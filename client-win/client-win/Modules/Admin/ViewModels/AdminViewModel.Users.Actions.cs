@@ -106,6 +106,7 @@ public sealed partial class AdminViewModel
         TextInput = "Ban admin";
         SecondaryInputLabel = "Durée (jours)";
         SecondaryInput = "7";
+        SecondaryInputAcceptsReturn = false;
         IsTextInputVisible = true;
         IsSecondaryInputVisible = true;
         Status = "Saisissez le motif et la durée (jours). Entrée : valider. Échap : retour.";

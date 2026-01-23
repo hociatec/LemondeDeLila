@@ -15,6 +15,7 @@ export type LamaMetadata = {
   roundPauseUntilMs: number | null;
   roundNumber: number;
   roundStarterIndex: number;
+  endedRoundNumber?: number | null;
   deck: LamaCardValue[];
   discard: LamaCardValue[];
   handsByPlayerId: Record<string, LamaCardValue[]>;

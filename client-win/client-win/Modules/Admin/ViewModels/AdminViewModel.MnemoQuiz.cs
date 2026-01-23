@@ -343,6 +343,7 @@ public sealed partial class AdminViewModel
         TextInput = question ?? string.Empty;
         SecondaryInputLabel = "Bonne réponse";
         SecondaryInput = correct ?? string.Empty;
+        SecondaryInputAcceptsReturn = false;
         ThirdInputLabel = "Réponse 1";
         ThirdInput = wrong1 ?? string.Empty;
         FourthInputLabel = "Réponse 2";

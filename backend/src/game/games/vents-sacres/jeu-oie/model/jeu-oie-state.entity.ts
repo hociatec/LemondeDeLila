@@ -1,13 +1,15 @@
+type JeuOieTileBase = { id: string; label: string; description?: string };
+
 export type JeuOieTile =
-  | { id: string; type: 'start'; label: string }
-  | { id: string; type: 'goose'; label: string }
-  | { id: string; type: 'bridge'; label: string }
-  | { id: string; type: 'inn'; label: string; skipTurns: number }
-  | { id: string; type: 'labyrinth'; label: string; backTo: number }
-  | { id: string; type: 'prison'; label: string; skipTurns: number }
-  | { id: string; type: 'death'; label: string; backTo: number }
-  | { id: string; type: 'normal'; label: string }
-  | { id: string; type: 'finish'; label: string };
+  | (JeuOieTileBase & { type: 'start' })
+  | (JeuOieTileBase & { type: 'goose' })
+  | (JeuOieTileBase & { type: 'bridge' })
+  | (JeuOieTileBase & { type: 'inn'; skipTurns: number })
+  | (JeuOieTileBase & { type: 'labyrinth'; backTo: number })
+  | (JeuOieTileBase & { type: 'prison'; skipTurns: number })
+  | (JeuOieTileBase & { type: 'death'; backTo: number })
+  | (JeuOieTileBase & { type: 'normal' })
+  | (JeuOieTileBase & { type: 'finish' });
 
 export type JeuOieMetadata = {
   tiles: JeuOieTile[];

@@ -823,10 +823,18 @@ public sealed partial class AdminViewModel
                 }
             }
 
-            if (_page == AdminPage.GameCategoryForm && tag is string categoryFormTag && categoryFormTag == "game.category.submit")
+            if (_page == AdminPage.GameCategoryForm && tag is string categoryFormTag)
             {
-                await SubmitCategoryFormAsync().ConfigureAwait(true);
-                return;
+                if (categoryFormTag == "game.category.submit")
+                {
+                    await SubmitCategoryFormAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (categoryFormTag == "game.category.delete")
+                {
+                    await DeleteCategoryAsync().ConfigureAwait(true);
+                    return;
+                }
             }
 
             if (_page == AdminPage.GameCategoryAssign)

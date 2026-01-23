@@ -162,6 +162,13 @@ public partial class GamePlayView
                     return;
                 }
 
+                // Quiz: si les réponses arrivent avant le texte de la question (premier affichage),
+                // ne pas voler le focus vers la réponse 1. On retentera dès que QuizQuestionText sera prêt.
+                if (_vm.IsQuizPending && string.IsNullOrWhiteSpace(_vm.QuizQuestionText))
+                {
+                    return;
+                }
+
                 TryFocusFirstChoice();
             }));
         };
@@ -196,35 +203,16 @@ public partial class GamePlayView
         {
             ChoicesList.SelectedIndex = -1;
 
-            // Warm-up virtualisation/layout : au tout premier quiz, l'utilisateur peut appuyer ↓
-            // avant que le container ListBoxItem soit créé, ce qui empêche NVDA d'annoncer la 1ère réponse.
+            // Warm-up layout sans ScrollIntoView : ScrollIntoView peut provoquer un défilement
+            // automatique vers la réponse 1 (et empêcher de revenir sur la question au tout premier quiz).
             try
             {
-                ChoicesList.ScrollIntoView(ChoicesList.Items[0]);
                 ChoicesList.UpdateLayout();
             }
             catch
             {
                 // ignore
             }
-
-            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
-            {
-                try
-                {
-                    if (ChoicesList.Visibility != Visibility.Visible || ChoicesList.Items.Count <= 0)
-                    {
-                        return;
-                    }
-
-                    ChoicesList.ScrollIntoView(ChoicesList.Items[0]);
-                    ChoicesList.UpdateLayout();
-                }
-                catch
-                {
-                    // ignore
-                }
-            }));
         }
 
         // IMPORTANT: rester sur la question (ne pas voler le focus vers la liste).

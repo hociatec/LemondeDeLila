@@ -21,6 +21,7 @@ public sealed partial class AdminViewModel
         IsSecondaryInputVisible = true;
         SecondaryInputLabel = "Durée (jours, défaut 3650)";
         SecondaryInput = string.IsNullOrWhiteSpace(_chatBanDays) ? "3650" : _chatBanDays;
+        SecondaryInputAcceptsReturn = false;
 
         Details = "Révoque l'accès au tchat pour l'utilisateur.";
         Items.Clear();

@@ -189,6 +189,8 @@ public sealed partial class AdminViewModel
         TextInput = string.Empty;
         SecondaryInputLabel = "Contenu";
         SecondaryInput = string.Empty;
+        PrimaryInputAcceptsReturn = false;
+        SecondaryInputAcceptsReturn = true;
         IsTextInputVisible = true;
         IsSecondaryInputVisible = true;
         IsAdditionalPermissionsVisible = false;
@@ -458,6 +460,7 @@ public sealed partial class AdminViewModel
         TextInput = string.Empty;
         SecondaryInputLabel = "Commentaire";
         SecondaryInput = string.Empty;
+        SecondaryInputAcceptsReturn = true;
         IsTextInputVisible = false;
         IsSecondaryInputVisible = true;
         IsAdditionalPermissionsVisible = false;
@@ -527,6 +530,8 @@ public sealed partial class AdminViewModel
         TextInput = report.Subject ?? string.Empty;
         SecondaryInputLabel = "Contenu";
         SecondaryInput = report.Content ?? string.Empty;
+        PrimaryInputAcceptsReturn = false;
+        SecondaryInputAcceptsReturn = true;
         IsTextInputVisible = true;
         IsSecondaryInputVisible = true;
         IsAdditionalPermissionsVisible = false;

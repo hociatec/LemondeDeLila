@@ -1000,28 +1000,14 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<number, number>;
     if (answers[botPlayerId] != null) return null;
 
-    const choicesLen = Math.max(0, q.choices?.length ?? 0);
+    // Le jeu expose toujours 4 choix, mais on reste robuste.
+    const choicesLen = Math.min(4, Math.max(0, q.choices?.length ?? 0));
     if (choicesLen <= 0) return null;
 
-    // Bot simple: réponse aléatoire (seed stable par partie/question/bot).
-    // IMPORTANT: ne pas dépendre de l'ordre de `players[]` (peut changer) et éviter
-    // une réponse déterministe identique entre bots pour une même question.
-    const seed = this.hashSeed(
-      `${q.id}:${botPlayerId}:${String((meta as any).roomRunId ?? '')}:${String(meta.quizDeadlineAtMs ?? '')}`,
-    );
-    const answerIndex = seed % choicesLen;
+    // Bot simple: réponse aléatoire.
+    const answerIndex = Math.floor(Math.random() * choicesLen);
 
     return [{ type: 'answer_quiz', payload: { answerIndex } } as any];
-  }
-
-  private hashSeed(value: string): number {
-    // Hash simple, stable, sans dépendance externe.
-    let h = 0;
-    const s = String(value ?? '');
-    for (let i = 0; i < s.length; i++) {
-      h = ((h << 5) - h + s.charCodeAt(i)) | 0;
-    }
-    return Math.abs(h);
   }
 
   private parseBool(value: any, defaultValue = false): boolean {

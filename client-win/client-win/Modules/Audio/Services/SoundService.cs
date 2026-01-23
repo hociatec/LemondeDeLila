@@ -622,10 +622,12 @@ public sealed class SoundService : ISoundService, IDisposable
 
                 if (sound == SoundId.ClientOpened)
                 {
-                    // Intentionnellement vide: ne pas ouvrir la "startup gate" sur Stop().
-                    // Cas important: login rapide -> on coupe ClientOpened pour jouer ClientConnected.
-                    // Ouvrir la gate ici laisse passer un burst de sons (replay notify) pendant la transition.
-                    // La gate s'ouvrira sur MediaEnded/MediaFailed, ou si ClientOpened/ClientConnected est disabled/missing.
+                    // Si on stoppe ClientOpened (ex: login rapide), on doit ouvrir la startup gate,
+                    // sinon les boucles (menu/taverne) restent silencieuses jusqu'à la fin du son suivant.
+                    if (Volatile.Read(ref _startupGateOpened) == 0)
+                    {
+                        OpenStartupGate("ClientOpened stopped");
+                    }
                 }
                 else if (sound == SoundId.ClientConnected && Volatile.Read(ref _startupGateOpened) == 0)
                 {
@@ -1044,7 +1046,7 @@ public sealed class SoundService : ISoundService, IDisposable
         }
 
         // Les boucles "ambiance/musique" ont des placeholders (roomopened.mp3) par défaut.
-        // Tant que l'admin n'a pas uploadé un vrai son, ne pas lancer la boucle (sinon on entend un 2e "son court" au démarrage).
+        // Tant que l'admin n'a pas uploadé un vrai son, ne pas lancer la boucle (sinon on entend un "son court" en boucle).
         if ((sound == SoundId.MainMenuMusic || sound == SoundId.TavernAmbience) &&
             string.IsNullOrWhiteSpace(_remote?.TryGetPath(sound)) &&
             string.Equals(Path.GetFileName(filePath), "roomopened.mp3", StringComparison.OrdinalIgnoreCase))

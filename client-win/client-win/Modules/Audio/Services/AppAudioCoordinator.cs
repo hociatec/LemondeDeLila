@@ -68,6 +68,11 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 // ignore
             }
         });
+
+        // Reduce first-play latency for common backgrounds (placeholders or admin overrides).
+        TryPreload(SoundId.MainMenuMusic);
+        TryPreload(SoundId.TavernAmbience);
+        TryPreload(SoundId.TavernOpened);
     }
 
     private static string GetStartupSoundMarkerPath()
@@ -287,6 +292,9 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
     public void NotifyTavernEntered()
     {
+        TryPreload(SoundId.TavernOpened);
+        TryPreload(SoundId.TavernAmbience);
+
         var shouldTransition = false;
         lock (_stateGate)
         {
@@ -309,6 +317,16 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
     public void SetBackground(AppAudioBackground background)
     {
+        if (background == AppAudioBackground.MainMenu)
+        {
+            TryPreload(SoundId.MainMenuMusic);
+        }
+        else if (background == AppAudioBackground.Tavern)
+        {
+            TryPreload(SoundId.TavernAmbience);
+            TryPreload(SoundId.TavernOpened);
+        }
+
         var shouldTransition = false;
         lock (_stateGate)
         {
@@ -376,6 +394,14 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         try
         {
             await _remote.RefreshAsync(force: force, cancellationToken: linked.Token).ConfigureAwait(false);
+
+            // If admin overrides were downloaded, preload them so the next Play/StartLoop is immediate.
+            TryPreload(SoundId.MainMenuMusic);
+            TryPreload(SoundId.TavernAmbience);
+            TryPreload(SoundId.TavernOpened);
+            TryPreload(SoundId.ClientConnected);
+            TryPreload(SoundId.ClientDisconnected);
+
             if (reapplyBackground)
             {
                 lock (_stateGate)
@@ -696,8 +722,12 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 return;
             }
 
-            // Music/ambience should start after the connection one-shot (no overlap).
-            await WaitForSoundOrCancelAsync(SoundId.ClientConnected, TimeSpan.FromSeconds(6), token).ConfigureAwait(false);
+            // Music/ambience should not wait several seconds for the connection one-shot to end.
+            // Give it a tiny head start then start the background (slight overlap is acceptable vs silence/latency).
+            await WaitForSoundOrCancelAsync(
+                SoundId.ClientConnected,
+                playConnected ? TimeSpan.FromMilliseconds(250) : TimeSpan.FromMilliseconds(100),
+                token).ConfigureAwait(false);
             if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
             {
                 return;

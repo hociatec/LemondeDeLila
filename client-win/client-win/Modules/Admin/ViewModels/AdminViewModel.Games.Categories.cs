@@ -85,11 +85,17 @@ public sealed partial class AdminViewModel
         TextInput = category?.Name ?? string.Empty;
         SecondaryInputLabel = "Parent (id, facultatif)";
         SecondaryInput = category?.ParentId ?? string.Empty;
+        SecondaryInputAcceptsReturn = false;
         IsTextInputVisible = true;
         IsSecondaryInputVisible = true;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Valider", tag: "game.category.submit"));
+        if (string.Equals(mode, "edit", StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrWhiteSpace(_categoryFormId))
+        {
+            Items.Add(new AdminMenuItem("Supprimer la catégorie", tag: "game.category.delete"));
+        }
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : valider. Échap : retour.";
     }
@@ -125,6 +131,46 @@ public sealed partial class AdminViewModel
                 ShowCategories();
                 Status = "Catégorie enregistrée.";
             });
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task DeleteCategoryAsync()
+    {
+        var id = (_categoryFormId ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return;
+        }
+
+        var name = (TextInput ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            name = id;
+        }
+
+        var confirm = await _dialogs.Confirm("Supprimer", $"Supprimer la catégorie \"{name}\" ?").ConfigureAwait(true);
+        if (confirm != true)
+        {
+            return;
+        }
+
+        if (IsBusy) return;
+        IsBusy = true;
+        try
+        {
+            var response = await _admin.DeleteGameCategoryAsync(id).ConfigureAwait(true);
+            _loadedCategories = (response.Categories ?? new()).ToArray();
+            _categoryAssignments = response.Assignments ?? new Dictionary<string, string?>();
+            ShowCategories();
+            Status = "Catégorie supprimée.";
+        }
+        catch (Exception ex)
+        {
+            await _dialogs.ShowError("Catégorie", ex.Message).ConfigureAwait(true);
         }
         finally
         {

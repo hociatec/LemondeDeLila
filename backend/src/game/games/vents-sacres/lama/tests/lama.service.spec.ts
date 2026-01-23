@@ -54,11 +54,16 @@ describe('LamaService', () => {
     expect((exposed?.actions ?? []).some((a: any) => a?.type === 'lama_set_config')).toBe(true);
 
     const started: any = service.applyActions(state, [
-      { type: 'lama_set_config', payload: { loseAtScore: 40, roundPauseSeconds: 2 }, meta: { actorId: 1 } } as any,
+      {
+        type: 'lama_set_config',
+        payload: { loseAtScore: 40, roundPauseSeconds: 2, allowPlayAfterDraw: 'true' },
+        meta: { actorId: 1 },
+      } as any,
     ]);
     expect(String(started.phase)).toBe('round');
     expect(Number(started.metadata?.roundPauseSeconds ?? -1)).toBe(2);
     expect(Number(started.metadata?.loseAtScore ?? 0)).toBe(40);
+    expect(Boolean(started.metadata?.allowPlayAfterDraw)).toBe(true);
     expect((started.metadata?.discard ?? []).length).toBeGreaterThan(0);
   });
 
@@ -326,6 +331,108 @@ describe('LamaService', () => {
       .slice(returnState.log.length)
       .map((l: any) => String(l?.message ?? ''));
     expect(returnMessages.some((m: string) => m.includes('diamant'))).toBe(true);
+  });
+
+  it('logs "doit piocher" before a bot draw (no double draw)', async () => {
+    const service = new LamaService(
+      { register: () => {} } as any,
+      new RandomService(),
+      new LamaPresenter(),
+    );
+
+    const state: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'Human' },
+        { id: 2, username: 'Bot', isBot: true },
+      ],
+      turn: { currentPlayerId: 2, direction: 1 },
+      pending: { step: 'turn_choice', playerId: 2 },
+      metadata: {
+        step: 'turn_choice',
+        allowPlayAfterDraw: true,
+        roundNumber: 1,
+        roundStarterIndex: 0,
+        deck: [2, 3, 4],
+        discard: [1],
+        handsByPlayerId: { '1': [1], '2': [5, 6] },
+        droppedOutByPlayerId: { '1': false, '2': false },
+        scoresByPlayerId: { '1': 0, '2': 0 },
+        turnTracker: { playerId: 2, drawn: false, played: false },
+        pendingReturnQueue: [],
+        pendingReturnPlayerId: null,
+        winnerId: null,
+      },
+    };
+
+    const after: any = service.applyActions(state, [
+      { type: 'draw', payload: {}, meta: { actorId: 2 } } as any,
+    ]);
+
+    const messages = (after.log ?? []).map((l: any) => String(l?.message ?? ''));
+    expect(messages.some((m: string) => m.includes('doit piocher'))).toBe(true);
+    expect(messages.filter((m: string) => m === 'Bot pioche.').length).toBe(1);
+  });
+
+  it('prevents a bot from drawing multiple times while still on its turn', async () => {
+    const service = new LamaService(
+      { register: () => {} } as any,
+      new RandomService(),
+      new LamaPresenter(),
+    );
+
+    const state: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'Human' },
+        { id: 2, username: 'Bot', isBot: true },
+      ],
+      turn: { currentPlayerId: 2, direction: 1 },
+      pending: { step: 'turn_choice', playerId: 2 },
+      metadata: {
+        step: 'turn_choice',
+        allowPlayAfterDraw: true,
+        roundNumber: 1,
+        roundStarterIndex: 0,
+        deck: [1, 7], // ensures the bot can keep the turn after drawing (draws a LAMA)
+        discard: [6],
+        handsByPlayerId: { '1': [1], '2': [2, 3, 4, 5, 6] },
+        droppedOutByPlayerId: { '1': false, '2': false },
+        scoresByPlayerId: { '1': 0, '2': 0 },
+        turnTracker: { playerId: 2, drawn: false, played: false },
+        pendingReturnQueue: [],
+        pendingReturnPlayerId: null,
+        winnerId: null,
+      },
+    };
+
+    const afterFirst: any = service.applyActions(state, [
+      { type: 'draw', payload: {}, meta: { actorId: 2 } } as any,
+    ]);
+    expect(afterFirst.turn.currentPlayerId).toBe(2);
+    expect(Boolean(afterFirst.metadata?.turnTracker?.drawn)).toBe(true);
+    const deckAfterFirst = (afterFirst.metadata.deck ?? []).length;
+    const handAfterFirst = (afterFirst.metadata.handsByPlayerId?.['2'] ?? []).length;
+
+    const afterSecond: any = service.applyActions(afterFirst, [
+      { type: 'draw', payload: {}, meta: { actorId: 2 } } as any,
+    ]);
+
+    // Second draw is ignored (one draw per turn).
+    expect((afterSecond.metadata.deck ?? []).length).toBe(deckAfterFirst);
+    expect((afterSecond.metadata.handsByPlayerId?.['2'] ?? []).length).toBe(handAfterFirst);
+    const messages = (afterSecond.log ?? []).map((l: any) => String(l?.message ?? ''));
+    expect(messages.filter((m: string) => m === 'Bot pioche.').length).toBe(1);
   });
 
   it('offers only single-card plays in pending choices', async () => {
@@ -652,8 +759,8 @@ describe('LamaService', () => {
 
     // B keeps 3,4,LAMA => 3+4+10 = 17 (duplicates ignored).
     expect(Number(after.metadata?.scoresByPlayerId?.['2'] ?? 0)).toBe(17);
-    expect(String(after.metadata?.step ?? '')).toBe('return_token');
-    expect(Number(after.metadata?.pendingReturnPlayerId ?? 0)).toBe(1);
+    // Winner has 0 token, so there is nothing to return: auto-advance to next round.
+    expect(Number(after.metadata?.pendingReturnPlayerId ?? 0)).toBe(0);
   });
 
   it('enters a round pause instead of starting the next round immediately (when configured)', async () => {
@@ -701,5 +808,111 @@ describe('LamaService', () => {
     expect(String(after.metadata?.step ?? '')).toBe('round_pause');
     expect(Number(after.round ?? 0)).toBe(2);
     expect(typeof after.metadata?.roundPauseUntilMs).toBe('number');
+  });
+
+  it('does not score/end the same round twice (idempotent endRound)', async () => {
+    const service = new LamaService(
+      { register: () => {} } as any,
+      new RandomService(),
+      new LamaPresenter(),
+    );
+
+    const endedState: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 10,
+      lastRoll: null,
+      log: [
+        { message: 'Fin de la manche 1.' },
+        { message: 'Lilas prend 12 jetons (pénalité).' },
+        { message: 'Grosminet gagne la manche.' },
+      ],
+      players: [
+        { id: 1, username: 'Lilas' },
+        { id: 2, username: 'Grosminet' },
+      ],
+      turn: { currentPlayerId: 2, direction: 1 },
+      pending: { step: 'turn_choice', playerId: 2 },
+      metadata: {
+        ownerPlayerId: 1,
+        loseAtScore: 40,
+        roundPauseSeconds: 0,
+        roundPauseUntilMs: null,
+        roundNumber: 1,
+        roundStarterIndex: 0,
+        endedRoundNumber: 1,
+        deck: [1],
+        discard: [6],
+        handsByPlayerId: { '1': [1, 2], '2': [5] },
+        droppedOutByPlayerId: { '1': false, '2': false },
+        scoresByPlayerId: { '1': 12, '2': 0 },
+        step: 'turn_choice',
+        pendingReturnQueue: [],
+        pendingReturnPlayerId: null,
+        winnerId: null,
+      },
+    };
+
+    const after: any = service.applyActions(endedState, [
+      { type: 'lama_quit', payload: {}, meta: { actorId: 2 } } as any,
+    ]);
+
+    // No duplicate "Fin de la manche" or extra penalties.
+    const messages = (after.log ?? []).map((l: any) => String(l?.message ?? ''));
+    expect(messages.filter((m: string) => m === 'Fin de la manche 1.').length).toBe(1);
+    expect(Number(after.metadata?.scoresByPlayerId?.['1'] ?? 0)).toBe(12);
+  });
+
+  it('auto-skips return_token when winner has 0 token', async () => {
+    const service = new LamaService(
+      { register: () => {} } as any,
+      new RandomService(),
+      new LamaPresenter(),
+    );
+
+    const base: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'Winner' },
+        { id: 2, username: 'Loser' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: { step: 'turn_choice', playerId: 1 },
+      metadata: {
+        ownerPlayerId: 1,
+        loseAtScore: 40,
+        roundPauseSeconds: 0,
+        roundPauseUntilMs: null,
+        roundNumber: 1,
+        roundStarterIndex: 0,
+        endedRoundNumber: null,
+        deck: [1],
+        discard: [1],
+        handsByPlayerId: { '1': [1], '2': [2, 3, 7] },
+        droppedOutByPlayerId: { '1': false, '2': false },
+        scoresByPlayerId: { '1': 0, '2': 0 },
+        step: 'turn_choice',
+        pendingReturnQueue: [],
+        pendingReturnPlayerId: null,
+        winnerId: null,
+      },
+    };
+
+    const after: any = service.applyActions(base, [
+      { type: 'lama_play', payload: { value: 1 }, meta: { actorId: 1 } } as any,
+    ]);
+
+    // Loser gets penalty, Winner stays at 0 => no return_token prompt should happen.
+    expect(Number(after.metadata?.scoresByPlayerId?.['2'] ?? 0)).toBe(2 + 3 + 10);
+    expect(Number(after.metadata?.scoresByPlayerId?.['1'] ?? 0)).toBe(0);
+    expect(Number(after.metadata?.pendingReturnPlayerId ?? 0)).toBe(0);
+    const messages = (after.log ?? []).map((l: any) => String(l?.message ?? ''));
+    expect(messages.some((m: string) => m.includes("n'a rien à rendre"))).toBe(true);
   });
 });

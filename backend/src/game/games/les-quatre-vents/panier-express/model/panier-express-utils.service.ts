@@ -188,9 +188,19 @@ export class PanierExpressUtils {
       detrempe: 'détrempé',
       derriere: 'derrière',
     };
+    const extraTokenMap: Record<string, string> = {
+      recompensee: 'r\u00e9compens\u00e9e',
+      inversee: 'invers\u00e9e',
+      fete: 'f\u00eate',
+      ferme: 'ferm\u00e9',
+      bonde: 'bond\u00e9',
+      defectueux: 'd\u00e9fectueux',
+      oublie: 'oubli\u00e9',
+      anime: 'anim\u00e9',
+    };
     const words = raw
       .split('-')
-      .map((token) => tokenMap[token] ?? token)
+      .map((token) => tokenMap[token] ?? extraTokenMap[token] ?? token)
       .filter((t) => t.length > 0);
     if (!words.length) return raw;
     const label = words.join(' ');

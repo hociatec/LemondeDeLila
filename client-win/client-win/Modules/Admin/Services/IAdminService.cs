@@ -49,6 +49,7 @@ public interface IAdminService
     Task<AdminGameCategoriesResponseDto> CreateGameCategoryAsync(string name, string? parentId = null, CancellationToken cancellationToken = default);
     Task<AdminGameCategoriesResponseDto> UpdateGameCategoryAsync(string id, string? name = null, string? parentId = null, CancellationToken cancellationToken = default);
     Task<AdminGameCategoriesResponseDto> AssignGameCategoryAsync(string gameType, string? categoryId = null, CancellationToken cancellationToken = default);
+    Task<AdminGameCategoriesResponseDto> DeleteGameCategoryAsync(string id, CancellationToken cancellationToken = default);
 
     Task<AdminMnemoQuizCategoriesResponseDto> GetMnemoQuizCategoriesAsync(CancellationToken cancellationToken = default);
     Task<AdminMnemoQuizCategoriesResponseDto> CreateMnemoQuizCategoryAsync(string name, CancellationToken cancellationToken = default);

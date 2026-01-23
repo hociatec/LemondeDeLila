@@ -1158,6 +1158,16 @@ export class GameEngineService {
         .map((b: any) => String(b?.name ?? '').trim())
         .filter((n: string) => n.length > 0);
 
+      // Bots "sièges" (id négatif) proviennent de payload.room.bots (GameCoreService buildPlayers).
+      // Si un bot est retiré de la room pendant une partie, il doit aussi disparaître du roster du jeu
+      // sinon l'exclusion est visuellement sans effet et le bot continue de jouer.
+      const allowedBotIds = new Set<number>(
+        roomBots
+          .map((b: any) => Number((b as any)?.id ?? 0))
+          .filter((id: number) => Number.isFinite(id) && id > 0)
+          .map((id: number) => -Math.abs(id)),
+      );
+
       // Bots already present in the game state (initial bots / already replaced seats).
       const assignedBotNames = new Set(
         players
@@ -1174,7 +1184,7 @@ export class GameEngineService {
       }
 
       let changed = false;
-      const nextPlayers = players.map((p) => {
+      const mappedPlayers = players.map((p) => {
         const id = Number((p as any)?.id ?? 0);
         if (!Number.isFinite(id) || id === 0) return p;
 
@@ -1199,6 +1209,54 @@ export class GameEngineService {
 
         return p;
       });
+
+      // Remove room bots that no longer exist (id < 0 and not in allowedBotIds).
+      const filteredPlayers = mappedPlayers.filter((p) => {
+        const id = Number((p as any)?.id ?? 0);
+        if (!Number.isFinite(id) || id === 0) return true;
+        if (id >= 0) return true;
+        if ((p as any)?.isBot !== true) return true;
+        return allowedBotIds.has(id);
+      });
+      const nextPlayers = filteredPlayers;
+      if (nextPlayers.length !== mappedPlayers.length) {
+        changed = true;
+      }
+
+      const currentPlayerId = state.turn?.currentPlayerId ?? null;
+      if (
+        typeof currentPlayerId === 'number' &&
+        currentPlayerId !== 0 &&
+        !nextPlayers.some((p) => p?.id === currentPlayerId)
+      ) {
+        // Keep a stable index if possible; otherwise fallback to first player.
+        const prevIndex = Math.max(0, players.findIndex((p) => p?.id === currentPlayerId));
+        const fallbackIndex = Math.min(prevIndex, Math.max(0, nextPlayers.length - 1));
+        const fallbackId = nextPlayers[fallbackIndex]?.id ?? nextPlayers[0]?.id ?? null;
+        if (fallbackId !== currentPlayerId) {
+          changed = true;
+          state = {
+            ...state,
+            turn: {
+              ...(state.turn ?? { direction: 1 }),
+              currentPlayerId: fallbackId,
+            },
+          };
+        }
+      }
+
+      const pendingPlayerId = (state.pending as any)?.playerId ?? null;
+      if (
+        typeof pendingPlayerId === 'number' &&
+        pendingPlayerId !== 0 &&
+        !nextPlayers.some((p) => p?.id === pendingPlayerId)
+      ) {
+        changed = true;
+        state = {
+          ...state,
+          pending: state.pending ? { ...(state.pending as any), playerId: null } : state.pending,
+        };
+      }
 
       return changed ? { ...state, players: nextPlayers } : state;
     } catch {

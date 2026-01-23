@@ -75,6 +75,11 @@ export class RoomGateway
   private readonly chatCooldownMs = 350;
   private readonly chatMaxLength = 300;
   private readonly lastRoomStatusByRoomId = new Map<number, string>();
+  private readonly participantDisconnectGraceMs = 60_000;
+  private readonly pendingParticipantLeaves = new Map<
+    string,
+    ReturnType<typeof setTimeout>
+  >();
 
   constructor(
     private readonly roomsService: RoomService,
@@ -167,6 +172,7 @@ export class RoomGateway
 
     let targetRoomId = roomId && roomId > 0 ? roomId : 0;
     if (targetRoomId > 0) {
+      this.clearPendingParticipantLeave(targetRoomId, payload.id);
       const effectiveSilent = Boolean(silent);
       if (this.roomsService.isBanned(targetRoomId, payload.id)) {
         await this.sendError(client, 'Banni de cette table.');
@@ -420,13 +426,17 @@ export class RoomGateway
           // Sur déconnexion on ne veut jamais supprimer une table par erreur.
           // On marque toutefois le joueur comme parti (et donc remplaçable par un bot en partie démarrée),
           // sauf si l'état de la table est indéterminé (ex: DB temporairement indisponible).
-          const disconnectOnly = roomStarted === null;
+          const disconnectOnly = true;
           this.roomsService
             .leaveRoom(meta.roomId, meta.userId, {
               preserveRoom: true,
               disconnectOnly,
             })
             .catch(() => {});
+
+          if (roomStarted === true) {
+            this.scheduleDelayedParticipantLeave(meta.roomId, meta.userId);
+          }
         }
       } else {
         if (!userStillConnected && ownerId === meta.userId) {
@@ -1817,6 +1827,38 @@ export class RoomGateway
       }
     }
     return false;
+  }
+
+  private buildParticipantLeaveKey(roomId: number, userId: number): string {
+    return `${roomId}:${userId}`;
+  }
+
+  private clearPendingParticipantLeave(roomId: number, userId: number): void {
+    const key = this.buildParticipantLeaveKey(roomId, userId);
+    const existing = this.pendingParticipantLeaves.get(key);
+    if (!existing) return;
+    clearTimeout(existing);
+    this.pendingParticipantLeaves.delete(key);
+  }
+
+  private scheduleDelayedParticipantLeave(roomId: number, userId: number): void {
+    const key = this.buildParticipantLeaveKey(roomId, userId);
+    if (this.pendingParticipantLeaves.has(key)) return;
+
+    const timeout = setTimeout(() => {
+      this.pendingParticipantLeaves.delete(key);
+      if (this.hasUserConnections(roomId, userId)) return;
+
+      this.roomsService
+        .leaveRoom(roomId, userId, {
+          preserveRoom: true,
+          disconnectOnly: false,
+        })
+        .then(() => this.sendRoomState(roomId))
+        .catch(() => {});
+    }, this.participantDisconnectGraceMs);
+
+    this.pendingParticipantLeaves.set(key, timeout);
   }
 
   private async canSpectate(roomId: number, userId: number): Promise<boolean> {

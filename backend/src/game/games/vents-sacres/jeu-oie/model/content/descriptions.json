@@ -1,0 +1,320 @@
+﻿{
+    "version":  1,
+    "cases":  [
+                  {
+                      "index":  1,
+                      "title":  "Départ",
+                      "description":  "Vous êtes sur la ligne de départ, le coeur battant et les chaussures bien lacées. La course est lancée ! Un simple lancer de dé peut faire de vous une légende… ou un éternel retardataire."
+                  },
+                  {
+                      "index":  2,
+                      "title":  "Case neutre",
+                      "description":  "Le chemin commence tranquillement. Vous prenez vos marques, observant le plateau comme un aventurier prudent."
+                  },
+                  {
+                      "index":  3,
+                      "title":  "Case neutre",
+                      "description":  "L\u0027excitation monte. Chaque pas résonne comme une promesse d\u0027aventure."
+                  },
+                  {
+                      "index":  4,
+                      "title":  "Case neutre",
+                      "description":  "Le paysage est calme, presque trop calme… Vous avancez en gardant l\u0027oeil ouvert."
+                  },
+                  {
+                      "index":  5,
+                      "title":  "Oie",
+                      "description":  "Une oie surgit en cacardant joyeusement ! Elle vous pousse dans le dos avec son bec : la chance est avec vous !"
+                  },
+                  {
+                      "index":  6,
+                      "title":  "Pont",
+                      "description":  "Le pont craque sous vos pas… puis vous glissez élégamment (ou pas) jusqu\u0027à la case 12. Quel raccourci !"
+                  },
+                  {
+                      "index":  7,
+                      "title":  "Case neutre",
+                      "description":  "Vous respirez calmement. Le vent du destin souffle doucement dans votre dos."
+                  },
+                  {
+                      "index":  8,
+                      "title":  "Case neutre",
+                      "description":  "Rien à signaler. Vous avancez avec assurance, comme si tout était sous contrôle."
+                  },
+                  {
+                      "index":  9,
+                      "title":  "Oie",
+                      "description":  "Une oie apparaît ! Elle semble vous reconnaître et vous offre un coup d\u0027aile providentiel."
+                  },
+                  {
+                      "index":  10,
+                      "title":  "Case neutre",
+                      "description":  "Vous marchez prudemment, évitant les flaques imaginaires et les mauvais présages."
+                  },
+                  {
+                      "index":  11,
+                      "title":  "Case neutre",
+                      "description":  "Vous restez concentré, attentif à chaque lancer."
+                  },
+                  {
+                      "index":  12,
+                      "title":  "Case neutre",
+                      "description":  "Vous continuez, l\u0027esprit alerte et le pas déterminé."
+                  },
+                  {
+                      "index":  13,
+                      "title":  "Case neutre",
+                      "description":  "Une tension flotte dans l\u0027air. Le plateau vous observe… oui, oui, il vous observe."
+                  },
+                  {
+                      "index":  14,
+                      "title":  "Oie",
+                      "description":  "L\u0027oie vous accueille avec enthousiasme. Elle semble particulièrement bien disposée à votre égard."
+                  },
+                  {
+                      "index":  15,
+                      "title":  "Case neutre",
+                      "description":  "Vous avancez à votre rythme. Pas de précipitation, la victoire se mérite."
+                  },
+                  {
+                      "index":  16,
+                      "title":  "Case neutre",
+                      "description":  "Le chemin est dégagé, mais l\u0027inconnu n\u0027est jamais loin."
+                  },
+                  {
+                      "index":  17,
+                      "title":  "Case neutre",
+                      "description":  "Rien ne se passe… ce qui est parfois plus inquiétant qu\u0027un piège."
+                  },
+                  {
+                      "index":  18,
+                      "title":  "Oie",
+                      "description":  "L\u0027oie apparaît avec entrain ! Sa présence vous intrigue autant qu\u0027elle vous amuse."
+                  },
+                  {
+                      "index":  19,
+                      "title":  "Auberge",
+                      "description":  "Une auberge accueillante se dresse sur votre chemin. Vous décidez de faire une pause bien méritée, de reprendre des forces et de savourer un moment de repos."
+                  },
+                  {
+                      "index":  20,
+                      "title":  "Case neutre",
+                      "description":  "Un pas de plus vers l\u0027inconnu. Le suspense est bien là."
+                  },
+                  {
+                      "index":  21,
+                      "title":  "Case neutre",
+                      "description":  "Vous avancez, concentré, prêt à affronter ce que le dé vous réserve."
+                  },
+                  {
+                      "index":  22,
+                      "title":  "Case neutre",
+                      "description":  "Le chemin est clair. Trop clair, peut-être…"
+                  },
+                  {
+                      "index":  23,
+                      "title":  "Oie",
+                      "description":  "Une oie surgit en battant des ailes avec enthousiasme ! Elle vous entraîne plus loin sur le plateau, comme portée par la chance."
+                  },
+                  {
+                      "index":  24,
+                      "title":  "Case neutre",
+                      "description":  "Vous avancez, concentré, déterminé à ne rien lâcher."
+                  },
+                  {
+                      "index":  25,
+                      "title":  "Case neutre",
+                      "description":  "Le plateau semble tranquille… mais il ne faut jamais lui faire totalement confiance."
+                  },
+                  {
+                      "index":  26,
+                      "title":  "Dé magique",
+                      "description":  "Le dé brille d\u0027un éclat étrange. Lancez-le ! Il pourrait vous bénir… ou rire de vous.\\nnote pour l\u0027admine : si le lancé de dé est compris entre un et trois, le joueur avance, et s\u0027il est compris entre quatre et six, il recule)"
+                  },
+                  {
+                      "index":  27,
+                      "title":  "Oie",
+                      "description":  "Une oie malicieusement déterminée vous coupe la route ! D\u0027un coup de bec plein d\u0027entrain, elle vous pousse à continuer votre chemin sans attendre."
+                  },
+                  {
+                      "index":  28,
+                      "title":  "Case neutre",
+                      "description":  "Vous avancez avec espoir. Une case favorable serait la bienvenue…"
+                  },
+                  {
+                      "index":  29,
+                      "title":  "Case neutre",
+                      "description":  "Vous avancez prudemment, comme si le sol pouvait se dérober sous vos pieds."
+                  },
+                  {
+                      "index":  30,
+                      "title":  "Case neutre",
+                      "description":  "Un calme tendu s\u0027installe. L\u0027atmosphère est chargée de suspense…"
+                  },
+                  {
+                      "index":  31,
+                      "title":  "Puits",
+                      "description":  "Oups ! Vous tombez dans un puits sombre et profond. Seul un 1 au dé pourra vous en sortir. En attendant, le temps semble s\u0027étirer…"
+                  },
+                  {
+                      "index":  32,
+                      "title":  "Oie",
+                      "description":  "Une oie tranquille mais décidée traverse votre chemin. Elle vous adresse un regard complice avant de vous encourager à repartir aussitôt. La chance vous sourit encore."
+                  },
+                  {
+                      "index":  33,
+                      "title":  "Case neutre",
+                      "description":  "Le chemin s\u0027éclaircit. Vous continuez d\u0027avancer avec confiance."
+                  },
+                  {
+                      "index":  34,
+                      "title":  "Case neutre",
+                      "description":  "Chaque lancer est un mini suspense digne d\u0027un grand final."
+                  },
+                  {
+                      "index":  35,
+                      "title":  "Case neutre",
+                      "description":  "Rien de spécial… ce qui, dans ce jeu, est presque une bonne nouvelle."
+                  },
+                  {
+                      "index":  36,
+                      "title":  "Oie",
+                      "description":  "Une oie surgit fièrement sur le chemin et vous escorte quelques instants, comme pour vous porter chance. Impossible de résister à son élan communicatif."
+                  },
+                  {
+                      "index":  37,
+                      "title":  "Case neutre",
+                      "description":  "Le dé roule… le silence se fait… tout peut arriver."
+                  },
+                  {
+                      "index":  38,
+                      "title":  "Case neutre",
+                      "description":  "Le plateau paraît amical, mais il a encore quelques tours dans son sac."
+                  },
+                  {
+                      "index":  39,
+                      "title":  "Case neutre",
+                      "description":  "Vous sentez votre coeur battre plus vite. L\u0027intensité du jeu se fait sentir."
+                  },
+                  {
+                      "index":  40,
+                      "title":  "Case neutre",
+                      "description":  "Vous avancez avec assurance. Restez vigilant."
+                  },
+                  {
+                      "index":  41,
+                      "title":  "Oie",
+                      "description":  "Une oie surgit en plein milieu du chemin et vous encourage d\u0027un joyeux cacardement. Son énergie vous donne aussitôt l\u0027envie d\u0027avancer encore."
+                  },
+                  {
+                      "index":  42,
+                      "title":  "Labyrinthe",
+                      "description":  "Perdu ! Les murs tournent, les chemins se croisent… et vous voilà renvoyé à la case 30. Note mentale : ne plus jamais faire confiance à un labyrinthe."
+                  },
+                  {
+                      "index":  43,
+                      "title":  "Case neutre",
+                      "description":  "Vous avancez d\u0027un pas léger. Rien ne vous décourage !"
+                  },
+                  {
+                      "index":  44,
+                      "title":  "Case neutre",
+                      "description":  "Le chemin est calme. Le dé, lui, est imprévisible."
+                  },
+                  {
+                      "index":  45,
+                      "title":  "Oie",
+                      "description":  "Une oie surgit en prenant son envol juste au-dessus de vous. En vous agrippant à ses pattes (plus ou moins volontairement), vous êtes porté plus loin sur le plateau."
+                  },
+                  {
+                      "index":  46,
+                      "title":  "Case neutre",
+                      "description":  "Tout va bien. Méfiez-vous, c’est souvent là que ça bascule."
+                  },
+                  {
+                      "index":  47,
+                      "title":  "Case neutre",
+                      "description":  "Le suspense est à son comble. Chaque lancer est un événement."
+                  },
+                  {
+                      "index":  48,
+                      "title":  "Case neutre",
+                      "description":  "Un calme trompeur s\u0027installe sur le plateau."
+                  },
+                  {
+                      "index":  49,
+                      "title":  "Case neutre",
+                      "description":  "Vous continuez, prêt à tout affronter."
+                  },
+                  {
+                      "index":  50,
+                      "title":  "Oie",
+                      "description":  "Une oie se met à tourner autour de vous en cacardant joyeusement, semant une joyeuse pagaille… avant de vous pousser à repartir."
+                  },
+                  {
+                      "index":  51,
+                      "title":  "Case neutre",
+                      "description":  "Chaque lancer peut décider du sort de la partie."
+                  },
+                  {
+                      "index":  52,
+                      "title":  "Prison",
+                      "description":  "Halte-là ! Vous êtes retenu ici pour deux tours. Le temps de réfléchir à vos choix… et de ruminer un peu."
+                  },
+                  {
+                      "index":  53,
+                      "title":  "Case neutre",
+                      "description":  "Vous avancez avec détermination, prêt à poursuivre la partie."
+                  },
+                  {
+                      "index":  54,
+                      "title":  "Oie",
+                      "description":  "Une oie apparaît en glissant sur une petite trottinette, casque vissé sur la tête et yeux pétillants. Dans un élan de folie, elle vous pousse à la suivre sur la piste… impossible de résister !"
+                  },
+                  {
+                      "index":  55,
+                      "title":  "Case neutre",
+                      "description":  "Votre coeur bat plus fort. L\u0027enjeu se fait sentir."
+                  },
+                  {
+                      "index":  56,
+                      "title":  "Case neutre",
+                      "description":  "Encore quelques pas. L\u0027excitation est palpable."
+                  },
+                  {
+                      "index":  57,
+                      "title":  "Case neutre",
+                      "description":  "Chaque lancer est crucial. Les regards se font insistants."
+                  },
+                  {
+                      "index":  58,
+                      "title":  "Mort",
+                      "description":  "Oh non ! Un mystérieux souffle glacial vous fauche… et vous voilà réduit à néant ! Il va falloir repartir de zéro."
+                  },
+                  {
+                      "index":  59,
+                      "title":  "Oie",
+                      "description":  "Une oie audacieuse effectue un petit saut périlleux devant vous, puis vous donne un coup d\u0027aile joyeux qui vous propulse en avant."
+                  },
+                  {
+                      "index":  60,
+                      "title":  "Case neutre",
+                      "description":  "Vous observez les autres joueurs. Certains transpirent la victoire… d\u0027autres la défaite."
+                  },
+                  {
+                      "index":  61,
+                      "title":  "Case neutre",
+                      "description":  "L\u0027adrénaline coule à flots. Vous êtes pleinement concentré."
+                  },
+                  {
+                      "index":  62,
+                      "title":  "Case neutre",
+                      "description":  "La tension est à son comble. Tout peut encore arriver."
+                  },
+                  {
+                      "index":  63,
+                      "title":  "Arrivée",
+                      "description":  "Victoire ! Vous franchissez la ligne sous une ovation spectaculaire. Des dizaines d’oies s\u0027envolent en un ballet aérien chatoyant, tournoyant et virevoltant au rythme de leurs cacardements joyeux, comme une parade folklorique céleste. Des confettis imaginaires scintillent dans l\u0027air, et chaque volée d\u0027oies semble saluer votre audace et votre réussite. Le spectacle est grandiose, joyeux et mémorable… un triomphe digne d\u0027une légende du plateau !"
+                  }
+              ]
+}

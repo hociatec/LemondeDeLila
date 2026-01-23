@@ -81,6 +81,7 @@ public sealed partial class AdminViewModel : ObservableObject
     private string _fifthInputLabel = string.Empty;
     private string _fifthInput = string.Empty;
     private bool _primaryInputAcceptsReturn = true;
+    private bool _secondaryInputAcceptsReturn;
     private bool _isPrimaryInputVisible;
     private bool _isSecondaryInputVisible;
     private bool _isThirdInputVisible;
@@ -299,6 +300,12 @@ public sealed partial class AdminViewModel : ObservableObject
     {
         get => _primaryInputAcceptsReturn;
         set => SetProperty(ref _primaryInputAcceptsReturn, value);
+    }
+
+    public bool SecondaryInputAcceptsReturn
+    {
+        get => _secondaryInputAcceptsReturn;
+        set => SetProperty(ref _secondaryInputAcceptsReturn, value);
     }
 
     public bool IsTextInputVisible

@@ -24,6 +24,7 @@ public sealed partial class AdminViewModel
         TextInput = string.Empty;
         SecondaryInputLabel = "Version (nouvelle)";
         SecondaryInput = AppInfo.GetShortVersion();
+        SecondaryInputAcceptsReturn = false;
         IsSecondaryInputVisible = true;
         Status = "Choisis une version plus haute que la dernière publiée. Entrée : exécuter l'action sélectionnée. Échap : retour.";
 

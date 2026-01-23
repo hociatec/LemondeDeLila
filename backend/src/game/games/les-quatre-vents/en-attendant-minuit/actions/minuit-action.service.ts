@@ -134,12 +134,13 @@ export class MinuitActionService {
         : (pending.answer ?? '').trim().toLowerCase() === answer.toLowerCase();
 
     let next: GameStateEntity = state;
+    const who = this.playerName(next, currentId);
     if (correct) {
       const delta =
         typeof pending.successDelta === 'number' ? pending.successDelta : 0;
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} réussit le quiz.`,
+        `${who} répond : ${answer}. Bonne réponse.`,
       );
       if (delta > 0) {
         next = this.move(next, currentId, delta);
@@ -147,7 +148,7 @@ export class MinuitActionService {
     } else {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} rate le quiz.`,
+        `${who} répond : ${answer}. Mauvaise réponse.`,
       );
     }
 

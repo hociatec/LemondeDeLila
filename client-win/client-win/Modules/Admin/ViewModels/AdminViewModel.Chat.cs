@@ -203,6 +203,7 @@ public sealed partial class AdminViewModel
         IsSecondaryInputVisible = true;
         SecondaryInputLabel = "Durée (jours, défaut 30)";
         SecondaryInput = string.IsNullOrWhiteSpace(_chatBanDays) ? "30" : _chatBanDays;
+        SecondaryInputAcceptsReturn = false;
 
         Details = "Entrée : bannir. Échap : retour.";
 
@@ -316,6 +317,7 @@ public sealed partial class AdminViewModel
         IsSecondaryInputVisible = true;
         SecondaryInputLabel = "Délai édition/suppression (secondes) (0 à 86400)";
         SecondaryInput = _chatEditWindowSeconds.ToString();
+        SecondaryInputAcceptsReturn = false;
 
         Status = "Entrée : valider. Échap : retour.";
         RestoreFocusIfAny();

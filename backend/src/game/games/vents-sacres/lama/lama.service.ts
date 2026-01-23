@@ -67,6 +67,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       roundPauseUntilMs: null,
       roundNumber: 1,
       roundStarterIndex: 0,
+      endedRoundNumber: null,
       deck: [],
       discard: [],
       handsByPlayerId: {},
@@ -188,10 +189,13 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       return [{ type: 'lama_play', payload: { value: best.value, count: 1 } }];
     }
 
-    // Règle: une seule pioche par tour. En mode "jouer après pioche", si le bot a déjà pioché
-    // et ne peut pas jouer, il passe (sinon boucle infinie possible si le tracker est sérialisé).
-    if (meta.allowPlayAfterDraw && sameTurn && trackerDrawn && !trackerPlayed) {
-      return [{ type: 'lama_pass', payload: {} }];
+    // Règle: une seule pioche par tour.
+    // Si le bot a déjà pioché et ne peut pas jouer, il doit terminer son tour:
+    // - en mode "jouer après pioche": il passe
+    // - sinon: il se retire (fallback) pour éviter une boucle sans progression en cas d'état incohérent
+    if (sameTurn && trackerDrawn && !trackerPlayed) {
+      if (meta.allowPlayAfterDraw) return [{ type: 'lama_pass', payload: {} }];
+      return [{ type: 'lama_quit', payload: {} }];
     }
 
     if ((meta.deck ?? []).length > 0) {
@@ -280,8 +284,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       const roundPauseSeconds = Number.isFinite(rawPause) ? Math.floor(rawPause) : NaN;
       if (!Number.isFinite(roundPauseSeconds) || roundPauseSeconds < 0 || roundPauseSeconds > 120) return state;
 
-      const rawAfterDraw = Number((action.payload as any)?.allowPlayAfterDraw);
-      const allowPlayAfterDraw = Number.isFinite(rawAfterDraw) ? Math.floor(rawAfterDraw) === 1 : false;
+      const allowPlayAfterDraw = LamaService.asBoolean((action.payload as any)?.allowPlayAfterDraw);
 
       const updatedMeta: LamaMetadata = {
         ...meta,
@@ -509,9 +512,9 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       ...meta,
       deck,
       handsByPlayerId,
-      turnTracker: allowPlayAfterDraw
-        ? { playerId: actorId, drawn: true, played: false }
-        : meta.turnTracker,
+      // Règle: une seule pioche par tour, quel que soit le mode "jouer après pioche".
+      // Le tracker empêche les multi-pioches si le tour reste sur le même joueur (bots / latences).
+      turnTracker: { playerId: actorId, drawn: true, played: false },
     };
 
     if (allowPlayAfterDraw && !canPlayAfterDraw)
@@ -680,7 +683,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
     const log = Array.isArray(state.log) ? [...state.log] : [];
     const label = lamaCardLabel(value);
-    log.push({ message: `${name} joue la carte ${label}.` });
+    log.push({ message: `${name} joue un ${label}.` });
 
     const nextMeta: LamaMetadata = {
       ...meta,
@@ -728,12 +731,16 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
 
   private endRound(state: GameStateEntity, winnerPlayerId: number | null): GameStateEntity {
     const meta = { ...(state.metadata ?? {}) } as LamaMetadata;
+    const roundNumber = Number(meta.roundNumber ?? 1);
+    if (Number(meta.endedRoundNumber ?? null) === roundNumber) {
+      return state;
+    }
     const players = Array.isArray(state.players) ? state.players : [];
     const handsByPlayerId = meta.handsByPlayerId ?? {};
     const scoresByPlayerId = { ...(meta.scoresByPlayerId ?? {}) };
 
     const log = Array.isArray(state.log) ? [...state.log] : [];
-    log.push({ message: `Fin de la manche ${meta.roundNumber}.` });
+    log.push({ message: `Fin de la manche ${roundNumber}.` });
 
     for (const p of players) {
       if (!p?.id) continue;
@@ -756,10 +763,17 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     }
 
     // Le gagnant peut rendre 1 jeton ou 1 diamant (10 jetons) si possible.
-    const eligible = winnerPlayerId != null ? [winnerPlayerId] : [];
+    const winnerScore =
+      winnerPlayerId != null ? Number(scoresByPlayerId[String(winnerPlayerId)] ?? 0) : 0;
+    const eligible =
+      winnerPlayerId != null && winnerScore >= 1 ? [winnerPlayerId] : [];
+    if (winnerName && eligible.length === 0) {
+      log.push({ message: `${winnerName} n'a rien à rendre.` });
+    }
     const nextMeta: LamaMetadata = {
       ...meta,
       scoresByPlayerId,
+      endedRoundNumber: roundNumber,
       step: eligible.length ? 'return_token' : 'turn_choice',
       pendingReturnQueue: eligible,
       pendingReturnPlayerId: eligible.length ? eligible[0] : null,
@@ -835,6 +849,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       ...meta,
       roundNumber: nextRound,
       roundStarterIndex: starter,
+      endedRoundNumber: null,
       step: pauseMs > 0 ? 'round_pause' : 'turn_choice',
       roundPauseUntilMs: pauseMs > 0 ? Date.now() + pauseMs : null,
       pendingReturnQueue: [],
@@ -905,6 +920,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       droppedOutByPlayerId,
       step: 'turn_choice',
       turnTracker: { playerId: starterPlayerId, drawn: false, played: false },
+      endedRoundNumber: null,
       pendingReturnQueue: [],
       pendingReturnPlayerId: null,
     };

@@ -68,11 +68,11 @@ export class JeuOiePresenterService {
       return 'Position: inconnue.';
     }
 
-    const startTile = tiles[0] as any;
-    const finishTile = tiles[tiles.length - 1] as any;
-    const hasStart = startTile?.type === 'start';
-    const hasFinish = finishTile?.type === 'finish';
-    const maxCase = hasStart && hasFinish ? tiles.length - 1 : tiles.length;
+    const startIndex = tiles.findIndex((t: any) => t?.type === 'start');
+    const finishIndex = tiles.findIndex((t: any) => t?.type === 'finish');
+    const effectiveStart = startIndex >= 0 ? startIndex : 0;
+    const effectiveFinish = finishIndex >= 0 ? finishIndex : tiles.length - 1;
+    const maxCase = effectiveFinish > 0 ? effectiveFinish : tiles.length - 1;
     if (maxCase <= 0) {
       return 'Position: inconnue.';
     }
@@ -82,19 +82,16 @@ export class JeuOiePresenterService {
     const tourPlateau = Number.isFinite(lap) ? String(Math.trunc(lap)) : '?';
 
     const caseNumber = Math.max(0, Math.trunc(pos));
-    if (hasStart && hasFinish) {
-      if (caseNumber <= 0) {
-        return `Tour plateau ${tourPlateau}, départ (0/${maxCase}).`;
-      }
-      if (caseNumber >= maxCase) {
-        return `Tour plateau ${tourPlateau}, arrivée (${maxCase}/${maxCase}).`;
-      }
-      return `Tour plateau ${tourPlateau}, case ${caseNumber}/${maxCase}.`;
+    if (caseNumber < effectiveStart) {
+      return `Tour plateau ${tourPlateau}, avant départ (${caseNumber}/${maxCase}).`;
     }
-
-    // Fallback (compat): positions 0-based -> affichage 1-based.
-    const display = Math.max(1, caseNumber + 1);
-    return `Tour plateau ${tourPlateau}, case ${display}/${maxCase}.`;
+    if (caseNumber === effectiveStart) {
+      return `Tour plateau ${tourPlateau}, départ (${caseNumber}/${maxCase}).`;
+    }
+    if (caseNumber >= effectiveFinish) {
+      return `Tour plateau ${tourPlateau}, arrivée (${maxCase}/${maxCase}).`;
+    }
+    return `Tour plateau ${tourPlateau}, case ${caseNumber}/${maxCase}.`;
   }
 
   private buildBoardMessage(meta: JeuOieMetadata): string {
@@ -103,19 +100,16 @@ export class JeuOiePresenterService {
       return 'Plateau: indisponible.';
     }
 
+    const startIndex = tiles.findIndex((t: any) => t?.type === 'start');
+    const finishIndex = tiles.findIndex((t: any) => t?.type === 'finish');
+    const from = startIndex >= 0 ? startIndex : 0;
+    const to = finishIndex >= 0 ? finishIndex : tiles.length - 1;
+
     const lines: string[] = [];
-    for (let i = 0; i < tiles.length; i += 1) {
+    for (let i = from; i <= to; i += 1) {
       const t: any = tiles[i];
       const label = String(t?.label ?? '').trim() || `Case ${i}`;
-      const type = String(t?.type ?? '').trim();
-      // Jeu de l'oie: cases 0..63 (0 = départ, 63 = arrivée). On expose l'index "plateau".
-      if (type === 'start') {
-        lines.push(`0: ${label}.`);
-      } else if (type === 'finish') {
-        lines.push(`63: ${label}.`);
-      } else {
-        lines.push(`${i}: ${label}.`);
-      }
+      lines.push(`${i}: ${label}.`);
     }
     return lines.join('\n');
   }

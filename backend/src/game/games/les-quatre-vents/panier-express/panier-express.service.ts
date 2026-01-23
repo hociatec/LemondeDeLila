@@ -657,7 +657,7 @@ export class PanierExpressService extends AbstractGameService {
       if (roll === 6 && !(skipTurn > 0)) {
         return this.core.appendLog(
           next,
-          `[Panier Express] ${this.utils.playerName(state, currentId)} rejoue (6).`,
+          `[Panier Express] ${this.utils.playerName(state, currentId)} rejoue (sur un 6).`,
         );
       }
       next = this.phaseFlow.advanceTurn(next);
@@ -1993,7 +1993,7 @@ export class PanierExpressService extends AbstractGameService {
         next = this.turnStatus.setStatus(next, playerId, 'noDrawCourses', 1);
         next = this.core.appendLog(
           next,
-          `[Panier Express] ${event} : aucune pioche de course ce tour-ci.`,
+          `[Panier Express] ${eventLabel || event} : aucune pioche de course ce tour-ci.`,
         );
         next = this.appendActionLog(next, playerId, 'event', {
           event,
@@ -3298,15 +3298,12 @@ export class PanierExpressService extends AbstractGameService {
       metadata: { ...meta, quiz: updatedQuiz },
       pending: null,
     };
-    next = this.core.appendLog(
-      next,
-      `[Panier Express] ${this.utils.playerName(state, playerId)} répond au quiz.`,
-    );
+    const who = this.utils.playerName(state, playerId);
     next = this.core.appendLog(
       next,
       correct
-        ? `[Panier Express] Bonne réponse !`
-        : `[Panier Express] Mauvaise réponse.`,
+        ? `${who} répond : ${answer}. Bonne réponse.`
+        : `${who} répond : ${answer}. Mauvaise réponse.`,
     );
     next = this.appendActionLog(next, playerId, 'answer_quiz', { correct });
     if (correct) {

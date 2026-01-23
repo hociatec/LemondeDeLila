@@ -56,6 +56,7 @@ public sealed partial class AdminViewModel
         TextInput = (settings?.BioMinLength ?? 0).ToString();
         SecondaryInputLabel = "Caractères maximum";
         SecondaryInput = (settings?.BioMaxLength ?? 500).ToString();
+        SecondaryInputAcceptsReturn = false;
         IsTextInputVisible = true;
         IsSecondaryInputVisible = true;
         IsAdditionalPermissionsVisible = false;

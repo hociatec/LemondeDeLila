@@ -49,7 +49,7 @@ export class JeuOieActionService {
       `${this.playerName(state, currentId)} lance le dé : "${roll}".`,
     );
 
-    const currentPos = meta.positions?.[currentId] ?? 0;
+    const currentPos = meta.positions?.[currentId] ?? 1;
     const moved = this.move(currentPos, roll);
     next = this.applyLanding(next, currentId, moved, roll);
 
@@ -85,6 +85,10 @@ export class JeuOieActionService {
     );
 
     if (!tile) return next;
+
+    if (tile.description && String(tile.description).trim()) {
+      next = this.core.appendLog(next, String(tile.description).trim());
+    }
 
     if (tile.type === 'finish') {
       next = this.core.appendLog(

@@ -423,7 +423,7 @@ public sealed class AboutViewModel : ObservableObject
         sb.AppendLine("- b : ajouter un bot (hors partie)");
         sb.AppendLine("- Maj+B : retirer un bot (hors partie)");
         sb.AppendLine("- Ctrl+I : inviter un joueur");
-        sb.AppendLine("- Ctrl+K : exclure un joueur");
+        sb.AppendLine("- Ctrl+K : exclure un joueur ou bot");
         sb.AppendLine("- Ctrl+B : bannir un joueur");
         sb.AppendLine("- Ctrl+P : changer le proprietaire");
         sb.AppendLine("- Ctrl+M : mode joueur/spectateur");

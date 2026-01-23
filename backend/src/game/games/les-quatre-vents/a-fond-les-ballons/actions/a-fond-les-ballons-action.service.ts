@@ -790,7 +790,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 29,
-      text: 'Une catapulte de fromage rebondit sur vous. Reculez jusqu’à la case 13.',
+      text: 'Une catapulte de fromage rebondit sur vous. Allez en case 13.',
     },
     {
       id: 30,

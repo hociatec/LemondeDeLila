@@ -146,4 +146,19 @@ public sealed partial class AdminService
         }
         return response.Payload;
     }
+
+    public async Task<AdminGameCategoriesResponseDto> DeleteGameCategoryAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var token = EnsureAuth();
+        var response = await _ws.RequestAsync<AdminGameCategoriesResponseDto>(
+            WsMessageTypes.Admin.GameCategoryDelete,
+            new { id },
+            token,
+            cancellationToken).ConfigureAwait(false);
+        if (!response.Success || response.Payload == null)
+        {
+            throw new InvalidOperationException(response.Error ?? "Suppression de catégorie impossible.");
+        }
+        return response.Payload;
+    }
 }

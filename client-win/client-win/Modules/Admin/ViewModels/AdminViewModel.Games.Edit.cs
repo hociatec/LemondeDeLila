@@ -74,6 +74,7 @@ public sealed partial class AdminViewModel
         TextInput = (game.MinPlayers ?? 1).ToString();
         SecondaryInputLabel = "Max joueurs";
         SecondaryInput = (game.MaxPlayers ?? 2).ToString();
+        SecondaryInputAcceptsReturn = false;
         PrimaryInputAcceptsReturn = true;
         IsTextInputVisible = true;
         IsSecondaryInputVisible = true;

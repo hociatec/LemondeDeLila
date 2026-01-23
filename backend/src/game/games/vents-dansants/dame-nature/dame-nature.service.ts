@@ -1090,27 +1090,29 @@ export class DameNatureService extends AbstractGameService {
       players: this.ensurePlayers(state),
       pending: null,
     };
+    const who = target?.username ?? 'Un joueur';
+    const answerText = (payloadAnswer ?? '').trim() || '...';
     if (correct) {
       next = this.applyPollutionTick(
         next,
-        { id: pending.playerId, username: target?.username ?? 'Un joueur' },
+        { id: pending.playerId, username: who },
         'Quiz réussi',
         -1,
       );
       next = this.core.appendLog(
         next,
-        `${target?.username ?? 'Un joueur'} réussit le quiz (${pending.card.memberName ?? pending.card.question ?? ''}).`,
+        `${who} répond : ${answerText}. Bonne réponse.`,
       );
     } else {
       next = this.applyPollutionTick(
         next,
-        { id: pending.playerId, username: target?.username ?? 'Un joueur' },
+        { id: pending.playerId, username: who },
         'Quiz raté',
         1,
       );
       next = this.core.appendLog(
         next,
-        `${target?.username ?? 'Un joueur'} rate le quiz (${pending.card.memberName ?? pending.card.question ?? ''}).`,
+        `${who} répond : ${answerText}. Mauvaise réponse.`,
       );
     }
     this.log('quiz.resolved', next, {

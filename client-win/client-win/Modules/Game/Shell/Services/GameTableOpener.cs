@@ -19,6 +19,7 @@ using client_win.Modules.Social.Services;
 using client_win.Modules.TextPrompts.Services;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.Game.RoomDirectory.Services;
+using client_win.Modules.Game.RoomDirectory.ViewModels;
 
 namespace client_win.Modules.Game.Shell.Services;
 
@@ -90,7 +91,14 @@ public sealed class GameTableOpener : IGameTableOpener
         await OpenExistingAsync(roomId, returnContent, spectator: false).ConfigureAwait(true);
     }
 
-    private sealed record RosterEntry(int Id, string Username, bool Spectator);
+    private enum RosterEntryKind
+    {
+        Player,
+        Spectator,
+        Bot
+    }
+
+    private sealed record RosterEntry(int Id, string Name, RosterEntryKind Kind);
 
     private static IReadOnlyList<RosterEntry> BuildRoster(RoomSession session)
     {
@@ -100,14 +108,14 @@ public sealed class GameTableOpener : IGameTableOpener
             return Array.Empty<RosterEntry>();
         }
 
-        var byId = new Dictionary<int, RosterEntry>();
+        var byKey = new Dictionary<string, RosterEntry>(StringComparer.Ordinal);
 
         foreach (var p in room.Players ?? new List<RoomUserDto>())
         {
             if (p == null || p.Id <= 0) continue;
             var name = (p.Username ?? string.Empty).Trim();
             if (name.Length == 0) continue;
-            byId[p.Id] = new RosterEntry(p.Id, name, Spectator: false);
+            byKey[$"user:{p.Id}"] = new RosterEntry(p.Id, name, RosterEntryKind.Player);
         }
 
         foreach (var s in room.Spectators ?? new List<RoomUserDto>())
@@ -115,12 +123,20 @@ public sealed class GameTableOpener : IGameTableOpener
             if (s == null || s.Id <= 0) continue;
             var name = (s.Username ?? string.Empty).Trim();
             if (name.Length == 0) continue;
-            byId[s.Id] = new RosterEntry(s.Id, name, Spectator: true);
+            byKey[$"user:{s.Id}"] = new RosterEntry(s.Id, name, RosterEntryKind.Spectator);
         }
 
-        return byId.Values
-            .OrderBy(x => x.Spectator)
-            .ThenBy(x => x.Username, StringComparer.OrdinalIgnoreCase)
+        foreach (var b in room.Bots ?? new List<RoomBotDto>())
+        {
+            if (b == null || b.Id <= 0) continue;
+            var name = (b.Name ?? string.Empty).Trim();
+            if (name.Length == 0) continue;
+            byKey[$"bot:{b.Id}"] = new RosterEntry(b.Id, name, RosterEntryKind.Bot);
+        }
+
+        return byKey.Values
+            .OrderBy(x => x.Kind)
+            .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
 
@@ -209,7 +225,10 @@ public sealed class GameTableOpener : IGameTableOpener
         var selfUsername = (_navigation.CurrentUser?.Username ?? string.Empty).Trim();
         if (!string.IsNullOrWhiteSpace(selfUsername))
         {
-            roster = roster.Where(r => !string.Equals(r.Username, selfUsername, StringComparison.OrdinalIgnoreCase)).ToList();
+            roster = roster
+                .Where(r => r.Kind == RosterEntryKind.Bot ||
+                            !string.Equals(r.Name, selfUsername, StringComparison.OrdinalIgnoreCase))
+                .ToList();
         }
         if (roster.Count == 0)
         {
@@ -217,11 +236,27 @@ public sealed class GameTableOpener : IGameTableOpener
             return;
         }
 
-        var title = ban ? "Bannir un joueur" : "Exclure un joueur";
+        if (ban)
+        {
+            roster = roster.Where(r => r.Kind != RosterEntryKind.Bot).ToList();
+        }
+
+        if (roster.Count == 0)
+        {
+            await _dialogs.ShowInfo("Table", "Aucun joueur à exclure/bannir.").ConfigureAwait(true);
+            return;
+        }
+
+        var title = ban ? "Bannir un joueur" : "Exclure un joueur ou bot";
         var action = ban ? "Bannir" : "Exclure";
 
         var labels = roster
-            .Select(r => r.Spectator ? $"{r.Username} (spectateur)" : r.Username)
+            .Select(r => r.Kind switch
+            {
+                RosterEntryKind.Spectator => $"{r.Name} (spectateur)",
+                RosterEntryKind.Bot => $"{r.Name} (bot)",
+                _ => r.Name
+            })
             .ToList();
 
         var picked = await _dialogs.Pick(title, "Choisir un joueur :", labels, okText: action, cancelText: "Annuler")
@@ -242,12 +277,19 @@ public sealed class GameTableOpener : IGameTableOpener
         {
             var confirm = await _dialogs.Confirm(
                     "Bannir",
-                    $"Bannir {target.Username} de cette table ?")
+                    $"Bannir {target.Name} de cette table ?")
                 .ConfigureAwait(true);
             if (confirm != true)
             {
                 return;
             }
+        }
+
+        if (target.Kind == RosterEntryKind.Bot)
+        {
+            await session.SendCommandAsync("bot.remove", payload: new { botId = target.Id })
+                .ConfigureAwait(true);
+            return;
         }
 
         await session.SendCommandAsync(ban ? "room.ban" : "room.kick", payload: new { userId = target.Id })
@@ -256,11 +298,11 @@ public sealed class GameTableOpener : IGameTableOpener
 
     private async Task TransferOwnerAsync(RoomSession session)
     {
-        var roster = BuildRoster(session).Where(r => !r.Spectator).ToList();
+        var roster = BuildRoster(session).Where(r => r.Kind == RosterEntryKind.Player).ToList();
         var selfUsername = (_navigation.CurrentUser?.Username ?? string.Empty).Trim();
         if (!string.IsNullOrWhiteSpace(selfUsername))
         {
-            roster = roster.Where(r => !string.Equals(r.Username, selfUsername, StringComparison.OrdinalIgnoreCase)).ToList();
+            roster = roster.Where(r => !string.Equals(r.Name, selfUsername, StringComparison.OrdinalIgnoreCase)).ToList();
         }
         if (roster.Count == 0)
         {
@@ -268,7 +310,7 @@ public sealed class GameTableOpener : IGameTableOpener
             return;
         }
 
-        var labels = roster.Select(r => r.Username).ToList();
+        var labels = roster.Select(r => r.Name).ToList();
         var picked = await _dialogs.Pick(
                 "Changer le proprietaire",
                 "Choisir un joueur :",
@@ -291,7 +333,7 @@ public sealed class GameTableOpener : IGameTableOpener
         var target = roster[idx];
         var confirm = await _dialogs.Confirm(
                 "Changer le proprietaire",
-                $"Donner la table a {target.Username} ?")
+                $"Donner la table a {target.Name} ?")
             .ConfigureAwait(true);
         if (confirm != true)
         {
@@ -362,7 +404,7 @@ public sealed class GameTableOpener : IGameTableOpener
         Action<string>? onSessionLeft = null;
         var isExiting = 0;
 
-        async Task ExitAsync(string? reason = null)
+        async Task ExitAsync(string? reason = null, bool forceTavern = false)
         {
             if (Interlocked.Exchange(ref isExiting, 1) == 1)
             {
@@ -417,13 +459,54 @@ public sealed class GameTableOpener : IGameTableOpener
                 try { _sounds.Play(SoundId.RoomExit); } catch { }
                 _ = _presence.SetHomeAsync();
 
+                object BuildTavernFallback()
+                {
+                    var safeReturn = returnContent is GameRoomViewModel ? null : returnContent;
+                    JoinGameViewModel? tavernVm = null;
+                    tavernVm = new JoinGameViewModel(
+                        rooms: _directory,
+                        tables: this,
+                        announcements: _announcementService,
+                        returnContent: () => safeReturn,
+                        onClose: () =>
+                        {
+                            try { tavernVm?.Dispose(); } catch { /* ignore */ }
+                            if (safeReturn != null)
+                            {
+                                try { _navigation.Show(safeReturn); } catch { /* ignore */ }
+                            }
+                        });
+                    return tavernVm;
+                }
+
+                void Navigate()
+                {
+                    try
+                    {
+                        if (forceTavern || returnContent is GameRoomViewModel)
+                        {
+                            _navigation.Show(BuildTavernFallback());
+                        }
+                        else
+                        {
+                            _navigation.Show(returnContent);
+                        }
+                    }
+                    catch
+                    {
+                        // Fallback de sÃ©curitÃ© : si le retour vers l'Ã©cran prÃ©cÃ©dent est impossible,
+                        // ouvrir la liste des tables publiques plutÃ´t que de laisser un "Ã©cran vide".
+                        _navigation.Show(BuildTavernFallback());
+                    }
+                }
+
                 if (!dispatcher.CheckAccess())
                 {
-                    await dispatcher.InvokeAsync(() => _navigation.Show(returnContent), DispatcherPriority.Normal);
+                    await dispatcher.InvokeAsync(Navigate, DispatcherPriority.Normal);
                 }
                 else
                 {
-                    _navigation.Show(returnContent);
+                    Navigate();
                 }
 
                 // Réactive l'ambiance/musique si on revient vers un écran qui en a une.
@@ -582,6 +665,25 @@ public sealed class GameTableOpener : IGameTableOpener
                     bindings.Attach();
                     bindings.InitializeFromLastState();
 
+                    // Précharge les sons de jeu dès l'ouverture de la table pour éviter la latence
+                    // (MediaOpened / cache distant) lors du premier déclenchement.
+                    try
+                    {
+                        _sounds.Preload(SoundId.DiceRolled);
+                        _sounds.Preload(SoundId.QuizCorrect);
+                        _sounds.Preload(SoundId.QuizWrong);
+                        _sounds.Preload(SoundId.RoundEnded);
+                        _sounds.Preload(SoundId.PawnPicked);
+                        _sounds.Preload(SoundId.PawnPlacedSelf);
+                        _sounds.Preload(SoundId.PawnPlacedOpponent);
+                        _sounds.Preload(SoundId.WallPlacedSelf);
+                        _sounds.Preload(SoundId.WallPlacedOpponent);
+                    }
+                    catch
+                    {
+                        // best-effort
+                    }
+
                     vm.Status = "Table prête.";
                     vm.IsReconnecting = false;
                     vm.GameZone.IsConnected = true;
@@ -593,7 +695,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         var m = message.Trim().ToLowerInvariant();
                         if (m.Contains("exclu") || m.Contains("banni") || m.Contains("banni"))
                         {
-                            _ = ExitAsync(message.Trim());
+                            _ = ExitAsync(message.Trim(), forceTavern: true);
                         }
                     };
 

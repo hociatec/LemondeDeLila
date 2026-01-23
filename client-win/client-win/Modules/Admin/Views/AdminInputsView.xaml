@@ -47,9 +47,14 @@
             <TextBox x:Name="SecondaryInputBox"
                       Text="{Binding SecondaryInput, UpdateSourceTrigger=PropertyChanged}"
                       Style="{DynamicResource InputTextBox}"
+                      AcceptsReturn="{Binding SecondaryInputAcceptsReturn}"
                       PreviewKeyDown="OnInputPreviewKeyDown"
                       TabIndex="1"
                       IsTabStop="True"
+                      MinHeight="40"
+                      TextWrapping="Wrap"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
                       AutomationProperties.LabeledBy="{Binding ElementName=SecondaryInputLabelText}">
             </TextBox>
         </StackPanel>
