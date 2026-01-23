@@ -661,14 +661,14 @@
     {
       "id": "2f2aa533-d5a6-46a8-a50f-37bce43c7e9b",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Quel animal Norbert, le dragon de Hagrid, est-il ?",
+      "question": "Quel animal Norbert, le dragon de Rubeus Hagrid, est-il ?",
       "correct": "Dragon de Norvège à crête",
       "wrong1": "Dragon de feu",
       "wrong2": "Dragon chinois à cornes",
       "wrong3": "Dragon des forêts",
       "status": "validated",
       "createdAt": "2026-01-16T19:04:05.194Z",
-      "updatedAt": "2026-01-16T19:04:05.194Z"
+      "updatedAt": "2026-01-20T09:36:30.885Z"
     },
     {
       "id": "b954bc67-f99f-4285-a6f5-8c795c94d424",
@@ -680,55 +680,55 @@
       "wrong3": "Albus Pius Arthur Thomas Dumbledore",
       "status": "validated",
       "createdAt": "2026-01-16T19:06:10.279Z",
-      "updatedAt": "2026-01-16T19:06:10.279Z"
+      "updatedAt": "2026-01-20T09:35:53.234Z"
     },
     {
       "id": "212cd397-89dc-40ef-953f-7826d22f5cb3",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Quel est le prénom de la sœur de Ron Weasley ?",
+      "question": "Comment se nomme la sœur de Ron Weasley ?",
       "correct": "Ginivra",
       "wrong1": "Luna",
       "wrong2": "Fleur",
       "wrong3": "Jennifer",
       "status": "validated",
       "createdAt": "2026-01-16T19:07:18.928Z",
-      "updatedAt": "2026-01-16T19:07:18.928Z"
+      "updatedAt": "2026-01-20T09:35:32.847Z"
     },
     {
       "id": "7c8706a8-c836-4fd2-9fe6-4ae2b52f547f",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Quel est le sortilège utilisé pour réparer les objets cassés ?",
+      "question": "Dans la saga Harry potter, quel est le sortilège utilisé pour réparer les objets cassés ?",
       "correct": "Reparo",
       "wrong1": "Accio",
       "wrong2": "Lumos",
       "wrong3": "Expelliarmus",
       "status": "validated",
       "createdAt": "2026-01-16T19:08:18.693Z",
-      "updatedAt": "2026-01-16T19:08:18.693Z"
+      "updatedAt": "2026-01-20T09:22:35.890Z"
     },
     {
       "id": "627a7a3c-db3c-4044-bb2f-a9f4fbbca38f",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Qui est le professeur de Défense contre les Forces du Mal dans le tome 2 ?",
+      "question": "Qui est le professeur de Défense contre les Forces du Mal dans la chambre des secrets ?",
       "correct": "Gilderoy Lockhart",
       "wrong1": "Remus Lupin",
       "wrong2": "Severus Rogue",
       "wrong3": "Dolores Ombrage",
       "status": "validated",
       "createdAt": "2026-01-16T19:09:17.615Z",
-      "updatedAt": "2026-01-16T19:09:17.615Z"
+      "updatedAt": "2026-01-20T09:34:53.277Z"
     },
     {
       "id": "e3d42361-2791-4523-a775-b7857184fa4d",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Quel est l’ingrédient principal du Polynectar ?",
+      "question": "Dans la saga Harry Potter, quel est l’ingrédient principal du Polynectar ?",
       "correct": "Cheveu ou autre partie du corps de la personne à imiter",
       "wrong1": "Venin de Basilic",
       "wrong2": "Peau de serpent",
       "wrong3": "Sang de dragon",
       "status": "validated",
       "createdAt": "2026-01-16T19:10:13.257Z",
-      "updatedAt": "2026-01-16T19:10:13.257Z"
+      "updatedAt": "2026-01-20T09:23:42.114Z"
     },
     {
       "id": "fc583188-e8f8-46af-ba97-60422b39f63e",
@@ -740,7 +740,7 @@
       "wrong3": "Godric",
       "status": "validated",
       "createdAt": "2026-01-16T19:11:27.086Z",
-      "updatedAt": "2026-01-16T19:11:27.086Z"
+      "updatedAt": "2026-01-20T09:33:24.814Z"
     },
     {
       "id": "65755470-b9a5-4b13-b8ea-f11442469d97",
@@ -764,7 +764,7 @@
       "wrong3": "Drago Malefoy",
       "status": "validated",
       "createdAt": "2026-01-16T19:13:12.569Z",
-      "updatedAt": "2026-01-16T19:13:12.569Z"
+      "updatedAt": "2026-01-20T09:34:13.668Z"
     },
     {
       "id": "36ebc5b3-8aa0-47d8-97fa-596c17fcc4ea",
@@ -781,14 +781,14 @@
     {
       "id": "b8ce40fa-80c5-406a-8ca4-a093370aac6a",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Dans quel tome découvre-t-on que Rogue aimait Lily Potter ?",
+      "question": "Dans quel tome découvre-t-on que Sévrus Rogue aimait Lily Potter ?",
       "correct": "Tome 7",
       "wrong1": "Tome 2",
       "wrong2": "Tome 6",
       "wrong3": "Tome 3",
       "status": "validated",
       "createdAt": "2026-01-16T19:14:39.203Z",
-      "updatedAt": "2026-01-16T19:14:39.203Z"
+      "updatedAt": "2026-01-20T09:32:57.077Z"
     },
     {
       "id": "7a8d8ede-d79b-4033-996b-94e7973f83ad",
@@ -829,26 +829,26 @@
     {
       "id": "7d287bb1-7ac1-4809-9306-8edabcb55d4b",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Quel sort utilise Hermione pour allumer sa baguette ?",
+      "question": "Quel sort utilise Hermione Granger pour allumer sa baguette ?",
       "correct": "Lumos",
       "wrong1": "Luminos",
       "wrong2": "Accio",
       "wrong3": "Nox",
       "status": "validated",
       "createdAt": "2026-01-16T19:19:13.582Z",
-      "updatedAt": "2026-01-16T19:19:13.582Z"
+      "updatedAt": "2026-01-20T09:38:38.401Z"
     },
     {
       "id": "6526c88c-145c-4a92-93df-11f80b14b84f",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Qui est le directeur de Poudlard dans l’Enfant Maudit ?",
+      "question": "Qui est le directeur de Poudlard dans Harry Potter et l’Enfant Maudit ?",
       "correct": "Minerva McGonagall",
       "wrong1": "Severus Rogue",
       "wrong2": "Pomela Chourave",
       "wrong3": "Albus Dumbledore",
       "status": "validated",
       "createdAt": "2026-01-16T19:20:06.493Z",
-      "updatedAt": "2026-01-16T19:20:06.493Z"
+      "updatedAt": "2026-01-20T09:39:05.586Z"
     },
     {
       "id": "7414ca11-bad9-4135-9093-a59cdc9db740",
@@ -877,50 +877,50 @@
     {
       "id": "49487763-cea6-4bcd-a913-5404d5522a80",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Qui est le seul sorcier à avoir réussi à se rendre maître de la Mort ?",
+      "question": "Dans la saga Harry Potter, Qui est le seul sorcier à avoir réussi à se rendre maître de la Mort ?",
       "correct": "Harry Potter",
       "wrong1": "Voldemort",
       "wrong2": "Lucius Malfoy",
       "wrong3": "Dumbledore",
       "status": "validated",
       "createdAt": "2026-01-16T19:22:26.944Z",
-      "updatedAt": "2026-01-16T19:22:26.944Z"
+      "updatedAt": "2026-01-20T09:39:52.785Z"
     },
     {
       "id": "b11f0a71-9859-4d9c-9386-9de4c07af42a",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Quel est le nom du magasin où Harry achète sa première baguette ?",
+      "question": "Quel est le nom du magasin où Harry Potter achète sa première baguette ?",
       "correct": "Ollivanders",
       "wrong1": "Fleury et Bott",
       "wrong2": "Chaudron baveur",
       "wrong3": "Weasley’s Wizard Wheezes",
       "status": "validated",
       "createdAt": "2026-01-16T19:23:32.456Z",
-      "updatedAt": "2026-01-16T19:23:32.456Z"
+      "updatedAt": "2026-01-20T09:40:17.116Z"
     },
     {
       "id": "3808838e-24d5-4843-aa1d-9262d5bdee09",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Quelle créature magique garde les secrets du Département des Mystères ?",
+      "question": "Dans l'univers Harry potter, quelle créature magique garde les secrets du Département des Mystères ?",
       "correct": "Les Veilleurs",
       "wrong1": "Les Acromentules",
       "wrong2": "Les Mangemorts",
       "wrong3": "Les Détraqueurs",
       "status": "validated",
       "createdAt": "2026-01-16T19:24:28.137Z",
-      "updatedAt": "2026-01-16T19:24:28.137Z"
+      "updatedAt": "2026-01-20T09:40:45.739Z"
     },
     {
       "id": "1cf2b820-0a13-4848-91e9-ea383e976f73",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Quel est le nom du bal organisé lors du quatrième tome ?",
+      "question": "Dans la saga Harry Potter, quel est le nom du bal organisé lors du Tournoi des trois sorciers ?",
       "correct": "Le Bal de Noël",
       "wrong1": "Le Bal d'halloween",
       "wrong2": "Le Bal des Sorciers",
       "wrong3": "Le Bal des Quatre Maisons",
       "status": "validated",
       "createdAt": "2026-01-16T19:25:15.483Z",
-      "updatedAt": "2026-01-16T19:25:15.483Z"
+      "updatedAt": "2026-01-20T09:42:40.386Z"
     },
     {
       "id": "6fba6e92-7cdb-456a-9c2d-123b2bd3e705",
@@ -937,74 +937,74 @@
     {
       "id": "c0838007-4dee-4d1c-a198-29cd0c9dc140",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Comment s’appelle le frère de Sirius Black ?",
+      "question": "Dans l'univers Harry potter, comment s’appelle le frère de Sirius Black ?",
       "correct": "Regulus",
       "wrong1": "Remus",
       "wrong2": "Mondingus",
       "wrong3": "Nigulus",
       "status": "validated",
       "createdAt": "2026-01-16T19:26:57.847Z",
-      "updatedAt": "2026-01-16T19:26:57.847Z"
+      "updatedAt": "2026-01-20T09:41:18.839Z"
     },
     {
       "id": "68f46f6c-c446-4ec8-8240-81b6df636686",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Quel est le nom complet de l’auteur des Reliques de la Mort ?",
+      "question": "Dans l'univers Harry Potter, quel est le nom complet de l’auteur des Reliques de la Mort ?",
       "correct": "The Peverell Brothers",
       "wrong1": "Gellert Grindelwald",
       "wrong2": "Bathilda Bagshot",
       "wrong3": "Xenophilius Lovegood",
       "status": "validated",
       "createdAt": "2026-01-16T19:27:49.387Z",
-      "updatedAt": "2026-01-16T19:27:49.387Z"
+      "updatedAt": "2026-01-20T09:44:41.209Z"
     },
     {
       "id": "6359b677-9600-4c96-8834-54d2aa7df974",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Quelle créature est capable de détecter le mensonge ?",
+      "question": "Dans l'univers Harry Potter, quelle créature est capable de détecter le mensonge ?",
       "correct": "Véracrasse",
       "wrong1": "Détraqueur",
       "wrong2": "Elfes de maison",
       "wrong3": "Mandragore",
       "status": "validated",
       "createdAt": "2026-01-16T19:28:45.116Z",
-      "updatedAt": "2026-01-16T19:28:45.116Z"
+      "updatedAt": "2026-01-20T09:43:08.701Z"
     },
     {
       "id": "93965b9c-90e8-4da9-b571-ab65899e5145",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Quel est le nom de la banque des sorciers ?",
+      "question": "Dans l'univers Harry potter, quel est le nom de la banque des sorciers ?",
       "correct": "Gringotts",
       "wrong1": "Au Royaume du Hibou",
       "wrong2": "Fleury et Bott",
       "wrong3": "Ollivanders",
       "status": "validated",
       "createdAt": "2026-01-16T19:30:05.173Z",
-      "updatedAt": "2026-01-16T19:31:03.952Z"
+      "updatedAt": "2026-01-20T09:43:44.565Z"
     },
     {
       "id": "db686dd8-74b2-4385-b091-d582378cec5c",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Qui est le dernier propriétaire connu de la baguette de sureau avant Harry ?",
+      "question": "Qui est le dernier propriétaire connu de la baguette de sureau avant Harry Potter ?",
       "correct": "Drago Malefoy",
       "wrong1": "Voldemort",
       "wrong2": "Albus Dumbledore",
       "wrong3": "Severus Rogue",
       "status": "validated",
       "createdAt": "2026-01-16T19:34:09.196Z",
-      "updatedAt": "2026-01-16T19:34:09.196Z"
+      "updatedAt": "2026-01-20T09:44:05.449Z"
     },
     {
       "id": "9d938228-6be2-46fb-8cbf-92d03d36f228",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Quel est le nom de la prison des sorciers ?",
+      "question": "Dans la saga Harry Potter, quel est le nom de la prison des sorciers ?",
       "correct": "Azkaban",
       "wrong1": "Iceblind",
       "wrong2": "Bobath",
       "wrong3": "Nurmengard",
       "status": "validated",
       "createdAt": "2026-01-16T19:35:02.129Z",
-      "updatedAt": "2026-01-16T19:35:02.129Z"
+      "updatedAt": "2026-01-20T09:45:16.010Z"
     },
     {
       "id": "1703cc22-7ab8-4452-955a-d1b4d8533f5b",
@@ -1021,14 +1021,14 @@
     {
       "id": "6845d655-3952-48e1-87ed-fc00bcd27e41",
       "categoryId": "la-tete-de-sanglier",
-      "question": "Qui a lancé le sortilège de la Mort sur Harry dans la Forêt Interdite ?",
+      "question": "Qui a lancé le sortilège de la Mort sur Harry Potter dans la Forêt Interdite ?",
       "correct": "Voldemort",
       "wrong1": "Bellatrix Lestrange",
       "wrong2": "Lucius Malefoy",
       "wrong3": "Severus Rogue",
       "status": "validated",
       "createdAt": "2026-01-16T19:37:02.918Z",
-      "updatedAt": "2026-01-16T19:37:02.918Z"
+      "updatedAt": "2026-01-20T09:45:49.269Z"
     },
     {
       "id": "b1febc47-09d8-4c54-900c-64233b959970",
@@ -4641,6 +4641,198 @@
       "status": "validated",
       "createdAt": "2026-01-19T17:53:10.611Z",
       "updatedAt": "2026-01-19T17:53:10.611Z"
+    },
+    {
+      "id": "524e6d1e-eeb1-4cb9-9c16-9197d57ef244",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Quelle est la récompense pour avoir gagné la Coupe des Trois Sorciers ?",
+      "correct": "Mille gallions et la gloire éternelle",
+      "wrong1": "Un dragon empaillé grandeur nature",
+      "wrong2": "Un sablier en or",
+      "wrong3": "Une année sans examens",
+      "status": "validated",
+      "createdAt": "2026-01-20T09:02:41.405Z",
+      "updatedAt": "2026-01-20T09:02:41.405Z"
+    },
+    {
+      "id": "a4b79689-4214-47c7-bb94-f5bce3cda70f",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Qui tue Nagini dans le tome 7 ?",
+      "correct": "Neville Londubat",
+      "wrong1": "Dine Thomas",
+      "wrong2": "Olivier Dubois",
+      "wrong3": "Luna Lovegood",
+      "status": "validated",
+      "createdAt": "2026-01-20T09:03:55.572Z",
+      "updatedAt": "2026-01-20T09:03:55.572Z"
+    },
+    {
+      "id": "2d865475-cc08-4242-8106-c7adcb248e1a",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Quel animal fantastique peut se glisser dans des pièces minuscules malgré sa taille ?",
+      "correct": "Occamy",
+      "wrong1": "Sombrâle",
+      "wrong2": "Croup",
+      "wrong3": "Hippogriffe",
+      "status": "validated",
+      "createdAt": "2026-01-20T09:04:45.165Z",
+      "updatedAt": "2026-01-20T09:04:45.165Z"
+    },
+    {
+      "id": "1c694725-0dd9-48c9-ae0e-5507481cca81",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Quelle créature pond un œuf en argent ?",
+      "correct": "Ashwinder",
+      "wrong1": "Occamy",
+      "wrong2": "Basilic",
+      "wrong3": "Niffleur",
+      "status": "validated",
+      "createdAt": "2026-01-20T09:05:38.843Z",
+      "updatedAt": "2026-01-20T09:05:38.843Z"
+    },
+    {
+      "id": "316440b9-27fe-45d9-a34d-337af716c3a5",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Quel sort est utilisé pour réduire un objet ?",
+      "correct": "Reducio",
+      "wrong1": "Geminio",
+      "wrong2": "Engorgio",
+      "wrong3": "Reparo",
+      "status": "validated",
+      "createdAt": "2026-01-20T09:06:21.341Z",
+      "updatedAt": "2026-01-20T09:06:21.341Z"
+    },
+    {
+      "id": "3f28089d-a364-4562-89d8-8a8ef6128310",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Dans L’Enfant Maudit, à quelle époque Albus et Scorpius remontent-ils pour sauver Cédric ?",
+      "correct": "La 3e tâche du Tournoi des Trois Sorciers",
+      "wrong1": "La 5e année de Harry",
+      "wrong2": "L’attaque de Godric’s Hollow",
+      "wrong3": "La bataille finale de Poudlard",
+      "status": "validated",
+      "createdAt": "2026-01-20T09:07:25.234Z",
+      "updatedAt": "2026-01-20T09:07:25.234Z"
+    },
+    {
+      "id": "adceb75d-70d5-4b8d-805f-a77811220e55",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Quel est le sortilège utilisé pour faire léviter un objet ?",
+      "correct": "Wingardium Leviosa",
+      "wrong1": "Petrificus totalus",
+      "wrong2": "Expelliarmus",
+      "wrong3": "Accio",
+      "status": "validated",
+      "createdAt": "2026-01-20T09:08:35.139Z",
+      "updatedAt": "2026-01-20T09:08:35.139Z"
+    },
+    {
+      "id": "2998ae2a-9e36-474e-8207-c5b6334abe81",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Qui est le directeur de la maison Serpentard dans les six premières années de Harry ?",
+      "correct": "Severus Rogue",
+      "wrong1": "Barty Croupton Jr",
+      "wrong2": "Slughorn",
+      "wrong3": "Dumbledore",
+      "status": "validated",
+      "createdAt": "2026-01-20T09:09:35.556Z",
+      "updatedAt": "2026-01-20T09:09:35.556Z"
+    },
+    {
+      "id": "3b5a6cf3-e81a-4663-93ee-edebb566d57b",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Quel objet donne accès à la Pensine ?",
+      "correct": "Une fiole",
+      "wrong1": "Une baguette",
+      "wrong2": "Un miroir",
+      "wrong3": "Une plume",
+      "status": "validated",
+      "createdAt": "2026-01-20T09:10:34.818Z",
+      "updatedAt": "2026-01-20T09:10:34.818Z"
+    },
+    {
+      "id": "df712eb5-c982-4481-a642-3158e0817cb4",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Quel est le nom du hibou de Ron ?",
+      "correct": "Coquecigrue",
+      "wrong1": "Errol",
+      "wrong2": "Hedwige",
+      "wrong3": "Pattenrond",
+      "status": "validated",
+      "createdAt": "2026-01-20T09:11:57.098Z",
+      "updatedAt": "2026-01-20T09:11:57.098Z"
+    },
+    {
+      "id": "46746aba-45e4-4f2c-806a-d0eb54db12f8",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Quel sort Hermione utilise-t-elle pour libérer Sirius de la tour d'astronomie ?",
+      "correct": "Bombarda",
+      "wrong1": "Stupefix",
+      "wrong2": "Alohomora",
+      "wrong3": "Reducto",
+      "status": "validated",
+      "createdAt": "2026-01-20T09:12:59.968Z",
+      "updatedAt": "2026-01-20T09:12:59.968Z"
+    },
+    {
+      "id": "d5bf3f36-d2da-419d-8b49-e567cf9e1f4c",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Que fait le sort « Prior Incantato » ?",
+      "correct": "Montre le dernier sort lancé par une baguette",
+      "wrong1": "Crée un double",
+      "wrong2": "Lance un sort aléatoire",
+      "wrong3": "Désarme l’adversaire",
+      "status": "validated",
+      "createdAt": "2026-01-20T09:13:49.153Z",
+      "updatedAt": "2026-01-20T09:13:49.153Z"
+    },
+    {
+      "id": "7430025e-26e7-4e0b-83e2-e7bcb300c446",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Dans quelle matière Hermione Granger est-elle la seule élève de sa classe à suivre tous les cours en 3e année ?",
+      "correct": "Arithmancie",
+      "wrong1": "Soins aux créatures magiques",
+      "wrong2": "Divination",
+      "wrong3": "Étude des Moldus",
+      "status": "validated",
+      "createdAt": "2026-01-20T09:15:00.922Z",
+      "updatedAt": "2026-01-20T09:46:31.649Z"
+    },
+    {
+      "id": "96edeb42-39f2-4ca6-acce-8e137f916c38",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Quel est le nom de la grand-tante acariâtre de Neville Londubat ?",
+      "correct": "Enid",
+      "wrong1": "Muriel",
+      "wrong2": "Augusta",
+      "wrong3": "Alice",
+      "status": "validated",
+      "createdAt": "2026-01-20T09:15:45.055Z",
+      "updatedAt": "2026-01-20T09:36:55.837Z"
+    },
+    {
+      "id": "99b5257b-6d58-4b00-8d7b-5697bc637f28",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Dans la saga Harry Potter, quelle substance rend les sorciers euphoriques mais désorientés ?",
+      "correct": "Elixir d’Euphorie",
+      "wrong1": "Amortentia",
+      "wrong2": "Jus de citrouille",
+      "wrong3": "Polynectar",
+      "status": "validated",
+      "createdAt": "2026-01-20T09:16:31.133Z",
+      "updatedAt": "2026-01-20T09:38:10.082Z"
+    },
+    {
+      "id": "c541c02d-93e1-4661-9772-623e335861b7",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Dans la saga Harry Potter, quel sort provoque une explosion ou une onde de choc ?",
+      "correct": "Reducto",
+      "wrong1": "Protego",
+      "wrong2": "Crache limace",
+      "wrong3": "Rictusempra",
+      "status": "validated",
+      "createdAt": "2026-01-20T09:17:32.885Z",
+      "updatedAt": "2026-01-20T09:37:40.708Z"
     }
   ]
 }

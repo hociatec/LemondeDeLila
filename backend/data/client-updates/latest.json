@@ -1,7 +1,7 @@
 {
-  "version": "1.2.519",
-  "publishedAt": "2026-01-19T21:49:40.992Z",
-  "message": "Auto publish ClickOnce (main @ e6c76f2c642a73840d42ad9d5cea72535be12b86)",
+  "version": "1.2.556",
+  "publishedAt": "2026-01-22T15:01:50.055Z",
+  "message": "Auto publish ClickOnce (main @ 08bcb54b661f165ad58f2aa9e719dd415a475e34)",
   "publicUrl": "https://api.lilas.hociatec.fr/updates/client-win/",
-  "minRequiredVersion": "1.2.519"
+  "minRequiredVersion": "1.2.556"
 }

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-17T11:08:48.888Z",
+  "updatedAt": "2026-01-20T10:16:02.023Z",
   "sounds": {
     "RoomJoined": {
       "soundId": "RoomJoined",
@@ -182,6 +182,27 @@
       "bytes": 77568,
       "uploadedAt": "2026-01-17T11:00:42.960Z",
       "url": "/api/sounds/ClientClosing/b87418710c0bb62ad8b45da60dc58279525ea48d0a1f479b8fa6de94dff52fbd.mp3"
+    },
+    "RoundEnded": {
+      "soundId": "RoundEnded",
+      "sha256": "e947df6846efb840cb84dac3eeafdf8088458d2001d05f75135884333136df19",
+      "bytes": 77740,
+      "uploadedAt": "2026-01-20T10:15:25.842Z",
+      "url": "/api/sounds/RoundEnded/e947df6846efb840cb84dac3eeafdf8088458d2001d05f75135884333136df19.mp3"
+    },
+    "QuizCorrect": {
+      "soundId": "QuizCorrect",
+      "sha256": "31f5ccddde18cdb2ba3a1d004133ec1d435769cba1992182626035cb80fe2bb9",
+      "bytes": 99621,
+      "uploadedAt": "2026-01-20T10:15:44.209Z",
+      "url": "/api/sounds/QuizCorrect/31f5ccddde18cdb2ba3a1d004133ec1d435769cba1992182626035cb80fe2bb9.mp3"
+    },
+    "QuizWrong": {
+      "soundId": "QuizWrong",
+      "sha256": "c3af78f5f0a591aa006b0959aedaa8b20e0224bc7e1454857ac4784807cfd896",
+      "bytes": 61022,
+      "uploadedAt": "2026-01-20T10:16:02.023Z",
+      "url": "/api/sounds/QuizWrong/c3af78f5f0a591aa006b0959aedaa8b20e0224bc7e1454857ac4784807cfd896.mp3"
     }
   }
 }
