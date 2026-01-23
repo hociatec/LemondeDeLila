@@ -426,3 +426,7 @@
 {"ts":"2026-01-23T22:32:10.315Z","label":"panier.bot.actions","event":"panier.bot.actions","roomId":null,"gameType":null,"userId":1,"type":"bot_actions","botPlayerId":1,"actions":["roll"]}
 {"ts":"2026-01-23T22:32:10.317Z","label":"panier.roll","event":"panier.roll","roomId":null,"gameType":null,"userId":1,"type":"roll","currentId":1,"turnIndex":0,"roll":5,"status":"started"}
 {"ts":"2026-01-23T22:32:10.323Z","label":"panier.advanceTurn","event":"panier.advanceTurn","roomId":null,"gameType":null,"userId":1,"type":"advance_turn","currentId":1,"currentIndex":0,"nextTurnIndex":1,"nextCurrentPlayerId":2,"skipTurn":{"2":0}}
+{"ts":"2026-01-23T22:40:55.142Z","label":"ws.game.gateway.init","event":"ws.game.gateway.init","roomId":null,"gameType":null,"userId":null,"type":null,"logPath":"log/playing.log (racine ou backend/log)","gateway":"/ws/game"}
+{"ts":"2026-01-23T22:42:03.724Z","label":"ws.game.disconnect","event":"ws.game.disconnect","roomId":null,"gameType":null,"userId":1,"type":null}
+{"ts":"2026-01-23T22:43:51.612Z","label":"ws.game.disconnect","event":"ws.game.disconnect","roomId":null,"gameType":null,"userId":1,"type":null}
+{"ts":"2026-01-23T22:46:56.416Z","label":"ws.game.disconnect","event":"ws.game.disconnect","roomId":null,"gameType":null,"userId":1,"type":null}
