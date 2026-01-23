@@ -864,6 +864,62 @@ describe('LamaService', () => {
     expect(Number(after.metadata?.scoresByPlayerId?.['1'] ?? 0)).toBe(12);
   });
 
+  it('reconciles endRound when log already contains round end (no duplicate messages)', async () => {
+    const service = new LamaService(
+      { register: () => {} } as any,
+      new RandomService(),
+      new LamaPresenter(),
+    );
+
+    const state: any = {
+      status: 'started',
+      phase: 'round',
+      round: 3,
+      turnIndex: 10,
+      lastRoll: null,
+      log: [
+        { message: 'Fin de la manche 3.' },
+        { message: 'Lilas prend 17 jetons (pénalité).' },
+        { message: 'Casper gagne la manche.' },
+      ],
+      players: [
+        { id: 1, username: 'Lilas' },
+        { id: 2, username: 'Casper' },
+      ],
+      turn: { currentPlayerId: 2, direction: 1 },
+      pending: { step: 'turn_choice', playerId: 2 },
+      metadata: {
+        ownerPlayerId: 1,
+        loseAtScore: 40,
+        roundPauseSeconds: 2,
+        roundPauseUntilMs: null,
+        roundNumber: 3,
+        roundStarterIndex: 0,
+        endedRoundNumber: null,
+        deck: [1],
+        discard: [6],
+        handsByPlayerId: { '1': [1, 2], '2': [6] },
+        droppedOutByPlayerId: { '1': false, '2': false },
+        scoresByPlayerId: { '1': 17, '2': 1 },
+        step: 'turn_choice',
+        pendingReturnQueue: [],
+        pendingReturnPlayerId: null,
+        winnerId: null,
+      },
+    };
+
+    // Trigger endRound through a normal action; the service must not append another "Fin de la manche 3."
+    // and must reconcile the pending "return_token" for the winner.
+    const after: any = service.applyActions(state, [
+      { type: 'lama_quit', payload: {}, meta: { actorId: 2 } } as any,
+    ]);
+
+    const messages = (after.log ?? []).map((l: any) => String(l?.message ?? ''));
+    expect(messages.filter((m: string) => m === 'Fin de la manche 3.').length).toBe(1);
+    expect(String(after.metadata?.step ?? '')).toBe('return_token');
+    expect(Number(after.metadata?.endedRoundNumber ?? 0)).toBe(3);
+  });
+
   it('auto-skips return_token when winner has 0 token', async () => {
     const service = new LamaService(
       { register: () => {} } as any,

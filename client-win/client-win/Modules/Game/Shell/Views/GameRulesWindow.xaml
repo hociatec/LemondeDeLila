@@ -1,0 +1,45 @@
+<Window x:Class="client_win.Modules.Game.Shell.Views.GameRulesWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Règles"
+        Width="900"
+        Height="650"
+        Background="#0F1D2D"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="{Binding WindowTitle}"
+                   Foreground="White"
+                   FontSize="18"
+                   Margin="0 0 0 12" />
+
+        <TextBox x:Name="RulesText"
+                 Grid.Row="1"
+                 Text="{Binding RulesText}"
+                 Background="#12263C"
+                 Foreground="#C3D2EA"
+                 BorderThickness="0"
+                 Padding="12"
+                 FontSize="13"
+                 TextWrapping="Wrap"
+                 IsReadOnly="True"
+                 AcceptsReturn="True"
+                 VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Disabled"
+                 Focusable="True"
+                 AutomationProperties.Name="Règles" />
+
+        <Button Grid.Row="2"
+                Content="Fermer"
+                Width="120"
+                Height="32"
+                HorizontalAlignment="Right"
+                Margin="0 12 0 0"
+                Click="OnCloseClicked" />
+    </Grid>
+</Window>

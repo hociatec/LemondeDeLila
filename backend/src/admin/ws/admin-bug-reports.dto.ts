@@ -14,7 +14,7 @@ export class AdminBugReportCreateWsDto {
 
   @IsString()
   @MinLength(1)
-  @MaxLength(5000)
+  @MaxLength(50000)
   content!: string;
 }
 
@@ -41,7 +41,7 @@ export class AdminBugReportUpdateWsDto extends AdminBugReportIdWsDto {
   @IsOptional()
   @IsString()
   @MinLength(1)
-  @MaxLength(5000)
+  @MaxLength(50000)
   content?: string;
 }
 

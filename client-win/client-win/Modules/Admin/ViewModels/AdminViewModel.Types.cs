@@ -58,6 +58,7 @@ internal enum AdminPage
 	SoundsChatTable,
 	SoundsPrivateMessages,
 	SoundsAdminContact,
+    SoundsTableAmbience,
     SoundDetails,
     BugReports,
     BugReportsStatusReports,

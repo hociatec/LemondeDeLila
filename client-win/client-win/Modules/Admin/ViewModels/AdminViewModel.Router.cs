@@ -524,6 +524,12 @@ public sealed partial class AdminViewModel
                     BuildSoundDetails(Modules.Audio.Models.SoundId.GameDefeat);
                     return;
                 }
+                if (tableSound == "sounds.table.ambience")
+                {
+                    PushReturnFocus();
+                    BuildSoundsTableAmbience();
+                    return;
+                }
                 if (tableSound == "sounds.table.enter")
                 {
                     PushReturnFocus();
@@ -555,6 +561,24 @@ public sealed partial class AdminViewModel
 	                    return;
 	                }
 	            }
+
+            if (_page == AdminPage.SoundsTableAmbience && tag is string tableAmbienceSound)
+            {
+                const string prefix = "sounds.table.ambience.";
+                if (tableAmbienceSound.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
+                    int.TryParse(tableAmbienceSound.Substring(prefix.Length), out var idx) &&
+                    idx >= 1 && idx <= 20 &&
+                    Enum.TryParse<Modules.Audio.Models.SoundId>($"TableAmbience{idx}", ignoreCase: true, out var sound))
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(
+                        sound,
+                        returnPageOverride: AdminPage.SoundsTableAmbience,
+                        groupOverride: "Table",
+                        titleOverride: $"Ambiance de table {idx}");
+                    return;
+                }
+            }
 	
 	            if (_page == AdminPage.SoundsGames && tag is string gameSound)
 	            {

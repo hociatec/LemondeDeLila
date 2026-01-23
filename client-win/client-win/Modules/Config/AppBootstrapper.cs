@@ -40,6 +40,7 @@ using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Updates;
 using client_win.Modules.Updates.Services;
 using client_win.Modules.Audio.Services;
+using client_win.Modules.Vault.Services;
 
 namespace client_win.Modules.Config;
 
@@ -257,6 +258,11 @@ public static class AppBootstrapper
 
         services.AddSingleton<Modules.TextPrompts.Services.ITextPromptService, Modules.TextPrompts.Services.TextPromptService>();
         services.AddSingleton<Modules.TextPrompts.Services.ISecretPromptService, Modules.TextPrompts.Services.SecretPromptService>();
+
+        services.AddSingleton<IVaultClient>(sp =>
+            new VaultClient(
+                sp.GetRequiredService<WsRequestClient>(),
+                sp.GetRequiredService<ISessionService>()));
 
         services.AddSingleton<Modules.Presence.Services.IPresenceLauncher>(sp =>
             new Modules.Presence.Services.PresenceLauncher(

@@ -566,6 +566,11 @@ export class CaActionService {
         next,
         `${this.playerName(next, actorId)} ${verb} de ${Math.abs(combined)} ${casesWord}.`,
       );
+      const landedLabel = String(meta.tiles?.[after]?.label ?? '').trim();
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, actorId)} arrive sur Case ${after + 1}${landedLabel ? ` - ${landedLabel}` : ''}.`,
+      );
       bumpTurnStats(true, combined);
     } else {
       bumpTurnStats(false, 0);
@@ -790,6 +795,11 @@ export class CaActionService {
           next,
           `${this.playerName(next, actorId)} ${verb} de ${Math.abs(delta)} ${casesWord} (condition).`,
         );
+        const landedLabel = String(meta.tiles?.[after]?.label ?? '').trim();
+        next = this.core.appendLog(
+          next,
+          `${this.playerName(next, actorId)} arrive sur Case ${after + 1}${landedLabel ? ` - ${landedLabel}` : ''}.`,
+        );
       }
     };
 
@@ -902,6 +912,11 @@ export class CaActionService {
         next,
         `${this.playerName(next, actorId)} prend la première place.`,
       );
+      const landedLabel = String(meta.tiles?.[target]?.label ?? '').trim();
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, actorId)} arrive sur Case ${target + 1}${landedLabel ? ` - ${landedLabel}` : ''}.`,
+      );
       return next;
     }
     if (card.id === 35) {
@@ -920,6 +935,11 @@ export class CaActionService {
         next,
         `${this.playerName(next, actorId)} dépasse ${this.playerName(next, ahead.id)}.`,
       );
+      const landedLabel = String(meta.tiles?.[target]?.label ?? '').trim();
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, actorId)} arrive sur Case ${target + 1}${landedLabel ? ` - ${landedLabel}` : ''}.`,
+      );
       return next;
     }
     if (card.id === 36) {
@@ -937,6 +957,11 @@ export class CaActionService {
       next = this.core.appendLog(
         next,
         `${this.playerName(next, actorId)} avance jusqu'à une case multiple de 5.`,
+      );
+      const landedLabel = String(meta.tiles?.[nextMultiple]?.label ?? '').trim();
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, actorId)} arrive sur Case ${nextMultiple + 1}${landedLabel ? ` - ${landedLabel}` : ''}.`,
       );
       return next;
     }
@@ -979,6 +1004,11 @@ export class CaActionService {
     nextState = this.core.appendLog(
       nextState,
       `${this.playerName(nextState, nextId)} ${delta > 0 ? 'avance' : 'recule'} de 1 case (effet).`,
+    );
+    const landedLabel = String(meta.tiles?.[after]?.label ?? '').trim();
+    nextState = this.core.appendLog(
+      nextState,
+      `${this.playerName(nextState, nextId)} arrive sur Case ${after + 1}${landedLabel ? ` - ${landedLabel}` : ''}.`,
     );
     return nextState;
   }

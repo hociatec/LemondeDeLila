@@ -139,6 +139,30 @@ public sealed class OptionsViewModel : ObservableObject
         set => Update(() => _state.SoundAmbienceVolume, v => _state.SoundAmbienceVolume = v, value);
     }
 
+    public int SoundMenuAmbienceVolume
+    {
+        get => _state.SoundMenuAmbienceVolume;
+        set
+        {
+            if (Update(() => _state.SoundMenuAmbienceVolume, v => _state.SoundMenuAmbienceVolume = v, value))
+            {
+                _state.SoundAmbienceSplit = true;
+            }
+        }
+    }
+
+    public int SoundTavernAmbienceVolume
+    {
+        get => _state.SoundTavernAmbienceVolume;
+        set
+        {
+            if (Update(() => _state.SoundTavernAmbienceVolume, v => _state.SoundTavernAmbienceVolume = v, value))
+            {
+                _state.SoundAmbienceSplit = true;
+            }
+        }
+    }
+
     public int SoundNavigateVolume
     {
         get => _state.SoundNavigateVolume;
@@ -171,6 +195,8 @@ public sealed class OptionsViewModel : ObservableObject
 
     public bool IsVolumeEnabled => !MuteAll;
     public bool IsAmbienceVolumeEnabled => IsVolumeEnabled && SoundAmbience;
+    public bool IsMenuAmbienceVolumeEnabled => IsAmbienceVolumeEnabled;
+    public bool IsTavernAmbienceVolumeEnabled => IsAmbienceVolumeEnabled;
     public bool IsAppLaunchVolumeEnabled => IsVolumeEnabled && SoundAppLaunch;
     public bool IsNavigateVolumeEnabled => IsVolumeEnabled && SoundNavigate;
     public bool IsSelectVolumeEnabled => IsVolumeEnabled && SoundSelect;

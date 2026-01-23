@@ -40,6 +40,8 @@ using client_win.Modules.TextPrompts.Services;
 using client_win.Modules.Notifications.Services;
 using client_win.Modules.Notifications.ViewModels;
 using client_win.Modules.Notifications.Views;
+using client_win.Modules.Vault.Services;
+using client_win.Modules.Vault.ViewModels;
 
 namespace client_win.Modules.MainMenu.Services;
 
@@ -78,6 +80,7 @@ public sealed class MenuRouter : IMenuRouter
     private readonly INotifyGatewayClient _notify;
     private readonly IMenuBadges _badges;
     private readonly Modules.Presence.Services.IPresenceMonitor _presence;
+    private readonly IVaultClient _vault;
     private bool _contactAdminOpen;
 
     public MenuRouter(
@@ -95,6 +98,7 @@ public sealed class MenuRouter : IMenuRouter
         INotifyGatewayClient notify,
         IMenuBadges badges,
         Modules.Presence.Services.IPresenceMonitor presence,
+        IVaultClient vault,
         IChatLauncher chat,
         ICatalogService catalog,
         INavigationService navigation,
@@ -125,6 +129,7 @@ public sealed class MenuRouter : IMenuRouter
         _notify = notify;
         _badges = badges;
         _presence = presence;
+        _vault = vault ?? throw new ArgumentNullException(nameof(vault));
         _chat = chat;
         _catalog = catalog;
         _navigation = navigation;
@@ -160,6 +165,7 @@ public sealed class MenuRouter : IMenuRouter
                 client_win.Modules.Messaging.ViewModels.MessagingViewModel => "messaging",
                 client_win.Modules.Notifications.ViewModels.NotificationsViewModel => "notifications",
                 client_win.Modules.MainMenu.ViewModels.MainMenuViewModel => "home",
+                client_win.Modules.Vault.ViewModels.VaultViewModel => "tavern",
                 _ => "other"
             };
 
@@ -201,12 +207,45 @@ public sealed class MenuRouter : IMenuRouter
             openStoryBook: async () =>
             {
                 return await OpenStats().ConfigureAwait(true);
+            },
+            openVault: async () =>
+            {
+                return await OpenVault().ConfigureAwait(true);
             });
 
         SetPresenceContextForContent(vm);
         _navigation.Show(vm);
 
         return Task.FromResult("Catalogue ouvert.");
+    }
+
+    public Task<string> OpenVault()
+    {
+        _logger.LogInformation("Ouverture de Mon coffre fort");
+
+        var previous = _navigation.CurrentContent;
+        if (previous == null)
+        {
+            return Task.FromResult("Impossible d'ouvrir Mon coffre fort (vue précédente indisponible).");
+        }
+
+        VaultViewModel? vm = null;
+        vm = new VaultViewModel(
+            _vault,
+            _tables,
+            _dialogs,
+            _announcements,
+            returnContent: previous,
+            onClose: () =>
+            {
+                vm?.Dispose();
+                _navigation.Show(previous);
+                SetPresenceContextForContent(previous);
+            });
+
+        SetPresenceContextForContent(vm);
+        _navigation.Show(vm);
+        return Task.FromResult("Mon coffre fort ouvert.");
     }
 
     public Task<string> OpenStats()

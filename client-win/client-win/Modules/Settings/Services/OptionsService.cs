@@ -27,6 +27,7 @@ public sealed class OptionsService : IOptionsService
     {
         _settingsManager = settingsManager ?? throw new ArgumentNullException(nameof(settingsManager));
         _state = _settingsManager.Current;
+        UpgradeStateIfNeeded();
     }
 
     public OptionsService(SettingsManager<OptionsState> settingsManager, INavigationService navigation)
@@ -34,6 +35,7 @@ public sealed class OptionsService : IOptionsService
         _settingsManager = settingsManager ?? throw new ArgumentNullException(nameof(settingsManager));
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         _state = _settingsManager.Current;
+        UpgradeStateIfNeeded();
     }
 
     public OptionsService(
@@ -47,6 +49,7 @@ public sealed class OptionsService : IOptionsService
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _state = _settingsManager.Current;
+        UpgradeStateIfNeeded();
     }
 
     public OptionsState Current => _state;
@@ -165,6 +168,9 @@ public sealed class OptionsService : IOptionsService
         SoundAmbience = source.SoundAmbience,
         SoundAppLaunch = source.SoundAppLaunch,
         SoundAmbienceVolume = source.SoundAmbienceVolume,
+        SoundAmbienceSplit = source.SoundAmbienceSplit,
+        SoundMenuAmbienceVolume = source.SoundMenuAmbienceVolume,
+        SoundTavernAmbienceVolume = source.SoundTavernAmbienceVolume,
         SoundAppLaunchVolume = source.SoundAppLaunchVolume,
         SoundNavigate = source.SoundNavigate,
         SoundNavigateVolume = source.SoundNavigateVolume,
@@ -172,6 +178,8 @@ public sealed class OptionsService : IOptionsService
         SoundSelectVolume = source.SoundSelectVolume,
         SoundChatMessages = source.SoundChatMessages,
         SoundChatMessagesVolume = source.SoundChatMessagesVolume,
+        SoundTableAmbience = source.SoundTableAmbience,
+        SoundTableAmbienceVolume = source.SoundTableAmbienceVolume,
         SoundRoomOpenedPath = source.SoundRoomOpenedPath,
         SoundRoomJoinedPath = source.SoundRoomJoinedPath,
         SoundRoomExitPath = source.SoundRoomExitPath,
@@ -200,4 +208,33 @@ public sealed class OptionsService : IOptionsService
         AdminChatModerationLoadLimit = source.AdminChatModerationLoadLimit,
         CurrentVersion = source.CurrentVersion
     };
+
+    private void UpgradeStateIfNeeded()
+    {
+        if (_settingsManager == null)
+        {
+            return;
+        }
+
+        // Migration: older settings.json had only SoundAmbienceVolume (menu + tavern).
+        // If split volumes look untouched, propagate the legacy value once.
+        if (_state.SoundAmbienceSplit)
+        {
+            return;
+        }
+
+        var legacy = _state.SoundAmbienceVolume;
+        var looksLikeLegacyOnly = _state.SoundMenuAmbienceVolume == 25 &&
+                                  _state.SoundTavernAmbienceVolume == 25 &&
+                                  legacy != 25;
+        if (!looksLikeLegacyOnly)
+        {
+            return;
+        }
+
+        _state.SoundMenuAmbienceVolume = legacy;
+        _state.SoundTavernAmbienceVolume = legacy;
+        _state.SoundAmbienceSplit = true;
+        _settingsManager.UpdateAndSave(_state);
+    }
 }

@@ -211,6 +211,14 @@ public static class WsMessageTypes
         public const string PublicUnsubscribe = "rooms.public.unsubscribe";
     }
 
+    public static class Vault
+    {
+        public const string List = "vault.list";
+        public const string Save = "vault.save";
+        public const string Restore = "vault.restore";
+        public const string Delete = "vault.delete";
+    }
+
     /// <summary>
     /// Contextes d'erreur pour ErrorBus (identification de la source de l'erreur)
     /// </summary>

@@ -236,7 +236,7 @@ export class MinuitActionService {
     let next = state;
     let meta = this.getMeta(next);
     const pos = meta.positions?.[playerId] ?? 0;
-    const tile = meta.tiles[pos] as MinuitTile | undefined;
+    let tile = meta.tiles[pos] as MinuitTile | undefined;
     if (!tile) return next;
 
     const occupant = this.findOccupant(meta, playerId, pos);
@@ -247,9 +247,25 @@ export class MinuitActionService {
       );
       next = this.move(next, playerId, -1);
       meta = this.getMeta(next);
+      const afterPos = meta.positions?.[playerId] ?? 0;
+      tile = meta.tiles[afterPos] as MinuitTile | undefined;
+      if (!tile) return next;
     }
 
     const afterPos = meta.positions?.[playerId] ?? 0;
+    next = this.core.appendLog(
+      next,
+      `${this.playerName(next, playerId)} arrive sur Case ${tile.n} - ${tile.title}.`,
+    );
+    if (tile.type === 'card') {
+      next = this.core.appendLog(next, `Effet : piochez une carte Noël.`);
+    } else if (tile.type === 'move') {
+      next = this.core.appendLog(next, `Effet : déplacement.`);
+    } else if (tile.type === 'skip') {
+      next = this.core.appendLog(next, `Effet : passez des tours.`);
+    } else if (tile.type === 'finish') {
+      next = this.core.appendLog(next, `Effet : arrivée.`);
+    }
     if (afterPos === 55) {
       meta = { ...meta, winnerId: playerId };
       next = this.core.appendLog(

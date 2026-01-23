@@ -20,6 +20,7 @@ export type RoomPayload = {
     gameType: string;
     startedAt?: Date | string | null;
     runId?: number | null;
+    tableAmbienceSoundId?: string | null;
     counts: {
       players: number;
       spectators: number;

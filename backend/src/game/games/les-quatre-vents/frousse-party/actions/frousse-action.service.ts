@@ -216,6 +216,23 @@ export class FrousseActionService {
     const pos = meta.positions?.[playerId] ?? 0;
     const tile = meta.tiles[pos] as FrousseTile | undefined;
 
+    if (tile) {
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, playerId)} arrive sur Case ${tile.n} - ${tile.title}.`,
+      );
+      if (tile.type === 'card') {
+        next = this.core.appendLog(next, `Effet : piochez une carte.`);
+      } else if (tile.type === 'finish') {
+        next = this.core.appendLog(next, `Effet : case d'arrivée.`);
+      }
+    } else {
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, playerId)} arrive sur Case ${pos + 1}.`,
+      );
+    }
+
     if (pos >= 49) {
       meta = { ...meta, winnerId: playerId };
       next = this.core.appendLog(

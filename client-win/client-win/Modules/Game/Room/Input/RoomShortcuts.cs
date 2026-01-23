@@ -6,6 +6,10 @@ namespace client_win.Modules.Game.Room.Input;
 
 public static class RoomShortcutCodes
 {
+    public const string Rules = "room.rules";
+    public const string TableAmbience = "room.tableAmbience";
+    public const string TableAmbienceVolume = "room.tableAmbienceVolume";
+    public const string SaveSnapshot = "room.saveSnapshot";
     public const string Reset = "room.reset";
     public const string Info = "room.info";
     public const string ToggleRole = "room.toggleRole";
@@ -25,6 +29,10 @@ public static class RoomShortcuts
     // Quand une partie (room) est "started", le jeu peut utiliser des touches lettres (q, w, etc).
     // Ce flag permet de garder seulement certains raccourcis de "table" actifs pendant la partie.
     public static IEnumerable<ShortcutDefinition> Create(
+        ICommand rulesCommand,
+        ICommand tableAmbienceCommand,
+        ICommand tableAmbienceVolumeCommand,
+        ICommand saveSnapshotCommand,
         ICommand resetCommand,
         ICommand addBotCommand,
         ICommand removeBotCommand,
@@ -39,9 +47,37 @@ public static class RoomShortcuts
         ICommand quitCommand)
     {
         yield return new ShortcutDefinition(
+            new KeyGesture(Key.R),
+            rulesCommand,
+            description: "Afficher les règles",
+            code: RoomShortcutCodes.Rules,
+            availableInGame: true);
+
+        yield return new ShortcutDefinition(
+            new KeyGesture(Key.A, ModifierKeys.Control),
+            tableAmbienceCommand,
+            description: "Choisir l'ambiance de la table",
+            code: RoomShortcutCodes.TableAmbience,
+            availableInGame: true);
+
+        yield return new ShortcutDefinition(
+            new KeyGesture(Key.V, ModifierKeys.Control),
+            tableAmbienceVolumeCommand,
+            description: "Volume ambiance de table (local)",
+            code: RoomShortcutCodes.TableAmbienceVolume,
+            availableInGame: true);
+
+        yield return new ShortcutDefinition(
+            new KeyGesture(Key.S, ModifierKeys.Control),
+            saveSnapshotCommand,
+            description: "Sauvegarder la table (Mon coffre fort)",
+            code: RoomShortcutCodes.SaveSnapshot,
+            availableInGame: true);
+
+        yield return new ShortcutDefinition(
             'x',
             resetCommand,
-            description: "Reinitialiser la table",
+            description: "Réinitialiser la table",
             code: RoomShortcutCodes.Reset,
             availableInGame: true);
 
@@ -62,7 +98,7 @@ public static class RoomShortcuts
         yield return new ShortcutDefinition(
             new KeyGesture(Key.H, ModifierKeys.Control),
             togglePrivacyCommand,
-            description: "Changer la visibilite de la table",
+            description: "Changer la visibilité de la table",
             code: RoomShortcutCodes.TogglePrivacy,
             availableInGame: true);
 
@@ -97,7 +133,7 @@ public static class RoomShortcuts
         yield return new ShortcutDefinition(
             new KeyGesture(Key.P, ModifierKeys.Control),
             transferOwnerCommand,
-            description: "Changer le proprietaire de la table",
+            description: "Changer le propriétaire de la table",
             code: RoomShortcutCodes.TransferOwner,
             availableInGame: true);
 
@@ -123,4 +159,3 @@ public static class RoomShortcuts
             availableInGame: true);
     }
 }
-

@@ -10,6 +10,6 @@ export class AdminBugReportCommentsListWsDto {
 export class AdminBugReportCommentAddWsDto extends AdminBugReportCommentsListWsDto {
   @IsString()
   @MinLength(1)
-  @MaxLength(5000)
+  @MaxLength(50000)
   content!: string;
 }

@@ -245,6 +245,20 @@ export class GaloponsActionService {
     const tile = meta.tiles[pos] as GaloponsTile | undefined;
     if (!tile) return next;
 
+    next = this.core.appendLog(
+      next,
+      `${this.playerName(next, playerId)} arrive sur Case ${tile.n} - ${tile.title}.`,
+    );
+    if (tile.type === 'card') {
+      next = this.core.appendLog(next, `Effet : piochez une carte Aventure.`);
+    } else if (tile.type === 'bonus') {
+      next = this.core.appendLog(next, `Effet : gagnez des pommes.`);
+    } else if (tile.type === 'skip') {
+      next = this.core.appendLog(next, `Effet : passez des tours.`);
+    } else if (tile.type === 'finish') {
+      next = this.core.appendLog(next, `Effet : écurie finale.`);
+    }
+
     // Si arrivée : déclenche fin de manche.
     if (tile.type === 'finish') {
       if (!meta.finish?.triggered) {

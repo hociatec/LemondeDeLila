@@ -28,6 +28,7 @@ import { WsTicketModule } from './common/ws/ws-ticket.module';
 import { JwksModule } from './common/auth/jwks.module';
 import { BugReportsModule } from './bug-reports/bug-reports.module';
 import { RedisModule } from './common/redis/redis.module';
+import { VaultModule } from './vault/vault.module';
 
 @Module({
   imports: [
@@ -186,6 +187,7 @@ import { RedisModule } from './common/redis/redis.module';
     WsTicketModule,
     JwksModule,
     BugReportsModule,
+    VaultModule,
   ],
   providers: [
     {

@@ -156,6 +156,33 @@ public sealed class GameActionMenuWindow : Window
     private static int SortKey(string? code)
     {
         var c = (code ?? string.Empty).Trim().ToLowerInvariant();
+
+        // Ordre explicite des actions de table (F2) : ne pas dépendre d'un tri alphabétique.
+        // Les raccourcis clavier ne changent pas, seulement l'ordre et les libellés.
+        if (c.StartsWith("room."))
+        {
+            return c switch
+            {
+                "room.rules" => 0,
+                "room.tableambience" => 10,
+                "room.tableambiencevolume" => 11,
+                "room.savesnapshot" => 12,
+                "room.players" => 20,
+                "room.info" => 21,
+                "room.togglerole" => 22,
+                "room.toggleprivacy" => 23,
+                "room.invite" => 30,
+                "room.kick" => 31,
+                "room.ban" => 32,
+                "room.transferowner" => 33,
+                "room.addbot" => 40,
+                "room.removebot" => 41,
+                "room.reset" => 90,
+                "room.quit" => 99,
+                _ => 80,
+            };
+        }
+
         if (c.StartsWith("ui.")) return 0;
         if (c.StartsWith("game.")) return 1;
         if (c.StartsWith("room.")) return 2;

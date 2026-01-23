@@ -300,7 +300,6 @@ export class GameEngineService {
     if (hasRoll || hasRollDice) {
       // Compat: certains jeux exposent "ROLL_DICE"/"roll_dice" au lieu de "roll".
       const action = hasRoll ? 'roll' : 'roll_dice';
-      common.push(actionShortcut('R', action));
       common.push(actionShortcut('ENTER', action));
     }
     if (types.has('draw')) {
@@ -796,6 +795,7 @@ export class GameEngineService {
     let marked = await this.markBotThinking(roomId, gameType, next, botTurn);
     marked = this.normalizeWinnerMetadata(marked);
     marked = this.forceFinishedIfWinnerDetected(marked);
+    marked = this.appendBoardArrivalAnnouncements(gameType, current, marked);
     if ((marked.status || '').toLowerCase() === 'finished') {
       const meta = (marked as any)?.metadata;
       const obj = meta && typeof meta === 'object' ? meta : {};
@@ -1264,6 +1264,50 @@ export class GameEngineService {
     }
   }
 
+  /**
+   * Snapshot helper: returns the full internal state (not per-user redacted),
+   * and ensures the state exists (builds it if needed).
+   */
+  async exportInternalState(
+    roomId: number,
+    gameType: string,
+  ): Promise<GameStateEntity | null> {
+    if (!Number.isFinite(roomId) || roomId <= 0) return null;
+    const gt = String(gameType ?? '').trim();
+    if (!gt) return null;
+    const internal = await this.enqueueMutation(this.buildKey(roomId, gt), () =>
+      this.getInternalState(roomId, gt),
+    );
+    return internal ?? null;
+  }
+
+  /**
+   * Snapshot helper: imports a raw internal state, persists it and schedules bot turn if needed.
+   */
+  async restoreInternalState(
+    roomId: number,
+    gameType: string,
+    state: GameStateEntity,
+  ): Promise<void> {
+    if (!Number.isFinite(roomId) || roomId <= 0) {
+      throw new Error('roomId invalide');
+    }
+    const gt = String(gameType ?? '').trim();
+    if (!gt) {
+      throw new Error('gameType invalide');
+    }
+    await this.enqueueMutation(this.buildKey(roomId, gt), async () => {
+      await this.store.set(roomId, gt, state);
+      const marked = await this.normalizeBotThinking(
+        roomId,
+        gt,
+        await this.markBotThinking(roomId, gt, state),
+      );
+      await this.scheduleBotTurn(roomId, gt, marked);
+      this.broadcaster?.(gt, roomId, marked);
+    });
+  }
+
   private isBotTurn(state: GameStateEntity): boolean {
     if (state.status === 'finished') return false;
     const currentId = state.turn?.currentPlayerId ?? null;
@@ -1363,6 +1407,7 @@ export class GameEngineService {
       let marked = await this.markBotThinking(roomId, gameType, next, botTurn);
       marked = this.normalizeWinnerMetadata(marked);
       marked = this.forceFinishedIfWinnerDetected(marked);
+      marked = this.appendBoardArrivalAnnouncements(gameType, current, marked);
 
       const previousPlayerId = current.turn?.currentPlayerId ?? null;
       const nextPlayerId = marked.turn?.currentPlayerId ?? null;
@@ -1450,8 +1495,29 @@ export class GameEngineService {
       const useTimer = Boolean(meta?.config?.useTimer);
       const untilMs = typeof meta.quizDeadlineAtMs === 'number' ? meta.quizDeadlineAtMs : null;
       const questionId = typeof meta?.currentQuestion?.id === 'string' ? meta.currentQuestion.id : null;
+      const interUntilMs = typeof meta?.interQuestionUntilMs === 'number' ? meta.interQuestionUntilMs : null;
 
-      if (useTimer && untilMs != null && questionId) {
+      if (interUntilMs != null && !questionId) {
+        const delayMs = Math.max(0, interUntilMs - GameEngineService.nowMs());
+        this.botScheduler.clear(systemKey);
+        this.botScheduler.schedule({
+          key: systemKey,
+          delayMs,
+          roomId,
+          gameType,
+          run: async () => {
+            const latest = (await this.store.get(roomId, gameType)) ?? null;
+            if (!latest) return;
+            const latestMeta: any =
+              latest?.metadata && typeof latest.metadata === 'object' ? latest.metadata : {};
+            if (typeof latestMeta?.currentQuestion?.id === 'string') return;
+            if (typeof latestMeta?.interQuestionUntilMs !== 'number') return;
+            if (latestMeta.interQuestionUntilMs !== interUntilMs) return;
+            await this.applySystemActions(roomId, gameType, [{ type: 'mnemo_timeout', payload: {} }]);
+          },
+          onStale: () => this.cleanupRoom(roomId, gameType),
+        });
+      } else if (useTimer && untilMs != null && questionId) {
         const delayMs = Math.max(0, untilMs - GameEngineService.nowMs());
         this.botScheduler.clear(systemKey);
         this.botScheduler.schedule({
@@ -1641,12 +1707,33 @@ export class GameEngineService {
     }
     const handler = this.registry.getHandler(gameType);
     if (handler) {
-      return handler.hydrateInitialState(baseState);
+      const hydrated = handler.hydrateInitialState(baseState);
+      return this.appendFirstTurnAnnouncement(hydrated);
     }
-    return this.core.appendLog(
-      baseState,
-      `Type de jeu non spécialisé: ${gameType}`,
+    return this.appendFirstTurnAnnouncement(
+      this.core.appendLog(baseState, `Type de jeu non spécialisé: ${gameType}`),
     );
+  }
+
+  private appendFirstTurnAnnouncement(state: GameStateEntity): GameStateEntity {
+    if (String(state.status ?? '').toLowerCase().trim() !== 'started') {
+      return state;
+    }
+    const currentPlayerId = state.turn?.currentPlayerId ?? null;
+    if (typeof currentPlayerId !== 'number') return state;
+
+    const log = Array.isArray(state.log) ? state.log : [];
+    const alreadyAnnounced = log.some((entry: any) => {
+      const msg = typeof entry?.message === 'string' ? entry.message.trim() : '';
+      return msg.toLowerCase().startsWith("c'est au tour de ");
+    });
+    if (alreadyAnnounced) return state;
+
+    const current =
+      state.players?.find((p) => p?.id === currentPlayerId) ?? null;
+    const name = String((current as any)?.username ?? '').trim();
+    const who = name ? name : `joueur ${currentPlayerId}`;
+    return this.core.appendLog(state, `C'est au tour de ${who}.`);
   }
 
   private buildKey(roomId: number, gameType: string): string {
@@ -1935,6 +2022,106 @@ export class GameEngineService {
         currentPlayerView,
       },
     };
+  }
+
+  private static readonly BOARD_ANNOUNCE_GAMES = new Set<string>([
+    // Les Quatre Vents (plateaux) : annoncer l'arrivée sur une case (titre + description si dispo).
+    // Panier Express gère déjà ses annonces de case dans son service, on évite le doublon.
+    'en-attendant-minuit',
+    'frousse-party',
+    'galopons-ensemble',
+  ]);
+
+  private appendBoardArrivalAnnouncements(
+    gameType: string,
+    previous: GameStateEntity,
+    next: GameStateEntity,
+  ): GameStateEntity {
+    try {
+      if (!GameEngineService.BOARD_ANNOUNCE_GAMES.has(String(gameType ?? '').trim())) {
+        return next;
+      }
+      if (String(next.status ?? '').toLowerCase().trim() !== 'started') {
+        return next;
+      }
+
+      const prevMeta: any =
+        previous?.metadata && typeof previous.metadata === 'object' ? previous.metadata : {};
+      const nextMeta: any =
+        next?.metadata && typeof next.metadata === 'object' ? next.metadata : {};
+
+      const tiles = Array.isArray(nextMeta.tiles) ? nextMeta.tiles : [];
+      const prevPositions =
+        prevMeta.positions && typeof prevMeta.positions === 'object' && !Array.isArray(prevMeta.positions)
+          ? prevMeta.positions
+          : {};
+      const nextPositions =
+        nextMeta.positions && typeof nextMeta.positions === 'object' && !Array.isArray(nextMeta.positions)
+          ? nextMeta.positions
+          : {};
+
+      if (tiles.length === 0) {
+        return next;
+      }
+
+      const players = Array.isArray(next.players) ? next.players : [];
+      const changed = players
+        .map((p: any) => ({ id: p?.id, username: String(p?.username ?? '').trim() }))
+        .filter((p: any) => typeof p.id === 'number' && Number.isFinite(p.id))
+        .map((p: any) => {
+          const prevRaw = (prevPositions as any)[String(p.id)];
+          const nextRaw = (nextPositions as any)[String(p.id)];
+          const prevPos = typeof prevRaw === 'number' ? prevRaw : Number(prevRaw);
+          const nextPos = typeof nextRaw === 'number' ? nextRaw : Number(nextRaw);
+          return {
+            id: p.id as number,
+            username: p.username,
+            prevPos: Number.isFinite(prevPos) ? Math.trunc(prevPos) : null,
+            nextPos: Number.isFinite(nextPos) ? Math.trunc(nextPos) : null,
+          };
+        })
+        .filter((p: any) => p.nextPos != null && p.prevPos != null && p.nextPos !== p.prevPos)
+        .sort((a: any, b: any) => (a.id as number) - (b.id as number));
+
+      if (changed.length === 0) {
+        return next;
+      }
+
+      let out = next;
+      for (const p of changed) {
+        const idx = p.nextPos as number;
+        if (idx < 0 || idx >= tiles.length) {
+          continue;
+        }
+
+        const tile: any = tiles[idx] ?? {};
+        const titleRaw = String(tile.title ?? tile.label ?? tile.name ?? '').trim();
+        const descriptionRaw = String(tile.description ?? '').trim();
+
+        const caseNumber = idx + 1;
+        const title = titleRaw ? ` - ${titleRaw}` : '';
+        const desc = descriptionRaw ? ` ${descriptionRaw}` : '';
+
+        const name = p.username || `joueur ${p.id}`;
+
+        // Éviter les doublons évidents : si la dernière entrée mentionne déjà l'arrivée sur cette case.
+        const lastMsg = (() => {
+          const log = Array.isArray(out.log) ? out.log : [];
+          const last = log.length ? log[log.length - 1] : null;
+          return typeof (last as any)?.message === 'string' ? String((last as any).message).trim() : '';
+        })();
+        const needle = `arrive sur case ${caseNumber}`.toLowerCase();
+        if (lastMsg.toLowerCase().includes(needle)) {
+          continue;
+        }
+
+        out = this.core.appendLog(out, `${name} arrive sur case ${caseNumber}${title}.${desc}`.trim());
+      }
+
+      return out;
+    } catch {
+      return next;
+    }
   }
 
   private attachViewerContext(

@@ -437,6 +437,19 @@ export class PresenceService implements OnModuleDestroy {
       });
   }
 
+  /**
+   * Best-effort check: true if the user has at least one active presence connection in "tavern" context.
+   * Used by features that require all players to be available before starting/restoring a table.
+   */
+  isUserInTavern(userId: number): boolean {
+    if (!Number.isFinite(userId) || userId <= 0) return false;
+    for (const client of this.clients.values()) {
+      if (client?.user?.id !== userId) continue;
+      if (client.context === 'tavern') return true;
+    }
+    return false;
+  }
+
   private collectPlayers(): Map<number, PresenceBroadcastPlayer> {
     const playersByUser = new Map<number, PresenceBroadcastPlayer>();
     for (const client of this.clients.values()) {

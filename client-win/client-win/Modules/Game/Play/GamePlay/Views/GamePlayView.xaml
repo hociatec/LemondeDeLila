@@ -8,12 +8,12 @@
              mc:Ignorable="d"
              d:DesignHeight="320"
              d:DesignWidth="900"
-             Focusable="True"
-             IsTabStop="True"
-             KeyboardNavigation.DirectionalNavigation="Contained"
-             AutomationProperties.Name="{Binding DataContext.Title, RelativeSource={RelativeSource AncestorType=shell:GameZoneHostView}}"
-             PreviewKeyDown="OnRootPreviewKeyDown"
-             Loaded="OnLoaded">
+              Focusable="True"
+              IsTabStop="True"
+              KeyboardNavigation.DirectionalNavigation="Contained"
+              AutomationProperties.Name="Partie en cours"
+              PreviewKeyDown="OnRootPreviewKeyDown"
+              Loaded="OnLoaded">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
@@ -27,7 +27,8 @@
         </Grid.RowDefinitions>
         <!--
             Focus anchor: le gestionnaire Tab/Maj+Tab ramène souvent le focus sur le premier élément focusable.
-            Sans nom d'automatisation, NVDA annonce "inconnu". Ici on force un nom basé sur le titre de la zone (nom du jeu).
+            Sans nom d'automatisation, NVDA annonce "inconnu". Ici on force un nom générique
+            pour éviter de répéter le nom du jeu après certaines actions.
         -->
         <TextBlock Grid.Row="0"
                    Text="{Binding ConnectionStatus}"
@@ -289,15 +290,21 @@
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
-                    <TextBlock x:Name="QuizQuestionTextBlock"
-                               Text="{Binding QuizQuestionText}"
-                               Foreground="White"
-                               FontSize="12"
-                               TextWrapping="Wrap"
-                               Focusable="True"
-                               KeyboardNavigation.IsTabStop="False"
-                               AutomationProperties.LiveSetting="Polite"
-                               AutomationProperties.Name="{Binding QuizQuestionText}" />
+                    <!-- Use a readonly TextBox to ensure the element is reliably focusable for screen readers. -->
+                    <TextBox x:Name="QuizQuestionTextBlock"
+                             Text="{Binding QuizQuestionText}"
+                             Foreground="White"
+                             FontSize="12"
+                             TextWrapping="Wrap"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             IsReadOnly="True"
+                             IsReadOnlyCaretVisible="False"
+                             CaretBrush="Transparent"
+                             Focusable="True"
+                             KeyboardNavigation.IsTabStop="False"
+                             AutomationProperties.LiveSetting="Polite"
+                             AutomationProperties.Name="{Binding QuizQuestionText}" />
                 </Border>
                 <ListBox x:Name="ChoicesList"
                          ItemsSource="{Binding PendingChoices}"

@@ -30,7 +30,7 @@ public sealed class GameHistorySink : IGameHistorySink
         {
             foreach (var part in parts)
             {
-                var cleaned = (part ?? string.Empty).Trim();
+                var cleaned = StripGamePrefix((part ?? string.Empty).Trim());
                 if (string.IsNullOrWhiteSpace(cleaned))
                 {
                     continue;
@@ -99,5 +99,48 @@ public sealed class GameHistorySink : IGameHistorySink
         var parts = normalized
             .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         return parts.Length == 0 ? string.Empty : string.Join(' ', parts);
+    }
+
+    private static string StripGamePrefix(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message) || message.Length < 4)
+        {
+            return message;
+        }
+
+        // Beaucoup de jeux préfixent leurs logs pour debug : "[Panier Express] ...".
+        // Pour l'accessibilité (annonces), on retire ce préfixe pour éviter de répéter le nom du jeu à chaque action.
+        if (message[0] != '[')
+        {
+            return message;
+        }
+
+        var end = message.IndexOf(']');
+        if (end < 2 || end > 40)
+        {
+            return message;
+        }
+
+        if (end + 1 >= message.Length || message[end + 1] != ' ')
+        {
+            return message;
+        }
+
+        var tag = message.Substring(1, end - 1);
+        var hasLetter = false;
+        foreach (var ch in tag)
+        {
+            if (char.IsLetter(ch))
+            {
+                hasLetter = true;
+                break;
+            }
+        }
+        if (!hasLetter)
+        {
+            return message;
+        }
+
+        return message.Substring(end + 2).Trim();
     }
 }

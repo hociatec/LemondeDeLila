@@ -94,13 +94,26 @@ export class AventureSauvageActionService {
     };
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
 
-    const label = tile?.label ?? `Case ${position + 1}`;
+    const labelRaw = String(tile?.label ?? '').trim();
+    const label = labelRaw
+      ? /^(case|départ|arrivée)\b/i.test(labelRaw)
+        ? labelRaw
+        : `Case ${position + 1} - ${labelRaw}`
+      : `Case ${position + 1}`;
     next = this.core.appendLog(
       next,
       `${this.playerName(next, playerId)} arrive sur ${label}.`,
     );
 
     if (!tile) return next;
+
+    if (tile.type === 'animal') {
+      next = this.core.appendLog(next, `Effet : piochez une carte Animal rigolo.`);
+    } else if (tile.type === 'patte') {
+      next = this.core.appendLog(next, `Effet : piochez une carte Coup de patte.`);
+    } else if (tile.type === 'finish') {
+      next = this.core.appendLog(next, `Effet : case d'arrivée.`);
+    }
 
     if (tile.type === 'finish') {
       meta = this.getMeta(next);

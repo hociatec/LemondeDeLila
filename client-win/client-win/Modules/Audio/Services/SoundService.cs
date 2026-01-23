@@ -145,7 +145,9 @@ public sealed class SoundService : ISoundService, IDisposable
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
                 OverridePath: null,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundAmbience,
-                Volume: () => Clamp01(_options.Current.SoundAmbienceVolume / 100.0)),
+                Volume: () => Clamp01((_options.Current.SoundAmbienceSplit
+                    ? _options.Current.SoundMenuAmbienceVolume
+                    : _options.Current.SoundAmbienceVolume) / 100.0)),
             [SoundId.TavernAmbience] = new SoundEntry(
                 // PLACEHOLDER: Ce fichier par défaut n'est pas approprié pour une ambiance de taverne.
                 // L'administrateur doit uploader une vraie ambiance via l'interface admin.
@@ -153,7 +155,9 @@ public sealed class SoundService : ISoundService, IDisposable
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
                 OverridePath: null,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundAmbience,
-                Volume: () => Clamp01(_options.Current.SoundAmbienceVolume / 100.0)),
+                Volume: () => Clamp01((_options.Current.SoundAmbienceSplit
+                    ? _options.Current.SoundTavernAmbienceVolume
+                    : _options.Current.SoundAmbienceVolume) / 100.0)),
             [SoundId.TavernOpened] = new SoundEntry(
                 // Son déclenché à l'entrée dans la taverne (one-shot).
                 // Configurable globalement via l'interface admin (son uploadé = RemoteSoundCache).
@@ -309,6 +313,108 @@ public sealed class SoundService : ISoundService, IDisposable
                 OverridePath: () => _options.Current.SoundWallPlacedOpponentPath,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundSelect,
                 Volume: () => Clamp01(_options.Current.SoundSelectVolume / 100.0)),
+
+            // Table ambience (loop) slots - configured via admin uploads (RemoteSoundCache).
+            [SoundId.TableAmbience1] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience2] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience3] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience4] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience5] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience6] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience7] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience8] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience9] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience10] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience11] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience12] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience13] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience14] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience15] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience16] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience17] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience18] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience19] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
+            [SoundId.TableAmbience20] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundTableAmbience,
+                Volume: () => Clamp01(_options.Current.SoundTableAmbienceVolume / 100.0)),
         };
     }
 

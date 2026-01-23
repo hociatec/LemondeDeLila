@@ -51,6 +51,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private Dictionary<int, string> _botsById = new();
     private int _ownerId = 0;
     private bool _selfIsSpectator;
+    private Modules.Audio.Models.SoundId? _activeTableAmbienceSound;
     private readonly HashSet<long> _seenChatSeq = new();
     private bool _ignoreChatHistoryOnce = true;
 
@@ -226,6 +227,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
             var nowStarted = string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase);
             _lastStatus = nextStatus;
 
+            // Keep table ambience loop in sync with room settings (start/stop/change).
+            SyncTableAmbience(payload, started: nowStarted);
+
 	            if (!wasStarted && nowStarted)
 	            {
 	                _dispatcher.InvokeAsync(() =>
@@ -248,18 +252,21 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	            {
 	                _dispatcher.InvokeAsync(async () =>
 	                {
+                        // Stop table ambience when leaving the game.
+                        SyncTableAmbience(payload, started: false);
+
 	                    SetRoomShortcutsForStarted(started: false);
 	                    _tableVm.GameZone.Content = null;
 	                    await UnloadGamePlayVmAsync().ConfigureAwait(true);
 
-	                    var gameName = (payload.Manifest?.Name ?? _game.Name ?? string.Empty).Trim();
-	                    if (string.IsNullOrWhiteSpace(gameName))
-	                    {
-                        _announcements.TableInfo("Table creee. Ajoutez des bots et commencez a jouer (Entree).");
+                    var gameName = (payload.Manifest?.Name ?? _game.Name ?? string.Empty).Trim();
+                    if (string.IsNullOrWhiteSpace(gameName))
+                    {
+                        _announcements.TableInfo("Table créée. Ajoutez des bots et commencez à jouer (Entrée).");
                     }
                     else
                     {
-                        _announcements.TableInfo($"Table de {gameName} creee. Ajoutez des bots et commencez a jouer (Entree).");
+                        _announcements.TableInfo($"Table de {gameName} créée. Ajoutez des bots et commencez à jouer (Entrée).");
                     }
 
 
@@ -287,6 +294,62 @@ internal sealed class GameTableBindings : IAsyncDisposable
         {
             EnsureGamePlayLoaded();
             SyncGameplayShortcuts();
+        }
+
+        if (last != null)
+        {
+            SyncTableAmbience(last, started: isStarted);
+        }
+    }
+
+    private void SyncTableAmbience(RoomPayloadDto payload, bool started)
+    {
+        try
+        {
+            if (!started)
+            {
+                if (_activeTableAmbienceSound.HasValue)
+                {
+                    _sounds.StopLoop(_activeTableAmbienceSound.Value);
+                    _activeTableAmbienceSound = null;
+                }
+                return;
+            }
+
+            var raw = (payload?.Room?.TableAmbienceSoundId ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                if (_activeTableAmbienceSound.HasValue)
+                {
+                    _sounds.StopLoop(_activeTableAmbienceSound.Value);
+                    _activeTableAmbienceSound = null;
+                }
+                return;
+            }
+
+            if (!Enum.TryParse<SoundId>(raw, ignoreCase: true, out var sound))
+            {
+                return;
+            }
+
+            if (_activeTableAmbienceSound.HasValue && _activeTableAmbienceSound.Value == sound)
+            {
+                return;
+            }
+
+            if (_activeTableAmbienceSound.HasValue)
+            {
+                _sounds.StopLoop(_activeTableAmbienceSound.Value);
+                _activeTableAmbienceSound = null;
+            }
+
+            _sounds.Preload(sound);
+            _sounds.StartLoop(sound);
+            _activeTableAmbienceSound = sound;
+        }
+        catch
+        {
+            // best-effort
         }
     }
 
@@ -432,6 +495,10 @@ internal sealed class GameTableBindings : IAsyncDisposable
         var isOwner = selfId > 0 && _ownerId > 0 && selfId == _ownerId;
 
         var shortcuts = RoomShortcuts.Create(
+            rulesCommand: _tableVm.GameZone.RulesCommand,
+            tableAmbienceCommand: _tableVm.GameZone.ConfigureTableAmbienceCommand,
+            tableAmbienceVolumeCommand: _tableVm.GameZone.ConfigureTableAmbienceVolumeCommand,
+            saveSnapshotCommand: _tableVm.GameZone.SaveSnapshotCommand,
             resetCommand: _tableVm.GameZone.ResetCommand,
             addBotCommand: _tableVm.GameZone.AddBotCommand,
             removeBotCommand: _tableVm.GameZone.RemoveBotCommand,
@@ -462,7 +529,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 string.Equals(s.Code, RoomShortcutCodes.Invite, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(s.Code, RoomShortcutCodes.Kick, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(s.Code, RoomShortcutCodes.Ban, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(s.Code, RoomShortcutCodes.TransferOwner, StringComparison.OrdinalIgnoreCase);
+                string.Equals(s.Code, RoomShortcutCodes.TransferOwner, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(s.Code, RoomShortcutCodes.TableAmbience, StringComparison.OrdinalIgnoreCase);
 
             // Spectateur : ne propose pas d'actions admin de table (mais garde w/q/i/ctrl+m).
             if (selfIsSpectator && IsOwnerOnlyRoomShortcut(shortcut))
@@ -790,6 +858,12 @@ internal sealed class GameTableBindings : IAsyncDisposable
             _role.Dispose();
             _info.Dispose();
             _chat.Dispose();
+
+            if (_activeTableAmbienceSound.HasValue)
+            {
+                try { _sounds.StopLoop(_activeTableAmbienceSound.Value); } catch { }
+                _activeTableAmbienceSound = null;
+            }
 
             await _session.LeaveAsync().ConfigureAwait(true);
             await _session.DisposeAsync().ConfigureAwait(true);

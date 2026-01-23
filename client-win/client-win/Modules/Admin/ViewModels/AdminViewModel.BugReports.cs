@@ -194,7 +194,7 @@ public sealed partial class AdminViewModel
         IsTextInputVisible = true;
         IsSecondaryInputVisible = true;
         IsAdditionalPermissionsVisible = false;
-        Status = "Saisissez puis Entrée pour envoyer. Échap : retour.";
+        Status = "Saisissez puis Ctrl+Entrée pour envoyer. Échap : retour.";
         UpdateFilterVisibility();
         RestoreFocusIfAny();
     }

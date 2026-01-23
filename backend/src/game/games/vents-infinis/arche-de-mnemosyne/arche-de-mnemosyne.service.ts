@@ -339,7 +339,19 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     if (type === 'mnemo_timeout') {
       const q = meta.currentQuestion;
       const deadline = typeof (meta as any).quizDeadlineAtMs === 'number' ? (meta as any).quizDeadlineAtMs : null;
-      if (!q || deadline == null) return state;
+      if (!q || deadline == null) {
+        const until = typeof (meta as any).interQuestionUntilMs === 'number' ? (meta as any).interQuestionUntilMs : null;
+        if (until == null) return state;
+        if (Date.now() < until) return state;
+
+        const clearedMeta: MnemoQuizMetadata = {
+          ...meta,
+          interQuestionUntilMs: null,
+        };
+        return this.syncBotPending(
+          this.drawNextQuestionOrStay({ ...state, metadata: clearedMeta as any }),
+        );
+      }
       if (Date.now() < deadline) return state;
 
       const players = Array.isArray(state.players) ? state.players : [];
@@ -433,6 +445,32 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       };
       const started = { ...state, phase: 'play', metadata: withSelection };
       return this.syncBotPending(this.drawNextQuestionOrStay(started));
+    }
+
+    // Quiz gameplay: any player can answer (not owner-only).
+    // NOTE: The owner-only guard below is for admin pages; quiz answering must remain open to everyone.
+    if (type === 'answer_quiz') {
+      const actorId = (action as any)?.meta?.actorId ?? null;
+      const question = meta.currentQuestion;
+      const answerIndex = Number(payload.answerIndex);
+      if (actorId == null || !question) return state;
+
+      const answers = { ...(meta.quizAnswersByPlayerId ?? {}) } as any;
+      if (answers[actorId] != null) return state;
+
+      answers[actorId] = answerIndex;
+
+      const choice = question.choices[answerIndex] ?? '';
+      const correct = choice === question.correctChoice;
+      const who = this.playerName(state, actorId);
+      const withLog = this.core.appendLog(
+        state,
+        correct
+          ? `${who} répond : ${choice}. Bonne réponse.`
+          : `${who} répond : ${choice}. Mauvaise réponse.`,
+      );
+
+      return { ...withLog, metadata: { ...meta, quizAnswersByPlayerId: answers } };
     }
 
     if (!this.isOwner(state, (action as any)?.meta?.actorId ?? null)) {
@@ -775,7 +813,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 	    let next = state;
 
 	    if (correctIds.length === 0) {
-	      next = this.core.appendLog(next, `Personne n'a trouve la bonne reponse (${q.correctChoice}).`);
+	      next = this.core.appendLog(next, `Personne n'a trouvé la bonne réponse (${q.correctChoice}).`);
 	    } else if (correctIds.length === 1) {
 	      const id = correctIds[0]!;
 	      nextScores[id] = (nextScores[id] ?? 0) + correctSoloPoints;
@@ -793,10 +831,10 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 	      const labels = correctIds.map((id) => this.playerName(next, id)).join(', ');
 	      const msg =
 	        correctMultiPoints === 0
-	          ? `Plusieurs bonnes reponses (${labels}) : aucun point.`
+	          ? `Plusieurs bonnes réponses (${labels}) : aucun point.`
 	          : correctMultiPoints > 0
-	            ? `Plusieurs bonnes reponses (${labels}) : +${correctMultiPoints} points chacun.`
-	            : `Plusieurs bonnes reponses (${labels}) : -${Math.abs(correctMultiPoints)} points chacun.`;
+	            ? `Plusieurs bonnes réponses (${labels}) : +${correctMultiPoints} points chacun.`
+	            : `Plusieurs bonnes réponses (${labels}) : -${Math.abs(correctMultiPoints)} points chacun.`;
 	      next = this.core.appendLog(next, msg);
 	    }
 
@@ -820,13 +858,20 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 	        const labels = unique.map((id) => this.playerName(next, id)).join(', ');
 	        const msg =
 	          timeoutPoints === 0
-	            ? `Temps ecoule: ${labels} ne marque aucun point.`
+	            ? `Temps écoulé: ${labels} ne marque aucun point.`
 	            : timeoutPoints > 0
-	              ? `Temps ecoule: ${labels} gagne +${timeoutPoints} points.`
-	              : `Temps ecoule: ${labels} perd ${Math.abs(timeoutPoints)} points.`;
+	              ? `Temps écoulé: ${labels} gagne +${timeoutPoints} points.`
+	              : `Temps écoulé: ${labels} perd ${Math.abs(timeoutPoints)} points.`;
 	        next = this.core.appendLog(next, msg);
 	      }
 	    }
+
+    if (force) {
+      if (wrongAnsweredIds.length) {
+        next = this.core.appendLog(next, `La bonne réponse était : ${q.correctChoice}.`);
+      }
+      next = this.core.appendLog(next, 'Prochaine question dans 5 secondes.');
+    }
 
     const afterMeta: MnemoQuizMetadata = {
       ...meta,
@@ -834,6 +879,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       currentQuestion: null,
       quizAnswersByPlayerId: {},
       quizDeadlineAtMs: null,
+      interQuestionUntilMs: force ? Date.now() + 5000 : null,
     };
 
     const target = afterMeta.config?.targetPoints ?? 20;
@@ -844,7 +890,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     if (reached.length) {
       reached.sort((a, b) => (b.score - a.score) || (a.id - b.id));
       const winnerId = reached[0]!.id;
-      const finished = this.core.appendLog(next, `${this.playerName(next, winnerId)} a gagne !`);
+      const finished = this.core.appendLog(next, `${this.playerName(next, winnerId)} a gagné !`);
       return {
         ...finished,
         status: 'finished',
@@ -857,6 +903,13 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       metadata: afterMeta as any,
     };
     const advanced = this.turns.advanceTurn(cleared);
+    if (force) {
+      return {
+        ...advanced,
+        metadata: afterMeta as any,
+        pending: null,
+      };
+    }
     return this.drawNextQuestionOrStay(advanced);
   }
 

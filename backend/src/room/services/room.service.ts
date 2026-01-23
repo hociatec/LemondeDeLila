@@ -162,6 +162,25 @@ export class RoomService {
   }
 
   /**
+   * Internal gateway helper: fetch a room and verify ownership.
+   */
+  async requireRoomForOwnerAction(roomId: number, userId: number): Promise<Room> {
+    const room = await this.requireRoom(roomId);
+    this.ensureOwner(room, userId);
+    return room;
+  }
+
+  /**
+   * Internal gateway helper: persist a room and invalidate payload cache.
+   */
+  async saveRoom(room: Room): Promise<Room> {
+    const saved = await this.rooms.save(room);
+    await this.invalidateRoomPayloadCache(saved.id);
+    this.notifyDirectoryChanged(saved.id, 'updated');
+    return saved;
+  }
+
+  /**
    * Admin: list rooms (public and/or private), optionally including started rooms.
    * Intended for maintenance tooling in the admin UI.
    */
@@ -837,6 +856,10 @@ export class RoomService {
         startedAt: room.startedAt ? room.startedAt.toISOString() : null,
         runId:
           typeof (room as any).runId === 'number' ? (room as any).runId : null,
+        tableAmbienceSoundId:
+          typeof (room as any).tableAmbienceSoundId === 'string'
+            ? String((room as any).tableAmbienceSoundId).trim() || null
+            : null,
         counts: {
           players: (room.participants || []).filter((p) => !p.leftAt).length,
           spectators: 0,

@@ -60,6 +60,9 @@ public sealed class RoomDto
     [JsonPropertyName("startedAt")]
     public string? StartedAt { get; set; }
 
+    [JsonPropertyName("tableAmbienceSoundId")]
+    public string? TableAmbienceSoundId { get; set; }
+
     [JsonPropertyName("counts")]
     public RoomCountsDto Counts { get; set; } = new();
 

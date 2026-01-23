@@ -30,6 +30,8 @@
              xmlns:optionsView="clr-namespace:client_win.Modules.Settings.Views"
              xmlns:presenceVm="clr-namespace:client_win.Modules.Presence.ViewModels"
              xmlns:presenceView="clr-namespace:client_win.Modules.Presence.Views"
+             xmlns:vaultVm="clr-namespace:client_win.Modules.Vault.ViewModels"
+             xmlns:vaultView="clr-namespace:client_win.Modules.Vault.Views"
              xmlns:roomVm="clr-namespace:client_win.Modules.Game.Shell.ViewModels"
              xmlns:roomView="clr-namespace:client_win.Modules.Game.Shell.Views"
              xmlns:playVm="clr-namespace:client_win.Modules.Game.Play.GamePlay.ViewModels"
@@ -76,6 +78,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type presenceVm:PresenceViewModel}">
             <presenceView:PresenceView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vaultVm:VaultViewModel}">
+            <vaultView:VaultView />
         </DataTemplate>
         <DataTemplate DataType="{x:Type roomVm:GameRoomViewModel}">
             <roomView:GameRoomView />

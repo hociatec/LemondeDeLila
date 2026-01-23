@@ -12,7 +12,7 @@
              IsTabStop="False"
              KeyboardNavigation.TabNavigation="Cycle"
              AutomationProperties.Name="Messagerie"
-             AutomationProperties.HelpText="Messagerie. Tabulation: se déplacer entre les zones. Echap: revenir.">
+             AutomationProperties.HelpText="Messagerie. Tabulation: se déplacer entre les zones. Échap: revenir.">
 
     <UserControl.Resources>
         <ResourceDictionary>
@@ -389,11 +389,11 @@
                            FontWeight="Medium"
                            TextWrapping="Wrap"
                            VerticalAlignment="Center" />
-                <TextBlock Text=" | Fleches haut/bas pour naviguer | Entree pour ouvrir | Echap pour revenir"
-                           Foreground="#7CA3D6"
-                           FontSize="12"
-                           Margin="20 0 0 0"
-                           VerticalAlignment="Center" />
+                <TextBlock Text=" | Flèches haut/bas pour naviguer | Entrée pour ouvrir | Échap pour revenir"
+                            Foreground="#7CA3D6"
+                            FontSize="12"
+                            Margin="20 0 0 0"
+                            VerticalAlignment="Center" />
             </StackPanel>
         </Border>
     </Grid>

@@ -15,8 +15,8 @@
 	            Margin="0 0 0 12"
 	            Focusable="False"
 	            KeyboardNavigation.DirectionalNavigation="None"
-	            AutomationProperties.Name="{Binding Title, StringFormat=Zone de jeu : {0}}"
-	            AutomationProperties.HelpText="Zone de jeu. Tabulation: changer de zone. Entree: demarrer si la table est en attente.">
+	            AutomationProperties.Name="Zone de jeu"
+	            AutomationProperties.HelpText="Zone de jeu. Tabulation: changer de zone. Entrée: démarrer si la table est en attente.">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -44,7 +44,7 @@
                                            Height="1"
 	                                           HorizontalAlignment="Left"
 	                                           VerticalAlignment="Top"
-	                                           AutomationProperties.Name="{Binding Title, StringFormat=Zone de jeu : {0}}"
+	                                           AutomationProperties.Name="Zone de jeu"
 	                                           PreviewKeyDown="OnAnchorPreviewKeyDown" />
 
 	                <local:GameZoneFocusAnchor x:Name="GameZoneEmptyAnchor"
@@ -55,7 +55,7 @@
                                            BorderThickness="0"
 	                                           Padding="0"
 	                                           PreviewKeyDown="OnAnchorPreviewKeyDown"
-	                                           AutomationProperties.Name="{Binding Title, StringFormat=Table de {0}. Entree pour demarrer.}">
+	                                           AutomationProperties.Name="Table. Entrée pour démarrer.">
                     <local:GameZoneFocusAnchor.Style>
                         <Style TargetType="{x:Type local:GameZoneFocusAnchor}">
                             <Setter Property="Visibility" Value="Collapsed" />
@@ -79,7 +79,7 @@
 	                                MinHeight="180"
 	                                HorizontalContentAlignment="Stretch"
 	                                VerticalContentAlignment="Stretch"
-	                                AutomationProperties.Name="{Binding Title, StringFormat=Zone de jeu : {0}}" />
+	                                AutomationProperties.Name="Zone de jeu" />
 
                 <!-- Placeholder visuel volontairement supprimé (lecture d'écran: ne pas polluer le focus). -->
             </Grid>

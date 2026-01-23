@@ -9,11 +9,24 @@ public sealed class OptionsState
     public bool SoundNavigate { get; set; } = true;
     public bool SoundSelect { get; set; } = true;
     public bool SoundChatMessages { get; set; } = true;
+
+    // Legacy: kept to preserve existing settings.json values.
     public int SoundAmbienceVolume { get; set; } = 25;
+
+    // Split ambience volumes (menu vs tavern).
+    public bool SoundAmbienceSplit { get; set; } = false;
+    public int SoundMenuAmbienceVolume { get; set; } = 25;
+    public int SoundTavernAmbienceVolume { get; set; } = 25;
+
     public int SoundAppLaunchVolume { get; set; } = 50;
     public int SoundNavigateVolume { get; set; } = 50;
     public int SoundSelectVolume { get; set; } = 50;
     public int SoundChatMessagesVolume { get; set; } = 50;
+
+    // Table ambience (loop) played during games.
+    // Per-user settings: affects only the local client.
+    public bool SoundTableAmbience { get; set; } = true;
+    public int SoundTableAmbienceVolume { get; set; } = 25;
 
     // Overrides de sons (stockés dans AppData), pour permettre la personnalisation sans casser ClickOnce.
     public string? SoundRoomOpenedPath { get; set; }

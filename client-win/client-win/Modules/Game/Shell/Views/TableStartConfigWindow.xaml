@@ -1,0 +1,51 @@
+<Window x:Class="client_win.Modules.Game.Shell.Views.TableStartConfigWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Configuration de la table"
+        Width="720"
+        Height="560"
+        Background="#0F1D2D"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Configuration de la table"
+                   Foreground="White"
+                   FontSize="18"
+                   Margin="0 0 0 8" />
+
+        <TextBlock Grid.Row="1"
+                   Text="Avant de démarrer, choisissez l'ambiance de la table (diffusée en boucle pendant la partie)."
+                   Foreground="#C3D2EA"
+                   TextWrapping="Wrap"
+                   Margin="0 0 0 12" />
+
+        <GroupBox Grid.Row="2"
+                  Header="Ambiance de table"
+                  Foreground="White"
+                  BorderBrush="#2B3A55">
+            <Grid Margin="8">
+                <ListBox x:Name="ChoicesList"
+                         ItemsSource="{Binding Choices}"
+                         SelectedItem="{Binding SelectedChoice}"
+                         DisplayMemberPath="Label"
+                         Background="#12263C"
+                         BorderThickness="0"
+                         Foreground="#C3D2EA"
+                         FontSize="13"
+                         AutomationProperties.Name="Ambiance de table" />
+            </Grid>
+        </GroupBox>
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 12 0 0">
+            <Button Content="Annuler" Width="120" Height="32" Margin="0 0 8 0" Click="OnCancelClicked" />
+            <Button Content="Démarrer" Width="140" Height="32" Click="OnStartClicked" />
+        </StackPanel>
+    </Grid>
+</Window>
+

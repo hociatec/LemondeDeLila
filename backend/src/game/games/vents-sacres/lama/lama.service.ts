@@ -740,6 +740,55 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     const scoresByPlayerId = { ...(meta.scoresByPlayerId ?? {}) };
 
     const log = Array.isArray(state.log) ? [...state.log] : [];
+
+    // Extra idempotence: if a prior buggy transition already appended "Fin de la manche X" in the log
+    // but didn't persist endedRoundNumber, never re-score or re-log the round.
+    // Instead, reconcile metadata/pending so the game can proceed (return token / next round).
+    const alreadyLoggedEnd =
+      log.some((l) => String((l as any)?.message ?? '') === `Fin de la manche ${roundNumber}.`);
+    if (alreadyLoggedEnd) {
+      const winnerName =
+        winnerPlayerId != null
+          ? players.find((p) => p?.id === winnerPlayerId)?.username ?? `#${winnerPlayerId}`
+          : null;
+
+      const winnerScore =
+        winnerPlayerId != null ? Number(scoresByPlayerId[String(winnerPlayerId)] ?? 0) : 0;
+      const eligible =
+        winnerPlayerId != null && winnerScore >= 1 ? [winnerPlayerId] : [];
+
+      const nextMeta: LamaMetadata = {
+        ...meta,
+        scoresByPlayerId,
+        endedRoundNumber: roundNumber,
+        step: eligible.length ? 'return_token' : 'turn_choice',
+        pendingReturnQueue: eligible,
+        pendingReturnPlayerId: eligible.length ? eligible[0] : null,
+      };
+
+      const nextState: GameStateEntity = {
+        ...state,
+        metadata: nextMeta as any,
+        pending: { step: nextMeta.step, playerId: nextMeta.pendingReturnPlayerId ?? null } as any,
+        turn: {
+          ...(state.turn ?? { direction: 1 }),
+          currentPlayerId: eligible.length ? eligible[0] : state.turn?.currentPlayerId ?? null,
+          direction: 1,
+          label: eligible.length
+            ? `Rendre des jetons : ${players.find((p) => p?.id === eligible[0])?.username ?? `#${eligible[0]}`}`
+            : winnerName
+              ? `Fin de manche : ${winnerName}`
+              : state.turn?.label,
+        },
+      };
+
+      if (eligible.length) {
+        return nextState;
+      }
+
+      return this.finishRoundAndMaybeStartNext(nextState);
+    }
+
     log.push({ message: `Fin de la manche ${roundNumber}.` });
 
     for (const p of players) {

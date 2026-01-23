@@ -520,18 +520,13 @@ export class DameNatureService extends AbstractGameService {
       next,
       `${current.username} défausse ${card.memberName} (${card.familyName}).`,
     );
-    // Option 1 : invariant serveur => ne jamais finir une action avec < 4 cartes si possible.
-    // Après une défausse, on repioche automatiquement pour revenir à 4.
-    const refill = this.actions.refillHandToFourWithCount(
-      next,
-      current as any,
-      next.metadata as DameNatureMetadata,
-    );
-    next = refill.state;
     next = this.markTurnProgress(next, current.id, {
       discarded: true,
-      drew: progressBefore.drew || refill.drew > 0,
+      drew: progressBefore.drew,
     });
+    if (!progressBefore.drew) {
+      next = this.core.appendLog(next, `${current.username} doit piocher (Espace).`);
+    }
     return this.advanceTurn(next);
   }
 

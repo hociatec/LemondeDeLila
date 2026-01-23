@@ -20,6 +20,7 @@ import { BotSettingsEntity } from '../game/modules/bot/entities/bot-settings.ent
 import { BugReportEntity } from '../bug-reports/entities/bug-report.entity';
 import { BugReportCommentEntity } from '../bug-reports/entities/bug-report-comment.entity';
 import { NotificationInboxItem } from '../notification/entities/notification-inbox-item.entity';
+import { VaultRoomSnapshotEntity } from '../vault/entities/vault-room-snapshot.entity';
 
 export const ORM_ENTITIES = [
   User,
@@ -44,4 +45,5 @@ export const ORM_ENTITIES = [
   BugReportEntity,
   BugReportCommentEntity,
   NotificationInboxItem,
+  VaultRoomSnapshotEntity,
 ];

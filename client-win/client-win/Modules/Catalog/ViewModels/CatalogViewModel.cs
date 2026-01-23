@@ -48,7 +48,8 @@ public sealed class CatalogViewModel : ObservableObject
         Action onClose,
         Func<CatalogGame, Task> openGame,
         Func<Task<string>>? joinGame = null,
-        Func<Task<string>>? openStoryBook = null)
+        Func<Task<string>>? openStoryBook = null,
+        Func<Task<string>>? openVault = null)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
         _openGame = openGame ?? throw new ArgumentNullException(nameof(openGame));
@@ -71,6 +72,13 @@ public sealed class CatalogViewModel : ObservableObject
                 id: $"{ActionPrefix}storyBook",
                 "Livre des contes",
                 new AsyncRelayCommand(async () => Status = await openStoryBook().ConfigureAwait(true)));
+        }
+        if (openVault != null)
+        {
+            AddShelfAction(
+                id: $"{ActionPrefix}vault",
+                "Mon coffre fort",
+                new AsyncRelayCommand(async () => Status = await openVault().ConfigureAwait(true)));
         }
 
         Status = "Chargement du catalogue...";

@@ -11,6 +11,7 @@ internal sealed class GameSessionMessageRouter
     private readonly JsonSerializerOptions _json;
     private readonly Action<GameStateDto> _emitState;
     private readonly Action<TurnInfoDto> _emitTurn;
+    private readonly Action<GameRulesPayloadDto> _emitRules;
     private readonly Action<string> _emitError;
     private readonly Action<string> _emitCommandAck;
     private readonly Action<string> _emitUiMessage;
@@ -22,6 +23,7 @@ internal sealed class GameSessionMessageRouter
         JsonSerializerOptions json,
         Action<GameStateDto> emitState,
         Action<TurnInfoDto> emitTurn,
+        Action<GameRulesPayloadDto> emitRules,
         Action<string> emitError,
         Action<string> emitCommandAck,
         Action<string> emitUiMessage,
@@ -31,6 +33,7 @@ internal sealed class GameSessionMessageRouter
         _json = json ?? throw new ArgumentNullException(nameof(json));
         _emitState = emitState ?? throw new ArgumentNullException(nameof(emitState));
         _emitTurn = emitTurn ?? throw new ArgumentNullException(nameof(emitTurn));
+        _emitRules = emitRules ?? throw new ArgumentNullException(nameof(emitRules));
         _emitError = emitError ?? throw new ArgumentNullException(nameof(emitError));
         _emitCommandAck = emitCommandAck ?? throw new ArgumentNullException(nameof(emitCommandAck));
         _emitUiMessage = emitUiMessage ?? throw new ArgumentNullException(nameof(emitUiMessage));
@@ -87,6 +90,12 @@ internal sealed class GameSessionMessageRouter
             if (string.Equals(type, "game.turn", StringComparison.OrdinalIgnoreCase))
             {
                 HandleTurn(root);
+                return;
+            }
+
+            if (string.Equals(type, "game.rules", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleRules(root);
             }
         }
         catch
@@ -224,6 +233,39 @@ internal sealed class GameSessionMessageRouter
             }
 
             _emitError(message.Trim());
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void HandleRules(JsonElement root)
+    {
+        try
+        {
+            if (!root.TryGetProperty("payload", out var payload) ||
+                payload.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            var gameType = payload.TryGetProperty("gameType", out var gameTypeProp) &&
+                           gameTypeProp.ValueKind == JsonValueKind.String
+                ? (gameTypeProp.GetString() ?? string.Empty).Trim()
+                : string.Empty;
+
+            var rules = payload.TryGetProperty("rules", out var rulesProp) &&
+                        rulesProp.ValueKind == JsonValueKind.String
+                ? rulesProp.GetString() ?? string.Empty
+                : string.Empty;
+
+            if (string.IsNullOrWhiteSpace(gameType))
+            {
+                return;
+            }
+
+            _emitRules(new GameRulesPayloadDto(gameType, rules));
         }
         catch
         {

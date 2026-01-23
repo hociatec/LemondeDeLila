@@ -11,15 +11,19 @@ using client_win.Modules.Game.History.Services;
 using client_win.Modules.Game.Play.GamePlay.ViewModels;
 using client_win.Modules.Game.Play.Session.Services;
 using client_win.Modules.Game.Room.Services;
+using client_win.Modules.Game.Shell.Views;
 using client_win.Modules.Game.Shell.ViewModels;
 using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Presence.Services;
 using client_win.Modules.Social.Services;
+using client_win.Modules.Settings.Services;
+using client_win.Modules.User.Services;
 using client_win.Modules.TextPrompts.Services;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.Game.RoomDirectory.Services;
 using client_win.Modules.Game.RoomDirectory.ViewModels;
+using client_win.Modules.Vault.Services;
 
 namespace client_win.Modules.Game.Shell.Services;
 
@@ -36,9 +40,14 @@ public sealed class GameTableOpener : IGameTableOpener
     private readonly IPresenceMonitor _presence;
     private readonly ISoundService _sounds;
     private readonly IAppAudioCoordinator _audio;
+    private readonly IRemoteSoundCache _remoteSounds;
+    private readonly IOptionsService _options;
+    private readonly ISessionService _sessionService;
     private readonly IRoomDirectoryClient _directory;
     private readonly ISocialService _social;
     private readonly ITextPromptService _textPrompts;
+    private readonly IVaultClient _vault;
+    private static int _globalSoundsPreloaded;
 
     public GameTableOpener(
         ILogger<GameTableOpener> logger,
@@ -52,9 +61,13 @@ public sealed class GameTableOpener : IGameTableOpener
         IPresenceMonitor presence,
         ISoundService sounds,
         IAppAudioCoordinator audio,
+        IRemoteSoundCache remoteSounds,
+        IOptionsService options,
+        ISessionService sessionService,
         IRoomDirectoryClient directory,
         ISocialService social,
-        ITextPromptService textPrompts)
+        ITextPromptService textPrompts,
+        IVaultClient vault)
     {
         _logger = logger;
         _rooms = rooms;
@@ -67,9 +80,13 @@ public sealed class GameTableOpener : IGameTableOpener
         _presence = presence ?? throw new ArgumentNullException(nameof(presence));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _audio = audio ?? throw new ArgumentNullException(nameof(audio));
+        _remoteSounds = remoteSounds ?? throw new ArgumentNullException(nameof(remoteSounds));
+        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _sessionService = sessionService ?? throw new ArgumentNullException(nameof(sessionService));
         _directory = directory ?? throw new ArgumentNullException(nameof(directory));
         _social = social ?? throw new ArgumentNullException(nameof(social));
         _textPrompts = textPrompts ?? throw new ArgumentNullException(nameof(textPrompts));
+        _vault = vault ?? throw new ArgumentNullException(nameof(vault));
     }
 
     public async Task OpenAsync(CatalogGame game, object returnContent)
@@ -530,14 +547,314 @@ public sealed class GameTableOpener : IGameTableOpener
             }
         }
 
+        async Task SaveSnapshot()
+        {
+            var current = session;
+            if (current == null)
+            {
+                await _dialogs.ShowError("Sauvegarde", "Impossible de sauvegarder (connexion indisponible).")
+                    .ConfigureAwait(true);
+                return;
+            }
+
+            try
+            {
+                await _vault.SaveAsync(current.RoomId).ConfigureAwait(true);
+                _announcementService.Enqueue("Table sauvegardée dans Mon coffre fort.", AnnouncementPriority.Polite);
+            }
+            catch (Exception ex)
+            {
+                await _dialogs.ShowError("Sauvegarde", ex.Message).ConfigureAwait(true);
+            }
+        }
+
         GameRoomViewModel? vm = null;
+        Func<Task>? startHandler = null;
+
+        async Task ShowRulesAsync()
+        {
+            if (session == null)
+            {
+                try { await _dialogs.ShowInfo("Règles", "Connexion à la table…").ConfigureAwait(true); } catch { }
+                return;
+            }
+
+            GameSession? gameSession = null;
+            try
+            {
+                var gameType = (vm?.Game?.Id ?? placeholderGame.Id ?? string.Empty).Trim();
+                var gameName = (vm?.Game?.Name ?? placeholderGame.Name ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(gameType))
+                {
+                    throw new InvalidOperationException("Type de jeu introuvable.");
+                }
+
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                gameSession = await _games.ConnectAsync(session.RoomId, gameType, timeout.Token)
+                    .ConfigureAwait(false);
+
+                var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+                void OnRules(GameRulesPayloadDto dto)
+                {
+                    if (!string.Equals(dto.GameType, gameType, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return;
+                    }
+                    tcs.TrySetResult(dto.Rules ?? string.Empty);
+                }
+
+                gameSession.RulesReceived += OnRules;
+                try
+                {
+                    await gameSession.RequestRulesAsync(timeout.Token).ConfigureAwait(false);
+                    var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(5), timeout.Token))
+                        .ConfigureAwait(false);
+                    if (completed != tcs.Task)
+                    {
+                        throw new TimeoutException("Règles : délai dépassé.");
+                    }
+
+                    var rules = await tcs.Task.ConfigureAwait(false);
+                    await dispatcher.InvokeAsync(() =>
+                    {
+                        GameRulesWindow.Show(
+                            owner: Application.Current?.MainWindow,
+                            title: $"Règles — {gameName}",
+                            rules: rules);
+                    }, DispatcherPriority.Normal).Task.ConfigureAwait(false);
+                }
+                finally
+                {
+                    gameSession.RulesReceived -= OnRules;
+                }
+            }
+            catch
+            {
+                try { await _dialogs.ShowInfo("Règles", "Impossible de charger les règles.").ConfigureAwait(true); } catch { }
+            }
+            finally
+            {
+                if (gameSession != null)
+                {
+                    try { await gameSession.DisposeAsync().ConfigureAwait(false); } catch { }
+                }
+            }
+        }
+
+        async Task ConfigureTableAmbienceAsync()
+        {
+            if (session == null)
+            {
+                try { await _dialogs.ShowInfo("Ambiance", "Connexion à la table…").ConfigureAwait(true); } catch { }
+                return;
+            }
+
+            try
+            {
+                await _remoteSounds.RefreshAsync(force: false).ConfigureAwait(true);
+            }
+            catch
+            {
+                // ignore
+            }
+
+            var current = session.LastRoomState?.Room?.TableAmbienceSoundId;
+
+            var choices = new System.Collections.Generic.List<TableAmbiencePickerWindow.Choice>
+            {
+                new(string.Empty, "Silence (aucune ambiance)")
+            };
+
+            for (var i = 1; i <= 20; i++)
+            {
+                var id = $"TableAmbience{i}";
+                var configured = Enum.TryParse<SoundId>(id, ignoreCase: true, out var sound) &&
+                                 _remoteSounds.TryGetPath(sound) != null;
+                choices.Add(new TableAmbiencePickerWindow.Choice(
+                    id,
+                    configured ? $"Ambiance {i} (configurée)" : $"Ambiance {i} (non configurée)"));
+            }
+
+            var selected = TableAmbiencePickerWindow.Pick(
+                owner: Application.Current?.MainWindow,
+                currentSoundId: current,
+                choices: choices);
+
+            if (selected == null)
+            {
+                return;
+            }
+
+            try
+            {
+                // Convention: empty string clears the ambience (silence).
+                await session.SendCommandAsync("room.set-ambience", payload: new { soundId = selected })
+                    .ConfigureAwait(true);
+            }
+            catch
+            {
+                try { await _dialogs.ShowError("Ambiance", "Impossible de mettre à jour l'ambiance.").ConfigureAwait(true); } catch { }
+            }
+        }
+
+        Task ConfigureTableAmbienceVolumeAsync()
+        {
+            try
+            {
+                TableAmbienceVolumeWindow.Show(
+                    owner: Application.Current?.MainWindow,
+                    initialEnabled: _options.Current.SoundTableAmbience,
+                    initialVolume: _options.Current.SoundTableAmbienceVolume,
+                    onSave: (enabled, volume) =>
+                    {
+                        var s = _options.Current;
+                        s.SoundTableAmbience = enabled;
+                        s.SoundTableAmbienceVolume = volume;
+                        _options.Update(s);
+                    });
+            }
+            catch
+            {
+                // ignore
+            }
+            return Task.CompletedTask;
+        }
 
         await dispatcher.InvokeAsync(() =>
         {
-            Task Start() => session?.SendCommandAsync("room.start", payload: null) ?? Task.CompletedTask;
+            async Task Start()
+            {
+                if (session == null)
+                {
+                    return;
+                }
+
+                var room = session.LastRoomState?.Room;
+                var selfId = _sessionService.CurrentUser?.UserId ?? 0;
+                var isOwner = selfId > 0 && room?.Owner?.Id == selfId;
+                var alreadyStarted = string.Equals(room?.Status, "started", StringComparison.OrdinalIgnoreCase) ||
+                                    !string.IsNullOrWhiteSpace(room?.StartedAt);
+
+                if (isOwner && !alreadyStarted)
+                {
+                    try { await _remoteSounds.RefreshAsync(force: false).ConfigureAwait(true); } catch { }
+
+                    var current = (room?.TableAmbienceSoundId ?? string.Empty).Trim();
+                    var choices = new System.Collections.Generic.List<TableAmbiencePickerWindow.Choice>
+                    {
+                        new(string.Empty, "Silence (aucune ambiance)")
+                    };
+                    for (var i = 1; i <= 20; i++)
+                    {
+                        var id = $"TableAmbience{i}";
+                        var configured = Enum.TryParse<SoundId>(id, ignoreCase: true, out var sound) &&
+                                         _remoteSounds.TryGetPath(sound) != null;
+                        choices.Add(new TableAmbiencePickerWindow.Choice(
+                            id,
+                            configured ? $"Ambiance {i} (configurée)" : $"Ambiance {i} (non configurée)"));
+                    }
+
+                    var selected = TableStartConfigWindow.Pick(
+                        owner: Application.Current?.MainWindow,
+                        currentSoundId: current,
+                        choices: choices);
+
+                    if (selected == null)
+                    {
+                        return;
+                    }
+
+                    // Apply ambience choice first (best-effort), then start the room.
+                    try
+                    {
+                        await session.SendCommandAsync("room.set-ambience", payload: new { soundId = selected })
+                            .ConfigureAwait(true);
+                    }
+                    catch
+                    {
+                        // ignore (starting should still be possible)
+                    }
+                }
+
+                await session.SendCommandAsync("room.start", payload: null).ConfigureAwait(true);
+            }
+
+            startHandler = Start;
             Task Reset() => session?.SendCommandAsync("room.reset", payload: null) ?? Task.CompletedTask;
             Task SendChat(string message) =>
                 session?.SendCommandAsync("room.chat.send", payload: new { message }) ?? Task.CompletedTask;
+
+            async Task ShowRules()
+            {
+                if (session == null)
+                {
+                    try { await _dialogs.ShowInfo("Règles", "Connexion à la table…").ConfigureAwait(true); } catch { }
+                    return;
+                }
+
+                GameSession? gameSession = null;
+                try
+                {
+                    var gameType = (vm?.Game?.Id ?? placeholderGame.Id ?? string.Empty).Trim();
+                    var gameName = (vm?.Game?.Name ?? placeholderGame.Name ?? string.Empty).Trim();
+                    if (string.IsNullOrWhiteSpace(gameType))
+                    {
+                        throw new InvalidOperationException("Type de jeu introuvable.");
+                    }
+
+                    using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                    gameSession = await _games.ConnectAsync(session.RoomId, gameType, timeout.Token)
+                        .ConfigureAwait(false);
+
+                    var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    void OnRules(GameRulesPayloadDto dto)
+                    {
+                        if (!string.Equals(dto.GameType, gameType, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return;
+                        }
+                        tcs.TrySetResult(dto.Rules ?? string.Empty);
+                    }
+
+                    gameSession.RulesReceived += OnRules;
+                    try
+                    {
+                        await gameSession.RequestRulesAsync(timeout.Token).ConfigureAwait(false);
+                        var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(5), timeout.Token))
+                            .ConfigureAwait(false);
+                        if (completed != tcs.Task)
+                        {
+                            throw new TimeoutException("Règles : délai dépassé.");
+                        }
+
+                        var rules = await tcs.Task.ConfigureAwait(false);
+                        await dispatcher.InvokeAsync(() =>
+                        {
+                            GameRulesWindow.Show(
+                                owner: Application.Current?.MainWindow,
+                                title: $"Règles — {gameName}",
+                                rules: rules);
+                        }, DispatcherPriority.Normal).Task.ConfigureAwait(false);
+                    }
+                    finally
+                    {
+                        gameSession.RulesReceived -= OnRules;
+                    }
+                }
+                catch
+                {
+                    try { await _dialogs.ShowInfo("Règles", "Impossible de charger les règles.").ConfigureAwait(true); } catch { }
+                }
+                finally
+                {
+                    if (gameSession != null)
+                    {
+                        try { await gameSession.DisposeAsync().ConfigureAwait(false); } catch { }
+                    }
+                }
+            }
+
+            Func<Task> _ignoreShowRules = ShowRules;
 
             Task AddBot() => bindings?.AddBotAsync() ?? Task.CompletedTask;
             Task RemoveBot() => bindings?.RemoveBotAsync() ?? Task.CompletedTask;
@@ -553,7 +870,11 @@ public sealed class GameTableOpener : IGameTableOpener
             vm = new GameRoomViewModel(
                 placeholderGame,
                 onSendChat: SendChat,
+                onShowRules: ShowRulesAsync,
+                onConfigureTableAmbience: ConfigureTableAmbienceAsync,
+                onConfigureTableAmbienceVolume: ConfigureTableAmbienceVolumeAsync,
                 onStart: Start,
+                onSaveSnapshot: SaveSnapshot,
                 onReset: Reset,
                 onQuit: () => ExitAsync(),
                 onAddBot: AddBot,
@@ -591,6 +912,32 @@ public sealed class GameTableOpener : IGameTableOpener
                 session = connected;
                 var game = buildGameFromSession(session);
 
+                // Audio warm-up (best-effort): évite les latences (premier dé, bonne/mauvaise réponse, ambiance de table).
+                // Ne bloque pas l'ouverture de la table.
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (Interlocked.Exchange(ref _globalSoundsPreloaded, 1) == 0)
+                        {
+                            try { _sounds.PreloadAll(); } catch { }
+                        }
+
+                        try { await _remoteSounds.RefreshAsync(force: false).ConfigureAwait(false); } catch { }
+
+                        var rawAmbience = (session?.LastRoomState?.Room?.TableAmbienceSoundId ?? string.Empty).Trim();
+                        if (!string.IsNullOrWhiteSpace(rawAmbience) &&
+                            Enum.TryParse<SoundId>(rawAmbience, ignoreCase: true, out var ambienceSound))
+                        {
+                            try { _sounds.Preload(ambienceSound); } catch { }
+                        }
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                });
+
                 // Mettre à jour la présence (best-effort).
                 try
                 {
@@ -613,10 +960,15 @@ public sealed class GameTableOpener : IGameTableOpener
                     // Si on a ouvert une table existante, remplacer le DataContext par un VM complet basé sur le manifest.
                     if (!ReferenceEquals(placeholderGame, game))
                     {
+                            var start = startHandler ?? (() => session.SendCommandAsync("room.start", payload: null));
 	                        var newVm = new GameRoomViewModel(
 	                            game,
                             onSendChat: msg => session.SendCommandAsync("room.chat.send", payload: new { message = msg }),
-                            onStart: () => session.SendCommandAsync("room.start", payload: null),
+                            onShowRules: ShowRulesAsync,
+                            onConfigureTableAmbience: ConfigureTableAmbienceAsync,
+                            onConfigureTableAmbienceVolume: ConfigureTableAmbienceVolumeAsync,
+                            onStart: start,
+                            onSaveSnapshot: SaveSnapshot,
                             onReset: () => session.SendCommandAsync("room.reset", payload: null),
                             onQuit: () => ExitAsync(),
                             onAddBot: () => bindings?.AddBotAsync() ?? Task.CompletedTask,

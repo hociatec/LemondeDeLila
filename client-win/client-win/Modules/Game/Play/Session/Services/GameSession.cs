@@ -49,6 +49,11 @@ public sealed class GameSession : IAsyncDisposable
                 LastTurnInfo = t;
                 TurnUpdated?.Invoke(t);
             },
+            emitRules: r =>
+            {
+                LastRules = r;
+                RulesReceived?.Invoke(r);
+            },
             emitError: msg => ErrorReceived?.Invoke(msg),
             emitCommandAck: msg => CommandAckReceived?.Invoke(msg),
             emitUiMessage: msg => UiMessageReceived?.Invoke(msg),
@@ -71,11 +76,13 @@ public sealed class GameSession : IAsyncDisposable
 
     public GameStateDto? LastState { get; private set; }
     public TurnInfoDto? LastTurnInfo { get; private set; }
+    public GameRulesPayloadDto? LastRules { get; private set; }
 
     public bool IsConnected => _state == WebSocketState.Connected;
 
     public event Action<GameStateDto>? StateUpdated;
     public event Action<TurnInfoDto>? TurnUpdated;
+    public event Action<GameRulesPayloadDto>? RulesReceived;
     public event Action<string>? RawMessageReceived;
     public event Action<string>? ErrorReceived;
     public event Action<string>? CommandAckReceived;
@@ -128,6 +135,21 @@ public sealed class GameSession : IAsyncDisposable
         var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
         var msg = JsonSerializer.Serialize(
             new { type = "game.turn", payload = new { roomId = RoomId, gameType = GameType, _trace = trace } },
+            _json);
+        await TrySendAsync(msg, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task RequestRulesAsync(CancellationToken cancellationToken = default)
+    {
+        if (!IsConnected)
+        {
+            ErrorReceived?.Invoke("Connexion jeu perdue.");
+            return;
+        }
+
+        var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
+        var msg = JsonSerializer.Serialize(
+            new { type = "game.rules", payload = new { gameType = GameType, _trace = trace } },
             _json);
         await TrySendAsync(msg, cancellationToken).ConfigureAwait(false);
     }

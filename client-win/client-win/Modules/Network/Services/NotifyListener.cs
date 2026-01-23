@@ -524,6 +524,12 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 return;
             }
 
+            if (string.Equals(type, "rooms.restore.ready", StringComparison.OrdinalIgnoreCase))
+            {
+                _ = HandleRoomRestoreReadyAsync(root);
+                return;
+            }
+
             if (string.Equals(type, "messaging.new", StringComparison.OrdinalIgnoreCase))
             {
                 HandleMessagingNew(root);
@@ -607,6 +613,53 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
         catch
         {
             // ignore
+        }
+    }
+
+    private async Task HandleRoomRestoreReadyAsync(JsonElement root)
+    {
+        try
+        {
+            if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            var roomId = payload.TryGetProperty("roomId", out var rid) && rid.ValueKind == JsonValueKind.Number
+                ? rid.GetInt32()
+                : 0;
+            if (roomId <= 0)
+            {
+                return;
+            }
+
+            var roomName = payload.TryGetProperty("roomName", out var rn) && rn.ValueKind == JsonValueKind.String
+                ? (rn.GetString() ?? string.Empty).Trim()
+                : string.Empty;
+
+            var returnContent = _navigation.CurrentContent;
+            if (returnContent == null)
+            {
+                await _dialogs.ShowError("Restauration", "Impossible d'ouvrir la table restaurée (vue courante indisponible).")
+                    .ConfigureAwait(true);
+                return;
+            }
+
+            var label = string.IsNullOrWhiteSpace(roomName) ? "Table restaurée prête." : $"Table restaurée prête : {roomName}.";
+            _announcements.Enqueue(label, AnnouncementPriority.Polite);
+
+            await _tables.OpenExistingAsync(roomId, returnContent, spectator: false).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                await _dialogs.ShowError("Restauration", ex.Message).ConfigureAwait(true);
+            }
+            catch
+            {
+                // ignore
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Shell.Services;
 
@@ -43,6 +44,15 @@ namespace client_win
 
                     // UIA + focus sentinelle (NVDA): améliore la fiabilité du focus initial.
                     FocusParking.Park(this);
+
+                    // Dernier nudge: placer le focus clavier sur le premier élément interactif
+                    // (évite les cas où aucune touche ne répond avant un Alt-Tab / Maj+Tab).
+                    if (!IsKeyboardFocusWithin)
+                    {
+                        try { Focus(); } catch { /* ignore */ }
+                        try { Keyboard.Focus(this); } catch { /* ignore */ }
+                        try { MoveFocus(new TraversalRequest(FocusNavigationDirection.First)); } catch { /* ignore */ }
+                    }
                 }
                 catch
                 {

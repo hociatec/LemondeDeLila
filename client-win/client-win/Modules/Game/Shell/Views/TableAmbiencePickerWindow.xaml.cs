@@ -1,0 +1,62 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows;
+
+namespace client_win.Modules.Game.Shell.Views;
+
+public partial class TableAmbiencePickerWindow : Window
+{
+    public sealed record Choice(string SoundId, string Label);
+
+    private sealed class Vm
+    {
+        public ObservableCollection<Choice> Choices { get; } = new();
+        public Choice? SelectedChoice { get; set; }
+    }
+
+    private readonly Vm _vm = new();
+
+    private TableAmbiencePickerWindow(
+        IReadOnlyList<Choice> choices,
+        string? currentSoundId)
+    {
+        InitializeComponent();
+        DataContext = _vm;
+
+        foreach (var c in choices ?? Array.Empty<Choice>())
+        {
+            _vm.Choices.Add(c);
+        }
+
+        var current = (currentSoundId ?? string.Empty).Trim();
+        _vm.SelectedChoice = _vm.Choices.FirstOrDefault(c => string.Equals(c.SoundId, current, StringComparison.OrdinalIgnoreCase))
+                             ?? _vm.Choices.FirstOrDefault();
+
+        Loaded += (_, _) =>
+        {
+            try { ChoicesList.Focus(); } catch { }
+        };
+    }
+
+    public static string? Pick(Window? owner, string? currentSoundId, IReadOnlyList<Choice> choices)
+    {
+        var w = new TableAmbiencePickerWindow(choices, currentSoundId) { Owner = owner };
+        var ok = w.ShowDialog();
+        return ok == true ? (w._vm.SelectedChoice?.SoundId ?? string.Empty) : null;
+    }
+
+    private void OnCancelClicked(object sender, RoutedEventArgs e)
+    {
+        DialogResult = false;
+        Close();
+    }
+
+    private void OnOkClicked(object sender, RoutedEventArgs e)
+    {
+        DialogResult = true;
+        Close();
+    }
+}
+

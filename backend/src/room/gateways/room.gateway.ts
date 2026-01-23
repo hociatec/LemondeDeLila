@@ -712,7 +712,8 @@ export class RoomGateway
       type === 'room.toggle-privacy' ||
       type === 'room.kick' ||
       type === 'room.ban' ||
-      type === 'room.set-owner'
+      type === 'room.set-owner' ||
+      type === 'room.set-ambience'
     ) {
       this.safeSend(client, {
         type: 'room.ack',
@@ -752,6 +753,9 @@ export class RoomGateway
         break;
       case 'room.set-owner':
         await this.handleSetOwner(meta, data);
+        break;
+      case 'room.set-ambience':
+        await this.handleSetAmbience(client, meta, data, receivedAtMs);
         break;
       case 'room.toggle-privacy':
         await this.handleTogglePrivacy(meta, data, receivedAtMs);
@@ -1827,6 +1831,68 @@ export class RoomGateway
       }
     }
     return false;
+  }
+
+  private async handleSetAmbience(
+    client: WebSocket,
+    meta: AuthedClient,
+    payload: any,
+    receivedAtMs: number,
+  ) {
+    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    await this.perf.measure(
+      'ws.room.setAmbience.total',
+      async () => {
+        const raw = String(payload?.soundId ?? '').trim();
+        const soundId = raw.length ? raw : null;
+
+        const allowed = new Set<string>([
+          'TableAmbience1',
+          'TableAmbience2',
+          'TableAmbience3',
+          'TableAmbience4',
+          'TableAmbience5',
+          'TableAmbience6',
+          'TableAmbience7',
+          'TableAmbience8',
+          'TableAmbience9',
+          'TableAmbience10',
+          'TableAmbience11',
+          'TableAmbience12',
+          'TableAmbience13',
+          'TableAmbience14',
+          'TableAmbience15',
+          'TableAmbience16',
+          'TableAmbience17',
+          'TableAmbience18',
+          'TableAmbience19',
+          'TableAmbience20',
+        ]);
+
+        if (soundId != null && !allowed.has(soundId)) {
+          await this.sendError(client, `Ambiance invalide: ${soundId}`);
+          return;
+        }
+
+        const room = await this.roomsService.requireRoomForOwnerAction(
+          meta.roomId,
+          meta.userId,
+        );
+        (room as any).tableAmbienceSoundId = soundId;
+        await this.roomsService.saveRoom(room);
+
+        const updated = await this.tryUpdateRoomPayload(meta.roomId, (p) => {
+          (p.room as any).tableAmbienceSoundId = soundId;
+          p.generatedAt = new Date().toISOString();
+          return p;
+        });
+        if (!updated) {
+          await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
+          await this.sendRoomState(meta.roomId);
+        }
+      },
+      { roomId: meta.roomId, userId: meta.userId, ...trace },
+    );
   }
 
   private buildParticipantLeaveKey(roomId: number, userId: number): string {

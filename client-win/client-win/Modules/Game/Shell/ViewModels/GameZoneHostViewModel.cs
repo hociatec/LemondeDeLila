@@ -12,6 +12,7 @@ namespace client_win.Modules.Game.Shell.ViewModels;
 public sealed class GameZoneHostViewModel : ObservableObject
 {
     private readonly Func<Task> _onStart;
+    private readonly Func<Task> _onSaveSnapshot;
     private readonly Func<Task> _onReset;
     private readonly Func<Task> _onQuit;
     private readonly Func<Task> _onAddBot;
@@ -24,6 +25,9 @@ public sealed class GameZoneHostViewModel : ObservableObject
     private readonly Func<Task> _onKick;
     private readonly Func<Task> _onBan;
     private readonly Func<Task> _onTransferOwner;
+    private readonly Func<Task> _onShowRules;
+    private readonly Func<Task> _onConfigureTableAmbience;
+    private readonly Func<Task> _onConfigureTableAmbienceVolume;
     private readonly IDialogService _dialogs;
     private object? _content;
     private string _title = "Zone de jeu";
@@ -32,7 +36,11 @@ public sealed class GameZoneHostViewModel : ObservableObject
 
     public GameZoneHostViewModel(
         string title,
+        Func<Task> onShowRules,
+        Func<Task> onConfigureTableAmbience,
+        Func<Task> onConfigureTableAmbienceVolume,
         Func<Task> onStart,
+        Func<Task> onSaveSnapshot,
         Func<Task> onReset,
         Func<Task> onQuit,
         Func<Task> onAddBot,
@@ -48,7 +56,11 @@ public sealed class GameZoneHostViewModel : ObservableObject
         IDialogService dialogs)
     {
         Title = string.IsNullOrWhiteSpace(title) ? "Zone de jeu" : title;
+        _onShowRules = onShowRules ?? throw new ArgumentNullException(nameof(onShowRules));
+        _onConfigureTableAmbience = onConfigureTableAmbience ?? throw new ArgumentNullException(nameof(onConfigureTableAmbience));
+        _onConfigureTableAmbienceVolume = onConfigureTableAmbienceVolume ?? throw new ArgumentNullException(nameof(onConfigureTableAmbienceVolume));
         _onStart = onStart ?? throw new ArgumentNullException(nameof(onStart));
+        _onSaveSnapshot = onSaveSnapshot ?? throw new ArgumentNullException(nameof(onSaveSnapshot));
         _onReset = onReset ?? throw new ArgumentNullException(nameof(onReset));
         _onQuit = onQuit ?? throw new ArgumentNullException(nameof(onQuit));
         _onAddBot = onAddBot ?? throw new ArgumentNullException(nameof(onAddBot));
@@ -64,6 +76,7 @@ public sealed class GameZoneHostViewModel : ObservableObject
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
 
         StartCommand = new AsyncRelayCommand(StartAsync, () => IsConnected && !_isStarted);
+        SaveSnapshotCommand = new AsyncRelayCommand(SaveSnapshotAsync, () => IsConnected && _isStarted);
         ResetCommand = new AsyncRelayCommand(ResetAsync, () => IsConnected);
         AddBotCommand = new AsyncRelayCommand(AddBotAsync, () => IsConnected);
         RemoveBotCommand = new AsyncRelayCommand(RemoveBotAsync, () => IsConnected);
@@ -75,9 +88,16 @@ public sealed class GameZoneHostViewModel : ObservableObject
         KickCommand = new AsyncRelayCommand(KickAsync, () => IsConnected);
         BanCommand = new AsyncRelayCommand(BanAsync, () => IsConnected);
         TransferOwnerCommand = new AsyncRelayCommand(TransferOwnerAsync, () => IsConnected);
+        RulesCommand = new AsyncRelayCommand(ShowRulesAsync, () => IsConnected);
+        ConfigureTableAmbienceCommand = new AsyncRelayCommand(ConfigureTableAmbienceAsync, () => IsConnected);
+        ConfigureTableAmbienceVolumeCommand = new AsyncRelayCommand(ConfigureTableAmbienceVolumeAsync, () => IsConnected);
         QuitCommand = new AsyncRelayCommand(QuitAsync);
 
         foreach (var shortcut in RoomShortcuts.Create(
+                     rulesCommand: RulesCommand,
+                     tableAmbienceCommand: ConfigureTableAmbienceCommand,
+                     tableAmbienceVolumeCommand: ConfigureTableAmbienceVolumeCommand,
+                     saveSnapshotCommand: SaveSnapshotCommand,
                      resetCommand: ResetCommand,
                      addBotCommand: AddBotCommand,
                      removeBotCommand: RemoveBotCommand,
@@ -98,6 +118,7 @@ public sealed class GameZoneHostViewModel : ObservableObject
     public ObservableCollection<ShortcutDefinition> Shortcuts { get; } = new();
 
     public ICommand StartCommand { get; }
+    public ICommand SaveSnapshotCommand { get; }
     public ICommand ResetCommand { get; }
     public ICommand AddBotCommand { get; }
     public ICommand RemoveBotCommand { get; }
@@ -109,6 +130,9 @@ public sealed class GameZoneHostViewModel : ObservableObject
     public ICommand KickCommand { get; }
     public ICommand BanCommand { get; }
     public ICommand TransferOwnerCommand { get; }
+    public ICommand RulesCommand { get; }
+    public ICommand ConfigureTableAmbienceCommand { get; }
+    public ICommand ConfigureTableAmbienceVolumeCommand { get; }
     public ICommand QuitCommand { get; }
 
     public object? Content
@@ -163,6 +187,7 @@ public sealed class GameZoneHostViewModel : ObservableObject
         }
 
         Raise(StartCommand);
+        Raise(SaveSnapshotCommand);
         Raise(ResetCommand);
         Raise(AddBotCommand);
         Raise(RemoveBotCommand);
@@ -174,11 +199,19 @@ public sealed class GameZoneHostViewModel : ObservableObject
         Raise(KickCommand);
         Raise(BanCommand);
         Raise(TransferOwnerCommand);
+        Raise(RulesCommand);
+        Raise(ConfigureTableAmbienceCommand);
+        Raise(ConfigureTableAmbienceVolumeCommand);
     }
 
     private async Task StartAsync()
     {
         await _onStart().ConfigureAwait(true);
+    }
+
+    private async Task SaveSnapshotAsync()
+    {
+        await _onSaveSnapshot().ConfigureAwait(true);
     }
 
     private async Task ResetAsync()
@@ -191,8 +224,8 @@ public sealed class GameZoneHostViewModel : ObservableObject
         }
 
         var confirm = await _dialogs.Confirm(
-                "Reinitialiser la table",
-                "Etes-vous sur d'arrêter la partie en cours ?")
+                "Réinitialiser la table",
+                "Êtes-vous sûr d'arrêter la partie en cours ?")
             .ConfigureAwait(true);
 
         if (confirm != true)
@@ -253,6 +286,21 @@ public sealed class GameZoneHostViewModel : ObservableObject
     private async Task TransferOwnerAsync()
     {
         await _onTransferOwner().ConfigureAwait(true);
+    }
+
+    private async Task ShowRulesAsync()
+    {
+        await _onShowRules().ConfigureAwait(true);
+    }
+
+    private async Task ConfigureTableAmbienceAsync()
+    {
+        await _onConfigureTableAmbience().ConfigureAwait(true);
+    }
+
+    private async Task ConfigureTableAmbienceVolumeAsync()
+    {
+        await _onConfigureTableAmbienceVolume().ConfigureAwait(true);
     }
 
     private async Task QuitAsync()

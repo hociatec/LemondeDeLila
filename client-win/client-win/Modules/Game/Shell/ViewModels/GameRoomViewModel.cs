@@ -18,7 +18,11 @@ public sealed class GameRoomViewModel : ObservableObject
     public GameRoomViewModel(
         CatalogGame game,
         Func<string, Task> onSendChat,
+        Func<Task> onShowRules,
+        Func<Task> onConfigureTableAmbience,
+        Func<Task> onConfigureTableAmbienceVolume,
         Func<Task> onStart,
+        Func<Task> onSaveSnapshot,
         Func<Task> onReset,
         Func<Task> onQuit,
         Func<Task> onAddBot,
@@ -43,7 +47,11 @@ public sealed class GameRoomViewModel : ObservableObject
         var title = !string.IsNullOrWhiteSpace(game.Name) ? game.Name : game.Id;
         GameZone = new GameZoneHostViewModel(
             title,
+            onShowRules,
+            onConfigureTableAmbience,
+            onConfigureTableAmbienceVolume,
             onStart,
+            onSaveSnapshot,
             onReset,
             onQuit,
             onAddBot,

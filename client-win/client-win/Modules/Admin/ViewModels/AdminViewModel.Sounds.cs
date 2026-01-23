@@ -183,6 +183,7 @@ public sealed partial class AdminViewModel
 	        Items.Clear();
 	        Items.Add(new AdminMenuItem("Victoire (fin de partie)", tag: "sounds.game.victory"));
 	        Items.Add(new AdminMenuItem("Défaite (fin de partie)", tag: "sounds.game.defeat"));
+	        Items.Add(new AdminMenuItem("Ambiance de table (boucles)", tag: "sounds.table.ambience"));
 	        Items.Add(new AdminMenuItem("Entrer dans une table", tag: "sounds.table.enter"));
 	        Items.Add(new AdminMenuItem("Rejoindre une table", tag: "sounds.table.join"));
 	        Items.Add(new AdminMenuItem("Quitter une table", tag: "sounds.table.exit"));
@@ -193,6 +194,26 @@ public sealed partial class AdminViewModel
 	        UpdateFilterVisibility();
 	        RestoreFocusIfAny();
 	    }
+
+        private void BuildSoundsTableAmbience()
+        {
+            _page = AdminPage.SoundsTableAmbience;
+            Title = "Administration - Sons - Table - Ambiance";
+            Details = "Uploader des sons d'ambiance de table (boucles), utilisables dans la configuration des tables.";
+            PreferDetailsFocus = false;
+            IsTextInputVisible = false;
+            IsSecondaryInputVisible = false;
+            IsAdditionalPermissionsVisible = false;
+            Items.Clear();
+            for (var i = 1; i <= 20; i++)
+            {
+                Items.Add(new AdminMenuItem($"Ambiance de table {i}", tag: $"sounds.table.ambience.{i}"));
+            }
+            SelectedItem = Items.FirstOrDefault();
+            Status = "Entrée : sélectionner. Échap : retour.";
+            UpdateFilterVisibility();
+            RestoreFocusIfAny();
+        }
 
 	    private void BuildSoundsGames()
 	    {
@@ -325,6 +346,7 @@ public sealed partial class AdminViewModel
 	            SoundId.ClientOpened or SoundId.ClientConnected or SoundId.ClientDisconnected => AdminPage.SoundsConnection,
 	            SoundId.MainMenuMusic or SoundId.TavernOpened or SoundId.TavernAmbience => AdminPage.SoundsAmbience,
 	            SoundId.GameVictory or SoundId.GameDefeat or SoundId.RoomOpened or SoundId.RoomJoined or SoundId.RoomExit => AdminPage.SoundsTable,
+	            SoundId.TableAmbience1 or SoundId.TableAmbience2 or SoundId.TableAmbience3 or SoundId.TableAmbience4 or SoundId.TableAmbience5 or SoundId.TableAmbience6 or SoundId.TableAmbience7 or SoundId.TableAmbience8 or SoundId.TableAmbience9 or SoundId.TableAmbience10 or SoundId.TableAmbience11 or SoundId.TableAmbience12 or SoundId.TableAmbience13 or SoundId.TableAmbience14 or SoundId.TableAmbience15 or SoundId.TableAmbience16 or SoundId.TableAmbience17 or SoundId.TableAmbience18 or SoundId.TableAmbience19 or SoundId.TableAmbience20 => AdminPage.SoundsTableAmbience,
 	            SoundId.DiceRolled or SoundId.QuizCorrect or SoundId.QuizWrong or SoundId.RoundEnded or SoundId.PawnPicked or SoundId.PawnPlacedSelf or SoundId.PawnPlacedOpponent or SoundId.WallPlacedSelf or SoundId.WallPlacedOpponent => AdminPage.SoundsGames,
 	            SoundId.InvitationSent or SoundId.InvitationReceived => AdminPage.SoundsTable,
 	            SoundId.ChatMessageSent or SoundId.ChatMessageReceived => AdminPage.SoundsChatGeneral,
@@ -346,6 +368,26 @@ public sealed partial class AdminViewModel
             SoundId.TavernAmbience => ("Ambiance", "Ambiance de la taverne", null),
             SoundId.GameVictory => ("Table", "Victoire (fin de partie)", _options.Current.SoundGameVictoryPath),
             SoundId.GameDefeat => ("Table", "Défaite (fin de partie)", _options.Current.SoundGameDefeatPath),
+            SoundId.TableAmbience1 => ("Table", "Ambiance de table 1", null),
+            SoundId.TableAmbience2 => ("Table", "Ambiance de table 2", null),
+            SoundId.TableAmbience3 => ("Table", "Ambiance de table 3", null),
+            SoundId.TableAmbience4 => ("Table", "Ambiance de table 4", null),
+            SoundId.TableAmbience5 => ("Table", "Ambiance de table 5", null),
+            SoundId.TableAmbience6 => ("Table", "Ambiance de table 6", null),
+            SoundId.TableAmbience7 => ("Table", "Ambiance de table 7", null),
+            SoundId.TableAmbience8 => ("Table", "Ambiance de table 8", null),
+            SoundId.TableAmbience9 => ("Table", "Ambiance de table 9", null),
+            SoundId.TableAmbience10 => ("Table", "Ambiance de table 10", null),
+            SoundId.TableAmbience11 => ("Table", "Ambiance de table 11", null),
+            SoundId.TableAmbience12 => ("Table", "Ambiance de table 12", null),
+            SoundId.TableAmbience13 => ("Table", "Ambiance de table 13", null),
+            SoundId.TableAmbience14 => ("Table", "Ambiance de table 14", null),
+            SoundId.TableAmbience15 => ("Table", "Ambiance de table 15", null),
+            SoundId.TableAmbience16 => ("Table", "Ambiance de table 16", null),
+            SoundId.TableAmbience17 => ("Table", "Ambiance de table 17", null),
+            SoundId.TableAmbience18 => ("Table", "Ambiance de table 18", null),
+            SoundId.TableAmbience19 => ("Table", "Ambiance de table 19", null),
+            SoundId.TableAmbience20 => ("Table", "Ambiance de table 20", null),
             SoundId.RoomOpened => ("Table", "Entrer dans une table", _options.Current.SoundRoomOpenedPath),
             SoundId.RoomJoined => ("Table", "Rejoindre une table", _options.Current.SoundRoomJoinedPath),
             SoundId.RoomExit => ("Table", "Quitter une table", _options.Current.SoundRoomExitPath),

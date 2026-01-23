@@ -44,6 +44,11 @@ export class Room {
   @Column({ name: 'run_id', type: 'int', default: 0 })
   runId!: number;
 
+  // Optional table ambience sound (loop), chosen by the room owner.
+  // Stored as a SoundKey (see sounds.types.ts) e.g. "TableAmbience1". Null/empty => no ambience.
+  @Column({ name: 'table_ambience_sound_id', type: 'varchar', length: 50, nullable: true })
+  tableAmbienceSoundId?: string | null;
+
   @OneToMany(() => RoomParticipant, (p) => p.room)
   participants!: RoomParticipant[];
 

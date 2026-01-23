@@ -125,15 +125,25 @@
                                                     <Separator Margin="0 10 0 10" />
 
                                                     <CheckBox Content="Ambiance (menu et taverne)" IsChecked="{Binding SoundAmbience}" />
-                                                    <TextBlock Text="{Binding SoundAmbienceVolume, StringFormat=Volume ambiance : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
+                                                    <TextBlock Text="{Binding SoundMenuAmbienceVolume, StringFormat=Volume menu : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
                                                     <Slider Minimum="0" Maximum="100"
-                                                            Value="{Binding SoundAmbienceVolume, UpdateSourceTrigger=PropertyChanged}"
+                                                            Value="{Binding SoundMenuAmbienceVolume, UpdateSourceTrigger=PropertyChanged}"
                                                             SmallChange="1"
                                                             LargeChange="10"
                                                             IsSnapToTickEnabled="True"
                                                             TickFrequency="1"
-                                                            IsEnabled="{Binding IsAmbienceVolumeEnabled}"
-                                                            AutomationProperties.Name="Volume ambiance"
+                                                            IsEnabled="{Binding IsMenuAmbienceVolumeEnabled}"
+                                                            AutomationProperties.Name="Volume menu"
+                                                            AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
+                                                    <TextBlock Text="{Binding SoundTavernAmbienceVolume, StringFormat=Volume taverne : {0}%}" Foreground="#9CB2D1" Margin="0 10 0 2" />
+                                                    <Slider Minimum="0" Maximum="100"
+                                                            Value="{Binding SoundTavernAmbienceVolume, UpdateSourceTrigger=PropertyChanged}"
+                                                            SmallChange="1"
+                                                            LargeChange="10"
+                                                            IsSnapToTickEnabled="True"
+                                                            TickFrequency="1"
+                                                            IsEnabled="{Binding IsTavernAmbienceVolumeEnabled}"
+                                                            AutomationProperties.Name="Volume taverne"
                                                             AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
 
                                                     <Separator Margin="0 10 0 10" />

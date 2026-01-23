@@ -423,10 +423,26 @@ export class ContesActionService {
     const tile = (this.getMeta(next).tiles ?? [])[nextPos] as
       | ContesCacahuetesTile
       | undefined;
+    const labelRaw = String(tile?.label ?? '').trim();
+    const label = labelRaw
+      ? /^(case|départ|arrivée)\b/i.test(labelRaw)
+        ? labelRaw
+        : `Case ${nextPos + 1} - ${labelRaw}`
+      : `Case ${nextPos + 1}`;
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} arrive sur ${tile?.label ?? `Case ${nextPos + 1}`}.`,
+      `${this.playerName(next, playerId)} arrive sur ${label}.`,
     );
+    if (tile?.type === 'bonus')
+      next = this.core.appendLog(next, `Effet : piochez une carte Bonus.`);
+    else if (tile?.type === 'malus')
+      next = this.core.appendLog(next, `Effet : piochez une carte Malus.`);
+    else if (tile?.type === 'surprise')
+      next = this.core.appendLog(next, `Effet : piochez une carte Surprise.`);
+    else if (tile?.type === 'conte')
+      next = this.core.appendLog(next, `Effet : piochez une carte Conte.`);
+    else if (tile?.type === 'finish')
+      next = this.core.appendLog(next, `Effet : case d'arrivée.`);
 
     if (raw >= finishIndex) {
       next = this.setWinner(next, playerId);

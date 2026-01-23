@@ -90,6 +90,7 @@ export type MnemoQuizMetadata = {
   currentQuestion: MnemoCurrentQuestion | null;
   quizAnswersByPlayerId: Record<number, number>;
   quizDeadlineAtMs?: number | null;
+  interQuestionUntilMs?: number | null;
   adminView: MnemoAdminPage;
   prompt: MnemoPrompt;
   promptOwnerId?: number | null;
