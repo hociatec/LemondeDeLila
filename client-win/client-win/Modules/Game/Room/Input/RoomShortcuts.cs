@@ -47,7 +47,7 @@ public static class RoomShortcuts
         ICommand quitCommand)
     {
         yield return new ShortcutDefinition(
-            new KeyGesture(Key.R),
+            'r',
             rulesCommand,
             description: "Afficher les règles",
             code: RoomShortcutCodes.Rules,
