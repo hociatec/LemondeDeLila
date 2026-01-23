@@ -51,6 +51,14 @@ public partial class GamePlayView
 
         try
         {
+            if (question is TextBox textBox)
+            {
+                // NVDA should start reading from the beginning of the question.
+                textBox.CaretIndex = 0;
+                textBox.SelectionStart = 0;
+                textBox.SelectionLength = 0;
+                try { textBox.ScrollToHome(); } catch { /* ignore */ }
+            }
             question.Focus();
             Keyboard.Focus(question);
             return true;

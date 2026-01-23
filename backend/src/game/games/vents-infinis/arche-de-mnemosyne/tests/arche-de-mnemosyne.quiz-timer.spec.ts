@@ -82,7 +82,12 @@ describe("ArcheDeMnemosyneService quiz timer", () => {
     const afterB = service.applyActions(afterA, [
       { type: 'answer_quiz', payload: { answerIndex: 1 }, meta: { actorId: 2 } } as any,
     ]);
-    expect(String(afterB.metadata.currentQuestion?.id ?? '')).toBe('q2');
+    const messages = (afterB.log ?? []).map((l: any) => String(l?.message ?? ''));
+    expect(messages.some((m: string) => m.includes('La bonne réponse était'))).toBe(true);
+    expect(messages.some((m: string) => m.includes('Prochaine question dans 5 secondes'))).toBe(true);
+    expect(afterB.metadata.currentQuestion).toBeNull();
+    expect(afterB.metadata.quizDeadlineAtMs).toBeNull();
+    expect(typeof afterB.metadata.interQuestionUntilMs).toBe('number');
     expect(Object.keys(afterB.metadata.quizAnswersByPlayerId ?? {}).length).toBe(0);
   });
 

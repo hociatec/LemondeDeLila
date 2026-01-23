@@ -785,6 +785,10 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       return state;
     }
 
+    // If everyone answered, end the question immediately (stop the timer) and use the same
+    // 5s inter-question pause as the timeout path.
+    const endedBecauseAllAnswered = !force && allAnswered;
+
 	    const correctIds = playerIds.filter((id) => {
 	      const idx = Number(answers[id]);
 	      if (!Number.isFinite(idx)) return false;
@@ -866,7 +870,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 	      }
 	    }
 
-    if (force) {
+    if (force || endedBecauseAllAnswered) {
       if (wrongAnsweredIds.length) {
         next = this.core.appendLog(next, `La bonne réponse était : ${q.correctChoice}.`);
       }
@@ -879,7 +883,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       currentQuestion: null,
       quizAnswersByPlayerId: {},
       quizDeadlineAtMs: null,
-      interQuestionUntilMs: force ? Date.now() + 5000 : null,
+      interQuestionUntilMs: (force || endedBecauseAllAnswered) ? Date.now() + 5000 : null,
     };
 
     const target = afterMeta.config?.targetPoints ?? 20;
@@ -903,7 +907,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       metadata: afterMeta as any,
     };
     const advanced = this.turns.advanceTurn(cleared);
-    if (force) {
+    if (force || endedBecauseAllAnswered) {
       return {
         ...advanced,
         metadata: afterMeta as any,

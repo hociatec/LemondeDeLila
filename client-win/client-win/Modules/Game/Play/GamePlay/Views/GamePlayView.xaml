@@ -296,6 +296,7 @@
                              Foreground="White"
                              FontSize="12"
                              TextWrapping="Wrap"
+                             AcceptsReturn="True"
                              Background="Transparent"
                              BorderThickness="0"
                              IsReadOnly="True"
