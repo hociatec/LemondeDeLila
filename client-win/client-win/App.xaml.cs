@@ -8,6 +8,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Automation;
+using System.Windows.Interop;
 using client_win.Core.Accessibility;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Config;
@@ -201,6 +202,42 @@ namespace client_win
 
             MainWindow = window;
             window.Show();
+
+            // Accessibility / screen readers (NVDA): on some startups the window can appear without getting OS focus,
+            // forcing the user to alt-tab away/back before the UI is reachable. Best-effort: bring the window to front.
+            window.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                try
+                {
+                    if (!window.IsVisible)
+                    {
+                        return;
+                    }
+
+                    try { window.WindowState = WindowState.Normal; } catch { /* ignore */ }
+                    try { window.Activate(); } catch { /* ignore */ }
+                    try { window.Focus(); } catch { /* ignore */ }
+
+                    try
+                    {
+                        var hwnd = new WindowInteropHelper(window).Handle;
+                        if (hwnd != IntPtr.Zero)
+                        {
+                            NativeMethods.ShowWindow(hwnd, NativeMethods.SW_RESTORE);
+                            NativeMethods.SetForegroundWindow(hwnd);
+                            NativeMethods.SwitchToThisWindow(hwnd, fAltTab: true);
+                        }
+                    }
+                    catch
+                    {
+                        // best-effort
+                    }
+                }
+                catch
+                {
+                    // best-effort
+                }
+            }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
         }
 
         protected override void OnExit(ExitEventArgs e)

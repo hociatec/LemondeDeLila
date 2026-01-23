@@ -7,6 +7,7 @@
         mc:Ignorable="d"
         Title="{Binding WindowTitle}" Height="720" Width="1280"
         WindowStartupLocation="CenterScreen"
+        ShowActivated="True"
         Background="#0B1523"
         shellViews:ShellWindowBehavior.Enable="True">
     <Grid>
