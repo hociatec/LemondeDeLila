@@ -523,6 +523,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
             static bool IsOwnerOnlyRoomShortcut(ShortcutDefinition s) =>
                 string.Equals(s.Code, RoomShortcutCodes.Reset, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(s.Code, RoomShortcutCodes.SaveSnapshot, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(s.Code, RoomShortcutCodes.TogglePrivacy, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(s.Code, RoomShortcutCodes.AddBot, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(s.Code, RoomShortcutCodes.RemoveBot, StringComparison.OrdinalIgnoreCase) ||

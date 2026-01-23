@@ -7,6 +7,7 @@ import { RoomService } from '../../room/services/room.service';
 import { BotService } from '../../bot/services/bot.service';
 import { RoomBot } from '../../room/entities/room-bot.entity';
 import { GameEngineService } from '../../game/engine/services/game-engine.service';
+import { GameRegistryService } from '../../game/engine/services/game-registry.service';
 import { PresenceService } from '../../presence/services/presence.service';
 import { NotificationService } from '../../notification/services/notification.service';
 import type { VaultRoomSnapshot } from '../vault.types';
@@ -22,6 +23,7 @@ export class VaultRoomSnapshotsService {
     private readonly rooms: RoomService,
     private readonly bots: BotService,
     private readonly engine: GameEngineService,
+    private readonly registry: GameRegistryService,
     private readonly presence: PresenceService,
     private readonly notifications: NotificationService,
   ) {}
@@ -69,6 +71,11 @@ export class VaultRoomSnapshotsService {
     if (!isOwner && !isPlayer) {
       throw new BadRequestException("Vous n'êtes pas sur cette table.");
     }
+    if (!isOwner) {
+      throw new BadRequestException(
+        'Seul le propriétaire de la table peut sauvegarder.',
+      );
+    }
     const started =
       String(payload?.room?.status ?? '').toLowerCase() === 'started' ||
       Boolean(payload?.room?.startedAt);
@@ -90,13 +97,28 @@ export class VaultRoomSnapshotsService {
       );
     }
 
-    const name = `Sauvegarde — ${payload.room.name}`.slice(0, 200);
-    const playersLabel = (payload.room.players ?? [])
-      .map((p) => p.username)
-      .filter(Boolean)
-      .slice(0, 6)
-      .join(', ')
-      .slice(0, 255);
+    const gameName =
+      String(this.registry.getHandler(gameType)?.displayName ?? '').trim() ||
+      gameType;
+
+    const dateFr = new Intl.DateTimeFormat('fr-FR', {
+      timeZone: 'Europe/Paris',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(new Date());
+
+    const players = (payload.room.players ?? [])
+      .map((p) => String(p?.username ?? '').trim())
+      .filter((u) => u.length > 0);
+    const playersShort =
+      players.slice(0, 6).join(', ') + (players.length > 6 ? ', …' : '');
+
+    const name = `${gameName}, ${dateFr} (${playersShort || 'joueurs'})`.slice(
+      0,
+      200,
+    );
+    const playersLabel = players.join(', ').slice(0, 255);
 
     const snapshot: VaultRoomSnapshot = {
       version: 1,
@@ -136,6 +158,11 @@ export class VaultRoomSnapshotsService {
       createdAt: new Date(),
     });
     await this.snapshots.save(entity);
+
+    // Sauvegarde de table = "archiver et fermer" : tout le monde retourne à la taverne.
+    // Le RoomGateway enverra 'room.deleted' à tous les clients connectés.
+    await this.rooms.adminDestroyRoom(roomId);
+
     return { id: entity.id };
   }
 

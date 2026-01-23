@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.Logging;
+using client_win.Core.Network;
+using client_win.Modules.Config;
 using client_win.Modules.Catalog.Models;
 using client_win.Modules.Game.History.Services;
 using client_win.Modules.Game.Play.GamePlay.ViewModels;
@@ -30,6 +34,7 @@ namespace client_win.Modules.Game.Shell.Services;
 public sealed class GameTableOpener : IGameTableOpener
 {
     private readonly ILogger<GameTableOpener> _logger;
+    private readonly ClientConfiguration _config;
     private readonly IRoomGatewayClient _rooms;
     private readonly IGameGatewayClient _games;
     private readonly INavigationService _navigation;
@@ -51,6 +56,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
     public GameTableOpener(
         ILogger<GameTableOpener> logger,
+        ClientConfiguration config,
         IRoomGatewayClient rooms,
         IGameGatewayClient games,
         INavigationService navigation,
@@ -70,6 +76,7 @@ public sealed class GameTableOpener : IGameTableOpener
         IVaultClient vault)
     {
         _logger = logger;
+        _config = config ?? throw new ArgumentNullException(nameof(config));
         _rooms = rooms;
         _games = games;
         _navigation = navigation;
@@ -87,6 +94,57 @@ public sealed class GameTableOpener : IGameTableOpener
         _social = social ?? throw new ArgumentNullException(nameof(social));
         _textPrompts = textPrompts ?? throw new ArgumentNullException(nameof(textPrompts));
         _vault = vault ?? throw new ArgumentNullException(nameof(vault));
+    }
+
+    private sealed class TableAmbienceFileDto
+    {
+        public TableAmbienceItemDto[]? Items { get; set; }
+    }
+
+    private sealed class TableAmbienceItemDto
+    {
+        public string? SoundId { get; set; }
+        public string? Name { get; set; }
+    }
+
+    private async Task<Dictionary<string, string>> FetchTableAmbienceLabelsAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var endpoint = new Uri(_config.HttpBase, "sounds/table-ambiences");
+            using var req = new HttpRequestMessage(HttpMethod.Get, endpoint);
+            using var res = await HttpClientProvider.Shared
+                .SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                .ConfigureAwait(false);
+            if (!res.IsSuccessStatusCode)
+            {
+                return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            }
+
+            var json = await res.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var dto = JsonSerializer.Deserialize<TableAmbienceFileDto>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            var items = dto?.Items ?? Array.Empty<TableAmbienceItemDto>();
+
+            var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var it in items)
+            {
+                var id = (it?.SoundId ?? string.Empty).Trim();
+                var name = (it?.Name ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(name))
+                {
+                    continue;
+                }
+                map[id] = name;
+            }
+            return map;
+        }
+        catch
+        {
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
     }
 
     public async Task OpenAsync(CatalogGame game, object returnContent)
@@ -560,7 +618,10 @@ public sealed class GameTableOpener : IGameTableOpener
             try
             {
                 await _vault.SaveAsync(current.RoomId).ConfigureAwait(true);
-                _announcementService.Enqueue("Table sauvegardée dans Mon coffre fort.", AnnouncementPriority.Polite);
+                _announcementService.Enqueue(
+                    "Table sauvegardée dans Mon coffre fort. Retour à la taverne.",
+                    AnnouncementPriority.Polite);
+                _ = ExitAsync(null, forceTavern: true);
             }
             catch (Exception ex)
             {
@@ -665,14 +726,32 @@ public sealed class GameTableOpener : IGameTableOpener
                 new(string.Empty, "Silence (aucune ambiance)")
             };
 
-            for (var i = 1; i <= 20; i++)
+            var labels = await FetchTableAmbienceLabelsAsync(CancellationToken.None).ConfigureAwait(true);
+            if (labels.Count > 0)
             {
-                var id = $"TableAmbience{i}";
-                var configured = Enum.TryParse<SoundId>(id, ignoreCase: true, out var sound) &&
-                                 _remoteSounds.TryGetPath(sound) != null;
-                choices.Add(new TableAmbiencePickerWindow.Choice(
-                    id,
-                    configured ? $"Ambiance {i} (configurée)" : $"Ambiance {i} (non configurée)"));
+                foreach (var kv in labels.OrderBy(k => k.Value, StringComparer.OrdinalIgnoreCase))
+                {
+                    var id = kv.Key;
+                    var name = kv.Value;
+                    var configured = Enum.TryParse<SoundId>(id, ignoreCase: true, out var sound) &&
+                                     _remoteSounds.TryGetPath(sound) != null;
+                    choices.Add(new TableAmbiencePickerWindow.Choice(
+                        id,
+                        configured ? name : $"{name} (non configurée)"));
+                }
+            }
+            else
+            {
+                // Compat: si le serveur ne supporte pas encore les ambiances nommées.
+                for (var i = 1; i <= 20; i++)
+                {
+                    var id = $"TableAmbience{i}";
+                    var configured = Enum.TryParse<SoundId>(id, ignoreCase: true, out var sound) &&
+                                     _remoteSounds.TryGetPath(sound) != null;
+                    choices.Add(new TableAmbiencePickerWindow.Choice(
+                        id,
+                        configured ? $"Ambiance {i} (configurée)" : $"Ambiance {i} (non configurée)"));
+                }
             }
 
             var selected = TableAmbiencePickerWindow.Pick(
@@ -744,14 +823,32 @@ public sealed class GameTableOpener : IGameTableOpener
                     {
                         new(string.Empty, "Silence (aucune ambiance)")
                     };
-                    for (var i = 1; i <= 20; i++)
+                    var labels = await FetchTableAmbienceLabelsAsync(CancellationToken.None).ConfigureAwait(true);
+                    if (labels.Count > 0)
                     {
-                        var id = $"TableAmbience{i}";
-                        var configured = Enum.TryParse<SoundId>(id, ignoreCase: true, out var sound) &&
-                                         _remoteSounds.TryGetPath(sound) != null;
-                        choices.Add(new TableAmbiencePickerWindow.Choice(
-                            id,
-                            configured ? $"Ambiance {i} (configurée)" : $"Ambiance {i} (non configurée)"));
+                        foreach (var kv in labels.OrderBy(k => k.Value, StringComparer.OrdinalIgnoreCase))
+                        {
+                            var id = kv.Key;
+                            var name = kv.Value;
+                            var configured = Enum.TryParse<SoundId>(id, ignoreCase: true, out var sound) &&
+                                             _remoteSounds.TryGetPath(sound) != null;
+                            choices.Add(new TableAmbiencePickerWindow.Choice(
+                                id,
+                                configured ? name : $"{name} (non configurée)"));
+                        }
+                    }
+                    else
+                    {
+                        // Compat: si le serveur ne supporte pas encore les ambiances nommées.
+                        for (var i = 1; i <= 20; i++)
+                        {
+                            var id = $"TableAmbience{i}";
+                            var configured = Enum.TryParse<SoundId>(id, ignoreCase: true, out var sound) &&
+                                             _remoteSounds.TryGetPath(sound) != null;
+                            choices.Add(new TableAmbiencePickerWindow.Choice(
+                                id,
+                                configured ? $"Ambiance {i} (configurée)" : $"Ambiance {i} (non configurée)"));
+                        }
                     }
 
                     var selected = TableStartConfigWindow.Pick(
@@ -1055,7 +1152,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     {
                         if (string.Equals(type, "room.deleted", StringComparison.OrdinalIgnoreCase))
                         {
-                            _ = ExitAsync("Table fermée.");
+                            _ = ExitAsync("Table fermée.", forceTavern: true);
                         }
                         else
                         {

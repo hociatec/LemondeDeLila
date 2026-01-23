@@ -123,6 +123,8 @@ public sealed partial class AdminViewModel : ObservableObject
     private readonly Func<Task<string>>? _openNotifications;
     private readonly Func<int, string, Task<string>>? _openStoryBookForUser;
     private string? _userPickMode;
+    private AdminTableAmbienceDto[] _tableAmbiences = Array.Empty<AdminTableAmbienceDto>();
+    private AdminTableAmbienceDto? _selectedTableAmbience;
 
     public AdminViewModel(
         IAdminService admin,

@@ -8,7 +8,10 @@ namespace client_win.Modules.Game.Shell.Views;
 
 public partial class TableAmbiencePickerWindow : Window
 {
-    public sealed record Choice(string SoundId, string Label);
+    public sealed record Choice(string SoundId, string Label)
+    {
+        public override string ToString() => Label ?? string.Empty;
+    }
 
     private sealed class Vm
     {
@@ -59,4 +62,3 @@ public partial class TableAmbiencePickerWindow : Window
         Close();
     }
 }
-

@@ -197,31 +197,23 @@ public partial class GamePlayView
 
         _lastAutoFocusedQuizQuestionText = question;
 
-        // Reset sélection: la 1ère pression sur ↓ doit arriver sur la 1ère réponse (index 0),
-        // sans sauter directement à la 2e (index 1).
-        if (ChoicesList.Visibility == Visibility.Visible && ChoicesList.Items.Count > 0)
+        // Quiz: la question est affichée comme 1ère ligne de la liste (index 0).
+        if (ChoicesList.Visibility != Visibility.Visible || ChoicesList.Items.Count <= 0)
         {
-            ChoicesList.SelectedIndex = -1;
-
-            // Warm-up layout sans ScrollIntoView : ScrollIntoView peut provoquer un défilement
-            // automatique vers la réponse 1 (et empêcher de revenir sur la question au tout premier quiz).
-            try
-            {
-                ChoicesList.UpdateLayout();
-            }
-            catch
-            {
-                // ignore
-            }
+            return false;
         }
 
-        // IMPORTANT: rester sur la question (ne pas voler le focus vers la liste).
-        // L'accès aux réponses se fait ensuite via ↓ depuis la question.
-        return TryFocusQuizQuestion();
-
-        // Si les choix n'ont pas encore été reçus, on laisse le live region annoncer la question
-        // et la navigation fléchée restera sur la liste dès qu'elle sera matérialisée.
-        // (TryFocusQuizQuestion() renvoie false si la question n'est pas visible.)
+        try
+        {
+            ChoicesList.SelectedIndex = 0;
+            ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+            TryFocusChoiceIndex(0);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private void UpdateChoicesAccessibility()
@@ -233,12 +225,11 @@ public partial class GamePlayView
 
         var label = string.IsNullOrWhiteSpace(_vm.ChoicesLabel) ? string.Empty : _vm.ChoicesLabel.Trim();
 
-        // Quiz: la question est déjà l'ancre (focus). La liste ne doit pas être annoncée avec la question,
-        // sinon NVDA relit la question à chaque navigation ↑/↓.
+        // Quiz: la liste contient "question + réponses". Ne pas dupliquer la question dans le nom de liste.
         if (_vm.IsQuizPending)
         {
             ChoicesList.ClearValue(AutomationProperties.HelpTextProperty);
-            AutomationProperties.SetName(ChoicesList, "Réponses");
+            AutomationProperties.SetName(ChoicesList, "Question et réponses");
             ChoicesList.ClearValue(AutomationProperties.LabeledByProperty);
             return;
         }
@@ -393,18 +384,27 @@ public partial class GamePlayView
         }
         // Le ListBox de quiz doit "consommer" Enter pour envoyer la réponse sélectionnée,
         // afin de ne pas déclencher le raccourci global Enter (roll).
+        e.Handled = true;
         try
         {
             bool sent = await vm.SubmitSelectedChoiceAsync(CancellationToken.None).ConfigureAwait(true);
             if (sent)
             {
-                e.Handled = true;
                 NoteChoiceSubmittedForFocusRestore();
+                return;
+            }
+
+            // Quiz: si l'utilisateur est sur la ligne "question", Enter doit aller à la 1ère réponse.
+            if (vm.IsQuizPending && ChoicesList.Items.Count > 1 && ChoicesList.SelectedIndex == 0)
+            {
+                ChoicesList.SelectedIndex = 1;
+                ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+                TryFocusChoiceIndex(1);
             }
         }
         catch
         {
-            e.Handled = true;
+            // ignore (Enter reste consommé)
         }
     }
 }

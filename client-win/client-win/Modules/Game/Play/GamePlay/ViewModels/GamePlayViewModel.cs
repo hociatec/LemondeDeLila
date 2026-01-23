@@ -31,6 +31,20 @@ namespace client_win.Modules.Game.Play.GamePlay.ViewModels;
 
 public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposable
 {
+    public sealed class ChoiceLine
+    {
+        public ChoiceLine(string text, int? choiceIndex)
+        {
+            Text = text ?? string.Empty;
+            ChoiceIndex = choiceIndex;
+        }
+
+        public string Text { get; }
+
+        // Index into PendingChoices (server/local choice list). Null => informational line (quiz question).
+        public int? ChoiceIndex { get; }
+    }
+
     private readonly Dispatcher _dispatcher;
     private readonly IDialogService _dialogs;
     private readonly ITextPromptService _textPrompts;
@@ -74,6 +88,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private string _pendingType = string.Empty;
     private string _quizQuestionText = string.Empty;
     private string _lastQuizQuestionForSelectionReset = string.Empty;
+    private int _selectedDisplayIndex = -1;
 
     public string GameId { get; }
 
@@ -106,7 +121,11 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             }
         };
         _choices.PropertyChanged += _choicesPropertyChangedHandler;
-        _pendingChoicesChangedHandler = (_, __) => OnPropertyChanged(nameof(ShowLegacyActionsPanel));
+        _pendingChoicesChangedHandler = (_, __) =>
+        {
+            OnPropertyChanged(nameof(ShowLegacyActionsPanel));
+            RebuildDisplayChoices();
+        };
         _choices.PendingChoices.CollectionChanged += _pendingChoicesChangedHandler;
 
         _presenter = new GamePlayStatePresenter(_projector);
@@ -184,9 +203,13 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             },
             setConnectionStatus: status => ConnectionStatus = status,
             refreshCanExecute: RefreshCanExecute);
+
+        RebuildDisplayChoices();
     }
 
     public ObservableCollection<string> PendingChoices => _choices.PendingChoices;
+
+    public ObservableCollection<ChoiceLine> DisplayChoices { get; } = new();
 
     public string ChoicesLabel => _choices.ChoicesLabel;
 
@@ -221,6 +244,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             _pendingType = value ?? string.Empty;
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsQuizPending));
+            RebuildDisplayChoices();
         }
     }
 
@@ -235,6 +259,33 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             if (SetProperty(ref _quizQuestionText, value))
             {
                 OnPropertyChanged(nameof(ChoicesA11yName));
+                RebuildDisplayChoices();
+            }
+        }
+    }
+
+    // Index used by the UI list (includes the quiz question line at index 0 when present).
+    public int SelectedDisplayIndex
+    {
+        get => _selectedDisplayIndex;
+        set
+        {
+            if (_selectedDisplayIndex == value)
+            {
+                return;
+            }
+
+            _selectedDisplayIndex = value;
+            OnPropertyChanged();
+
+            // Map UI index -> underlying choice index.
+            if (IsQuizPending && DisplayChoices.Count > 0 && DisplayChoices[0].ChoiceIndex == null)
+            {
+                SelectedChoiceIndex = value <= 0 ? -1 : value - 1;
+            }
+            else
+            {
+                SelectedChoiceIndex = value;
             }
         }
     }
@@ -472,6 +523,41 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
         _lastQuizQuestionForSelectionReset = q;
         SelectedChoiceIndex = -1;
+    }
+
+    private void RebuildDisplayChoices()
+    {
+        DisplayChoices.Clear();
+
+        if (IsQuizPending)
+        {
+            var q = (QuizQuestionText ?? string.Empty).Trim();
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                DisplayChoices.Add(new ChoiceLine(q, choiceIndex: null));
+            }
+        }
+
+        for (var i = 0; i < PendingChoices.Count; i++)
+        {
+            DisplayChoices.Add(new ChoiceLine(PendingChoices[i], i));
+        }
+
+        SyncSelectedDisplayFromChoice();
+    }
+
+    private void SyncSelectedDisplayFromChoice()
+    {
+        var want = SelectedChoiceIndex;
+        var hasQuestionLine = IsQuizPending && DisplayChoices.Count > 0 && DisplayChoices[0].ChoiceIndex == null;
+        var next = hasQuestionLine ? (want < 0 ? 0 : want + 1) : want;
+        if (_selectedDisplayIndex == next)
+        {
+            return;
+        }
+
+        _selectedDisplayIndex = next;
+        OnPropertyChanged(nameof(SelectedDisplayIndex));
     }
 
     private string ExtractQuizQuestion(GameStateDto state)
@@ -897,6 +983,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
             _choices.SelectedChoiceIndex = value;
             OnPropertyChanged();
+            SyncSelectedDisplayFromChoice();
         }
     }
 

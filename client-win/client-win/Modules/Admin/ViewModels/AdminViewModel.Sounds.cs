@@ -9,6 +9,7 @@ using System.Windows;
 using Microsoft.Win32;
 using client_win.Core.Constants;
 using client_win.Core.Network;
+using client_win.Modules.Admin.Dtos;
 using client_win.Modules.Audio.Models;
 
 namespace client_win.Modules.Admin.ViewModels;
@@ -17,6 +18,7 @@ public sealed partial class AdminViewModel
 {
     private SoundId? _soundDetailsId;
     private AdminPage _soundDetailsReturnPage = AdminPage.Sounds;
+    private bool _tableAmbiencesRefreshInProgress;
 
     public void StopSoundPreview() => _sounds.StopPreview();
 
@@ -183,7 +185,7 @@ public sealed partial class AdminViewModel
 	        Items.Clear();
 	        Items.Add(new AdminMenuItem("Victoire (fin de partie)", tag: "sounds.game.victory"));
 	        Items.Add(new AdminMenuItem("Défaite (fin de partie)", tag: "sounds.game.defeat"));
-	        Items.Add(new AdminMenuItem("Ambiance de table (boucles)", tag: "sounds.table.ambience"));
+	        Items.Add(new AdminMenuItem("Ambiances de table", tag: "sounds.table.ambience"));
 	        Items.Add(new AdminMenuItem("Entrer dans une table", tag: "sounds.table.enter"));
 	        Items.Add(new AdminMenuItem("Rejoindre une table", tag: "sounds.table.join"));
 	        Items.Add(new AdminMenuItem("Quitter une table", tag: "sounds.table.exit"));
@@ -198,21 +200,275 @@ public sealed partial class AdminViewModel
         private void BuildSoundsTableAmbience()
         {
             _page = AdminPage.SoundsTableAmbience;
-            Title = "Administration - Sons - Table - Ambiance";
-            Details = "Uploader des sons d'ambiance de table (boucles), utilisables dans la configuration des tables.";
+            Title = "Administration - Table - Ambiances";
+            Details = "Créer, renommer, supprimer des ambiances de table, et associer un son (.mp3).";
             PreferDetailsFocus = false;
             IsTextInputVisible = false;
             IsSecondaryInputVisible = false;
             IsAdditionalPermissionsVisible = false;
             Items.Clear();
-            for (var i = 1; i <= 20; i++)
+            Items.Add(new AdminMenuItem("Ajouter une ambiance de table", tag: "tableAmbience.create"));
+
+            var list = _tableAmbiences ?? Array.Empty<AdminTableAmbienceDto>();
+            foreach (var a in list.OrderBy(a => a.Name, StringComparer.OrdinalIgnoreCase))
             {
-                Items.Add(new AdminMenuItem($"Ambiance de table {i}", tag: $"sounds.table.ambience.{i}"));
+                var configured = false;
+                if (Enum.TryParse<SoundId>(a.SoundId ?? string.Empty, ignoreCase: true, out var sid))
+                {
+                    configured = _remoteSounds.TryGetPath(sid) != null;
+                }
+
+                var status = configured ? " (configurée)" : " (sans son)";
+                Items.Add(new AdminMenuItem($"{a.Name}{status}", tag: a));
             }
-            SelectedItem = Items.FirstOrDefault();
+
+            SelectedItem = Items.FirstOrDefault(i => i.Tag is AdminTableAmbienceDto) ?? Items.FirstOrDefault();
             Status = "Entrée : sélectionner. Échap : retour.";
             UpdateFilterVisibility();
             RestoreFocusIfAny();
+
+            // Rafraîchit en arrière-plan (best effort) pour afficher les dernières ambiances.
+            _ = RefreshTableAmbiencesAsync();
+        }
+
+        private void BuildSoundsTableAmbienceActions(AdminTableAmbienceDto ambience)
+        {
+            _page = AdminPage.SoundsTableAmbienceActions;
+            _selectedTableAmbience = ambience;
+            Title = $"Administration - Table - Ambiance : {ambience?.Name}";
+            Details = ambience?.SoundId ?? string.Empty;
+            PreferDetailsFocus = false;
+            IsTextInputVisible = false;
+            IsSecondaryInputVisible = false;
+            IsAdditionalPermissionsVisible = false;
+            Items.Clear();
+            Items.Add(new AdminMenuItem("Renommer", tag: "tableAmbience.rename"));
+            Items.Add(new AdminMenuItem("Changer le son (.mp3)", tag: "tableAmbience.sound"));
+            Items.Add(new AdminMenuItem("Supprimer", tag: "tableAmbience.delete"));
+            SelectedItem = Items.FirstOrDefault();
+            Status = "Entrée : action. Échap : retour.";
+            UpdateFilterVisibility();
+            RestoreFocusIfAny();
+        }
+
+        private sealed class TableAmbiencesFileDto
+        {
+            public string? UpdatedAt { get; set; }
+            public AdminTableAmbienceDto[]? Items { get; set; }
+        }
+
+        private async Task RefreshTableAmbiencesAsync(bool force = false)
+        {
+            if (_tableAmbiencesRefreshInProgress && !force)
+            {
+                return;
+            }
+
+            if (IsBusy && !force)
+            {
+                return;
+            }
+
+            var jwt = _session.CurrentUser?.Token;
+            if (string.IsNullOrWhiteSpace(jwt))
+            {
+                return;
+            }
+
+            try
+            {
+                _tableAmbiencesRefreshInProgress = true;
+                IsBusy = true;
+
+                try { await _remoteSounds.RefreshAsync(force: false).ConfigureAwait(true); } catch { }
+
+                var endpoint = new Uri(_config.HttpBase, "admin/sounds/table-ambiences");
+                using var req = new HttpRequestMessage(HttpMethod.Get, endpoint);
+                req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+                using var resp = await HttpClientProvider.Shared.SendAsync(req).ConfigureAwait(true);
+                var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
+                if (!resp.IsSuccessStatusCode)
+                {
+                    return;
+                }
+
+                var dto = JsonSerializer.Deserialize<TableAmbiencesFileDto>(body, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                _tableAmbiences = dto?.Items ?? Array.Empty<AdminTableAmbienceDto>();
+
+                if (_page == AdminPage.SoundsTableAmbience)
+                {
+                    // Re-render with fresh data.
+                    BuildSoundsTableAmbience();
+                    NavigationChanged?.Invoke();
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+            finally
+            {
+                IsBusy = false;
+                _tableAmbiencesRefreshInProgress = false;
+            }
+        }
+
+        private void BuildTableAmbienceNameForm(string mode, string title, string initialValue)
+        {
+            _page = AdminPage.EditText;
+            _currentEditMode = mode;
+            Title = title;
+            Items.Clear();
+            Items.Add(new AdminMenuItem("Valider", tag: "tableAmbience.submit"));
+            SelectedItem = Items.FirstOrDefault();
+            PrimaryInputAcceptsReturn = true;
+            TextInputLabel = "Nom";
+            TextInput = initialValue ?? string.Empty;
+            SecondaryInputLabel = string.Empty;
+            SecondaryInput = string.Empty;
+            IsTextInputVisible = true;
+            IsSecondaryInputVisible = false;
+            IsAdditionalPermissionsVisible = false;
+            Details = string.Empty;
+            Status = "Saisissez puis Entrée pour valider. Échap : retour.";
+            UpdateFilterVisibility();
+            RestoreFocusIfAny();
+        }
+
+        private async Task SubmitTableAmbienceAsync()
+        {
+            var jwt = _session.CurrentUser?.Token;
+            if (string.IsNullOrWhiteSpace(jwt))
+            {
+                await _dialogs.ShowError("Ambiances", "Connexion requise.").ConfigureAwait(true);
+                return;
+            }
+
+            var name = (TextInput ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                await _dialogs.ShowError("Ambiances", "Nom requis.").ConfigureAwait(true);
+                return;
+            }
+
+            var mode = _currentEditMode ?? string.Empty;
+
+            IsBusy = true;
+            try
+            {
+                if (string.Equals(mode, "tableAmbience.create", StringComparison.OrdinalIgnoreCase))
+                {
+                    var endpoint = new Uri(_config.HttpBase, "admin/sounds/table-ambiences");
+                    using var req = new HttpRequestMessage(HttpMethod.Post, endpoint);
+                    req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+                    req.Content = new StringContent(JsonSerializer.Serialize(new { name }), System.Text.Encoding.UTF8, "application/json");
+                    using var resp = await HttpClientProvider.Shared.SendAsync(req).ConfigureAwait(true);
+                    var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
+                    if (!resp.IsSuccessStatusCode)
+                    {
+                        var message = ApiErrorParser.TryExtractMessage(body) ?? body;
+                        await _dialogs.ShowError("Ambiances", $"Création échouée ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
+                        return;
+                    }
+
+                    await RefreshTableAmbiencesAsync(force: true).ConfigureAwait(true);
+                    BuildSoundsTableAmbience();
+                    NavigationChanged?.Invoke();
+                    await _dialogs.ShowInfo("Ambiances", "Ambiance créée.").ConfigureAwait(true);
+                    return;
+                }
+
+                if (string.Equals(mode, "tableAmbience.rename", StringComparison.OrdinalIgnoreCase))
+                {
+                    var selected = _selectedTableAmbience;
+                    if (selected == null || string.IsNullOrWhiteSpace(selected.SoundId))
+                    {
+                        await _dialogs.ShowError("Ambiances", "Ambiance introuvable.").ConfigureAwait(true);
+                        return;
+                    }
+
+                    var endpoint = new Uri(_config.HttpBase, $"admin/sounds/table-ambiences/{Uri.EscapeDataString(selected.SoundId)}");
+                    using var req = new HttpRequestMessage(HttpMethod.Put, endpoint);
+                    req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+                    req.Content = new StringContent(JsonSerializer.Serialize(new { name }), System.Text.Encoding.UTF8, "application/json");
+                    using var resp = await HttpClientProvider.Shared.SendAsync(req).ConfigureAwait(true);
+                    var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
+                    if (!resp.IsSuccessStatusCode)
+                    {
+                        var message = ApiErrorParser.TryExtractMessage(body) ?? body;
+                        await _dialogs.ShowError("Ambiances", $"Renommage échoué ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
+                        return;
+                    }
+
+                    selected.Name = name;
+                    await RefreshTableAmbiencesAsync(force: true).ConfigureAwait(true);
+                    BuildSoundsTableAmbienceActions(selected);
+                    NavigationChanged?.Invoke();
+                    await _dialogs.ShowInfo("Ambiances", "Ambiance renommée.").ConfigureAwait(true);
+                    return;
+                }
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        private async Task DeleteTableAmbienceAsync(AdminTableAmbienceDto ambience)
+        {
+            var jwt = _session.CurrentUser?.Token;
+            if (string.IsNullOrWhiteSpace(jwt))
+            {
+                await _dialogs.ShowError("Ambiances", "Connexion requise.").ConfigureAwait(true);
+                return;
+            }
+
+            if (ambience == null || string.IsNullOrWhiteSpace(ambience.SoundId))
+            {
+                await _dialogs.ShowError("Ambiances", "Ambiance introuvable.").ConfigureAwait(true);
+                return;
+            }
+
+            var confirm = await _dialogs.Confirm(
+                    "Ambiances",
+                    $"Supprimer l'ambiance \"{ambience.Name}\" ? (Le son associé sera aussi supprimé.)",
+                    okText: "Supprimer",
+                    cancelText: "Annuler")
+                .ConfigureAwait(true);
+
+            if (confirm != true)
+            {
+                return;
+            }
+
+            IsBusy = true;
+            try
+            {
+                var endpoint = new Uri(_config.HttpBase, $"admin/sounds/table-ambiences/{Uri.EscapeDataString(ambience.SoundId)}");
+                using var req = new HttpRequestMessage(HttpMethod.Delete, endpoint);
+                req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+                using var resp = await HttpClientProvider.Shared.SendAsync(req).ConfigureAwait(true);
+                var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
+                if (!resp.IsSuccessStatusCode)
+                {
+                    var message = ApiErrorParser.TryExtractMessage(body) ?? body;
+                    await _dialogs.ShowError("Ambiances", $"Suppression échouée ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
+                    return;
+                }
+
+                _selectedTableAmbience = null;
+                await RefreshTableAmbiencesAsync(force: true).ConfigureAwait(true);
+                BuildSoundsTableAmbience();
+                NavigationChanged?.Invoke();
+                await _dialogs.ShowInfo("Ambiances", "Ambiance supprimée.").ConfigureAwait(true);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
 	    private void BuildSoundsGames()

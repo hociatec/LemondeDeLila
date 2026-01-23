@@ -249,7 +249,7 @@
                         <Style TargetType="TextBlock">
                             <Setter Property="Visibility" Value="Visible"/>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding PendingChoices.Count}" Value="0">
+                                <DataTrigger Binding="{Binding DisplayChoices.Count}" Value="0">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding ChoicesLabel}" Value="">
@@ -263,53 +263,10 @@
                     </TextBlock.Style>
                 </TextBlock>
 
-                <!-- Quiz: afficher la question au-dessus des réponses, au même format que les items de la liste. -->
-                <Border Background="#10223A"
-                        BorderBrush="#1F3C60"
-                        BorderThickness="1"
-                        CornerRadius="6"
-                        Padding="10"
-                        Margin="0 10 0 0">
-                    <Border.Style>
-                        <Style TargetType="Border">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                            <Style.Triggers>
-                                <MultiDataTrigger>
-                                    <MultiDataTrigger.Conditions>
-                                        <Condition Binding="{Binding IsQuizPending}" Value="True" />
-                                        <Condition Binding="{Binding QuizQuestionText}" Value="{x:Null}" />
-                                    </MultiDataTrigger.Conditions>
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                </MultiDataTrigger>
-                                <DataTrigger Binding="{Binding IsQuizPending}" Value="True">
-                                    <Setter Property="Visibility" Value="Visible" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding QuizQuestionText}" Value="">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                    <!-- Use a readonly TextBox to ensure the element is reliably focusable for screen readers. -->
-                    <TextBox x:Name="QuizQuestionTextBlock"
-                             Text="{Binding QuizQuestionText}"
-                             Foreground="White"
-                             FontSize="12"
-                             TextWrapping="Wrap"
-                             AcceptsReturn="True"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             IsReadOnly="True"
-                             IsReadOnlyCaretVisible="False"
-                             CaretBrush="Transparent"
-                             Focusable="True"
-                             KeyboardNavigation.IsTabStop="False"
-                             AutomationProperties.LiveSetting="Polite"
-                             AutomationProperties.Name="{Binding QuizQuestionText}" />
-                </Border>
                 <ListBox x:Name="ChoicesList"
-                         ItemsSource="{Binding PendingChoices}"
-                         SelectedIndex="{Binding SelectedChoiceIndex, Mode=TwoWay}"
+                         ItemsSource="{Binding DisplayChoices}"
+                         DisplayMemberPath="Text"
+                         SelectedIndex="{Binding SelectedDisplayIndex, Mode=TwoWay}"
                          KeyDown="OnChoicesKeyDown"
                          PreviewKeyDown="OnChoicesPreviewKeyDown"
                          Margin="0 8 0 0"
@@ -357,7 +314,7 @@
                         <Style TargetType="ListBox">
                             <Setter Property="Visibility" Value="Visible"/>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding PendingChoices.Count}" Value="0">
+                                <DataTrigger Binding="{Binding DisplayChoices.Count}" Value="0">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                 </DataTrigger>
                             </Style.Triggers>

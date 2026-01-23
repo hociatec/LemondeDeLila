@@ -58,6 +58,21 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
+        if (_page == AdminPage.EditText &&
+            !string.IsNullOrWhiteSpace(_currentEditMode) &&
+            _currentEditMode.StartsWith("tableAmbience.", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.Equals(_currentEditMode, "tableAmbience.rename", StringComparison.OrdinalIgnoreCase) &&
+                _selectedTableAmbience != null)
+            {
+                BuildSoundsTableAmbienceActions(_selectedTableAmbience);
+                return AdminNavResult.Moved;
+            }
+
+            BuildSoundsTableAmbience();
+            return AdminNavResult.Moved;
+        }
+
         if (_page is AdminPage.MnemoQuizCategoryActions or AdminPage.MnemoQuizQuestions or AdminPage.MnemoQuizQuestionActions)
         {
             if (_selectedGame != null)
@@ -382,6 +397,12 @@ public sealed partial class AdminViewModel
 	            return AdminNavResult.Moved;
 	        }
 
+        if (_page == AdminPage.SoundsTableAmbienceActions)
+        {
+            BuildSoundsTableAmbience();
+            return AdminNavResult.Moved;
+        }
+
         if (_page == AdminPage.SoundDetails)
         {
 	            switch (_soundDetailsReturnPage)
@@ -391,6 +412,16 @@ public sealed partial class AdminViewModel
 	                    break;
                     case AdminPage.SoundsTableAmbience:
                         BuildSoundsTableAmbience();
+                        break;
+                    case AdminPage.SoundsTableAmbienceActions:
+                        if (_selectedTableAmbience != null)
+                        {
+                            BuildSoundsTableAmbienceActions(_selectedTableAmbience);
+                        }
+                        else
+                        {
+                            BuildSoundsTableAmbience();
+                        }
                         break;
 	                case AdminPage.SoundsGames:
 	                    BuildSoundsGames();

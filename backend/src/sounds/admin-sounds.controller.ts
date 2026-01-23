@@ -1,9 +1,12 @@
 import {
   BadRequestException,
   Controller,
+  Body,
   Delete,
+  Get,
   Param,
   Post,
+  Put,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -23,6 +26,26 @@ export class AdminSoundsController {
   @Post('cleanup')
   async cleanup() {
     return this.sounds.cleanupUnusedSounds();
+  }
+
+  @Get('table-ambiences')
+  async listTableAmbiences() {
+    return this.sounds.listTableAmbiences();
+  }
+
+  @Post('table-ambiences')
+  async createTableAmbience(@Body() body: any) {
+    return this.sounds.createTableAmbience(body?.name);
+  }
+
+  @Put('table-ambiences/:soundId')
+  async renameTableAmbience(@Param('soundId') soundId: string, @Body() body: any) {
+    return this.sounds.renameTableAmbience(soundId, body?.name);
+  }
+
+  @Delete('table-ambiences/:soundId')
+  async deleteTableAmbience(@Param('soundId') soundId: string) {
+    return this.sounds.deleteTableAmbience(soundId);
   }
 
   @Post(':soundId')

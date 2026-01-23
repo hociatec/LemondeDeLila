@@ -29,6 +29,11 @@ export class SoundsController {
     return this.sounds.getPublicManifest(origin);
   }
 
+  @Get('table-ambiences')
+  async tableAmbiences() {
+    return this.sounds.listTableAmbiences();
+  }
+
   @Get(':soundId/:sha.mp3')
   async getSound(
     @Param('soundId') soundId: string,

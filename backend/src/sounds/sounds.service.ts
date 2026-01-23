@@ -11,6 +11,9 @@ import {
   SoundKey,
   SoundManifest,
   SoundManifestEntry,
+  TableAmbienceDefinition,
+  TableAmbienceDefinitionsFile,
+  TableAmbienceSoundKey,
 } from './sounds.types';
 import { NotificationService } from '../notification/services/notification.service';
 
@@ -50,6 +53,10 @@ export class SoundsService {
     return path.join(this.dataRoot(), 'manifest.json');
   }
 
+  private tableAmbiencesPath() {
+    return path.join(this.dataRoot(), 'table-ambiences.json');
+  }
+
   private normalizeSoundKey(input: string): SoundKey {
     const raw = (input || '').trim();
     const found = SOUND_KEYS.find((k) => k.toLowerCase() === raw.toLowerCase());
@@ -57,6 +64,14 @@ export class SoundsService {
       throw new BadRequestException(`soundId invalide: ${raw}`);
     }
     return found;
+  }
+
+  private normalizeTableAmbienceKey(input: string): TableAmbienceSoundKey {
+    const soundId = this.normalizeSoundKey(input);
+    if (!/^TableAmbience\\d+$/i.test(soundId)) {
+      throw new BadRequestException(`Ambiance de table invalide: ${soundId}`);
+    }
+    return soundId as TableAmbienceSoundKey;
   }
 
   private async readManifest(): Promise<SoundManifest> {
@@ -81,6 +96,141 @@ export class SoundsService {
       JSON.stringify(next, null, 2),
       'utf-8',
     );
+  }
+
+  private async readTableAmbiences(): Promise<TableAmbienceDefinitionsFile> {
+    const file = this.tableAmbiencesPath();
+    try {
+      const raw = await fs.promises.readFile(file, 'utf-8');
+      const parsed = JSON.parse(raw.replace(/^\uFEFF/, '')) as any;
+      const itemsRaw = Array.isArray(parsed?.items) ? parsed.items : [];
+      const items: TableAmbienceDefinition[] = itemsRaw
+        .map((it: any) => ({
+          soundId: this.normalizeTableAmbienceKey(String(it?.soundId ?? '')),
+          name: String(it?.name ?? '').trim(),
+        }))
+        .filter((it: TableAmbienceDefinition) => it.soundId && it.name);
+
+      const seen = new Set<string>();
+      const deduped: TableAmbienceDefinition[] = [];
+      for (const it of items) {
+        const k = it.soundId.toLowerCase();
+        if (seen.has(k)) continue;
+        seen.add(k);
+        deduped.push(it);
+      }
+
+      return {
+        updatedAt:
+          typeof parsed?.updatedAt === 'string' && parsed.updatedAt.trim()
+            ? parsed.updatedAt
+            : new Date().toISOString(),
+        items: deduped,
+      };
+    } catch {
+      return { updatedAt: new Date().toISOString(), items: [] };
+    }
+  }
+
+  private async writeTableAmbiences(next: TableAmbienceDefinitionsFile) {
+    const root = this.dataRoot();
+    await fs.promises.mkdir(root, { recursive: true });
+    await fs.promises.writeFile(
+      this.tableAmbiencesPath(),
+      JSON.stringify(next, null, 2),
+      'utf-8',
+    );
+  }
+
+  async listTableAmbiences(): Promise<TableAmbienceDefinitionsFile> {
+    return this.readTableAmbiences();
+  }
+
+  async createTableAmbience(nameRaw: string): Promise<TableAmbienceDefinition> {
+    const name = String(nameRaw ?? '').trim();
+    if (!name) {
+      throw new BadRequestException("Nom d'ambiance requis.");
+    }
+
+    const current = await this.readTableAmbiences();
+    const used = new Set(current.items.map((i) => i.soundId.toLowerCase()));
+    const available = (SOUND_KEYS.filter((k) =>
+      /^TableAmbience\\d+$/.test(k),
+    ) as TableAmbienceSoundKey[]).find((k) => !used.has(k.toLowerCase()));
+    if (!available) {
+      throw new BadRequestException(
+        'Nombre maximum atteint (20 ambiances de table).',
+      );
+    }
+
+    const created: TableAmbienceDefinition = { soundId: available, name };
+    const next: TableAmbienceDefinitionsFile = {
+      updatedAt: new Date().toISOString(),
+      items: [...current.items, created],
+    };
+    await this.writeTableAmbiences(next);
+
+    await this.notifications.notifyAll('sounds.tableAmbiences.updated', {
+      updatedAt: next.updatedAt,
+    });
+
+    return created;
+  }
+
+  async renameTableAmbience(
+    soundIdRaw: string,
+    nameRaw: string,
+  ): Promise<TableAmbienceDefinition> {
+    const soundId = this.normalizeTableAmbienceKey(soundIdRaw);
+    const name = String(nameRaw ?? '').trim();
+    if (!name) {
+      throw new BadRequestException("Nom d'ambiance requis.");
+    }
+
+    const current = await this.readTableAmbiences();
+    const idx = current.items.findIndex(
+      (i) => i.soundId.toLowerCase() === soundId.toLowerCase(),
+    );
+    if (idx < 0) {
+      throw new NotFoundException('Ambiance de table introuvable.');
+    }
+
+    const nextItems = [...current.items];
+    nextItems[idx] = { soundId: soundId as TableAmbienceSoundKey, name };
+    const next: TableAmbienceDefinitionsFile = {
+      updatedAt: new Date().toISOString(),
+      items: nextItems,
+    };
+    await this.writeTableAmbiences(next);
+
+    await this.notifications.notifyAll('sounds.tableAmbiences.updated', {
+      updatedAt: next.updatedAt,
+    });
+
+    return nextItems[idx];
+  }
+
+  async deleteTableAmbience(soundIdRaw: string): Promise<{ ok: true }> {
+    const soundId = this.normalizeTableAmbienceKey(soundIdRaw);
+
+    const current = await this.readTableAmbiences();
+    const nextItems = current.items.filter(
+      (i) => i.soundId.toLowerCase() !== soundId.toLowerCase(),
+    );
+    const next: TableAmbienceDefinitionsFile = {
+      updatedAt: new Date().toISOString(),
+      items: nextItems,
+    };
+    await this.writeTableAmbiences(next);
+
+    // Also clear associated sound to free the slot completely.
+    await this.clearSound(soundId);
+
+    await this.notifications.notifyAll('sounds.tableAmbiences.updated', {
+      updatedAt: next.updatedAt,
+    });
+
+    return { ok: true };
   }
 
   async getPublicManifest(origin?: string | null): Promise<SoundManifest> {

@@ -353,6 +353,12 @@ public sealed partial class AdminViewModel
                 return;
             }
 
+            if (_page == AdminPage.EditText && tag is string submitTableAmbience && submitTableAmbience == "tableAmbience.submit")
+            {
+                await SubmitTableAmbienceAsync().ConfigureAwait(true);
+                return;
+            }
+
             if (_page == AdminPage.RoomsJoinSilent && tag is string joinTag)
             {
                 const string prefix = "rooms.join.silent.open:";
@@ -564,18 +570,63 @@ public sealed partial class AdminViewModel
 
             if (_page == AdminPage.SoundsTableAmbience && tag is string tableAmbienceSound)
             {
-                const string prefix = "sounds.table.ambience.";
-                if (tableAmbienceSound.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
-                    int.TryParse(tableAmbienceSound.Substring(prefix.Length), out var idx) &&
-                    idx >= 1 && idx <= 20 &&
-                    Enum.TryParse<Modules.Audio.Models.SoundId>($"TableAmbience{idx}", ignoreCase: true, out var sound))
+                if (tableAmbienceSound == "tableAmbience.create")
                 {
                     PushReturnFocus();
-                    BuildSoundDetails(
-                        sound,
-                        returnPageOverride: AdminPage.SoundsTableAmbience,
-                        groupOverride: "Table",
-                        titleOverride: $"Ambiance de table {idx}");
+                    BuildTableAmbienceNameForm(
+                        mode: "tableAmbience.create",
+                        title: "Ajouter une ambiance de table",
+                        initialValue: string.Empty);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.SoundsTableAmbience && tag is AdminTableAmbienceDto ambience)
+            {
+                PushReturnFocus();
+                BuildSoundsTableAmbienceActions(ambience);
+                return;
+            }
+
+            if (_page == AdminPage.SoundsTableAmbienceActions && tag is string tableAmbienceAction)
+            {
+                var selected = _selectedTableAmbience;
+                if (selected == null)
+                {
+                    BuildSoundsTableAmbience();
+                    return;
+                }
+
+                if (tableAmbienceAction == "tableAmbience.rename")
+                {
+                    PushReturnFocus();
+                    BuildTableAmbienceNameForm(
+                        mode: "tableAmbience.rename",
+                        title: $"Renommer : {selected.Name}",
+                        initialValue: selected.Name);
+                    return;
+                }
+
+                if (tableAmbienceAction == "tableAmbience.sound")
+                {
+                    if (Enum.TryParse<Modules.Audio.Models.SoundId>(selected.SoundId ?? string.Empty, ignoreCase: true, out var sid))
+                    {
+                        PushReturnFocus();
+                        BuildSoundDetails(
+                            sid,
+                            returnPageOverride: AdminPage.SoundsTableAmbienceActions,
+                            groupOverride: "Table",
+                            titleOverride: selected.Name);
+                        return;
+                    }
+
+                    Status = "Son invalide.";
+                    return;
+                }
+
+                if (tableAmbienceAction == "tableAmbience.delete")
+                {
+                    await DeleteTableAmbienceAsync(selected).ConfigureAwait(true);
                     return;
                 }
             }

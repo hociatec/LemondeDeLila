@@ -72,3 +72,15 @@ export type SoundManifest = {
   updatedAt: string; // ISO
   sounds: Partial<Record<SoundKey, SoundManifestEntry>>;
 };
+
+export type TableAmbienceSoundKey = Extract<SoundKey, `TableAmbience${number}`>;
+
+export type TableAmbienceDefinition = {
+  soundId: TableAmbienceSoundKey;
+  name: string;
+};
+
+export type TableAmbienceDefinitionsFile = {
+  updatedAt: string; // ISO
+  items: TableAmbienceDefinition[];
+};
