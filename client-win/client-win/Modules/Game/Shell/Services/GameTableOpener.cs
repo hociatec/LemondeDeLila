@@ -1140,6 +1140,26 @@ public sealed class GameTableOpener : IGameTableOpener
                         : $"Table rejointe : {game.Name}.";
                     new GameHistorySink(dispatcher, vm.History, _announcementService).Add(createdMessage);
 
+                    // Preload table + common gameplay one-shots early (async/background) so first actions feel snappy.
+                    try
+                    {
+                        _sounds.Preload(SoundId.RoomOpened);
+                        _sounds.Preload(SoundId.RoomJoined);
+                        _sounds.Preload(SoundId.DiceRolled);
+                        _sounds.Preload(SoundId.QuizCorrect);
+                        _sounds.Preload(SoundId.QuizWrong);
+                        _sounds.Preload(SoundId.RoundEnded);
+                        _sounds.Preload(SoundId.PawnPicked);
+                        _sounds.Preload(SoundId.PawnPlacedSelf);
+                        _sounds.Preload(SoundId.PawnPlacedOpponent);
+                        _sounds.Preload(SoundId.WallPlacedSelf);
+                        _sounds.Preload(SoundId.WallPlacedOpponent);
+                    }
+                    catch
+                    {
+                        // best-effort
+                    }
+
                     try { _sounds.Play(isNew ? SoundId.RoomOpened : SoundId.RoomJoined); } catch { }
 
                     bindings = new GameTableBindings(
@@ -1159,15 +1179,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     // (MediaOpened / cache distant) lors du premier déclenchement.
                     try
                     {
-                        _sounds.Preload(SoundId.DiceRolled);
-                        _sounds.Preload(SoundId.QuizCorrect);
-                        _sounds.Preload(SoundId.QuizWrong);
-                        _sounds.Preload(SoundId.RoundEnded);
-                        _sounds.Preload(SoundId.PawnPicked);
-                        _sounds.Preload(SoundId.PawnPlacedSelf);
-                        _sounds.Preload(SoundId.PawnPlacedOpponent);
-                        _sounds.Preload(SoundId.WallPlacedSelf);
-                        _sounds.Preload(SoundId.WallPlacedOpponent);
+                        // Already preloaded above (best-effort).
                     }
                     catch
                     {

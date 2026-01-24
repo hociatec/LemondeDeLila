@@ -73,6 +73,9 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         TryPreload(SoundId.MainMenuMusic);
         TryPreload(SoundId.TavernAmbience);
         TryPreload(SoundId.TavernOpened);
+        // Reduce first-play latency for table one-shots.
+        TryPreload(SoundId.RoomOpened);
+        TryPreload(SoundId.RoomJoined);
     }
 
     private static string GetStartupSoundMarkerPath()
@@ -401,6 +404,9 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             TryPreload(SoundId.TavernOpened);
             TryPreload(SoundId.ClientConnected);
             TryPreload(SoundId.ClientDisconnected);
+            // Table one-shots: preload early so "RoomOpened/Joined" feels instant when opening a table.
+            TryPreload(SoundId.RoomOpened);
+            TryPreload(SoundId.RoomJoined);
 
             if (reapplyBackground)
             {

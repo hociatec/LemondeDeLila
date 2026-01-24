@@ -511,14 +511,9 @@ public sealed class SoundService : ISoundService, IDisposable
             }
         }
 
-        if (_dispatcher.CheckAccess())
-        {
-            PreloadOnUiThread();
-        }
-        else
-        {
-            _ = _dispatcher.BeginInvoke((Action)PreloadOnUiThread, DispatcherPriority.Background);
-        }
+        // Never block the UI thread with preload IO/decoder warm-up: it can delay first user-feedback sounds
+        // and create "bursts" when queued playbacks catch up.
+        _ = _dispatcher.BeginInvoke((Action)PreloadOnUiThread, DispatcherPriority.Background);
     }
 
     public void Preload(SoundId sound, bool warmUp = false)
@@ -563,14 +558,8 @@ public sealed class SoundService : ISoundService, IDisposable
             }
         }
 
-        if (_dispatcher.CheckAccess())
-        {
-            PreloadOnUiThread();
-        }
-        else
-        {
-            _ = _dispatcher.BeginInvoke((Action)PreloadOnUiThread, DispatcherPriority.Background);
-        }
+        // Always schedule preloads in the background to avoid blocking gameplay/UI interactions.
+        _ = _dispatcher.BeginInvoke((Action)PreloadOnUiThread, DispatcherPriority.Background);
     }
 
     public void Play(SoundId sound)
