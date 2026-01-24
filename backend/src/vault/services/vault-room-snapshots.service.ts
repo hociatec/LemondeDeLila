@@ -316,6 +316,10 @@ export class VaultRoomSnapshotsService {
     return { roomId: created.id };
   }
 
+  /**
+   * Supprime une table créée via restauration (sans supprimer la sauvegarde).
+   * Utilisé quand le propriétaire quitte la table (Q) sans la re-sauvegarder.
+   */
   async abandonRestoredRoom(
     ownerUserId: number,
     roomId: number,
@@ -330,7 +334,6 @@ export class VaultRoomSnapshotsService {
 
     const meta = this.restoredRoomsById.get(id);
     if (!meta || meta.ownerUserId !== ownerUserId) {
-      // Ne permet pas de détruire une room "normale" via cette route.
       return false;
     }
 
