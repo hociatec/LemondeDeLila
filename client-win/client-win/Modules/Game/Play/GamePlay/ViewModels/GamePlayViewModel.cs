@@ -43,6 +43,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
         // Index into PendingChoices (server/local choice list). Null => informational line (quiz question).
         public int? ChoiceIndex { get; }
+
+        public override string ToString() => Text;
     }
 
     private readonly Dispatcher _dispatcher;

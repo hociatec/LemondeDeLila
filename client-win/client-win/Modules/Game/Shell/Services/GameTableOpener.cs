@@ -558,7 +558,20 @@ public sealed class GameTableOpener : IGameTableOpener
                 {
                     try
                     {
-                        if (forceTavern || returnContent is GameRoomViewModel)
+                        if (forceTavern)
+                        {
+                            // Après une sauvegarde (Ctrl+S) : revenir à la racine de la taverne (étagères)
+                            // quand on vient du catalogue, plutôt que d'atterrir sur "Rejoindre une table".
+                            if (returnContent is client_win.Modules.Catalog.ViewModels.CatalogViewModel)
+                            {
+                                _navigation.Show(returnContent);
+                            }
+                            else
+                            {
+                                _navigation.Show(BuildTavernFallback());
+                            }
+                        }
+                        else if (returnContent is GameRoomViewModel)
                         {
                             _navigation.Show(BuildTavernFallback());
                         }
@@ -743,7 +756,7 @@ public sealed class GameTableOpener : IGameTableOpener
             else
             {
                 // Compat: si le serveur ne supporte pas encore les ambiances nommées.
-                for (var i = 1; i <= 20; i++)
+                for (var i = 1; i <= 0; i++)
                 {
                     var id = $"TableAmbience{i}";
                     var configured = Enum.TryParse<SoundId>(id, ignoreCase: true, out var sound) &&
@@ -840,7 +853,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     else
                     {
                         // Compat: si le serveur ne supporte pas encore les ambiances nommées.
-                        for (var i = 1; i <= 20; i++)
+                        for (var i = 1; i <= 0; i++)
                         {
                             var id = $"TableAmbience{i}";
                             var configured = Enum.TryParse<SoundId>(id, ignoreCase: true, out var sound) &&

@@ -332,7 +332,9 @@ public sealed partial class AdminViewModel
             IsTextInputVisible = true;
             IsSecondaryInputVisible = false;
             IsAdditionalPermissionsVisible = false;
-            Details = string.Empty;
+            Details = string.Equals(mode, "tableAmbience.create", StringComparison.OrdinalIgnoreCase)
+                ? "Donnez un nom Ã  l'ambiance. Le fichier .mp3 se choisit ensuite via \"Changer le son (.mp3)\"."
+                : string.Empty;
             Status = "Saisissez puis Entrée pour valider. Échap : retour.";
             UpdateFilterVisibility();
             RestoreFocusIfAny();
@@ -370,12 +372,43 @@ public sealed partial class AdminViewModel
                     if (!resp.IsSuccessStatusCode)
                     {
                         var message = ApiErrorParser.TryExtractMessage(body) ?? body;
+                        if (message.Contains("Nombre maximum atteint", StringComparison.OrdinalIgnoreCase))
+                        {
+                            message += " (Supprimez une ambiance existante pour libÃ©rer un slot.)";
+                        }
                         await _dialogs.ShowError("Ambiances", $"Création échouée ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
                         return;
                     }
 
+                    string? createdSoundId = null;
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(body);
+                        if (doc.RootElement.ValueKind == JsonValueKind.Object &&
+                            doc.RootElement.TryGetProperty("soundId", out var sid) &&
+                            sid.ValueKind == JsonValueKind.String)
+                        {
+                            createdSoundId = (sid.GetString() ?? string.Empty).Trim();
+                        }
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+
                     await RefreshTableAmbiencesAsync(force: true).ConfigureAwait(true);
-                    BuildSoundsTableAmbience();
+                    var created = !string.IsNullOrWhiteSpace(createdSoundId)
+                        ? (_tableAmbiences ?? Array.Empty<AdminTableAmbienceDto>()).FirstOrDefault(a =>
+                            string.Equals((a.SoundId ?? string.Empty).Trim(), createdSoundId, StringComparison.OrdinalIgnoreCase))
+                        : null;
+                    if (created != null)
+                    {
+                        BuildSoundsTableAmbienceActions(created);
+                    }
+                    else
+                    {
+                        BuildSoundsTableAmbience();
+                    }
                     NavigationChanged?.Invoke();
                     await _dialogs.ShowInfo("Ambiances", "Ambiance créée.").ConfigureAwait(true);
                     return;

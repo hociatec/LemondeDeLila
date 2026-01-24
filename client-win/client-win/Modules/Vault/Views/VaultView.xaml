@@ -43,11 +43,10 @@
                          AutomationProperties.Name="Liste des sauvegardes">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Margin="0 6 0 6">
-                                <TextBlock Text="{Binding Name}" FontSize="16" />
-                                <TextBlock Text="{Binding RoomName}" Foreground="#9CB2D1" FontSize="13" />
-                                <TextBlock Text="{Binding PlayersLabel}" Foreground="#9CB2D1" FontSize="13" />
-                            </StackPanel>
+                            <TextBlock Text="{Binding DisplayLabel}"
+                                       FontSize="16"
+                                       Margin="0 6 0 6"
+                                       TextWrapping="Wrap" />
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
@@ -77,4 +76,3 @@
         </StackPanel>
     </Grid>
 </UserControl>
-
