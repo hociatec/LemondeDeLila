@@ -18,6 +18,9 @@ npm run migration:run:dev     # crée/maj le schéma MySQL local
 npm run start:dev             # API + gateways en mode watch
 ```
 
+> Note (production/local) : si vous démarrez avec `NODE_ENV=production`, le backend charge aussi `.env` par défaut.
+> Pour forcer un mode "env-only" (systemd/docker), définissez `IGNORE_ENV_FILE=true`.
+
 ### Générer des clés JWT RS256
 
 ```bash

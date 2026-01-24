@@ -1,8 +1,11 @@
 import { DataSource } from 'typeorm';
 import { ORM_ENTITIES } from './database/entities';
 
-const isProd = process.env.NODE_ENV === 'production';
-if (!isProd) {
+const shouldIgnoreEnvFile =
+  (process.env.IGNORE_ENV_FILE || '').toLowerCase().trim() === 'true';
+if (!shouldIgnoreEnvFile) {
+  // Load `.env` for migrations as well (default behavior).
+  // When env vars come from systemd/docker, set `IGNORE_ENV_FILE=true`.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('dotenv/config');
 }
@@ -16,6 +19,7 @@ const {
   DB_NAME = 'le_monde_de_lila',
 } = process.env;
 
+const isProd = process.env.NODE_ENV === 'production';
 const base = DATABASE_URL
   ? {
       type: 'mysql' as const,

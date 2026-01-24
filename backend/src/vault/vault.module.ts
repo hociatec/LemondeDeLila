@@ -10,12 +10,14 @@ import { GameModule } from '../game/game.module';
 import { PresenceModule } from '../presence/presence.module';
 import { NotificationModule } from '../notification/notification.module';
 import { RoomBot } from '../room/entities/room-bot.entity';
+import { GameRegistryModule } from '../game/engine/game-registry.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([VaultRoomSnapshotEntity, RoomBot]),
     RoomModule,
     BotModule,
+    GameRegistryModule,
     GameModule,
     PresenceModule,
     NotificationModule,

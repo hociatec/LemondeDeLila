@@ -36,8 +36,12 @@ import { VaultModule } from './vault/vault.module';
     RedisModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      // In production we rely on systemd-provided environment variables; avoid loading a local .env file.
-      ignoreEnvFile: process.env.NODE_ENV === 'production',
+      // Default: load `.env` when present (even in production) to avoid "works in dev, fails in prod"
+      // when users run `NODE_ENV=production node dist/main` without a systemd EnvironmentFile.
+      //
+      // To force env-only (systemd/docker secrets), set `IGNORE_ENV_FILE=true`.
+      ignoreEnvFile:
+        (process.env.IGNORE_ENV_FILE || '').toLowerCase().trim() === 'true',
       validationSchema: Joi.object({
         NODE_ENV: Joi.string()
           .valid('development', 'production', 'test')
