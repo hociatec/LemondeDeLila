@@ -460,15 +460,8 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 
       answers[actorId] = answerIndex;
 
-      const choice = question.choices[answerIndex] ?? '';
-      const correct = choice === question.correctChoice;
       const who = this.playerName(state, actorId);
-      const withLog = this.core.appendLog(
-        state,
-        correct
-          ? `${who} répond : ${choice}. Bonne réponse.`
-          : `${who} répond : ${choice}. Mauvaise réponse.`,
-      );
+      const withLog = this.core.appendLog(state, `${who} a répondu.`);
 
       return { ...withLog, metadata: { ...meta, quizAnswersByPlayerId: answers } };
     }
@@ -707,15 +700,8 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 
       answers[actorId] = answerIndex;
 
-      const choice = question.choices[answerIndex] ?? '';
-      const correct = choice === question.correctChoice;
       const who = this.playerName(state, actorId);
-      const withLog = this.core.appendLog(
-        state,
-        correct
-          ? `${who} répond : ${choice}. Bonne réponse.`
-          : `${who} répond : ${choice}. Mauvaise réponse.`,
-      );
+      const withLog = this.core.appendLog(state, `${who} a répondu.`);
 
       return { ...withLog, metadata: { ...meta, quizAnswersByPlayerId: answers } };
 
@@ -877,6 +863,21 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 	    }
 
     if (force || endedBecauseAllAnswered) {
+      for (const id of playerIds) {
+        const idx = answers[id];
+        const who = this.playerName(next, id);
+        if (idx == null) {
+          next = this.core.appendLog(next, `${who} répond : Temps écoulé.`);
+          continue;
+        }
+        const choice = q.choices[Number(idx)] ?? '';
+        const correct = choice === q.correctChoice;
+        next = this.core.appendLog(
+          next,
+          correct ? `${who} répond : Bonne réponse.` : `${who} répond : Mauvaise réponse.`,
+        );
+      }
+
       if (wrongAnsweredIds.length) {
         next = this.core.appendLog(next, `La bonne réponse était : ${q.correctChoice}.`);
       }

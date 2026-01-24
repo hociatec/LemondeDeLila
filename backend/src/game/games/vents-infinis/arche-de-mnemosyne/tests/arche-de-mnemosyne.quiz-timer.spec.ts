@@ -83,6 +83,10 @@ describe("ArcheDeMnemosyneService quiz timer", () => {
       { type: 'answer_quiz', payload: { answerIndex: 1 }, meta: { actorId: 2 } } as any,
     ]);
     const messages = (afterB.log ?? []).map((l: any) => String(l?.message ?? ''));
+    expect(messages.some((m: string) => m === 'A répond : Bonne réponse.')).toBe(true);
+    expect(messages.some((m: string) => m === 'B répond : Mauvaise réponse.')).toBe(true);
+    expect(messages.some((m: string) => m.includes('répond : A.'))).toBe(false);
+    expect(messages.some((m: string) => m.includes('répond : B.'))).toBe(false);
     expect(messages.some((m: string) => m.includes('La bonne réponse était'))).toBe(true);
     expect(messages.some((m: string) => m.includes('Prochaine question dans 5 secondes'))).toBe(true);
     expect(messages.some((m: string) => m === 'Fin de la manche 1.')).toBe(true);
@@ -140,6 +144,8 @@ describe("ArcheDeMnemosyneService quiz timer", () => {
     ]);
 
     const messages = (after.log ?? []).map((l: any) => String(l?.message ?? ''));
+    expect(messages.some((m: string) => m === 'Lilas répond : Mauvaise réponse.')).toBe(true);
+    expect(messages.some((m: string) => m === 'Bot répond : Temps écoulé.')).toBe(true);
     expect(messages.some((m: string) => m.includes('La bonne réponse était'))).toBe(true);
     expect(messages.some((m: string) => m.includes('Prochaine question dans 5 secondes'))).toBe(true);
     expect(messages.some((m: string) => m === 'Fin de la manche 1.')).toBe(true);
