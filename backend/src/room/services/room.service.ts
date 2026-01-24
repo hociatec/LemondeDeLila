@@ -12,6 +12,7 @@ import { IsNull, Repository } from 'typeorm';
 import { Room } from '../entities/room.entity';
 import { RoomParticipant } from '../entities/room-participant.entity';
 import { User } from '../../user/entities/user.entity';
+import { VaultRoomSnapshotEntity } from '../../vault/entities/vault-room-snapshot.entity';
 import { RoomPayload } from '../dto/room-response.dto';
 import { BotService } from '../../bot/services/bot.service';
 import { PresenceService } from '../../presence/services/presence.service';
@@ -359,6 +360,8 @@ export class RoomService {
     @InjectRepository(Room) private readonly rooms: Repository<Room>,
     @InjectRepository(RoomParticipant)
     private readonly participants: Repository<RoomParticipant>,
+    @InjectRepository(VaultRoomSnapshotEntity)
+    private readonly vaultSnapshots: Repository<VaultRoomSnapshotEntity>,
     @InjectRepository(User) private readonly users: Repository<User>,
     @Inject(forwardRef(() => BotService))
     private readonly botService: BotService,
@@ -583,6 +586,45 @@ export class RoomService {
       await this.participants.save(participant);
     }
     await this.invalidateRoomPayloadCache(room.id);
+
+    // Special case: if this room was created by restoring a vault snapshot and the original
+    // restorer quits without re-saving, we delete both the room and the snapshot to avoid "phantom rooms".
+    if (
+      participant &&
+      opts?.disconnectOnly !== true &&
+      opts?.preserveRoom !== true &&
+      room.restoredFromSnapshotId &&
+      room.restoredOwnerUserId === userId
+    ) {
+      const snapshotId = String(room.restoredFromSnapshotId ?? '').trim();
+      this.logger.log('Restored room abandoned (delete room + snapshot)', {
+        roomId: room.id,
+        userId,
+        snapshotId: snapshotId || null,
+      });
+
+      try {
+        await this.roomDeletedNotifier?.(room.id);
+      } catch {
+        // best effort
+      }
+
+      // Best-effort: delete the vault snapshot entry (the room deletion is the main goal).
+      if (snapshotId) {
+        try {
+          await this.vaultSnapshots.delete({ id: snapshotId, ownerUserId: userId } as any);
+        } catch {
+          // best effort
+        }
+      }
+
+      await this.rooms.delete(room.id);
+      this.roomBans.delete(room.id);
+      await this.invalidateRoomPayloadCache(room.id);
+      this.presenceService.broadcastPresence();
+      this.notifyDirectoryChanged(room.id, 'deleted');
+      return null;
+    }
 
     // Quit explicite d'une partie démarrée = "partie quittée" dans les stats.
     // (Ne pas le faire en mode disconnectOnly, déjà géré plus haut.)

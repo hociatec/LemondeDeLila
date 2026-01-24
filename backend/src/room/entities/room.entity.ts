@@ -49,6 +49,20 @@ export class Room {
   @Column({ name: 'table_ambience_sound_id', type: 'varchar', length: 50, nullable: true })
   tableAmbienceSoundId?: string | null;
 
+  // Optional: when this room was created by restoring a vault snapshot, we keep a back-reference.
+  // Used to delete "restored rooms" when the original owner quits without re-saving.
+  @Column({
+    name: 'restored_from_snapshot_id',
+    type: 'varchar',
+    length: 64,
+    nullable: true,
+  })
+  restoredFromSnapshotId?: string | null;
+
+  // User id of the original restorer (can differ from current owner if ownership is transferred).
+  @Column({ name: 'restored_owner_user_id', type: 'int', nullable: true })
+  restoredOwnerUserId?: number | null;
+
   @OneToMany(() => RoomParticipant, (p) => p.room)
   participants!: RoomParticipant[];
 

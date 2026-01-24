@@ -22,6 +22,7 @@ import { RoomRealtimeTrackerService } from './services/room-realtime-tracker.ser
 import { RoomAutoCleanupService } from './services/room-auto-cleanup.service';
 import { RoomMaintenanceSettingsService } from './services/room-maintenance-settings.service';
 import { RoomMaintenanceSettingsEntity } from './entities/room-maintenance-settings.entity';
+import { VaultRoomSnapshotEntity } from '../vault/entities/vault-room-snapshot.entity';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { RoomMaintenanceSettingsEntity } from './entities/room-maintenance-setti
       RoomParticipant,
       RoomBot,
       RoomMaintenanceSettingsEntity,
+      VaultRoomSnapshotEntity,
       User,
     ]),
     forwardRef(() => BotModule),

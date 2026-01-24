@@ -15,11 +15,6 @@ import type { GameStateEntity } from '../../game/core/entities/game-state.entity
 
 @Injectable()
 export class VaultRoomSnapshotsService {
-  private readonly restoredRoomsById = new Map<
-    number,
-    { ownerUserId: number; snapshotId: string }
-  >();
-
   constructor(
     @InjectRepository(VaultRoomSnapshotEntity)
     private readonly snapshots: Repository<VaultRoomSnapshotEntity>,
@@ -240,7 +235,15 @@ export class VaultRoomSnapshotsService {
       snapshot.room.maxPlayers,
       snapshot.room.isPrivate,
     );
-    this.restoredRoomsById.set(created.id, { ownerUserId, snapshotId: id });
+    // Mark room as "restored from vault" (persisted) so we can clean it up on owner quit.
+    try {
+      const room = await this.rooms.requireRoomForOwnerAction(created.id, ownerUserId);
+      (room as any).restoredFromSnapshotId = id;
+      (room as any).restoredOwnerUserId = ownerUserId;
+      await this.rooms.saveRoom(room);
+    } catch {
+      // best-effort
+    }
 
     // Join all other human players.
     for (const p of humans) {
@@ -332,15 +335,35 @@ export class VaultRoomSnapshotsService {
       throw new BadRequestException('roomId invalide');
     }
 
-    const meta = this.restoredRoomsById.get(id);
-    if (!meta || meta.ownerUserId !== ownerUserId) {
+    let snapshotId: string | null = null;
+    try {
+      const room = await this.rooms.requireRoomForOwnerAction(id, ownerUserId);
+      snapshotId =
+        typeof (room as any).restoredFromSnapshotId === 'string'
+          ? String((room as any).restoredFromSnapshotId).trim() || null
+          : null;
+      const restoredOwner =
+        typeof (room as any).restoredOwnerUserId === 'number'
+          ? Number((room as any).restoredOwnerUserId)
+          : null;
+      if (!snapshotId || restoredOwner !== ownerUserId) {
+        return false;
+      }
+    } catch {
       return false;
     }
 
     try {
       await this.rooms.adminDestroyRoom(id);
-    } finally {
-      this.restoredRoomsById.delete(id);
+    } catch {
+      return false;
+    }
+
+    // Best-effort: also delete the snapshot entry.
+    try {
+      await this.snapshots.delete({ id: snapshotId, ownerUserId } as any);
+    } catch {
+      // best-effort
     }
 
     return true;

@@ -460,10 +460,9 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 
       answers[actorId] = answerIndex;
 
-      const who = this.playerName(state, actorId);
-      const withLog = this.core.appendLog(state, `${who} a répondu.`);
-
-      return { ...withLog, metadata: { ...meta, quizAnswersByPlayerId: answers } };
+      // Ne pas annoncer les réponses/état des autres joueurs pendant la question (évite l'effet "triche").
+      // Les résultats sont annoncés à la fin (quand tout le monde a répondu / temps écoulé).
+      return { ...state, metadata: { ...meta, quizAnswersByPlayerId: answers } };
     }
 
     if (!this.isOwner(state, (action as any)?.meta?.actorId ?? null)) {
@@ -700,10 +699,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 
       answers[actorId] = answerIndex;
 
-      const who = this.playerName(state, actorId);
-      const withLog = this.core.appendLog(state, `${who} a répondu.`);
-
-      return { ...withLog, metadata: { ...meta, quizAnswersByPlayerId: answers } };
+      return { ...state, metadata: { ...meta, quizAnswersByPlayerId: answers } };
 
       /* const currentId = state.turn?.currentPlayerId ?? null;
       const idx = Number(payload.answerIndex);

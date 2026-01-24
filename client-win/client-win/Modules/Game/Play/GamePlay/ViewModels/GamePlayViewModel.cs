@@ -1035,9 +1035,11 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         var session = _session;
         if (session == null) return false;
 
+        var pendingType = (session.LastState?.Pending?.Type ?? string.Empty).Trim();
+
         try
         {
-            return await _choices.SubmitSelectedChoiceAsync(
+            var sent = await _choices.SubmitSelectedChoiceAsync(
                     session,
                     emitError: message =>
                     {
@@ -1046,6 +1048,11 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                     },
                     cancellationToken)
                 .ConfigureAwait(false);
+            if (sent && string.Equals(pendingType, "quiz", StringComparison.OrdinalIgnoreCase))
+            {
+                MessageReceived?.Invoke("Réponse envoyée.");
+            }
+            return sent;
         }
         catch (Exception ex)
         {

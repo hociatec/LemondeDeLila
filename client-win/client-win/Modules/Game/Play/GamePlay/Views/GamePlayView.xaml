@@ -265,7 +265,6 @@
 
                 <ListBox x:Name="ChoicesList"
                          ItemsSource="{Binding DisplayChoices}"
-                         DisplayMemberPath="Text"
                          SelectedIndex="{Binding SelectedDisplayIndex, Mode=TwoWay}"
                          KeyDown="OnChoicesKeyDown"
                          PreviewKeyDown="OnChoicesPreviewKeyDown"
@@ -278,6 +277,11 @@
                          MaxHeight="160"
                          AutomationProperties.Name="{Binding ChoicesA11yName}"
                          AutomationProperties.LabeledBy="{Binding ElementName=ChoicesLabelText}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Text}" TextWrapping="Wrap" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem">
                             <Setter Property="Margin" Value="0 4 0 4" />
@@ -287,6 +291,7 @@
                             <Setter Property="BorderThickness" Value="1" />
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                            <Setter Property="AutomationProperties.Name" Value="{Binding Text}" />
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListBoxItem">
