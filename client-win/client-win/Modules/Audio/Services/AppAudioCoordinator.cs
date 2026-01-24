@@ -76,6 +76,10 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         // Reduce first-play latency for table one-shots.
         TryPreload(SoundId.RoomOpened);
         TryPreload(SoundId.RoomJoined);
+        // Reduce first-play latency for common gameplay one-shots (notably quiz feedback).
+        TryPreload(SoundId.DiceRolled);
+        TryPreload(SoundId.QuizCorrect);
+        TryPreload(SoundId.QuizWrong);
     }
 
     private static string GetStartupSoundMarkerPath()
@@ -407,6 +411,10 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             // Table one-shots: preload early so "RoomOpened/Joined" feels instant when opening a table.
             TryPreload(SoundId.RoomOpened);
             TryPreload(SoundId.RoomJoined);
+            // Gameplay one-shots: avoid first-action latency after joining a table.
+            TryPreload(SoundId.DiceRolled);
+            TryPreload(SoundId.QuizCorrect);
+            TryPreload(SoundId.QuizWrong);
 
             if (reapplyBackground)
             {

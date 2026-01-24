@@ -151,13 +151,34 @@ export class VaultRoomSnapshotsService {
       game: { gameType, state },
     };
 
-    const requestedId = String(snapshotId ?? '').trim();
+    // If a snapshot id is provided, update it (overwrite) instead of creating a new entry.
+    // Also: if the room was created by restoring a snapshot, always overwrite that original snapshot
+    // (prevents accidental duplicates if the client doesn't carry the id).
+    const requestedIdRaw = String(snapshotId ?? '').trim();
+    let requestedId = requestedIdRaw;
+    try {
+      const room = await this.rooms.requireRoomForOwnerAction(roomId, ownerUserId);
+      const restoredFrom =
+        typeof (room as any).restoredFromSnapshotId === 'string'
+          ? String((room as any).restoredFromSnapshotId).trim() || ''
+          : '';
+      const restoredOwner =
+        typeof (room as any).restoredOwnerUserId === 'number'
+          ? Number((room as any).restoredOwnerUserId)
+          : null;
+      if (!requestedId && restoredFrom && restoredOwner === ownerUserId) {
+        requestedId = restoredFrom;
+      }
+    } catch {
+      // best-effort (room may already be closing/deleted)
+    }
     let entity: VaultRoomSnapshotEntity;
     if (requestedId) {
       const existing = await this.snapshots.findOne({
         where: { id: requestedId, ownerUserId },
       });
       if (!existing) {
+        // Safety: if the client passed an id but it doesn't exist, fail loudly rather than creating duplicates.
         throw new BadRequestException('Sauvegarde introuvable');
       }
 

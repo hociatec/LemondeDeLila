@@ -28,6 +28,9 @@ using client_win.Modules.Shell.Services;
 using client_win.Modules.Game.RoomDirectory.Services;
 using client_win.Modules.Game.RoomDirectory.ViewModels;
 using client_win.Modules.Vault.Services;
+using client_win.Modules.Catalog.Services;
+using client_win.Modules.Catalog.ViewModels;
+using client_win.Modules.Vault.ViewModels;
 
 namespace client_win.Modules.Game.Shell.Services;
 
@@ -52,6 +55,7 @@ public sealed class GameTableOpener : IGameTableOpener
     private readonly ISocialService _social;
     private readonly ITextPromptService _textPrompts;
     private readonly IVaultClient _vault;
+    private readonly ICatalogService _catalog;
     private static int _globalSoundsPreloaded;
 
     public GameTableOpener(
@@ -73,7 +77,8 @@ public sealed class GameTableOpener : IGameTableOpener
         IRoomDirectoryClient directory,
         ISocialService social,
         ITextPromptService textPrompts,
-        IVaultClient vault)
+        IVaultClient vault,
+        ICatalogService catalog)
     {
         _logger = logger;
         _config = config ?? throw new ArgumentNullException(nameof(config));
@@ -94,6 +99,7 @@ public sealed class GameTableOpener : IGameTableOpener
         _social = social ?? throw new ArgumentNullException(nameof(social));
         _textPrompts = textPrompts ?? throw new ArgumentNullException(nameof(textPrompts));
         _vault = vault ?? throw new ArgumentNullException(nameof(vault));
+        _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
     }
 
     private sealed class TableAmbienceFileDto
@@ -545,21 +551,63 @@ public sealed class GameTableOpener : IGameTableOpener
                 object BuildTavernFallback()
                 {
                     var safeReturn = returnContent is GameRoomViewModel ? null : returnContent;
-                    JoinGameViewModel? tavernVm = null;
-                    tavernVm = new JoinGameViewModel(
-                        rooms: _directory,
-                        tables: this,
-                        announcements: _announcementService,
-                        returnContent: () => safeReturn,
+
+                    CatalogViewModel? catalogVm = null;
+                    catalogVm = new CatalogViewModel(
+                        _catalog,
                         onClose: () =>
                         {
-                            try { tavernVm?.Dispose(); } catch { /* ignore */ }
+                            try { catalogVm?.Dispose(); } catch { /* ignore */ }
                             if (safeReturn != null)
                             {
                                 try { _navigation.Show(safeReturn); } catch { /* ignore */ }
                             }
+                        },
+                        openGame: async game =>
+                        {
+                            if (catalogVm == null) return;
+                            await OpenAsync(game, catalogVm).ConfigureAwait(true);
+                        },
+                        joinGame: async () =>
+                        {
+                            if (catalogVm == null) return "Impossible d'ouvrir Rejoindre une table.";
+
+                            JoinGameViewModel? tavernVm = null;
+                            tavernVm = new JoinGameViewModel(
+                                rooms: _directory,
+                                tables: this,
+                                announcements: _announcementService,
+                                returnContent: () => catalogVm,
+                                onClose: () =>
+                                {
+                                    try { tavernVm?.Dispose(); } catch { /* ignore */ }
+                                    try { _navigation.Show(catalogVm); } catch { /* ignore */ }
+                                });
+                            _navigation.Show(tavernVm);
+                            return "Rejoindre une table ouvert.";
+                        },
+                        openVault: async () =>
+                        {
+                            if (catalogVm == null) return "Impossible d'ouvrir Mon coffre fort.";
+
+                            VaultViewModel? vaultVm = null;
+                            vaultVm = new VaultViewModel(
+                                _vault,
+                                this,
+                                _dialogs,
+                                _announcementService,
+                                returnContent: catalogVm,
+                                onClose: () =>
+                                {
+                                    try { vaultVm?.Dispose(); } catch { /* ignore */ }
+                                    try { _navigation.Show(catalogVm); } catch { /* ignore */ }
+                                });
+
+                            _navigation.Show(vaultVm);
+                            return "Mon coffre fort ouvert.";
                         });
-                    return tavernVm;
+
+                    return catalogVm;
                 }
 
                 void Navigate()
@@ -655,7 +703,8 @@ public sealed class GameTableOpener : IGameTableOpener
         async Task QuitRoom()
         {
             var current = session;
-            if (current != null && !string.IsNullOrWhiteSpace(boundSnapshotId))
+            var isRestoredFromVault = !string.IsNullOrWhiteSpace(boundSnapshotId);
+            if (current != null && isRestoredFromVault)
             {
                 try
                 {
@@ -667,7 +716,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 }
             }
 
-            await ExitAsync().ConfigureAwait(true);
+            await ExitAsync(forceTavern: isRestoredFromVault).ConfigureAwait(true);
         }
 
         GameRoomViewModel? vm = null;
