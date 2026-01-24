@@ -157,7 +157,8 @@ public sealed class GameTableOpener : IGameTableOpener
                 returnContent: returnContent,
                 connect: ct => _rooms.CreateAndConnectAsync(game.Id, ct),
                 buildGameFromSession: _ => game,
-                isNew: true)
+                isNew: true,
+                vaultSnapshotId: null)
             .ConfigureAwait(true);
     }
 
@@ -425,6 +426,11 @@ public sealed class GameTableOpener : IGameTableOpener
 
     public async Task OpenExistingAsync(int roomId, object returnContent, bool spectator, bool silent)
     {
+        await OpenExistingAsync(roomId, returnContent, spectator, silent, vaultSnapshotId: null).ConfigureAwait(true);
+    }
+
+    public async Task OpenExistingAsync(int roomId, object returnContent, bool spectator, bool silent, string? vaultSnapshotId)
+    {
         if (roomId <= 0) throw new ArgumentException("roomId invalide", nameof(roomId));
         if (returnContent == null) throw new ArgumentNullException(nameof(returnContent));
 
@@ -459,7 +465,8 @@ public sealed class GameTableOpener : IGameTableOpener
                         engine: string.Empty,
                         categories: Array.Empty<string>());
                 },
-                isNew: false)
+                isNew: false,
+                vaultSnapshotId: vaultSnapshotId)
             .ConfigureAwait(true);
     }
 
@@ -468,7 +475,8 @@ public sealed class GameTableOpener : IGameTableOpener
         object returnContent,
         Func<CancellationToken, Task<RoomSession>> connect,
         Func<RoomSession, CatalogGame> buildGameFromSession,
-        bool isNew)
+        bool isNew,
+        string? vaultSnapshotId)
     {
         var dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
@@ -618,6 +626,8 @@ public sealed class GameTableOpener : IGameTableOpener
             }
         }
 
+        var boundSnapshotId = string.IsNullOrWhiteSpace(vaultSnapshotId) ? null : vaultSnapshotId.Trim();
+
         async Task SaveSnapshot()
         {
             var current = session;
@@ -630,7 +640,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
             try
             {
-                await _vault.SaveAsync(current.RoomId).ConfigureAwait(true);
+                boundSnapshotId = await _vault.SaveAsync(current.RoomId, boundSnapshotId).ConfigureAwait(true);
                 _announcementService.Enqueue(
                     "Table sauvegardée dans Mon coffre fort. Retour à la taverne.",
                     AnnouncementPriority.Polite);
@@ -640,6 +650,24 @@ public sealed class GameTableOpener : IGameTableOpener
             {
                 await _dialogs.ShowError("Sauvegarde", ex.Message).ConfigureAwait(true);
             }
+        }
+
+        async Task QuitRoom()
+        {
+            var current = session;
+            if (current != null && !string.IsNullOrWhiteSpace(boundSnapshotId))
+            {
+                try
+                {
+                    await _vault.AbandonAsync(current.RoomId).ConfigureAwait(true);
+                }
+                catch
+                {
+                    // best-effort: si ça échoue, on quitte quand même.
+                }
+            }
+
+            await ExitAsync().ConfigureAwait(true);
         }
 
         GameRoomViewModel? vm = null;
@@ -986,7 +1014,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 onStart: Start,
                 onSaveSnapshot: SaveSnapshot,
                 onReset: Reset,
-                onQuit: () => ExitAsync(),
+                onQuit: QuitRoom,
                 onAddBot: AddBot,
                 onRemoveBot: RemoveBot,
                 onAnnouncePlayers: AnnouncePlayers,
@@ -1080,7 +1108,7 @@ public sealed class GameTableOpener : IGameTableOpener
                             onStart: start,
                             onSaveSnapshot: SaveSnapshot,
                             onReset: () => session.SendCommandAsync("room.reset", payload: null),
-                            onQuit: () => ExitAsync(),
+                            onQuit: QuitRoom,
                             onAddBot: () => bindings?.AddBotAsync() ?? Task.CompletedTask,
                             onRemoveBot: () => bindings?.RemoveBotAsync() ?? Task.CompletedTask,
                             onAnnouncePlayers: () => AnnouncePlayersAsync(session),

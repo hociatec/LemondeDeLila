@@ -3,7 +3,7 @@ import { requireUser } from '../../common/ws/ws-auth';
 import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { VaultRoomSnapshotsService } from '../services/vault-room-snapshots.service';
-import { VaultIdWsDto, VaultSaveWsDto } from './vault-ws.dto';
+import { VaultAbandonWsDto, VaultIdWsDto, VaultSaveWsDto } from './vault-ws.dto';
 
 @Injectable()
 export class VaultWsHandler {
@@ -21,7 +21,7 @@ export class VaultWsHandler {
   async save(session: WsSession, payload: any) {
     const user = requireUser(session);
     const dto = this.validator.validate(VaultSaveWsDto, payload);
-    const res = await this.vault.save(user.id, dto.roomId);
+    const res = await this.vault.save(user.id, dto.roomId, dto.id);
     return { type: 'vault.save', payload: { id: res.id } };
   }
 
@@ -37,5 +37,12 @@ export class VaultWsHandler {
     const dto = this.validator.validate(VaultIdWsDto, payload);
     const ok = await this.vault.delete(user.id, dto.id);
     return { type: 'vault.delete', payload: { ok } };
+  }
+
+  async abandon(session: WsSession, payload: any) {
+    const user = requireUser(session);
+    const dto = this.validator.validate(VaultAbandonWsDto, payload);
+    const ok = await this.vault.abandonRestoredRoom(user.id, dto.roomId);
+    return { type: 'vault.abandon', payload: { ok } };
   }
 }

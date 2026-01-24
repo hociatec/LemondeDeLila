@@ -9,4 +9,5 @@ public interface IGameTableOpener
     Task OpenExistingAsync(int roomId, object returnContent);
     Task OpenExistingAsync(int roomId, object returnContent, bool spectator);
     Task OpenExistingAsync(int roomId, object returnContent, bool spectator, bool silent);
+    Task OpenExistingAsync(int roomId, object returnContent, bool spectator, bool silent, string? vaultSnapshotId);
 }

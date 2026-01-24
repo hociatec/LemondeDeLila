@@ -217,6 +217,7 @@ public static class WsMessageTypes
         public const string Save = "vault.save";
         public const string Restore = "vault.restore";
         public const string Delete = "vault.delete";
+        public const string Abandon = "vault.abandon";
     }
 
     /// <summary>

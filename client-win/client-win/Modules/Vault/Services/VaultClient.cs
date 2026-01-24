@@ -67,6 +67,12 @@ public sealed class VaultClient : IVaultClient
         public bool Ok { get; set; }
     }
 
+    private sealed class AbandonPayload
+    {
+        [JsonPropertyName("ok")]
+        public bool Ok { get; set; }
+    }
+
     public async Task<IReadOnlyList<VaultSnapshotItem>> ListAsync(CancellationToken cancellationToken = default)
     {
         var token = _session.CurrentUser?.Token;
@@ -95,12 +101,15 @@ public sealed class VaultClient : IVaultClient
             .ToArray();
     }
 
-    public async Task<string> SaveAsync(int roomId, CancellationToken cancellationToken = default)
+    public async Task<string> SaveAsync(int roomId, string? snapshotId = null, CancellationToken cancellationToken = default)
     {
         var token = _session.CurrentUser?.Token;
+        object payload = string.IsNullOrWhiteSpace(snapshotId)
+            ? (object)new { roomId }
+            : (object)new { roomId, id = snapshotId };
         var res = await _ws.RequestAsync<SavePayload>(
                 WsMessageTypes.Vault.Save,
-                payload: new { roomId },
+                payload: payload,
                 token: token,
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false);
@@ -158,5 +167,22 @@ public sealed class VaultClient : IVaultClient
 
         return res.Payload?.Ok ?? false;
     }
-}
 
+    public async Task<bool> AbandonAsync(int roomId, CancellationToken cancellationToken = default)
+    {
+        var token = _session.CurrentUser?.Token;
+        var res = await _ws.RequestAsync<AbandonPayload>(
+                WsMessageTypes.Vault.Abandon,
+                payload: new { roomId },
+                token: token,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!res.Success)
+        {
+            throw new InvalidOperationException(res.Error ?? "Suppression de la table impossible.");
+        }
+
+        return res.Payload?.Ok ?? false;
+    }
+}

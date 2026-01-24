@@ -129,7 +129,8 @@ public sealed class VaultViewModel : ObservableObject, IDisposable
             Status = "Restauration…";
             var roomId = await _vault.RestoreAsync(selected.Id).ConfigureAwait(true);
             _announcements.Enqueue("Partie restaurée. Ouverture de la table…", AnnouncementPriority.Polite);
-            await _tables.OpenExistingAsync(roomId, _returnContent, spectator: false).ConfigureAwait(true);
+            await _tables.OpenExistingAsync(roomId, _returnContent, spectator: false, silent: false, vaultSnapshotId: selected.Id)
+                .ConfigureAwait(true);
         }
         catch (Exception ex)
         {
@@ -179,4 +180,3 @@ public sealed class VaultViewModel : ObservableObject, IDisposable
         }
     }
 }
-

@@ -8,8 +8,8 @@ namespace client_win.Modules.Vault.Services;
 public interface IVaultClient
 {
     Task<IReadOnlyList<VaultSnapshotItem>> ListAsync(CancellationToken cancellationToken = default);
-    Task<string> SaveAsync(int roomId, CancellationToken cancellationToken = default);
+    Task<string> SaveAsync(int roomId, string? snapshotId = null, CancellationToken cancellationToken = default);
     Task<int> RestoreAsync(string id, CancellationToken cancellationToken = default);
     Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default);
+    Task<bool> AbandonAsync(int roomId, CancellationToken cancellationToken = default);
 }
-

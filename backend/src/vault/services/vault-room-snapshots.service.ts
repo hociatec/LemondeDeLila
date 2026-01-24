@@ -15,6 +15,11 @@ import type { GameStateEntity } from '../../game/core/entities/game-state.entity
 
 @Injectable()
 export class VaultRoomSnapshotsService {
+  private readonly restoredRoomsById = new Map<
+    number,
+    { ownerUserId: number; snapshotId: string }
+  >();
+
   constructor(
     @InjectRepository(VaultRoomSnapshotEntity)
     private readonly snapshots: Repository<VaultRoomSnapshotEntity>,
@@ -60,7 +65,11 @@ export class VaultRoomSnapshotsService {
     return (res.affected ?? 0) > 0;
   }
 
-  async save(ownerUserId: number, roomId: number): Promise<{ id: string }> {
+  async save(
+    ownerUserId: number,
+    roomId: number,
+    snapshotId?: string | null,
+  ): Promise<{ id: string }> {
     if (!Number.isFinite(roomId) || roomId <= 0) {
       throw new BadRequestException('roomId invalide');
     }
@@ -147,17 +156,37 @@ export class VaultRoomSnapshotsService {
       game: { gameType, state },
     };
 
-    const entity = this.snapshots.create({
-      id: randomUUID(),
-      ownerUserId,
-      name,
-      gameType,
-      roomName: snapshot.room.name.slice(0, 255),
-      playersLabel,
-      snapshotJson: JSON.stringify(snapshot),
-      createdAt: new Date(),
-    });
-    await this.snapshots.save(entity);
+    const requestedId = String(snapshotId ?? '').trim();
+    let entity: VaultRoomSnapshotEntity;
+    if (requestedId) {
+      const existing = await this.snapshots.findOne({
+        where: { id: requestedId, ownerUserId },
+      });
+      if (!existing) {
+        throw new BadRequestException('Sauvegarde introuvable');
+      }
+
+      existing.name = name;
+      existing.gameType = gameType;
+      existing.roomName = snapshot.room.name.slice(0, 255);
+      existing.playersLabel = playersLabel;
+      existing.snapshotJson = JSON.stringify(snapshot);
+      // Met à jour l'ordre d'affichage (tri par createdAt côté list).
+      existing.createdAt = new Date();
+      entity = await this.snapshots.save(existing);
+    } else {
+      entity = this.snapshots.create({
+        id: randomUUID(),
+        ownerUserId,
+        name,
+        gameType,
+        roomName: snapshot.room.name.slice(0, 255),
+        playersLabel,
+        snapshotJson: JSON.stringify(snapshot),
+        createdAt: new Date(),
+      });
+      await this.snapshots.save(entity);
+    }
 
     // Sauvegarde de table = "archiver et fermer" : tout le monde retourne à la taverne.
     // Le RoomGateway enverra 'room.deleted' à tous les clients connectés.
@@ -211,6 +240,7 @@ export class VaultRoomSnapshotsService {
       snapshot.room.maxPlayers,
       snapshot.room.isPrivate,
     );
+    this.restoredRoomsById.set(created.id, { ownerUserId, snapshotId: id });
 
     // Join all other human players.
     for (const p of humans) {
@@ -271,12 +301,8 @@ export class VaultRoomSnapshotsService {
 
     await this.engine.restoreInternalState(created.id, gameType, restored);
 
-    // Une restauration "consomme" la sauvegarde : pour conserver l'état, il faut re-sauvegarder.
-    try {
-      await this.snapshots.delete({ id, ownerUserId } as any);
-    } catch {
-      // best-effort
-    }
+    // Note: la restauration ne supprime pas la sauvegarde.
+    // L'utilisateur peut restaurer plusieurs fois ou supprimer manuellement.
 
     // Notify players to open the restored table.
     for (const p of humans) {
@@ -288,6 +314,33 @@ export class VaultRoomSnapshotsService {
     }
 
     return { roomId: created.id };
+  }
+
+  async abandonRestoredRoom(
+    ownerUserId: number,
+    roomId: number,
+  ): Promise<boolean> {
+    const id =
+      typeof roomId === 'number' && Number.isFinite(roomId) && roomId > 0
+        ? Math.floor(roomId)
+        : 0;
+    if (id <= 0) {
+      throw new BadRequestException('roomId invalide');
+    }
+
+    const meta = this.restoredRoomsById.get(id);
+    if (!meta || meta.ownerUserId !== ownerUserId) {
+      // Ne permet pas de détruire une room "normale" via cette route.
+      return false;
+    }
+
+    try {
+      await this.rooms.adminDestroyRoom(id);
+    } finally {
+      this.restoredRoomsById.delete(id);
+    }
+
+    return true;
   }
 
   private parseSnapshot(raw: string): VaultRoomSnapshot {

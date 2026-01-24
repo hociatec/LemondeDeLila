@@ -68,7 +68,7 @@ export class SoundsService {
 
   private normalizeTableAmbienceKey(input: string): TableAmbienceSoundKey {
     const soundId = this.normalizeSoundKey(input);
-    if (!/^TableAmbience\\d+$/i.test(soundId)) {
+    if (!/^TableAmbience\d+$/i.test(soundId)) {
       throw new BadRequestException(`Ambiance de table invalide: ${soundId}`);
     }
     return soundId as TableAmbienceSoundKey;
@@ -155,7 +155,7 @@ export class SoundsService {
     const current = await this.readTableAmbiences();
     const used = new Set(current.items.map((i) => i.soundId.toLowerCase()));
     const available = (SOUND_KEYS.filter((k) =>
-      /^TableAmbience\\d+$/.test(k),
+      /^TableAmbience\d+$/.test(k),
     ) as TableAmbienceSoundKey[]).find((k) => !used.has(k.toLowerCase()));
     if (!available) {
       throw new BadRequestException(

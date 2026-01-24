@@ -14,6 +14,6 @@ export class VaultWsRegistrar implements OnModuleInit {
     this.registry.register('vault.save', (s, p) => this.handler.save(s, p));
     this.registry.register('vault.restore', (s, p) => this.handler.restore(s, p));
     this.registry.register('vault.delete', (s, p) => this.handler.delete(s, p));
+    this.registry.register('vault.abandon', (s, p) => this.handler.abandon(s, p));
   }
 }
-
