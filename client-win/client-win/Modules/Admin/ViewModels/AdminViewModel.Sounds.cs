@@ -264,17 +264,13 @@ public sealed partial class AdminViewModel
                 return;
             }
 
-            if (IsBusy && !force)
-            {
-                return;
-            }
-
             var jwt = _session.CurrentUser?.Token;
             if (string.IsNullOrWhiteSpace(jwt))
             {
                 return;
             }
 
+            var restoreBusy = IsBusy;
             try
             {
                 _tableAmbiencesRefreshInProgress = true;
@@ -289,6 +285,17 @@ public sealed partial class AdminViewModel
                 var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
                 if (!resp.IsSuccessStatusCode)
                 {
+                    try
+                    {
+                        var message = ApiErrorParser.TryExtractMessage(body) ?? body;
+                        Status = string.IsNullOrWhiteSpace(message)
+                            ? $"Chargement des ambiances échoué ({(int)resp.StatusCode})."
+                            : $"Chargement des ambiances échoué ({(int)resp.StatusCode}) : {message}";
+                    }
+                    catch
+                    {
+                        Status = $"Chargement des ambiances échoué ({(int)resp.StatusCode}).";
+                    }
                     return;
                 }
 
@@ -311,7 +318,7 @@ public sealed partial class AdminViewModel
             }
             finally
             {
-                IsBusy = false;
+                IsBusy = restoreBusy;
                 _tableAmbiencesRefreshInProgress = false;
             }
         }
@@ -363,6 +370,37 @@ public sealed partial class AdminViewModel
             {
                 if (string.Equals(mode, "tableAmbience.create", StringComparison.OrdinalIgnoreCase))
                 {
+                    // Pré-check (UX): si les 20 slots sont déjà pris, ne pas lancer un POST voué à échouer.
+                    // Ne pas appeler RefreshTableAmbiencesAsync ici (IsBusy est déjà géré par SubmitTableAmbienceAsync).
+                    try
+                    {
+                        var checkEndpoint = new Uri(_config.HttpBase, "admin/sounds/table-ambiences");
+                        using var checkReq = new HttpRequestMessage(HttpMethod.Get, checkEndpoint);
+                        checkReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+                        using var checkResp = await HttpClientProvider.Shared.SendAsync(checkReq).ConfigureAwait(true);
+                        var checkBody = await checkResp.Content.ReadAsStringAsync().ConfigureAwait(true);
+                        if (checkResp.IsSuccessStatusCode)
+                        {
+                            var checkDto = JsonSerializer.Deserialize<TableAmbiencesFileDto>(checkBody, new JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true
+                            });
+                            var count = (checkDto?.Items ?? Array.Empty<AdminTableAmbienceDto>()).Length;
+                            if (count >= 20)
+                            {
+                                await _dialogs.ShowError(
+                                        "Ambiances",
+                                        "Nombre maximum atteint (20 ambiances de table). Supprimez une ambiance existante pour libérer un slot.")
+                                    .ConfigureAwait(true);
+                                return;
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // ignore (best-effort)
+                    }
+
                     var endpoint = new Uri(_config.HttpBase, "admin/sounds/table-ambiences");
                     using var req = new HttpRequestMessage(HttpMethod.Post, endpoint);
                     req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
@@ -374,7 +412,7 @@ public sealed partial class AdminViewModel
                         var message = ApiErrorParser.TryExtractMessage(body) ?? body;
                         if (message.Contains("Nombre maximum atteint", StringComparison.OrdinalIgnoreCase))
                         {
-                            message += " (Supprimez une ambiance existante pour libÃ©rer un slot.)";
+                            message += " (Supprimez une ambiance existante pour libérer un slot.)";
                         }
                         await _dialogs.ShowError("Ambiances", $"Création échouée ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
                         return;

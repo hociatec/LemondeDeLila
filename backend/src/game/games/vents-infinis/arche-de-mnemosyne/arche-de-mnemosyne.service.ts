@@ -773,6 +773,12 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     const q = meta.currentQuestion;
     if (!q) return state;
 
+    const currentRoundRaw = Number((state as any)?.round ?? 1);
+    const currentRound =
+      Number.isFinite(currentRoundRaw) && currentRoundRaw > 0
+        ? Math.trunc(currentRoundRaw)
+        : 1;
+
     const players = Array.isArray(state.players) ? state.players : [];
     const playerIds = players
       .map((p: any) => Number(p?.id))
@@ -874,6 +880,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       if (wrongAnsweredIds.length) {
         next = this.core.appendLog(next, `La bonne réponse était : ${q.correctChoice}.`);
       }
+      next = this.core.appendLog(next, `Fin de la manche ${currentRound}.`);
       next = this.core.appendLog(next, 'Prochaine question dans 5 secondes.');
     }
 
@@ -898,6 +905,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       return {
         ...finished,
         status: 'finished',
+        round: currentRound,
         metadata: { ...afterMeta, winnerId },
       };
     }
@@ -910,6 +918,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     if (force || endedBecauseAllAnswered) {
       return {
         ...advanced,
+        round: currentRound + 1,
         metadata: afterMeta as any,
         pending: null,
       };

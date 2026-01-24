@@ -1006,7 +1006,9 @@ export class RoomGateway
             (leftPayload?.room?.status || '').toLowerCase() === 'started' ||
             Boolean(leftPayload?.room?.startedAt);
           await this.roomsService.leaveRoom(roomId, userId, {
-            preserveRoom: started || remainingTotalConnections > 0,
+            // Leave explicite : si la table devient vide (plus aucun humain/bot), elle doit disparaître.
+            // Garder preserveRoom uniquement quand il reste d'autres connexions (autres joueurs / autre socket).
+            preserveRoom: remainingTotalConnections > 0,
             disconnectOnly: false,
           });
         } else {

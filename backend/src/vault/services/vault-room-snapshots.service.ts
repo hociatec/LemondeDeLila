@@ -188,6 +188,8 @@ export class VaultRoomSnapshotsService {
 
     const missing: string[] = [];
     for (const p of humans) {
+      // Le propriétaire ouvre déjà via la réponse à vault.restore côté client.
+      if (p.id === ownerUserId) continue;
       const ok = this.presence.isUserInTavern(p.id);
       if (!ok) {
         missing.push(String(p.username ?? `joueur ${p.id}`));
@@ -268,6 +270,13 @@ export class VaultRoomSnapshotsService {
     });
 
     await this.engine.restoreInternalState(created.id, gameType, restored);
+
+    // Une restauration "consomme" la sauvegarde : pour conserver l'état, il faut re-sauvegarder.
+    try {
+      await this.snapshots.delete({ id, ownerUserId } as any);
+    } catch {
+      // best-effort
+    }
 
     // Notify players to open the restored table.
     for (const p of humans) {

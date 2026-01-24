@@ -85,10 +85,12 @@ describe("ArcheDeMnemosyneService quiz timer", () => {
     const messages = (afterB.log ?? []).map((l: any) => String(l?.message ?? ''));
     expect(messages.some((m: string) => m.includes('La bonne réponse était'))).toBe(true);
     expect(messages.some((m: string) => m.includes('Prochaine question dans 5 secondes'))).toBe(true);
+    expect(messages.some((m: string) => m === 'Fin de la manche 1.')).toBe(true);
     expect(afterB.metadata.currentQuestion).toBeNull();
     expect(afterB.metadata.quizDeadlineAtMs).toBeNull();
     expect(typeof afterB.metadata.interQuestionUntilMs).toBe('number');
     expect(Object.keys(afterB.metadata.quizAnswersByPlayerId ?? {}).length).toBe(0);
+    expect(afterB.round).toBe(2);
   });
 
   it('on timeout: logs the correct answer and waits 5s before next question', () => {
@@ -140,7 +142,9 @@ describe("ArcheDeMnemosyneService quiz timer", () => {
     const messages = (after.log ?? []).map((l: any) => String(l?.message ?? ''));
     expect(messages.some((m: string) => m.includes('La bonne réponse était'))).toBe(true);
     expect(messages.some((m: string) => m.includes('Prochaine question dans 5 secondes'))).toBe(true);
+    expect(messages.some((m: string) => m === 'Fin de la manche 1.')).toBe(true);
     expect(after.metadata.currentQuestion).toBeNull();
     expect(typeof after.metadata.interQuestionUntilMs).toBe('number');
+    expect(after.round).toBe(2);
   });
 });

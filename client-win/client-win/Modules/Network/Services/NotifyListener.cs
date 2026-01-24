@@ -54,6 +54,8 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
     private long _startupQuietUntilTicks;
     private readonly object _friendPresenceGate = new();
     private readonly Dictionary<int, bool> _friendPresenceById = new();
+    private readonly object _restoreReadyGate = new();
+    private readonly HashSet<int> _handledRestoreReadyRoomIds = new();
 
 	    private IWebSocketConnection? _ws;
 	    private readonly SemaphoreSlim _connectLock = new(1, 1);
@@ -631,6 +633,20 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
             if (roomId <= 0)
             {
                 return;
+            }
+
+            // Les notifications peuvent être rejouées (reconnect / snapshot) : éviter de rouvrir la même table en boucle.
+            lock (_restoreReadyGate)
+            {
+                if (_handledRestoreReadyRoomIds.Contains(roomId))
+                {
+                    return;
+                }
+                _handledRestoreReadyRoomIds.Add(roomId);
+                if (_handledRestoreReadyRoomIds.Count > 100)
+                {
+                    _handledRestoreReadyRoomIds.Clear();
+                }
             }
 
             var roomName = payload.TryGetProperty("roomName", out var rn) && rn.ValueKind == JsonValueKind.String

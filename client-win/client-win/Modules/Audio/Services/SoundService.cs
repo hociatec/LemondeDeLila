@@ -1186,6 +1186,7 @@ public sealed class SoundService : ISoundService, IDisposable
                 {
                     try
                     {
+                        player.IsMuted = false;
                         player.Volume = entry.Volume();
                         player.Play();
                     }
@@ -1208,6 +1209,7 @@ public sealed class SoundService : ISoundService, IDisposable
 
                     try
                     {
+                        player.IsMuted = false;
                         player.Position = TimeSpan.Zero;
                         player.Play();
                     }
@@ -1225,6 +1227,7 @@ public sealed class SoundService : ISoundService, IDisposable
 
             try
             {
+                player.IsMuted = false;
                 player.Volume = entry.Volume();
                 player.Stop();
                 player.Position = TimeSpan.Zero;
@@ -1427,6 +1430,10 @@ public sealed class SoundService : ISoundService, IDisposable
         _opened.Remove(sound);
 
         var player = new MediaPlayer();
+        // Preload must never emit audio: some devices/drivers can leak audible "blips" on Open().
+        // Keep the player muted until a real Play/StartLoop explicitly unmutes it.
+        player.IsMuted = true;
+        player.Volume = 0;
         player.MediaOpened += (_, _) =>
         {
             lock (_gate)

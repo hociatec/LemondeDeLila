@@ -15,7 +15,10 @@ export function getAvailableActions(
   if (status !== 'started') return [];
   if ((state.turn?.currentPlayerId ?? null) !== playerId) return [];
   if (state.pending) return [];
-  return [{ type: 'roll' }, { type: 'ROLL_DICE' }];
+  // Expose une seule action canonicale pour éviter tout double-envoi côté clients
+  // (certains clients peuvent soumettre toutes les actions "visibles" d'un coup).
+  // Le serveur accepte toujours les alias (ROLL_DICE/roll_dice) via `validateAction`.
+  return [{ type: 'roll', payload: {} }];
 }
 
 export function validateAction(

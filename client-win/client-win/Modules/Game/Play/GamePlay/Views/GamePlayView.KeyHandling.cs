@@ -204,6 +204,13 @@ public partial class GamePlayView
 
     private async void OnRootPreviewKeyDown(object sender, KeyEventArgs e)
     {
+        // Routed events: si une couche plus haute (ex: ShortcutBindingsBehavior) a déjà consommé la touche,
+        // ne pas la retraiter ici (sinon double envoi/annonces doublées).
+        if (e.Handled || e.IsRepeat)
+        {
+            return;
+        }
+
         if (IsTextInputFocused())
         {
             return;
