@@ -8,3 +8,6 @@
 # Local env
 backend/.env
 backend/logs/
+
+# Runtime logs (written by systemd unit on the server)
+log/
