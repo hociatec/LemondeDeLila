@@ -731,6 +731,7 @@ public sealed class GameTableOpener : IGameTableOpener
             }
 
             GameSession? gameSession = null;
+            string? errorDetail = null;
             try
             {
                 var gameType = (vm?.Game?.Id ?? placeholderGame.Id ?? string.Empty).Trim();
@@ -754,6 +755,16 @@ public sealed class GameTableOpener : IGameTableOpener
                     tcs.TrySetResult(dto.Rules ?? string.Empty);
                 }
 
+                void OnError(string message)
+                {
+                    if (string.IsNullOrWhiteSpace(message))
+                    {
+                        return;
+                    }
+                    errorDetail = message.Trim();
+                }
+
+                gameSession.ErrorReceived += OnError;
                 gameSession.RulesReceived += OnRules;
                 try
                 {
@@ -777,11 +788,13 @@ public sealed class GameTableOpener : IGameTableOpener
                 finally
                 {
                     gameSession.RulesReceived -= OnRules;
+                    gameSession.ErrorReceived -= OnError;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                try { await _dialogs.ShowInfo("Règles", "Impossible de charger les règles.").ConfigureAwait(true); } catch { }
+                var detail = string.IsNullOrWhiteSpace(errorDetail) ? ex.Message : errorDetail;
+                try { await _dialogs.ShowInfo("Règles", $"Impossible de charger les règles.\nDétail: {detail}").ConfigureAwait(true); } catch { }
             }
             finally
             {
@@ -980,6 +993,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 }
 
                 GameSession? gameSession = null;
+                string? errorDetail = null;
                 try
                 {
                     var gameType = (vm?.Game?.Id ?? placeholderGame.Id ?? string.Empty).Trim();
@@ -1003,6 +1017,16 @@ public sealed class GameTableOpener : IGameTableOpener
                         tcs.TrySetResult(dto.Rules ?? string.Empty);
                     }
 
+                    void OnError(string message)
+                    {
+                        if (string.IsNullOrWhiteSpace(message))
+                        {
+                            return;
+                        }
+                        errorDetail = message.Trim();
+                    }
+
+                    gameSession.ErrorReceived += OnError;
                     gameSession.RulesReceived += OnRules;
                     try
                     {
@@ -1026,11 +1050,13 @@ public sealed class GameTableOpener : IGameTableOpener
                     finally
                     {
                         gameSession.RulesReceived -= OnRules;
+                        gameSession.ErrorReceived -= OnError;
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    try { await _dialogs.ShowInfo("Règles", "Impossible de charger les règles.").ConfigureAwait(true); } catch { }
+                    var detail = string.IsNullOrWhiteSpace(errorDetail) ? ex.Message : errorDetail;
+                    try { await _dialogs.ShowInfo("Règles", $"Impossible de charger les règles.\nDétail: {detail}").ConfigureAwait(true); } catch { }
                 }
                 finally
                 {
