@@ -232,13 +232,21 @@ public partial class AdminView : UserControl, IInitialFocusTarget
 
         _ = Dispatcher.BeginInvoke(
             DispatcherPriority.Input,
-            new Action(() => DetailsBox?.Focus()));
+            new Action(() => FocusDetails(resetCaret: true)));
     }
 
     private void FocusWhenContainersGenerated()
     {
         if (ItemsList == null)
         {
+            return;
+        }
+
+        if (DataContext is AdminViewModel vm && vm.PreferDetailsFocus)
+        {
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.Input,
+                new Action(() => FocusDetails(resetCaret: true)));
             return;
         }
 
@@ -267,6 +275,12 @@ public partial class AdminView : UserControl, IInitialFocusTarget
     {
         if (ItemsList == null)
         {
+            return;
+        }
+
+        if (DataContext is AdminViewModel vm && vm.PreferDetailsFocus)
+        {
+            FocusDetails(resetCaret: false);
             return;
         }
 
@@ -303,5 +317,26 @@ public partial class AdminView : UserControl, IInitialFocusTarget
         FocusWhenContainersGenerated();
         FocusBestInputIfVisible();
         FocusDetailsIfPreferred();
+    }
+
+    private void FocusDetails(bool resetCaret)
+    {
+        if (DetailsBox == null)
+        {
+            return;
+        }
+
+        DetailsBox.Focus();
+
+        if (!resetCaret)
+        {
+            return;
+        }
+
+        // Make keyboard navigation predictable for screen readers (start reading from the top).
+        DetailsBox.CaretIndex = 0;
+        DetailsBox.SelectionStart = 0;
+        DetailsBox.SelectionLength = 0;
+        DetailsBox.ScrollToHome();
     }
 }
