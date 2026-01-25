@@ -927,7 +927,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     const starter = (Number(meta.roundStarterIndex ?? 0) + 1) % Math.max(1, players.length);
     const pauseSeconds = Number(meta.roundPauseSeconds ?? 0);
     const pauseMs = Number.isFinite(pauseSeconds) ? Math.max(0, Math.floor(pauseSeconds) * 1000) : 0;
-    const updatedMeta: LamaMetadata = {
+    const updatedMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       ...meta,
       roundNumber: nextRound,
       roundStarterIndex: starter,
@@ -936,6 +936,8 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       roundPauseUntilMs: pauseMs > 0 ? Date.now() + pauseMs : null,
       pendingReturnQueue: [],
       pendingReturnPlayerId: null,
+      winnerId: null,
+      winnerPlayerId: null,
     };
 
     if (pauseMs > 0) {
@@ -994,7 +996,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     const log = Array.isArray(state.log) ? [...state.log] : [];
     log.push({ message: `Début de la manche ${meta.roundNumber}. Défausse: ${lamaCardLabel(firstDiscard as LamaCardValue)}.` });
 
-    const nextMeta: LamaMetadata = {
+    const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       ...meta,
       deck,
       discard,
@@ -1005,6 +1007,8 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       endedRoundNumber: null,
       pendingReturnQueue: [],
       pendingReturnPlayerId: null,
+      winnerId: null,
+      winnerPlayerId: null,
     };
 
     return {
