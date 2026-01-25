@@ -588,41 +588,20 @@ export class RoomService {
     await this.invalidateRoomPayloadCache(room.id);
 
     // Special case: if this room was created by restoring a vault snapshot and the original
-    // restorer quits without re-saving, we delete both the room and the snapshot to avoid "phantom rooms".
+    // restorer quits without re-saving, we delete the restored room so the snapshot becomes available again.
     if (
       participant &&
       opts?.disconnectOnly !== true &&
-      opts?.preserveRoom !== true &&
       room.restoredFromSnapshotId &&
       room.restoredOwnerUserId === userId
     ) {
       const snapshotId = String(room.restoredFromSnapshotId ?? '').trim();
-      this.logger.log('Restored room abandoned (delete room + snapshot)', {
+      this.logger.log('Restored room abandoned (delete restored room)', {
         roomId: room.id,
         userId,
         snapshotId: snapshotId || null,
       });
-
-      try {
-        await this.roomDeletedNotifier?.(room.id);
-      } catch {
-        // best effort
-      }
-
-      // Best-effort: delete the vault snapshot entry (the room deletion is the main goal).
-      if (snapshotId) {
-        try {
-          await this.vaultSnapshots.delete({ id: snapshotId, ownerUserId: userId } as any);
-        } catch {
-          // best effort
-        }
-      }
-
-      await this.rooms.delete(room.id);
-      this.roomBans.delete(room.id);
-      await this.invalidateRoomPayloadCache(room.id);
-      this.presenceService.broadcastPresence();
-      this.notifyDirectoryChanged(room.id, 'deleted');
+      await this.adminDestroyRoom(room.id);
       return null;
     }
 

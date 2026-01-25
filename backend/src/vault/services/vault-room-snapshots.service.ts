@@ -342,7 +342,8 @@ export class VaultRoomSnapshotsService {
 
   /**
    * Supprime une table créée via restauration (sans supprimer la sauvegarde).
-   * Utilisé quand le propriétaire quitte la table (Q) sans la re-sauvegarder.
+   * Utilisé quand le propriétaire quitte la table (Q) sans la re-sauvegarder,
+   * pour que la sauvegarde redevienne restaurable.
    */
   async abandonRestoredRoom(
     ownerUserId: number,
@@ -378,13 +379,6 @@ export class VaultRoomSnapshotsService {
       await this.rooms.adminDestroyRoom(id);
     } catch {
       return false;
-    }
-
-    // Best-effort: also delete the snapshot entry.
-    try {
-      await this.snapshots.delete({ id: snapshotId, ownerUserId } as any);
-    } catch {
-      // best-effort
     }
 
     return true;
