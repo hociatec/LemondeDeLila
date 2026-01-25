@@ -1,7 +1,13 @@
-name: Backend - Build & Deploy (manual)
+name: Backend - Build & Deploy
 
 on:
+  push:
+    branches: [ "main" ]
   workflow_dispatch:
+
+concurrency:
+  group: backend-deploy-main
+  cancel-in-progress: true
 
 jobs:
   deploy:
