@@ -588,21 +588,25 @@ export class RoomService {
     await this.invalidateRoomPayloadCache(room.id);
 
     // Special case: if this room was created by restoring a vault snapshot and the original
-    // restorer quits without re-saving, we delete the restored room so the snapshot becomes available again.
+    // restorer quits, we only delete the restored room when no human players remain (i.e. only bots would be left).
+    // This avoids kicking other humans still playing on the restored table.
     if (
       participant &&
       opts?.disconnectOnly !== true &&
       room.restoredFromSnapshotId &&
       room.restoredOwnerUserId === userId
     ) {
-      const snapshotId = String(room.restoredFromSnapshotId ?? '').trim();
-      this.logger.log('Restored room abandoned (delete restored room)', {
-        roomId: room.id,
-        userId,
-        snapshotId: snapshotId || null,
-      });
-      await this.adminDestroyRoom(room.id);
-      return null;
+      const activeHumansAfterLeave = await this.countActiveHumans(room.id);
+      if (activeHumansAfterLeave === 0) {
+        const snapshotId = String(room.restoredFromSnapshotId ?? '').trim();
+        this.logger.log('Restored room abandoned (no humans left => delete room)', {
+          roomId: room.id,
+          userId,
+          snapshotId: snapshotId || null,
+        });
+        await this.adminDestroyRoom(room.id);
+        return null;
+      }
     }
 
     // Quit explicite d'une partie démarrée = "partie quittée" dans les stats.
