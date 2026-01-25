@@ -166,8 +166,16 @@ export class VaultRoomSnapshotsService {
         typeof (room as any).restoredOwnerUserId === 'number'
           ? Number((room as any).restoredOwnerUserId)
           : null;
-      if (!requestedId && restoredFrom && restoredOwner === ownerUserId) {
-        requestedId = restoredFrom;
+      if (!requestedId && restoredFrom && (restoredOwner === ownerUserId || restoredOwner == null)) {
+        // Only auto-overwrite if the snapshot exists for this owner.
+        // This prevents blocking saves when ownership was transferred to a different user.
+        const exists = await this.snapshots.findOne({
+          where: { id: restoredFrom, ownerUserId } as any,
+          select: ['id'] as any,
+        });
+        if (exists) {
+          requestedId = restoredFrom;
+        }
       }
     } catch {
       // best-effort (room may already be closing/deleted)
