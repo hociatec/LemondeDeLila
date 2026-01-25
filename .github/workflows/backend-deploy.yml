@@ -1,21 +1,17 @@
-name: Backend - Deploy (manual)
+name: Backend - Build & Deploy
 
 on:
+  push:
+    branches: [ "main" ]
   workflow_dispatch:
+
+concurrency:
+  group: backend-deploy-main
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: [self-hosted, linux, x64]
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.1.0
-        with:
-          host: ${{ secrets.BACKEND_SSH_HOST }}
-          username: ${{ secrets.BACKEND_SSH_USER }}
-          key: ${{ secrets.BACKEND_SSH_KEY }}
-          port: ${{ secrets.BACKEND_SSH_PORT || 22 }}
-          script: |
-            set -euo pipefail
-            cd "${{ secrets.BACKEND_WORKDIR }}"
-            chmod +x ./deploy-prod.sh
-            SERVICE_NAME="${{ secrets.BACKEND_SERVICE_NAME }}" ./deploy-prod.sh
+      - name: Deploy on server
+        run: sudo /usr/local/sbin/deploy-lemonde-prod
