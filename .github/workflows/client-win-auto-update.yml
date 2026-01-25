@@ -1,8 +1,7 @@
 name: Client Win - Build/Sign/Publish (auto)
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_dispatch:
 
 concurrency:
   group: client-win-publish-main

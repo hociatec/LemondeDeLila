@@ -5,7 +5,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.1.0
@@ -19,4 +19,3 @@ jobs:
             cd "${{ secrets.BACKEND_WORKDIR }}"
             chmod +x ./deploy-prod.sh
             SERVICE_NAME="${{ secrets.BACKEND_SERVICE_NAME }}" ./deploy-prod.sh
-
