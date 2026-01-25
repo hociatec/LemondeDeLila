@@ -10,9 +10,15 @@ export class GameWsRegistrar implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    this.registry.register('game.rules', (session, payload) =>
-      this.handler.rules(session, payload),
-    );
+    // Rules fetching: keep backward-compatible aliases.
+    const rulesHandler = (session: any, payload: any) =>
+      this.handler.rules(session, payload);
+    this.registry.register('game.rules', rulesHandler);
+    this.registry.register('game.rules.get', rulesHandler);
+    this.registry.register('game.rulebook', rulesHandler);
+    this.registry.register('game.rulebook.get', rulesHandler);
+    this.registry.register('rules', rulesHandler);
+
     this.registry.register('game.modules', (session) =>
       this.handler.modules(session),
     );

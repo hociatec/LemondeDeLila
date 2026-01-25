@@ -204,6 +204,10 @@ export class GameGateway
     if (!parsed?.type) return;
     const { type, payload } = parsed;
     try {
+      // Some clients historically send raw key types (ex: "r"). Avoid spamming errors.
+      if (type === 'r' || type === 'R') {
+        return;
+      }
       switch (type) {
         case 'game.join':
           await this.handleJoin(client, meta, payload);
@@ -233,6 +237,16 @@ export class GameGateway
           await this.handleKey(client, meta, payload);
           break;
         case 'game.rules':
+        case 'game.rules.get':
+        case 'game.rulebook':
+        case 'game.rulebook.get':
+        case 'rules':
+        case 'ctrl+r':
+        case 'Ctrl+R':
+        case 'CTRL+R':
+        case 'control+r':
+        case 'Control+R':
+        case 'CONTROL+R':
           await this.handleRules(client, meta, payload);
           break;
         case 'game.bot.play':

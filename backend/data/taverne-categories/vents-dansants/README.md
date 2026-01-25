@@ -2,7 +2,7 @@
 
 - id: `vents-dansants`
 - parentId: `null`
-- syncedAt: `2026-01-24T19:12:06.963Z`
+- syncedAt: `2026-01-25T14:24:34.205Z`
 
 Ce dossier est un miroir automatique de la taverne.
 Ne pas y mettre de code: il peut être renommé/supprimé automatiquement.

@@ -161,6 +161,10 @@ export class RealtimeApiGateway
     }
 
     try {
+      // Some clients historically sent raw key types (ex: "r"). Ignore them to avoid spurious errors.
+      if (type === 'r' || type === 'R') {
+        return;
+      }
       const handler = this.registry.get(type);
       if (!handler) {
         this.logger.warn(

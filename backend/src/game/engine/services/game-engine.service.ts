@@ -284,6 +284,9 @@ export class GameEngineService {
     // Always available: request/announce turn information.
     common.push(interfaceShortcut('T', 'turn'));
 
+    // Rules overlay (client-side): prefer Ctrl+R (avoid interfering with in-game text inputs).
+    common.push(interfaceShortcut('Ctrl+R', 'rules'));
+
     // Action shortcuts: emit only when action exists in the exposed state.
     const actionsRaw = (state as any)?.actions;
     const actions: Array<any> = Array.isArray(actionsRaw) ? actionsRaw : [];
