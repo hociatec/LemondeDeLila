@@ -604,6 +604,14 @@ export class RoomService {
           userId,
           snapshotId: snapshotId || null,
         });
+        // Best-effort: also delete the vault snapshot so it disappears from the coffre.
+        if (snapshotId) {
+          try {
+            await this.vaultSnapshots.delete({ id: snapshotId, ownerUserId: userId } as any);
+          } catch {
+            // best effort
+          }
+        }
         await this.adminDestroyRoom(room.id);
         return null;
       }
