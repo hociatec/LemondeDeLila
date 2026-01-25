@@ -16,6 +16,7 @@ import { ClientUpdatesService } from '../../../client-updates/services/client-up
 import { isVersionLower } from '../../../common/utils/version.utils';
 import { WsTicketAuthService } from '../../../common/ws/ws-ticket-auth.service';
 import { RoomService } from '../../../room/services/room.service';
+import { GameContentService } from '../services/game-content.service';
 
 type IncomingPayload = { type?: string; payload?: any };
 type GameClient = {
@@ -57,6 +58,7 @@ export class GameGateway
     private readonly clientUpdates: ClientUpdatesService,
     private readonly wsTickets: WsTicketAuthService,
     private readonly roomService: RoomService,
+    private readonly content: GameContentService,
   ) {
     this.engine.setBroadcaster((gameType, roomId, state) =>
       this.broadcastState(gameType, roomId, state),
@@ -230,6 +232,9 @@ export class GameGateway
         case 'game.key':
           await this.handleKey(client, meta, payload);
           break;
+        case 'game.rules':
+          await this.handleRules(client, meta, payload);
+          break;
         case 'game.bot.play':
           await this.handleBot(meta, payload);
           break;
@@ -280,6 +285,22 @@ export class GameGateway
       },
       { roomId, userId: meta.userId, gameType, traceId, clientToServerMs },
     );
+  }
+
+  private async handleRules(client: WebSocket, meta: GameClient, payload: any) {
+    const gameType = String(payload?.gameType ?? meta.gameType ?? '').trim();
+    if (!gameType) {
+      this.sendError(client, 'gameType requis', 'game.rules');
+      return;
+    }
+
+    const roomId = meta.roomId ?? null;
+    if (typeof roomId === 'number' && roomId > 0) {
+      await this.engine.checkReadAccess(roomId, meta.userId);
+    }
+
+    const rules = await this.content.getRules(gameType);
+    this.safeSend(client, { type: 'game.rules', payload: { rules, gameType } });
   }
 
   private async handleState(client: WebSocket, meta: GameClient, payload: any) {
