@@ -1,17 +1,11 @@
-name: Backend - Build & Deploy
+name: Backend - Build & Deploy (manual)
 
 on:
-  push:
-    branches: [ "main" ]
   workflow_dispatch:
-
-concurrency:
-  group: backend-deploy-main
-  cancel-in-progress: true
 
 jobs:
   deploy:
-    runs-on: [self-hosted, linux, x64]
+    runs-on: [self-hosted, Linux, X64]
     steps:
       - name: Deploy on server
         run: sudo /usr/local/sbin/deploy-lemonde-prod
