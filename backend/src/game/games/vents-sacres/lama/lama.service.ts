@@ -162,6 +162,15 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     const trackerPlayed = LamaService.asBoolean(trackerRaw?.played);
     const sameTurn = trackerPlayerId === botPlayerId;
 
+    const turnIndex = Number(state.turnIndex ?? 0);
+    const lastDrawMap: any = (meta as any)?.lastDrawTurnIndexByPlayerId ?? null;
+    const lastDrawIndex =
+      lastDrawMap && typeof lastDrawMap === 'object'
+        ? LamaService.asNumberOrNull(lastDrawMap[String(botPlayerId)])
+        : null;
+    const justDrew = lastDrawIndex != null && lastDrawIndex === turnIndex;
+    const alreadyDrew = (sameTurn && trackerDrawn) || justDrew;
+
     const hand = (meta.handsByPlayerId ?? {})[String(botPlayerId)] ?? [];
     const discard = Array.isArray(meta.discard) ? meta.discard : [];
     const top = discard.length ? (discard[discard.length - 1] as LamaCardValue) : null;
@@ -193,7 +202,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     // Si le bot a déjà pioché et ne peut pas jouer, il doit terminer son tour:
     // - en mode "jouer après pioche": il passe
     // - sinon: il se retire (fallback) pour éviter une boucle sans progression en cas d'état incohérent
-    if (sameTurn && trackerDrawn && !trackerPlayed) {
+    if (alreadyDrew && !trackerPlayed) {
       if (meta.allowPlayAfterDraw) return [{ type: 'lama_pass', payload: {} }];
       return [{ type: 'lama_quit', payload: {} }];
     }
@@ -447,13 +456,21 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
         const current = players.find((p: any) => p?.id === actorId) as any;
         const isBot = Boolean(current?.isBot);
         const tracker = metaForTurn.turnTracker ?? null;
+        const lastDrawMap: any = (metaForTurn as any)?.lastDrawTurnIndexByPlayerId ?? null;
+        const lastDrawIndex =
+          lastDrawMap && typeof lastDrawMap === 'object'
+            ? LamaService.asNumberOrNull(lastDrawMap[String(actorId)])
+            : null;
+        const justDrew = lastDrawIndex != null && lastDrawIndex === Number(state.turnIndex ?? 0);
         const alreadyDrawn =
           LamaService.asNumberOrNull((tracker as any)?.playerId) === actorId &&
           LamaService.asBoolean((tracker as any)?.drawn);
         if (isBot && !alreadyDrawn) {
           const name = current?.username ?? `#${actorId}`;
           const log = Array.isArray(state.log) ? [...state.log] : [];
-          log.push({ message: `${name} doit piocher.` });
+          if (!justDrew) {
+            log.push({ message: `${name} doit piocher.` });
+          }
           return this.applyDraw({ ...state, log }, metaForTurn, actorId);
         }
       } catch {
@@ -485,6 +502,17 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       return state;
     }
 
+    // Anti-boucle: même si turnTracker est incohérent, empêcher une double pioche consécutive.
+    const turnIndex = Number(state.turnIndex ?? 0);
+    const lastDrawMap: any = (meta as any)?.lastDrawTurnIndexByPlayerId ?? null;
+    const lastDrawIndex =
+      lastDrawMap && typeof lastDrawMap === 'object'
+        ? LamaService.asNumberOrNull(lastDrawMap[String(actorId)])
+        : null;
+    if (lastDrawIndex != null && lastDrawIndex === turnIndex) {
+      return state;
+    }
+
     const deck = Array.isArray(meta.deck) ? [...meta.deck] : [];
     if (deck.length <= 0) return state;
     const card = deck.pop() as LamaCardValue;
@@ -512,6 +540,10 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       ...meta,
       deck,
       handsByPlayerId,
+      lastDrawTurnIndexByPlayerId: {
+        ...(((meta as any).lastDrawTurnIndexByPlayerId as any) ?? {}),
+        [String(actorId)]: (state.turnIndex ?? 0) + 1,
+      },
       // Règle: une seule pioche par tour, quel que soit le mode "jouer après pioche".
       // Le tracker empêche les multi-pioches si le tour reste sur le même joueur (bots / latences).
       turnTracker: { playerId: actorId, drawn: true, played: false },

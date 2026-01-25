@@ -174,6 +174,70 @@ describe('LamaService', () => {
     expect(actions[0].type).toBe('lama_pass');
   });
 
+  it('prevents multiple consecutive draws even if turnTracker becomes desynced', async () => {
+    const service = new LamaService(
+      { register: () => {} } as any,
+      new RandomService(),
+      new LamaPresenter(),
+    );
+
+    const state: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'Human' },
+        { id: 2, username: 'Bot', isBot: true },
+      ],
+      turn: { currentPlayerId: 2, direction: 1 },
+      pending: { step: 'turn_choice', playerId: 2 },
+      metadata: {
+        step: 'turn_choice',
+        allowPlayAfterDraw: true,
+        roundNumber: 1,
+        roundStarterIndex: 0,
+        deck: [1, 7], // top draw is LAMA => keeps the turn when discard is 6
+        discard: [6],
+        handsByPlayerId: { '1': [1], '2': [1, 2, 3, 4, 5] },
+        droppedOutByPlayerId: { '1': false, '2': false },
+        scoresByPlayerId: { '1': 0, '2': 0 },
+        turnTracker: { playerId: 2, drawn: false, played: false },
+        pendingReturnQueue: [],
+        pendingReturnPlayerId: null,
+        winnerId: null,
+      },
+    };
+
+    const afterFirst: any = service.applyActions(state, [
+      { type: 'draw', payload: {}, meta: { actorId: 2 } } as any,
+    ]);
+    expect(afterFirst.turn.currentPlayerId).toBe(2);
+    const deckAfterFirst = (afterFirst.metadata.deck ?? []).length;
+    const handAfterFirst = (afterFirst.metadata.handsByPlayerId?.['2'] ?? []).length;
+
+    // Simule un bug externe: tracker du tour ne correspond plus au joueur courant.
+    const desynced: any = {
+      ...afterFirst,
+      metadata: {
+        ...afterFirst.metadata,
+        turnTracker: { playerId: 1, drawn: false, played: false },
+      },
+    };
+
+    const afterSecond: any = service.applyActions(desynced, [
+      { type: 'draw', payload: {}, meta: { actorId: 2 } } as any,
+    ]);
+
+    // La 2e pioche doit être ignorée (même si turnTracker est incohérent).
+    expect((afterSecond.metadata.deck ?? []).length).toBe(deckAfterFirst);
+    expect((afterSecond.metadata.handsByPlayerId?.['2'] ?? []).length).toBe(handAfterFirst);
+    const messages = (afterSecond.log ?? []).map((l: any) => String(l?.message ?? ''));
+    expect(messages.filter((m: string) => m === 'Bot pioche.').length).toBe(1);
+  });
+
   it('includes discard top in pending label', async () => {
     const service = new LamaService(
       { register: () => {} } as any,

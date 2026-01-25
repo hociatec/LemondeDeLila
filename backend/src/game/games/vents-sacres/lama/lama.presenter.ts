@@ -81,19 +81,52 @@ export class LamaPresenter extends BasePresenterService {
     if (!top) return out;
 
     const tracker = meta.turnTracker ?? { playerId: current, drawn: false, played: false };
-    const isSameTurn = tracker.playerId === current;
+
+    const asNumberOrNull = (value: unknown): number | null => {
+      if (typeof value === 'number' && Number.isFinite(value)) return value;
+      if (typeof value === 'string') {
+        const n = Number(value.trim());
+        return Number.isFinite(n) ? n : null;
+      }
+      return null;
+    };
+    const asBoolean = (value: unknown): boolean => {
+      if (value === true) return true;
+      if (value === false) return false;
+      if (typeof value === 'number') return value === 1;
+      if (typeof value === 'string') {
+        const t = value.trim().toLowerCase();
+        if (t === 'true' || t === '1' || t === 'yes' || t === 'oui' || t === 'on') return true;
+        if (t === 'false' || t === '0' || t === 'no' || t === 'non' || t === 'off') return false;
+      }
+      return false;
+    };
+
+    const trackerPlayerId = asNumberOrNull((tracker as any)?.playerId);
+    const isSameTurn = trackerPlayerId === current;
+    const trackerDrawn = asBoolean((tracker as any)?.drawn);
+    const trackerPlayed = asBoolean((tracker as any)?.played);
+
+    const turnIndex = Number(state.turnIndex ?? 0);
+    const lastDrawMap: any = (meta as any)?.lastDrawTurnIndexByPlayerId ?? null;
+    const lastDrawIndex =
+      lastDrawMap && typeof lastDrawMap === 'object'
+        ? asNumberOrNull(lastDrawMap[String(userId)])
+        : null;
+    const justDrew = lastDrawIndex != null && lastDrawIndex === turnIndex;
+    const alreadyDrew = (isSameTurn && trackerDrawn) || justDrew;
 
     // One pending choice per card in hand (including duplicates): ENTER plays the selected card (count=1).
-    if (!(isSameTurn && tracker.played)) {
+    if (!(isSameTurn && trackerPlayed)) {
       for (const value of sortedHandValues) {
         out.push({ type: 'lama_play', payload: { value, count: 1 } });
       }
     }
 
-    if ((meta.deck ?? []).length > 0 && !(isSameTurn && tracker.drawn)) {
+    if ((meta.deck ?? []).length > 0 && !alreadyDrew) {
       out.push({ type: 'draw', payload: {} });
     }
-    if (meta.allowPlayAfterDraw && isSameTurn && tracker.drawn && !tracker.played) {
+    if (meta.allowPlayAfterDraw && alreadyDrew && !trackerPlayed) {
       out.push({ type: 'lama_pass', payload: {} });
     }
     out.push({ type: 'lama_quit', payload: {} });

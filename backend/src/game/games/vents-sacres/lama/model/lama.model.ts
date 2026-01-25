@@ -23,6 +23,11 @@ export type LamaMetadata = {
   scoresByPlayerId: Record<string, number>;
   step: LamaRoundStep;
   turnTracker?: { playerId: number | null; drawn: boolean; played: boolean };
+  /**
+   * Anti-boucle: mémorise le dernier `turnIndex` auquel un joueur a pioché.
+   * Permet d'empêcher une double pioche même si `turnTracker` devient incohérent.
+   */
+  lastDrawTurnIndexByPlayerId?: Record<string, number>;
   pendingReturnQueue: number[];
   pendingReturnPlayerId: number | null;
   winnerId?: number | null;
