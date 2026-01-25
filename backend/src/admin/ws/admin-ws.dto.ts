@@ -227,6 +227,11 @@ export class AdminGameUpdateWsDto {
   description?: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(20000)
+  rules?: string;
+
+  @IsOptional()
   @IsBoolean()
   chatEnabled?: boolean;
 

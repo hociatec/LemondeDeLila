@@ -20,6 +20,9 @@ public sealed class AdminGameDto
     [JsonPropertyName("description")]
     public string? Description { get; set; }
 
+    [JsonPropertyName("rules")]
+    public string? Rules { get; set; }
+
     [JsonPropertyName("minPlayers")]
     public int? MinPlayers { get; set; }
 

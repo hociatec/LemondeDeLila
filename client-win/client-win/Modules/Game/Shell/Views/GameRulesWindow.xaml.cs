@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Windows;
 
 namespace client_win.Modules.Game.Shell.Views;
@@ -8,21 +9,28 @@ public partial class GameRulesWindow : Window
     private sealed class Vm
     {
         public string WindowTitle { get; init; } = "Règles";
-        public string RulesText { get; init; } = string.Empty;
+        public string[] RulesLines { get; init; } = Array.Empty<string>();
     }
 
     public GameRulesWindow(string title, string rules)
     {
+        var text = string.IsNullOrWhiteSpace(rules) ? "Aucune règle disponible." : rules.Trim();
+        var lines = text.Replace("\r\n", "\n").Split('\n').Select(l => l.TrimEnd('\r')).ToArray();
+        if (lines.Length == 0)
+        {
+            lines = new[] { "Aucune règle disponible." };
+        }
+
         InitializeComponent();
         DataContext = new Vm
         {
             WindowTitle = string.IsNullOrWhiteSpace(title) ? "Règles" : title.Trim(),
-            RulesText = string.IsNullOrWhiteSpace(rules) ? "Aucune règle disponible." : rules.Trim(),
+            RulesLines = lines,
         };
 
         Loaded += (_, _) =>
         {
-            try { RulesText.Focus(); } catch { }
+            try { RulesList.Focus(); } catch { }
         };
     }
 
@@ -37,4 +45,3 @@ public partial class GameRulesWindow : Window
         Close();
     }
 }
-

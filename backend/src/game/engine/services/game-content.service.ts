@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import { GameRegistryService } from './game-registry.service';
+import { GameCatalogOverridesService } from './game-catalog-overrides.service';
 
 @Injectable()
 export class GameContentService {
@@ -10,10 +11,19 @@ export class GameContentService {
   >();
   private readonly devTtlMs = 3000;
 
-  constructor(private readonly registry: GameRegistryService) {}
+  constructor(
+    private readonly registry: GameRegistryService,
+    private readonly overrides: GameCatalogOverridesService,
+  ) {}
 
   async getRules(gameType: string): Promise<string> {
     const key = String(gameType ?? '').trim();
+
+    const overrideRules = this.overrides.getGameOverride(key)?.rules ?? null;
+    if (typeof overrideRules === 'string') {
+      return overrideRules;
+    }
+
     if (key) {
       const cached = this.rulesCache.get(key) ?? null;
       if (cached) {

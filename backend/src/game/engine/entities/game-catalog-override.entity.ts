@@ -20,6 +20,9 @@ export class GameCatalogOverrideEntity {
   @Column({ type: 'text', nullable: true })
   description?: string | null;
 
+  @Column({ type: 'text', nullable: true })
+  rules?: string | null;
+
   @Column({ name: 'chat_enabled', type: 'boolean', nullable: true })
   chatEnabled?: boolean | null;
 

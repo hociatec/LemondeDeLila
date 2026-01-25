@@ -10,6 +10,7 @@ export type GameCatalogOverride = {
   maxPlayers?: number;
   name?: string;
   description?: string;
+  rules?: string;
   chatEnabled?: boolean;
   chatSoundsEnabled?: boolean;
 };
@@ -83,6 +84,7 @@ export class GameCatalogOverridesService implements OnModuleInit {
       maxPlayers: root.games[gameType].maxPlayers ?? null,
       name: root.games[gameType].name ?? null,
       description: root.games[gameType].description ?? null,
+      rules: root.games[gameType].rules ?? null,
       chatEnabled: root.games[gameType].chatEnabled ?? null,
       chatSoundsEnabled: root.games[gameType].chatSoundsEnabled ?? null,
     });
@@ -106,6 +108,7 @@ export class GameCatalogOverridesService implements OnModuleInit {
     if (typeof next.name === 'string' && !next.name.trim()) delete next.name;
     if (typeof next.description === 'string' && !next.description.trim())
       delete next.description;
+    if (typeof next.rules === 'string' && !next.rules.trim()) delete next.rules;
 
     root.games[gameType] = next;
     await this.repo.save({
@@ -116,6 +119,7 @@ export class GameCatalogOverridesService implements OnModuleInit {
       name: typeof next.name === 'string' ? next.name : null,
       description:
         typeof next.description === 'string' ? next.description : null,
+      rules: typeof next.rules === 'string' ? next.rules : null,
       chatEnabled:
         typeof next.chatEnabled === 'boolean' ? next.chatEnabled : null,
       chatSoundsEnabled:
@@ -153,6 +157,7 @@ export class GameCatalogOverridesService implements OnModuleInit {
             typeof row.maxPlayers === 'number' ? row.maxPlayers : undefined,
           name: row.name ?? undefined,
           description: row.description ?? undefined,
+          rules: row.rules ?? undefined,
           chatEnabled:
             typeof row.chatEnabled === 'boolean' ? row.chatEnabled : undefined,
           chatSoundsEnabled:

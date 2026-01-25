@@ -1,7 +1,7 @@
 <Window x:Class="client_win.Modules.Game.Shell.Views.GameRulesWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Règles"
+        Title="RÃ¨gles"
         Width="900"
         Height="650"
         Background="#0F1D2D"
@@ -18,21 +18,25 @@
                    FontSize="18"
                    Margin="0 0 0 12" />
 
-        <TextBox x:Name="RulesText"
+        <ListBox x:Name="RulesList"
                  Grid.Row="1"
-                 Text="{Binding RulesText}"
+                 ItemsSource="{Binding RulesLines}"
                  Background="#12263C"
                  Foreground="#C3D2EA"
                  BorderThickness="0"
                  Padding="12"
                  FontSize="13"
-                 TextWrapping="Wrap"
-                 IsReadOnly="True"
-                 AcceptsReturn="True"
-                 VerticalScrollBarVisibility="Auto"
-                 HorizontalScrollBarVisibility="Disabled"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                  Focusable="True"
-                 AutomationProperties.Name="Règles" />
+                 AutomationProperties.Name="RÃ¨gles">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}"
+                               TextWrapping="Wrap" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
         <Button Grid.Row="2"
                 Content="Fermer"
@@ -43,3 +47,4 @@
                 Click="OnCloseClicked" />
     </Grid>
 </Window>
+

@@ -63,6 +63,7 @@ export class AdminGamesWsHandler {
           categoryId: categoryId ?? undefined,
           subcategory: g.subcategory,
           description: g.description,
+          rules: ov?.rules ?? undefined,
           minPlayers: g.minPlayers,
           maxPlayers: g.maxPlayers,
           enabled,
@@ -141,15 +142,18 @@ export class AdminGamesWsHandler {
   async gamesUpdate(session: WsSession, payload: any) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(AdminGameUpdateWsDto, payload);
-    await this.overrides.updateGameOverride(dto.gameType, {
-      enabled: dto.enabled,
-      minPlayers: dto.minPlayers,
-      maxPlayers: dto.maxPlayers,
-      name: dto.name,
-      description: dto.description,
-      chatEnabled: dto.chatEnabled,
-      chatSoundsEnabled: dto.chatSoundsEnabled,
-    });
+    const update: Record<string, unknown> = {};
+    if (typeof dto.enabled === 'boolean') update.enabled = dto.enabled;
+    if (typeof dto.minPlayers === 'number') update.minPlayers = dto.minPlayers;
+    if (typeof dto.maxPlayers === 'number') update.maxPlayers = dto.maxPlayers;
+    if (typeof dto.name === 'string') update.name = dto.name;
+    if (typeof dto.description === 'string') update.description = dto.description;
+    if (typeof dto.rules === 'string') update.rules = dto.rules;
+    if (typeof dto.chatEnabled === 'boolean') update.chatEnabled = dto.chatEnabled;
+    if (typeof dto.chatSoundsEnabled === 'boolean')
+      update.chatSoundsEnabled = dto.chatSoundsEnabled;
+
+    await this.overrides.updateGameOverride(dto.gameType, update as any);
     await this.catalogInvalidation.invalidateCatalogAndNotify(admin.id);
     return { type: 'admin.games.update', payload: { ok: true } };
   }

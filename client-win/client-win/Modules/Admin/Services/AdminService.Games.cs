@@ -45,14 +45,51 @@ public sealed partial class AdminService
         int? maxPlayers = null,
         string? name = null,
         string? description = null,
+        string? rules = null,
         bool? chatEnabled = null,
         bool? chatSoundsEnabled = null,
         CancellationToken cancellationToken = default)
     {
         var token = EnsureAuth();
+        var payload = new Dictionary<string, object?>
+        {
+            ["gameType"] = gameType,
+        };
+        if (enabled.HasValue)
+        {
+            payload["enabled"] = enabled.Value;
+        }
+        if (minPlayers.HasValue)
+        {
+            payload["minPlayers"] = minPlayers.Value;
+        }
+        if (maxPlayers.HasValue)
+        {
+            payload["maxPlayers"] = maxPlayers.Value;
+        }
+        if (name != null)
+        {
+            payload["name"] = name;
+        }
+        if (description != null)
+        {
+            payload["description"] = description;
+        }
+        if (rules != null)
+        {
+            payload["rules"] = rules;
+        }
+        if (chatEnabled.HasValue)
+        {
+            payload["chatEnabled"] = chatEnabled.Value;
+        }
+        if (chatSoundsEnabled.HasValue)
+        {
+            payload["chatSoundsEnabled"] = chatSoundsEnabled.Value;
+        }
         var response = await _ws.RequestAsync<object>(
             WsMessageTypes.Admin.GamesUpdate,
-            new { gameType, enabled, minPlayers, maxPlayers, name, description, chatEnabled, chatSoundsEnabled },
+            payload,
             token,
             cancellationToken).ConfigureAwait(false);
         if (!response.Success)

@@ -26,6 +26,27 @@ public sealed partial class AdminViewModel
         _currentEditMode = mode;
     }
 
+    private void BuildEditRules(AdminGameDto game)
+    {
+        _page = AdminPage.EditText;
+        _selectedGame = game;
+        Title = $"Règles : {game.Name}";
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Valider", tag: "game.edit.submit"));
+        SelectedItem = Items.FirstOrDefault();
+        PrimaryInputAcceptsReturn = false;
+        SecondaryInputAcceptsReturn = true;
+        TextInputLabel = string.Empty;
+        TextInput = string.Empty;
+        SecondaryInputLabel = "Règles du jeu";
+        SecondaryInput = game.Rules ?? string.Empty;
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = true;
+        Details = $"Type: {game.Id}";
+        Status = "Ctrl+Entrée : valider. Échap : retour.";
+        _currentEditMode = "rules";
+    }
+
     private async Task SubmitGameTextEditAsync(AdminGameDto game)
     {
         var mode = _currentEditMode;
@@ -53,6 +74,22 @@ public sealed partial class AdminViewModel
                 await _admin.UpdateGameAsync(game.Id, description: value).ConfigureAwait(true);
                 await LoadGamesAsync().ConfigureAwait(true);
                 await _dialogs.ShowInfo("Jeu", $"Description mise à jour pour {game.Name}.");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+            return;
+        }
+        if (mode == "rules")
+        {
+            var rules = (SecondaryInput ?? string.Empty).Trim();
+            IsBusy = true;
+            try
+            {
+                await _admin.UpdateGameAsync(game.Id, rules: rules).ConfigureAwait(true);
+                await LoadGamesAsync().ConfigureAwait(true);
+                await _dialogs.ShowInfo("Jeu", $"Règles mises à jour pour {game.Name}.");
             }
             finally
             {

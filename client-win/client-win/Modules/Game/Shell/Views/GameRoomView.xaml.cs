@@ -212,6 +212,20 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
 	            return;
 	        }
 
+        // R : afficher les règles de la table (boîte de dialogue).
+        // Doit fonctionner même pendant une partie; ne pas l'envoyer au serveur.
+        if (!IsTextInputFocused() &&
+            (Keyboard.Modifiers & (ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Windows)) == ModifierKeys.None &&
+            (e.Key == Key.R || (e.Key == Key.System && e.SystemKey == Key.R)) &&
+            DataContext is ViewModels.GameRoomViewModel rulesVm &&
+            rulesVm.GameZone.RulesCommand.CanExecute(null))
+        {
+            e.Handled = true;
+            rulesVm.GameZone.RulesCommand.Execute(null);
+            RequestFocusGameZoneDeferred();
+            return;
+        }
+
 	        // Démarrage table (accessibilité): Entrée doit fonctionner même si le focus n'est pas exactement sur l'ancre
 	        // (après ajout de bot / annonces / navigation SR, WPF peut déplacer le focus).
 	        if ((e.Key == Key.Enter || e.Key == Key.Return) &&

@@ -89,6 +89,7 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem(game.ChatSoundsEnabled ? "Désactiver les sons du chat" : "Activer les sons du chat", tag: "game.chat.sounds.toggle"));
         Items.Add(new AdminMenuItem("Modifier le nom", tag: "game.edit.name"));
         Items.Add(new AdminMenuItem("Modifier la description", tag: "game.edit.description"));
+        Items.Add(new AdminMenuItem("Règles du jeu", tag: "game.edit.rules"));
         Items.Add(new AdminMenuItem("Attribuer une catégorie", tag: "game.category.assign"));
         if (string.Equals(game.Id, "arche-de-mnemosyne", StringComparison.OrdinalIgnoreCase))
         {
@@ -133,6 +134,11 @@ public sealed partial class AdminViewModel
         if (action == "game.edit.description")
         {
             BuildEditText(game, title: $"Description : {game.Name}", label: "Nouvelle description", initialValue: game.Description ?? string.Empty, mode: "description");
+            return;
+        }
+        if (action == "game.edit.rules")
+        {
+            BuildEditRules(game);
             return;
         }
         if (action == "game.edit.players")
