@@ -118,13 +118,11 @@ export class RoomGateway
     if (targets) all.push(...Array.from(targets));
     if (silentTargets) all.push(...Array.from(silentTargets));
 
-    for (const socket of all) {
-      try {
-        this.safeSend(socket, { type: 'room.deleted', roomId });
-      } catch {
-        // ignore
-      }
+    // Important: `ws` send is async; closing immediately can drop the last message.
+    // We therefore send 'room.deleted' and close the socket in the send callback.
+    const deletedMessage = JSON.stringify({ type: 'room.deleted', roomId });
 
+    for (const socket of all) {
       // Important: retirer avant close pour éviter handleDisconnect/leaveRoom en cascade.
       this.realtimeTracker.clearSocket(socket);
       this.clients.delete(socket);
@@ -132,7 +130,17 @@ export class RoomGateway
       silentTargets?.delete(socket);
 
       try {
-        socket.close();
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(deletedMessage, () => {
+            try {
+              socket.close();
+            } catch {
+              /* ignore */
+            }
+          });
+        } else {
+          socket.close();
+        }
       } catch {
         /* ignore */
       }

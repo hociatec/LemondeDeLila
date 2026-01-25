@@ -503,6 +503,7 @@ public sealed class GameTableOpener : IGameTableOpener
             try
             {
                 try { cts.Cancel(); } catch { }
+                try { _announcementService?.CancelPending(cancelSpeech: true); } catch { }
 
                 if (session != null && onRoomConnectionStateChanged != null)
                 {
@@ -716,7 +717,8 @@ public sealed class GameTableOpener : IGameTableOpener
                 }
             }
 
-            await ExitAsync(forceTavern: isRestoredFromVault).ConfigureAwait(true);
+            // Quitter une table depuis l'UI doit toujours ramener à la taverne (même si on vient d'une autre vue).
+            await ExitAsync(forceTavern: true).ConfigureAwait(true);
         }
 
         GameRoomViewModel? vm = null;
@@ -1284,7 +1286,8 @@ public sealed class GameTableOpener : IGameTableOpener
                         }
                         else
                         {
-                            _ = ExitAsync("Vous avez quitté la table.");
+                            // room.left: quitter (ou être éjecté) doit toujours ramener à la taverne.
+                            _ = ExitAsync("Vous avez quitté la table.", forceTavern: true);
                         }
                     };
                     session.Left += onSessionLeft;

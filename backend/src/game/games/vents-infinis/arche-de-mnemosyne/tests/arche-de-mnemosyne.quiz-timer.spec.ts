@@ -97,6 +97,118 @@ describe("ArcheDeMnemosyneService quiz timer", () => {
     expect(afterB.round).toBe(2);
   });
 
+  it('when nobody finds the answer: does not repeat it in the "Personne..." line', () => {
+    const service = makeService();
+
+    const state: any = {
+      status: 'started',
+      phase: 'play',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      metadata: {
+        config: {
+          useTimer: true,
+          timerSeconds: 30,
+          targetPoints: 20,
+          correctSoloPoints: 2,
+          correctMultiPoints: 1,
+          wrongPoints: 0,
+          timeoutPoints: -1,
+        },
+        quizDeadlineAtMs: Date.now() + 30_000,
+        currentQuestion: {
+          id: 'q1',
+          categoryId: 'c1',
+          question: 'Q?',
+          choices: ['A', 'B', 'C', 'D'],
+          correctChoice: 'A',
+        },
+        quizAnswersByPlayerId: {},
+        scoresByPlayerId: { 1: 0, 2: 0 },
+        selectedCategoryId: null,
+        usedQuestionIds: [],
+        adminView: { page: 'setup' },
+        prompt: null,
+        winnerId: null,
+      },
+    };
+
+    const afterA = service.applyActions(state, [
+      { type: 'answer_quiz', payload: { answerIndex: 1 }, meta: { actorId: 1 } } as any, // wrong
+    ]);
+    const afterB = service.applyActions(afterA, [
+      { type: 'answer_quiz', payload: { answerIndex: 2 }, meta: { actorId: 2 } } as any, // wrong
+    ]);
+
+    const messages = (afterB.log ?? []).map((l: any) => String(l?.message ?? ''));
+    expect(messages.some((m: string) => m === `Personne n'a trouvé la bonne réponse.`)).toBe(true);
+    expect(messages.some((m: string) => m.includes(`Personne n'a trouvé la bonne réponse (`))).toBe(false);
+    expect(messages.some((m: string) => m.includes('La bonne réponse était'))).toBe(true);
+  });
+
+  it('when game ends: does not announce a next question countdown', () => {
+    const service = makeService();
+
+    const state: any = {
+      status: 'started',
+      phase: 'play',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      metadata: {
+        config: {
+          useTimer: true,
+          timerSeconds: 30,
+          targetPoints: 1,
+          correctSoloPoints: 2,
+          correctMultiPoints: 1,
+          wrongPoints: 0,
+          timeoutPoints: -1,
+        },
+        quizDeadlineAtMs: Date.now() + 30_000,
+        currentQuestion: {
+          id: 'q1',
+          categoryId: 'c1',
+          question: 'Q?',
+          choices: ['A', 'B', 'C', 'D'],
+          correctChoice: 'A',
+        },
+        quizAnswersByPlayerId: {},
+        scoresByPlayerId: { 1: 0, 2: 0 },
+        selectedCategoryId: null,
+        usedQuestionIds: [],
+        adminView: { page: 'setup' },
+        prompt: null,
+        winnerId: null,
+      },
+    };
+
+    const afterA = service.applyActions(state, [
+      { type: 'answer_quiz', payload: { answerIndex: 0 }, meta: { actorId: 1 } } as any, // correct
+    ]);
+    const afterB = service.applyActions(afterA, [
+      { type: 'answer_quiz', payload: { answerIndex: 1 }, meta: { actorId: 2 } } as any, // wrong
+    ]);
+
+    expect(String(afterB.status ?? '')).toBe('finished');
+    expect(afterB.metadata.interQuestionUntilMs).toBeNull();
+
+    const messages = (afterB.log ?? []).map((l: any) => String(l?.message ?? ''));
+    expect(messages.some((m: string) => m.includes('Prochaine question dans 5 secondes'))).toBe(false);
+    expect(messages.some((m: string) => m === 'Fin de la manche 1.')).toBe(true);
+  });
+
   it('on timeout: logs the correct answer and waits 5s before next question', () => {
     const service = makeService();
 

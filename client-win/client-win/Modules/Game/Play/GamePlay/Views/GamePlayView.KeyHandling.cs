@@ -339,18 +339,18 @@ public partial class GamePlayView
         }
 
         e.Handled = true;
-        try
-        {
-            if (vm.TryHandleInterfaceShortcutLocally(key))
+            try
             {
-                return;
+                if (await vm.TryHandleInterfaceShortcutLocallyAsync(key, CancellationToken.None).ConfigureAwait(true))
+                {
+                    return;
+                }
+                await vm.TrySendKeyAsync(key, CancellationToken.None).ConfigureAwait(true);
             }
-            await vm.TrySendKeyAsync(key, CancellationToken.None).ConfigureAwait(true);
-        }
-        catch
-        {
-            // ignore
-        }
+            catch
+            {
+                // ignore
+            }
     }
 
     private static bool TryMapKeyToServerShortcut(Key key, out string normalized)

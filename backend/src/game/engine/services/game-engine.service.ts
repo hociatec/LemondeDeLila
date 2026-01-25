@@ -838,7 +838,7 @@ export class GameEngineService {
     ) {
       const nextPlayer =
         marked.players?.find((p) => p.id === nextPlayerId) ?? null;
-      const name = String(nextPlayer?.username ?? '').trim();
+      const name = this.normalizeUsernameForLog(nextPlayer?.username);
       const who = name ? name : `joueur ${nextPlayerId}`;
       marked = this.core.appendLog(marked, `C'est au tour de ${who}.`);
     }
@@ -945,6 +945,15 @@ export class GameEngineService {
     }
 
     return state;
+  }
+
+  private normalizeUsernameForLog(username: unknown): string {
+    let name = String(username ?? '').trim();
+    name = name.replace(/[\r\n\t]+/g, ' ').replace(/\s{2,}/g, ' ').trim();
+    if (name.startsWith('"') && name.endsWith('"')) {
+      name = name.slice(1, -1).trim();
+    }
+    return name;
   }
 
   /**
@@ -1421,7 +1430,7 @@ export class GameEngineService {
         String(marked.status ?? '').toLowerCase() === 'started'
       ) {
         const nextPlayer = marked.players?.find((p) => p.id === nextPlayerId) ?? null;
-        const name = String(nextPlayer?.username ?? '').trim();
+        const name = this.normalizeUsernameForLog(nextPlayer?.username);
         const who = name ? name : `joueur ${nextPlayerId}`;
         marked = this.core.appendLog(marked, `C'est au tour de ${who}.`);
         await this.store.set(roomId, gameType, marked);
@@ -1734,7 +1743,7 @@ export class GameEngineService {
 
     const current =
       state.players?.find((p) => p?.id === currentPlayerId) ?? null;
-    const name = String((current as any)?.username ?? '').trim();
+    const name = this.normalizeUsernameForLog((current as any)?.username);
     const who = name ? name : `joueur ${currentPlayerId}`;
     return this.core.appendLog(state, `C'est au tour de ${who}.`);
   }

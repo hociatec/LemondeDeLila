@@ -805,7 +805,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 	    let next = state;
 
 	    if (correctIds.length === 0) {
-	      next = this.core.appendLog(next, `Personne n'a trouvé la bonne réponse (${q.correctChoice}).`);
+	      next = this.core.appendLog(next, `Personne n'a trouvé la bonne réponse.`);
 	    } else if (correctIds.length === 1) {
 	      const id = correctIds[0]!;
 	      nextScores[id] = (nextScores[id] ?? 0) + correctSoloPoints;
@@ -858,6 +858,9 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 	      }
 	    }
 
+    const target = meta.config?.targetPoints ?? 20;
+    const willFinish = playerIds.some((id) => Number(nextScores[id] ?? 0) >= target);
+
     if (force || endedBecauseAllAnswered) {
       for (const id of playerIds) {
         const idx = answers[id];
@@ -878,7 +881,9 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
         next = this.core.appendLog(next, `La bonne réponse était : ${q.correctChoice}.`);
       }
       next = this.core.appendLog(next, `Fin de la manche ${currentRound}.`);
-      next = this.core.appendLog(next, 'Prochaine question dans 5 secondes.');
+      if (!willFinish) {
+        next = this.core.appendLog(next, 'Prochaine question dans 5 secondes.');
+      }
     }
 
     const afterMeta: MnemoQuizMetadata = {
@@ -887,10 +892,9 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       currentQuestion: null,
       quizAnswersByPlayerId: {},
       quizDeadlineAtMs: null,
-      interQuestionUntilMs: (force || endedBecauseAllAnswered) ? Date.now() + 5000 : null,
+      interQuestionUntilMs: (!willFinish && (force || endedBecauseAllAnswered)) ? Date.now() + 5000 : null,
     };
 
-    const target = afterMeta.config?.targetPoints ?? 20;
     const reached = playerIds
       .map((id) => ({ id, score: Number(afterMeta.scoresByPlayerId?.[id] ?? 0) }))
       .filter((x) => x.score >= target);
@@ -1540,7 +1544,14 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
   private playerName(state: GameStateEntity, playerId: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
     const p = players.find((x: any) => x?.id === playerId) as any;
-    return String(p?.username ?? '').trim() || `Joueur ${playerId}`;
+    const raw = String(p?.username ?? '').trim();
+    const cleaned = raw
+      .replace(/[\r\n\t]+/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim()
+      .replace(/^"(.*)"$/u, '$1')
+      .trim();
+    return cleaned || `Joueur ${playerId}`;
   }
 
   private getMeta(state: GameStateEntity): MnemoQuizMetadata {

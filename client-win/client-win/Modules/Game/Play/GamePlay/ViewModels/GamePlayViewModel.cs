@@ -1105,14 +1105,34 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public bool TryHandleInterfaceShortcutLocally(string normalizedKey)
     {
+        // Backward-compatible sync wrapper (no blocking).
+        // Prefer TryHandleInterfaceShortcutLocallyAsync to ensure latest state (esp. during bot turns).
+        return false;
+    }
+
+    public async Task<bool> TryHandleInterfaceShortcutLocallyAsync(
+        string normalizedKey,
+        CancellationToken cancellationToken = default)
+    {
         var session = _session;
-        if (session?.LastState == null)
+        if (session == null)
         {
             return false;
         }
 
-        var state = session.LastState;
         if (string.IsNullOrWhiteSpace(normalizedKey))
+        {
+            return false;
+        }
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return false;
+        }
+
+        // Interface shortcuts should reflect the latest server state (bot turns can update quickly).
+        // Request a fresh game.state and fall back to the last known one.
+        var state = await _panels.RequestFreshStateAsync(session).ConfigureAwait(true) ?? session.LastState;
+        if (state == null)
         {
             return false;
         }

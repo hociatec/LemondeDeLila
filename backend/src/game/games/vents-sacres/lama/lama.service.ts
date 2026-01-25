@@ -466,7 +466,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
           LamaService.asNumberOrNull((tracker as any)?.playerId) === actorId &&
           LamaService.asBoolean((tracker as any)?.drawn);
         if (isBot && !alreadyDrawn) {
-          const name = current?.username ?? `#${actorId}`;
+          const name = this.playerLabel(players, actorId);
           const log = Array.isArray(state.log) ? [...state.log] : [];
           if (!justDrew) {
             log.push({ message: `${name} doit piocher.` });
@@ -522,7 +522,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     handsByPlayerId[String(actorId)] = hand;
 
     const players = Array.isArray(state.players) ? state.players : [];
-    const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
+    const name = this.playerLabel(players, actorId);
     const log = Array.isArray(state.log) ? [...state.log] : [];
     log.push({ message: `${name} pioche.` });
 
@@ -542,7 +542,8 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       handsByPlayerId,
       lastDrawTurnIndexByPlayerId: {
         ...(((meta as any).lastDrawTurnIndexByPlayerId as any) ?? {}),
-        [String(actorId)]: (state.turnIndex ?? 0) + 1,
+        // Toujours stocker un nombre (évite les concaténations si turnIndex est sérialisé en string).
+        [String(actorId)]: turnIndex + 1,
       },
       // Règle: une seule pioche par tour, quel que soit le mode "jouer après pioche".
       // Le tracker empêche les multi-pioches si le tour reste sur le même joueur (bots / latences).
@@ -568,13 +569,13 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       metadata: advancedMeta as any,
       log,
       pending: { step: 'turn_choice', playerId: nextPlayerId } as any,
-      turnIndex: (state.turnIndex ?? 0) + 1,
+      turnIndex: turnIndex + 1,
       turn: {
         ...(state.turn ?? { direction: 1 }),
         currentPlayerId: nextPlayerId,
         direction: 1,
         label: nextPlayerId
-          ? `Tour de ${players.find((p) => p?.id === nextPlayerId)?.username ?? `#${nextPlayerId}`}`
+          ? `Tour de ${this.playerLabel(players, nextPlayerId)}`
           : undefined,
       },
     };
@@ -1062,8 +1063,21 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       ...(turn ?? { direction: 1 }),
       currentPlayerId,
       direction: 1,
-      label: `Tour de ${players.find((p) => p?.id === currentPlayerId)?.username ?? `#${currentPlayerId}`}`,
+      label: `Tour de ${this.playerLabel(players, currentPlayerId)}`,
     };
+  }
+
+  private playerLabel(players: any[], playerId: number): string {
+    const raw = players.find((p) => p?.id === playerId)?.username;
+    let name = String(raw ?? '').trim();
+    name = name
+      .replace(/[\r\n\t]+/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+    if (name.startsWith('"') && name.endsWith('"')) {
+      name = name.slice(1, -1).trim();
+    }
+    return name.length ? name : `joueur ${playerId}`;
   }
 
   private findEmptyHandWinnerId(meta: LamaMetadata, players: any[]): number | null {

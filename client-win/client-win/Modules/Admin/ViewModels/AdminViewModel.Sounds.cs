@@ -340,7 +340,7 @@ public sealed partial class AdminViewModel
             IsSecondaryInputVisible = false;
             IsAdditionalPermissionsVisible = false;
             Details = string.Equals(mode, "tableAmbience.create", StringComparison.OrdinalIgnoreCase)
-                ? "Donnez un nom Ã  l'ambiance. Le fichier .mp3 se choisit ensuite via \"Changer le son (.mp3)\"."
+                ? "Donnez un nom à l'ambiance. Le fichier .mp3 se choisit ensuite via \"Changer le son (.mp3)\"."
                 : string.Empty;
             Status = "Saisissez puis Entrée pour valider. Échap : retour.";
             UpdateFilterVisibility();
