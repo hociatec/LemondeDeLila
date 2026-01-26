@@ -128,12 +128,6 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
     {
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
-            if (IsChatEnabled())
-            {
-                FocusChatInput();
-                return;
-            }
-
             FocusHistory();
         }));
     }
@@ -255,7 +249,13 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
 
         if (HistoryHost?.IsKeyboardFocusWithin == true)
         {
-            if (shift && IsChatEnabled())
+            if (shift)
+            {
+                FocusGameZone();
+                return;
+            }
+
+            if (IsChatEnabled())
             {
                 FocusChatInput();
                 return;
@@ -269,11 +269,11 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
         {
             if (shift)
             {
-                FocusGameZone();
+                FocusHistory();
                 return;
             }
 
-            FocusHistory();
+            FocusGameZone();
             return;
         }
 
@@ -281,13 +281,13 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
         {
             if (shift)
             {
-                FocusHistory();
-                return;
-            }
+                if (IsChatEnabled())
+                {
+                    FocusChatInput();
+                    return;
+                }
 
-            if (IsChatEnabled())
-            {
-                FocusChatInput();
+                FocusHistory();
                 return;
             }
 
@@ -297,13 +297,13 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
 
         if (shift)
         {
-            FocusGameZone();
-            return;
-        }
+            if (IsChatEnabled())
+            {
+                FocusChatInput();
+                return;
+            }
 
-        if (IsChatEnabled())
-        {
-            FocusChatInput();
+            FocusGameZone();
             return;
         }
 
@@ -341,14 +341,19 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
 
     private void FocusHistory()
     {
-        if (HistoryHost != null)
+        if (HistoryHost == null)
         {
-            HistoryHost.FocusToBottom();
             return;
         }
 
-        // Fallback (ne devrait pas arriver)
-        HistoryHost?.Focus();
+        var target = HistoryHost.FocusTarget ?? (HistoryHost as FrameworkElement);
+        if (target != null)
+        {
+            target.Focus();
+            Keyboard.Focus(target);
+        }
+
+        HistoryHost.FocusToBottom();
     }
 
     private bool IsChatEnabled()
