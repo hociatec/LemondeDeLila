@@ -30,7 +30,6 @@ namespace client_win
                 return;
             _didStartupFocusNudge = true;
 
-            // Attendre que la fenêtre soit complètement chargée
             await Task.Delay(150);
 
             await Dispatcher.InvokeAsync(() =>
@@ -40,7 +39,6 @@ namespace client_win
                     if (!IsVisible)
                         return;
 
-                    // Forcer l'activation de la fenêtre
                     if (!IsActive)
                     {
                         Activate();
@@ -49,24 +47,20 @@ namespace client_win
                         NativeMethods.SetForegroundWindow(helper.Handle);
                     }
 
-                    // Attendre un instant supplémentaire pour la stabilisation
                     Task.Delay(50).ContinueWith(_ =>
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            // Positionner le focus sur le premier élément interactif
                             var firstFocusable = FindFirstFocusableElement();
                             if (firstFocusable != null)
                             {
-                                firstFocusable.Focus();
-                                Keyboard.Focus(firstFocusable);
-                                
-                                // Notifier les lecteurs d'écran
-                                NotifyScreenReader(firstFocusable);
+                                FocusAndAnnounce(firstFocusable);
                             }
                             else
                             {
                                 MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+                                var fallback = FocusManager.GetFocusedElement(this) as IInputElement ?? this;
+                                FocusAndAnnounce(fallback);
                             }
                         });
                     });
@@ -78,11 +72,19 @@ namespace client_win
             }, DispatcherPriority.ApplicationIdle);
         }
 
-        private IInputElement FindFirstFocusableElement()
+        private IInputElement? FindFirstFocusableElement()
         {
             // Rechercher le premier élément focusable dans l'arborescence visuelle
-            return FocusManager.GetFocusedElement(this) as IInputElement 
+            return FocusManager.GetFocusedElement(this) as IInputElement
                    ?? PredictionServices.GetFirstFocusableChild(this);
+        }
+
+        private void FocusAndAnnounce(IInputElement element)
+        {
+            try { element.Focus(); } catch { /* ignore */ }
+            try { Keyboard.Focus(element); } catch { /* ignore */ }
+            try { FocusManager.SetFocusedElement(this, element); } catch { /* ignore */ }
+            try { NotifyScreenReader(element); } catch { /* ignore */ }
         }
 
         private void NotifyScreenReader(IInputElement element)
@@ -114,7 +116,7 @@ namespace client_win
     // Classe helper pour trouver le premier élément focusable
     internal static class PredictionServices
     {
-        public static IInputElement GetFirstFocusableChild(DependencyObject parent)
+        public static IInputElement? GetFirstFocusableChild(DependencyObject parent)
         {
             if (parent is UIElement element && element.Focusable && element.IsEnabled && element.Visibility == Visibility.Visible)
             {

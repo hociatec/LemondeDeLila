@@ -214,18 +214,58 @@ namespace client_win
                         return;
                     }
 
-                    try { window.WindowState = WindowState.Normal; } catch { /* ignore */ }
+                    var wasMinimized = window.WindowState == WindowState.Minimized;
+                    try
+                    {
+                        if (wasMinimized)
+                        {
+                            window.WindowState = WindowState.Normal;
+                        }
+                    }
+                    catch
+                    {
+                        // best-effort
+                    }
+
                     try { window.Activate(); } catch { /* ignore */ }
                     try { window.Focus(); } catch { /* ignore */ }
+
+                    var previousTopmost = window.Topmost;
+                    try
+                    {
+                        window.Topmost = true;
+                    }
+                    catch
+                    {
+                        // best-effort
+                    }
 
                     try
                     {
                         var hwnd = new WindowInteropHelper(window).Handle;
                         if (hwnd != IntPtr.Zero)
                         {
-                            NativeMethods.ShowWindow(hwnd, NativeMethods.SW_RESTORE);
+                            var showCmd = wasMinimized ? NativeMethods.SW_RESTORE : NativeMethods.SW_SHOW;
+                            NativeMethods.ShowWindow(hwnd, showCmd);
                             NativeMethods.SetForegroundWindow(hwnd);
                             NativeMethods.SwitchToThisWindow(hwnd, fAltTab: true);
+                            NativeMethods.ShowWindow(hwnd, NativeMethods.SW_MAXIMIZE);
+                        }
+                    }
+                    catch
+                    {
+                        // best-effort
+                    }
+                    finally
+                    {
+                        try { window.Topmost = previousTopmost; } catch { /* ignore */ }
+                    }
+
+                    try
+                    {
+                        if (window.WindowState != WindowState.Maximized)
+                        {
+                            window.WindowState = WindowState.Maximized;
                         }
                     }
                     catch
@@ -311,6 +351,8 @@ namespace client_win
     internal static class NativeMethods
     {
         public const int SW_RESTORE = 9;
+        public const int SW_SHOW = 5;
+        public const int SW_MAXIMIZE = 3;
 
         [DllImport("user32.dll")]
         public static extern bool SetForegroundWindow(IntPtr hWnd);

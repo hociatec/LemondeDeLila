@@ -102,6 +102,8 @@ public sealed class GameTableOpener : IGameTableOpener
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
     }
 
+    private IAnnouncementService AnnouncementService => _announcementService ?? throw new InvalidOperationException("Le service d'annonces n'est pas disponible.");
+
     private sealed class TableAmbienceFileDto
     {
         public TableAmbienceItemDto[]? Items { get; set; }
@@ -582,7 +584,7 @@ public sealed class GameTableOpener : IGameTableOpener
                             tavernVm = new JoinGameViewModel(
                                 rooms: _directory,
                                 tables: this,
-                                announcements: _announcementService,
+                                announcements: AnnouncementService,
                                 returnContent: () => catalogVm,
                                 onClose: () =>
                                 {
@@ -601,7 +603,7 @@ public sealed class GameTableOpener : IGameTableOpener
                                 _vault,
                                 this,
                                 _dialogs,
-                                _announcementService,
+                                AnnouncementService,
                                 returnContent: catalogVm,
                                 onClose: () =>
                                 {
