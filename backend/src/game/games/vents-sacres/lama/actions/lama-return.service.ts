@@ -4,12 +4,14 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import type { LamaMetadata } from '../model/lama.model';
 import { LamaSharedService } from '../shared/lama-shared.service';
 import { LamaRoundService } from '../round/lama-round.service';
+import { LamaLogService } from '../logging/lama-log.service';
 
 @Injectable()
 export class LamaReturnService {
   constructor(
     private readonly shared: LamaSharedService,
     private readonly round: LamaRoundService,
+    private readonly logger: LamaLogService,
   ) {}
 
   applyReturnToken(
@@ -33,10 +35,10 @@ export class LamaReturnService {
 
     const players = Array.isArray(state.players) ? state.players : [];
     const name = this.shared.playerLabel(players, actorId);
-    const log = Array.isArray(state.log) ? [...state.log] : [];
-    if (delta === 10) log.push({ message: `${name} rend 1 diamant (10 jetons).` });
-    else if (delta === 1) log.push({ message: `${name} rend 1 jeton.` });
-    else log.push({ message: `${name} ne rend rien.` });
+    let log = state.log;
+    if (delta === 10) log = this.logger.append(log, `${name} rend 1 diamant (10 jetons).`);
+    else if (delta === 1) log = this.logger.append(log, `${name} rend 1 jeton.`);
+    else log = this.logger.append(log, `${name} ne rend rien.`);
 
     const queue = Array.isArray(meta.pendingReturnQueue) ? [...meta.pendingReturnQueue] : [];
     const remaining = queue.filter((id) => id !== actorId);

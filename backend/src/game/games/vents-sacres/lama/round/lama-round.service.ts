@@ -3,10 +3,14 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { LamaCardValue, LamaMetadata } from '../model/lama.model';
 import { lamaCardLabel, lamaCardScore, LAMA_VALUE } from '../model/lama.model';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { LamaLogService } from '../logging/lama-log.service';
 
 @Injectable()
 export class LamaRoundService {
-  constructor(private readonly random: RandomService) {}
+  constructor(
+    private readonly random: RandomService,
+    private readonly logger: LamaLogService,
+  ) {}
 
   startNewRound(state: GameStateEntity, starterIndex: number): GameStateEntity {
     const players = Array.isArray(state.players) ? state.players : [];
@@ -39,10 +43,12 @@ export class LamaRoundService {
     const discard: LamaCardValue[] = [firstDiscard as LamaCardValue];
 
     const starterPlayerId = players[starterIndex]?.id ?? players[0]?.id ?? null;
-    const log = Array.isArray(state.log) ? [...state.log] : [];
-    log.push({
-      message: `Début de la manche ${meta.roundNumber}. Défausse: ${lamaCardLabel(firstDiscard as LamaCardValue)}.`,
-    });
+    const log = this.logger.append(
+      state.log,
+      `Début de la manche ${meta.roundNumber}. Défausse: ${lamaCardLabel(
+        firstDiscard as LamaCardValue,
+      )}.`,
+    );
 
     const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       ...meta,
@@ -86,7 +92,7 @@ export class LamaRoundService {
     const handsByPlayerId = meta.handsByPlayerId ?? {};
     const scoresByPlayerId = { ...(meta.scoresByPlayerId ?? {}) };
 
-    const log = Array.isArray(state.log) ? [...state.log] : [];
+    let log = Array.isArray(state.log) ? [...state.log] : [];
 
     const alreadyLoggedEnd =
       log.some((l) => String((l as any)?.message ?? '') === `Fin de la manche ${roundNumber}.`);
@@ -134,7 +140,7 @@ export class LamaRoundService {
       return this.finishRoundAndMaybeStartNext(nextState);
     }
 
-    log.push({ message: `Fin de la manche ${roundNumber}.` });
+    log = this.logger.append(log, `Fin de la manche ${roundNumber}.`);
 
     for (const p of players) {
       if (!p?.id) continue;
@@ -144,9 +150,10 @@ export class LamaRoundService {
       const gained = unique.reduce((sum, v) => sum + lamaCardScore(v), 0);
       scoresByPlayerId[String(pid)] = Number(scoresByPlayerId[String(pid)] ?? 0) + gained;
       if (gained > 0) {
-        log.push({
-          message: `${p.username ?? `#${pid}`} prend ${gained} jeton${gained > 1 ? 's' : ''} (pénalité).`,
-        });
+        log = this.logger.append(
+          log,
+          `${p.username ?? `#${pid}`} prend ${gained} jeton${gained > 1 ? 's' : ''} (pénalité).`,
+        );
       }
     }
 
@@ -155,7 +162,7 @@ export class LamaRoundService {
         ? players.find((p) => p?.id === winnerPlayerId)?.username ?? `#${winnerPlayerId}`
         : null;
     if (winnerName) {
-      log.push({ message: `${winnerName} gagne la manche.` });
+      log = this.logger.append(log, `${winnerName} gagne la manche.`);
     }
 
     const winnerScore =
@@ -163,7 +170,7 @@ export class LamaRoundService {
     const eligible =
       this.shouldPromptReturn(roundNumber, winnerScore) ? [winnerPlayerId] : [];
     if (winnerName && eligible.length === 0) {
-      log.push({ message: `${winnerName} n'a rien à rendre.` });
+      log = this.logger.append(log, `${winnerName} n'a rien à rendre.`);
     }
     const nextMeta: LamaMetadata = {
       ...meta,
@@ -216,12 +223,13 @@ export class LamaRoundService {
           winnerId = pid;
         }
       }
-      const log = Array.isArray(state.log) ? [...state.log] : [];
-      log.push({ message: `Partie terminée.` });
+      let log = state.log;
+      log = this.logger.append(log, `Partie terminée.`);
       if (winnerId) {
-        log.push({
-          message: `Gagnant : ${players.find((p) => p?.id === winnerId)?.username ?? `#${winnerId}`}.`,
-        });
+        log = this.logger.append(
+          log,
+          `Gagnant : ${players.find((p) => p?.id === winnerId)?.username ?? `#${winnerId}`}.`,
+        );
       }
       return {
         ...state,
@@ -254,8 +262,10 @@ export class LamaRoundService {
     };
 
     if (pauseMs > 0) {
-      const log = Array.isArray(state.log) ? [...state.log] : [];
-      log.push({ message: `Pause ${Math.floor(pauseMs / 1000)}s avant la manche ${nextRound}.` });
+      const log = this.logger.append(
+        state.log,
+        `Pause ${Math.floor(pauseMs / 1000)}s avant la manche ${nextRound}.`,
+      );
       return {
         ...state,
         phase: 'round',

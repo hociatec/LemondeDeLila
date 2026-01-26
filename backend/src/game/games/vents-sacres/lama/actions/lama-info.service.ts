@@ -3,10 +3,14 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { LamaMetadata, LamaCardValue } from '../model/lama.model';
 import { lamaCardLabel } from '../model/lama.model';
 import { LamaSharedService } from '../shared/lama-shared.service';
+import { LamaLogService } from '../logging/lama-log.service';
 
 @Injectable()
 export class LamaInfoService {
-  constructor(private readonly shared: LamaSharedService) {}
+  constructor(
+    private readonly shared: LamaSharedService,
+    private readonly logger: LamaLogService,
+  ) {}
 
   applyInfoAction(
     state: GameStateEntity,
@@ -19,8 +23,10 @@ export class LamaInfoService {
     const top = discard.length ? (discard[discard.length - 1] as LamaCardValue) : null;
     const players = Array.isArray(state.players) ? state.players : [];
     const name = this.shared.playerLabel(players, actorId);
-    const log = Array.isArray(state.log) ? [...state.log] : [];
-    log.push({ message: `${name} regarde la défausse : ${top ? lamaCardLabel(top) : '(vide)'}.` });
+    const log = this.logger.append(
+      state.log,
+      `${name} regarde la défausse : ${top ? lamaCardLabel(top) : '(vide)'}.`,
+    );
     return { ...state, log };
   }
 }

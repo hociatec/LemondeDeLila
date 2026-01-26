@@ -3,12 +3,14 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { LamaMetadata } from '../model/lama.model';
 import { LamaRoundService } from '../round/lama-round.service';
 import { LamaSharedService } from '../shared/lama-shared.service';
+import { LamaLogService } from '../logging/lama-log.service';
 
 @Injectable()
 export class LamaQuitService {
   constructor(
     private readonly shared: LamaSharedService,
     private readonly round: LamaRoundService,
+    private readonly logger: LamaLogService,
   ) {}
 
   applyQuit(state: GameStateEntity, meta: LamaMetadata, actorId: number): GameStateEntity {
@@ -18,9 +20,8 @@ export class LamaQuitService {
 
     const players = Array.isArray(state.players) ? state.players : [];
     const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
-    const log = Array.isArray(state.log) ? [...state.log] : [];
-    log.push({ message: `${name} se retire de la manche.` });
-    log.push({ message: `${name} ne jouera plus ; ses jetons seront comptés à la fin de la manche.` });
+    let log = this.logger.append(state.log, `${name} se retire de la manche.`);
+    log = this.logger.append(log, `${name} ne jouera plus ; ses jetons seront comptés à la fin de la manche.`);
 
     const nextMeta: LamaMetadata = { ...meta, droppedOutByPlayerId };
     const nextStateBase: GameStateEntity = { ...state, metadata: nextMeta as any, log };

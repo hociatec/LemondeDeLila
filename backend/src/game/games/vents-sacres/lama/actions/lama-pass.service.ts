@@ -3,12 +3,14 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { LamaMetadata } from '../model/lama.model';
 import { LamaRoundService } from '../round/lama-round.service';
 import { LamaSharedService } from '../shared/lama-shared.service';
+import { LamaLogService } from '../logging/lama-log.service';
 
 @Injectable()
 export class LamaPassService {
   constructor(
     private readonly shared: LamaSharedService,
     private readonly round: LamaRoundService,
+    private readonly logger: LamaLogService,
   ) {}
 
   applyPass(state: GameStateEntity, meta: LamaMetadata, actorId: number): GameStateEntity {
@@ -24,8 +26,7 @@ export class LamaPassService {
 
     const players = Array.isArray(state.players) ? state.players : [];
     const name = this.shared.playerLabel(players, actorId);
-    const log = Array.isArray(state.log) ? [...state.log] : [];
-    log.push({ message: `${name} passe.` });
+    const log = this.logger.append(state.log, `${name} passe.`);
 
     const nextPlayerId = this.round.findNextActivePlayerId(players, meta, actorId);
     const nextMeta: LamaMetadata = {

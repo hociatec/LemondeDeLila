@@ -5,12 +5,14 @@ import type { LamaCardValue, LamaMetadata } from '../model/lama.model';
 import { lamaCardLabel, nextLamaValue } from '../model/lama.model';
 import { LamaRoundService } from '../round/lama-round.service';
 import { LamaSharedService } from '../shared/lama-shared.service';
+import { LamaLogService } from '../logging/lama-log.service';
 
 @Injectable()
 export class LamaPlayService {
   constructor(
     private readonly shared: LamaSharedService,
     private readonly round: LamaRoundService,
+    private readonly logger: LamaLogService,
   ) {}
 
   applyPlay(
@@ -60,9 +62,8 @@ export class LamaPlayService {
 
     const players = Array.isArray(state.players) ? state.players : [];
     const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
-    const log = Array.isArray(state.log) ? [...state.log] : [];
     const label = lamaCardLabel(value);
-    log.push({ message: `${name} joue un ${label}.` });
+    const log = this.logger.append(state.log, `${name} joue un ${label}.`);
 
     const nextMeta: LamaMetadata = {
       ...meta,

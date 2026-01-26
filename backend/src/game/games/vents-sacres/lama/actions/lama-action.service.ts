@@ -10,6 +10,7 @@ import { LamaQuitService } from './lama-quit.service';
 import { LamaReturnService } from './lama-return.service';
 import { LamaInfoService } from './lama-info.service';
 import { LamaSetupService } from '../setup/lama-setup.service';
+import { LamaLogService } from '../logging/lama-log.service';
 
 @Injectable()
 export class LamaActionService {
@@ -22,6 +23,7 @@ export class LamaActionService {
     private readonly returnService: LamaReturnService,
     private readonly infoService: LamaInfoService,
     private readonly setupService: LamaSetupService,
+    private readonly logger: LamaLogService,
   ) {}
 
   applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
@@ -95,11 +97,11 @@ export class LamaActionService {
           this.shared.asBoolean((tracker as any)?.drawn);
         if (isBot && !alreadyDrawn) {
           const name = this.shared.playerLabel(players, actorId);
-          const log = Array.isArray(state.log) ? [...state.log] : [];
           if (!justDrew) {
-            log.push({ message: `${name} doit piocher.` });
+            const logWithWarning = this.logger.append(state.log, `${name} doit piocher.`);
+            return this.drawService.applyDraw({ ...state, log: logWithWarning }, metaForTurn, actorId);
           }
-          return this.drawService.applyDraw({ ...state, log }, metaForTurn, actorId);
+          return this.drawService.applyDraw(state, metaForTurn, actorId);
         }
       } catch {
         // ignore

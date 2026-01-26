@@ -209,7 +209,7 @@ describe('LamaService', () => {
     expect((afterSecond.metadata.deck ?? []).length).toBe(deckAfterFirst);
     expect((afterSecond.metadata.handsByPlayerId?.['2'] ?? []).length).toBe(handAfterFirst);
     const messages = (afterSecond.log ?? []).map((l: any) => String(l?.message ?? ''));
-    expect(messages.filter((m: string) => m === 'Bot pioche.').length).toBe(1);
+    expect(messages.filter((m: string) => (m ?? '').startsWith('Bot pioche ')).length).toBe(1);
   });
 
   it('includes discard top in pending label', async () => {
@@ -402,7 +402,7 @@ describe('LamaService', () => {
 
     const messages = (after.log ?? []).map((l: any) => String(l?.message ?? ''));
     expect(messages.some((m: string) => m.includes('doit piocher'))).toBe(true);
-    expect(messages.filter((m: string) => m === 'Bot pioche.').length).toBe(1);
+    expect(messages.filter((m: string) => (m ?? '').startsWith('Bot pioche ')).length).toBe(1);
   });
 
   it('prevents a bot from drawing multiple times while still on its turn', async () => {
@@ -454,7 +454,7 @@ describe('LamaService', () => {
     expect((afterSecond.metadata.deck ?? []).length).toBe(deckAfterFirst);
     expect((afterSecond.metadata.handsByPlayerId?.['2'] ?? []).length).toBe(handAfterFirst);
     const messages = (afterSecond.log ?? []).map((l: any) => String(l?.message ?? ''));
-    expect(messages.filter((m: string) => m === 'Bot pioche.').length).toBe(1);
+    expect(messages.filter((m: string) => (m ?? '').startsWith('Bot pioche ')).length).toBe(1);
   });
 
   it('offers only single-card plays in pending choices', async () => {

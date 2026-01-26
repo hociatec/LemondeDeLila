@@ -4,12 +4,14 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import type { LamaMetadata } from '../model/lama.model';
 import { LamaRoundService } from '../round/lama-round.service';
 import { LamaSharedService } from '../shared/lama-shared.service';
+import { LamaLogService } from '../logging/lama-log.service';
 
 @Injectable()
 export class LamaSetupService {
   constructor(
     private readonly shared: LamaSharedService,
     private readonly round: LamaRoundService,
+    private readonly logger: LamaLogService,
   ) {}
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
@@ -116,16 +118,17 @@ export class LamaSetupService {
       suppressTurnAnnouncement: true,
     };
 
-    const log = Array.isArray(state.log) ? [...state.log] : [];
+    let log = state.log;
     const name = (state.players ?? []).find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
-    log.push({ message: `${name} fixe la défaite à ${loseAtScore} jetons.` });
-    log.push({ message: `${name} règle la pause entre manches à ${roundPauseSeconds}s.` });
-    log.push({
-      message: allowPlayAfterDraw
+    log = this.logger.append(log, `${name} fixe la défaite à ${loseAtScore} jetons.`);
+    log = this.logger.append(log, `${name} règle la pause entre manches à ${roundPauseSeconds}s.`);
+    log = this.logger.append(
+      log,
+      allowPlayAfterDraw
         ? `${name} autorise à jouer après avoir pioché (même tour).`
         : `${name} interdit de jouer après avoir pioché (tour suivant).`,
-    });
-    log.push({ message: `Début de la partie.` });
+    );
+    log = this.logger.append(log, `Début de la partie.`);
 
     return this.round.startNewRound(
       {

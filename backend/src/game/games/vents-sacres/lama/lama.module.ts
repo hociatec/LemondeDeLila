@@ -17,6 +17,7 @@ import { LamaReturnService } from './actions/lama-return.service';
 import { LamaInfoService } from './actions/lama-info.service';
 import { LamaBotService } from './bots/lama-bot.service';
 import { LamaShortcutsService } from './shortcuts/lama-shortcuts.service';
+import { LamaLogService } from './logging/lama-log.service';
 
 @Module({
   imports: [ConfigModule, GameCoreModule, GameRegistryModule, RandomModule],
@@ -35,6 +36,7 @@ import { LamaShortcutsService } from './shortcuts/lama-shortcuts.service';
     LamaInfoService,
     LamaBotService,
     LamaShortcutsService,
+    LamaLogService,
   ],
   exports: [LamaService],
 })
