@@ -558,8 +558,20 @@ public sealed class SoundService : ISoundService, IDisposable
             }
         }
 
-        // Always schedule preloads in the background to avoid blocking gameplay/UI interactions.
-        _ = _dispatcher.BeginInvoke((Action)PreloadOnUiThread, DispatcherPriority.Background);
+        // Warm-up preloads should run ASAP (before the first play), while default preloads stay background.
+        if (_dispatcher.CheckAccess())
+        {
+            PreloadOnUiThread();
+        }
+        else if (warmUp)
+        {
+            _ = _dispatcher.InvokeAsync((Action)PreloadOnUiThread, DispatcherPriority.Send);
+        }
+        else
+        {
+            // Always schedule default preloads in the background to avoid blocking gameplay/UI interactions.
+            _ = _dispatcher.BeginInvoke((Action)PreloadOnUiThread, DispatcherPriority.Background);
+        }
     }
 
     public void Play(SoundId sound)

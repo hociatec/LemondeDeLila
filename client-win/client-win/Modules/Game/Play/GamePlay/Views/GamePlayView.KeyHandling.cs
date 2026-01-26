@@ -206,7 +206,7 @@ public partial class GamePlayView
     {
         // Routed events: si une couche plus haute (ex: ShortcutBindingsBehavior) a déjà consommé la touche,
         // ne pas la retraiter ici (sinon double envoi/annonces doublées).
-        if (e.Handled || e.IsRepeat)
+        if (e.Handled)
         {
             return;
         }

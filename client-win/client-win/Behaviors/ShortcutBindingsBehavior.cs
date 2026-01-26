@@ -115,13 +115,6 @@ public static class ShortcutBindingsBehavior
                     return;
                 }
 
-                // Évite les doublons (touches maintenues / auto-repeat) qui peuvent déclencher plusieurs fois
-                // une même action (ex: annonces, requêtes game.state, etc.).
-                if (e.IsRepeat)
-                {
-                    return;
-                }
-
                 // Ne pas interpréter les raccourcis quand le focus est dans un contrôle de texte
                 // (ex: historique en lecture seule). On laisse le contrôle/lecteur d'écran gérer l'écho clavier.
                 if (IsTextInputFocused())

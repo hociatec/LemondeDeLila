@@ -2,7 +2,7 @@
 
 - id: `village-mystique`
 - parentId: `null`
-- syncedAt: `2026-01-26T23:20:02.237Z`
+- syncedAt: `2026-01-26T23:25:07.115Z`
 
 Ce dossier est un miroir automatique de la taverne.
 Ne pas y mettre de code: il peut être renommé/supprimé automatiquement.
