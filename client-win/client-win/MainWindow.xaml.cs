@@ -180,6 +180,7 @@ namespace client_win
                     var peer = UIElementAutomationPeer.CreatePeerForElement(uiElement);
                     if (peer != null)
                     {
+                        try { peer.SetFocus(); } catch { /* ignore */ }
                         peer.RaiseAutomationEvent(AutomationEvents.AutomationFocusChanged);
                         
                         // Si l'élément supporte l'invocation, notifier également

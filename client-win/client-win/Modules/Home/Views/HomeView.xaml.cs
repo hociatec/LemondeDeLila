@@ -150,66 +150,88 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         return source is TextBoxBase || source is PasswordBox;
     }
 
-    private void FocusFirstField()
-    {
-        var vm = _viewModel;
-        if (vm == null)
+        private void FocusFirstField()
         {
-            return;
+            var vm = _viewModel;
+            if (vm == null)
+            {
+                return;
+            }
+
+            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+            {
+                try
+                {
+                    if (!ReferenceEquals(_viewModel, vm) || !IsLoaded || !IsVisible)
+                    {
+                        return;
+                    }
+
+                    switch (vm.CurrentPage)
+                    {
+                        case HomePage.Landing:
+                            FocusLandingButton();
+                            break;
+
+                        case HomePage.Login:
+                            FocusLoginField();
+                            break;
+
+                        case HomePage.Register:
+                            FocusRegisterField();
+                            break;
+                    }
+                }
+                catch
+                {
+                    // Focus is best-effort: never crash the UI thread.
+                }
+            }));
         }
 
-        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        private void FocusLandingButton()
         {
-            try
+            if (LandingPrimaryButton?.IsVisible == true && LandingPrimaryButton.IsEnabled)
             {
-                if (!ReferenceEquals(_viewModel, vm) || !IsLoaded || !IsVisible)
-                {
-                    return;
-                }
-
-                switch (vm.CurrentPage)
-                {
-                    case HomePage.Login:
-                        if (LoginUsernameBox?.IsVisible == true && LoginUsernameBox.IsEnabled)
-                        {
-                            LoginUsernameBox.Focus();
-                        }
-                        else if (LoginPasswordBox?.IsVisible == true && LoginPasswordBox.IsEnabled)
-                        {
-                            LoginPasswordBox.Focus();
-                        }
-                        else if (LoginPasswordTextBox?.IsVisible == true && LoginPasswordTextBox.IsEnabled)
-                        {
-                            LoginPasswordTextBox.Focus();
-                        }
-                        break;
-
-                    case HomePage.Register:
-                        if (RegisterUsernameBox?.IsVisible == true && RegisterUsernameBox.IsEnabled)
-                        {
-                            RegisterUsernameBox.Focus();
-                        }
-                        else if (RegisterEmailBox?.IsVisible == true && RegisterEmailBox.IsEnabled)
-                        {
-                            RegisterEmailBox.Focus();
-                        }
-                        else if (RegisterPasswordBox?.IsVisible == true && RegisterPasswordBox.IsEnabled)
-                        {
-                            RegisterPasswordBox.Focus();
-                        }
-                        else if (RegisterPasswordTextBox?.IsVisible == true && RegisterPasswordTextBox.IsEnabled)
-                        {
-                            RegisterPasswordTextBox.Focus();
-                        }
-                        break;
-                }
+                LandingPrimaryButton.Focus();
             }
-            catch
+        }
+
+        private void FocusLoginField()
+        {
+            if (LoginUsernameBox?.IsVisible == true && LoginUsernameBox.IsEnabled)
             {
-                // Focus is best-effort: never crash the UI thread.
+                LoginUsernameBox.Focus();
             }
-        }));
-    }
+            else if (LoginPasswordBox?.IsVisible == true && LoginPasswordBox.IsEnabled)
+            {
+                LoginPasswordBox.Focus();
+            }
+            else if (LoginPasswordTextBox?.IsVisible == true && LoginPasswordTextBox.IsEnabled)
+            {
+                LoginPasswordTextBox.Focus();
+            }
+        }
+
+        private void FocusRegisterField()
+        {
+            if (RegisterUsernameBox?.IsVisible == true && RegisterUsernameBox.IsEnabled)
+            {
+                RegisterUsernameBox.Focus();
+            }
+            else if (RegisterEmailBox?.IsVisible == true && RegisterEmailBox.IsEnabled)
+            {
+                RegisterEmailBox.Focus();
+            }
+            else if (RegisterPasswordBox?.IsVisible == true && RegisterPasswordBox.IsEnabled)
+            {
+                RegisterPasswordBox.Focus();
+            }
+            else if (RegisterPasswordTextBox?.IsVisible == true && RegisterPasswordTextBox.IsEnabled)
+            {
+                RegisterPasswordTextBox.Focus();
+            }
+        }
 
     private void AttachHostWindowFocusRetry()
     {

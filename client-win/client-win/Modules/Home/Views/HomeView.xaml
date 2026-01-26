@@ -90,9 +90,12 @@
 
 	                        <TextBlock Text="Bienvenue, choisissez une action pour continuer."
 	                                   Foreground="White" FontSize="18" Margin="0 0 0 16" />
-	                        <Button Grid.Row="1" Content="Se connecter"
-	                                Command="{Binding ShowLoginCommand}"
-	                                PreviewKeyDown="OnCommandButtonPreviewKeyDown" />
+                        <Button x:Name="LandingPrimaryButton"
+                                Grid.Row="1" Content="Se connecter"
+                                Command="{Binding ShowLoginCommand}"
+                                PreviewKeyDown="OnCommandButtonPreviewKeyDown"
+                                AutomationProperties.Name="Se connecter"
+                                AutomationProperties.HelpText="Ouvre le formulaire de connexion" />
 	                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0 12 0 0">
 	                            <Button Content="Créer un compte" Command="{Binding ShowRegisterCommand}"
 	                                    Background="#234A7A" />
