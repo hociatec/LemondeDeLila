@@ -1,14 +1,8 @@
-import { LamaService } from '../lama.service';
-import { LamaPresenter } from '../lama.presenter';
-import { RandomService } from '../../../../modules/random/services/random.service';
+import { createLamaServiceForTest } from './lama-test-harness';
 
 describe('LamaService', () => {
   it('exposes pending choices only for current player', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const state: any = service.hydrateInitialState({
       status: 'started',
@@ -30,11 +24,7 @@ describe('LamaService', () => {
   });
 
   it('starts with a single setup prompt, then starts the first round', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const state: any = service.hydrateInitialState({
       status: 'started',
@@ -68,11 +58,7 @@ describe('LamaService', () => {
   });
 
   it('suggests a bot action on its turn', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const state: any = {
       status: 'started',
@@ -108,11 +94,7 @@ describe('LamaService', () => {
   });
 
   it('declares keyboard shortcuts', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const shortcuts = service.getShortcuts({
       metadata: {},
@@ -131,11 +113,7 @@ describe('LamaService', () => {
   });
 
   it('prevents infinite bot draw loop when turnTracker is serialized as strings', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const state: any = {
       status: 'started',
@@ -175,11 +153,7 @@ describe('LamaService', () => {
   });
 
   it('prevents multiple consecutive draws even if turnTracker becomes desynced', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const state: any = {
       status: 'started',
@@ -239,11 +213,7 @@ describe('LamaService', () => {
   });
 
   it('includes discard top in pending label', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const state: any = {
       status: 'started',
@@ -280,11 +250,7 @@ describe('LamaService', () => {
   });
 
   it('logs every player action (for NVDA announcements)', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const base: any = {
       status: 'started',
@@ -398,11 +364,7 @@ describe('LamaService', () => {
   });
 
   it('logs "doit piocher" before a bot draw (no double draw)', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const state: any = {
       status: 'started',
@@ -444,11 +406,7 @@ describe('LamaService', () => {
   });
 
   it('prevents a bot from drawing multiple times while still on its turn', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const state: any = {
       status: 'started',
@@ -500,11 +458,7 @@ describe('LamaService', () => {
   });
 
   it('offers only single-card plays in pending choices', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const state: any = {
       status: 'started',
@@ -544,11 +498,7 @@ describe('LamaService', () => {
   });
 
   it('does not offer draw/quit in pending choices (draw is via SPACE)', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const state: any = {
       status: 'started',
@@ -591,11 +541,7 @@ describe('LamaService', () => {
   });
 
   it('passes the turn after a draw', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const state: any = {
       status: 'started',
@@ -635,11 +581,7 @@ describe('LamaService', () => {
   });
 
   it('can keep the turn after a draw when configured', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const state: any = {
       status: 'started',
@@ -691,11 +633,7 @@ describe('LamaService', () => {
   });
 
   it('does not allow multiple draws in a single message from the same actor', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const state: any = {
       status: 'started',
@@ -737,11 +675,7 @@ describe('LamaService', () => {
   });
 
   it('passes the turn after playing', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const state: any = {
       status: 'started',
@@ -781,11 +715,7 @@ describe('LamaService', () => {
   });
 
   it('scores only distinct remaining card values at end of round', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const state: any = {
       status: 'started',
@@ -828,11 +758,7 @@ describe('LamaService', () => {
   });
 
   it('enters a round pause instead of starting the next round immediately (when configured)', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const state: any = {
       status: 'started',
@@ -875,11 +801,7 @@ describe('LamaService', () => {
   });
 
   it('does not score/end the same round twice (idempotent endRound)', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const endedState: any = {
       status: 'started',
@@ -929,11 +851,7 @@ describe('LamaService', () => {
   });
 
   it('reconciles endRound when log already contains round end (no duplicate messages)', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const state: any = {
       status: 'started',
@@ -985,11 +903,7 @@ describe('LamaService', () => {
   });
 
   it('auto-skips return_token when winner has 0 token', async () => {
-    const service = new LamaService(
-      { register: () => {} } as any,
-      new RandomService(),
-      new LamaPresenter(),
-    );
+    const { service } = createLamaServiceForTest();
 
     const base: any = {
       status: 'started',
