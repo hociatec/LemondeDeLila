@@ -52,16 +52,17 @@ namespace client_win
                         Dispatcher.Invoke(() =>
                         {
                             var firstFocusable = FindFirstFocusableElement();
-                            if (firstFocusable != null)
-                            {
-                                FocusAndAnnounce(firstFocusable);
-                            }
-                            else
+                            if (firstFocusable == null)
                             {
                                 MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
-                                var fallback = FocusManager.GetFocusedElement(this) as IInputElement ?? this;
-                                FocusAndAnnounce(fallback);
+                                firstFocusable = FocusManager.GetFocusedElement(this) as IInputElement;
+                                if (ShouldSkipStartupFocusTarget(firstFocusable))
+                                {
+                                    firstFocusable = null;
+                                }
                             }
+
+                            FocusAndAnnounce(firstFocusable ?? this);
                         });
                     });
                 }
@@ -74,9 +75,14 @@ namespace client_win
 
         private IInputElement? FindFirstFocusableElement()
         {
-            // Rechercher le premier élément focusable dans l'arborescence visuelle
-            return FocusManager.GetFocusedElement(this) as IInputElement
-                   ?? PredictionServices.GetFirstFocusableChild(this);
+            var focused = FocusManager.GetFocusedElement(this) as IInputElement;
+            if (!ShouldSkipStartupFocusTarget(focused))
+            {
+                return focused;
+            }
+
+            var host = FindName("RootHost") as DependencyObject ?? this;
+            return PredictionServices.GetFirstFocusableChild(host, element => !ShouldSkipStartupFocusTarget(element));
         }
 
         private void FocusAndAnnounce(IInputElement element)
@@ -85,6 +91,32 @@ namespace client_win
             try { Keyboard.Focus(element); } catch { /* ignore */ }
             try { FocusManager.SetFocusedElement(this, element); } catch { /* ignore */ }
             try { NotifyScreenReader(element); } catch { /* ignore */ }
+        }
+
+        private static bool ShouldSkipStartupFocusTarget(IInputElement? element)
+        {
+            if (element is UIElement uiElement)
+            {
+                return ShouldSkipStartupFocusTarget(uiElement);
+            }
+            return false;
+        }
+
+        private static bool ShouldSkipStartupFocusTarget(UIElement element)
+        {
+            if (element is FrameworkElement fe)
+            {
+                const string sentinelName = "FocusSentinel";
+                const string rootHostName = "RootHost";
+                var name = fe.Name;
+                if (string.Equals(name, sentinelName, StringComparison.Ordinal) ||
+                    string.Equals(name, rootHostName, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void NotifyScreenReader(IInputElement element)
@@ -116,9 +148,10 @@ namespace client_win
     // Classe helper pour trouver le premier élément focusable
     internal static class PredictionServices
     {
-        public static IInputElement? GetFirstFocusableChild(DependencyObject parent)
+        public static IInputElement? GetFirstFocusableChild(DependencyObject parent, Func<UIElement, bool>? allow = null)
         {
-            if (parent is UIElement element && element.Focusable && element.IsEnabled && element.Visibility == Visibility.Visible)
+            if (parent is UIElement element && element.Focusable && element.IsEnabled && element.Visibility == Visibility.Visible &&
+                (allow?.Invoke(element) ?? true))
             {
                 return element;
             }
@@ -126,7 +159,7 @@ namespace client_win
             for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
             {
                 var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
-                var result = GetFirstFocusableChild(child);
+                var result = GetFirstFocusableChild(child, allow);
                 if (result != null)
                     return result;
             }
