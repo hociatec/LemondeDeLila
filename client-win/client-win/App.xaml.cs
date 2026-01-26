@@ -363,6 +363,12 @@ namespace client_win
         // Deprecated but still useful for bringing the window forward in some cases.
         [DllImport("user32.dll")]
         public static extern void SwitchToThisWindow(IntPtr hWnd, bool fAltTab);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr SetActiveWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr SetFocus(IntPtr hWnd);
     }
 
 }

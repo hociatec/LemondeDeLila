@@ -62,8 +62,8 @@ namespace client_win
                                 }
                             }
 
-                            FocusAndAnnounce(firstFocusable ?? this);
                             EnsureWindowForeground();
+                            FocusAndAnnounce(firstFocusable ?? this);
                         });
                     });
                 }
@@ -108,6 +108,8 @@ namespace client_win
 
                 NativeMethods.ShowWindow(hwnd, NativeMethods.SW_RESTORE);
                 NativeMethods.SetForegroundWindow(hwnd);
+                NativeMethods.SetActiveWindow(hwnd);
+                NativeMethods.SetFocus(hwnd);
                 NativeMethods.SwitchToThisWindow(hwnd, fAltTab: true);
                 NativeMethods.ShowWindow(hwnd, NativeMethods.SW_MAXIMIZE);
             }
