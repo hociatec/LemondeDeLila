@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <asmv1:assembly xsi:schemaLocation="urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd" manifestVersion="1.0" xmlns:asmv1="urn:schemas-microsoft-com:asm.v1" xmlns="urn:schemas-microsoft-com:asm.v2" xmlns:asmv2="urn:schemas-microsoft-com:asm.v2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:co.v1="urn:schemas-microsoft-com:clickonce.v1" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns:co.v2="urn:schemas-microsoft-com:clickonce.v2">
-  <asmv1:assemblyIdentity name="LeMondeDeLila.exe" version="1.2.589.0" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" type="win32" />
+  <asmv1:assemblyIdentity name="LeMondeDeLila.exe" version="1.2.592.0" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" type="win32" />
   <application />
   <entryPoint>
     <assemblyIdentity name="Launcher" version="8.0.0.0" language="neutral" processorArchitecture="msil" />
@@ -320,16 +320,16 @@
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>+jAVyQ3Ih1Rb7mgvmmwbalSauJBCFmDUbi/mv3U0LrI=</dsig:DigestValue>
+      <dsig:DigestValue>OaxkIsIqDbe665RIuX/b0u+clX7H04t0c/aO8I/y6Ic=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="LeMondeDeLila.dll" size="1891328">
+  <file name="LeMondeDeLila.dll" size="1894400">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>D84PnTzh1dgdxLP5KAJVQY8bDiahbL9w0ns2e6wXzx4=</dsig:DigestValue>
+      <dsig:DigestValue>69Hq+yIy3xbmxuIgoan4jyh8mZUj7/pP8be84niJ0Vw=</dsig:DigestValue>
     </hash>
   </file>
   <file name="LeMondeDeLila.exe" size="151040">
@@ -338,7 +338,7 @@
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>F13vrvdpUnNokGG9WLiB3P4EkKJpbZ0XO6+3dWZrJvI=</dsig:DigestValue>
+      <dsig:DigestValue>5LfOHh9wF4maLyogNySE/EWZTdWnJNnS6t6ZqWClYE8=</dsig:DigestValue>
     </hash>
   </file>
   <file name="LeMondeDeLila.runtimeconfig.json" size="429">

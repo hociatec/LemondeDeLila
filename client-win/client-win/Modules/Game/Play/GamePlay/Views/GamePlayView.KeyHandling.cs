@@ -245,14 +245,6 @@ public partial class GamePlayView
             return;
         }
 
-        // Éviter que Tab/Maj+Tab fasse "sortir" le focus de la zone de jeu, ce qui casse l'UX clavier.
-        if (e.Key == Key.Tab)
-        {
-            e.Handled = true;
-            ForceFocusGameZone();
-            return;
-        }
-
         // Échap sert de "reset focus" côté client; ne pas l'envoyer au serveur (qui n'a souvent aucun raccourci ESC).
         if (e.Key == Key.Escape)
         {
