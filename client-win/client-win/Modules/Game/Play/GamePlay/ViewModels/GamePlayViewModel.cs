@@ -173,7 +173,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 	            grid: Grid,
 	            syncShortcuts: SyncShortcuts,
 	            canStartAskCardSelection: CanStartAskCardSelection,
-            emitMessage: msg => MessageReceived?.Invoke(new GamePlayHistoryMessage(msg)),
+	            emitMessage: msg => MessageReceived?.Invoke(msg),
 	            requestFocus: () => GameZoneFocusRequested?.Invoke(),
 	            refreshCanExecute: RefreshCanExecute,
 	            onGameStatusChanged: OnGameStatusChanged,

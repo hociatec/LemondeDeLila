@@ -57,6 +57,16 @@ public sealed class GameLogEntryDto
 
     [JsonPropertyName("timestamp")]
     public string? Timestamp { get; set; }
+
+    public GameLogEntryDto()
+    {
+    }
+
+    public GameLogEntryDto(string message, string? timestamp = null)
+    {
+        Message = message ?? string.Empty;
+        Timestamp = timestamp;
+    }
 }
 
 public sealed class GameTurnDto
