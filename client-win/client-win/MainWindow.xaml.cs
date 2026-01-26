@@ -63,6 +63,7 @@ namespace client_win
                             }
 
                             FocusAndAnnounce(firstFocusable ?? this);
+                            EnsureWindowForeground();
                         });
                     });
                 }
@@ -91,6 +92,29 @@ namespace client_win
             try { Keyboard.Focus(element); } catch { /* ignore */ }
             try { FocusManager.SetFocusedElement(this, element); } catch { /* ignore */ }
             try { NotifyScreenReader(element); } catch { /* ignore */ }
+        }
+
+        private void EnsureWindowForeground()
+        {
+            try
+            {
+                var helper = new WindowInteropHelper(this);
+                helper.EnsureHandle();
+                var hwnd = helper.Handle;
+                if (hwnd == IntPtr.Zero)
+                {
+                    return;
+                }
+
+                NativeMethods.ShowWindow(hwnd, NativeMethods.SW_RESTORE);
+                NativeMethods.SetForegroundWindow(hwnd);
+                NativeMethods.SwitchToThisWindow(hwnd, fAltTab: true);
+                NativeMethods.ShowWindow(hwnd, NativeMethods.SW_MAXIMIZE);
+            }
+            catch
+            {
+                // best-effort
+            }
         }
 
         private static bool ShouldSkipStartupFocusTarget(IInputElement? element)
