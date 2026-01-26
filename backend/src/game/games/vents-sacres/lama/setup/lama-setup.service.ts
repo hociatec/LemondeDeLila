@@ -14,6 +14,10 @@ export class LamaSetupService {
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const status = String(baseState.status ?? '').toLowerCase().trim();
+    const currentStep = String(((baseState.metadata ?? {}) as any)?.step ?? '').trim();
+    if (status === 'started' && currentStep && currentStep !== 'setup_config') {
+      return baseState;
+    }
     if (status !== 'started') {
       return {
         ...baseState,
