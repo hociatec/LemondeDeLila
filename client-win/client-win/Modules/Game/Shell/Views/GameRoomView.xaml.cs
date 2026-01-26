@@ -128,6 +128,12 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
     {
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
+            if (IsChatEnabled())
+            {
+                FocusChatInput();
+                return;
+            }
+
             FocusHistory();
         }));
     }
@@ -251,13 +257,13 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
         {
             if (shift)
             {
-                FocusGameZone();
-                return;
-            }
+                if (IsChatEnabled())
+                {
+                    FocusChatInput();
+                    return;
+                }
 
-            if (IsChatEnabled())
-            {
-                FocusChatInput();
+                FocusGameZone();
                 return;
             }
 
@@ -269,11 +275,11 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
         {
             if (shift)
             {
-                FocusHistory();
+                FocusGameZone();
                 return;
             }
 
-            FocusGameZone();
+            FocusHistory();
             return;
         }
 
@@ -281,13 +287,13 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
         {
             if (shift)
             {
-                if (IsChatEnabled())
-                {
-                    FocusChatInput();
-                    return;
-                }
-
                 FocusHistory();
+                return;
+            }
+
+            if (IsChatEnabled())
+            {
+                FocusChatInput();
                 return;
             }
 
@@ -297,13 +303,13 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
 
         if (shift)
         {
-            if (IsChatEnabled())
-            {
-                FocusChatInput();
-                return;
-            }
-
             FocusGameZone();
+            return;
+        }
+
+        if (IsChatEnabled())
+        {
+            FocusChatInput();
             return;
         }
 
