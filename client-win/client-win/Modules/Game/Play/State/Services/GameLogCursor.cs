@@ -40,7 +40,7 @@ internal sealed class GameLogCursor
         }
     }
 
-    internal IEnumerable<string> ExtractNewMessages(GameStateDto state)
+    internal IEnumerable<GameLogEntryDto> ExtractNewMessages(GameStateDto state)
     {
         var log = state.Log ?? new List<GameLogEntryDto>();
         if (log.Count == 0)
@@ -122,10 +122,15 @@ internal sealed class GameLogCursor
 
         for (var i = startIndex; i < log.Count; i++)
         {
-            var msg = NormalizeGameLogMessage(log[i]?.Message);
+            var entry = log[i];
+            if (entry == null)
+            {
+                continue;
+            }
+            var msg = NormalizeGameLogMessage(entry.Message);
             if (!string.IsNullOrWhiteSpace(msg))
             {
-                yield return msg;
+                yield return new GameLogEntryDto(msg, entry.Timestamp);
             }
         }
 
@@ -172,4 +177,3 @@ internal sealed class GameLogCursor
         return $"{ts}|{msg}";
     }
 }
-

@@ -24,6 +24,7 @@ using client_win.Modules.Game.Play.Shortcuts.ViewModels;
 using client_win.Modules.Game.Play.State.Dtos;
 using client_win.Modules.Game.Play.State.Services;
 using client_win.Modules.Shell.Services;
+using client_win.Modules.Game.Play.GamePlay.Dtos;
 using client_win.Modules.TextPrompts.Services;
 using Serilog;
 
@@ -138,7 +139,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             sounds: sounds ?? throw new ArgumentNullException(nameof(sounds)),
             getSession: () => _session,
             canInteract: () => !_isSpectator,
-            announce: msg => MessageReceived?.Invoke(msg));
+            announce: msg => MessageReceived?.Invoke(new GamePlayHistoryMessage(msg)));
         Grid.PropertyChanged += (_, e) =>
         {
             if (string.Equals(e.PropertyName, nameof(GridBoardViewModel.IsVisible), StringComparison.Ordinal))
@@ -155,7 +156,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             choices: _choices,
             canStartAskCardSelection: CanStartAskCardSelection,
             requestTurnAsync: RequestTurnAsync,
-            emitMessage: msg => MessageReceived?.Invoke(msg));
+            emitMessage: msg => MessageReceived?.Invoke(new GamePlayHistoryMessage(msg)));
 
         _shortcuts = new GamePlayShortcutsViewModel(_commands.SendKey);
 
@@ -172,7 +173,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 	            grid: Grid,
 	            syncShortcuts: SyncShortcuts,
 	            canStartAskCardSelection: CanStartAskCardSelection,
-	            emitMessage: msg => MessageReceived?.Invoke(msg),
+            emitMessage: msg => MessageReceived?.Invoke(new GamePlayHistoryMessage(msg)),
 	            requestFocus: () => GameZoneFocusRequested?.Invoke(),
 	            refreshCanExecute: RefreshCanExecute,
 	            onGameStatusChanged: OnGameStatusChanged,
@@ -217,7 +218,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public ObservableCollection<ShortcutDefinition> Shortcuts => _shortcuts.Shortcuts;
 
-    public event Action<string>? MessageReceived;
+        public event Action<GamePlayHistoryMessage>? MessageReceived;
     public event Action? GameZoneFocusRequested;
     public event Action<string, string>? GameStatusChanged;
 
@@ -1028,7 +1029,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         {
             const string message = "Mode spectateur : action de jeu interdite.";
             ConnectionStatus = message;
-            MessageReceived?.Invoke(message);
+            MessageReceived?.Invoke(new GamePlayHistoryMessage(message));
             return false;
         }
 
@@ -1044,13 +1045,13 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                     emitError: message =>
                     {
                         ConnectionStatus = $"Erreur pending: {message}";
-                        MessageReceived?.Invoke($"Erreur pending: {message}");
+                        MessageReceived?.Invoke(new GamePlayHistoryMessage($"Erreur pending: {message}"));
                     },
                     cancellationToken)
                 .ConfigureAwait(false);
             if (sent && string.Equals(pendingType, "quiz", StringComparison.OrdinalIgnoreCase))
             {
-                MessageReceived?.Invoke("Réponse envoyée.");
+                MessageReceived?.Invoke(new GamePlayHistoryMessage("Réponse envoyée."));
             }
             return sent;
         }
@@ -1058,7 +1059,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         {
             Log.Error(ex, "Erreur lors de l'envoi d'une action de pending");
             ConnectionStatus = $"Erreur pending: {ex.Message}";
-            MessageReceived?.Invoke($"Erreur pending: {ex.Message}");
+            MessageReceived?.Invoke(new GamePlayHistoryMessage($"Erreur pending: {ex.Message}"));
             return false;
         }
     }
@@ -1167,7 +1168,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             if (GamePlayUiPanelsParser.TryGetPanelMessage(state, panelId.Trim(), out var message) &&
                 !string.IsNullOrWhiteSpace(message))
             {
-                MessageReceived?.Invoke(message.Trim());
+                MessageReceived?.Invoke(new GamePlayHistoryMessage(message.Trim()));
                 return true;
             }
         }

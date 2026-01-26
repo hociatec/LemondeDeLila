@@ -15,6 +15,7 @@ using client_win.Modules.Game.Shell.ViewModels;
 using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Shell.Services;
+using client_win.Modules.Game.Play.GamePlay.Dtos;
 
 namespace client_win.Modules.Game.Shell.Services;
 
@@ -43,7 +44,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	    private Action<RoomPayloadDto>? _onRoomUpdated;
 	    private Action<RoomAnnouncement>? _onAnnounced;
 	    private Action<string>? _onSessionError;
-	    private Action<string>? _onGameMessage;
+    private Action<GamePlayHistoryMessage>? _onGameMessage;
 	    private Action<string, string>? _onGameStatusChanged;
 
     private string? _lastStatus;
@@ -606,7 +607,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
             _gamePlayVm = _createGamePlayVm();
 
-            _onGameMessage = msg => _history.Add(msg);
+            _onGameMessage = msg => _history.Add(msg.Message, msg.Timestamp);
             _gamePlayVm.MessageReceived += _onGameMessage;
 
             _onGameStatusChanged = (previousStatus, nextStatus) =>

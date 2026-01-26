@@ -24,7 +24,7 @@ internal sealed class GamePlayStatePresenter
                 stateSummary: string.Empty,
                 pendingText: string.Empty,
                 actionsText: string.Empty,
-                newLogMessages: Array.Empty<string>());
+                newLogMessages: Array.Empty<GameLogEntryDto>());
         }
 
         return new PresentedGameState(
@@ -40,5 +40,5 @@ internal sealed class GamePlayStatePresenter
         string stateSummary,
         string pendingText,
         string actionsText,
-        IEnumerable<string> newLogMessages);
+        IEnumerable<GameLogEntryDto> newLogMessages);
 }

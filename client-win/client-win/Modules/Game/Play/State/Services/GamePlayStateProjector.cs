@@ -30,7 +30,7 @@ internal sealed class GamePlayStateProjector
         return (result, result.Count > 0 ? result[0] : null);
     }
 
-    internal IEnumerable<string> ExtractNewLogMessages(GameStateDto state) => _logCursor.ExtractNewMessages(state);
+    internal IEnumerable<GameLogEntryDto> ExtractNewLogMessages(GameStateDto state) => _logCursor.ExtractNewMessages(state);
 
     internal bool HasInterfaceShortcut(GameStateDto? state, string id)
     {
@@ -41,4 +41,3 @@ internal sealed class GamePlayStateProjector
             string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
     }
 }
-

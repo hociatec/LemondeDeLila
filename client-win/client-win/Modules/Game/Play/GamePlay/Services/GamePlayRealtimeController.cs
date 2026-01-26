@@ -10,6 +10,7 @@ using client_win.Modules.Game.Play.Grid.ViewModels;
 using client_win.Modules.Game.Play.Panels.Services;
 using client_win.Modules.Game.Play.State.Dtos;
 using client_win.Modules.Game.Play.State.Services;
+using client_win.Modules.Game.Play.GamePlay.Dtos;
 
 namespace client_win.Modules.Game.Play.GamePlay.Services;
 
@@ -27,7 +28,7 @@ internal sealed class GamePlayRealtimeController
     private readonly GridBoardViewModel _grid;
     private readonly Action<GameStateDto> _syncShortcuts;
     private readonly Func<GameStateDto, bool> _canStartAskCardSelection;
-    private readonly Action<string> _emitMessage;
+    private readonly Action<GamePlayHistoryMessage> _emitMessage;
     private readonly Action _requestFocus;
     private readonly Action _refreshCanExecute;
     private readonly Action<string, string> _onGameStatusChanged;
@@ -57,7 +58,7 @@ internal sealed class GamePlayRealtimeController
         GridBoardViewModel grid,
         Action<GameStateDto> syncShortcuts,
         Func<GameStateDto, bool> canStartAskCardSelection,
-        Action<string> emitMessage,
+        Action<GamePlayHistoryMessage> emitMessage,
         Action requestFocus,
         Action refreshCanExecute,
         Action<string, string> onGameStatusChanged,
@@ -116,7 +117,7 @@ internal sealed class GamePlayRealtimeController
             // Garder seulement les annonces "forcées" (ex: demande manuelle de game.turn).
             if (force)
             {
-                _announcementRouter.TryHandleTurnUpdate(info, _emitMessage, force: true);
+        _announcementRouter.TryHandleTurnUpdate(info, msg => _emitMessage(new GamePlayHistoryMessage(msg)), force: true);
             }
         }, DispatcherPriority.Background);
     }
@@ -142,10 +143,12 @@ internal sealed class GamePlayRealtimeController
             // Annoncer d'abord les nouvelles lignes d'historique (ordre serveur),
             // puis seulement ensuite appliquer les changements d'interface (ex: liste de choix),
             // sinon NVDA lit le contrôle (ex: "Échange") avant le message "Case 11: Échange ...".
-            foreach (var msg in presented.newLogMessages)
+            foreach (var entry in presented.newLogMessages)
             {
-                _logSounds.TryPlayForLogMessage(msg, viewerUsername);
-                _emitMessage(RewriteLogForViewer(msg, viewerUsername, _lastViewerHandCounts, currentHandCounts));
+                var trimmed = entry?.Message ?? string.Empty;
+                _logSounds.TryPlayForLogMessage(trimmed, viewerUsername);
+                var rewritten = RewriteLogForViewer(trimmed, viewerUsername, _lastViewerHandCounts, currentHandCounts);
+                _emitMessage(new GamePlayHistoryMessage(rewritten, entry?.Timestamp));
             }
 
             var nextStatus = NormalizeStatus(state);

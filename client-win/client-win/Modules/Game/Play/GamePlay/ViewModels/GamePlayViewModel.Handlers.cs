@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Threading;
+using client_win.Modules.Game.Play.GamePlay.Dtos;
 
 namespace client_win.Modules.Game.Play.GamePlay.ViewModels;
 
@@ -10,7 +11,7 @@ public sealed partial class GamePlayViewModel
         _dispatcher.InvokeAsync(() =>
         {
             ConnectionStatus = $"Erreur serveur: {message}";
-            MessageReceived?.Invoke($"Erreur: {message}");
+            MessageReceived?.Invoke(new GamePlayHistoryMessage($"Erreur: {message}"));
             RefreshCanExecute();
         }, DispatcherPriority.Background);
 
@@ -34,7 +35,6 @@ public sealed partial class GamePlayViewModel
             return;
         }
 
-        MessageReceived?.Invoke(message.Trim());
+        MessageReceived?.Invoke(new GamePlayHistoryMessage(message.Trim()));
     }
 }
-

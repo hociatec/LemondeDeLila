@@ -5,8 +5,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="360"
-             Focusable="False"
-             IsTabStop="False">
+             Focusable="True"
+             IsTabStop="True">
 	    <Border Background="#12263C"
 	            CornerRadius="12"
 	            Padding="20"

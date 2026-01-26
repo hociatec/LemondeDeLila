@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Windows.Threading;
 using client_win.Modules.Game.History.ViewModels;
 using client_win.Modules.Shell.Services;
@@ -9,6 +10,7 @@ namespace client_win.Modules.Game.History.Services;
 public sealed class GameHistorySink : IGameHistorySink
 {
     private static readonly TimeSpan AnnouncementDedupWindow = TimeSpan.FromSeconds(3);
+    private static readonly TimeSpan CleanupThreshold = TimeSpan.FromMinutes(5);
 
     private readonly Dispatcher _dispatcher;
     private readonly GameHistoryViewModel _history;
@@ -22,7 +24,7 @@ public sealed class GameHistorySink : IGameHistorySink
         _announcements = announcements;
     }
 
-    public void Add(string message)
+    public void Add(string message, string? timestamp = null)
     {
         var parts = GameHistoryMessageSplitter.Split(message);
         if (parts.Count == 0)
@@ -42,7 +44,7 @@ public sealed class GameHistorySink : IGameHistorySink
 
                 _history.Entries.Add(cleaned);
 
-                TryAnnounce(cleaned);
+                TryAnnounce(cleaned, timestamp);
             }
         }
 
@@ -84,7 +86,7 @@ public sealed class GameHistorySink : IGameHistorySink
         }
     }
 
-    private bool TryAnnounce(string message)
+    private bool TryAnnounce(string message, string? timestamp)
     {
         if (_announcements == null)
         {
@@ -97,18 +99,18 @@ public sealed class GameHistorySink : IGameHistorySink
             return false;
         }
 
-        var now = DateTime.UtcNow;
+        var now = ParseTimestampOrNow(timestamp);
         if (_lastAnnouncements.TryGetValue(normalized, out var last))
         {
-            if (now - last <= AnnouncementDedupWindow)
+            if (now <= last || now - last <= AnnouncementDedupWindow)
             {
                 return false;
             }
         }
 
-        if (_lastAnnouncements.Count > 256)
+        if (_lastAnnouncements.Count > 512)
         {
-            var cutoff = now - AnnouncementDedupWindow * 4;
+            var cutoff = DateTime.UtcNow - CleanupThreshold;
             foreach (var key in new List<string>(_lastAnnouncements.Keys))
             {
                 if (_lastAnnouncements.TryGetValue(key, out var recorded) && recorded < cutoff)
@@ -121,6 +123,21 @@ public sealed class GameHistorySink : IGameHistorySink
         _lastAnnouncements[normalized] = now;
         _announcements.Enqueue(normalized, AnnouncementPriority.Polite);
         return true;
+    }
+
+    private static DateTime ParseTimestampOrNow(string? timestamp)
+    {
+        if (string.IsNullOrWhiteSpace(timestamp))
+        {
+            return DateTime.UtcNow;
+        }
+
+        if (DateTime.TryParse(timestamp, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var parsed))
+        {
+            return parsed.ToUniversalTime();
+        }
+
+        return DateTime.UtcNow;
     }
 
     private static string NormalizeSingleLine(string? message)
