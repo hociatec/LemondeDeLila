@@ -105,7 +105,9 @@ export class LamaRoundService {
       const winnerScore =
         winnerPlayerId != null ? Number(scoresByPlayerId[String(winnerPlayerId)] ?? 0) : 0;
       const eligible =
-        this.shouldPromptReturn(roundNumber, winnerScore) ? [winnerPlayerId] : [];
+        this.shouldPromptReturn(roundNumber, winnerScore) && winnerPlayerId != null
+          ? [winnerPlayerId]
+          : [];
 
       const nextMeta: LamaMetadata = {
         ...meta,
@@ -168,7 +170,9 @@ export class LamaRoundService {
     const winnerScore =
       winnerPlayerId != null ? Number(scoresByPlayerId[String(winnerPlayerId)] ?? 0) : 0;
     const eligible =
-      this.shouldPromptReturn(roundNumber, winnerScore) ? [winnerPlayerId] : [];
+      this.shouldPromptReturn(roundNumber, winnerScore) && winnerPlayerId != null
+        ? [winnerPlayerId]
+        : [];
     if (winnerName && eligible.length === 0) {
       log = this.logger.append(log, `${winnerName} n'a rien à rendre.`);
     }
