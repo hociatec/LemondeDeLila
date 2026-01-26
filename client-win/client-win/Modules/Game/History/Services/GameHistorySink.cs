@@ -8,13 +8,12 @@ namespace client_win.Modules.Game.History.Services;
 
 public sealed class GameHistorySink : IGameHistorySink
 {
-    private const int MaxRecentAnnouncements = 120;
+    private static readonly TimeSpan AnnouncementDedupWindow = TimeSpan.FromSeconds(3);
 
     private readonly Dispatcher _dispatcher;
     private readonly GameHistoryViewModel _history;
     private readonly IAnnouncementService? _announcements;
-    private readonly Queue<string> _recentAnnouncementQueue = new();
-    private readonly HashSet<string> _recentAnnouncements = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, DateTime> _lastAnnouncements = new(StringComparer.OrdinalIgnoreCase);
 
     public GameHistorySink(Dispatcher dispatcher, GameHistoryViewModel history, IAnnouncementService? announcements = null)
     {
@@ -98,19 +97,28 @@ public sealed class GameHistorySink : IGameHistorySink
             return false;
         }
 
-        if (_recentAnnouncements.Contains(normalized))
+        var now = DateTime.UtcNow;
+        if (_lastAnnouncements.TryGetValue(normalized, out var last))
         {
-            return false;
+            if (now - last <= AnnouncementDedupWindow)
+            {
+                return false;
+            }
         }
 
-        _recentAnnouncements.Add(normalized);
-        _recentAnnouncementQueue.Enqueue(normalized);
-        if (_recentAnnouncementQueue.Count > MaxRecentAnnouncements)
+        if (_lastAnnouncements.Count > 256)
         {
-            var removed = _recentAnnouncementQueue.Dequeue();
-            _recentAnnouncements.Remove(removed);
+            var cutoff = now - AnnouncementDedupWindow * 4;
+            foreach (var key in new List<string>(_lastAnnouncements.Keys))
+            {
+                if (_lastAnnouncements.TryGetValue(key, out var recorded) && recorded < cutoff)
+                {
+                    _lastAnnouncements.Remove(key);
+                }
+            }
         }
 
+        _lastAnnouncements[normalized] = now;
         _announcements.Enqueue(normalized, AnnouncementPriority.Polite);
         return true;
     }
