@@ -59,6 +59,7 @@ export class LamaSetupService {
       pendingReturnQueue: [],
       pendingReturnPlayerId: null,
       winnerId: null,
+      suppressTurnAnnouncement: true,
     };
 
     return {
@@ -112,6 +113,7 @@ export class LamaSetupService {
       turnTracker: { playerId: null, drawn: false, played: false },
       pendingReturnQueue: [],
       pendingReturnPlayerId: null,
+      suppressTurnAnnouncement: true,
     };
 
     const log = Array.isArray(state.log) ? [...state.log] : [];

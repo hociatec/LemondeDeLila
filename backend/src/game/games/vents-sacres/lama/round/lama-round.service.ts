@@ -57,6 +57,7 @@ export class LamaRoundService {
       pendingReturnPlayerId: null,
       winnerId: null,
       winnerPlayerId: null,
+      suppressTurnAnnouncement: true,
     };
 
     return {
@@ -98,7 +99,7 @@ export class LamaRoundService {
       const winnerScore =
         winnerPlayerId != null ? Number(scoresByPlayerId[String(winnerPlayerId)] ?? 0) : 0;
       const eligible =
-        winnerPlayerId != null && winnerScore >= 1 ? [winnerPlayerId] : [];
+        this.shouldPromptReturn(roundNumber, winnerScore) ? [winnerPlayerId] : [];
 
       const nextMeta: LamaMetadata = {
         ...meta,
@@ -107,6 +108,7 @@ export class LamaRoundService {
         step: eligible.length ? 'return_token' : 'turn_choice',
         pendingReturnQueue: eligible,
         pendingReturnPlayerId: eligible.length ? eligible[0] : null,
+        suppressTurnAnnouncement: true,
       };
 
       const nextState: GameStateEntity = {
@@ -159,7 +161,7 @@ export class LamaRoundService {
     const winnerScore =
       winnerPlayerId != null ? Number(scoresByPlayerId[String(winnerPlayerId)] ?? 0) : 0;
     const eligible =
-      winnerPlayerId != null && winnerScore >= 1 ? [winnerPlayerId] : [];
+      this.shouldPromptReturn(roundNumber, winnerScore) ? [winnerPlayerId] : [];
     if (winnerName && eligible.length === 0) {
       log.push({ message: `${winnerName} n'a rien à rendre.` });
     }
@@ -170,6 +172,7 @@ export class LamaRoundService {
       step: eligible.length ? 'return_token' : 'turn_choice',
       pendingReturnQueue: eligible,
       pendingReturnPlayerId: eligible.length ? eligible[0] : null,
+      suppressTurnAnnouncement: true,
     };
 
     const nextState: GameStateEntity = {
@@ -247,6 +250,7 @@ export class LamaRoundService {
       pendingReturnPlayerId: null,
       winnerId: null,
       winnerPlayerId: null,
+      suppressTurnAnnouncement: true,
     };
 
     if (pauseMs > 0) {
@@ -326,5 +330,10 @@ export class LamaRoundService {
       if (hand.length === 0) return pid;
     }
     return null;
+  }
+
+  private shouldPromptReturn(roundNumber: number, winnerScore: number): boolean {
+    if (winnerScore < 1) return false;
+    return roundNumber >= 2;
   }
 }

@@ -830,7 +830,10 @@ export class GameEngineService {
     // Le client reste "bête": il ne décide pas quand annoncer, il lit l'historique.
     const previousPlayerId = current.turn?.currentPlayerId ?? null;
     const nextPlayerId = marked.turn?.currentPlayerId ?? null;
+    const markedMeta = (marked as any)?.metadata ?? {};
+    const skipTurnAnnouncement = Boolean(markedMeta?.suppressTurnAnnouncement);
     if (
+      !skipTurnAnnouncement &&
       previousPlayerId != null &&
       nextPlayerId != null &&
       previousPlayerId !== nextPlayerId &&

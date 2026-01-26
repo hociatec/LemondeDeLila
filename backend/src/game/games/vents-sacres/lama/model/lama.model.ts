@@ -31,6 +31,7 @@ export type LamaMetadata = {
   pendingReturnQueue: number[];
   pendingReturnPlayerId: number | null;
   winnerId?: number | null;
+  suppressTurnAnnouncement?: boolean;
 };
 
 export const LAMA_VALUE: LamaCardValue = 7;

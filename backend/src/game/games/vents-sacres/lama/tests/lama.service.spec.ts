@@ -949,4 +949,49 @@ describe('LamaService', () => {
     const messages = (after.log ?? []).map((l: any) => String(l?.message ?? ''));
     expect(messages.some((m: string) => m.includes("n'a rien à rendre"))).toBe(true);
   });
+
+  it('n’invite pas au retour de jetons après la première manche', async () => {
+    const { service } = createLamaServiceForTest();
+
+    const base: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'Winner' },
+        { id: 2, username: 'Loser' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: { step: 'turn_choice', playerId: 1 },
+      metadata: {
+        ownerPlayerId: 1,
+        loseAtScore: 40,
+        roundPauseSeconds: 0,
+        roundPauseUntilMs: null,
+        roundNumber: 1,
+        roundStarterIndex: 0,
+        deck: [],
+        discard: [1],
+        handsByPlayerId: { '1': [1], '2': [2, 3, 7] },
+        droppedOutByPlayerId: { '1': false, '2': false },
+        scoresByPlayerId: { '1': 5, '2': 0 },
+        step: 'turn_choice',
+        pendingReturnQueue: [],
+        pendingReturnPlayerId: null,
+        winnerId: null,
+      },
+    };
+
+    const after: any = service.applyActions(base, [
+      { type: 'lama_play', payload: { value: 1 }, meta: { actorId: 1 } } as any,
+    ]);
+
+    expect(Number(after.metadata?.scoresByPlayerId?.['2'] ?? 0)).toBe(2 + 3 + 10);
+    expect(Number(after.metadata?.scoresByPlayerId?.['1'] ?? 0)).toBe(5);
+    expect(String(after.metadata?.step ?? '')).toBe('turn_choice');
+    expect(after.metadata?.pendingReturnPlayerId).toBeNull();
+  });
 });
