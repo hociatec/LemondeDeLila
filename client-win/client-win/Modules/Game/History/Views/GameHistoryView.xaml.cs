@@ -42,8 +42,6 @@ public partial class GameHistoryView : UserControl
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
             MoveCaretAndScrollToEnd();
-            HistoryViewer.Focus();
-            Keyboard.Focus(HistoryViewer);
         }));
     }
 

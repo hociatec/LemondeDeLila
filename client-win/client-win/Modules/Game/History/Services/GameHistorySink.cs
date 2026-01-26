@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows.Threading;
 using client_win.Modules.Game.History.ViewModels;
 using client_win.Modules.Shell.Services;
@@ -7,9 +8,13 @@ namespace client_win.Modules.Game.History.Services;
 
 public sealed class GameHistorySink : IGameHistorySink
 {
+    private const int MaxRecentAnnouncements = 120;
+
     private readonly Dispatcher _dispatcher;
     private readonly GameHistoryViewModel _history;
     private readonly IAnnouncementService? _announcements;
+    private readonly Queue<string> _recentAnnouncementQueue = new();
+    private readonly HashSet<string> _recentAnnouncements = new(StringComparer.OrdinalIgnoreCase);
 
     public GameHistorySink(Dispatcher dispatcher, GameHistoryViewModel history, IAnnouncementService? announcements = null)
     {
@@ -38,9 +43,7 @@ public sealed class GameHistorySink : IGameHistorySink
 
                 _history.Entries.Add(cleaned);
 
-                // Robustesse lecteur d'écran: annoncer explicitement chaque ligne.
-                // On séquence avec un petit espacement pour éviter que NVDA "avale" des lignes lors d'une rafale.
-                _announcements?.Enqueue(cleaned, AnnouncementPriority.Polite);
+                TryAnnounce(cleaned);
             }
         }
 
@@ -80,6 +83,36 @@ public sealed class GameHistorySink : IGameHistorySink
         {
             _dispatcher.InvokeAsync(AddNow, DispatcherPriority.Background);
         }
+    }
+
+    private bool TryAnnounce(string message)
+    {
+        if (_announcements == null)
+        {
+            return false;
+        }
+
+        var normalized = NormalizeAnnouncement(message);
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return false;
+        }
+
+        if (_recentAnnouncements.Contains(normalized))
+        {
+            return false;
+        }
+
+        _recentAnnouncements.Add(normalized);
+        _recentAnnouncementQueue.Enqueue(normalized);
+        if (_recentAnnouncementQueue.Count > MaxRecentAnnouncements)
+        {
+            var removed = _recentAnnouncementQueue.Dequeue();
+            _recentAnnouncements.Remove(removed);
+        }
+
+        _announcements.Enqueue(normalized, AnnouncementPriority.Polite);
+        return true;
     }
 
     private static string NormalizeSingleLine(string? message)
@@ -142,5 +175,11 @@ public sealed class GameHistorySink : IGameHistorySink
         }
 
         return message.Substring(end + 2).Trim();
+    }
+
+    private static string NormalizeAnnouncement(string? message)
+    {
+        var trimmed = (message ?? string.Empty).Trim();
+        return string.IsNullOrWhiteSpace(trimmed) ? string.Empty : trimmed;
     }
 }
