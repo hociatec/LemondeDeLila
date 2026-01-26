@@ -559,9 +559,14 @@ public sealed class GameTableOpener : IGameTableOpener
                         onClose: () =>
                         {
                             try { catalogVm?.Dispose(); } catch { /* ignore */ }
-                            if (safeReturn != null)
+                            switch (safeReturn)
                             {
-                                try { _navigation.Show(safeReturn); } catch { /* ignore */ }
+                                case CatalogViewModel catalogReturn when catalogReturn.CloseCommand.CanExecute(null):
+                                    try { catalogReturn.CloseCommand.Execute(null); } catch { /* ignore */ }
+                                    break;
+                                case not null:
+                                    try { _navigation.Show(safeReturn); } catch { /* ignore */ }
+                                    break;
                             }
                         },
                         openGame: async game =>
@@ -693,7 +698,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 _announcementService.Enqueue(
                     "Table sauvegardée dans Mon coffre fort. Retour à la taverne.",
                     AnnouncementPriority.Polite);
-                _ = ExitAsync(null, forceTavern: true);
+                await ExitAsync(null, forceTavern: true).ConfigureAwait(true);
             }
             catch (Exception ex)
             {
