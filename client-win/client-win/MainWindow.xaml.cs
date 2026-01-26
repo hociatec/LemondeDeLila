@@ -22,6 +22,7 @@ namespace client_win
             WindowState = WindowState.Maximized;
             
             Loaded += OnLoaded;
+            Activated += OnActivated;
         }
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -47,26 +48,26 @@ namespace client_win
                         NativeMethods.SetForegroundWindow(helper.Handle);
                     }
 
-                    Task.Delay(50).ContinueWith(_ =>
+            Task.Delay(50).ContinueWith(_ =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    var firstFocusable = FindFirstFocusableElement();
+                    if (firstFocusable == null)
                     {
-                        Dispatcher.Invoke(() =>
+                        MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+                        firstFocusable = FocusManager.GetFocusedElement(this) as IInputElement;
+                        if (ShouldSkipStartupFocusTarget(firstFocusable))
                         {
-                            var firstFocusable = FindFirstFocusableElement();
-                            if (firstFocusable == null)
-                            {
-                                MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
-                                firstFocusable = FocusManager.GetFocusedElement(this) as IInputElement;
-                                if (ShouldSkipStartupFocusTarget(firstFocusable))
-                                {
-                                    firstFocusable = null;
-                                }
-                            }
+                            firstFocusable = null;
+                        }
+                    }
 
-                            EnsureWindowForeground();
-                            FocusAndAnnounce(firstFocusable ?? this);
-                        });
-                    });
-                }
+                    EnsureWindowForeground();
+                    FocusAndAnnounce(firstFocusable ?? this);
+                });
+            });
+        }
                 catch
                 {
                     // Ignorer les erreurs (best-effort)
@@ -92,6 +93,31 @@ namespace client_win
             try { Keyboard.Focus(element); } catch { /* ignore */ }
             try { FocusManager.SetFocusedElement(this, element); } catch { /* ignore */ }
             try { NotifyScreenReader(element); } catch { /* ignore */ }
+        }
+
+        private bool _isHandlingActivation;
+
+        private void OnActivated(object? sender, EventArgs e)
+        {
+            if (_isHandlingActivation)
+            {
+                return;
+            }
+
+            _isHandlingActivation = true;
+            _ = Dispatcher.BeginInvoke((Action)(() =>
+            {
+                try
+                {
+                    EnsureWindowForeground();
+                    var target = FindFirstFocusableElement() ?? this;
+                    FocusAndAnnounce(target);
+                }
+                finally
+                {
+                    _isHandlingActivation = false;
+                }
+            }), DispatcherPriority.Input);
         }
 
         private void EnsureWindowForeground()
