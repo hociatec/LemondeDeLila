@@ -1,8 +1,10 @@
 using System;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Threading;
-using client_win.Modules.Shell.Services;
 
 namespace client_win
 {
@@ -16,49 +18,51 @@ namespace client_win
             Loaded += OnLoaded;
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
+        private async void OnLoaded(object sender, RoutedEventArgs e)
         {
             if (_didStartupFocusNudge)
-            {
                 return;
-            }
+
             _didStartupFocusNudge = true;
 
-            // Au démarrage, le client peut être lancé en arrière-plan (ClickOnce / démarrage silencieux)
-            // et l'utilisateur est obligé d'aller sur une autre fenêtre puis revenir pour "récupérer" le focus.
-            // On tente un nudge best-effort sur la fenêtre principale pour que les champs de connexion
-            // reçoivent le focus initial sans action supplémentaire.
-            Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+            // Attendre que la fenêtre soit complètement chargée
+            await Task.Delay(100);
+
+            Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () =>
             {
                 try
                 {
                     if (!IsVisible)
-                    {
                         return;
-                    }
 
+                    // Forcer l'activation de la fenêtre
                     if (!IsActive)
                     {
-                        try { Activate(); } catch { /* ignore */ }
+                        Activate();
+                        var helper = new WindowInteropHelper(this);
+                        helper.EnsureHandle();
+                        NativeMethods.SetForegroundWindow(helper.Handle);
                     }
 
-                    // UIA + focus sentinelle (NVDA): améliore la fiabilité du focus initial.
+                    // Positionner le focus sur le premier élément interactif
                     FocusParking.Park(this);
-
-                    // Dernier nudge: placer le focus clavier sur le premier élément interactif
-                    // (évite les cas où aucune touche ne répond avant un Alt-Tab / Maj+Tab).
                     if (!IsKeyboardFocusWithin)
                     {
-                        try { Focus(); } catch { /* ignore */ }
-                        try { Keyboard.Focus(this); } catch { /* ignore */ }
-                        try { MoveFocus(new TraversalRequest(FocusNavigationDirection.First)); } catch { /* ignore */ }
+                        MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
                     }
                 }
                 catch
                 {
-                    // best-effort
+                    // Ignorer les erreurs (best-effort)
                 }
-            }));
+            });
         }
+    }
+
+    // Classe pour les appels natifs Win32
+    internal static class NativeMethods
+    {
+        [DllImport("user32.dll")]
+        internal static extern bool SetForegroundWindow(IntPtr hWnd);
     }
 }
