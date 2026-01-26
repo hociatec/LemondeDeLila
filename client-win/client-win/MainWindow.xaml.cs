@@ -1,5 +1,5 @@
+// MainWindow.xaml.cs
 using System;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -45,7 +45,7 @@ namespace client_win
                     }
 
                     // Positionner le focus sur le premier élément interactif
-                    FocusParking.Park(this);
+
                     if (!IsKeyboardFocusWithin)
                     {
                         MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
@@ -57,12 +57,5 @@ namespace client_win
                 }
             });
         }
-    }
-
-    // Classe pour les appels natifs Win32
-    internal static class NativeMethods
-    {
-        [DllImport("user32.dll")]
-        internal static extern bool SetForegroundWindow(IntPtr hWnd);
     }
 }
