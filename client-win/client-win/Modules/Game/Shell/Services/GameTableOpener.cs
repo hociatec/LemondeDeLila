@@ -1227,17 +1227,17 @@ public sealed class GameTableOpener : IGameTableOpener
                     // Preload table + common gameplay one-shots early (async/background) so first actions feel snappy.
                     try
                     {
-                        _sounds.Preload(SoundId.RoomOpened);
-                        _sounds.Preload(SoundId.RoomJoined);
-                        _sounds.Preload(SoundId.DiceRolled);
-                        _sounds.Preload(SoundId.QuizCorrect);
-                        _sounds.Preload(SoundId.QuizWrong);
-                        _sounds.Preload(SoundId.RoundEnded);
-                        _sounds.Preload(SoundId.PawnPicked);
-                        _sounds.Preload(SoundId.PawnPlacedSelf);
-                        _sounds.Preload(SoundId.PawnPlacedOpponent);
-                        _sounds.Preload(SoundId.WallPlacedSelf);
-                        _sounds.Preload(SoundId.WallPlacedOpponent);
+                        _sounds.Preload(SoundId.RoomOpened, warmUp: true);
+                        _sounds.Preload(SoundId.RoomJoined, warmUp: true);
+                        _sounds.Preload(SoundId.DiceRolled, warmUp: true);
+                        _sounds.Preload(SoundId.QuizCorrect, warmUp: true);
+                        _sounds.Preload(SoundId.QuizWrong, warmUp: true);
+                        _sounds.Preload(SoundId.RoundEnded, warmUp: true);
+                        _sounds.Preload(SoundId.PawnPicked, warmUp: true);
+                        _sounds.Preload(SoundId.PawnPlacedSelf, warmUp: true);
+                        _sounds.Preload(SoundId.PawnPlacedOpponent, warmUp: true);
+                        _sounds.Preload(SoundId.WallPlacedSelf, warmUp: true);
+                        _sounds.Preload(SoundId.WallPlacedOpponent, warmUp: true);
                     }
                     catch
                     {
