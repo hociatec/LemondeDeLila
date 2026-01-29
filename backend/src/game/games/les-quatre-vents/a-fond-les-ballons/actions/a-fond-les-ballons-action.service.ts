@@ -156,7 +156,7 @@ export class AFondLesBallonsActionService {
       const depth = Math.max(0, Number(data.depth ?? 0));
       const drawn = Array.isArray(data.drawn) ? [...data.drawn] : [];
 
-      let next = { ...state, pending: null };
+      let next: GameStateEntity = { ...state, pending: null };
       let meta = this.getMeta(next);
       const draw = this.drawLoufoque(meta);
       meta = draw.meta;

@@ -50,7 +50,12 @@ describe('PanierExpress pending scenarios', () => {
       discards: [],
     };
 
-    const after = (game as any).applyEvent(state, 1);
+    const mid = (game as any).applyEvent(state, 1);
+    expect(mid.pending?.type).toBe('draw');
+
+    const after = game.applyActions(mid, [
+      { type: 'draw', meta: { actorId: 1 } } as any,
+    ]);
 
     expect(after.pending?.type).toBe('pick');
     expect(after.pending?.data?.kind).toBe('event.tirage_chanceux');
@@ -92,10 +97,14 @@ describe('PanierExpress pending scenarios', () => {
     };
 
     const afterEvent = (game as any).applyEvent(state, 1);
-    const botActions = game.getBotActions(afterEvent, 1);
-    expect(botActions.map((a: any) => a.type)).toEqual(['pick_choice']);
+    const botActions1 = game.getBotActions(afterEvent, 1);
+    expect(botActions1.map((a: any) => a.type)).toEqual(['draw']);
+    const mid = game.applyActions(afterEvent, botActions1 as any);
 
-    const after = game.applyActions(afterEvent, botActions as any);
+    const botActions2 = game.getBotActions(mid, 1);
+    expect(botActions2.map((a: any) => a.type)).toEqual(['pick_choice']);
+
+    const after = game.applyActions(mid, botActions2 as any);
     expect(after.pending).toBeNull();
     expect(after.turn?.currentPlayerId).toBe(2);
   });

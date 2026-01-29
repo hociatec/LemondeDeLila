@@ -102,4 +102,19 @@ export type ContesPending =
           title: string;
         }>;
       };
+    }
+  | {
+      type: 'draw';
+      label: string;
+      playerId: number;
+      blocking: true;
+      choices?: string[];
+      data: {
+        context: string;
+        cardType?: ContesCardType;
+        queue?: string[];
+        remaining?: number;
+        drawn?: ContesCard[];
+        depth?: number;
+      };
     };

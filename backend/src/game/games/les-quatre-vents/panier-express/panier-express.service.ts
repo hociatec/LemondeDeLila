@@ -1621,7 +1621,10 @@ export class PanierExpressService extends AbstractGameService {
             }
             return null;
           })
-          .filter((t: any) => t && Number.isFinite(t.playerId));
+          .filter(
+            (t): t is { playerId: number; standId: string } =>
+              t !== null && Number.isFinite(t.playerId),
+          );
         if (targets.length) {
           next = this.queueCourseDraws(
             next,
