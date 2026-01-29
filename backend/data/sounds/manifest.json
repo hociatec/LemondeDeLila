@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-20T10:16:02.023Z",
+  "updatedAt": "2026-01-28T17:18:22.759Z",
   "sounds": {
     "RoomJoined": {
       "soundId": "RoomJoined",
@@ -203,6 +203,104 @@
       "bytes": 61022,
       "uploadedAt": "2026-01-20T10:16:02.023Z",
       "url": "/api/sounds/QuizWrong/c3af78f5f0a591aa006b0959aedaa8b20e0224bc7e1454857ac4784807cfd896.mp3"
+    },
+    "TableAmbience1": {
+      "soundId": "TableAmbience1",
+      "sha256": "bfa78183c66b35fb131e1f022d97f53bd7001f20c1257e7089eb17007ea989f9",
+      "bytes": 2542436,
+      "uploadedAt": "2026-01-28T17:01:41.377Z",
+      "url": "/api/sounds/TableAmbience1/bfa78183c66b35fb131e1f022d97f53bd7001f20c1257e7089eb17007ea989f9.mp3"
+    },
+    "TableAmbience2": {
+      "soundId": "TableAmbience2",
+      "sha256": "2f01ce4241e055f9a4badb9cc962f7809cae6b1a695b0f54782d664ed9230066",
+      "bytes": 3122776,
+      "uploadedAt": "2026-01-28T17:04:50.526Z",
+      "url": "/api/sounds/TableAmbience2/2f01ce4241e055f9a4badb9cc962f7809cae6b1a695b0f54782d664ed9230066.mp3"
+    },
+    "TableAmbience3": {
+      "soundId": "TableAmbience3",
+      "sha256": "4adc4706d56614c51cc576acb948ea386672d22988f5f009cb8cbae89b9cdf54",
+      "bytes": 2421612,
+      "uploadedAt": "2026-01-28T17:06:02.363Z",
+      "url": "/api/sounds/TableAmbience3/4adc4706d56614c51cc576acb948ea386672d22988f5f009cb8cbae89b9cdf54.mp3"
+    },
+    "TableAmbience4": {
+      "soundId": "TableAmbience4",
+      "sha256": "fbe5710bb371b8cdb370587d2577721ea813abf455aa0d6901252e5e888985c4",
+      "bytes": 1327677,
+      "uploadedAt": "2026-01-28T17:06:52.744Z",
+      "url": "/api/sounds/TableAmbience4/fbe5710bb371b8cdb370587d2577721ea813abf455aa0d6901252e5e888985c4.mp3"
+    },
+    "TableAmbience5": {
+      "soundId": "TableAmbience5",
+      "sha256": "a8b7f5db348439f060a4234e015f3e03b42e8e90f577f1689ecd3ececdf2d1d3",
+      "bytes": 2800291,
+      "uploadedAt": "2026-01-28T17:07:38.371Z",
+      "url": "/api/sounds/TableAmbience5/a8b7f5db348439f060a4234e015f3e03b42e8e90f577f1689ecd3ececdf2d1d3.mp3"
+    },
+    "TableAmbience6": {
+      "soundId": "TableAmbience6",
+      "sha256": "f5c5490cfe4da23ea8a027cdb785f8e03e6f94208c2c39d952b05b3bdcb2557f",
+      "bytes": 3269347,
+      "uploadedAt": "2026-01-28T17:08:48.142Z",
+      "url": "/api/sounds/TableAmbience6/f5c5490cfe4da23ea8a027cdb785f8e03e6f94208c2c39d952b05b3bdcb2557f.mp3"
+    },
+    "TableAmbience7": {
+      "soundId": "TableAmbience7",
+      "sha256": "31458dd232a3eae9bfff41bf61346929b77ab6d761c0534ef320cb0aebe8e7c2",
+      "bytes": 5274643,
+      "uploadedAt": "2026-01-28T17:09:46.704Z",
+      "url": "/api/sounds/TableAmbience7/31458dd232a3eae9bfff41bf61346929b77ab6d761c0534ef320cb0aebe8e7c2.mp3"
+    },
+    "TableAmbience8": {
+      "soundId": "TableAmbience8",
+      "sha256": "028f11a759f7afbc01a0856bf103c50f29cb3361f97ec3a09b43bcdc3c736c80",
+      "bytes": 2481978,
+      "uploadedAt": "2026-01-28T17:10:22.064Z",
+      "url": "/api/sounds/TableAmbience8/028f11a759f7afbc01a0856bf103c50f29cb3361f97ec3a09b43bcdc3c736c80.mp3"
+    },
+    "TableAmbience9": {
+      "soundId": "TableAmbience9",
+      "sha256": "489ce3d656c89a2b0b34cad3bef722d639d6df62564d48fc5aa3bf2a0f436291",
+      "bytes": 2114902,
+      "uploadedAt": "2026-01-28T17:11:32.291Z",
+      "url": "/api/sounds/TableAmbience9/489ce3d656c89a2b0b34cad3bef722d639d6df62564d48fc5aa3bf2a0f436291.mp3"
+    },
+    "TableAmbience10": {
+      "soundId": "TableAmbience10",
+      "sha256": "203e64505acff681ec0248af9508df846f643b2f49e9432843ab6a8427c58de8",
+      "bytes": 681906,
+      "uploadedAt": "2026-01-28T17:12:15.705Z",
+      "url": "/api/sounds/TableAmbience10/203e64505acff681ec0248af9508df846f643b2f49e9432843ab6a8427c58de8.mp3"
+    },
+    "TableAmbience11": {
+      "soundId": "TableAmbience11",
+      "sha256": "114f38071e353ce276b95bb726f91e90499ec489ecedba05cc4f371987a4ac6d",
+      "bytes": 4610282,
+      "uploadedAt": "2026-01-28T17:13:28.024Z",
+      "url": "/api/sounds/TableAmbience11/114f38071e353ce276b95bb726f91e90499ec489ecedba05cc4f371987a4ac6d.mp3"
+    },
+    "TableAmbience12": {
+      "soundId": "TableAmbience12",
+      "sha256": "9f2d092e98083c4f11f7b422561e3a5c76438dd61caa40bb512eae7e7fddc615",
+      "bytes": 4068363,
+      "uploadedAt": "2026-01-28T17:15:18.845Z",
+      "url": "/api/sounds/TableAmbience12/9f2d092e98083c4f11f7b422561e3a5c76438dd61caa40bb512eae7e7fddc615.mp3"
+    },
+    "TableAmbience13": {
+      "soundId": "TableAmbience13",
+      "sha256": "ffaf832c7fa2902c6e93e73f58e4c14fa94df7d7928380fabb6f46544f86b2f4",
+      "bytes": 8878655,
+      "uploadedAt": "2026-01-28T17:16:57.104Z",
+      "url": "/api/sounds/TableAmbience13/ffaf832c7fa2902c6e93e73f58e4c14fa94df7d7928380fabb6f46544f86b2f4.mp3"
+    },
+    "TableAmbience14": {
+      "soundId": "TableAmbience14",
+      "sha256": "b6d274b94964f376900865caa4c63eed4d2ed7b71acc2ca4ade37b1a58a010b0",
+      "bytes": 8697378,
+      "uploadedAt": "2026-01-28T17:18:22.759Z",
+      "url": "/api/sounds/TableAmbience14/b6d274b94964f376900865caa4c63eed4d2ed7b71acc2ca4ade37b1a58a010b0.mp3"
     }
   }
 }
