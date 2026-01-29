@@ -54,6 +54,8 @@ public sealed class OptionsService : IOptionsService
 
     public OptionsState Current => _state;
 
+    public event EventHandler? Changed;
+
     public void Update(OptionsState state)
     {
         _state = state ?? throw new ArgumentNullException(nameof(state));
@@ -62,6 +64,8 @@ public sealed class OptionsService : IOptionsService
         {
             _settingsManager.UpdateAndSave(state);
         }
+
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     public Task<string> OpenAsync()

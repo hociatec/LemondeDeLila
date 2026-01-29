@@ -215,6 +215,7 @@ public static class AppBootstrapper
         services.AddSingleton<Modules.Audio.Services.IAppAudioCoordinator>(sp =>
             new Modules.Audio.Services.AppAudioCoordinator(
                 sp.GetRequiredService<ISoundService>(),
+                sp.GetRequiredService<IOptionsService>(),
                 sp.GetRequiredService<IRemoteSoundCache>(),
                 sp.GetRequiredService<ILogger<Modules.Audio.Services.AppAudioCoordinator>>()));
 

@@ -1253,6 +1253,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         tableVm: vm,
                         announcements: _announcements,
                         sounds: _sounds,
+                        options: _options,
                         announcementService: _announcementService,
                         createGamePlayVm: () => CreateGamePlayViewModel(session, game),
                         selfUsername: _navigation.CurrentUser?.Username ?? string.Empty);

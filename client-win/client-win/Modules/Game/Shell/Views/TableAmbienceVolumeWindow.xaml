@@ -23,7 +23,7 @@
         <CheckBox Grid.Row="1"
                   Content="Activer l'ambiance de table"
                   Foreground="#C3D2EA"
-                  IsChecked="{Binding Enabled}"
+                  IsChecked="{Binding Enabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                   Margin="0 0 0 12"
                   AutomationProperties.Name="Activer l'ambiance de table" />
 
@@ -34,8 +34,8 @@
             <Slider x:Name="VolumeSlider"
                     Minimum="0"
                     Maximum="100"
-                    Value="{Binding Volume}"
-                    IsEnabled="{Binding Enabled}"
+                    Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    IsEnabled="{Binding Enabled, Mode=OneWay}"
                     TickFrequency="5"
                     IsSnapToTickEnabled="False"
                     PreviewKeyDown="OnVolumeSliderKeyDown"

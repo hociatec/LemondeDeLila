@@ -88,6 +88,8 @@ public sealed class SoundService : ISoundService, IDisposable
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
+        _options.Changed += OnOptionsChanged;
+
         // Enable targeted audio tracing at startup (to debug "parasite" sounds).
         // Set env var `LMDL_AUDIO_STARTUP_TRACE=1` to include limited call stacks.
         _startupTraceEnabled = string.Equals(
@@ -1118,6 +1120,43 @@ public sealed class SoundService : ISoundService, IDisposable
         }
     }
 
+    private void SyncOptions()
+    {
+        lock (_gate)
+        {
+            // Update volumes of all active players.
+            foreach (var kv in _players)
+            {
+                if (_sounds.TryGetValue(kv.Key, out var entry))
+                {
+                    try { kv.Value.Volume = entry.Volume(); } catch { }
+                }
+            }
+
+            // Update volumes and enabled state of loops.
+            var loopsToStop = new List<SoundId>();
+            foreach (var kv in _loopPlayers)
+            {
+                if (_sounds.TryGetValue(kv.Key, out var entry))
+                {
+                    if (!entry.IsEnabled())
+                    {
+                        loopsToStop.Add(kv.Key);
+                    }
+                    else
+                    {
+                        try { kv.Value.Volume = entry.Volume(); } catch { }
+                    }
+                }
+            }
+
+            foreach (var sound in loopsToStop)
+            {
+                StopLoop(sound);
+            }
+        }
+    }
+
     public void StartLoop(SoundId sound)
     {
         // At startup, keep the app silent (except ClientOpened one-shot) until the launch sound finishes.
@@ -1306,6 +1345,8 @@ public sealed class SoundService : ISoundService, IDisposable
 
     public void Dispose()
     {
+        _options.Changed -= OnOptionsChanged;
+
         lock (_gate)
         {
             _looping.Clear();
@@ -1478,6 +1519,11 @@ public sealed class SoundService : ISoundService, IDisposable
         player.Open(new Uri(absolutePath, UriKind.Absolute));
         _players[sound] = player;
         _loadedPaths[sound] = absolutePath;
+    }
+
+    private void OnOptionsChanged(object? sender, EventArgs e)
+    {
+        _dispatcher.BeginInvoke((Action)SyncOptions, DispatcherPriority.Normal);
     }
 
     private static double Clamp01(double v)

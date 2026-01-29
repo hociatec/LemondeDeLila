@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -7,10 +9,39 @@ namespace client_win.Modules.Game.Shell.Views;
 
 public partial class TableAmbienceVolumeWindow : Window
 {
-    private sealed class Vm
+    public sealed class Vm : INotifyPropertyChanged
     {
-        public bool Enabled { get; set; }
-        public int Volume { get; set; }
+        private bool _enabled;
+        private int _volume;
+
+        public bool Enabled
+        {
+            get => _enabled;
+            set
+            {
+                if (_enabled == value) return;
+                _enabled = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public int Volume
+        {
+            get => _volume;
+            set
+            {
+                if (_volume == value) return;
+                _volume = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 
     private readonly Vm _vm = new();

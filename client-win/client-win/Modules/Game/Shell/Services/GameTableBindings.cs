@@ -28,6 +28,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private readonly IRoomAnnouncements _announcements;
     private readonly IGameHistorySink _history;
     private readonly ISoundService _sounds;
+    private readonly IOptionsService? _options;
     private readonly IAnnouncementService? _announcementService;
     private readonly string _selfUsername;
 
@@ -63,6 +64,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         GameRoomViewModel tableVm,
         IRoomAnnouncements announcements,
         ISoundService sounds,
+        IOptionsService? options,
         IAnnouncementService? announcementService,
         Func<GamePlayViewModel> createGamePlayVm,
         string selfUsername)
@@ -73,6 +75,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _tableVm = tableVm ?? throw new ArgumentNullException(nameof(tableVm));
         _announcements = announcements ?? throw new ArgumentNullException(nameof(announcements));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
+        _options = options;
         _announcementService = announcementService;
         _createGamePlayVm = createGamePlayVm ?? throw new ArgumentNullException(nameof(createGamePlayVm));
         _selfUsername = (selfUsername ?? string.Empty).Trim();
@@ -279,6 +282,24 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	            }
 	        };
 	        _session.RoomUpdated += _onRoomUpdated;
+
+        if (_options != null)
+        {
+            _options.Changed += OnOptionsChanged;
+        }
+    }
+
+    private void OnOptionsChanged(object? sender, EventArgs e)
+    {
+        _dispatcher.InvokeAsync(() =>
+        {
+            var last = _session.LastRoomState;
+            if (last != null)
+            {
+                var isStarted = string.Equals(_lastStatus, "started", StringComparison.OrdinalIgnoreCase);
+                SyncTableAmbience(last, started: isStarted);
+            }
+        }, DispatcherPriority.Background);
     }
 
     public void InitializeFromLastState()
@@ -335,6 +356,11 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
             if (_activeTableAmbienceSound.HasValue && _activeTableAmbienceSound.Value == sound)
             {
+                // If the sound is already active, but it might have been stopped by SoundService (options change),
+                // we should check if it needs to be restarted.
+                // However, StartLoop handles already running loops.
+                // The real issue is if it was STOPPED and now needs to RESTART.
+                _sounds.StartLoop(sound);
                 return;
             }
 
@@ -838,6 +864,10 @@ internal sealed class GameTableBindings : IAsyncDisposable
             {
                 _announcements.Announced -= _onAnnounced;
                 _onAnnounced = null;
+            }
+            if (_options != null)
+            {
+                _options.Changed -= OnOptionsChanged;
             }
             if (_onRoomUpdated != null)
             {

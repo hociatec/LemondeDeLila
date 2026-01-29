@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using client_win.Modules.Settings.Models;
 
@@ -8,4 +9,5 @@ public interface IOptionsService
     OptionsState Current { get; }
     Task<string> OpenAsync();
     void Update(OptionsState state);
+    event EventHandler? Changed;
 }

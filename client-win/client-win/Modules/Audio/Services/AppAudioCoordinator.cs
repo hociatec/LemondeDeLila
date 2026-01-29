@@ -12,6 +12,7 @@ namespace client_win.Modules.Audio.Services;
 public sealed class AppAudioCoordinator : IAppAudioCoordinator
 {
     private readonly ISoundService _sounds;
+    private readonly IOptionsService? _options;
     private readonly IRemoteSoundCache _remote;
     private readonly ILogger<AppAudioCoordinator> _logger;
     private readonly SemaphoreSlim _transitionLock = new(1, 1);
@@ -48,10 +49,12 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
     public AppAudioCoordinator(
         ISoundService sounds,
+        IOptionsService? options,
         IRemoteSoundCache remote,
         ILogger<AppAudioCoordinator> logger)
     {
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
+        _options = options;
         _remote = remote ?? throw new ArgumentNullException(nameof(remote));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -80,6 +83,11 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         TryPreload(SoundId.DiceRolled);
         TryPreload(SoundId.QuizCorrect);
         TryPreload(SoundId.QuizWrong);
+
+        if (_options != null)
+        {
+            _options.Changed += (_, _) => RequestTransition();
+        }
     }
 
     private static string GetStartupSoundMarkerPath()
