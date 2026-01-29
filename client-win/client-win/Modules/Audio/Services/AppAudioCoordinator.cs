@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Audio.Models;
+using client_win.Modules.Settings.Services;
 using client_win.Core.Constants;
 using Microsoft.Extensions.Logging;
 
