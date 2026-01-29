@@ -74,16 +74,16 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         });
 
         // Reduce first-play latency for common backgrounds (placeholders or admin overrides).
-        TryPreload(SoundId.MainMenuMusic);
-        TryPreload(SoundId.TavernAmbience);
-        TryPreload(SoundId.TavernOpened);
+        TryPreload(SoundId.MainMenuMusic, warmUp: true);
+        TryPreload(SoundId.TavernAmbience, warmUp: true);
+        TryPreload(SoundId.TavernOpened, warmUp: true);
         // Reduce first-play latency for table one-shots.
-        TryPreload(SoundId.RoomOpened);
-        TryPreload(SoundId.RoomJoined);
+        TryPreload(SoundId.RoomOpened, warmUp: true);
+        TryPreload(SoundId.RoomJoined, warmUp: true);
         // Reduce first-play latency for common gameplay one-shots (notably quiz feedback).
-        TryPreload(SoundId.DiceRolled);
-        TryPreload(SoundId.QuizCorrect);
-        TryPreload(SoundId.QuizWrong);
+        TryPreload(SoundId.DiceRolled, warmUp: true);
+        TryPreload(SoundId.QuizCorrect, warmUp: true);
+        TryPreload(SoundId.QuizWrong, warmUp: true);
 
         if (_options != null)
         {
@@ -308,8 +308,8 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
     public void NotifyTavernEntered()
     {
-        TryPreload(SoundId.TavernOpened);
-        TryPreload(SoundId.TavernAmbience);
+        TryPreload(SoundId.TavernOpened, warmUp: true);
+        TryPreload(SoundId.TavernAmbience, warmUp: true);
 
         var shouldTransition = false;
         lock (_stateGate)
@@ -335,12 +335,12 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
     {
         if (background == AppAudioBackground.MainMenu)
         {
-            TryPreload(SoundId.MainMenuMusic);
+            TryPreload(SoundId.MainMenuMusic, warmUp: true);
         }
         else if (background == AppAudioBackground.Tavern)
         {
-            TryPreload(SoundId.TavernAmbience);
-            TryPreload(SoundId.TavernOpened);
+            TryPreload(SoundId.TavernAmbience, warmUp: true);
+            TryPreload(SoundId.TavernOpened, warmUp: true);
         }
 
         var shouldTransition = false;
@@ -412,18 +412,18 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             await _remote.RefreshAsync(force: force, cancellationToken: linked.Token).ConfigureAwait(false);
 
             // If admin overrides were downloaded, preload them so the next Play/StartLoop is immediate.
-            TryPreload(SoundId.MainMenuMusic);
-            TryPreload(SoundId.TavernAmbience);
-            TryPreload(SoundId.TavernOpened);
-            TryPreload(SoundId.ClientConnected);
-            TryPreload(SoundId.ClientDisconnected);
+            TryPreload(SoundId.MainMenuMusic, warmUp: true);
+            TryPreload(SoundId.TavernAmbience, warmUp: true);
+            TryPreload(SoundId.TavernOpened, warmUp: true);
+            TryPreload(SoundId.ClientConnected, warmUp: true);
+            TryPreload(SoundId.ClientDisconnected, warmUp: true);
             // Table one-shots: preload early so "RoomOpened/Joined" feels instant when opening a table.
-            TryPreload(SoundId.RoomOpened);
-            TryPreload(SoundId.RoomJoined);
+            TryPreload(SoundId.RoomOpened, warmUp: true);
+            TryPreload(SoundId.RoomJoined, warmUp: true);
             // Gameplay one-shots: avoid first-action latency after joining a table.
-            TryPreload(SoundId.DiceRolled);
-            TryPreload(SoundId.QuizCorrect);
-            TryPreload(SoundId.QuizWrong);
+            TryPreload(SoundId.DiceRolled, warmUp: true);
+            TryPreload(SoundId.QuizCorrect, warmUp: true);
+            TryPreload(SoundId.QuizWrong, warmUp: true);
 
             if (reapplyBackground)
             {

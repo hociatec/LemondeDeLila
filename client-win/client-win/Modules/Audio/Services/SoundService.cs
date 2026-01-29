@@ -550,9 +550,40 @@ public sealed class SoundService : ISoundService, IDisposable
                     return;
                 }
 
-                // Warm-up disabled: attempting to Play/Pause can leak audible "blips" on some machines,
-                // which feels like "multiple sounds at startup".
-                _ = generationSnapshot;
+                // Audio warm-up: reduces latency on first play by initializing the decoder.
+                // We play at volume 0 to avoid audible "blips".
+                void DoWarmUp()
+                {
+                    try
+                    {
+                        var originalVolume = player.Volume;
+                        var originalMute = player.IsMuted;
+                        player.IsMuted = true;
+                        player.Volume = 0;
+                        player.Play();
+                        player.Stop();
+                        player.Position = TimeSpan.Zero;
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+
+                if (_opened.Contains(sound))
+                {
+                    DoWarmUp();
+                }
+                else
+                {
+                    EventHandler? handler = null;
+                    handler = (_, _) =>
+                    {
+                        try { player.MediaOpened -= handler; } catch { }
+                        DoWarmUp();
+                    };
+                    player.MediaOpened += handler;
+                }
             }
             catch (Exception ex)
             {
