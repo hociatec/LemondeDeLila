@@ -7,7 +7,8 @@ export type CaDerapeActionType =
   | 'ROLL_DICE'
   | 'choose_target'
   | 'choose_next_delta'
-  | 'choose_next_player';
+  | 'choose_next_player'
+  | 'draw';
 
 export const CA_DERAPE_GAME: GameDefinition<
   CaDerapeGameId,
@@ -27,6 +28,7 @@ export const CA_DERAPE_GAME: GameDefinition<
     'choose_target',
     'choose_next_delta',
     'choose_next_player',
+    'draw',
   ],
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,

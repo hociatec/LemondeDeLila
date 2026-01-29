@@ -13,6 +13,9 @@ export function getAvailableActions(
     if (pending.playerId !== playerId) return [];
 
     const type = String(pending.type ?? '').toLowerCase();
+    if (type === 'draw') {
+      return [{ type: 'draw', payload: {} }];
+    }
     if (type === 'reroll') {
       return [
         { type: 'reroll_yes', payload: {} },
@@ -90,7 +93,8 @@ export function validateAction(
     type !== 'choose_target' &&
     type !== 'choose_number' &&
     type !== 'choose_option' &&
-    type !== 'choose_card'
+    type !== 'choose_card' &&
+    type !== 'draw'
   ) {
     throw new Error(`Action inconnue: ${type}`);
   }
@@ -105,6 +109,10 @@ export function validateAction(
       throw new Error('Action réservée à un autre joueur.');
 
     const pType = String(pending.type ?? '').toLowerCase();
+    if (pType === 'draw') {
+      if (type !== 'draw') throw new Error('Choix invalide.');
+      return { type: 'draw', payload: {} };
+    }
     if (pType === 'reroll') {
       if (type !== 'reroll_yes' && type !== 'reroll_no')
         throw new Error('Choix invalide.');

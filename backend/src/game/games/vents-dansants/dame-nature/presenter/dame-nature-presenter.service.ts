@@ -74,9 +74,11 @@ export class DameNaturePresenterService extends BasePresenterService {
     const meta = this.getMetadata(state) as DameNatureMetadata;
     const pendingAsk = meta?.pendingAsk ?? null;
     const pendingQuiz = meta?.pendingQuiz ?? null;
+    const pendingRefill = meta?.pendingRefill ?? null;
     const actionPlayerId =
       pendingAsk?.targetId ??
       pendingQuiz?.playerId ??
+      pendingRefill?.playerId ??
       (typeof currentPlayerId === 'number' ? currentPlayerId : null);
 
     return typeof actionPlayerId === 'number'
@@ -94,9 +96,11 @@ export class DameNaturePresenterService extends BasePresenterService {
   ): any {
     const pendingAsk = metadata?.pendingAsk ?? null;
     const pendingQuiz = metadata?.pendingQuiz ?? null;
+    const pendingRefill = metadata?.pendingRefill ?? null;
     const actionPlayerId =
       pendingAsk?.targetId ??
       pendingQuiz?.playerId ??
+      pendingRefill?.playerId ??
       (typeof currentPlayerId === 'number' ? currentPlayerId : null);
 
     if (pendingQuiz) {
@@ -119,6 +123,16 @@ export class DameNaturePresenterService extends BasePresenterService {
         playerId: pendingAsk.fromId,
         targetPlayerId: pendingAsk.targetId,
         blocking: true,
+      };
+    }
+
+    if (pendingRefill) {
+      const remaining = Math.max(0, Number(pendingRefill.remaining ?? 0));
+      return {
+        type: 'draw',
+        playerId: pendingRefill.playerId,
+        blocking: true,
+        label: `Piocher ${remaining} carte(s) pour revenir à 4 (Espace).`,
       };
     }
 

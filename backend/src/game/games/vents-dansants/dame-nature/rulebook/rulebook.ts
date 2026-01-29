@@ -25,6 +25,10 @@ type DameNatureRuleMeta = {
       question?: string | null;
     };
   } | null;
+  pendingRefill?: {
+    playerId: number;
+    remaining: number;
+  } | null;
   turnProgress?: {
     playerId: number;
     drew: boolean;
@@ -110,6 +114,13 @@ export function getAvailableActions(
         type: 'answer_quiz',
         payload: { playerId, answer: choice },
       }));
+    }
+    return [];
+  }
+
+  if (meta.pendingRefill) {
+    if (meta.pendingRefill.playerId === playerId) {
+      return [{ type: 'draw', payload: { playerId } }];
     }
     return [];
   }
@@ -206,6 +217,29 @@ export function validateAction(
     return { ...action, type, payload: { playerId: actorId, answer } };
   }
 
+  if (meta.pendingRefill) {
+    if (type !== 'draw') {
+      throw new PlayerActionError('Action non disponible', {
+        gameType: 'dame-nature',
+        playerId: actorId ?? undefined,
+        action: type,
+        expectedActions: ['draw'],
+      });
+    }
+    if (actorId == null || actorId !== meta.pendingRefill.playerId) {
+      throw new PlayerActionError("Ce n'est pas votre action.", {
+        gameType: 'dame-nature',
+        playerId: actorId ?? undefined,
+        expectedPlayerId: meta.pendingRefill.playerId,
+      });
+    }
+    return {
+      ...action,
+      type,
+      payload: actorId != null ? { playerId: actorId } : payload,
+    };
+  }
+
   if (currentId != null && actorId != null && actorId !== currentId) {
     throw new PlayerActionError("Ce n'est pas votre tour.", {
       gameType: 'dame-nature',
@@ -273,6 +307,11 @@ export function actorOverrideAllowed(
   if (meta.pendingQuiz) {
     if (meta.pendingQuiz.playerId !== actorId) return false;
     return list.every((a) => String(a?.type ?? '').trim() === 'answer_quiz');
+  }
+
+  if (meta.pendingRefill) {
+    if (meta.pendingRefill.playerId !== actorId) return false;
+    return list.every((a) => String(a?.type ?? '').trim() === 'draw');
   }
 
   return false;

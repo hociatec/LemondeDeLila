@@ -113,6 +113,7 @@ export class PanierExpressBotService {
         const cost = missing.has(give) ? -2 : 1;
         return 4 + cost;
       }
+      if (type === 'draw') return 7;
       if (type === 'roll') return 1;
       return 0;
     };
@@ -123,6 +124,7 @@ export class PanierExpressBotService {
       profile,
       {
         preferTypes: [
+          'draw',
           'answer_quiz',
           'pick_choice',
           'exchange_choose_give',

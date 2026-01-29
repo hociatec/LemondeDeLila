@@ -30,6 +30,10 @@ export class AFondLesBallonsActionService {
         next = this.handleRoll(next);
         continue;
       }
+      if (type === 'draw') {
+        next = this.handleDraw(next);
+        continue;
+      }
       if (type === 'swap_choose_target') {
         next = this.handleSwapChooseTarget(next, action);
       }
@@ -128,6 +132,78 @@ export class AFondLesBallonsActionService {
 
     next = this.decrementTrapImmunity(next, currentId);
     return this.advanceTurnWithSkipLogs(next);
+  }
+
+  private handleDraw(state: GameStateEntity): GameStateEntity {
+    const status = String(state.status ?? '').toLowerCase();
+    if (status !== 'started') return state;
+
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'draw') return state;
+
+    const playerId =
+      typeof pending.playerId === 'number'
+        ? pending.playerId
+        : state.turn?.currentPlayerId ?? null;
+    if (!playerId) return state;
+
+    const data = (pending?.data ?? {}) as any;
+    const kind = String(data.kind ?? '').trim();
+
+    if (kind === 'boutique') {
+      const remaining = Math.max(1, Math.abs(Number(data.remaining ?? 1)));
+      const drawIndex = Math.max(1, Math.abs(Number(data.drawIndex ?? 1)));
+      const depth = Math.max(0, Number(data.depth ?? 0));
+      const drawn = Array.isArray(data.drawn) ? [...data.drawn] : [];
+
+      let next = { ...state, pending: null };
+      let meta = this.getMeta(next);
+      const draw = this.drawLoufoque(meta);
+      meta = draw.meta;
+      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+
+      const card = draw.card ?? null;
+      drawn.push(card);
+      next = this.core.appendLog(
+        next,
+        card
+          ? `Boutique : carte ${drawIndex} : ${card.text}`
+          : `Boutique : carte ${drawIndex} : aucune carte disponible.`,
+      );
+
+      const remainingAfter = remaining - 1;
+      if (remainingAfter > 0) {
+        return {
+          ...next,
+          pending: {
+            type: 'draw',
+            playerId,
+            blocking: true,
+            label: 'Boutique : piocher une carte Loufoque (Espace).',
+            data: {
+              kind: 'boutique',
+              remaining: remainingAfter,
+              drawIndex: drawIndex + 1,
+              drawn,
+              depth,
+            },
+          },
+        };
+      }
+
+      const c1 = drawn[0] ?? null;
+      const c2 = drawn[1] ?? null;
+      const chosen = pickMostReculer(c1, c2);
+      if (!chosen) return next;
+      next = this.core.appendLog(
+        next,
+        'Boutique : application de la carte la plus défavorable.',
+      );
+      return this.applyCardEffect(next, playerId, chosen, depth);
+    }
+
+    const cleared: GameStateEntity = { ...state, pending: null };
+    return this.drawAndApplyLoufoque(cleared, playerId, 0);
   }
 
   private advanceTurnWithSkipLogs(state: GameStateEntity): GameStateEntity {
@@ -272,7 +348,15 @@ export class AFondLesBallonsActionService {
     }
 
     if (tile.type === 'folie') {
-      return this.drawAndApplyLoufoque(next, playerId, depth);
+      return {
+        ...next,
+        pending: {
+          type: 'draw',
+          playerId,
+          blocking: true,
+          label: 'Piocher une carte Loufoque (Espace).',
+        },
+      };
     }
 
     return next;
@@ -449,27 +533,23 @@ export class AFondLesBallonsActionService {
     playerId: number,
     depth: number,
   ): GameStateEntity {
-    let next = state;
-    let meta = this.getMeta(next);
-    const d1 = this.drawLoufoque(meta);
-    meta = d1.meta;
-    const d2 = this.drawLoufoque(meta);
-    meta = d2.meta;
-    next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-
-    const c1 = d1.card;
-    const c2 = d2.card;
-    if (!c1 && !c2) return next;
-    if (c1) next = this.core.appendLog(next, `Boutique : carte 1 : ${c1.text}`);
-    if (c2) next = this.core.appendLog(next, `Boutique : carte 2 : ${c2.text}`);
-
-    const chosen = pickMostReculer(c1, c2);
-    if (!chosen) return next;
-    next = this.core.appendLog(
-      next,
-      'Boutique : application de la carte la plus défavorable.',
-    );
-    return this.applyCardEffect(next, playerId, chosen, depth);
+    if (state.pending) return state;
+    return {
+      ...state,
+      pending: {
+        type: 'draw',
+        playerId,
+        blocking: true,
+        label: 'Boutique : piocher une carte Loufoque (Espace).',
+        data: {
+          kind: 'boutique',
+          remaining: 2,
+          drawIndex: 1,
+          drawn: [],
+          depth,
+        },
+      },
+    };
   }
 
   private startSwapPending(

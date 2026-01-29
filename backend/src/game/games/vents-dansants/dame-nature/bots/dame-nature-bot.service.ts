@@ -28,6 +28,14 @@ export class DameNatureBotService {
     const others = players.filter((p) => p.id !== botPlayerId);
     const families = this.setup.families();
     const meta = state.metadata as DameNatureMetadata;
+    const pendingRefill = meta?.pendingRefill ?? null;
+    if (
+      pendingRefill &&
+      pendingRefill.playerId === botPlayerId &&
+      Number(pendingRefill.remaining ?? 0) > 0
+    ) {
+      return [{ type: 'draw', payload: { playerId: botPlayerId } }];
+    }
     const recentRequests = new Set<string>(
       (meta.actionLog ?? [])
         .filter((e) => e.actorId === botPlayerId && e.type === 'ask_card')

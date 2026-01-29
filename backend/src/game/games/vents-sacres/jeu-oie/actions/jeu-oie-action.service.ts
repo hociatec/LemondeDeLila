@@ -35,6 +35,7 @@ export class JeuOieActionService {
     if (currentId == null) return state;
 
     const meta = this.getMeta(state);
+    const inWell = Boolean(meta.statuses?.well?.[currentId]);
     const rng = this.random.rollDice(meta as any, 6);
     const roll = rng.roll;
 
@@ -48,6 +49,31 @@ export class JeuOieActionService {
       next,
       `${this.playerName(state, currentId)} lance le dé : "${roll}".`,
     );
+
+    if (inWell) {
+      if (roll !== 1) {
+        const logged = this.core.appendLog(
+          next,
+          `${this.playerName(next, currentId)} reste bloqué dans le puits.`,
+        );
+        return this.turns.advanceTurn(logged);
+      }
+      const metaAfter = this.getMeta(next);
+      const well = { ...(metaAfter.statuses?.well ?? {}) };
+      delete well[currentId];
+      next = {
+        ...next,
+        metadata: {
+          ...(next.metadata ?? {}),
+          ...metaAfter,
+          statuses: { ...(metaAfter.statuses ?? {}), well },
+        },
+      };
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, currentId)} sort du puits.`,
+      );
+    }
 
     const currentPos = meta.positions?.[currentId] ?? 1;
     const moved = this.move(currentPos, roll);
@@ -126,7 +152,7 @@ export class JeuOieActionService {
       const turns = tile.skipTurns ?? 1;
       next = this.core.appendLog(
         next,
-        `${label} : ${this.playerName(next, playerId)} perd ${turns} tour(s).`,
+        `${this.playerName(next, playerId)} perd ${turns} tour(s).`,
       );
       meta = this.getMeta(next);
       const currentSkip = meta.statuses?.skipTurn?.[playerId] ?? 0;
@@ -137,6 +163,47 @@ export class JeuOieActionService {
       };
       meta = { ...meta, statuses: { ...statuses, skipTurn } };
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+    }
+
+    if (tile.type === 'magic_die') {
+      const rng = this.random.rollDice(this.getMeta(next) as any, 6);
+      const magicRoll = rng.roll;
+      next = {
+        ...next,
+        metadata: { ...(next.metadata ?? {}), ...rng.meta },
+        lastRoll: magicRoll,
+      };
+      next = this.core.appendLog(
+        next,
+        `Dé magique : ${this.playerName(next, playerId)} lance "${magicRoll}".`,
+      );
+      const delta = magicRoll <= 3 ? magicRoll : -magicRoll;
+      const moved = this.move(position, delta);
+      next = this.core.appendLog(
+        next,
+        magicRoll <= 3
+          ? `Dé magique : avance de ${magicRoll} case(s).`
+          : `Dé magique : recule de ${magicRoll} case(s).`,
+      );
+      return this.applyLanding(next, playerId, moved, magicRoll);
+    }
+
+    if (tile.type === 'well') {
+      const metaNow = this.getMeta(next);
+      const well = { ...(metaNow.statuses?.well ?? {}) };
+      well[playerId] = true;
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, playerId)} est bloqué dans le puits (il faut faire 1 pour sortir).`,
+      );
+      return {
+        ...next,
+        metadata: {
+          ...(next.metadata ?? {}),
+          ...metaNow,
+          statuses: { ...(metaNow.statuses ?? {}), well },
+        },
+      };
     }
 
     if (tile.type === 'goose') {
@@ -153,6 +220,7 @@ export class JeuOieActionService {
 
   private move(currentPos: number, roll: number): number {
     const target = currentPos + roll;
+    if (target < 0) return 0;
     if (target === 63) return 63;
     if (target < 63) return target;
     const overshoot = target - 63;

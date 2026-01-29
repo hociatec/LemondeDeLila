@@ -44,6 +44,10 @@ export type DameNatureMetadata = {
     playerId: number;
     card: FamilyCard;
   } | null;
+  pendingRefill?: {
+    playerId: number;
+    remaining: number;
+  } | null;
 };
 
 export type DameNaturePlayer = PlayerStateEntity & {

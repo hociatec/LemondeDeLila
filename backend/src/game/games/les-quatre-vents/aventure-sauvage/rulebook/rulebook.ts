@@ -7,7 +7,13 @@ export function getAvailableActions(
 ): GameSingleActionDto[] {
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') return [];
-  if (state.pending) return [];
+  const pending = state.pending as any;
+  if (pending) {
+    if (pending.type === 'draw' && pending.playerId === playerId) {
+      return [{ type: 'draw', payload: {} }];
+    }
+    return [];
+  }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== playerId) return [];
   return [{ type: 'roll', payload: {} }];
@@ -19,7 +25,12 @@ export function validateAction(
   actorId: number | null,
 ): GameSingleActionDto {
   const type = String(action?.type ?? '').trim();
-  if (type !== 'roll' && type !== 'ROLL_DICE' && type !== 'roll_dice') {
+  if (
+    type !== 'roll' &&
+    type !== 'ROLL_DICE' &&
+    type !== 'roll_dice' &&
+    type !== 'draw'
+  ) {
     throw new Error(`Action inconnue: ${type}`);
   }
   if (actorId == null) {
@@ -29,7 +40,14 @@ export function validateAction(
   if (status !== 'started') {
     throw new Error('La partie n’est pas démarrée.');
   }
-  if (state.pending) {
+  const pending = state.pending as any;
+  if (pending) {
+    if (pending.type === 'draw' && pending.playerId === actorId) {
+      if (type !== 'draw') {
+        throw new Error('Action indisponible (pioche requise).');
+      }
+      return { type: 'draw', payload: {} };
+    }
     throw new Error('Action indisponible (choix en attente).');
   }
   const current = state.turn?.currentPlayerId ?? null;

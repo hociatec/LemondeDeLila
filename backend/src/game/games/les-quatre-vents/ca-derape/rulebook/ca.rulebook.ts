@@ -21,6 +21,9 @@ export function getAvailableActions(
   const pending = state.pending as any;
   if (pending) {
     if (pending.playerId !== playerId) return [];
+    if (pending.type === 'draw') {
+      return [{ type: 'draw', payload: {} }];
+    }
     if (pending.type === 'choose_target') {
       const targets: Array<{ targetPlayerId: number }> = Array.isArray(
         pending?.data?.targets,
@@ -94,6 +97,14 @@ export function validateAction(
       throw new PlayerActionError('Action réservée à un autre joueur.', {
         gameType: 'ca-derape',
       });
+    }
+    if (pending.type === 'draw') {
+      if (normalized !== 'draw') {
+        throw new PlayerActionError('Action non disponible.', {
+          gameType: 'ca-derape',
+        });
+      }
+      return { type: 'draw', payload: {} };
     }
     if (pending.type === 'choose_target') {
       if (normalized !== 'choose_target') {

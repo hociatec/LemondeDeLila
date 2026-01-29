@@ -18,8 +18,8 @@ export class MinuitBotService {
       { state, playerId: botPlayerId },
       'random',
       {
-        preferTypes: ['answer_quiz', 'choose_target', 'roll'],
-        fallbackTypes: ['answer_quiz', 'choose_target', 'roll'],
+        preferTypes: ['answer_quiz', 'draw', 'choose_target', 'roll'],
+        fallbackTypes: ['answer_quiz', 'draw', 'choose_target', 'roll'],
       },
     );
   }

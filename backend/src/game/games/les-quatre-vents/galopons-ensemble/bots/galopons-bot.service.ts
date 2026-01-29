@@ -18,8 +18,8 @@ export class GaloponsBotService {
       { state, playerId: botPlayerId },
       'random',
       {
-        preferTypes: ['choose_target', 'roll'],
-        fallbackTypes: ['choose_target', 'roll'],
+        preferTypes: ['draw', 'choose_target', 'roll'],
+        fallbackTypes: ['draw', 'choose_target', 'roll'],
       },
     );
   }

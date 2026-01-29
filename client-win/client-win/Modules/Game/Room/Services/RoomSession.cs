@@ -267,12 +267,34 @@ public sealed class RoomSession : IAsyncDisposable
                 return;
             }
 
-            ErrorReceived?.Invoke(message.Trim());
+            var trimmed = message.Trim();
+            ErrorReceived?.Invoke(trimmed);
+            if (IsFatalRoomError(trimmed))
+            {
+                // Ensure the UI exits the table if the room no longer exists.
+                Left?.Invoke("room.deleted");
+            }
         }
         catch
         {
             // ignore
         }
+    }
+
+    private static bool IsFatalRoomError(string message)
+    {
+        var normalized = message.Trim().ToLowerInvariant();
+        if (normalized.Contains("introuvable") &&
+            (normalized.Contains("table") || normalized.Contains("room")))
+        {
+            return true;
+        }
+        if (normalized.Contains("n'êtes pas dans une table") ||
+            normalized.Contains("n’êtes pas dans une table"))
+        {
+            return true;
+        }
+        return false;
     }
 
     private async Task RequestStateRefreshAsync()

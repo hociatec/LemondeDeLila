@@ -32,6 +32,10 @@ export class FrousseActionService {
         next = this.handleRoll(next);
         continue;
       }
+      if (type === 'draw') {
+        next = this.handleDraw(next);
+        continue;
+      }
       if (type === 'choose_target') {
         next = this.handleChooseTarget(next, action);
       }
@@ -207,6 +211,21 @@ export class FrousseActionService {
     return this.turns.advanceTurn(next);
   }
 
+  private handleDraw(state: GameStateEntity): GameStateEntity {
+    if (String(state.status ?? '').toLowerCase() !== 'started') return state;
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'draw') return state;
+
+    const playerId =
+      typeof pending.playerId === 'number'
+        ? pending.playerId
+        : state.turn?.currentPlayerId ?? null;
+    if (!playerId) return state;
+
+    const cleared: GameStateEntity = { ...state, pending: null };
+    return this.applyDrawCard(cleared, playerId);
+  }
+
   private applyLanding(
     state: GameStateEntity,
     playerId: number,
@@ -244,6 +263,20 @@ export class FrousseActionService {
 
     if (!tile) return next;
     if (tile.type !== 'card') return next;
+    return {
+      ...next,
+      pending: {
+        type: 'draw',
+        playerId,
+        blocking: true,
+        label: 'Piocher une carte (Espace).',
+      },
+    };
+  }
+
+  private applyDrawCard(state: GameStateEntity, playerId: number): GameStateEntity {
+    let next = state;
+    let meta = this.getMeta(next);
 
     const draw = this.drawCard(meta);
     meta = draw.meta;

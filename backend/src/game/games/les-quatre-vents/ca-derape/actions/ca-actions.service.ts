@@ -35,6 +35,10 @@ export class CaActionService {
         next = this.handleRoll(next);
         continue;
       }
+      if (type === 'draw') {
+        next = this.handleDraw(next);
+        continue;
+      }
       if (type === 'choose_target') {
         next = this.handleChooseTarget(next, action);
         continue;
@@ -128,14 +132,47 @@ export class CaActionService {
       `${this.playerName(next, currentId)} lance le dé : "${roll}".`,
     );
 
-    const drawOut = this.drawCard(this.getMeta(next));
+    return {
+      ...next,
+      pending: {
+        type: 'draw',
+        playerId: currentId,
+        blocking: true,
+        label: 'Piocher une carte (Espace).',
+        data: { roll },
+      },
+    };
+  }
+
+  private handleDraw(state: GameStateEntity): GameStateEntity {
+    if (String(state.status ?? '').toLowerCase() !== 'started') return state;
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'draw') return state;
+
+    const playerId =
+      typeof pending.playerId === 'number'
+        ? pending.playerId
+        : state.turn?.currentPlayerId ?? null;
+    if (playerId == null) return state;
+
+    const roll =
+      typeof pending?.data?.roll === 'number'
+        ? pending.data.roll
+        : typeof state.lastRoll === 'number'
+          ? state.lastRoll
+          : 0;
+
+    let next: GameStateEntity = { ...state, pending: null };
+    let meta = this.getMeta(next);
+
+    const drawOut = this.drawCard(meta);
     meta = drawOut.meta;
     const card = drawOut.card;
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
 
     if (card) {
       next = this.core.appendLog(next, `Carte : ${card.title}. ${card.text}`);
-      next = this.applyCardEffects(next, currentId, card, roll);
+      next = this.applyCardEffects(next, playerId, card, roll);
     }
 
     meta = this.getMeta(next);
@@ -146,11 +183,12 @@ export class CaActionService {
     if (next.pending) return next;
 
     const keepTurn = Boolean(card?.keepTurn);
-    if (keepTurn)
+    if (keepTurn) {
       return this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} rejoue.`,
+        `${this.playerName(next, playerId)} rejoue.`,
       );
+    }
 
     const override =
       (this.getMeta(next).pendingContext as PendingContext) ?? null;
@@ -480,21 +518,17 @@ export class CaActionService {
     }
 
     if (card.kind === 'rule' && /^Pioche une carte/i.test(card.text)) {
-      const draw2 = this.drawCard(meta);
-      meta = draw2.meta;
-      if (draw2.card) {
-        next = this.core.appendLog(
-          next,
-          `Carte supplémentaire : ${draw2.card.title}. ${draw2.card.text}`,
-        );
-        next = this.applyCardEffects(
-          { ...next, metadata: { ...(next.metadata ?? {}), ...meta } },
-          actorId,
-          draw2.card,
-          baseRoll,
-        );
-        return next;
-      }
+      next = this.core.appendLog(next, 'Carte supplémentaire : pioche requise.');
+      return {
+        ...next,
+        pending: {
+          type: 'draw',
+          playerId: actorId,
+          blocking: true,
+          label: 'Piocher une carte supplémentaire (Espace).',
+          data: { roll: baseRoll },
+        },
+      };
     }
 
     // Mouvement combiné (dé + delta carte).

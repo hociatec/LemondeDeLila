@@ -10,6 +10,9 @@ export function getAvailableActions(
 
   const pending = state.pending as any;
   if (pending) {
+    if (pending.type === 'draw' && pending.playerId === playerId) {
+      return [{ type: 'draw', payload: {} }];
+    }
     if (pending.type === 'swap' && pending.playerId === playerId) {
       const targets: Array<{ targetPlayerId: number }> = Array.isArray(
         pending?.data?.targets,
@@ -39,7 +42,8 @@ export function validateAction(
     type !== 'roll' &&
     type !== 'ROLL_DICE' &&
     type !== 'roll_dice' &&
-    type !== 'swap_choose_target'
+    type !== 'swap_choose_target' &&
+    type !== 'draw'
   ) {
     throw new Error(`Action inconnue: ${type}`);
   }
@@ -52,6 +56,14 @@ export function validateAction(
   }
 
   const current = state.turn?.currentPlayerId ?? null;
+
+  if (type === 'draw') {
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'draw' || pending.playerId !== actorId) {
+      throw new Error('Aucune pioche en attente.');
+    }
+    return { type: 'draw', payload: {} };
+  }
 
   if (type === 'swap_choose_target') {
     const pending = state.pending as any;

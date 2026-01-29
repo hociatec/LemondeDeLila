@@ -18,8 +18,8 @@ export class CaBotService {
       { state, playerId: botPlayerId },
       'random',
       {
-        preferTypes: ['choose_target', 'choose_next_player', 'roll'],
-        fallbackTypes: ['choose_target', 'choose_next_player', 'roll'],
+        preferTypes: ['draw', 'choose_target', 'choose_next_player', 'roll'],
+        fallbackTypes: ['draw', 'choose_target', 'choose_next_player', 'roll'],
       },
     );
   }

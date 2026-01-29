@@ -46,6 +46,10 @@ export class ContesActionService {
         next = this.handleChooseOption(next, action);
         continue;
       }
+      if (type === 'draw') {
+        next = this.handleDraw(next);
+        continue;
+      }
       if (type === 'choose_card') {
         next = this.handleChooseCard(next, action);
       }
@@ -525,23 +529,189 @@ export class ContesActionService {
       }
     }
 
-    const draw = this.drawCard(state, type);
+    return this.setPending(state, {
+      type: 'draw',
+      label: `Piocher une carte ${type.toUpperCase()} (Espace).`,
+      playerId,
+      blocking: true,
+      data: {
+        context: 'draw_and_apply',
+        cardType: type,
+        depth,
+      },
+    });
+  }
+
+  private handleDraw(state: GameStateEntity): GameStateEntity {
+    const status = String(state.status ?? '').toLowerCase();
+    if (status !== 'started') return state;
+
+    const pending = state.pending as any as ContesPending | null;
+    if (!pending || pending.type !== 'draw') return state;
+
+    const playerId =
+      typeof pending.playerId === 'number'
+        ? pending.playerId
+        : state.turn?.currentPlayerId ?? null;
+    if (playerId == null) return state;
+
+    const data = (pending.data ?? {}) as any;
+    const context = String(data.context ?? 'draw_and_apply');
+
+    if (context === 'abondance') {
+      return this.resolveAbondanceDraw({ ...state, pending: null }, playerId, data);
+    }
+
+    return this.resolveQueuedDraw({ ...state, pending: null }, playerId, data);
+  }
+
+  private resolveQueuedDraw(
+    state: GameStateEntity,
+    playerId: number,
+    data: { queue?: string[]; cardType?: string; depth?: number },
+  ): GameStateEntity {
+    const queue = Array.isArray(data.queue) ? [...data.queue] : [];
+    const fallbackType = String(data.cardType ?? '').trim().toLowerCase();
+    const currentType = (queue.shift() ?? fallbackType) as
+      | 'bonus'
+      | 'malus'
+      | 'surprise'
+      | 'conte';
+    const depth = Number.isFinite(data.depth) ? Number(data.depth) : 0;
+
+    if (!currentType) return state;
+
+    if (currentType === 'malus') {
+      const protectedOut = this.maybeProtectFromMalus(state, playerId);
+      if (protectedOut.protected) {
+        return this.continueQueuedDraw(
+          protectedOut.state,
+          playerId,
+          queue,
+          depth,
+        );
+      }
+    }
+
+    const draw = this.drawCard(state, currentType);
     let next = draw.state;
     const card = draw.card;
-    if (!card) return this.core.appendLog(next, `Aucune carte disponible.`);
+    if (!card) {
+      next = this.core.appendLog(next, `Aucune carte disponible.`);
+      return this.continueQueuedDraw(next, playerId, queue, depth);
+    }
+
     next = this.core.appendLog(
       next,
       `${card.type.toUpperCase()} : ${card.title}. ${card.text}`,
     );
 
-    if (card.type === 'conte') return next;
-    if (card.type === 'bonus')
-      return this.applyBonusEffectById(next, playerId, card.id, depth);
-    if (card.type === 'malus')
-      return this.applyMalusEffectById(next, playerId, card.id, depth);
-    if (card.type === 'surprise')
-      return this.applySurpriseEffectById(next, playerId, card.id, depth);
-    return next;
+    if (card.type === 'conte') {
+      return this.continueQueuedDraw(next, playerId, queue, depth);
+    }
+    if (card.type === 'bonus') {
+      next = this.applyBonusEffectById(next, playerId, card.id, depth);
+    } else if (card.type === 'malus') {
+      next = this.applyMalusEffectById(next, playerId, card.id, depth);
+    } else if (card.type === 'surprise') {
+      next = this.applySurpriseEffectById(next, playerId, card.id, depth);
+    }
+
+    if (next.pending) return next;
+    return this.continueQueuedDraw(next, playerId, queue, depth);
+  }
+
+  private continueQueuedDraw(
+    state: GameStateEntity,
+    playerId: number,
+    queue: string[],
+    depth: number,
+  ): GameStateEntity {
+    if (!queue.length) return state;
+    return this.setPending(state, {
+      type: 'draw',
+      label: 'Piocher une carte (Espace).',
+      playerId,
+      blocking: true,
+      data: {
+        context: 'draw_and_apply',
+        queue,
+        depth,
+      },
+    });
+  }
+
+  private queueDraws(
+    state: GameStateEntity,
+    playerId: number,
+    queue: Array<'bonus' | 'malus' | 'surprise' | 'conte'>,
+    depth: number,
+    label: string = 'Piocher une carte (Espace).',
+  ): GameStateEntity {
+    if (!queue.length) return state;
+    return this.setPending(state, {
+      type: 'draw',
+      label,
+      playerId,
+      blocking: true,
+      data: {
+        context: 'draw_and_apply',
+        queue,
+        depth,
+      },
+    });
+  }
+
+  private resolveAbondanceDraw(
+    state: GameStateEntity,
+    playerId: number,
+    data: { remaining?: number; drawn?: ContesCard[]; depth?: number },
+  ): GameStateEntity {
+    const remaining = Number.isFinite(data.remaining) ? Number(data.remaining) : 0;
+    const drawn = Array.isArray(data.drawn) ? [...data.drawn] : [];
+    if (remaining <= 0) return state;
+
+    const draw = this.drawCard(state, 'bonus');
+    let next = draw.state;
+    if (draw.card) {
+      drawn.push(draw.card);
+    }
+
+    if (remaining - 1 > 0) {
+      return this.setPending(next, {
+        type: 'draw',
+        label: 'Corne d’abondance : piocher une carte Bonus (Espace).',
+        playerId,
+        blocking: true,
+        data: {
+          context: 'abondance',
+          remaining: remaining - 1,
+          drawn,
+        },
+      });
+    }
+
+    if (drawn.length === 0) return next;
+    if (drawn.length === 1) {
+      return this.applyBonusEffectById(next, playerId, drawn[0].id, 0);
+    }
+
+    return this.setPending(next, {
+      type: 'choose_card',
+      label:
+        'Corne d’abondance : choisissez la carte Bonus à garder, puis Entrée.',
+      playerId,
+      blocking: true,
+      choices: drawn.map((c) => c.title),
+      data: {
+        context: `abondance_keep_one:${playerId}`,
+        cards: drawn.map((c) => ({
+          cardType: 'bonus',
+          cardId: c.id,
+          title: c.title,
+        })),
+      },
+    });
   }
 
   // --- Effects + helpers (added in next patches) ---
@@ -604,8 +774,7 @@ export class ContesActionService {
       case 8:
         return this.moveBy(next, playerId, 3, depth);
       case 9:
-        next = this.drawAndApply(next, playerId, 'bonus', depth);
-        return this.drawAndApply(next, playerId, 'surprise', depth);
+        return this.queueDraws(next, playerId, ['bonus', 'surprise'], depth);
       case 10:
         return this.startChooseTarget(
           next,
@@ -827,32 +996,15 @@ export class ContesActionService {
     state: GameStateEntity,
     playerId: number,
   ): GameStateEntity {
-    let next = state;
-    const d1 = this.drawCard(next, 'bonus');
-    next = d1.state;
-    const c1 = d1.card;
-    const d2 = this.drawCard(next, 'bonus');
-    next = d2.state;
-    const c2 = d2.card;
-    const cards = [c1, c2].filter(Boolean) as ContesCard[];
-    if (cards.length === 0) return next;
-    if (cards.length === 1)
-      return this.applyBonusEffectById(next, playerId, cards[0].id, 0);
-
-    return this.setPending(next, {
-      type: 'choose_card',
-      label:
-        'Corne d’abondance : choisissez la carte Bonus à garder, puis Entrée.',
+    return this.setPending(state, {
+      type: 'draw',
+      label: 'Corne d’abondance : piocher une carte Bonus (Espace).',
       playerId,
       blocking: true,
-      choices: cards.map((c) => c.title),
       data: {
-        context: `abondance_keep_one:${playerId}`,
-        cards: cards.map((c) => ({
-          cardType: 'bonus',
-          cardId: c.id,
-          title: c.title,
-        })),
+        context: 'abondance',
+        remaining: 2,
+        drawn: [],
       },
     });
   }
@@ -875,8 +1027,7 @@ export class ContesActionService {
       next,
       `Coffre aux merveilles : 2 cartes (${t1}, ${t2}).`,
     );
-    next = this.drawAndApply(next, playerId, t1 as any, depth);
-    return this.drawAndApply(next, playerId, t2 as any, depth);
+    return this.queueDraws(next, playerId, [t1 as any, t2 as any], depth);
   }
 
   private drawCard(

@@ -329,6 +329,8 @@ export class PanierExpressService extends AbstractGameService {
     switch (action.type) {
       case 'roll':
         return this.handleRoll(state, action);
+      case 'draw':
+        return this.handleDraw(state, action);
       case 'answer_quiz':
         return this.handleAnswerQuiz(state, action);
       case 'pick_choice':
@@ -665,6 +667,308 @@ export class PanierExpressService extends AbstractGameService {
     return next;
   }
 
+  private handleDraw(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'draw') return state;
+    const actorId =
+      typeof (action.meta as any)?.actorId === 'number'
+        ? (action.meta as any).actorId
+        : Number(pending.playerId);
+    const pendingPlayerId = Number(pending.playerId);
+    if (
+      Number.isFinite(pendingPlayerId) &&
+      Number.isFinite(actorId) &&
+      pendingPlayerId !== actorId
+    ) {
+      return this.core.appendLog(
+        state,
+        `[Panier Express] Pioche refusée : ce n'est pas le bon joueur.`,
+      );
+    }
+
+    const data = (pending?.data ?? {}) as any;
+    const kind = String(data.kind ?? 'queue').trim();
+    let next: GameStateEntity = { ...state, pending: null };
+
+    if (kind === 'event.card') {
+      next = this.applyEvent(next, pendingPlayerId);
+      return this.advanceAfterDraw(next);
+    }
+
+    if (kind === 'event.tirage_chanceux') {
+      const metaNow = this.getMetadata(next) as any;
+      const metaRng = this.random.createMetaRng(metaNow);
+      const drawnCourses = this.deckPool.drawMany<string>(
+        metaNow.decks ?? {},
+        'courses-bonus',
+        3,
+        metaRng.rng,
+      );
+      next = {
+        ...next,
+        metadata: {
+          ...metaRng.getMeta(),
+          decks: drawnCourses.pool as any,
+        },
+      };
+      const offered = (drawnCourses.cards ?? [])
+        .map((v: any) => String(v))
+        .filter((v: string) => v.length > 0);
+      if (!offered.length) {
+        next = this.core.appendLog(
+          next,
+          `[Panier Express] Tirage chanceux : aucune carte disponible.`,
+        );
+        return this.advanceAfterDraw(next);
+      }
+      return {
+        ...next,
+        pending: {
+          type: 'pick',
+          playerId: pendingPlayerId,
+          blocking: true,
+          label: 'Choisissez une carte (tirage chanceux), puis Entrée.',
+          choices: offered,
+          data: { kind: 'event.tirage_chanceux', offered },
+        },
+      } as any;
+    }
+
+    if (kind === 'event.producteur_genereux') {
+      next = this.drawSvc.drawCourse(next, pendingPlayerId, 'bonus');
+      const me = (next.players ?? []).find(
+        (p) => p.id === pendingPlayerId,
+      ) as any;
+      const inv = this.utils.toStringArray(me?.inventory);
+      const targets = (next.players ?? [])
+        .filter((p) => p.id !== pendingPlayerId)
+        .map((p: any) => ({ playerId: p.id, username: p.username }));
+      if (!inv.length || !targets.length) {
+        next = this.core.appendLog(
+          next,
+          `[Panier Express] Producteur généreux : aucun don possible.`,
+        );
+        return this.advanceAfterDraw(next);
+      }
+      return {
+        ...next,
+        pending: {
+          type: 'pick',
+          playerId: pendingPlayerId,
+          blocking: true,
+          label: 'Choisissez une carte à offrir (inventaire), puis Entrée.',
+          choices: inv,
+          data: { kind: 'event.producteur_genereux.choose_card', cards: inv, targets },
+        },
+      } as any;
+    }
+
+    if (kind === 'event.changement_de_saison') {
+      next = this.drawSvc.drawCourse(next, pendingPlayerId, 'bonus');
+      const order = Array.isArray(data?.order)
+        ? data.order.map((v: any) => Number(v))
+        : [];
+      const cursor = Number(data?.cursor);
+      const processed = Number(data?.processed);
+      if (!order.length || !Number.isFinite(cursor) || !Number.isFinite(processed)) {
+        return this.advanceAfterDraw(next);
+      }
+
+      let nextCursor = (cursor + 1) % order.length;
+      let nextProcessed = processed + 1;
+      while (nextProcessed < order.length) {
+        const nextPid = Number(order[nextCursor]);
+        const player = (next.players ?? []).find(
+          (p: any) => p.id === nextPid,
+        ) as any;
+        const cards = [
+          ...this.utils.toStringArray(player?.inventory),
+          ...this.utils.toStringArray(player?.basket),
+        ];
+        if (cards.length) {
+          return {
+            ...next,
+            pending: {
+              type: 'pick',
+              playerId: nextPid,
+              blocking: true,
+              label: 'Choisissez une carte à défausser, puis Entrée.',
+              choices: cards,
+              data: {
+                kind: 'event.changement_de_saison',
+                order,
+                cursor: nextCursor,
+                processed: nextProcessed,
+              },
+            } as any,
+          };
+        }
+        return {
+          ...next,
+          pending: {
+            type: 'draw',
+            playerId: nextPid,
+            blocking: true,
+            label: 'Piocher une course bonus (Espace).',
+            data: {
+              kind: 'event.changement_de_saison',
+              order,
+              cursor: nextCursor,
+              processed: nextProcessed,
+            },
+          },
+        } as any;
+      }
+
+      next = this.core.appendLog(
+        next,
+        `[Panier Express] Changement de saison : terminé.`,
+      );
+      return this.advanceAfterDraw(next);
+    }
+
+    const queue = Array.isArray(data?.queue) ? data.queue : [];
+    const cursor = Number(data?.cursor ?? 0);
+    const entry = queue[cursor];
+    if (!entry || !Number.isFinite(entry?.playerId)) {
+      return this.advanceAfterDraw(next);
+    }
+
+    next = this.drawSvc.drawCourse(
+      next,
+      Number(entry.playerId),
+      entry?.standId ? String(entry.standId) : undefined,
+    );
+
+    const nextCursor = cursor + 1;
+    if (nextCursor < queue.length) {
+      const nextEntry = queue[nextCursor];
+      return {
+        ...next,
+        pending: {
+          type: 'draw',
+          playerId: nextEntry?.playerId,
+          blocking: true,
+          label: pending.label ?? 'Piocher une carte (Espace).',
+          data: { kind: 'queue', queue, cursor: nextCursor },
+        },
+      } as any;
+    }
+
+    return this.advanceAfterDraw(next);
+  }
+
+  private startDrawPending(
+    state: GameStateEntity,
+    playerId: number,
+    data: Record<string, unknown>,
+    label: string,
+  ): GameStateEntity {
+    if (state.pending) {
+      return this.core.appendLog(
+        state,
+        `[Panier Express] Une action est déjà en attente.`,
+      );
+    }
+    return {
+      ...state,
+      pending: {
+        type: 'draw',
+        playerId,
+        blocking: true,
+        label,
+        data,
+      },
+    } as any;
+  }
+
+  private queueCourseDraws(
+    state: GameStateEntity,
+    tasks: Array<{ playerId: number; standId?: string }>,
+    label: string,
+  ): GameStateEntity {
+    const sanitized = tasks
+      .map((task) => ({
+        kind: 'course',
+        playerId: Number(task.playerId),
+        standId: task.standId,
+      }))
+      .filter((task) => Number.isFinite(task.playerId));
+    if (!sanitized.length) return state;
+
+    const pending = state.pending as any;
+    if (pending?.type === 'draw' && pending?.data?.kind === 'queue') {
+      const queue = Array.isArray(pending.data.queue) ? pending.data.queue : [];
+      return {
+        ...state,
+        pending: {
+          ...pending,
+          data: {
+            ...(pending.data ?? {}),
+            kind: 'queue',
+            queue: [...queue, ...sanitized],
+            cursor: Number(pending.data.cursor ?? 0),
+          },
+        },
+      } as any;
+    }
+
+    if (state.pending) {
+      return this.core.appendLog(
+        state,
+        `[Panier Express] Une action est déjà en attente.`,
+      );
+    }
+
+    const first = sanitized[0];
+    return {
+      ...state,
+      pending: {
+        type: 'draw',
+        playerId: first.playerId,
+        blocking: true,
+        label,
+        data: { kind: 'queue', queue: sanitized, cursor: 0 },
+      },
+    } as any;
+  }
+
+  private advanceAfterDraw(state: GameStateEntity): GameStateEntity {
+    const currentId = state.turn?.currentPlayerId ?? null;
+    if (currentId == null) return state;
+    const metaAfter = this.getMetadata(state);
+    const postActions = this.getAvailableActions(state, currentId);
+    const hasBlockingQuiz = Boolean(metaAfter.quiz.pending[currentId]);
+    const hasBlockingPending = Boolean(state.pending?.blocking);
+    const hasBlockingExchange = postActions.some((a) =>
+      ['exchange_choose_target', 'exchange_choose_give'].includes(
+        (a.type || '').toLowerCase(),
+      ),
+    );
+    if (hasBlockingQuiz || hasBlockingExchange || hasBlockingPending) {
+      return state;
+    }
+
+    const keepTurn = this.turnStatus.getStatus(state, currentId, 'keepTurn');
+    if (keepTurn > 0) {
+      return this.turnStatus.setStatus(state, currentId, 'keepTurn', 0);
+    }
+
+    const roll = typeof state.lastRoll === 'number' ? state.lastRoll : null;
+    const skipTurn = this.turnStatus.getStatus(state, currentId, 'skipTurn');
+    if (roll === 6 && !(skipTurn > 0)) {
+      return this.core.appendLog(
+        state,
+        `[Panier Express] ${this.utils.playerName(state, currentId)} rejoue (sur un 6).`,
+      );
+    }
+
+    return this.phaseFlow.advanceTurn(state);
+  }
+
   private movePlayer(
     state: GameStateEntity,
     playerId: number,
@@ -799,7 +1103,12 @@ export class PanierExpressService extends AbstractGameService {
       }),
     );
     this.tileRegistry.register('event', (s, ctx) =>
-      this.applyEvent(s, ctx.playerId),
+      this.startDrawPending(
+        s,
+        ctx.playerId,
+        { kind: 'event.card' },
+        'Piocher une carte Événement (Espace).',
+      ),
     );
     this.tileRegistry.register('exchange', (s, ctx) =>
       this.applyExchange(s, ctx.playerId),
@@ -829,7 +1138,11 @@ export class PanierExpressService extends AbstractGameService {
       ),
     );
     this.tileRegistry.register('bonus_course', (s, ctx) =>
-      this.drawBonusCourse(s, ctx.playerId),
+      this.queueCourseDraws(
+        s,
+        [{ playerId: ctx.playerId, standId: 'bonus' }],
+        'Piocher une course bonus (Espace).',
+      ),
     );
     this.tileRegistry.register('move_to_stand', (s, ctx) =>
       this.applyMoveToNextStand(s, ctx.playerId),
@@ -839,11 +1152,19 @@ export class PanierExpressService extends AbstractGameService {
   private registerStandHandlers(): void {
     // Stands paramétrables : tous les stands routent vers l'effet générique drawCourse
     this.standEffects.registerStand('stand', (s, ctx) =>
-      this.drawSvc.drawCourse(s, ctx.playerId, ctx.standId),
+      this.queueCourseDraws(
+        s,
+        [{ playerId: ctx.playerId, standId: ctx.standId }],
+        'Piocher une course (Espace).',
+      ),
     );
     this.standIds().forEach((id) => {
       this.standEffects.registerStand(id, (s, ctx) =>
-        this.drawSvc.drawCourse(s, ctx.playerId, ctx.standId),
+        this.queueCourseDraws(
+          s,
+          [{ playerId: ctx.playerId, standId: ctx.standId }],
+          'Piocher une course (Espace).',
+        ),
       );
     });
   }
@@ -1067,8 +1388,14 @@ export class PanierExpressService extends AbstractGameService {
           next,
           `[Panier Express] Promo surprise : ${this.utils.playerName(state, playerId)} pioche 2 courses.`,
         );
-        next = this.drawSvc.drawCourse(next, playerId, 'bonus');
-        next = this.drawSvc.drawCourse(next, playerId, 'bonus');
+        next = this.queueCourseDraws(
+          next,
+          [
+            { playerId, standId: 'bonus' },
+            { playerId, standId: 'bonus' },
+          ],
+          'Piocher une course bonus (Espace).',
+        );
         next = this.appendActionLog(next, playerId, 'event', {
           event,
           effect: 'draw2',
@@ -1091,7 +1418,11 @@ export class PanierExpressService extends AbstractGameService {
           next,
           `[Panier Express] Stand exceptionnel : pioche 1 course bonus.`,
         );
-        next = this.drawSvc.drawCourse(next, playerId, 'bonus');
+        next = this.queueCourseDraws(
+          next,
+          [{ playerId, standId: 'bonus' }],
+          'Piocher une course bonus (Espace).',
+        );
         next = this.appendActionLog(next, playerId, 'event', {
           event,
           effect: 'draw',
@@ -1139,44 +1470,12 @@ export class PanierExpressService extends AbstractGameService {
         break;
       }
       case 'tirage-chanceux': {
-        // Tirage chanceux : proposer 3 cartes depuis le deck bonus, et les sortir du deck
-        // (sinon on repropose en boucle les mêmes cartes, surtout visible côté bot).
-        const metaNow = this.getMetadata(next) as any;
-        const metaRng = this.random.createMetaRng(metaNow);
-        const drawnCourses = this.deckPool.drawMany<string>(
-          metaNow.decks ?? {},
-          'courses-bonus',
-          3,
-          metaRng.rng,
+        next = this.startDrawPending(
+          next,
+          playerId,
+          { kind: 'event.tirage_chanceux' },
+          'Tirage chanceux : piocher 3 cartes (Espace).',
         );
-        next = {
-          ...next,
-          metadata: {
-            ...metaRng.getMeta(),
-            decks: drawnCourses.pool as any,
-          },
-        };
-
-        const offered = (drawnCourses.cards ?? [])
-          .map((v: any) => String(v))
-          .filter((v: string) => v.length > 0);
-        if (!offered.length) {
-          next = this.core.appendLog(
-            next,
-            `[Panier Express] Tirage chanceux : aucune carte disponible.`,
-          );
-          next = this.appendActionLog(next, playerId, 'event', {
-            event,
-            effect: 'none',
-          });
-          break;
-        }
-        next = setPickPending({
-          label: 'Choisissez une carte (tirage chanceux), puis Entrée.',
-          kind: 'event.tirage_chanceux',
-          choices: offered,
-          data: { offered },
-        });
         next = this.appendActionLog(next, playerId, 'event', {
           event,
           effect: 'pick',
@@ -1184,29 +1483,12 @@ export class PanierExpressService extends AbstractGameService {
         break;
       }
       case 'producteur-genereux': {
-        next = this.drawSvc.drawCourse(next, playerId, 'bonus');
-        const me = (next.players ?? []).find((p) => p.id === playerId) as any;
-        const inv = this.utils.toStringArray(me?.inventory);
-        const targets = (next.players ?? [])
-          .filter((p) => p.id !== playerId)
-          .map((p: any) => ({ playerId: p.id, username: p.username }));
-        if (!inv.length || !targets.length) {
-          next = this.core.appendLog(
-            next,
-            `[Panier Express] Producteur généreux : aucun don possible.`,
-          );
-          next = this.appendActionLog(next, playerId, 'event', {
-            event,
-            effect: 'none',
-          });
-          break;
-        }
-        next = setPickPending({
-          label: 'Choisissez une carte à offrir (inventaire), puis Entrée.',
-          kind: 'event.producteur_genereux.choose_card',
-          choices: inv,
-          data: { cards: inv, targets },
-        });
+        next = this.startDrawPending(
+          next,
+          playerId,
+          { kind: 'event.producteur_genereux' },
+          'Producteur généreux : piocher une course bonus (Espace).',
+        );
         next = this.appendActionLog(next, playerId, 'event', {
           event,
           effect: 'pick',
@@ -1295,16 +1577,25 @@ export class PanierExpressService extends AbstractGameService {
           next,
           `[Panier Express] Don du maraîcher : pioche 1 course bonus.`,
         );
-        next = this.drawSvc.drawCourse(next, playerId, 'bonus');
+        next = this.queueCourseDraws(
+          next,
+          [{ playerId, standId: 'bonus' }],
+          'Piocher une course bonus (Espace).',
+        );
         next = this.appendActionLog(next, playerId, 'event', {
           event,
           effect: 'draw',
         });
         break;
       case 'marche-anime':
-        (next.players ?? []).forEach((p: any) => {
-          next = this.drawSvc.drawCourse(next, p.id, 'bonus');
-        });
+        next = this.queueCourseDraws(
+          next,
+          (next.players ?? []).map((p: any) => ({
+            playerId: p.id,
+            standId: 'bonus',
+          })),
+          'Piocher une course bonus (Espace).',
+        );
         next = this.core.appendLog(
           next,
           `[Panier Express] Marché animé : tous les joueurs piochent 1 course.`,
@@ -1318,16 +1609,26 @@ export class PanierExpressService extends AbstractGameService {
         const metaNow = this.getMetadata(next);
         const tiles = Array.isArray(metaNow.tiles) ? metaNow.tiles : [];
         const positions = metaNow.positions ?? {};
-        (next.players ?? []).forEach((p: any) => {
-          const pos = positions[p.id] ?? 0;
-          const tile = tiles[pos] as any;
-          if (
-            tile?.type === 'stand' &&
-            String(tile.standId ?? '').startsWith('bio')
-          ) {
-            next = this.drawSvc.drawCourse(next, p.id, 'bonus');
-          }
-        });
+        const targets = (next.players ?? [])
+          .map((p: any) => {
+            const pos = positions[p.id] ?? 0;
+            const tile = tiles[pos] as any;
+            if (
+              tile?.type === 'stand' &&
+              String(tile.standId ?? '').startsWith('bio')
+            ) {
+              return { playerId: p.id, standId: 'bonus' };
+            }
+            return null;
+          })
+          .filter((t: any) => t && Number.isFinite(t.playerId));
+        if (targets.length) {
+          next = this.queueCourseDraws(
+            next,
+            targets,
+            'Piocher une course bonus (Espace).',
+          );
+        }
         next = this.core.appendLog(
           next,
           `[Panier Express] Journée bio : bonus pour les joueurs sur un stand Bio.`,
@@ -1555,9 +1856,11 @@ export class PanierExpressService extends AbstractGameService {
           });
           break;
         }
-        targets.forEach((p: any) => {
-          next = this.drawBonusCourse(next, p.id);
-        });
+        next = this.queueCourseDraws(
+          next,
+          targets.map((p: any) => ({ playerId: p.id, standId: 'bonus' })),
+          'Piocher une course bonus (Espace).',
+        );
         next = this.core.appendLog(
           next,
           `[Panier Express] ${eventLabel} : bonus pour les joueurs sur le stand.`,
@@ -1872,8 +2175,23 @@ export class PanierExpressService extends AbstractGameService {
             };
             break;
           }
-          // Si le joueur n'a aucune carte : il pioche quand même (best-effort).
-          next = this.drawBonusCourse(next, pid);
+          // Si le joueur n'a aucune carte : il pioche quand même.
+          next = {
+            ...next,
+            pending: {
+              type: 'draw',
+              playerId: pid,
+              blocking: true,
+              label: 'Piocher une course bonus (Espace).',
+              data: {
+                kind: 'event.changement_de_saison',
+                order,
+                cursor,
+                processed,
+              },
+            },
+          } as any;
+          break;
           cursor = (cursor + 1) % order.length;
           processed += 1;
         }
@@ -2159,6 +2477,9 @@ export class PanierExpressService extends AbstractGameService {
       );
     }
     const resolved = this.exchangeSvc.acceptOffer(state, actorId);
+    if (resolved.pending?.type === 'draw') {
+      return resolved;
+    }
     return this.phaseFlow.advanceTurn(resolved);
   }
 
@@ -2753,47 +3074,21 @@ export class PanierExpressService extends AbstractGameService {
       if (chosen) {
         next = discardCourse(next, pid, chosen);
       }
-      next = this.drawBonusCourse(next, pid);
-
-      let nextCursor = (currentIndex + 1) % order.length;
-      let nextProcessed = processed + 1;
-      while (nextProcessed < order.length) {
-        const nextPid = Number(order[nextCursor]);
-        const player = (next.players ?? []).find(
-          (p: any) => p.id === nextPid,
-        ) as any;
-        const cards = [
-          ...this.utils.toStringArray(player?.inventory),
-          ...this.utils.toStringArray(player?.basket),
-        ];
-        if (cards.length) {
-          return {
-            ...next,
-            pending: {
-              type: 'pick',
-              playerId: nextPid,
-              blocking: true,
-              label: 'Choisissez une carte à défausser, puis Entrée.',
-              choices: cards,
-              data: {
-                kind: 'event.changement_de_saison',
-                order,
-                cursor: nextCursor,
-                processed: nextProcessed,
-              },
-            } as any,
-          };
-        }
-        next = this.drawBonusCourse(next, nextPid);
-        nextCursor = (nextCursor + 1) % order.length;
-        nextProcessed += 1;
-      }
-
-      next = this.core.appendLog(
-        next,
-        `[Panier Express] Changement de saison : terminé.`,
-      );
-      return this.phaseFlow.advanceTurn(next);
+      return {
+        ...next,
+        pending: {
+          type: 'draw',
+          playerId: pid,
+          blocking: true,
+          label: 'Piocher une course bonus (Espace).',
+          data: {
+            kind: 'event.changement_de_saison',
+            order,
+            cursor: currentIndex,
+            processed,
+          },
+        },
+      } as any;
     }
 
     if (kind === 'tile.move_choice') {
@@ -3117,12 +3412,15 @@ export class PanierExpressService extends AbstractGameService {
       const fruitCards = myInv.filter((c) => summerFruit.has(c));
       if (!fruitCards.length) {
         let next = clearPending(state);
-        next = this.drawBonusCourse(next, actorId);
         next = this.core.appendLog(
           next,
           `[Panier Express] Échange de saison : aucun fruit d'été, pioche.`,
         );
-        return this.phaseFlow.advanceTurn(next);
+        return this.queueCourseDraws(
+          next,
+          [{ playerId: actorId, standId: 'bonus' }],
+          'Piocher une course bonus (Espace).',
+        );
       }
       return {
         ...state,
@@ -3307,7 +3605,12 @@ export class PanierExpressService extends AbstractGameService {
     );
     next = this.appendActionLog(next, playerId, 'answer_quiz', { correct });
     if (correct) {
-      next = this.drawBonusCourse(next, playerId);
+      next = this.queueCourseDraws(
+        next,
+        [{ playerId, standId: 'bonus' }],
+        'Piocher une course bonus (Espace).',
+      );
+      if (next.pending) return next;
     }
     return this.phaseFlow.advanceTurn(next);
   }

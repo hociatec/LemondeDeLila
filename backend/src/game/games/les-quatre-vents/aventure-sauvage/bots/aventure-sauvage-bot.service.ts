@@ -24,8 +24,8 @@ export class AventureSauvageBotService {
       { state, playerId: botPlayerId },
       'random',
       {
-        preferTypes: ['roll'],
-        fallbackTypes: ['roll'],
+        preferTypes: ['draw', 'roll'],
+        fallbackTypes: ['draw', 'roll'],
       },
     );
   }

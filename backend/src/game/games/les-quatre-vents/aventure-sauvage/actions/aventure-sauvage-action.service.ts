@@ -27,6 +27,11 @@ export class AventureSauvageActionService {
       const type = String(action?.type ?? '').trim();
       if (type === 'roll' || type === 'ROLL_DICE' || type === 'roll_dice') {
         next = this.handleRoll(next);
+        continue;
+      }
+      if (type === 'draw') {
+        next = this.handleDraw(next);
+        continue;
       }
     }
     return next;
@@ -57,6 +62,7 @@ export class AventureSauvageActionService {
     const currentPos = meta.positions?.[currentId] ?? 0;
     const target = this.clampMove(currentPos + roll, meta.tiles.length);
     next = this.applyLanding(next, currentId, target);
+    if (next.pending) return next;
 
     const afterMeta = this.getMeta(next);
     if (afterMeta.winnerId != null) {
@@ -76,6 +82,26 @@ export class AventureSauvageActionService {
     }
 
     return this.turns.advanceTurn(next);
+  }
+
+  private handleDraw(state: GameStateEntity): GameStateEntity {
+    const status = String(state.status ?? '').toLowerCase();
+    if (status !== 'started') return state;
+
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'draw') return state;
+
+    const playerId =
+      typeof pending.playerId === 'number'
+        ? pending.playerId
+        : state.turn?.currentPlayerId ?? null;
+    if (!playerId) return state;
+
+    const deckRaw = String(pending?.data?.deck ?? '').trim().toLowerCase();
+    const deck = deckRaw === 'patte' ? 'patte' : 'animal';
+
+    const cleared: GameStateEntity = { ...state, pending: null };
+    return this.drawAndApplyCard(cleared, playerId, deck);
   }
 
   private applyLanding(
@@ -122,11 +148,29 @@ export class AventureSauvageActionService {
     }
 
     if (tile.type === 'animal') {
-      return this.drawAndApplyCard(next, playerId, 'animal');
+      return {
+        ...next,
+        pending: {
+          type: 'draw',
+          playerId,
+          blocking: true,
+          label: 'Piocher une carte Animal rigolo (Espace).',
+          data: { deck: 'animal' },
+        },
+      };
     }
 
     if (tile.type === 'patte') {
-      return this.drawAndApplyCard(next, playerId, 'patte');
+      return {
+        ...next,
+        pending: {
+          type: 'draw',
+          playerId,
+          blocking: true,
+          label: 'Piocher une carte Coup de patte (Espace).',
+          data: { deck: 'patte' },
+        },
+      };
     }
 
     return next;

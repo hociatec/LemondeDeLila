@@ -19,6 +19,9 @@ export function getAvailableActions(
   const pending = state.pending as any;
   if (pending) {
     if (pending.playerId !== playerId) return [];
+    if (pending.type === 'draw') {
+      return [{ type: 'draw', payload: {} }];
+    }
     if (pending.type === 'choose_target') {
       const targets: Array<{ targetPlayerId: number }> = Array.isArray(
         pending?.data?.targets,
@@ -70,6 +73,14 @@ export function validateAction(
       throw new PlayerActionError("Ce n'est pas votre action.", {
         gameType: 'frousse-party',
       });
+    }
+    if (pending.type === 'draw') {
+      if (type !== 'draw') {
+        throw new PlayerActionError('Action non disponible.', {
+          gameType: 'frousse-party',
+        });
+      }
+      return { type: 'draw', payload: {} };
     }
     if (pending.type === 'choose_target') {
       if (type !== 'choose_target') {

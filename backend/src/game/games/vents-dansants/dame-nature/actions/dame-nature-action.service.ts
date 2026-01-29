@@ -227,25 +227,26 @@ export class DameNatureActionService {
     },
     meta: DameNatureMetadata,
   ): { state: GameStateEntity; drew: number } {
-    let next = state;
-    let currentMeta = meta;
-    let drew = 0;
-    while ((player.hand?.length ?? 0) < 4) {
-      const draw = this.setup.drawFamilyCard(currentMeta);
-      currentMeta = draw.metadata;
-      if (!draw.card) break;
-      player.hand.push(draw.card);
-      player.handCount = player.hand.length;
-      drew += 1;
+    const remaining = Math.max(0, 4 - (player.hand?.length ?? 0));
+    if (remaining <= 0) {
+      return { state, drew: 0 };
     }
-    next = { ...next, metadata: currentMeta, players: next.players };
-    if (drew > 0) {
-      next = this.core.appendLog(
-        next,
-        `${player.username} pioche ${drew} carte(s) pour revenir à 4.`,
-      );
-    }
-    return { state: next, drew };
+
+    const existing = (meta as any)?.pendingRefill ?? null;
+    const nextRemaining =
+      existing && existing.playerId === player.id
+        ? Math.max(Number(existing.remaining ?? 0), remaining)
+        : remaining;
+
+    const nextMeta: DameNatureMetadata = {
+      ...meta,
+      pendingRefill: { playerId: player.id, remaining: nextRemaining },
+    };
+    const next = this.core.appendLog(
+      { ...state, metadata: nextMeta },
+      `${player.username} doit piocher ${nextRemaining} carte(s) pour revenir à 4 (Espace).`,
+    );
+    return { state: next, drew: 0 };
   }
 
   handleAskCard(

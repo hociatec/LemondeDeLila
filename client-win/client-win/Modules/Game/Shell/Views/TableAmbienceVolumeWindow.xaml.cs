@@ -1,5 +1,7 @@
 using System;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace client_win.Modules.Game.Shell.Views;
 
@@ -49,5 +51,39 @@ public partial class TableAmbienceVolumeWindow : Window
         DialogResult = true;
         Close();
     }
-}
 
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (VolumeSlider.IsEnabled)
+            {
+                VolumeSlider.Focus();
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void OnVolumeSliderKeyDown(object sender, KeyEventArgs e)
+    {
+        if (sender is not Slider slider || !slider.IsEnabled)
+        {
+            return;
+        }
+
+        var step = Math.Max(1, (int)Math.Round(slider.TickFrequency));
+        if (e.Key == Key.Up)
+        {
+            slider.Value = Math.Min(slider.Maximum, slider.Value + step);
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Down)
+        {
+            slider.Value = Math.Max(slider.Minimum, slider.Value - step);
+            e.Handled = true;
+        }
+    }
+}

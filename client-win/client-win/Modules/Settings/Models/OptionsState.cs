@@ -26,7 +26,7 @@ public sealed class OptionsState
     // Table ambience (loop) played during games.
     // Per-user settings: affects only the local client.
     public bool SoundTableAmbience { get; set; } = true;
-    public int SoundTableAmbienceVolume { get; set; } = 25;
+    public int SoundTableAmbienceVolume { get; set; } = 15;
 
     // Overrides de sons (stockés dans AppData), pour permettre la personnalisation sans casser ClickOnce.
     public string? SoundRoomOpenedPath { get; set; }

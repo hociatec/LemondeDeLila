@@ -199,6 +199,7 @@ export class DameNatureSetupService {
       phaseId: 'turn',
       victoryId: null,
       winnerId: null,
+      pendingRefill: null,
     };
   }
 

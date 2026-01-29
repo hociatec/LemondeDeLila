@@ -33,7 +33,7 @@ export class JeuOieSetupService {
       tiles: buildTiles(this.loadTexts()),
       positions,
       laps,
-      statuses: { skipTurn: {} },
+      statuses: { skipTurn: {}, well: {} },
       winnerId: null,
     };
 
@@ -110,6 +110,26 @@ function buildTiles(texts: JeuOieCaseTextsJsonV1): JeuOieTile[] {
         label: t?.title ? `Case ${i} - ${t.title}` : `Case ${i} - Auberge`,
         description: t?.description || undefined,
         skipTurns: 1,
+      });
+      continue;
+    }
+    if (i === 26) {
+      const t = byIndex.get(i);
+      tiles.push({
+        id: 'magic-die',
+        type: 'magic_die',
+        label: t?.title ? `Case ${i} - ${t.title}` : `Case ${i} - Dé magique`,
+        description: t?.description || undefined,
+      });
+      continue;
+    }
+    if (i === 31) {
+      const t = byIndex.get(i);
+      tiles.push({
+        id: 'well',
+        type: 'well',
+        label: t?.title ? `Case ${i} - ${t.title}` : `Case ${i} - Puits`,
+        description: t?.description || undefined,
       });
       continue;
     }

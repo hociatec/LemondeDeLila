@@ -5,6 +5,7 @@ export type MinuitPhaseId = 'turn';
 export type MinuitActionType =
   | 'roll'
   | 'ROLL_DICE'
+  | 'draw'
   | 'choose_target'
   | 'answer_quiz';
 
@@ -20,7 +21,7 @@ export const MINUIT_GAME: GameDefinition<
   minPlayers: 2,
   maxPlayers: 6,
   roles: [],
-  actions: ['roll', 'ROLL_DICE', 'choose_target', 'answer_quiz'],
+  actions: ['roll', 'ROLL_DICE', 'draw', 'choose_target', 'answer_quiz'],
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,
 } as const;

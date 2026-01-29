@@ -20,6 +20,7 @@ import type {
 } from './model/mnemo-quiz.model';
 
 type ActionType =
+  | 'draw'
   | 'mnemo_start'
   | 'mnemo_open_admin'
   | 'mnemo_back'
@@ -184,10 +185,24 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       return { ...action, type, payload: action.payload ?? {} };
     }
 
-	    if (type === 'answer_quiz') {
-	      if (actorId == null) {
-	        throw new Error('Acteur requis.');
-	      }
+    if (type === 'draw') {
+      const currentId = state.turn?.currentPlayerId ?? null;
+      if (actorId == null) {
+        throw new Error('Acteur requis.');
+      }
+      if (currentId != null && actorId !== currentId) {
+        throw new Error("Ce n'est pas votre tour.");
+      }
+      if (meta.currentQuestion) {
+        throw new Error('Une question est déjà en cours.');
+      }
+      return { ...action, type, payload: action.payload ?? {} };
+    }
+
+    if (type === 'answer_quiz') {
+      if (actorId == null) {
+        throw new Error('Acteur requis.');
+      }
       const players = Array.isArray(state.players) ? state.players : [];
       if (!players.some((p: any) => p?.id === actorId)) {
         throw new Error('Joueur invalide.');
@@ -348,9 +363,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
           ...meta,
           interQuestionUntilMs: null,
         };
-        return this.syncBotPending(
-          this.drawNextQuestionOrStay({ ...state, metadata: clearedMeta as any }),
-        );
+        return { ...state, metadata: clearedMeta as any };
       }
       if (Date.now() < deadline) return state;
 
@@ -444,7 +457,19 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
         promptOwnerId: null,
       };
       const started = { ...state, phase: 'play', metadata: withSelection };
-      return this.syncBotPending(this.drawNextQuestionOrStay(started));
+      return this.core.appendLog(
+        started,
+        'Quiz : appuyez sur Espace pour piocher la première question.',
+      );
+    }
+
+    if (type === 'draw') {
+      const actorId = (action as any)?.meta?.actorId ?? null;
+      if (actorId == null) return state;
+      if (meta.currentQuestion) return state;
+      const currentId = state.turn?.currentPlayerId ?? null;
+      if (currentId != null && actorId !== currentId) return state;
+      return this.syncBotPending(this.drawNextQuestionOrStay(state));
     }
 
     // Quiz gameplay: any player can answer (not owner-only).
@@ -882,7 +907,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       }
       next = this.core.appendLog(next, `Fin de la manche ${currentRound}.`);
       if (!willFinish) {
-        next = this.core.appendLog(next, 'Prochaine question dans 5 secondes.');
+        next = this.core.appendLog(next, 'Prochaine question : appuyez sur Espace.');
       }
     }
 
@@ -892,7 +917,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       currentQuestion: null,
       quizAnswersByPlayerId: {},
       quizDeadlineAtMs: null,
-      interQuestionUntilMs: (!willFinish && (force || endedBecauseAllAnswered)) ? Date.now() + 5000 : null,
+      interQuestionUntilMs: null,
     };
 
     const reached = playerIds
@@ -924,7 +949,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
         pending: null,
       };
     }
-    return this.drawNextQuestionOrStay(advanced);
+    return advanced;
   }
 
   private drawNextQuestionOrStay(state: GameStateEntity): GameStateEntity {
@@ -1058,7 +1083,11 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
   getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] | null {
     const meta = this.getMeta(state);
     const q = meta.currentQuestion;
-    if (!q) return null;
+    if (!q) {
+      const currentId = state.turn?.currentPlayerId ?? null;
+      if (currentId !== botPlayerId) return null;
+      return [{ type: 'draw', payload: {} } as any];
+    }
 
     const players = Array.isArray(state.players) ? state.players : [];
     const bot = players.find((p: any) => p?.id === botPlayerId) as any;
@@ -1306,6 +1335,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
   private buildActionsForUser(state: GameStateEntity, userId: number): GameSingleActionDto[] {
     const meta = this.getMeta(state);
     const currentId = state.turn?.currentPlayerId ?? null;
+    const phase = String(state.phase ?? '').toLowerCase().trim();
     const actions: GameSingleActionDto[] = [];
 
     const promptOwnerId =
@@ -1339,13 +1369,18 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 
     const isCurrent = currentId === userId;
 
-    if (meta.adminView.page === 'setup') {
+    if (phase === 'setup') {
       if (isCurrent) {
         for (const c of this.store.listCategories()) {
           actions.push({ type: 'mnemo_start', payload: { categoryId: c.id } });
         }
         actions.push({ type: 'mnemo_start', payload: { categoryId: null } });
       }
+      return actions;
+    }
+
+    if (!meta.currentQuestion && isCurrent) {
+      actions.push({ type: 'draw', payload: {} });
       return actions;
     }
 

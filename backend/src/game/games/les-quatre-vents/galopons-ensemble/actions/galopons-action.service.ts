@@ -32,6 +32,10 @@ export class GaloponsActionService {
         next = this.handleRoll(next);
         continue;
       }
+      if (type === 'draw') {
+        next = this.handleDraw(next);
+        continue;
+      }
       if (type === 'choose_target') {
         next = this.handleChooseTarget(next, action);
       }
@@ -235,6 +239,21 @@ export class GaloponsActionService {
     return this.turns.advanceTurn(next);
   }
 
+  private handleDraw(state: GameStateEntity): GameStateEntity {
+    if (String(state.status ?? '').toLowerCase() !== 'started') return state;
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'draw') return state;
+
+    const playerId =
+      typeof pending.playerId === 'number'
+        ? pending.playerId
+        : state.turn?.currentPlayerId ?? null;
+    if (!playerId) return state;
+
+    const cleared: GameStateEntity = { ...state, pending: null };
+    return this.applyDrawCard(cleared, playerId);
+  }
+
   private applyLanding(
     state: GameStateEntity,
     playerId: number,
@@ -335,15 +354,29 @@ export class GaloponsActionService {
     }
 
     if (tile.type === 'card') {
-      const draw = this.drawCard(meta);
-      meta = draw.meta;
-      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      if (!draw.card) return next;
-      next = this.core.appendLog(next, `Carte Aventure : ${draw.card.text}`);
-      return this.applyCard(next, playerId, draw.card);
+      return {
+        ...next,
+        pending: {
+          type: 'draw',
+          playerId,
+          blocking: true,
+          label: 'Piocher une carte Aventure (Espace).',
+        },
+      };
     }
 
     return next;
+  }
+
+  private applyDrawCard(state: GameStateEntity, playerId: number): GameStateEntity {
+    let next = state;
+    let meta = this.getMeta(next);
+    const draw = this.drawCard(meta);
+    meta = draw.meta;
+    next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+    if (!draw.card) return next;
+    next = this.core.appendLog(next, `Carte Aventure : ${draw.card.text}`);
+    return this.applyCard(next, playerId, draw.card);
   }
 
   private applyCard(

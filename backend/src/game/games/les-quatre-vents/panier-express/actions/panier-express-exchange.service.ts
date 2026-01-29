@@ -100,7 +100,20 @@ export class PanierExpressExchangeService {
         result.state,
         `[Panier Express] Échange accepté : ${offer.initiatorUsername} donne "${giveLabel}" à ${offer.targetUsername}. ${offer.targetUsername} n'a aucune carte et perd 2 tours.`,
       );
-      return this.drawSvc.drawCourse(after, offer.initiatorPlayerId, 'bonus');
+      return {
+        ...after,
+        pending: {
+          type: 'draw',
+          playerId: offer.initiatorPlayerId,
+          blocking: true,
+          label: 'Piocher une course bonus (Espace).',
+          data: {
+            kind: 'queue',
+            queue: [{ playerId: offer.initiatorPlayerId, standId: 'bonus' }],
+            cursor: 0,
+          },
+        },
+      } as any;
     }
 
     playingLog('panier.exchange.resolve', {

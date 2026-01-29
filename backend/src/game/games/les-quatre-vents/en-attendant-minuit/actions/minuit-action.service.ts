@@ -33,6 +33,10 @@ export class MinuitActionService {
         next = this.handleRoll(next);
         continue;
       }
+      if (type === 'draw') {
+        next = this.handleDraw(next);
+        continue;
+      }
       if (type === 'answer_quiz') {
         next = this.handleAnswerQuiz(next, action);
         continue;
@@ -76,19 +80,16 @@ export class MinuitActionService {
         next,
         `${this.playerName(next, currentId)} pioche une carte au lieu de lancer le dé.`,
       );
-
-      const draw = this.drawCard(this.getMeta(next));
-      meta = draw.meta;
-      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      if (draw.card) {
-        next = this.core.appendLog(next, `Carte Noël : ${draw.card.title}.`);
-        next = this.applyCard(next, currentId, draw.card);
-      }
-
-      meta = this.getMeta(next);
-      if (meta.winnerId != null) return { ...next, status: 'finished' };
-      if (meta.pendingQuiz || next.pending) return next;
-      return this.turns.advanceTurn(next);
+      return {
+        ...next,
+        pending: {
+          type: 'draw',
+          playerId: currentId,
+          blocking: true,
+          label: 'Piocher une carte Noël (Espace).',
+          data: { context: 'force_draw' },
+        },
+      };
     }
 
     const rng = this.random.rollDice(meta as any, 6);
@@ -113,6 +114,38 @@ export class MinuitActionService {
     if (meta.pendingQuiz || next.pending) return next;
 
     return this.turns.advanceTurn(next);
+  }
+
+  private handleDraw(state: GameStateEntity): GameStateEntity {
+    if (String(state.status ?? '').toLowerCase() !== 'started') return state;
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'draw') return state;
+
+    const currentId =
+      typeof pending.playerId === 'number'
+        ? pending.playerId
+        : state.turn?.currentPlayerId ?? null;
+    if (currentId == null) return state;
+
+    let next: GameStateEntity = { ...state, pending: null };
+    next = this.applyDrawCard(next, currentId);
+
+    const meta = this.getMeta(next);
+    if (meta.winnerId != null) return { ...next, status: 'finished' };
+    if (meta.pendingQuiz || next.pending) return next;
+
+    return this.turns.advanceTurn(next);
+  }
+
+  private applyDrawCard(state: GameStateEntity, playerId: number): GameStateEntity {
+    let next = state;
+    let meta = this.getMeta(next);
+    const draw = this.drawCard(meta);
+    meta = draw.meta;
+    next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+    if (!draw.card) return next;
+    next = this.core.appendLog(next, `Carte Noël : ${draw.card.title}.`);
+    return this.applyCard(next, playerId, draw.card);
   }
 
   private handleAnswerQuiz(
@@ -338,12 +371,15 @@ export class MinuitActionService {
     }
 
     if (tile.type === 'card') {
-      const draw = this.drawCard(meta);
-      meta = draw.meta;
-      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      if (!draw.card) return next;
-      next = this.core.appendLog(next, `Carte Noël : ${draw.card.title}.`);
-      return this.applyCard(next, playerId, draw.card);
+      return {
+        ...next,
+        pending: {
+          type: 'draw',
+          playerId,
+          blocking: true,
+          label: 'Piocher une carte Noël (Espace).',
+        },
+      };
     }
 
     return next;

@@ -5,9 +5,11 @@ export type JeuOieTile =
   | (JeuOieTileBase & { type: 'goose' })
   | (JeuOieTileBase & { type: 'bridge' })
   | (JeuOieTileBase & { type: 'inn'; skipTurns: number })
+  | (JeuOieTileBase & { type: 'magic_die' })
   | (JeuOieTileBase & { type: 'labyrinth'; backTo: number })
   | (JeuOieTileBase & { type: 'prison'; skipTurns: number })
   | (JeuOieTileBase & { type: 'death'; backTo: number })
+  | (JeuOieTileBase & { type: 'well' })
   | (JeuOieTileBase & { type: 'normal' })
   | (JeuOieTileBase & { type: 'finish' });
 
@@ -17,6 +19,7 @@ export type JeuOieMetadata = {
   laps: Record<number, number>;
   statuses: {
     skipTurn: Record<number, number>;
+    well: Record<number, boolean>;
   };
   winnerId: number | null;
 };

@@ -5,7 +5,8 @@
         Width="520"
         Height="260"
         Background="#0F1D2D"
-        WindowStartupLocation="CenterOwner">
+        WindowStartupLocation="CenterOwner"
+        Loaded="OnLoaded">
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -30,12 +31,14 @@
             <TextBlock Text="{Binding Volume, StringFormat=Volume : {0}%}"
                        Foreground="#C3D2EA"
                        Margin="0 0 0 6" />
-            <Slider Minimum="0"
+            <Slider x:Name="VolumeSlider"
+                    Minimum="0"
                     Maximum="100"
                     Value="{Binding Volume}"
                     IsEnabled="{Binding Enabled}"
                     TickFrequency="5"
                     IsSnapToTickEnabled="False"
+                    PreviewKeyDown="OnVolumeSliderKeyDown"
                     AutomationProperties.Name="Volume ambiance de table" />
         </StackPanel>
 
@@ -45,4 +48,3 @@
         </StackPanel>
     </Grid>
 </Window>
-

@@ -2,7 +2,7 @@
 
 export type FrousseGameId = 'frousse-party';
 export type FroussePhaseId = 'turn';
-export type FrousseActionType = 'roll' | 'ROLL_DICE' | 'choose_target';
+export type FrousseActionType = 'roll' | 'ROLL_DICE' | 'choose_target' | 'draw';
 
 export const FROUSSE_GAME: GameDefinition<
   FrousseGameId,
@@ -16,7 +16,7 @@ export const FROUSSE_GAME: GameDefinition<
   minPlayers: 2,
   maxPlayers: 6,
   roles: [],
-  actions: ['roll', 'ROLL_DICE', 'choose_target'],
+  actions: ['roll', 'ROLL_DICE', 'choose_target', 'draw'],
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,
 } as const;

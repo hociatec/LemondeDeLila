@@ -13,9 +13,11 @@ export const buildDameNatureShortcuts: GameShortcutsBuilder<
   const { metadata, started, currentPlayerId } = ctx;
   const pendingAsk = metadata?.pendingAsk ?? null;
   const pendingQuiz = metadata?.pendingQuiz ?? null;
+  const pendingRefill = metadata?.pendingRefill ?? null;
   const actionPlayerId =
     pendingAsk?.targetId ??
     pendingQuiz?.playerId ??
+    pendingRefill?.playerId ??
     (typeof currentPlayerId === 'number' ? currentPlayerId : null);
 
   const base = [

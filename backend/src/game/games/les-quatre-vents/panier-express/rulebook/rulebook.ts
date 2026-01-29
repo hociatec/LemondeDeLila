@@ -41,6 +41,14 @@ export function getAvailableActions(
   }
   if (
     rawPending &&
+    rawPending.type === 'draw' &&
+    pendingPlayerId != null &&
+    pendingPlayerId === playerId
+  ) {
+    return [{ type: 'draw' }];
+  }
+  if (
+    rawPending &&
     rawPending.type === 'pick' &&
     pendingPlayerId != null &&
     pendingPlayerId === playerId
@@ -170,6 +178,7 @@ export function validateAction(
 
   if (hasBlockingPending) {
     const allowedWhileBlocking = new Set<string>([
+      'draw',
       'pick_choice',
       'exchange_choose_target',
       'exchange_choose_give',
@@ -224,7 +233,8 @@ export function validateAction(
   if (
     type !== 'exchange_accept' &&
     type !== 'exchange_refuse' &&
-    type !== 'pick_choice'
+    type !== 'pick_choice' &&
+    type !== 'draw'
   ) {
     if (current != null && actorId != null && actorId !== current) {
       throw new PlayerActionError("Ce n'est pas votre tour.", {
@@ -310,6 +320,18 @@ export function validateAction(
       pid !== actorId
     ) {
       throw new PlayerActionError('Aucun échange à confirmer.', {
+        gameType: 'panier-express',
+        playerId: actorId ?? undefined,
+      });
+    }
+    return { ...action, type, payload: {} };
+  }
+
+  if (type === 'draw') {
+    const pending = state.pending as any;
+    const pid = normalizeNumber(pending?.playerId);
+    if (!pending || pending.type !== 'draw' || pid == null || pid !== actorId) {
+      throw new PlayerActionError('Aucune pioche en attente.', {
         gameType: 'panier-express',
         playerId: actorId ?? undefined,
       });

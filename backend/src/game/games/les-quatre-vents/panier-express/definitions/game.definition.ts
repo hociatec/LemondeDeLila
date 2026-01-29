@@ -9,6 +9,7 @@ export type PanierExpressActionType =
   | 'roll'
   | 'ROLL_DICE'
   | 'roll_dice'
+  | 'draw'
   | 'answer_quiz'
   | 'pick_choice'
   | 'exchange_choose_target'
@@ -33,6 +34,7 @@ export const PANIER_EXPRESS_GAME: GameDefinition<
     'roll',
     'ROLL_DICE',
     'roll_dice',
+    'draw',
     'answer_quiz',
     'pick_choice',
     'exchange_choose_target',

@@ -5,7 +5,8 @@ export type AFondLesBallonsPhaseId = 'turn';
 export type AFondLesBallonsActionType =
   | 'roll'
   | 'ROLL_DICE'
-  | 'swap_choose_target';
+  | 'swap_choose_target'
+  | 'draw';
 
 export const A_FOND_LES_BALLONS_GAME: GameDefinition<
   AFondLesBallonsGameId,
@@ -19,7 +20,7 @@ export const A_FOND_LES_BALLONS_GAME: GameDefinition<
   minPlayers: 2,
   maxPlayers: 6,
   roles: [],
-  actions: ['roll', 'ROLL_DICE', 'swap_choose_target'],
+  actions: ['roll', 'ROLL_DICE', 'swap_choose_target', 'draw'],
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,
 } as const;

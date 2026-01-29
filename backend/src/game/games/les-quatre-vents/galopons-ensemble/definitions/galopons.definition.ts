@@ -2,7 +2,11 @@
 
 export type GaloponsGameId = 'galopons-ensemble';
 export type GaloponsPhaseId = 'turn';
-export type GaloponsActionType = 'roll' | 'ROLL_DICE' | 'choose_target';
+export type GaloponsActionType =
+  | 'roll'
+  | 'ROLL_DICE'
+  | 'choose_target'
+  | 'draw';
 
 export const GALOPONS_GAME: GameDefinition<
   GaloponsGameId,
@@ -16,7 +20,7 @@ export const GALOPONS_GAME: GameDefinition<
   minPlayers: 2,
   maxPlayers: 4,
   roles: [],
-  actions: ['roll', 'ROLL_DICE', 'choose_target'],
+  actions: ['roll', 'ROLL_DICE', 'choose_target', 'draw'],
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,
 } as const;

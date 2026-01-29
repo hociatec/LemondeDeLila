@@ -78,6 +78,10 @@ export type DameNatureMetadata = {
     playerId: number;
     card: FamilyCard;
   } | null;
+  pendingRefill?: {
+    playerId: number;
+    remaining: number;
+  } | null;
 };
 
 type PlayerExt = PlayerStateEntity & {
@@ -481,19 +485,78 @@ export class DameNatureService extends AbstractGameService {
       return fixed;
     }
     const normalizedState: GameStateEntity = { ...state, players };
-    const result = this.actions.handleDraw(normalizedState, current, meta);
+    const isRefill =
+      meta.pendingRefill != null && meta.pendingRefill.playerId === current.id;
+
+    const result = isRefill
+      ? this.applyRefillDraw(normalizedState, current, meta)
+      : this.actions.handleDraw(normalizedState, current, meta);
+
     let next = this.appendAction(result.state, {
       actorId: actorId ?? current.id,
       type: 'draw',
       payload: { cardId: result.card?.memberId ?? null },
     });
-    if (result.performed) {
+    if (result.performed && !isRefill) {
       next = this.markTurnProgress(next, current.id, { drew: true });
     }
     if (result.skipAdvance) {
       return next;
     }
     return this.advanceTurn(next);
+  }
+
+  private applyRefillDraw(
+    state: GameStateEntity,
+    current: PlayerExt,
+    meta: DameNatureMetadata,
+  ): { state: GameStateEntity; card: FamilyCard | null; performed: boolean; skipAdvance: boolean } {
+    const pending = meta.pendingRefill ?? null;
+    if (!pending || pending.playerId !== current.id) {
+      return { state, card: null, performed: false, skipAdvance: false };
+    }
+
+    const remaining = Math.max(0, Number(pending.remaining ?? 0));
+    if (remaining <= 0) {
+      const cleared: DameNatureMetadata = { ...meta, pendingRefill: null };
+      return { state: { ...state, metadata: cleared }, card: null, performed: false, skipAdvance: false };
+    }
+
+    let next = state;
+    let nextMeta = meta;
+    const draw = this.setup.drawFamilyCard(nextMeta);
+    nextMeta = draw.metadata;
+    const card = draw.card ?? null;
+
+    if (card) {
+      current.hand.push(card);
+      current.handCount = current.hand.length;
+      next = this.core.appendLog(
+        next,
+        `${current.username} pioche ${card.familyName} - ${card.memberName} (remplissage).`,
+      );
+    } else {
+      next = this.core.appendLog(
+        next,
+        `${current.username} ne peut pas piocher pour le remplissage (pioche vide).`,
+      );
+    }
+
+    const remainingAfter = card ? remaining - 1 : 0;
+    const updatedMeta: DameNatureMetadata = {
+      ...nextMeta,
+      pendingRefill:
+        remainingAfter > 0
+          ? { playerId: current.id, remaining: remainingAfter }
+          : null,
+    };
+
+    return {
+      state: { ...next, metadata: updatedMeta, players: next.players },
+      card,
+      performed: Boolean(card),
+      skipAdvance: false,
+    };
   }
 
   private handleDiscard(
@@ -753,7 +816,7 @@ export class DameNatureService extends AbstractGameService {
     if (!players.length) return state;
     const meta =
       (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
-    if (meta.pendingAsk || meta.pendingQuiz) {
+    if (meta.pendingAsk || meta.pendingQuiz || meta.pendingRefill) {
       // Tant qu'une demande ou un quiz est en attente, ne pas avancer.
       return state;
     }
@@ -856,6 +919,7 @@ export class DameNatureService extends AbstractGameService {
         victoryId: meta.victoryId ?? null,
         winnerId: meta.winnerId ?? null,
         pendingQuiz: meta.pendingQuiz ?? null,
+        pendingRefill: meta.pendingRefill ?? null,
       },
     };
   }

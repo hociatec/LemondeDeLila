@@ -12,8 +12,14 @@ export class ContesBotService {
     state: GameStateEntity,
     botPlayerId: number,
   ): GameSingleActionDto[] {
+    const pending = state.pending as any;
     const current = state.turn?.currentPlayerId ?? null;
-    if (current !== botPlayerId) return [];
+    if (
+      current !== botPlayerId &&
+      !(pending?.type === 'draw' && pending.playerId === botPlayerId)
+    ) {
+      return [];
+    }
     const available = Rulebook.getAvailableActions(state, botPlayerId);
     return this.botRunner.choose(
       available,
@@ -21,6 +27,7 @@ export class ContesBotService {
       'random',
       {
         preferTypes: [
+          'draw',
           'choose_target',
           'choose_option',
           'choose_number',
@@ -28,6 +35,7 @@ export class ContesBotService {
           'roll',
         ],
         fallbackTypes: [
+          'draw',
           'choose_target',
           'choose_option',
           'choose_number',

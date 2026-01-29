@@ -10,7 +10,8 @@ export type ContesCacahuetesActionType =
   | 'choose_target'
   | 'choose_number'
   | 'choose_option'
-  | 'choose_card';
+  | 'choose_card'
+  | 'draw';
 
 export const CONTES_CACAHUETES_GAME: GameDefinition<
   ContesCacahuetesGameId,
@@ -33,6 +34,7 @@ export const CONTES_CACAHUETES_GAME: GameDefinition<
     'choose_number',
     'choose_option',
     'choose_card',
+    'draw',
   ],
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,
