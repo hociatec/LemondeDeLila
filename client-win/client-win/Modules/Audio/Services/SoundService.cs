@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using System.Windows.Media;
+using client_win.Core.Constants;
 using client_win.Modules.Audio.Models;
 using client_win.Modules.Settings.Services;
 using Microsoft.Extensions.Logging;
@@ -25,7 +26,6 @@ public sealed class SoundService : ISoundService, IDisposable
     private readonly Dispatcher _dispatcher;
     private readonly ILogger<SoundService> _logger;
     private readonly bool _remoteSoundsEnabled;
-    private readonly bool _remoteConnectionSoundsEnabled;
     private readonly object _gate = new();
     private readonly Dictionary<SoundId, MediaPlayer> _players = new();
     private readonly Dictionary<SoundId, string> _loadedPaths = new();
@@ -95,12 +95,6 @@ public sealed class SoundService : ISoundService, IDisposable
         _remoteSoundsEnabled =
             !string.Equals(Environment.GetEnvironmentVariable("LMDL_DISABLE_REMOTE_SOUNDS"), "1", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(Environment.GetEnvironmentVariable("LMDL_DISABLE_REMOTE_SOUNDS"), "true", StringComparison.OrdinalIgnoreCase);
-
-        // Connection feedback sounds must be reliable. If the server-provided versions are silent/broken,
-        // prefer local assets by default. Opt-in to server versions with `LMDL_ENABLE_REMOTE_CONNECTION_SOUNDS=1`.
-        _remoteConnectionSoundsEnabled =
-            string.Equals(Environment.GetEnvironmentVariable("LMDL_ENABLE_REMOTE_CONNECTION_SOUNDS"), "1", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(Environment.GetEnvironmentVariable("LMDL_ENABLE_REMOTE_CONNECTION_SOUNDS"), "true", StringComparison.OrdinalIgnoreCase);
 
         _options.Changed += OnOptionsChanged;
 
@@ -844,7 +838,7 @@ public sealed class SoundService : ISoundService, IDisposable
                     }
 
                     player.IsMuted = false;
-                    player.Volume = request.Entry.Volume();
+                    player.Volume = GetPlaybackVolume(request.Sound, request.Entry, request.FilePath);
                     player.Stop();
                     player.Position = TimeSpan.Zero;
                     player.Play();
@@ -1456,15 +1450,6 @@ public sealed class SoundService : ISoundService, IDisposable
     {
         if (_remoteSoundsEnabled)
         {
-            var allowRemoteForThisSound =
-                _remoteConnectionSoundsEnabled ||
-                (sound != SoundId.ClientConnected && sound != SoundId.ClientDisconnected);
-
-            if (!allowRemoteForThisSound)
-            {
-                return ResolveFilePath(entry);
-            }
-
             var remotePath = _remote?.TryGetPath(sound);
             if (!string.IsNullOrWhiteSpace(remotePath))
             {
@@ -1588,5 +1573,54 @@ public sealed class SoundService : ISoundService, IDisposable
         if (v < 0) return 0;
         if (v > 1) return 1;
         return v;
+    }
+
+    private static string GetSoundsCacheDir() =>
+        Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            AppConstants.AppDataFolderName,
+            "sounds-cache");
+
+    private static bool IsFromSoundsCache(string filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            return false;
+        }
+
+        try
+        {
+            var cacheDir = GetSoundsCacheDir();
+            if (string.IsNullOrWhiteSpace(cacheDir))
+            {
+                return false;
+            }
+
+            var normalizedCache = Path.GetFullPath(cacheDir)
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) +
+                Path.DirectorySeparatorChar;
+            var normalizedFile = Path.GetFullPath(filePath);
+            return normalizedFile.StartsWith(normalizedCache, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static double GetPlaybackVolume(SoundId sound, SoundEntry entry, string filePath)
+    {
+        var baseVolume = entry.Volume();
+
+        // These two sounds are commonly server-provided and can be uploaded too quietly.
+        // External players often apply normalization; MediaPlayer does not.
+        if ((sound == SoundId.ClientConnected || sound == SoundId.ClientDisconnected) &&
+            baseVolume > 0 &&
+            IsFromSoundsCache(filePath))
+        {
+            return Clamp01(baseVolume * 2.0);
+        }
+
+        return baseVolume;
     }
 }
