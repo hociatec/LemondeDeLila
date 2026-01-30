@@ -10,9 +10,16 @@ public sealed partial class GamePlayViewModel
     {
         _dispatcher.InvokeAsync(() =>
         {
-            ConnectionStatus = $"Erreur serveur: {message}";
-            MessageReceived?.Invoke(new GamePlayHistoryMessage($"Erreur: {message}"));
-            RefreshCanExecute();
+            try
+            {
+                ConnectionStatus = $"Erreur serveur: {message}";
+                MessageReceived?.Invoke(new GamePlayHistoryMessage($"Erreur: {message}"));
+                RefreshCanExecute();
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Error(ex, "Erreur lors de la gestion d'une erreur serveur (handled)");
+            }
         }, DispatcherPriority.Background);
 
         _connection.HandleServerError(message);

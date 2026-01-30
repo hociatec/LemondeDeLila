@@ -388,8 +388,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _ownerId = room?.Owner?.Id ?? 0;
     }
 
-    private void TrackParticipants(RoomDto room)
+    private void TrackParticipants(RoomDto? room)
     {
+        if (room == null) return;
         var next = BuildParticipants(room);
 
         foreach (var (id, info) in next)
@@ -445,8 +446,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
         return output;
     }
 
-    private void TrackBots(RoomDto room)
+    private void TrackBots(RoomDto? room)
     {
+        if (room == null) return;
         var next = BuildBots(room);
 
         foreach (var (id, name) in next)
@@ -470,8 +472,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _botsById = next;
     }
 
-    private void TrackOwner(RoomDto room)
+    private void TrackOwner(RoomDto? room)
     {
+        if (room == null) return;
         var nextOwnerId = room.Owner?.Id ?? 0;
         if (nextOwnerId == _ownerId)
         {
@@ -638,9 +641,17 @@ internal sealed class GameTableBindings : IAsyncDisposable
             _gamePlayVm.MessageReceived += _onGameMessage;
 
             _onGameStatusChanged = (previousStatus, nextStatus) =>
-                _ = _dispatcher.InvokeAsync(
-                    async () => await HandleGameStatusChangedAsync(previousStatus, nextStatus).ConfigureAwait(true),
-                    DispatcherPriority.Background);
+                _ = _dispatcher.InvokeAsync(async () =>
+                {
+                    try
+                    {
+                        await HandleGameStatusChangedAsync(previousStatus, nextStatus).ConfigureAwait(true);
+                    }
+                    catch (Exception ex)
+                    {
+                        Serilog.Log.Error(ex, "Erreur lors du changement de statut du jeu (handled)");
+                    }
+                }, DispatcherPriority.Background);
             _gamePlayVm.GameStatusChanged += _onGameStatusChanged;
 
             if (_gamePlayVm.Shortcuts is INotifyCollectionChanged notify)

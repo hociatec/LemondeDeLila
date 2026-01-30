@@ -497,7 +497,17 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             // Configuration: ouvrir une boîte de dialogue au lancement (et lors des prompts config_prompt).
             if (HasPendingConfigPrompt)
             {
-                _ = TryOpenPendingConfigPromptAsync(CancellationToken.None);
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await TryOpenPendingConfigPromptAsync(CancellationToken.None).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Erreur lors de l'ouverture du prompt de configuration (handled)");
+                    }
+                });
             }
 
             SyncInlinePromptFromPending();
