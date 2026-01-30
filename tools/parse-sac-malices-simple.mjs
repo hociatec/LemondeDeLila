@@ -56,19 +56,35 @@ const fix = (s) => {
 const readText = (p) => fix(fs.readFileSync(p, 'utf8')).replace(/\r/g, '');
 
 const parsePlateau = (raw) => {
-  const text = String(raw ?? '');
-  const regex = /(?:^|\n)\s*(\d+)\.\s*([^\n]*)\n([\s\S]*?)(?=\n\s*\d+\.|$)/g;
-  const tiles = [];
-  let m;
-  while ((m = regex.exec(text))) {
-    const n = Number(m[1]);
-    let title = String(m[2] ?? '').trim();
-    const block = String(m[3] ?? '').replace(/\r/g, '');
-    const lines = block.split('\n').map((l) => l.trim()).filter(Boolean);
-    if (!title) {
-      title = lines.shift() ?? `Case ${n}`;
+  const lines = String(raw ?? '')
+    .replace(/\r/g, '')
+    .split('\n')
+    .map((l) => l.trimEnd());
+
+  const items = [];
+  let current = null;
+  for (const line of lines) {
+    const m = line.match(/^\s*(\d+)\.\s*(.*)$/);
+    if (m) {
+      if (current) items.push(current);
+      current = { n: Number(m[1]), title: String(m[2] ?? '').trim(), desc: [] };
+      continue;
     }
-    const description = lines.join(' ').trim();
+    if (!current) continue;
+    if (!line.trim()) continue;
+    current.desc.push(line.trim());
+  }
+  if (current) items.push(current);
+
+  const tiles = [];
+  for (const it of items) {
+    const n = it.n;
+    let title = it.title;
+    const descLines = [...(it.desc ?? [])];
+    if (!title) {
+      title = descLines.shift() ?? `Case ${n}`;
+    }
+    const description = descLines.join(' ').trim();
     const t = `${title} ${description}`.toLowerCase();
 
     let type = 'neutral';

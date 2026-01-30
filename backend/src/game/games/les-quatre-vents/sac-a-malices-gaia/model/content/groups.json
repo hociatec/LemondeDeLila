@@ -4,8 +4,11 @@
     {
       "color": "Groupe 1",
       "properties": [
+        "Piste cyclable (Rue cycliste)",
+        "Jardin communautaire",
         "Centre de recyclage",
-        "Parc naturel urbain"
+        "Éolienne de quartier",
+        "Ferme bio urbaine"
       ],
       "purchasePrice": 100,
       "mortgage": 50,
@@ -31,8 +34,11 @@
       "color": "Groupe 2",
       "properties": [
         "Réserve naturelle",
+        "Station solaire",
+        "Forêt protégée",
         "Pénalité sur l’empreinte carbone (tu payes)",
-        "Parc éolien"
+        "Réseau de transport en commun écologique",
+        "Rivières nettoyées"
       ],
       "purchasePrice": 160,
       "mortgage": 80,
@@ -57,8 +63,11 @@
     {
       "color": "Groupe 3",
       "properties": [
+        "Centrale hydroélectrique",
+        "Usine de compostage",
         "Jardin botanique",
-        "Ferme solaire"
+        "Projet de reforestation",
+        "Parc national"
       ],
       "purchasePrice": 220,
       "mortgage": 110,
@@ -83,7 +92,11 @@
     {
       "color": "Groupe 4",
       "properties": [
+        "Programme de protection des océans",
+        "Réseau mondial d’énergie renouvelable",
+        "Réserve de biosphère",
         "Projet zéro déchet",
+        "Sanctuaire animalier",
         "Banque verte (là où tu gagnes des crédits verts)"
       ],
       "purchasePrice": 280,

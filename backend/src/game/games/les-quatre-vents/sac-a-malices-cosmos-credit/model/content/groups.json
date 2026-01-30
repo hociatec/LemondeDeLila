@@ -4,7 +4,11 @@
     {
       "color": "Groupe 1",
       "properties": [
-        "Propriété 4 — “Mars” (planète)"
+        "Propriété 1 — “Mercure” (planète)",
+        "Propriété 2 — “Vénus” (planète)",
+        "Propriété 3 — “Station Lunaire” (base orbitale)",
+        "Propriété 4 — “Mars” (planète)",
+        "Propriété 5 — “Ceinture d’Astéroïdes” (zone minière)"
       ],
       "purchasePrice": 100,
       "mortgage": 50,
@@ -27,9 +31,11 @@
       }
     },
     {
-      "color": "Groupe 2",
+      "color": "Groupe 0",
       "properties": [
-        "Propriété 11 — “Uranus” (planète)"
+        "Propriété 6 — “Jupiter” (planète)",
+        "Propriété 13 — “Pluton” (planète naine)",
+        "Propriété 20 — “Astéroïde Vesta”"
       ],
       "purchasePrice": 160,
       "mortgage": 80,
@@ -52,9 +58,13 @@
       }
     },
     {
-      "color": "Groupe 3",
+      "color": "Groupe 2",
       "properties": [
-        "Propriété 19 — “Comète Halley”"
+        "Propriété 7 — “Saturne” (planète)",
+        "Propriété 8 — “Titan” (lune de Saturne)",
+        "Propriété 10 — “Station Spatiale Internationale”",
+        "Propriété 11 — “Uranus” (planète)",
+        "Propriété 12 — “Neptune” (planète)"
       ],
       "purchasePrice": 220,
       "mortgage": 110,
@@ -65,6 +75,62 @@
         "house2": 65,
         "house3": 110,
         "house4": 185,
+        "hotel": 0
+      },
+      "housePrice": 60,
+      "hotelPrice": 0,
+      "housePrices": {
+        "1": 60,
+        "2": 120,
+        "3": 180,
+        "4": 300
+      }
+    },
+    {
+      "color": "Groupe 3",
+      "properties": [
+        "Propriété 14 — “Exoplanète Kepler-22b”",
+        "Propriété 15 — “Nébuleuse d’Orion”",
+        "Propriété 17 — “Galaxie d’Andromède”",
+        "Propriété 18 — “Supernova” (case spéciale, paiement ou gain)",
+        "Propriété 19 — “Comète Halley”"
+      ],
+      "purchasePrice": 280,
+      "mortgage": 140,
+      "unmortgageCost": 154,
+      "rents": {
+        "base": 25,
+        "house1": 40,
+        "house2": 70,
+        "house3": 115,
+        "house4": 190,
+        "hotel": 0
+      },
+      "housePrice": 60,
+      "hotelPrice": 0,
+      "housePrices": {
+        "1": 60,
+        "2": 120,
+        "3": 180,
+        "4": 300
+      }
+    },
+    {
+      "color": "Groupe 4",
+      "properties": [
+        "Propriété 21 — “Quasar”",
+        "Propriété 22 — “Pulsar”",
+        "Propriété 23 — “Amas d’Étoiles”"
+      ],
+      "purchasePrice": 340,
+      "mortgage": 170,
+      "unmortgageCost": 187,
+      "rents": {
+        "base": 30,
+        "house1": 45,
+        "house2": 75,
+        "house3": 120,
+        "house4": 195,
         "hotel": 0
       },
       "housePrice": 60,
