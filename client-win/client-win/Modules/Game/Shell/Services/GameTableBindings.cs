@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using Serilog;
 using client_win.Core.Input;
 using client_win.Modules.Catalog.Models;
 using client_win.Modules.Game.History.Services;
@@ -97,10 +98,11 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
     public void Attach()
     {
-        _lastStatus = _session.LastRoomState?.Room?.Status;
-        SeedParticipants(_session.LastRoomState?.Room);
+        var last = _session.LastRoomState;
+        _lastStatus = last?.Room?.Status;
+        SeedParticipants(last?.Room);
         _selfIsSpectator = ComputeSelfSpectator();
-        SyncChatEnabled(_session.LastRoomState?.Manifest);
+        SyncChatEnabled(last?.Manifest);
 
         // Local echo: ensures the sender hears/sees their own chat immediately.
         // The server echo will be consumed via ConsumePendingEcho to avoid duplicates.
@@ -129,68 +131,84 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
         _onAnnounced = announcement =>
         {
-            if (string.IsNullOrWhiteSpace(announcement.Message)) return;
+            if (announcement == null || string.IsNullOrWhiteSpace(announcement.Message)) return;
             _history.Add(announcement.Message);
         };
         _announcements.Announced += _onAnnounced;
 
         _info.InfoReceived += message =>
         {
-            _dispatcher.InvokeAsync(() =>
+            _ = _dispatcher.InvokeAsync(() =>
             {
-                _announcements.TableInfo(message);
+                try { _announcements.TableInfo(message); } catch { }
             }, DispatcherPriority.Background);
         };
 
         _onSessionError = message =>
         {
-            _dispatcher.InvokeAsync(() =>
+            _ = _dispatcher.InvokeAsync(() =>
             {
-                _announcements.Error(message);
+                try { _announcements.Error(message); } catch { }
             }, DispatcherPriority.Background);
         };
         _session.ErrorReceived += _onSessionError;
 
         _chat.HistoryReceived += messages =>
         {
-            _dispatcher.InvokeAsync(() =>
+            _ = _dispatcher.InvokeAsync(() =>
             {
-                if (_ignoreChatHistoryOnce)
+                try
                 {
-                    _ignoreChatHistoryOnce = false;
-                    return;
-                }
+                    if (_ignoreChatHistoryOnce)
+                    {
+                        _ignoreChatHistoryOnce = false;
+                        return;
+                    }
 
-	                foreach (var msg in messages)
-	                {
-	                    if (msg == null) continue;
-                    if (msg.Seq > 0 && _seenChatSeq.Contains(msg.Seq)) continue;
-                    if (msg.Seq > 0) _seenChatSeq.Add(msg.Seq);
-	                    if (ShouldConsumeLocalEcho(msg))
-	                    {
-	                        continue;
-	                    }
-	                    _history.AddChat(FormatChatLine(msg));
-	                }
-	            }, DispatcherPriority.Background);
-	        };
+                    if (messages == null) return;
+
+                    foreach (var msg in messages)
+                    {
+                        if (msg == null) continue;
+                        if (msg.Seq > 0 && _seenChatSeq.Contains(msg.Seq)) continue;
+                        if (msg.Seq > 0) _seenChatSeq.Add(msg.Seq);
+                        if (ShouldConsumeLocalEcho(msg))
+                        {
+                            continue;
+                        }
+                        _history.AddChat(FormatChatLine(msg));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Erreur lors du traitement de l'historique du tchat");
+                }
+            }, DispatcherPriority.Background);
+        };
 
         _chat.MessageReceived += msg =>
         {
-            _dispatcher.InvokeAsync(() =>
+            _ = _dispatcher.InvokeAsync(() =>
             {
-                if (msg == null) return;
-                if (msg.Seq > 0 && _seenChatSeq.Contains(msg.Seq)) return;
-                if (msg.Seq > 0) _seenChatSeq.Add(msg.Seq);
-                if (ShouldConsumeLocalEcho(msg))
+                try
                 {
-                    return;
-                }
+                    if (msg == null) return;
+                    if (msg.Seq > 0 && _seenChatSeq.Contains(msg.Seq)) return;
+                    if (msg.Seq > 0) _seenChatSeq.Add(msg.Seq);
+                    if (ShouldConsumeLocalEcho(msg))
+                    {
+                        return;
+                    }
 
-	                MaybePlayChatSound(msg);
-	                _history.AddChat(FormatChatLine(msg));
-	            }, DispatcherPriority.Background);
-	        };
+                    MaybePlayChatSound(msg);
+                    _history.AddChat(FormatChatLine(msg));
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Erreur lors du traitement d'un message de tchat");
+                }
+            }, DispatcherPriority.Background);
+        };
 
         // IMPORTANT:
         // Les ajouts/retraits de bots sont déjà reflétés par `room.updated`.
@@ -198,90 +216,107 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
         _privacy.PrivacyChanged += isPrivate =>
         {
-            _dispatcher.InvokeAsync(() =>
+            _ = _dispatcher.InvokeAsync(() =>
             {
-                // L'annonce passe via IRoomAnnouncements -> Announced -> historique (puis SR).
-                // Ne pas dupliquer via _history.Add / Status (sinon double lecture).
-                _announcements.VisibilityChanged(isPrivate);
+                try
+                {
+                    // L'annonce passe via IRoomAnnouncements -> Announced -> historique (puis SR).
+                    // Ne pas dupliquer via _history.Add / Status (sinon double lecture).
+                    _announcements.VisibilityChanged(isPrivate);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Erreur lors du changement de confidentialité");
+                }
             }, DispatcherPriority.Background);
         };
 
         _role.RoleChanged += isSpectator =>
         {
-            _dispatcher.InvokeAsync(() =>
+            _ = _dispatcher.InvokeAsync(() =>
             {
-                // L'annonce passe via IRoomAnnouncements -> Announced -> historique (puis SR).
-                // Ne pas dupliquer via _history.Add / Status (sinon double lecture).
-                _announcements.RoleChanged(isSpectator);
-                _selfIsSpectator = isSpectator;
-                ApplySpectatorState();
+                try
+                {
+                    // L'annonce passe via IRoomAnnouncements -> Announced -> historique (puis SR).
+                    // Ne pas dupliquer via _history.Add / Status (sinon double lecture).
+                    _announcements.RoleChanged(isSpectator);
+                    _selfIsSpectator = isSpectator;
+                    ApplySpectatorState();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Erreur lors du changement de rôle");
+                }
             }, DispatcherPriority.Background);
         };
 
-	        _onRoomUpdated = payload =>
-	        {
-            UpdateGameTitle(payload);
-            SyncChatEnabled(payload.Manifest);
-            TrackParticipants(payload.Room);
-            TrackBots(payload.Room);
-            TrackOwner(payload.Room);
-            ApplySpectatorState();
+        _onRoomUpdated = payload =>
+        {
+            _ = _dispatcher.InvokeAsync(async () =>
+            {
+                try
+                {
+                    UpdateGameTitle(payload);
+                    SyncChatEnabled(payload.Manifest);
+                    TrackParticipants(payload.Room);
+                    TrackBots(payload.Room);
+                    TrackOwner(payload.Room);
+                    ApplySpectatorState();
 
-            var nextStatus = payload.Room?.Status;
-            var wasStarted = string.Equals(_lastStatus, "started", StringComparison.OrdinalIgnoreCase);
-            var nowStarted = string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase);
-            _lastStatus = nextStatus;
+                    var nextStatus = payload.Room?.Status;
+                    var wasStarted = string.Equals(_lastStatus, "started", StringComparison.OrdinalIgnoreCase);
+                    var nowStarted = string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase);
+                    _lastStatus = nextStatus;
 
-            // Keep table ambience loop in sync with room settings (start/stop/change).
-            SyncTableAmbience(payload, started: nowStarted);
+                    // Keep table ambience loop in sync with room settings (start/stop/change).
+                    SyncTableAmbience(payload, started: nowStarted);
 
-	            if (!wasStarted && nowStarted)
-	            {
-	                _dispatcher.InvokeAsync(() =>
-	                {
-	                    SetRoomShortcutsForStarted(started: true);
-	                    EnsureGamePlayLoaded();
-	                    SyncGameplayShortcuts();
+                    if (!wasStarted && nowStarted)
+                    {
+                        SetRoomShortcutsForStarted(started: true);
+                        EnsureGamePlayLoaded();
+                        SyncGameplayShortcuts();
 
-                    _announcements.TableInfo("Table démarrée.");
+                        _announcements.TableInfo("Table démarrée.");
 
-                    // Forcer le focus sur la zone de jeu.
-                    _dispatcher.BeginInvoke(
-                        DispatcherPriority.Input,
-                        new Action(_tableVm.GameZone.RequestFocus));
-	                }, DispatcherPriority.Normal);
-	                return;
-	            }
+                        // Forcer le focus sur la zone de jeu.
+                        _dispatcher.BeginInvoke(
+                            DispatcherPriority.Input,
+                            new Action(_tableVm.GameZone.RequestFocus));
+                        return;
+                    }
 
-	            if (wasStarted && !nowStarted)
-	            {
-	                _dispatcher.InvokeAsync(async () =>
-	                {
+                    if (wasStarted && !nowStarted)
+                    {
                         // Stop table ambience when leaving the game.
                         SyncTableAmbience(payload, started: false);
 
-	                    SetRoomShortcutsForStarted(started: false);
-	                    _tableVm.GameZone.Content = null;
-	                    await UnloadGamePlayVmAsync().ConfigureAwait(true);
+                        SetRoomShortcutsForStarted(started: false);
+                        _tableVm.GameZone.Content = null;
+                        await UnloadGamePlayVmAsync().ConfigureAwait(true);
 
-                    var gameName = (payload.Manifest?.Name ?? _game.Name ?? string.Empty).Trim();
-                    if (string.IsNullOrWhiteSpace(gameName))
-                    {
-                        _announcements.TableInfo("Table créée. Ajoutez des bots et commencez à jouer (Entrée).");
+                        var gameName = (payload.Manifest?.Name ?? _game.Name ?? string.Empty).Trim();
+                        if (string.IsNullOrWhiteSpace(gameName))
+                        {
+                            _announcements.TableInfo("Table créée. Ajoutez des bots et commencez à jouer (Entrée).");
+                        }
+                        else
+                        {
+                            _announcements.TableInfo($"Table de {gameName} créée. Ajoutez des bots et commencez à jouer (Entrée).");
+                        }
+
+                        // Forcer le focus sur la zone de jeu (le contenu a été déchargé).
+                        _ = _dispatcher.BeginInvoke(
+                            DispatcherPriority.Input,
+                            new Action(_tableVm.GameZone.RequestFocus));
                     }
-                    else
-                    {
-                        _announcements.TableInfo($"Table de {gameName} créée. Ajoutez des bots et commencez à jouer (Entrée).");
-                    }
-
-
-                    // Forcer le focus sur la zone de jeu (le contenu a été déchargé).
-                    _ = _dispatcher.BeginInvoke(
-                        DispatcherPriority.Input,
-                        new Action(_tableVm.GameZone.RequestFocus));
-	                }, DispatcherPriority.Normal);
-	            }
-	        };
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Erreur lors du traitement de room.updated sur l'UI");
+                }
+            }, DispatcherPriority.Background);
+        };
 	        _session.RoomUpdated += _onRoomUpdated;
 
         if (_options != null)
@@ -292,36 +327,51 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
     private void OnOptionsChanged(object? sender, EventArgs e)
     {
-        _dispatcher.InvokeAsync(() =>
+        _ = _dispatcher.InvokeAsync(() =>
         {
-            var last = _session.LastRoomState;
-            if (last != null)
+            try
             {
-                var isStarted = string.Equals(_lastStatus, "started", StringComparison.OrdinalIgnoreCase);
-                SyncTableAmbience(last, started: isStarted);
+                var last = _session.LastRoomState;
+                if (last != null)
+                {
+                    var isStarted = string.Equals(_lastStatus, "started", StringComparison.OrdinalIgnoreCase);
+                    SyncTableAmbience(last, started: isStarted);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Erreur lors du changement d'options");
             }
         }, DispatcherPriority.Background);
     }
 
     public void InitializeFromLastState()
     {
-        var last = _session.LastRoomState;
-        if (last != null)
+        try
         {
-            UpdateGameTitle(last);
-        }
+            var last = _session.LastRoomState;
+            if (last != null)
+            {
+                UpdateGameTitle(last);
+                SyncChatEnabled(last.Manifest);
+            }
 
-        var isStarted = string.Equals(_lastStatus, "started", StringComparison.OrdinalIgnoreCase);
-        SetRoomShortcutsForStarted(isStarted);
-        if (isStarted)
-        {
-            EnsureGamePlayLoaded();
-            SyncGameplayShortcuts();
-        }
+            var isStarted = string.Equals(_lastStatus, "started", StringComparison.OrdinalIgnoreCase);
+            SetRoomShortcutsForStarted(isStarted);
+            if (isStarted)
+            {
+                EnsureGamePlayLoaded();
+                SyncGameplayShortcuts();
+            }
 
-        if (last != null)
+            if (last != null)
+            {
+                SyncTableAmbience(last, started: isStarted);
+            }
+        }
+        catch (Exception ex)
         {
-            SyncTableAmbience(last, started: isStarted);
+            Log.Error(ex, "Erreur lors de l'initialisation des bindings à partir du dernier état");
         }
     }
 
@@ -594,30 +644,37 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
 	    private void SyncGameplayShortcuts()
 	    {
-	        RemoveGameplayShortcuts();
+            try
+            {
+                RemoveGameplayShortcuts();
 
-	        if (_gamePlayVm == null)
-	        {
-	            return;
-	        }
+                if (_gamePlayVm == null)
+                {
+                    return;
+                }
 
-	        if (_selfIsSpectator)
-	        {
-	            return;
-	        }
-	
-	        // Les raccourcis "game./ui." (dont server.key.*) ne doivent être actifs
-	        // que pendant une partie. Sinon ils interceptent des touches de "table"
-	        // (ex: 'b' pour ajouter un bot) après une fin de partie.
-	        if (!_tableVm.GameZone.IsStarted)
-	        {
-	            return;
-	        }
+                if (_selfIsSpectator)
+                {
+                    return;
+                }
 
-	        foreach (var shortcut in _gamePlayVm.Shortcuts.Where(IsGameplayShortcut))
-	        {
-	            _tableVm.GameZone.Shortcuts.Add(shortcut);
-	        }
+                // Les raccourcis "game./ui." (dont server.key.*) ne doivent être actifs
+                // que pendant une partie. Sinon ils interceptent des touches de "table"
+                // (ex: 'b' pour ajouter un bot) après une fin de partie.
+                if (!_tableVm.GameZone.IsStarted)
+                {
+                    return;
+                }
+
+                foreach (var shortcut in _gamePlayVm.Shortcuts.Where(IsGameplayShortcut))
+                {
+                    _tableVm.GameZone.Shortcuts.Add(shortcut);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Erreur lors de la synchronisation des raccourcis de jeu");
+            }
 	    }
 
 		    private void EnsureGamePlayLoaded()
@@ -636,6 +693,10 @@ internal sealed class GameTableBindings : IAsyncDisposable
             }
 
             _gamePlayVm = _createGamePlayVm();
+            if (_gamePlayVm == null)
+            {
+                return;
+            }
 
             _onGameMessage = msg => _history.Add(msg.Message, msg.Timestamp);
             _gamePlayVm.MessageReceived += _onGameMessage;
@@ -649,7 +710,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     }
                     catch (Exception ex)
                     {
-                        Serilog.Log.Error(ex, "Erreur lors du changement de statut du jeu (handled)");
+                        Log.Error(ex, "Erreur lors du changement de statut du jeu (handled)");
                     }
                 }, DispatcherPriority.Background);
             _gamePlayVm.GameStatusChanged += _onGameStatusChanged;
@@ -801,13 +862,27 @@ internal sealed class GameTableBindings : IAsyncDisposable
         return 0;
     }
 
-    private void UpdateGameTitle(RoomPayloadDto payload)
+    private void UpdateGameTitle(RoomPayloadDto? payload)
     {
+        if (payload == null) return;
         var name = payload.Manifest?.Name;
         if (string.IsNullOrWhiteSpace(name)) return;
-        _dispatcher.InvokeAsync(
-            () => _tableVm.GameZone.Title = name.Trim(),
-            DispatcherPriority.Background);
+
+        var title = name.Trim();
+        _ = _dispatcher.InvokeAsync(() =>
+        {
+            try
+            {
+                if (_tableVm?.GameZone != null)
+                {
+                    _tableVm.GameZone.Title = title;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Erreur lors de la mise à jour du titre du jeu");
+            }
+        }, DispatcherPriority.Background);
     }
 
     private void SyncChatEnabled(GameManifestDto? manifest)
@@ -817,10 +892,23 @@ internal sealed class GameTableBindings : IAsyncDisposable
             return;
         }
 
-        _dispatcher.InvokeAsync(() =>
+        var chatEnabled = manifest.ChatEnabled;
+        var soundsEnabled = manifest.ChatSoundsEnabled;
+
+        _ = _dispatcher.InvokeAsync(() =>
         {
-            _tableVm.Chat.IsEnabled = manifest.ChatEnabled;
-            _tableVm.Chat.IsSoundsEnabled = manifest.ChatSoundsEnabled;
+            try
+            {
+                if (_tableVm?.Chat != null)
+                {
+                    _tableVm.Chat.IsEnabled = chatEnabled;
+                    _tableVm.Chat.IsSoundsEnabled = soundsEnabled;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Erreur lors de la synchronisation de l'état du tchat");
+            }
         }, DispatcherPriority.Background);
     }
 

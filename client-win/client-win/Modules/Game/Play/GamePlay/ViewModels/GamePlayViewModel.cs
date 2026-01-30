@@ -497,17 +497,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             // Configuration: ouvrir une boîte de dialogue au lancement (et lors des prompts config_prompt).
             if (HasPendingConfigPrompt)
             {
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        await TryOpenPendingConfigPromptAsync(CancellationToken.None).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, "Erreur lors de l'ouverture du prompt de configuration (handled)");
-                    }
-                });
+                _ = TryOpenPendingConfigPromptAsync(CancellationToken.None);
             }
 
             SyncInlinePromptFromPending();
@@ -653,15 +643,19 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         }
 
         var cancelActionType = (GetString(data, "cancelActionType") ?? string.Empty).Trim();
+        var title = (GetString(data, "title") ?? "Configuration").Trim();
+        var initialText = GetString(data, "initialText") ?? string.Empty;
+        var payloadKey = (GetString(data, "payloadKey") ?? "value").Trim();
+        var kind = (GetString(data, "kind") ?? "text").Trim();
 
         _pendingTextPrompt = new PendingTextPrompt(
-            Title: (GetString(data, "title") ?? "Configuration").Trim(),
+            Title: title,
             Label: label,
-            InitialText: GetString(data, "initialText") ?? string.Empty,
+            InitialText: initialText,
             ActionType: actionType,
-            PayloadKey: (GetString(data, "payloadKey") ?? "value").Trim(),
+            PayloadKey: payloadKey,
             CancelActionType: cancelActionType,
-            Kind: (GetString(data, "kind") ?? "text").Trim(),
+            Kind: kind,
             Min: GetInt(data, "min"),
             Max: GetInt(data, "max"));
     }
@@ -735,11 +729,14 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             if (field.ValueKind != System.Text.Json.JsonValueKind.Object) continue;
             var key = (GetString(field, "key") ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(key)) continue;
+            var label = (GetString(field, "label") ?? key).Trim();
+            var initialText = GetString(field, "initialText") ?? string.Empty;
+            var kind = (GetString(field, "kind") ?? "text").Trim();
             fields.Add(new PendingConfigField(
                 Key: key,
-                Label: (GetString(field, "label") ?? key).Trim(),
-                InitialText: GetString(field, "initialText") ?? string.Empty,
-                Kind: (GetString(field, "kind") ?? "text").Trim(),
+                Label: label,
+                InitialText: initialText,
+                Kind: kind,
                 Min: GetInt(field, "min"),
                 Max: GetInt(field, "max")));
         }

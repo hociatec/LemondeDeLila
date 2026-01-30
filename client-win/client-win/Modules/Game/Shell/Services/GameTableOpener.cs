@@ -660,7 +660,13 @@ public sealed class GameTableOpener : IGameTableOpener
                 {
                     Navigate();
                 }
-
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur critique lors de la sortie de la table");
+            }
+            finally
+            {
                 // Réactive l'ambiance/musique si on revient vers un écran qui en a une.
                 try
                 {
@@ -675,9 +681,6 @@ public sealed class GameTableOpener : IGameTableOpener
                 {
                     try { await _dialogs.ShowInfo("Table", reason.Trim()).ConfigureAwait(true); } catch { }
                 }
-            }
-            finally
-            {
                 Interlocked.Exchange(ref isExiting, 0);
             }
         }
