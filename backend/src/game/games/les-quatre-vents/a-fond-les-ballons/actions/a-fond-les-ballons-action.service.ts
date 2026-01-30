@@ -150,13 +150,15 @@ export class AFondLesBallonsActionService {
     const data = (pending?.data ?? {}) as any;
     const kind = String(data.kind ?? '').trim();
 
+    let next: GameStateEntity;
+
     if (kind === 'boutique') {
       const remaining = Math.max(1, Math.abs(Number(data.remaining ?? 1)));
       const drawIndex = Math.max(1, Math.abs(Number(data.drawIndex ?? 1)));
       const depth = Math.max(0, Number(data.depth ?? 0));
       const drawn = Array.isArray(data.drawn) ? [...data.drawn] : [];
 
-      let next: GameStateEntity = { ...state, pending: null };
+      next = { ...state, pending: null };
       let meta = this.getMeta(next);
       const draw = this.drawLoufoque(meta);
       meta = draw.meta;
