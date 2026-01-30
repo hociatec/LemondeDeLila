@@ -490,7 +490,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
     {
         try
         {
-            StopBackgroundLoops();
+            StopBackgroundLoopsImmediate();
         }
         catch
         {
@@ -697,6 +697,14 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 _appliedBackground = AppAudioBackground.None;
                 if (playDisconnected && logoutSeq != Volatile.Read(ref _disconnectedSoundPlayedSequence))
                 {
+                    try
+                    {
+                        StopBackgroundLoopsImmediate();
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
                     // Ensure latest admin overrides are applied before playing the sound.
                     try
                     {
@@ -728,7 +736,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
                 try
                 {
-                    StopBackgroundLoops();
+                    StopBackgroundLoopsImmediate();
                     _appliedBackground = AppAudioBackground.None;
                 }
                 catch
@@ -919,6 +927,12 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
     {
         _sounds.StopLoop(SoundId.MainMenuMusic);
         _sounds.StopLoop(SoundId.TavernAmbience);
+    }
+
+    private void StopBackgroundLoopsImmediate()
+    {
+        _sounds.StopLoopImmediate(SoundId.MainMenuMusic);
+        _sounds.StopLoopImmediate(SoundId.TavernAmbience);
     }
 
     private void TryPreload(SoundId sound, bool warmUp = false)

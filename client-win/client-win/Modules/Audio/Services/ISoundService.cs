@@ -13,6 +13,7 @@ public interface ISoundService
     void SetConnected(bool connected);
     void StartLoop(SoundId sound);
     void StopLoop(SoundId sound);
+    void StopLoopImmediate(SoundId sound);
     Task WaitForSoundToEndAsync(SoundId sound, TimeSpan timeout);
     void Preload(SoundId sound, bool warmUp = false);
     void PreloadAll();

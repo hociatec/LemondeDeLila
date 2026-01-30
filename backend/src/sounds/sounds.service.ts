@@ -2,14 +2,10 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  Logger,
 } from '@nestjs/common';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as os from 'os';
-import { spawn } from 'node:child_process';
-import ffmpegPath from 'ffmpeg-static';
 import {
   SOUND_KEYS,
   SoundKey,
@@ -23,7 +19,6 @@ import { NotificationService } from '../notification/services/notification.servi
 
 @Injectable()
 export class SoundsService {
-  private readonly logger = new Logger(SoundsService.name);
 
   constructor(private readonly notifications: NotificationService) {}
 
@@ -62,116 +57,6 @@ export class SoundsService {
   private tableAmbiencesPath() {
     return path.join(this.dataRoot(), 'table-ambiences.json');
   }
-
-  private resolveFfmpegPath(): string | null {
-    const env = (process.env.FFMPEG_PATH || '').trim();
-    if (env) {
-      try {
-        if (fs.existsSync(env)) {
-          return env;
-        }
-      } catch {
-        // ignore
-      }
-    }
-
-    try {
-      if (ffmpegPath && fs.existsSync(ffmpegPath)) {
-        return ffmpegPath;
-      }
-    } catch {
-      // ignore
-    }
-
-    // Fall back to PATH resolution (may still fail if ffmpeg isn't installed).
-    return 'ffmpeg';
-  }
-
-  private async normalizeMp3IfPossible(
-    inputPath: string,
-  ): Promise<string | null> {
-    const ffmpeg = this.resolveFfmpegPath();
-    if (!ffmpeg) {
-      return null;
-    }
-
-    const outPath = path.join(
-      os.tmpdir(),
-      `lila-sound-normalized-${Date.now()}-${crypto.randomUUID()}.mp3`,
-    );
-    const args = [
-      '-y',
-      '-i',
-      inputPath,
-      '-vn',
-      '-af',
-      // Loudness normalization: keep short UI sounds audible without clipping.
-      'loudnorm=I=-16:TP=-1.5:LRA=11',
-      '-ar',
-      '44100',
-      '-ac',
-      '2',
-      '-b:a',
-      '192k',
-      outPath,
-    ];
-
-    return new Promise((resolve) => {
-      const child = spawn(ffmpeg, args, { windowsHide: true });
-      let stderr = '';
-      let settled = false;
-
-      const finish = async (ok: boolean) => {
-        if (settled) return;
-        settled = true;
-        if (!ok) {
-          try {
-            await fs.promises.rm(outPath, { force: true });
-          } catch {
-            // ignore
-          }
-          resolve(null);
-          return;
-        }
-        resolve(outPath);
-      };
-
-      child.stderr?.on('data', (chunk) => {
-        stderr += String(chunk);
-      });
-
-      child.on('error', (err) => {
-        this.logger.warn(
-          `Normalization failed (ffmpeg error): ${err?.message || err}`,
-        );
-        finish(false);
-      });
-
-      child.on('close', async (code) => {
-        if (code !== 0) {
-          if (stderr) {
-            this.logger.warn(`Normalization failed (ffmpeg): ${stderr.trim()}`);
-          } else {
-            this.logger.warn(`Normalization failed (ffmpeg exit ${code}).`);
-          }
-          finish(false);
-          return;
-        }
-        try {
-          const st = await fs.promises.stat(outPath);
-          if (!st || st.size <= 0) {
-            finish(false);
-            return;
-          }
-        } catch {
-          finish(false);
-          return;
-        }
-        finish(true);
-      });
-    });
-  }
-
   private normalizeSoundKey(input: string): SoundKey {
     const raw = (input || '').trim();
     const found = SOUND_KEYS.find((k) => k.toLowerCase() === raw.toLowerCase());
@@ -388,59 +273,43 @@ export class SoundsService {
         `Taille fichier invalide (max ${maxBytes} bytes).`,
       );
     }
+    const bytes = await fs.promises.readFile(tempFilePath);
+    const sha256 = crypto.createHash('sha256').update(bytes).digest('hex');
 
-    let normalizedPath: string | null = null;
-    let sourcePath = tempFilePath;
-    try {
-      normalizedPath = await this.normalizeMp3IfPossible(tempFilePath);
-      if (normalizedPath) {
-        sourcePath = normalizedPath;
-      }
+    const root = this.dataRoot();
+    const soundDir = path.join(root, soundId);
+    await fs.promises.mkdir(soundDir, { recursive: true });
 
-      const sourceStat = await fs.promises.stat(sourcePath);
-      if (sourceStat.size <= 0 || sourceStat.size > maxBytes) {
-        throw new BadRequestException(
-          `Taille fichier invalide (max ${maxBytes} bytes).`,
-        );
-      }
+    const destName = `${sha256}.mp3`;
+    const destPath = path.join(soundDir, destName);
+    await fs.promises.writeFile(destPath, bytes);
 
-      const bytes = await fs.promises.readFile(sourcePath);
-      const sha256 = crypto.createHash('sha256').update(bytes).digest('hex');
+    const entry: SoundManifestEntry = {
+      soundId,
+      sha256,
+      bytes: stat.size,
+      uploadedAt: new Date().toISOString(),
+      url: `/api/sounds/${encodeURIComponent(soundId)}/${sha256}.mp3`,
+    };
 
-      const root = this.dataRoot();
-      const soundDir = path.join(root, soundId);
-      await fs.promises.mkdir(soundDir, { recursive: true });
+    const manifest = await this.readManifest();
+    const next: SoundManifest = {
+      updatedAt: new Date().toISOString(),
+      sounds: { ...(manifest.sounds || {}), [soundId]: entry },
+    };
+    await this.writeManifest(next);
 
-      const destName = `${sha256}.mp3`;
-      const destPath = path.join(soundDir, destName);
-      await fs.promises.writeFile(destPath, bytes);
+    // Nettoyage: supprimer les anciennes versions non référencées (doublons) pour ce soundId.
+    await this.removeUnusedFilesForSoundId(soundId, sha256);
 
-      const entry: SoundManifestEntry = {
-        soundId,
-        sha256,
-        bytes: sourceStat.size,
-        uploadedAt: new Date().toISOString(),
-        url: `/api/sounds/${encodeURIComponent(soundId)}/${sha256}.mp3`,
-      };
+    await this.notifications.notifyAll('sounds.updated', {
+      soundId,
+      sha256,
+      url: entry.url,
+      updatedAt: next.updatedAt,
+    });
 
-      const manifest = await this.readManifest();
-      const next: SoundManifest = {
-        updatedAt: new Date().toISOString(),
-        sounds: { ...(manifest.sounds || {}), [soundId]: entry },
-      };
-      await this.writeManifest(next);
-
-      // Nettoyage: supprimer les anciennes versions non référencées (doublons) pour ce soundId.
-      await this.removeUnusedFilesForSoundId(soundId, sha256);
-
-      await this.notifications.notifyAll('sounds.updated', {
-        soundId,
-        sha256,
-        url: entry.url,
-        updatedAt: next.updatedAt,
-      });
-
-      return entry;
+    return entry;
     } finally {
       if (normalizedPath) {
         try {

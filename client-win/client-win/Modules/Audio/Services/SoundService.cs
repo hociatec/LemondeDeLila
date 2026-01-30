@@ -1415,6 +1415,60 @@ public sealed class SoundService : ISoundService, IDisposable
         }
     }
 
+    public void StopLoopImmediate(SoundId sound)
+    {
+        void StopOnUiThread()
+        {
+            MediaPlayer? player = null;
+            EventHandler? handler = null;
+
+            lock (_gate)
+            {
+                _looping.Remove(sound);
+
+                if (_loopPlayers.TryGetValue(sound, out var p))
+                {
+                    player = p;
+                    _loopPlayers.Remove(sound);
+                }
+
+                if (_loopHandlers.TryGetValue(sound, out var h))
+                {
+                    handler = h;
+                    _loopHandlers.Remove(sound);
+                }
+            }
+
+            if (player != null && handler != null)
+            {
+                try { player.MediaEnded -= handler; } catch { /* ignore */ }
+            }
+
+            if (player != null)
+            {
+                try { player.Stop(); } catch { /* ignore */ }
+            }
+
+            lock (_gate)
+            {
+                if (_playEndSignals.TryGetValue(sound, out var tcs))
+                {
+                    _playEndSignals.Remove(sound);
+                    tcs.TrySetResult(true);
+                }
+            }
+        }
+
+        if (_dispatcher.CheckAccess())
+        {
+            StopOnUiThread();
+        }
+        else
+        {
+            _dispatcher.Invoke((Action)StopOnUiThread, DispatcherPriority.Send);
+        }
+    }
+
     public void Dispose()
     {
         _options.Changed -= OnOptionsChanged;
