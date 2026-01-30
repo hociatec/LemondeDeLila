@@ -199,11 +199,22 @@ export class AFondLesBallonsActionService {
         next,
         'Boutique : application de la carte la plus défavorable.',
       );
-      return this.applyCardEffect(next, playerId, chosen, depth);
+      next = this.applyCardEffect(next, playerId, chosen, depth);
+    } else {
+      const cleared: GameStateEntity = { ...state, pending: null };
+      next = this.drawAndApplyLoufoque(cleared, playerId, 0);
     }
 
-    const cleared: GameStateEntity = { ...state, pending: null };
-    return this.drawAndApplyLoufoque(cleared, playerId, 0);
+    if (next.pending) return next;
+
+    const keepTurn = Boolean((next.metadata as any)?.aFondKeepTurn);
+    if (keepTurn) {
+      const cleaned = { ...(next.metadata ?? {}) } as any;
+      delete cleaned.aFondKeepTurn;
+      return { ...next, metadata: cleaned };
+    }
+
+    return this.advanceTurnWithSkipLogs(next);
   }
 
   private advanceTurnWithSkipLogs(state: GameStateEntity): GameStateEntity {
@@ -224,11 +235,15 @@ export class AFondLesBallonsActionService {
     let nextIndex = currentIndex >= 0 ? currentIndex : state.turnIndex;
     let attempts = 0;
     let next = state;
+    let found = false;
 
-    do {
+    // We allow up to 2 * players.length attempts to find the next player who can actually play.
+    // This handles cases where everyone skips, and we need to come back to the first one whose skip just expired.
+    while (attempts < players.length * 2) {
       nextIndex = (nextIndex + 1) % players.length;
       const pid = (players[nextIndex] as any)?.id;
       const remaining = updatedSkip[pid] ?? 0;
+
       if (remaining > 0) {
         updatedSkip[pid] = remaining - 1;
         next = this.core.appendLog(
@@ -236,15 +251,18 @@ export class AFondLesBallonsActionService {
           `${this.playerName(next, pid)} passe son tour.`,
         );
         attempts += 1;
-        continue;
+      } else {
+        found = true;
+        break;
       }
-      break;
-    } while (attempts < players.length);
+    }
+
+    const finalPlayerId = (players[nextIndex] as any).id;
 
     return {
       ...next,
       turnIndex: nextIndex,
-      turn: { currentPlayerId: (players[nextIndex] as any).id, direction: 1 },
+      turn: { currentPlayerId: finalPlayerId, direction: 1 },
       metadata: {
         ...meta,
         statuses: { ...statuses, skipTurn: updatedSkip },
@@ -431,7 +449,7 @@ export class AFondLesBallonsActionService {
       case 12:
         return this.moveBy(next, playerId, -1, depth);
       case 13:
-        return this.moveBy(next, playerId, 1, depth);
+        return this.moveBy(next, playerId, 2, depth);
       case 14:
         return this.moveBy(next, playerId, 3, depth);
       case 15:
@@ -470,9 +488,8 @@ export class AFondLesBallonsActionService {
         }
         return next;
       case 27:
-        next = this.moveBy(next, playerId, 1, depth);
-        next = this.moveBy(next, playerId, -2, depth);
-        return next;
+        // Combined move to avoid intermediate landing effects (like Bonus loops)
+        return this.moveBy(next, playerId, -1, depth);
       case 28:
         return this.startSwapPending(
           next,
@@ -591,7 +608,12 @@ export class AFondLesBallonsActionService {
     const tiles = Array.isArray(meta.tiles) ? meta.tiles : [];
     const current = meta.positions?.[playerId] ?? 0;
     const idx = tiles.findIndex((t, i) => i > current && t?.type === type);
-    if (idx < 0) return state;
+    if (idx < 0) {
+      return this.core.appendLog(
+        state,
+        `Aucune case de type ${type} n'a été trouvée devant vous.`,
+      );
+    }
     return this.applyLanding(state, playerId, idx, depth + 1);
   }
 
