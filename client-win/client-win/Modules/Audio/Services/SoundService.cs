@@ -26,7 +26,6 @@ public sealed class SoundService : ISoundService, IDisposable
     private readonly Dispatcher _dispatcher;
     private readonly ILogger<SoundService> _logger;
     private readonly bool _remoteSoundsEnabled;
-    private readonly bool _preferRemoteConnectionSounds;
     private readonly object _gate = new();
     private readonly Dictionary<SoundId, MediaPlayer> _players = new();
     private readonly Dictionary<SoundId, string> _loadedPaths = new();
@@ -96,11 +95,6 @@ public sealed class SoundService : ISoundService, IDisposable
         _remoteSoundsEnabled =
             !string.Equals(Environment.GetEnvironmentVariable("LMDL_DISABLE_REMOTE_SOUNDS"), "1", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(Environment.GetEnvironmentVariable("LMDL_DISABLE_REMOTE_SOUNDS"), "true", StringComparison.OrdinalIgnoreCase);
-
-        // For reliability, connection sounds default to local assets. Opt-in to server-provided versions if needed.
-        _preferRemoteConnectionSounds =
-            string.Equals(Environment.GetEnvironmentVariable("LMDL_PREFER_REMOTE_CONNECTION_SOUNDS"), "1", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(Environment.GetEnvironmentVariable("LMDL_PREFER_REMOTE_CONNECTION_SOUNDS"), "true", StringComparison.OrdinalIgnoreCase);
 
         _options.Changed += OnOptionsChanged;
 
@@ -1174,7 +1168,21 @@ public sealed class SoundService : ISoundService, IDisposable
             {
                 if (_sounds.TryGetValue(kv.Key, out var entry))
                 {
-                    try { kv.Value.Volume = entry.Volume(); } catch { }
+                    try
+                    {
+                        if (_loadedPaths.TryGetValue(kv.Key, out var path))
+                        {
+                            kv.Value.Volume = GetPlaybackVolume(kv.Key, entry, path);
+                        }
+                        else
+                        {
+                            kv.Value.Volume = entry.Volume();
+                        }
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
                 }
             }
 
@@ -1190,7 +1198,21 @@ public sealed class SoundService : ISoundService, IDisposable
                     }
                     else
                     {
-                        try { kv.Value.Volume = entry.Volume(); } catch { }
+                        try
+                        {
+                            if (_loadedPaths.TryGetValue(kv.Key, out var path))
+                            {
+                                kv.Value.Volume = GetPlaybackVolume(kv.Key, entry, path);
+                            }
+                            else
+                            {
+                                kv.Value.Volume = entry.Volume();
+                            }
+                        }
+                        catch
+                        {
+                            // ignore
+                        }
                     }
                 }
             }
@@ -1456,11 +1478,6 @@ public sealed class SoundService : ISoundService, IDisposable
     {
         if (_remoteSoundsEnabled)
         {
-            if ((sound == SoundId.ClientConnected || sound == SoundId.ClientDisconnected) && !_preferRemoteConnectionSounds)
-            {
-                return ResolveFilePath(entry);
-            }
-
             var remotePath = _remote?.TryGetPath(sound);
             if (!string.IsNullOrWhiteSpace(remotePath))
             {
