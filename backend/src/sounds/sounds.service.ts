@@ -310,15 +310,6 @@ export class SoundsService {
     });
 
     return entry;
-    } finally {
-      if (normalizedPath) {
-        try {
-          await fs.promises.rm(normalizedPath, { force: true });
-        } catch {
-          // ignore
-        }
-      }
-    }
   }
 
   async clearSound(soundIdRaw: string) {
