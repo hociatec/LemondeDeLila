@@ -639,10 +639,13 @@ public sealed class SoundService : ISoundService, IDisposable
 
         // At app startup, avoid playing any other sounds before the explicit launch sound.
         // This prevents bursts caused by reconnect/history replay and makes the first sound predictable.
-        // Exception: allow the connection one-shot to play even if the launch sound was cut.
+        // Exception: allow the connection one-shot and system sounds to play even if the launch sound was cut.
         if (Volatile.Read(ref _startupGateOpened) == 0 &&
             sound != SoundId.ClientOpened &&
-            sound != SoundId.ClientConnected)
+            sound != SoundId.ClientConnected &&
+            sound != SoundId.ClientDisconnected &&
+            sound != SoundId.ClientClosing &&
+            sound != SoundId.ClientUpdateWarning)
         {
             TraceStartupOnce($"startup.suppress.{sound}", () =>
                 $"suppressed {sound} because startup gate is closed (waiting for ClientOpened to finish)");
@@ -653,11 +656,13 @@ public sealed class SoundService : ISoundService, IDisposable
 
         // Gating: before being authenticated/connected, only allow non-spammy system sounds.
         // This prevents bursts of notification sounds during app startup or WS warm-up, while still
-        // allowing user-feedback sounds like voluntary disconnect/close.
+        // allowing user-feedback sounds like voluntary disconnect/close/connect.
         if (Volatile.Read(ref _connectedGate) == 0 &&
             sound != SoundId.ClientOpened &&
+            sound != SoundId.ClientConnected &&
             sound != SoundId.ClientDisconnected &&
-            sound != SoundId.ClientClosing)
+            sound != SoundId.ClientClosing &&
+            sound != SoundId.ClientUpdateWarning)
         {
             TraceStartupOnce($"startup.suppress.notconnected.{sound}", () =>
                 $"suppressed {sound} because connected gate is closed (not authenticated/connected yet)");
