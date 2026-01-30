@@ -1,0 +1,8 @@
+{
+  "code": "sac-a-malices-violette-boussole",
+  "name": "Sac à Malices — Violette & Boussole",
+  "minPlayers": 2,
+  "maxPlayers": 8,
+  "engine": "sac-a-malices-violette-boussole",
+  "summary": "Variante Toulouse : propriétés, loyers, Chance/Caisse, Parc Gratuit, prison."
+}

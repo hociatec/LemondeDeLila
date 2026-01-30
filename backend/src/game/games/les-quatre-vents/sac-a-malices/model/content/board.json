@@ -11,7 +11,8 @@
       "n": 2,
       "title": "Rue de la Chouette (beige)",
       "description": "Une ancienne  petite rue où la célèbre chouette sculptée murmure chance à ceux qui la caressent.",
-      "type": "chance"
+      "type": "property",
+      "group": "beige"
     },
     {
       "n": 3,
@@ -108,7 +109,14 @@
     {
       "n": 17,
       "title": "Boulevard de Brosses (orange)",
-      "description": "Un boulevard rectiligne où se mêlent modernité, mouvement et échos citadins. \t18. Boulevard de l’Ouest (orange) : Un axe contemporain baigné de lumière, où souffle l’élan de la nouvelle ville.",
+      "description": "Un boulevard rectiligne où se mêlent modernité, mouvement et échos citadins.",
+      "type": "property",
+      "group": "orange"
+    },
+    {
+      "n": 18,
+      "title": "Boulevard de l’Ouest (orange)",
+      "description": "Un axe contemporain baigné de lumière, où souffle l’élan de la nouvelle ville.",
       "type": "property",
       "group": "orange"
     },

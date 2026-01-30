@@ -1,0 +1,8 @@
+{
+  "code": "sac-a-malices-pintzel-couronnes",
+  "name": "Sac à Malices — Pintzel & Couronnes",
+  "minPlayers": 2,
+  "maxPlayers": 8,
+  "engine": "sac-a-malices-pintzel-couronnes",
+  "summary": "Variante Strasbourg : propriétés, loyers, Chance/Caisse, Parc Gratuit, prison."
+}

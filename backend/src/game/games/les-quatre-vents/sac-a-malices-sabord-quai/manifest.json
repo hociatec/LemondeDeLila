@@ -1,0 +1,8 @@
+{
+  "code": "sac-a-malices-sabord-quai",
+  "name": "Sac à Malices — Sabord et Quai",
+  "minPlayers": 2,
+  "maxPlayers": 8,
+  "engine": "sac-a-malices-sabord-quai",
+  "summary": "Variante Nantes : propriétés, loyers, Chance/Caisse, Parc Gratuit, prison."
+}

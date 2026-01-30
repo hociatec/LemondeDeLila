@@ -41,6 +41,11 @@ export type SacGroupsJsonV1 = {
     };
     housePrice: number;
     hotelPrice: number;
+    /**
+     * Optionnel : coûts par niveau (1..4) si un jeu n'utilise pas un coût fixe par maison.
+     * Si absent, `housePrice` est utilisé.
+     */
+    housePrices?: Partial<Record<'1' | '2' | '3' | '4', number>>;
   }>;
 };
 
@@ -92,6 +97,18 @@ export type SacMetadata = {
     consecutiveDoubles?: Record<number, number>;
   };
   pot: number;
+  rules?: {
+    startMoney: number;
+    passStartBonus: number;
+    potEnabled: boolean;
+    rentBlockedInJail: boolean;
+    jail: {
+      maxTurns: number;
+      autoFine: number;
+      allowPayFine: boolean;
+      allowDoubleEscape: boolean;
+    };
+  };
   decks: {
     chance: SacDeck;
     community: SacDeck;

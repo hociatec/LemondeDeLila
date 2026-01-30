@@ -9,10 +9,10 @@ import type {
   SacMetadata,
   SacStationsJsonV1,
   SacUtilitiesJsonV1,
-} from '../model/sac-a-malices.types';
+} from '../../sac-a-malices/model/sac-a-malices.types';
 
 @Injectable()
-export class SacAMalicesSetupService {
+export class SacAMalicesGaiaSetupService {
   constructor(
     private readonly contentLoader: GameContentLoaderService,
     private readonly random: RandomService,
@@ -31,7 +31,7 @@ export class SacAMalicesSetupService {
     const money: Record<number, number> = {};
     for (const p of players) {
       positions[p.id] = 0;
-      money[p.id] = 2000;
+      money[p.id] = 1500;
     }
 
     const seedMeta = (base.metadata ?? {}) as any;
@@ -54,10 +54,10 @@ export class SacAMalicesSetupService {
       },
       pot: 0,
       rules: {
-        startMoney: 2000,
+        startMoney: 1500,
         passStartBonus: 200,
-        potEnabled: true,
-        rentBlockedInJail: true,
+        potEnabled: false,
+        rentBlockedInJail: false,
         jail: {
           maxTurns: 3,
           autoFine: 100,
@@ -91,7 +91,7 @@ export class SacAMalicesSetupService {
 
   private loadBoard(): SacBoardJsonV1 {
     return this.contentLoader.loadContent<SacBoardJsonV1>({
-      gameType: 'sac-a-malices',
+      gameType: 'sac-a-malices-gaia',
       baseDir: __dirname,
       filename: 'board.json',
       validators: [
@@ -103,7 +103,7 @@ export class SacAMalicesSetupService {
 
   private loadGroups(): SacGroupsJsonV1 {
     return this.contentLoader.loadContent<SacGroupsJsonV1>({
-      gameType: 'sac-a-malices',
+      gameType: 'sac-a-malices-gaia',
       baseDir: __dirname,
       filename: 'groups.json',
       validators: [
@@ -115,7 +115,7 @@ export class SacAMalicesSetupService {
 
   private loadStations(): SacStationsJsonV1 {
     return this.contentLoader.loadContent<SacStationsJsonV1>({
-      gameType: 'sac-a-malices',
+      gameType: 'sac-a-malices-gaia',
       baseDir: __dirname,
       filename: 'stations.json',
       validators: [
@@ -127,19 +127,19 @@ export class SacAMalicesSetupService {
 
   private loadUtilities(): SacUtilitiesJsonV1 {
     return this.contentLoader.loadContent<SacUtilitiesJsonV1>({
-      gameType: 'sac-a-malices',
+      gameType: 'sac-a-malices-gaia',
       baseDir: __dirname,
       filename: 'utilities.json',
       validators: [
         this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('utilities', 1),
+        this.contentLoader.validators.arrayField('utilities', 0),
       ],
     });
   }
 
   private loadCards(filename: string): SacCardsJsonV1 {
     return this.contentLoader.loadContent<SacCardsJsonV1>({
-      gameType: 'sac-a-malices',
+      gameType: 'sac-a-malices-gaia',
       baseDir: __dirname,
       filename,
       validators: [
@@ -149,3 +149,4 @@ export class SacAMalicesSetupService {
     });
   }
 }
+

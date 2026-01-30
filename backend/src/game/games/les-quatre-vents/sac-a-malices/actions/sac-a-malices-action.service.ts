@@ -62,6 +62,7 @@ export class SacAMalicesActionService {
       }
       if (type === 'use_jail_card') {
         next = this.handleUseJailCard(next);
+        continue;
       }
     }
     return next;
@@ -78,14 +79,78 @@ export class SacAMalicesActionService {
       return this.advanceTurn(state);
     }
 
-    // Prison (version Dijon) : on attend 3 tours sauf carte/amende.
+    const rules = this.getRules(meta);
+
+    // Prison
     const jailTurns = meta.statuses?.inJail?.[currentId] ?? 0;
     if (jailTurns > 0) {
+      if (rules.jail.allowDoubleEscape) {
+        // 2d6 : si double => sortie immédiate et déplacement ; sinon on attend.
+        const r1 = this.random.rollDice(meta as any, 6);
+        const r2 = this.random.rollDice(r1.meta as any, 6);
+        meta = { ...meta, ...r2.meta };
+        const d1 = r1.roll;
+        const d2 = r2.roll;
+        const sum = d1 + d2;
+        const isDouble = d1 === d2;
+
+        let next: GameStateEntity = {
+          ...state,
+          lastRoll: sum,
+          metadata: { ...(state.metadata ?? {}), ...meta },
+        };
+        next = this.core.appendLog(
+          next,
+          `${this.playerName(next, currentId)} lance les dés : "${d1}" + "${d2}" = "${sum}".`,
+        );
+
+        if (!isDouble) {
+          const remainingTurns = Math.max(0, jailTurns - 1);
+          next = this.setJailTurns(next, currentId, remainingTurns);
+          if (remainingTurns <= 0) {
+            if (rules.jail.autoFine > 0) {
+              next = this.core.appendLog(next, `Sortie automatique : amende ${rules.jail.autoFine} €.`);
+              next = this.addMoney(next, currentId, -rules.jail.autoFine, { toPot: true });
+            } else {
+              next = this.core.appendLog(next, 'Sortie automatique.');
+            }
+            next = this.setJailTurns(next, currentId, 0);
+          } else {
+            next = this.core.appendLog(next, `Prison : il reste ${remainingTurns} tour(s).`);
+          }
+          next = this.checkWinner(next);
+          if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
+          return this.advanceTurn(next);
+        }
+
+        next = this.core.appendLog(next, 'Double : vous sortez de prison.');
+        next = this.setJailTurns(next, currentId, 0);
+        next = this.setConsecutiveDoubles(next, currentId, 0);
+
+        // On rejoue / on se déplace normalement après la sortie.
+        next = this.moveForward(next, currentId, sum);
+        next = this.applyLanding(next, currentId);
+        next = this.checkWinner(next);
+        if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
+        if (next.pending) {
+          next = this.setExtraRoll(next, currentId, true);
+          return next;
+        }
+        next = this.core.appendLog(next, 'Double : vous rejouez.');
+        next = this.setExtraRoll(next, currentId, true);
+        return next;
+      }
+
+      // Version "attente" : on attend N tours, puis amende auto (si configurée).
       let next = this.setJailTurns(state, currentId, Math.max(0, jailTurns - 1));
       const remaining = this.getMeta(next).statuses?.inJail?.[currentId] ?? 0;
       if (remaining <= 0) {
-        next = this.core.appendLog(next, 'Sortie automatique : amende 100 €.');
-        next = this.addMoney(next, currentId, -100, { toPot: true });
+        if (rules.jail.autoFine > 0) {
+          next = this.core.appendLog(next, `Sortie automatique : amende ${rules.jail.autoFine} €.`);
+          next = this.addMoney(next, currentId, -rules.jail.autoFine, { toPot: true });
+        } else {
+          next = this.core.appendLog(next, 'Sortie automatique.');
+        }
       } else {
         next = this.core.appendLog(next, `Prison : il reste ${remaining} tour(s).`);
       }
@@ -181,27 +246,27 @@ export class SacAMalicesActionService {
       next = this.core.appendLog(next, `${this.playerName(next, playerId)} n'achète pas.`);
       next = this.checkWinner(next);
       if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
-      return this.advanceTurn(next);
+      return this.advanceTurnOrExtraRoll(next, playerId);
     }
 
     const meta = this.getMeta(next);
     const tile = meta.tiles?.[tileIndex];
-    if (!tile) return this.advanceTurn(next);
+    if (!tile) return this.advanceTurnOrExtraRoll(next, playerId);
 
     if (meta.ownership?.[tileIndex] != null) {
       next = this.core.appendLog(next, 'Déjà acheté.');
-      return this.advanceTurn(next);
+      return this.advanceTurnOrExtraRoll(next, playerId);
     }
 
     const price = this.getPurchasePrice(meta, tile);
     if (price <= 0) {
       next = this.core.appendLog(next, "Achat impossible (prix inconnu).");
-      return this.advanceTurn(next);
+      return this.advanceTurnOrExtraRoll(next, playerId);
     }
     const cash = meta.money?.[playerId] ?? 0;
     if (cash < price) {
       next = this.core.appendLog(next, "Fonds insuffisants.");
-      return this.advanceTurn(next);
+      return this.advanceTurnOrExtraRoll(next, playerId);
     }
 
     next = this.addMoney(next, playerId, -price, { toPot: false });
@@ -213,7 +278,189 @@ export class SacAMalicesActionService {
 
     next = this.checkWinner(next);
     if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
-    return this.advanceTurn(next);
+    return this.advanceTurnOrExtraRoll(next, playerId);
+  }
+
+  private handlePayFine(state: GameStateEntity): GameStateEntity {
+    if (String(state.status ?? '').toLowerCase() !== 'started') return state;
+    if (state.pending) return state;
+    const playerId = state.turn?.currentPlayerId ?? null;
+    if (playerId == null) return state;
+
+    const meta = this.getMeta(state);
+    const rules = this.getRules(meta);
+    if (!rules.jail.allowPayFine || rules.jail.autoFine <= 0) {
+      return this.core.appendLog(state, "Sortie de prison par amende : indisponible dans cette variante.");
+    }
+    const jailTurns = meta.statuses?.inJail?.[playerId] ?? 0;
+    if (jailTurns <= 0) return state;
+
+    let next = state;
+    next = this.core.appendLog(next, `Prison : vous payez ${rules.jail.autoFine} € pour sortir.`);
+    next = this.addMoney(next, playerId, -rules.jail.autoFine, { toPot: true });
+    next = this.setJailTurns(next, playerId, 0);
+    next = this.checkWinner(next);
+    if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
+    return next;
+  }
+
+  private handleUseJailCard(state: GameStateEntity): GameStateEntity {
+    if (String(state.status ?? '').toLowerCase() !== 'started') return state;
+    if (state.pending) return state;
+    const playerId = state.turn?.currentPlayerId ?? null;
+    if (playerId == null) return state;
+
+    const meta = this.getMeta(state);
+    const jailTurns = meta.statuses?.inJail?.[playerId] ?? 0;
+    if (jailTurns <= 0) return state;
+
+    const count = meta.statuses?.getOutOfJail?.[playerId] ?? 0;
+    if (count <= 0) {
+      return this.core.appendLog(state, 'Vous n’avez pas de carte "Sortie de prison".');
+    }
+
+    let next = state;
+    next = this.core.appendLog(next, 'Carte "Sortie de prison" utilisée.');
+    next = this.setGetOutOfJail(next, playerId, count - 1);
+    next = this.setJailTurns(next, playerId, 0);
+    return next;
+  }
+
+  private openChooseProperty(
+    state: GameStateEntity,
+    kind: 'build' | 'sell_building' | 'mortgage' | 'unmortgage',
+  ): GameStateEntity {
+    if (String(state.status ?? '').toLowerCase() !== 'started') return state;
+    if (state.pending) return state;
+    const playerId = state.turn?.currentPlayerId ?? null;
+    if (playerId == null) return state;
+
+    const meta = this.getMeta(state);
+    const tiles = Array.isArray(meta.tiles) ? meta.tiles : [];
+    const myCash = meta.money?.[playerId] ?? 0;
+
+    const options: Array<{ tileIndex: number; label: string }> = [];
+    for (let tileIndex = 0; tileIndex < tiles.length; tileIndex += 1) {
+      const tile = tiles[tileIndex];
+      if (!tile) continue;
+      if (meta.ownership?.[tileIndex] !== playerId) continue;
+
+      const b = this.getBuilding(meta, tileIndex);
+
+      if (kind === 'build') {
+        if (tile.type !== 'property') continue;
+        if (b.mortgaged || b.hotel) continue;
+        const group = this.getGroup(meta, tile.group ?? '');
+        if (!group) continue;
+        if (!this.isGroupComplete(meta, playerId, group)) continue;
+        const supportsHotel =
+          Number(group?.hotelPrice ?? 0) > 0 && Number(group?.rents?.hotel ?? 0) > 0;
+        if (!supportsHotel && b.houses >= 4) continue;
+        const nextLevel = clamp(b.houses + 1, 1, 4);
+        const houseCost =
+          Number(group?.housePrices?.[String(nextLevel) as any] ?? group?.housePrice ?? 0) || 0;
+        const cost = supportsHotel && b.houses >= 4 ? Number(group.hotelPrice ?? 0) || 0 : houseCost;
+        if (!Number.isFinite(cost) || cost <= 0 || myCash < cost) continue;
+        options.push({ tileIndex, label: `${tile.title} (coût ${cost} €)` });
+        continue;
+      }
+
+      if (kind === 'sell_building') {
+        if (tile.type !== 'property') continue;
+        if (!b.hotel && b.houses <= 0) continue;
+        const group = this.getGroup(meta, tile.group ?? '');
+        const supportsHotel =
+          Number(group?.hotelPrice ?? 0) > 0 && Number(group?.rents?.hotel ?? 0) > 0;
+        const refund = (() => {
+          if (!group) return 0;
+          if (supportsHotel && b.hotel) return Math.floor((Number(group.hotelPrice ?? 0) || 0) / 2);
+          const level = clamp(b.houses, 1, 4);
+          const cost =
+            Number(group?.housePrices?.[String(level) as any] ?? group?.housePrice ?? 0) || 0;
+          return Math.floor(cost / 2);
+        })();
+        options.push({ tileIndex, label: `${tile.title} (remb. ${refund} €)` });
+        continue;
+      }
+
+      if (kind === 'mortgage') {
+        if (b.mortgaged) continue;
+        if (tile.type === 'property' && (b.hotel || b.houses > 0)) continue;
+        const amount = this.getMortgageValue(meta, tile);
+        if (!Number.isFinite(amount) || amount <= 0) continue;
+        options.push({ tileIndex, label: `${tile.title} (+${amount} €)` });
+        continue;
+      }
+
+      if (kind === 'unmortgage') {
+        if (!b.mortgaged) continue;
+        const cost = this.getUnmortgageCost(meta, tile);
+        if (!Number.isFinite(cost) || cost <= 0 || myCash < cost) continue;
+        options.push({ tileIndex, label: `${tile.title} (-${cost} €)` });
+      }
+    }
+
+    if (!options.length) {
+      return this.core.appendLog(state, 'Aucune propriété disponible pour cette action.');
+    }
+
+    const pending: PendingState = {
+      type: 'choose_property',
+      playerId,
+      blocking: true,
+      label:
+        kind === 'build'
+          ? 'Construire où ?'
+          : kind === 'sell_building'
+            ? 'Vendre une habitation où ?'
+            : kind === 'mortgage'
+              ? 'Hypothéquer quoi ?'
+              : 'Lever l’hypothèque de quoi ?',
+      choices: options.map((o) => o.label),
+      data: { kind, options: options.map((o) => ({ tileIndex: o.tileIndex })) },
+    };
+
+    return { ...state, pending };
+  }
+
+  private handleChooseProperty(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
+    if (String(state.status ?? '').toLowerCase() !== 'started') return state;
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'choose_property') return state;
+
+    const playerId =
+      typeof pending.playerId === 'number'
+        ? pending.playerId
+        : state.turn?.currentPlayerId ?? null;
+    if (playerId == null) return state;
+
+    const wanted = Number((action?.payload as any)?.tileIndex);
+    const options: Array<{ tileIndex: number }> = Array.isArray(pending?.data?.options)
+      ? pending.data.options
+      : [];
+    if (!Number.isFinite(wanted) || !options.some((o) => o.tileIndex === wanted)) return state;
+
+    const kind = String(pending?.data?.kind ?? '').trim();
+    let next: GameStateEntity = { ...state, pending: null };
+
+    const meta = this.getMeta(next);
+    const tile = meta.tiles?.[wanted];
+    if (!tile) return next;
+    if (meta.ownership?.[wanted] !== playerId) return next;
+
+    if (kind === 'build') {
+      next = this.buildOne(next, playerId, wanted);
+    } else if (kind === 'sell_building') {
+      next = this.sellOne(next, playerId, wanted);
+    } else if (kind === 'mortgage') {
+      next = this.mortgageTile(next, playerId, wanted);
+    } else if (kind === 'unmortgage') {
+      next = this.unmortgageTile(next, playerId, wanted);
+    }
+
+    next = this.checkWinner(next);
+    if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
+    return next;
   }
 
   private handleJailTurn(
@@ -281,6 +528,10 @@ export class SacAMalicesActionService {
     }
 
     if (tile.type === 'free') {
+      const rules = this.getRules(this.getMeta(next));
+      if (!rules.potEnabled) {
+        return this.core.appendLog(next, 'Parking : rien ne se passe.');
+      }
       const pot = this.getMeta(next).pot ?? 0;
       if (pot > 0) {
         next = this.core.appendLog(next, `Parc Gratuit : vous récupérez ${pot} €.`);
@@ -325,10 +576,15 @@ export class SacAMalicesActionService {
         return { ...next, pending };
       }
       if (owner === playerId) return next;
-      if ((meta.statuses?.inJail?.[owner] ?? 0) > 0) {
+      const rules = this.getRules(meta);
+      if (rules.rentBlockedInJail && (meta.statuses?.inJail?.[owner] ?? 0) > 0) {
         return this.core.appendLog(next, 'Le propriétaire est en prison : pas de loyer.');
       }
-      const rent = this.getRent(meta, tile, owner, state.lastRoll ?? 0);
+      const b = this.getBuilding(meta, pos);
+      if (b.mortgaged) {
+        return this.core.appendLog(next, 'Propriété hypothéquée : pas de loyer.');
+      }
+      const rent = this.getRent(meta, tile, pos, owner, state.lastRoll ?? 0);
       if (rent > 0) {
         next = this.core.appendLog(
           next,
@@ -366,11 +622,40 @@ export class SacAMalicesActionService {
     let next = state;
     const text = String(card.text ?? '');
 
-    if (/Sortie de prison/i.test(text)) {
+    if (isGetOutOfJailCard(text)) {
       const meta = this.getMeta(next);
       const current = meta.statuses?.getOutOfJail?.[playerId] ?? 0;
       next = this.core.appendLog(next, 'Vous gardez cette carte.');
       return this.setGetOutOfJail(next, playerId, current + 1);
+    }
+
+    const everyone = extractAllPlayersMoney(text);
+    if (everyone) {
+      const meta0 = this.getMeta(next);
+      const rules = this.getRules(meta0);
+      const players = Array.isArray(next.players) ? next.players : [];
+      const alive = players
+        .map((p) => p?.id)
+        .filter((id): id is number => typeof id === 'number' && Number.isFinite(id))
+        .filter((id) => !meta0.statuses?.eliminated?.[id]);
+
+      if (everyone.kind === 'pay') {
+        next = this.core.appendLog(next, `Tous les joueurs paient ${everyone.amount} €.`);
+        for (const id of alive) {
+          next = this.addMoney(next, id, -everyone.amount, { toPot: rules.potEnabled && !everyone.toBank });
+        }
+        return next;
+      }
+      next = this.core.appendLog(next, `Tous les joueurs reçoivent ${everyone.amount} €.`);
+      for (const id of alive) {
+        next = this.addMoney(next, id, everyone.amount, { toPot: false });
+      }
+      return next;
+    }
+
+    if (mentionsInfrastructureLoss(text)) {
+      next = this.core.appendLog(next, 'Vous perdez une infrastructure.');
+      return this.loseOneInfrastructure(next, playerId);
     }
 
     const delta = extractMoveDelta(text);
@@ -433,7 +718,7 @@ export class SacAMalicesActionService {
 
     if (!cards.length) return { card: null, meta };
     const [card, ...rest] = cards;
-    const keep = /Sortie de prison/i.test(String(card.text ?? ''));
+    const keep = isGetOutOfJailCard(String(card.text ?? ''));
     const nextDeck = keep
       ? { cards: rest, discard }
       : { cards: rest, discard: [...discard, card] };
@@ -446,14 +731,15 @@ export class SacAMalicesActionService {
 
   private moveForward(state: GameStateEntity, playerId: number, delta: number): GameStateEntity {
     const meta = this.getMeta(state);
+    const rules = this.getRules(meta);
     const tiles = Array.isArray(meta.tiles) ? meta.tiles : [];
     const len = tiles.length || 40;
     const pos = meta.positions?.[playerId] ?? 0;
     const nextPos = ((pos + delta) % len + len) % len;
     let next = this.setPos(state, playerId, nextPos);
     if (delta > 0 && nextPos < pos) {
-      next = this.core.appendLog(next, 'Passage sur Départ : +200 €.');
-      next = this.addMoney(next, playerId, 200, { toPot: false });
+      next = this.core.appendLog(next, `Passage sur Départ : +${rules.passStartBonus} €.`);
+      next = this.addMoney(next, playerId, rules.passStartBonus, { toPot: false });
     }
     return next;
   }
@@ -465,23 +751,25 @@ export class SacAMalicesActionService {
     options: { collectStart: boolean },
   ): GameStateEntity {
     const meta = this.getMeta(state);
+    const rules = this.getRules(meta);
     const tiles = Array.isArray(meta.tiles) ? meta.tiles : [];
     const len = tiles.length || 40;
     const current = meta.positions?.[playerId] ?? 0;
     const target = clamp(pos, 0, len - 1);
     let next = this.setPos(state, playerId, target);
     if (options.collectStart && target < current) {
-      next = this.core.appendLog(next, 'Passage sur Départ : +200 €.');
-      next = this.addMoney(next, playerId, 200, { toPot: false });
+      next = this.core.appendLog(next, `Passage sur Départ : +${rules.passStartBonus} €.`);
+      next = this.addMoney(next, playerId, rules.passStartBonus, { toPot: false });
     }
     return next;
   }
 
   private sendToJail(state: GameStateEntity, playerId: number): GameStateEntity {
     const meta = this.getMeta(state);
+    const rules = this.getRules(meta);
     const jailPos = this.findJailTile(meta.tiles) ?? 30;
     let next = this.setPos(state, playerId, jailPos);
-    next = this.setJailTurns(next, playerId, 3);
+    next = this.setJailTurns(next, playerId, rules.jail.maxTurns);
     return next;
   }
 
@@ -563,6 +851,268 @@ export class SacAMalicesActionService {
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
 
+  private setExtraRoll(state: GameStateEntity, playerId: number, value: boolean): GameStateEntity {
+    const meta = this.getMeta(state);
+    const nextMeta: SacMetadata = {
+      ...meta,
+      statuses: {
+        ...meta.statuses,
+        extraRoll: { ...(meta.statuses.extraRoll ?? {}), [playerId]: Boolean(value) },
+      },
+    };
+    return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
+  }
+
+  private setConsecutiveDoubles(state: GameStateEntity, playerId: number, value: number): GameStateEntity {
+    const meta = this.getMeta(state);
+    const nextMeta: SacMetadata = {
+      ...meta,
+      statuses: {
+        ...meta.statuses,
+        consecutiveDoubles: {
+          ...(meta.statuses.consecutiveDoubles ?? {}),
+          [playerId]: Math.max(0, Math.trunc(value)),
+        },
+      },
+    };
+    return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
+  }
+
+  private advanceTurnOrExtraRoll(state: GameStateEntity, playerId: number): GameStateEntity {
+    const meta = this.getMeta(state);
+    if (meta.statuses?.eliminated?.[playerId]) return this.advanceTurn(state);
+    if (meta.statuses?.extraRoll?.[playerId]) {
+      let next = this.setExtraRoll(state, playerId, false);
+      next = this.core.appendLog(next, 'Double : vous rejouez.');
+      return next;
+    }
+    return this.advanceTurn(state);
+  }
+
+  private getBuilding(
+    meta: SacMetadata,
+    tileIndex: number,
+  ): { houses: number; hotel: boolean; mortgaged: boolean } {
+    const current = meta.buildings?.[tileIndex];
+    return {
+      houses: clamp(Number(current?.houses ?? 0) || 0, 0, 4),
+      hotel: Boolean(current?.hotel),
+      mortgaged: Boolean(current?.mortgaged),
+    };
+  }
+
+  private setBuilding(
+    state: GameStateEntity,
+    tileIndex: number,
+    patch: Partial<{ houses: number; hotel: boolean; mortgaged: boolean }>,
+  ): GameStateEntity {
+    const meta = this.getMeta(state);
+    const current = this.getBuilding(meta, tileIndex);
+    const nextBuilding = {
+      houses: clamp(Number(patch.houses ?? current.houses) || 0, 0, 4),
+      hotel: patch.hotel != null ? Boolean(patch.hotel) : current.hotel,
+      mortgaged: patch.mortgaged != null ? Boolean(patch.mortgaged) : current.mortgaged,
+    };
+    const nextMeta: SacMetadata = {
+      ...meta,
+      buildings: { ...(meta.buildings ?? {}), [tileIndex]: nextBuilding },
+    };
+    return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
+  }
+
+  private clearBuilding(state: GameStateEntity, tileIndex: number): GameStateEntity {
+    const meta = this.getMeta(state);
+    const nextBuildings = { ...(meta.buildings ?? {}) } as any;
+    delete nextBuildings[tileIndex];
+    const nextMeta: SacMetadata = { ...meta, buildings: nextBuildings };
+    return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
+  }
+
+  private getGroup(meta: SacMetadata, rawGroup: string) {
+    const key = normalize(rawGroup);
+    if (!key) return null;
+    return meta.data?.groups?.find((g) => normalize(g.color) === key) ?? null;
+  }
+
+  private isGroupComplete(meta: SacMetadata, ownerId: number, group: any): boolean {
+    const props: string[] = Array.isArray(group?.properties) ? group.properties : [];
+    if (!props.length) return false;
+    const idxs = props
+      .map((name) => this.findTileByName(meta.tiles, name))
+      .filter((idx) => idx != null) as number[];
+    if (!idxs.length) return false;
+    return idxs.every(
+      (idx) => meta.ownership?.[idx] === ownerId && !this.getBuilding(meta, idx).mortgaged,
+    );
+  }
+
+  private getMortgageValue(meta: SacMetadata, tile: SacTile): number {
+    if (tile.type === 'station') return meta.data?.stations?.mortgage ?? 0;
+    if (tile.type === 'utility') {
+      const u = meta.data?.utilities?.find((x) => normalize(x.name) === normalize(tile.title));
+      return u?.mortgage ?? 0;
+    }
+    if (tile.type === 'property') {
+      const group = this.getGroup(meta, tile.group ?? '');
+      return group?.mortgage ?? 0;
+    }
+    return 0;
+  }
+
+  private getUnmortgageCost(meta: SacMetadata, tile: SacTile): number {
+    if (tile.type === 'station') return meta.data?.stations?.unmortgageCost ?? 0;
+    if (tile.type === 'utility') {
+      const u = meta.data?.utilities?.find((x) => normalize(x.name) === normalize(tile.title));
+      return u?.unmortgageCost ?? 0;
+    }
+    if (tile.type === 'property') {
+      const group = this.getGroup(meta, tile.group ?? '');
+      return group?.unmortgageCost ?? 0;
+    }
+    return 0;
+  }
+
+  private buildOne(state: GameStateEntity, playerId: number, tileIndex: number): GameStateEntity {
+    const meta = this.getMeta(state);
+    const tile = meta.tiles?.[tileIndex];
+    if (!tile || tile.type !== 'property') return state;
+    const group = this.getGroup(meta, tile.group ?? '');
+    if (!group) return state;
+    if (!this.isGroupComplete(meta, playerId, group)) return state;
+
+    const b = this.getBuilding(meta, tileIndex);
+    if (b.mortgaged || b.hotel) return state;
+    const supportsHotel =
+      Number(group?.hotelPrice ?? 0) > 0 && Number(group?.rents?.hotel ?? 0) > 0;
+    if (!supportsHotel && b.houses >= 4) return state;
+
+    const nextLevel = clamp(b.houses + 1, 1, 4);
+    const houseCost =
+      Number(group?.housePrices?.[String(nextLevel) as any] ?? group?.housePrice ?? 0) || 0;
+    const cost = supportsHotel && b.houses >= 4 ? Number(group.hotelPrice ?? 0) || 0 : houseCost;
+    const cash = meta.money?.[playerId] ?? 0;
+    if (!Number.isFinite(cost) || cost <= 0 || cash < cost) return state;
+
+    let next = state;
+    next = this.addMoney(next, playerId, -cost, { toPot: false });
+    if (this.getMeta(next).statuses?.eliminated?.[playerId]) return next;
+
+    if (supportsHotel && b.houses >= 4) {
+      next = this.core.appendLog(next, `Hôtel construit sur "${tile.title}".`);
+      return this.setBuilding(next, tileIndex, { hotel: true, houses: 0 });
+    }
+    next = this.core.appendLog(next, `Maison construite sur "${tile.title}".`);
+    return this.setBuilding(next, tileIndex, { houses: b.houses + 1, hotel: false });
+  }
+
+  private sellOne(state: GameStateEntity, playerId: number, tileIndex: number): GameStateEntity {
+    const meta = this.getMeta(state);
+    const tile = meta.tiles?.[tileIndex];
+    if (!tile || tile.type !== 'property') return state;
+    const group = this.getGroup(meta, tile.group ?? '');
+    if (!group) return state;
+    const supportsHotel =
+      Number(group?.hotelPrice ?? 0) > 0 && Number(group?.rents?.hotel ?? 0) > 0;
+
+    const b = this.getBuilding(meta, tileIndex);
+    if (!b.hotel && b.houses <= 0) return state;
+
+    if (supportsHotel && b.hotel) {
+      const refund = Math.floor((group.hotelPrice ?? 0) / 2);
+      let next = this.core.appendLog(state, `Hôtel vendu sur "${tile.title}" (+${refund} €).`);
+      next = this.setBuilding(next, tileIndex, { hotel: false, houses: 4 });
+      return this.addMoney(next, playerId, refund, { toPot: false });
+    }
+
+    const level = clamp(b.houses, 1, 4);
+    const cost =
+      Number(group?.housePrices?.[String(level) as any] ?? group?.housePrice ?? 0) || 0;
+    const refund = Math.floor(cost / 2);
+    let next = this.core.appendLog(state, `Maison vendue sur "${tile.title}" (+${refund} €).`);
+    next = this.setBuilding(next, tileIndex, { houses: Math.max(0, b.houses - 1) });
+    return this.addMoney(next, playerId, refund, { toPot: false });
+  }
+
+  private mortgageTile(state: GameStateEntity, playerId: number, tileIndex: number): GameStateEntity {
+    const meta = this.getMeta(state);
+    const tile = meta.tiles?.[tileIndex];
+    if (!tile) return state;
+    if (meta.ownership?.[tileIndex] !== playerId) return state;
+
+    const b = this.getBuilding(meta, tileIndex);
+    if (b.mortgaged) return state;
+    if (tile.type === 'property' && (b.hotel || b.houses > 0)) return state;
+
+    const amount = this.getMortgageValue(meta, tile);
+    if (!Number.isFinite(amount) || amount <= 0) return state;
+
+    let next = this.core.appendLog(state, `Hypothèque : "${tile.title}" (+${amount} €).`);
+    next = this.setBuilding(next, tileIndex, { mortgaged: true });
+    return this.addMoney(next, playerId, amount, { toPot: false });
+  }
+
+  private unmortgageTile(state: GameStateEntity, playerId: number, tileIndex: number): GameStateEntity {
+    const meta = this.getMeta(state);
+    const tile = meta.tiles?.[tileIndex];
+    if (!tile) return state;
+    if (meta.ownership?.[tileIndex] !== playerId) return state;
+
+    const b = this.getBuilding(meta, tileIndex);
+    if (!b.mortgaged) return state;
+
+    const cost = this.getUnmortgageCost(meta, tile);
+    const cash = meta.money?.[playerId] ?? 0;
+    if (!Number.isFinite(cost) || cost <= 0 || cash < cost) return state;
+
+    let next = this.core.appendLog(state, `Levée d’hypothèque : "${tile.title}" (-${cost} €).`);
+    next = this.addMoney(next, playerId, -cost, { toPot: false });
+    if (this.getMeta(next).statuses?.eliminated?.[playerId]) return next;
+    return this.setBuilding(next, tileIndex, { mortgaged: false });
+  }
+
+  private loseOneInfrastructure(state: GameStateEntity, playerId: number): GameStateEntity {
+    const meta0 = this.getMeta(state);
+    const tiles = Array.isArray(meta0.tiles) ? meta0.tiles : [];
+
+    const ownedWithInfra: number[] = [];
+    for (let i = 0; i < tiles.length; i += 1) {
+      const owner = meta0.ownership?.[i];
+      if (owner !== playerId) continue;
+      const tile = tiles[i];
+      if (!tile || tile.type !== 'property') continue;
+      const b = this.getBuilding(meta0, i);
+      if (b.hotel || b.houses > 0) ownedWithInfra.push(i);
+    }
+
+    if (!ownedWithInfra.length) {
+      return this.core.appendLog(state, 'Aucune infrastructure à perdre.');
+    }
+
+    const picked = this.random.pickOne(meta0 as any, ownedWithInfra);
+    let next: GameStateEntity = {
+      ...state,
+      metadata: { ...(state.metadata ?? {}), ...meta0, ...(picked.meta as any) },
+    };
+    const tileIndex = picked.value as number | null;
+    if (tileIndex == null) return next;
+
+    const tile = tiles[tileIndex];
+    const group = tile ? this.getGroup(this.getMeta(next), tile.group ?? '') : null;
+    const supportsHotel =
+      Number(group?.hotelPrice ?? 0) > 0 && Number(group?.rents?.hotel ?? 0) > 0;
+
+    const b = this.getBuilding(this.getMeta(next), tileIndex);
+    if (supportsHotel && b.hotel) {
+      next = this.core.appendLog(next, `Infrastructure perdue : hôtel sur "${tile?.title ?? 'propriété'}".`);
+      return this.setBuilding(next, tileIndex, { hotel: false, houses: 4 });
+    }
+    if (b.houses > 0) {
+      next = this.core.appendLog(next, `Infrastructure perdue : -1 sur "${tile?.title ?? 'propriété'}".`);
+      return this.setBuilding(next, tileIndex, { houses: Math.max(0, b.houses - 1) });
+    }
+    return next;
+  }
+
   private addMoney(
     state: GameStateEntity,
     playerId: number,
@@ -572,17 +1122,51 @@ export class SacAMalicesActionService {
     const meta = this.getMeta(state);
     const current = meta.money?.[playerId] ?? 0;
     const nextMoney = current + delta;
+    const rules = this.getRules(meta);
     const nextMeta: SacMetadata = {
       ...meta,
       money: { ...(meta.money ?? {}), [playerId]: nextMoney },
-      pot: options.toPot ? (meta.pot ?? 0) + Math.max(0, -delta) : meta.pot ?? 0,
+      pot:
+        rules.potEnabled && options.toPot
+          ? (meta.pot ?? 0) + Math.max(0, -delta)
+          : meta.pot ?? 0,
     };
     let next: GameStateEntity = { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
     if (nextMoney < 0) {
       next = this.core.appendLog(next, `${this.playerName(next, playerId)} est en faillite !`);
       next = this.setEliminated(next, playerId, true);
+      next = this.releaseAssets(next, playerId);
     }
     return next;
+  }
+
+  private releaseAssets(state: GameStateEntity, playerId: number): GameStateEntity {
+    const meta = this.getMeta(state);
+    const ownership = { ...(meta.ownership ?? {}) } as any;
+    const buildings = { ...(meta.buildings ?? {}) } as any;
+    for (const [k, v] of Object.entries(ownership)) {
+      if (Number(v) === playerId) {
+        delete ownership[k];
+        delete buildings[k];
+      }
+    }
+
+    const money = { ...(meta.money ?? {}), [playerId]: 0 };
+    const statuses = meta.statuses ?? ({} as any);
+    const nextMeta: SacMetadata = {
+      ...meta,
+      ownership,
+      buildings,
+      money,
+      statuses: {
+        ...statuses,
+        inJail: { ...(statuses.inJail ?? {}), [playerId]: 0 },
+        skipTurn: { ...(statuses.skipTurn ?? {}), [playerId]: 0 },
+        extraRoll: { ...(statuses.extraRoll ?? {}), [playerId]: false },
+        consecutiveDoubles: { ...(statuses.consecutiveDoubles ?? {}), [playerId]: 0 },
+      },
+    };
+    return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
 
   private setEliminated(state: GameStateEntity, playerId: number, value: boolean): GameStateEntity {
@@ -610,7 +1194,13 @@ export class SacAMalicesActionService {
     return 0;
   }
 
-  private getRent(meta: SacMetadata, tile: SacTile, ownerId: number, lastRoll: number): number {
+  private getRent(
+    meta: SacMetadata,
+    tile: SacTile,
+    tileIndex: number,
+    ownerId: number,
+    lastRoll: number,
+  ): number {
     if (tile.type === 'station') {
       const stations = meta.data?.stations?.properties ?? [];
       const count = stations
@@ -633,8 +1223,18 @@ export class SacAMalicesActionService {
     }
 
     if (tile.type === 'property') {
-      const group = meta.data?.groups?.find((g) => normalize(g.color) === normalize(tile.group ?? ''));
-      return Number(group?.rents?.base ?? 0) || 0;
+      const group = meta.data?.groups?.find(
+        (g) => normalize(g.color) === normalize(tile.group ?? ''),
+      );
+      if (!group) return 0;
+      const b = this.getBuilding(meta, tileIndex);
+      if (b.hotel) return Number(group.rents?.hotel ?? 0) || 0;
+      const houses = clamp(Number(b.houses ?? 0) || 0, 0, 4);
+      if (houses <= 0) return Number(group.rents?.base ?? 0) || 0;
+      if (houses === 1) return Number(group.rents?.house1 ?? 0) || 0;
+      if (houses === 2) return Number(group.rents?.house2 ?? 0) || 0;
+      if (houses === 3) return Number(group.rents?.house3 ?? 0) || 0;
+      return Number(group.rents?.house4 ?? 0) || 0;
     }
 
     return 0;
@@ -706,6 +1306,27 @@ export class SacAMalicesActionService {
 
   private getMeta(state: GameStateEntity): SacMetadata {
     return (state.metadata ?? {}) as any as SacMetadata;
+  }
+
+  private getRules(meta: SacMetadata): NonNullable<SacMetadata['rules']> {
+    const defaults: NonNullable<SacMetadata['rules']> = {
+      startMoney: 2000,
+      passStartBonus: 200,
+      potEnabled: true,
+      rentBlockedInJail: true,
+      jail: {
+        maxTurns: 3,
+        autoFine: 100,
+        allowPayFine: true,
+        allowDoubleEscape: false,
+      },
+    };
+    const r = meta.rules ?? ({} as any);
+    return {
+      ...defaults,
+      ...r,
+      jail: { ...defaults.jail, ...(r.jail ?? {}) },
+    };
   }
 
   private playerName(state: GameStateEntity, id: number): string {
@@ -793,4 +1414,33 @@ function extractTargetPlace(text: string): string | null {
   const m2 = text.match(/avancez\s+(?:directement\s+)?à\s+([^.,]+)/i);
   if (m2?.[1]) return m2[1].trim();
   return null;
+}
+
+function isGetOutOfJailCard(text: string): boolean {
+  return /Sortie de prison/i.test(text) || /Lib[ée]ration/i.test(text);
+}
+
+function extractAllPlayersMoney(
+  textRaw: string,
+): null | { kind: 'pay' | 'receive'; amount: number; toBank: boolean } {
+  const text = String(textRaw ?? '');
+  const toBank = /banque/i.test(text);
+
+  const pay = text.match(/Tous\s+les\s+joueurs\s+(?:paient|payent)\s+(\d+)/i);
+  if (pay?.[1]) {
+    const n = Number(pay[1]);
+    if (Number.isFinite(n) && n > 0) return { kind: 'pay', amount: Math.trunc(n), toBank };
+  }
+
+  const receive = text.match(/Tous\s+les\s+joueurs\s+re[çc]oivent\s+(\d+)/i);
+  if (receive?.[1]) {
+    const n = Number(receive[1]);
+    if (Number.isFinite(n) && n > 0) return { kind: 'receive', amount: Math.trunc(n), toBank };
+  }
+
+  return null;
+}
+
+function mentionsInfrastructureLoss(text: string): boolean {
+  return /perd(?:ez|s)?\s+une\s+infrastructure/i.test(text) || /perds\s+une\s+infrastructure/i.test(text);
 }

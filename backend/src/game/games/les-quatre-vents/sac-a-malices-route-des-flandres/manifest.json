@@ -1,0 +1,8 @@
+{
+  "code": "sac-a-malices-route-des-flandres",
+  "name": "Sac à Malices — La Route des Flandres",
+  "minPlayers": 2,
+  "maxPlayers": 8,
+  "engine": "sac-a-malices-route-des-flandres",
+  "summary": "Variante Lille : achetez, construisez, payez des loyers, cartes Chance/Caisse, Parc Gratuit."
+}

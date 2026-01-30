@@ -1,6 +1,14 @@
 import type { GameShortcutsBuilder } from '../../../engine/shortcuts/game-shortcuts';
-import { positionOnlyShortcuts } from '../../../engine/shortcuts/shortcut-presets';
+import { interfaceShortcut, actionShortcut } from '../../../engine/shortcuts/shortcut-utils';
 
 export const buildSacAMalicesShortcuts: GameShortcutsBuilder = () =>
-  positionOnlyShortcuts();
-
+  [
+    interfaceShortcut('S', 'position'),
+    actionShortcut('D', 'roll'),
+    actionShortcut('F', 'build'),
+    actionShortcut('V', 'sell_building'),
+    actionShortcut('H', 'mortgage'),
+    actionShortcut('L', 'unmortgage'),
+    actionShortcut('P', 'pay_fine'),
+    actionShortcut('U', 'use_jail_card'),
+  ];

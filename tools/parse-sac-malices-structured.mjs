@@ -2,11 +2,44 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
+
+const arg = (name, fallback = null) => {
+  const idx = process.argv.indexOf(name);
+  if (idx === -1) return fallback;
+  const v = process.argv[idx + 1];
+  return v == null ? fallback : String(v);
+};
+
+const variant = arg('--variant');
+const gameType = arg('--gameType');
+const boardFile = arg('--board');
+const chanceFile = arg('--chance');
+const communityFile = arg('--community');
+const groupsFile = arg('--groups');
+const stationsFile = arg('--stations');
+const utilitiesFile = arg('--utilities');
+
+if (!variant || !gameType) {
+  throw new Error(
+    'Usage: node tools/parse-sac-malices-structured.mjs --variant \",Sabord et Quai\" --gameType sac-a-malices-sabord-et-quai --board \"Cases ...txt\" --chance \"Cartes ...txt\" --community \"Cartes ...txt\" --groups \"Fiches ...txt\" --stations \"Fiche(s) ...txt\" --utilities \"Fiche(s) ...txt\"',
+  );
+}
+for (const [label, v] of [
+  ['--board', boardFile],
+  ['--chance', chanceFile],
+  ['--community', communityFile],
+  ['--groups', groupsFile],
+  ['--stations', stationsFile],
+  ['--utilities', utilitiesFile],
+]) {
+  if (!v) throw new Error(`${label} requis`);
+}
+
 const sourceDir = path.join(
   root,
   'Étagère des Quatre Vents (Jeux de plateaux)',
   'Sac à Malices ! (x7)',
-  ',Chouette et fortune !',
+  variant,
 );
 const targetDir = path.join(
   root,
@@ -15,7 +48,7 @@ const targetDir = path.join(
   'game',
   'games',
   'les-quatre-vents',
-  'sac-a-malices',
+  gameType,
   'model',
   'content',
 );
@@ -72,14 +105,6 @@ const parseCards = (raw) => {
   return items.filter((c) => Number.isFinite(c.id) && c.text);
 };
 
-const normalize = (s) =>
-  String(s ?? '')
-    .toLowerCase()
-    .replace(/[’'`]/g, "'")
-    .replace(/[^a-z0-9àâäçéèêëîïôöùûüÿñœ\s-]/gi, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
 const inferTile = (n, title, description) => {
   const tTitle = String(title ?? '').toLowerCase();
   const tAll = `${title} ${description}`.toLowerCase();
@@ -95,13 +120,19 @@ const inferTile = (n, title, description) => {
   if (colorMatch) return { type: 'property', group: colorMatch[1].trim() };
 
   if (tTitle.includes('chance')) return { type: 'chance' };
-  if (tTitle.includes('caisse de communauté') || tTitle.includes('caisse de communaute')) return { type: 'community' };
+  if (
+    tTitle.includes('caisse de communauté') ||
+    tTitle.includes('caisse de communaute')
+  )
+    return { type: 'community' };
   if (tTitle.includes('prison')) return { type: 'jail' };
 
   return { type: 'neutral' };
 };
 
-const boardBlocks = parseNumberedBlocks(readText(path.join(sourceDir, 'Cases du plateau Dijonnais.txt')));
+const boardBlocks = parseNumberedBlocks(
+  readText(path.join(sourceDir, boardFile)),
+);
 const tiles = boardBlocks.map((b) => {
   const inferred = inferTile(b.id, b.title, b.description);
   return {
@@ -112,13 +143,17 @@ const tiles = boardBlocks.map((b) => {
   };
 });
 
-const groupsRaw = readText(path.join(sourceDir, 'Fiche groupes.txt'));
-const groupSections = groupsRaw.split(/\n\s*\n+/).map((s) => s.trim()).filter(Boolean);
+const groupsRaw = readText(path.join(sourceDir, groupsFile));
+const groupSections = groupsRaw
+  .split(/\n\s*\n+/)
+  .map((s) => s.trim())
+  .filter(Boolean);
 const groups = [];
 for (const section of groupSections) {
   const title = section.match(/^Groupe\s+(.+)$/im)?.[1]?.trim();
   if (!title) continue;
-  const propsLine = section.match(/Propri[eé]t[eé]s\s*:\s*([^\n]+)/i)?.[1]?.trim() ?? '';
+  const propsLine =
+    section.match(/Propri[eé]t[eé]s\s*:\s*([^\n]+)/i)?.[1]?.trim() ?? '';
   const properties = propsLine
     .split(',')
     .map((s) => s.trim())
@@ -147,9 +182,13 @@ for (const section of groupSections) {
   groups.push(group);
 }
 
-const stationsRaw = readText(path.join(sourceDir, 'Fiche gares.txt'));
-const stationsProps = stationsRaw.match(/Propri[eé]t[eé]s\s*:\s*([^\n]+)/i)?.[1] ?? '';
-const stationNames = stationsProps.split(',').map((s) => s.trim()).filter(Boolean);
+const stationsRaw = readText(path.join(sourceDir, stationsFile));
+const stationsProps =
+  stationsRaw.match(/Propri[eé]t[eé]s\s*:\s*([^\n]+)/i)?.[1] ?? '';
+const stationNames = stationsProps
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
 const stationNums = (re) => {
   const m = stationsRaw.match(re);
   return m ? Number(m[1]) : 0;
@@ -167,11 +206,17 @@ const stations = {
   },
 };
 
-const utilitiesRaw = readText(path.join(sourceDir, 'Fiche compagnies.txt'));
-const utilBlocks = utilitiesRaw.split(/\n\s*\n+/).map((s) => s.trim()).filter(Boolean);
+const utilitiesRaw = readText(path.join(sourceDir, utilitiesFile));
+const utilBlocks = utilitiesRaw
+  .split(/\n\s*\n+/)
+  .map((s) => s.trim())
+  .filter(Boolean);
 const utilities = [];
 for (const block of utilBlocks) {
-  const lines = block.split('\n').map((l) => l.trim()).filter(Boolean);
+  const lines = block
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
   const name = lines[0];
   if (!name || /^Fiches?\s+compagnies/i.test(name)) continue;
   const num = (re) => {
@@ -189,14 +234,8 @@ for (const block of utilBlocks) {
   utilities.push(util);
 }
 
-const chanceCards = parseCards(readText(path.join(sourceDir, 'Cartes chance.txt')));
-const communityCards = parseCards(readText(path.join(sourceDir, 'Cartes caisse de communauté.txt')));
-
-// Matche des noms pour éviter les différences d’accents
-const nameIndex = new Map();
-tiles.forEach((t, idx) => {
-  nameIndex.set(normalize(t.title.replace(/\([^)]*\)/g, '')), idx);
-});
+const chanceCards = parseCards(readText(path.join(sourceDir, chanceFile)));
+const communityCards = parseCards(readText(path.join(sourceDir, communityFile)));
 
 const out = (filename, data) =>
   fs.writeFileSync(path.join(targetDir, filename), JSON.stringify(data, null, 2), 'utf8');
@@ -208,4 +247,5 @@ out('utilities.json', { version: 1, utilities });
 out('chance-cards.json', { version: 1, cards: chanceCards });
 out('community-cards.json', { version: 1, cards: communityCards });
 
-console.log('Sac à Malices (Dijon) content generated.');
+console.log(`Sac à Malices structured content generated for ${gameType}.`);
+

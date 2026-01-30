@@ -215,6 +215,15 @@ export class VoyageActionService {
       next = this.addSkip(next, targetId, 1);
       next = this.setLastTarget(next, playerId, targetId);
     }
+    if (kind === 'swap_card') {
+      const count = Math.max(1, Math.trunc(Number(pending?.data?.count ?? 1)));
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, playerId)} échange ${count} carte(s) avec ${this.playerName(next, targetId)}.`,
+      );
+      next = this.exchangeRandomCards(next, playerId, targetId, count);
+      next = this.setLastTarget(next, playerId, targetId);
+    }
 
     const meta = this.getMeta(next);
     if (meta.winnerId != null) return { ...next, status: 'finished' };
@@ -251,12 +260,15 @@ export class VoyageActionService {
       const metaNow = this.getMeta(next);
       if (metaNow.finishCountdown == null) {
         const players = Array.isArray(next.players) ? next.players : [];
-        const countdown = Math.max(0, players.length - 1);
+        // On compte aussi le tour du joueur qui vient d'arriver, pour que tous les autres
+        // joueurs puissent terminer le tour en cours et jouer une fois.
+        const countdown = Math.max(0, players.length);
+        const remainingTurns = Math.max(0, players.length - 1);
         const updated: VoyageMetadata = { ...metaNow, finishCountdown: countdown };
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...updated } };
         next = this.core.appendLog(
           next,
-          `Arrivée atteinte ! Fin de partie dans ${countdown} tour(s).`,
+          `Arrivée atteinte ! Les autres joueurs jouent encore ${remainingTurns} tour(s).`,
         );
       }
       return next;
@@ -417,7 +429,55 @@ export class VoyageActionService {
       next = this.core.appendLog(next, `Effet : perdez ${skip} tour(s).`);
       return this.addSkip(next, playerId, skip);
     }
-    if (/échange/i.test(text)) {
+
+    // Échanges de cartes
+    if (/échange/i.test(text) && /carte/i.test(text)) {
+      const count = extractCardCount(text);
+
+      // Cas "second joueur installé à la table" : on cible automatiquement.
+      if (/second\s+joueur/i.test(text)) {
+        const players = Array.isArray(next.players) ? next.players : [];
+        const ids = players.map((p) => p?.id).filter((id): id is number => Number.isFinite(id as any));
+        const targetId = ids.length >= 2 ? (ids[1] === playerId ? ids[0] : ids[1]) : null;
+        if (targetId != null) {
+          next = this.core.appendLog(next, `Échange automatique avec ${this.playerName(next, targetId)}.`);
+          next = this.exchangeRandomCards(next, playerId, targetId, count);
+          return this.setLastTarget(next, playerId, targetId);
+        }
+      }
+
+      const otherPlayers = this.otherPlayers(next, playerId);
+      if (otherPlayers.length) {
+        const pending: PendingState = {
+          type: 'choose_target',
+          playerId,
+          blocking: true,
+          label: `Choisir un joueur (échanger ${count} carte(s)).`,
+          data: { kind: 'swap_card', count },
+          choices: otherPlayers.map((p) => p.username),
+        };
+        return { ...next, pending };
+      }
+    }
+
+    // Échanges de position
+    if (/échange/i.test(text) && /position/i.test(text)) {
+      if (/dernier\s+joueur/i.test(text)) {
+        const other = this.otherPlayers(next, playerId);
+        if (other.length) {
+          const meta = this.getMeta(next);
+          const last = other
+            .map((p) => p.id)
+            .sort((a, b) => (meta.positions?.[a] ?? 0) - (meta.positions?.[b] ?? 0))[0];
+          next = this.core.appendLog(
+            next,
+            `${this.playerName(next, playerId)} échange sa place avec ${this.playerName(next, last)}.`,
+          );
+          next = this.swapPositions(next, playerId, last);
+          return this.setLastTarget(next, playerId, last);
+        }
+      }
+
       const otherPlayers = this.otherPlayers(next, playerId);
       if (otherPlayers.length) {
         const pending: PendingState = {
@@ -431,7 +491,50 @@ export class VoyageActionService {
         return { ...next, pending };
       }
     }
+
     return next;
+  }
+
+  private exchangeRandomCards(
+    state: GameStateEntity,
+    aId: number,
+    bId: number,
+    count: number,
+  ): GameStateEntity {
+    let next = state;
+    for (let i = 0; i < count; i += 1) {
+      const takeA = this.takeRandomCard(next, aId);
+      next = takeA.state;
+      const takeB = this.takeRandomCard(next, bId);
+      next = takeB.state;
+
+      if (takeA.kind) next = this.incrementCollection(next, bId, takeA.kind);
+      if (takeB.kind) next = this.incrementCollection(next, aId, takeB.kind);
+    }
+    return next;
+  }
+
+  private takeRandomCard(
+    state: GameStateEntity,
+    playerId: number,
+  ): { state: GameStateEntity; kind: 'legend' | 'farce' | 'treasure' | 'landscape' | null } {
+    const meta = this.getMeta(state);
+    const c = meta.collections?.[playerId] ?? { legend: 0, farce: 0, treasure: 0, landscape: 0 };
+    const candidates: Array<'legend' | 'farce' | 'treasure' | 'landscape'> = [];
+    if ((c.legend ?? 0) > 0) candidates.push('legend');
+    if ((c.treasure ?? 0) > 0) candidates.push('treasure');
+    if ((c.landscape ?? 0) > 0) candidates.push('landscape');
+    if ((c.farce ?? 0) > 0) candidates.push('farce');
+    if (!candidates.length) return { state, kind: null };
+
+    const picked = this.random.pickOne(meta as any, candidates);
+    let next: GameStateEntity = {
+      ...state,
+      metadata: { ...(state.metadata ?? {}), ...meta, ...(picked.meta as any) },
+    };
+    if (!picked.value) return { state: next, kind: null };
+    next = this.decrementCollection(next, playerId, picked.value);
+    return { state: next, kind: picked.value };
   }
 
   private parseQuizCard(playerId: number, card: VoyageCard): VoyagePendingQuiz | null {
@@ -764,4 +867,10 @@ function extractSkipTurns(text: string): number {
   if (/Passez deux tours/i.test(text)) return 2;
   if (/Passez votre tour/i.test(text) || /Passe ton prochain tour/i.test(text)) return 1;
   return 0;
+}
+
+function extractCardCount(text: string): number {
+  if (/\b2\b/.test(text) || /\bdeux\b/i.test(text)) return 2;
+  if (/\b3\b/.test(text) || /\btrois\b/i.test(text)) return 3;
+  return 1;
 }
