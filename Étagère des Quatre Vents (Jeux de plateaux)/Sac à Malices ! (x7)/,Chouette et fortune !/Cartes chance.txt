@@ -1,0 +1,34 @@
+Cartes chance
+
+
+1. Vous participez à une dégustation de grands crus à Gevrey-Chambertin. Avancez jusqu’à la gare de Gevrey-Chambertin et recevez 200 €.
+2. Un vent de succès souffle sur votre moutarde : recevez 150 € pour vos talents culinaires.
+3. Vous perdez votre chemin dans les ruelles du Vieux Dijon. Reculez de trois cases pour retrouver votre route.
+4. Les cloches de l’église Saint-Michel résonnent pour vous annoncer un heureux évênement : avancez à Quartier Saint-Michel.
+5. Votre visite du Palais des Ducs attire l’attention d’un mécène. Recevez 100 €.
+6. Vous êtes invité à un bal masqué sur la Place de la Libération. Avancez directement à la place et profitez de la fête.
+7. Une exposition imprévue au Musée des Beaux-Arts vous retient plus longtemps que prévu. Passez votre prochain tour.
+8. Vous trouvez une carte rare au marché des Halles. Recevez 50 € de récompense.
+9. Votre rosalie tombe en panne sur le Parc de la Colombière. Reculez de deux cases pour la réparer.
+10. Vous aidez à la rénovation de la Tour Philippe le Bon et gagnez les remerciements de la ville : recevez 100 €.
+11. Un tram Divia vous transporte gratuitement jusqu’au Boulevard de l’Ouest. Avancez jusqu’à cette case.
+12. Vous participez à la foire annuelle de Dijon. Recevez 150 € pour vos ventes et exploits.
+13. Une pluie soudaine vous surprend sur la Rue de la Liberté : retournez à la case Départ pour vous abriter.
+14. Vous êtes élu « visiteur d’honneur » à la Place François Rude : recevez 200 €.
+15. Vous trouvez un trésor caché dans une cave à vin de Beaune : avancez jusqu’à la Gare de Beaune et recevez 150 €.
+16. Un troubadour chante votre louange sur la Place Darcy : avancez jusqu’à cette case et recevez 100 €.
+17. Vous êtes choisi pour inaugurer une exposition au Palais des Ducs : recevez 150 €.
+18. Votre rosalie vous emmène trop vite et vous heurtez un kiosque : reculez de deux cases.
+19. Vous découvrez un vieux parchemin dans la Bibliothèque municipale : recevez 50 €.
+20. Un festival de musique vous enchante sur le Boulevard de Brosses : avancez jusqu’à cette case.
+21. Vous aidez à organiser le marché de Noël sur la Place de la Libération : recevez 200 €.
+22. Une erreur de livraison vous coûte cher : payez 100 €.
+23. Vous trouvez une pièce d’or dans le Jardin Darcy : recevez 100 €.
+24. Un peintre vous offre un portrait sur la Rue de la Chouette : recevez 50 €.
+25. Votre visite guidée au Musée des Beaux-Arts attire des admirateurs : recevez 150 €.
+26. Un corbeau vole votre carte postale sur la Rue Jeannin : reculez de trois cases.
+27. Vous participez au concours de gastronomie de Dijon : recevez 200 €.
+28. Les cloches de la Tour Philippe le Bon sonnent à votre honneur : avancez jusqu’à cette case et recevez 100 €.
+29. Votre promenade en rosalie dans le Parc de la Colombière est interrompue par une averse : reculez de deux cases.
+30. Une invitation exclusive au Château du Clos de Vougeot vous rapporte 250 €.
+ 

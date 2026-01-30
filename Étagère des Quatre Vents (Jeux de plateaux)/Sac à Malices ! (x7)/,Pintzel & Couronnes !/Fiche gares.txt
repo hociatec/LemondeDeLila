@@ -1,0 +1,14 @@
+Fiche gares
+
+
+Gares
+Propriétés : Gare de Strasbourg-Ville, Gare de Krimmeri-Meinau, Gare de Bischheim, Gare de Schiltigheim.
+Prix d’achat : 200 €
+Hypothèque : 100 €
+Coût pour lever l’hypothèque : 110 €
+Loyer :
+Si 1 gare possédée : 25 €
+Si 2 gares possédées : 50 €
+Si 3 gares possédées : 100 €
+Si 4 gares possédées : 200 €
+ 

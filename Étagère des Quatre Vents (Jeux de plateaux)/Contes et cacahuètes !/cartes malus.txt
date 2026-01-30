@@ -1,0 +1,34 @@
+Cartes malus
+
+
+1. Sortilège de Sommeil
+Vous vous endormez comme la Belle au bois dormant. Passez votre tour.
+2. Ronce Enchevêtrée
+Vous êtes coincé dans une forêt de ronces… Reculez de 2 cases.
+3. Grimoire Capricieux
+Vous lisez une formule à l’envers : échangez votre place avec le joueur le plus proche derrière vous !
+4. Pluie de Mots Oubliés
+Vous oubliez un passage de votre histoire. Lancez le dé et avancez seulement de la moitié du chiffre obtenu.
+5. Loup dans la Forêt
+Un grand méchant loup surgit ! Vous devez attendre qu’un autre joueur atteigne ou dépasse votre case pour pouvoir rejouer.
+6. Sable Mouvant Magique
+Vous vous enfoncez dans une étrange plage mouvante… Passez deux tours.
+7. Page Manquante
+Oh non ! Votre conte est incomplet. Vous devez tirer une carte Malus et subir son effet.
+8. Confusion de Contes
+Les histoires s’emmêlent ! Avancez de 3 cases… puis reculez de 4. Zut, ce n’était pas dans cet ordre-là !
+9. Maladresse de Sorcier
+Vous cassez votre baguette magique. Donnez une de vos cartes Bonus à un autre joueur de votre choix.
+10. Ombre Farceuse
+Une créature invisible vous embête… Relancez votre dé, mais cette fois, reculer au lieu d’avancer.
+11. Énigme Infernale
+Vous êtes bloqué par un sphinx rusé ! Pour continuer, lancez le dé : si vous obtenez un 4 ou plus, avancez normalement. Sinon, passez votre tour.
+12. Passage Obscur
+Vous entrez dans un tunnel sombre. Retournez à la case malus précédente et revivez son effet.
+13. Chaussures Enchantées… mais trop petites
+Reculez de deux cases pour changer de chaussures. Aïe !
+14. Miroir Brisé
+Un miroir magique vous renvoie à votre passé. Retournez à la case départ.
+15. Grimoire Grincheux
+Vous ne pouvez plus jouer de carte Bonus pendant deux tours.
+ 

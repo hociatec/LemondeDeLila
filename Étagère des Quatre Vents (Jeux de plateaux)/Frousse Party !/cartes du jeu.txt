@@ -1,0 +1,72 @@
+Cartes du jeu
+
+ 
+Cartes Piège (20 cartes)
+1. Le plancher s’effondre sous vos pieds ! Vous glissez en arrière dans un grand fracas. Reculez de 3 cases.
+2. Vous glissez sur une flaque gluante et malodorante. Impossible de vous relever tout de suite. Passez votre tour.
+3. La porte claque : vous êtes enfermé dans un placard qui grince. Pour vous libérer, vous devrez lancer un 5 ou un 6.
+4. Une araignée géante descend devant votre visage. Pris de panique, vous reculez de 2 cases.
+5. La lumière s’éteint brusquement. Vous restez figé par la peur. Passez votre tour.
+6. Un tableau se décroche et s’écrase devant vous. Vous faites demi-tour. Reculez d'une case.
+7. CRAC ! Une trappe s’ouvre sous vos pieds. Vous dévalez tout le manoir. Retour à la case une.
+8. Le sol colle à vos chaussures. Au prochain tour, vous n’avancerez que d’une seule case.
+9. Vous perdez un objet important dans l’obscurité. Pour continuer, vous devrez relancer le dé jusqu’à obtenir un 6.
+10. Un rire maléfique résonne derrière vous. Terrifié, vous reculez de 4 cases.
+11. Vous vous coincez dans un passage trop étroit. Passez votre tour.
+12. Une pluie de poussière vous aveugle et vous étouffe. Vous ne bougez pas tant que vous n’obtenez pas un 4 ou plus au lancé de dé.
+13. Le parquet grince affreusement. Les fantômes vous repèrent. Retournez dans la pièce précédente en reculant d'une case.
+14. Un coucou jaillit d’une vieille horloge et vous fait sursauter. Passez votre tour.
+15. La cheminée s’allume toute seule. Surpris, vous reculez d'une case.
+16. Une porte claque violemment derrière vous. Vous êtes coincé. Vous ne rejouez que si vous faites un nombre pair au lancé de dé.
+17. Un chat noir traverse lentement votre chemin. Mauvais présage… reculez de 5 cases.
+18. Une armure s’effondre devant vous dans un vacarme infernal. Passez votre tour. Vous êtes trop effrayé pour avancer.
+19. Un courant d’air glacial vous repousse violemment. Reculez de 3 cases.
+20. Une ombre étrange vous barre la route. Lancez le dé : si le résultat est impair, passez votre tour.
+ 
+Cartes Farce (15 cartes)
+1. Vous éternuez si fort que tout le monde éclate de rire. Gêné, vous reculez de 2 cases.
+2. Un coussin péteur explose sous vous. Vous tombez. Passez votre tour.
+3. Un autre joueur vous joue une farce. Echangez immédiatement vos places.
+4. Vous faites un croche-pied à un adversaire en riant. Avancez de 2 cases.
+5. Vous glissez sur une peau de banane magique. Rejouez, mais avec un malus de moins 2 au lancer.
+6. Un farceur invisible vous attache les lacets. Vous tombez et restez bloqué. Passez votre tour.
+7. Une boîte à surprise jaillit en faisant “BOUH !”. Vous sursautez et reculez d’1 case.
+8. Vous riez tellement que vous perdez le sens de l’orientation. Reculez d’1 case.
+9. Une poignée tourne dans le vide pendant de longues secondes. Passez un tour.
+10. Une main gantée surgit et vous fait un “coucou !”. Reculez de 3 cases, effrayé.
+11. Une bougie clignote et vous joue un tour. Lancez le dé deux fois et gardez le plus petit résultat.
+12. Des éclats de rire résonnent autour de vous. Vous avancez… mais dans le mauvais sens. Reculez de 4 cases.
+13. Une farce vous épargne cette fois-ci. Ignorez le prochain piège.
+14. Un nez rouge de clown tombe du plafond. Distrait, passez votre tour.
+15. 
+Vous imitez un fantôme pour faire rire. Passez un tour à reprendre votre sérieux.
+ 
+Cartes Fantôme (10 cartes)
+1. Un fantôme vous attrape par le bras. Il vous ramène dans la pièce précédente. Reculez d'une case.
+2. Un esprit moqueur souffle sur votre dé. Relancez et gardez le chiffre le plus bas.
+3. Une ombre flotte devant vous. Vous êtes paralysé par la peur. Passez un tour.
+4. Un fantôme farceur éclate de rire et vous fait échanger votre place avec celle d’un autre joueur.
+5. Pris de panique, vous vous enfuyez en hurlant. Reculez de 5 cases.
+6. Le spectre de la vieille cuisinière apparaît. Il vous force à faire demi-tour. Allez en cuisine.
+7. Un long gémissement résonne dans le couloir. Vous avancez prudemment d’une case.
+8. Une voix murmure votre prénom. Terrifié, vous passez votre tour.
+9. Le fantôme joue avec votre dé. Si vous faites un trois, reculez de 2 cases.
+10. Le fantôme surgit en hurlant, vous propulse en avant d’une force surnaturelle, puis vous agrippe et vous traîne en arrière. Avancez de 5 cases, puis reculez de 3.
+ 
+Cartes Bonus (15 cartes)
+1. Vous trouvez une lanterne magique. Ignorez le prochain piège.
+2. Une clé d’or apparaît dans votre main. Avancez de 4 cases.
+3. Des bottes turbo s’activent sous vos pieds. Doublez votre prochain lancer de dé.
+4. Un passage secret s’ouvre brusquement à vos côtés, laissant les autres joueurs filer de 3 cases. Passez votre tour.
+5. Un vieux grimoire murmure un raccourci. Avancez de 2 cases.
+6. Vous découvrez un plan du manoir. Ignorez les pièges jusqu’à la prochaine farce.
+7. Une main amie (un peu décorative) vous pousse gentiment. Avancez de 3 cases.
+8. Un chaudron magique vous redonne de l’énergie. Relancez le dé.
+9. Un élan de confiance vous envahit et le manoir semble vous ouvrir la voie. Avancez de 5 cases.
+10. Une petite souris vous montre le bon chemin. Relancez le dé.
+11. Vous récupérez un sifflet anti-fantôme. Ignorez la prochaine carte Fantôme.
+12. Vous glissez sur une nappe… mais dans le bon sens ! Avancez de 2 cases.
+13. Un miroir magique vous montre la sortie. Sautez 6 cases.
+14. Votre rire magique annule une farce. Rien ne vous arrive.
+15. Un ascenseur secret se met en marche. Avancez ou reculez directement jusqu’à la case 40.
+ 

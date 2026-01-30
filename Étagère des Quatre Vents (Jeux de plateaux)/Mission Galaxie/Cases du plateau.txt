@@ -1,0 +1,151 @@
+Cases du plateau
+
+
+1. Base de lancement
+Vous êtes au cœur de la base spatiale, entouré de technologies prêtes à s’éveiller. Tout est en place, la mission commence ici.
+
+2. Orbites encombrées
+Vous traversez les premières couches de l’espace, encore marquées par l’activité humaine. Le passage est dense, mais votre trajectoire reste stable.
+
+3. Question Galactique
+Un premier message de contrôle vous parvient depuis l’espace proche. Vous devez répondre à une Question Galactique pour poursuivre votre mission.
+
+4. Panne de communication
+Les signaux se brouillent soudainement et vos systèmes se taisent. Vous passez immédiatement votre tour, le temps que les communications reviennent.
+
+5. Défi Cosmique
+Un dysfonctionnement imprévu exige toute votre concentration. Vous appliquez immédiatement un Défi Cosmique.
+
+6. Ravitaillement orbital
+Une station automatique répond à votre appel et renforce vos réserves. Rassuré, vous avancez de deux cases.
+
+7. Pluie de météorites
+Des fragments traversent votre route à grande vitesse. Un Événement Spatial s’applique immédiatement.
+
+8. Question Galactique
+Un nouveau signal vous met à l’épreuve des connaissances spatiales. Répondez à une Question Galactique.
+
+9. Tempête solaire
+Une onde énergétique secoue vos systèmes et vous oblige à ralentir. Vous reculez d’une case.
+
+10. Signal alien brouillé
+Une transmission inconnue perturbe vos repères habituels. Vous appliquez un Défi Cosmique.
+
+11. Survol paisible
+Le calme revient tandis que vous glissez dans un espace silencieux. Rien ne se produit en ces lieux.
+
+12. Satellite d’observation
+Un ancien satellite vous transmet des données précieuses sur la route à venir. Grâce à elles, vous avancez d’une case.
+
+13. Question Galactique
+L’univers continue de vous tester avant de vous laisser progresser. Répondez à une Question Galactique.
+
+14. Turbulences orbitales
+Des courants instables figent votre avancée sans avertissement. Vous passez immédiatement votre tour.
+
+15. Sortie du système solaire
+Les dernières influences familières disparaissent derrière vous. Un Événement Spatial marque ce grand départ vers l’inconnu.
+ 
+16. Entrée dans la galaxie
+Vous pénétrez un espace vaste et ancien, chargé d’étoiles innombrables. Votre voyage se poursuit sans obstacle immédiat.
+
+17. Attraction gravitationnelle intense
+Une force invisible dévie votre trajectoire et vous attire en arrière. Vous reculez de deux cases.
+
+18. Question Galactique
+Un signal lointain vous interroge sur les lois du cosmos. Répondez à une Question Galactique.
+
+19. Message codé
+Une transmission cryptée exige réflexion et discernement. Vous appliquez un Défi Cosmique.
+
+20. Raccourci interstellaire
+Vous identifiez une route plus rapide entre les étoiles. Avancez de trois cases.
+
+21. Station spatiale abandonnée
+Des systèmes anciens s’activent brièvement à votre passage. Un Événement Spatial se déclenche alors.
+
+22. Étoile filante
+Une énergie favorable semble accompagner votre trajectoire. Vous avancez d’une case.
+
+23. Champ énergétique instable
+Votre progression est brutalement interrompue par des ondes erratiques. Vous passez votre tour.
+
+24. Question Galactique
+Avant d’aller plus loin, une nouvelle épreuve de connaissances s’impose. Répondez à une Question Galactique.
+
+25. Nébuleuse lumineuse
+Une matière cosmique rare enveloppe votre fusée et vous insuffle une énergie nouvelle. Rejouez.
+
+26. Astre inconnu
+Un corps céleste mystérieux perturbe vos calculs. Appliquez un Défi Cosmique.
+
+27. Système endommagé
+Une avarie mineure ralentit votre avancée. Vous reculez d’une case.
+
+28. Transmission réussie
+Un contact clair avec votre base vous redonne confiance. Vous avancez immédiatement de deux cases.
+
+29. Rencontre extraterrestre
+Un échange inattendu modifie subtilement votre trajectoire. Un Événement Spatial s’applique immédiatement.
+
+30. Instabilité gravitationnelle
+Les lois de l’espace vacillent autour de vous. Lancez le dé une seconde fois et appliquez son effet.
+
+31. Question Galactique
+Une réponse juste peut ouvrir la voie vers l’avant. Appliquez les règles de la Question Galactique.
+
+32. Réseau spatial perturbé
+Vos systèmes se figent sans panne apparente. Aucun effet supplémentaire ne s’applique.
+
+33. Zone de silence cosmique
+Tout semble suspendu, comme si l’univers retenait son souffle. Rien ne se produit sur cette case.
+
+34. Collision évitée de justesse
+Un danger frôlé de très près laisse des traces sur votre trajectoire. Un Événement Spatial s’applique immédiatement.
+
+35. Fin de la zone galactique
+Les repères connus s’effacent peu à peu. Vous poursuivez votre voyage vers le cosmos profond.
+ 
+36. Comète massive
+Une immense comète traverse votre route et vous force à corriger votre trajectoire. Vous reculez d’une case.
+
+37. Défi Cosmique
+Une situation complexe exige toute votre concentration mentale. Vous appliquez un Défi Cosmique.
+
+38. Monde habité
+Vous découvrez une civilisation lointaine qui vous apporte un soutien précieux. Avancez de deux cases.
+
+39. Rayonnement cosmique
+Une onde invisible sature vos systèmes et ralentit votre progression. Passez immédiatement votre tour.
+
+40. Question Galactique
+Une question décisive se présente à vous avant la dernière ligne droite. Répondez à une Question Galactique.
+
+41. Rencontre pacifique
+Une alliance sincère vous permet d’accélérer vers votre destination. Avancez de trois cases.
+
+42. Anomalie temporelle
+Le temps se plie autour de vous et bouleverse l’ordre établi. Vous échangez immédiatement votre case avec celle du joueur le plus proche.
+
+43. Champ de débris
+Des fragments errants modifient votre trajectoire. Un Événement Spatial s’applique immédiatement.
+
+44. Réserves optimales
+Vos systèmes fonctionnent parfaitement et votre progression s’en trouve facilitée. Vous avancez immédiatement d’une case.
+
+45. Vision de la destination
+La planète légendaire se rapproche clairement dans votre esprit. Vous avancez immédiatement jusqu’à la case 48.
+
+46. Défi Cosmique
+Une dernière épreuve met votre esprit à contribution avant l’arrivée. Vous appliquez immédiatement un Défi Cosmique.
+
+47. Singularité évitée
+Une distorsion de l’espace menace votre trajectoire, mais vous l’évitez de justesse. Vous reculez immédiatement d’une case.
+48. Don d’une civilisation avancée
+Un soutien inattendu vous propulse vers l’ultime étape. Vous rejouez immédiatement.
+49. Dernière épreuve
+L’univers vous pose une ultime question avant de vous laisser passer. Une bonne réponse vous permet d’atteindre la dernière case.
+
+50. Planète légendaire
+Vous atteignez enfin la planète tant recherchée. La mission s’achève et votre voyage entre dans la légende.
+ 

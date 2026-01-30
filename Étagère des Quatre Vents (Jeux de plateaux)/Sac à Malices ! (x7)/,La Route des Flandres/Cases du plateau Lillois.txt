@@ -1,0 +1,84 @@
+Cases du plateau Lillois
+
+
+1. Départ :
+Vous franchissez les portes de Lille, prêt à arpenter ses rues et à empocher 200 euros.
+2. Rue de la Monnaie (beige) :
+Une rue ancienne où les façades flamandes semblent veiller sur les pas des promeneurs.
+3. Rue Esquermoise (beige) :
+Un chemin de briques et de commerces élégants, toujours animé d’une douce effervescence.
+4. Caisse de Communauté :
+Une carte se présente à vous, porteuse de solidarité… ou d’ennuis.
+5. Taxe de Gaufres à l’Ancienne :
+Les traditions du Nord réclament leur dû : versez 80 euros pour soutenir la gourmandise locale.
+6. Gare de Lille-Flandres :
+Sous sa grande verrière, les trains soufflent un air de départ et d’aventures.
+7. Rue de Béthune (bleue) :
+Rue piétonne vibrante, où cafés, rires et vitrines se mêlent en un joyeux tourbillon.
+8. Rue du Molinel (bleue) :
+Un long ruban animé, bordé de boutiques et d’impatiences citadines.
+9. Rue Nationale (bleue) :
+Grande artère commerçante où parfums, passages pressés et sourires s’entrecroisent.
+10. Chance :
+Le hasard ouvre sa main : piochez et laissez-vous guider.
+11. Place du Lion d’Or (rose) :
+Petite place chaleureuse où se mêlent terrasses, éclats de voix et instants suspendus.
+12. Place Rihour (rose) :
+Au pied du palais, la place vit au rythme de rencontres, festivals et passages quotidiens.
+13. Compagnie des Trams Ilévia :
+Les trams filent en silence, reliant quartiers, habitants et nouvelles histoires.
+14. Place de la République (rose) :
+Majestueuse et ouverte, elle accueille les pas lents comme les marches pressées.
+15. Gare de Lille-Europe :
+Carrefour moderne où voyageurs du monde et navetteurs se croisent comme des silhouettes furtives.
+16. Boulevard de la Liberté (orange) :
+Un vaste axe bordé d’arbres où souffle un air de calme urbain.
+17. Boulevard Louis XIV (orange) :
+Un boulevard noble, rythmé par les façades élégantes et les pas feutrés.
+18. Boulevard Vauban (orange) :
+Un espace végétalisé où étudiants, familles et joggeurs se croisent sous les branches.
+19. Chance :
+Le destin revient frapper : à vous de jouer.
+20. Parc Gratuit – Parc de la Citadelle :
+Son ombre fraîche et ses sentiers doux offrent une pause bienvenue au cœur de la ville.
+21. Palais Rihour (rouge) :
+La silhouette gothique du palais veille sur Lille, témoin des siècles passés.
+22. Beffroi de l’Hôtel de Ville (rouge) :
+Imposant et fier, il domine le ciel lillois de sa stature protectrice.
+23. Gare de Roubaix :
+À l’entrée des anciens quartiers textiles, la gare porte encore l’âme du Nord laborieux.
+24. Parc Jean-Baptiste Lebas (jaune) :
+Un parc moderne où pelouses, jeux et couleurs dessinées offrent un havre familial.
+25. Jardin Vauban (jaune) :
+Un jardin romantique où l’eau, la pierre et la verdure composent une douce harmonie.
+26. La Piscine - Musée d’Art et d’Industrie
+Ancienne piscine Art déco transformée en musée éclatant, où l’eau a laissé place aux œuvres.
+27. Gare de Tourcoing :
+Une gare vivante qui ouvre les portes des quartiers frontaliers et des marchés animés.
+28. Rue Faidherbe (jaune) :
+Artère piétonne éclatante où les lumières se reflètent sur les façades en fête.
+29. Place du Théâtre (vert) :
+Entre l’Opéra et la Bourse, la place respire une élégance classique et vivante.
+30. Taxe de Luxe :
+Vos envies fastueuses vous coûtent 100 euros ; on ne brille jamais sans payer.
+31. Prison :
+Les portes se referment… Vous n’êtes ici qu’en visite. Du moins, on vous le souhaite.
+32. Ruelles du Vieux Lille (vert) :
+Un dédale de pavés, de briques et de secrets qui se dévoilent au fil des pas.
+33. Quartier du Vieux Marché (vert) :
+Entre antiquaires et cafés anciens, le passé semble encore vibrer sous les vitrines.
+34. Caisse de Communauté :
+Une carte vous attend, imprévisible et pleine d’humeurs.
+35. Quartier Wazemmes (violet) :
+Un quartier bigarré, généreux et bruyant, où le marché bat comme un cœur vivant.
+36. Caisse de Communauté :
+Une nouvelle carte s’offre à vous, prête à vous aider… ou à vous piéger.
+37. Allez en Prison :
+Le verdict tombe : direction la prison sans détour.
+38. Palais des Beaux-Arts de Lille (violet) :
+Un musée monumental dont les salles recèlent trésors, toiles et merveilles inestimables.
+39. Chance :
+Le hasard sourit, hésite… puis décide pour vous.
+40. Place du Général-de-Gaulle (violet) :
+La grande place s’ouvre comme un théâtre vivant, entourée de façades flamandes magnifiques.
+ 

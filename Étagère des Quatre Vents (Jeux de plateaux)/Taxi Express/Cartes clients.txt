@@ -1,0 +1,75 @@
+Cartes clients
+
+
+1. Karim
+Destination : Museum d’Histoire Naturelle
+Trajet : première à droite jusqu’au Museum d’Histoire Naturelle
+
+2. Sven
+Destination : Parc des Fleurs
+Trajet : première à droite jusqu’au Parc des Fleurs
+
+3. Jawad
+Destination : Hôtel de Ville
+Trajet : première à droite jusqu’à l’Hôtel de Ville
+
+4. Mélanie
+Destination : Place du Marché
+Trajet : première à droite, première à gauche, première à gauche jusqu’à la Place du Marché
+
+5. Antonin
+Destination : Bibliothèque Sainte-Anne
+Trajet : première à droite, première à gauche, première à droite jusqu’à la Bibliothèque Sainte-Anne
+
+6. Eric
+Destination : Kiosque à Musique
+Trajet : première à droite, première à gauche, première à droite jusqu’au Kiosque à Musique
+
+7. Sylvia
+Destination : Café du Tramway
+Trajet : première à droite, première à gauche, première à droite jusqu’au Café du Tramway
+
+8. Rachid
+Destination : Pharmacie Delpêche
+Trajet : première à droite, première à gauche, première à gauche, première à droite, première à droite jusqu’à la Pharmacie Delpêche
+
+9. Benoît
+Destination : Brasserie des Étoiles
+Trajet : première à droite, première à gauche, première à gauche, première à droite, première à droite jusqu’à la Brasserie des Étoiles
+
+10. Sabrina
+Destination : Palais des Sports
+Trajet : première à droite, première à gauche, première à gauche, première à droite, première à droite jusqu’au Palais des Sports
+
+11. Ludwig
+Destination : Cinéma Lézard
+Trajet : première à droite, première à gauche, première à gauche, première à droite, première à droite jusqu’au Cinéma Lézard
+
+12. Marie
+Destination : Gare Ferroviaire
+Trajet : première à droite, première à gauche, première à gauche, première à droite, première à droite, première à gauche, première à gauche jusqu’à la Gare Ferroviaire
+
+13. Michel
+Destination : Clinique Saint-Ange
+Trajet : première à droite, première à gauche, première à gauche, première à droite, première à droite, troisième à gauche, première à droite jusqu’à la Clinique Saint-Ange
+
+14. Farah
+Destination : Hôpital Camille P.
+Trajet : première à droite, première à gauche, première à gauche, première à droite, première à droite, première à gauche, première à gauche, première à droite jusqu’à l’Hôpital Camille P.
+
+15. Josiane
+Destination : Commissariat Central
+Trajet : première à droite, première à gauche, première à gauche, première à droite, première à droite, première à gauche jusqu’au Commissariat Central
+
+16. Léa
+Destination : Université Bertrand Lacroix
+Trajet : première à droite, première à gauche, première à gauche, première à droite, première à droite, deuxième à gauche jusqu’à l’Université Bertrand Lacroix
+
+17. Bertille
+Destination : Roseraie des Cieux
+Trajet : première à droite, première à gauche, première à gauche, première à droite, première à droite, troisième à gauche jusqu’à la Roseraie des Cieux
+
+18. Norah
+Destination : Observatoire Yuna Bretz
+Trajet : première à droite, première à gauche, première à gauche, première à droite, première à droite, troisième à gauche, première à droite, première à gauche jusqu’à l’Observatoire Yuna Bretz
+ 

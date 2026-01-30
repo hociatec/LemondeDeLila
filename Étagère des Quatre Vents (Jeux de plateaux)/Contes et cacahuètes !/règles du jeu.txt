@@ -1,0 +1,54 @@
+Règles du jeu - Contes et cacahuètes !
+
+
+But du jeu
+Vous devez être le premier joueur à atteindre la case « Arrivée », représentée par un grand livre magique, après avoir parcouru un plateau de 60 cases. Tout au long du parcours, vous découvrez des contes du monde entier, ponctués de défis, de surprises, de bonus et de malus.
+ 
+Matériel
+Le jeu comprend
+1. Un plateau de jeu de 60 cases.
+2. Un dé à 6 faces.
+3. Quatre types de cartes.
+a) Cartes Bonus (symbole : fleur de lys bleue)
+b) Cartes Malus (symbole : tourbillon rouge)
+c) Cartes Surprise (symbole : trèfle vert)
+d) Cartes contes (symbole : lune jaune)
+4. Six fiches personnages représentant des enfants du monde entier.
+5. Six pions joueurs (un par personne).
+
+Mise en place
+1. Choisissez une fiche personnage et prenez le pion correspondant.
+2. Ce dernier est automatiquement placé sur la case de départ
+3. Les cartes Bonus, Malus et Surprise sont automatiquement mélangées, puis placées séparément face cachée.
+
+Déroulement du jeu
+À votre tour
+1. Vous lancez le dé.
+2. Vous avancez votre pion du nombre de cases indiqué.
+3. Vous appliquez l’effet de la case sur laquelle vous arrivez.
+
+Types de cases
+a) Case conte : Vous tirez une carte conte et découvrez des merveilles du monde.
+b) case bonus : tirez une carte bonus et appliquez son effet.
+c) case malus : tirez une carte malus et appliquez son effet.
+d) case surprise : tirez une carte surprise et appliquez son effet.
+
+Les cartes
+Lorsque vous tirez une carte, vous appliquez immédiatement son effet.
+1. Cartes Bonus (fleur de lys bleue) Elles vous offrent des avantages, par exemple :
+a) avancer de plusieurs cases.
+b) rejouer un tour.
+c) vous protéger d’un prochain malus.
+2. Cartes Malus (tourbillon rouge) Elles imposent des contraintes, par exemple :
+a) reculer sur le plateau.
+b) passer votre tour.
+c) échanger votre position avec un autre joueur.
+3. Cartes Surprise (trèfle vert) Elles déclenchent des événements inattendus qui peuvent :
+a) vous aider.
+b) ralentir votre progression.
+c) modifier temporairement les règles.
+ 
+Fin de la partie
+Dès que vous atteignez ou dépassiez la case « Arrivée », vous remportez la partie. Vous devenez alors le Maître ou la Maîtresse des contes du monde.
+ 
+Amusez-vous bien et laissez-vous porter par la magie des contes du monde !

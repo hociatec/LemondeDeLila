@@ -1,0 +1,54 @@
+Cartes évênements
+
+
+Case 1 – Groupe de motards
+Une nuée de motards rugissants déboule sur la route, vous devez freiner !
+Case 2 – Route barrée (vide-grenier)
+Des étals colorés s’étendent sur toute la rue : impossible de passer.
+Case 3 – Sortie des écoles
+Une horde d’enfants traverse en riant : patience, laissez-les passer.
+Case 4 – Tempête
+Un arbre vient de tomber en travers de la chaussée, vous devez vous arrêter.
+Case 5 – Piétons qui traversent
+Des passants imprudents traversent sans regarder, mieux vaut freiner !
+Case 6 – Embouteillage
+Les voitures sont coincées partout : vous avancez au compte-gouttes.
+Case 7 – Travaux
+Le bitume est en plein chantier : il faudra attendre pour continuer.
+Case 8 – Envie pressante du client
+Le client tape sur le siège : il faut s’arrêter immédiatement.
+Case 9 – Manifestation
+Une foule en colère bloque la route, impossible de passer.
+Case 10 – Feu rouge
+Les feux s’allument soudain : stop obligatoire !
+Case 11 – Voiture en panne
+Une voiture arrêtée en plein milieu vous force à vous immobiliser.
+Case 12 – Accident
+Les secours sont déjà sur place : le chemin est bloqué.
+Case 13 – Jour de livraison
+Un camion encombrant bouche la voie : mieux vaut attendre.
+Case 14 – Contrôle routier
+La police vérifie les papiers : vous devez patienter.
+Case 15 – Pluie torrentielle
+Des trombes d’eau tombent : la route devient impraticable.
+Case 16 – Incendie
+Des pompiers s’activent autour d’un bâtiment en feu : passage impossible.
+Case 17 – Inondation
+La chaussée est sous l’eau, impossible de continuer.
+Case 18 – Fête des voisins
+Rires, musique et décorations bloquent la rue : il faut attendre.
+Case 19 – Groupe d’oiseaux sur la voie publique
+Une nuée de pigeons traverse devant vous, prudence !
+Case 20 – Récolte de dons pour les enfants malades
+Des bénévoles occupent la rue : impossible de passer.
+Case 21 – Forum de la santé
+Des stands et des visiteurs encombrent le passage.
+Case 22 – Transfert de prisonniers
+Des policiers escortent des détenus : mieux vaut stopper le taxi.
+Case 23 – Exercices de secourisme
+Une scène de formation bloque la rue, patience !
+Case 24 – Foire aux fleurs
+Les allées de fleurs colorées envahissent la chaussée.
+Case 25 – Convoi exceptionnel
+Un camion immense traverse la rue, vous devez attendre.
+ 

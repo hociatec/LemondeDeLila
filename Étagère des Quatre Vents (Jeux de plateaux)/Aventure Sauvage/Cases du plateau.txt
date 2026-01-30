@@ -1,0 +1,93 @@
+Cases du plateau
+
+
+1. Case Neutre (verte)
+Vous pénétrez dans la jungle par un sentier étroit. L’air est chaud, chargé d’odeurs de feuilles et de terre humide. L’aventure commence.
+
+2. Case Neutre (verte)
+Vous avancez sous une canopée dense. Des gouttes tombent encore des branches, comme si la jungle respirait autour de vous.
+
+3. Case Animal rigolo (rouge)
+Vous marchez sur un sol souple recouvert de mousse. Chaque pas devient une petite aventure imprévisible.
+
+4. Case Neutre (verte)
+Vous traversez une clairière silencieuse. Le calme est étrange, presque trop parfait.
+
+5. Case Coup de patte (jaune)
+Vous suivez un ancien chemin tracé par les saisons, mais quelque chose ralentit soudain votre progression.
+
+6. Case Animal rigolo (rouge)
+Vous entendez des bruissements lointains dans les feuillages. Impossible de savoir s’il s’agit du vent… ou d’autre chose.
+
+7. Case Neutre (verte)
+Vous passez près d’un grand arbre aux racines apparentes. Elles serpentent au sol comme un labyrinthe naturel.
+
+8. Case Animal rigolo (rouge)
+Vous longez un ruisseau peu profond. L’eau clapote doucement et attire votre attention.
+
+9. Case Coup de patte (jaune)
+Vous progressez dans une zone plus sombre. La lumière filtre à peine entre les feuilles épaisses.
+
+10. Case Animal rigolo (rouge)
+Vous atteignez un passage étroit envahi de lianes. Votre avancée devient maladroite et imprévisible.
+
+11. Case Neutre (verte)
+Vous débouchez dans un espace plus ouvert. L’air circule mieux, et vous respirez plus librement.
+
+12. Case Animal rigolo (rouge)
+Le sol devient irrégulier. Racines et pierres transforment chaque pas en jeu d’équilibre.
+
+13. Case Coup de patte (jaune)
+Vous traversez une zone marécageuse. Chaque mouvement demande prudence et patience.
+
+14. Case Neutre (verte)
+Vous suivez une légère montée. Vos muscles travaillent, mais la progression est satisfaisante.
+
+15. Case Animal rigolo (rouge)
+Vous marquez une courte pause sur un terrain stable. Les sons de la jungle vous entourent.
+
+16. Case Coup de patte (jaune)
+Vous redescendez vers une zone plus humide. L’atmosphère devient lourde et collante.
+
+17. Case Animal rigolo (rouge)
+Vous avancez sur un chemin bordé de grandes feuilles. Elles frôlent vos bras à chaque pas.
+
+18. Case Neutre (verte)
+Vous traversez une clairière balayée par une brise plus fraîche. Le contraste est agréable.
+
+19. Case Animal rigolo (rouge)
+La végétation devient très dense. Le sol disparaît presque sous les plantes.
+
+20. Case Coup de patte (jaune)
+Un tronc tombé barre le chemin. Vous devez ralentir et contourner l’obstacle.
+
+21. Case Neutre (verte)
+Vous marchez sur une terre plus sèche. L’ambiance change subtilement autour de vous.
+
+22. Case Animal rigolo (rouge)
+Les sons semblent amplifiés, comme si la jungle réagissait à chacun de vos mouvements.
+
+23. Case Coup de patte (jaune)
+Le sentier devient sinueux et instable. Votre progression est mise à l’épreuve.
+
+24. Case Animal rigolo (rouge)
+Le sol est tapissé de feuilles mortes. Elles craquent sous vos pieds de façon imprévisible.
+
+25. Case Neutre (verte)
+Le passage se resserre. La végétation se fait plus pressante, presque oppressante.
+
+26. Case Animal rigolo (rouge)
+Le chemin s’éclaircit soudain. Vous vous sentez encouragé à continuer.
+
+27. Case Coup de patte (jaune)
+L’atmosphère change. Vous sentez que vous approchez d’un lieu important, mais la jungle résiste encore.
+
+28. Case Animal rigolo (rouge)
+Le terrain devient stable et dégagé. Votre progression est fluide et assurée.
+
+29. Case Coup de patte (jaune)
+Vous traversez une dernière zone dense. La jungle semble tester votre détermination une ultime fois.
+
+30. Case Neutre – Arrivée (verte)
+Vous atteignez enfin la mare au cœur de la jungle. L’eau est calme, l’air plus frais, et le sentier s’arrête ici. Votre aventure prend fin.
+ 

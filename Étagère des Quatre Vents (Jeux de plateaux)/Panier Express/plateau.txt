@@ -1,0 +1,41 @@
+1. Départ
+2. Stand Fruitier
+3. Case "Pioche carte Événement"
+4. Stand Maraîcher (légumes frais)
+5. Case "Échange avec un joueur"
+6. Stand Bio
+7. Case "Avance d’une case"
+8. Stand Primeur
+9. Case "Perd ton prochain tour"
+10. Stand des Fruits Exotiques
+11. Case "Pioche carte Échange"
+12. Stand Légumes Racines
+13. Case "Recule de 2 cases"
+14. Stand Légumes Feuilles
+15. Case "Mini Quiz (réponds à une question)"
+16. Stand des Fruits Rouges
+17. Case "Pioche carte Événement"
+18. Stand des Légumes Secs
+19. Case "Échange de cartes avec un autre joueur"
+20. Stand Bio
+21. Case "Avance jusqu’à un stand de ton choix"
+22. Stand Primeur
+23. Case "Pioche carte Courses supplémentaire"
+24. Stand des Agrumes
+25. Case "Reste un tour sur place"
+26. Stand Fruits Secs
+27. Case "Troc improvisé (échange une carte avec joueur voisin)"
+28. Stand Légumes d’Été
+29. Case "Retour en arrière de 3 cases"
+30. Stand Fruits d’Hiver
+31. Case "Pioche carte Échange"
+32. Stand Légumes Exotiques
+33. Case "Mini Quiz (réponds à une question)"
+34. Stand des Champignons
+35. Case "Avance de 2 cases"
+36. Stand Primeur
+37. Case "Pioche carte Événement"
+38. Stand Maraîcher
+39. Case "Échange libre de cartes entre joueurs"
+40. Arrivée (Termine la course !)
+ 

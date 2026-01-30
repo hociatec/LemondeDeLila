@@ -1,0 +1,89 @@
+Infrastructures construites sur une propriété spatiale
+
+• 1 infrastructure
+• 
+Type : Module d’habitation spatial
+• 
+Bonus de loyer : +15 crédits cosmiques
+• 
+Description : Petite unité de logement sur une planète ou station
+• 2 infrastructures
+• 
+Type : 2 Satellites de communication
+• 
+Bonus de loyer : +30 crédits cosmiques
+• 
+Description : Amélioration de la connectivité et des transmissions spatiales
+• 3 infrastructures
+• 
+Type : 3 Centrales énergétiques solaires
+• 
+Bonus de loyer : +45 crédits cosmiques
+• 
+Description : Production accrue d’énergie renouvelable pour la base
+• 4 infrastructures
+• 
+Type : Colonie orbitale complète
+• 
+Bonus de loyer : +75 crédits cosmiques
+• 
+Description : Hub spatial avancé, centre de vie et d’activité
+ 
+Notes importantes :
+• 
+Le joueur peut construire jusqu’à 4 infrastructures par propriété.
+• 
+Le bonus de loyer s’ajoute à chaque construction).
+• 
+Les infrastructures doivent être construites dans l’ordre (1, puis 2, puis 3, puis 4).
+ 
+Coût de construction des infrastructures spatiales :
+• 
+1ère infrastructure (Module d’habitation spatial) : 60 crédits cosmiques
+• 
+2ème infrastructure (Satellites de communication) : 120 crédits cosmiques
+• 
+3ème infrastructure (Centrales énergétiques solaires) : 180 crédits cosmiques
+• 
+4ème infrastructure (Colonie orbitale complète) : 300 crédits cosmiques
+ 
+Résumé complet :
+• 
+Pour construire la 1ère infrastructure sur une propriété, tu paies 60 crédits cosmiques et le loyer augmente de +15.
+• 
+Pour la 2ème, tu ajoutes 120 crédits cosmiques et le loyer augmente de +30.
+• 
+Pour la 3ème, 180 crédits cosmiques et +45 au loyer.
+• 
+Pour la 4ème, 300 crédits cosmiques et +75 au loyer.
+ 
+Règles spéciales liées à la construction d’infrastructures spatiales :
+1. 
+Conditions de construction
+• 
+Tu ne peux construire des infrastructures que si tu possèdes toutes les propriétés d’un même groupe spatial (comme dans le Monopoly classique avec les couleurs).
+• 
+Exemple : pour construire sur “Mars” et “Station Lunaire”, tu dois posséder toutes les cases du groupe “Système solaire intérieur”.
+2. 
+Vente des infrastructures
+• 
+Tu peux vendre une infrastructure à la banque pour la moitié du prix d’achat (arrondi au crédit cosmique le plus proche).
+• 
+La vente réduit immédiatement le loyer de la propriété en fonction de l’infrastructure vendue.
+• 
+Tu dois vendre les infrastructures dans l’ordre inverse de leur construction (d’abord la 4ème, puis la 3ème, etc.).
+3. 
+Dommages ou pannes spatiales
+• 
+Certaines cartes Anomalie Spatiale ou Événement Spatial peuvent imposer une pénalité liée à des pannes ou dégâts (exemple : “Satellites hors service” ou “Panne de centrale solaire”).
+• 
+Dans ce cas, tu dois payer une somme pour réparer (par exemple 60 crédits cosmiques).
+• 
+Si tu ne peux pas payer, tu perds une infrastructure sur une propriété au choix (à retourner à la banque).
+4. 
+Bonus galactique
+• 
+Si tu as construit au moins 2 infrastructures sur toutes les propriétés d’un groupe, tu gagnes un bonus de 150 crédits cosmiques (représentant un réseau spatial performant).
+• 
+Ce bonus est donné à chaque tour où tu possèdes cette configuration.
+ 

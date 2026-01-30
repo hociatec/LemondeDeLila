@@ -1,0 +1,115 @@
+Fiches groupes
+
+
+Groupe Beige
+Propriétés : Rue de la Monnaie, Rue Esquermoise
+Prix d’achat : 60 €
+Hypothèque : 30 €
+Coût pour lever l’hypothèque : 33 €
+Loyer de base : 2 €
+Loyer avec 1 maison flamande : 10 €
+Loyer avec 2 maisons flamandes : 30 €
+Loyer avec 3 maisons flamandes : 90 €
+Loyer avec 4 maisons flamandes : 160 €
+Loyer avec hôtel lillois : 250 €
+Prix d’une maison flamande : 50 €
+Prix d’un hôtel lillois : 100 €
+ 
+Groupe Bleu
+Propriétés : Rue de Béthune, Rue du Molinel, Rue Nationale
+Prix d’achat : 100 €
+Hypothèque : 50 €
+Coût pour lever l’hypothèque : 55 €
+Loyer de base : 6 €
+Loyer avec 1 maison flamande : 30 €
+Loyer avec 2 maisons flamandes : 90 €
+Loyer avec 3 maisons flamandes : 270 €
+Loyer avec 4 maisons flamandes : 400 €
+Loyer avec hôtel lillois : 550 €
+Prix d’une maison flamande : 50 €
+Prix d’un hôtel lillois : 100 €
+ 
+Groupe Rose
+Propriétés : Place du Lion d’Or, Place Rihour, Place de la République
+Prix d’achat : 140 €
+Hypothèque : 70 €
+Coût pour lever l’hypothèque : 77 €
+Loyer de base : 10 €
+Loyer avec 1 maison flamande : 50 €
+Loyer avec 2 maisons flamandes : 150 €
+Loyer avec 3 maisons flamandes : 450 €
+Loyer avec 4 maisons flamandes : 625 €
+Loyer avec hôtel lillois : 750 €
+Prix d’une maison flamande : 100 €
+Prix d’un hôtel lillois : 200 €
+ 
+Groupe Orange
+Propriétés : Boulevard de la Liberté, Boulevard Louis XIV, Boulevard Vauban
+Prix d’achat : 180 €
+Hypothèque : 90 €
+Coût pour lever l’hypothèque : 99 €
+Loyer de base : 14 €
+Loyer avec 1 maison flamande : 70 €
+Loyer avec 2 maisons flamandes : 200 €
+Loyer avec 3 maisons flamandes : 550 €
+Loyer avec 4 maisons flamandes : 750 €
+Loyer avec hôtel lillois : 950 €
+Prix d’une maison flamande : 100 €
+Prix d’un hôtel lillois : 200 €
+ 
+Groupe Rouge
+Propriétés : Palais Rihour, Beffroi de l’Hôtel de Ville
+Prix d’achat : 220 €
+Hypothèque : 110 €
+Coût pour lever l’hypothèque : 121 €
+Loyer de base : 18 €
+Loyer avec 1 maison flamande : 90 €
+Loyer avec 2 maisons flamandes : 250 €
+Loyer avec 3 maisons flamandes : 700 €
+Loyer avec 4 maisons flamandes : 875 €
+Loyer avec hôtel lillois : 1050 €
+Prix d’une maison flamande : 150 €
+Prix d’un hôtel lillois : 300 €
+ 
+Groupe Jaune
+Propriétés : Parc de la Citadelle, Jardin Vauban, Rue Faidherbe
+Prix d’achat : 260 €
+Hypothèque : 130 €
+Coût pour lever l’hypothèque : 143 €
+Loyer de base : 22 €
+Loyer avec 1 maison flamande : 110 €
+Loyer avec 2 maisons flamandes : 330 €
+Loyer avec 3 maisons flamandes : 800 €
+Loyer avec 4 maisons flamandes : 975 €
+Loyer avec hôtel lillois : 1150 €
+Prix d’une maison flamande : 150 €
+Prix d’un hôtel lillois : 300 €
+ 
+Groupe Vert
+Propriétés : Place du Théâtre, Ruelles du Vieux Lille, Quartier du Vieux Marché
+Prix d’achat : 300 €
+Hypothèque : 150 €
+Coût pour lever l’hypothèque : 165 €
+Loyer de base : 26 €
+Loyer avec 1 maison flamande : 130 €
+Loyer avec 2 maisons flamandes : 390 €
+Loyer avec 3 maisons flamandes : 900 €
+Loyer avec 4 maisons flamandes : 1100 €
+Loyer avec hôtel lillois : 1275 €
+Prix d’une maison flamande : 200 €
+Prix d’un hôtel lillois : 400 €
+ 
+Groupe Violet
+Propriétés : Quartier Wazemmes, Palais des Beaux-Arts de Lille, Grand’Place
+Prix d’achat : 350 €
+Hypothèque : 175 €
+Coût pour lever l’hypothèque : 193 €
+Loyer de base : 35 €
+Loyer avec 1 maison flamande : 175 €
+Loyer avec 2 maisons flamandes : 500 €
+Loyer avec 3 maisons flamandes : 1100 €
+Loyer avec 4 maisons flamandes : 1300 €
+Loyer avec hôtel lillois : 1500 €
+Prix d’une maison flamande : 200 €
+Prix d’un hôtel lillois : 400 €
+ 

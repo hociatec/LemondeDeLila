@@ -1,0 +1,21 @@
+Pions joueur
+
+
+Le Lion
+Vous avancez avec une crinière imposante qui bouge à chaque pas. Vous avez l’air majestueux, presque fier de vous, même dans les moments les plus cocasses. Tout le monde vous remarque dès que vous entrez sur le plateau.
+ 
+L’Éléphant
+Vous progressez avec votre masse imposante et vos oreilles qui se balancent doucement. Chaque pas résonne comme un petit tambour, et votre trompe semble parfois avoir sa propre idée. On ne peut pas vous louper, et votre présence inspire un sourire immédiat.
+ 
+La Girafe
+Vous avancez la tête très haute, votre long cou semblant vouloir toucher les nuages. Vos grandes pattes font des pas élégants mais légèrement maladroits, et vous donnez l’impression de toujours observer quelque chose d’intriguant autour de vous.
+ 
+Le Zèbre
+Vous trottez avec vos rayures parfaitement dessinées, changeant parfois de direction sans prévenir. Votre allure énergique et imprévisible attire les regards et provoque toujours un petit rire discret chez ceux qui vous suivent.
+ 
+Le Crocodile
+Vous glissez silencieusement, votre corps long et écailleux presque collé au sol. Votre large bouche entrouverte laisse entrevoir un sourire malicieux, et on a l’impression que vous pourriez surprendre tout le monde à tout moment.
+ 
+L’Autruche
+Vous avancez avec votre corps rond et vos longues pattes puissantes. Votre cou bouge dans tous les sens, et vos départs soudains pour courir ou vous arrêter font toujours sourire ceux qui observent votre trajectoire.
+ 

@@ -1,0 +1,92 @@
+Nombre d’infrastructures construites sur une propriété :
+• 
+1 infrastructure
+• 
+Type : Jardin partagé (exemple)
+• 
+Bonus de loyer : +10 crédits verts
+• 
+Description : Petite amélioration écologique locale
+• 
+2 infrastructures
+• 
+Type : 2 panneaux solaires
+• 
+Bonus de loyer : +20 crédits verts
+• 
+Description : Production d’énergie renouvelable
+• 
+3 infrastructures
+• 
+Type : 3 éoliennes
+• 
+Bonus de loyer : +30 crédits verts
+• 
+Description : Production accrue d’énergie propre
+• 
+4 infrastructures
+• 
+Type : Ferme bio ou Centre écologique complet
+• 
+Bonus de loyer : +50 crédits verts
+• 
+Description : Projet complet et durable
+ 
+Notes importantes :
+• 
+Le joueur peut construire jusqu’à 4 infrastructures par propriété.
+• 
+Le bonus de loyer s’ajoute à chaque construction, ou bien tu peux choisir un système par palier (ex : seulement le bonus du dernier niveau atteint).
+• 
+Les infrastructures doivent être construites dans l’ordre (1, puis 2, puis 3, puis 4).
+ 
+Coût de construction des infrastructures écologiques
+• 
+1ère infrastructure (Jardin partagé) : 50 crédits verts
+• 
+2ème infrastructure (Panneaux solaires) : 100 crédits verts
+• 
+3ème infrastructure (Éoliennes) : 150 crédits verts
+• 
+4ème infrastructure (Ferme bio / Centre écologique) : 250 crédits verts
+ 
+Résumé complet :
+• 
+Pour construire la 1ère infrastructure sur une propriété, tu paies 50 crédits verts et le loyer augmente de +10.
+• 
+Pour la 2ème, tu ajoutes 100 crédits verts et le loyer augmente de +20.
+• 
+Pour la 3ème, 150 crédits verts et +30 au loyer.
+• 
+Pour la 4ème, 250 crédits verts et +50 au loyer.
+ 
+Règles spéciales liées à la construction d’infrastructures écologiques
+1. 
+Conditions de construction
+• 
+Tu ne peux construire des infrastructures que si tu possèdes toutes les propriétés d’un même groupe thématique (comme dans le Monopoly classique avec les couleurs).
+• 
+Exemple : pour construire sur “Piste cyclable”, tu dois posséder toutes les cases “Projets locaux et urbains écologiques”.
+2. 
+Vente des infrastructures
+• 
+Tu peux vendre une infrastructure à la banque pour la moitié du prix d’achat (arrondi au crédit vert le plus proche).
+• 
+La vente réduit immédiatement le loyer de la propriété en fonction de l’infrastructure vendue.
+• 
+Tu dois vendre les infrastructures dans l’ordre inverse de leur construction (d’abord la 4ème, puis la 3ème, etc.).
+3. 
+Pollution ou dégâts
+• 
+Certaines cartes Chance ou Communauté peuvent imposer une pénalité liée à la pollution ou à des dégâts (exemple : “Panneau solaire cassé” ou “Éolienne défectueuse”).
+• 
+Dans ce cas, tu dois payer une somme pour réparer (par exemple 50 crédits verts).
+• 
+Si tu ne peux pas payer, tu perds une infrastructure sur une propriété au choix (à retourner à la banque).
+4. 
+Bonus écologique
+• 
+Si tu as construit au moins 2 infrastructures sur toutes les propriétés d’un groupe, tu gagnes un bonus de 100 crédits verts (représentant un réseau écologique performant).
+• 
+Ce bonus est donné à chaque tour où tu possèdes cette configuration.
+ 

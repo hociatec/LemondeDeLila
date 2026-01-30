@@ -1,0 +1,243 @@
+Cases du plateau
+
+
+1. Départ – Dublin, le cœur vibrant (Neutre)
+Vous commencez votre voyage dans les rues animées de Dublin. Le parfum du café fraîchement moulu et des pâtisseries flotte dans l’air tandis que les sons des musiciens de rue se mêlent aux pas des passants.
+
+2. Trésor Culturel – Trinity College
+Les murs centenaires du Trinity College résonnent des pas des étudiants et des visiteurs émerveillés par le Livre de Kells. Chaque enluminure raconte l’histoire de l’Irlande.
+
+3. Tradition – Fête de Samhain à Kells
+Les habitants décorent les maisons de citrouilles et allument des feux sacrés. Vous sentez la magie ancienne de cette célébration automnale.
+
+4. Paysage – Falaises de Moher
+Le vent fouette vos joues alors que les falaises s’élancent vers l’océan. Les vagues rugissent en contrebas et le vert des prairies tranche avec le bleu profond de la mer.
+
+5. Farce – Marais de Bog of Allen
+Vous traversez le mystérieux Bog of Allen, vaste marais au cœur de l’Irlande. Le sol spongieux grince sous vos pas et de petits trous d’eau laissent échapper des vapeurs mystérieuses. Les grenouilles coassent, les oiseaux vous observent, et parfois, un esprit farceur semble déplacer les troncs ou créer des illusions étranges. Méfiez‑vous : dans ces marais, tout peut se jouer d’un voyageur inattentif !
+
+6. Neutre – Pont Ha’Penny, Dublin
+Le célèbre pont de fer enjambe la Liffey. Chaque pas sur le bois ancien vous rapproche des histoires des amoureux et voyageurs d’antan.
+
+7. Légende – Slieve Bloom
+Les collines de Slieve Bloom s’élèvent doucement, couvertes de bruyères et de forêts anciennes. On raconte que des esprits du vent et du feu veillent sur ces terres, vestiges d’anciens volcans endormis. Le brouillard et les chants des oiseaux créent une atmosphère mystérieuse, comme si chaque pierre murmurait les secrets des anciens druides.
+
+8. Trésor Culturel – Bibliothèque de Marsh, Dublin
+Vous découvrez la célèbre bibliothèque aux étagères infinies et aux voûtes majestueuses. Les manuscrits anciens et les rouleaux médiévaux racontent l’histoire intellectuelle de l’Irlande, et chaque pas parmi les rayonnages semble vous plonger dans un voyage à travers le temps.
+
+9. Neutre – Bain thermal de Lisdoonvarna
+L’eau chaude et minérale s’élève en vapeur dans l’air frais. Le murmure des sources invite à la détente et à l’observation des collines environnantes.
+
+10. Tradition – Pêche traditionnelle sur le Shannon
+Les pêcheurs tirent leurs filets à l’aube. Les gestes anciens et le chant des oiseaux donnent un air de sérénité à l’aube irlandaise.
+
+11. Farce – Village de Doolin
+Les ruelles étroites résonnent des sons d’accordéons et de rires. Méfiez-vous : un farceur pourrait vous faire trébucher… de rire !
+
+12. Neutre – Escalier de Clonmacnoise
+Les pierres usées guident dans le monastère ancien. Chaque marche semble murmurer des prières et des chants oubliés.
+
+13. Légende – Forêt de Killarney
+Les bois abritent faunes et créatures mythiques. On raconte que les druides y laissaient des messages secrets aux voyageurs.
+
+14. Paysage – Connemara, l’étendue sauvage
+Les tourbières s’étendent à perte de vue, ponctuées de lochs scintillants. Le vent transporte les parfums de bruyère et d’air pur.
+
+15. Tradition – Danse et musique traditionnelle à Kilkenny
+Au son des violons et bodhrans, habitants et visiteurs se joignent à une danse folklorique. L’énergie du groupe emplit les ruelles médiévales.
+
+16. Neutre – Rue pavée de Galway
+Les façades colorées et les boutiques artisanales créent une atmosphère vivante et chaleureuse. L’odeur des biscuits et du pain chatouille vos narines.
+
+17. Farce – Pont de Carrick-a-Rede
+La passerelle suspendue danse sous le vent. Chaque pas semble une aventure… et peut-être un défi espiègle lancé par la nature elle-même.
+
+18. Trésor Culturel – Château de Powerscourt
+Les jardins spectaculaires s’étendent à perte de vue, ponctués de fontaines, statues et allées fleuries. Le château lui-même, avec ses salles richement décorées et ses portraits anciens, raconte l’histoire des nobles irlandais et de leurs traditions artistiques.
+
+19. Légende – Lough Neagh
+Les eaux calmes du plus grand lac d’Irlande cachent les secrets des créatures mystiques et des histoires de pêche miraculeuse. Les brumes révèlent parfois les silhouettes des anciens héros.
+
+20. Tradition – Festival des Feux de Beltane
+Les feux illuminent la nuit tandis que les habitants célèbrent la fertilité et le renouveau. Vous sentez l’énergie vibrante de la saison et des anciens rites.
+
+ 21. Neutre – Quai de Dingle
+Les bateaux colorés se balancent doucement sur l’eau. L’air salin emporte les chants des pêcheurs et le parfum iodé des embruns.
+
+22. Farce – Village de Adare
+Les chaumières aux toits de chaume semblent paisibles… mais derrière chaque fenêtre, un petit esprit espiègle pourrait vous surprendre.
+
+23. Tradition – Cérémonie du mariage à Bunratty
+Les habitants en costumes anciens célèbrent l’union sous des arches fleuries. Les musiques et chants traditionnels emplissent la cour du château.
+
+24. Trésor Culturel – Rockingham House
+Cette demeure ancienne vous transporte dans les salons feutrés et les jardins impeccables des grandes familles irlandaises.
+
+25. Paysage – Glens of Antrim
+Les vallées profondes et verdoyantes serpentent entre des collines escarpées, parsemées de rivières scintillantes et de cascades cachées. Le chant des oiseaux et le bruissement des feuilles créent un spectacle naturel empreint de calme et de mystère.
+
+26. Neutre – Village de Adrigole
+Les ruelles tranquilles et les maisons aux façades colorées s’étendent le long de la vallée d’Adrigole. Le murmure du ruisseau et le chant des oiseaux créent une ambiance paisible. Chaque pas vous invite à découvrir la vie quotidienne des habitants et la beauté intacte de ce coin reculé du comté de Cork.
+
+27. Légende – Chemin des Fées de Turlough
+Les landes sont ponctuées de pierres mystérieuses et de trous d’eau où, dit-on, les fées dansent au clair de lune.
+
+28. Farce – Glencar Waterfall
+L’eau chute avec fracas sur les rochers, et un esprit malicieux pourrait éclabousser les visiteurs ou cacher un petit objet inattendu.
+
+29. Trésor Culturel – Monastère de Clonmacnoise
+Les ruines anciennes s’élèvent le long du Shannon. Les croix celtiques et les manuscrits évoquent le savoir, la foi et les légendes monastiques.
+
+30. Tradition – Fête de la Saint-Patrick à Dublin
+Les rues s’illuminent de vert, les musiciens de rue jouent des airs entraînants, et les habitants dansent au rythme des tambours et violons.
+
+31. Neutre – Village de Portmagee
+Vous arrivez dans le petit village côtier de Portmagee, avec ses maisons colorées et son port pittoresque. Les bateaux de pêche se balancent doucement sur l’eau et les mouettes crient au-dessus des quais. Le parfum salin de l’océan et le bruissement des vagues créent une atmosphère paisible et authentique.
+
+32. Paysage – Plage de Dog's Bay
+La courbe parfaite de sable blanc se mêle aux eaux turquoise de l’Atlantique. Le vent léger apporte une odeur saline, tandis que les vagues dessinent des motifs éphémères sur la plage immaculée. Un lieu paisible où la lumière semble danser sur chaque grain de sable.
+
+33. Légende – Roche de Cashel
+Le rocher s’élève majestueux, témoin des rois et saints irlandais. Certaines pierres semblent encore murmurer des histoires anciennes.
+
+34. Farce – Le Violon qui Joue Tout Seul à Minuit
+Dans certaines vieilles auberges, on dit qu’un violon abandonné se met à jouer un air de jig quand son propriétaire oublie de le ranger. Les habitants assurent qu’il ne joue pas pour faire peur, juste pour rappeler qu’un instrument irlandais, ça ne reste pas muet longtemps.
+
+35. Tradition – Danse des Mayflowers à Cork
+Les habitants exécutent des danses anciennes autour de maypoles fleuris, perpétuant des coutumes joyeuses et colorées.
+
+36. Neutre – Jardin botanique de Dublin
+Les allées se perdent parmi fleurs colorées et arbres majestueux. L’air est doux et parfumé, invitant à la détente et à l’observation des plantes rares.
+
+37. Trésor Culturel – Château de Cahir
+Les murailles imposantes et les douves profondes racontent l’histoire des chevaliers et des batailles médiévales.
+
+38. Légende – Lough Corrib
+On raconte que des créatures mystérieuses peuplent le lac et protègent les trésors engloutis. Le brouillard semble murmurer de vieilles légendes.
+
+39. Paysage – Île d’Aran
+Falaises abruptes et prairies ventées donnent à l’île un charme sauvage. Les moutons paissent librement et la mer clapote contre les rochers noirs.
+
+40 — Paysage : Les Burren, le désert de pierre
+Dans ce paysage lunaire du comté de Clare, d’immenses dalles de calcaire s’étendent à perte de vue, fendillées comme une peau antique. Entre les failles, des fleurs minuscules jaillissent, défiant la rudesse du vent. On dit que marcher ici, c’est voyager dans un autre âge de la Terre.
+
+ 41. Neutre – Promenade dans les rues de Galway
+Les pavés luisent sous vos pas, et les façades colorées des maisons semblent sourire aux passants. L’air est empli d’une légère brise marine et des rires s’échappent des cafés animés.
+
+42. Farce – Île de Skellig Michael
+Les oiseaux et le vent jouent avec votre équilibre sur les marches abruptes. Une apparition de puffin ou un cri inattendu pourrait vous faire rire ou sursauter.
+
+43. Tradition – Festival des Lumières de Derry
+Les lanternes flottent au-dessus des rues, illuminant la nuit d’une douce clarté. Les habitants partagent musiques, danses et histoires locales.
+
+44. Trésor Culturel – Musée National d’Irlande, Dublin
+Dans les salles feutrées, vous découvrez des artefacts celtiques fascinants : torques d’or, armes finement ciselées, broderies anciennes. Chaque vitrine éclaire un pan de l’histoire irlandaise, des mythes fondateurs aux grandes époques monastiques. Le silence du musée vous enveloppe tandis que vous voyagez à travers les siècles.
+
+45 – Paysage – Parc forestier de Killarney
+Les lacs tranquilles reflètent les collines verdoyantes et les forêts anciennes. Le parfum des pins et le chant des oiseaux créent une atmosphère de calme absolu.
+
+46. Légende – Giant’s Causeway
+Les colonnes de basalte s’alignent comme une passerelle géante vers l’océan. La légende raconte qu’elles ont été construites par un géant pour traverser la mer et défier son rival.
+
+47. Neutre – Marché de Dublin
+Les étals regorgent de fruits, de légumes, de fromages et de spécialités locales. Les voix des marchands et le parfum des herbes créent une atmosphère animée et chaleureuse.
+
+48. Farce – Parc national de Killarney
+Le vent dans les arbres et les cascades cachées peuvent créer des illusions sonores. Une feuille tombante ou un écureuil curieux pourrait vous surprendre.
+
+49. Tradition – Bal de la Saint-Jean à Cork
+Les villageois dansent autour du feu, chantant des airs anciens. Les étincelles illuminent la nuit et célèbrent l’arrivée de l’été.
+
+50. Trésor Culturel – Château de Kilkenny
+Les pierres anciennes racontent les exploits des seigneurs et des chevaliers. À l’intérieur, tapisseries, salles d’armes et couloirs secrets révèlent des trésors historiques.
+
+51. Paysage – Lough Mask
+Le lac s’étend comme un miroir sombre, reflétant les nuages et les collines environnantes. Les brumes matinales donnent à l’endroit une atmosphère mystérieuse et paisible.
+
+52. Légende – Knock Shrine
+Les pèlerins marchent lentement vers l’apparition sacrée. Des récits miraculeux entourent ce lieu de dévotion, où le sacré et le quotidien se croisent.
+
+53. Neutre – Rue animée de Belfast
+Les façades modernes côtoient les murs historiques, et les artistes de rue partagent leurs œuvres et musiques. L’énergie de la ville vous enveloppe doucement.
+
+54. Farce – Le Mouton Jugeur de Connemara
+On raconte qu’un mouton solitaire, perché sur un muret de pierres sèches, observe les voyageurs avec l’air le plus sévère d’Irlande. Si vous passez trop vite, il secoue la tête ; si vous passez trop lentement, il vous juge encore plus fort. Certains disent qu’il comprend tout. Les autres préfèrent ne pas vérifier.
+
+55. Tradition – Pique-nique folklorique à Lough Neagh
+Les habitants se rassemblent au bord du lac, partageant musiques, contes et mets traditionnels, dans un cadre naturel enchanteur.
+
+56. Trésor Culturel – Newgrange
+Le tumulus préhistorique renferme un mystère vieux de 5 000 ans. À l’intérieur, la lumière du solstice révèle un savoir astronomique fascinant.
+
+57. Paysage – Lough Ree
+Les eaux calmes du Lough Ree s’étendent sous un ciel changeant, bordées de forêts anciennes et de prairies verdoyantes. Le reflet des nuages et le chant des oiseaux créent une atmosphère sereine et presque mystique, propice à la contemplation et à la rêverie.
+ 
+58. Légende – Château de Dunluce
+Perché au bord d’une falaise, le château semble flotter dans la brume. Les légendes y murmurent batailles, romances et disparitions mystérieuses.
+
+59 – Neutre – Rue médiévale de Trim
+Les pavés usés et les maisons anciennes racontent l’histoire du passé. Les odeurs de pain frais et de fleurs en pot ajoutent un charme discret et authentique.
+
+60. Farce – Chaussée des Géants
+Les colonnes de basalte forment un chemin improbable. On raconte que les géants y ont laissé plus d’un piège… ou quelques farces minérales.
+
+61 – Neutre – Quai de Howth
+Les bateaux de pêche oscillent doucement sur l’eau, les mouettes tournoient et le vent salin chatouille le visage. L’endroit respire la tranquillité maritime et le quotidien des pêcheurs.
+
+62. Farce – Grotte de Marble Arch
+L’obscurité et l’écho des gouttes d’eau peuvent vous jouer des tours. Un bruit soudain ou un reflet inattendu pourrait vous surprendre.
+
+63. Tradition – Fête de la Harpe à Belfast
+Des musiciens talentueux font vibrer les cordes, tandis que les habitants chantent des airs anciens. La culture irlandaise s’exprime avec énergie et passion.
+
+64. Trésor Culturel – Château de Blarney
+Vous approchez du célèbre château. Baiser la pierre vous promet l’éloquence, tandis que chaque mur raconte l’histoire de batailles et d’héritages anciens.
+
+65 – Paysage – Iles Skellig
+Les îles rocheuses se dressent au large, battues par les vagues de l’Atlantique. Les ruines monastiques et la nature sauvage offrent un spectacle dramatique et fascinant.
+
+66. Légende – Colline de Tara
+Ancien siège mythique des rois d’Irlande. Les tertres sacrés vibrent encore des échos druidiques, comme si le passé chuchotait sous vos pas.
+
+67. Neutre – Quai de Kinsale
+Les barques colorées oscillent doucement dans le port. L’air marin apporte une odeur d’embruns et de poisson grillé, tandis que les façades pastel se reflètent sur l’eau calme.
+
+68. Farce – Farces du Banshee
+Alors que vous traversez un sentier brumeux, un petit cri perçant retentit derrière un rocher… mais ce n’est que le Banshee qui joue des tours aux voyageurs inattentifs ! Une branche qui tombe, un souffle de vent soudain, ou un reflet étrange dans l’eau vous fait sursauter… mais tout ceci n’est que malice et mystère.
+
+69. Tradition – Marché d’été à Cork
+Les stands regorgent de produits locaux et artisanaux. La musique et les rires des enfants emplissent l’air, célébrant la vie et les traditions locales.
+
+70. Trésor Culturel – Château de Lismore
+Perché au cœur du comté de Waterford, le château de Lismore dévoile ses vastes jardins, ses salles richement décorées et ses trésors artistiques. Chaque pierre raconte les histoires des seigneurs et des grands événements qui ont façonné l’histoire irlandaise.
+
+71. Paysage – Montagnes du Wicklow
+Les collines verdoyantes ondulent sous le vent. Les sentiers serpentent entre les tourbières et les forêts, offrant une vue spectaculaire sur la campagne irlandaise.
+
+72. Légende – Le Cheval d’Ombre de Knockmany
+Dans les collines de Knockmany, on raconte qu’un cheval noir, né de l’ombre et du vent, apparaît parfois au crépuscule. Ceux qui croisent son regard jurent entendre un souffle venu d’un autre monde, comme un appel vers les anciens dieux.
+
+73. Neutre – Sentier de Glendalough
+Vous marchez le long des lacs paisibles et des ruines monastiques de Glendalough. Les pierres anciennes et les arbres centenaires créent une atmosphère de sérénité. Le murmure de l’eau et le chant des oiseaux vous accompagnent, tandis que chaque pas raconte l’histoire tranquille de ce lieu sacré.
+
+74. Farce – L’Île d’Inishbofin
+Les falaises escarpées et les sentiers étroits de cette île au large du Connemara cachent parfois des moutons espiègles et des oiseaux malicieux. Un vent soudain ou un cri perçant peut vous surprendre, et les habitants racontent que certains visiteurs repartent avec un souvenir… tout à fait inattendu !
+
+75. Tradition – Festival de la Saint-Patrick
+Les habitants vêtus de vert défilent dans les rues, tambours et cornemuses résonnent. La fierté et la culture irlandaise éclatent en musique et en couleurs.
+
+76 – Trésor Culturel – Abbaye de Kylemore
+L’abbaye victorienne se dresse au bord du lac Pollacapall, entourée de jardins victoriens et de paysages enchanteurs. Chaque salle raconte l’histoire des moines bénédictins et des artistes qui ont contribué à sa splendeur.
+
+77 – Paysage – Mourne Mountains
+Les sommets granitiques s’élèvent dans la brume, les vallées cachent des ruisseaux scintillants. La lumière changeante donne à chaque regard un paysage nouveau et mystérieux.
+
+78. Légende – La Dame Blanche de Lough Gur
+Au bord du lac Lough Gur, certains disent apercevoir une silhouette éthérée vêtue de blanc. On raconte qu’elle apparaît lors des nuits de brume pour guider les voyageurs perdus ou annoncer un événement mystérieux. Le vent porte parfois ses soupirs anciens, et chaque reflet sur l’eau semble murmurer une histoire oubliée.
+
+79. Neutre – Montagnes de Slieve Gullion
+Vous marchez dans les contreforts de Slieve Gullion, un ancien volcan endormi. Les pentes verdoyantes et les cratères formés il y a des millénaires créent un paysage à la fois majestueux et mystérieux. Le souffle du vent et les légers murmures des ruisseaux accompagnent vos pas, tandis que l’histoire géologique et mythique de la montagne semble vibrer sous vos pieds.
+
+80. Farce – Falaises de Slieve League
+Vous admirez les falaises vertigineuses… mais attention ! Un vent espiègle ou un oiseau curieux pourrait vous surprendre et faire vaciller votre équilibre.
+ 

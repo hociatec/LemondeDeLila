@@ -1,0 +1,88 @@
+Cases du plateau
+
+
+Case 1. - Place Centrale
+Vous vous tenez sur la Place Centrale de votre village. De là, toutes les avenues partent vers de nouvelles aventures et métiers. Respirez l’air du marché et préparez-vous à développer votre village.
+Case 2 – Champs et prairies
+Vous marchez entre champs et pâturages. L’Agriculteur cultive la terre et le Berger veille sur les troupeaux. Votre village commence à nourrir ses habitants.
+Case 3 – Élevage et ruches
+Dans l’étable et le rucher, le Vacher, le Porcher et l’Apiculteur travaillent avec soin. Votre village gagne en lait, viande et miel.
+Case 4 – Forêt et bois
+Vous pénétrez dans la forêt. Le Bûcheron abat les arbres avec prudence, le Charbonnier transforme le bois en charbon, et le Garde-forestier veille sur l’équilibre naturel. Le village se fournit en matériaux.
+Case 5 – Chasse et pêche
+Au bord des bois et des rivières, le Chasseur, le Pêcheur et le Fauconnier assurent nourriture et peaux. Votre village prospère et se protège des manques alimentaires.
+Case 6 – Vignes, oliveraies et ressources rares
+Vous découvrez vignes et marais salants. Le Vigneron, l’Oliviculteur, le Salinier, le Pisciculteur, l’Éleveur de vers à soie et le Gardien de pigeonnier enrichissent le village de produits précieux.
+Case 7 – Forge et métal
+Le Forgeron, le Maréchal-ferrant et l’Armurier travaillent le métal. Vos habitants gagnent outils, armes et équipements robustes.
+Case 8 – Bois et pierre
+Charpentier, Menuisier, Tonnelier, Tailleur de pierre et Maçon transforment bois et pierre. Les constructions du village se multiplient et s’affermissent.
+Case 9 – Argile et verre
+Potier, Verrier, Sculpteur, Tourneur sur bois et Cloutier façonnent objets, décorations et ustensiles. Le village devient fonctionnel et esthétique.
+Case 10 – Textiles et cuir
+Tisserand, Fileuse, Teinturier, Cordonnier, Bourrelier, Sellier, Vannier et Sabotier enrichissent vêtements, chaussures et accessoires. Vos habitants sont habillés et protégés.
+Case 11 – Toits et ornements
+Couvreur, Plâtrier, Orfèvre, Fondeur, Graveur, Ébéniste, Facteur d’instruments et Papetier complètent le village avec toits solides, bijoux et instruments.
+Case 12 – Couture et broderie
+Tailleur, Couturier et Brodeur confectionnent vêtements et décorations textiles. Les habitants se parent d’élégance.
+Case 13 – Dentelle et chapeaux
+Dentellière et Chapelier créent beauté et raffinement pour les habitants.
+Case 14 – Fourrure et entretien
+Fourreur, Blanchisseur, Lainier et Tanneur assurent chaleur et confort.
+Case 15 – Traitement et accessoires textiles
+Foulonnier, Passementier et Ravaudeur entretiennent et décorent tissus et vêtements.
+Case 16 – Laine et finitions
+Peigneur de laine complète le travail en préparant la laine brute pour la fabrication des vêtements.
+Case 17 – Céréales et pain
+Boulanger et Meunier travaillent pour nourrir le village.
+Case 18 – Boissons et fromage
+Brasseur, Fromager et Vinaigrier créent boissons et fromages pour les habitants et le commerce.
+Case 19 – Viandes et poissons
+Boucher, Charcutier et Poissonnier assurent la nourriture de tous.
+Case 20 – Tavernes et auberges
+Tavernier et Aubergiste accueillent voyageurs et villageois pour festins et repos.
+Case 21 – Sucreries et lait
+Cuisinier, Confiseur, Laitier, Glacier et Pâtissier ancien enchantent les palais du village.
+Case 22 – Commerce
+Marchand, Colporteur et Épicier permettent échanges et approvisionnement du village.
+Case 23 – Santé et remèdes
+Herboriste, Guérisseur et Rebouteux soignent les habitants.
+Case 24 – Naissance et hygiène
+Sage-femme, Barbier, Baigneur et Laveuse s’occupent de la naissance et du bien-être des villageois.
+Case 25 – Eau et coiffure
+Porteur d’eau et Perruquier assurent hydratation et apparence.
+Case 26 – Communication et sécurité
+Crieur public, Allumeur de lampes, Veilleur de nuit, Vidangeur et Fossoyeur maintiennent ordre et propreté.
+Case 27 – Écriture et copie
+Scribe, Copiste et Enlumineur consignent l’histoire et les textes sacrés.
+Case 28 – Arts et traditions
+Conteur, Troubadour, Barde, Musicien et Danseur transmettent culture et musique.
+Case 29 – Religion et spiritualité
+Prêtre, Moine et Chaman guident la spiritualité du village.
+Case 30 – Divination et savoirs
+Devin, Astrologue, Calligraphe et Philosophe interprètent signes et enseignent.
+Case 31 – Éducation et histoire
+Maître d’école, Chroniqueur, Alchimiste, Exégète et Poète enrichissent connaissances et patrimoine.
+Case 32 – Défense et surveillance
+Soldat, Garde et Sentinelle protègent le village.
+Case 33 – Messager et justice
+Messager, Héraut, Juge, Notaire et Bailli assurent ordre et transmission des informations.
+Case 34 – Commandement
+Capitaine, Écuyer et Chevalier dirigent et défendent les habitants.
+Case 35 – Prisons et sanctions
+Geôlier, Bourreau, Prévôt et Huissier appliquent lois et régulent conflits.
+Case 36 – Maîtrise du combat
+Maître d’armes forme et entraîne les défenseurs du village.
+Case 37 – Construction et navigation
+Bâtisseur, Passeur, Batelier et Marin explorent et développent infrastructures et routes.
+Case 38 – Bâtiments et mer
+Charpentier naval et Navigateur assurent transport et commerce sur mer.
+Case 39 – Exploration
+Explorateur, Caravanier et Pèlerin parcourent terres et chemins lointains.
+Case 40 – Cartographie et guidage
+Cartographe, Guide et Pisteur tracent routes et surveillent le territoire.
+Case 41 – Éclaireurs et nomades
+Éclaireur et Nomade explorent et vivent en harmonie avec le déplacement et l’élevage.
+Case 42 – Salle des Fêtes
+Vous arrivez à la Salle des Fêtes. Votre village est désormais complet, animé et prospère. Vous pouvez contempler l’ensemble des métiers et activités qui le font vivre et vibrer.
+ 

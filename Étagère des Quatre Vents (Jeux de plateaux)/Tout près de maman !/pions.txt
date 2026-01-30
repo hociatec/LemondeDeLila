@@ -1,0 +1,20 @@
+Pions joueurs
+
+
+1. Kiko le Kangourou rouge
+Grand sauteur énergique, il aime aller vite.
+
+2. Louna la Koala rose
+Douce et calme, elle adore les arbres.
+
+3.	Zazou le Wallaby bleu
+Petit mais rapide, il est toujours joyeux.
+
+4. Bibi le Wombat vert
+Tranquille et costaud, il aime aider les autres.
+
+5.	Tiki l’Opossum violet
+Curieux et rusé, il grimpe partout !
+
+6. Dodo le Diable de Tasmanie orange
+	Rapide et imprévisible, il fonce tête baissée !

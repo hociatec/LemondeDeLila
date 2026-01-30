@@ -1,0 +1,115 @@
+Cases du plateau
+
+
+1. Case Départ – Le Village du Père Noël
+Vous débutez votre aventure au cœur du village du Père Noël. Les cloches tintent, la hotte est prête. Lancez le dé pour commencer.
+2. Case neutre – Forêt de sapins
+Vous traversez une forêt silencieuse et parfumée. Rien ne se passe.
+3. Case Carte Noël
+Vous piochez une carte et appliquez immédiatement son effet.
+4. Case Avance – Traîneau express
+Vous montez à bord d’un traîneau lancé à toute vitesse. Avancez de 2 cases.
+5. Case neutre – Boulangerie des lutins
+Une délicieuse odeur de biscuits flotte dans l’air. Rien ne se passe.
+6. Case Recule – Neige fondue
+Vous glissez sur une plaque de glace. Reculez de 1 case.
+7. Case Carte Noël
+Vous piochez une carte et appliquez son effet.
+8. Case Événement – Lettre égarée
+Un enfant attend toujours son jouet. Vous prenez le temps de l’aider. Passez votre tour.
+9. Case neutre – Marché de Noël
+Vous flânez parmi les étals illuminés. Rien ne se passe.
+10. Case neutre – Lac gelé
+Vous patinez en riant. Votre aventure continue.
+11. Case Carte Noël
+Vous piochez une carte et appliquez son effet.
+12. Case neutre – Chalet décoré
+Vous admirez les guirlandes scintillantes. Rien ne se passe.
+13. Case Événement – Nez rouge du renne
+Votre renne éternue sans arrêt. Passez votre prochain tour.
+14. Case Carte Noël
+Vous piochez une carte et appliquez son effet.
+15. Case neutre – Fabrique de jouets
+Vous aidez les lutins à emballer les cadeaux. Continuez votre chemin.
+16. Case neutre – Pont de givre
+Une aurore boréale illumine le ciel. Rien ne se passe.
+17. Case Carte Noël
+Vous piochez une carte et appliquez son effet.
+18. Case neutre – Montagne enneigée
+Vous restez sans voix face au paysage.
+19. Case Recule – Boule de neige géante
+Une avalanche de boules de neige vous emporte. Reculez de 3 cases.
+20. Case Événement – Tu as bien chanté
+Les enfants vous applaudissent. Avancez de 2 cases.
+21. Case neutre – Hotte oubliée
+Vous vous grattez la tête, pensif. Rien ne se passe.
+22. Case Carte Noël
+Vous piochez une carte et appliquez son effet.
+23. Case neutre – Forêt enchantée
+De petites fées rient autour de vous.
+24. Case neutre – Troupeau de rennes
+Vous jouez avec les rennes. Votre aventure continue.
+25. Case Carte Noël
+Vous piochez une carte et appliquez son effet.
+26. Case Passe ton tour – Grippe du bonhomme de neige
+Vous frissonnez. Passez votre prochain tour.
+27. Case Avance – Bonnet chanceux
+Votre bonnet vous porte chance. Avancez de 1 case.
+28. Case neutre – Atelier des décorations
+Vous fabriquez une couronne de houx.
+29. Case Carte Noël
+Vous piochez une carte et appliquez son effet.
+30. Case Événement – Chocolat chaud brûlant
+Vous vous brûlez la langue. Reculez de 1 case.
+31. Case neutre – Mur des souhaits
+Vous formulez un vœu en silence.
+32. Case Carte Noël
+Vous piochez une carte et appliquez son effet.
+33. Case Recule – Lutin farceur
+Un lutin espiègle vous joue un tour. Reculez de 2 cases.
+34. Case neutre – Sous les guirlandes
+Les lumières scintillent au-dessus de vous.
+35. Case neutre – Boule cassée
+Vous essayez de la réparer avec soin.
+36. Case Carte Noël
+Vous piochez une carte et appliquez son effet.
+37. Case Avance – Chanson en chœur
+Vous chantez à pleins poumons. Avancez de 2 cases.
+38. Case neutre – Rue enneigée
+Vos pas crissent dans la neige fraîche.
+39. Case Carte Noël
+Vous piochez une carte et appliquez son effet.
+40. Case Événement – Panne du traîneau
+Une réparation s’impose. Passez votre prochain tour.
+41. Case neutre – Boîte à lettres magique
+Une invitation au bal de Noël vous attend.
+42. Case Carte Noël
+Vous piochez une carte et appliquez son effet.
+43. Case neutre – Casse-noisette géant
+Vous admirez la statue imposante.
+44. Case neutre – Cadeau trop lourd
+Le cadeau tombe à vos pieds. Rien ne se passe.
+45. Case Recule – Chute dans la cheminée
+Vous glissez maladroitement. Reculez de 1 case.
+46. Case Carte Noël
+Vous piochez une carte et appliquez son effet.
+47. Case neutre – Dernière ligne droite
+Un renard polaire vous observe.
+48. Case Avance – L’esprit de Noël vous guide
+La joie vous envahit. Avancez de 1 case.
+49. Case Carte Noël
+Vous piochez une carte et appliquez son effet.
+50. Case Événement – Trop de sucre d’orge
+Vous êtes ralenti. Passez votre prochain tour.
+51. Case neutre – Devant le grand sapin
+Vous déposez du lait et des biscuits.
+52. Case Carte Noël
+Vous piochez une carte et appliquez son effet.
+53. Case neutre – Les cloches de minuit
+Les cloches résonnent au loin.
+54. Case neutre – La neige scintillante
+La lumière danse autour de vous.
+55. Case neutre – Le seuil de la fête
+Vous sentez l’effervescence de la célébration.
+56. Case Arrivée – La Grande Fête de Noël
+Vous arrivez à temps pour célébrer Noël avec le Père Noël. Félicitations !

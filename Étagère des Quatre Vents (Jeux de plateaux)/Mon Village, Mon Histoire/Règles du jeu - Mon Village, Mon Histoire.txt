@@ -1,0 +1,48 @@
+Règles du jeu - Mon Village, Mon Histoire
+
+
+Introduction
+Bienvenue dans Mon Village, Mon Histoire ! Vous êtes invité·e·s à explorer un monde ancien, où chaque métier contribue à la prospérité et à la vie quotidienne du village. Vous rencontrerez artisans, agriculteurs, guérisseurs et aventuriers. Chaque choix de carte, chaque lancer de dé et chaque case du plateau raconte une histoire et façonne votre expérience. Vous construisez votre village dans l’esprit de votre propre aventure : observez, choisissez, collectez et construisez. Tout est automatisé : vous n’avez besoin de manipuler ni objets ni ressources physiques, le système gère pour vous votre progression, vos cartes et vos ressources.
+ 
+But du jeu
+Votre objectif est de devenir le joueur ayant accumulé le plus de cartes en parcourant le plateau et en choisissant les métiers et ressources qui feront prospérer votre village. Vous lancez le dé, avancez sur le plateau et choisissez parmi les cartes proposées sur chaque case. Le système dépose automatiquement les ressources sur le plateau et garde vos cartes pour vous seul. Le joueur ayant le plus de cartes à la fin du parcours remporte la partie.
+ 
+Contenu du jeu
+a) 1 plateau représentant votre village, divisé en cases numérotées.
+b) 1 dé à six faces.
+c) 16 personnages : Gaston, Martin, Mireille, Léonie, Clément, Émile, Adèle, Céleste, Roland, Hélène, Armand, Timothée, Solange, Basile, Alix, Ryan.
+d) 1 paquet de cartes Métiers (réparties en 8 zones, correspondant aux métiers : Terre & Nature, Artisanat, Textile & Habillement, Bouche, Quotidien & Services, Savoir & Spirituel, Protection & Société, Très anciens/universels).
+ 
+Mise en place
+1. Vous choisissez un personnage parmi la liste.
+2. Ce dernier est automatiquement placé sur la place centrale du village, la case de départ.
+3. Le système mélange automatiquement toutes les cartes et gère la liste des cartes disponibles sur chaque case.
+4. Le chef de table commence, puis le tour continue dans l’ordre d’arrivée.
+ 
+Déroulement d’un tour
+À votre tour :
+1. Lancez le dé.
+2. Avancez votre personnage du nombre indiqué.
+3. Appliquez l’effet de la case sur laquelle vous arrivez :
+a) Le système vous propose la liste des cartes disponibles.
+b) Choisissez une carte parmi celles-ci.
+c) La carte est automatiquement ajoutée à votre inventaire et retirée de la liste disponible sur la case.
+
+Votre interaction avec les autres joueurs se limite au plateau et aux cartes visibles sur la case :
+a) Vous pouvez voir qui occupe quelles cases et quelles cartes sont disponibles, mais vous ne pouvez jamais accéder aux cartes ou ressources des autres.
+b) Le jeu encourage l’observation et la stratégie, notamment lors du choix des cartes pour créer des opportunités ou « bloquer » indirectement un autre personnage.
+ 
+Fin de partie
+La partie se termine lorsqu’un ou plusieurs joueurs atteignent la dernière case du plateau.
+1. Tous les joueurs terminent le tour en cours pour que chacun ait joué le même nombre de fois.
+2. Le système compte automatiquement le nombre de cartes de chaque joueur.
+3. Le joueur ayant le plus de cartes remporte la partie.
+4. En cas d’égalité, on compare le nombre de cartes de la zone Terre & Nature, puis la zone Artisanat, et ainsi de suite, jusqu’à départager.
+5. Si l’égalité persiste, tous les gagnants partagent la victoire et peuvent recommencer pour créer de nouvelles histoires dans le village.
+ 
+Conseils pour une belle partie
+a) Prenez plaisir à explorer tous les métiers et zones, même ceux qui ne vous attirent pas spontanément.
+b) Observez les choix des autres joueurs pour anticiper vos décisions.
+c) Laissez libre cours à votre imagination : le jeu se joue entièrement par votre choix et le système gère les règles et ressources automatiquement.
+d) Chaque partie peut se dérouler différemment : amusez-vous à créer votre propre village et vos propres histoires à chaque partie.
+ 
