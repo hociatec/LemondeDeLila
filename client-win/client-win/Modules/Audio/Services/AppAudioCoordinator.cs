@@ -653,11 +653,11 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 });
             }
 
-            if (!isConnected || pauseCount > 0)
+            if (!isConnected)
             {
                 StopBackgroundLoops();
                 _appliedBackground = AppAudioBackground.None;
-                if (!isConnected && playDisconnected && logoutSeq != Volatile.Read(ref _disconnectedSoundPlayedSequence))
+                if (playDisconnected && logoutSeq != Volatile.Read(ref _disconnectedSoundPlayedSequence))
                 {
                     // Ensure latest admin overrides are applied before playing the sound.
                     try
@@ -681,6 +681,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             }
 
             // Login succeeded: refresh remote sounds quickly so the "connected" sound can use the admin override.
+            // IMPORTANT: this one-shot should play even if background audio is currently paused (e.g. during startup/login overlays).
             if (playConnected && loginSeq != Volatile.Read(ref _connectedSoundPlayedSequence))
             {
                 // Keep the "one sound at a time" rule: stop the launch sound if it is still playing,
@@ -729,6 +730,13 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                         // ignore
                     }
                 });
+            }
+
+            if (pauseCount > 0)
+            {
+                StopBackgroundLoops();
+                _appliedBackground = AppAudioBackground.None;
+                return;
             }
 
             // Background loops are exclusive and should start only after the connection sound (and the initial connect gate).
