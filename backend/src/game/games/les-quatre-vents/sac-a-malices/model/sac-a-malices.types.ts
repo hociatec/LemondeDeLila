@@ -75,11 +75,21 @@ export type SacMetadata = {
   positions: Record<number, number>;
   money: Record<number, number>;
   ownership: Record<number, number>;
+  buildings: Record<
+    number,
+    {
+      houses: number;
+      hotel: boolean;
+      mortgaged: boolean;
+    }
+  >;
   statuses: {
     skipTurn: Record<number, number>;
     inJail: Record<number, number>;
     eliminated: Record<number, boolean>;
     getOutOfJail: Record<number, number>;
+    extraRoll?: Record<number, boolean>;
+    consecutiveDoubles?: Record<number, number>;
   };
   pot: number;
   decks: {
@@ -93,4 +103,3 @@ export type SacMetadata = {
   };
   winnerId?: number | null;
 };
-

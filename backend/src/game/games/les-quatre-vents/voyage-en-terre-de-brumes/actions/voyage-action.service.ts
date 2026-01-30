@@ -207,6 +207,14 @@ export class VoyageActionService {
       next = this.swapPositions(next, playerId, targetId);
       next = this.setLastTarget(next, playerId, targetId);
     }
+    if (kind === 'skip1') {
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, targetId)} perd son prochain tour.`,
+      );
+      next = this.addSkip(next, targetId, 1);
+      next = this.setLastTarget(next, playerId, targetId);
+    }
 
     const meta = this.getMeta(next);
     if (meta.winnerId != null) return { ...next, status: 'finished' };
@@ -361,6 +369,43 @@ export class VoyageActionService {
   ): GameStateEntity {
     let next = state;
     const text = String(textRaw ?? '');
+
+    // Effet ciblÃ© : choisir un joueur qui perd son prochain tour.
+    if (
+      /choisissez\s+un\s+joueur/i.test(text) &&
+      /perd\s+son\s+prochain\s+tour/i.test(text)
+    ) {
+      const otherPlayers = this.otherPlayers(next, playerId);
+      if (otherPlayers.length) {
+        const pending: PendingState = {
+          type: 'choose_target',
+          playerId,
+          blocking: true,
+          label: 'Choisir un joueur (il perd son prochain tour).',
+          data: { kind: 'skip1' },
+          choices: otherPlayers.map((p) => p.username),
+        };
+        return { ...next, pending };
+      }
+    }
+
+    // Effet : perdre une carte au hasard (simulation sur les compteurs).
+    if (
+      /tirez\s+au\s+hasard\s+une\s+carte/i.test(text) &&
+      /vous\s+la\s+perdez/i.test(text)
+    ) {
+      const wantLegend = /l[ée]gende/i.test(text);
+      const wantLandscape = /paysage/i.test(text);
+      const wantTreasure = /tr[ée]sor/i.test(text);
+      const wantFarce = /farce/i.test(text);
+      next = this.loseRandomCard(next, playerId, {
+        legend: wantLegend,
+        landscape: wantLandscape,
+        treasure: wantTreasure,
+        farce: wantFarce,
+      });
+      return next;
+    }
     const delta = extractMoveDelta(text);
     if (delta !== 0) {
       next = this.core.appendLog(next, `Effet : déplacement ${delta}.`);
@@ -534,6 +579,66 @@ export class VoyageActionService {
     };
     const nextMeta: VoyageMetadata = { ...meta, collections: nextCollections };
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
+  }
+
+  private decrementCollection(
+    state: GameStateEntity,
+    playerId: number,
+    kind: 'legend' | 'farce' | 'treasure' | 'landscape',
+  ): GameStateEntity {
+    const meta = this.getMeta(state);
+    const current = meta.collections?.[playerId] ?? {
+      legend: 0,
+      farce: 0,
+      treasure: 0,
+      landscape: 0,
+    };
+    const nextVal = Math.max(0, (current as any)[kind] - 1);
+    const nextCollections = {
+      ...(meta.collections ?? {}),
+      [playerId]: { ...current, [kind]: nextVal },
+    };
+    const nextMeta: VoyageMetadata = { ...meta, collections: nextCollections };
+    return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
+  }
+
+  private loseRandomCard(
+    state: GameStateEntity,
+    playerId: number,
+    filter: {
+      legend?: boolean;
+      farce?: boolean;
+      treasure?: boolean;
+      landscape?: boolean;
+    },
+  ): GameStateEntity {
+    const meta = this.getMeta(state);
+    const c = meta.collections?.[playerId] ?? {
+      legend: 0,
+      farce: 0,
+      treasure: 0,
+      landscape: 0,
+    };
+    const candidates: Array<'legend' | 'farce' | 'treasure' | 'landscape'> = [];
+    const allow = (k: keyof typeof c) => filter[k] !== false;
+
+    if (allow('legend') && (c.legend ?? 0) > 0) candidates.push('legend');
+    if (allow('landscape') && (c.landscape ?? 0) > 0) candidates.push('landscape');
+    if (allow('treasure') && (c.treasure ?? 0) > 0) candidates.push('treasure');
+    if (allow('farce') && (c.farce ?? 0) > 0) candidates.push('farce');
+
+    if (!candidates.length) {
+      return this.core.appendLog(state, 'Aucune carte Ã  perdre.');
+    }
+
+    const picked = this.random.pickOne(meta as any, candidates);
+    let next: GameStateEntity = {
+      ...state,
+      metadata: { ...(state.metadata ?? {}), ...meta, ...(picked.meta as any) },
+    };
+    if (!picked.value) return next;
+    next = this.core.appendLog(next, `Vous perdez une carte (${picked.value}).`);
+    return this.decrementCollection(next, playerId, picked.value);
   }
 
   private advanceTurnWithCountdown(state: GameStateEntity): GameStateEntity {

@@ -1,9 +1,0 @@
-{
-  "code": "triomino",
-  "name": "Triomino",
-  "minPlayers": 2,
-  "maxPlayers": 4,
-  "engine": "triomino",
-  "summary": "Placez des triominos sur une grille triangulaire en faisant correspondre les nombres."
-}
-

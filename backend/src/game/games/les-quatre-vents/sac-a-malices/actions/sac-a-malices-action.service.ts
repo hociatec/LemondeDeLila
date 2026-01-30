@@ -34,6 +34,34 @@ export class SacAMalicesActionService {
       }
       if (type === 'skip_buy') {
         next = this.handleBuy(next, false);
+        continue;
+      }
+      if (type === 'build') {
+        next = this.openChooseProperty(next, 'build');
+        continue;
+      }
+      if (type === 'sell_building') {
+        next = this.openChooseProperty(next, 'sell_building');
+        continue;
+      }
+      if (type === 'mortgage') {
+        next = this.openChooseProperty(next, 'mortgage');
+        continue;
+      }
+      if (type === 'unmortgage') {
+        next = this.openChooseProperty(next, 'unmortgage');
+        continue;
+      }
+      if (type === 'choose_property') {
+        next = this.handleChooseProperty(next, action);
+        continue;
+      }
+      if (type === 'pay_fine') {
+        next = this.handlePayFine(next);
+        continue;
+      }
+      if (type === 'use_jail_card') {
+        next = this.handleUseJailCard(next);
       }
     }
     return next;
@@ -49,6 +77,26 @@ export class SacAMalicesActionService {
     if (meta.statuses?.eliminated?.[currentId]) {
       return this.advanceTurn(state);
     }
+
+    // Prison (version Dijon) : on attend 3 tours sauf carte/amende.
+    const jailTurns = meta.statuses?.inJail?.[currentId] ?? 0;
+    if (jailTurns > 0) {
+      let next = this.setJailTurns(state, currentId, Math.max(0, jailTurns - 1));
+      const remaining = this.getMeta(next).statuses?.inJail?.[currentId] ?? 0;
+      if (remaining <= 0) {
+        next = this.core.appendLog(next, 'Sortie automatique : amende 100 €.');
+        next = this.addMoney(next, currentId, -100, { toPot: true });
+      } else {
+        next = this.core.appendLog(next, `Prison : il reste ${remaining} tour(s).`);
+      }
+      next = this.checkWinner(next);
+      if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
+      return this.advanceTurn(next);
+    }
+
+    // On consomme l'éventuel bonus "rejouer" à l'entrée du lancer.
+    state = this.setExtraRoll(state, currentId, false);
+    meta = this.getMeta(state);
 
     // 2d6
     const r1 = this.random.rollDice(meta as any, 6);
@@ -70,8 +118,20 @@ export class SacAMalicesActionService {
       `${this.playerName(next, currentId)} lance les dés : "${d1}" + "${d2}" = "${sum}".`,
     );
 
-    next = this.handleJailTurn(next, currentId, isDouble, sum);
-    if (next.pending) return next;
+    // Doubles : rejouer, 3 doubles consécutifs => prison.
+    const prevDoubles =
+      this.getMeta(next).statuses?.consecutiveDoubles?.[currentId] ?? 0;
+    const doubles = isDouble ? prevDoubles + 1 : 0;
+    next = this.setConsecutiveDoubles(next, currentId, doubles);
+    if (doubles >= 3) {
+      next = this.core.appendLog(next, 'Trois doubles : direction la prison.');
+      next = this.sendToJail(next, currentId);
+      next = this.setConsecutiveDoubles(next, currentId, 0);
+      next = this.setExtraRoll(next, currentId, false);
+      next = this.checkWinner(next);
+      if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
+      return this.advanceTurn(next);
+    }
 
     meta = this.getMeta(next);
     if (meta.statuses?.eliminated?.[currentId]) {
@@ -80,19 +140,25 @@ export class SacAMalicesActionService {
       return this.advanceTurn(next);
     }
 
-    // Si on est encore en prison après handleJailTurn, le tour est fini.
-    if ((meta.statuses?.inJail?.[currentId] ?? 0) > 0) {
-      next = this.checkWinner(next);
-      if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
-      return this.advanceTurn(next);
-    }
+    // (prison gérée avant le lancer)
 
     // Déplacement
     next = this.moveForward(next, currentId, sum);
     next = this.applyLanding(next, currentId);
     next = this.checkWinner(next);
     if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
-    if (next.pending) return next;
+    if (next.pending) {
+      if (isDouble) {
+        next = this.setExtraRoll(next, currentId, true);
+      }
+      return next;
+    }
+
+    if (isDouble) {
+      next = this.core.appendLog(next, 'Double : vous rejouez.');
+      next = this.setExtraRoll(next, currentId, true);
+      return next;
+    }
 
     return this.advanceTurn(next);
   }
@@ -728,4 +794,3 @@ function extractTargetPlace(text: string): string | null {
   if (m2?.[1]) return m2[1].trim();
   return null;
 }
-

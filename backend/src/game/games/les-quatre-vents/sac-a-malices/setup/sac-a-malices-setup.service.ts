@@ -43,11 +43,14 @@ export class SacAMalicesSetupService {
       positions,
       money,
       ownership: {},
+      buildings: {},
       statuses: {
         skipTurn: {},
         inJail: {},
         eliminated: {},
         getOutOfJail: {},
+        extraRoll: {},
+        consecutiveDoubles: {},
       },
       pot: 0,
       decks: {
@@ -134,4 +137,3 @@ export class SacAMalicesSetupService {
     });
   }
 }
-

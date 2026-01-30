@@ -7,7 +7,14 @@ export type SacAMalicesActionType =
   | 'ROLL_DICE'
   | 'roll_dice'
   | 'buy'
-  | 'skip_buy';
+  | 'skip_buy'
+  | 'build'
+  | 'sell_building'
+  | 'mortgage'
+  | 'unmortgage'
+  | 'choose_property'
+  | 'pay_fine'
+  | 'use_jail_card';
 
 export const SAC_A_MALICES_GAME: GameDefinition<
   SacAMalicesGameId,
@@ -21,8 +28,19 @@ export const SAC_A_MALICES_GAME: GameDefinition<
   minPlayers: 2,
   maxPlayers: 8,
   roles: [],
-  actions: ['roll', 'ROLL_DICE', 'buy', 'skip_buy'],
+  actions: [
+    'roll',
+    'ROLL_DICE',
+    'buy',
+    'skip_buy',
+    'build',
+    'sell_building',
+    'mortgage',
+    'unmortgage',
+    'choose_property',
+    'pay_fine',
+    'use_jail_card',
+  ],
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,
 } as const;
-

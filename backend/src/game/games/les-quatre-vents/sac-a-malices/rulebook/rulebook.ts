@@ -5,7 +5,20 @@ import {
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
 
-const ALLOWED = new Set(['roll', 'ROLL_DICE', 'roll_dice', 'buy', 'skip_buy']);
+const ALLOWED = new Set([
+  'roll',
+  'ROLL_DICE',
+  'roll_dice',
+  'buy',
+  'skip_buy',
+  'build',
+  'sell_building',
+  'mortgage',
+  'unmortgage',
+  'choose_property',
+  'pay_fine',
+  'use_jail_card',
+]);
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -19,10 +32,29 @@ export function getAvailableActions(
     if ((pending.playerId ?? null) !== playerId) return [];
     return [{ type: 'buy', payload: {} }, { type: 'skip_buy', payload: {} }];
   }
+  if (pending?.type === 'choose_property') {
+    if ((pending.playerId ?? null) !== playerId) return [];
+    return [{ type: 'choose_property', payload: {} }];
+  }
 
   if ((state.turn?.currentPlayerId ?? null) !== playerId) return [];
   if (state.pending) return [];
-  return [{ type: 'roll', payload: {} }];
+
+  const meta: any = state.metadata ?? {};
+  const inJail = Number(meta?.statuses?.inJail?.[playerId] ?? 0) > 0;
+
+  const actions: GameSingleActionDto[] = [
+    { type: 'roll', payload: {} },
+    { type: 'build', payload: {} },
+    { type: 'sell_building', payload: {} },
+    { type: 'mortgage', payload: {} },
+    { type: 'unmortgage', payload: {} },
+  ];
+  if (inJail) {
+    actions.push({ type: 'pay_fine', payload: {} });
+    actions.push({ type: 'use_jail_card', payload: {} });
+  }
+  return actions;
 }
 
 export function validateAction(
@@ -56,6 +88,17 @@ export function validateAction(
     if (normalized === 'buy') return { ...action, type: 'buy', payload: {} };
     return { ...action, type: 'skip_buy', payload: {} };
   }
+  if (pending?.type === 'choose_property') {
+    const pid = pending.playerId ?? null;
+    if (pid != null && actorId != null && actorId !== pid) {
+      throw new PlayerActionError("Ce n'est pas votre action.", {
+        gameType: 'sac-a-malices',
+        playerId: actorId,
+        currentPlayerId: pid,
+      });
+    }
+    return { ...action, type: 'choose_property', payload: action.payload ?? {} };
+  }
 
   const current = state.turn?.currentPlayerId ?? null;
   if (current != null && actorId != null && actorId !== current) {
@@ -71,4 +114,3 @@ export function validateAction(
   }
   return { ...action, type: normalized, payload: {} };
 }
-
