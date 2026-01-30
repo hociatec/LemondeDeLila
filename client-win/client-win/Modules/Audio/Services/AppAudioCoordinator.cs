@@ -232,6 +232,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
     {
         var shouldTransition = false;
         var skipOpenedSeq = 0;
+        var loginSeq = 0;
         lock (_stateGate)
         {
             // Redundant login: ignore (prevents double "connected" sound).
@@ -243,6 +244,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             _isConnected = true;
             _connectedAtTicks = Stopwatch.GetTimestamp();
             _loginSequence++;
+            loginSeq = _loginSequence;
             _pendingConnectedSound = 1;
 
             // If the user connects before the startup transition had time to play the launch sound,
@@ -280,6 +282,42 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         }
 
         _ = WarmRefreshAfterLoginAsync();
+
+        // Failsafe: if rapid navigation/overlays cancel transitions, ensure the connection one-shot still plays.
+        // This keeps login feedback reliable even if background audio is paused or transitions are superseded.
+        _ = Task.Run(async () =>
+        {
+            try { await Task.Delay(1200).ConfigureAwait(false); } catch { return; }
+
+            try
+            {
+                bool shouldPlay;
+                lock (_stateGate)
+                {
+                    shouldPlay = _isConnected &&
+                                 _pendingConnectedSound == 1 &&
+                                 _loginSequence == loginSeq &&
+                                 loginSeq != Volatile.Read(ref _connectedSoundPlayedSequence);
+                    if (shouldPlay)
+                    {
+                        _pendingConnectedSound = 0;
+                    }
+                }
+
+                if (!shouldPlay)
+                {
+                    return;
+                }
+
+                // Best-effort: do not block on remote refresh here.
+                TryPlay(SoundId.ClientConnected);
+                Volatile.Write(ref _connectedSoundPlayedSequence, loginSeq);
+            }
+            catch
+            {
+                // ignore
+            }
+        });
     }
 
     public void NotifyLogoutRequested()
