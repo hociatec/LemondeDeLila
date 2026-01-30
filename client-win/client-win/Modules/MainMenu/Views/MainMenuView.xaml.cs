@@ -27,9 +27,37 @@ public partial class MainMenuView : UserControl, IInitialFocusTarget
 
     private void OnKeyDown(object sender, KeyEventArgs e)
     {
+        if (e.Handled)
+        {
+            return;
+        }
+
         if (e.Key == Key.Escape)
         {
             e.Handled = true;
+            return;
+        }
+
+        if (e.Key == Key.Enter || e.Key == Key.Return)
+        {
+            if (DataContext is not MainMenuViewModel vm)
+            {
+                return;
+            }
+
+            e.Handled = true;
+            FocusParking.Park();
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
+            {
+                try
+                {
+                    await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
+                }
+                catch
+                {
+                    // best-effort
+                }
+            }));
         }
     }
 

@@ -26,6 +26,7 @@ public sealed class SoundService : ISoundService, IDisposable
     private readonly Dispatcher _dispatcher;
     private readonly ILogger<SoundService> _logger;
     private readonly bool _remoteSoundsEnabled;
+    private readonly bool _requireRemoteSounds;
     private readonly object _gate = new();
     private readonly Dictionary<SoundId, MediaPlayer> _players = new();
     private readonly Dictionary<SoundId, string> _loadedPaths = new();
@@ -48,6 +49,7 @@ public sealed class SoundService : ISoundService, IDisposable
     private readonly bool _startupTraceEnabled;
     private readonly HashSet<string> _startupTraceOnce = new(StringComparer.Ordinal);
     private long _startupTraceLastLogTicks;
+    private readonly HashSet<SoundId> _remoteMissingLogged = new();
 
     private sealed record PlayRequest(SoundId Sound, SoundEntry Entry, string FilePath);
 
@@ -95,6 +97,11 @@ public sealed class SoundService : ISoundService, IDisposable
         _remoteSoundsEnabled =
             !string.Equals(Environment.GetEnvironmentVariable("LMDL_DISABLE_REMOTE_SOUNDS"), "1", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(Environment.GetEnvironmentVariable("LMDL_DISABLE_REMOTE_SOUNDS"), "true", StringComparison.OrdinalIgnoreCase);
+
+        // When enabled, only server-provided sounds from the manifest are allowed (no local fallbacks).
+        _requireRemoteSounds = _remoteSoundsEnabled &&
+            !string.Equals(Environment.GetEnvironmentVariable("LMDL_ALLOW_LOCAL_SOUNDS"), "1", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(Environment.GetEnvironmentVariable("LMDL_ALLOW_LOCAL_SOUNDS"), "true", StringComparison.OrdinalIgnoreCase);
 
         _options.Changed += OnOptionsChanged;
 
@@ -1552,6 +1559,19 @@ public sealed class SoundService : ISoundService, IDisposable
                 {
                     // ignore
                 }
+            }
+            if (_requireRemoteSounds)
+            {
+                var shouldLog = false;
+                lock (_remoteMissingLogged)
+                {
+                    shouldLog = _remoteMissingLogged.Add(sound);
+                }
+                if (shouldLog)
+                {
+                    _logger.LogWarning("Remote sound missing (manifest required): {Sound}", sound);
+                }
+                return string.Empty;
             }
         }
 

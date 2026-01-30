@@ -86,6 +86,32 @@ public partial class HomeView : UserControl, IInitialFocusTarget
             return;
         }
 
+        if (_viewModel != null &&
+            (e.Key == Key.Enter || e.Key == Key.Return) &&
+            IsTextEditingControl(e.OriginalSource))
+        {
+            if (_viewModel.CurrentPage == HomePage.Login)
+            {
+                var command = _viewModel.LoginForm.SubmitCommand;
+                if (command.CanExecute(null))
+                {
+                    command.Execute(null);
+                    e.Handled = true;
+                    return;
+                }
+            }
+            else if (_viewModel.CurrentPage == HomePage.Register)
+            {
+                var command = _viewModel.RegisterForm.SubmitCommand;
+                if (command.CanExecute(null))
+                {
+                    command.Execute(null);
+                    e.Handled = true;
+                    return;
+                }
+            }
+        }
+
         if (IsNavigationKey(e.Key) && !IsTextEditingControl(e.OriginalSource))
         {
             e.Handled = true;
