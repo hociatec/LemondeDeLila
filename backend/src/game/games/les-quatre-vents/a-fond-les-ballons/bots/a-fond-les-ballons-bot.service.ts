@@ -12,10 +12,14 @@ export class AFondLesBallonsBotService {
     state: GameStateEntity,
     botPlayerId: number,
   ): GameSingleActionDto[] {
-    const current = state.turn?.currentPlayerId ?? null;
-    if (current !== botPlayerId) return [];
-
     const available = Rulebook.getAvailableActions(state, botPlayerId);
+    if (available.length === 0) return [];
+
+    const current = state.turn?.currentPlayerId ?? null;
+    const isPendingForMe = !!(state.pending as any)?.playerId && (state.pending as any).playerId === botPlayerId;
+
+    if (current !== botPlayerId && !isPendingForMe) return [];
+
     return this.botRunner.choose(
       available,
       { state, playerId: botPlayerId },
