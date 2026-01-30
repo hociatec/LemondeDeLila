@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "cards": [
+    {
+      "id": 1,
+      "text": "Un boulanger du quartier vous offre une chocolatine en trop : gagnez 20 €."
+    },
+    {
+      "id": 2,
+      "text": "Vous aidez une mamie à porter ses courses au marché Victor-Hugo : recevez 15 €."
+    },
+    {
+      "id": 3,
+      "text": "Un joueur du Stade Toulousain vous signe un maillot et vous le revendez : gagnez 85 €."
+    },
+    {
+      "id": 4,
+      "text": "Vous perdez votre abonnement Tisséo (ah béh mince) : payez 45 €."
+    },
+    {
+      "id": 5,
+      "text": "Vous trouvez une pièce oubliée dans une cabine photo du Capitole : empochez 5 €."
+    },
+    {
+      "id": 6,
+      "text": "Une petite brocante à Saint-Cyprien vous rapporte 40 €."
+    },
+    {
+      "id": 7,
+      "text": "Après une soirée un peu trop arrosée dans les rues de la Daurade, vous égarez votre portefeuille : perdez 30 €."
+    },
+    {
+      "id": 8,
+      "text": "Vous aidez un touriste perdu à trouver la Prairie des Filtres : recevez 10 €."
+    },
+    {
+      "id": 9,
+      "text": "Vous payez votre participation à une fête de quartier : perdez 20 €."
+    },
+    {
+      "id": 10,
+      "text": "Votre vélo tombe en rade sur le Pont-Neuf : réparation urgente, payez 25 €."
+    },
+    {
+      "id": 11,
+      "text": "Un producteur vous offre un panier garni du Lauragais : gagnez 30 €."
+    },
+    {
+      "id": 12,
+      "text": "Vous cassez accidentellement un verre en terrasse : payez 5 €."
+    },
+    {
+      "id": 13,
+      "text": "Vous gagnez un concours de pétanque au Jardin des Plantes : recevez 35 €."
+    },
+    {
+      "id": 14,
+      "text": "Une averse vous surprend sans parapluie (c’est pas la Bretagne pourtant !) : perdez 15 €."
+    },
+    {
+      "id": 15,
+      "text": "Vous découvrez un petit billet coincé sous une chaise de café : recevez 20 €."
+    },
+    {
+      "id": 16,
+      "text": "Vous offrez un pastis à un ami : payez 10 €."
+    },
+    {
+      "id": 17,
+      "text": "Vous prenez un taxi de nuit parce que vous avez raté le dernier métro : payez 25 €."
+    },
+    {
+      "id": 18,
+      "text": "Un commerçant de la rue Saint-Rome vous fait un bon prix : gagnez 15 €."
+    },
+    {
+      "id": 19,
+      "text": "Vous achetez des produits fermiers au marché des Carmes : payez 30 €."
+    },
+    {
+      "id": 20,
+      "text": "Votre coloc rembourse enfin sa part du loyer : recevez 150 €."
+    },
+    {
+      "id": 21,
+      "text": "Vous perdez vos clés dans les rues d’Arnaud-Bernard : payez 65 €."
+    },
+    {
+      "id": 22,
+      "text": "Vous participez à un vide-grenier à Rangueil : gagnez 30 €."
+    },
+    {
+      "id": 23,
+      "text": "Une association occitane vous remercie pour un coup de main : recevez 25 €."
+    },
+    {
+      "id": 24,
+      "text": "Vous offrez une tournée au bar du quartier Saint-Pierre : payez 30 €."
+    },
+    {
+      "id": 25,
+      "text": "Vous trouvez un portefeuille et le rapportez honnêtement : la propriétaire vous donne 20 €."
+    },
+    {
+      "id": 26,
+      "text": "Vous gagnez un panier garni lors d’une tombola locale : recevez 40 €."
+    },
+    {
+      "id": 27,
+      "text": "Un artisan toulousain vous offre une petite réduction : gagnez 10 €."
+    },
+    {
+      "id": 28,
+      "text": "Vous participez à une collecte de solidarité : perdez 15 €."
+    },
+    {
+      "id": 29,
+      "text": "Une photo de vous avec le Canal du Midi devient virale : gagnez 60 €."
+    },
+    {
+      "id": 30,
+      "text": "Carte à conserver : “Sortie de prison” – Utilisable quand vous le souhaitez."
+    }
+  ]
+}

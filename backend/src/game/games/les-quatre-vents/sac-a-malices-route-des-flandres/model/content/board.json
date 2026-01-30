@@ -1,0 +1,267 @@
+{
+  "version": 1,
+  "tiles": [
+    {
+      "n": 1,
+      "title": "Départ",
+      "description": "Vous franchissez les portes de Lille, prêt à arpenter ses rues et à empocher 200 euros.",
+      "type": "start"
+    },
+    {
+      "n": 2,
+      "title": "Rue de la Monnaie (beige)",
+      "description": "Une rue ancienne où les façades flamandes semblent veiller sur les pas des promeneurs.",
+      "type": "property",
+      "group": "beige"
+    },
+    {
+      "n": 3,
+      "title": "Rue Esquermoise (beige)",
+      "description": "Un chemin de briques et de commerces élégants, toujours animé d’une douce effervescence.",
+      "type": "property",
+      "group": "beige"
+    },
+    {
+      "n": 4,
+      "title": "Caisse de Communauté",
+      "description": "Une carte se présente à vous, porteuse de solidarité… ou d’ennuis.",
+      "type": "community"
+    },
+    {
+      "n": 5,
+      "title": "Taxe de Gaufres à l’Ancienne",
+      "description": "Les traditions du Nord réclament leur dû : versez 80 euros pour soutenir la gourmandise locale.",
+      "type": "tax"
+    },
+    {
+      "n": 6,
+      "title": "Gare de Lille-Flandres",
+      "description": "Sous sa grande verrière, les trains soufflent un air de départ et d’aventures.",
+      "type": "station"
+    },
+    {
+      "n": 7,
+      "title": "Rue de Béthune (bleue)",
+      "description": "Rue piétonne vibrante, où cafés, rires et vitrines se mêlent en un joyeux tourbillon.",
+      "type": "property",
+      "group": "bleue"
+    },
+    {
+      "n": 8,
+      "title": "Rue du Molinel (bleue)",
+      "description": "Un long ruban animé, bordé de boutiques et d’impatiences citadines.",
+      "type": "property",
+      "group": "bleue"
+    },
+    {
+      "n": 9,
+      "title": "Rue Nationale (bleue)",
+      "description": "Grande artère commerçante où parfums, passages pressés et sourires s’entrecroisent.",
+      "type": "property",
+      "group": "bleue"
+    },
+    {
+      "n": 10,
+      "title": "Chance",
+      "description": "Le hasard ouvre sa main : piochez et laissez-vous guider.",
+      "type": "chance"
+    },
+    {
+      "n": 11,
+      "title": "Place du Lion d’Or (rose)",
+      "description": "Petite place chaleureuse où se mêlent terrasses, éclats de voix et instants suspendus.",
+      "type": "property",
+      "group": "rose"
+    },
+    {
+      "n": 12,
+      "title": "Place Rihour (rose)",
+      "description": "Au pied du palais, la place vit au rythme de rencontres, festivals et passages quotidiens.",
+      "type": "property",
+      "group": "rose"
+    },
+    {
+      "n": 13,
+      "title": "Compagnie des Trams Ilévia",
+      "description": "Les trams filent en silence, reliant quartiers, habitants et nouvelles histoires.",
+      "type": "utility"
+    },
+    {
+      "n": 14,
+      "title": "Place de la République (rose)",
+      "description": "Majestueuse et ouverte, elle accueille les pas lents comme les marches pressées.",
+      "type": "property",
+      "group": "rose"
+    },
+    {
+      "n": 15,
+      "title": "Gare de Lille-Europe",
+      "description": "Carrefour moderne où voyageurs du monde et navetteurs se croisent comme des silhouettes furtives.",
+      "type": "station"
+    },
+    {
+      "n": 16,
+      "title": "Boulevard de la Liberté (orange)",
+      "description": "Un vaste axe bordé d’arbres où souffle un air de calme urbain.",
+      "type": "property",
+      "group": "orange"
+    },
+    {
+      "n": 17,
+      "title": "Boulevard Louis XIV (orange)",
+      "description": "Un boulevard noble, rythmé par les façades élégantes et les pas feutrés.",
+      "type": "property",
+      "group": "orange"
+    },
+    {
+      "n": 18,
+      "title": "Boulevard Vauban (orange)",
+      "description": "Un espace végétalisé où étudiants, familles et joggeurs se croisent sous les branches.",
+      "type": "property",
+      "group": "orange"
+    },
+    {
+      "n": 19,
+      "title": "Chance",
+      "description": "Le destin revient frapper : à vous de jouer.",
+      "type": "chance"
+    },
+    {
+      "n": 20,
+      "title": "Parc Gratuit – Parc de la Citadelle",
+      "description": "Son ombre fraîche et ses sentiers doux offrent une pause bienvenue au cœur de la ville.",
+      "type": "free"
+    },
+    {
+      "n": 21,
+      "title": "Palais Rihour (rouge)",
+      "description": "La silhouette gothique du palais veille sur Lille, témoin des siècles passés.",
+      "type": "property",
+      "group": "rouge"
+    },
+    {
+      "n": 22,
+      "title": "Beffroi de l’Hôtel de Ville (rouge)",
+      "description": "Imposant et fier, il domine le ciel lillois de sa stature protectrice.",
+      "type": "property",
+      "group": "rouge"
+    },
+    {
+      "n": 23,
+      "title": "Gare de Roubaix",
+      "description": "À l’entrée des anciens quartiers textiles, la gare porte encore l’âme du Nord laborieux.",
+      "type": "station"
+    },
+    {
+      "n": 24,
+      "title": "Parc Jean-Baptiste Lebas (jaune)",
+      "description": "Un parc moderne où pelouses, jeux et couleurs dessinées offrent un havre familial.",
+      "type": "property",
+      "group": "jaune"
+    },
+    {
+      "n": 25,
+      "title": "Jardin Vauban (jaune)",
+      "description": "Un jardin romantique où l’eau, la pierre et la verdure composent une douce harmonie.",
+      "type": "property",
+      "group": "jaune"
+    },
+    {
+      "n": 26,
+      "title": "La Piscine - Musée d’Art et d’Industrie",
+      "description": "Ancienne piscine Art déco transformée en musée éclatant, où l’eau a laissé place aux œuvres.",
+      "type": "neutral"
+    },
+    {
+      "n": 27,
+      "title": "Gare de Tourcoing",
+      "description": "Une gare vivante qui ouvre les portes des quartiers frontaliers et des marchés animés.",
+      "type": "station"
+    },
+    {
+      "n": 28,
+      "title": "Rue Faidherbe (jaune)",
+      "description": "Artère piétonne éclatante où les lumières se reflètent sur les façades en fête.",
+      "type": "property",
+      "group": "jaune"
+    },
+    {
+      "n": 29,
+      "title": "Place du Théâtre (vert)",
+      "description": "Entre l’Opéra et la Bourse, la place respire une élégance classique et vivante.",
+      "type": "property",
+      "group": "vert"
+    },
+    {
+      "n": 30,
+      "title": "Taxe de Luxe",
+      "description": "Vos envies fastueuses vous coûtent 100 euros ; on ne brille jamais sans payer.",
+      "type": "tax"
+    },
+    {
+      "n": 31,
+      "title": "Prison",
+      "description": "Les portes se referment… Vous n’êtes ici qu’en visite. Du moins, on vous le souhaite.",
+      "type": "jail"
+    },
+    {
+      "n": 32,
+      "title": "Ruelles du Vieux Lille (vert)",
+      "description": "Un dédale de pavés, de briques et de secrets qui se dévoilent au fil des pas.",
+      "type": "property",
+      "group": "vert"
+    },
+    {
+      "n": 33,
+      "title": "Quartier du Vieux Marché (vert)",
+      "description": "Entre antiquaires et cafés anciens, le passé semble encore vibrer sous les vitrines.",
+      "type": "property",
+      "group": "vert"
+    },
+    {
+      "n": 34,
+      "title": "Caisse de Communauté",
+      "description": "Une carte vous attend, imprévisible et pleine d’humeurs.",
+      "type": "community"
+    },
+    {
+      "n": 35,
+      "title": "Quartier Wazemmes (violet)",
+      "description": "Un quartier bigarré, généreux et bruyant, où le marché bat comme un cœur vivant.",
+      "type": "property",
+      "group": "violet"
+    },
+    {
+      "n": 36,
+      "title": "Caisse de Communauté",
+      "description": "Une nouvelle carte s’offre à vous, prête à vous aider… ou à vous piéger.",
+      "type": "community"
+    },
+    {
+      "n": 37,
+      "title": "Allez en Prison",
+      "description": "Le verdict tombe : direction la prison sans détour.",
+      "type": "go_to_jail"
+    },
+    {
+      "n": 38,
+      "title": "Palais des Beaux-Arts de Lille (violet)",
+      "description": "Un musée monumental dont les salles recèlent trésors, toiles et merveilles inestimables.",
+      "type": "property",
+      "group": "violet"
+    },
+    {
+      "n": 39,
+      "title": "Chance",
+      "description": "Le hasard sourit, hésite… puis décide pour vous.",
+      "type": "chance"
+    },
+    {
+      "n": 40,
+      "title": "Place du Général-de-Gaulle (violet)",
+      "description": "La grande place s’ouvre comme un théâtre vivant, entourée de façades flamandes magnifiques.",
+      "type": "property",
+      "group": "violet"
+    }
+  ]
+}

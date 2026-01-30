@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "groups": [
+    {
+      "color": "Groupe 1",
+      "properties": [
+        "Propriété 4 — “Mars” (planète)"
+      ],
+      "purchasePrice": 100,
+      "mortgage": 50,
+      "unmortgageCost": 55,
+      "rents": {
+        "base": 10,
+        "house1": 25,
+        "house2": 55,
+        "house3": 100,
+        "house4": 175,
+        "hotel": 0
+      },
+      "housePrice": 60,
+      "hotelPrice": 0,
+      "housePrices": {
+        "1": 60,
+        "2": 120,
+        "3": 180,
+        "4": 300
+      }
+    },
+    {
+      "color": "Groupe 2",
+      "properties": [
+        "Propriété 11 — “Uranus” (planète)"
+      ],
+      "purchasePrice": 160,
+      "mortgage": 80,
+      "unmortgageCost": 88,
+      "rents": {
+        "base": 15,
+        "house1": 30,
+        "house2": 60,
+        "house3": 105,
+        "house4": 180,
+        "hotel": 0
+      },
+      "housePrice": 60,
+      "hotelPrice": 0,
+      "housePrices": {
+        "1": 60,
+        "2": 120,
+        "3": 180,
+        "4": 300
+      }
+    },
+    {
+      "color": "Groupe 3",
+      "properties": [
+        "Propriété 19 — “Comète Halley”"
+      ],
+      "purchasePrice": 220,
+      "mortgage": 110,
+      "unmortgageCost": 121,
+      "rents": {
+        "base": 20,
+        "house1": 35,
+        "house2": 65,
+        "house3": 110,
+        "house4": 185,
+        "hotel": 0
+      },
+      "housePrice": 60,
+      "hotelPrice": 0,
+      "housePrices": {
+        "1": 60,
+        "2": 120,
+        "3": 180,
+        "4": 300
+      }
+    }
+  ]
+}

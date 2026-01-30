@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "cards": [
+    {
+      "id": 1,
+      "text": "Trou de ver découvert : avance directement à “Trou de Ver” (case 26)."
+    },
+    {
+      "id": 2,
+      "text": "Tempête de radiations : perds un tour."
+    },
+    {
+      "id": 3,
+      "text": "Décollage anticipé : avance de 5 cases."
+    },
+    {
+      "id": 4,
+      "text": "Panne de moteur sur ta station : paie 50 crédits pour réparation."
+    },
+    {
+      "id": 5,
+      "text": "Signal extraterrestre mystérieux : gagne 100 crédits."
+    },
+    {
+      "id": 6,
+      "text": "Collision avec un débris : paie 75 crédits."
+    },
+    {
+      "id": 7,
+      "text": "Découverte d’un nouveau système stellaire : reçois 200 crédits."
+    },
+    {
+      "id": 8,
+      "text": "Passage près d’un pulsar : recule de 2 cases."
+    },
+    {
+      "id": 9,
+      "text": "Découverte d’un trésor spatial : gagne 150 crédits."
+    },
+    {
+      "id": 10,
+      "text": "Réparation de ton vaisseau : paie 25 crédits."
+    },
+    {
+      "id": 11,
+      "text": "Rencontre avec un vaisseau pirate : perds une infrastructure."
+    },
+    {
+      "id": 12,
+      "text": "Bonus énergie solaire : gagne 50 crédits."
+    },
+    {
+      "id": 13,
+      "text": "Réussite d’une mission scientifique : avance jusqu’à “Laboratoire de Recherche Stellaire”."
+    },
+    {
+      "id": 14,
+      "text": "Perte de signal : passe ton prochain tour."
+    },
+    {
+      "id": 15,
+      "text": "Réactivation d’un ancien satellite : gagne 100 crédits."
+    }
+  ]
+}

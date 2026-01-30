@@ -57,13 +57,18 @@ const readText = (p) => fix(fs.readFileSync(p, 'utf8')).replace(/\r/g, '');
 
 const parsePlateau = (raw) => {
   const text = String(raw ?? '');
-  const regex = /(?:^|\n)\s*(\d+)\.\s*([^\n]+)\n([^\n]*)/g;
+  const regex = /(?:^|\n)\s*(\d+)\.\s*([^\n]*)\n([\s\S]*?)(?=\n\s*\d+\.|$)/g;
   const tiles = [];
   let m;
   while ((m = regex.exec(text))) {
     const n = Number(m[1]);
-    const title = String(m[2] ?? '').trim();
-    const description = String(m[3] ?? '').trim();
+    let title = String(m[2] ?? '').trim();
+    const block = String(m[3] ?? '').replace(/\r/g, '');
+    const lines = block.split('\n').map((l) => l.trim()).filter(Boolean);
+    if (!title) {
+      title = lines.shift() ?? `Case ${n}`;
+    }
+    const description = lines.join(' ').trim();
     const t = `${title} ${description}`.toLowerCase();
 
     let type = 'neutral';

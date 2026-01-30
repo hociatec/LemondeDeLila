@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "groups": [
+    {
+      "color": "Groupe 1",
+      "properties": [
+        "Centre de recyclage",
+        "Parc naturel urbain"
+      ],
+      "purchasePrice": 100,
+      "mortgage": 50,
+      "unmortgageCost": 55,
+      "rents": {
+        "base": 10,
+        "house1": 20,
+        "house2": 40,
+        "house3": 70,
+        "house4": 120,
+        "hotel": 0
+      },
+      "housePrice": 50,
+      "hotelPrice": 0,
+      "housePrices": {
+        "1": 50,
+        "2": 100,
+        "3": 150,
+        "4": 250
+      }
+    },
+    {
+      "color": "Groupe 2",
+      "properties": [
+        "Réserve naturelle",
+        "Pénalité sur l’empreinte carbone (tu payes)",
+        "Parc éolien"
+      ],
+      "purchasePrice": 160,
+      "mortgage": 80,
+      "unmortgageCost": 88,
+      "rents": {
+        "base": 15,
+        "house1": 25,
+        "house2": 45,
+        "house3": 75,
+        "house4": 125,
+        "hotel": 0
+      },
+      "housePrice": 50,
+      "hotelPrice": 0,
+      "housePrices": {
+        "1": 50,
+        "2": 100,
+        "3": 150,
+        "4": 250
+      }
+    },
+    {
+      "color": "Groupe 3",
+      "properties": [
+        "Jardin botanique",
+        "Ferme solaire"
+      ],
+      "purchasePrice": 220,
+      "mortgage": 110,
+      "unmortgageCost": 121,
+      "rents": {
+        "base": 20,
+        "house1": 30,
+        "house2": 50,
+        "house3": 80,
+        "house4": 130,
+        "hotel": 0
+      },
+      "housePrice": 50,
+      "hotelPrice": 0,
+      "housePrices": {
+        "1": 50,
+        "2": 100,
+        "3": 150,
+        "4": 250
+      }
+    },
+    {
+      "color": "Groupe 4",
+      "properties": [
+        "Projet zéro déchet",
+        "Banque verte (là où tu gagnes des crédits verts)"
+      ],
+      "purchasePrice": 280,
+      "mortgage": 140,
+      "unmortgageCost": 154,
+      "rents": {
+        "base": 25,
+        "house1": 35,
+        "house2": 55,
+        "house3": 85,
+        "house4": 135,
+        "hotel": 0
+      },
+      "housePrice": 50,
+      "hotelPrice": 0,
+      "housePrices": {
+        "1": 50,
+        "2": 100,
+        "3": 150,
+        "4": 250
+      }
+    }
+  ]
+}

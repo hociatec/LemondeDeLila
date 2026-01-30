@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "utilities": [
+    {
+      "name": "Compagnie des Transports Nantais (tram et bus) :",
+      "purchasePrice": 150,
+      "mortgage": 75,
+      "unmortgageCost": 83,
+      "multiplier1": 4,
+      "multiplier2": 10
+    },
+    {
+      "name": "Les Machines de l’île :",
+      "purchasePrice": 150,
+      "mortgage": 75,
+      "unmortgageCost": 83,
+      "multiplier1": 4,
+      "multiplier2": 10
+    }
+  ]
+}

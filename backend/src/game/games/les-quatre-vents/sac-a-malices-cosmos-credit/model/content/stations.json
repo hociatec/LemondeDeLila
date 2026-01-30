@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "stations": {
+    "properties": [
+      "Propriété spéciale — “Laboratoire de Recherche Stellaire” (gare / transport)",
+      "Propriété 15 — “Nébuleuse d’Orion”"
+    ],
+    "purchasePrice": 200,
+    "mortgage": 100,
+    "unmortgageCost": 110,
+    "rents": {
+      "1": 25,
+      "2": 50,
+      "3": 100,
+      "4": 200
+    }
+  }
+}

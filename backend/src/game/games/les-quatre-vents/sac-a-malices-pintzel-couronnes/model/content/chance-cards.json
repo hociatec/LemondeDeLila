@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "cards": [
+    {
+      "id": 1,
+      "text": "Une vendeuse du Christkindelsmärik vous offre un petit mannala en forme de sourire : recevez 20 €."
+    },
+    {
+      "id": 2,
+      "text": "En passant sous les illuminations de la Porte de Noël, vous ressentez un élan magique : avancez de 2 cases."
+    },
+    {
+      "id": 3,
+      "text": "Un maître verrier de la Petite France vous confie un minuscule sapin en verre soufflé : recevez 80 €."
+    },
+    {
+      "id": 4,
+      "text": "Vous gagnez au tirage d’une tombola de chalet : recevez 100 €."
+    },
+    {
+      "id": 5,
+      "text": "La Chorale des Enfants d’Alsace chante juste à côté de vous : rejouez immédiatement."
+    },
+    {
+      "id": 6,
+      "text": "Une cigogne perchée sur une guirlande vous porte chance : avancez de 3 cases."
+    },
+    {
+      "id": 7,
+      "text": "Vous êtes invité à goûter un nouveau vin chaud blanc aux épices rares : recevez 50 €."
+    },
+    {
+      "id": 8,
+      "text": "Un artisan vous confie un bredela cassé \"qui ne pouvait plus être vendu\" : avancez d’une case."
+    },
+    {
+      "id": 9,
+      "text": "Le grand sapin de la Place Kléber scintille au moment exact où vous passez : gagnez 75 €."
+    },
+    {
+      "id": 10,
+      "text": "Une association collecte des jouets : vous donnez un cadeau, le cœur léger — perdez 20 €, mais rejouez."
+    },
+    {
+      "id": 11,
+      "text": "Vous aidez un touriste perdu à retrouver la Cathédrale dans la foule : recevez 30 €."
+    },
+    {
+      "id": 12,
+      "text": "Un souffleur de verre vous montre comment créer une étoile : recevez 60 €."
+    },
+    {
+      "id": 13,
+      "text": "Une bourrasque froide vous fait reculer de deux cases… mais vous trouvez un billet de 10 € par terre."
+    },
+    {
+      "id": 14,
+      "text": "Le Père Noël alsacien (Papanöel) vous salue personnellement : recevez 50 €."
+    },
+    {
+      "id": 15,
+      "text": "Une danse folklorique improvisée vous emporte dans la ronde : avancez de 3 cases."
+    },
+    {
+      "id": 16,
+      "text": "Vous tombez sur un stand de pain d’épices encore chaud : recevez 25 €."
+    },
+    {
+      "id": 17,
+      "text": "Une lanterne se met à briller juste pour vous dans une rue décorée : avancez d'une cases."
+    },
+    {
+      "id": 18,
+      "text": "En dégustant une soupe à l'oignon, vous racontez une bonne histoire : on vous offre le dessert ! Recevez 20 €."
+    },
+    {
+      "id": 19,
+      "text": "Vous êtes choisi pour accrocher un souhait sur l’Arbre des Vœux : rejouez."
+    },
+    {
+      "id": 20,
+      "text": "Une chorale gospel vous enveloppe de chaleur : avancez jusqu’à la prochaine gare."
+    },
+    {
+      "id": 21,
+      "text": "Vous aidez un enfant à retrouver ses parents près de la Place Broglie : recevez 50 €."
+    },
+    {
+      "id": 22,
+      "text": "Les effluves de cannelle vous inspirent : gagnez 15 €."
+    },
+    {
+      "id": 23,
+      "text": "En admirant l’Horloge Astronomique, une surprise festive se déclenche : avancez de 3 cases."
+    },
+    {
+      "id": 24,
+      "text": "Une boutique décorée de guirlandes vous offre un petit ange en tissu : recevez 20 €."
+    },
+    {
+      "id": 25,
+      "text": "Un artisan chocolatier vous fait goûter une praline spéciale Noël : payez 25 €."
+    },
+    {
+      "id": 26,
+      "text": "Vos gants tombent dans un chalet, mais on vous en donne une nouvelle paire “par esprit de Noël” : avancez de 1 case."
+    },
+    {
+      "id": 27,
+      "text": "Vous gagnez un concours de décoration de bredeles improvisé : recevez 65 €."
+    },
+    {
+      "id": 28,
+      "text": "En traversant la Petite France illuminée, vous faites une rencontre chaleureuse : avancez de 2 cases."
+    },
+    {
+      "id": 29,
+      "text": "Un lutin de parade vous glisse une pièce porte-bonheur : recevez 10 €."
+    },
+    {
+      "id": 30,
+      "text": "Une lanterne scintillante s’éteint juste après votre passage, signe de bonne fortune : avancez jusqu’à la case dépare."
+    }
+  ]
+}
