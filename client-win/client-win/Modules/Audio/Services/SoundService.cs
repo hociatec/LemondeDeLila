@@ -813,7 +813,7 @@ public sealed class SoundService : ISoundService, IDisposable
         EnqueuePlayback(new PlayRequest(sound, entry, filePath));
     }
 
-    private void PlayOneShotWithNewPlayer(SoundId sound, SoundEntry entry, string filePath)
+    private void PlayOneShotWithNewPlayer(SoundId sound, SoundEntry entry, string filePath, bool allowFallback = true)
     {
         void PlayOnUiThread()
         {
@@ -852,15 +852,15 @@ public sealed class SoundService : ISoundService, IDisposable
                     _loadedPaths[sound] = filePath;
                 }
 
-                void CleanupAndSignal(string reason)
+                void CleanupAndSignal(string reason, bool openGate)
                 {
                     try
                     {
-                        if (sound == SoundId.ClientOpened)
+                        if (openGate && sound == SoundId.ClientOpened)
                         {
                             OpenStartupGate($"ClientOpened {reason}");
                         }
-                        else if (sound == SoundId.ClientConnected && Volatile.Read(ref _startupGateOpened) == 0)
+                        else if (openGate && sound == SoundId.ClientConnected && Volatile.Read(ref _startupGateOpened) == 0)
                         {
                             OpenStartupGate($"ClientConnected {reason}");
                         }
@@ -887,6 +887,45 @@ public sealed class SoundService : ISoundService, IDisposable
                     try { local?.TrySetResult(true); } catch { /* ignore */ }
                     try { localPlayer?.Stop(); } catch { /* ignore */ }
                     try { localPlayer?.Close(); } catch { /* ignore */ }
+                }
+
+                bool TryFallbackToLocal(string reason)
+                {
+                    if (!allowFallback)
+                    {
+                        return false;
+                    }
+
+                    if (!IsFromSoundsCache(filePath))
+                    {
+                        return false;
+                    }
+
+                    var localPath = ResolveFilePath(entry);
+                    if (string.IsNullOrWhiteSpace(localPath) ||
+                        string.Equals(localPath, filePath, StringComparison.OrdinalIgnoreCase) ||
+                        !File.Exists(localPath))
+                    {
+                        return false;
+                    }
+
+                    try
+                    {
+                        _logger.LogWarning(
+                            "Audio: fallback to local sound for {Sound} after {Reason} (remote={RemoteFile} local={LocalFile})",
+                            sound,
+                            reason,
+                            Path.GetFileName(filePath),
+                            Path.GetFileName(localPath));
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+
+                    CleanupAndSignal(reason, openGate: false);
+                    PlayOneShotWithNewPlayer(sound, entry, localPath, allowFallback: false);
+                    return true;
                 }
 
                 void StartPlaybackBestEffort()
@@ -936,7 +975,11 @@ public sealed class SoundService : ISoundService, IDisposable
                             args.ErrorException?.Message ?? "unknown error");
                     }
                     catch { /* ignore */ }
-                    CleanupAndSignal("media failed");
+                    if (TryFallbackToLocal("media failed"))
+                    {
+                        return;
+                    }
+                    CleanupAndSignal("media failed", openGate: true);
                 };
                 player.MediaFailed += failed;
 
@@ -944,7 +987,7 @@ public sealed class SoundService : ISoundService, IDisposable
                 ended = (_, _) =>
                 {
                     try { player!.MediaEnded -= ended; } catch { /* ignore */ }
-                    CleanupAndSignal("ended");
+                    CleanupAndSignal("ended", openGate: true);
                 };
                 player.MediaEnded += ended;
 
@@ -954,7 +997,11 @@ public sealed class SoundService : ISoundService, IDisposable
                 }
                 catch
                 {
-                    CleanupAndSignal("open failed");
+                    if (TryFallbackToLocal("open failed"))
+                    {
+                        return;
+                    }
+                    CleanupAndSignal("open failed", openGate: true);
                     return;
                 }
 
