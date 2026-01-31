@@ -876,6 +876,17 @@ public sealed class SoundService : ISoundService, IDisposable
 
                 lock (_gate)
                 {
+                    // These two are "system feedback" sounds (login/logout).
+                    // On some setups, a MediaPlayer instance created early (preload) can become silent
+                    // (device switch, driver glitch, etc.). Preview uses a fresh MediaPlayer and works,
+                    // so we force a reload here to match preview reliability.
+                    if (request.Sound == SoundId.ClientConnected ||
+                        request.Sound == SoundId.ClientDisconnected)
+                    {
+                        ForceReloadPlayerLocked(request.Sound);
+                        try { _logger.LogInformation("Audio: reloaded player for {Sound}", request.Sound); } catch { /* ignore */ }
+                    }
+
                     EnsurePlayerLoaded(request.Sound, request.FilePath, canInterruptPlayback: true);
                     player = _players[request.Sound];
 
@@ -1710,6 +1721,29 @@ public sealed class SoundService : ISoundService, IDisposable
         player.Open(new Uri(absolutePath, UriKind.Absolute));
         _players[sound] = player;
         _loadedPaths[sound] = absolutePath;
+    }
+
+    private void ForceReloadPlayerLocked(SoundId sound)
+    {
+        if (_players.TryGetValue(sound, out var old))
+        {
+            try { old.Stop(); } catch { /* ignore */ }
+            try { old.Close(); } catch { /* ignore */ }
+            _players.Remove(sound);
+        }
+        _loadedPaths.Remove(sound);
+        _opened.Remove(sound);
+
+        if (_loopPlayers.TryGetValue(sound, out var loopPlayer) && ReferenceEquals(loopPlayer, old))
+        {
+            if (_loopHandlers.TryGetValue(sound, out var loopHandler))
+            {
+                try { loopPlayer.MediaEnded -= loopHandler; } catch { /* ignore */ }
+            }
+            _loopPlayers.Remove(sound);
+            _loopHandlers.Remove(sound);
+            _looping.Remove(sound);
+        }
     }
 
     private void OnOptionsChanged(object? sender, EventArgs e)
