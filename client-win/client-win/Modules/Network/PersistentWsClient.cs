@@ -48,6 +48,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
     private Task? _receiveLoop;
     private bool _isDisposed;
     private bool _isPausedByNetwork;
+    private volatile bool _updateRequired;
     private HashSet<string>? _supportedWsTypes;
 
     public event Action<string>? UnmatchedMessageReceived;
@@ -255,6 +256,11 @@ public sealed class PersistentWsClient : IAsyncDisposable
         // Vérifier circuit breaker
         CheckCircuitBreaker();
 
+        if (_updateRequired)
+        {
+            throw new InvalidOperationException("Mise Ã  jour requise pour continuer.");
+        }
+
         lock (_sync)
         {
             if (_socket != null &&
@@ -448,8 +454,12 @@ public sealed class PersistentWsClient : IAsyncDisposable
                     {
                         Log.Information("WebSocket fermé par le serveur: {Status} - {Description}",
                             socket.CloseStatus, socket.CloseStatusDescription);
+                        var isUpdateRequired = IsUpdateRequiredClose(socket.CloseStatus, socket.CloseStatusDescription);
                         PublishCloseAsErrorIfNeeded(socket.CloseStatus, socket.CloseStatusDescription);
-                        FireDisconnected($"close {socket.CloseStatus} {socket.CloseStatusDescription}".Trim());
+                        if (!isUpdateRequired)
+                        {
+                            FireDisconnected($"close {socket.CloseStatus} {socket.CloseStatusDescription}".Trim());
+                        }
                         FailAllPending($"Connexion WS fermée par le serveur ({socket.CloseStatus} - {socket.CloseStatusDescription}).");
                         await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "closing", cancellationToken).ConfigureAwait(false);
                         return;
@@ -550,6 +560,16 @@ public sealed class PersistentWsClient : IAsyncDisposable
         }
     }
 
+    private static bool IsUpdateRequiredClose(WebSocketCloseStatus? status, string? description)
+    {
+        var code = status.HasValue ? (int)status.Value : 0;
+        var reason = (description ?? string.Empty).Trim();
+
+        // Custom server close code used by Lila to force updates.
+        // Keep the detection intentionally simple and ASCII-safe.
+        return code == 4406 || reason.Contains("update required", StringComparison.OrdinalIgnoreCase);
+    }
+
     private void PublishCloseAsErrorIfNeeded(WebSocketCloseStatus? status, string? description)
     {
         try
@@ -568,6 +588,9 @@ public sealed class PersistentWsClient : IAsyncDisposable
             {
                 return;
             }
+
+            // Avoid reconnect loops: once the server requires an update, stop trying to reconnect.
+            _updateRequired = true;
 
             // Keep message stable so ShellErrorHandler can consistently show the update dialog.
             _errorBus?.Publish(new Modules.Error.AppError(

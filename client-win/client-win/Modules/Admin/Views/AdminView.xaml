@@ -11,7 +11,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="AdminView.Resources.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <Style x:Key="HideWhenClientUpdates" TargetType="UIElement">
+            <Style x:Key="HideWhenClientUpdates" TargetType="FrameworkElement">
                 <Setter Property="Visibility" Value="Visible" />
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding ShowClientUpdatesPanel}" Value="True">
