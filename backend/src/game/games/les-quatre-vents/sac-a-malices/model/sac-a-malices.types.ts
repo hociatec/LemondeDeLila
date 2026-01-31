@@ -11,6 +11,15 @@ export type SacTileType =
   | 'free'
   | 'neutral';
 
+export type SacVariantId =
+  | 'classic'
+  | 'gaia'
+  | 'violette-boussole'
+  | 'sabord-quai'
+  | 'route-des-flandres'
+  | 'cosmos-credit'
+  | 'pintzel-couronnes';
+
 export type SacTile = {
   n: number;
   title: string;
@@ -76,6 +85,9 @@ export type SacBoardJsonV1 = { version: 1; tiles: SacTile[] };
 export type SacCardsJsonV1 = { version: 1; cards: SacCard[] };
 
 export type SacMetadata = {
+  variantId?: SacVariantId;
+  setupStep?: 'setup_config' | 'playing';
+  setupStarterId?: number | null;
   tiles: SacTile[];
   positions: Record<number, number>;
   money: Record<number, number>;

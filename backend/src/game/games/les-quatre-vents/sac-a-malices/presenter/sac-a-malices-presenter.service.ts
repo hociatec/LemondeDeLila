@@ -5,6 +5,12 @@ import { BoardPayloadService } from '../../../../modules/board/services/board-pa
 import { SAC_A_MALICES_GAME } from '../definitions/sac-a-malices.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { SacMetadata } from '../model/sac-a-malices.types';
+import {
+  SAC_VARIANT_COUNT,
+  buildVariantChoiceLabel,
+  getVariantIndex,
+  parseVariantInput,
+} from '../sac-a-malices-variants';
 
 @Injectable()
 export class SacAMalicesPresenterService {
@@ -16,6 +22,7 @@ export class SacAMalicesPresenterService {
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
     const money = meta.money?.[userId] ?? 0;
+    const pending = this.buildVariantPrompt(meta, players, userId) ?? state.pending ?? null;
 
     return {
       ...state,
@@ -28,7 +35,7 @@ export class SacAMalicesPresenterService {
         label: a.type,
         payload: a.payload ?? {},
       })),
-      pending: state.pending ?? null,
+      pending,
       extras: {
         ...(state as any).extras,
         currentPlayerView: {
@@ -59,5 +66,41 @@ export class SacAMalicesPresenterService {
       board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
     } as any;
   }
-}
 
+  private buildVariantPrompt(
+    meta: SacMetadata,
+    players: Array<{ id: number }>,
+    userId: number,
+  ): any | null {
+    if ((meta.setupStep ?? '') !== 'setup_config') return null;
+    const ownerId =
+      typeof (meta as any)?.ownerPlayerId === 'number'
+        ? (meta as any).ownerPlayerId
+        : (players[0]?.id ?? null);
+    if (ownerId == null || ownerId !== userId) return null;
+
+    const variantId = parseVariantInput(meta.variantId) ?? 'classic';
+    const initialIndex = getVariantIndex(variantId);
+
+    return {
+      type: 'config_prompt',
+      playerId: ownerId,
+      label: 'Choisissez la variante.',
+      choices: [],
+      data: {
+        title: 'Variante Sac à Malices',
+        actionType: 'sac_set_variant',
+        fields: [
+          {
+            key: 'variant',
+            label: buildVariantChoiceLabel(),
+            kind: 'number',
+            min: 1,
+            max: SAC_VARIANT_COUNT,
+            initialText: String(initialIndex),
+          },
+        ],
+      },
+    };
+  }
+}

@@ -9,7 +9,14 @@ import type {
   SacMetadata,
   SacStationsJsonV1,
   SacUtilitiesJsonV1,
+  SacVariantId,
 } from '../model/sac-a-malices.types';
+import {
+  SAC_VARIANT_BY_ID,
+  SAC_VARIANTS,
+  parseVariantInput,
+  type SacVariantConfig,
+} from '../sac-a-malices-variants';
 
 @Injectable()
 export class SacAMalicesSetupService {
@@ -19,19 +26,70 @@ export class SacAMalicesSetupService {
   ) {}
 
   hydrateInitialState(base: GameStateEntity): GameStateEntity {
-    const board = this.loadBoard();
-    const groups = this.loadGroups();
-    const stations = this.loadStations();
-    const utilities = this.loadUtilities();
-    const chance = this.loadCards('chance-cards.json');
-    const community = this.loadCards('community-cards.json');
+    const meta = (base.metadata ?? {}) as SacMetadata;
+    const variantId = this.resolveVariantId(meta?.variantId);
+    if (!variantId) {
+      return this.buildSetupState(base);
+    }
+    return this.buildConfiguredState(base, variantId);
+  }
+
+  applyVariantSelection(base: GameStateEntity, variantId: SacVariantId): GameStateEntity {
+    return this.buildConfiguredState(base, variantId);
+  }
+
+  private resolveVariantId(raw: unknown): SacVariantId | null {
+    const parsed = parseVariantInput(raw);
+    if (parsed && SAC_VARIANT_BY_ID[parsed]) return parsed;
+    return null;
+  }
+
+  private buildSetupState(base: GameStateEntity): GameStateEntity {
+    const players = Array.isArray(base.players) ? base.players : [];
+    const meta = (base.metadata ?? {}) as SacMetadata;
+    const ownerId =
+      typeof (meta as any)?.ownerPlayerId === 'number'
+        ? (meta as any).ownerPlayerId
+        : (players[0]?.id ?? null);
+    const starterId =
+      typeof meta.setupStarterId === 'number'
+        ? meta.setupStarterId
+        : (base.turn?.currentPlayerId ?? players[0]?.id ?? null);
+
+    return {
+      ...base,
+      phase: 'setup',
+      pending: null,
+      turn: {
+        ...(base.turn ?? { direction: 1 }),
+        currentPlayerId: ownerId ?? base.turn?.currentPlayerId ?? null,
+        direction: 1,
+      },
+      metadata: {
+        ...(base.metadata ?? {}),
+        setupStep: 'setup_config',
+        setupStarterId: starterId,
+        variantId: meta.variantId ?? undefined,
+      } as SacMetadata,
+    };
+  }
+
+  private buildConfiguredState(base: GameStateEntity, variantId: SacVariantId): GameStateEntity {
+    const variant = SAC_VARIANT_BY_ID[variantId] ?? SAC_VARIANTS[0];
+    const board = this.loadBoard(variant);
+    const groups = this.loadGroups(variant);
+    const stations = this.loadStations(variant);
+    const utilities = this.loadUtilities(variant);
+    const chance = this.loadCards(variant, 'chance-cards.json');
+    const community = this.loadCards(variant, 'community-cards.json');
 
     const players = Array.isArray(base.players) ? base.players : [];
     const positions: Record<number, number> = {};
     const money: Record<number, number> = {};
+    const startMoney = Number(variant.rules.startMoney ?? 0) || 0;
     for (const p of players) {
       positions[p.id] = 0;
-      money[p.id] = 2000;
+      money[p.id] = startMoney;
     }
 
     const seedMeta = (base.metadata ?? {}) as any;
@@ -39,6 +97,9 @@ export class SacAMalicesSetupService {
     const s2 = this.random.shuffle(s1.meta, community.cards ?? []);
 
     const meta: SacMetadata = {
+      variantId: variant.id,
+      setupStep: 'playing',
+      setupStarterId: null,
       tiles: board.tiles ?? [],
       positions,
       money,
@@ -53,18 +114,7 @@ export class SacAMalicesSetupService {
         consecutiveDoubles: {},
       },
       pot: 0,
-      rules: {
-        startMoney: 2000,
-        passStartBonus: 200,
-        potEnabled: true,
-        rentBlockedInJail: true,
-        jail: {
-          maxTurns: 3,
-          autoFine: 100,
-          allowPayFine: true,
-          allowDoubleEscape: false,
-        },
-      },
+      rules: variant.rules,
       decks: {
         chance: { cards: s1.values as any, discard: [] },
         community: { cards: s2.values as any, discard: [] },
@@ -77,10 +127,21 @@ export class SacAMalicesSetupService {
       winnerId: null,
     };
 
+    const metaBase = (base.metadata ?? {}) as SacMetadata;
+    const starterId =
+      typeof metaBase.setupStarterId === 'number'
+        ? metaBase.setupStarterId
+        : (base.turn?.currentPlayerId ?? players[0]?.id ?? null);
+
     return {
       ...base,
       phase: 'playing',
       pending: null,
+      turn: {
+        ...(base.turn ?? { direction: 1 }),
+        currentPlayerId: starterId ?? base.turn?.currentPlayerId ?? null,
+        direction: 1,
+      },
       metadata: {
         ...(base.metadata ?? {}),
         ...s2.meta,
@@ -89,10 +150,12 @@ export class SacAMalicesSetupService {
     };
   }
 
-  private loadBoard(): SacBoardJsonV1 {
+  private loadBoard(variant: SacVariantConfig): SacBoardJsonV1 {
+    const contentDir = variant.contentDir;
     return this.contentLoader.loadContent<SacBoardJsonV1>({
-      gameType: 'sac-a-malices',
+      gameType: variant.gameType,
       baseDir: __dirname,
+      ...(contentDir ? { contentDir } : {}),
       filename: 'board.json',
       validators: [
         this.contentLoader.validators.version(1),
@@ -101,10 +164,12 @@ export class SacAMalicesSetupService {
     });
   }
 
-  private loadGroups(): SacGroupsJsonV1 {
+  private loadGroups(variant: SacVariantConfig): SacGroupsJsonV1 {
+    const contentDir = variant.contentDir;
     return this.contentLoader.loadContent<SacGroupsJsonV1>({
-      gameType: 'sac-a-malices',
+      gameType: variant.gameType,
       baseDir: __dirname,
+      ...(contentDir ? { contentDir } : {}),
       filename: 'groups.json',
       validators: [
         this.contentLoader.validators.version(1),
@@ -113,10 +178,12 @@ export class SacAMalicesSetupService {
     });
   }
 
-  private loadStations(): SacStationsJsonV1 {
+  private loadStations(variant: SacVariantConfig): SacStationsJsonV1 {
+    const contentDir = variant.contentDir;
     return this.contentLoader.loadContent<SacStationsJsonV1>({
-      gameType: 'sac-a-malices',
+      gameType: variant.gameType,
       baseDir: __dirname,
+      ...(contentDir ? { contentDir } : {}),
       filename: 'stations.json',
       validators: [
         this.contentLoader.validators.version(1),
@@ -125,22 +192,26 @@ export class SacAMalicesSetupService {
     });
   }
 
-  private loadUtilities(): SacUtilitiesJsonV1 {
+  private loadUtilities(variant: SacVariantConfig): SacUtilitiesJsonV1 {
+    const contentDir = variant.contentDir;
     return this.contentLoader.loadContent<SacUtilitiesJsonV1>({
-      gameType: 'sac-a-malices',
+      gameType: variant.gameType,
       baseDir: __dirname,
+      ...(contentDir ? { contentDir } : {}),
       filename: 'utilities.json',
       validators: [
         this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('utilities', 1),
+        this.contentLoader.validators.arrayField('utilities', variant.utilitiesMin),
       ],
     });
   }
 
-  private loadCards(filename: string): SacCardsJsonV1 {
+  private loadCards(variant: SacVariantConfig, filename: string): SacCardsJsonV1 {
+    const contentDir = variant.contentDir;
     return this.contentLoader.loadContent<SacCardsJsonV1>({
-      gameType: 'sac-a-malices',
+      gameType: variant.gameType,
       baseDir: __dirname,
+      ...(contentDir ? { contentDir } : {}),
       filename,
       validators: [
         this.contentLoader.validators.version(1),

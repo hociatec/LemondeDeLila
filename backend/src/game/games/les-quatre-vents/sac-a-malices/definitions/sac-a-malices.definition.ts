@@ -14,7 +14,8 @@ export type SacAMalicesActionType =
   | 'unmortgage'
   | 'choose_property'
   | 'pay_fine'
-  | 'use_jail_card';
+  | 'use_jail_card'
+  | 'sac_set_variant';
 
 export const SAC_A_MALICES_GAME: GameDefinition<
   SacAMalicesGameId,
@@ -40,6 +41,7 @@ export const SAC_A_MALICES_GAME: GameDefinition<
     'choose_property',
     'pay_fine',
     'use_jail_card',
+    'sac_set_variant',
   ],
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,

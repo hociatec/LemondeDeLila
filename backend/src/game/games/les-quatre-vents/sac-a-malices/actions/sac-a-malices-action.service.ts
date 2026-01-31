@@ -6,24 +6,31 @@ import type {
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { SacAMalicesSetupService } from '../setup/sac-a-malices-setup.service';
 import type {
   SacCard,
   SacDeck,
   SacMetadata,
   SacTile,
 } from '../model/sac-a-malices.types';
+import { SAC_VARIANT_BY_ID, parseVariantInput } from '../sac-a-malices-variants';
 
 @Injectable()
 export class SacAMalicesActionService {
   constructor(
     private readonly random: RandomService,
     private readonly core: GameCoreService,
+    private readonly setup: SacAMalicesSetupService,
   ) {}
 
   applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
     let next = state;
     for (const action of actions ?? []) {
       const type = String(action?.type ?? '').trim();
+      if (type === 'sac_set_variant') {
+        next = this.applyVariantConfig(next, action);
+        continue;
+      }
       if (type === 'roll' || type === 'ROLL_DICE' || type === 'roll_dice') {
         next = this.handleRoll(next);
         continue;
@@ -64,6 +71,32 @@ export class SacAMalicesActionService {
         next = this.handleUseJailCard(next);
         continue;
       }
+    }
+    return next;
+  }
+
+  private applyVariantConfig(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
+    const meta = this.getMeta(state);
+    if (meta.setupStep !== 'setup_config') return state;
+
+    const payload = (action?.payload ?? {}) as any;
+    const rawVariant = payload.variant ?? payload.variantId ?? payload.value ?? null;
+    const parsed = parseVariantInput(rawVariant) ?? parseVariantInput(meta.variantId) ?? 'classic';
+    const variant = SAC_VARIANT_BY_ID[parsed] ?? SAC_VARIANT_BY_ID['classic'];
+    const chosenId = variant?.id ?? 'classic';
+
+    let next = this.setup.applyVariantSelection(state, chosenId);
+    const actorId =
+      typeof (action as any)?.meta?.actorId === 'number'
+        ? (action as any).meta.actorId
+        : null;
+    const label = variant?.label ?? chosenId;
+    if (rawVariant == null || parseVariantInput(rawVariant) == null) {
+      next = this.core.appendLog(next, `Variante inconnue, défaut "${label}".`);
+    } else if (actorId != null) {
+      next = this.core.appendLog(next, `${this.playerName(next, actorId)} choisit la variante : ${label}.`);
+    } else {
+      next = this.core.appendLog(next, `Variante choisie : ${label}.`);
     }
     return next;
   }
@@ -571,6 +604,7 @@ export class SacAMalicesActionService {
           playerId,
           blocking: true,
           label: `Acheter "${tile.title}" (${price > 0 ? price + ' €' : 'prix inconnu'}) ?`,
+          choices: ['Acheter', 'Passer'],
           data: { tileIndex: pos },
         };
         return { ...next, pending };

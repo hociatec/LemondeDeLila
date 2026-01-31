@@ -18,6 +18,7 @@ const ALLOWED = new Set([
   'choose_property',
   'pay_fine',
   'use_jail_card',
+  'sac_set_variant',
 ]);
 
 export function getAvailableActions(
@@ -26,6 +27,16 @@ export function getAvailableActions(
 ): GameSingleActionDto[] {
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') return [];
+
+  const meta: any = state.metadata ?? {};
+  const setupStep = String(meta?.setupStep ?? '').trim();
+  if (setupStep === 'setup_config') {
+    const ownerId = typeof meta?.ownerPlayerId === 'number' ? meta.ownerPlayerId : null;
+    if (ownerId != null && ownerId === playerId) {
+      return [{ type: 'sac_set_variant', payload: {} }];
+    }
+    return [];
+  }
 
   const pending = state.pending as any;
   if (pending?.type === 'buy') {
@@ -47,7 +58,6 @@ export function getAvailableActions(
   if ((state.turn?.currentPlayerId ?? null) !== playerId) return [];
   if (state.pending) return [];
 
-  const meta: any = state.metadata ?? {};
   const inJail = Number(meta?.statuses?.inJail?.[playerId] ?? 0) > 0;
   const jailCardCount = Number(meta?.statuses?.getOutOfJail?.[playerId] ?? 0) || 0;
   const rules: any = meta?.rules ?? {};
@@ -83,6 +93,25 @@ export function validateAction(
         allowedActions: Array.from(ALLOWED),
       },
     );
+  }
+
+  if (normalized === 'sac_set_variant') {
+    const meta: any = state.metadata ?? {};
+    const setupStep = String(meta?.setupStep ?? '').trim();
+    if (setupStep !== 'setup_config') {
+      throw new PlayerActionError('Configuration indisponible.', {
+        gameType: 'sac-a-malices',
+      });
+    }
+    const ownerId = typeof meta?.ownerPlayerId === 'number' ? meta.ownerPlayerId : null;
+    if (ownerId != null && actorId != null && actorId !== ownerId) {
+      throw new PlayerActionError("Ce n'est pas votre action.", {
+        gameType: 'sac-a-malices',
+        playerId: actorId,
+        currentPlayerId: ownerId,
+      });
+    }
+    return { ...action, type: 'sac_set_variant', payload: action.payload ?? {} };
   }
 
   const pending = state.pending as any;

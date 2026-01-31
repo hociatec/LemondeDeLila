@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "stations": {
+    "properties": [
+      "Gare de Strasbourg-Ville",
+      "Gare de Krimmeri-Meinau",
+      "Gare de Bischheim",
+      "Gare de Schiltigheim."
+    ],
+    "purchasePrice": 200,
+    "mortgage": 100,
+    "unmortgageCost": 110,
+    "rents": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0
+    }
+  }
+}
