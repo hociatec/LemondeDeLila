@@ -267,6 +267,17 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             Volatile.Write(ref _openedSoundPlayedSequence, skipOpenedSeq);
         }
 
+        // Feedback immédiat de connexion (hors machine à états des transitions pour éviter latence/conflits).
+        TryPlay(SoundId.ClientConnected);
+        lock (_stateGate)
+        {
+            if (_loginSequence == loginSeq)
+            {
+                _pendingConnectedSound = 0;
+                Volatile.Write(ref _connectedSoundPlayedSequence, loginSeq);
+            }
+        }
+
         if (shouldTransition)
         {
             RequestTransition();
@@ -326,6 +337,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
     public void NotifyLogoutRequested()
     {
         var shouldTransition = false;
+        var logoutSeq = 0;
         lock (_stateGate)
         {
             // Redundant logout: ignore (prevents double "disconnected" sound).
@@ -337,8 +349,21 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             _isConnected = false;
             _desiredBackground = AppAudioBackground.None;
             _logoutSequence++;
+            logoutSeq = _logoutSequence;
             _pendingDisconnectedSound = 1;
             shouldTransition = true;
+        }
+
+        // Feedback immédiat de déconnexion (hors machine à états des transitions).
+        try { StopBackgroundLoopsImmediate(); } catch { }
+        TryPlay(SoundId.ClientDisconnected);
+        lock (_stateGate)
+        {
+            if (_logoutSequence == logoutSeq)
+            {
+                _pendingDisconnectedSound = 0;
+                Volatile.Write(ref _disconnectedSoundPlayedSequence, logoutSeq);
+            }
         }
 
         if (shouldTransition)
@@ -709,19 +734,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                         // ignore
                     }
 
-                    // On déconnecte : priorité absolue au feedback immédiat.
-                    // On joue le son d'abord, puis on rafraîchit le cache en arrière-plan pour le prochain coup.
                     TryPlay(SoundId.ClientDisconnected);
-
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                            await RefreshRemoteSoundsAsync(force: false, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
-                        }
-                        catch { }
-                    });
 
                     lock (_stateGate)
                     {
@@ -750,19 +763,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                     // ignore
                 }
 
-                // Priorité au feedback immédiat : on lance le son tout de suite.
-                // Le rafraîchissement du cache (pour avoir les derniers sons admin) se fait en parallèle.
                 TryPlay(SoundId.ClientConnected);
-
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                        await RefreshRemoteSoundsAsync(force: false, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
-                    }
-                    catch { }
-                });
 
                 lock (_stateGate)
                 {

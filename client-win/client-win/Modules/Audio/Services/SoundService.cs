@@ -941,14 +941,18 @@ public sealed class SoundService : ISoundService, IDisposable
 
                     try
                     {
+                        var vol = GetPlaybackVolume(sound, entry, filePath);
+                        _logger.LogInformation("Audio: system one-shot play {Sound} vol={Volume:P0}", sound, vol);
                         player!.IsMuted = false;
-                        player.Volume = GetPlaybackVolume(sound, entry, filePath);
+                        player.Volume = vol;
+                        player.Stop();
+                        player.Position = TimeSpan.Zero;
                         player.Play();
                         TraceStartupPlayStart(sound, filePath);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // ignore
+                        _logger.LogDebug(ex, "Audio: system one-shot play failed {Sound}", sound);
                     }
                 }
 
@@ -1004,11 +1008,11 @@ public sealed class SoundService : ISoundService, IDisposable
                 }
 
                 // Fallback: if MediaOpened never fires (or too late), start playback anyway after a short delay.
-                // We use Priority.Input to ensure it runs even during heavy UI activity (common at login).
+                // We use Priority.Send to ensure it runs even during heavy UI activity (common at login).
                 _ = _dispatcher.BeginInvoke((Action)(() =>
                 {
                     try { StartPlaybackBestEffort(); } catch { /* ignore */ }
-                }), DispatcherPriority.Input);
+                }), DispatcherPriority.Send);
 
                 try { _logger.LogInformation("Audio: system one-shot (fresh MediaPlayer) {Sound} file={File}", sound, Path.GetFileName(filePath)); } catch { /* ignore */ }
             }
@@ -2006,12 +2010,12 @@ public sealed class SoundService : ISoundService, IDisposable
 
             if (!isUserOverride)
             {
-                // Mirror PlayPreview behavior: ensure a minimum audibility floor (0.35) if the category is enabled.
+                // Mirror PlayPreview behavior: ensure a minimum audibility floor (0.45) if the category is enabled.
                 // This handles cases where user has volume near 0 but still expects to hear system feedback.
                 var boosted = Clamp01(baseVolume * 2.0);
                 if (entry.IsEnabled())
                 {
-                    return Math.Max(0.35, boosted);
+                    return Math.Max(0.45, boosted);
                 }
                 return boosted;
             }
