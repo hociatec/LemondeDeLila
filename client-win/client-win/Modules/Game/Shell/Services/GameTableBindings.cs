@@ -280,7 +280,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                         _announcements.TableInfo("Table démarrée.");
 
                         // Forcer le focus sur la zone de jeu.
-                        _dispatcher.BeginInvoke(
+                        _ = _dispatcher.BeginInvoke(
                             DispatcherPriority.Input,
                             new Action(_tableVm.GameZone.RequestFocus));
                         return;
