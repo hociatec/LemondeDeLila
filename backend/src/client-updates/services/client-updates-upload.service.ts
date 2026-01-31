@@ -64,8 +64,16 @@ export class ClientUpdatesUploadService {
   }
 
   private async saveAndApplyZip(zipPath: string, meta: ClientUpdateMeta) {
-    await this.updates.applyZip(zipPath);
-    await this.updates.saveLatest(meta);
+    try {
+      await this.updates.applyZip(zipPath);
+      await this.updates.saveLatest(meta);
+    } catch (err: any) {
+      const msg =
+        typeof err?.message === 'string' && err.message.trim()
+          ? err.message.trim()
+          : 'erreur inconnue';
+      throw new BadRequestException(`Publication echouee: ${msg}`);
+    }
   }
 
   async uploadSingleZip(params: {

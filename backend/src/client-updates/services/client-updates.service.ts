@@ -320,12 +320,23 @@ export class ClientUpdatesService {
       });
     }
 
-    // Node >=16: fs.cp is available.
-    await fs.promises.cp(srcDir, dstDir, {
-      recursive: true,
-      force: true,
-      errorOnExist: false,
-    } as any);
+    // Avoid fs.promises.cp: not available on older Node versions (common on some servers).
+    const copyRecursive = async (from: string, to: string): Promise<void> => {
+      const st = await fs.promises.stat(from);
+      if (st.isDirectory()) {
+        await fs.promises.mkdir(to, { recursive: true });
+        const entries = await fs.promises.readdir(from, { withFileTypes: true });
+        for (const e of entries) {
+          await copyRecursive(path.join(from, e.name), path.join(to, e.name));
+        }
+        return;
+      }
+      // File (or other): treat as file.
+      await fs.promises.mkdir(path.dirname(to), { recursive: true });
+      await fs.promises.copyFile(from, to);
+    };
+
+    await copyRecursive(srcDir, dstDir);
   }
 
   async applyZip(zipPath: string): Promise<void> {
