@@ -20,13 +20,15 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Forcer la mise à jour (bloquer les anciens clients)", tag: "clientUpdate.forceLatest"));
         SelectedItem = Items.FirstOrDefault();
         IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
         TextInputLabel = string.Empty;
         TextInput = string.Empty;
         SecondaryInputLabel = "Version (nouvelle)";
         SecondaryInput = AppInfo.GetShortVersion();
         SecondaryInputAcceptsReturn = false;
-        IsSecondaryInputVisible = true;
-        Status = "Choisis une version plus haute que la dernière publiée. Entrée : exécuter l'action sélectionnée. Échap : retour.";
+        ClientUpdateMessage = string.Empty;
+        PreferDetailsFocus = false;
+        Status = "Choisis une version plus haute que la dernière publiée. Publie puis diffuse la mise à jour.";
 
         _ = PrefillClientUpdateVersionAsync();
     }
@@ -59,7 +61,9 @@ public sealed partial class AdminViewModel
         IsBusy = true;
         try
         {
-            var (delivered, min) = await _admin.ForceClientUpdateLatestAsync(message: null).ConfigureAwait(true);
+            var (delivered, min) = await _admin
+                .ForceClientUpdateLatestAsync(message: NormalizeClientUpdateMessage())
+                .ConfigureAwait(true);
             var suffix = string.IsNullOrWhiteSpace(min) ? string.Empty : $" (min: {min})";
             await _dialogs.ShowInfo("Mise à jour", $"Mise à jour forcée pour {delivered} utilisateur(s){suffix}.").ConfigureAwait(true);
         }
@@ -76,7 +80,7 @@ public sealed partial class AdminViewModel
         try
         {
             var delivered = await _admin.AnnounceClientUpdateAsync(
-                    message: null,
+                    message: NormalizeClientUpdateMessage(),
                     version: string.IsNullOrWhiteSpace(version) ? null : version)
                 .ConfigureAwait(true);
             await _dialogs.ShowInfo("Mise à jour", $"Proposition envoyée à {delivered} utilisateur(s).").ConfigureAwait(true);
@@ -90,6 +94,7 @@ public sealed partial class AdminViewModel
     private async Task BuildAndUploadClientUpdateAsync()
     {
         var version = (SecondaryInput ?? string.Empty).Trim();
+        var message = NormalizeClientUpdateMessage();
 
         var latest = await _publisher.GetLatestPublishedVersionAsync().ConfigureAwait(true);
         if (!string.IsNullOrWhiteSpace(latest) &&
@@ -106,7 +111,7 @@ public sealed partial class AdminViewModel
         try
         {
             var result = await _publisher.BuildAndUploadAsync(
-                    message: null,
+                    message: message,
                     string.IsNullOrWhiteSpace(version) ? null : version)
                 .ConfigureAwait(true);
 
@@ -176,5 +181,11 @@ public sealed partial class AdminViewModel
         {
             IsBusy = false;
         }
+    }
+
+    private string? NormalizeClientUpdateMessage()
+    {
+        var msg = (ClientUpdateMessage ?? string.Empty).Trim();
+        return string.IsNullOrWhiteSpace(msg) ? null : msg;
     }
 }

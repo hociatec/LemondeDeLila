@@ -80,6 +80,7 @@ public sealed partial class AdminViewModel : ObservableObject
     private string _fourthInput = string.Empty;
     private string _fifthInputLabel = string.Empty;
     private string _fifthInput = string.Empty;
+    private string _clientUpdateMessage = string.Empty;
     private bool _primaryInputAcceptsReturn = true;
     private bool _secondaryInputAcceptsReturn;
     private bool _isPrimaryInputVisible;
@@ -171,6 +172,9 @@ public sealed partial class AdminViewModel : ObservableObject
         ActivateCommand = new AsyncRelayCommand(ActivateSelectedAsync);
         ApplyFiltersCommand = new AsyncRelayCommand(ApplyFiltersAsync);
         DownloadLogsCommand = new AsyncRelayCommand(DownloadLogsAsync);
+        ClientUpdatesBuildCommand = new AsyncRelayCommand(BuildAndUploadClientUpdateAsync, () => !IsBusy);
+        ClientUpdatesAnnounceCommand = new AsyncRelayCommand(AnnounceClientUpdateAsync, () => !IsBusy);
+        ClientUpdatesForceCommand = new AsyncRelayCommand(ForceClientUpdateLatestAsync, () => !IsBusy);
         EscapeCommand = new RelayCommand(() =>
         {
             var result = HandleEscape();
@@ -235,7 +239,15 @@ public sealed partial class AdminViewModel : ObservableObject
     public bool IsBusy
     {
         get => _isBusy;
-        private set => SetProperty(ref _isBusy, value);
+        private set
+        {
+            if (SetProperty(ref _isBusy, value))
+            {
+                ClientUpdatesBuildCommand.RaiseCanExecuteChanged();
+                ClientUpdatesAnnounceCommand.RaiseCanExecuteChanged();
+                ClientUpdatesForceCommand.RaiseCanExecuteChanged();
+            }
+        }
     }
 
     public string TextInputLabel
@@ -296,6 +308,12 @@ public sealed partial class AdminViewModel : ObservableObject
     {
         get => _fifthInput;
         set => SetProperty(ref _fifthInput, value);
+    }
+
+    public string ClientUpdateMessage
+    {
+        get => _clientUpdateMessage;
+        set => SetProperty(ref _clientUpdateMessage, value);
     }
 
     public bool PrimaryInputAcceptsReturn
@@ -384,6 +402,7 @@ public sealed partial class AdminViewModel : ObservableObject
 
     public bool ShowUserFilters => _page == AdminPage.Users || _page == AdminPage.Roles;
     public bool ShowLogControls => _page == AdminPage.Logs;
+    public bool ShowClientUpdatesPanel => _page == AdminPage.ClientUpdates;
     public bool ShowPermissionMatrix => IsAdditionalPermissionsVisible;
 
     public IEnumerable<PermissionModuleState> PermissionModules => _permissionModules;
@@ -415,6 +434,9 @@ public sealed partial class AdminViewModel : ObservableObject
     public AsyncRelayCommand ActivateCommand { get; }
     public AsyncRelayCommand ApplyFiltersCommand { get; }
     public AsyncRelayCommand DownloadLogsCommand { get; }
+    public AsyncRelayCommand ClientUpdatesBuildCommand { get; }
+    public AsyncRelayCommand ClientUpdatesAnnounceCommand { get; }
+    public AsyncRelayCommand ClientUpdatesForceCommand { get; }
     public RelayCommand EscapeCommand { get; }
     public AsyncRelayCommand<AdminMenuItem> SelectAndActivateCommand { get; }
 }

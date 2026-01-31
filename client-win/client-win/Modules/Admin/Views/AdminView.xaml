@@ -101,6 +101,6 @@
             </Grid>
         </Border>
 
-        <views:AdminStatusBarView Grid.Row="2" />
+        <views:AdminStatusBarView Grid.Row="2" Style="{StaticResource HideWhenClientUpdates}" />
     </Grid>
 </UserControl>

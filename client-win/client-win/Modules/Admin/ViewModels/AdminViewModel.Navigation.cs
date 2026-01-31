@@ -499,5 +499,6 @@ public sealed partial class AdminViewModel
     {
         OnPropertyChanged(nameof(ShowUserFilters));
         OnPropertyChanged(nameof(ShowLogControls));
+        OnPropertyChanged(nameof(ShowClientUpdatesPanel));
     }
 }
