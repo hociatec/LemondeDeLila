@@ -800,7 +800,189 @@ public sealed class SoundService : ISoundService, IDisposable
             }
         }
 
+        // Robust path for login/logout feedback:
+        // - these are played during heavy transitions (startup/login/logout, background changes, remote refresh)
+        // - a cached MediaPlayer instance can become silent on some setups (preview uses a fresh player and works)
+        // So we intentionally mirror the preview strategy here: create a fresh MediaPlayer for each play.
+        if (sound == SoundId.ClientConnected || sound == SoundId.ClientDisconnected)
+        {
+            PlayOneShotWithNewPlayer(sound, entry, filePath);
+            return;
+        }
+
         EnqueuePlayback(new PlayRequest(sound, entry, filePath));
+    }
+
+    private void PlayOneShotWithNewPlayer(SoundId sound, SoundEntry entry, string filePath)
+    {
+        void PlayOnUiThread()
+        {
+            MediaPlayer? player = null;
+            TaskCompletionSource<bool>? tcs = null;
+
+            try
+            {
+                lock (_gate)
+                {
+                    // Cancel any in-flight waiters for this sound.
+                    if (_playEndSignals.TryGetValue(sound, out var previous))
+                    {
+                        _playEndSignals.Remove(sound);
+                        try { previous.TrySetResult(true); } catch { /* ignore */ }
+                    }
+
+                    // Stop and dispose any previous player for this sound.
+                    if (_players.TryGetValue(sound, out var old))
+                    {
+                        try { old.Stop(); } catch { /* ignore */ }
+                        try { old.Close(); } catch { /* ignore */ }
+                        _players.Remove(sound);
+                    }
+                    _loadedPaths.Remove(sound);
+                    _opened.Remove(sound);
+
+                    tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    _playEndSignals[sound] = tcs;
+
+                    player = new MediaPlayer();
+                    // Keep muted until we explicitly Play (avoid device blips).
+                    player.IsMuted = true;
+                    player.Volume = 0;
+                    _players[sound] = player;
+                    _loadedPaths[sound] = filePath;
+                }
+
+                void CleanupAndSignal(string reason)
+                {
+                    try
+                    {
+                        if (sound == SoundId.ClientOpened)
+                        {
+                            OpenStartupGate($"ClientOpened {reason}");
+                        }
+                        else if (sound == SoundId.ClientConnected && Volatile.Read(ref _startupGateOpened) == 0)
+                        {
+                            OpenStartupGate($"ClientConnected {reason}");
+                        }
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+
+                    TaskCompletionSource<bool>? local;
+                    MediaPlayer? localPlayer;
+                    lock (_gate)
+                    {
+                        _playEndSignals.TryGetValue(sound, out local);
+                        _playEndSignals.Remove(sound);
+
+                        _players.TryGetValue(sound, out localPlayer);
+                        _players.Remove(sound);
+
+                        _loadedPaths.Remove(sound);
+                        _opened.Remove(sound);
+                    }
+
+                    try { local?.TrySetResult(true); } catch { /* ignore */ }
+                    try { localPlayer?.Stop(); } catch { /* ignore */ }
+                    try { localPlayer?.Close(); } catch { /* ignore */ }
+                }
+
+                void StartPlaybackBestEffort()
+                {
+                    MediaPlayer? current;
+                    lock (_gate)
+                    {
+                        if (!_players.TryGetValue(sound, out current) || !ReferenceEquals(current, player))
+                        {
+                            return;
+                        }
+                    }
+
+                    try
+                    {
+                        player!.IsMuted = false;
+                        player.Volume = GetPlaybackVolume(sound, entry, filePath);
+                        player.Stop();
+                        player.Position = TimeSpan.Zero;
+                        player.Play();
+                        TraceStartupPlayStart(sound, filePath);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+
+                EventHandler? opened = null;
+                opened = (_, _) =>
+                {
+                    try { player!.MediaOpened -= opened; } catch { /* ignore */ }
+                    lock (_gate) { _opened.Add(sound); }
+                    StartPlaybackBestEffort();
+                };
+                player!.MediaOpened += opened;
+
+                EventHandler<ExceptionEventArgs>? failed = null;
+                failed = (_, args) =>
+                {
+                    try { player!.MediaFailed -= failed; } catch { /* ignore */ }
+                    try
+                    {
+                        _logger.LogWarning(
+                            "Sound playback failed ({Sound}): {Error}",
+                            sound,
+                            args.ErrorException?.Message ?? "unknown error");
+                    }
+                    catch { /* ignore */ }
+                    CleanupAndSignal("media failed");
+                };
+                player.MediaFailed += failed;
+
+                EventHandler? ended = null;
+                ended = (_, _) =>
+                {
+                    try { player!.MediaEnded -= ended; } catch { /* ignore */ }
+                    CleanupAndSignal("ended");
+                };
+                player.MediaEnded += ended;
+
+                try
+                {
+                    player.Open(new Uri(filePath, UriKind.Absolute));
+                }
+                catch
+                {
+                    CleanupAndSignal("open failed");
+                    return;
+                }
+
+                // Fallback: if MediaOpened never fires (or too late), start playback anyway after a short delay.
+                _ = _dispatcher.BeginInvoke((Action)(() =>
+                {
+                    try { StartPlaybackBestEffort(); } catch { /* ignore */ }
+                }), DispatcherPriority.Background);
+
+                try { _logger.LogInformation("Audio: system one-shot (fresh MediaPlayer) {Sound}", sound); } catch { /* ignore */ }
+            }
+            catch (Exception ex)
+            {
+                try { _logger.LogDebug(ex, "Sound playback error ({Sound})", sound); } catch { /* ignore */ }
+                try { tcs?.TrySetResult(true); } catch { /* ignore */ }
+                try { player?.Stop(); } catch { /* ignore */ }
+                try { player?.Close(); } catch { /* ignore */ }
+            }
+        }
+
+        if (_dispatcher.CheckAccess())
+        {
+            PlayOnUiThread();
+        }
+        else
+        {
+            _ = _dispatcher.BeginInvoke((Action)PlayOnUiThread, DispatcherPriority.Send);
+        }
     }
 
     public void Stop(SoundId sound)
@@ -876,17 +1058,6 @@ public sealed class SoundService : ISoundService, IDisposable
 
                 lock (_gate)
                 {
-                    // These two are "system feedback" sounds (login/logout).
-                    // On some setups, a MediaPlayer instance created early (preload) can become silent
-                    // (device switch, driver glitch, etc.). Preview uses a fresh MediaPlayer and works,
-                    // so we force a reload here to match preview reliability.
-                    if (request.Sound == SoundId.ClientConnected ||
-                        request.Sound == SoundId.ClientDisconnected)
-                    {
-                        ForceReloadPlayerLocked(request.Sound);
-                        try { _logger.LogInformation("Audio: reloaded player for {Sound}", request.Sound); } catch { /* ignore */ }
-                    }
-
                     EnsurePlayerLoaded(request.Sound, request.FilePath, canInterruptPlayback: true);
                     player = _players[request.Sound];
 
@@ -1721,29 +1892,6 @@ public sealed class SoundService : ISoundService, IDisposable
         player.Open(new Uri(absolutePath, UriKind.Absolute));
         _players[sound] = player;
         _loadedPaths[sound] = absolutePath;
-    }
-
-    private void ForceReloadPlayerLocked(SoundId sound)
-    {
-        if (_players.TryGetValue(sound, out var old))
-        {
-            try { old.Stop(); } catch { /* ignore */ }
-            try { old.Close(); } catch { /* ignore */ }
-            _players.Remove(sound);
-        }
-        _loadedPaths.Remove(sound);
-        _opened.Remove(sound);
-
-        if (_loopPlayers.TryGetValue(sound, out var loopPlayer) && ReferenceEquals(loopPlayer, old))
-        {
-            if (_loopHandlers.TryGetValue(sound, out var loopHandler))
-            {
-                try { loopPlayer.MediaEnded -= loopHandler; } catch { /* ignore */ }
-            }
-            _loopPlayers.Remove(sound);
-            _loopHandlers.Remove(sound);
-            _looping.Remove(sound);
-        }
     }
 
     private void OnOptionsChanged(object? sender, EventArgs e)
