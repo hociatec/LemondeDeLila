@@ -648,6 +648,41 @@ public sealed class SoundService : ISoundService, IDisposable
         {
             return;
         }
+
+        // Diagnostics: these two sounds are often reported as "preview works but in-game doesn't".
+        // Preview intentionally ignores IsEnabled() and enforces a minimum volume, so it can be misleading.
+        if (sound == SoundId.ClientConnected || sound == SoundId.ClientDisconnected)
+        {
+            try
+            {
+                var appLaunchOn = _options.Current.SoundAppLaunch;
+                var navOn = _options.Current.SoundNavigate;
+                var appLaunchVol = _options.Current.SoundAppLaunchVolume;
+                var navVol = _options.Current.SoundNavigateVolume;
+                var overridePath = entry.OverridePath?.Invoke();
+                var remotePath = _remoteSoundsEnabled ? _remote?.TryGetPath(sound) : null;
+                var resolvedPath = ResolveFilePath(sound, entry);
+                _logger.LogInformation(
+                    "Audio diag {Sound}: enabled={Enabled} muteAll={MuteAll} appLaunch={AppLaunch} nav={Nav} volLaunch={VolLaunch}% volNav={VolNav}% remoteEnabled={RemoteEnabled} remoteFile={RemoteFile} overrideFile={OverrideFile} resolvedFile={ResolvedFile} exists={Exists}",
+                    sound,
+                    entry.IsEnabled(),
+                    _options.Current.MuteAll,
+                    appLaunchOn,
+                    navOn,
+                    appLaunchVol,
+                    navVol,
+                    _remoteSoundsEnabled,
+                    string.IsNullOrWhiteSpace(remotePath) ? null : Path.GetFileName(remotePath),
+                    string.IsNullOrWhiteSpace(overridePath) ? null : Path.GetFileName(overridePath),
+                    Path.GetFileName(resolvedPath),
+                    File.Exists(resolvedPath));
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
         if (!entry.IsEnabled())
         {
             if (sound == SoundId.ClientOpened)
