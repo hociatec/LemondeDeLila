@@ -3,7 +3,6 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
-import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import type {
   AventureSauvageCard,
   AventureSauvageMetadata,
@@ -16,7 +15,6 @@ export class AventureSauvageActionService {
   constructor(
     private readonly core: GameCoreService,
     private readonly random: RandomService,
-    private readonly turns: TurnFlowService,
   ) {}
 
   applyActions(
@@ -78,7 +76,7 @@ export class AventureSauvageActionService {
       return { ...next, status: 'finished' };
     }
 
-    return this.turns.advanceTurn(next);
+    return this.advanceTurn(next);
   }
 
   private handleDraw(state: GameStateEntity): GameStateEntity {
@@ -122,7 +120,7 @@ export class AventureSauvageActionService {
       return next;
     }
 
-    return this.turns.advanceTurn(next);
+    return this.advanceTurn(next);
   }
 
   private handleChoosePawn(
@@ -481,6 +479,57 @@ export class AventureSauvageActionService {
         ? String(p.username).trim()
         : null;
     return u ?? `Joueur ${id}`;
+  }
+
+  private advanceTurn(state: GameStateEntity): GameStateEntity {
+    const players = Array.isArray(state.players) ? state.players : [];
+    if (!players.length) return state;
+
+    const meta: any = state.metadata ?? {};
+    const statuses: any = meta.statuses ?? {};
+    const baseSkipTurn: Record<number, number> = statuses.skipTurn ?? {};
+
+    const skipTurn: Record<number, number> = { ...baseSkipTurn };
+
+    const currentId = state.turn?.currentPlayerId ?? null;
+    const currentIndex =
+      currentId != null
+        ? players.findIndex((p: any) => p?.id === currentId)
+        : state.turnIndex;
+    const startIndex =
+      currentIndex >= 0 ? currentIndex : (typeof state.turnIndex === 'number' ? state.turnIndex : 0);
+
+    let nextIndex = startIndex;
+    const skipped: number[] = [];
+    for (let attempts = 0; attempts < players.length; attempts += 1) {
+      nextIndex = (nextIndex + 1) % players.length;
+      const pid = players[nextIndex]?.id;
+      if (typeof pid !== 'number' || !Number.isFinite(pid)) continue;
+      const remaining = skipTurn[pid] ?? 0;
+      if (remaining > 0) {
+        skipTurn[pid] = remaining - 1;
+        skipped.push(pid);
+        continue;
+      }
+      break;
+    }
+
+    let next: GameStateEntity = {
+      ...state,
+      turnIndex: nextIndex,
+      turn: { currentPlayerId: players[nextIndex].id, direction: 1 },
+      metadata: {
+        ...meta,
+        statuses: { ...statuses, skipTurn },
+      },
+    };
+
+    // Important UX: si un joueur est sautÃ©, on l'annonce, sinon on a l'impression que "rien ne se passe".
+    for (const pid of skipped) {
+      next = this.core.appendLog(next, `${this.playerName(next, pid)} passe son tour.`);
+    }
+
+    return next;
   }
 }
 

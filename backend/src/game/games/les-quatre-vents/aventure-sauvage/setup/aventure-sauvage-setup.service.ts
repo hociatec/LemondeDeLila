@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import { RandomService } from '../../../../modules/random/services/random.service';
 import type {
   AventureSauvageCard,
   AventureSauvageMetadata,
@@ -9,6 +10,8 @@ import { AVENTURE_SAUVAGE_PAWNS, resolvePawnId } from '../aventure-sauvage.pawns
 
 @Injectable()
 export class AventureSauvageSetupService {
+  constructor(private readonly random: RandomService) {}
+
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const players = Array.isArray(baseState.players) ? baseState.players : [];
     const positions: Record<number, number> = {};
@@ -32,12 +35,25 @@ export class AventureSauvageSetupService {
       pawnByPlayerId,
       setupStarterId,
       decks: {
-        animal: defaultAnimalDeck(),
-        patte: defaultPatteDeck(),
+        animal: [],
+        patte: [],
         discardAnimal: [],
         discardPatte: [],
       },
       winnerId: null,
+    };
+
+    // IMPORTANT: les cartes doivent Ãªtre mÃ©langÃ©es au dÃ©but, sinon on pioche toujours dans l'ordre du fichier.
+    // On utilise le RNG seedÃ© cÃ´tÃ© serveur (metadata.rng) pour avoir un comportement stable par "session" (runId/startedAt).
+    let rngMeta: any = (baseState.metadata ?? {}) as any;
+    const shuffledAnimal = this.random.shuffle(rngMeta, defaultAnimalDeck());
+    rngMeta = shuffledAnimal.meta as any;
+    const shuffledPatte = this.random.shuffle(rngMeta, defaultPatteDeck());
+    rngMeta = shuffledPatte.meta as any;
+    metaBase.decks = {
+      ...metaBase.decks,
+      animal: shuffledAnimal.values,
+      patte: shuffledPatte.values,
     };
 
     const pendingInfo = buildPawnPending(players, pawnByPlayerId, setupStarterId);
@@ -53,12 +69,12 @@ export class AventureSauvageSetupService {
       phase: 'playing',
       pending: pendingInfo?.pending ?? null,
       turn: {
-        ...(baseState.turn ?? { direction: 1 }),
-        currentPlayerId: turnPlayerId,
-        direction: 1,
-      },
+      ...(baseState.turn ?? { direction: 1 }),
+      currentPlayerId: turnPlayerId,
+      direction: 1,
+    },
       turnIndex,
-      metadata: { ...(baseState.metadata ?? {}), ...metaBase },
+      metadata: { ...(baseState.metadata ?? {}), ...metaBase, rng: rngMeta?.rng ?? (baseState.metadata as any)?.rng },
     };
   }
 }
