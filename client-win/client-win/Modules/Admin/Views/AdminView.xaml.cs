@@ -183,6 +183,14 @@ public partial class AdminView : UserControl, IInitialFocusTarget
             return;
         }
 
+        if (vm.ShowClientUpdatesPanel)
+        {
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.Input,
+                new Action(() => ClientUpdatesPanel?.FocusPrimaryInput()));
+            return;
+        }
+
         if (vm.IsTextInputVisible)
         {
             _ = Dispatcher.BeginInvoke(

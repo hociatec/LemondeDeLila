@@ -35,6 +35,7 @@ public sealed partial class AdminViewModel
         {
             ItemsView.GroupDescriptions.Clear();
         }
+
+        UpdateFilterVisibility();
     }
 }
-

@@ -11,6 +11,14 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="AdminView.Resources.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="HideWhenClientUpdates" TargetType="UIElement">
+                <Setter Property="Visibility" Value="Visible" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding ShowClientUpdatesPanel}" Value="True">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -43,18 +51,19 @@
                 <ScrollViewer Grid.Row="0"
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled"
-                              MaxHeight="420"
+                              MaxHeight="520"
                               Focusable="False"
                               KeyboardNavigation.IsTabStop="False">
                     <StackPanel Orientation="Vertical" Margin="0,0,0,12">
-                        <views:AdminInputsView x:Name="InputsView" />
-                        <views:AdminUserFiltersView />
-                        <views:AdminLogControlsView />
+                        <views:AdminInputsView x:Name="InputsView" Style="{StaticResource HideWhenClientUpdates}" />
+                        <views:AdminUserFiltersView Style="{StaticResource HideWhenClientUpdates}" />
+                        <views:AdminLogControlsView Style="{StaticResource HideWhenClientUpdates}" />
                     </StackPanel>
                 </ScrollViewer>
 
                 <ListBox x:Name="ItemsList"
                          Grid.Row="1"
+                         Style="{StaticResource HideWhenClientUpdates}"
                          ItemsSource="{Binding ItemsView}"
                          SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                          ItemTemplate="{StaticResource AdminMenuItemTemplate}"
@@ -69,8 +78,13 @@
                     </ListBox.InputBindings>
                 </ListBox>
 
+                <views:AdminClientUpdatesView x:Name="ClientUpdatesPanel"
+                                              Grid.Row="1"
+                                              Visibility="{Binding ShowClientUpdatesPanel, Converter={StaticResource BoolToVis}}" />
+
                 <TextBox x:Name="DetailsBox"
                          Grid.Row="2"
+                         Style="{StaticResource HideWhenClientUpdates}"
                          Text="{Binding Details, Mode=OneWay}"
                          Foreground="#BFD0E6"
                          FontSize="14"
