@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -115,6 +116,22 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
 
         try
         {
+            // If the user doesn't provide a version, ClickOnce may re-publish the same one
+            // (resulting in "it did something" but no real update for clients).
+            var effectiveVersion = (version ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(effectiveVersion))
+            {
+                effectiveVersion = (TryReadProjectVersion(projectPath) ?? string.Empty).Trim();
+            }
+            if (string.IsNullOrWhiteSpace(effectiveVersion))
+            {
+                var latest = await GetLatestPublishedVersionAsync(cancellationToken).ConfigureAwait(true);
+                effectiveVersion = SuggestNextVersion(latest);
+            }
+
+            version = string.IsNullOrWhiteSpace(effectiveVersion) ? null : effectiveVersion;
+            _logger.LogInformation("Client update publish: version={Version}", version ?? "(none)");
+
             var publishResult = await RunDotnetPublishAsync(projectPath, publishDir, baseUrl, version, cancellationToken)
                 .ConfigureAwait(true);
             if (!publishResult.Success)
@@ -142,6 +159,34 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
         finally
         {
             try { Directory.Delete(publishDir, recursive: true); } catch { /* ignore */ }
+        }
+    }
+
+    private static string? TryReadProjectVersion(string csprojPath)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(csprojPath) || !File.Exists(csprojPath))
+            {
+                return null;
+            }
+
+            var xml = File.ReadAllText(csprojPath);
+            var m = Regex.Match(
+                xml,
+                "<Version>\\s*(?<v>[^<\\s]+)\\s*</Version>",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (!m.Success)
+            {
+                return null;
+            }
+
+            var v = (m.Groups["v"].Value ?? string.Empty).Trim();
+            return string.IsNullOrWhiteSpace(v) ? null : v;
+        }
+        catch
+        {
+            return null;
         }
     }
 
