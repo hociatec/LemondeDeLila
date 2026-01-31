@@ -155,8 +155,8 @@
 
                                                     <Separator Margin="0 10 0 10" />
 
-                                                    <CheckBox Content="Son à l'ouverture du client" IsChecked="{Binding SoundAppLaunch}" />
-                                                    <TextBlock Text="{Binding SoundAppLaunchVolume, StringFormat=Volume ouverture : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
+                                                    <CheckBox Content="Sons de connexion (ouverture / connexion / déconnexion)" IsChecked="{Binding SoundAppLaunch}" />
+                                                    <TextBlock Text="{Binding SoundAppLaunchVolume, StringFormat=Volume connexion : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
                                                     <Slider Minimum="0" Maximum="100"
                                                             Value="{Binding SoundAppLaunchVolume, UpdateSourceTrigger=PropertyChanged}"
                                                             SmallChange="1"
@@ -164,10 +164,10 @@
                                                             IsSnapToTickEnabled="True"
                                                             TickFrequency="1"
                                                             IsEnabled="{Binding IsAppLaunchVolumeEnabled}"
-                                                            AutomationProperties.Name="Volume ouverture"
+                                                            AutomationProperties.Name="Volume connexion"
                                                             AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
 
-                                                    <CheckBox Content="Sons de navigation (connexion / déconnexion)" IsChecked="{Binding SoundNavigate}" Margin="0 12 0 6" />
+                                                    <CheckBox Content="Sons de navigation" IsChecked="{Binding SoundNavigate}" Margin="0 12 0 6" />
                                                     <TextBlock Text="{Binding SoundNavigateVolume, StringFormat=Volume navigation : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
                                                     <Slider Minimum="0" Maximum="100"
                                                             Value="{Binding SoundNavigateVolume, UpdateSourceTrigger=PropertyChanged}"

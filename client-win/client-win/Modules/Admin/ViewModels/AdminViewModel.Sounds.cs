@@ -687,7 +687,7 @@ public sealed partial class AdminViewModel
 	        var (group, title, current) = sound switch
 	        {
             SoundId.ClientOpened => ("Connexion", "Ouverture du client", _options.Current.SoundClientOpenedPath),
-            SoundId.ClientClosing => ("Connexion", "Fermeture du client", null),
+            SoundId.ClientClosing => ("Connexion", "Fermeture du client", _options.Current.SoundClientClosingPath),
             SoundId.ClientConnected => ("Connexion", "Connexion au serveur", _options.Current.SoundClientConnectedPath),
             SoundId.ClientDisconnected => ("Connexion", "Déconnexion du serveur", _options.Current.SoundClientDisconnectedPath),
             SoundId.MainMenuMusic => ("Ambiance", "Musique du menu principal", null),
