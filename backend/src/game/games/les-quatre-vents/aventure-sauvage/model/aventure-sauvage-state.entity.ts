@@ -3,9 +3,16 @@ export type AventureSauvageTileType = 'neutral' | 'animal' | 'patte' | 'finish';
 export type AventureSauvageTile = {
   type: AventureSauvageTileType;
   label: string;
+  description?: string;
 };
 
 export type AventureSauvageCardDeck = 'animal' | 'patte';
+
+export type AventureSauvagePawn = {
+  id: string;
+  label: string;
+  description: string;
+};
 
 export type AventureSauvageCard = {
   id: number;
@@ -22,6 +29,9 @@ export type AventureSauvageMetadata = {
   statuses?: {
     skipTurn?: Record<number, number>;
   };
+  pawns?: AventureSauvagePawn[];
+  pawnByPlayerId?: Record<number, string>;
+  setupStarterId?: number | null;
   decks: {
     animal: AventureSauvageCard[];
     patte: AventureSauvageCard[];

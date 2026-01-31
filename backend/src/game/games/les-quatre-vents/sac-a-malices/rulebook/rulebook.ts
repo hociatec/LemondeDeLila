@@ -60,8 +60,17 @@ export function getAvailableActions(
 
   const inJail = Number(meta?.statuses?.inJail?.[playerId] ?? 0) > 0;
   const jailCardCount = Number(meta?.statuses?.getOutOfJail?.[playerId] ?? 0) || 0;
+  const defaults = {
+    jail: {
+      maxTurns: 3,
+      autoFine: 100,
+      allowPayFine: true,
+      allowDoubleEscape: false,
+    },
+  };
   const rules: any = meta?.rules ?? {};
-  const allowPayFine = Boolean(rules?.jail?.allowPayFine) && Number(rules?.jail?.autoFine ?? 0) > 0;
+  const jailRules = { ...defaults.jail, ...(rules?.jail ?? {}) };
+  const allowPayFine = Boolean(jailRules.allowPayFine) && Number(jailRules.autoFine ?? 0) > 0;
 
   const actions: GameSingleActionDto[] = [
     { type: 'roll', payload: {} },
