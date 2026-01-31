@@ -101,7 +101,8 @@ export class ClientUpdatesService {
     return `${base}/updates/client-win/`;
   }
 
-  private async getPublishedClickOnceVersion(): Promise<string | null> {
+  // Reads the currently served ClickOnce manifest version from disk (source of truth for what clients download).
+  async getPublishedClickOnceVersionFromDisk(): Promise<string | null> {
     // Source of truth: the ClickOnce manifest currently served from updatesDir.
     // This avoids mismatches when latest.json gets out of sync.
     const targetDir = this.getTargetDir();
@@ -246,7 +247,7 @@ export class ClientUpdatesService {
 
     const metaMin = (latest?.minRequiredVersion || '').trim();
     const publishedClickOnce = forceLatest
-      ? await this.getPublishedClickOnceVersion()
+      ? await this.getPublishedClickOnceVersionFromDisk()
       : null;
     const latestAsMin = forceLatest
       ? (publishedClickOnce || latest?.version || '').trim()

@@ -66,6 +66,18 @@ export class ClientUpdatesUploadService {
   private async saveAndApplyZip(zipPath: string, meta: ClientUpdateMeta) {
     try {
       await this.updates.applyZip(zipPath);
+
+      // Ensure /client/version reflects the actual ClickOnce version being served,
+      // even if the uploader didn't pass a version (or passed a placeholder).
+      try {
+        const published = await this.updates.getPublishedClickOnceVersionFromDisk();
+        if (published) {
+          meta = { ...meta, version: published };
+        }
+      } catch {
+        // Best-effort
+      }
+
       await this.updates.saveLatest(meta);
     } catch (err: any) {
       const msg =

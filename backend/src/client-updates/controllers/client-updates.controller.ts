@@ -26,7 +26,9 @@ export class ClientUpdatesController {
   @Get('client/version')
   async getVersion(@Query('current') current?: string, @Req() req?: Request) {
     const latest = await this.updates.getLatest();
-    const latestVersion = latest?.version ?? null;
+    // Prefer ClickOnce manifest version (what clients will actually download).
+    const clickOnce = await this.updates.getPublishedClickOnceVersionFromDisk();
+    const latestVersion = clickOnce ?? latest?.version ?? null;
     const minRequiredVersion = await this.updates.getMinRequiredVersion();
     const currentVersion = typeof current === 'string' ? current.trim() : null;
     const origin = req ? this.getOrigin(req) : null;
