@@ -84,6 +84,9 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         TryPreload(SoundId.DiceRolled, warmUp: true);
         TryPreload(SoundId.QuizCorrect, warmUp: true);
         TryPreload(SoundId.QuizWrong, warmUp: true);
+        // Reduce first-play latency for connection sounds (critical feedback).
+        TryPreload(SoundId.ClientConnected, warmUp: true);
+        TryPreload(SoundId.ClientDisconnected, warmUp: true);
 
         if (_options != null)
         {
@@ -705,11 +708,12 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                     {
                         // ignore
                     }
-                    // Ensure latest admin overrides are applied before playing the sound.
+                    // Best-effort: refresh remote sounds if needed but don't force a blocking network call (up to 2s)
+                    // before playing the disconnect sound. We want the feedback to be immediate.
                     try
                     {
                         using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-                        await RefreshRemoteSoundsAsync(force: true, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
+                        await RefreshRemoteSoundsAsync(force: false, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
                     }
                     catch
                     {
@@ -744,12 +748,12 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                     // ignore
                 }
 
-                // Make a best-effort attempt to refresh remote sounds before playing, so admin overrides
-                // are used consistently for connection feedback.
+                // Best-effort: refresh remote sounds if needed but don't force a blocking network call (up to 2s)
+                // before playing the connected sound. We want the feedback to be immediate.
                 try
                 {
                     using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-                    await RefreshRemoteSoundsAsync(force: true, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
+                    await RefreshRemoteSoundsAsync(force: false, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
                 }
                 catch
                 {

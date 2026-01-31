@@ -58,9 +58,9 @@ public sealed class SoundService : ISoundService, IDisposable
     private static long GetMinIntervalTicks(SoundId sound) =>
         sound switch
         {
-            // Connexion/déconnexion : éviter les doubles triggers (souvent dus à reconnect WS + replay).
-            SoundId.ClientConnected => Stopwatch.Frequency * 2,
-            SoundId.ClientDisconnected => Stopwatch.Frequency * 2,
+            // Connexion/déconnexion : éviter les doubles triggers tout en restant réactif.
+            SoundId.ClientConnected => Stopwatch.Frequency / 2,
+            SoundId.ClientDisconnected => Stopwatch.Frequency / 2,
             // Notifications admin : limiter le spam si plusieurs commentaires arrivent.
             SoundId.BugReportCommentReceived => Stopwatch.Frequency / 2,
             SoundId.ClientUpdateWarning => Stopwatch.Frequency * 2,
@@ -819,6 +819,7 @@ public sealed class SoundService : ISoundService, IDisposable
         {
             MediaPlayer? player = null;
             TaskCompletionSource<bool>? tcs = null;
+            var started = 0;
 
             try
             {
@@ -930,6 +931,11 @@ public sealed class SoundService : ISoundService, IDisposable
 
                 void StartPlaybackBestEffort()
                 {
+                    if (Interlocked.Exchange(ref started, 1) == 1)
+                    {
+                        return;
+                    }
+
                     MediaPlayer? current;
                     lock (_gate)
                     {
@@ -943,8 +949,6 @@ public sealed class SoundService : ISoundService, IDisposable
                     {
                         player!.IsMuted = false;
                         player.Volume = GetPlaybackVolume(sound, entry, filePath);
-                        player.Stop();
-                        player.Position = TimeSpan.Zero;
                         player.Play();
                         TraceStartupPlayStart(sound, filePath);
                     }
@@ -1990,13 +1994,25 @@ public sealed class SoundService : ISoundService, IDisposable
     {
         var baseVolume = entry.Volume();
 
-        // These two sounds are commonly server-provided and can be uploaded too quietly.
-        // External players often apply normalization; MediaPlayer does not.
-        if ((sound == SoundId.ClientConnected || sound == SoundId.ClientDisconnected) &&
-            baseVolume > 0 &&
-            IsFromSoundsCache(filePath))
+        // Ces sons sont cruciaux pour le feedback utilisateur lors des transitions lourdes (login/logout).
+        // On applique un boost systématique (+100%) sauf s'il s'agit d'un override local (chemin personnalisé).
+        if ((sound == SoundId.ClientConnected || sound == SoundId.ClientDisconnected) && baseVolume > 0)
         {
-            return Clamp01(baseVolume * 2.0);
+            var isUserOverride = false;
+            try
+            {
+                var overridePath = entry.OverridePath?.Invoke();
+                if (!string.IsNullOrWhiteSpace(overridePath) && string.Equals(Path.GetFullPath(overridePath), Path.GetFullPath(filePath), StringComparison.OrdinalIgnoreCase))
+                {
+                    isUserOverride = true;
+                }
+            }
+            catch { }
+
+            if (!isUserOverride)
+            {
+                return Clamp01(baseVolume * 2.0);
+            }
         }
 
         return baseVolume;
