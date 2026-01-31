@@ -108,7 +108,9 @@ async function bootstrap() {
   // Nginx currently proxies all paths to the backend, so we serve /updates/* here.
   const updatesDir =
     config.get<string>('CLIENT_UPDATES_DIR') ||
-    path.resolve(process.cwd(), 'data', 'client-updates', 'client-win');
+    // IMPORTANT: do not depend on process.cwd() (can vary between systemd / manual runs).
+    // Keep a stable default path relative to the backend project root.
+    path.resolve(__dirname, '..', 'data', 'client-updates', 'client-win');
   try {
     fs.mkdirSync(updatesDir, { recursive: true });
   } catch {
@@ -126,6 +128,13 @@ async function bootstrap() {
         const pathname = url.split('?')[0] || '';
         if (pathname === '' || pathname === '/' || pathname === '/index.html') {
           res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          // ClickOnce should always revalidate this page/manifest in case a new version is published.
+          res.setHeader(
+            'Cache-Control',
+            'no-store, no-cache, must-revalidate, proxy-revalidate',
+          );
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
           res.status(200).send(buildUpdatesLandingPageHtml(updatesDir));
           return;
         }
@@ -152,8 +161,20 @@ async function bootstrap() {
         const ext = path.extname(filePath).toLowerCase();
         if (ext === '.application') {
           res.setHeader('Content-Type', 'application/x-ms-application');
+          res.setHeader(
+            'Cache-Control',
+            'no-store, no-cache, must-revalidate, proxy-revalidate',
+          );
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
         } else if (ext === '.manifest') {
           res.setHeader('Content-Type', 'application/x-ms-manifest');
+          res.setHeader(
+            'Cache-Control',
+            'no-store, no-cache, must-revalidate, proxy-revalidate',
+          );
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
         }
       },
     }),

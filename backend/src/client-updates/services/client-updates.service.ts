@@ -27,18 +27,21 @@ export class ClientUpdatesService {
   private readonly latestCacheTtlMs = 10_000;
 
   constructor() {
+    const backendRoot = path.resolve(__dirname, '..', '..', '..');
+    const defaultDataDir = path.join(backendRoot, 'data', 'client-updates');
+    const defaultUpdatesDir = path.join(defaultDataDir, 'client-win');
+
     // Folder served by your reverse-proxy (nginx) as:
     //   https://api.lilas.hociatec.fr/updates/client-win/
     // Configure this path on the Linux server via CLIENT_UPDATES_DIR.
     this.updatesDir =
-      process.env.CLIENT_UPDATES_DIR ||
-      path.resolve(process.cwd(), 'data', 'client-updates', 'client-win');
-    this.metaPath = path.resolve(
-      process.cwd(),
-      'data',
-      'client-updates',
-      'latest.json',
-    );
+      process.env.CLIENT_UPDATES_DIR || defaultUpdatesDir;
+
+    // Metadata lives in a stable location (independent of process.cwd()).
+    // Can be overridden for advanced deployments.
+    this.metaPath =
+      process.env.CLIENT_UPDATES_META_PATH ||
+      path.join(defaultDataDir, 'latest.json');
   }
 
   getTargetDir() {
@@ -302,6 +305,29 @@ export class ClientUpdatesService {
     }
   }
 
+  private async replaceDirectoryContents(
+    srcDir: string,
+    dstDir: string,
+  ): Promise<void> {
+    // Best-effort publish method that works even if symlinks are not supported/allowed.
+    await fs.promises.mkdir(dstDir, { recursive: true });
+
+    const existing = await fs.promises.readdir(dstDir, { withFileTypes: true });
+    for (const e of existing) {
+      await fs.promises.rm(path.join(dstDir, e.name), {
+        recursive: true,
+        force: true,
+      });
+    }
+
+    // Node >=16: fs.cp is available.
+    await fs.promises.cp(srcDir, dstDir, {
+      recursive: true,
+      force: true,
+      errorOnExist: false,
+    } as any);
+  }
+
   async applyZip(zipPath: string): Promise<void> {
     await this.assertZipSafe(zipPath);
 
@@ -317,77 +343,51 @@ export class ClientUpdatesService {
       maxBuffer: 50 * 1024 * 1024,
     });
 
-    // Swap atomique via symlink (évite les fenêtres 404 pendant une publication).
-    const targetDir = this.getTargetDir(); // path stable servi par express.static
+    const targetDir = this.getTargetDir();
     const parent = path.dirname(targetDir);
     const releasesDir = path.join(parent, 'client-win.releases');
     await fs.promises.mkdir(releasesDir, { recursive: true });
 
-    const ensureTargetSymlink = async (): Promise<string | null> => {
-      try {
-        const st = await fs.promises.lstat(targetDir);
-        if (st.isSymbolicLink()) {
-          const link = await fs.promises.readlink(targetDir);
-          return path.isAbsolute(link) ? link : path.resolve(parent, link);
-        }
-        // Convert existing folder to a first release.
-        if (st.isDirectory()) {
-          const initial = path.join(releasesDir, `initial.${Date.now()}`);
-          await fs.promises.rename(targetDir, initial);
-          await fs.promises.symlink(initial, targetDir);
-          return initial;
-        }
-      } catch {
-        // missing: create empty release and link
-        const initial = path.join(releasesDir, `initial.${Date.now()}`);
-        await fs.promises.mkdir(initial, { recursive: true });
-        try {
-          await fs.promises.symlink(initial, targetDir);
-        } catch {
-          // If created concurrently, ignore.
-        }
-        return initial;
+    // Publish strategy:
+    // - Primary: swap directories (fast, avoids duplicating storage).
+    // - Fallback: replace directory contents (works even when renames/symlinks are constrained).
+    const backupDir = path.join(releasesDir, `backup.${Date.now()}`);
+    let published = false;
+
+    try {
+      const st = await fs.promises.lstat(targetDir);
+      if (!st.isSymbolicLink() && st.isDirectory()) {
+        await fs.promises.rename(targetDir, backupDir);
+        await fs.promises.rename(stagingDir, targetDir);
+        published = true;
       }
-      return null;
-    };
+    } catch {
+      // targetDir might not exist yet -> publish via fallback below.
+    }
 
-    const previousTarget = await ensureTargetSymlink();
+    if (!published) {
+      await this.replaceDirectoryContents(stagingDir, targetDir);
+      published = true;
+    }
 
-    const newReleaseDir = path.join(releasesDir, `release.${Date.now()}`);
-    await fs.promises.rename(stagingDir, newReleaseDir);
-
-    await this.ensureLegacyAliases(newReleaseDir);
+    await this.ensureLegacyAliases(targetDir);
 
     // Keep a stable downloadable artifact for clients (no need to keep the original upload name).
     try {
-      const zipDest = path.join(newReleaseDir, this.latestZipName);
+      const zipDest = path.join(targetDir, this.latestZipName);
       await fs.promises.copyFile(zipPath, zipDest);
-    } catch {
-      // Best-effort: the extracted folder is still served, but the "client-win.zip" URL won't work.
-    }
-
-    // Provide a stable /updates/client-win/ landing page even without nginx directory listing.
-    try {
-      await this.writeLandingPage(newReleaseDir);
     } catch {
       // Best-effort
     }
 
-    // Atomically repoint symlink.
+    // Provide a landing page even without nginx directory listing.
     try {
-      const tmpLink = `${targetDir}.next`;
-      try {
-        await fs.promises.unlink(tmpLink);
-      } catch {
-        /* ignore */
-      }
-      await fs.promises.symlink(newReleaseDir, tmpLink);
-      await fs.promises.rename(tmpLink, targetDir);
+      await this.writeLandingPage(targetDir);
     } catch {
-      // If we can't swap, we still keep the extracted release directory on disk.
+      // Best-effort
     }
 
-    // Best-effort cleanup: keep last 3 releases + current.
+    // Best-effort cleanup: keep last 3 backups.
     try {
       const entries = await fs.promises.readdir(releasesDir, {
         withFileTypes: true,
@@ -395,14 +395,10 @@ export class ClientUpdatesService {
       const dirs = entries
         .filter((e) => e.isDirectory())
         .map((e) => e.name)
-        .filter((n) => n.startsWith('release.') || n.startsWith('initial.'))
+        .filter((n) => n.startsWith('backup.'))
         .sort()
         .reverse();
       const keep = new Set(dirs.slice(0, 3));
-      if (previousTarget) {
-        keep.add(path.basename(previousTarget));
-      }
-      keep.add(path.basename(newReleaseDir));
       for (const d of dirs) {
         if (keep.has(d)) continue;
         fs.promises
