@@ -1560,19 +1560,6 @@ public sealed class SoundService : ISoundService, IDisposable
                     // ignore
                 }
             }
-            if (_requireRemoteSounds)
-            {
-                var shouldLog = false;
-                lock (_remoteMissingLogged)
-                {
-                    shouldLog = _remoteMissingLogged.Add(sound);
-                }
-                if (shouldLog)
-                {
-                    _logger.LogWarning("Remote sound missing (manifest required): {Sound}", sound);
-                }
-                return string.Empty;
-            }
         }
 
         return ResolveFilePath(entry);
