@@ -137,31 +137,25 @@ public sealed class SoundService : ISoundService, IDisposable
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "invitationrecu.mp3"),
                 OverridePath: () => _options.Current.SoundClientConnectedPath,
                 // Connexion/déconnexion sont des feedbacks "système" : si l'utilisateur a coupé le son
-                // d'ouverture mais garde les sons de navigation, on doit quand même pouvoir les entendre.
-                IsEnabled: () => !_options.Current.MuteAll && (_options.Current.SoundAppLaunch || _options.Current.SoundNavigate),
+                // d'ouverture mais garde les sons de navigation (ou de sélection), on doit quand même pouvoir les entendre.
+                IsEnabled: () => !_options.Current.MuteAll && (_options.Current.SoundAppLaunch || _options.Current.SoundNavigate || _options.Current.SoundSelect),
                 Volume: () =>
                 {
-                    var vLaunch = _options.Current.SoundAppLaunch
-                        ? _options.Current.SoundAppLaunchVolume / 100.0
-                        : 0.0;
-                    var vNav = _options.Current.SoundNavigate
-                        ? _options.Current.SoundNavigateVolume / 100.0
-                        : 0.0;
-                    return Clamp01(Math.Max(vLaunch, vNav));
+                    var vLaunch = _options.Current.SoundAppLaunch ? _options.Current.SoundAppLaunchVolume / 100.0 : 0.0;
+                    var vNav = _options.Current.SoundNavigate ? _options.Current.SoundNavigateVolume / 100.0 : 0.0;
+                    var vSel = _options.Current.SoundSelect ? _options.Current.SoundSelectVolume / 100.0 : 0.0;
+                    return Clamp01(Math.Max(vSel, Math.Max(vLaunch, vNav)));
                 }),
             [SoundId.ClientDisconnected] = new SoundEntry(
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomexit.mp3"),
                 OverridePath: () => _options.Current.SoundClientDisconnectedPath,
-                IsEnabled: () => !_options.Current.MuteAll && (_options.Current.SoundAppLaunch || _options.Current.SoundNavigate),
+                IsEnabled: () => !_options.Current.MuteAll && (_options.Current.SoundAppLaunch || _options.Current.SoundNavigate || _options.Current.SoundSelect),
                 Volume: () =>
                 {
-                    var vLaunch = _options.Current.SoundAppLaunch
-                        ? _options.Current.SoundAppLaunchVolume / 100.0
-                        : 0.0;
-                    var vNav = _options.Current.SoundNavigate
-                        ? _options.Current.SoundNavigateVolume / 100.0
-                        : 0.0;
-                    return Clamp01(Math.Max(vLaunch, vNav));
+                    var vLaunch = _options.Current.SoundAppLaunch ? _options.Current.SoundAppLaunchVolume / 100.0 : 0.0;
+                    var vNav = _options.Current.SoundNavigate ? _options.Current.SoundNavigateVolume / 100.0 : 0.0;
+                    var vSel = _options.Current.SoundSelect ? _options.Current.SoundSelectVolume / 100.0 : 0.0;
+                    return Clamp01(Math.Max(vSel, Math.Max(vLaunch, vNav)));
                 }),
             [SoundId.ClientClosing] = new SoundEntry(
                 // Son joué lors de la fermeture volontaire du client (différent de la déconnexion serveur).
@@ -1010,12 +1004,13 @@ public sealed class SoundService : ISoundService, IDisposable
                 }
 
                 // Fallback: if MediaOpened never fires (or too late), start playback anyway after a short delay.
+                // We use Priority.Input to ensure it runs even during heavy UI activity (common at login).
                 _ = _dispatcher.BeginInvoke((Action)(() =>
                 {
                     try { StartPlaybackBestEffort(); } catch { /* ignore */ }
-                }), DispatcherPriority.Background);
+                }), DispatcherPriority.Input);
 
-                try { _logger.LogInformation("Audio: system one-shot (fresh MediaPlayer) {Sound}", sound); } catch { /* ignore */ }
+                try { _logger.LogInformation("Audio: system one-shot (fresh MediaPlayer) {Sound} file={File}", sound, Path.GetFileName(filePath)); } catch { /* ignore */ }
             }
             catch (Exception ex)
             {
@@ -1996,7 +1991,7 @@ public sealed class SoundService : ISoundService, IDisposable
 
         // Ces sons sont cruciaux pour le feedback utilisateur lors des transitions lourdes (login/logout).
         // On applique un boost systématique (+100%) sauf s'il s'agit d'un override local (chemin personnalisé).
-        if ((sound == SoundId.ClientConnected || sound == SoundId.ClientDisconnected) && baseVolume > 0)
+        if ((sound == SoundId.ClientConnected || sound == SoundId.ClientDisconnected))
         {
             var isUserOverride = false;
             try
@@ -2011,7 +2006,14 @@ public sealed class SoundService : ISoundService, IDisposable
 
             if (!isUserOverride)
             {
-                return Clamp01(baseVolume * 2.0);
+                // Mirror PlayPreview behavior: ensure a minimum audibility floor (0.35) if the category is enabled.
+                // This handles cases where user has volume near 0 but still expects to hear system feedback.
+                var boosted = Clamp01(baseVolume * 2.0);
+                if (entry.IsEnabled())
+                {
+                    return Math.Max(0.35, boosted);
+                }
+                return boosted;
             }
         }
 

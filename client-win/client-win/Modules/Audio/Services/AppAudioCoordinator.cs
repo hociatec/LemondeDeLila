@@ -708,19 +708,21 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                     {
                         // ignore
                     }
-                    // Best-effort: refresh remote sounds if needed but don't force a blocking network call (up to 2s)
-                    // before playing the disconnect sound. We want the feedback to be immediate.
-                    try
-                    {
-                        using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-                        await RefreshRemoteSoundsAsync(force: false, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
-                    }
-                    catch
-                    {
-                        // ignore
-                    }
 
+                    // On déconnecte : priorité absolue au feedback immédiat.
+                    // On joue le son d'abord, puis on rafraîchit le cache en arrière-plan pour le prochain coup.
                     TryPlay(SoundId.ClientDisconnected);
+
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                            await RefreshRemoteSoundsAsync(force: false, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
+                        }
+                        catch { }
+                    });
+
                     lock (_stateGate)
                     {
                         _pendingDisconnectedSound = 0;
@@ -748,19 +750,20 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                     // ignore
                 }
 
-                // Best-effort: refresh remote sounds if needed but don't force a blocking network call (up to 2s)
-                // before playing the connected sound. We want the feedback to be immediate.
-                try
-                {
-                    using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-                    await RefreshRemoteSoundsAsync(force: false, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
-                }
-                catch
-                {
-                    // ignore
-                }
-
+                // Priorité au feedback immédiat : on lance le son tout de suite.
+                // Le rafraîchissement du cache (pour avoir les derniers sons admin) se fait en parallèle.
                 TryPlay(SoundId.ClientConnected);
+
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                        await RefreshRemoteSoundsAsync(force: false, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
+                    }
+                    catch { }
+                });
+
                 lock (_stateGate)
                 {
                     _pendingConnectedSound = 0;
