@@ -1,4 +1,8 @@
-export type CaTile = { label: string };
+export type CaTile = {
+  label: string;
+  description?: string | null;
+  isNeutral?: boolean;
+};
 
 export type CaPending =
   | null
