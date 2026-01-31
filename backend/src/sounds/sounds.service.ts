@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   Injectable,
   NotFoundException,
@@ -23,7 +23,15 @@ export class SoundsService {
   constructor(private readonly notifications: NotificationService) {}
 
   private dataRoot() {
-    return path.resolve(process.cwd(), 'data', 'sounds');
+    // IMPORTANT:
+    // - Using process.cwd() makes the storage path depend on how the service is launched (systemd WorkingDirectory,
+    //   deploy scripts, manual runs...). That can make admin-uploaded sounds appear to "disappear" after a restart
+    //   because the server starts reading a different folder.
+    // - Default to a stable path relative to the backend project root (works in both src/ and dist/).
+    // - Allow overriding via env for prod setups.
+    const override = String(process.env.LMDL_SOUNDS_DIR ?? '').trim();
+    if (override) return path.resolve(override);
+    return path.resolve(__dirname, '..', '..', 'data', 'sounds');
   }
 
   private async removeUnusedFilesForSoundId(
@@ -262,7 +270,7 @@ export class SoundsService {
 
     const ext = path.extname(originalName || tempFilePath).toLowerCase();
     if (ext !== '.mp3') {
-      throw new BadRequestException('Seuls les fichiers .mp3 sont acceptés.');
+      throw new BadRequestException('Seuls les fichiers .mp3 sont acceptÃ©s.');
     }
 
     const stat = await fs.promises.stat(tempFilePath);
@@ -299,7 +307,7 @@ export class SoundsService {
     };
     await this.writeManifest(next);
 
-    // Nettoyage: supprimer les anciennes versions non r�f�renc�es (doublons) pour ce soundId.
+    // Nettoyage: supprimer les anciennes versions non référencées (doublons) pour ce soundId.
     await this.removeUnusedFilesForSoundId(soundId, sha256);
 
     await this.notifications.notifyAll('sounds.updated', {
@@ -325,7 +333,7 @@ export class SoundsService {
     delete next.sounds[soundId];
     await this.writeManifest(next);
 
-    // Nettoyage best-effort: si le son est supprimé du manifest, supprimer aussi les fichiers associés.
+    // Nettoyage best-effort: si le son est supprimÃ© du manifest, supprimer aussi les fichiers associÃ©s.
     try {
       await fs.promises.rm(path.join(this.dataRoot(), soundId), {
         recursive: true,
@@ -388,7 +396,7 @@ export class SoundsService {
 
       const keepSha = usedById[soundKey];
       if (!keepSha) {
-        // Aucun son configuré pour ce soundId => supprimer le dossier.
+        // Aucun son configurÃ© pour ce soundId => supprimer le dossier.
         try {
           await fs.promises.rm(path.join(root, soundKey), {
             recursive: true,
@@ -403,7 +411,7 @@ export class SoundsService {
 
       deletedFiles += await this.removeUnusedFilesForSoundId(soundKey, keepSha);
 
-      // Si le dossier est vide après cleanup, supprimer.
+      // Si le dossier est vide aprÃ¨s cleanup, supprimer.
       try {
         const remaining = await fs.promises.readdir(path.join(root, soundKey));
         if (remaining.length === 0) {
@@ -426,11 +434,11 @@ export class SoundsService {
     const manifest = await this.readManifest();
     const entry = manifest.sounds?.[soundId];
     if (!entry) {
-      throw new NotFoundException('Son non configuré.');
+      throw new NotFoundException('Son non configurÃ©.');
     }
     if (shaFromUrl && shaFromUrl !== entry.sha256) {
       // The client asked an old url; 404 encourages them to refresh manifest.
-      throw new NotFoundException('Version du son obsolète.');
+      throw new NotFoundException('Version du son obsolÃ¨te.');
     }
     const filePath = path.join(this.dataRoot(), soundId, `${entry.sha256}.mp3`);
     if (!fs.existsSync(filePath)) {
@@ -444,4 +452,5 @@ export class SoundsService {
     await fs.promises.mkdir(this.dataRoot(), { recursive: true });
   }
 }
+
 
