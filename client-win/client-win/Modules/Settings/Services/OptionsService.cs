@@ -202,6 +202,7 @@ public sealed class OptionsService : IOptionsService
         SoundClientOpenedPath = source.SoundClientOpenedPath,
         SoundClientConnectedPath = source.SoundClientConnectedPath,
         SoundClientDisconnectedPath = source.SoundClientDisconnectedPath,
+        SoundClientClosingPath = source.SoundClientClosingPath,
         SoundPawnPickedPath = source.SoundPawnPickedPath,
         SoundPawnPlacedSelfPath = source.SoundPawnPlacedSelfPath,
         SoundPawnPlacedOpponentPath = source.SoundPawnPlacedOpponentPath,

@@ -49,6 +49,7 @@ public sealed class OptionsState
     public string? SoundClientOpenedPath { get; set; }
     public string? SoundClientConnectedPath { get; set; }
     public string? SoundClientDisconnectedPath { get; set; }
+    public string? SoundClientClosingPath { get; set; }
     public string? SoundPawnPickedPath { get; set; }
     public string? SoundPawnPlacedSelfPath { get; set; }
     public string? SoundPawnPlacedOpponentPath { get; set; }
