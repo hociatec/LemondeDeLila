@@ -798,6 +798,85 @@ export class SoundsService {
     };
   }
 
+  async diagnoseSounds(): Promise<{
+    ok: true;
+    dataRoot: string;
+    manifestPath: string;
+    manifestUpdatedAt: string;
+    total: number;
+    missing: string[];
+    sounds: {
+      soundId: string;
+      inManifest: boolean;
+      sha256?: string | null;
+      filePath?: string | null;
+      exists: boolean;
+      bytes?: number | null;
+      url?: string | null;
+      uploadedAt?: string | null;
+    }[];
+  }> {
+    const manifest = await this.readManifest();
+    const root = this.dataRoot();
+    const manifestPath = path.join(root, 'manifest.json');
+
+    const sounds: {
+      soundId: string;
+      inManifest: boolean;
+      sha256?: string | null;
+      filePath?: string | null;
+      exists: boolean;
+      bytes?: number | null;
+      url?: string | null;
+      uploadedAt?: string | null;
+    }[] = [];
+    const missing: string[] = [];
+
+    for (const soundId of SOUND_KEYS) {
+      const entry = manifest.sounds?.[soundId];
+      const sha256 = entry?.sha256 ?? null;
+      const filePath = sha256
+        ? path.join(root, soundId, `${sha256}.mp3`)
+        : null;
+      let exists = false;
+      let bytes: number | null = null;
+      if (filePath) {
+        try {
+          const stat = await fs.promises.stat(filePath);
+          exists = stat.isFile();
+          bytes = stat.size;
+        } catch {
+          exists = false;
+        }
+      }
+
+      if (entry?.sha256 && !exists) {
+        missing.push(soundId);
+      }
+
+      sounds.push({
+        soundId,
+        inManifest: Boolean(entry?.sha256),
+        sha256,
+        filePath,
+        exists,
+        bytes,
+        url: entry?.url ?? null,
+        uploadedAt: entry?.uploadedAt ?? null,
+      });
+    }
+
+    return {
+      ok: true,
+      dataRoot: root,
+      manifestPath,
+      manifestUpdatedAt: manifest.updatedAt ?? new Date().toISOString(),
+      total: sounds.length,
+      missing,
+      sounds,
+    };
+  }
+
   async cleanupUnusedSounds(): Promise<{
     ok: true;
     deletedFiles: number;

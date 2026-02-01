@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-02-01T01:03:07.514Z",
+  "updatedAt": "2026-02-01T01:48:33.151Z",
   "sounds": {
     "RoomJoined": {
       "soundId": "RoomJoined",
@@ -68,7 +68,7 @@
       "soundId": "ClientConnected",
       "sha256": "1d6caf44f82e6cb3ab4a0a419d2ed428b24414f215d0a9b9bed688ef2b901896",
       "bytes": 63990,
-      "uploadedAt": "2026-02-01T01:03:07.512Z",
+      "uploadedAt": "2026-02-01T01:43:29.423Z",
       "url": "/api/sounds/ClientConnected/1d6caf44f82e6cb3ab4a0a419d2ed428b24414f215d0a9b9bed688ef2b901896.mp3"
     },
     "TavernAmbience": {
@@ -87,10 +87,10 @@
     },
     "ClientDisconnected": {
       "soundId": "ClientDisconnected",
-      "sha256": "89ac2db4fbc2b38feff45b9476dd6587b6ab2fcff5bd48fa89b7410559c5d45c",
-      "bytes": 59602,
-      "uploadedAt": "2026-02-01T01:01:42.164Z",
-      "url": "/api/sounds/ClientDisconnected/89ac2db4fbc2b38feff45b9476dd6587b6ab2fcff5bd48fa89b7410559c5d45c.mp3"
+      "sha256": "0c61861a768960107dbc1e8236b00a7202d6987e759286c0ba1584cebe9329bf",
+      "bytes": 8896931,
+      "uploadedAt": "2026-02-01T01:48:27.450Z",
+      "url": "/api/sounds/ClientDisconnected/0c61861a768960107dbc1e8236b00a7202d6987e759286c0ba1584cebe9329bf.mp3"
     },
     "FriendInvitationSent": {
       "soundId": "FriendInvitationSent",
@@ -297,10 +297,10 @@
     },
     "TableAmbience14": {
       "soundId": "TableAmbience14",
-      "sha256": "f6ba01cee54f8ba8d8fcbba614d7f4dea19b9e30831be1baa683c74e020809ff",
+      "sha256": "ba6ba180a0cec997b65fdfc352df638968bd6836e12641224fe220274b82bc5f",
       "bytes": 8896931,
-      "uploadedAt": "2026-02-01T01:02:28.545Z",
-      "url": "/api/sounds/TableAmbience14/f6ba01cee54f8ba8d8fcbba614d7f4dea19b9e30831be1baa683c74e020809ff.mp3"
+      "uploadedAt": "2026-02-01T01:48:33.144Z",
+      "url": "/api/sounds/TableAmbience14/ba6ba180a0cec997b65fdfc352df638968bd6836e12641224fe220274b82bc5f.mp3"
     }
   }
 }

@@ -38,6 +38,11 @@ export class AdminSoundsController {
     return this.sounds.reencodeInvalidSounds();
   }
 
+  @Get('diagnostic')
+  async diagnostic() {
+    return this.sounds.diagnoseSounds();
+  }
+
   @Get('table-ambiences')
   async listTableAmbiences() {
     return this.sounds.listTableAmbiences();
