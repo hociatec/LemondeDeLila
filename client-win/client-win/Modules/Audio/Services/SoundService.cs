@@ -27,6 +27,7 @@ public sealed class SoundService : ISoundService, IDisposable
     private readonly ILogger<SoundService> _logger;
     private readonly bool _remoteSoundsEnabled;
     private readonly bool _requireRemoteSounds;
+    private readonly bool _preferLocalSystemSounds;
     private readonly object _gate = new();
     private readonly Dictionary<SoundId, MediaPlayer> _players = new();
     private readonly Dictionary<SoundId, string> _loadedPaths = new();
@@ -67,6 +68,7 @@ public sealed class SoundService : ISoundService, IDisposable
             _ => MinIntervalTicks
         };
 
+    private static readonly long MinSystemOneShotDurationTicks = Stopwatch.Frequency / 5; // ~200ms
     private static readonly long JustConnectedSuppressTicks = Stopwatch.Frequency; // ~1s
 
     private static bool ShouldSuppressJustAfterConnect(SoundId sound) =>
@@ -102,6 +104,11 @@ public sealed class SoundService : ISoundService, IDisposable
         _requireRemoteSounds = _remoteSoundsEnabled &&
             !string.Equals(Environment.GetEnvironmentVariable("LMDL_ALLOW_LOCAL_SOUNDS"), "1", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(Environment.GetEnvironmentVariable("LMDL_ALLOW_LOCAL_SOUNDS"), "true", StringComparison.OrdinalIgnoreCase);
+
+        // Safety: allow forcing local files for critical system sounds (login/logout/close).
+        _preferLocalSystemSounds =
+            string.Equals(Environment.GetEnvironmentVariable("LMDL_PREFER_LOCAL_SYSTEM_SOUNDS"), "1", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(Environment.GetEnvironmentVariable("LMDL_PREFER_LOCAL_SYSTEM_SOUNDS"), "true", StringComparison.OrdinalIgnoreCase);
 
         _options.Changed += OnOptionsChanged;
 
@@ -814,6 +821,7 @@ public sealed class SoundService : ISoundService, IDisposable
             MediaPlayer? player = null;
             TaskCompletionSource<bool>? tcs = null;
             var started = 0;
+            var startedAtTicks = 0L;
 
             try
             {
@@ -947,6 +955,10 @@ public sealed class SoundService : ISoundService, IDisposable
                         player.Volume = vol;
                         player.Stop();
                         player.Position = TimeSpan.Zero;
+                        if (startedAtTicks == 0)
+                        {
+                            startedAtTicks = Stopwatch.GetTimestamp();
+                        }
                         player.Play();
                         TraceStartupPlayStart(sound, filePath);
                     }
@@ -989,6 +1001,25 @@ public sealed class SoundService : ISoundService, IDisposable
                 ended = (_, _) =>
                 {
                     try { player!.MediaEnded -= ended; } catch { /* ignore */ }
+                    try
+                    {
+                        if (startedAtTicks > 0)
+                        {
+                            var elapsedTicks = Stopwatch.GetTimestamp() - startedAtTicks;
+                            if (elapsedTicks > 0 && elapsedTicks < MinSystemOneShotDurationTicks)
+                            {
+                                var elapsedMs = (elapsedTicks * 1000.0) / Stopwatch.Frequency;
+                                if (TryFallbackToLocal($"ended-too-fast-{elapsedMs:0}ms"))
+                                {
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
                     CleanupAndSignal("ended", openGate: true);
                 };
                 player.MediaEnded += ended;
@@ -1829,6 +1860,12 @@ public sealed class SoundService : ISoundService, IDisposable
 
     private string ResolveFilePath(SoundId sound, SoundEntry entry)
     {
+        if (_preferLocalSystemSounds &&
+            (sound == SoundId.ClientConnected || sound == SoundId.ClientDisconnected || sound == SoundId.ClientClosing))
+        {
+            return ResolveFilePath(entry);
+        }
+
         if (_remoteSoundsEnabled)
         {
             var remotePath = _remote?.TryGetPath(sound);
