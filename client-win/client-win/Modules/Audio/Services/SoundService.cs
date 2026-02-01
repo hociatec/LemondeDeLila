@@ -105,8 +105,13 @@ public sealed class SoundService : ISoundService, IDisposable
             !string.Equals(Environment.GetEnvironmentVariable("LMDL_ALLOW_LOCAL_SOUNDS"), "1", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(Environment.GetEnvironmentVariable("LMDL_ALLOW_LOCAL_SOUNDS"), "true", StringComparison.OrdinalIgnoreCase);
 
-        // Safety: allow forcing local files for critical system sounds (login/logout/close).
+        // Safety: system sounds (login/logout/close) default to local files for reliability.
+        // Set `LMDL_ALLOW_REMOTE_SYSTEM_SOUNDS=1` to opt-in to server overrides for these events.
+        var allowRemoteSystemSounds =
+            string.Equals(Environment.GetEnvironmentVariable("LMDL_ALLOW_REMOTE_SYSTEM_SOUNDS"), "1", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(Environment.GetEnvironmentVariable("LMDL_ALLOW_REMOTE_SYSTEM_SOUNDS"), "true", StringComparison.OrdinalIgnoreCase);
         _preferLocalSystemSounds =
+            !allowRemoteSystemSounds ||
             string.Equals(Environment.GetEnvironmentVariable("LMDL_PREFER_LOCAL_SYSTEM_SOUNDS"), "1", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(Environment.GetEnvironmentVariable("LMDL_PREFER_LOCAL_SYSTEM_SOUNDS"), "true", StringComparison.OrdinalIgnoreCase);
 
@@ -649,6 +654,7 @@ public sealed class SoundService : ISoundService, IDisposable
         {
             return;
         }
+        var isSystemSound = sound == SoundId.ClientConnected || sound == SoundId.ClientDisconnected;
 
         // Diagnostics: these two sounds are often reported as "preview works but in-game doesn't".
         // Preview intentionally ignores IsEnabled() and enforces a minimum volume, so it can be misleading.
@@ -686,6 +692,23 @@ public sealed class SoundService : ISoundService, IDisposable
 
         if (!entry.IsEnabled())
         {
+            if (isSystemSound)
+            {
+                try
+                {
+                    _logger.LogInformation(
+                        "Audio: {Sound} suppressed (disabled). muteAll={MuteAll} appLaunch={AppLaunch} nav={Nav} select={Select}",
+                        sound,
+                        _options.Current.MuteAll,
+                        _options.Current.SoundAppLaunch,
+                        _options.Current.SoundNavigate,
+                        _options.Current.SoundSelect);
+                }
+                catch
+                {
+                    // ignore
+                }
+            }
             if (sound == SoundId.ClientOpened)
             {
                 // If the launch sound is disabled, don't block all other sounds forever.
@@ -746,6 +769,21 @@ public sealed class SoundService : ISoundService, IDisposable
         var filePath = ResolveFilePath(sound, entry);
         if (!File.Exists(filePath))
         {
+            if (isSystemSound)
+            {
+                try
+                {
+                    _logger.LogWarning(
+                        "Audio: {Sound} missing file (resolved={Resolved}, source={Source})",
+                        sound,
+                        filePath,
+                        DescribeSoundSource(sound, entry, filePath));
+                }
+                catch
+                {
+                    // ignore
+                }
+            }
             _logger.LogDebug("Sound file missing: {Path}", filePath);
             if (sound == SoundId.ClientOpened)
             {
@@ -768,6 +806,23 @@ public sealed class SoundService : ISoundService, IDisposable
             var minInterval = GetMinIntervalTicks(sound);
             if (_lastPlayTicks.TryGetValue(sound, out var last) && now - last < minInterval)
             {
+                if (isSystemSound)
+                {
+                    try
+                    {
+                        var elapsedMs = (now - last) * 1000.0 / Stopwatch.Frequency;
+                        var minMs = minInterval * 1000.0 / Stopwatch.Frequency;
+                        _logger.LogDebug(
+                            "Audio: {Sound} suppressed (min-interval {Elapsed:0}ms < {Min:0}ms)",
+                            sound,
+                            elapsedMs,
+                            minMs);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
                 return;
             }
             _lastPlayTicks[sound] = now;
@@ -1045,7 +1100,15 @@ public sealed class SoundService : ISoundService, IDisposable
                     try { StartPlaybackBestEffort(); } catch { /* ignore */ }
                 }), DispatcherPriority.Send);
 
-                try { _logger.LogInformation("Audio: system one-shot (fresh MediaPlayer) {Sound} file={File}", sound, Path.GetFileName(filePath)); } catch { /* ignore */ }
+                try
+                {
+                    _logger.LogInformation(
+                        "Audio: system one-shot (fresh MediaPlayer) {Sound} file={File} source={Source}",
+                        sound,
+                        Path.GetFileName(filePath),
+                        DescribeSoundSource(sound, entry, filePath));
+                }
+                catch { /* ignore */ }
             }
             catch (Exception ex)
             {
@@ -2024,6 +2087,40 @@ public sealed class SoundService : ISoundService, IDisposable
         {
             return false;
         }
+    }
+
+    private string DescribeSoundSource(SoundId sound, SoundEntry entry, string filePath)
+    {
+        try
+        {
+            var overridePath = entry.OverridePath?.Invoke();
+            if (!string.IsNullOrWhiteSpace(overridePath))
+            {
+                var fullOverride = Path.GetFullPath(overridePath);
+                if (string.Equals(Path.GetFullPath(filePath), fullOverride, StringComparison.OrdinalIgnoreCase))
+                {
+                    return "override";
+                }
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        try
+        {
+            if (_remoteSoundsEnabled && IsFromSoundsCache(filePath))
+            {
+                return "remote-cache";
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        return "local";
     }
 
     private static double GetPlaybackVolume(SoundId sound, SoundEntry entry, string filePath)

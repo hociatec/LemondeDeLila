@@ -262,6 +262,8 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             shouldTransition = true;
         }
 
+        try { _logger.LogInformation("Audio: login succeeded (seq={Seq}) -> ClientConnected one-shot", loginSeq); } catch { /* ignore */ }
+
         if (skipOpenedSeq != 0)
         {
             Volatile.Write(ref _openedSoundPlayedSequence, skipOpenedSeq);
@@ -353,6 +355,8 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             _pendingDisconnectedSound = 1;
             shouldTransition = true;
         }
+
+        try { _logger.LogInformation("Audio: logout requested (seq={Seq}) -> ClientDisconnected one-shot", logoutSeq); } catch { /* ignore */ }
 
         // Feedback immédiat de déconnexion (hors machine à états des transitions).
         try { StopBackgroundLoopsImmediate(); } catch { }
