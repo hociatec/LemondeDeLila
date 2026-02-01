@@ -28,6 +28,16 @@ export class AdminSoundsController {
     return this.sounds.cleanupUnusedSounds();
   }
 
+  @Post('reencode')
+  async reencodeAll() {
+    return this.sounds.reencodeAllSounds();
+  }
+
+  @Post('reencode-invalid')
+  async reencodeInvalid() {
+    return this.sounds.reencodeInvalidSounds();
+  }
+
   @Get('table-ambiences')
   async listTableAmbiences() {
     return this.sounds.listTableAmbiences();

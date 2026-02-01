@@ -146,7 +146,7 @@ public sealed class SoundService : ISoundService, IDisposable
                 Volume: () => Clamp01(_options.Current.SoundAppLaunchVolume / 100.0)),
             [SoundId.ClientConnected] = new SoundEntry(
                 // Son court et distinct pour rendre la connexion perceptible.
-                DefaultRelativePath: Path.Combine("Assets", "Sounds", "invitationrecu.mp3"),
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "clientconnected.mp3"),
                 OverridePath: () => _options.Current.SoundClientConnectedPath,
                 // Connexion/déconnexion sont des feedbacks "système" : si l'utilisateur a coupé le son
                 // d'ouverture mais garde les sons de navigation (ou de sélection), on doit quand même pouvoir les entendre.
@@ -159,7 +159,7 @@ public sealed class SoundService : ISoundService, IDisposable
                     return Clamp01(Math.Max(vSel, Math.Max(vLaunch, vNav)));
                 }),
             [SoundId.ClientDisconnected] = new SoundEntry(
-                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomexit.mp3"),
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "clientdisconnected.mp3"),
                 OverridePath: () => _options.Current.SoundClientDisconnectedPath,
                 IsEnabled: () => !_options.Current.MuteAll && (_options.Current.SoundAppLaunch || _options.Current.SoundNavigate || _options.Current.SoundSelect),
                 Volume: () =>
@@ -171,7 +171,7 @@ public sealed class SoundService : ISoundService, IDisposable
                 }),
             [SoundId.ClientClosing] = new SoundEntry(
                 // Son joué lors de la fermeture volontaire du client (différent de la déconnexion serveur).
-                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomexit.mp3"),
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "clientclosing.mp3"),
                 OverridePath: () => _options.Current.SoundClientClosingPath,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundAppLaunch,
                 Volume: () => Clamp01(_options.Current.SoundAppLaunchVolume / 100.0)),

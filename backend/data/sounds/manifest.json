@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-02-01T00:13:25.013Z",
+  "updatedAt": "2026-02-01T00:39:23.102Z",
   "sounds": {
     "RoomJoined": {
       "soundId": "RoomJoined",
@@ -68,7 +68,7 @@
       "soundId": "ClientConnected",
       "sha256": "647e00c8a4789e64a88c05c04e93be14670d23e4ea177a7998bc870da1b60e2a",
       "bytes": 83591,
-      "uploadedAt": "2026-02-01T00:13:25.013Z",
+      "uploadedAt": "2026-02-01T00:39:23.101Z",
       "url": "/api/sounds/ClientConnected/647e00c8a4789e64a88c05c04e93be14670d23e4ea177a7998bc870da1b60e2a.mp3"
     },
     "TavernAmbience": {

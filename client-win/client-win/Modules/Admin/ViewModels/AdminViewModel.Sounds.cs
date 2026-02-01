@@ -37,10 +37,12 @@ public sealed partial class AdminViewModel
 	        Items.Add(new AdminMenuItem("Table", tag: "sounds.table"));
 	        Items.Add(new AdminMenuItem("Jeux", tag: "sounds.games"));
 	        Items.Add(new AdminMenuItem("Amis", tag: "sounds.invitations"));
-	        Items.Add(new AdminMenuItem("Tchat", tag: "sounds.chat"));
-	        Items.Add(new AdminMenuItem("Messages privés", tag: "sounds.private"));
-	        Items.Add(new AdminMenuItem("Contact admin", tag: "sounds.adminContact"));
-	        Items.Add(new AdminMenuItem("Nettoyer les sons inutilisés", tag: "sounds.cleanup"));
+        Items.Add(new AdminMenuItem("Tchat", tag: "sounds.chat"));
+        Items.Add(new AdminMenuItem("Messages privés", tag: "sounds.private"));
+        Items.Add(new AdminMenuItem("Contact admin", tag: "sounds.adminContact"));
+        Items.Add(new AdminMenuItem("Nettoyer les sons inutilisés", tag: "sounds.cleanup"));
+        Items.Add(new AdminMenuItem("Ré-encoder tous les sons (batch)", tag: "sounds.reencode"));
+        Items.Add(new AdminMenuItem("Ré-encoder sons invalides/manquants", tag: "sounds.reencode.invalid"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();
@@ -112,6 +114,172 @@ public sealed partial class AdminViewModel
 
         await _dialogs.ShowInfo("Sons", info).ConfigureAwait(true);
         await _remoteSounds.RefreshAsync(force: true).ConfigureAwait(true);
+    }
+
+    private async Task ReencodeAllSoundsAsync()
+    {
+        var jwt = _session.CurrentUser?.Token;
+        if (string.IsNullOrWhiteSpace(jwt))
+        {
+            await _dialogs.ShowError("Sons", "Connexion requise.").ConfigureAwait(true);
+            return;
+        }
+
+        var confirm = await _dialogs.Confirm(
+                "Sons",
+                "Ré-encoder tous les sons du serveur ? (peut prendre plusieurs secondes)",
+                okText: "Ré-encoder",
+                cancelText: "Annuler")
+            .ConfigureAwait(true);
+        if (confirm != true)
+        {
+            return;
+        }
+
+        var endpoint = new Uri(_config.HttpBase, "admin/sounds/reencode");
+
+        HttpResponseMessage resp;
+        try
+        {
+            using var req = new HttpRequestMessage(HttpMethod.Post, endpoint);
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+            req.Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json");
+            resp = await HttpClientProvider.Shared.SendAsync(req).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            await _dialogs.ShowError("Sons", $"Ré-encodage impossible : {ex.Message}").ConfigureAwait(true);
+            return;
+        }
+
+        if (!resp.IsSuccessStatusCode)
+        {
+            var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
+            var message = ApiErrorParser.TryExtractMessage(body) ?? body;
+            await _dialogs.ShowError("Sons", $"Ré-encodage échoué ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
+            return;
+        }
+
+        string info;
+        try
+        {
+            var json = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
+            info = BuildReencodeInfo(json);
+        }
+        catch
+        {
+            info = "Ré-encodage terminé.";
+        }
+
+        await _dialogs.ShowInfo("Sons", info).ConfigureAwait(true);
+        await _remoteSounds.RefreshAsync(force: true).ConfigureAwait(true);
+    }
+
+    private async Task ReencodeInvalidSoundsAsync()
+    {
+        var jwt = _session.CurrentUser?.Token;
+        if (string.IsNullOrWhiteSpace(jwt))
+        {
+            await _dialogs.ShowError("Sons", "Connexion requise.").ConfigureAwait(true);
+            return;
+        }
+
+        var confirm = await _dialogs.Confirm(
+                "Sons",
+                "Ré-encoder uniquement les sons invalides/manquants ?",
+                okText: "Ré-encoder",
+                cancelText: "Annuler")
+            .ConfigureAwait(true);
+        if (confirm != true)
+        {
+            return;
+        }
+
+        var endpoint = new Uri(_config.HttpBase, "admin/sounds/reencode-invalid");
+
+        HttpResponseMessage resp;
+        try
+        {
+            using var req = new HttpRequestMessage(HttpMethod.Post, endpoint);
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+            req.Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json");
+            resp = await HttpClientProvider.Shared.SendAsync(req).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            await _dialogs.ShowError("Sons", $"Ré-encodage impossible : {ex.Message}").ConfigureAwait(true);
+            return;
+        }
+
+        if (!resp.IsSuccessStatusCode)
+        {
+            var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
+            var message = ApiErrorParser.TryExtractMessage(body) ?? body;
+            await _dialogs.ShowError("Sons", $"Ré-encodage échoué ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
+            return;
+        }
+
+        string info;
+        try
+        {
+            var json = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
+            info = BuildReencodeInfo(json);
+        }
+        catch
+        {
+            info = "Ré-encodage terminé.";
+        }
+
+        await _dialogs.ShowInfo("Sons", info).ConfigureAwait(true);
+        await _remoteSounds.RefreshAsync(force: true).ConfigureAwait(true);
+    }
+
+    private static string BuildReencodeInfo(string json)
+    {
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        var updated = root.TryGetProperty("updated", out var u) && u.ValueKind == JsonValueKind.Number ? u.GetInt32() : 0;
+        var skipped = root.TryGetProperty("skipped", out var s) && s.ValueKind == JsonValueKind.Number ? s.GetInt32() : 0;
+        var missing = root.TryGetProperty("missing", out var m) && m.ValueKind == JsonValueKind.Number ? m.GetInt32() : 0;
+        var errors = root.TryGetProperty("errors", out var e) && e.ValueKind == JsonValueKind.Number ? e.GetInt32() : 0;
+        var invalid = root.TryGetProperty("invalid", out var inv) && inv.ValueKind == JsonValueKind.Number ? inv.GetInt32() : 0;
+
+        var info = $"Ré-encodage terminé. Modifiés : {updated}. Inchangés : {skipped}. Manquants : {missing}. Invalides : {invalid}. Erreurs : {errors}.";
+
+        if (root.TryGetProperty("details", out var details) && details.ValueKind == JsonValueKind.Object)
+        {
+            var lines = new System.Collections.Generic.List<string>();
+
+            if (details.TryGetProperty("missing", out var missArr) && missArr.ValueKind == JsonValueKind.Array)
+            {
+                var miss = missArr.EnumerateArray().Select(v => v.GetString()).Where(v => !string.IsNullOrWhiteSpace(v)).Take(10).ToArray();
+                if (miss.Length > 0)
+                {
+                    lines.Add($"Manquants: {string.Join(", ", miss)}");
+                }
+            }
+
+            if (details.TryGetProperty("errors", out var errArr) && errArr.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var err in errArr.EnumerateArray().Take(10))
+                {
+                    var sid = err.TryGetProperty("soundId", out var idEl) ? idEl.GetString() : null;
+                    var msg = err.TryGetProperty("message", out var msgEl) ? msgEl.GetString() : null;
+                    if (!string.IsNullOrWhiteSpace(sid) || !string.IsNullOrWhiteSpace(msg))
+                    {
+                        lines.Add($"Erreur: {sid ?? "(inconnu)"} - {msg ?? "inconnue"}");
+                    }
+                }
+            }
+
+            if (lines.Count > 0)
+            {
+                info += "\n" + string.Join("\n", lines);
+            }
+        }
+
+        return info;
     }
 
     private void BuildSoundsAmbience()

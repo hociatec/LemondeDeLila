@@ -436,6 +436,16 @@ public sealed partial class AdminViewModel
                     await CleanupUnusedSoundsAsync().ConfigureAwait(true);
                     return;
                 }
+                if (soundsTag == "sounds.reencode")
+                {
+                    await ReencodeAllSoundsAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (soundsTag == "sounds.reencode.invalid")
+                {
+                    await ReencodeInvalidSoundsAsync().ConfigureAwait(true);
+                    return;
+                }
             }
 
             if (_page == AdminPage.SoundsAmbience && tag is string ambienceSound)
