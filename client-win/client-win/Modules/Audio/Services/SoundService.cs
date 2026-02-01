@@ -39,6 +39,7 @@ public sealed class SoundService : ISoundService, IDisposable
     private readonly Dictionary<SoundId, MediaPlayer> _loopPlayers = new();
     private readonly Dictionary<SoundId, EventHandler> _loopHandlers = new();
     private readonly Dictionary<SoundId, TaskCompletionSource<bool>> _playEndSignals = new();
+    private readonly Dictionary<SoundId, TimeSpan> _soundDurations = new();
     private MediaPlayer? _previewPlayer;
     private EventHandler? _previewOpenedHandler;
     private EventHandler<ExceptionEventArgs>? _previewFailedHandler;
@@ -1028,6 +1029,7 @@ public sealed class SoundService : ISoundService, IDisposable
                 {
                     try { player!.MediaOpened -= opened; } catch { /* ignore */ }
                     lock (_gate) { _opened.Add(sound); }
+                    RecordDurationIfKnown(sound, player!);
                     StartPlaybackBestEffort();
                 };
                 player!.MediaOpened += opened;
@@ -1250,6 +1252,7 @@ public sealed class SoundService : ISoundService, IDisposable
                     opened = (_, _) =>
                     {
                         try { player.MediaOpened -= opened; } catch { /* ignore */ }
+                        RecordDurationIfKnown(request.Sound, player);
                         try { StartPlaybackIfCurrent(); } catch { /* ignore */ }
                     };
                     player.MediaOpened += opened;
@@ -1267,6 +1270,7 @@ public sealed class SoundService : ISoundService, IDisposable
 
                 if (!needsMediaOpened)
                 {
+                    RecordDurationIfKnown(request.Sound, player);
                     try { StartPlaybackIfCurrent(); } catch { /* ignore */ }
                 }
 
@@ -1495,6 +1499,14 @@ public sealed class SoundService : ISoundService, IDisposable
         }
 
         Volatile.Write(ref _connectedAtTicks, Stopwatch.GetTimestamp());
+    }
+
+    public TimeSpan? TryGetSoundDuration(SoundId sound)
+    {
+        lock (_gate)
+        {
+            return _soundDurations.TryGetValue(sound, out var duration) ? duration : null;
+        }
     }
 
     public async Task WaitForSoundToEndAsync(SoundId sound, TimeSpan timeout)
@@ -2121,6 +2133,32 @@ public sealed class SoundService : ISoundService, IDisposable
         }
 
         return "local";
+    }
+
+    private void RecordDurationIfKnown(SoundId sound, MediaPlayer player)
+    {
+        try
+        {
+            if (!player.NaturalDuration.HasTimeSpan)
+            {
+                return;
+            }
+
+            var duration = player.NaturalDuration.TimeSpan;
+            if (duration <= TimeSpan.Zero)
+            {
+                return;
+            }
+
+            lock (_gate)
+            {
+                _soundDurations[sound] = duration;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
     }
 
     private static double GetPlaybackVolume(SoundId sound, SoundEntry entry, string filePath)

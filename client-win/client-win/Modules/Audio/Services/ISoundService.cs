@@ -14,6 +14,7 @@ public interface ISoundService
     void StartLoop(SoundId sound);
     void StopLoop(SoundId sound);
     void StopLoopImmediate(SoundId sound);
+    TimeSpan? TryGetSoundDuration(SoundId sound);
     Task WaitForSoundToEndAsync(SoundId sound, TimeSpan timeout);
     void Preload(SoundId sound, bool warmUp = false);
     void PreloadAll();

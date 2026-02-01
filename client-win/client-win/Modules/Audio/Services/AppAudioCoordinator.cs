@@ -551,7 +551,10 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
         try
         {
-            await _sounds.WaitForSoundToEndAsync(SoundId.ClientDisconnected, timeout).ConfigureAwait(false);
+            var wait = GetSoundWaitTimeout(
+                SoundId.ClientDisconnected,
+                timeout > TimeSpan.Zero ? timeout : TimeSpan.FromSeconds(8));
+            await _sounds.WaitForSoundToEndAsync(SoundId.ClientDisconnected, wait).ConfigureAwait(false);
         }
         catch
         {
@@ -592,7 +595,10 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
         try
         {
-            await _sounds.WaitForSoundToEndAsync(SoundId.ClientClosing, timeout).ConfigureAwait(false);
+            var wait = GetSoundWaitTimeout(
+                SoundId.ClientClosing,
+                timeout > TimeSpan.Zero ? timeout : TimeSpan.FromSeconds(8));
+            await _sounds.WaitForSoundToEndAsync(SoundId.ClientClosing, wait).ConfigureAwait(false);
         }
         catch
         {
@@ -811,11 +817,12 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 return;
             }
 
-            // Music/ambience should not wait several seconds for the connection one-shot to end.
-            // Give it a tiny head start then start the background (slight overlap is acceptable vs silence/latency).
+            // Attendre la fin du one-shot de connexion pour éviter qu'il soit masqué/coupé par l'ambiance.
+            // Le timeout s'adapte à la durée connue du son (fallback si inconnue).
+            var connectedWait = GetSoundWaitTimeout(SoundId.ClientConnected, TimeSpan.FromSeconds(10));
             await WaitForSoundOrCancelAsync(
                 SoundId.ClientConnected,
-                playConnected ? TimeSpan.FromMilliseconds(250) : TimeSpan.FromMilliseconds(100),
+                connectedWait,
                 token).ConfigureAwait(false);
             if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
             {
@@ -969,6 +976,27 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         {
             // ignore
         }
+    }
+
+    private TimeSpan GetSoundWaitTimeout(SoundId sound, TimeSpan fallback)
+    {
+        try
+        {
+            var duration = _sounds.TryGetSoundDuration(sound);
+            if (duration.HasValue && duration.Value > TimeSpan.Zero)
+            {
+                var wait = duration.Value + TimeSpan.FromMilliseconds(400);
+                return wait < TimeSpan.FromMilliseconds(300)
+                    ? TimeSpan.FromMilliseconds(300)
+                    : wait;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        return fallback;
     }
 
     private static Task WaitForCancelAsync(CancellationToken token)
