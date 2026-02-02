@@ -756,15 +756,8 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                     // ignore
                 }
 
-                var openedWait = GetSoundWaitTimeout(SoundId.ClientOpened, TimeSpan.FromSeconds(15));
-                await WaitForSoundOrCancelAsync(SoundId.ClientOpened, openedWait, token).ConfigureAwait(false);
-                if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
-                {
-                    return;
-                }
-                try { _sounds.Stop(SoundId.ClientOpened); } catch { /* ignore */ }
-
                 TryPlay(SoundId.ClientConnected);
+                try { _sounds.Stop(SoundId.ClientOpened); } catch { /* ignore */ }
 
                 lock (_stateGate)
                 {
@@ -794,7 +787,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 return;
             }
 
-            // Background loops are exclusive and should start only after the connection sound (and the initial connect gate).
+            // Background loops now start immediately once connected; we no longer gate them behind fixed timers.
             if (desiredBackground == AppAudioBackground.None)
             {
                 StopBackgroundLoops();
@@ -802,31 +795,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 return;
             }
 
-            await WaitForConnectStabilizationAsync(connectedAtTicks, token).ConfigureAwait(false);
-            if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
-            {
-                return;
-            }
-
-            // Attendre la fin du one-shot de connexion pour éviter qu'il soit masqué/coupé par l'ambiance.
-            // Le timeout s'adapte à la durée connue du son (fallback si inconnue).
-            var connectedWait = GetSoundWaitTimeout(SoundId.ClientConnected, TimeSpan.FromSeconds(10));
-            await WaitForSoundOrCancelAsync(
-                SoundId.ClientConnected,
-                connectedWait,
-                token).ConfigureAwait(false);
-            if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
-            {
-                return;
-            }
-
-            // Debounce rapid navigation changes to avoid starting/stopping loops during initialization.
-            await WaitForBackgroundToStabilizeAsync(backgroundRequestedAtTicks, token).ConfigureAwait(false);
-            if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
-            {
-                return;
-            }
-
+            // Continue immediately to apply background loops.
             if (_appliedBackground == desiredBackground && !reapplyBackground)
             {
                 return;
@@ -888,51 +857,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         }
     }
 
-    private async Task WaitForConnectStabilizationAsync(long connectedAtTicks, CancellationToken token)
-    {
-        if (connectedAtTicks <= 0)
-        {
-            return;
-        }
-
-        // Small debounce to avoid rapid connect/disconnect flapping starting/stopping loops.
-        // Keep this short to avoid perceivable audio latency on transitions.
-        var minTicks = Stopwatch.Frequency / 10; // ~100ms
-        while (!token.IsCancellationRequested && Stopwatch.GetTimestamp() - connectedAtTicks < minTicks)
-        {
-            try
-            {
-                await Task.Delay(75, token).ConfigureAwait(false);
-            }
-            catch
-            {
-                return;
-            }
-        }
-    }
-
-    private async Task WaitForBackgroundToStabilizeAsync(long requestedAtTicks, CancellationToken token)
-    {
-        if (requestedAtTicks <= 0)
-        {
-            return;
-        }
-
-        // Coalesce bursts of SetBackground() during startup/navigation.
-        var minTicks = Stopwatch.Frequency / 4; // ~250ms
-        while (!token.IsCancellationRequested && Stopwatch.GetTimestamp() - requestedAtTicks < minTicks)
-        {
-            try
-            {
-                await Task.Delay(50, token).ConfigureAwait(false);
-            }
-            catch
-            {
-                return;
-            }
-        }
-    }
-
     private void StopBackgroundLoops()
     {
         _sounds.StopLoop(SoundId.MainMenuMusic);
@@ -953,20 +877,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
     private void TryPlay(SoundId sound)
     {
         try { _sounds.Play(sound); } catch { /* ignore */ }
-    }
-
-    private async Task WaitForSoundOrCancelAsync(SoundId sound, TimeSpan timeout, CancellationToken token)
-    {
-        try
-        {
-            var waitTask = _sounds.WaitForSoundToEndAsync(sound, timeout);
-            var cancelTask = WaitForCancelAsync(token);
-            await Task.WhenAny(waitTask, cancelTask).ConfigureAwait(false);
-        }
-        catch
-        {
-            // ignore
-        }
     }
 
     private TimeSpan GetSoundWaitTimeout(SoundId sound, TimeSpan fallback)
@@ -990,15 +900,4 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         return fallback;
     }
 
-    private static Task WaitForCancelAsync(CancellationToken token)
-    {
-        if (token.IsCancellationRequested)
-        {
-            return Task.CompletedTask;
-        }
-
-        var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        token.Register(() => tcs.TrySetResult(true));
-        return tcs.Task;
-    }
 }
