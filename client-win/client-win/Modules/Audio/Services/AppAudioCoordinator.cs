@@ -49,6 +49,8 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
     private int _pendingOpenedSound;
     private int _pendingTavernOpenedSound;
     private int _pendingReapplyBackground;
+    private Task? _pendingConnectedOneShot;
+    private Task? _pendingDisconnectedOneShot;
 
     // ClickOnce peut relancer le client pendant une mise à jour et démarrer un nouveau process
     // dans un autre dossier "Apps\\2.0". On supprime le son d'ouverture sur cette relance uniquement.
@@ -280,15 +282,12 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             Volatile.Write(ref _openedSoundPlayedSequence, skipOpenedSeq);
         }
 
-        if (shouldTransition)
-        {
-            RequestTransition();
-        }
-
-        _ = ScheduleOneShotAsync(
-            SoundId.ClientConnected,
-            priority: 0,
-            GetSoundWaitTimeout(SoundId.ClientConnected, TimeSpan.FromSeconds(10)));
+        TrackPendingConnectedOneShot(
+            ScheduleOneShotAsync(
+                SoundId.ClientConnected,
+                priority: 0,
+                GetSoundWaitTimeout(SoundId.ClientConnected, TimeSpan.FromSeconds(10)),
+                allowDuplicate: true));
         lock (_stateGate)
         {
             if (_loginSequence == loginSeq)
@@ -296,6 +295,11 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 _pendingConnectedSound = 0;
                 Volatile.Write(ref _connectedSoundPlayedSequence, loginSeq);
             }
+        }
+
+        if (shouldTransition)
+        {
+            RequestTransition();
         }
 
         _ = WarmRefreshAfterLoginAsync();
@@ -326,10 +330,18 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                     return;
                 }
 
-                _ = ScheduleOneShotAsync(
-                    SoundId.ClientConnected,
-                    priority: 0,
-                    GetSoundWaitTimeout(SoundId.ClientConnected, TimeSpan.FromSeconds(10)));
+                if (HasPendingConnectedOneShot())
+                {
+                    Volatile.Write(ref _connectedSoundPlayedSequence, loginSeq);
+                    return;
+                }
+
+                TrackPendingConnectedOneShot(
+                    ScheduleOneShotAsync(
+                        SoundId.ClientConnected,
+                        priority: 0,
+                        GetSoundWaitTimeout(SoundId.ClientConnected, TimeSpan.FromSeconds(10)),
+                        allowDuplicate: true));
                 Volatile.Write(ref _connectedSoundPlayedSequence, loginSeq);
             }
             catch
@@ -363,10 +375,12 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
         // Feedback immédiat de déconnexion (hors machine à états des transitions).
         try { StopBackgroundLoopsImmediate(); } catch { }
-        _ = ScheduleOneShotAsync(
-            SoundId.ClientDisconnected,
-            priority: 0,
-            GetSoundWaitTimeout(SoundId.ClientDisconnected, TimeSpan.FromSeconds(8)));
+        TrackPendingDisconnectedOneShot(
+            ScheduleOneShotAsync(
+                SoundId.ClientDisconnected,
+                priority: 0,
+                GetSoundWaitTimeout(SoundId.ClientDisconnected, TimeSpan.FromSeconds(8)),
+                allowDuplicate: true));
         lock (_stateGate)
         {
             if (_logoutSequence == logoutSeq)
@@ -549,9 +563,30 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         var wait = GetSoundWaitTimeout(
             SoundId.ClientDisconnected,
             timeout > TimeSpan.Zero ? timeout : TimeSpan.FromSeconds(8));
+        Task disconnectTask;
+        var existing = GetPendingDisconnectedOneShot();
+        if (existing != null)
+        {
+            disconnectTask = existing;
+        }
+        else
+        {
+            disconnectTask = TrackPendingDisconnectedOneShot(
+                ScheduleOneShotAsync(
+                    SoundId.ClientDisconnected,
+                    priority: 0,
+                    wait,
+                    allowDuplicate: true));
+        }
+
         try
         {
-            await ScheduleOneShotAsync(SoundId.ClientDisconnected, priority: 0, wait).ConfigureAwait(false);
+            var delay = Task.Delay(timeout > TimeSpan.Zero ? timeout : TimeSpan.FromSeconds(8));
+            var completed = await Task.WhenAny(disconnectTask, delay).ConfigureAwait(false);
+            if (completed == disconnectTask)
+            {
+                await disconnectTask.ConfigureAwait(false);
+            }
         }
         catch
         {
@@ -869,15 +904,18 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         try { _sounds.Preload(sound, warmUp: warmUp); } catch { /* ignore */ }
     }
 
-    private Task ScheduleOneShotAsync(SoundId sound, int priority, TimeSpan timeout)
+    private Task ScheduleOneShotAsync(SoundId sound, int priority, TimeSpan timeout, bool allowDuplicate = false)
     {
         var request = new OneShotRequest(sound, priority, timeout, new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously));
         lock (_oneShotGate)
         {
-            var existing = TryFindScheduledOneShot(sound);
-            if (existing != null)
+            if (!allowDuplicate)
             {
-                return existing;
+                var existing = TryFindScheduledOneShot(sound);
+                if (existing != null)
+                {
+                    return existing;
+                }
             }
             var node = _oneShotQueue.First;
             while (node != null && node.Value.Priority <= priority)
@@ -907,15 +945,75 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         return request.Completion.Task;
     }
 
+    private Task TrackPendingConnectedOneShot(Task task)
+    {
+        lock (_stateGate)
+        {
+            _pendingConnectedOneShot = task;
+        }
+        _ = task.ContinueWith(t =>
+        {
+            _ = t.Exception;
+            lock (_stateGate)
+            {
+                if (ReferenceEquals(_pendingConnectedOneShot, t))
+                {
+                    _pendingConnectedOneShot = null;
+                }
+            }
+        }, TaskScheduler.Default);
+        return task;
+    }
+
+    private Task TrackPendingDisconnectedOneShot(Task task)
+    {
+        lock (_stateGate)
+        {
+            _pendingDisconnectedOneShot = task;
+        }
+        _ = task.ContinueWith(t =>
+        {
+            _ = t.Exception;
+            lock (_stateGate)
+            {
+                if (ReferenceEquals(_pendingDisconnectedOneShot, t))
+                {
+                    _pendingDisconnectedOneShot = null;
+                }
+            }
+        }, TaskScheduler.Default);
+        return task;
+    }
+
+    private bool HasPendingConnectedOneShot()
+    {
+        lock (_stateGate)
+        {
+            return _pendingConnectedOneShot != null && !_pendingConnectedOneShot.IsCompleted;
+        }
+    }
+
+    private Task? GetPendingDisconnectedOneShot()
+    {
+        lock (_stateGate)
+        {
+            if (_pendingDisconnectedOneShot != null && !_pendingDisconnectedOneShot.IsCompleted)
+            {
+                return _pendingDisconnectedOneShot;
+            }
+            return null;
+        }
+    }
+
     private Task? TryFindScheduledOneShot(SoundId sound)
     {
-        if (_currentOneShot?.Sound == sound)
+        if (_currentOneShot?.Sound == sound && !_currentOneShot.Completion.Task.IsCompleted)
         {
             return _currentOneShot.Completion.Task;
         }
         foreach (var pending in _oneShotQueue)
         {
-            if (pending.Sound == sound)
+            if (pending.Sound == sound && !pending.Completion.Task.IsCompleted)
             {
                 return pending.Completion.Task;
             }
