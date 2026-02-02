@@ -285,12 +285,10 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             RequestTransition();
         }
 
-        // If the user connects quickly, cut the launch sound immediately so the connection sound
-        // can play without waiting for the startup gate.
+        // If the user connects quickly, wait for the launch sound to finish before playing ClientConnected.
         try
         {
-            _logger.LogInformation("Audio: login succeeded, stopping ClientOpened for immediate ClientConnected");
-            _sounds.Stop(SoundId.ClientOpened);
+            _logger.LogInformation("Audio: login succeeded, deferring ClientConnected until ClientOpened ends");
         }
         catch
         {
@@ -759,10 +757,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             // IMPORTANT: this one-shot should play even if background audio is currently paused (e.g. during startup/login overlays).
             if (playConnected && loginSeq != Volatile.Read(ref _connectedSoundPlayedSequence))
             {
-                // Keep the "one sound at a time" rule: stop the launch sound if it is still playing,
-                // then play the connected sound immediately (reduces perceived latency).
-                try { _sounds.Stop(SoundId.ClientOpened); } catch { /* ignore */ }
-
                 try
                 {
                     StopBackgroundLoopsImmediate();
@@ -772,6 +766,14 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 {
                     // ignore
                 }
+
+                var openedWait = GetSoundWaitTimeout(SoundId.ClientOpened, TimeSpan.FromSeconds(15));
+                await WaitForSoundOrCancelAsync(SoundId.ClientOpened, openedWait, token).ConfigureAwait(false);
+                if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
+                {
+                    return;
+                }
+                try { _sounds.Stop(SoundId.ClientOpened); } catch { /* ignore */ }
 
                 TryPlay(SoundId.ClientConnected);
 
