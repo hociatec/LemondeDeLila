@@ -874,6 +874,11 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         var request = new OneShotRequest(sound, priority, timeout, new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously));
         lock (_oneShotGate)
         {
+            var existing = TryFindScheduledOneShot(sound);
+            if (existing != null)
+            {
+                return existing;
+            }
             var node = _oneShotQueue.First;
             while (node != null && node.Value.Priority <= priority)
             {
@@ -900,6 +905,22 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             }
         }
         return request.Completion.Task;
+    }
+
+    private Task? TryFindScheduledOneShot(SoundId sound)
+    {
+        if (_currentOneShot?.Sound == sound)
+        {
+            return _currentOneShot.Completion.Task;
+        }
+        foreach (var pending in _oneShotQueue)
+        {
+            if (pending.Sound == sound)
+            {
+                return pending.Completion.Task;
+            }
+        }
+        return null;
     }
 
     private async Task ProcessOneShotsAsync()
