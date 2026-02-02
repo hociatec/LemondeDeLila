@@ -4845,6 +4845,18 @@
       "status": "validated",
       "createdAt": "2026-02-02T22:20:50.129Z",
       "updatedAt": "2026-02-02T22:20:50.129Z"
+    },
+    {
+      "id": "3ec7d0e8-4aac-4de3-a129-0d3e92be9799",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Quel animal Norbert, le dragon de Hagrid, est-il ?",
+      "correct": "Un dragon de Norvège à crête",
+      "wrong1": "Un dragon de feu",
+      "wrong2": "Un dragon chinois à cornes",
+      "wrong3": "Un dragon des forêts",
+      "status": "validated",
+      "createdAt": "2026-02-02T22:22:59.806Z",
+      "updatedAt": "2026-02-02T22:22:59.806Z"
     }
   ]
 }
