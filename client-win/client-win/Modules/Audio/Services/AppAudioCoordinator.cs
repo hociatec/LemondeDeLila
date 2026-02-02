@@ -55,6 +55,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
     // ClickOnce peut relancer le client pendant une mise à jour et démarrer un nouveau process
     // dans un autre dossier "Apps\\2.0". On supprime le son d'ouverture sur cette relance uniquement.
     private static readonly TimeSpan StartupSoundDebounceWindow = TimeSpan.FromMinutes(2);
+    private static readonly long DuplicateLoginSuppressTicks = Stopwatch.Frequency * 2;
 
     public AppAudioCoordinator(
         ISoundService sounds,
@@ -254,7 +255,12 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             // Redundant login: ignore (prevents double "connected" sound).
             if (_isConnected)
             {
-                return;
+                var now = Stopwatch.GetTimestamp();
+                var elapsed = _connectedAtTicks > 0 ? now - _connectedAtTicks : long.MaxValue;
+                if (elapsed >= 0 && elapsed < DuplicateLoginSuppressTicks)
+                {
+                    return;
+                }
             }
 
             _isConnected = true;
