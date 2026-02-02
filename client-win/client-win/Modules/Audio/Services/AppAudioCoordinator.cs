@@ -282,20 +282,23 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             Volatile.Write(ref _openedSoundPlayedSequence, skipOpenedSeq);
         }
 
-        TrackPendingConnectedOneShot(
+        var connectedOneShot = TrackPendingConnectedOneShot(
             ScheduleOneShotAsync(
                 SoundId.ClientConnected,
                 priority: 0,
                 GetSoundWaitTimeout(SoundId.ClientConnected, TimeSpan.FromSeconds(10)),
                 allowDuplicate: true));
-        lock (_stateGate)
+        _ = connectedOneShot.ContinueWith(_ =>
         {
-            if (_loginSequence == loginSeq)
+            lock (_stateGate)
             {
-                _pendingConnectedSound = 0;
-                Volatile.Write(ref _connectedSoundPlayedSequence, loginSeq);
+                if (_loginSequence == loginSeq)
+                {
+                    _pendingConnectedSound = 0;
+                    Volatile.Write(ref _connectedSoundPlayedSequence, loginSeq);
+                }
             }
-        }
+        }, TaskScheduler.Default);
 
         if (shouldTransition)
         {
