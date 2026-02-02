@@ -40,6 +40,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
     private bool _isConnected;
     private long _connectedAtTicks;
+    private long _lastDisconnectedSoundAtTicks;
     private long _backgroundRequestedAtTicks;
     private AppAudioBackground _desiredBackground = AppAudioBackground.None;
     private AppAudioBackground _appliedBackground = AppAudioBackground.None;
@@ -56,6 +57,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
     // dans un autre dossier "Apps\\2.0". On supprime le son d'ouverture sur cette relance uniquement.
     private static readonly TimeSpan StartupSoundDebounceWindow = TimeSpan.FromMinutes(2);
     private static readonly long DefaultDuplicateLoginSuppressTicks = Stopwatch.Frequency * 2;
+    private static readonly long DefaultDisconnectSuppressTicks = Stopwatch.Frequency * 2;
 
     public AppAudioCoordinator(
         ISoundService sounds,
@@ -288,6 +290,15 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             Volatile.Write(ref _openedSoundPlayedSequence, skipOpenedSeq);
         }
 
+        // If a disconnect one-shot is still queued/playing, cancel it to ensure the login feedback is audible.
+        CancelOneShots(SoundId.ClientDisconnected);
+        ClearPendingDisconnectedOneShot();
+        try { _sounds.Stop(SoundId.ClientDisconnected); } catch { /* ignore */ }
+        lock (_stateGate)
+        {
+            _pendingDisconnectedSound = 0;
+        }
+
         var connectedOneShot = TrackPendingConnectedOneShot(
             ScheduleOneShotAsync(
                 SoundId.ClientConnected,
@@ -360,15 +371,21 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         });
     }
 
-    public void NotifyLogoutRequested()
+    public void NotifyLogoutRequested() => HandleDisconnect(userInitiated: true);
+
+    public void NotifyDisconnected() => HandleDisconnect(userInitiated: false);
+
+    private void HandleDisconnect(bool userInitiated)
     {
         var shouldTransition = false;
         var logoutSeq = 0;
         lock (_stateGate)
         {
-            // Redundant logout: ignore (prevents double "disconnected" sound).
-            if (!_isConnected && _pendingDisconnectedSound == 0)
+            // If a disconnect sound is already pending, avoid scheduling another.
+            if (_pendingDisconnectedSound != 0)
             {
+                _isConnected = false;
+                _desiredBackground = AppAudioBackground.None;
                 return;
             }
 
@@ -380,7 +397,33 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             shouldTransition = true;
         }
 
-        try { _logger.LogInformation("Audio: logout requested (seq={Seq}) -> ClientDisconnected one-shot", logoutSeq); } catch { /* ignore */ }
+        if (ShouldSuppressDisconnectSound())
+        {
+            lock (_stateGate)
+            {
+                if (_logoutSequence == logoutSeq)
+                {
+                    _pendingDisconnectedSound = 0;
+                    Volatile.Write(ref _disconnectedSoundPlayedSequence, logoutSeq);
+                }
+            }
+
+            ClearPendingConnectedOneShot();
+
+            if (shouldTransition)
+            {
+                RequestTransition();
+            }
+
+            return;
+        }
+
+        try
+        {
+            var reason = userInitiated ? "logout" : "network";
+            _logger.LogInformation("Audio: disconnect requested ({Reason}, seq={Seq}) -> ClientDisconnected one-shot", reason, logoutSeq);
+        }
+        catch { /* ignore */ }
 
         // Feedback immédiat de déconnexion (hors machine à états des transitions).
         try { StopBackgroundLoopsImmediate(); } catch { }
@@ -389,7 +432,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 SoundId.ClientDisconnected,
                 priority: 0,
                 GetSoundWaitTimeout(SoundId.ClientDisconnected, TimeSpan.FromSeconds(8)),
-                allowDuplicate: true));
+                allowDuplicate: false));
         lock (_stateGate)
         {
             if (_logoutSequence == logoutSeq)
@@ -1024,6 +1067,37 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         }
     }
 
+    private void ClearPendingDisconnectedOneShot()
+    {
+        lock (_stateGate)
+        {
+            _pendingDisconnectedOneShot = null;
+        }
+    }
+
+    private void CancelOneShots(SoundId sound)
+    {
+        lock (_oneShotGate)
+        {
+            var node = _oneShotQueue.First;
+            while (node != null)
+            {
+                var next = node.Next;
+                if (node.Value.Sound == sound)
+                {
+                    try { node.Value.Completion.TrySetCanceled(); } catch { /* ignore */ }
+                    _oneShotQueue.Remove(node);
+                }
+                node = next;
+            }
+
+            if (_currentOneShot?.Sound == sound)
+            {
+                _oneShotCts?.Cancel();
+            }
+        }
+    }
+
     private Task? TryFindScheduledOneShot(SoundId sound)
     {
         if (_currentOneShot?.Sound == sound && !_currentOneShot.Completion.Task.IsCompleted)
@@ -1141,6 +1215,59 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         }
 
         return DefaultDuplicateLoginSuppressTicks;
+    }
+
+    private bool ShouldSuppressDisconnectSound()
+    {
+        try
+        {
+            var now = Stopwatch.GetTimestamp();
+            var last = Volatile.Read(ref _lastDisconnectedSoundAtTicks);
+            var minTicks = GetDisconnectSuppressTicks();
+            if (last > 0 && now - last >= 0 && now - last < minTicks)
+            {
+                return true;
+            }
+
+            Volatile.Write(ref _lastDisconnectedSoundAtTicks, now);
+        }
+        catch
+        {
+            // ignore
+        }
+
+        return false;
+    }
+
+    private long GetDisconnectSuppressTicks()
+    {
+        try
+        {
+            var duration = _sounds.TryGetSoundDuration(SoundId.ClientDisconnected);
+            if (duration.HasValue && duration.Value > TimeSpan.Zero)
+            {
+                var baseTicks = (long)Math.Round(duration.Value.TotalSeconds * Stopwatch.Frequency);
+                var extraTicks = Stopwatch.Frequency / 4; // ~250ms guard
+                var minTicks = Stopwatch.Frequency; // ~1s
+                var maxTicks = Stopwatch.Frequency * 5; // ~5s
+                var computed = baseTicks + extraTicks;
+                if (computed < minTicks)
+                {
+                    return minTicks;
+                }
+                if (computed > maxTicks)
+                {
+                    return maxTicks;
+                }
+                return computed;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        return DefaultDisconnectSuppressTicks;
     }
 
 }

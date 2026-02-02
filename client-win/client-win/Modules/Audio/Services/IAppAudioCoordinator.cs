@@ -10,6 +10,7 @@ public interface IAppAudioCoordinator
     void NotifyAppOpened();
     void NotifyLoginSucceeded();
     void NotifyLogoutRequested();
+    void NotifyDisconnected();
     void NotifyTavernEntered();
     void SetBackground(AppAudioBackground background);
     void PauseBackground();

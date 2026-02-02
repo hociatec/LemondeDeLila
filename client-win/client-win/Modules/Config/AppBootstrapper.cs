@@ -347,7 +347,6 @@ public static class AppBootstrapper
         // Best-effort: ne doit jamais empêcher le démarrage.
         try
         {
-            var sounds = provider.GetRequiredService<ISoundService>();
             var dispatcher = provider.GetRequiredService<Dispatcher>();
             var session = provider.GetRequiredService<ISessionService>();
             var audio = provider.GetRequiredService<Modules.Audio.Services.IAppAudioCoordinator>();
@@ -391,7 +390,7 @@ public static class AppBootstrapper
                         {
                             return;
                         }
-                        sounds.Play(Modules.Audio.Models.SoundId.ClientDisconnected);
+                        audio.NotifyDisconnected();
                     }),
                     DispatcherPriority.Send);
         }
