@@ -269,17 +269,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             Volatile.Write(ref _openedSoundPlayedSequence, skipOpenedSeq);
         }
 
-        // Feedback immédiat de connexion (hors machine à états des transitions pour éviter latence/conflits).
-        TryPlay(SoundId.ClientConnected);
-        lock (_stateGate)
-        {
-            if (_loginSequence == loginSeq)
-            {
-                _pendingConnectedSound = 0;
-                Volatile.Write(ref _connectedSoundPlayedSequence, loginSeq);
-            }
-        }
-
         if (shouldTransition)
         {
             RequestTransition();
