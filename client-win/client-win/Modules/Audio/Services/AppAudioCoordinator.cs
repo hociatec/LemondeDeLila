@@ -390,6 +390,8 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             }
         }
 
+        ClearPendingConnectedOneShot();
+
         if (shouldTransition)
         {
             RequestTransition();
@@ -1002,6 +1004,14 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 return _pendingDisconnectedOneShot;
             }
             return null;
+        }
+    }
+
+    private void ClearPendingConnectedOneShot()
+    {
+        lock (_stateGate)
+        {
+            _pendingConnectedOneShot = null;
         }
     }
 
