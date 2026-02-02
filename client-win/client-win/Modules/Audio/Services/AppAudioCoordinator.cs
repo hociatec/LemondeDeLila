@@ -55,7 +55,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
     // ClickOnce peut relancer le client pendant une mise à jour et démarrer un nouveau process
     // dans un autre dossier "Apps\\2.0". On supprime le son d'ouverture sur cette relance uniquement.
     private static readonly TimeSpan StartupSoundDebounceWindow = TimeSpan.FromMinutes(2);
-    private static readonly long DuplicateLoginSuppressTicks = Stopwatch.Frequency * 2;
+    private static readonly long DefaultDuplicateLoginSuppressTicks = Stopwatch.Frequency * 2;
 
     public AppAudioCoordinator(
         ISoundService sounds,
@@ -257,7 +257,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             {
                 var now = Stopwatch.GetTimestamp();
                 var elapsed = _connectedAtTicks > 0 ? now - _connectedAtTicks : long.MaxValue;
-                if (elapsed >= 0 && elapsed < DuplicateLoginSuppressTicks)
+                if (elapsed >= 0 && elapsed < GetDuplicateLoginSuppressTicks())
                 {
                     return;
                 }
@@ -1110,6 +1110,37 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         }
 
         return fallback;
+    }
+
+    private long GetDuplicateLoginSuppressTicks()
+    {
+        try
+        {
+            var duration = _sounds.TryGetSoundDuration(SoundId.ClientConnected);
+            if (duration.HasValue && duration.Value > TimeSpan.Zero)
+            {
+                var baseTicks = (long)Math.Round(duration.Value.TotalSeconds * Stopwatch.Frequency);
+                var extraTicks = Stopwatch.Frequency / 4; // ~250ms guard
+                var minTicks = Stopwatch.Frequency / 2; // ~500ms
+                var maxTicks = Stopwatch.Frequency * 4; // ~4s
+                var computed = baseTicks + extraTicks;
+                if (computed < minTicks)
+                {
+                    return minTicks;
+                }
+                if (computed > maxTicks)
+                {
+                    return maxTicks;
+                }
+                return computed;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        return DefaultDuplicateLoginSuppressTicks;
     }
 
 }
