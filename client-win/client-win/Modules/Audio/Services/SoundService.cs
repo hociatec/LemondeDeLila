@@ -1509,7 +1509,7 @@ public sealed class SoundService : ISoundService, IDisposable
         }
     }
 
-    public async Task WaitForSoundToEndAsync(SoundId sound, TimeSpan timeout)
+    public async Task WaitForSoundToEndAsync(SoundId sound, TimeSpan timeout, CancellationToken cancellationToken = default)
     {
         if (timeout <= TimeSpan.Zero)
         {
@@ -1554,13 +1554,12 @@ public sealed class SoundService : ISoundService, IDisposable
             return;
         }
 
-        try
+        var waitTask = tcs.Task;
+        var delayTask = Task.Delay(remaining, cancellationToken);
+        var completed = await Task.WhenAny(waitTask, delayTask).ConfigureAwait(false);
+        if (completed == delayTask)
         {
-            await Task.WhenAny(tcs.Task, Task.Delay(remaining)).ConfigureAwait(false);
-        }
-        catch
-        {
-            // ignore
+            cancellationToken.ThrowIfCancellationRequested();
         }
     }
 

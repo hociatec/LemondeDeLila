@@ -15,7 +15,7 @@ public interface ISoundService
     void StopLoop(SoundId sound);
     void StopLoopImmediate(SoundId sound);
     TimeSpan? TryGetSoundDuration(SoundId sound);
-    Task WaitForSoundToEndAsync(SoundId sound, TimeSpan timeout);
+    Task WaitForSoundToEndAsync(SoundId sound, TimeSpan timeout, CancellationToken cancellationToken = default);
     void Preload(SoundId sound, bool warmUp = false);
     void PreloadAll();
 }

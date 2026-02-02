@@ -19,6 +19,12 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
     private readonly SemaphoreSlim _transitionLock = new(1, 1);
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
 
+    private sealed record OneShotRequest(SoundId Sound, int Priority, TimeSpan Timeout, TaskCompletionSource<bool> Completion);
+    private readonly LinkedList<OneShotRequest> _oneShotQueue = new();
+    private readonly object _oneShotGate = new();
+    private OneShotRequest? _currentOneShot;
+    private CancellationTokenSource? _oneShotCts;
+    private bool _oneShotProcessorRunning;
     private readonly object _stateGate = new();
     private CancellationTokenSource _transitionCts = new();
     private int _transitionVersion;
@@ -229,6 +235,11 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         {
             RequestTransition();
         }
+
+        _ = ScheduleOneShotAsync(
+            SoundId.ClientOpened,
+            priority: 1,
+            GetSoundWaitTimeout(SoundId.ClientOpened, TimeSpan.FromSeconds(15)));
     }
 
     public void NotifyLoginSucceeded()
@@ -274,14 +285,17 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             RequestTransition();
         }
 
-        // If the user connects quickly, wait for the launch sound to finish before playing ClientConnected.
-        try
+        _ = ScheduleOneShotAsync(
+            SoundId.ClientConnected,
+            priority: 0,
+            GetSoundWaitTimeout(SoundId.ClientConnected, TimeSpan.FromSeconds(10)));
+        lock (_stateGate)
         {
-            _logger.LogInformation("Audio: login succeeded, deferring ClientConnected until ClientOpened ends");
-        }
-        catch
-        {
-            // ignore
+            if (_loginSequence == loginSeq)
+            {
+                _pendingConnectedSound = 0;
+                Volatile.Write(ref _connectedSoundPlayedSequence, loginSeq);
+            }
         }
 
         _ = WarmRefreshAfterLoginAsync();
@@ -312,8 +326,10 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                     return;
                 }
 
-                // Best-effort: do not block on remote refresh here.
-                TryPlay(SoundId.ClientConnected);
+                _ = ScheduleOneShotAsync(
+                    SoundId.ClientConnected,
+                    priority: 0,
+                    GetSoundWaitTimeout(SoundId.ClientConnected, TimeSpan.FromSeconds(10)));
                 Volatile.Write(ref _connectedSoundPlayedSequence, loginSeq);
             }
             catch
@@ -347,7 +363,10 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
         // Feedback immédiat de déconnexion (hors machine à états des transitions).
         try { StopBackgroundLoopsImmediate(); } catch { }
-        TryPlay(SoundId.ClientDisconnected);
+        _ = ScheduleOneShotAsync(
+            SoundId.ClientDisconnected,
+            priority: 0,
+            GetSoundWaitTimeout(SoundId.ClientDisconnected, TimeSpan.FromSeconds(8)));
         lock (_stateGate)
         {
             if (_logoutSequence == logoutSeq)
@@ -527,21 +546,12 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             // ignore
         }
 
+        var wait = GetSoundWaitTimeout(
+            SoundId.ClientDisconnected,
+            timeout > TimeSpan.Zero ? timeout : TimeSpan.FromSeconds(8));
         try
         {
-            _sounds.Play(SoundId.ClientDisconnected);
-        }
-        catch
-        {
-            // ignore
-        }
-
-        try
-        {
-            var wait = GetSoundWaitTimeout(
-                SoundId.ClientDisconnected,
-                timeout > TimeSpan.Zero ? timeout : TimeSpan.FromSeconds(8));
-            await _sounds.WaitForSoundToEndAsync(SoundId.ClientDisconnected, wait).ConfigureAwait(false);
+            await ScheduleOneShotAsync(SoundId.ClientDisconnected, priority: 0, wait).ConfigureAwait(false);
         }
         catch
         {
@@ -571,21 +581,12 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             // ignore
         }
 
+        var wait = GetSoundWaitTimeout(
+            SoundId.ClientClosing,
+            timeout > TimeSpan.Zero ? timeout : TimeSpan.FromSeconds(8));
         try
         {
-            _sounds.Play(SoundId.ClientClosing);
-        }
-        catch
-        {
-            // ignore
-        }
-
-        try
-        {
-            var wait = GetSoundWaitTimeout(
-                SoundId.ClientClosing,
-                timeout > TimeSpan.Zero ? timeout : TimeSpan.FromSeconds(8));
-            await _sounds.WaitForSoundToEndAsync(SoundId.ClientClosing, wait).ConfigureAwait(false);
+            await ScheduleOneShotAsync(SoundId.ClientClosing, priority: 0, wait).ConfigureAwait(false);
         }
         catch
         {
@@ -685,23 +686,18 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             // Application launch sound is independent of connection state.
             if (playOpened && openedSeq != Volatile.Read(ref _openedSoundPlayedSequence))
             {
-                TryPlay(SoundId.ClientOpened);
                 lock (_stateGate)
                 {
                     _pendingOpenedSound = 0;
                 }
                 Volatile.Write(ref _openedSoundPlayedSequence, openedSeq);
 
-                // Once the launch sound has finished, re-run transitions so background loops (if any)
-                // can start without ever playing before the launch sound.
                 _ = Task.Run(async () =>
                 {
                     try { await _sounds.WaitForSoundToEndAsync(SoundId.ClientOpened, TimeSpan.FromSeconds(15)).ConfigureAwait(false); } catch { /* ignore */ }
                     try { RequestTransition(); } catch { /* ignore */ }
                 });
 
-                // Refresh remote sounds after playing the launch sound.
-                // This keeps startup audio deterministic and avoids delaying it (or letting a fallback gate open).
                 _ = Task.Run(async () =>
                 {
                     try
@@ -731,8 +727,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                         // ignore
                     }
 
-                    TryPlay(SoundId.ClientDisconnected);
-
                     lock (_stateGate)
                     {
                         _pendingDisconnectedSound = 0;
@@ -756,7 +750,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                     // ignore
                 }
 
-                TryPlay(SoundId.ClientConnected);
                 try { _sounds.Stop(SoundId.ClientOpened); } catch { /* ignore */ }
 
                 lock (_stateGate)
@@ -765,7 +758,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 }
                 Volatile.Write(ref _connectedSoundPlayedSequence, loginSeq);
 
-                // Refresh again after playing to keep cache warm, without blocking transitions.
                 _ = Task.Run(async () =>
                 {
                     try
@@ -812,11 +804,14 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             }
 
             // One-shot on entering the tavern (played before the ambience loop).
-            if (desiredBackground == AppAudioBackground.Tavern &&
-                playTavernOpened &&
-                tavernSeq != Volatile.Read(ref _tavernOpenedSoundPlayedSequence))
-            {
-                TryPlay(SoundId.TavernOpened);
+                if (desiredBackground == AppAudioBackground.Tavern &&
+                    playTavernOpened &&
+                    tavernSeq != Volatile.Read(ref _tavernOpenedSoundPlayedSequence))
+                {
+                    _ = ScheduleOneShotAsync(
+                        SoundId.TavernOpened,
+                        priority: 2,
+                        GetSoundWaitTimeout(SoundId.TavernOpened, TimeSpan.FromSeconds(5)));
                 lock (_stateGate)
                 {
                     _pendingTavernOpenedSound = 0;
@@ -874,9 +869,88 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         try { _sounds.Preload(sound, warmUp: warmUp); } catch { /* ignore */ }
     }
 
-    private void TryPlay(SoundId sound)
+    private Task ScheduleOneShotAsync(SoundId sound, int priority, TimeSpan timeout)
     {
-        try { _sounds.Play(sound); } catch { /* ignore */ }
+        var request = new OneShotRequest(sound, priority, timeout, new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously));
+        lock (_oneShotGate)
+        {
+            var node = _oneShotQueue.First;
+            while (node != null && node.Value.Priority <= priority)
+            {
+                node = node.Next;
+            }
+            if (node == null)
+            {
+                _oneShotQueue.AddLast(request);
+            }
+            else
+            {
+                _oneShotQueue.AddBefore(node, request);
+            }
+
+            if (!_oneShotProcessorRunning)
+            {
+                _oneShotProcessorRunning = true;
+                _ = ProcessOneShotsAsync();
+            }
+
+            if (_currentOneShot != null && priority < _currentOneShot.Priority)
+            {
+                _oneShotCts?.Cancel();
+            }
+        }
+        return request.Completion.Task;
+    }
+
+    private async Task ProcessOneShotsAsync()
+    {
+        while (true)
+        {
+            OneShotRequest request;
+            lock (_oneShotGate)
+            {
+                if (_oneShotQueue.Count == 0)
+                {
+                    _oneShotProcessorRunning = false;
+                    return;
+                }
+                request = _oneShotQueue.First.Value;
+                _oneShotQueue.RemoveFirst();
+                _currentOneShot = request;
+                _oneShotCts?.Dispose();
+                _oneShotCts = new CancellationTokenSource();
+            }
+
+            try
+            {
+                _sounds.Play(request.Sound);
+                await _sounds.WaitForSoundToEndAsync(
+                    request.Sound,
+                    request.Timeout,
+                    _oneShotCts.Token).ConfigureAwait(false);
+                request.Completion.TrySetResult(true);
+            }
+            catch (OperationCanceledException)
+            {
+                request.Completion.TrySetCanceled();
+            }
+            catch
+            {
+                request.Completion.TrySetResult(true);
+            }
+            finally
+            {
+                lock (_oneShotGate)
+                {
+                    if (ReferenceEquals(_currentOneShot, request))
+                    {
+                        _currentOneShot = null;
+                        try { _oneShotCts?.Dispose(); } catch { /* ignore */ }
+                        _oneShotCts = null;
+                    }
+                }
+            }
+        }
     }
 
     private TimeSpan GetSoundWaitTimeout(SoundId sound, TimeSpan fallback)
