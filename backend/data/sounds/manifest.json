@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-02-03T02:37:17.288Z",
+  "updatedAt": "2026-02-03T02:45:11.754Z",
   "sounds": {
     "RoomJoined": {
       "soundId": "RoomJoined",
@@ -66,10 +66,10 @@
     },
     "ClientConnected": {
       "soundId": "ClientConnected",
-      "sha256": "1f06352ccb11ce1ca148835d15c3ffafa09fdea115270942e0ea01c254142739",
-      "bytes": 30763,
-      "uploadedAt": "2026-02-02T21:02:25.498Z",
-      "url": "/api/sounds/ClientConnected/1f06352ccb11ce1ca148835d15c3ffafa09fdea115270942e0ea01c254142739.mp3"
+      "sha256": "f642281645bf3945b61e6ec5e5910d20a1dbab19f7aa7433d09a7ec362c4f37c",
+      "bytes": 33897,
+      "uploadedAt": "2026-02-03T02:45:11.754Z",
+      "url": "/api/sounds/ClientConnected/f642281645bf3945b61e6ec5e5910d20a1dbab19f7aa7433d09a7ec362c4f37c.mp3"
     },
     "TavernAmbience": {
       "soundId": "TavernAmbience",

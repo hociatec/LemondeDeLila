@@ -1254,8 +1254,11 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
     private Task PlaySystemOneShotAsync(SoundId sound, TimeSpan timeout)
     {
-        CancelOneShots(sound);
-        try { _sounds.Stop(sound); } catch { /* ignore */ }
+        if (sound != SoundId.ClientConnected)
+        {
+            CancelOneShots(sound);
+            try { _sounds.Stop(sound); } catch { /* ignore */ }
+        }
 
         try
         {
@@ -1346,7 +1349,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             // ignore
         }
 
-        return TimeSpan.FromMilliseconds(1500);
+        return TimeSpan.FromSeconds(3);
     }
 
 }

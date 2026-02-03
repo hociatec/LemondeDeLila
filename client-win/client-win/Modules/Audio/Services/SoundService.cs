@@ -39,6 +39,7 @@ public sealed class SoundService : ISoundService, IDisposable
     private readonly Dictionary<SoundId, MediaPlayer> _loopPlayers = new();
     private readonly Dictionary<SoundId, EventHandler> _loopHandlers = new();
     private readonly Dictionary<SoundId, TaskCompletionSource<bool>> _playEndSignals = new();
+    private readonly List<MediaPlayer> _connectedOverlapPlayers = new();
     private readonly Dictionary<SoundId, TimeSpan> _soundDurations = new();
     private MediaPlayer? _previewPlayer;
     private EventHandler? _previewOpenedHandler;
@@ -61,7 +62,7 @@ public sealed class SoundService : ISoundService, IDisposable
         sound switch
         {
             // Connexion/déconnexion : éviter les doubles triggers tout en restant réactif.
-            SoundId.ClientConnected => Stopwatch.Frequency / 2,
+            SoundId.ClientConnected => 0,
             SoundId.ClientDisconnected => Stopwatch.Frequency / 2,
             // Notifications admin : limiter le spam si plusieurs commentaires arrivent.
             SoundId.BugReportCommentReceived => Stopwatch.Frequency / 2,
@@ -149,9 +150,8 @@ public sealed class SoundService : ISoundService, IDisposable
                 // Son court et distinct pour rendre la connexion perceptible.
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "clientconnected.mp3"),
                 OverridePath: () => _options.Current.SoundClientConnectedPath,
-                // Connexion/déconnexion sont des feedbacks "système" : si l'utilisateur a coupé le son
-                // d'ouverture mais garde les sons de navigation (ou de sélection), on doit quand même pouvoir les entendre.
-                IsEnabled: () => !_options.Current.MuteAll && (_options.Current.SoundAppLaunch || _options.Current.SoundNavigate || _options.Current.SoundSelect),
+                // Feedback "système" : doit rester indépendant des autres catégories de sons.
+                IsEnabled: () => !_options.Current.MuteAll,
                 Volume: () =>
                 {
                     var vLaunch = _options.Current.SoundAppLaunch ? _options.Current.SoundAppLaunchVolume / 100.0 : 0.0;
@@ -614,6 +614,7 @@ public sealed class SoundService : ISoundService, IDisposable
 
                 if (_opened.Contains(sound))
                 {
+                    RecordDurationIfKnown(sound, player);
                     DoWarmUp();
                 }
                 else
@@ -622,6 +623,7 @@ public sealed class SoundService : ISoundService, IDisposable
                     handler = (_, _) =>
                     {
                         try { player.MediaOpened -= handler; } catch { }
+                        RecordDurationIfKnown(sound, player);
                         DoWarmUp();
                     };
                     player.MediaOpened += handler;
@@ -872,6 +874,12 @@ public sealed class SoundService : ISoundService, IDisposable
 
     private void PlayOneShotWithNewPlayer(SoundId sound, SoundEntry entry, string filePath, bool allowFallback = true)
     {
+        if (sound == SoundId.ClientConnected)
+        {
+            PlayOverlappingSystemOneShot(sound, entry, filePath, allowFallback);
+            return;
+        }
+
         void PlayOnUiThread()
         {
             MediaPlayer? player = null;
@@ -1115,6 +1123,268 @@ public sealed class SoundService : ISoundService, IDisposable
             catch (Exception ex)
             {
                 try { _logger.LogDebug(ex, "Sound playback error ({Sound})", sound); } catch { /* ignore */ }
+                try
+                {
+                    lock (_gate)
+                    {
+                        if (player != null)
+                        {
+                            _connectedOverlapPlayers.Remove(player);
+                        }
+                        if (_playEndSignals.TryGetValue(sound, out var current) && ReferenceEquals(current, tcs))
+                        {
+                            _playEndSignals.Remove(sound);
+                        }
+                    }
+                }
+                catch
+                {
+                    // ignore
+                }
+                try { tcs?.TrySetResult(true); } catch { /* ignore */ }
+                try { player?.Stop(); } catch { /* ignore */ }
+                try { player?.Close(); } catch { /* ignore */ }
+            }
+        }
+
+        if (_dispatcher.CheckAccess())
+        {
+            PlayOnUiThread();
+        }
+        else
+        {
+            _ = _dispatcher.BeginInvoke((Action)PlayOnUiThread, DispatcherPriority.Send);
+        }
+    }
+
+    private void PlayOverlappingSystemOneShot(SoundId sound, SoundEntry entry, string filePath, bool allowFallback = true)
+    {
+        void PlayOnUiThread()
+        {
+            MediaPlayer? player = null;
+            TaskCompletionSource<bool>? tcs = null;
+            var started = 0;
+            var startedAtTicks = 0L;
+
+            try
+            {
+                lock (_gate)
+                {
+                    if (_playEndSignals.TryGetValue(sound, out var previous))
+                    {
+                        _playEndSignals.Remove(sound);
+                        try { previous.TrySetResult(true); } catch { /* ignore */ }
+                    }
+
+                    tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    _playEndSignals[sound] = tcs;
+
+                    player = new MediaPlayer();
+                    // Keep muted until we explicitly Play (avoid device blips).
+                    player.IsMuted = true;
+                    player.Volume = 0;
+                    _connectedOverlapPlayers.Add(player);
+                }
+
+                void CleanupAndSignal(string reason, bool openGate)
+                {
+                    try
+                    {
+                        if (openGate && sound == SoundId.ClientConnected && Volatile.Read(ref _startupGateOpened) == 0)
+                        {
+                            OpenStartupGate($"ClientConnected {reason}");
+                        }
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+
+                    TaskCompletionSource<bool>? local = null;
+                    lock (_gate)
+                    {
+                        if (_playEndSignals.TryGetValue(sound, out var current) && ReferenceEquals(current, tcs))
+                        {
+                            _playEndSignals.Remove(sound);
+                            local = current;
+                        }
+
+                        if (player != null)
+                        {
+                            _connectedOverlapPlayers.Remove(player);
+                        }
+                    }
+
+                    try { local?.TrySetResult(true); } catch { /* ignore */ }
+                    try { player?.Stop(); } catch { /* ignore */ }
+                    try { player?.Close(); } catch { /* ignore */ }
+                }
+
+                bool TryFallbackToLocal(string reason)
+                {
+                    if (!allowFallback)
+                    {
+                        return false;
+                    }
+
+                    if (!IsFromSoundsCache(filePath))
+                    {
+                        return false;
+                    }
+
+                    var localPath = ResolveFilePath(entry);
+                    if (string.IsNullOrWhiteSpace(localPath) ||
+                        string.Equals(localPath, filePath, StringComparison.OrdinalIgnoreCase) ||
+                        !File.Exists(localPath))
+                    {
+                        return false;
+                    }
+
+                    try
+                    {
+                        _logger.LogWarning(
+                            "Audio: fallback to local sound for {Sound} after {Reason} (remote={RemoteFile} local={LocalFile})",
+                            sound,
+                            reason,
+                            Path.GetFileName(filePath),
+                            Path.GetFileName(localPath));
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+
+                    CleanupAndSignal(reason, openGate: false);
+                    PlayOverlappingSystemOneShot(sound, entry, localPath, allowFallback: false);
+                    return true;
+                }
+
+                void StartPlaybackBestEffort()
+                {
+                    if (Interlocked.Exchange(ref started, 1) == 1)
+                    {
+                        return;
+                    }
+
+                    lock (_gate)
+                    {
+                        if (player == null || !_connectedOverlapPlayers.Contains(player))
+                        {
+                            return;
+                        }
+                    }
+
+                    try
+                    {
+                        var vol = GetPlaybackVolume(sound, entry, filePath);
+                        _logger.LogInformation("Audio: system one-shot play {Sound} vol={Volume:P0}", sound, vol);
+                        player!.IsMuted = false;
+                        player.Volume = vol;
+                        player.Stop();
+                        player.Position = TimeSpan.Zero;
+                        if (startedAtTicks == 0)
+                        {
+                            startedAtTicks = Stopwatch.GetTimestamp();
+                        }
+                        player.Play();
+                        TraceStartupPlayStart(sound, filePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogDebug(ex, "Audio: system one-shot play failed {Sound}", sound);
+                    }
+                }
+
+                EventHandler? opened = null;
+                opened = (_, _) =>
+                {
+                    try { player!.MediaOpened -= opened; } catch { /* ignore */ }
+                    RecordDurationIfKnown(sound, player!);
+                    StartPlaybackBestEffort();
+                };
+                player!.MediaOpened += opened;
+
+                EventHandler<ExceptionEventArgs>? failed = null;
+                failed = (_, args) =>
+                {
+                    try { player!.MediaFailed -= failed; } catch { /* ignore */ }
+                    try
+                    {
+                        _logger.LogWarning(
+                            "Sound playback failed ({Sound}): {Error}",
+                            sound,
+                            args.ErrorException?.Message ?? "unknown error");
+                    }
+                    catch { /* ignore */ }
+                    if (TryFallbackToLocal("media failed"))
+                    {
+                        return;
+                    }
+                    CleanupAndSignal("media failed", openGate: true);
+                };
+                player.MediaFailed += failed;
+
+                EventHandler? ended = null;
+                ended = (_, _) =>
+                {
+                    try { player!.MediaEnded -= ended; } catch { /* ignore */ }
+                    try
+                    {
+                        if (startedAtTicks > 0)
+                        {
+                            var elapsedTicks = Stopwatch.GetTimestamp() - startedAtTicks;
+                            if (elapsedTicks > 0 && elapsedTicks < MinSystemOneShotDurationTicks)
+                            {
+                                var elapsedMs = (elapsedTicks * 1000.0) / Stopwatch.Frequency;
+                                if (TryFallbackToLocal($"ended-too-fast-{elapsedMs:0}ms"))
+                                {
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                    CleanupAndSignal("ended", openGate: true);
+                };
+                player.MediaEnded += ended;
+
+                try
+                {
+                    player.Open(new Uri(filePath, UriKind.Absolute));
+                }
+                catch
+                {
+                    if (TryFallbackToLocal("open failed"))
+                    {
+                        return;
+                    }
+                    CleanupAndSignal("open failed", openGate: true);
+                    return;
+                }
+
+                // Fallback: if MediaOpened never fires (or too late), start playback anyway after a short delay.
+                // We use Priority.Send to ensure it runs even during heavy UI activity (common at login).
+                _ = _dispatcher.BeginInvoke((Action)(() =>
+                {
+                    try { StartPlaybackBestEffort(); } catch { /* ignore */ }
+                }), DispatcherPriority.Send);
+
+                try
+                {
+                    _logger.LogInformation(
+                        "Audio: system one-shot (overlap) {Sound} file={File} source={Source}",
+                        sound,
+                        Path.GetFileName(filePath),
+                        DescribeSoundSource(sound, entry, filePath));
+                }
+                catch { /* ignore */ }
+            }
+            catch (Exception ex)
+            {
+                try { _logger.LogDebug(ex, "Sound playback error ({Sound})", sound); } catch { /* ignore */ }
                 try { tcs?.TrySetResult(true); } catch { /* ignore */ }
                 try { player?.Stop(); } catch { /* ignore */ }
                 try { player?.Close(); } catch { /* ignore */ }
@@ -1137,6 +1407,35 @@ public sealed class SoundService : ISoundService, IDisposable
         {
             try
             {
+                if (sound == SoundId.ClientConnected)
+                {
+                    List<MediaPlayer>? overlaps = null;
+                    TaskCompletionSource<bool>? overlapTcs = null;
+                    lock (_gate)
+                    {
+                        if (_connectedOverlapPlayers.Count > 0)
+                        {
+                            overlaps = new List<MediaPlayer>(_connectedOverlapPlayers);
+                            _connectedOverlapPlayers.Clear();
+                        }
+                        if (_playEndSignals.TryGetValue(sound, out var current))
+                        {
+                            _playEndSignals.Remove(sound);
+                            overlapTcs = current;
+                        }
+                    }
+
+                    try { overlapTcs?.TrySetResult(true); } catch { /* ignore */ }
+                    if (overlaps != null)
+                    {
+                        foreach (var p in overlaps)
+                        {
+                            try { p.Stop(); } catch { /* ignore */ }
+                            try { p.Close(); } catch { /* ignore */ }
+                        }
+                    }
+                }
+
                 MediaPlayer? player = null;
                 TaskCompletionSource<bool>? tcs = null;
 
@@ -1885,6 +2184,11 @@ public sealed class SoundService : ISoundService, IDisposable
             {
                 try { p.Close(); } catch { /* ignore */ }
             }
+            foreach (var p in _connectedOverlapPlayers)
+            {
+                try { p.Close(); } catch { /* ignore */ }
+            }
+            _connectedOverlapPlayers.Clear();
             _players.Clear();
             _loadedPaths.Clear();
             _lastPlayTicks.Clear();
