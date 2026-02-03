@@ -290,9 +290,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             Volatile.Write(ref _openedSoundPlayedSequence, skipOpenedSeq);
         }
 
-        // Ensure login feedback is audible (avoid masking by background loops or pending disconnects).
-        try { StopBackgroundLoopsImmediate(); } catch { /* ignore */ }
-        try { _sounds.Stop(SoundId.ClientOpened); } catch { /* ignore */ }
+        // Allow login sound to overlap with existing audio (startup/menu).
 
         // If a disconnect one-shot is still queued/playing, cancel it to ensure the login feedback is audible.
         CancelOneShots(SoundId.ClientDisconnected);
@@ -830,18 +828,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             // IMPORTANT: this one-shot should play even if background audio is currently paused (e.g. during startup/login overlays).
             if (playConnected && loginSeq != Volatile.Read(ref _connectedSoundPlayedSequence))
             {
-                try
-                {
-                    StopBackgroundLoopsImmediate();
-                    _appliedBackground = AppAudioBackground.None;
-                }
-                catch
-                {
-                    // ignore
-                }
-
-                try { _sounds.Stop(SoundId.ClientOpened); } catch { /* ignore */ }
-
                 lock (_stateGate)
                 {
                     _pendingConnectedSound = 0;
@@ -862,14 +848,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 });
             }
 
-            if (playConnected)
-            {
-                await DelayForConnectedSoundAsync(token).ConfigureAwait(false);
-                if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
-                {
-                    return;
-                }
-            }
+            // Allow background loops to start without waiting for the login one-shot.
 
             if (pauseCount > 0)
             {

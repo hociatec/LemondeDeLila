@@ -1630,17 +1630,16 @@ public sealed class SoundService : ISoundService, IDisposable
 
     public void StartLoop(SoundId sound)
     {
-        // At startup, keep the app silent (except ClientOpened one-shot) until the launch sound finishes.
-        if (Volatile.Read(ref _startupGateOpened) == 0)
-        {
-            TraceStartupOnce($"startup.suppress.loop.{sound}", () =>
-                $"suppressed loop {sound} because startup gate is closed (waiting for ClientOpened to finish)");
-            return;
-        }
         // Avant connexion: aucune boucle (ambiance/musique) ne doit démarrer.
         if (Volatile.Read(ref _connectedGate) == 0)
         {
             return;
+        }
+        // At startup, allow loops once connected (even if the launch sound is still playing).
+        if (Volatile.Read(ref _startupGateOpened) == 0)
+        {
+            TraceStartupOnce($"startup.allow.loop.{sound}", () =>
+                $"allowed loop {sound} even though startup gate is closed (connected)");
         }
 
         // Juste après connexion, éviter la superposition avec le son "connexion réussie".
