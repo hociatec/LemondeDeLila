@@ -184,87 +184,97 @@ public partial class HomeView : UserControl, IInitialFocusTarget
                 return;
             }
 
-            void FocusAction()
+            bool TryFocus()
             {
                 try
                 {
                     if (!ReferenceEquals(_viewModel, vm) || !IsLoaded || !IsVisible)
                     {
-                        return;
+                        return false;
                     }
 
-                    switch (vm.CurrentPage)
+                    return vm.CurrentPage switch
                     {
-                        case HomePage.Landing:
-                            FocusLandingButton();
-                            break;
-
-                        case HomePage.Login:
-                            FocusLoginField();
-                            break;
-
-                        case HomePage.Register:
-                            FocusRegisterField();
-                            break;
-                    }
+                        HomePage.Landing => FocusLandingButton(),
+                        HomePage.Login => FocusLoginField(),
+                        HomePage.Register => FocusRegisterField(),
+                        _ => false,
+                    };
                 }
                 catch
                 {
                     // Focus is best-effort: never crash the UI thread.
                 }
+
+                return false;
             }
 
             if (immediate && Dispatcher.CheckAccess())
             {
-                FocusAction();
-                return;
+                if (TryFocus())
+                {
+                    return;
+                }
             }
 
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusAction));
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => TryFocus()));
         }
 
-        private void FocusLandingButton()
+        private bool FocusLandingButton()
         {
             if (LandingPrimaryButton?.IsVisible == true && LandingPrimaryButton.IsEnabled)
             {
                 LandingPrimaryButton.Focus();
+                return true;
             }
+            return false;
         }
 
-        private void FocusLoginField()
+        private bool FocusLoginField()
         {
             if (LoginUsernameBox?.IsVisible == true && LoginUsernameBox.IsEnabled)
             {
                 LoginUsernameBox.Focus();
+                return true;
             }
             else if (LoginPasswordBox?.IsVisible == true && LoginPasswordBox.IsEnabled)
             {
                 LoginPasswordBox.Focus();
+                return true;
             }
             else if (LoginPasswordTextBox?.IsVisible == true && LoginPasswordTextBox.IsEnabled)
             {
                 LoginPasswordTextBox.Focus();
+                return true;
             }
+
+            return false;
         }
 
-        private void FocusRegisterField()
+        private bool FocusRegisterField()
         {
             if (RegisterUsernameBox?.IsVisible == true && RegisterUsernameBox.IsEnabled)
             {
                 RegisterUsernameBox.Focus();
+                return true;
             }
             else if (RegisterEmailBox?.IsVisible == true && RegisterEmailBox.IsEnabled)
             {
                 RegisterEmailBox.Focus();
+                return true;
             }
             else if (RegisterPasswordBox?.IsVisible == true && RegisterPasswordBox.IsEnabled)
             {
                 RegisterPasswordBox.Focus();
+                return true;
             }
             else if (RegisterPasswordTextBox?.IsVisible == true && RegisterPasswordTextBox.IsEnabled)
             {
                 RegisterPasswordTextBox.Focus();
+                return true;
             }
+
+            return false;
         }
 
     private void AttachHostWindowFocusRetry()
