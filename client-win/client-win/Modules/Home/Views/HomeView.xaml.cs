@@ -176,7 +176,7 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         return source is TextBoxBase || source is PasswordBox;
     }
 
-        private void FocusFirstField()
+        private void FocusFirstField(bool immediate = false)
         {
             var vm = _viewModel;
             if (vm == null)
@@ -184,7 +184,7 @@ public partial class HomeView : UserControl, IInitialFocusTarget
                 return;
             }
 
-            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+            void FocusAction()
             {
                 try
                 {
@@ -212,7 +212,15 @@ public partial class HomeView : UserControl, IInitialFocusTarget
                 {
                     // Focus is best-effort: never crash the UI thread.
                 }
-            }));
+            }
+
+            if (immediate && Dispatcher.CheckAccess())
+            {
+                FocusAction();
+                return;
+            }
+
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusAction));
         }
 
         private void FocusLandingButton()
@@ -353,8 +361,8 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         }
     }
 
-    public void RequestInitialFocus()
-    {
-        FocusFirstField();
-    }
+        public void RequestInitialFocus()
+        {
+            FocusFirstField(immediate: true);
+        }
 }
