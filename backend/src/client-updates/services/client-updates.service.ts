@@ -366,15 +366,43 @@ export class ClientUpdatesService {
     const backupDir = path.join(releasesDir, `backup.${Date.now()}`);
     let published = false;
 
+    const resolveExistingTarget = async (): Promise<string | null> => {
+      try {
+        const existing = await fs.promises.lstat(targetDir);
+        if (existing.isDirectory()) {
+          return targetDir;
+        }
+        if (existing.isSymbolicLink()) {
+          let resolved: string | null = null;
+          try {
+            const realPath = await fs.promises.realpath(targetDir);
+            const realStats = await fs.promises.lstat(realPath);
+            if (realStats.isDirectory()) {
+              resolved = realPath;
+            }
+          } catch {
+            // ignore
+          }
+          await fs.promises.unlink(targetDir).catch(() => {
+            /* ignore */
+          });
+          return resolved;
+        }
+      } catch {
+        // targetDir might not exist yet
+      }
+      return null;
+    };
+
     try {
-      const st = await fs.promises.lstat(targetDir);
-      if (!st.isSymbolicLink() && st.isDirectory()) {
-        await fs.promises.rename(targetDir, backupDir);
+      const existingTargetPath = await resolveExistingTarget();
+      if (existingTargetPath) {
+        await fs.promises.rename(existingTargetPath, backupDir);
         await fs.promises.rename(stagingDir, targetDir);
         published = true;
       }
     } catch {
-      // targetDir might not exist yet -> publish via fallback below.
+      // fallback below
     }
 
     if (!published) {
