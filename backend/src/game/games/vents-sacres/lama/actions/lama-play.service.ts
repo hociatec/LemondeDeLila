@@ -70,6 +70,7 @@ export class LamaPlayService {
       handsByPlayerId,
       discard,
       turnTracker: { playerId: actorId, drawn: (tracker as any).drawn, played: true },
+      suppressTurnAnnouncement: false,
     };
 
     if (nextHand.length === 0) {
@@ -85,7 +86,11 @@ export class LamaPlayService {
     const nextPlayerId = this.round.findNextActivePlayerId(players, nextMeta, actorId);
     const nextState: GameStateEntity = {
       ...state,
-      metadata: { ...nextMeta, turnTracker: { playerId: nextPlayerId, drawn: false, played: false } } as any,
+      metadata: {
+        ...nextMeta,
+        turnTracker: { playerId: nextPlayerId, drawn: false, played: false },
+        suppressTurnAnnouncement: false,
+      } as any,
       log,
       pending: { step: 'turn_choice', playerId: nextPlayerId } as any,
       turnIndex: (state.turnIndex ?? 0) + 1,

@@ -49,6 +49,7 @@ export class LamaReturnService {
       pendingReturnQueue: remaining,
       pendingReturnPlayerId: nextPending,
       step: nextPending ? 'return_token' : 'turn_choice',
+      suppressTurnAnnouncement: false,
     };
 
     const nextState: GameStateEntity = {

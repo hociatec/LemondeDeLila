@@ -32,6 +32,7 @@ export class LamaPassService {
     const nextMeta: LamaMetadata = {
       ...meta,
       turnTracker: { playerId: nextPlayerId, drawn: false, played: false },
+      suppressTurnAnnouncement: false,
     };
 
     const nextState: GameStateEntity = {

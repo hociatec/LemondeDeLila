@@ -23,7 +23,7 @@ export class LamaQuitService {
     let log = this.logger.append(state.log, `${name} se retire de la manche.`);
     log = this.logger.append(log, `${name} ne jouera plus ; ses jetons seront comptés à la fin de la manche.`);
 
-    const nextMeta: LamaMetadata = { ...meta, droppedOutByPlayerId };
+    const nextMeta: LamaMetadata = { ...meta, droppedOutByPlayerId, suppressTurnAnnouncement: false };
     const nextStateBase: GameStateEntity = { ...state, metadata: nextMeta as any, log };
 
     if (this.round.isRoundEnded(nextMeta, players)) {

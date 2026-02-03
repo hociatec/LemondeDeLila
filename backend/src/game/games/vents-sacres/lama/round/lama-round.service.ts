@@ -63,7 +63,7 @@ export class LamaRoundService {
       pendingReturnPlayerId: null,
       winnerId: null,
       winnerPlayerId: null,
-      suppressTurnAnnouncement: true,
+      suppressTurnAnnouncement: false,
     };
 
     return {
@@ -116,7 +116,7 @@ export class LamaRoundService {
         step: eligible.length ? 'return_token' : 'turn_choice',
         pendingReturnQueue: eligible,
         pendingReturnPlayerId: eligible.length ? eligible[0] : null,
-        suppressTurnAnnouncement: true,
+        suppressTurnAnnouncement: false,
       };
 
       const nextState: GameStateEntity = {
@@ -183,7 +183,7 @@ export class LamaRoundService {
       step: eligible.length ? 'return_token' : 'turn_choice',
       pendingReturnQueue: eligible,
       pendingReturnPlayerId: eligible.length ? eligible[0] : null,
-      suppressTurnAnnouncement: true,
+      suppressTurnAnnouncement: false,
     };
 
     const nextState: GameStateEntity = {
@@ -262,7 +262,7 @@ export class LamaRoundService {
       pendingReturnPlayerId: null,
       winnerId: null,
       winnerPlayerId: null,
-      suppressTurnAnnouncement: true,
+      suppressTurnAnnouncement: pauseMs > 0,
     };
 
     if (pauseMs > 0) {

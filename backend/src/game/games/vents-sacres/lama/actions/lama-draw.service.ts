@@ -66,6 +66,7 @@ export class LamaDrawService {
         [String(actorId)]: turnIndex + 1,
       },
       turnTracker: { playerId: actorId, drawn: true, played: false },
+      suppressTurnAnnouncement: false,
     };
 
     if (allowPlayAfterDraw && !canPlayAfterDraw) {
@@ -78,7 +79,11 @@ export class LamaDrawService {
 
     const advancedMeta: LamaMetadata = canPlayAfterDraw
       ? nextMeta
-      : { ...nextMeta, turnTracker: { playerId: nextPlayerId, drawn: false, played: false } };
+      : {
+          ...nextMeta,
+          turnTracker: { playerId: nextPlayerId, drawn: false, played: false },
+          suppressTurnAnnouncement: false,
+        };
 
     const nextState: GameStateEntity = {
       ...state,
