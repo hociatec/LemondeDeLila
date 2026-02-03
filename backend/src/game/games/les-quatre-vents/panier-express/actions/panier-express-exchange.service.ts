@@ -177,37 +177,8 @@ export class PanierExpressExchangeService {
       if (!stolen) return state;
 
       let next: GameStateEntity = { ...state, metadata: picked.meta };
-      next = {
-        ...next,
-        players: (next.players ?? []).map((p: any) => {
-          if (p.id === targetPlayerId) {
-            return {
-              ...p,
-              inventory: removeOne(
-                this.utils.toStringArray(p.inventory),
-                stolen,
-              ),
-            };
-          }
-          if (p.id === initiatorPlayerId) {
-            return addCardToPlayer(this.utils, p, stolen);
-          }
-          return p;
-        }),
-      };
-      next = {
-        ...next,
-        metadata: {
-          ...(next.metadata as any),
-          lastObtainedCourse: {
-            ...(((next.metadata as any)?.lastObtainedCourse ?? {}) as Record<
-              number,
-              string | null
-            >),
-            [initiatorPlayerId]: stolen,
-          },
-        },
-      };
+      next = removeFromInventoryState(this.utils, next, targetPlayerId, stolen);
+      next = addCardToPlayerState(this.utils, next, initiatorPlayerId, stolen);
 
       return this.core.appendLog(
         next,
@@ -225,19 +196,23 @@ export class PanierExpressExchangeService {
       const target = (state.players ?? []).find(
         (p) => p.id === targetPlayerId,
       ) as any;
-      const initiatorBasket = this.utils.toStringArray(initiator?.basket);
-      const targetBasket = this.utils.toStringArray(target?.basket);
-      const players = (state.players ?? []).map((p: any) => {
-        if (p.id === initiatorPlayerId) return { ...p, basket: targetBasket };
-        if (p.id === targetPlayerId) return { ...p, basket: initiatorBasket };
-        return p;
+      const initiatorInv = this.utils.toStringArray(initiator?.inventory);
+      const targetInv = this.utils.toStringArray(target?.inventory);
+      let next: GameStateEntity = state;
+      next = setInventoryState(this.utils, next, initiatorPlayerId, []);
+      next = setInventoryState(this.utils, next, targetPlayerId, []);
+      targetInv.forEach((card) => {
+        next = addCardToPlayerState(this.utils, next, initiatorPlayerId, card);
+      });
+      initiatorInv.forEach((card) => {
+        next = addCardToPlayerState(this.utils, next, targetPlayerId, card);
       });
       return this.core.appendLog(
-        { ...state, players },
+        next,
         `[Panier Express] Chariot échangé : ${this.utils.playerName(
           state,
           initiatorPlayerId,
-        )} échange son panier avec ${this.utils.playerName(state, targetPlayerId)}.`,
+        )} échange son inventaire avec ${this.utils.playerName(state, targetPlayerId)}.`,
       );
     }
 
@@ -376,6 +351,7 @@ export class PanierExpressExchangeService {
           `[Panier Express] Aucun joueur disponible pour ${resolvedCard}.`,
         );
       }
+      const exchangeLabel = this.utils.formatEventLabel(resolvedCard) || resolvedCard;
       return {
         ...state,
         metadata,
@@ -383,7 +359,7 @@ export class PanierExpressExchangeService {
           type: 'pick',
           playerId,
           blocking: true,
-          label: `Choisissez un joueur pour ${resolvedCard}, puis Entrée.`,
+          label: `Choisissez un joueur pour ${exchangeLabel}, puis Entrée.`,
           choices,
           data: { kind: 'exchange.choose_target', card: resolvedCard, targets },
         } as any,
@@ -517,10 +493,7 @@ export class PanierExpressExchangeService {
 
     if (resolvedCard === 'marche-noir') {
       const me = (state.players ?? []).find((p) => p.id === playerId) as any;
-      const cards = [
-        ...this.utils.toStringArray(me?.inventory),
-        ...this.utils.toStringArray(me?.basket),
-      ];
+      const cards = this.utils.toStringArray(me?.inventory);
       if (!cards.length) {
         return this.core.appendLog(
           { ...state, metadata },
@@ -778,23 +751,23 @@ export class PanierExpressExchangeService {
     }
 
     if (resolvedCard === 'defausse-aleatoire') {
-      const basket = this.utils.toStringArray(
-        (state.players ?? []).find((p) => p.id === playerId)?.basket,
+      const inventory = this.utils.toStringArray(
+        (state.players ?? []).find((p) => p.id === playerId)?.inventory,
       );
-      if (!basket.length) {
+      if (!inventory.length) {
         return this.core.appendLog(
           { ...state, metadata },
-          `[Panier Express] Défausse aléatoire : panier vide.`,
+          `[Panier Express] Défausse aléatoire : inventaire vide.`,
         );
       }
       const metaRng = this.random.createMetaRng(metadata as any);
-      const picked = this.random.pickOne(metaRng.getMeta(), basket);
+      const picked = this.random.pickOne(metaRng.getMeta(), inventory);
       const card = String(picked.value ?? '').trim();
       const updatedMeta = picked.meta;
       const players = (state.players ?? []).map((p: any) => {
         if (p.id !== playerId) return p;
-        const nextBasket = this.utils.removeOne(basket, card);
-        return { ...p, basket: nextBasket };
+        const nextInv = this.utils.removeOne(inventory, card);
+        return { ...p, inventory: nextInv };
       });
       const cardLabel = this.utils.formatCourseLabel(card);
       return this.core.appendLog(
@@ -899,14 +872,44 @@ function addCardToPlayer(
   utils: PanierExpressUtils,
   player: any,
   card: string,
-): any {
+): { player: any; kept: boolean; discarded: boolean } {
+  const trimmed = String(card ?? '').trim();
+  if (!trimmed || !player) {
+    return { player, kept: false, discarded: false };
+  }
   const list = utils.toStringArray(player.shoppingList);
   const basket = utils.toStringArray(player.basket);
   const inventory = utils.toStringArray(player.inventory);
-  if (list.includes(card) && !basket.includes(card)) {
-    return { ...player, basket: [card, ...basket], inventory };
+  const alreadyInBasket = basket.includes(trimmed);
+  const alreadyInInventory = inventory.includes(trimmed);
+  const isNeeded = list.includes(trimmed) && !alreadyInBasket;
+
+  // Pas de doublons: si déjà présent, on défausse la carte reçue.
+  // Si la carte est nécessaire et déjà dans l'inventaire, on la transfère au panier.
+  if (alreadyInBasket || alreadyInInventory) {
+    if (isNeeded && alreadyInInventory) {
+      return {
+        player: {
+          ...player,
+          basket: [...basket, trimmed],
+          inventory: utils.removeOne(inventory, trimmed),
+        },
+        kept: false,
+        discarded: true,
+      };
+    }
+    return { player: { ...player, basket, inventory }, kept: false, discarded: true };
   }
-  return { ...player, inventory: [card, ...inventory], basket };
+
+  if (isNeeded) {
+    return { player: { ...player, basket: [...basket, trimmed], inventory }, kept: true, discarded: false };
+  }
+
+  if (inventory.length >= 5) {
+    return { player: { ...player, basket, inventory }, kept: false, discarded: true };
+  }
+
+  return { player: { ...player, inventory: [trimmed, ...inventory], basket }, kept: true, discarded: false };
 }
 
 function addCardToPlayerState(
@@ -917,11 +920,19 @@ function addCardToPlayerState(
 ): GameStateEntity {
   const trimmed = String(card ?? '').trim();
   if (!trimmed) return state;
+  let kept = false;
+  let discarded = false;
   const players = (state.players ?? []).map((p: any) => {
     if (p.id !== playerId) return p;
-    return addCardToPlayer(utils, p, trimmed);
+    const result = addCardToPlayer(utils, p, trimmed);
+    kept = result.kept;
+    discarded = result.discarded;
+    return result.player;
   });
   const meta = (state.metadata ?? {}) as any;
+  const currentDiscards = Array.isArray(meta?.discards?.courses)
+    ? meta.discards.courses.map((v: any) => String(v))
+    : [];
   return {
     ...state,
     players,
@@ -929,7 +940,11 @@ function addCardToPlayerState(
       ...meta,
       lastObtainedCourse: {
         ...(meta?.lastObtainedCourse ?? {}),
-        [playerId]: trimmed,
+        [playerId]: kept ? trimmed : null,
+      },
+      discards: {
+        ...(meta?.discards ?? {}),
+        courses: discarded ? [...currentDiscards, trimmed] : currentDiscards,
       },
     },
   };

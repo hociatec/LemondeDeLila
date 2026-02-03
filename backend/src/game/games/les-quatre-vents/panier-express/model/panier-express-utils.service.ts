@@ -187,6 +187,8 @@ export class PanierExpressUtils {
       abime: 'abîmé',
       detrempe: 'détrempé',
       derriere: 'derrière',
+      impose: 'imposé',
+      perce: 'percé',
     };
     const extraTokenMap: Record<string, string> = {
       recompensee: 'r\u00e9compens\u00e9e',

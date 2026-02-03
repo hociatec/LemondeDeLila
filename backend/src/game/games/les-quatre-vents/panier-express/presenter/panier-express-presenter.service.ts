@@ -376,6 +376,31 @@ export class PanierExpressPresenterService extends BasePresenterService {
         : `${title}: ${body}`;
     };
 
+    const shoppingAllMessage = () => {
+      if (!Array.isArray(params.playerViews) || params.playerViews.length === 0) {
+        return 'Listes de courses: (aucun joueur).';
+      }
+
+      const max = 12;
+      const lines = params.playerViews.map((p) => {
+        const name =
+          typeof p.username === 'string' && p.username.trim().length > 0
+            ? p.username.trim()
+            : `Joueur ${p.id}`;
+        const items = Array.isArray(p.shoppingList) ? p.shoppingList : [];
+        if (items.length === 0) {
+          return `${name} : liste (vide)`;
+        }
+        const shown = items.length > max ? items.slice(0, max) : items;
+        const body = shown.join(', ');
+        return items.length > max
+          ? `${name} : liste ${body}, ... (+${items.length - max})`
+          : `${name} : liste ${body}`;
+      });
+
+      return lines.join('\n');
+    };
+
     const inventoryAllMessage = () => {
       const currentId =
         typeof params.currentId === 'number' ? params.currentId : null;
@@ -411,6 +436,24 @@ export class PanierExpressPresenterService extends BasePresenterService {
       return lines.join('\n');
     };
 
+    const scoreMessage = () => {
+      if (!Array.isArray(params.playerViews) || params.playerViews.length === 0) {
+        return 'Scores: (aucun joueur).';
+      }
+      const lines = params.playerViews.map((p) => {
+        const name =
+          typeof p.username === 'string' && p.username.trim().length > 0
+            ? p.username.trim()
+            : `Joueur ${p.id}`;
+        const list = Array.isArray(p.shoppingList) ? p.shoppingList : [];
+        const basket = Array.isArray(p.basket) ? p.basket : [];
+        const total = list.length;
+        const done = total > 0 ? basket.filter((item) => list.includes(item)).length : 0;
+        return `${name} : ${done}/${total}`;
+      });
+      return lines.join('\n');
+    };
+
     const meta = this.getMetadata(state) as PanierExpressMetadata;
     const positionMessage = this.boardPayload.buildPositionPanelMessage({
       tilesRaw: meta.tiles,
@@ -430,6 +473,10 @@ export class PanierExpressPresenterService extends BasePresenterService {
             title: 'Shopping list',
             message: listMessage('Shopping list', currentPlayerView?.shoppingList),
           },
+          shopping_all: {
+            title: 'Shopping list (tous)',
+            message: shoppingAllMessage(),
+          },
           basket: {
             title: 'Panier',
             message: listMessage('Panier', currentPlayerView?.basket),
@@ -441,6 +488,10 @@ export class PanierExpressPresenterService extends BasePresenterService {
           inventory_all: {
             title: 'Inventaires (tous)',
             message: inventoryAllMessage(),
+          },
+          score: {
+            title: 'Score',
+            message: scoreMessage(),
           },
           position: {
             title: 'Position',

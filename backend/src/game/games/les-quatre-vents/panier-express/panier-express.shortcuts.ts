@@ -6,7 +6,9 @@ export const buildPanierExpressShortcuts: GameShortcutsBuilder<
   PanierExpressMetadata
 > = () => {
   return [
-    interfaceShortcut('S', 'shopping'),
+    interfaceShortcut('L', 'shopping'),
+    interfaceShortcut('SHIFT+L', 'shopping_all'),
+    interfaceShortcut('S', 'score'),
     interfaceShortcut('B', 'basket'),
     interfaceShortcut('I', 'inventory'),
     interfaceShortcut('SHIFT+I', 'inventory_all'),

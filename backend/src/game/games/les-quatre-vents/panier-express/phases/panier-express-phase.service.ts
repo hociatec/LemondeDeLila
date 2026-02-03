@@ -45,6 +45,8 @@ export class PanierExpressPhaseService {
 
     const meta = this.getMetadata(next);
     const statuses: any = meta.statuses ?? {};
+    const turnFlow: any =
+      meta && typeof meta === 'object' ? (meta as any).turnFlow : null;
 
     const decrementMap = (input: Record<number, number> | undefined) => {
       const out: Record<number, number> = {};
@@ -102,7 +104,35 @@ export class PanierExpressPhaseService {
       nextCurrentPlayerId: withMeta.turn?.currentPlayerId ?? null,
       skipTurn: (withMeta.metadata as any)?.statuses?.skipTurn ?? {},
     });
-    return withMeta;
+    const skipped = Array.isArray(turnFlow?.skipped) ? turnFlow.skipped : [];
+    if (!skipped.length) {
+      return withMeta;
+    }
+
+    let out = withMeta;
+    for (const entry of skipped) {
+      const id = typeof entry?.id === 'number' ? entry.id : null;
+      if (id == null) continue;
+      const remaining =
+        typeof entry?.remainingAfter === 'number' ? entry.remainingAfter : 0;
+      const suffix = remaining > 0 ? ` (${remaining} restant)` : '';
+      out = this.core.appendLog(
+        out,
+        `[Panier Express] ${this.utils.playerName(out, id)} passe son tour${suffix}.`,
+      );
+    }
+
+    const cleanedTurnFlow = {
+      ...(turnFlow && typeof turnFlow === 'object' ? turnFlow : {}),
+      skipped: [],
+    };
+    return {
+      ...out,
+      metadata: {
+        ...(out.metadata as any),
+        turnFlow: cleanedTurnFlow,
+      },
+    };
   }
 
   private applyVictory(state: GameStateEntity): GameStateEntity {

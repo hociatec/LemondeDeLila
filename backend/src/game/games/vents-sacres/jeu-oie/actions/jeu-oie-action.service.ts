@@ -150,9 +150,13 @@ export class JeuOieActionService {
 
     if (tile.type === 'inn' || tile.type === 'prison') {
       const turns = tile.skipTurns ?? 1;
+      const suffix =
+        turns === 1
+          ? ' (passera son prochain tour).'
+          : ` (passera ses ${turns} prochains tours).`;
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} perd ${turns} tour(s).`,
+        `${this.playerName(next, playerId)} perd ${turns} tour(s).${suffix}`,
       );
       meta = this.getMeta(next);
       const currentSkip = meta.statuses?.skipTurn?.[playerId] ?? 0;

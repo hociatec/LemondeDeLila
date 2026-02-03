@@ -29,9 +29,46 @@ export class LamaActionService {
   applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
     let next = state;
     for (const action of actions ?? []) {
-      next = this.applyOne(next, action);
+      const before = next;
+      const applied = this.applyOne(before, action);
+      next = this.appendTurnAnnouncementIfNeeded(before, applied);
     }
     return next;
+  }
+
+  private appendTurnAnnouncementIfNeeded(
+    previous: GameStateEntity,
+    next: GameStateEntity,
+  ): GameStateEntity {
+    const previousStatus = String(previous.status ?? '').toLowerCase();
+    const nextStatus = String(next.status ?? '').toLowerCase();
+    if (previousStatus !== 'started' || nextStatus !== 'started') {
+      return next;
+    }
+    const prevPlayerId = previous.turn?.currentPlayerId ?? null;
+    const nextPlayerId = next.turn?.currentPlayerId ?? null;
+    if (
+      prevPlayerId == null ||
+      nextPlayerId == null ||
+      prevPlayerId === nextPlayerId
+    ) {
+      return next;
+    }
+
+    const players = Array.isArray(next.players) ? next.players : [];
+    const name = this.shared.playerLabel(players, nextPlayerId);
+    const message = `C'est au tour de ${name}.`;
+    const log = this.logger.append(next.log, message);
+
+    const meta = { ...(next.metadata ?? {}) } as LamaMetadata;
+    return {
+      ...next,
+      log,
+      metadata: {
+        ...meta,
+        suppressTurnAnnouncement: true,
+      } as any,
+    };
   }
 
   private applyOne(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {

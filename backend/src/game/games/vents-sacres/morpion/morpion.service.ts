@@ -184,17 +184,31 @@ export class MorpionService implements GameRulesAdapter, OnModuleInit {
 
     const nextStatus = winnerId || isDraw ? 'finished' : state.status;
     const actorName = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
+    const opponent =
+      players.find((p) => p?.id != null && p.id !== actorId) ?? null;
+    const opponentId = opponent?.id ?? null;
+    const opponentName = opponent?.username ?? (opponentId != null ? `#${opponentId}` : null);
     const glyph = this.glyphForOwner(actorId, players);
     const cellRef = this.toCellRef({ x, y }, size);
     let log = this.appendLog(state.log, `${actorName} place ${glyph} en ${cellRef}.`);
     if (winnerId) {
       log = this.appendLog(log, 'Fin de la manche.');
       log = this.appendLog(log, `Victoire de ${actorName}.`);
+      if (opponentName) {
+        log = this.appendLog(log, `D\u00e9faite de ${opponentName}.`);
+      }
       (nextMeta as any).winnerPlayerId = winnerId;
       (nextMeta as any).winnerId = winnerId;
+      if (opponentId != null) {
+        (nextMeta as any).outcomesByPlayerId = {
+          [String(winnerId)]: 'won',
+          [String(opponentId)]: 'lost',
+        };
+      }
     } else if (isDraw) {
       log = this.appendLog(log, 'Fin de la manche.');
       log = this.appendLog(log, 'Match nul.');
+      log = this.appendLog(log, 'Partie termin\u00e9e : match nul.');
     }
 
     return {

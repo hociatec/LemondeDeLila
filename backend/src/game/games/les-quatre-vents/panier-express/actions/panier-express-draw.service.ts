@@ -49,18 +49,40 @@ export class PanierExpressDrawService {
 
     const { card, metadata } = draw;
     let discarded: 'duplicate' | 'full' | null = null;
+    let duplicateSource: 'panier' | 'inventaire' | null = null;
     let kept = false;
     const players = (state.players ?? []).map((player) => {
       if (player.id !== playerId) return player;
       const shoppingList = this.utils.toStringArray(player.shoppingList);
       const basket = this.utils.toStringArray(player.basket);
       const inventory = this.utils.toStringArray(player.inventory);
-      if (shoppingList.includes(card) && !basket.includes(card)) {
+      const alreadyInBasket = basket.includes(card);
+      const alreadyInInventory = inventory.includes(card);
+      const isNeeded = shoppingList.includes(card) && !alreadyInBasket;
+
+      if (alreadyInBasket) {
+        discarded = 'duplicate';
+        duplicateSource = 'panier';
+        return { ...player, inventory, basket };
+      }
+
+      if (isNeeded) {
         kept = true;
+        if (alreadyInInventory) {
+          discarded = 'duplicate';
+          duplicateSource = 'inventaire';
+          return {
+            ...player,
+            basket: [...basket, card],
+            inventory: this.utils.removeOne(inventory, card),
+          };
+        }
         return { ...player, basket: [...basket, card], inventory };
       }
-      if (inventory.includes(card)) {
+
+      if (alreadyInInventory) {
         discarded = 'duplicate';
+        duplicateSource = 'inventaire';
         return { ...player, inventory, basket };
       }
       if (inventory.length >= PanierExpressDrawService.MAX_INVENTORY) {
@@ -81,7 +103,7 @@ export class PanierExpressDrawService {
         [playerId]: kept ? card : null,
       },
       discards:
-        !kept && card
+        discarded && card
           ? {
               ...(((metadata as any)?.discards ?? {}) as any),
               courses: [
@@ -99,7 +121,11 @@ export class PanierExpressDrawService {
     const courseLabel = this.utils.formatCourseLabel(card);
     const message = discarded
       ? discarded === 'duplicate'
-        ? `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}" mais l'a déjà et la défausse.`
+        ? duplicateSource === 'panier'
+          ? `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}" mais l'a déjà dans son panier et la défausse.`
+          : duplicateSource === 'inventaire'
+            ? `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}" mais l'a déjà dans son inventaire et la défausse.`
+            : `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}" mais l'a déjà et la défausse.`
         : `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}" mais son inventaire est plein et la défausse.`
       : `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}".`;
     const logged = this.core.appendLog(nextState, message);
