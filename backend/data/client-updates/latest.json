@@ -1,7 +1,7 @@
-{
-  "version": "2.2.15.0",
-  "publishedAt": "2026-02-03T00:27:39.105Z",
-  "message": null,
-  "publicUrl": "https://api.lilas.hociatec.fr/updates/client-win/",
-  "minRequiredVersion": null
+﻿{
+    "publishedAt":  "2026-02-03T01:24:57.4380677Z",
+    "message":  null,
+    "minRequiredVersion":  null,
+    "version":  "2.2.17.0",
+    "publicUrl":  "https://api.lilas.hociatec.fr/updates/client-win/"
 }
