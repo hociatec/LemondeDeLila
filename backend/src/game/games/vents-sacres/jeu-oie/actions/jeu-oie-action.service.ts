@@ -152,7 +152,7 @@ export class JeuOieActionService {
       const turns = tile.skipTurns ?? 1;
       const suffix =
         turns === 1
-          ? ' (passera son prochain tour).'
+          ? ''
           : ` (passera ses ${turns} prochains tours).`;
       next = this.core.appendLog(
         next,
