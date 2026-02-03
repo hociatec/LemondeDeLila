@@ -290,6 +290,10 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             Volatile.Write(ref _openedSoundPlayedSequence, skipOpenedSeq);
         }
 
+        // Ensure login feedback is audible (avoid masking by background loops or pending disconnects).
+        try { StopBackgroundLoopsImmediate(); } catch { /* ignore */ }
+        try { _sounds.Stop(SoundId.ClientOpened); } catch { /* ignore */ }
+
         // If a disconnect one-shot is still queued/playing, cancel it to ensure the login feedback is audible.
         CancelOneShots(SoundId.ClientDisconnected);
         ClearPendingDisconnectedOneShot();
@@ -602,17 +606,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             // ignore
         }
 
-        // Ensure latest admin overrides are applied before playing the sound.
-        try
-        {
-            using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-            await RefreshRemoteSoundsAsync(force: true, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
-        }
-        catch
-        {
-            // ignore
-        }
-
         var wait = GetSoundWaitTimeout(
             SoundId.ClientDisconnected,
             timeout > TimeSpan.Zero ? timeout : TimeSpan.FromSeconds(8));
@@ -624,6 +617,10 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         }
         else
         {
+            if (ShouldSuppressDisconnectSound())
+            {
+                return;
+            }
             disconnectTask = TrackPendingDisconnectedOneShot(
                 PlaySystemOneShotAsync(SoundId.ClientDisconnected, wait));
         }
@@ -676,6 +673,20 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         {
             // ignore
         }
+
+        // Best-effort: refresh remote sounds after playing (non-blocking).
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                await RefreshRemoteSoundsAsync(force: true, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
+            }
+            catch
+            {
+                // ignore
+            }
+        });
     }
 
     private void RequestTransition()
