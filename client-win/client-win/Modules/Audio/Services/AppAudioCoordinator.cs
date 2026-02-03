@@ -356,7 +356,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                     return;
                 }
 
-                TrackPendingConnectedOneShot(
+                _ = TrackPendingConnectedOneShot(
                     PlaySystemOneShotAsync(
                         SoundId.ClientConnected,
                         GetSoundWaitTimeout(SoundId.ClientConnected, TimeSpan.FromSeconds(10))));
@@ -1115,7 +1115,13 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                     _oneShotProcessorRunning = false;
                     return;
                 }
-                request = _oneShotQueue.First.Value;
+                var node = _oneShotQueue.First;
+                if (node == null)
+                {
+                    _oneShotProcessorRunning = false;
+                    return;
+                }
+                request = node.Value;
                 _oneShotQueue.RemoveFirst();
                 _currentOneShot = request;
                 _oneShotCts?.Dispose();
