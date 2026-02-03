@@ -47,6 +47,9 @@ export class AventureSauvageActionService {
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
 
+    const autoSkipped = this.autoSkipIfNeeded(state);
+    if (autoSkipped !== state) return autoSkipped;
+
     const meta = this.getMeta(state);
     const rng = this.random.rollDice(meta as any, 6);
     const roll = rng.roll;
@@ -501,7 +504,7 @@ export class AventureSauvageActionService {
 
     let nextIndex = startIndex;
     const skipped: number[] = [];
-    for (let attempts = 0; attempts < players.length; attempts += 1) {
+    for (let attempts = 0; attempts < players.length * 2; attempts += 1) {
       nextIndex = (nextIndex + 1) % players.length;
       const pid = players[nextIndex]?.id;
       if (typeof pid !== 'number' || !Number.isFinite(pid)) continue;
@@ -530,6 +533,33 @@ export class AventureSauvageActionService {
     }
 
     return next;
+  }
+
+  private autoSkipIfNeeded(state: GameStateEntity): GameStateEntity {
+    if (state.pending) return state;
+    const meta = this.getMeta(state) as any;
+    const currentId = state.turn?.currentPlayerId ?? null;
+    if (currentId == null) return state;
+    const statuses = meta.statuses ?? { skipTurn: {} };
+    const remaining = Number(statuses.skipTurn?.[currentId] ?? 0);
+    if (!Number.isFinite(remaining) || remaining <= 0) return state;
+
+    const updatedSkip = {
+      ...(statuses.skipTurn ?? {}),
+      [currentId]: Math.max(0, remaining - 1),
+    };
+
+    let next: GameStateEntity = {
+      ...state,
+      metadata: {
+        ...(state.metadata ?? {}),
+        ...meta,
+        statuses: { ...statuses, skipTurn: updatedSkip },
+      },
+    };
+
+    next = this.core.appendLog(next, `${this.playerName(next, currentId)} passe son tour.`);
+    return this.advanceTurn(next);
   }
 }
 

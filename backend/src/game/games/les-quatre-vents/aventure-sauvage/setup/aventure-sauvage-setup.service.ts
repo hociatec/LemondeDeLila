@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { ensureSeededRng } from '../../../../common/utils/seeded-rng';
 import type {
   AventureSauvageCard,
   AventureSauvageMetadata,
@@ -45,7 +46,7 @@ export class AventureSauvageSetupService {
 
     // IMPORTANT: les cartes doivent Ãªtre mÃ©langÃ©es au dÃ©but, sinon on pioche toujours dans l'ordre du fichier.
     // On utilise le RNG seedÃ© cÃ´tÃ© serveur (metadata.rng) pour avoir un comportement stable par "session" (runId/startedAt).
-    let rngMeta: any = (baseState.metadata ?? {}) as any;
+    let rngMeta: any = buildShuffleMeta(baseState.metadata ?? {});
     const shuffledAnimal = this.random.shuffle(rngMeta, defaultAnimalDeck());
     rngMeta = shuffledAnimal.meta as any;
     const shuffledPatte = this.random.shuffle(rngMeta, defaultPatteDeck());
@@ -453,6 +454,31 @@ function defaultPatteDeck(): AventureSauvageCard[] {
     },
   ];
   return deck;
+}
+
+function buildShuffleMeta(seedMeta: Record<string, any> | null | undefined): Record<string, any> {
+  const meta = seedMeta && typeof seedMeta === 'object' ? seedMeta : {};
+  const baseRng = ensureSeededRng(meta as any);
+  const runId = Number((meta as any)?.roomRunId ?? 0);
+  const generatedAt =
+    typeof (meta as any)?.generatedAt === 'string' ? String((meta as any).generatedAt) : '';
+  const salt =
+    Number.isFinite(runId) && runId !== 0
+      ? runId
+      : generatedAt
+        ? hashSeed(generatedAt)
+        : 0;
+  const seed = (baseRng.seed + (salt >>> 0)) >>> 0;
+  return { ...(meta as any), rng: { seed, counter: baseRng.counter } };
+}
+
+function hashSeed(value: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
 }
 
 function normalizePawnAssignments(
