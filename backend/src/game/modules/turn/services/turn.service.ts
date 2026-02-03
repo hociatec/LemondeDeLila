@@ -31,6 +31,11 @@ export class TurnService {
     turnIndex: number;
     currentPlayerId: number;
     skipTurn: Record<number, number>;
+    skipped?: Array<{
+      id: number;
+      remainingBefore: number;
+      remainingAfter: number;
+    }>;
   } {
     if (!players.length) {
       return { turnIndex: currentIndex, currentPlayerId: -1, skipTurn };
@@ -38,13 +43,20 @@ export class TurnService {
     let nextIndex = currentIndex;
     let attempts = 0;
     const updatedSkip = { ...skipTurn };
+    const skipped: Array<{
+      id: number;
+      remainingBefore: number;
+      remainingAfter: number;
+    }> = [];
 
     do {
       nextIndex = (nextIndex + 1) % players.length;
       const pid = players[nextIndex].id;
       const remaining = updatedSkip[pid] ?? 0;
       if (remaining > 0) {
-        updatedSkip[pid] = remaining - 1;
+        const remainingAfter = remaining - 1;
+        updatedSkip[pid] = remainingAfter;
+        skipped.push({ id: pid, remainingBefore: remaining, remainingAfter });
         attempts += 1;
         continue;
       }
@@ -55,6 +67,7 @@ export class TurnService {
       turnIndex: nextIndex,
       currentPlayerId: players[nextIndex].id,
       skipTurn: updatedSkip,
+      ...(skipped.length ? { skipped } : {}),
     };
   }
 }

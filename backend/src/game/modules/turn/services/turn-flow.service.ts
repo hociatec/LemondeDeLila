@@ -24,6 +24,20 @@ export class TurnFlowService {
       currentIndex >= 0 ? currentIndex : state.turnIndex,
       skipTurn,
     );
+    const skipped = Array.isArray((next as any).skipped)
+      ? (next as any).skipped
+      : [];
+    const turnFlow =
+      meta && typeof meta === 'object' && !Array.isArray(meta)
+        ? (meta as any).turnFlow
+        : null;
+    const nextTurnFlow =
+      skipped.length > 0
+        ? {
+            ...(turnFlow && typeof turnFlow === 'object' && !Array.isArray(turnFlow) ? turnFlow : {}),
+            skipped,
+          }
+        : turnFlow;
 
     return {
       ...state,
@@ -32,6 +46,7 @@ export class TurnFlowService {
       metadata: {
         ...meta,
         statuses: { ...statuses, skipTurn: next.skipTurn },
+        ...(nextTurnFlow ? { turnFlow: nextTurnFlow } : {}),
       },
     };
   }

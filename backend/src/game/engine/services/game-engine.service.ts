@@ -799,6 +799,7 @@ export class GameEngineService {
     marked = this.normalizeWinnerMetadata(marked);
     marked = this.forceFinishedIfWinnerDetected(marked);
     marked = this.appendBoardArrivalAnnouncements(gameType, current, marked);
+    marked = this.appendSkipTurnAnnouncements(marked);
     if ((marked.status || '').toLowerCase() === 'finished') {
       const meta = (marked as any)?.metadata;
       const obj = meta && typeof meta === 'object' ? meta : {};
@@ -1423,6 +1424,7 @@ export class GameEngineService {
       marked = this.normalizeWinnerMetadata(marked);
       marked = this.forceFinishedIfWinnerDetected(marked);
       marked = this.appendBoardArrivalAnnouncements(gameType, current, marked);
+      marked = this.appendSkipTurnAnnouncements(marked);
 
       const previousPlayerId = current.turn?.currentPlayerId ?? null;
       const nextPlayerId = marked.turn?.currentPlayerId ?? null;
@@ -2136,6 +2138,49 @@ export class GameEngineService {
       return out;
     } catch {
       return next;
+    }
+  }
+
+  private appendSkipTurnAnnouncements(
+    state: GameStateEntity,
+  ): GameStateEntity {
+    try {
+      const meta: any =
+        state?.metadata && typeof state.metadata === 'object'
+          ? state.metadata
+          : {};
+      const turnFlow: any =
+        meta?.turnFlow && typeof meta.turnFlow === 'object' ? meta.turnFlow : {};
+      const skippedRaw = turnFlow?.skipped;
+      const skipped = Array.isArray(skippedRaw) ? skippedRaw : [];
+      if (!skipped.length) {
+        return state;
+      }
+
+      let out = state;
+      for (const entry of skipped) {
+        const id = typeof entry?.id === 'number' ? entry.id : null;
+        if (id == null) continue;
+        const remaining =
+          typeof entry?.remainingAfter === 'number' ? entry.remainingAfter : 0;
+        const player =
+          out.players?.find((p: any) => p?.id === id) ?? null;
+        const name = this.normalizeUsernameForLog(player?.username);
+        const who = name ? name : `joueur ${id}`;
+        const suffix = remaining > 0 ? ` (${remaining} restant)` : '';
+        out = this.core.appendLog(out, `${who} passe son tour${suffix}.`);
+      }
+
+      const cleanedTurnFlow = { ...turnFlow, skipped: [] };
+      return {
+        ...out,
+        metadata: {
+          ...meta,
+          turnFlow: cleanedTurnFlow,
+        },
+      };
+    } catch {
+      return state;
     }
   }
 
