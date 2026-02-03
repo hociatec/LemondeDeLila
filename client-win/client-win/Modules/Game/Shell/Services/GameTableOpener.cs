@@ -1227,6 +1227,8 @@ public sealed class GameTableOpener : IGameTableOpener
                         : $"Table rejointe : {game.Name}.";
                     new GameHistorySink(dispatcher, vm.History, _announcementService).Add(createdMessage);
 
+                    var openSound = isNew ? SoundId.RoomOpened : SoundId.RoomJoined;
+
                     // Preload table + common gameplay one-shots early (async/background) so first actions feel snappy.
                     try
                     {
@@ -1247,7 +1249,17 @@ public sealed class GameTableOpener : IGameTableOpener
                         // best-effort
                     }
 
-                    try { _sounds.Play(isNew ? SoundId.RoomOpened : SoundId.RoomJoined); } catch { }
+                    try
+                    {
+                        using var warmUpCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(750));
+                        await _sounds.WarmUpAsync(openSound, warmUpCts.Token).ConfigureAwait(true);
+                    }
+                    catch
+                    {
+                        // best-effort
+                    }
+
+                    try { _sounds.Play(openSound); } catch { }
 
                     bindings = new GameTableBindings(
                         dispatcher: dispatcher,

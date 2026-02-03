@@ -41,6 +41,8 @@ public sealed class SoundService : ISoundService, IDisposable
     private readonly Dictionary<SoundId, TaskCompletionSource<bool>> _playEndSignals = new();
     private readonly List<MediaPlayer> _connectedOverlapPlayers = new();
     private readonly Dictionary<SoundId, TimeSpan> _soundDurations = new();
+    private readonly object _warmUpGate = new();
+    private readonly Dictionary<SoundId, TaskCompletionSource<bool>> _warmUpSignals = new();
     private MediaPlayer? _previewPlayer;
     private EventHandler? _previewOpenedHandler;
     private EventHandler<ExceptionEventArgs>? _previewFailedHandler;
@@ -528,6 +530,39 @@ public sealed class SoundService : ISoundService, IDisposable
             $"start playback {sound} gate(startup={Volatile.Read(ref _startupGateOpened)} connected={Volatile.Read(ref _connectedGate)}) file={Path.GetFileName(filePath)}");
     }
 
+    public Task WarmUpAsync(SoundId sound, CancellationToken cancellationToken = default)
+    {
+        if (!_sounds.TryGetValue(sound, out var entry))
+        {
+            return Task.CompletedTask;
+        }
+
+        var filePath = ResolveFilePath(sound, entry);
+        if (!File.Exists(filePath))
+        {
+            return Task.CompletedTask;
+        }
+
+        var tcs = RegisterWarmUpSignal(sound);
+
+        if (cancellationToken.CanBeCanceled)
+        {
+            var registration = cancellationToken.Register(() => CancelWarmUp(sound));
+            _ = tcs.Task.ContinueWith(_ => registration.Dispose(), TaskScheduler.Default);
+        }
+
+        try
+        {
+            Preload(sound, warmUp: true);
+        }
+        catch
+        {
+            CompleteWarmUp(sound);
+        }
+
+        return tcs.Task;
+    }
+
     public void PreloadAll()
     {
         void PreloadOnUiThread()
@@ -567,10 +602,22 @@ public sealed class SoundService : ISoundService, IDisposable
             return;
         }
 
+        var warmUpSignaled = false;
+        void SignalWarmUpCompletion()
+        {
+            if (!warmUp || warmUpSignaled)
+            {
+                return;
+            }
+            warmUpSignaled = true;
+            CompleteWarmUp(sound);
+        }
+
         var filePath = ResolveFilePath(sound, entry);
         if (!File.Exists(filePath))
         {
             _logger.LogDebug("Sound file missing: {Path}", filePath);
+            SignalWarmUpCompletion();
             return;
         }
 
@@ -610,6 +657,10 @@ public sealed class SoundService : ISoundService, IDisposable
                     {
                         // ignore
                     }
+                    finally
+                    {
+                        SignalWarmUpCompletion();
+                    }
                 }
 
                 if (_opened.Contains(sound))
@@ -632,6 +683,7 @@ public sealed class SoundService : ISoundService, IDisposable
             catch (Exception ex)
             {
                 _logger.LogDebug(ex, "Sound preload error ({Sound})", sound);
+                SignalWarmUpCompletion();
             }
         }
 
@@ -2376,6 +2428,7 @@ public sealed class SoundService : ISoundService, IDisposable
                 "Sound playback failed ({Sound}): {Error}",
                 sound,
                 args.ErrorException?.Message ?? "unknown error");
+            CompleteWarmUp(sound);
             lock (_gate)
             {
                 if (sound == SoundId.ClientOpened)
@@ -2507,6 +2560,51 @@ public sealed class SoundService : ISoundService, IDisposable
         catch
         {
             // ignore
+        }
+    }
+
+    private TaskCompletionSource<bool> RegisterWarmUpSignal(SoundId sound)
+    {
+        lock (_warmUpGate)
+        {
+            if (_warmUpSignals.TryGetValue(sound, out var existing))
+            {
+                return existing;
+            }
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _warmUpSignals[sound] = tcs;
+            return tcs;
+        }
+    }
+
+    private TaskCompletionSource<bool>? TakeWarmUpSignal(SoundId sound)
+    {
+        lock (_warmUpGate)
+        {
+            if (_warmUpSignals.TryGetValue(sound, out var existing))
+            {
+                _warmUpSignals.Remove(sound);
+                return existing;
+            }
+        }
+        return null;
+    }
+
+    private void CompleteWarmUp(SoundId sound)
+    {
+        var tcs = TakeWarmUpSignal(sound);
+        if (tcs != null)
+        {
+            tcs.TrySetResult(true);
+        }
+    }
+
+    private void CancelWarmUp(SoundId sound)
+    {
+        var tcs = TakeWarmUpSignal(sound);
+        if (tcs != null)
+        {
+            tcs.TrySetCanceled();
         }
     }
 
