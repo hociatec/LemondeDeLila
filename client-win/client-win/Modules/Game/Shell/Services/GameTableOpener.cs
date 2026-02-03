@@ -1175,7 +1175,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     // ignore
                 }
 
-                await dispatcher.InvokeAsync(() =>
+                await dispatcher.InvokeAsync(async () =>
                 {
                     if (cts.IsCancellationRequested || Interlocked.CompareExchange(ref isExiting, 0, 0) == 1)
                     {
@@ -1258,6 +1258,36 @@ public sealed class GameTableOpener : IGameTableOpener
                     {
                         // best-effort
                     }
+
+                    // Kickstart other common gameplay one-shots without delaying the UI.
+                    _ = Task.Run(async () =>
+                    {
+                        using var warmUpCts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                        var soundsToWarm = new[]
+                        {
+                            SoundId.DiceRolled,
+                            SoundId.QuizCorrect,
+                            SoundId.QuizWrong,
+                            SoundId.RoundEnded,
+                            SoundId.PawnPicked,
+                            SoundId.PawnPlacedSelf,
+                            SoundId.PawnPlacedOpponent,
+                            SoundId.WallPlacedSelf,
+                            SoundId.WallPlacedOpponent,
+                        };
+
+                        foreach (var sound in soundsToWarm)
+                        {
+                            try
+                            {
+                                await _sounds.WarmUpAsync(sound, warmUpCts.Token).ConfigureAwait(false);
+                            }
+                            catch
+                            {
+                                // best-effort
+                            }
+                        }
+                    });
 
                     try { _sounds.Play(openSound); } catch { }
 
