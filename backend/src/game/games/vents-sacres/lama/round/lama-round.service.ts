@@ -262,7 +262,7 @@ export class LamaRoundService {
       pendingReturnPlayerId: null,
       winnerId: null,
       winnerPlayerId: null,
-      suppressTurnAnnouncement: pauseMs > 0,
+      suppressTurnAnnouncement: false,
     };
 
     if (pauseMs > 0) {

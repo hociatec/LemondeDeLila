@@ -155,6 +155,7 @@ export class LamaSetupService {
       ...meta,
       roundPauseUntilMs: null,
       step: 'turn_choice',
+      suppressTurnAnnouncement: false,
     };
     return this.round.startNewRound(
       {
