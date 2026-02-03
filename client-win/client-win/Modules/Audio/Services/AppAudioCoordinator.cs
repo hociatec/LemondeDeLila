@@ -848,7 +848,8 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 });
             }
 
-            // Allow background loops to start without waiting for the login one-shot.
+            // Allow background loops to start soon after login,
+            // but give the "connected" one-shot a short head start to stay audible.
 
             if (pauseCount > 0)
             {
@@ -857,7 +858,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 return;
             }
 
-            // Background loops now start immediately once connected; we no longer gate them behind fixed timers.
+            // Background loops now start immediately once connected (with a short login one-shot grace period).
             if (desiredBackground == AppAudioBackground.None)
             {
                 StopBackgroundLoops();
@@ -879,6 +880,21 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 {
                     _pendingReapplyBackground = 0;
                 }
+            }
+
+            // If the login one-shot is still playing, wait briefly before starting loops.
+            // This prevents the menu ambience from masking the connection feedback.
+            try
+            {
+                await DelayForConnectedSoundAsync(token).ConfigureAwait(false);
+            }
+            catch
+            {
+                return;
+            }
+            if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
+            {
+                return;
             }
 
             // One-shot on entering the tavern (played before the ambience loop).

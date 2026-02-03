@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-02-02T21:02:25.498Z",
+  "updatedAt": "2026-02-03T02:37:17.288Z",
   "sounds": {
     "RoomJoined": {
       "soundId": "RoomJoined",
@@ -87,10 +87,10 @@
     },
     "ClientDisconnected": {
       "soundId": "ClientDisconnected",
-      "sha256": "bf8f4c9f04c7ae2b6767f0a911eae5bfb91171a4a112d9ea1100f604c1608260",
-      "bytes": 8896931,
-      "uploadedAt": "2026-02-02T20:38:35.986Z",
-      "url": "/api/sounds/ClientDisconnected/bf8f4c9f04c7ae2b6767f0a911eae5bfb91171a4a112d9ea1100f604c1608260.mp3"
+      "sha256": "bd7e11df430db32bdc20db41a70aad12d2d1a21cedd0f017447df7b9c9226451",
+      "bytes": 6939,
+      "uploadedAt": "2026-02-03T02:37:17.288Z",
+      "url": "/api/sounds/ClientDisconnected/bd7e11df430db32bdc20db41a70aad12d2d1a21cedd0f017447df7b9c9226451.mp3"
     },
     "FriendInvitationSent": {
       "soundId": "FriendInvitationSent",
