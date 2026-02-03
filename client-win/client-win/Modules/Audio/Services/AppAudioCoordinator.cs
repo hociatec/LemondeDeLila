@@ -300,11 +300,9 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         }
 
         var connectedOneShot = TrackPendingConnectedOneShot(
-            ScheduleOneShotAsync(
+            PlaySystemOneShotAsync(
                 SoundId.ClientConnected,
-                priority: 0,
-                GetSoundWaitTimeout(SoundId.ClientConnected, TimeSpan.FromSeconds(10)),
-                allowDuplicate: true));
+                GetSoundWaitTimeout(SoundId.ClientConnected, TimeSpan.FromSeconds(10))));
         _ = connectedOneShot.ContinueWith(_ =>
         {
             lock (_stateGate)
@@ -357,11 +355,9 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 }
 
                 TrackPendingConnectedOneShot(
-                    ScheduleOneShotAsync(
+                    PlaySystemOneShotAsync(
                         SoundId.ClientConnected,
-                        priority: 0,
-                        GetSoundWaitTimeout(SoundId.ClientConnected, TimeSpan.FromSeconds(10)),
-                        allowDuplicate: true));
+                        GetSoundWaitTimeout(SoundId.ClientConnected, TimeSpan.FromSeconds(10))));
                 Volatile.Write(ref _connectedSoundPlayedSequence, loginSeq);
             }
             catch
@@ -397,6 +393,11 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             shouldTransition = true;
         }
 
+        // If a connect one-shot is still queued/playing, cancel it to ensure the disconnect feedback is audible.
+        CancelOneShots(SoundId.ClientConnected);
+        ClearPendingConnectedOneShot();
+        try { _sounds.Stop(SoundId.ClientConnected); } catch { /* ignore */ }
+
         if (ShouldSuppressDisconnectSound())
         {
             lock (_stateGate)
@@ -428,11 +429,9 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         // Feedback immédiat de déconnexion (hors machine à états des transitions).
         try { StopBackgroundLoopsImmediate(); } catch { }
         TrackPendingDisconnectedOneShot(
-            ScheduleOneShotAsync(
+            PlaySystemOneShotAsync(
                 SoundId.ClientDisconnected,
-                priority: 0,
-                GetSoundWaitTimeout(SoundId.ClientDisconnected, TimeSpan.FromSeconds(8)),
-                allowDuplicate: false));
+                GetSoundWaitTimeout(SoundId.ClientDisconnected, TimeSpan.FromSeconds(8))));
         lock (_stateGate)
         {
             if (_logoutSequence == logoutSeq)
@@ -626,11 +625,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         else
         {
             disconnectTask = TrackPendingDisconnectedOneShot(
-                ScheduleOneShotAsync(
-                    SoundId.ClientDisconnected,
-                    priority: 0,
-                    wait,
-                    allowDuplicate: true));
+                PlaySystemOneShotAsync(SoundId.ClientDisconnected, wait));
         }
 
         try
@@ -675,7 +670,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             timeout > TimeSpan.Zero ? timeout : TimeSpan.FromSeconds(8));
         try
         {
-            await ScheduleOneShotAsync(SoundId.ClientClosing, priority: 0, wait).ConfigureAwait(false);
+            await PlaySystemOneShotAsync(SoundId.ClientClosing, wait).ConfigureAwait(false);
         }
         catch
         {
@@ -859,6 +854,15 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                         // ignore
                     }
                 });
+            }
+
+            if (playConnected)
+            {
+                await DelayForConnectedSoundAsync(token).ConfigureAwait(false);
+                if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
+                {
+                    return;
+                }
             }
 
             if (pauseCount > 0)
@@ -1186,6 +1190,30 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         return fallback;
     }
 
+    private async Task DelayForConnectedSoundAsync(CancellationToken token)
+    {
+        Task? pending;
+        lock (_stateGate)
+        {
+            pending = _pendingConnectedOneShot;
+        }
+
+        if (pending == null || pending.IsCompleted)
+        {
+            return;
+        }
+
+        var wait = GetConnectedSoundGateTimeout();
+        try
+        {
+            await Task.WhenAny(pending, Task.Delay(wait, token)).ConfigureAwait(false);
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
     private long GetDuplicateLoginSuppressTicks()
     {
         try
@@ -1215,6 +1243,23 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         }
 
         return DefaultDuplicateLoginSuppressTicks;
+    }
+
+    private Task PlaySystemOneShotAsync(SoundId sound, TimeSpan timeout)
+    {
+        CancelOneShots(sound);
+        try { _sounds.Stop(sound); } catch { /* ignore */ }
+
+        try
+        {
+            _sounds.Play(sound);
+        }
+        catch
+        {
+            return Task.CompletedTask;
+        }
+
+        return _sounds.WaitForSoundToEndAsync(sound, timeout);
     }
 
     private bool ShouldSuppressDisconnectSound()
@@ -1268,6 +1313,33 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         }
 
         return DefaultDisconnectSuppressTicks;
+    }
+
+    private TimeSpan GetConnectedSoundGateTimeout()
+    {
+        try
+        {
+            var duration = _sounds.TryGetSoundDuration(SoundId.ClientConnected);
+            if (duration.HasValue && duration.Value > TimeSpan.Zero)
+            {
+                var wait = duration.Value + TimeSpan.FromMilliseconds(250);
+                if (wait < TimeSpan.FromMilliseconds(500))
+                {
+                    return TimeSpan.FromMilliseconds(500);
+                }
+                if (wait > TimeSpan.FromSeconds(4))
+                {
+                    return TimeSpan.FromSeconds(4);
+                }
+                return wait;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        return TimeSpan.FromMilliseconds(1500);
     }
 
 }
