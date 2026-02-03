@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { RandomService } from '../../../../modules/random/services/random.service';
-import { ensureSeededRng } from '../../../../common/utils/seeded-rng';
+import { ensureSeededRng } from '../../../../../common/utils/seeded-rng';
 import type {
   AventureSauvageCard,
   AventureSauvageMetadata,
