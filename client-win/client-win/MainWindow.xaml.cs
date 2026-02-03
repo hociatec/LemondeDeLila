@@ -13,6 +13,9 @@ namespace client_win
     public partial class MainWindow : Window
     {
         private bool _didStartupFocusNudge;
+        private DispatcherTimer? _focusRetryTimer;
+        private int _focusRetryAttempts;
+        private const int MaxFocusRetryAttempts = 12;
 
         public MainWindow()
         {
@@ -65,6 +68,7 @@ namespace client_win
 
                     EnsureWindowForeground();
                     FocusAndAnnounce(firstFocusable ?? this);
+                    StartFocusRetryLoop();
                 });
             });
         }
@@ -112,6 +116,7 @@ namespace client_win
                     EnsureWindowForeground();
                     var target = FindFirstFocusableElement() ?? this;
                     FocusAndAnnounce(target);
+                    RequestContentInitialFocus();
                 }
                 finally
                 {
@@ -143,6 +148,79 @@ namespace client_win
             {
                 // best-effort
             }
+        }
+
+        private void RequestContentInitialFocus()
+        {
+            try
+            {
+                if (RootHost?.Content is IInitialFocusTarget initialFocusTarget)
+                {
+                    initialFocusTarget.RequestInitialFocus();
+                    if (Keyboard.FocusedElement is IInputElement focused)
+                    {
+                        NotifyScreenReader(focused);
+                        StopFocusRetryLoop();
+                    }
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+        }
+
+        private void StartFocusRetryLoop()
+        {
+            if (_focusRetryTimer != null)
+            {
+                return;
+            }
+
+            _focusRetryAttempts = 0;
+            _focusRetryTimer = new DispatcherTimer(
+                TimeSpan.FromMilliseconds(150),
+                DispatcherPriority.Background,
+                OnFocusRetryTick,
+                Dispatcher);
+            _focusRetryTimer.Start();
+        }
+
+        private void OnFocusRetryTick(object? sender, EventArgs e)
+        {
+            var host = RootHost;
+            if (host != null && host.IsKeyboardFocusWithin)
+            {
+                StopFocusRetryLoop();
+                return;
+            }
+
+            _focusRetryAttempts++;
+            if (_focusRetryAttempts > MaxFocusRetryAttempts)
+            {
+                StopFocusRetryLoop();
+                return;
+            }
+
+            if (!IsVisible || !IsLoaded)
+            {
+                return;
+            }
+
+            RequestContentInitialFocus();
+        }
+
+        private void StopFocusRetryLoop()
+        {
+            if (_focusRetryTimer == null)
+            {
+                return;
+            }
+
+            _focusRetryTimer.Stop();
+            _focusRetryTimer.Tick -= OnFocusRetryTick;
+            _focusRetryTimer = null;
+            _focusRetryAttempts = 0;
         }
 
         private static bool ShouldSkipStartupFocusTarget(IInputElement? element)
