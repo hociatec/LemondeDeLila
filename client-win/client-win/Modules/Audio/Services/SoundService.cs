@@ -1953,6 +1953,11 @@ public sealed class SoundService : ISoundService, IDisposable
                 // ignore
             }
 
+            if (_preferLocalSystemSounds)
+            {
+                return ResolveFilePath(entry);
+            }
+
             if (_remoteSoundsEnabled)
             {
                 var remotePath = _remote?.TryGetPath(sound);
