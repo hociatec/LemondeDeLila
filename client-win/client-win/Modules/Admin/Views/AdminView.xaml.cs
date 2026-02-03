@@ -11,6 +11,18 @@ namespace client_win.Modules.Admin.Views;
 public partial class AdminView : UserControl, IInitialFocusTarget
 {
     private AdminViewModel? _vm;
+    private bool _inputsFocusTrackingAttached;
+    private InputFocusSlot _lastInputFocus = InputFocusSlot.None;
+
+    private enum InputFocusSlot
+    {
+        None,
+        Primary,
+        Secondary,
+        Third,
+        Fourth,
+        Fifth,
+    }
 
     public AdminView()
     {
@@ -24,6 +36,7 @@ public partial class AdminView : UserControl, IInitialFocusTarget
         AttachViewModel(DataContext as AdminViewModel);
         AttachRootTabSuppression();
         AttachItemsKeyNavigation();
+        AttachInputsFocusTracking();
         FocusWhenContainersGenerated();
         FocusBestInputIfVisible();
         FocusDetailsIfPreferred();
@@ -52,9 +65,36 @@ public partial class AdminView : UserControl, IInitialFocusTarget
 
     private void OnNavigationChanged()
     {
+        AttachInputsFocusTracking();
         FocusWhenContainersGenerated();
         FocusBestInputIfVisible();
         FocusDetailsIfPreferred();
+    }
+
+    private void AttachInputsFocusTracking()
+    {
+        if (_inputsFocusTrackingAttached || InputsView == null)
+        {
+            return;
+        }
+
+        _inputsFocusTrackingAttached = true;
+
+        void Track(TextBox? box, InputFocusSlot slot)
+        {
+            if (box == null)
+            {
+                return;
+            }
+
+            box.GotKeyboardFocus += (_, __) => _lastInputFocus = slot;
+        }
+
+        Track(InputsView.PrimaryInputBox, InputFocusSlot.Primary);
+        Track(InputsView.SecondaryInputTextBox, InputFocusSlot.Secondary);
+        Track(InputsView.ThirdInputTextBox, InputFocusSlot.Third);
+        Track(InputsView.FourthInputTextBox, InputFocusSlot.Fourth);
+        Track(InputsView.FifthInputTextBox, InputFocusSlot.Fifth);
     }
 
     private void AttachRootTabSuppression()
@@ -191,6 +231,11 @@ public partial class AdminView : UserControl, IInitialFocusTarget
             return;
         }
 
+        if (FocusLastInputIfVisible(vm))
+        {
+            return;
+        }
+
         if (vm.IsTextInputVisible)
         {
             _ = Dispatcher.BeginInvoke(
@@ -229,6 +274,60 @@ public partial class AdminView : UserControl, IInitialFocusTarget
                 DispatcherPriority.Input,
                 new Action(() => InputsView?.FifthInputTextBox?.Focus()));
         }
+    }
+
+    private bool FocusLastInputIfVisible(AdminViewModel vm)
+    {
+        switch (_lastInputFocus)
+        {
+            case InputFocusSlot.Primary:
+                if (vm.IsTextInputVisible)
+                {
+                    _ = Dispatcher.BeginInvoke(
+                        DispatcherPriority.Input,
+                        new Action(() => InputsView?.PrimaryInputBox?.Focus()));
+                    return true;
+                }
+                break;
+            case InputFocusSlot.Secondary:
+                if (vm.IsSecondaryInputVisible)
+                {
+                    _ = Dispatcher.BeginInvoke(
+                        DispatcherPriority.Input,
+                        new Action(() => InputsView?.SecondaryInputTextBox?.Focus()));
+                    return true;
+                }
+                break;
+            case InputFocusSlot.Third:
+                if (vm.IsThirdInputVisible)
+                {
+                    _ = Dispatcher.BeginInvoke(
+                        DispatcherPriority.Input,
+                        new Action(() => InputsView?.ThirdInputTextBox?.Focus()));
+                    return true;
+                }
+                break;
+            case InputFocusSlot.Fourth:
+                if (vm.IsFourthInputVisible)
+                {
+                    _ = Dispatcher.BeginInvoke(
+                        DispatcherPriority.Input,
+                        new Action(() => InputsView?.FourthInputTextBox?.Focus()));
+                    return true;
+                }
+                break;
+            case InputFocusSlot.Fifth:
+                if (vm.IsFifthInputVisible)
+                {
+                    _ = Dispatcher.BeginInvoke(
+                        DispatcherPriority.Input,
+                        new Action(() => InputsView?.FifthInputTextBox?.Focus()));
+                    return true;
+                }
+                break;
+        }
+
+        return false;
     }
 
     private void FocusDetailsIfPreferred()
