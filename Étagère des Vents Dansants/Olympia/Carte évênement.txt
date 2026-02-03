@@ -1,0 +1,48 @@
+Carte évênement
+
+
+1. Oracle de Delphes
+Tous les joueurs piochent une carte Héros ou Exploit.
+
+2. Éclipse d’Apollon
+Tous les exploits joués ce tour rapportent 1 point de prestige de moins.
+
+3. Éruption du Mont Olympe
+Tous les héros en jeu perdent 1 point de prestige.
+
+4. Malédiction de Médée
+Tous les joueurs doivent défausser une carte Héros ou Créature.
+
+5. Tempête de Poséidon
+Les exploits maritimes sont annulés pour tous les joueurs ce tour.
+
+6. Concours des Muses
+Tous les joueurs peuvent piocher une carte Exploit supplémentaire.
+
+7. Fureur des Titans
+Tous les joueurs sauf l’attaquant perdent 1 point de prestige.
+
+8. Voyage des Argonautes
+Tous les joueurs peuvent jouer un héros supplémentaire ce tour.
+
+9. Sagesse d’Athéna
+Chaque joueur peut annuler un effet de créature adverse ce tour.
+
+10. Fête des Dieux
+Tous les joueurs gagnent 1 point de prestige et peuvent activer un pouvoir divin.
+
+11. Chaos des Harpies
+Chaque joueur perd 1 point de prestige ou défausse une carte Créature.
+
+12. Défi des Sirènes
+Tous les exploits maritimes nécessitent de réussir un tirage pour être joués.
+
+13. Invasion des Centaures
+Les exploits terrestres sont bloqués ce tour.
+
+14. Vision d’Hermès
+Tous les joueurs peuvent échanger une carte avec un autre joueur.
+
+15. Orage d’Éole
+Annule une action de tous les joueurs ce tour.
+ 

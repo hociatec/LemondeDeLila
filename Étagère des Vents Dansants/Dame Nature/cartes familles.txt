@@ -1,0 +1,58 @@
+Cartes familles
+
+
+1. Famille Sylvestre
+Le grand-père Olivier
+La grand-mère Cerisier 
+Le père Chêne 
+La mère Séquoia
+L’enfant Tilleul
+Le bébé Pommier
+
+2. Famille Coeursauvage
+Le grand-père Hibou 
+La grand-mère Renarde
+Le père Cerf
+La mère Louve
+L’enfant Écureuil 
+Le bébé Hérisson 
+
+3. Famille Abysse
+Le grand-père Crabe
+La grand-mère Pieuvre
+Le père Dauphin
+La mère Otarie
+L’enfant Tortue 
+Le bébé Poisson-Clown
+
+4. Famille Hauteterre
+Le grand-père Rocher 
+La grand-mère Grotte
+Le père Mont Blanc 
+La mère Volcan
+L’enfant Colline
+Le bébé Caillou
+
+5. Famille Fleurie
+Le grand-père Cactus
+La grand-mère Lavande
+Le père Tournesol
+La mère Rose
+L’enfant Jonquille
+Le bébé Coquelicot
+
+6. Famille Céleste
+Le grand-père Brouillard
+La grand-mère Tempête
+Le père Orage
+La mère Pluie
+L’enfant Flocon
+Le bébé Éclaire
+
+7. Famille Sixpattes
+Le grand-père Grillon
+La grand-mère Abeille
+Le père Scarabée
+La mère Coccinelle
+L’enfant Papillon
+Le bébé Fourmi

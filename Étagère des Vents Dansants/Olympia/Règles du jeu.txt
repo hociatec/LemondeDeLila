@@ -1,0 +1,49 @@
+Règles du jeu – Olympia
+
+
+Objectif du jeu
+Incarnez une divinité grecque et utilisez vos héros, créatures, exploits, actions, attaques et événements pour accumuler le plus de points de prestige divin.
+À la fin de la partie, celui d’entre vous qui possède le plus de prestige devient le souverain du Panthéon.
+ 
+Contenu du jeu
+Le jeu comprend plusieurs types de cartes :
+a) Divinités : choisissez un dieu ou une déesse avec un pouvoir unique.
+b) Héros : personnages légendaires accomplissant des exploits pour gagner du prestige.
+c) Créatures Mythiques : obstacles ou alliés, jouables pour bloquer ou aider des exploits.
+d) Exploits : actions héroïques légendaires rapportant des points de prestige.
+e) Actions : cartes qui protègent, volent, doublent ou bloquent des effets.
+f) Attaques : cartes offensives affectant les héros, créatures ou le prestige de vos adversaires.
+g) Événements : rebondissements mythologiques affectant un ou tous les joueurs.
+ 
+Préparation du jeu
+1. Toutes les cartes sont automatiquement mélangées par type : Divinités, Héros, Créatures, Exploits, Actions, Attaques et Événements.
+2. Recevez aléatoirement une carte Divinité et ses pouvoirs associés.
+3. Commencez la partie avec :
+a) - 2 cartes Créatures
+b) - 1 carte Action ou Attaque
+4. Le reste des cartes constitue la pioche générale, et une zone de défausse est définie pour les cartes utilisées.
+ 
+Déroulement d’un tour
+À votre tour, suivez ces étapes :
+1. Pioche : tirez une carte de chaque type autorisé pour ce tour (Héros, Créature ou Exploit, selon votre stratégie).
+2. Jouez vos cartes :
+a) Exploits : jouez un héros pour accomplir un exploit et gagner du prestige.
+b) Actions : protégez, bloquez ou doublez les effets d’un exploit ou d’un héros.
+c) Attaques : réduisez le prestige d’un autre joueur, bloquez un héros ou neutralisez une créature.
+3. Pouvoir de divinité : activez une fois par tour le pouvoir de votre divinité.
+4. Événement : tirez une carte Événement pour créer un rebondissement global ou individuel.
+5. Défausse : les cartes sont automatiquement jetées à la défausse après utilisation.
+6. Fin du tour : votre score se met à jour.
+ 
+Points de prestige
+1. Chaque exploit ou action réussie vous rapporte le nombre de points indiqué sur la carte.
+2. Les attaques peuvent faire perdre des points de prestige à vos adversaires.
+3. Les événements peuvent ajouter ou retirer des points à un ou plusieurs joueurs.
+4. Les pouvoirs divins peuvent modifier vos points : doubler, protéger ou réduire.
+ 
+Conditions de victoire
+La partie se termine lorsque :
+a) La pioche est épuisée et qu’aucun d’entre vous ne peut jouer de cartes supplémentaires, ou
+b) L’un d’entre vous atteint un nombre de points de prestige prédéfini (par exemple 20 points pour une partie courte, 30 pour une partie standard).
+Celui d’entre vous qui possède le plus de prestige divin est déclaré vainqueur et souverain du Panthéon.
+ 

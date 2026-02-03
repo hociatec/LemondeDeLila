@@ -1,0 +1,51 @@
+Cartes du jeu – Cat Pattes !
+
+
+Le jeu Cat Pattes ! contient 106 cartes, réparties en plusieurs catégories.
+Chaque carte représente une situation typiquement féline : courir, glisser, manger, dormir… ou se tirer d’un mauvais pas avec élégance.
+ 
+Cartes Pattes – Les foulées du chat (46 cartes)
+a) Petite foulée - 20 pattes (10 cartes)
+Avancer tranquillement, la queue bien droite.
+b) Sprint du matin – 50 pattes (10 cartes)
+Votre chat déborde d’énergie… pour l’instant.
+c) Course-poursuite – 80 pattes (10 cartes)
+Quelque chose a bougé. Il faut foncer.
+d) Chasse à la souris – 130 pattes (12 cartes)
+Concentration maximale. Objectif en vue.
+e) Turbo‑chat – 150 pattes (4 cartes)
+Quand tout s’aligne : vitesse, instinct et panache.
+ 
+Cartes Obstacles – Les imprévus de la course (18 cartes)
+a) Gamelle vide (3 cartes) - (correspond à panne d’essence)
+Impossible d’avancer le ventre vide.
+b) Pluie torrentielle (5 cartes) - (correspond à feu rouge)
+Tout est mouillé, glissant, et franchement désagréable.
+c) Chien enragé (3 cartes) - (correspond à accident)
+Beaucoup trop enthousiaste. Beaucoup trop proche.
+d) Coussin piégé (3 cartes)correspond à crevaison)
+Il avait l’air confortable… erreur fatale.
+e) Sol ciré (4 cartes)correspond à limitation de vitesse)
+Vos pattes partent toutes seules, mais pas dans le bon sens.
+ 
+Cartes Parades – L’art félin de s’en sortir (38 cartes)
+a) Croquettes (6 cartes) - (correspond à essence)
+Un plein d’énergie instantané.
+b) Rayon de soleil (14 cartes) - (correspond à feu vert)
+Indispensable pour démarrer… ou repartir du bon pied.
+c) Dodo réparateur (6 cartes) - (correspond à réparation)
+Un petit somme, et tout va mieux.
+d) Nouveau coussin (6 cartes) - (correspond à roue de secours)
+Celui‑ci est sûr. Normalement.
+e) Saut agile (6 cartes) - (correspond à fin de limitation)
+Une pirouette bien placée règle beaucoup de problèmes.
+ 
+Cartes Bots – Les talents ultimes (4 cartes)
+a) Réserve secrète (1 carte) - (correspond à citerne)
+Plus jamais à court de croquettes.
+b) Chat Ninja (1 carte) - (correspond à as du volant)
+Les chiens ? Quels chiens ?
+c) Patte blindée (1 carte) - (correspond à increvable)
+Les pièges ne font plus peur.
+d) Passage de star (1 carte) - (correspond à prioritaire)
+Toujours prioritaire. Toujours prêt. Toujours stylé.

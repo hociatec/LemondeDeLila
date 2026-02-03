@@ -1,0 +1,43 @@
+Règles du jeu  - Dame Nature !
+
+
+But du jeu :
+Votre objectif est d’obtenir au moins 4 familles complètes. Mais attention à Dame Nature : si trop de jetons pollution s’accumulent, le joueur responsable perd la partie.
+ 
+Matériel :
+1. Vos cartes familles
+2. Cartes quiz
+3. Cartes nature en danger
+4. Jetons pollution
+5. Dame Nature (figurine ou carte au centre de la table)
+ 
+Préparation :
+1.  Les cartes familles sont distribuées aux joueurs comme dans un jeu de sept familles classique.
+2.  le reste des cartes familles + cartes quiz + cartes nature en danger sont mélangées ensembles pour former la pioche.
+3. Dame Nature est placée au centre de la table, avec un nombre de jetons pollution initial de 0.
+ 
+Déroulement du jeu :
+Le jeu se joue comme un Sept Familles classique, avec une variante pour pimenter le jeu :
+1. Tour d’un joueur :
+a) Demandez une carte à un autre joueur comme dans le sept familles classique.
+b) Si la carte demandée n’est pas disponible, vous piochez dans la pioche.
+2. Pioche :
+a) Si vous piochez une carte famille, vous la gardez.
+b) Si vous piochez une carte quiz, lisez la question pour le plaisir (aucune incidence sur le jeu).
+c) Si vous piochez une carte nature en danger, vous devez ajouter ou retirer des jetons pollution sur Dame Nature selon ce qui est indiqué sur la carte.
+3. Important : 
+a) il ne faut jamais dépasser 12 jetons pollution sur Dame Nature.
+b) Si vous déposez les derniers jetons qui font atteindre 12, vous perdez immédiatement et Dame Nature meurt.
+ 
+Fin de partie :
+1. La partie se termine dès qu’un joueur a au moins 4 familles complètes.
+2. Score final :
+a) Le nombre de familles complètes est votre score principal.
+b) Le nombre de jetons pollution sur Dame Nature est affiché dans votre score.
+3. Bonus/malus pour la prochaine partie :
+a) Si Dame Nature a plus de 6 jetons pollution, vous multipliez votre score par 2 pour la prochaine partie.
+ 
+Remarque :
+1. Les cartes quiz sont là pour apporter du savoir et de l’interaction, mais n’affectent pas le score ni les jetons pollution.
+2. Les cartes nature en danger sont la vraie stratégie du jeu : gérez la pollution tout en complétant vos familles.
+ 

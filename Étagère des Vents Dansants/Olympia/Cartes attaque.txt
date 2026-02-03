@@ -1,0 +1,48 @@
+Cartes attaque
+
+
+1. Foudre de Zeus
+Annule l’action d’un joueur ce tour.
+
+2. Tempête de Poséidon
+Tous les exploits maritimes des autres joueurs sont annulés ce tour.
+
+3. Malédiction d’Héra
+Un joueur doit défausser une carte Héros ou Créature.
+
+4. Regard de Méduse
+Un héros adverse perd 2 points de prestige ce tour.
+
+5. Attaque du Minotaure
+Bloque l’action d’un joueur sur un exploit.
+
+6. Lancer de Charybde
+Le joueur ciblé perd 1 point de prestige pour chaque héros en mer.
+
+7. Assaut des Harpies
+Voler 1 point de prestige à chaque joueur ciblé.
+
+8. Piège de la Chimère
+Empêche un joueur de jouer une carte Exploit ou Héros ce tour.
+
+9. Sablier de Chronos
+Le joueur ciblé doit passer son prochain tour.
+
+10. Éruption du Mont Olympe
+Tous les héros en jeu perdent 1 point de prestige.
+
+11. Tourbillon de Scylla
+Le joueur adverse perd 2 points de prestige si un exploit maritime est joué.
+
+12. Serres du Cerbère
+Empêche le joueur ciblé de piocher une carte Héros ce tour.
+
+13. Fureur des Titans
+Tous les joueurs sauf l’attaquant perdent 1 point de prestige.
+
+14. Éclat du Soleil d’Hélios
+Un exploit joué par un autre joueur est annulé ce tour.
+
+15. Poigne de l’Hydre
+Bloque un héros adverse et le joueur perd 2 points de prestige si non contré.
+ 

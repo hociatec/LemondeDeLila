@@ -1,0 +1,48 @@
+Cartes créatures
+
+
+1. Méduse - Gorgone dont le regard pétrifie.
+Si Méduse est jouée contre un joueur, il perd 2 points de prestige ce tour.
+
+2. Minotaure - Mi-homme, mi-taureau
+Bloque un exploit héroïque : le joueur adverse ne gagne pas de points ce tour.
+
+3. Hydre de Lerne - Serpent à plusieurs têtes
+Combat un héros : si une tête est coupée, le héros perd 1 point de prestige et Hydre reste en jeu.
+
+4. Cerbère - Chien à trois têtes gardien des Enfers.
+Empêche un joueur de piocher une carte Héros ce tour.
+
+5. Chimère - Lion avec tête de chèvre et queue de serpent.
+Combat un héros : si vaincu, le joueur gagne 3 points de prestige.
+
+6. Cyclope - Géant à un œil.
+Bloque un exploit héroïque d’un joueur pour ce tour.
+
+7. Sphinx - Créature posant des énigmes.
+Le joueur perd 2 points de prestige.
+
+8. Sirènes - Créatures marines chantant pour attirer les marins.
+Piochez une carte supplémentaire
+
+9. Harpies - Esprits du vent et du chaos.
+Volent 1 point de prestige à un joueur au hasard.
+
+10. Hippocampe - Cheval marin légendaire.
+Permet de doubler l’effet d’un héros marin ou de Poséidon ce tour.
+
+11. Gorgone - Méduse dont le regard pétrifie mais peut se déplacer.
+Bloque l’action d’un héros d’un autre joueur jusqu’au prochain tour.
+
+12. Cerastes - Serpent cornue
+Piochez une carte Héros pour tenter de le combattre ; si échoué, perdez 1 point de prestige.
+
+13. Scylla - Monstre marin à plusieurs têtes.
+Si un héros tente un exploit en mer, il perd 2 points de prestige si Scylla est en jeu.
+
+14. Charybde - Tourbillon marin dévastateur.
+Bloque toutes les actions héroïques maritimes ce tour.
+
+15. Ladon - Dragon gardant les pommes d’or des Hespérides.
+Si vaincu par un héros, le joueur gagne 4 points de prestige.
+ 

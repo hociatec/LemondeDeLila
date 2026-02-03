@@ -1,0 +1,49 @@
+Cartes action
+
+
+1. Foudre de Zeus
+Annule l’action d’un joueur ce tour.
+
+2. Tempête de Poséidon
+Bloque toutes les actions héroïques maritimes ce tour.
+
+3. Bouclier d’Athéna
+Protège un héros ou exploit adverse contre une attaque ou un blocage ce tour.
+
+4. Séduction d’Aphrodite
+Réduit de moitié les points de prestige gagnés par un joueur ce tour.
+
+5. Châtiment d’Héra
+Force un joueur à défausser une carte Héros ou Créature.
+
+6. Oracle de Delphes
+Piochez deux cartes et choisissez-en une à jouer immédiatement.
+
+7. Harpie du Chaos
+Voler 1 point de prestige à un joueur au hasard.
+
+8. Charme d’Orphée
+Neutralise l’effet d’une Créature adverse ce tour.
+
+9. Éclair Céleste
+Double les points de prestige d’un exploit joué ce tour.
+
+10. Malédiction de Médée
+Un joueur ne peut pas activer son pouvoir divin ce tour.
+
+11. Intervention des Muses
+Piochez une carte Héros ou Exploit supplémentaire.
+
+12. Tempête de Scylla et Charybde
+Tous les héros en mer perdent 2 points de prestige ce tour.
+
+13. Renforts Divins
+Jouez un héros ou créature supplémentaire ce tour.
+
+14. Malice d’Hermès
+Échangez une carte Héros ou Exploit avec un autre joueur.
+
+15. Bénédiction Olympienne
+Tous vos exploits joués ce tour rapportent +1 point de prestige.
+
+ 

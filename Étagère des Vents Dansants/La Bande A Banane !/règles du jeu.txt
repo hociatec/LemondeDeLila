@@ -1,0 +1,60 @@
+Règles de jeu - La Bande à Banane !
+Un jeu de cartes rigolo, sauvage et un peu bruyant !
+
+
+Objectif du jeu
+Vous devez réunir une troupe composée de cinq singes de cinq espèces différentes.
+Le premier joueur qui complète sa troupe remporte la partie et devient le chef officiel de la Bande à Banane !
+ 
+Contenu du jeu
+Le jeu contient :
+1. 30 cartes Singe (5 espèces × 6 cartes) :
+Capucin, Mandrill, Gibbon, Babouin, Macaque — chacune accompagnée d’un petit fait amusant.
+2. 15 cartes Action : effets rigolos et interactifs (voler, échanger, piocher…).
+3. 10 cartes Piège : perte de tour, défausse, surprises non souhaitées.
+4. 5 cartes Joker : des singes déguisés pouvant remplacer n’importe quelle espèce.
+ 
+🎮 Mise en place (version en ligne)
+1. Une pioche est automatiquement générée et mélangée.
+2. Chaque joueur reçoit 5 cartes au hasard.
+ 
+Déroulement d’un tour
+À votre tour, vous effectuez les étapes suivantes :
+1) Piocher
+Vous piochez 1 carte dans la pioche.
+2) Jouer une carte (si vous le souhaitez)
+Selon le type de carte piochée ou déjà dans votre main :
+a) Carte Singe
+Vous pouvez la poser si vous ne possédez pas encore cette espèce dans votre troupe.
+b) Carte Action
+Son effet s’applique immédiatement. Elle est ensuite défaussée automatiquement.
+c) Carte Piège
+Vous subissez l’effet dès son apparition (aïe). Le système gère la pénalité.
+d) Carte Joker
+Vous pouvez la poser pour remplacer une espèce manquante.
+Une fois posé, il ne peut plus être déplacé.
+3) Gestion de la main
+Vous pouvez conserver jusqu’à 7 cartes.
+Si vous dépassez cette limite, vous devez en défausser jusqu’à revenir à 7 — l’interface vous y obligera automatiquement.
+ 
+Effets des cartes spéciales
+1. Vol de banane
+Vous choisissez un joueur et lui prenez une carte au hasard (sans la révéler).
+2. Cris de la jungle
+Chaque joueur échange une carte avec un autre joueur de son choix.
+3. Grimpeur fou
+Vous piochez deux cartes supplémentaires. (Attention, un piège peut s’y cacher !)
+4. Piège à noix de coco
+Vous perdez votre prochain tour. Grogner est autorisé.
+5. Tigre rôdeur
+Vous défaussez une carte au hasard de votre main.
+6. Joker
+Il peut représenter n’importe quelle espèce. Il devient fixe une fois posé.
+ 
+Fin de partie
+Dès qu’un joueur pose devant lui 5 espèces différentes (Joker inclus), il crie — virtuellement ou non — « BANAAAANE ! »
+Le système affiche alors le vainqueur.
+
+Conseil de la jungle
+Dans La Bande à Banane, mieux vaut être malin, rapide et un peu chapardeur. Mais n’oubliez jamais de rire : c’est le véritable cri de guerre de tous les singes heureux !
+ 

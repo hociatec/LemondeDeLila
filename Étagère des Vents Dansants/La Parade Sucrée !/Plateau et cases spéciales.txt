@@ -1,0 +1,16 @@
+Plateau et cases spéciales
+
+
+Carré central : 7 (Farou Le Farceur), (Valeur : 1 Chocobon)
+Triangle bas gauche : 10 (Roland Le Roi du Carnaval), (Valeur : 1 Chamallow)
+Triangle bas droit : Valet – (Dimitri Le Bouffon), (Valeur : 2 Chamallows)
+Triangle haut droit : Dame (Daniella La Reine du Bal), (Valeur : 3 Chamallows)
+Triangle haut gauche : Roi (Fabien Le Capitaine de la Parade), (Valeur : 4 Chamallows)
+ 
+Résumé des friandises et règle d’équivalence
+Chamallow = 1
+Chocobon = 5
+Balisto = 10
+
+Règle spéciale : si un joueur n’a pas exactement la friandise demandée pour une case, il peut poser une friandise de valeur supérieure et récupérer le trop-perçu, pour que la mise finale corresponde exactement à la valeur de la case.
+ 

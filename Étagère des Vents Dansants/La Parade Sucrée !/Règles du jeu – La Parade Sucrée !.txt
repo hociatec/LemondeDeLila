@@ -1,0 +1,47 @@
+Règles du jeu – La Parade Sucrée !
+
+
+Introduction
+La Parade Sucrée est un jeu de cartes et de friandises inspiré du carnaval de Dunkerque. Dans ce jeu, vous incarnez un participant à la parade et devez poser vos cartes pour ramasser des friandises. Certaines cartes déclenchent des mises sur les cases spéciales, et chaque personnage est unique et festif.
+ 
+Objectif du jeu
+Votre objectif est de ramasser le plus de friandises possible en posant vos cartes et en remportant les mises sur les cases spéciales. La partie se termine lorsque tous les joueurs ont posé toutes leurs cartes. Le joueur ayant le plus de friandises à la fin est déclaré vainqueur.
+ 
+Mise en place
+1. Les cartes sont automatiquement mélangées et distribuées entre les joueurs.
+2. Les friandises (Chamallow = 1, Chocobon = 5, Balisto = 10) sont automatiquement attribuées à chaque joueur en début de partie.
+ 
+Déroulement d’une partie
+1. Tapis de pose
+a) Les cartes se posent dans l’ordre croissant, de 2 à As (2, 3, 4, 5, 6, 7, 8, 9, 10, Valet, Dame, Roi, As).
+b) À votre tour, vous devez poser la carte suivante sur le tapis.
+c) Vous continuez à poser des cartes tant que vous avez la carte suivante.
+d) Si vous ne possédez pas la carte attendue, votre tour s’arrête, et c’est au joueur suivant de continuer la séquence.
+e) Si le joueur suivant a la carte attendue, il la pose et poursuit le tour ; sinon, il passe et c’est au joueur suivant, et ainsi de suite.
+2. Cartes normales et cartes spéciales
+a) Cartes normales : 2, 3, 4, 5, 6, 8, 9, As. Elles sont simplement posées et font avancer la partie.
+b) Cartes spéciales : 7, 10, Valet, Dame, Roi.
+c) Si vous posez une carte spéciale, vous ramassez toutes les friandises présentes sur la case correspondante et poursuivez votre tour tant que vous pouvez poser la carte suivante sur le tapis.
+3. Cartes spéciales et valeurs
+a) 7 (Farou Le Farceur) : 1 Chocobon
+b) 10 (Roland Le Roi du Carnaval) : 1 Chamallow
+c) Valet (Dimitri Le Bouffon) : 2 Chamallows
+d) Dame (Daniella La Reine du Bal) : 3 Chamallows
+e) Roi (Fabien Le Capitaine de la Parade) : 4 Chamallows
+4. Équivalence des friandises
+a) Si vous n’avez pas exactement la friandise demandée pour une case, vous pouvez poser une friandise de valeur supérieure et récupérer le trop-perçu pour que la valeur finale corresponde exactement à la case.
+b) Exemples :
+- Pour la case 7 (1 Chocobon), vous pouvez poser un Balisto (10) et récupérer 5 (équivalent à 1 Chocobon).
+- Pour la case Roi (4 Chamallows), vous pouvez poser un Chocobon (5) et récupérer 1 Chamallow.
+
+Fin de partie
+a) La partie se termine lorsque tous les joueurs ont posé toutes leurs cartes.
+b) Le joueur ayant ramassé le plus de friandises est déclaré vainqueur.
+c) En cas d’égalité, vous partager la victoire.
+ 
+Conseils et astuces
+a) Suivez les cartes posées par les autres joueurs pour anticiper vos coups.
+b) Les cartes spéciales sont stratégiques : garder une carte spéciale pour un moment clé peut rapporter beaucoup de friandises.
+c) Utilisez la règle d’équivalence pour ne jamais être bloqué par un manque de friandises.
+d) Amusez-vous à inventer des histoires sur vos personnages pour rendre la partie plus festive et vivante.
+e) Respectez toujours les autres joueurs : le jeu est festif et gourmand, avant tout.

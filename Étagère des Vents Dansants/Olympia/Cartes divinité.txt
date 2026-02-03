@@ -1,0 +1,48 @@
+Cartes divinité
+
+
+1. Zeus - Roi des Dieux
+Une fois par tour, annule l’action d’un autre joueur.
+
+2. Athéna - Déesse de la Sagesse
+double les points d’un exploit ce tour.
+
+3. Poséidon - Dieu des Mers
+Annule toutes les actions maritimes adverses ce tour.
+
+4. Héra - Reine des Dieux
+Force un joueur à défausser une carte Héros ou Créature.
+
+5. Aphrodite - Déesse de l’Amour
+Réduit de moitié les points de prestige d’un joueur ce tour.
+
+6. Apollon - Dieu du Soleil et des Arts
+Permet de piocher une carte supplémentaire et de la jouer immédiatement.
+
+7. Arès - Dieu de la Guerre
+Gagne 2 points de prestige si vous attaquez un héros adverse avec succès.
+
+8. Artémis - Déesse de la Chasse
+Permet de réussir un exploit avec un héros d’un autre joueur ou une créature.
+
+9. Dionysos - Dieu du Vin et de la Fête
+Tous les joueurs gagnent 1 point de prestige 
+
+10. Hermès - Messager des Dieux
+Échangez une carte Héros ou Exploit avec un autre joueur.
+
+11. Hadès - Dieu des Enfers
+Bloque un héros adverse ou récupère une carte Exploit défaussée.
+
+12. Héphaïstos - Dieu du Feu et des Forgerons
+Permet de doubler les points d’un exploit de type combat ce tour.
+
+13. Hestia - Déesse du Foyer
+Protège vos points de prestige contre toute attaque ce tour.
+
+14. Artémis - Déesse de la Lune et de la Nature
+Neutralise une créature adverse ou double un exploit sur la terre ou la chasse.
+
+15. Hélios - Dieu du Soleil
+Annule l’effet d’une carte Événement adverse ce tour.
+ 

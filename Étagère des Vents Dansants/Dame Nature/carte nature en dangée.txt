@@ -1,0 +1,38 @@
+Cartes Nature en dangé
+
+
+Carte 1.
+Un feu ravage une grande partie d’une forêt. Ajoute 2 jetons polution à Dame Nature.
+
+Carte 2.
+Une marée Noire  De pétrole s'est échappé d'un bateau et pollue l'océan. Ajoute 3 jetons Pollution à Dame nature.
+
+Carte 3.
+Il fait trop chaud pendant plusieurs jours : la faune et la flore souffrent. Ajoute 1 jeton Pollution à Dame nature.
+
+Carte 4.
+Une grande zone de forêt à été coupée pour construire une ville. Ajoute 2 jetons Pollution à Dame nature.
+
+Carte 5.
+Une vieille usine rejette beaucoup de fumée et pollue l'air. Ajoute 2 jetons Pollution à Dame nature.
+
+Carte 6.
+La circulation est dense, l'air devient irrespirable. Ajoute 1 jeton Pollution à Dame nature.
+
+Carte 7.
+Des déchets plastiques flottent sur l’eau et blessent les animaux marins. Ajoute 2 jetons Pollution à Dame nature.
+
+Carte 8.
+Les lampadaires allumées toute la nuit empêchent certaines espèces de chasser. Ajoute 1 jeton Pollution à Dame nature.
+
+Carte 9.
+Des produits chimiques ont été versés dans un champ. Ajoute 3 jetons Pollution  à Dame nature.
+
+Carte 10.
+Une tempête arrache des arbres et emporte des déchets. Ajoute 1 jeton Pollution à Dame nature.
+
+Carte 11.
+Des enfants plantent des arbres pour remplacer ceux qui ont été coupés. Retire 2 jetons Pollution à Dame nature.
+
+Carte 12.
+Une réserve nature à vue le jour grâce aux habitants du village. Retire 2 jetons Pollution à Dame nature.

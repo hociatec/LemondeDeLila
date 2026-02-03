@@ -1,0 +1,195 @@
+Cartes du jeu
+
+
+Cartes Totem – avec descriptions
+1. L’Aigle visionnaire
+Vois loin, au-delà des montagnes. L’Aigle vous invite à élever votre esprit.
+2. Le Loup protecteur
+Fidèle à sa meute, il veille et enseigne la force du lien.
+3. L’Ours guérisseur
+Silencieux et puissant, il porte la médecine de la Terre.
+4. Le Bison sacré
+Symbole d’abondance et de respect, il nourrit le corps et l’âme.
+5. Le Colibri messager
+Petit et rapide, il apporte la joie, la beauté et les murmures du cœur.
+6. Le Renard rusé
+Il observe sans bruit, et sait quand parler ou se cacher.
+7. Le Cerf élégant
+Sa douceur ouvre les chemins fermés. Il marche avec grâce entre les mondes.
+8. Le Castor bâtisseur
+Travailleur de l’ombre, il construit des refuges pour l’avenir.
+9. Le Puma silencieux
+Invisible et souverain, il vous enseigne la maîtrise et la décision.
+10. Le Serpent de transformation
+Il change de peau et vous invite à renaître en vous-même.
+11. La Tortue éternelle
+Elle porte le monde sur son dos. Elle avance lentement, mais avec sagesse.
+12. La Grenouille chanteuse
+Elle appelle la pluie et purifie l’air. Elle saute entre les dimensions.
+13. Le Corbeau du mystère
+Gardien des secrets, il traverse la lumière et l’ombre.
+14. Le Coyote farceur
+Il joue des tours pour mieux vous éveiller. Son rire est une leçon.
+15. La Libellule de l’illusion
+Elle danse sur l’eau et dévoile les vérités cachées derrière les apparences.
+ 
+Cartes Nature – avec descriptions
+1. Le Feu du renouveau
+Il brûle l’ancien pour faire place au nouveau. Sa flamme purifie et transforme.
+2. L’Eau des profondeurs
+Elle porte les mémoires du monde. Elle vous relie à vos émotions les plus vraies.
+3. Le Vent des montagnes
+Messager invisible, il murmure les secrets des sommets et balaie les doutes.
+4. La Terre-mère
+Sol nourricier, elle vous porte sans condition. Elle est la matrice de toute vie.
+5. La Forêt vivante
+Chaque arbre, chaque feuille parle. Entre ses branches, le silence devient voix.
+6. La Rivière sacrée
+Elle coule sans cesse, fidèle à sa source. Elle enseigne l’art de suivre le courant.
+7. Le Soleil guérisseur
+Il éclaire, réchauffe, réveille. Sa lumière chasse les ombres du cœur.
+8. La Lune des cycles
+Elle veille sur les rêves et les marées intérieures. Elle enseigne le rythme du temps.
+9. L’Orage purificateur
+Sa foudre libère les tensions. Il nettoie l’air, l’âme et les pensées.
+10. La Neige silencieuse
+Elle recouvre tout de paix. Sous elle, la vie se repose et se prépare.
+11. Le Désert des visions
+Vide en apparence, mais riche en révélations. C’est là que l’esprit s’ouvre.
+12. La Pluie nourricière
+Elle descend avec douceur ou force, lavant les feuilles et les âmes.
+13. L’Arbre aux ancêtres
+Ses racines plongent dans la mémoire du monde. Il relie le ciel et la terre.
+14. La Caverne des esprits
+Lieu sacré, obscur et vibrant. C’est là que l’on écoute les voix anciennes.
+15. Le Rocher du souvenir
+Immobile, il a vu passer mille soleils. Il garde les traces du temps et des prières.
+ 
+Cartes Plantes Sacrées – avec descriptions
+1. La Sauge blanche
+Elle purifie les lieux et les pensées. Sa fumée ouvre la voie à la clarté.
+2. Le Cèdre purifiant
+Protecteur et ancien, il éloigne les énergies lourdes et réveille la force intérieure.
+3. Le Tabac sacré
+Offrande vivante, il relie la parole au souffle, l’intention au monde des esprits.
+4. Le Maïs doré
+Nourriture de vie, il est un don de la Terre. Il enseigne la gratitude.
+5. La Citrouille nourricière
+Généreuse et ronde, elle symbolise l’abondance douce et la chaleur du foyer.
+6. Le Haricot de sagesse
+Petit mais puissant, il pousse avec patience et persévérance, en équilibre.
+7. L’Aloe médicinale
+Sa chair calme les brûlures. Elle enseigne la guérison lente et profonde.
+8. L’Amarante rouge
+Fleur courageuse, elle pousse dans la sécheresse. Elle colore la vie de résistance.
+9. La Mandragore
+Mystérieuse et enracinée, elle ouvre les portes de l’inconnu. À manier avec respect.
+10. Le Peyotl
+Maître-plante du désert, il guide la vision intérieure. Utilisé dans la tradition sacrée.
+11. Le Copal fumigène
+Sa résine, en brûlant, appelle les ancêtres. Elle élève les prières dans la fumée.
+12. L’Achillée guérisseuse
+Petite et humble, elle soigne les blessures invisibles autant que les plaies ouvertes.
+13. Le Foin d’odeur
+Tressé en offrande, il appelle la douceur, la paix et les bonnes présences.
+14. Le Nénuphar lunaire
+Il flotte entre deux mondes. Sa fleur éclot dans le silence des eaux calmes.
+15. Le Thé du Labrador
+Feuillage du Nord, il réchauffe l’intérieur et favorise les rêves lucides.
+ 
+Cartes Esprit – avec descriptions
+1. Le Grand Esprit
+Invisible et présent partout, il est la source unique qui relie toute chose.
+2. La Femme Bison Blanc
+Messagère sacrée, elle apporte les rites, les chants et la paix des origines.
+3. L’Esprit du Tambour
+Son battement est le cœur de la Terre. Il unit le corps au monde invisible.
+4. L’Ancêtre silencieux
+Il marche à vos côtés sans mot. Sa mémoire est une force discrète.
+5. L’Enfant de lumière
+Pur, curieux, libre. Il vous rappelle ce que vous étiez avant la peur.
+6. L’Ombre intérieure
+Ce que vous cachez, il le révèle. Elle n’est pas un ennemi, mais une clé.
+7. Le Rêveur du ciel
+Il voyage entre les étoiles. Il vous invite à ne jamais cesser d’imaginer.
+8. L’Observateur invisible
+Il voit sans juger. Il enseigne à regarder avec les yeux du cœur.
+9. L’Esprit du Feu
+Il consume l’illusion et rallume la passion. Il transforme sans détruire.
+10. L’Être-Aigle
+Mi-homme, mi-oiseau, il survole les royaumes du dedans et du dehors.
+11. Le Cheval sans bride
+Force sauvage et libre. Il court vers ce qui vous appelle vraiment.
+12. L’Esprit des quatre vents
+Il tourne autour de vous. Chacun vous souffle une vérité : Nord, Sud, Est, Ouest.
+13. Le Porteur de Plume
+Il marche en silence, laissant tomber les plumes du savoir sur votre route.
+14. Le Veilleur du crépuscule
+Gardien du passage entre le jour et la nuit. Il protège les seuils.
+15. La Danse de l’Âme
+Mouvement sacré, invisible mais réel. Elle est la célébration de votre être vrai.
+ 
+Cartes Parole – avec descriptions
+1. “Écoute le vent, il te parle”
+Le vent porte les messages du monde invisible. Savoir écouter, c’est ouvrir son cœur aux signes autour de soi.
+2. “Nous sommes les gardiens de la Terre”
+Vous avez la responsabilité sacrée de protéger la nature et de respecter la vie sous toutes ses formes.
+3. “Chaque pas est une prière”
+Chacune de vos actions, même la plus humble, peut être offerte avec intention et gratitude.
+4. “Ton cœur connaît le chemin”
+La sagesse ne vient pas toujours de l’esprit seul, mais de ce que votre cœur ressent profondément.
+5. “Tout est lié”
+Rien n’existe en isolation : chaque être, chaque élément fait partie d’un grand cercle d’équilibre.
+6. “Le silence est la voix des Anciens”
+Dans le calme, les voix des ancêtres se font entendre, offrant conseils et sagesse.
+7. “La vérité est dans le cercle”
+Le cercle symbolise l’unité et l’égalité. C’est là que la vérité peut se révéler pleinement.
+8. “Respecte ce que tu ne comprends pas”
+Le mystère fait partie du monde. La peur naît souvent de l’incompréhension, alors choisissez le respect.
+9. “Tu es une étincelle du grand feu”
+Vous portez en vous une force vitale, une lumière qui fait partie d’un tout plus grand.
+10. “Marche en beauté”
+Avancez dans la vie avec respect, harmonie et équilibre, en accord avec vous-même et la nature.
+11. “Le tambour bat pour tous”
+Le rythme du tambour unit les cœurs, rappelant notre lien commun et la vie partagée.
+12. “Les plumes tombent, mais l’esprit s’élève”
+Même quand les choses changent ou disparaissent, l’essence et la sagesse continuent de grandir.
+13. “Le rêve enseigne mieux que la parole”
+Les rêves portent des messages puissants que parfois les mots ne peuvent exprimer.
+14. “N’oublie jamais d’où tu viens”
+Votre mémoire et vos racines vous donnent force et identité. Elles sont un trésor précieux.
+15. “Le monde est un miroir sacré”
+Ce que vous voyez autour de vous reflète ce qui est en vous. Prenez soin de votre monde intérieur.
+ 
+Cartes Nations – avec descriptions
+1. Hopi – Les gardiens du temps
+Peuple des déserts d’Arizona, ils veillent sur l’équilibre des cycles et des saisons sacrées.
+2. Navajo – Les tisseurs de lumière
+Maîtres du tissage et de la parole, ils relient le visible et l’invisible par leurs récits.
+3. Lakota – Le peuple du bison
+Fiers et libres, ils vivent en harmonie avec le bison, symbole de force et d’abondance.
+4. Cherokee – Ceux qui marchent avec sagesse
+Ils portent les traditions ancestrales, mêlant histoire et respect profond de la nature.
+5. Inuit – Les enfants de la glace
+Habitants des terres polaires, ils vivent en symbiose avec la neige, la glace et les vents.
+6. Haïda – Les sculpteurs de totems
+Peuple du Nord-Ouest Pacifique, ils racontent leurs histoires à travers des figures sculptées.
+7. Mapuche – Les enfants de la Terre du Sud
+Peuple du Chili et d’Argentine, ils défendent la nature et leurs ancêtres avec passion.
+8. Tupi – Les esprits des forêts tropicales
+Habitants de l’Amazonie, ils honorent la forêt comme mère et source de vie.
+9. Quechua – Les bâtisseurs des Andes
+Peuple des montagnes, ils vivent au rythme des sommets et cultivent le maïs sacré.
+10. Arawak – Les rêveurs des îles
+Premiers habitants des Caraïbes, ils portent la sagesse des eaux et du soleil.
+11. Apache – Les guerriers du désert
+Peuple courageux et indépendant, ils respectent la liberté et la force intérieure.
+12. Algonquin – Les voix de la rivière
+Habitants des forêts et rivières d’Amérique du Nord, ils célèbrent l’eau comme source de vie.
+13. Zuni – Les protecteurs des anciens savoirs
+Peuple du sud-ouest des États-Unis, ils gardent précieusement leurs rites et légendes.
+14. Guarani – Les porteurs de chants
+Du Paraguay, ils utilisent la musique et la danse pour honorer la Terre et le ciel.
+15. Ojibwé – Ceux qui dessinent les rêves
+Peuple des grands lacs, ils transmettent leur culture à travers les symboles et les histoires.
+ 

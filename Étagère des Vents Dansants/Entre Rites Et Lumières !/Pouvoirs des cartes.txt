@@ -1,0 +1,48 @@
+Pouvoirs des cartes
+
+
+Famille 1 – Symboles Sacrés
+1. La Croix – Vous protégez l’une de vos combinaisons contre tout vol ou échange.
+2. Le mouton – Vous annulez le pouvoir d’une carte jouée contre vous.
+3. La Cloche – Vous pouvez rejouer immédiatement un nouveau tour.
+4. Le Pain Azyme – Vous piochez une carte supplémentaire.
+5. La Lumière – Vous montrez votre main à tous les joueurs, puis vous choisissez une carte chez le joueur de votre choix.
+6. L’Eau Bénite – Vous mélangez toute votre main dans la pioche, puis repiochez le même nombre de cartes.
+7. Le Tombeau Vide – Vous réactivez le pouvoir d’une carte que vous avez déjà jouée auparavant.
+ 
+Famille 2 – Créatures de Pâques
+1. Le Lapin – Vous sautez un tour… mais vous gagnez 2 points bonus.
+2. La Poule – Vous donnez une carte de votre choix à un joueur, puis vous piochez deux cartes.
+3. L’Agneau – Vous protégez une de vos cartes pendant un tour (effet différent de l’Agneau de la famille 1).
+4. Le Papillon – Vous échangez une carte de votre main avec une carte de la défausse.
+5. L’Hirondelle – Vous volez une carte au hasard chez un autre joueur.
+6. L’Abeille – Vous pouvez jouer deux cartes au lieu d’une durant ce tour.
+7. Le Lièvre Blanc – Vous cherchez une carte dans la défausse et l’ajoutez à votre main.
+ 
+Famille 3 – Traditions & Fêtes
+1. Ostara – Vous provoquez un changement : toutes les mains sont échangées dans le sens horaire.
+2. Pessa’h – Vous annulez tous les pouvoirs joués pendant ce tour.
+3. La Messe de Pâques – Vous distribuez une carte au joueur de votre choix (y compris vous-même).
+4. Chasse aux œufs – Vous piochez trois cartes, gardez-en une, et replacez les deux autres sous la pioche.
+5. Lundi de Pâques – Vous gagnez un tour gratuit à la fin du tour des autres joueurs.
+6. Festin de famille – Toutes vos cartes en main valent +1 point ce tour-ci.
+7. Veillée Pascale – Vous gardez une carte posée secrète jusqu’à la fin du jeu.
+ 
+Famille 4 – Gourmandises & Objets
+1. Œuf en chocolat – Carte joker : vous pouvez remplacer n’importe quelle carte manquante dans une combinaison.
+2. Panier de Pâques – Vous pouvez stocker une carte sans qu’elle compte dans votre main.
+3. Brioche tressée – Vous doublez la valeur d’une de vos combinaisons déjà posées.
+4. Cloche en sucre – Vous échangez une carte avec un autre joueur : vous choisissez les deux cartes.
+5. Gâteau Agneau – Vous invalidez le pouvoir d’une carte actuellement en jeu.
+6. Nid de printemps – Vous cachez une carte sous le nid : elle devient impossible à voler.
+7. Dragées multicolores – Toutes vos cartes valent +1 point jusqu’à votre prochain tour.
+ 
+Famille 5 – Nature & Saisons
+1. Printemps – Vous posez une nouvelle combinaison sans tenir compte de la famille.
+2. Arbre en fleurs – Vous piochez autant de cartes que vous voulez… mais vous en reposez autant.
+3. Rayon de soleil – Vous révélez une carte de chaque joueur.
+4. Éclosion – Vous piochez deux cartes et jouez immédiatement l’une des deux.
+5. Arc-en-ciel – Vous échangez une carte de votre main avec une carte de la défausse.
+6. Douce pluie – Chaque joueur donne une carte au joueur dans le sens d'arrivée à la table.
+7. Champ fleuri – Vous gagnez 1 point pour chaque carte Nature posée devant vous.
+ 

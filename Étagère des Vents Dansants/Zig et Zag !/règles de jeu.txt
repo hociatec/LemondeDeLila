@@ -1,0 +1,63 @@
+Règles du jeu – Zig et Zag
+
+
+Objectif
+Bienvenue dans Zig et Zag, un jeu de bataille loufoque, mignon et totalement personnalisé.
+Votre objectif est simple : remporter toutes les cartes de votre adversaire en utilisant à la fois les cartes simples, les figures et les jokers, tout en respectant les couleurs et les règles spéciales.
+Chaque carte a sa valeur et remplace une carte classique du jeu de bataille, mais avec une touche tendre et humoristique.
+ 
+Familles et couleurs
+Le jeu se compose de quatre familles, chacune associée à une couleur spécifique :
+a) Vert Sauge : Banane et Dentifrice
+b) Bleu Ardoise : Pantoufle et Bougie
+Chaque carte annonce clairement sa famille et sa valeur, ce qui permet à tout public de suivre le jeu sans difficulté.
+ 
+Cartes simples (2 à 10)
+Chaque famille comporte neuf cartes simples. Voici le détail :
+a) Libellule (très petite, fragile, volante) – remplace le 2
+b) Souris (petite mais maligne) – remplace le 3
+c) Poisson (petit, agile, aquatique) – remplace le 4
+d) Poule (familière, simple, un peu maladroite) – remplace le 5
+e) Lézard (discret, rapide) – remplace le 6
+f) Chèvre (coriace, têtue, imprévisible) – remplace le 7
+g) Chat (rusé, souple, habile) – remplace le 8
+h) Dauphin (intelligent, sociable, fort) – remplace le 9
+i) Loup (fort, impressionnant) – remplace le 10
+Ces cartes se trouvent dans toutes les familles, avec la même valeur mais un nom différent selon la couleur (Banane, Pantoufle, Dentifrice, Bougie).
+Par exemple, un 7 Banane et un 7 Pantoufle correspondent tous deux au chiffre 7, mais appartiennent à des familles différentes.
+ 
+Figures (Valet, Dame, Roi, As)
+Les figures remplacent les cartes traditionnelles et suivent un ordre de puissance croissant :
+a) Bergère – remplace le Valet
+b) Marin – remplace la Dame
+c) Parachutiste – remplace le Roi
+d) Astronaute – remplace l’As
+Chaque famille possède ces figures, et elles suivent l’ordre de puissance classique :
+Bergère < Marin < Parachutiste < Astronaute.
+ 
+Jokers uniques
+Le jeu comprend deux jokers, chacun associé à une couleur et une famille :
+a) Montgolfière (Vert Sauge) – remplace n’importe quelle carte verte (Banane ou Dentifrice)
+b) Fusée (Bleu Ardoise) – remplace n’importe quelle carte bleue (Pantoufle ou Bougie)
+Vous pouvez utiliser ces jokers de manière stratégique, mais leur utilisation est limitée en bataille :
+vous ne pouvez poser un joker que s’il correspond à la couleur/famille de la carte déclencheuse de la bataille.
+ 
+Déroulement d’une partie
+a) Toutes les cartes sont automatiquement mélangées et distribuées à chaque joueurs, faces cachées.
+b) Vous déposez la carte du dessus de votre pile face visible. La plus forte remporte la manche et ramasse toutes celles jouées.
+c) En cas d’égalité, une bataille est déclenchée.
+ 
+Règles de la bataille
+a) Lorsqu’une bataille se produit, une carte face cachée est automatiquement posée sur celles impliquées dans le conflit.
+b) Vous devez ensuite poser une carte de votre jeu face visible sur le dessus de votre pile.
+c) Si vous souhaitez poser un joker, il doit correspondre à la couleur/famille de votre carte initiale :
+- Banane ou Dentifrice (Montgolfière)
+- Pantoufle ou Bougie (Fusée)
+d) Si vous ne possédez pas le joker approprié, vous devez poser une autre carte.
+e) Si vous n’avez aucune carte valide à poser, vous êtes proclamés perdants de la bataille.
+f) Le joueur qui remporte la bataille ramasse toutes les cartes en jeu. Les cartes posées face cachée sont alors retournées et dévoilent leur contenu.
+ 
+Fin de la partie
+Le jeu continue jusqu’à ce que l’un de vous ait remporté toutes les cartes.
+Ce joueur est alors déclaré vainqueur de Zig et Zag !
+ 

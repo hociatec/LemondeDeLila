@@ -914,7 +914,7 @@ public sealed class GameTableOpener : IGameTableOpener
             return Task.CompletedTask;
         }
 
-        await dispatcher.InvokeAsync(() =>
+        await dispatcher.InvokeAsync(async () =>
         {
             async Task Start()
             {

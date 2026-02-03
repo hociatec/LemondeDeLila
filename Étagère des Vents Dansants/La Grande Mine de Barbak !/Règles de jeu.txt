@@ -1,0 +1,79 @@
+Règles du jeu - La Grande Mine de Barbak !
+
+
+Objectif du jeu
+Vous incarnez un clan nain parti explorer les profondeurs de la montagne afin d’accumuler richesses, gloire et histoires à raconter.
+Votre but est simple : terminer la partie avec le plus de points grâce aux trésors, objets, outils et effets des cartes. La partie s’achève automatiquement lorsque surgit un Éboulement majeur ou l’Effondrement final. Celui ou celle qui possède le plus de points à ce moment-là devient le Nain suprême.
+ 
+Contenu
+Le jeu comporte 80 cartes, réparties en cinq familles :
+1. Trésors (18 cartes)
+2. Objets et Outils (22 cartes)
+3. Événements (26 cartes)
+4. Monstres (8 cartes)
+5. Cartes de fin de partie : Éboulements & Effondrement (4 cartes)
+Chaque carte possède son effet, appliqué automatiquement lorsque vous la piochez ou la jouez.
+ 
+Mise en place
+Lorsque la partie commence :
+1. Les 80 cartes sont mélangées automatiquement pour former la pioche.
+2. Vous recevez 5 cartes pour constituer votre main de départ.
+3. Une zone personnelle vous est attribuée pour y poser vos trésors et vos objets.
+ 
+Déroulement d’un tour
+Chaque tour se déroule en quatre étapes simples.
+1. Pioche
+Vous piochez une carte.
+a) Si c’est un Événement ou un Monstre, son effet se déclenche immédiatement.
+b) Si c’est un Trésor ou un Objet/Outil, vous pouvez le conserver pour le jouer plus tard.
+2. Action principale
+Vous pouvez effectuer une seule action parmi :
+a) Poser un Trésor dans votre domaine.
+b) Poser un Objet ou un Outil pour bénéficier de ses avantages.
+c) Jouer un Événement si son effet vous est utile ou gêne un adversaire.
+d) Lancer un Monstre contre un autre joueur si la carte le permet.
+3. Résolution des effets
+a) Tout effet se déclenche automatiquement.
+b) Les cartes à conditions (par exemple : « bonus si vous possédez une Bière ») sont gérées directement par le système.
+c) Si vous ne pouvez pas appliquer un effet, vous subissez la pénalité indiquée (souvent la perte d’une carte).
+4. Fin de tour
+Votre main est ajustée automatiquement pour ne pas dépasser 5 cartes.
+Le tour passe ensuite au joueur suivant.
+ 
+Types de cartes
+Trésors
+a) Ils se posent dans votre domaine.
+b) Ils rapportent immédiatement leurs points.
+c) Certains trésors donnent des bonus selon les cartes que vous possédez.
+Objets et Outils
+a) Ils s’installent devant vous et vous offrent des avantages permanents.
+b) Certains protègent de monstres, améliorent vos trésors ou interagissent avec d’autres cartes.
+Événements
+a) Leur effet est immédiat.
+b) Ils peuvent vous aider, perturber un adversaire ou modifier la situation de jeu.
+Monstres
+a) Ils attaquent les joueurs.
+b) Si un joueur ne peut pas se défendre, il perd un objet, un trésor ou subit une pénalité.
+Éboulements et Effondrement
+Ces cartes déclenchent immédiatement leurs effets :
+a) Éboulement mineur : chaque joueur défausse 1 carte.
+b) Éboulement majeur : perte de deux Trésors au hasard.
+c) Effondrement final : la partie se termine aussitôt.
+ 
+Fin de partie et calcul des points
+La partie se termine lorsque :
+a) La pioche est vide, ou
+b) Un Éboulement majeur ou l’Effondrement final apparaît.
+Sont additionnez ensuite automatiquement :
+a) Les points de vos Trésors posés
+b) Les points de vos Objets / Outils
+c) Les bonus liés aux combinaisons ou effets spéciaux
+Le joueur avec le score le plus élevé devient le Nain suprême.
+En cas d’égalité, celui ayant le plus de Trésors rares ou de Monstres vaincus l’emporte.
+ 
+Précisions et règles supplémentaires
+a) Les bonus conditionnels sont appliqués automatiquement.
+b) Les Monstres et Événements ne restent jamais dans votre domaine : ils sont défaussés après usage.
+c) Les Trésors et Objets restent devant vous jusqu’à la fin, sauf si une carte vous oblige à les perdre.
+d) Vous ne pouvez jouer une carte hors de votre tour que si celle-ci l’autorise explicitement.
+  

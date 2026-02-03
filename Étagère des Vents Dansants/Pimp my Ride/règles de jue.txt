@@ -1,0 +1,46 @@
+Règles du jeu - Pimp My Ride
+
+
+Introduction
+Pimp My Ride est un jeu de cartes familial, accessible à tous. Chacun possède un garage vide et vous devez assembler des voitures en combinant les bonnes cartes. Le jeu mêle construction, stratégie et humour, avec des accessoires farfelus qui rendent chaque voiture unique et amusante.
+Le but du jeu est simple : être le premier à construire trois voitures complètes en respectant l’ordre précis de construction.
+ 
+Contenu du jeu
+Le jeu comprend 7 catégories de cartes :
+a) Carrosseries - 18 cartes
+b) Roues - 18 cartes
+c) Moteurs - 18 cartes
+d) Volants - 18 cartes
+e) Sièges - 18 cartes
+f) Phares - 18 cartes
+g) Accessoires Rigolos - 36 cartes
+Chaque carte possède une description amusante et une petite phrase pour donner vie au jeu. Une fois que vous choisissez une carte, elle devient indisponible pour les autres joueurs jusqu’à la fin de la partie.
+ 
+Ordre de construction des voitures
+Pour construire une voiture, vous devez suivre strictement l’ordre suivant :
+1. Carrosserie
+2. Roues
+3. Moteur
+4. Volant
+5. Sièges
+6. Phares
+7. Accessoires
+Si vous ne possédez pas la carte correspondant à l’étape suivante, vous devez piocher dans le tas commun ou passer votre tour jusqu’à obtenir la carte nécessaire.
+ 
+Mise en place et distribution
+1. Mélangez toutes les cartes ensemble pour former un seul tas commun.
+2. Chaque joueur reçoit 3 cartes aléatoires pour commencer, pouvant provenir de n’importe quelle catégorie.
+3. Vous ne pouvez pas poser une carte si vous n’êtes pas à l’étape correspondante de votre construction.
+4. Vous choisissez la première voiture à construire, puis commencez à assembler les pièces dans l’ordre indiqué. Une fois cette voiture terminée, vous passez à la suivante.
+ 
+Déroulement d’un tour
+1. Piocher une carte : vous prenez une carte dans le tas commun.
+2. Décider de poser ou jeter :
+a) Si la carte correspond à l’étape suivante de votre construction et vous plaît, vous la posez sur votre voiture.
+b) Si elle ne vous plaît pas ou ne correspond pas, vous la jetez dans la défausse.
+3. Carte indisponible : une fois posée, la carte devient indisponible pour les autres joueurs.
+4. Fin de voiture : lorsque la voiture est complète, un nom humoristique lui est automatiquement généré.
+ 
+Conditions de victoire
+Le premier joueur à construire trois voitures complètes en respectant l’ordre de construction remporte la partie.
+ 

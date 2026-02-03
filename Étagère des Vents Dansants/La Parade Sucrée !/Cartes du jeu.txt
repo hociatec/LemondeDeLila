@@ -1,0 +1,17 @@
+Cartes du jeu
+
+
+2 – Jacques – Le Tambourinaire - carte normale
+3 – Rémi – Le Jongleur - carte normale
+4 – Tina – La Danseuse Colorée - carte normale
+5 – Mélissa – La Lanceuse de Bonbons - carte normale
+6 – Nico – L’Acrobate - carte normale
+7 – Farou – Le Farceur - carte spéciale
+8 – Laura – Le Masque Mystérieux - carte normale
+9 – Francis – Le Pêcheur - carte normale
+10 – Roland – Le Roi du Carnaval - carte spéciale
+Valet – Dimitri – Le Bouffon - carte spéciale
+Dame – Daniella – La Reine du Bal - carte spéciale
+Roi – Fabien – Le Capitaine de la Parade - carte spéciale
+As – Régis – Le Trompettiste - carte normale
+ 

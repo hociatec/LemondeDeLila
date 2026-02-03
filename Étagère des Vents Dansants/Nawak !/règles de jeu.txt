@@ -1,0 +1,28 @@
+Règles de jeu - Nawak !
+Le jeu textuel complètement délirant !
+ 
+
+Objectif du jeu
+Riez, amusez-vous et soyez les premiers à atteindre un score fixé en votant pour les réponses les plus loufoques… mais pas les vôtres !
+ 
+Mise en place
+a) Choisissez un score cible à atteindre pour gagner (ex : 5, 10, 15 points).
+b) Le système génère aléatoirement des défis délirants avec leurs réponses farfelues.
+ 
+Déroulement d’un tour
+a) Un défi complètement loufoque apparaît, accompagné de 3 réponses farfelues.
+b) Naviguez entre les 3 réponses à l’aide des touches flèche haut et flèche bas, puis validez votre choix avec Entrée.
+c) Ce choix reste secret : aucun d’entre vous ne connaît les réponses des autres jusqu'à ce que tout le monde est terminé.
+d) Une fois tous les choix effectués, votez publiquement pour la réponse que vous préférez, sauf la vôtre. Il est interdit de voter pour sois-même.
+e) Chaque vote attribué à une réponse rapporte 1 point au joueur qui a choisi cette réponse.
+f) Les réponses qui ne reçoivent aucun vote ne rapportent aucun point.
+ 
+Fin de partie
+a) Continuez ainsi jusqu’à ce que l’un d’entre vous atteigne le score cible fixé dès le départ.
+b) Le premier à atteindre ce score est sacré Roi ou Reine du Nawak !
+c) En cas d’égalité, un défi supplémentaire est généré pour vous départager.
+ 
+Conseils pour jouer
+a) Gardez votre bonne humeur et une ouverture d’esprit : plus c’est absurde, mieux c’est !
+b) Invitez vos amis, collègues, ou même des inconnus pour partager ce moment de folie textuelle.
+ 

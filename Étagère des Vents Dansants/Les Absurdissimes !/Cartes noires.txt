@@ -1,0 +1,1503 @@
+Cartes noires
+
+
+1. 
+"une femme nue"
+2. 
+"un cheval qui parle"
+3. 
+"le bruit d’un toaster"
+4. 
+"un homme déguisé en licorne"
+5. 
+"le corps d’un zombie"
+6. 
+"un pingouin sur un skateboard"
+7. 
+"le goût du savon"
+8. 
+"un panier de grenouilles vivantes"
+9. 
+"l’odeur du chocolat fondu"
+10. 
+"le cri d’un enfant dans un supermarché"
+11. 
+"un chat qui se gratte"
+12. 
+"un dessin animé des années 90"
+13. 
+"un sandwich à la mayonnaise"
+14. 
+"le vent dans les cheveux"
+15. 
+"une explosion de confettis"
+16. 
+"une danse de la pluie"
+17. 
+"un hot-dog qui danse"
+18. 
+"des lunettes de soleil dans la nuit"
+19. 
+"une balle rebondissante"
+20. 
+"une pluie de spaghetti"
+21. 
+"le bruit d’une porte qui grince"
+22. 
+"un narval dans un jacuzzi"
+23. 
+"un ping-pong avec des crabes"
+24. 
+"un dragon en pyjama"
+25. 
+"des billes dans un sac"
+26. 
+"une pizza géante"
+27. 
+"un hamster en costume"
+28. 
+"un clown triste"
+29. 
+"un chat faisant des pirouettes"
+30. 
+"une licorne qui éternue"
+31. 
+"un éléphant rose"
+32. 
+"un ballet de canards"
+33. 
+"un panda mangeant des bambous"
+34. 
+"un clown jonglant avec des pommes"
+35. 
+"une fête foraine abandonnée"
+36. 
+"un rat faisant du skateboard"
+37. 
+"des frites qui dansent"
+38. 
+"des baisers sur la plage"
+39. 
+"un dragon de glace"
+40. 
+"une boîte à musique cassée"
+41. 
+"une grenouille portant des lunettes"
+42. 
+"des dauphins dansants"
+43. 
+"une machine à remonter le temps"
+44. 
+"un gâteau en forme de voiture"
+45. 
+"une pluie de bonbons"
+46. 
+"des étoiles filantes"
+47. 
+"un hérisson portant une montre"
+48. 
+"une invasion de zombies"
+49. 
+"un film en noir et blanc"
+50. 
+"des bras en spaghetti"
+51. 
+"un tas de fromage râpé"
+52. 
+"une baguette magique"
+53. 
+"un hamster déguisé en super-héros"
+54. 
+"une pizza volante"
+55. 
+"des cheveux en barbe à papa"
+56. 
+"une pluie de tacos"
+57. 
+"un crocodile dans un fauteuil"
+58. 
+"le regard d’un lama"
+59. 
+"des mains en caoutchouc"
+60. 
+"un seau de glace"
+61. 
+"un clown faisant du yoga"
+62. 
+"une danse de robots"
+63. 
+"une moustache en forme de cœur"
+64. 
+"un gorille en tutu"
+65. 
+"un poisson qui chante"
+66. 
+"un cheval faisant du kung-fu"
+67. 
+"un alien dans une voiture"
+68. 
+"des lentilles de contact géantes"
+69. 
+"des bottes en mousse"
+70. 
+"un volcan de chocolat"
+71. 
+"une guitare en bonbons"
+72. 
+"une explosion de marshmallows"
+73. 
+"un chat dans un chapeau"
+74. 
+"un monstre en tutu"
+75. 
+"une licorne qui mange des tacos"
+76. 
+"des lunettes de soleil pour un poisson"
+77. 
+"un dragon à lunettes"
+78. 
+"un ours en pyjama"
+79. 
+"un panier de pommes géantes"
+80. 
+"un éclair de bonheur"
+81. 
+"des lasers dans les yeux"
+82. 
+"une tortue volante "
+83. 
+"un tableau de pâtes"
+84. 
+"une boîte de coussins"
+85. 
+"des chaussures qui parlent"
+86. 
+"un poisson dans un costume"
+87. 
+"un yogourt à la banane"
+88. 
+"une carotte en or"
+89. 
+"une lampe qui danse"
+90. 
+"un ballon de football qui parle"
+91. 
+"une pizza avec des ailes"
+92. 
+"un robot en forme de banane"
+93. 
+"un chocolat fondant"
+94. 
+"une chaussure géante"
+95. 
+"un canapé flottant"
+96. 
+"des éclats de rire"
+97. 
+"un dé à coudre géant"
+98. 
+"des bulles de savon géantes"
+99. 
+"un kangourou qui fait du breakdance"
+100. 
+"des bonbons fluorescents"
+101. 
+"une pluie de donuts"
+102. 
+"un plat de spaghetti en forme de cœur"
+103. 
+"un zombie sur un scooter"
+104. 
+"un dragon éternuant du feu"
+105. 
+"un hamster jouant à la guitare"
+106. 
+"un pirate avec une patte en chocolat"
+107. 
+"un yaourt qui parle"
+108. 
+"une baguette magique en pain d’épices"
+109. 
+"un taureau en rollers"
+110. 
+"un bébé koala sur un skateboard"
+111. 
+"un sandwich qui chante"
+112. 
+"une soupe de légumes flottante"
+113. 
+"un chat se prenant pour un lion"
+114. 
+"un sous-marin en guimauve"
+115. 
+"une planète en fromage"
+116. 
+"un cerf-volant en forme de pizza"
+117. 
+"des lunettes qui font des bulles"
+118. 
+"un hamster faisant du yoga"
+119. 
+"des lunettes de soleil sur un cactus"
+120. 
+"une pluie de bonbons acidulés"
+121. 
+"un hamster pilotant un avion"
+122. 
+"un perroquet racontant des blagues"
+123. 
+"une licorne sur un trampoline"
+124. 
+"une pizza se transformant en dragon"
+125. 
+"un crocodile en maillot de bain"
+126. 
+"un aspirateur qui danse"
+127. 
+"un bâton de dynamite en guimauve"
+128. 
+"des gâteaux qui chantent"
+129. 
+"un hamster dans une robe de bal"
+130. 
+"un panda avec un monocle"
+131. 
+"une étoile filante en chocolat"
+132. 
+"un robot qui fait du breakdance"
+133. 
+"une pizza parlant en argot"
+134. 
+"un pingouin sur un skateboard électrique"
+135. 
+"une mouette avec des lunettes de soleil"
+136. 
+"des chaussures en forme de légumes"
+137. 
+"une maison faite de bonbons"
+138. 
+"un pot de miel géant"
+139. 
+"une grenouille avec un micro"
+140. 
+"un chat qui fait du surf"
+141. 
+"une île flottante en chocolat"
+142. 
+"des pâtes qui se transforment en danseuses"
+143. 
+"une tasse de thé qui fait du bruit"
+144. 
+"un canard déguisé en super-héros"
+145. 
+"une licorne avec des baskets"
+146. 
+"un monstre qui adore les câlins"
+147. 
+"un chien qui fait du skateboard"
+148. 
+"une roue de hamster géante"
+149. 
+"une grenouille en train de chanter"
+150. 
+"un écureuil jouant du piano"
+151. 
+"un robinet hurleur"
+152. 
+"un pyjama possédé"
+153. 
+"les chaussettes de ma grand-mère"
+154. 
+"les couches du bébé d’en face"
+155. 
+"les poils de barbe du papi d’à côté"
+156. 
+"montrer ses fesses"
+157. 
+"donner un coup de pied"
+158. 
+"un doigt qui se prend pour un trombone"
+159. 
+"le bruit d’un réveil qui explose"
+160. 
+"un couteau dansant sur la table"
+161. 
+"un téléphone qui parle en vers"
+162. 
+"des cloches en chocolat"
+163. 
+"une patte de poulet se mettant à chanter"
+164. 
+"les dents d’un monstre sous le lit"
+165. 
+"le fil de l’araignée géante"
+166. 
+"les mains d’un homme invisible"
+167. 
+"un chewing-gum collé sur l’oreille"
+168. 
+"un aspirateur en mode disco"
+169. 
+"un nuage de poussière géant"
+170. 
+"des ciseaux qui font du tricot"
+171. 
+"le bruit d’un éléphant mangeant une pizza"
+172. 
+"une poêle en pleine crise d’angoisse"
+173. 
+"un téléphone sous l’eau"
+174. 
+"un œuf se transformant en poulet"
+175. 
+"une chaise qui rit"
+176. 
+"un gâteau qui fond en criant"
+177. 
+"un pamplemousse qui se prend pour un melon"
+178. 
+"un tapis qui s’écrase de rire"
+179. 
+"les pieds d’un robot en roller"
+180. 
+"un stylo qui raconte des blagues"
+181. 
+"une pomme qui se transforme en grenade"
+182. 
+"des lunettes de soleil en chocolat"
+183. 
+"un miroir qui a peur de lui-même"
+184. 
+"un sac de pommes de terre qui fait des bruitages"
+185. 
+"un chat qui porte des gants de boxe"
+186. 
+"une pierre qui dit des gros mots"
+187. 
+"des escargots en patins à roulettes"
+188. 
+"une fourchette qui chante"
+189. 
+"une balle rebondissante qui pleure"
+190. 
+"un cactus qui danse la salsa"
+191. 
+"un poisson rouge faisant des pirouettes"
+192. 
+"un doudou qui râle"
+193. 
+"un réveil qui explose de rire"
+194. 
+"une salade qui fait du breakdance"
+195. 
+"des poils de barbe qui racontent des secrets"
+196. 
+"une chaussure qui a des pensées profondes"
+197. 
+"un robot qui perd ses vis"
+198. 
+"une montre qui meurt de fatigue"
+199. 
+"une balle de tennis qui s’éclate de rire"
+200. 
+"un sablier qui se mit à pleurer"
+201. 
+"une mouette qui twerke"
+202. 
+"le parapluie d’un clown"
+203. 
+"un bouchon de champagne qui parle"
+204. 
+"le rire d’un poisson"
+205. 
+"un manteau qui mange des chips"
+206. 
+"des dents de requin en gelée"
+207. 
+"une bouteille de lait jouant au foot"
+208. 
+"les yeux de ton voisin qui clignotent en Morse"
+209. 
+"une souris qui fait des blagues"
+210. 
+"un canapé qui se met à chanter"
+211. 
+"une chaussette qui mange des bonbons"
+212. 
+"un chewing-gum dans une montre"
+213. 
+"un œuf qui dit bonjour"
+214. 
+"un parapluie qui fuit"
+215. 
+"un hamster déguisé en pirate"
+216. 
+"un papier toilette qui fait du rap"
+217. 
+"un gâteau de riz qui rigole tout seul"
+218. 
+"un fer à repasser qui se prend pour un DJ"
+219. 
+"une serviette de plage qui se transforme en coussin"
+220. 
+"un pied qui a des moustaches"
+221. 
+"une éponge qui se prend pour un détective"
+222. 
+"une mouche avec une perruque"
+223. 
+"un canapé qui fait des grimaces"
+224. 
+"des chaussons qui se battent"
+225. 
+"une soupe qui parle en rimes"
+226. 
+"des épinards en forme de cœur"
+227. 
+"une montre à gousset qui fait la fête"
+228. 
+"des poissons qui écrivent des poèmes"
+229. 
+"un ballon de basket qui se transforme en licorne"
+230. 
+"un éclair de génie qui explose"
+231. 
+"un toast qui se prend pour une pizza"
+232. 
+"une poupée qui dit des gros mots"
+233. 
+"un aspirateur avec des lunettes de soleil"
+234. 
+"un zèbre en maillot de bain"
+235. 
+"une chaussure qui se rebelle"
+236. 
+"un lit qui mange des céréales"
+237. 
+"une cuillère qui fait du breakdance"
+238. 
+"une tasse de café qui jette des sorts"
+239. 
+"des lunettes de ski sur un chien"
+240. 
+"une tomate qui fait du yoga"
+241. 
+"un tabouret qui aime danser"
+242. 
+"des mains invisibles qui déménagent des meubles"
+243. 
+"un pot de fleurs qui se transforme en robot"
+244. 
+"un oreiller qui se prend pour un avocat"
+245. 
+"un cactus qui a un complexe de supériorité"
+246. 
+"un trombone rêvant de devenir une guitare"
+247. 
+"une pantoufle racontant des histoires"
+248. 
+"un cartable qui veut être un super-héros"
+249. 
+"des pâtes décidant de faire la grève"
+250. 
+"un miroir prenant des selfies"
+251. 
+"un ketchup qui chante du métal"
+252. 
+"des oreillers faisant de la boxe"
+253. 
+"une balle de ping-pong faisant du yoga"
+254. 
+"un rouleau de papier toilette dansant la valse"
+255. 
+"un pot de confiture qui s'enfuit"
+256. 
+"une boîte de céréales donnant des conseils de vie"
+257. 
+"des épinards qui se battent contre des poivrons"
+258. 
+"un marteau qui veut être acteur"
+259. 
+"une assiette qui fait la cuisine"
+260. 
+"une guitare qui pleure"
+261. 
+"un bâton de colle qui lit des poèmes"
+262. 
+"des gants de boxe qui se marient"
+263. 
+"un jus d’orange qui fait du breakdance"
+264. 
+"une baignoire qui parle avec un accent"
+265. 
+"un vélo qui rêve de voler"
+266. 
+"une fourchette qui se prend pour une guitare"
+267. 
+"un croissant qui devient un pancake"
+268. 
+"des chaussures de clown qui marchent seules"
+269. 
+"une mouche qui porte des lunettes de soleil"
+270. 
+"un chat qui fait du tricot"
+271. 
+"un trombone qui fait une déclaration d’amour"
+272. 
+"un pieu en bois qui fait des câlins"
+273. 
+"un câlin de robot"
+274. 
+"des frites qui chantent du jazz"
+275. 
+"une chaussette en furie"
+276. 
+"une brosse à dents qui rêve de faire du théâtre"
+277. 
+"un ventilateur qui se prend pour un hélicoptère"
+278. 
+"un pain au chocolat qui fait du hip-hop"
+279. 
+"une glace qui se transforme en cake"
+280. 
+"un pot de peinture qui pleure des larmes arc-en-ciel"
+281. 
+"une échelle qui est jalouse des escaliers"
+282. 
+"des grenouilles qui jouent à la pétanque"
+283. 
+"un gant de toilette qui déteste l’eau"
+284. 
+"une cravate qui veut être une écharpe"
+285. 
+"un sac à dos qui veut voyager dans l’espace"
+286. 
+"un aspirateur qui fait des karaokés"
+287. 
+"une porte qui veut être une fenêtre"
+288. 
+"des lunettes de vue qui rêvent d’être des lunettes de soleil"
+289. 
+"une mouette avec un diplôme"
+290. 
+"une voiture qui roule en arrière"
+291. 
+"un poulet en basket"
+292. 
+"un caddie qui fait de la musculation"
+293. 
+"une chaussure qui rêve d’être un chapeau"
+294. 
+"un steak qui s’échappe du frigo"
+295. 
+"un chat qui a un job de détective"
+296. 
+"un arbre qui veut se faire coiffer"
+297. 
+"un escargot qui mange des paillettes"
+298. 
+"une fourchette qui écrit des romans"
+299. 
+"un canapé qui raconte sa vie"
+300. 
+"une bouteille de vin qui déteste les fêtes"
+301. 
+"un cri de banane en colère"
+302. 
+"des lunettes de soleil qui refusent de sortir la nuit"
+303. 
+"un robot qui fait la cuisine pour les aliens"
+304. 
+"une chaussette qui rêve d’être une grenouille"
+305. 
+"une tarte qui a décidé de voyager dans le temps"
+306. 
+"une cloche qui se prend pour un tambour"
+307. 
+"une brosse à cheveux qui refuse de brosser les cheveux"
+308. 
+"un canapé qui pleure pour un film triste"
+309. 
+"un cactus qui fait des grimaces"
+310. 
+"une cuillère qui a écrit un roman"
+311. 
+"une brosse à dents qui se bat avec le dentifrice"
+312. 
+"des lunettes 3D qui deviennent aveugles"
+313. 
+"un vélo qui parle en morse"
+314. 
+"des biscuits qui chantent l’hymne national"
+315. 
+"un oreiller qui donne des conseils de vie"
+316. 
+"un panier de fruits qui veulent être des légumes"
+317. 
+"une lampe de chevet qui veut se marier"
+318. 
+"une table qui veut aller en vacances"
+319. 
+"des clés qui ont un accident de voiture"
+320. 
+"un grille-pain qui veut devenir un piano"
+321. 
+"un chapeau qui essaie de faire un spectacle de magie"
+322. 
+"des chaussons qui refusent de marcher"
+323. 
+"un miroir qui se fait des selfies"
+324. 
+"un gâteau qui veut être un croissant"
+325. 
+"un écureuil qui se prend pour un danseur de ballet"
+326. 
+"un frisbee qui se prend pour une pizza"
+327. 
+"un poulet rôti qui fait du théâtre"
+328. 
+"des fourchettes qui organisent un concours de danse"
+329. 
+"une boîte à musique qui déteste la musique"
+330. 
+"une crème solaire qui veut être une crème au chocolat"
+331. 
+"une baguette qui veut être une baguette magique"
+332. 
+"des poissons qui font des selfies"
+333. 
+"un stylo qui se prend pour un pinceau"
+334. 
+"une écharpe qui rêve d’être un collier"
+335. 
+"un chat qui veut devenir une star du cinéma"
+336. 
+"un ballon de football qui veut devenir un pâté en croûte"
+337. 
+"des lunettes de soleil qui détestent la lumière"
+338. 
+"un coussin qui a des angoisses existentielles"
+339. 
+"des tomates qui veulent être des pommes"
+340. 
+"un aspirateur qui se prend pour un super-héros"
+341. 
+"un thermomètre qui fait une dépression"
+342. 
+"un tuyau d’arrosage qui se transforme en serpent"
+343. 
+"des baguettes chinoises qui veulent jouer au golf"
+344. 
+"un téléphone portable qui veut être un avocat"
+345. 
+"un lapin qui devient un politicien"
+346. 
+"des cuillères en bois qui se transforment en spatules"
+347. 
+"un canapé qui veut être un trampoline"
+348. 
+"une bouche qui fait des discours motivants"
+349. 
+"une banane qui veut devenir une pizza"
+350. 
+"des peluches qui veulent être des détectives privés"
+351. 
+"une tartine de beurre qui parle anglais"
+352. 
+"une porte qui rêve d’être un réfrigérateur"
+353. 
+"un coussin qui a des conversations philosophiques"
+354. 
+"un perroquet qui s’improvise chef cuisinier"
+355. 
+"un grille-pain qui se prend pour un DJ"
+356. 
+"un élastique qui veut devenir une baguette magique"
+357. 
+"des lunettes de vue qui veulent devenir des lunettes de soleil"
+358. 
+"un bidet qui se prend pour un jacuzzi"
+359. 
+"des pâtes qui jouent aux échecs"
+360. 
+"une boîte à pizza qui rêve d’être un four à micro-ondes"
+361. 
+"un seau qui veut être un vase"
+362. 
+"un parapluie qui se prend pour un chapeau"
+363. 
+"un fer à repasser qui danse la salsa"
+364. 
+"un bol de céréales qui parle aux fruits"
+365. 
+"un réveil qui veut vivre à Bali"
+366. 
+"un chapeau melon qui veut être un ballon de basket"
+367. 
+"un fromage qui fait du théâtre"
+368. 
+"des chaussettes qui sont en couple"
+369. 
+"une éponge qui écrit des poèmes d’amour"
+370. 
+"un poivron qui se prend pour un avocat"
+371. 
+"un tableau de bord de voiture qui a peur des piétons"
+372. 
+"une pierre qui veut devenir un diamant"
+373. 
+"des canapés qui rêvent d’être des lits"
+374. 
+"un crayon qui veut être un pinceau"
+375. 
+"un rideau qui fait des blagues de mauvais goût"
+376. 
+"un sac à main qui se fait des photos"
+377. 
+"une brosse à dents qui est amoureuse du dentifrice"
+378. 
+"une gomme qui pleure dans son coin"
+379. 
+"un hamac qui veut être un trampoline"
+380. 
+"un moulin à vent qui veut partir en croisière"
+381. 
+"un ventilateur qui pense qu’il est un hélicoptère"
+382. 
+"une bouteille d’eau qui se prend pour un soda"
+383. 
+"un réfrigérateur qui part en vacances"
+384. 
+"un pigeon qui déteste les oiseaux"
+385. 
+"un déodorant qui fait des blagues de papa"
+386. 
+"des biscuits qui chantent de l’opéra"
+387. 
+"une balle de tennis qui veut être un ballon de football"
+388. 
+"une pizza qui rêve de devenir une crêpe"
+389. 
+"une boîte de chocolats qui se prend pour un cadeau"
+390. 
+"une cuillère qui veut devenir une fourchette"
+391. 
+"des lunettes de ski qui veulent aller à la plage"
+392. 
+"un écureuil qui se prend pour un avocat"
+393. 
+"un poisson rouge qui fait du trampoline"
+394. 
+"un œuf qui a des complexes"
+395. 
+"une étoile filante qui rêve d’être une comète"
+396. 
+"un tapis qui fait la roue"
+397. 
+"une ampoule qui a peur du noir"
+398. 
+"un marteau qui chante des chansons de Noël"
+399. 
+"un robot qui veut prendre des vacances"
+400. 
+"des pommes de terre qui parlent avec des accents étrangers"
+401. 
+"une serviette qui fait du bodyboard"
+402. 
+"une mouette qui porte des lunettes de ski"
+403. 
+"un bananier qui rêve de faire du yoga"
+404. 
+"un cactus qui écrit des chansons d’amour"
+405. 
+"une pomme de terre qui a des piercings"
+406. 
+"un parapluie qui se prend pour un drone"
+407. 
+"un poulet rôti qui fait des imitations"
+408. 
+"un rouleau de scotch qui s’invente un nom d’artiste"
+409. 
+"un marteau qui veut devenir écrivain"
+410. 
+"une pâte à modeler qui se prend pour un avocat"
+411. 
+"des poissons qui organisent une conférence"
+412. 
+"une fourchette qui se prend pour une baguette"
+413. 
+"un chat qui rêve de devenir une star de cinéma"
+414. 
+"un miroir qui veut changer de rôle"
+415. 
+"un ventilo qui veut se faire une carrière de danseur"
+416. 
+"un réveil qui met des réveils dans un café"
+417. 
+"des crayons de couleur qui vont à un cours de poterie"
+418. 
+"une chaussette qui fait du surf"
+419. 
+"une barre de chocolat qui rêve de devenir un gâteau"
+420. 
+"un livre qui veut être un film d’action"
+421. 
+"une chaussure qui est amoureuse d’un trombone"
+422. 
+"un doudou qui veut être un détective"
+423. 
+"un canapé qui essaie de devenir un fauteuil de massage"
+424. 
+"un ballon de foot qui veut être un globe terrestre"
+425. 
+"un pull qui se transforme en écharpe"
+426. 
+"une boîte de conserve qui fait du théâtre"
+427. 
+"un aspirateur qui veut devenir une rockstar"
+428. 
+"un sac de sable qui parle aux étoiles"
+429. 
+"un tabouret qui rêve de devenir une chaise longue"
+430. 
+"une brosse à cheveux qui se transforme en peigne"
+431. 
+"un téléphone qui se prend pour un répondeur"
+432. 
+"un dinosaure en pyjama"
+433. 
+"un distributeur de billets qui se prend pour un psychologue"
+434. 
+"une salade de fruits qui fait des pirouettes"
+435. 
+"une pizza qui veut être une tarte"
+436. 
+"un panier à linge qui veut devenir une maison de vacances"
+437. 
+"un chapeau qui a des ambitions d'acteur"
+438. 
+"une fourchette qui rêve d’être une fourchette à fondue"
+439. 
+"un sac à dos qui parle en rimes"
+440. 
+"un cactus qui se prend pour un cactus en peluche"
+441. 
+"une pomme qui se transforme en pomme de terre"
+442. 
+"un crayon qui rêve de se transformer en pinceau"
+443. 
+"des pâtes qui se battent contre du riz"
+444. 
+"un stylo qui veut devenir une baguette magique"
+445. 
+"une cuillère qui rêve de diriger un orchestre"
+446. 
+"un tapis qui veut se transformer en trampoline"
+447. 
+"un coussin qui s’entraîne à être un oreiller"
+448. 
+"un rideau qui veut devenir une couverture"
+449. 
+"un tournevis qui rêve d’être une perceuse"
+450. 
+"une bouteille d’eau qui se prend pour un cocktail"
+451. 
+"une tempête de frites"
+452. 
+"un perroquet qui explose en feu d'artifice"
+453. 
+"un cri de démon sous un lit"
+454. 
+"un hamster possédé qui grimpe au plafond"
+455. 
+"un chewing-gum qui s’enflamme"
+456. 
+"des pantoufles qui font des claquettes à minuit"
+457. 
+"un casserole qui crache de la vapeur radioactive"
+458. 
+"une éruption volcanique de spaghetti"
+459. 
+"une mouette qui dévore un sac plastique"
+460. 
+"une toile d’araignée qui fait du laser"
+461. 
+"un micro-ondes qui se met à grogner"
+462. 
+"un ours en peluche qui fait des blagues macabres"
+463. 
+"une pizza qui rigole dans l’obscurité"
+464. 
+"des chaussettes qui sentent le fromage qui pourrit"
+465. 
+"un sac à main qui se transforme en portail dimensionnel"
+466. 
+"des fleurs qui chantent des chansons sataniques"
+467. 
+"un aspirateur qui hurle de douleur"
+468. 
+"une boîte à musique qui joue des airs de psychose"
+469. 
+"un gâteau d’anniversaire qui explose"
+470. 
+"une douche qui fait des bruits de portes qui grincent"
+471. 
+"un canapé qui se déchire et vomit des serpents"
+472. 
+"une brosse à dents qui émet des éclairs"
+473. 
+"des chaussettes qui se transforment en ombres chinoises"
+474. 
+"un chien qui parle avec une voix caverneuse"
+475. 
+"une cloche qui fait un bruit de cri de banshee"
+476. 
+"un robot qui clignote en rouge et menace de tout détruire"
+477. 
+"un tambour de machine à laver qui hurle de terreur"
+478. 
+"un pigeon qui attaque comme un ninja"
+479. 
+"des pommes pourries qui explosent dans des nuages de vapeur"
+480. 
+"un dragon qui fume des cigarettes à l’ombre"
+481. 
+"un miroir qui déforme les visages"
+482. 
+"des doigts qui gigotent dans le noir"
+483. 
+"un gâteau d'anniversaire qui hurle quand on le coupe"
+484. 
+"un crocodile qui fait du breakdance sous la pluie"
+485. 
+"des lumières clignotantes qui viennent du futur"
+486. 
+"un chat qui se transforme en créature poilue géante"
+487. 
+"des nuages qui forment des visages terrifiants"
+488. 
+"un lapin qui rugit comme un lion"
+489. 
+"une bibliothèque qui éclate en flammes et déverse des livres maudits"
+490. 
+"des mains invisibles qui tiennent un balai et balaient seules"
+491. 
+"un chat qui déteste les canapés et les griffes"
+492. 
+"un avion qui ne veut pas voler"
+493. 
+"des escargots qui glissent en chantant du métal"
+494. 
+"un robinet qui crache du poison au lieu d'eau"
+495. 
+"des crayons de couleur qui foncent vers l’apocalypse"
+496. 
+"un drap qui se prend pour un fantôme"
+497. 
+"un dé à coudre qui explose dans une fumée verte"
+498. 
+"une boîte de conserve qui explose et envoie des confettis en feu"
+499. 
+"une cafetière qui hurle après chaque gorgée"
+500. 
+"un râteau qui se met à gémir de douleur"
+501. 
+"se curer le nez avec une baguette magique"
+502. 
+"un chien qui fait des high-five avec des pigeons"
+503. 
+"un oreiller qui vous parle dans la nuit"
+504. 
+"un cactus qui a une crise d’angoisse"
+505. 
+"un canard qui se gratte les fesses en public"
+506. 
+"un poney qui rêve d’être un hélicoptère"
+507. 
+"un clown qui pleure pendant son spectacle"
+508. 
+"un bébé qui rit en se curant le nez"
+509. 
+"une licorne qui mange du fromage"
+510. 
+"un cactus qui envoie des textos bizarres"
+511. 
+"un balai qui a des jambes et court après les souris"
+512. 
+"un robot qui rêve de faire la sieste"
+513. 
+"un gâteau d’anniversaire qui vole à travers la pièce"
+514. 
+"une bougie qui hurle à chaque souffle"
+515. 
+"un chat qui se prend pour un détective"
+516. 
+"un hamster qui fait du breakdance sur une roue"
+517. 
+"un raton laveur qui crache du feu"
+518. 
+"une chaise qui parle et critique tout le monde"
+519. 
+"un tapis volant qui veut une place dans un film d’action"
+520. 
+"un lama qui chante du rap dans un micro"
+521. 
+"un crocodile qui se prend pour une danseuse étoile"
+522. 
+"un arbre qui se transforme en spaghetti"
+523. 
+"un hamster qui vole en jet-ski"
+524. 
+"un géranium qui se fait des selfies"
+525. 
+"une mouette qui vole en parlant anglais"
+526. 
+"un crabe qui fait des blagues salaces"
+527. 
+"un chat qui porte des lunettes de soleil et se la pète"
+528. 
+"une tarte aux pommes qui court un marathon"
+529. 
+"un tracteur qui rêve de devenir une fusée"
+530. 
+"un cupcake qui veut être une pizza"
+531. 
+"une chaussure qui rêve d’être un sac à main"
+532. 
+"un robot qui s’habille en super-héros pour aller à l’école"
+533. 
+"une fourchette qui se transforme en épée magique"
+534. 
+"un perroquet qui fait des blagues de mauvais goût"
+535. 
+"un chat qui saute dans une piscine de chocolat"
+536. 
+"un hamster qui collectionne des pierres précieuses"
+537. 
+"un miroir qui te raconte des secrets effrayants"
+538. 
+"une éponge qui fait de la politique"
+539. 
+"un pingouin qui monte un skate"
+540. 
+"un coussin qui s’invente une vie amoureuse"
+541. 
+"un œuf qui se transforme en crêpe géante"
+542. 
+"une pastèque qui veut devenir un melon"
+543. 
+"une bougie qui fait des tours de magie"
+544. 
+"un fauteuil qui se met à pleurer"
+545. 
+"un thermomètre qui s’énerve quand on ne le regarde pas"
+546. 
+"des chaussettes qui se transforment en serpents"
+547. 
+"un lapin qui déteste les carottes"
+548. 
+"un chat qui fait du tricot à 3 heures du matin"
+549. 
+"une poule qui pète de la mousse à raser"
+550. 
+"un crocodile qui fait un monologue existentiel"
+551. 
+"une tartine de beurre qui se transforme en dragon"
+552. 
+"un aspirateur qui avale un nuage"
+553. 
+"un ballon de basket qui se prend pour un pingouin"
+554. 
+"un perroquet qui crache de la confiture"
+555. 
+"une boîte à musique qui veut devenir une sirène"
+556. 
+"un chat qui fait du yoga sur un nuage"
+557. 
+"une tasse à café qui chante des chansons de Noël"
+558. 
+"une chaussette qui se prend pour un détective"
+559. 
+"une girafe qui monte un cheval"
+560. 
+"un grille-pain qui pleure à chaque toast"
+561. 
+"une brosse à dents qui refuse de brosser les dents"
+562. 
+"une mouette qui vole en portant des lunettes de soleil"
+563. 
+"un fauteuil qui se transforme en trampoline"
+564. 
+"un sac à main qui parle en vers"
+565. 
+"une carotte qui fait des démonstrations de kung-fu"
+566. 
+"un chat qui se fait des crêpes à 3 heures du matin"
+567. 
+"une pizza qui se prend pour un plat principal dans un restaurant 5 étoiles"
+568. 
+"un tapis qui veut être une couverture"
+569. 
+"un hamster qui danse la valse avec une feuille de papier"
+570. 
+"un cactus qui porte des lunettes de soleil et se bronze"
+571. 
+"une bougie qui veut se marier avec un gâteau"
+572. 
+"un miroir qui se moque de ta coupe de cheveux"
+573. 
+"une pomme de terre qui veut devenir une pomme"
+574. 
+"un hamster qui se bat contre un paquet de chips"
+575. 
+"une fourchette qui rêve de devenir un couteau"
+576. 
+"une souris qui se transforme en licorne"
+577. 
+"un écureuil qui rêve de devenir un super-héros"
+578. 
+"un oreiller qui fait des rêves bizarres et en parle à tout le monde"
+579. 
+"une horloge qui court plus vite que le temps"
+580. 
+"un coussin qui te raconte sa vie amoureuse avec le canapé"
+581. 
+"un canard qui essaie de faire du skateboard"
+582. 
+"une clé qui refuse d’ouvrir les portes"
+583. 
+"une paille qui se transforme en baguette magique"
+584. 
+"un tracteur qui rêve de danser le tango"
+585. 
+"un robot qui veut devenir un chat"
+586. 
+"un pingouin qui veut monter un cirque"
+587. 
+"un crayon de couleur qui a un accès de colère"
+588. 
+"une brosse à cheveux qui se coiffe elle-même"
+589. 
+"un ballon qui explose de joie"
+590. 
+"une brosse de toilette qui fait du rap"
+591. 
+"un sac à dos qui essaie de s’envoler en parachute"
+592. 
+"un canapé qui fait du moonwalk"
+593. 
+"une éponge qui veut devenir un chanteur de rock"
+594. 
+"un téléphone qui veut un rendez-vous galant"
+595. 
+"une bougie qui pète de la vapeur de chocolat"
+596. 
+"une chaussure qui décide de partir en vacances à la plage"
+597. 
+"un canard qui fait des claquettes"
+598. 
+"une lampe qui allume des étincelles de bonheur"
+599. 
+"une fourchette qui rêverait de devenir un chef cuisinier"
+600. 
+"un coussin qui te demande de l’aide pour une audition"
+601. 
+"un coussin péteur qui se prend pour une arme secrète"
+602. 
+"une paille incendiaire qui fait un barbecue"
+603. 
+"un furoncle sur le front qui veut se faire une carrière de star"
+604. 
+"une crotte de nez qui décide de faire une tournée mondiale"
+605. 
+"une patate dans la face qui crie ‘au secours!’"
+606. 
+"des dents de castor qui essayent de mordre une brique"
+607. 
+"un rot dans le micro qui dure trois minutes"
+608. 
+"le ventre qui gargouille plus fort que des tambours de guerre"
+609. 
+"des chaussures qui refusent de sortir de leur boîte"
+610. 
+"un chapeau qui se cache du soleil"
+611. 
+"une chaussette qui se transforme en espion"
+612. 
+"un trombone qui rêve de devenir un spaghetti"
+613. 
+"un ballon qui explose de joie"
+614. 
+"une fourchette qui décide de devenir une cuillère à soupe"
+615. 
+"un paon qui essaie d’être un flamant rose"
+616. 
+"une lampe qui éclaire plus quand tu n’as pas besoin de lumière"
+617. 
+"un poisson rouge qui organise une fête sur le canapé"
+618. 
+"un tapis qui veut un petit frère"
+619. 
+"une baguette de pain qui danse la salsa"
+620. 
+"un vieux t-shirt qui rêve de devenir un drapeau"
+621. 
+"une roue de vélo qui veut être une porte de garage"
+622. 
+"un couvercle de casserole qui se prend pour une soucoupe volante"
+623. 
+"une pâte à pizza qui se transforme en créature mythologique"
+624. 
+"une goutte d’eau qui saute de joie"
+625. 
+"une porte qui refuse de fermer"
+626. 
+"un ver de terre qui se prend pour un détective privé"
+627. 
+"un râteau qui décide de déménager en Afrique"
+628. 
+"une chaussette qui s’embrasse dans le noir"
+629. 
+"une brosse à dents qui veut devenir une brosse de bain"
+630. 
+"un coussin de canapé qui se met à râler"
+631. 
+"un pyjama qui essaie de s’échapper de l’armoire"
+632. 
+"un dé à coudre qui décide de devenir une bague"
+633. 
+"une pâte à modeler qui se fait une coupe de cheveux"
+634. 
+"un trombone qui devient un chef d’orchestre"
+635. 
+"une brique qui décide de jouer à cache-cache"
+636. 
+"un miroir qui commence à raconter sa vie"
+637. 
+"une montre qui a un accident avec le temps"
+638. 
+"des lunettes de soleil qui veulent se cacher sous un chapeau"
+639. 
+"une souris qui prend des cours de danse contemporaine"
+640. 
+"un chat qui mange des croquettes en regardant des films d’action"
+641. 
+"un micro-onde qui hurle chaque fois qu’il tourne"
+642. 
+"une bouteille de lait qui rêve de devenir une bouteille de vin"
+643. 
+"un oreiller qui se prend pour un mini canapé"
+644. 
+"une montre en bois qui refait sa vie après une rupture"
+645. 
+"des chaussettes qui se transforment en serpents géants"
+646. 
+"un parapluie qui se transforme en moustache géante"
+647. 
+"un escargot qui fait du ski nautique"
+648. 
+"un chewing-gum qui devient une œuvre d’art"
+649. 
+"un trombone qui décide de diriger un orchestre symphonique"
+650. 
+"un pissenlit qui rêve de devenir une fleur de lotus"
+651. 
+"un chien qui porte des lunettes de soleil et fait du yoga"
+652. 
+"un hamburger qui se transforme en éclat de rire"
+653. 
+"une pomme de terre qui organise un cours de danse"
+654. 
+"une banane qui veut devenir une fusée"
+655. 
+"un ticket de métro qui rêve d’être une star de cinéma"
+656. 
+"une bougie qui a des regrets"
+657. 
+"un éclair qui se prend pour un éclair de génie"
+658. 
+"un thermomètre qui préfère être une baguette de pain"
+659. 
+"une baguette magique qui fait apparaître des cacahuètes"
+660. 
+"une chaussure qui essaie de devenir un pied"
+661. 
+"une vache qui rêve d’être un lion"
+662. 
+"une cuillère qui s’imagine être une fourchette"
+663. 
+"un aspirateur qui se prend pour un super-héros"
+664. 
+"une chaussette qui tente de convaincre l’autre de partir en vacances"
+665. 
+"un cheval qui fait des grimaces"
+666. 
+"une bouteille d'eau qui se transforme en fontaine de chocolat"
+667. 
+"un cactus qui hurle quand on lui touche les épines"
+668. 
+"une poignée de porte qui se met à chanter des chansons tristes"
+669. 
+"un verre d’eau qui veut absolument prendre des vacances"
+670. 
+"un pamplemousse qui rêve d’être un melon"
+671. 
+"une pomme qui veut devenir une pastèque"
+672. 
+"un canard qui essaie de faire du skate sur un trottoir"
+673. 
+"une carotte qui fait de la gymnastique rythmique"
+674. 
+"un hamster qui veut monter un cirque"
+675. 
+"une pizza qui devient une explosion de feu"
+676. 
+"un fouet qui veut se transformer en serpent géant"
+677. 
+"une porte qui danse le cha-cha-cha toute seule"
+678. 
+"une bougie qui pleure chaque fois qu’on l’allume"
+679. 
+"une fourchette qui se prend pour un stylo"
+680. 
+"un bol de céréales qui tente de conquérir l’espace"
+681. 
+"un pull qui se prend pour un t-shirt"
+682. 
+"un chocolat qui fond sous la chaleur de la lumière"
+683. 
+"un trombone qui pense qu'il est un élastique"
+684. 
+"une étagère qui se rebelle contre les livres"
+685. 
+"une brosse à cheveux qui se transforme en brosse à dents"
+686. 
+"un robot qui rêve d’être une pastèque géante"
+687. 
+"un œuf qui éclate et raconte sa vie"
+688. 
+"une lampe qui fait des étincelles de paillettes"
+689. 
+"un savon qui refuse de se laver"
+690. 
+"un pigeon qui se transforme en flamant rose"
+691. 
+"un sac à dos qui se prend pour un coussin"
+692. 
+"une éponge qui rêve d’être une guirlande lumineuse"
+693. 
+"un râteau qui se déguise en moustache"
+694. 
+"une plume qui se prend pour un ventilateur"
+695. 
+"une tasse de café qui fait des claquettes"
+696. 
+"une montre qui essaye de rattraper le temps"
+697. 
+"un ours en peluche qui fait des blagues de mauvais goût"
+698. 
+"une fourchette qui essaie de devenir une épée"
+699. 
+"un rouleau de papier toilette qui veut changer le monde"
+700. 
+"un canapé qui se cache sous le tapis"
+701. 
+"un coussin qui vomit des arcs-en-ciel"
+702. 
+"une mouette qui joue à Fortnite en 4K"
+703. 
+"une brosse à dents qui te crie dessus"
+704. 
+"une patate qui a décidé de devenir une pizza"
+705. 
+"une tétine de bébé qui parle le swahili"
+706. 
+"un trombone qui se prend pour une sirène"
+707. 
+"un gâteau au chocolat qui rêve d'être une star de cinéma"
+708. 
+"un hamster qui se déguise en licorne pour Halloween"
+709. 
+"un savon qui se prend pour un sushi"
+710. 
+"un chewing-gum qui fait du yoga avec des dauphins"
+711. 
+"un parapluie qui devient une sculpture de Picasso"
+712. 
+"une chaussette qui fait de la chirurgie esthétique"
+713. 
+"un canapé qui se prend pour un trampoline"
+714. 
+"une mouche qui rêve de piloter un avion de chasse"
+715. 
+"une cuillère qui essaie de sauver l’univers"
+716. 
+"une carotte qui décide de faire de la boxe"
+717. 
+"un seau de peinture qui explose de colère"
+718. 
+"un aspirateur qui veut faire de l’escalade"
+719. 
+"une éponge qui fait du roller"
+720. 
+"un chat qui a une crise d’identité"
+721. 
+"une banane qui se transforme en vache"
+722. 
+"une boîte de céréales qui veut faire du stand-up"
+723. 
+"un raton laveur qui se prend pour un astronaute"
+724. 
+"une fourchette qui fait du karaté"
+725. 
+"un téléphone qui parle comme Yoda"
+726. 
+"un cactus qui hurle comme une sirène de pompiers"
+727. 
+"une pizza qui fait des jongles avec des œufs"
+728. 
+"une échelle qui se prend pour une fusée"
+729. 
+"une mouette qui porte un costume de super-héros"
+730. 
+"un crocodile qui fait du macramé"
+731. 
+"un poulet qui veut ouvrir un salon de coiffure"
+732. 
+"une brosse à cheveux qui pense être un piano"
+733. 
+"un oreiller qui fait des vidéos TikTok"
+734. 
+"une pelle à poussière qui rêve de devenir une brouette"
+735. 
+"un pain de mie qui s’éclate en boîte de nuit"
+736. 
+"une touffe de poils qui se prend pour une boule disco"
+737. 
+"un chat qui médite pour devenir un ninja"
+738. 
+"une pièce de monnaie qui veut devenir une star de cinéma"
+739. 
+"un sac à dos qui court un marathon"
+740. 
+"un crayon qui se transforme en trompette"
+741. 
+"un portefeuille qui part en vacances à la plage"
+742. 
+"un chausson qui veut devenir un soldat"
+743. 
+"une feuille de papier qui a un accès de colère"
+744. 
+"un extincteur qui parle de ses traumatismes d’enfance"
+745. 
+"un oeuf qui pleure dans un coin"
+746. 
+"un feu de camp qui crie comme un bébé"
+747. 
+"une plume de dindon qui se prend pour un chef cuisinier"
+748. 
+"un trombone qui s’évapore dans un tourbillon"
+749. 
+"un sac poubelle qui rêve d’être une star du cirque"
+750. 
+"une mouette ayant des tatouages tribaux"
