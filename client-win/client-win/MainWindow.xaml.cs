@@ -7,6 +7,7 @@ using System.Windows.Automation.Provider;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
+using client_win.Modules.Shell.Views;
 
 namespace client_win
 {
