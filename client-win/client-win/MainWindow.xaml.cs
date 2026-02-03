@@ -17,6 +17,7 @@ namespace client_win
         private DispatcherTimer? _focusRetryTimer;
         private int _focusRetryAttempts;
         private const int MaxFocusRetryAttempts = 12;
+        private bool _pendingScreenReaderAnnouncement;
 
         public MainWindow()
         {
@@ -27,6 +28,7 @@ namespace client_win
             
             Loaded += OnLoaded;
             Activated += OnActivated;
+            AddHandler(Keyboard.GotKeyboardFocusEvent, new KeyboardFocusChangedEventHandler(OnWindowGotKeyboardFocus), handledEventsToo: true);
         }
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -159,15 +161,15 @@ namespace client_win
         {
             try
             {
-                if (RootHost?.Content is IInitialFocusTarget initialFocusTarget)
-                {
-                    initialFocusTarget.RequestInitialFocus();
-                    if (Keyboard.FocusedElement is IInputElement focused)
-                    {
-                        NotifyScreenReader(focused);
-                        StopFocusRetryLoop();
-                    }
-                }
+            if (RootHost?.Content is IInitialFocusTarget initialFocusTarget)
+            {
+                _pendingScreenReaderAnnouncement = true;
+                initialFocusTarget.RequestInitialFocus();
+            }
+            else
+            {
+                _pendingScreenReaderAnnouncement = false;
+            }
             }
             catch
             {
@@ -226,6 +228,22 @@ namespace client_win
             _focusRetryTimer.Tick -= OnFocusRetryTick;
             _focusRetryTimer = null;
             _focusRetryAttempts = 0;
+            _pendingScreenReaderAnnouncement = false;
+        }
+
+        private void OnWindowGotKeyboardFocus(object? sender, KeyboardFocusChangedEventArgs e)
+        {
+            if (!_pendingScreenReaderAnnouncement)
+            {
+                return;
+            }
+
+            if (e.NewFocus is IInputElement element && !ShouldSkipStartupFocusTarget(element))
+            {
+                _pendingScreenReaderAnnouncement = false;
+                NotifyScreenReader(element);
+                StopFocusRetryLoop();
+            }
         }
 
         private static bool ShouldSkipStartupFocusTarget(IInputElement? element)
