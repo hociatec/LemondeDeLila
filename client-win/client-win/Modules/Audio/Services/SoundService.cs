@@ -106,15 +106,15 @@ public sealed class SoundService : ISoundService, IDisposable
             !string.Equals(Environment.GetEnvironmentVariable("LMDL_ALLOW_LOCAL_SOUNDS"), "1", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(Environment.GetEnvironmentVariable("LMDL_ALLOW_LOCAL_SOUNDS"), "true", StringComparison.OrdinalIgnoreCase);
 
-        // Safety: system sounds (login/logout/close) default to local files for reliability.
-        // Set `LMDL_ALLOW_REMOTE_SYSTEM_SOUNDS=1` to opt-in to server overrides for these events.
+        // System sounds (login/logout/close) can use server overrides when available.
+        // Set `LMDL_ALLOW_REMOTE_SYSTEM_SOUNDS=0` or `LMDL_PREFER_LOCAL_SYSTEM_SOUNDS=1` to force local files.
         var allowRemoteSystemSounds =
-            string.Equals(Environment.GetEnvironmentVariable("LMDL_ALLOW_REMOTE_SYSTEM_SOUNDS"), "1", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(Environment.GetEnvironmentVariable("LMDL_ALLOW_REMOTE_SYSTEM_SOUNDS"), "true", StringComparison.OrdinalIgnoreCase);
+            !string.Equals(Environment.GetEnvironmentVariable("LMDL_ALLOW_REMOTE_SYSTEM_SOUNDS"), "0", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(Environment.GetEnvironmentVariable("LMDL_ALLOW_REMOTE_SYSTEM_SOUNDS"), "false", StringComparison.OrdinalIgnoreCase);
         _preferLocalSystemSounds =
-            !allowRemoteSystemSounds ||
             string.Equals(Environment.GetEnvironmentVariable("LMDL_PREFER_LOCAL_SYSTEM_SOUNDS"), "1", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(Environment.GetEnvironmentVariable("LMDL_PREFER_LOCAL_SYSTEM_SOUNDS"), "true", StringComparison.OrdinalIgnoreCase);
+            string.Equals(Environment.GetEnvironmentVariable("LMDL_PREFER_LOCAL_SYSTEM_SOUNDS"), "true", StringComparison.OrdinalIgnoreCase) ||
+            !allowRemoteSystemSounds;
 
         _options.Changed += OnOptionsChanged;
 
