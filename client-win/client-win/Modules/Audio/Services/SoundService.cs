@@ -1934,8 +1934,50 @@ public sealed class SoundService : ISoundService, IDisposable
 
     private string ResolveFilePath(SoundId sound, SoundEntry entry)
     {
+        if (sound == SoundId.ClientConnected)
+        {
+            try
+            {
+                var overridePath = entry.OverridePath?.Invoke();
+                if (!string.IsNullOrWhiteSpace(overridePath))
+                {
+                    var candidate = Path.GetFullPath(overridePath);
+                    if (File.Exists(candidate))
+                    {
+                        return candidate;
+                    }
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+
+            if (_remoteSoundsEnabled)
+            {
+                var remotePath = _remote?.TryGetPath(sound);
+                if (!string.IsNullOrWhiteSpace(remotePath))
+                {
+                    try
+                    {
+                        var candidate = Path.GetFullPath(remotePath);
+                        if (File.Exists(candidate))
+                        {
+                            return candidate;
+                        }
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+            }
+
+            return ResolveFilePath(entry);
+        }
+
         if (_preferLocalSystemSounds &&
-            (sound == SoundId.ClientConnected || sound == SoundId.ClientDisconnected || sound == SoundId.ClientClosing))
+            (sound == SoundId.ClientDisconnected || sound == SoundId.ClientClosing))
         {
             return ResolveFilePath(entry);
         }
