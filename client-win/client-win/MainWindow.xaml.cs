@@ -117,6 +117,10 @@ namespace client_win
                     var target = FindFirstFocusableElement() ?? this;
                     FocusAndAnnounce(target);
                     RequestContentInitialFocus();
+                    if (!IsKeyboardFocusWithin)
+                    {
+                        StartFocusRetryLoop();
+                    }
                 }
                 finally
                 {
