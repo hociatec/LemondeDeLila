@@ -397,10 +397,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             shouldTransition = true;
         }
 
-        // If a connect one-shot is still queued/playing, cancel it to ensure the disconnect feedback is audible.
-        CancelOneShots(SoundId.ClientConnected);
-        ClearPendingConnectedOneShot();
-        try { _sounds.Stop(SoundId.ClientConnected); } catch { /* ignore */ }
+        // Allow login and disconnect sounds to overlap: do not stop ClientConnected here.
 
         if (ShouldSuppressDisconnectSound())
         {
@@ -412,8 +409,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                     Volatile.Write(ref _disconnectedSoundPlayedSequence, logoutSeq);
                 }
             }
-
-            ClearPendingConnectedOneShot();
 
             if (shouldTransition)
             {
