@@ -200,5 +200,18 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     needs: [client_win_publish]
     steps:
+      - name: Guard stale deploy lock
+        run: |
+          set -euo pipefail
+          LOCK=/var/lock/lemonde-deploy.lock
+          if sudo test -f "$LOCK"; then
+            PID=$(sudo cat "$LOCK" 2>/dev/null || true)
+            if [ -n "$PID" ] && sudo kill -0 "$PID" >/dev/null 2>&1; then
+              echo "Deploy lock already held by running PID $PID"
+              exit 1
+            fi
+            echo "Removing stale deploy lock left by PID ${PID:-unknown}"
+            sudo rm -f "$LOCK"
+          fi
       - name: Deploy on server
         run: sudo /usr/local/sbin/deploy-lemonde-prod
