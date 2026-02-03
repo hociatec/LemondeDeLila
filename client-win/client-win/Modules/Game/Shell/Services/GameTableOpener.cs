@@ -1148,7 +1148,7 @@ public sealed class GameTableOpener : IGameTableOpener
                             try { _sounds.PreloadAll(); } catch { }
                         }
 
-                        try { await _remoteSounds.RefreshAsync(force: false).ConfigureAwait(false); } catch { }
+                        try { await _audio.RefreshRemoteSoundsAsync(force: true, reapplyBackground: false, cancellationToken: cts.Token).ConfigureAwait(false); } catch { }
 
                         var rawAmbience = (session?.LastRoomState?.Room?.TableAmbienceSoundId ?? string.Empty).Trim();
                         if (!string.IsNullOrWhiteSpace(rawAmbience) &&
