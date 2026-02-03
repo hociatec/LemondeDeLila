@@ -1249,47 +1249,30 @@ public sealed class GameTableOpener : IGameTableOpener
                         // best-effort
                     }
 
-                    try
+                    var openWarm = _sounds.WarmUpAsync(openSound);
+
+                    var soundsToWarm = new[]
                     {
-                        using var warmUpCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(750));
-                        await _sounds.WarmUpAsync(openSound, warmUpCts.Token).ConfigureAwait(true);
+                        SoundId.DiceRolled,
+                        SoundId.QuizCorrect,
+                        SoundId.QuizWrong,
+                        SoundId.RoundEnded,
+                        SoundId.PawnPicked,
+                        SoundId.PawnPlacedSelf,
+                        SoundId.PawnPlacedOpponent,
+                        SoundId.WallPlacedSelf,
+                        SoundId.WallPlacedOpponent,
+                    };
+
+                    foreach (var sound in soundsToWarm)
+                    {
+                        _ = _sounds.WarmUpAsync(sound);
                     }
-                    catch
+
+                    _ = openWarm.ContinueWith(_ =>
                     {
-                        // best-effort
-                    }
-
-                    // Kickstart other common gameplay one-shots without delaying the UI.
-                    _ = Task.Run(async () =>
-                    {
-                        using var warmUpCts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-                        var soundsToWarm = new[]
-                        {
-                            SoundId.DiceRolled,
-                            SoundId.QuizCorrect,
-                            SoundId.QuizWrong,
-                            SoundId.RoundEnded,
-                            SoundId.PawnPicked,
-                            SoundId.PawnPlacedSelf,
-                            SoundId.PawnPlacedOpponent,
-                            SoundId.WallPlacedSelf,
-                            SoundId.WallPlacedOpponent,
-                        };
-
-                        foreach (var sound in soundsToWarm)
-                        {
-                            try
-                            {
-                                await _sounds.WarmUpAsync(sound, warmUpCts.Token).ConfigureAwait(false);
-                            }
-                            catch
-                            {
-                                // best-effort
-                            }
-                        }
-                    });
-
-                    try { _sounds.Play(openSound); } catch { }
+                        try { _sounds.Play(openSound); } catch { }
+                    }, TaskScheduler.Default);
 
                     bindings = new GameTableBindings(
                         dispatcher: dispatcher,
