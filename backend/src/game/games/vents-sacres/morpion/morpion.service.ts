@@ -183,14 +183,18 @@ export class MorpionService implements GameRulesAdapter, OnModuleInit {
     };
 
     const nextStatus = winnerId || isDraw ? 'finished' : state.status;
-    const log = Array.isArray(state.log) ? [...state.log] : [];
     const actorName = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
+    const glyph = this.glyphForOwner(actorId, players);
+    const cellRef = this.toCellRef({ x, y }, size);
+    let log = this.appendLog(state.log, `${actorName} place ${glyph} en ${cellRef}.`);
     if (winnerId) {
-      log.push({ message: `${actorName} gagne !` });
+      log = this.appendLog(log, 'Fin de la manche.');
+      log = this.appendLog(log, `Victoire de ${actorName}.`);
       (nextMeta as any).winnerPlayerId = winnerId;
       (nextMeta as any).winnerId = winnerId;
     } else if (isDraw) {
-      log.push({ message: 'Match nul.' });
+      log = this.appendLog(log, 'Fin de la manche.');
+      log = this.appendLog(log, 'Match nul.');
     }
 
     return {
@@ -261,5 +265,31 @@ export class MorpionService implements GameRulesAdapter, OnModuleInit {
     }
 
     return null;
+  }
+
+  private appendLog(log: Array<{ message: string; timestamp?: string }> | undefined, message: string) {
+    const trimmed = (message ?? '').trim();
+    const next = Array.isArray(log) ? [...log] : [];
+    if (!trimmed) {
+      return next;
+    }
+    next.push({ message: trimmed, timestamp: new Date().toISOString() });
+    return next;
+  }
+
+  private toCellRef(pos: { x: number; y: number }, size: number): string {
+    const colIndex = Math.max(0, Math.min(size - 1, Math.floor(pos.x)));
+    const rowIndex = Math.max(0, Math.min(size - 1, Math.floor(pos.y)));
+    const col = String.fromCharCode(65 + colIndex);
+    const row = rowIndex + 1;
+    return `${col}${row}`;
+  }
+
+  private glyphForOwner(ownerId: number, players: any[]): string {
+    const player0 = players[0]?.id ?? 1;
+    const player1 = players[1]?.id ?? 2;
+    if (ownerId === player0) return 'X';
+    if (ownerId === player1) return 'O';
+    return '@';
   }
 }
