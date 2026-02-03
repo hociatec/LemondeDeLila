@@ -80,7 +80,7 @@ export class AFondLesBallonsSetupService {
     next = this.core.appendLog(next, '=== A fond les ballons ! ===');
     next = this.core.appendLog(
       next,
-      "Objectif : atteindre exactement la case 40 (la Grosse Noix Dorée). Si vous dépassez, vous reculez du surplus.",
+      "Objectif : atteindre exactement la case 40 (la Grosse Noix Dor�e). Si vous d�passez, vous reculez du surplus.",
     );
     next = this.core.appendLog(next, 'Pions disponibles :');
     for (const pawn of A_FOND_LES_BALLONS_PAWNS) {
@@ -142,15 +142,15 @@ function buildTiles(): AFondLesBallonsTile[] {
 
     const label =
       type === 'start'
-        ? 'DÃ©part - La TaniÃ¨re Ã  Tartines'
+        ? 'Départ - La Tanière à Tartines'
         : type === 'finish'
-          ? 'La Grosse Noix DorÃ©e'
+          ? 'La Grosse Noix Dorée'
           : type === 'bonus'
             ? 'Bonus'
             : type === 'folie'
               ? 'Folie'
               : type === 'piege'
-                ? 'PiÃ¨ge'
+                ? 'Piège'
                 : type === 'glissade'
                   ? 'Glissade'
                   : type === 'tornade'
@@ -254,57 +254,57 @@ function buildCharactersByPlayerId(
 }
 
 const CASE_DESCRIPTIONS: string[] = [
-  "Vous commencez votre aventure Ã  la TaniÃ¨re Ã  Tartines. Prenez une grande inspiration et sentez l'air frais de la course.",
-  "Un tunnel secret s'ouvre entre deux racines. Vous glissez Ã  toute vitesse et avancez de 2 cases supplÃ©mentaires.",
+  "Vous commencez votre aventure à la Tanière à Tartines. Prenez une grande inspiration et sentez l'air frais de la course.",
+  "Un tunnel secret s'ouvre entre deux racines. Vous glissez à toute vitesse et avancez de 2 cases supplémentaires.",
   "Une noix farfelue rebondit devant vous ! La folie vous emporte : piochez une carte Loufoque.",
   'Des feuilles mortes crissent sous vos pattes, mais vous avancez calmement.',
-  'Une tartine gluante traÃ®ne sur le sol. Oh non ! Vous glissez et reculez de 2 cases.',
-  'Une flaque de confiture vous fait tourner sur vous-mÃªme. Avancez ou reculez de 1 Ã  3 cases, alÃ©atoirement.',
-  'Une douce brise caresse vos moustaches. Rien Ã  signaler ici, continuez votre route.',
-  "Un vent fou souffle dans la clairiÃ¨re ! Vous Ã©changez votre place avec un joueur de votre choix.",
-  "Une gerbille farceuse vous regarde intensÃ©ment. La folie s'empare de vous : piochez une carte Loufoque.",
-  'Une clairiÃ¨re tranquille sâ€™Ã©tend devant vous, idÃ©ale pour souffler un peu.',
-  'Vous dÃ©couvrez un passage rapide entre les arbres. Avancez de 2 cases supplÃ©mentaires.',
+  'Une tartine gluante traîne sur le sol. Oh non ! Vous glissez et reculez de 2 cases.',
+  'Une flaque de confiture vous fait tourner sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement.',
+  'Une douce brise caresse vos moustaches. Rien à signaler ici, continuez votre route.',
+  "Un vent fou souffle dans la clairière ! Vous échangez votre place avec un joueur de votre choix.",
+  "Une gerbille farceuse vous regarde intensément. La folie s'empare de vous : piochez une carte Loufoque.",
+  'Une clairière tranquille s�"étend devant vous, idéale pour souffler un peu.',
+  'Vous découvrez un passage rapide entre les arbres. Avancez de 2 cases supplémentaires.',
   'Vous glissez sur une racine humide ! Reculez de 2 cases.',
-  'Un petit ruisseau vous fait tourner sur vous-mÃªme. Avancez ou reculez de 1 Ã  3 cases, alÃ©atoirement.',
-  'Vous passez sous un vieux chÃªne majestueux. Rien ne vous retient ici.',
-  'Une bulle de savon gÃ©ante apparaÃ®t ! Piochez une carte Loufoque et appliquez son effet.',
-  "Un tunnel sombre et secret s'ouvre. Vous avancez de 2 cases supplÃ©mentaires.",
-  "Une flaque de sirop gluant vous fait perdre l'Ã©quilibre. Reculez de 2 cases.",
-  'Le sol est recouvert de mousse glissante. Tournez sur vous-mÃªme et avancez ou reculez de 1 Ã  3 cases, alÃ©atoirement.',
+  'Un petit ruisseau vous fait tourner sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement.',
+  'Vous passez sous un vieux chêne majestueux. Rien ne vous retient ici.',
+  'Une bulle de savon géante apparaît ! Piochez une carte Loufoque et appliquez son effet.',
+  "Un tunnel sombre et secret s'ouvre. Vous avancez de 2 cases supplémentaires.",
+  "Une flaque de sirop gluant vous fait perdre l'équilibre. Reculez de 2 cases.",
+  'Le sol est recouvert de mousse glissante. Tournez sur vous-même et avancez ou reculez de 1 à 3 cases, aléatoirement.',
   "Une odeur de noisette flotte dans l'air. Vous pouvez avancer tranquillement.",
   'Une noix chanteuse vous perturbe. Piochez une carte Loufoque.',
-  'Catastrophe ! Le Grand Chaton Gourmand rÃ´de ici. Il vous attrape et vous renvoie Ã  la case dÃ©part.',
-  'Un petit tunnel secret se rÃ©vÃ¨le derriÃ¨re un buisson. Avancez de 2 cases supplÃ©mentaires.',
-  'Une tartine tombÃ©e vous fait glisser. Reculez de 2 cases.',
-  'Une flaque de lait renversÃ© vous fait tourner. Avancez ou reculez de 1 Ã  3 cases, alÃ©atoirement.',
-  'Une branche basse frÃ´le votre museau. Rien de bien mÃ©chant ici.',
+  'Catastrophe ! Le Grand Chaton Gourmand rôde ici. Il vous attrape et vous renvoie à la case départ.',
+  'Un petit tunnel secret se révèle derrière un buisson. Avancez de 2 cases supplémentaires.',
+  'Une tartine tombée vous fait glisser. Reculez de 2 cases.',
+  'Une flaque de lait renversé vous fait tourner. Avancez ou reculez de 1 à 3 cases, aléatoirement.',
+  'Une branche basse frôle votre museau. Rien de bien méchant ici.',
   'Un minuscule campagnol farceur surgit. Piochez une carte Loufoque.',
-  'Vous trouvez un passage rapide entre les rochers. Avancez de 2 cases supplÃ©mentaires.',
-  "Une tartine gluante apparaÃ®t au dÃ©tour d'un chemin. Reculez de 2 cases.",
-  'Une feuille glissante vous fait tourner sur vous-mÃªme. Avancez ou reculez de 1 Ã  3 cases, alÃ©atoirement.',
-  'Vous traversez un sentier calme bordÃ© de fleurs. Rien ne vous retient.',
-  'Un vent tourbillonnant soulÃ¨ve des feuilles et petits cailloux. Ã‰changez votre place avec un joueur de votre choix.',
+  'Vous trouvez un passage rapide entre les rochers. Avancez de 2 cases supplémentaires.',
+  "Une tartine gluante apparaît au détour d'un chemin. Reculez de 2 cases.",
+  'Une feuille glissante vous fait tourner sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement.',
+  'Vous traversez un sentier calme bordé de fleurs. Rien ne vous retient.',
+  'Un vent tourbillonnant soulève des feuilles et petits cailloux. �0changez votre place avec un joueur de votre choix.',
   'Une noix magique tombe juste devant vous. Piochez une carte Loufoque.',
-  'Vous trouvez un tunnel Ã©troit cachÃ© sous les racines. Avancez de 2 cases supplÃ©mentaires.',
+  'Vous trouvez un tunnel étroit caché sous les racines. Avancez de 2 cases supplémentaires.',
   'Une flaque de confiture inattendue vous fait reculer de 2 cases.',
-  'Un ruisseau bouillonnant vous fait tourner sur vous-mÃªme. Avancez ou reculez de 1 Ã  3 cases, alÃ©atoirement.',
-  'Une petite clairiÃ¨re ensoleillÃ©e vous permet de souffler un peu.',
-  'Un Ã©trange bruit derriÃ¨re un buisson vous surprend. Piochez une carte Loufoque.',
-  "Une tartine glissante vous fait perdre l'Ã©quilibre. Reculez de 2 cases.",
-  'Vous glissez sur une feuille humide et tournez sur vous-mÃªme. Avancez ou reculez de 1 Ã  3 cases, alÃ©atoirement.',
-  "La Grosse Noix DorÃ©e est juste lÃ  ! Vous l'atteignez enfin et remportez la partie. FÃ©licitations, Rongeur SuprÃªme !",
+  'Un ruisseau bouillonnant vous fait tourner sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement.',
+  'Une petite clairière ensoleillée vous permet de souffler un peu.',
+  'Un étrange bruit derrière un buisson vous surprend. Piochez une carte Loufoque.',
+  "Une tartine glissante vous fait perdre l'équilibre. Reculez de 2 cases.",
+  'Vous glissez sur une feuille humide et tournez sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement.',
+  "La Grosse Noix Dorée est juste là ! Vous l'atteignez enfin et remportez la partie. Félicitations, Rongeur Suprême !",
 ];
 
 function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
   return [
     {
       id: 1,
-      text: 'Vous glissez sur une peau de banane sÃ©chÃ©e. Reculez de 2 cases.',
+      text: 'Vous glissez sur une peau de banane séchée. Reculez de 2 cases.',
     },
     {
       id: 2,
-      text: 'Un muscardin vous livre un cookie gÃ©ant, beaucoup trop lourd. Passez votre tour.',
+      text: 'Un muscardin vous livre un cookie géant, beaucoup trop lourd. Passez votre tour.',
     },
     {
       id: 3,
@@ -312,11 +312,11 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 4,
-      text: "Une noix Ã©trange chante et perturbe la TaniÃ¨re. La partie est figÃ©e : aucun joueur n'agit pendant ce tour.",
+      text: "Une noix étrange chante et perturbe la Tanière. La partie est figée : aucun joueur n'agit pendant ce tour.",
     },
     {
       id: 5,
-      text: 'Un Ã©cureuil volant vous prend pour un ami et vous emporte dans les airs. Avancez de 4 cases.',
+      text: 'Un écureuil volant vous prend pour un ami et vous emporte dans les airs. Avancez de 4 cases.',
     },
     {
       id: 6,
@@ -324,16 +324,16 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 7,
-      text: 'Vous trouvez une corde Ã  sauter en rÃ©glisse enchantÃ©e. Avancez de 2 cases.',
+      text: 'Vous trouvez une corde à sauter en réglisse enchantée. Avancez de 2 cases.',
     },
-    { id: 8, text: "Le Grand Chaton Ã©ternue violemment. Reculez d'une case." },
+    { id: 8, text: "Le Grand Chaton éternue violemment. Reculez d'une case." },
     {
       id: 9,
       text: 'Vous vous prenez les pattes dans du chewing-gum collant. Passez votre tour.',
     },
     {
       id: 10,
-      text: "Un lÃ©rot ninja surgit et vous tend une noisette turbo. Avancez jusqu'Ã  la prochaine case Bonus.",
+      text: "Un lérot ninja surgit et vous tend une noisette turbo. Avancez jusqu'à la prochaine case Bonus.",
     },
     {
       id: 11,
@@ -341,7 +341,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 12,
-      text: "Votre museau vous dÃ©mange sans raison. Reculez d'une case.",
+      text: "Votre museau vous démange sans raison. Reculez d'une case.",
     },
     {
       id: 13,
@@ -353,19 +353,19 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 15,
-      text: "Vous faites tomber une montagne de cacahuÃ¨tes. Distrait, vous reculez d'une case.",
+      text: "Vous faites tomber une montagne de cacahuètes. Distrait, vous reculez d'une case.",
     },
     {
       id: 16,
-      text: "Une bulle de savon gÃ©ante vous emporte. Avancez jusqu'Ã  la prochaine case Folie.",
+      text: "Une bulle de savon géante vous emporte. Avancez jusqu'à la prochaine case Folie.",
     },
     {
       id: 17,
-      text: 'Un capybara vous invite Ã  une sieste improvisÃ©e. Passez votre tour et ronflez Ã  ses cÃ´tÃ©s.',
+      text: 'Un capybara vous invite à une sieste improvisée. Passez votre tour et ronflez à ses côtés.',
     },
     {
       id: 18,
-      text: 'Une souris malicieuse vous pique une noisette et file Ã  toute vitesse. Vous la poursuivez et avancez de 2 cases.',
+      text: 'Une souris malicieuse vous pique une noisette et file à toute vitesse. Vous la poursuivez et avancez de 2 cases.',
     },
     {
       id: 19,
@@ -383,7 +383,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
       id: 22,
       text: 'Une baguette magique vous transforme temporairement en fromage. Passez deux tours.',
     },
-    { id: 23, text: 'Vous trouvez un trampoline gÃ©ant. Avancez de 4 cases.' },
+    { id: 23, text: 'Vous trouvez un trampoline géant. Avancez de 4 cases.' },
     {
       id: 24,
       text: 'Un agouti philosophe vous parle longuement. Passez votre tour.',
@@ -394,7 +394,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 26,
-      text: 'Vous Ã©ternuez des confettis multicolores. Tous les joueurs avancent du mÃªme nombre de cases obtenu prÃ©cÃ©demment.',
+      text: 'Vous éternuez des confettis multicolores. Tous les joueurs avancent du même nombre de cases obtenu précédemment.',
     },
     {
       id: 27,
@@ -402,7 +402,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 28,
-      text: 'Vous lisez un vieux grimoire ronronique. Ã‰changez votre position avec le joueur de votre choix.',
+      text: 'Vous lisez un vieux grimoire ronronique. �0changez votre position avec le joueur de votre choix.',
     },
     {
       id: 29,
@@ -410,19 +410,19 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 30,
-      text: "Vous tombez dans une mare d'Ã©paisse mousse. Passez votre tour.",
+      text: "Vous tombez dans une mare d'épaisse mousse. Passez votre tour.",
     },
     {
       id: 31,
-      text: "Un hutia curieux bondit sur votre chemin et vous bouscule gentiment. Avancez d'une case, un peu Ã©tourdi.",
+      text: "Un hutia curieux bondit sur votre chemin et vous bouscule gentiment. Avancez d'une case, un peu étourdi.",
     },
     {
       id: 32,
-      text: 'Un fromage qui parle vous raconte une irrÃ©sistible blague. Avancez de 2 cases.',
+      text: 'Un fromage qui parle vous raconte une irrésistible blague. Avancez de 2 cases.',
     },
     {
       id: 33,
-      text: 'Vous jouez Ã  saute-rongeur avec un paca. Avancez de 3 cases.',
+      text: 'Vous jouez à saute-rongeur avec un paca. Avancez de 3 cases.',
     },
     {
       id: 34,
@@ -430,11 +430,11 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 35,
-      text: "Un tunnel dÃ©fectueux vous mÃ¨ne droit chez le Chaton gourmand. Retournez Ã  la case dÃ©part.",
+      text: "Un tunnel défectueux vous mène droit chez le Chaton gourmand. Retournez à la case départ.",
     },
     {
       id: 36,
-      text: 'Vous devenez temporairement invisible. Durant deux tours, vous ignorez les effets des cases PiÃ¨ge.',
+      text: 'Vous devenez temporairement invisible. Durant deux tours, vous ignorez les effets des cases Piège.',
     },
     {
       id: 37,
@@ -442,7 +442,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 38,
-      text: "Un biscuit gÃ©ant explose. Tous les joueurs se dÃ©placent d'une case alÃ©atoire.",
+      text: "Un biscuit géant explose. Tous les joueurs se déplacent d'une case aléatoire.",
     },
     {
       id: 39,
@@ -450,7 +450,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 40,
-      text: "La Reine des Rongeurs vous envoie un message. Si vous Ãªtes sur une case Glissade, avancez jusqu'Ã  la case 40.",
+      text: "La Reine des Rongeurs vous envoie un message. Si vous êtes sur une case Glissade, avancez jusqu'à la case 40.",
     },
   ];
 }

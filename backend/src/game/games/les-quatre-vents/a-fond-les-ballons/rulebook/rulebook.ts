@@ -62,7 +62,7 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error("La partie n'est pas dÃ©marrÃ©e.");
+    throw new Error("La partie n'est pas démarrée.");
   }
 
   const current = state.turn?.currentPlayerId ?? null;
@@ -97,7 +97,7 @@ export function validateAction(
   if (type === 'swap_choose_target') {
     const pending = state.pending as any;
     if (!pending || pending.type !== 'swap' || pending.playerId !== actorId) {
-      throw new Error('Aucun Ã©change de position en attente.');
+      throw new Error('Aucun échange de position en attente.');
     }
     const targets: Array<{ targetPlayerId: number }> = Array.isArray(
       pending?.data?.targets,
