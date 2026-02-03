@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 
 export function getAvailableActions(
@@ -12,6 +12,15 @@ export function getAvailableActions(
   if (pending) {
     if (pending.type === 'draw' && pending.playerId === playerId) {
       return [{ type: 'draw', payload: {} }];
+    }
+    if (pending.type === 'choose_pawn' && pending.playerId === playerId) {
+      const pawns: Array<{ id?: string }> = Array.isArray(pending?.data?.pawns)
+        ? pending.data.pawns
+        : [];
+      return pawns
+        .map((p) => String(p?.id ?? '').trim())
+        .filter((id) => id.length > 0)
+        .map((id) => ({ type: 'choose_pawn', payload: { pawnId: id } }));
     }
     if (pending.type === 'swap' && pending.playerId === playerId) {
       const targets: Array<{ targetPlayerId: number }> = Array.isArray(
@@ -42,6 +51,7 @@ export function validateAction(
     type !== 'roll' &&
     type !== 'ROLL_DICE' &&
     type !== 'roll_dice' &&
+    type !== 'choose_pawn' &&
     type !== 'swap_choose_target' &&
     type !== 'draw'
   ) {
@@ -52,7 +62,7 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error("La partie n'est pas démarrée.");
+    throw new Error("La partie n'est pas dÃ©marrÃ©e.");
   }
 
   const current = state.turn?.currentPlayerId ?? null;
@@ -64,11 +74,30 @@ export function validateAction(
     }
     return { type: 'draw', payload: {} };
   }
+  if (type === 'choose_pawn') {
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'choose_pawn' || pending.playerId !== actorId) {
+      throw new Error('Aucun choix de pion en attente.');
+    }
+    const payload = (action.payload ?? {}) as any;
+    const rawPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
+    const pawns: Array<{ id?: string }> = Array.isArray(pending?.data?.pawns)
+      ? pending.data.pawns
+      : [];
+    const chosen =
+      rawPawn != null
+        ? pawns.find((p) => String(p?.id ?? '').trim() === String(rawPawn).trim())
+        : null;
+    if (!chosen) {
+      throw new Error('Pion invalide.');
+    }
+    return { type: 'choose_pawn', payload: { pawnId: chosen.id } };
+  }
 
   if (type === 'swap_choose_target') {
     const pending = state.pending as any;
     if (!pending || pending.type !== 'swap' || pending.playerId !== actorId) {
-      throw new Error('Aucun échange de position en attente.');
+      throw new Error('Aucun Ã©change de position en attente.');
     }
     const targets: Array<{ targetPlayerId: number }> = Array.isArray(
       pending?.data?.targets,
@@ -97,3 +126,4 @@ export function validateAction(
   }
   return { type: 'roll', payload: {} };
 }
+

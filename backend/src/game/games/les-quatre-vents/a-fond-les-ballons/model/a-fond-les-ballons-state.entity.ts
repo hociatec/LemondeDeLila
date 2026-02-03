@@ -26,6 +26,12 @@ export type AFondLesBallonsCharacter = {
   description: string;
 };
 
+export type AFondLesBallonsPawn = {
+  id: string;
+  label: string;
+  description: string;
+};
+
 export type AFondLesBallonsPendingSwap = {
   type: 'swap';
   label: string;
@@ -41,7 +47,10 @@ export type AFondLesBallonsMetadata = {
   rng?: Record<string, any>;
   tiles: AFondLesBallonsTile[];
   positions: Record<number, number>;
-  charactersByPlayerId: Record<number, AFondLesBallonsCharacter>;
+  pawns?: AFondLesBallonsPawn[];
+  pawnByPlayerId?: Record<number, string>;
+  setupStarterId?: number | null;
+  charactersByPlayerId?: Record<number, AFondLesBallonsCharacter>;
   statuses: {
     skipTurn: Record<number, number>;
     trapImmunityTurns: Record<number, number>;

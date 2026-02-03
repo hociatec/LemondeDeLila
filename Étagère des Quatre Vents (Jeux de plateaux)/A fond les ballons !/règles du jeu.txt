@@ -1,47 +1,47 @@
-Règles de jeu - A fond les ballons !
+﻿RÃ¨gles de jeu - A fond les ballons !
 
 
 Introduction
-Bienvenue dans la course la plus déjantée de toute la Tanière ! Vous êtes de petits rongeurs farfelus, rapides comme l’éclair… ou presque. Votre objectif est simple : foncer jusqu’à la Grosse Noix Dorée, tout au bout du chemin. Mais attention : entre les pièges glissants, les cartes complètement loufoques et le terrible Grand Chaton Gourmand, rien ne se passera jamais comme prévu !
+Bienvenue dans la course la plus dÃ©jantÃ©e de toute la TaniÃ¨re ! Vous Ãªtes de petits rongeurs farfelus, rapides comme lâ€™Ã©clairâ€¦ ou presque. Votre objectif est simple : foncer jusquâ€™Ã  la Grosse Noix DorÃ©e, tout au bout du chemin. Mais attention : entre les piÃ¨ges glissants, les cartes complÃ¨tement loufoques et le terrible Grand Chaton Gourmand, rien ne se passera jamais comme prÃ©vu !
  
 But du jeu
-Votre mission est d’être le premier rongeur à atteindre exactement la case numéro 40, appelée la Grosse Noix Dorée. Mais prenez garde : le Grand Chaton et les pièges peuvent vous faire reculer… très loin !
+Votre mission est dâ€™Ãªtre le premier rongeur Ã  atteindre exactement la case numÃ©ro 40, appelÃ©e la Grosse Noix DorÃ©e. Mais prenez garde : le Grand Chaton et les piÃ¨ges peuvent vous faire reculerâ€¦ trÃ¨s loin !
  
 Mise en place
 Pour commencer la partie :
-1. Vous choisissez un personnage rongeur et prenez le pion correspondant.
-2. Vous placez votre pion sur la case de départ, appelée la Tanière à Tartines.
-3. Les cartes Loufoques sont automatiquement mélangées et posées en une pile, face cachée.
-4. Prenez le dé… et préparez-vous à couiner de plaisir !
+1. Vous choisissez un personnage rongeur et prenez le pion correspondant. Pions disponibles : Capitaine Cacahuète, Professeur Gribouille, Miss Froufrou, Sir Croquou, Chinchillator 3000, Hamstéro Dynamite.
+2. Vous placez votre pion sur la case de dÃ©part, appelÃ©e la TaniÃ¨re Ã  Tartines.
+3. Les cartes Loufoques sont automatiquement mÃ©langÃ©es et posÃ©es en une pile, face cachÃ©e.
+4. Prenez le dÃ©â€¦ et prÃ©parez-vous Ã  couiner de plaisir !
  
-Déroulement d'un tour
-À votre tour :
-1. Vous lancez le dé.
-2. Vous avancez votre pion du nombre de cases indiqué.
-3. Vous appliquez immédiatement l'effet de la case.
-4. Une fois votre action terminée, c’est au joueur suivant de jouer.
+DÃ©roulement d'un tour
+Ã€ votre tour :
+1. Vous lancez le dÃ©.
+2. Vous avancez votre pion du nombre de cases indiquÃ©.
+3. Vous appliquez immÃ©diatement l'effet de la case.
+4. Une fois votre action terminÃ©e, câ€™est au joueur suivant de jouer.
  
-Les différentes cases du parcours
-Tout au long du chemin, vous rencontrerez plusieurs types de cases. Chaque case a un nom et un effet précis.
+Les diffÃ©rentes cases du parcours
+Tout au long du chemin, vous rencontrerez plusieurs types de cases. Chaque case a un nom et un effet prÃ©cis.
 a) Case Neutre
-Il ne se passe rien. Vous soufflez un peu… et c’est déjà une bonne nouvelle.
+Il ne se passe rien. Vous soufflez un peuâ€¦ et câ€™est dÃ©jÃ  une bonne nouvelle.
 b) Case Folie
-La folie s’empare de vous ! Vous piochez une carte Loufoque et vous appliquez son effet immédiatement.
+La folie sâ€™empare de vous ! Vous piochez une carte Loufoque et vous appliquez son effet immÃ©diatement.
 c) Case Bonus
-Un tunnel secret ! Vous avancez de deux cases supplémentaires.
-d) Case Piège
-Oh non… vous glissez ! Vous reculez de deux cases.
+Un tunnel secret ! Vous avancez de deux cases supplÃ©mentaires.
+d) Case PiÃ¨ge
+Oh nonâ€¦ vous glissez ! Vous reculez de deux cases.
 e) Case Glissade
-Vous tournez sur vous-même, puis glissez d’un à trois pas. Avez vous avancé ou reculé ? Ah ah ! Surprise !.
+Vous tournez sur vous-mÃªme, puis glissez dâ€™un Ã  trois pas. Avez vous avancÃ© ou reculÃ© ? Ah ah ! Surprise !.
 f) Case Tornade
-Un vent tourbillonnant vous emporte ! Vous échangez votre place avec un joueur de votre choix….
+Un vent tourbillonnant vous emporte ! Vous Ã©changez votre place avec un joueur de votre choixâ€¦.
 g) Case Chaton
 Catastrophe ! Le Grand Chaton Gourmand vous attrape.
-Vous retournez à la case de départ...
+Vous retournez Ã  la case de dÃ©part...
  
 Les pouvoirs des personnages
-Chaque rongeur possède un pouvoir spécial et rigolo, utilisable une seule fois par partie. Vous pouvez l’utiliser quand vous le souhaitez, pour éviter un piège ou prendre de l’avance.
+Chaque rongeur possÃ¨de un pouvoir spÃ©cial et rigolo, utilisable une seule fois par partie. Vous pouvez lâ€™utiliser quand vous le souhaitez, pour Ã©viter un piÃ¨ge ou prendre de lâ€™avance.
  
 Fin de la partie
-La partie se termine dès qu’un joueur atteint exactement la case 40, la Grosse Noix Dorée. Si vous dépassez cette case, vous devez reculer du nombre de pas en trop. Il faut tomber pile dessus pour gagner ! Le premier rongeur à y parvenir remporte la partie… et devient le Rongeur Suprême de la Tanière
+La partie se termine dÃ¨s quâ€™un joueur atteint exactement la case 40, la Grosse Noix DorÃ©e. Si vous dÃ©passez cette case, vous devez reculer du nombre de pas en trop. Il faut tomber pile dessus pour gagner ! Le premier rongeur Ã  y parvenir remporte la partieâ€¦ et devient le Rongeur SuprÃªme de la TaniÃ¨re
  

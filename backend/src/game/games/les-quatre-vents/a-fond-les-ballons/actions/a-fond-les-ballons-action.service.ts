@@ -10,6 +10,10 @@ import type {
   AFondLesBallonsPendingSwap,
   AFondLesBallonsTile,
 } from '../model/a-fond-les-ballons-state.entity';
+import {
+  A_FOND_LES_BALLONS_PAWNS,
+  resolvePawnId,
+} from '../a-fond-les-ballons.pawns';
 
 @Injectable()
 export class AFondLesBallonsActionService {
@@ -26,6 +30,10 @@ export class AFondLesBallonsActionService {
     let next = state;
     for (const action of actions ?? []) {
       const type = String(action?.type ?? '').trim();
+      if (type === 'choose_pawn') {
+        next = this.handleChoosePawn(next, action);
+        continue;
+      }
       if (type === 'roll' || type === 'ROLL_DICE' || type === 'roll_dice') {
         next = this.handleRoll(next);
         continue;
@@ -219,6 +227,111 @@ export class AFondLesBallonsActionService {
     return this.advanceTurnWithSkipLogs(next);
   }
 
+  private handleChoosePawn(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    const status = String(state.status ?? '').toLowerCase();
+    if (status !== 'started') return state;
+
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'choose_pawn') return state;
+
+    const playerId =
+      typeof pending.playerId === 'number'
+        ? pending.playerId
+        : state.turn?.currentPlayerId ?? null;
+    if (playerId == null) return state;
+
+    const payload = (action?.payload ?? {}) as any;
+    const rawPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
+    const resolved = resolvePawnId(rawPawn);
+
+    const options = Array.isArray(pending?.data?.pawns) ? pending.data.pawns : [];
+    const chosen =
+      resolved != null
+        ? options.find((p: any) => resolvePawnId(p?.id) === resolved)
+        : null;
+    if (!chosen) return state;
+
+    const meta = this.getMeta(state);
+    const assigned = { ...(meta.pawnByPlayerId ?? {}) } as Record<number, string>;
+    if (assigned[playerId]) return state;
+    if (Object.values(assigned).some((id) => id === chosen.id)) return state;
+
+    const pawns =
+      Array.isArray(meta.pawns) && meta.pawns.length > 0
+        ? meta.pawns
+        : A_FOND_LES_BALLONS_PAWNS;
+    const pawn = pawns.find((p) => p.id === chosen.id) ?? chosen;
+
+    const charactersByPlayerId = {
+      ...(meta.charactersByPlayerId ?? {}),
+      [playerId]: {
+        id: pawn.id,
+        name: pawn.label ?? pawn.id,
+        description: pawn.description ?? '',
+      },
+    };
+
+    const nextMeta: AFondLesBallonsMetadata = {
+      ...meta,
+      pawns,
+      pawnByPlayerId: { ...assigned, [playerId]: pawn.id },
+      charactersByPlayerId,
+    };
+
+    let next: GameStateEntity = {
+      ...state,
+      pending: null,
+      metadata: { ...(state.metadata ?? {}), ...nextMeta },
+    };
+
+    next = this.core.appendLog(
+      next,
+      `${this.playerName(next, playerId)} choisit le pion : ${String(
+        pawn.label ?? 'pion',
+      ).trim()}.`,
+    );
+
+    const pendingInfo = this.buildPawnPending(next, playerId);
+    if (pendingInfo) {
+      return {
+        ...next,
+        pending: pendingInfo.pending,
+        turnIndex: pendingInfo.turnIndex,
+        turn: {
+          ...(next.turn ?? { direction: 1 }),
+          currentPlayerId: pendingInfo.playerId,
+          direction: 1,
+        },
+      };
+    }
+
+    const players = Array.isArray(next.players) ? next.players : [];
+    const starterId =
+      typeof nextMeta.setupStarterId === 'number'
+        ? nextMeta.setupStarterId
+        : (state.turn?.currentPlayerId ?? players[0]?.id ?? null);
+    const starterIndex =
+      starterId != null ? players.findIndex((p) => p?.id === starterId) : -1;
+    const resolvedStarterId =
+      starterId != null && starterIndex >= 0
+        ? starterId
+        : players[0]?.id ?? null;
+
+    return {
+      ...next,
+      pending: null,
+      turnIndex: starterIndex >= 0 ? starterIndex : next.turnIndex,
+      turn: {
+        ...(next.turn ?? { direction: 1 }),
+        currentPlayerId: resolvedStarterId,
+        direction: 1,
+      },
+    };
+  }
+
   private advanceTurnWithSkipLogs(state: GameStateEntity): GameStateEntity {
     const players = Array.isArray(state.players) ? state.players : [];
     if (!players.length) return state;
@@ -270,6 +383,68 @@ export class AFondLesBallonsActionService {
         statuses: { ...statuses, skipTurn: updatedSkip },
       },
     };
+  }
+
+  private buildPawnPending(
+    state: GameStateEntity,
+    startId: number | null,
+  ): { pending: any; playerId: number; turnIndex: number } | null {
+    const players = Array.isArray(state.players) ? state.players : [];
+    if (!players.length) return null;
+
+    const meta = this.getMeta(state);
+    const pawnByPlayerId = (meta.pawnByPlayerId ?? {}) as Record<number, string>;
+    const startIndex =
+      startId != null ? players.findIndex((p) => p?.id === startId) : -1;
+    const count = players.length;
+    const baseIndex = startIndex >= 0 ? startIndex : 0;
+    let nextIndex = -1;
+    for (let i = 0; i < count; i += 1) {
+      const idx = (baseIndex + i) % count;
+      const pid = players[idx]?.id;
+      if (pid == null) continue;
+      if (!pawnByPlayerId[pid]) {
+        nextIndex = idx;
+        break;
+      }
+    }
+    if (nextIndex < 0) return null;
+
+    const choices = this.availablePawns(meta, pawnByPlayerId);
+    if (choices.length === 0) return null;
+
+    return {
+      playerId: players[nextIndex].id,
+      turnIndex: nextIndex,
+      pending: {
+        type: 'choose_pawn',
+        playerId: players[nextIndex].id,
+        blocking: true,
+        label: 'Choisissez votre pion.',
+        choices: choices.map((p) => p.label),
+        data: {
+          pawns: choices.map((p) => ({
+            id: p.id,
+            label: p.label,
+            description: p.description,
+          })),
+        },
+      },
+    };
+  }
+
+  private availablePawns(
+    meta: AFondLesBallonsMetadata,
+    pawnByPlayerId: Record<number, string>,
+  ): Array<{ id: string; label: string; description: string }> {
+    const pawns =
+      Array.isArray(meta.pawns) && meta.pawns.length > 0
+        ? meta.pawns
+        : A_FOND_LES_BALLONS_PAWNS;
+    const used = new Set(
+      Object.values(pawnByPlayerId).filter((v) => typeof v === 'string'),
+    );
+    return pawns.filter((p) => !used.has(p.id));
   }
 
   private moveBy(

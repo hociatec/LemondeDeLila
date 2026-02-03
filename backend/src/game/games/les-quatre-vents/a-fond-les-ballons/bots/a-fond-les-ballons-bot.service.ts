@@ -25,8 +25,8 @@ export class AFondLesBallonsBotService {
       { state, playerId: botPlayerId },
       'random',
       {
-        preferTypes: ['draw', 'swap_choose_target', 'roll'],
-        fallbackTypes: ['draw', 'swap_choose_target', 'roll'],
+        preferTypes: ['choose_pawn', 'draw', 'swap_choose_target', 'roll'],
+        fallbackTypes: ['choose_pawn', 'draw', 'swap_choose_target', 'roll'],
       },
     );
   }
