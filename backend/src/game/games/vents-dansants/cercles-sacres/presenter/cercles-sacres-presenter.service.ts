@@ -13,7 +13,9 @@ export class CerclesSacresPresenterService {
   ): GameStateWithActions {
     const meta = (state.metadata ?? {}) as CerclesSacresMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
+    const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
     const extras = {
+      hand,
       hands: meta.hands,
       circles: meta.circles,
       deckCount: meta.deck.length,

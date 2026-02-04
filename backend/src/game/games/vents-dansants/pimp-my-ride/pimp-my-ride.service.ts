@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import * as Rulebook from './rulebook/rulebook';
 import { PimpMyRideActionService } from './actions/pimp-my-ride-action.service';
 import { PimpMyRidePresenterService } from './presenter/pimp-my-ride-presenter.service';
 import { PimpMyRideSetupService } from './setup/pimp-my-ride-setup.service';
 import { PimpMyRideBotService } from './bots/pimp-my-ride-bot.service';
 import { PIMP_MY_RIDE_GAME } from './definitions/game.definition';
+import { buildPimpMyRideShortcuts } from './pimp-my-ride.shortcuts';
 
 @Injectable()
 export class PimpMyRideService implements GameRulesAdapter, OnModuleInit {
@@ -73,6 +78,10 @@ export class PimpMyRideService implements GameRulesAdapter, OnModuleInit {
     state: GameStateEntity,
     botPlayerId: number,
   ): GameSingleActionDto[] {
-    return this.bots.getBotActions();
+    return this.bots.getBotActions(state, botPlayerId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildPimpMyRideShortcuts(ctx);
   }
 }

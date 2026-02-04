@@ -13,6 +13,7 @@ export class BandeABananePresenterService {
   ): GameStateWithActions {
     const meta = (state.metadata ?? {}) as BandeABananeMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
+    const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
     return {
       ...state,
       catalog: {
@@ -25,6 +26,7 @@ export class BandeABananePresenterService {
         payload: action.payload ?? {},
       })),
       extras: {
+        hand,
         hands: meta.hands,
         troops: meta.troops,
         statuses: meta.statuses,

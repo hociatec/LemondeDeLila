@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import * as Rulebook from './rulebook/rulebook';
 import { OlympiaActionService } from './actions/olympia-action.service';
 import { OlympiaPresenterService } from './presenter/olympia-presenter.service';
 import { OlympiaSetupService } from './setup/olympia-setup.service';
 import { OlympiaBotService } from './bots/olympia-bot.service';
 import { OLYMPIA_GAME } from './definitions/game.definition';
+import { buildOlympiaShortcuts } from './olympia.shortcuts';
 
 @Injectable()
 export class OlympiaService implements GameRulesAdapter, OnModuleInit {
@@ -73,6 +78,10 @@ export class OlympiaService implements GameRulesAdapter, OnModuleInit {
     state: GameStateEntity,
     botPlayerId: number,
   ): GameSingleActionDto[] {
-    return this.bots.getBotActions();
+    return this.bots.getBotActions(state, botPlayerId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildOlympiaShortcuts(ctx);
   }
 }

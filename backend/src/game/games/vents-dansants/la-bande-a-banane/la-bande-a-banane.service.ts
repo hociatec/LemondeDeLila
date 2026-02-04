@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import * as Rulebook from './rulebook/rulebook';
 import { BandeABananeActionService } from './actions/la-bande-a-banane-action.service';
 import { BandeABananePresenterService } from './presenter/la-bande-a-banane-presenter.service';
 import { BandeABananeSetupService } from './setup/la-bande-a-banane-setup.service';
 import { BandeABananeBotService } from './bots/la-bande-a-banane-bot.service';
 import { BANDE_A_BANANE_GAME } from './definitions/game.definition';
+import { buildLaBandeABananeShortcuts } from './la-bande-a-banane.shortcuts';
 
 @Injectable()
 export class BandeABananeService implements GameRulesAdapter, OnModuleInit {
@@ -73,7 +78,10 @@ export class BandeABananeService implements GameRulesAdapter, OnModuleInit {
     state: GameStateEntity,
     botPlayerId: number,
   ): GameSingleActionDto[] {
-    return this.bots.getBotActions();
+    return this.bots.getBotActions(state, botPlayerId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildLaBandeABananeShortcuts(ctx);
   }
 }
-

@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import * as Rulebook from './rulebook/rulebook';
 import { CatPattesActionService } from './actions/cat-pattes-action.service';
 import { CatPattesPresenterService } from './presenter/cat-pattes-presenter.service';
 import { CatPattesSetupService } from './setup/cat-pattes-setup.service';
 import { CatPattesBotService } from './bots/cat-pattes-bot.service';
 import { CAT_PATTES_GAME } from './definitions/game.definition';
+import { buildCatPattesShortcuts } from './cat-pattes.shortcuts';
 
 @Injectable()
 export class CatPattesService implements GameRulesAdapter, OnModuleInit {
@@ -72,6 +77,10 @@ export class CatPattesService implements GameRulesAdapter, OnModuleInit {
     state: GameStateEntity,
     botPlayerId: number,
   ): GameSingleActionDto[] {
-    return this.bots.getBotActions();
+  return this.bots.getBotActions(state, botPlayerId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildCatPattesShortcuts(ctx);
   }
 }

@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import * as Rulebook from './rulebook/rulebook';
 import { CerclesSacresActionService } from './actions/cercles-sacres-action.service';
 import { CerclesSacresPresenterService } from './presenter/cercles-sacres-presenter.service';
 import { CerclesSacresSetupService } from './setup/cercles-sacres-setup.service';
 import { CerclesSacresBotService } from './bots/cercles-sacres-bot.service';
 import { CERCLES_SACRES_GAME } from './definitions/game.definition';
+import { buildCerclesSacresShortcuts } from './cercles-sacres.shortcuts';
 
 @Injectable()
 export class CerclesSacresService implements GameRulesAdapter, OnModuleInit {
@@ -73,6 +78,10 @@ export class CerclesSacresService implements GameRulesAdapter, OnModuleInit {
     state: GameStateEntity,
     botPlayerId: number,
   ): GameSingleActionDto[] {
-    return this.bots.getBotActions();
+    return this.bots.getBotActions(state, botPlayerId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildCerclesSacresShortcuts(ctx);
   }
 }

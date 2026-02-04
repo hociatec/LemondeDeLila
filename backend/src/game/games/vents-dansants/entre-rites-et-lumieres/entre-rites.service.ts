@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import * as Rulebook from './rulebook/rulebook';
 import { EntreRitesActionService } from './actions/entre-rites-action.service';
 import { EntreRitesPresenterService } from './presenter/entre-rites-presenter.service';
 import { EntreRitesSetupService } from './setup/entre-rites-setup.service';
 import { EntreRitesBotService } from './bots/entre-rites-bot.service';
 import { ENTRE_RITES_GAME } from './definitions/game.definition';
+import { buildEntreRitesShortcuts } from './entre-rites.shortcuts';
 
 @Injectable()
 export class EntreRitesService implements GameRulesAdapter, OnModuleInit {
@@ -73,6 +78,10 @@ export class EntreRitesService implements GameRulesAdapter, OnModuleInit {
     state: GameStateEntity,
     botPlayerId: number,
   ): GameSingleActionDto[] {
-    return this.bots.getBotActions();
+    return this.bots.getBotActions(state, botPlayerId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildEntreRitesShortcuts(ctx);
   }
 }

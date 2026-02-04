@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import * as Rulebook from './rulebook/rulebook';
 import { AbsurdissimesActionService } from './actions/les-absurdissimes-action.service';
 import { AbsurdissimesBotService } from './bots/les-absurdissimes-bot.service';
 import { AbsurdissimesPresenterService } from './presenter/les-absurdissimes-presenter.service';
 import { AbsurdissimesSetupService } from './setup/les-absurdissimes-setup.service';
 import { ABSURDISSIMES_GAME } from './definitions/game.definition';
+import { buildAbsurdissimesShortcuts } from './les-absurdissimes.shortcuts';
 
 @Injectable()
 export class LesAbsurdissimesService implements GameRulesAdapter, OnModuleInit {
@@ -74,5 +79,9 @@ export class LesAbsurdissimesService implements GameRulesAdapter, OnModuleInit {
     botPlayerId: number,
   ): GameSingleActionDto[] {
     return this.bots.getBotActions(state, botPlayerId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildAbsurdissimesShortcuts(ctx);
   }
 }

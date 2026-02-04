@@ -13,6 +13,7 @@ export class PimpMyRidePresenterService {
   ): GameStateWithActions {
     const meta = (state.metadata ?? {}) as PimpMyRideMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
+    const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
 
     return {
       ...state,
@@ -26,6 +27,7 @@ export class PimpMyRidePresenterService {
         payload: action.payload ?? {},
       })),
       extras: {
+        hand,
         hands: meta.hands,
         progress: meta.progress,
         deckCount: meta.deck?.length ?? 0,

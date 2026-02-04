@@ -1,5 +1,7 @@
-import type { GameShortcutHint } from '../../../engine/shortcuts/game-shortcuts';
+import type { GameShortcutsBuilder } from '../../../engine/shortcuts/game-shortcuts';
+import { actionShortcut } from '../../../engine/shortcuts/shortcut-utils';
 
-export function buildEntreRitesShortcuts(): GameShortcutHint[] {
-  return [];
-}
+export const buildEntreRitesShortcuts: GameShortcutsBuilder = () => [
+  actionShortcut('A', 'ask_card'),
+  actionShortcut('S', 'pass'),
+];

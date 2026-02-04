@@ -1,5 +1,6 @@
-﻿import type { GameShortcutHint } from '../../../engine/shortcuts/game-shortcuts';
+import type { GameShortcutsBuilder } from '../../../engine/shortcuts/game-shortcuts';
+import { actionShortcut } from '../../../engine/shortcuts/shortcut-utils';
 
-export function buildLesMainsShortcuts(): GameShortcutHint[] {
-  return [];
-}
+export const buildLesMainsDeLaTerreShortcuts: GameShortcutsBuilder = () => [
+  actionShortcut('R', 'request_card'),
+];

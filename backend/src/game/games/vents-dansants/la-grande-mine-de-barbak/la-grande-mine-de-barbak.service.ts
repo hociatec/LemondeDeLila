@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import * as Rulebook from './rulebook/rulebook';
 import { LaGrandeMineDeBarbakActionService } from './actions/la-grande-mine-de-barbak-action.service';
 import { LaGrandeMineDeBarbakPresenterService } from './presenter/la-grande-mine-de-barbak-presenter.service';
 import { LaGrandeMineSetupService } from './setup/la-grande-mine-de-barbak-setup.service';
 import { LaGrandeMineDeBarbakBotService } from './bots/la-grande-mine-de-barbak-bot.service';
 import { LA_GRANDE_MINE_GAME } from './definitions/game.definition';
+import { buildLaGrandeMineDeBarbakShortcuts } from './la-grande-mine-de-barbak.shortcuts';
 
 @Injectable()
 export class LaGrandeMineDeBarbakService implements GameRulesAdapter, OnModuleInit {
@@ -74,5 +79,9 @@ export class LaGrandeMineDeBarbakService implements GameRulesAdapter, OnModuleIn
     botPlayerId: number,
   ): GameSingleActionDto[] {
     return this.bots.getBotActions(state, botPlayerId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildLaGrandeMineDeBarbakShortcuts(ctx);
   }
 }

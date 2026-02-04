@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import * as Rulebook from './rulebook/rulebook';
 import { NawakActionService } from './actions/nawak-action.service';
 import { NawakBotService } from './bots/nawak-bot.service';
 import { NawakPresenterService } from './presenter/nawak-presenter.service';
 import { NawakSetupService } from './setup/nawak-setup.service';
 import { NAWAK_GAME } from './definitions/game.definition';
+import { buildNawakShortcuts } from './nawak.shortcuts';
 
 @Injectable()
 export class NawakService implements GameRulesAdapter, OnModuleInit {
@@ -73,5 +78,9 @@ export class NawakService implements GameRulesAdapter, OnModuleInit {
     botPlayerId: number,
   ): GameSingleActionDto[] {
     return this.bots.getBotActions(state, botPlayerId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildNawakShortcuts(ctx);
   }
 }

@@ -14,6 +14,7 @@ export class OlympiaPresenterService {
     const meta = (state.metadata ?? {}) as OlympiaMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
     const deckCounts = this.buildDeckCounts(meta);
+    const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
     return {
       ...state,
       catalog: {
@@ -26,6 +27,7 @@ export class OlympiaPresenterService {
         payload: action.payload ?? {},
       })),
       extras: {
+        hand,
         hands: meta.hands,
         prestige: meta.prestige,
         divinity: meta.divinity,

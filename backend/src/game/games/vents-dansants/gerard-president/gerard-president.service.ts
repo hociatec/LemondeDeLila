@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import * as Rulebook from './rulebook/rulebook';
 import { GerardPresidentActionService } from './actions/gerard-president-action.service';
 import { GerardPresidentBotService } from './bots/gerard-president-bot.service';
 import { GerardPresidentPresenterService } from './presenter/gerard-president-presenter.service';
 import { GerardPresidentSetupService } from './setup/gerard-president-setup.service';
 import { GERARD_PRESIDENT_GAME } from './definitions/game.definition';
+import { buildGerardPresidentShortcuts } from './gerard-president.shortcuts';
 
 @Injectable()
 export class GerardPresidentService implements GameRulesAdapter, OnModuleInit {
@@ -60,6 +65,10 @@ export class GerardPresidentService implements GameRulesAdapter, OnModuleInit {
   }
 
   getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
-    return this.bots.getBotActions();
+    return this.bots.getBotActions(state, botPlayerId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildGerardPresidentShortcuts(ctx);
   }
 }

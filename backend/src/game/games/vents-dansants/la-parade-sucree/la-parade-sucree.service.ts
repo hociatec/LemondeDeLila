@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import * as Rulebook from './rulebook/rulebook';
 import { LaParadeSucreeActionService } from './actions/la-parade-sucree-action.service';
 import { LaParadeSucreePresenterService } from './presenter/la-parade-sucree-presenter.service';
 import { LaParadeSucreeSetupService } from './setup/la-parade-sucree-setup.service';
 import { LaParadeSucreeBotService } from './bots/la-parade-sucree-bot.service';
 import { LA_PARADE_SUCREE_GAME } from './definitions/game.definition';
+import { buildLaParadeSucreeShortcuts } from './la-parade-sucree.shortcuts';
 
 @Injectable()
 export class LaParadeSucreeService implements GameRulesAdapter, OnModuleInit {
@@ -20,7 +25,7 @@ export class LaParadeSucreeService implements GameRulesAdapter, OnModuleInit {
   readonly subcategory = 'VentsDansants';
   readonly displayName = LA_PARADE_SUCREE_GAME.displayName;
   readonly description =
-    'Posez les cartes dans l’ordre et collectionnez les friandises des cases spéciales.';
+    'Posez les cartes dans lÂ’ordre et collectionnez les friandises des cases spÃ©ciales.';
   readonly minPlayers = LA_PARADE_SUCREE_GAME.minPlayers;
   readonly maxPlayers = LA_PARADE_SUCREE_GAME.maxPlayers;
 
@@ -73,6 +78,10 @@ export class LaParadeSucreeService implements GameRulesAdapter, OnModuleInit {
     state: GameStateEntity,
     botPlayerId: number,
   ): GameSingleActionDto[] {
-    return this.bots.getBotActions();
+    return this.bots.getBotActions(state, botPlayerId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildLaParadeSucreeShortcuts(ctx);
   }
 }

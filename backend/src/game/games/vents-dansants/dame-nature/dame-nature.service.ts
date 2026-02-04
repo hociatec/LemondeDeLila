@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import * as Rulebook from './rulebook/rulebook';
 import { DameNatureActionService } from './actions/dame-nature-action.service';
 import { DameNaturePresenterService } from './presenter/dame-nature-presenter.service';
 import { DameNatureSetupService } from './setup/dame-nature-setup.service';
 import { DameNatureBotService } from './bots/dame-nature-bot.service';
 import { DAME_NATURE_GAME } from './definitions/game.definition';
+import { buildDameNatureShortcuts } from './dame-nature.shortcuts';
 
 @Injectable()
 export class DameNatureService implements GameRulesAdapter, OnModuleInit {
@@ -73,6 +78,10 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
     state: GameStateEntity,
     botPlayerId: number,
   ): GameSingleActionDto[] {
-    return this.bots.getBotActions();
+    return this.bots.getBotActions(state, botPlayerId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildDameNatureShortcuts(ctx);
   }
 }

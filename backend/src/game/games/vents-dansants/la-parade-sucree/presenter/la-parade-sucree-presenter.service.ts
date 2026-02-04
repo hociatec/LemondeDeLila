@@ -13,6 +13,7 @@ export class LaParadeSucreePresenterService {
   ): GameStateWithActions {
     const meta = (state.metadata ?? {}) as LaParadeSucreeMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
+    const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
     const nextValue = LA_PARADE_SEQUENCE[meta.sequenceIndex];
     return {
       ...state,
@@ -26,6 +27,7 @@ export class LaParadeSucreePresenterService {
         payload: action.payload ?? {},
       })),
       extras: {
+        hand,
         hands: meta.hands,
         candies: meta.candies,
         nextCard: nextValue,

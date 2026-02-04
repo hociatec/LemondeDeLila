@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import * as Rulebook from './rulebook/rulebook';
 import { ZigEtZagActionService } from './actions/zig-et-zag-action.service';
 import { ZigEtZagPresenterService } from './presenter/zig-et-zag-presenter.service';
 import { ZigEtZagSetupService } from './setup/zig-et-zag-setup.service';
 import { ZigEtZagBotService } from './bots/zig-et-zag-bot.service';
 import { ZIG_ET_ZAG_GAME } from './definitions/game.definition';
+import { buildZigEtZagShortcuts } from './zig-et-zag.shortcuts';
 
 @Injectable()
 export class ZigEtZagService implements GameRulesAdapter, OnModuleInit {
@@ -73,5 +78,9 @@ export class ZigEtZagService implements GameRulesAdapter, OnModuleInit {
     botPlayerId: number,
   ): GameSingleActionDto[] {
     return this.bots.getBotActions(state, botPlayerId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildZigEtZagShortcuts(ctx);
   }
 }

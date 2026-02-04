@@ -12,6 +12,7 @@ export class LaGrandeMineDeBarbakPresenterService {
   ): GameStateWithActions {
     const meta = this.getMeta(state);
     const actions = Rulebook.getAvailableActions(state, userId);
+    const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
     return {
       ...state,
       catalog: {
@@ -24,6 +25,7 @@ export class LaGrandeMineDeBarbakPresenterService {
         payload: action.payload ?? {},
       })),
       extras: {
+        hand,
         hands: meta.hands,
         domains: meta.domains,
         deckCount: meta.deck.length,

@@ -1,9 +1,10 @@
-import type { GerardPresidentActionType } from './definitions/game.definition';
+import type { GameShortcutsBuilder } from '../../../engine/shortcuts/game-shortcuts';
+import { actionShortcut } from '../../../engine/shortcuts/shortcut-utils';
 
-export const GERARD_PRESIDENT_SHORTCUTS: Record<string, GerardPresidentActionType> = {
-  setTheme: 'set_theme',
-  playName: 'play_name',
-  playSpecial: 'play_special',
-  chooseWinner: 'choose_winner',
-  pass: 'pass',
-};
+export const buildGerardPresidentShortcuts: GameShortcutsBuilder = () => [
+  actionShortcut('T', 'set_theme'),
+  actionShortcut('N', 'play_name'),
+  actionShortcut('S', 'play_special'),
+  actionShortcut('W', 'choose_winner'),
+  actionShortcut('P', 'pass'),
+];
