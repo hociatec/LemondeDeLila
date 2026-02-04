@@ -7,10 +7,10 @@ import type {
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
 import * as Rulebook from './rulebook/rulebook';
-import { LaGrandeMineActionService } from './actions/la-grande-mine-de-barbak-action.service';
-import { LaGrandeMinePresenterService } from './presenter/la-grande-mine-de-barbak-presenter.service';
+import { LaGrandeMineDeBarbakActionService } from './actions/la-grande-mine-de-barbak-action.service';
+import { LaGrandeMineDeBarbakPresenterService } from './presenter/la-grande-mine-de-barbak-presenter.service';
 import { LaGrandeMineSetupService } from './setup/la-grande-mine-de-barbak-setup.service';
-import { LaGrandeMineBotService } from './bots/la-grande-mine-de-barbak-bot.service';
+import { LaGrandeMineDeBarbakBotService } from './bots/la-grande-mine-de-barbak-bot.service';
 import { LA_GRANDE_MINE_GAME } from './definitions/game.definition';
 
 @Injectable()
@@ -27,9 +27,9 @@ export class LaGrandeMineDeBarbakService implements GameRulesAdapter, OnModuleIn
   constructor(
     private readonly registry: GameRegistryService,
     private readonly setup: LaGrandeMineSetupService,
-    private readonly actions: LaGrandeMineActionService,
-    private readonly presenter: LaGrandeMinePresenterService,
-    private readonly bots: LaGrandeMineBotService,
+    private readonly actions: LaGrandeMineDeBarbakActionService,
+    private readonly presenter: LaGrandeMineDeBarbakPresenterService,
+    private readonly bots: LaGrandeMineDeBarbakBotService,
   ) {}
 
   onModuleInit(): void {

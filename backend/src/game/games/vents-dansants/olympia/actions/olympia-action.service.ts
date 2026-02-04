@@ -169,11 +169,6 @@ export class OlympiaActionService {
           value: effect.value,
         });
       }
-      if (effect.key === 'skip') {
-        for (const tid of targets) {
-          next = this.addSkip(next, tid, effect.turns);
-        }
-      }
     } else if (effect.type === 'discard') {
       const targets = this.resolveTargets(next, actorId, targetId, effect.target);
       for (const tid of targets) {

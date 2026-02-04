@@ -24,14 +24,14 @@ export class AbsurdissimesDeckService {
   private loadCards(fileName: string): string[] {
     const filePath = this.resolveDataPath(fileName);
     if (!filePath) {
-      this.logger.error(Fichier de cartes introuvable : );
+      this.logger.error(`Fichier de cartes introuvable : ${fileName}`);
       return [];
     }
     try {
       const raw = fs.readFileSync(filePath, 'utf-8');
       return this.parseCards(raw);
     } catch (error: any) {
-      this.logger.error(Impossible de lire  : );
+      this.logger.error(`Impossible de lire ${fileName} : ${error?.message ?? 'erreur inconnue'}`);
       return [];
     }
   }

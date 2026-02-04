@@ -525,7 +525,7 @@ export class LesMainsActionService {
     }
     const seed = meta.rng ?? {};
     const result = this.random.pickIndex(seed, length);
-    return { index: result.value, meta: { ...meta, rng: result.meta } };
+    return { index: result.index, meta: { ...meta, rng: result.meta } };
   }
 
   private shuffleWithMeta<T>(meta: LesMainsMetadata, values: T[]): { values: T[]; meta: LesMainsMetadata } {

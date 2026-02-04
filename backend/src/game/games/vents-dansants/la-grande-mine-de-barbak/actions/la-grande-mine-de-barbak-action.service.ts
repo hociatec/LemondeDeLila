@@ -445,6 +445,21 @@ export class LaGrandeMineDeBarbakActionService {
     });
   }
 
+  private removeCardFromHand(
+    metadata: LaGrandeMineMetadata,
+    playerId: number,
+    cardId: string,
+  ): LaGrandeMineMetadata {
+    const hands = { ...(metadata.hands ?? {}) };
+    const hand = Array.isArray(hands[playerId]) ? [...hands[playerId]] : [];
+    const index = hand.indexOf(cardId);
+    if (index >= 0) {
+      hand.splice(index, 1);
+    }
+    hands[playerId] = hand;
+    return { ...metadata, hands };
+  }
+
   private addCardToDiscard(
     state: GameStateEntity,
     cardId: string,

@@ -179,7 +179,7 @@ export class BandeABananeActionService {
       targetHand.length,
     );
     const stolen = targetHand[index];
-    let nextMeta = { ...meta, rng: updatedRng };
+    let nextMeta: BandeABananeMetadata = { ...meta, rng: updatedRng };
     nextMeta = this.removeCardFromHand(nextMeta, targetId, stolen);
     nextMeta = this.addCardToHand(nextMeta, playerId, stolen);
     let next = this.setMeta(state, nextMeta);

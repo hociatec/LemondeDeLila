@@ -255,12 +255,13 @@ export class PanierExpressService extends AbstractGameService {
     hydratedPlayers.forEach((p) => {
       positions[p.id] = 0;
     });
+    const baseMetadata = (baseState.metadata ?? {}) as Record<string, unknown>;
     const initial: GameStateEntity = {
       ...baseState,
       players: hydratedPlayers,
       status: baseState.status ?? 'open',
       metadata: {
-        ...baseState.metadata,
+        ...baseMetadata,
         category: this.category,
         subcategory: this.subcategory,
         ...metadata,

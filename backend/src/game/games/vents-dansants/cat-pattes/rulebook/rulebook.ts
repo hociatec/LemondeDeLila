@@ -30,7 +30,7 @@ export const CAT_PATTES_OBSTACLE_TO_PARADE: Record<
   sol: 'dodo',
 };
 
-function hasBot(bots: readonly CatPattesMetadata['bots'][number], type: string): boolean {
+function hasBot(bots: CatPattesMetadata['bots'][number], type: string): boolean {
   return Array.isArray(bots) && bots.includes(type as any);
 }
 

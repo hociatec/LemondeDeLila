@@ -1,4 +1,4 @@
-﻿import type { GerardPresidentActionType } from '../definitions/game.definition';
+import type { GerardPresidentActionType } from './definitions/game.definition';
 
 export const GERARD_PRESIDENT_SHORTCUTS: Record<string, GerardPresidentActionType> = {
   setTheme: 'set_theme',

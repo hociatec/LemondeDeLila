@@ -65,10 +65,10 @@ export class NawakActionService {
     meta = { ...meta, submissions };
 
     let next = this.setMeta(state, meta);
-    const answerLabel = meta.currentChallenge.answers?.[answerIndex] ?? éponse ;
+    const answerLabel = meta.currentChallenge.answers?.[answerIndex] ?? 'réponse inconnue';
     next = this.core.appendLog(
       next,
-      ${this.playerName(state.players, currentId)} choisit “”.,
+      `${this.playerName(state.players, currentId)} choisit "${answerLabel}".`,
     );
 
     const playerIds = this.getPlayerIds(state.players);
@@ -121,7 +121,10 @@ export class NawakActionService {
     let next = this.setMeta(state, meta);
     next = this.core.appendLog(
       next,
-      ${this.playerName(state.players, currentId)} vote pour .,
+      `${this.playerName(state.players, currentId)} vote pour ${this.playerName(
+        state.players,
+        targetPlayerId,
+      )}.`,
     );
 
     const playerIds = this.getPlayerIds(state.players);
@@ -185,19 +188,21 @@ export class NawakActionService {
     };
 
     let next = this.setMeta(state, nextMeta);
-    next = this.core.appendLog(
-      next,
-      Fin du vote : “”.,
-    );
+    next = this.core.appendLog(next, 'Fin du vote : ouverture des scores !');
     const scoreboard = playerIds
-      .map((pid) => ${this.playerName(state.players, pid)}  pts)
+      .map(
+        (pid) =>
+          `${this.playerName(state.players, pid)} ${(scores[pid] ?? 0)} pts`,
+      )
       .join(' / ');
-    next = this.core.appendLog(next, Scores : .);
+    next = this.core.appendLog(next, `Scores : ${scoreboard}`);
 
     if (winnerId != null && !tie) {
       next = this.core.appendLog(
         next,
-        ${this.playerName(state.players, winnerId)} atteint  points !,
+        `${this.playerName(state.players, winnerId)} atteint ${
+          scores[winnerId] ?? 0
+        } points !`,
       );
       return {
         ...next,
@@ -229,6 +234,6 @@ export class NawakActionService {
   private playerName(players: GameStateEntity['players'], playerId: number): string {
     const list = Array.isArray(players) ? players : [];
     const player = list.find((p) => p?.id === playerId);
-    return player?.username?.trim() || Joueur ;
+    return player?.username?.trim() || `Joueur ${playerId}`;
   }
 }

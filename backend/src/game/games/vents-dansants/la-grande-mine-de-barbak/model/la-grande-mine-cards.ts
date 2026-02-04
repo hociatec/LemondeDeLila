@@ -83,5 +83,5 @@ const cards: LaGrandeMineCard[] = [
   {"id": "barbak-collapse-3", "category": "collapse", "name": "Effondrement final", "description": "(la partie se termine immédiatement.)", "points": null},
   {"id": "barbak-collapse-4", "category": "collapse", "name": "Effondrement final", "description": "(la partie se termine immédiatement.)", "points": null},
 ];
-export const LA_GRANDE_MINE_CARDS = cards as const;
+export const LA_GRANDE_MINE_CARDS = cards;
 export const LA_GRANDE_MINE_CARD_BY_ID = Object.fromEntries(cards.map((card) => [card.id, card]));

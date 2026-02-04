@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import type { GameStateEntity } from '../../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../engine/dto/game-action.dto';
+import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import * as Rulebook from '../rulebook/rulebook';
 
 @Injectable()

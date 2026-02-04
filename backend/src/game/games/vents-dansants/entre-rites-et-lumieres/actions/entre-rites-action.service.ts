@@ -6,6 +6,7 @@ import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.ser
 import { RandomService } from '../../../../modules/random/services/random.service';
 import type {
   RiteCardDefinition,
+  RiteFamilyId,
   RiteSpecialCard,
 } from '../model/entre-rites-cards';
 import {
@@ -192,7 +193,7 @@ export class EntreRitesActionService {
         next,
         `${this.playerName(next, playerId)} pioche ${card.name} mais ses pouvoirs sont désormais muets.`,
       );
-      next = this.discardCard(next, card.id);
+      next = this.discardCard(next, playerId, card.id);
       next = this.recordSpecial(next, playerId, card.id);
       return next;
     }
@@ -228,7 +229,7 @@ export class EntreRitesActionService {
         next = this.effectRevealAndSteal(next, playerId);
         break;
       default:
-        next = this.discardCard(next, card.id);
+        next = this.discardCard(next, playerId, card.id);
     }
     next = this.recordSpecial(next, playerId, card.id);
     return this.checkVictory(next, playerId);
@@ -382,7 +383,7 @@ export class EntreRitesActionService {
   ): GameStateEntity {
     const metadata = this.getMeta(state);
     const completed = new Set(metadata.completedFamilies?.[playerId] ?? []);
-    const familyKeys = Object.keys(ENTRE_RITES_CUSTOM_FAMILY_SIZE) as RiteCardDefinition['familyId'][];
+    const familyKeys = Object.keys(ENTRE_RITES_CUSTOM_FAMILY_SIZE) as RiteFamilyId[];
     const pending = familyKeys.find((familyId) => !completed.has(familyId));
     if (!pending) {
       return this.core.appendLog(
@@ -487,6 +488,23 @@ export class EntreRitesActionService {
     let updatedMeta = this.removeCardFromHand(meta, playerId, cardId);
     updatedMeta = this.addCardToDiscard(updatedMeta, cardId);
     let next = this.setMeta(state, updatedMeta);
+    return this.core.appendLog(
+      next,
+      `${this.playerName(next, playerId)} défausse ${cardId}.`,
+    );
+  }
+
+  private discardCard(
+    state: GameStateEntity,
+    playerId: number,
+    cardId: string,
+  ): GameStateEntity {
+    const meta = this.getMeta(state);
+    const updatedMeta = this.addCardToDiscard(
+      this.removeCardFromHand(meta, playerId, cardId),
+      cardId,
+    );
+    const next = this.setMeta(state, updatedMeta);
     return this.core.appendLog(
       next,
       `${this.playerName(next, playerId)} défausse ${cardId}.`,

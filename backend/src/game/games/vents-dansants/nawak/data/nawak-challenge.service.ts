@@ -1,7 +1,7 @@
 ﻿import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
-import { RandomService } from '../../../../../modules/random/services/random.service';
+import { RandomService } from '../../../../modules/random/services/random.service';
 import type { NawakChallenge } from '../model/nawak-challenge.model';
 import type { NawakMetadata } from '../model/nawak-state.entity';
 

@@ -4,6 +4,7 @@ import {
   LES_MAINS_CARD_BY_ID,
   LES_MAINS_FAMILIES,
 } from '../model/les-mains-de-la-terre-cards';
+import type { LesMainsFamily } from '../model/les-mains-de-la-terre-cards';
 import type { LesMainsMetadata } from '../model/les-mains-de-la-terre-state.entity';
 
 type LesMainsActionPayload = {
@@ -35,11 +36,11 @@ export function getAvailableActions(
   const freeRequest = Boolean(meta.freeFamilyRequest?.[playerId]);
   const hand = Array.isArray(meta.hands?.[playerId]) ? meta.hands[playerId] : [];
   const ownedFamilies = freeRequest
-    ? new Set<string>(LES_MAINS_FAMILIES)
-    : new Set<string>(
+    ? new Set<LesMainsFamily>(LES_MAINS_FAMILIES)
+    : new Set<LesMainsFamily>(
         hand
           .map((cardId) => LES_MAINS_CARD_BY_ID[cardId]?.family)
-          .filter((family): family is string => Boolean(family)),
+          .filter((family): family is LesMainsFamily => Boolean(family)),
       );
   const targets = getPlayerIds(state.players).filter((pid) => pid !== playerId);
   const requestedCards = Object.values(LES_MAINS_CARD_BY_ID).filter((card) => card.family && card.type === 'metier');

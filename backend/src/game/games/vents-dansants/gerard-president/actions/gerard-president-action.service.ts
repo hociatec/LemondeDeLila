@@ -4,7 +4,7 @@ import type {
   PlayerStateEntity,
 } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import { RandomService } from '../../../modules/random/services/random.service';
+import { RandomService } from '../../../../modules/random/services/random.service';
 import { GERARD_PRESIDENT_SPECIAL_CARDS } from '../model/gerard-president-cards';
 import type { GerardPresidentMetadata } from '../model/gerard-president-state.entity';
 import { type GerardPresidentActionType } from '../definitions/game.definition';
@@ -230,7 +230,11 @@ export class GerardPresidentActionService {
       nextState = {
         ...nextState,
         status: 'finished',
-        turn: { ...(nextState.turn ?? {}), currentPlayerId: null },
+        turn: {
+          ...(nextState.turn ?? {}),
+          direction: nextState.turn?.direction ?? 1,
+          currentPlayerId: null,
+        },
       };
     }
 

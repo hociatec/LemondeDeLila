@@ -16,10 +16,10 @@ import { BotModule } from '../../../modules/bot/bot.module';
 import { RandomModule } from '../../../modules/random/random.module';
 import { LaGrandeMineDeBarbakService } from './la-grande-mine-de-barbak.service';
 import { LaGrandeMineSetupService } from './setup/la-grande-mine-de-barbak-setup.service';
-import { LaGrandeMineActionService } from './actions/la-grande-mine-de-barbak-action.service';
-import { LaGrandeMinePresenterService } from './presenter/la-grande-mine-de-barbak-presenter.service';
-import { LaGrandeMineBotService } from './bots/la-grande-mine-de-barbak-bot.service';
-import { LaGrandeMinePhaseService } from './phases/la-grande-mine-de-barbak-phase.service';
+import { LaGrandeMineDeBarbakActionService } from './actions/la-grande-mine-de-barbak-action.service';
+import { LaGrandeMineDeBarbakPresenterService } from './presenter/la-grande-mine-de-barbak-presenter.service';
+import { LaGrandeMineDeBarbakBotService } from './bots/la-grande-mine-de-barbak-bot.service';
+import { LaGrandeMineDeBarbakPhaseService } from './phases/la-grande-mine-de-barbak-phase.service';
 
 @Module({
   imports: [
@@ -42,18 +42,18 @@ import { LaGrandeMinePhaseService } from './phases/la-grande-mine-de-barbak-phas
   providers: [
     LaGrandeMineDeBarbakService,
     LaGrandeMineSetupService,
-    LaGrandeMineActionService,
-    LaGrandeMinePresenterService,
-    LaGrandeMineBotService,
-    LaGrandeMinePhaseService,
+    LaGrandeMineDeBarbakActionService,
+    LaGrandeMineDeBarbakPresenterService,
+    LaGrandeMineDeBarbakBotService,
+    LaGrandeMineDeBarbakPhaseService,
   ],
   exports: [
     LaGrandeMineDeBarbakService,
     LaGrandeMineSetupService,
-    LaGrandeMineActionService,
-    LaGrandeMinePresenterService,
-    LaGrandeMineBotService,
-    LaGrandeMinePhaseService,
+    LaGrandeMineDeBarbakActionService,
+    LaGrandeMineDeBarbakPresenterService,
+    LaGrandeMineDeBarbakBotService,
+    LaGrandeMineDeBarbakPhaseService,
   ],
 })
 export class LaGrandeMineDeBarbakModule {}

@@ -92,12 +92,6 @@ export class GerardPresidentSetupService {
       juryOverrideId: null,
       dominoRemaining: 0,
       ghostNames: [],
-      submissions: {},
-      pendingPlayers: [],
-      roundPhase: 'waiting_theme',
-      specialsPlayed: {},
-      extraNamesAllowed: {},
-      defenseActive: {},
     };
 
     return {

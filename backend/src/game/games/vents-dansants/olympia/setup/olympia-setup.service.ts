@@ -2,10 +2,8 @@ import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { OLYMPIA_DECKS } from '../model/olympia-cards';
-import type {
-  OlympiaDeckType,
-  OlympiaMetadata,
-} from '../model/olympia-state.entity';
+import type { OlympiaDeckType } from '../model/olympia-cards';
+import type { OlympiaMetadata } from '../model/olympia-state.entity';
 
 const DECK_ORDER: OlympiaDeckType[] = [
   'divinite',

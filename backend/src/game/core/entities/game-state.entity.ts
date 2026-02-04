@@ -44,7 +44,7 @@ export type GameStateEntity = {
   log: GameLogEntry[];
   players?: PlayerStateEntity[];
   turn?: TurnStateEntity;
-  metadata?: Record<string, unknown>;
+  metadata?: unknown;
   pending?: PendingState | null;
   /**
    * Indique qu'un bot est en cours de "reflexion" et qu'aucune action humaine ne doit etre acceptee.
