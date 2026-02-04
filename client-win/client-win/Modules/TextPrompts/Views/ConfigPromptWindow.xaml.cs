@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -101,12 +102,12 @@ public partial class ConfigPromptWindow : Window
 
     private void OnPreviewGotKeyboardFocus(object? sender, KeyboardFocusChangedEventArgs e)
     {
-        if (e.NewFocus == null)
+        if (e.NewFocus is not DependencyObject focusTarget)
         {
             return;
         }
 
-        var id = (AutomationProperties.GetAutomationId(e.NewFocus) ?? string.Empty).Trim();
+        var id = (AutomationProperties.GetAutomationId(focusTarget) ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(id))
         {
             return;
