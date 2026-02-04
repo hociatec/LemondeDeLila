@@ -4,6 +4,10 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import * as Rulebook from '../rulebook/rulebook';
 import { BANDE_A_BANANE_GAME } from '../definitions/game.definition';
 import type { BandeABananeMetadata } from '../model/la-bande-a-banane-state.entity';
+import {
+  buildLamaLikePanels,
+  summarizeHandCounts,
+} from '../../../../presenters/lamalike-presenter.helper';
 
 @Injectable()
 export class BandeABananePresenterService {
@@ -14,6 +18,13 @@ export class BandeABananePresenterService {
     const meta = (state.metadata ?? {}) as BandeABananeMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
     const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
+    const handCounts = summarizeHandCounts(meta.hands);
+    const panels = buildLamaLikePanels({
+      hand,
+      handCounts,
+      discardLabel: 'Troops en jeu',
+      tableMessage: `Statut: ${state.status ?? 'en attente'}`,
+    });
     return {
       ...state,
       catalog: {
@@ -30,6 +41,7 @@ export class BandeABananePresenterService {
         hands: meta.hands,
         troops: meta.troops,
         statuses: meta.statuses,
+        ui: { panels },
       },
       pending: state.pending ?? null,
     } as any;

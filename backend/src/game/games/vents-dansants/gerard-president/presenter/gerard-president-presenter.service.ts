@@ -8,6 +8,7 @@ import {
   GERARD_PRESIDENT_SPECIAL_CARDS,
   GERARD_PRESIDENT_THEMES,
 } from '../model/gerard-president-cards';
+import { buildLamaLikePanels } from '../../../../presenters/lamalike-presenter.helper';
 
 const ACTION_LABELS: Record<string, string> = {
   set_theme: 'Définir un thème',
@@ -37,6 +38,20 @@ export class GerardPresidentPresenterService {
       themeHidden && metadata.secondTheme ? 'Thème secret' : metadata.secondTheme;
     const actions = Rulebook.getAvailableActions(state, userId);
     const catalog = this.buildCatalog();
+    const scoreLines = Object.entries(metadata.scores ?? {}).map(([pid, value]) => ({
+      pid: Number(pid),
+      value,
+    }));
+    const panels = buildLamaLikePanels({
+      hand,
+      handCounts,
+      discardLabel: 'Soumissions',
+      scoreLines: scoreLines.map((entry) => {
+        const playerName = this.playerName(state.players, entry.pid);
+        return `${playerName}: ${entry.value ?? 0}`;
+      }),
+      tableMessage: `Phase : ${metadata.roundPhase ?? 'en attente'}`,
+    });
     const extras = {
       hand,
       specialHand,
@@ -50,6 +65,7 @@ export class GerardPresidentPresenterService {
       roundPhase: metadata.roundPhase,
       targetScore: metadata.targetScore,
       pendingPlayers: metadata.pendingPlayers,
+      ui: { panels },
     };
 
     return {
@@ -160,5 +176,11 @@ export class GerardPresidentPresenterService {
         username:
           player?.username?.trim() || `Joueur ${player!.id}`,
       }));
+  }
+
+  private playerName(players: GameStateEntity['players'], playerId: number): string {
+    const list = Array.isArray(players) ? players : [];
+    const player = list.find((p) => p?.id === playerId);
+    return player?.username?.trim() || `Joueur ${playerId}`;
   }
 }

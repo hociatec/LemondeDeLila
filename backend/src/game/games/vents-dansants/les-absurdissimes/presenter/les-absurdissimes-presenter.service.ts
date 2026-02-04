@@ -4,6 +4,10 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import * as Rulebook from '../rulebook/rulebook';
 import { ABSURDISSIMES_GAME } from '../definitions/game.definition';
 import type { AbsurdissimesMetadata } from '../model/les-absurdissimes-state.entity';
+import {
+  buildLamaLikePanels,
+  summarizeHandCounts,
+} from '../../../../presenters/lamalike-presenter.helper';
 
 @Injectable()
 export class AbsurdissimesPresenterService {
@@ -15,6 +19,16 @@ export class AbsurdissimesPresenterService {
     const actions = Rulebook.getAvailableActions(state, userId);
     const judgeId = Rulebook.getJudgeId(state, meta);
     const hand = meta.blackHands?.[userId] ?? [];
+    const handCounts = summarizeHandCounts(meta.blackHands);
+    const panels = buildLamaLikePanels({
+      hand,
+      handCounts,
+      discardLabel: 'Défausse du juge',
+      scoreLines: Object.entries(meta.scores ?? {}).map(
+        ([playerId, score]) => `Joueur ${playerId}: ${score ?? 0}`,
+      ),
+      tableMessage: `Phase : ${meta.roundStage ?? 'en attente'}`,
+    });
 
     return {
       ...state,
@@ -37,6 +51,7 @@ export class AbsurdissimesPresenterService {
         targetScore: meta.targetScore,
         submissions: meta.submissions,
         winnerId: meta.winnerId ?? null,
+        ui: { panels },
       },
       pending: state.pending ?? null,
     } as any;

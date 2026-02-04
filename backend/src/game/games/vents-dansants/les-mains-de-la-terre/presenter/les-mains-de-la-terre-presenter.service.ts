@@ -9,6 +9,10 @@ import {
 } from '../model/les-mains-de-la-terre-cards';
 import { LES_MAINS_GAME } from '../definitions/game.definition';
 import type { LesMainsMetadata } from '../model/les-mains-de-la-terre-state.entity';
+import {
+  buildLamaLikePanels,
+  summarizeHandCounts,
+} from '../../../../presenters/lamalike-presenter.helper';
 
 const FAMILY_LABELS: Record<LesMainsFamily, string> = {
   tradition: 'Tradition',
@@ -29,6 +33,13 @@ export class LesMainsPresenterService {
     const meta = (state.metadata ?? {}) as LesMainsMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
     const hand = Array.isArray(meta.hands?.[userId]) ? meta.hands[userId] : [];
+    const handCounts = summarizeHandCounts(meta.hands);
+    const panels = buildLamaLikePanels({
+      hand,
+      handCounts,
+      discardLabel: 'Table de métiers',
+      tableMessage: `Statut: ${state.status ?? 'en attente'}`,
+    });
     const familyCatalog = this.buildFamilyCatalog();
     const catalog = {
       phases: LES_MAINS_GAME.phaseOrder.map((phase) => phase.id),
@@ -53,6 +64,7 @@ export class LesMainsPresenterService {
         freeRequest: Boolean(meta.freeFamilyRequest?.[userId]),
         statuses: meta.statuses,
         playerViews: this.buildPlayerViews(state.players),
+        ui: { panels },
       },
       pending: state.pending ?? null,
     } as any;

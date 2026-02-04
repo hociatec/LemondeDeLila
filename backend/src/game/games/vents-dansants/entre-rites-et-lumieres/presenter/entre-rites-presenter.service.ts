@@ -8,6 +8,10 @@ import {
   ENTRE_RITES_CARD_BY_ID,
   ENTRE_RITES_FAMILY_CARDS,
 } from '../model/entre-rites-cards';
+import {
+  buildLamaLikePanels,
+  summarizeHandCounts,
+} from '../../../../presenters/lamalike-presenter.helper';
 
 @Injectable()
 export class EntreRitesPresenterService {
@@ -18,6 +22,13 @@ export class EntreRitesPresenterService {
     const meta = (state.metadata ?? {}) as EntreRitesMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
     const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
+    const handCounts = summarizeHandCounts(meta.hands);
+    const panels = buildLamaLikePanels({
+      hand,
+      handCounts,
+      discardLabel: 'Familles',
+      tableMessage: `Statut: ${state.status ?? 'en attente'}`,
+    });
     const extras = {
       hand,
       handCards: this.buildHandCards(hand),
@@ -30,6 +41,7 @@ export class EntreRitesPresenterService {
       specialsPlayedCount: meta.specialsPlayedCount,
       deckCount: meta.deck.length,
       discardCount: meta.discard.length,
+      ui: { panels },
     };
 
     return {

@@ -4,6 +4,10 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import * as Rulebook from '../rulebook/rulebook';
 import { PIMP_MY_RIDE_GAME } from '../definitions/game.definition';
 import type { PimpMyRideMetadata } from '../model/pimp-my-ride-state.entity';
+import {
+  buildLamaLikePanels,
+  summarizeHandCounts,
+} from '../../../../presenters/lamalike-presenter.helper';
 
 @Injectable()
 export class PimpMyRidePresenterService {
@@ -14,6 +18,13 @@ export class PimpMyRidePresenterService {
     const meta = (state.metadata ?? {}) as PimpMyRideMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
     const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
+    const handCounts = summarizeHandCounts(meta.hands);
+    const panels = buildLamaLikePanels({
+      hand,
+      handCounts,
+      discardLabel: 'Garage',
+      tableMessage: `Statut: ${state.status ?? 'en attente'}`,
+    });
 
     return {
       ...state,
@@ -33,6 +44,7 @@ export class PimpMyRidePresenterService {
         deckCount: meta.deck?.length ?? 0,
         drawnPlayerId: meta.drawnPlayerId ?? null,
         carNameIndex: meta.carNameIndex,
+        ui: { panels },
       },
       pending: state.pending ?? null,
     } as any;

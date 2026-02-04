@@ -4,6 +4,10 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import * as Rulebook from '../rulebook/rulebook';
 import { CAT_PATTES_GAME } from '../definitions/game.definition';
 import type { CatPattesMetadata } from '../model/cat-pattes-state.entity';
+import {
+  buildLamaLikePanels,
+  summarizeHandCounts,
+} from '../../../../presenters/lamalike-presenter.helper';
 
 @Injectable()
 export class CatPattesPresenterService {
@@ -14,6 +18,16 @@ export class CatPattesPresenterService {
     const meta = (state.metadata ?? {}) as CatPattesMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
     const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
+    const handCounts = summarizeHandCounts(meta.hands);
+    const panels = buildLamaLikePanels({
+      hand,
+      handCounts,
+      discardLabel: 'Table de jeu',
+      scoreLines: Object.entries(meta.positions ?? {}).map(
+        ([playerId, value]) => `Joueur ${playerId}: ${value ?? 0} pattes`,
+      ),
+      tableMessage: `Statut: ${state.status ?? 'en attente'}`,
+    });
     const extras = {
       hand,
       hands: meta.hands,
@@ -21,6 +35,7 @@ export class CatPattesPresenterService {
       obstacles: meta.obstacles,
       bots: meta.bots,
       hasSun: meta.hasSun,
+      ui: { panels },
     };
 
     return {

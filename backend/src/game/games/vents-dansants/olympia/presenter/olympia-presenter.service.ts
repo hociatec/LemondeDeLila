@@ -4,6 +4,10 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import * as Rulebook from '../rulebook/rulebook';
 import { OLYMPIA_GAME } from '../definitions/game.definition';
 import type { OlympiaMetadata } from '../model/olympia-state.entity';
+import {
+  buildLamaLikePanels,
+  summarizeHandCounts,
+} from '../../../../presenters/lamalike-presenter.helper';
 
 @Injectable()
 export class OlympiaPresenterService {
@@ -15,6 +19,13 @@ export class OlympiaPresenterService {
     const actions = Rulebook.getAvailableActions(state, userId);
     const deckCounts = this.buildDeckCounts(meta);
     const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
+    const handCounts = summarizeHandCounts(meta.hands);
+    const panels = buildLamaLikePanels({
+      hand,
+      handCounts,
+      discardLabel: 'Divinités',
+      tableMessage: `Statut: ${state.status ?? 'en attente'}`,
+    });
     return {
       ...state,
       catalog: {
@@ -33,6 +44,7 @@ export class OlympiaPresenterService {
         divinity: meta.divinity,
         decks: deckCounts,
         statuses: meta.statuses,
+        ui: { panels },
       },
       pending: state.pending ?? null,
     } as any;

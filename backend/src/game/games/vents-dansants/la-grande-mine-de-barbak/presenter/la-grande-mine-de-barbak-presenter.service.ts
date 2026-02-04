@@ -3,6 +3,10 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
 import * as Rulebook from '../rulebook/rulebook';
 import type { LaGrandeMineMetadata } from '../model/la-grande-mine-state.entity';
+import {
+  buildLamaLikePanels,
+  summarizeHandCounts,
+} from '../../../../presenters/lamalike-presenter.helper';
 
 @Injectable()
 export class LaGrandeMineDeBarbakPresenterService {
@@ -13,6 +17,13 @@ export class LaGrandeMineDeBarbakPresenterService {
     const meta = this.getMeta(state);
     const actions = Rulebook.getAvailableActions(state, userId);
     const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
+    const handCounts = summarizeHandCounts(meta.hands);
+    const panels = buildLamaLikePanels({
+      hand,
+      handCounts,
+      discardLabel: 'Puits',
+      tableMessage: `Statut: ${state.status ?? 'en attente'}`,
+    });
     return {
       ...state,
       catalog: {
@@ -32,6 +43,7 @@ export class LaGrandeMineDeBarbakPresenterService {
         discardCount: meta.discard.length,
         drawnPlayerId: meta.drawnPlayerId,
         winnerId: meta.winnerId ?? null,
+        ui: { panels },
       },
       pending: state.pending ?? null,
     } as any;

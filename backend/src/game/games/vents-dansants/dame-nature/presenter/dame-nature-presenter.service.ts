@@ -8,6 +8,10 @@ import {
   DAME_NATURE_CARD_BY_ID,
   DAME_NATURE_FAMILY_CARD_DEFINITIONS,
 } from '../model/dame-nature-cards';
+import {
+  buildLamaLikePanels,
+  summarizeHandCounts,
+} from '../../../../presenters/lamalike-presenter.helper';
 
 @Injectable()
 export class DameNaturePresenterService {
@@ -20,6 +24,13 @@ export class DameNaturePresenterService {
     const deckCount = Array.isArray(meta.deck) ? meta.deck.length : 0;
     const pollution = meta.pollutionTokens ?? 0;
     const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
+    const handCounts = summarizeHandCounts(meta.hands);
+    const panels = buildLamaLikePanels({
+      hand,
+      handCounts,
+      discardLabel: 'Famille ciblée',
+      tableMessage: `Pollution : ${pollution}`,
+    });
 
     return {
       ...state,
@@ -43,6 +54,7 @@ export class DameNaturePresenterService {
         deckCount,
         lastQuizCardId: meta.lastQuizCardId ?? null,
         pollutionLoserId: meta.pollutionLoserId ?? null,
+        ui: { panels },
       },
       pending: state.pending ?? null,
     } as any;

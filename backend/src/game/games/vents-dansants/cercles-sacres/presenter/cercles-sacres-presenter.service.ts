@@ -4,6 +4,10 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import * as Rulebook from '../rulebook/rulebook';
 import { CERCLES_SACRES_GAME } from '../definitions/game.definition';
 import type { CerclesSacresMetadata } from '../model/cercles-sacres-state.entity';
+import {
+  buildLamaLikePanels,
+  summarizeHandCounts,
+} from '../../../../presenters/lamalike-presenter.helper';
 
 @Injectable()
 export class CerclesSacresPresenterService {
@@ -14,12 +18,20 @@ export class CerclesSacresPresenterService {
     const meta = (state.metadata ?? {}) as CerclesSacresMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
     const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
+    const handCounts = summarizeHandCounts(meta.hands);
+    const panels = buildLamaLikePanels({
+      hand,
+      handCounts,
+      discardLabel: 'Défausse',
+      tableMessage: `Ronde: ${state.status ?? 'en attente'}`,
+    });
     const extras = {
       hand,
       hands: meta.hands,
       circles: meta.circles,
       deckCount: meta.deck.length,
       discardCount: meta.discard.length,
+      ui: { panels },
     };
 
     return {

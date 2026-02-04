@@ -4,6 +4,7 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import * as Rulebook from '../rulebook/rulebook';
 import { NAWAK_GAME } from '../definitions/game.definition';
 import type { NawakMetadata } from '../model/nawak-state.entity';
+import { buildLamaLikePanels } from '../../../../presenters/lamalike-presenter.helper';
 
 @Injectable()
 export class NawakPresenterService {
@@ -13,6 +14,16 @@ export class NawakPresenterService {
   ): GameStateWithActions {
     const meta = (state.metadata ?? {}) as NawakMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
+    const hand =
+      Array.isArray(meta.currentChallenge?.answers) ? meta.currentChallenge.answers : [];
+    const panels = buildLamaLikePanels({
+      hand,
+      discardLabel: 'Défis disponibles',
+      scoreLines: Object.entries(meta.scores ?? {}).map(
+        ([playerId, value]) => `Joueur ${playerId}: ${value ?? 0}`,
+      ),
+      tableMessage: `Phase : ${meta.roundStage ?? 'en attente'}`,
+    });
 
     return {
       ...state,
@@ -26,6 +37,7 @@ export class NawakPresenterService {
         payload: action.payload ?? {},
       })),
       extras: {
+        hand,
         targetScore: meta.targetScore,
         scores: meta.scores,
         stage: meta.roundStage,
@@ -33,6 +45,7 @@ export class NawakPresenterService {
         submissions: meta.submissions,
         votes: meta.votes,
         lastRound: meta.lastRound ?? null,
+        ui: { panels },
       },
       pending: state.pending ?? null,
     } as any;

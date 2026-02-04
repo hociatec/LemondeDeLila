@@ -4,6 +4,10 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import * as Rulebook from '../rulebook/rulebook';
 import { LA_PARADE_SEQUENCE } from '../model/la-parade-sucree-cards';
 import type { LaParadeSucreeMetadata } from '../model/la-parade-sucree-state.entity';
+import {
+  buildLamaLikePanels,
+  summarizeHandCounts,
+} from '../../../../presenters/lamalike-presenter.helper';
 
 @Injectable()
 export class LaParadeSucreePresenterService {
@@ -14,6 +18,13 @@ export class LaParadeSucreePresenterService {
     const meta = (state.metadata ?? {}) as LaParadeSucreeMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
     const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
+    const handCounts = summarizeHandCounts(meta.hands);
+    const panels = buildLamaLikePanels({
+      hand,
+      handCounts,
+      discardLabel: 'Bonbons joués',
+      tableMessage: `Statut: ${state.status ?? 'en attente'}`,
+    });
     const nextValue = LA_PARADE_SEQUENCE[meta.sequenceIndex];
     return {
       ...state,
@@ -32,6 +43,7 @@ export class LaParadeSucreePresenterService {
         candies: meta.candies,
         nextCard: nextValue,
         played: meta.played,
+        ui: { panels },
       },
       pending: state.pending ?? null,
     } as any;
