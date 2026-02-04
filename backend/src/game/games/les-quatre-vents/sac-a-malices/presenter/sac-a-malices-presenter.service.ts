@@ -5,12 +5,7 @@ import { BoardPayloadService } from '../../../../modules/board/services/board-pa
 import { SAC_A_MALICES_GAME } from '../definitions/sac-a-malices.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { SacMetadata } from '../model/sac-a-malices.types';
-import {
-  SAC_VARIANT_COUNT,
-  buildVariantChoiceLabel,
-  getVariantIndex,
-  parseVariantInput,
-} from '../sac-a-malices-variants';
+import { SAC_VARIANTS } from '../sac-a-malices-variants';
 
 @Injectable()
 export class SacAMalicesPresenterService {
@@ -79,28 +74,17 @@ export class SacAMalicesPresenterService {
         : (players[0]?.id ?? null);
     if (ownerId == null || ownerId !== userId) return null;
 
-    const variantId = parseVariantInput(meta.variantId) ?? 'classic';
-    const initialIndex = getVariantIndex(variantId);
+    const choices = SAC_VARIANTS.map((variant) => variant.label).filter((label) => label && label.trim());
+    if (choices.length === 0) {
+      return null;
+    }
 
     return {
-      type: 'config_prompt',
+      type: 'sac_setup_variant',
       playerId: ownerId,
-      label: 'Choisissez la variante.',
-      choices: [],
-      data: {
-        title: 'Variante Sac à Malices',
-        actionType: 'sac_set_variant',
-        fields: [
-          {
-            key: 'variant',
-            label: buildVariantChoiceLabel(),
-            kind: 'number',
-            min: 1,
-            max: SAC_VARIANT_COUNT,
-            initialText: String(initialIndex),
-          },
-        ],
-      },
+      label: 'Choisissez votre Monopoly',
+      blocking: true,
+      choices,
     };
   }
 }

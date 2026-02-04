@@ -404,6 +404,7 @@ export class PanierExpressService extends AbstractGameService {
       laps: {},
       winnerId: null,
       quiz: { pending: {} },
+      quizOutcome: {},
       actionLog: [],
       botProfile: 'greedy',
       movementDirection: 1,
@@ -459,6 +460,7 @@ export class PanierExpressService extends AbstractGameService {
       positions: { ...defaults.positions, ...(existing.positions ?? {}) },
       laps: { ...defaults.laps, ...(existing.laps ?? {}) },
       quiz: existing.quiz ?? defaults.quiz,
+      quizOutcome: existing.quizOutcome ?? defaults.quizOutcome,
       actionLog: existing.actionLog ?? defaults.actionLog,
       botProfile: existing.botProfile ?? defaults.botProfile,
       statuses: this.mergeStatuses(defaults.statuses, existing.statuses),
@@ -472,6 +474,7 @@ export class PanierExpressService extends AbstractGameService {
   ): PanierExpressMetadata {
     const decks = meta.decks ?? this.setup.buildDeckPool(state);
     const quiz = meta.quiz;
+    const quizOutcome = this.ensureQuizOutcome(meta.quizOutcome, players);
     const statuses = this.mergeStatuses(
       {
         skipTurn: {},
@@ -512,6 +515,7 @@ export class PanierExpressService extends AbstractGameService {
       ...meta,
       decks,
       quiz,
+      quizOutcome,
       statuses,
       positions,
       laps,
@@ -586,6 +590,21 @@ export class PanierExpressService extends AbstractGameService {
       }
     });
     return resolved;
+  }
+
+  private ensureQuizOutcome(
+    entries: PanierExpressMetadata['quizOutcome'] | undefined,
+    players: PanierExpressPlayer[],
+  ): PanierExpressMetadata['quizOutcome'] {
+    const normalized: PanierExpressMetadata['quizOutcome'] = {};
+    if (!entries) return normalized;
+    players.forEach((player) => {
+      const entry = entries[player.id];
+      if (entry) {
+        normalized[player.id] = entry;
+      }
+    });
+    return normalized;
   }
 
   private assignBotPawns(state: GameStateEntity): GameStateEntity {
@@ -1632,7 +1651,7 @@ export class PanierExpressService extends AbstractGameService {
         next = this.turnStatus.setStatus(next, playerId, 'noDrawCourses', 1);
         next = this.core.appendLog(
           next,
-          `[Panier Express] Inspection sanitaire : votre inventaire est visible jusqu'Ã  votre prochain tour.`,
+          `[Panier Express] Inspection sanitaire : votre inventaire est visible jusqu'à votre prochain tour.`,
         );
         next = this.appendActionLog(next, playerId, 'event', {
           event,
@@ -1853,10 +1872,15 @@ export class PanierExpressService extends AbstractGameService {
         const basket = this.utils.toStringArray(me?.basket);
         const owned = new Set(basket);
         const uniques = new Set(list.filter((item) => owned.has(item)));
-        if (uniques.size < 3 || !list.length) {
+        const requiredItems = 1;
+        const requirementLabel =
+          requiredItems > 1
+            ? `${requiredItems} ingrédients requis`
+            : '1 ingrédient requis';
+        if (list.length === 0 || uniques.size < requiredItems) {
           next = this.core.appendLog(
             next,
-            `[Panier Express] ${eventLabel} : condition non remplie (3 ingrédients requis).`,
+            `[Panier Express] ${eventLabel} : condition non remplie (${requirementLabel}).`,
           );
           next = this.appendActionLog(next, playerId, 'event', {
             event,
@@ -3694,11 +3718,27 @@ export class PanierExpressService extends AbstractGameService {
     const result = this.quizRunner.validateAnswer(quizState, playerId, answer);
     const correct = result.correct;
     const updatedQuiz = result.state;
+    const outcomeEntry = {
+      correct,
+      message: correct ? 'Bonne réponse !' : 'Mauvaise réponse !',
+      timestamp: Date.now(),
+    };
     let next: GameStateEntity = {
       ...state,
-      metadata: { ...meta, quiz: updatedQuiz },
+      metadata: {
+        ...meta,
+        quiz: updatedQuiz,
+        quizOutcome: { ...(meta.quizOutcome ?? {}), [playerId]: outcomeEntry },
+      },
       pending: null,
     };
+    next = this.core.appendLog(
+      next,
+      `[Panier Express] Quiz : réponse ${correct ? 'correcte' : 'incorrecte'} pour ${this.utils.playerName(
+        state,
+        playerId,
+      )}.`,
+    );
     next = this.appendActionLog(next, playerId, 'answer_quiz', { correct });
     if (correct) {
       next = this.queueCourseDraws(

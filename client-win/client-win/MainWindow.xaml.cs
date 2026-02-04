@@ -6,6 +6,7 @@ using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
 using client_win.Modules.Shell.Views;
 
@@ -94,6 +95,42 @@ namespace client_win
             return PredictionServices.GetFirstFocusableChild(host, element => !ShouldSkipStartupFocusTarget(element));
         }
 
+    private bool IsFocusableElementWithinRoot(IInputElement element)
+    {
+        if (element is not DependencyObject dependency) return false;
+
+        var host = FindName("RootHost") as DependencyObject ?? this;
+        for (var current = dependency; current != null; current = GetParent(current))
+        {
+            if (ReferenceEquals(current, host))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static DependencyObject? GetParent(DependencyObject current)
+    {
+        if (current == null)
+        {
+            return null;
+        }
+
+        if (current is Visual || current is System.Windows.Media.Media3D.Visual3D)
+        {
+            return VisualTreeHelper.GetParent(current);
+        }
+
+        if (current is FrameworkElement fe)
+        {
+            return fe.Parent ?? fe.TemplatedParent;
+        }
+
+        return LogicalTreeHelper.GetParent(current);
+    }
+
         private void FocusAndAnnounce(IInputElement element)
         {
             try { element.Focus(); } catch { /* ignore */ }
@@ -117,6 +154,15 @@ namespace client_win
                 try
                 {
                     EnsureWindowForeground();
+                    var currentlyFocused = Keyboard.FocusedElement as IInputElement;
+                    if (currentlyFocused != null &&
+                        IsFocusableElementWithinRoot(currentlyFocused) &&
+                        !ShouldSkipStartupFocusTarget(currentlyFocused))
+                    {
+                        _pendingScreenReaderAnnouncement = false;
+                        return;
+                    }
+
                     var target = FindFirstFocusableElement() ?? this;
                     FocusAndAnnounce(target);
                     RequestContentInitialFocus();

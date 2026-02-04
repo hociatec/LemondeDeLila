@@ -1,0 +1,38 @@
+﻿import { Injectable } from '@nestjs/common';
+import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+import * as Rulebook from '../rulebook/rulebook';
+import { PIMP_MY_RIDE_GAME } from '../definitions/game.definition';
+import type { PimpMyRideMetadata } from '../model/pimp-my-ride-state.entity';
+
+@Injectable()
+export class PimpMyRidePresenterService {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
+    const meta = (state.metadata ?? {}) as PimpMyRideMetadata;
+    const actions = Rulebook.getAvailableActions(state, userId);
+
+    return {
+      ...state,
+      catalog: {
+        phases: PIMP_MY_RIDE_GAME.phaseOrder.map((phase) => phase.id),
+        victory: null,
+      },
+      actions: actions.map((action) => ({
+        type: action.type,
+        label: action.type,
+        payload: action.payload ?? {},
+      })),
+      extras: {
+        hands: meta.hands,
+        progress: meta.progress,
+        deckCount: meta.deck?.length ?? 0,
+        drawnPlayerId: meta.drawnPlayerId ?? null,
+        carNameIndex: meta.carNameIndex,
+      },
+      pending: state.pending ?? null,
+    } as any;
+  }
+}

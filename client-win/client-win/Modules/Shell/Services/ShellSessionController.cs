@@ -82,6 +82,15 @@ public sealed class ShellSessionController
             // ignore
         }
 
+        try
+        {
+            _ = _audio.RefreshRemoteSoundsAsync(force: true, reapplyBackground: false);
+        }
+        catch
+        {
+            // ignore
+        }
+
         var menuVm = _host.CreateMainMenuViewModel(user, onLogoutRequested);
         _homeAccessor.HomeContent = menuVm;
         _navigation.Show(menuVm);

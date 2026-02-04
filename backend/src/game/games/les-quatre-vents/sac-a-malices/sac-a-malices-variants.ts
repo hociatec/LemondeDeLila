@@ -40,7 +40,7 @@ const buildRules = (overrides: SacRulesOverride = {}): SacRules => ({
 export const SAC_VARIANTS: SacVariantConfig[] = [
   {
     id: 'classic',
-    label: 'Classique (Dijon)',
+    label: 'Chouette et fortune !',
     summary: 'Jeu de type Monopoly (version Dijon).',
     gameType: 'sac-a-malices',
     rules: buildRules(),
@@ -70,7 +70,7 @@ export const SAC_VARIANTS: SacVariantConfig[] = [
   },
   {
     id: 'sabord-quai',
-    label: 'Sabord & Quai',
+    label: 'Sabord et Quai',
     summary: 'Variante Nantes : propriétés, loyers, Chance/Caisse, Parc Gratuit.',
     gameType: 'sac-a-malices-sabord-quai',
     contentDir: 'variants/sabord-quai/model/content',
@@ -79,7 +79,7 @@ export const SAC_VARIANTS: SacVariantConfig[] = [
   },
   {
     id: 'route-des-flandres',
-    label: 'Route des Flandres',
+    label: 'La Route des Flandres',
     summary: 'Variante Lille : achetez, construisez, payez des loyers.',
     gameType: 'sac-a-malices-route-des-flandres',
     contentDir: 'variants/route-des-flandres/model/content',
@@ -106,7 +106,7 @@ export const SAC_VARIANTS: SacVariantConfig[] = [
   },
   {
     id: 'pintzel-couronnes',
-    label: 'Pintzel & Couronnes',
+    label: 'Pintzel & Couronnes !',
     summary: 'Variante Strasbourg : propriétés, loyers, Chance/Caisse, Parc Gratuit.',
     gameType: 'sac-a-malices-pintzel-couronnes',
     contentDir: 'variants/pintzel-couronnes/model/content',

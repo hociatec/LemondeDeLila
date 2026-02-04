@@ -4,6 +4,7 @@ import {
   GameValidationError,
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
+import { SAC_VARIANTS } from '../sac-a-malices-variants';
 
 const ALLOWED = new Set([
   'roll',
@@ -33,7 +34,10 @@ export function getAvailableActions(
   if (setupStep === 'setup_config') {
     const ownerId = typeof meta?.ownerPlayerId === 'number' ? meta.ownerPlayerId : null;
     if (ownerId != null && ownerId === playerId) {
-      return [{ type: 'sac_set_variant', payload: {} }];
+      return SAC_VARIANTS.map((variant) => ({
+        type: 'sac_set_variant',
+        payload: { variant: variant.id },
+      }));
     }
     return [];
   }

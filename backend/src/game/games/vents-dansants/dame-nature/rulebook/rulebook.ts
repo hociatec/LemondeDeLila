@@ -1,150 +1,54 @@
+﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import {
-  DAME_NATURE_GAME,
-  type DameNatureActionType,
-} from '../definitions/game.definition';
-import {
-  GameValidationError,
-  PlayerActionError,
-} from '../../../../../common/errors/game-errors';
+  DAME_NATURE_CARD_BY_ID,
+  DameNatureFamilyCardDefinition,
+} from '../model/dame-nature-cards';
+import type { DameNatureMetadata } from '../model/dame-nature-state.entity';
 
-type DameNatureRuleMeta = {
-  decks?: {
-    family?: { deck?: unknown[]; discards?: unknown[] };
-  };
-  pendingAsk?: {
-    targetId: number;
-    memberId?: string | null;
-  } | null;
-  pendingQuiz?: {
-    playerId: number;
-    card?: {
-      choices?: string[] | null;
-      memberName?: string | null;
-      question?: string | null;
-    };
-  } | null;
-  pendingRefill?: {
-    playerId: number;
-    remaining: number;
-  } | null;
-  turnProgress?: {
-    playerId: number;
-    drew: boolean;
-    discarded: boolean;
-    asked: boolean;
-  } | null;
+export type DameNatureActionType = 'ask_card' | 'pass';
+
+export type DameNatureActionPayload = {
+  cardId?: string | null;
+  targetPlayerId?: number | null;
 };
 
-function normalizeNumber(value: unknown): number | null {
-  const n = typeof value === 'number' ? value : Number(value);
-  if (!Number.isFinite(n)) return null;
-  return n;
+function getMeta(state: GameStateEntity): DameNatureMetadata {
+  return (state.metadata ?? {}) as DameNatureMetadata;
 }
 
-function asMeta(state: GameStateEntity): DameNatureRuleMeta {
-  return (state.metadata ?? {}) as DameNatureRuleMeta;
+function getPlayerHand(meta: DameNatureMetadata, playerId: number): string[] {
+  return Array.isArray(meta.hands?.[playerId]) ? meta.hands[playerId] : [];
 }
 
-function getTurnProgress(meta: DameNatureRuleMeta, playerId: number) {
-  const progress = meta.turnProgress;
-  if (!progress || progress.playerId !== playerId) {
-    return { playerId, drew: false, discarded: false, asked: false };
-  }
-  return { ...progress, asked: (progress as any).asked ?? false };
-}
-
-function getPlayer(state: GameStateEntity, playerId: number): any | null {
-  const players = Array.isArray(state.players) ? state.players : [];
-  const found = players.find((p: any) => p && p.id === playerId);
-  return found ?? null;
+function getOpponents(state: GameStateEntity, playerId: number): number[] {
+  return (Array.isArray(state.players) ? state.players : [])
+    .filter((player) => player?.id != null && player.id !== playerId)
+    .map((player) => player!.id);
 }
 
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const meta = asMeta(state);
-  const familyDeck = meta.decks?.family ?? { deck: [], discards: [] };
-  const deckAvailable =
-    (familyDeck.deck?.length ?? 0) + (familyDeck.discards?.length ?? 0) > 0;
+  const status = String(state.status ?? '').toLowerCase();
+  if (status !== 'started') return [];
+  const current = state.turn?.currentPlayerId ?? null;
+  if (current !== playerId) return [];
+  const meta = getMeta(state);
+  const opponents = getOpponents(state, playerId);
+  const actions: GameSingleActionDto[] = [{ type: 'pass', payload: {} }];
 
-  if (meta.pendingAsk) {
-    if (meta.pendingAsk.targetId === playerId) {
-      const me = getPlayer(state, playerId);
-      const requestedMemberId = meta.pendingAsk.memberId
-        ? String(meta.pendingAsk.memberId)
-        : null;
-      const hasRequested =
-        requestedMemberId != null && me != null
-          ? (me.hand ?? []).some(
-              (c: any) => c && c.memberId === requestedMemberId,
-            )
-          : false;
-      if (!hasRequested) {
-        return [
-          {
-            type: 'answer_ask_card_refuse',
-            payload: { accept: false, playerId },
-          },
-        ];
-      }
-      return [
-        {
-          type: 'answer_ask_card_accept',
-          payload: { accept: true, playerId },
-        },
-        {
-          type: 'answer_ask_card_refuse',
-          payload: { accept: false, playerId },
-        },
-      ];
-    }
-    return [];
-  }
-
-  if (meta.pendingQuiz) {
-    if (meta.pendingQuiz.playerId === playerId) {
-      const choices = meta.pendingQuiz.card?.choices ?? [
-        'Bonne réponse',
-        'Mauvaise réponse',
-      ];
-      return (choices ?? []).map((choice) => ({
-        type: 'answer_quiz',
-        payload: { playerId, answer: choice },
-      }));
-    }
-    return [];
-  }
-
-  if (meta.pendingRefill) {
-    if (meta.pendingRefill.playerId === playerId) {
-      return [{ type: 'draw', payload: { playerId } }];
-    }
-    return [];
-  }
-
-  const me = getPlayer(state, playerId);
-  const progress = getTurnProgress(meta, playerId);
-
-  const actions: GameSingleActionDto[] = [];
-  const canDraw =
-    deckAvailable && !progress.drew && (me?.hand?.length ?? 0) < 5;
-  if (canDraw) actions.push({ type: 'draw' });
-
-  const canDiscard = !progress.discarded || (me?.hand?.length ?? 0) > 4;
-  if (canDiscard && (me?.hand?.length ?? 0) > 0) {
-    (me?.hand ?? []).forEach((card: any) => {
+  for (const opponentId of opponents) {
+    const hand = getPlayerHand(meta, opponentId);
+    for (const cardId of hand) {
+      const definition = DAME_NATURE_CARD_BY_ID[cardId];
+      if (!definition || definition.type !== 'family') continue;
       actions.push({
-        type: 'discard_card',
-        payload: { memberId: card.memberId, familyId: card.familyId },
+        type: 'ask_card',
+        payload: { cardId, targetPlayerId: opponentId },
       });
-    });
-  }
-
-  if (!progress.asked) {
-    actions.push({ type: 'ask_card', payload: { playerId } });
+    }
   }
 
   return actions;
@@ -155,164 +59,49 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const meta = asMeta(state);
-  const type = String(action?.type ?? '').trim() as DameNatureActionType;
-  if (!DAME_NATURE_GAME.actions.includes(type)) {
-    throw new GameValidationError(`Action inconnue: ${type}`, {
-      gameType: 'dame-nature',
-      action: type,
-      allowedActions: DAME_NATURE_GAME.actions,
-    });
+  const type = String(action?.type ?? '').trim();
+  const payload = (action?.payload ?? {}) as DameNatureActionPayload;
+  if (type !== 'ask_card' && type !== 'pass') {
+    throw new Error(`Action inconnue : ${type}`);
+  }
+  if (actorId == null) {
+    throw new Error('Acteur requis.');
+  }
+  const status = String(state.status ?? '').toLowerCase();
+  if (status !== 'started') {
+    throw new Error('La partie n\'est pas commencée.');
+  }
+  const current = state.turn?.currentPlayerId ?? null;
+  if (current !== actorId) {
+    throw new Error('Ce n\'est pas votre tour.');
   }
 
-  const payload = action.payload ?? {};
-  const currentId = state.turn?.currentPlayerId ?? null;
-
-  if (meta.pendingAsk) {
-    if (
-      type !== 'answer_ask_card_accept' &&
-      type !== 'answer_ask_card_refuse'
-    ) {
-      throw new PlayerActionError('Action non disponible', {
-        gameType: 'dame-nature',
-        playerId: actorId ?? undefined,
-        action: type,
-        expectedActions: ['answer_ask_card_accept', 'answer_ask_card_refuse'],
-      });
-    }
-    if (actorId == null || actorId !== meta.pendingAsk.targetId) {
-      throw new PlayerActionError("Ce n'est pas votre action.", {
-        gameType: 'dame-nature',
-        playerId: actorId ?? undefined,
-        expectedPlayerId: meta.pendingAsk.targetId,
-      });
-    }
-    return { ...action, type, payload: { ...payload, playerId: actorId } };
+  if (type === 'pass') {
+    return { type: 'pass', payload: {} };
   }
 
-  if (meta.pendingQuiz) {
-    if (type !== 'answer_quiz') {
-      throw new PlayerActionError('Action non disponible', {
-        gameType: 'dame-nature',
-        playerId: actorId ?? undefined,
-        action: type,
-        expectedActions: ['answer_quiz'],
-      });
-    }
-    if (actorId == null || actorId !== meta.pendingQuiz.playerId) {
-      throw new PlayerActionError("Ce n'est pas votre action.", {
-        gameType: 'dame-nature',
-        playerId: actorId ?? undefined,
-        expectedPlayerId: meta.pendingQuiz.playerId,
-      });
-    }
-    const answer = typeof payload.answer === 'string' ? payload.answer : null;
-    if (!answer) {
-      throw new GameValidationError('Payload invalide: answer', {
-        gameType: 'dame-nature',
-        playerId: actorId ?? undefined,
-        payload,
-      });
-    }
-    return { ...action, type, payload: { playerId: actorId, answer } };
+  const cardId = String(payload.cardId ?? '').trim();
+  if (!cardId) {
+    throw new Error('Carte manquante.');
+  }
+  const target = payload.targetPlayerId;
+  if (typeof target !== 'number') {
+    throw new Error('Cible requise.');
+  }
+  if (target === actorId) {
+    throw new Error('Impossible de demander à soi-même.');
   }
 
-  if (meta.pendingRefill) {
-    if (type !== 'draw') {
-      throw new PlayerActionError('Action non disponible', {
-        gameType: 'dame-nature',
-        playerId: actorId ?? undefined,
-        action: type,
-        expectedActions: ['draw'],
-      });
-    }
-    if (actorId == null || actorId !== meta.pendingRefill.playerId) {
-      throw new PlayerActionError("Ce n'est pas votre action.", {
-        gameType: 'dame-nature',
-        playerId: actorId ?? undefined,
-        expectedPlayerId: meta.pendingRefill.playerId,
-      });
-    }
-    return {
-      ...action,
-      type,
-      payload: actorId != null ? { playerId: actorId } : payload,
-    };
+  const meta = getMeta(state);
+  const targetHand = getPlayerHand(meta, target);
+  if (!targetHand.includes(cardId)) {
+    throw new Error('La cible ne possède pas cette carte.');
   }
 
-  if (currentId != null && actorId != null && actorId !== currentId) {
-    throw new PlayerActionError("Ce n'est pas votre tour.", {
-      gameType: 'dame-nature',
-      playerId: actorId,
-      currentPlayerId: currentId,
-    });
+  const definition = DAME_NATURE_CARD_BY_ID[cardId];
+  if (!definition || definition.type !== 'family') {
+    throw new Error('Carte invalide pour cette action.');
   }
 
-  if (type === 'discard_card') {
-    const memberId = payload.memberId != null ? String(payload.memberId) : null;
-    if (!memberId) {
-      throw new GameValidationError('Payload invalide: memberId', {
-        gameType: 'dame-nature',
-        playerId: actorId ?? undefined,
-        payload,
-      });
-    }
-    const familyId = payload.familyId != null ? String(payload.familyId) : null;
-    const normalized: Record<string, unknown> = { memberId };
-    if (familyId) normalized.familyId = familyId;
-    return { ...action, type, payload: normalized };
-  }
-
-  if (type === 'ask_card') {
-    const normalized: Record<string, unknown> = {};
-    const targetId = normalizeNumber(payload.targetId);
-    if (targetId != null) normalized.targetId = targetId;
-    const familyId = payload.familyId != null ? String(payload.familyId) : null;
-    if (familyId) normalized.familyId = familyId;
-    const memberId = payload.memberId != null ? String(payload.memberId) : null;
-    if (memberId) normalized.memberId = memberId;
-    if (actorId != null) normalized.playerId = actorId;
-    return { ...action, type, payload: normalized };
-  }
-
-  if (type === 'draw') {
-    return {
-      ...action,
-      type,
-      payload: actorId != null ? { playerId: actorId } : payload,
-    };
-  }
-
-  return { ...action, type };
-}
-
-export function actorOverrideAllowed(
-  state: GameStateEntity,
-  actions: GameSingleActionDto[],
-  actorId: number | null,
-): boolean {
-  if (actorId == null) return false;
-  const list = Array.isArray(actions) ? actions : [];
-  if (list.length === 0) return false;
-
-  const meta = asMeta(state);
-  if (meta.pendingAsk) {
-    if (meta.pendingAsk.targetId !== actorId) return false;
-    return list.every((a) => {
-      const t = String(a?.type ?? '').trim();
-      return t === 'answer_ask_card_accept' || t === 'answer_ask_card_refuse';
-    });
-  }
-
-  if (meta.pendingQuiz) {
-    if (meta.pendingQuiz.playerId !== actorId) return false;
-    return list.every((a) => String(a?.type ?? '').trim() === 'answer_quiz');
-  }
-
-  if (meta.pendingRefill) {
-    if (meta.pendingRefill.playerId !== actorId) return false;
-    return list.every((a) => String(a?.type ?? '').trim() === 'draw');
-  }
-
-  return false;
+  return { type: 'ask_card', payload: { cardId, targetPlayerId: target } };
 }

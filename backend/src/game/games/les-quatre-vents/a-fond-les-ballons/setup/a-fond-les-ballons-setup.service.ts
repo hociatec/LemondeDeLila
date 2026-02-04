@@ -257,62 +257,58 @@ const CASE_DESCRIPTIONS: string[] = [
   "Vous commencez votre aventure à la Tanière à Tartines. Prenez une grande inspiration et sentez l'air frais de la course.",
   "Un tunnel secret s'ouvre entre deux racines. Vous glissez à toute vitesse et avancez de 2 cases supplémentaires.",
   "Une noix farfelue rebondit devant vous ! La folie vous emporte : piochez une carte Loufoque.",
-  'Des feuilles mortes crissent sous vos pattes, mais vous avancez calmement.',
-  'Une tartine gluante traîne sur le sol. Oh non ! Vous glissez et reculez de 2 cases.',
-  'Une flaque de confiture vous fait tourner sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement.',
-  'Une douce brise caresse vos moustaches. Rien à signaler ici, continuez votre route.',
+  "Des feuilles mortes crissent sous vos pattes, mais vous avancez calmement.",
+  "Une tartine gluante traîne sur le sol. Oh non ! Vous glissez et reculez de 2 cases.",
+  "Une flaque de confiture vous fait tourner sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement.",
+  "Une douce brise caresse vos moustaches. Rien à signaler ici, continuez votre route.",
   "Un vent fou souffle dans la clairière ! Vous échangez votre place avec un joueur de votre choix.",
   "Une gerbille farceuse vous regarde intensément. La folie s'empare de vous : piochez une carte Loufoque.",
-  'Une clairière tranquille s�"étend devant vous, idéale pour souffler un peu.',
-  'Vous découvrez un passage rapide entre les arbres. Avancez de 2 cases supplémentaires.',
-  'Vous glissez sur une racine humide ! Reculez de 2 cases.',
-  'Un petit ruisseau vous fait tourner sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement.',
-  'Vous passez sous un vieux chêne majestueux. Rien ne vous retient ici.',
-  'Une bulle de savon géante apparaît ! Piochez une carte Loufoque et appliquez son effet.',
+  "Une clairière tranquille s'étend devant vous, idéale pour souffler un peu.",
+  "Vous découvrez un passage rapide entre les arbres. Avancez de 2 cases supplémentaires.",
+  "Vous glissez sur une racine humide ! Reculez de 2 cases.",
+  "Un petit ruisseau vous fait tourner sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement.",
+  "Vous passez sous un vieux chêne majestueux. Rien ne vous retient ici.",
+  "Une bulle de savon géante apparaît ! Piochez une carte Loufoque et appliquez son effet.",
   "Un tunnel sombre et secret s'ouvre. Vous avancez de 2 cases supplémentaires.",
   "Une flaque de sirop gluant vous fait perdre l'équilibre. Reculez de 2 cases.",
-  'Le sol est recouvert de mousse glissante. Tournez sur vous-même et avancez ou reculez de 1 à 3 cases, aléatoirement.',
+  "Le sol est recouvert de mousse glissante. Tournez sur vous-même et avancez ou reculez de 1 à 3 cases, aléatoirement.",
   "Une odeur de noisette flotte dans l'air. Vous pouvez avancer tranquillement.",
-  'Une noix chanteuse vous perturbe. Piochez une carte Loufoque.',
-  'Catastrophe ! Le Grand Chaton Gourmand rôde ici. Il vous attrape et vous renvoie à la case départ.',
-  'Un petit tunnel secret se révèle derrière un buisson. Avancez de 2 cases supplémentaires.',
-  'Une tartine tombée vous fait glisser. Reculez de 2 cases.',
-  'Une flaque de lait renversé vous fait tourner. Avancez ou reculez de 1 à 3 cases, aléatoirement.',
-  'Une branche basse frôle votre museau. Rien de bien méchant ici.',
-  'Un minuscule campagnol farceur surgit. Piochez une carte Loufoque.',
-  'Vous trouvez un passage rapide entre les rochers. Avancez de 2 cases supplémentaires.',
+  "Une noix chanteuse vous perturbe. Piochez une carte Loufoque.",
+  "Catastrophe ! Le Grand Chaton Gourmand rôde ici. Il vous attrape et vous renvoie à la case départ.",
+  "Un petit tunnel secret se révèle derrière un buisson. Avancez de 2 cases supplémentaires.",
+  "Une tartine tombée vous fait glisser. Reculez de 2 cases.",
+  "Une flaque de lait renversé vous fait tourner. Avancez ou reculez de 1 à 3 cases, aléatoirement.",
+  "Une branche basse frôle votre museau. Rien de bien méchant ici.",
+  "Un minuscule campagnol farceur surgit. Piochez une carte Loufoque.",
+  "Vous trouvez un passage rapide entre les rochers. Avancez de 2 cases supplémentaires.",
   "Une tartine gluante apparaît au détour d'un chemin. Reculez de 2 cases.",
-  'Une feuille glissante vous fait tourner sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement.',
-  'Vous traversez un sentier calme bordé de fleurs. Rien ne vous retient.',
-  'Un vent tourbillonnant soulève des feuilles et petits cailloux. �0changez votre place avec un joueur de votre choix.',
-  'Une noix magique tombe juste devant vous. Piochez une carte Loufoque.',
-  'Vous trouvez un tunnel étroit caché sous les racines. Avancez de 2 cases supplémentaires.',
-  'Une flaque de confiture inattendue vous fait reculer de 2 cases.',
-  'Un ruisseau bouillonnant vous fait tourner sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement.',
-  'Une petite clairière ensoleillée vous permet de souffler un peu.',
-  'Un étrange bruit derrière un buisson vous surprend. Piochez une carte Loufoque.',
+  "Une feuille glissante vous fait tourner sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement.",
+  "Vous traversez un sentier calme bordé de fleurs. Rien ne vous retient.",
+  "Un vent tourbillonnant soulève des feuilles et petits cailloux. Échangez votre place avec un joueur de votre choix.",
+  "Une noix magique tombe juste devant vous. Piochez une carte Loufoque.",
+  "Vous trouvez un tunnel étroit caché sous les racines. Avancez de 2 cases supplémentaires.",
+  "Une flaque de confiture inattendue vous fait reculer de 2 cases.",
+  "Un ruisseau bouillonnant vous fait tourner sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement.",
+  "Une petite clairière ensoleillée vous permet de souffler un peu.",
+  "Un étrange bruit derrière un buisson vous surprend. Piochez une carte Loufoque.",
   "Une tartine glissante vous fait perdre l'équilibre. Reculez de 2 cases.",
-  'Vous glissez sur une feuille humide et tournez sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement.',
+  "Vous glissez sur une feuille humide et tournez sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement.",
   "La Grosse Noix Dorée est juste là ! Vous l'atteignez enfin et remportez la partie. Félicitations, Rongeur Suprême !",
 ];
-
 function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
   return [
-    {
-      id: 1,
-      text: 'Vous glissez sur une peau de banane séchée. Reculez de 2 cases.',
-    },
+    { id: 1, text: 'Vous glissez sur une peau de banane séchée. Reculez de 2 cases.' },
     {
       id: 2,
       text: 'Un muscardin vous livre un cookie géant, beaucoup trop lourd. Passez votre tour.',
     },
     {
       id: 3,
-      text: "Vous sautez dans une flaque de confiture collante. Avancez d'une case.",
+      text: 'Vous sautez dans une flaque de confiture collante. Avancez d\'une case.',
     },
     {
       id: 4,
-      text: "Une noix étrange chante et perturbe la Tanière. La partie est figée : aucun joueur n'agit pendant ce tour.",
+      text: 'Une noix étrange chante et perturbe la Tanière. La partie est figée : aucun joueur n\'agit pendant ce tour.',
     },
     {
       id: 5,
@@ -320,20 +316,20 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 6,
-      text: "Vous renversez une bouteille de sirop magique. Tous les joueurs reculent d'une case.",
+      text: 'Vous renversez une bouteille de sirop magique. Tous les joueurs reculent d\'une case.',
     },
     {
       id: 7,
       text: 'Vous trouvez une corde à sauter en réglisse enchantée. Avancez de 2 cases.',
     },
-    { id: 8, text: "Le Grand Chaton éternue violemment. Reculez d'une case." },
+    { id: 8, text: 'Le Grand Chaton éternue violemment. Reculez d\'une case.' },
     {
       id: 9,
       text: 'Vous vous prenez les pattes dans du chewing-gum collant. Passez votre tour.',
     },
     {
       id: 10,
-      text: "Un lérot ninja surgit et vous tend une noisette turbo. Avancez jusqu'à la prochaine case Bonus.",
+      text: 'Un lérot ninja surgit et vous tend une noisette turbo. Avancez jusqu\'à la prochaine case Bonus.',
     },
     {
       id: 11,
@@ -341,11 +337,11 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 12,
-      text: "Votre museau vous démange sans raison. Reculez d'une case.",
+      text: 'Votre museau vous démange sans raison. Reculez d\'une case.',
     },
     {
       id: 13,
-      text: "Une gerboise farceuse vous chatouille les pattes. Sautez d'une case.",
+      text: 'Une gerboise farceuse vous chatouille les pattes. Sautez d\'une case.',
     },
     {
       id: 14,
@@ -353,11 +349,11 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 15,
-      text: "Vous faites tomber une montagne de cacahuètes. Distrait, vous reculez d'une case.",
+      text: 'Vous faites tomber une montagne de cacahuètes. Distrait, vous reculez d\'une case.',
     },
     {
       id: 16,
-      text: "Une bulle de savon géante vous emporte. Avancez jusqu'à la prochaine case Folie.",
+      text: 'Une bulle de savon géante vous emporte. Avancez jusqu\'à la prochaine case Folie.',
     },
     {
       id: 17,
@@ -369,7 +365,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 19,
-      text: "Un loir vous montre le chemin en remuant la queue. Avancez d'une case en souriant.",
+      text: 'Un loir vous montre le chemin en remuant la queue. Avancez d\'une case en souriant.',
     },
     {
       id: 20,
@@ -377,7 +373,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 21,
-      text: "Vous renversez un pot de peinture fluo. Tout le monde avance d'une case.",
+      text: 'Vous renversez un pot de peinture fluo. Tout le monde avance d\'une case.',
     },
     {
       id: 22,
@@ -398,23 +394,23 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 27,
-      text: "Un petit avion de carton vous emporte maladroitement. Avancez d'une case, puis reculez de deux.",
+      text: 'Un petit avion de carton vous emporte maladroitement. Avancez d\'une case, puis reculez de deux.',
     },
     {
       id: 28,
-      text: 'Vous lisez un vieux grimoire ronronique. �0changez votre position avec le joueur de votre choix.',
+      text: 'Vous lisez un vieux grimoire ronronique. Échangez votre position avec le joueur de votre choix.',
     },
     {
       id: 29,
-      text: "Une catapulte de fromage rebondit sur vous. Allez en case 13.",
+      text: 'Une catapulte de fromage rebondit sur vous. Reculez jusqu\'à la case 13.',
     },
     {
       id: 30,
-      text: "Vous tombez dans une mare d'épaisse mousse. Passez votre tour.",
+      text: 'Vous tombez dans une mare d\'épaisse mousse. Passez votre tour.',
     },
     {
       id: 31,
-      text: "Un hutia curieux bondit sur votre chemin et vous bouscule gentiment. Avancez d'une case, un peu étourdi.",
+      text: 'Un hutia curieux bondit sur votre chemin et vous bouscule gentiment. Avancez d\'une case un peu étourdi.',
     },
     {
       id: 32,
@@ -430,7 +426,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 35,
-      text: "Un tunnel défectueux vous mène droit chez le Chaton gourmand. Retournez à la case départ.",
+      text: 'Un tunnel défectueux vous mène droit chez le Chaton gourmand. Retournez à la case départ.',
     },
     {
       id: 36,
@@ -442,7 +438,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 38,
-      text: "Un biscuit géant explose. Tous les joueurs se déplacent d'une case aléatoire.",
+      text: 'Un biscuit géant explose. Tous les joueurs se déplacent d\'une case aléatoire.',
     },
     {
       id: 39,
@@ -450,7 +446,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 40,
-      text: "La Reine des Rongeurs vous envoie un message. Si vous êtes sur une case Glissade, avancez jusqu'à la case 40.",
+      text: 'La Reine des Rongeurs vous envoie un message. Si vous êtes sur une case Glissade, avancez jusqu\'à la case 40.',
     },
   ];
 }

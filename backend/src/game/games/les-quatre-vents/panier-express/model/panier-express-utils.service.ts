@@ -189,6 +189,7 @@ export class PanierExpressUtils {
       derriere: 'derrière',
       impose: 'imposé',
       perce: 'percé',
+      spontane: 'spontané',
     };
     const extraTokenMap: Record<string, string> = {
       recompensee: 'r\u00e9compens\u00e9e',
@@ -198,7 +199,8 @@ export class PanierExpressUtils {
       bonde: 'bond\u00e9',
       defectueux: 'd\u00e9fectueux',
       oublie: 'oubli\u00e9',
-      anime: 'anim\u00e9',
+      anime: 'anim\\u00e9',
+      spontanee: 'spontan\\u00e9e',
     };
     const words = raw
       .split('-')
@@ -238,3 +240,5 @@ export class PanierExpressUtils {
     }
   }
 }
+
+

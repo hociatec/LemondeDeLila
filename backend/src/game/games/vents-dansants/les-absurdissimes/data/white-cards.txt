@@ -1,0 +1,503 @@
+Cartes blanches
+
+
+1. 
+"J’ai toujours rêvé de ___"
+2. 
+"Quand j’étais petit, je croyais que ___"
+3. 
+"Le pire conseil que l’on m’ait donné, c’est ___"
+4. 
+"Je suis sûr que ___ existe vraiment."
+5. 
+"On m’a toujours dit qu’il fallait jamais ___"
+6. 
+"Mon super pouvoir, c’est ___"
+7. 
+"La meilleure excuse pour ne pas aller au travail, c’est ___"
+8. 
+"Dans un monde parfait, tout le monde serait ___"
+9. 
+"Je ne sais pas pourquoi, mais j’ai une peur irrationnelle de ___"
+10. 
+"Je n’aurais jamais cru que ___ m’arriverait un jour."
+11. 
+"Ce qui manque vraiment à ma vie, c’est ___"
+12. 
+"La dernière fois que j’ai ri de manière incontrôlable, c’était à cause de ___"
+13. 
+"Si j’étais un super-héros, mon nom serait ___"
+14. 
+"Mon plat préféré est ___, mais je ne le dis jamais à personne."
+15. 
+"La phrase qui me fait le plus rire, c’est ___"
+16. 
+"Mon voisin est le genre de personne qui ___"
+17. 
+"Je suis totalement obsédé par ___ en ce moment."
+18. 
+"Si je devais choisir une chanson pour décrire ma vie, ce serait ___"
+19. 
+"Le secret pour réussir dans la vie, c’est ___"
+20. 
+"L’objet qui traîne toujours chez moi et qui ne sert à rien, c’est ___"
+21. 
+"Si je pouvais me téléporter, je partirais direct à ___"
+22. 
+"Quand je suis de mauvaise humeur, je me venge en ___"
+23. 
+"Un jour, j’ai trouvé ___ dans ma boîte à chaussures."
+24. 
+"Mon animal de compagnie m’a appris à ___"
+25. 
+"Je rêve de rencontrer ___ sur une île déserte."
+26. 
+"Si j’étais une licorne, je serais la seule à ___"
+27. 
+"La dernière fois que j’ai pleuré, c’était en ___"
+28. 
+"On m’a dit que si je mangeais ___, j’allais devenir immortel."
+29. 
+"J’ai une photo secrète de ___ qui me fait rire à chaque fois."
+30. 
+"Ce matin, j’ai mangé ___ pour le petit-déjeuner, et ça m’a changé ma journée."
+31. 
+"Si je pouvais parler aux objets, je commencerais par ___"
+32. 
+"Je suis convaincu que le gouvernement cache ___ dans le Grand Canyon."
+33. 
+"Si je devais choisir un superpouvoir, je prendrais ___"
+34. 
+"Ma passion secrète, c’est ___ mais je ne l’avoue à personne."
+35. 
+"J’ai un talent caché pour ___"
+36. 
+"Le mystère le plus intrigant de ma vie est ___"
+37. 
+"Quand je vais au supermarché, je m’arrête toujours devant ___"
+38. 
+"Je suis persuadé que ___ est un complot intergalactique."
+39. 
+"Si les extraterrestres viennent sur Terre, je leur offrirai ___"
+40. 
+"Quand j’ai besoin de me détendre, je m’allonge et je me concentre sur ___"
+41. 
+"Un matin, je me suis réveillé avec ___ sur mon oreiller."
+42. 
+"Si je pouvais inviter n'importe qui à dîner, je choisirais ___, mais je leur ferais manger ___."
+43. 
+"Mon rêve le plus bizarre ? C’est de ___ avec un pingouin."
+44. 
+"Je suis convaincu que ___ est une conspiration menée par des chats."
+45. 
+"J’ai une théorie sur les licornes : elles cachent ___ dans leurs crinières."
+46. 
+"La chose la plus étrange que j’ai trouvée sous mon lit, c’était ___"
+47. 
+"Si je pouvais échanger de corps avec quelqu’un, ce serait avec ___, juste pour voir comment ___."
+48. 
+"Le dernier objet que j’ai acheté par impulsion, c’était ___"
+49. 
+"Mon voisin a un problème, il parle toujours de ___ en pleine nuit."
+50. 
+"Quand je me sens vraiment seul, je parle à ___."
+51. 
+"Un jour, j’ai vu un ___ faire un moonwalk."
+52. 
+"J’ai une obsession secrète pour ___, mais je ne veux pas en parler à mes amis."
+53. 
+"Le gouvernement cache ___ dans les pyramides d’Égypte."
+54. 
+"Le pire moment pour recevoir un appel téléphonique, c’est quand je suis ___"
+55. 
+"Je suis sûr que ___ est responsable de tous les problèmes du monde."
+56. 
+"J’ai un rêve : avoir un ___ en peluche géant qui m’accompagne partout."
+57. 
+"Le meilleur remède contre le stress, c’est ___, mais personne ne m’a cru."
+58. 
+"Si je pouvais avoir un animal de compagnie totalement bizarre, je choisirais ___."
+59. 
+"Je suis persuadé que ___ est un message secret des aliens."
+60. 
+"J’ai vu ___ dans mon jardin hier soir, et je suis toujours sous le choc."
+61. 
+"J’ai une photo de moi avec ___, mais je ne peux pas la montrer à personne."
+62. 
+"La pire invention que l’humanité ait jamais créée, c’est ___."
+63. 
+"Si je devais passer une soirée avec ___, je suis sûr qu’on finirait par ___."
+64. 
+"J’ai trouvé un message secret écrit par ___ dans mon cahier de maths."
+65. 
+"Je suis presque sûr que ___ est en train de préparer une invasion de biscuits géants."
+66. 
+"Si les extraterrestres débarquent, je leur offrirais ___ en premier."
+67. 
+"Quand j’étais petit, je croyais que ___ était responsable de tous mes mauvais rêves."
+68. 
+"La dernière fois que j’ai vu ___, il/elle était en train de ___ dans un costume de poulet."
+69. 
+"Si je pouvais vivre dans n’importe quel film, je choisirais ___ et je prendrais ___ comme partenaire."
+70. 
+"Je suis persuadé que ___ n’est qu’une distraction pour nous faire oublier l’existence de ___."
+71. 
+"Le pire truc que j’ai vu en direct, c’est ___ dans un supermarché."
+72. 
+"Si je pouvais échanger de cerveau avec n’importe qui, ce serait avec ___, pour comprendre pourquoi ___."
+73. 
+"Un jour, je suis tombé sur ___ dans un arbre, et il/elle m’a dit ___."
+74. 
+"Quand je veux me sentir puissant, je regarde ___ et je me mets à ___."
+75. 
+"La première fois que j’ai vu ___, j’ai eu envie de ___."
+76. 
+"Si je pouvais avoir un animal mythologique comme animal de compagnie, je choisirais ___."
+77. 
+"Je suis sûr que ___ n’est pas humain et qu’il/elle cache ___ dans sa cave."
+78. 
+"Un jour, je vais fonder une religion basée sur ___ et ___."
+79. 
+"Je suis tombé amoureux de ___ au moment où j’ai vu ___."
+80. 
+"Si je devais inventer une nouvelle couleur, elle s’appellerait ___ et ressemblerait à ___."
+81. 
+"Si je pouvais avoir un dîner avec ___, je leur servirais ___ pour les impressionner."
+82. 
+"Je suis convaincu que ___ est en réalité un super-héros déguisé en ___."
+83. 
+"Si je pouvais changer une chose dans le passé, je reviendrais pour ___ et je dirais ___."
+84. 
+"Un jour, je me suis réveillé avec ___ dans mes cheveux et je n’ai jamais su pourquoi."
+85. 
+"Mon esprit s’égare toujours quand je pense à ___, mais je me demande pourquoi ça existe."
+86. 
+"Je suis persuadé que ___ est en train de vivre une vie secrète en tant que ___."
+87. 
+"Quand je suis stressé, je me calme en regardant ___ danser sur ___."
+88. 
+"Le gouvernement nous cache ___ dans l’Antarctique et ça pourrait tout changer."
+89. 
+"Si je pouvais choisir n’importe quelle époque pour y vivre, je prendrais ___ pour aller à ___."
+90. 
+"J’ai vu ___ sur la Lune et je suis presque certain que ___ a tout filmé."
+91. 
+"Quand je me regarde dans un miroir, je me demande toujours pourquoi ___."
+92. 
+"Si j’avais une machine à remonter le temps, j’irais ___ pour ___."
+93. 
+"Le dernier objet étrange que j’ai trouvé dans mon garage, c’était ___, et c’était totalement inutile."
+94. 
+"J’ai toujours pensé que ___ était responsable du phénomène des chaussettes qui disparaissent dans la machine à laver."
+95. 
+"Si un alien débarquait chez moi, je lui offrirais ___ et je lui dirais ___."
+96. 
+"Si je devais fusionner avec n’importe quel animal, je choisirais ___ et je ferais ___."
+97. 
+"La meilleure façon de survivre à une invasion de zombies, c’est ___."
+98. 
+"Je suis convaincu que ___ est la clé pour comprendre l’univers tout entier."
+99. 
+"Je pourrais passer des heures à observer ___, surtout quand il/elle ___."
+100. 
+"Le mystère de ma vie, c’est pourquoi ___ disparaît toujours avant que je puisse l’utiliser."
+101. 
+"La dernière fois que j’ai vu un extraterrestre, il/elle portait ___ et disait qu’il/elle venait de ___."
+102. 
+"Si je devais ouvrir un restaurant, je servirais exclusivement ___ et je l’appellerais ___."
+103. 
+"Je suis absolument certain que ___ est une forme de vie extraterrestre déguisée en ___."
+104. 
+"Quand je fais une sieste, je rêve toujours de ___ qui me dit ___."
+105. 
+"Si j’avais un assistant robot, il/elle serait programmé(e) pour ___, mais je suis un peu inquiet(e) de ___."
+106. 
+"Mon rêve le plus fou ? C’est de ___ avec ___ pendant une pluie de ___."
+107. 
+"La seule chose qui me fait vraiment peur, c’est ___, surtout quand je pense à ___."
+108. 
+"Si je pouvais communiquer avec les objets, je commencerais par ___ et je lui demanderais ___."
+109. 
+"Je suis convaincu que ___ a des pouvoirs magiques et utilise ___ pour ___."
+110. 
+"Quand je suis seul chez moi, je me parle à moi-même et je dis toujours ___, même si ça n’a aucun sens."
+111. 
+"Un jour, je suis allé à ___ et j’ai vu ___ qui faisait ___ dans une piscine remplie de ___."
+112. 
+"Si je devais choisir une couleur pour l’univers, je choisirais ___, et tout serait fait de ___."
+113. 
+"J’ai un doute sur ___, je pense qu’il/elle est responsable de ___."
+114. 
+"Le plus gros mystère de ma vie : pourquoi ___ se transforme en ___ tous les matins."
+115. 
+"Si je devais faire une rencontre avec un monstre sous mon lit, je lui offrirais ___ et on discuterait de ___."
+116. 
+"Je suis sûr que ___ est en train de planifier une invasion de ___, mais personne ne veut me croire."
+117. 
+"Si je devais écrire un livre, il s’appellerait ___ et il raconterait l’histoire de ___ qui se rend dans ___."
+118. 
+"Ma plus grande peur, c’est de découvrir que ___ a toujours été ___ et qu’on m’a menti pendant des années."
+119. 
+"Le truc le plus bizarre que j’aie vu en vacances, c’était ___ qui ___ avec ___."
+120. 
+"Je me demande parfois si ___ n’est pas en réalité une forme de vie venue de ___."
+121. 
+"Un jour, j’ai trouvé ___ qui m’a dit : ‘Tu ne croiras jamais ce qui s’est passé à ___.’"
+122. 
+"Si je pouvais vivre dans une dimension parallèle, je choisirais ___ pour m’accompagner et ___ serait notre mission."
+123. 
+"J’ai un secret : chaque fois que je mange ___, je me transforme en ___ pendant 10 minutes."
+124. 
+"La dernière fois que j’ai vu ___, il/elle m’a proposé ___ en échange de ___."
+125. 
+"Je suis convaincu que ___ fait partie d’un complot mondial pour ___."
+126. 
+"Si je pouvais avoir une rencontre avec un dieu, ce serait ___, et je lui demanderais ___."
+127. 
+"Quand je me sens vraiment bizarre, je vais dans mon jardin et je parle à ___ en espérant qu’il/elle me réponde."
+128. 
+"Je suis presque certain que ___ est une invention du gouvernement pour cacher ___."
+129. 
+"Si je devais faire un saut dans le temps, j’irais en ___ pour ___."
+130. 
+"Mon plus grand regret, c’est de ne jamais avoir essayé de ___ avec ___."
+131. 
+"Le plus grand mystère de l’univers, c’est de savoir pourquoi ___ fait toujours ___ quand il/elle voit ___."
+132. 
+"La chose la plus absurde que j’ai entendue aujourd’hui, c’est ___, et je n’arrive toujours pas à y croire."
+133. 
+"Si je devais écrire une lettre au futur, je leur dirais ___ et je leur demanderais de ___."
+134. 
+"Un jour, ___ m’a dit : ‘Fais attention à ___, ça va te changer à jamais.’"
+135. 
+"Si je pouvais être un objet inanimé pendant une journée, je serais ___ et j’attendrais ___."
+136. 
+"Je suis convaincu que ___ n’est pas un humain, mais un ___ déguisé."
+137. 
+"Mon super pouvoir secret, c’est de ___ chaque fois que je suis ___."
+138. 
+"Quand je vais à la plage, je cherche toujours ___, mais je ne trouve jamais ce que je cherche."
+139. 
+"Si je pouvais changer ma voix pour celle de ___, je chanterais ___ à tout le monde."
+140. 
+"Je suis persuadé que ___ est responsable de la disparition des ___ dans le monde entier."
+141. 
+"Le dernier rêve que j’ai eu, c’était ___ qui me poursuivait avec ___ et me demandait ___."
+142. 
+"Je suis sûr que ___ fait secrètement partie d’un club secret où on échange des ___ et des ___."
+143. 
+"Un jour, j’ai vu ___ en train de ___ dans un parc, et je me suis dit : ‘C’est quoi ce délire ?!’"
+144. 
+"Si je pouvais avoir une conversation avec ___, je lui poserais ___ et je lui dirais ___."
+145. 
+"Le plus grand défi de ma vie, c’est de savoir pourquoi ___ refuse de ___ chaque fois que je lui demande."
+146. 
+"Si je devais choisir un compagnon de voyage pour aller sur Mars, ce serait ___, et on ferait ___."
+147. 
+"Je suis convaincu que ___ a des pouvoirs surnaturels et que ___ est en réalité ___ en mission secrète."
+148. 
+"La dernière fois que j’ai mangé ___, je me suis retrouvé dans ___ et j’ai rencontré ___."
+149. 
+"Je suis presque certain que ___ est responsable de la disparition des ___ dans le grand mystère des mondes parallèles."
+150. 
+"Si je devais réécrire l’histoire, je commencerais par ___ et je ferais ___ le personnage principal."
+151. 
+"Mon esprit est obsédé par ___, surtout quand je pense que ___ pourrait être la solution à tout."
+152. 
+"Si je pouvais être un extraterrestre, je choisirais ___ comme planète pour y installer ___ et ___."
+153. 
+"J’ai entendu dire que ___ a un projet secret pour créer ___ et envahir ___."
+154. 
+"Un jour, je suis tombé sur ___ qui faisait ___ dans une piscine remplie de ___."
+155. 
+"Je suis convaincu que ___ est en réalité ___ déguisé pour ___ dans le monde des humains."
+156. 
+"Quand je veux impressionner quelqu’un, je me fais ___ en espérant que ça fonctionne avec ___."
+157. 
+"Si je pouvais vivre dans un monde parallèle, ce serait un monde où ___ et ___ seraient les règles fondamentales."
+158. 
+"Je suis obsédé par ___, surtout quand il/elle me parle de ___ dans un langage secret."
+159. 
+"Un jour, je vais faire ___ avec ___ dans ___ et personne ne saura jamais pourquoi."
+160. 
+"Si je devais donner un conseil à l’humanité, ce serait de ___ chaque fois que ___ se produit."
+161. 
+"Si je devais choisir entre ___ et ___, je prendrais ___, mais seulement si ___."
+162. 
+"Un jour, je vais organiser ___ et inviter ___ pour discuter de ___ pendant des heures."
+163. 
+"Je suis convaincu que ___ est en réalité ___ déguisé en ___ pour infiltrer ___."
+164. 
+"La dernière fois que j’ai vu ___, il/elle m’a offert ___ en me disant que ça venait de ___."
+165. 
+"Si je devais passer un an sur une île déserte, je n’emmènerais que ___ et ___ pour ___."
+166. 
+"Je suis persuadé que ___ est un secret gouvernemental qui peut résoudre ___ en une seule nuit."
+167. 
+"Si je pouvais fusionner avec un objet, je deviendrais ___ et j’irai ___ pour ___."
+168. 
+"Mon rêve le plus bizarre, c’est de ___ avec ___ pendant qu’un ___ se transforme en ___."
+169. 
+"Quand je vais au supermarché, je ne peux pas m’empêcher d’acheter ___, même si je n’en ai absolument pas besoin."
+170. 
+"Si je pouvais être invisible, je passerais mes journées à ___ et à ___ avec ___."
+171. 
+"Un jour, je vais rencontrer ___ et je vais lui demander ___ avant de lui offrir ___."
+172. 
+"Je suis convaincu que ___ fait en fait partie d’une mission pour ___ et trouver ___."
+173. 
+"Si je pouvais m’installer dans n’importe quel endroit, je choisirais ___ pour y faire ___ toute la journée."
+174. 
+"Je suis sûr que ___ m’a dit qu’il/elle venait d’un autre univers, mais je n’ai pas osé lui poser des questions."
+175. 
+"Le dernier objet bizarre que j’ai trouvé chez moi, c’était ___, et il/elle m’a dit que ça appartenait à ___."
+176. 
+"Je suis convaincu que ___ a un pouvoir secret pour ___, mais il/elle n’a jamais voulu me le dire."
+177. 
+"Si je pouvais changer une seule règle dans le monde, je dirais que ___ doit être remplacé par ___."
+178. 
+"J’ai un secret : chaque fois que je mange ___, je me transforme en ___ et je deviens ___ pendant une heure."
+179. 
+"Si je pouvais voyager dans le temps, je reviendrais juste pour ___ et ___."
+180. 
+"Je suis certain que ___ cache un portail magique dans ___ qui mène à ___."
+181. 
+"La dernière fois que j’ai vu ___, il/elle m’a dit qu’il/elle allait ___ pour résoudre ___."
+182. 
+"Un jour, je vais acheter ___ et le transformer en ___ pour ___."
+183. 
+"Je suis persuadé que ___ cache ___ dans ___ et que ___ est la clé pour tout comprendre."
+184. 
+"Si je pouvais parler à ___, je lui demanderais ___ et lui dirais que ___ est la vraie raison de tout."
+185. 
+"Si ___ était un super-héros, son pouvoir serait de ___ et son ennemi juré serait ___."
+186. 
+"Je suis sûr que ___ possède une technologie secrète qui permet de ___, et personne ne veut en parler."
+187. 
+"Si je devais donner un conseil aux extraterrestres, ce serait de ___ et de ___ avant de repartir vers ___."
+188. 
+"Un jour, j’ai rencontré ___ et il/elle m’a dit : ‘Tu sais, la solution à ___ c’est de ___.’"
+189. 
+"Si je pouvais être un objet pendant une journée, je serais ___ et je passerais toute la journée à ___."
+190. 
+"Quand je me réveille le matin, je me demande toujours pourquoi ___ est dans ___ et comment il/elle a fini là."
+191. 
+"Je suis convaincu que ___ a secrètement ___ dans sa cave, mais il/elle refuse de me le dire."
+192. 
+"Si je pouvais m’installer sur une autre planète, je choisirais ___ et je commencerais une guerre contre ___ avec ___."
+193. 
+"La dernière fois que j’ai essayé de ___, ___ a totalement échoué et ___ en a rigolé."
+194. 
+"Si ___ venait sur Terre, je lui offrirais ___ et on passerait la journée à ___."
+195. 
+"J’ai un projet secret : créer ___ qui permettra de ___ et de ___ à grande échelle."
+196. 
+"Je suis sûr que ___ est une machine de guerre déguisée en ___ pour infiltrer ___."
+197. 
+"Un jour, ___ m’a dit que ___ pouvait me donner un super pouvoir si j’arrêtais de ___."
+198. 
+"Je suis persuadé que ___ et ___ sont en réalité des agents secrets venus pour ___ et sauver ___."
+199. 
+"Si je devais organiser un concours pour trouver la personne la plus bizarre, je ferais venir ___ et je lui demanderais ___."
+200. 
+"J’ai trouvé ___ en train de ___ dans un ascenseur, et il/elle m’a dit qu’il/elle cherchait ___."
+201. 
+"Je suis convaincu que ___ et ___ forment le duo le plus dangereux du monde. Ils ont créé ___ et l’ont caché dans ___."
+202. 
+"Le dernier truc que j’ai mangé, c’était ___ et j’ai trouvé un message de ___ dedans disant : ‘Si tu veux ___, fais ___ maintenant.’"
+203. 
+"Je me demande parfois si ___ n’est pas un extraterrestre qui se cache sous l’apparence de ___ et qui mange ___ pour survivre."
+204. 
+"Si je devais passer une journée avec ___ et ___, je suis sûr qu’on finirait par ___, ___ et ___ dans un volcan en éruption."
+205. 
+"Si un chat pouvait dominer le monde, ___ serait son premier ordre et il/elle ferait ___ avec ___."
+206. 
+"Je suis convaincu que ___ est responsable de la disparition des ___, il/elle utilise ___ pour créer un trou noir dans ___."
+207. 
+"Quand ___ m’a dit qu’il/elle voulait acheter ___, je savais qu’on allait se retrouver coincés dans ___ pour ___."
+208. 
+"Si ___ et ___ avaient une chaîne YouTube, elle s’appellerait ‘Comment ___ tout en ___’ et ferait des millions de vues."
+209. 
+"Je pense que ___ a secrètement volé ___ et l’a caché sous ___ pour que personne ne découvre que ___ est un ___."
+210. 
+"Un jour, je vais___ avec ___ sur ___ et on va inventer ___ pour détruire ___."
+211. 
+"Je suis persuadé que ___ a un plan pour ___ en utilisant ___ et ___ pour convaincre ___ qu’il faut ___."
+212. 
+"J’ai trouvé ___ dans ___ en train de ___ avec ___, et il/elle m’a dit que c’était la seule manière de ___."
+213. 
+"Si je devais aller dans un autre univers, je choisirais celui où ___ est une divinité et tout le monde doit ___ pour obtenir ___."
+214. 
+"Quand ___ m’a montré ___, je savais que ça allait déclencher ___, mais je n’imaginais pas que ça finirait par ___ dans ___."
+215. 
+"Si j’étais une créature mythologique, je serais ___, et je conquérirais ___ en lançant ___ et ___ sur ___."
+216. 
+"Je suis absolument certain que ___ a trouvé un moyen de ___ avec ___ et qu’il/elle veut convaincre ___ que ___."
+217. 
+"J’ai vu ___ en train de ___ avec ___ dans un ___ et je me suis demandé s’ils cherchaient ___ ou juste à ___."
+218. 
+"Un jour, je vais convaincre ___ de ___ en échange de ___, et ensemble, on va ___ jusqu’à ___."
+219. 
+"Si ___ devenait président, je suis sûr qu’il/elle imposerait ___ et interdirait ___ en faveur de ___."
+220. 
+"Je suis convaincu que ___ possède la recette secrète pour ___ et l’utilise pour ___ avant de ___ dans ___."
+221. 
+"Si je devais créer un culte, il serait basé sur ___, et on se réunirait tous les dimanches pour ___ et ___."
+222. 
+"Quand j’ai vu ___ faire ___ avec ___, j’ai su que l’humanité allait changer pour toujours."
+223. 
+"Le secret de l’univers, c’est ___, et il suffit de ___ pour accéder à ___."
+224. 
+"Un jour, je vais convaincre ___ de ___, et on fera ___ jusqu’à ce que ___ devienne la norme."
+225. 
+"J’ai découvert que ___ était en réalité ___, et ils ont secrètement inventé ___ pour ___."
+226. 
+"Quand ___ me regarde, je suis sûr(e) qu’il/elle pense à ___, mais moi, je rêve de ___."
+227. 
+"Si j’étais un super-héros, mon super-pouvoir serait de ___ avec ___ et de sauver ___ en ___."
+228. 
+"La dernière fois que j’ai vu ___, il/elle portait ___ et m’a dit que je devais ___ pour ___."
+229. 
+"Je suis convaincu que ___ a créé ___ en secret, et tout ce qu’il/elle veut, c’est ___ pour ___."
+230. 
+"Si ___ et ___ se battaient dans un ring, je parie qu’ils/elles utiliseraient ___ pour ___ et ___ finirait par ___."
+231. 
+"Un jour, je vais fonder une nouvelle religion où ___ et ___ seront les éléments sacrés, et on priera pour ___."
+232. 
+"Je suis sûr(e) que ___ est une créature mythologique cachée sous l’apparence de ___, et il/elle attend juste le bon moment pour ___."
+233. 
+"Si je pouvais ouvrir une boîte de Pandore, dedans, il y aurait ___ et ___, et ensemble, ils provoqueraient ___ dans le monde entier."
+234. 
+"Quand ___ a dit que ___, je savais que c’était un signal pour ___, mais je ne pensais pas que ça finirait par ___."
+235. 
+"Je me demande souvent si ___ a vraiment compris que ___ pourrait le/la transformer en ___ pour toujours."
+236. 
+"Un jour, je vais ___ avec ___ et on va ___, tout ça pour découvrir que ___ est en réalité ___."
+237. 
+"Je suis sûr que ___ a trouvé le moyen de ___ et qu’il/elle va utiliser ___ pour ___."
+238. 
+"Si ___ et ___ se retrouvaient dans ___, ils/elles feraient ___ pour sauver ___ d’une invasion de ___."
+239. 
+"Je suis persuadé que ___ a secrètement envoyé ___ sur ___ pour ___ et tester ___."
+240. 
+"Si je devais choisir une mission pour ___ et ___, ce serait de ___ pour ___, et ensemble, ils/elles réussiraient à ___."
+241. 
+"Si je devais donner un conseil à ___, ce serait de ___ et de ne jamais oublier ___, sinon ___ viendrait ___."
+242. 
+"Je suis convaincu que ___ est en réalité ___, et que ___ est une illusion créée par ___ pour ___."
+243. 
+"Un jour, ___ m’a dit qu’il/elle voulait ___ avec ___ dans ___, mais je ne pensais pas que ça finirait par ___."
+244. 
+"Je suis sûr(e) que ___ a créé ___ pour ___ et que ___ est la clé de ___."
+245. 
+"Si ___ et ___ devenaient des super-héros, leurs pouvoirs seraient de ___ et de ___, et leur ennemi juré serait ___."
+246. 
+"La dernière fois que ___ a fait ___, j’ai eu l’impression que le monde entier allait ___, mais je ne pouvais pas m’arrêter de ___."
+247. 
+"Un jour, je vais organiser une réunion secrète où ___ et ___ devront ___ pour résoudre ___."
+248. 
+"Si ___ et ___ fusionnaient en un seul être, ils/elles deviendraient ___, et leur mission serait de ___ dans ___."
+249. 
+"Je suis sûr(e) que ___ a caché ___ sous ___, et personne n’ose encore ___ pour découvrir ___."
+250. 
+"Je me demande souvent si ___ n’est pas en réalité un ___. Leur plan secret serait de ___ et d’utiliser ___ pour ___."

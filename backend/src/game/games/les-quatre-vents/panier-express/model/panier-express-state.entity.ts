@@ -59,6 +59,12 @@ export type PanierExpressActionLogEntry = {
   timestamp: number;
 };
 
+export type PanierExpressQuizOutcomeEntry = {
+  correct: boolean;
+  message: string;
+  timestamp: number;
+};
+
 /**
  * Joueur Panier Express
  *
@@ -96,6 +102,7 @@ export type PanierExpressMetadata = {
   laps: Record<number, number>;
   winnerId: number | null;
   quiz: QuizState;
+  quizOutcome: Record<number, PanierExpressQuizOutcomeEntry>;
   actionLog: PanierExpressActionLogEntry[];
   botProfile: BotProfile;
   movementDirection?: 1 | -1;

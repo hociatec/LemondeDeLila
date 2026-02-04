@@ -455,12 +455,51 @@ export class PanierExpressPresenterService extends BasePresenterService {
     };
 
     const meta = this.getMetadata(state) as PanierExpressMetadata;
-    const positionMessage = this.boardPayload.buildPositionPanelMessage({
-      tilesRaw: meta.tiles,
-      positionsRaw: meta.positions,
-      lapsRaw: meta.laps,
-      playerId: params.currentId,
-    });
+    const positionMessage = this.buildPositionPanelMessage(
+      meta,
+      params.playerViews,
+    );
+    const quizFeedbackMessage = this.buildQuizFeedbackMessage(
+      meta,
+      params.currentId,
+    );
+
+    const panels: Record<string, { title: string; message: string }> = {
+      shopping: {
+        title: 'Shopping list',
+        message: listMessage('Shopping list', currentPlayerView?.shoppingList),
+      },
+      shopping_all: {
+        title: 'Shopping list (tous)',
+        message: shoppingAllMessage(),
+      },
+      basket: {
+        title: 'Panier',
+        message: listMessage('Panier', currentPlayerView?.basket),
+      },
+      inventory: {
+        title: 'Inventaire',
+        message: listMessage('Inventaire', currentPlayerView?.inventory),
+      },
+      inventory_all: {
+        title: 'Inventaires (tous)',
+        message: inventoryAllMessage(),
+      },
+      score: {
+        title: 'Score',
+        message: scoreMessage(),
+      },
+      position: {
+        title: 'Position',
+        message: positionMessage,
+      },
+    };
+    if (quizFeedbackMessage) {
+      panels.quiz_feedback = {
+        title: 'Quiz',
+        message: quizFeedbackMessage,
+      };
+    }
 
     return {
       ...baseExtras,
@@ -468,38 +507,52 @@ export class PanierExpressPresenterService extends BasePresenterService {
       playerViews: params.playerViews,
       players: params.players,
       ui: {
-        panels: {
-          shopping: {
-            title: 'Shopping list',
-            message: listMessage('Shopping list', currentPlayerView?.shoppingList),
-          },
-          shopping_all: {
-            title: 'Shopping list (tous)',
-            message: shoppingAllMessage(),
-          },
-          basket: {
-            title: 'Panier',
-            message: listMessage('Panier', currentPlayerView?.basket),
-          },
-          inventory: {
-            title: 'Inventaire',
-            message: listMessage('Inventaire', currentPlayerView?.inventory),
-          },
-          inventory_all: {
-            title: 'Inventaires (tous)',
-            message: inventoryAllMessage(),
-          },
-          score: {
-            title: 'Score',
-            message: scoreMessage(),
-          },
-          position: {
-            title: 'Position',
-            message: positionMessage,
-          },
-        },
+        panels,
       },
     };
+  }
+
+  private buildQuizFeedbackMessage(
+    meta: PanierExpressMetadata,
+    playerId: number | null,
+  ): string | null {
+    if (typeof playerId !== 'number') {
+      return null;
+    }
+    return meta.quizOutcome?.[playerId]?.message ?? null;
+  }
+
+  private buildPositionPanelMessage(
+    meta: PanierExpressMetadata,
+    playerViews: PanierExpressPlayerView[],
+  ): string {
+    if (!playerViews.length) {
+      return 'Position: (aucun joueur).';
+    }
+    const totalTiles = Array.isArray(meta.tiles) ? meta.tiles.length : 0;
+    const lines = playerViews.map((view) => {
+      const name =
+        typeof view.username === 'string' && view.username.trim().length > 0
+          ? view.username.trim()
+          : `Joueur ${view.id}`;
+      const pos = meta.positions?.[view.id];
+      const lap = meta.laps?.[view.id];
+      const caseNumber =
+        typeof pos === 'number' && Number.isFinite(pos)
+          ? Math.max(1, Math.trunc(pos) + 1)
+          : null;
+      const lapText =
+        typeof lap === 'number' && Number.isFinite(lap)
+          ? `tour plateau ${Math.trunc(lap)}`
+          : 'tour plateau ?';
+      const caseText = caseNumber
+        ? totalTiles
+          ? `case ${caseNumber}/${totalTiles}`
+          : `case ${caseNumber}`
+        : 'case (inconnue)';
+      return `${name} : ${lapText}, ${caseText}.`;
+    });
+    return lines.join('\n');
   }
 
   private toStringArray(value: unknown): string[] {

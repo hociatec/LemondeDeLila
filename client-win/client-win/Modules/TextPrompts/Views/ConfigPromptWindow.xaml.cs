@@ -11,6 +11,9 @@ namespace client_win.Modules.TextPrompts.Views;
 
 public partial class ConfigPromptWindow : Window
 {
+    private string? _lastFocusedFieldKey;
+    private bool _autoFocusDone;
+
     public Dictionary<string, string>? Result { get; private set; }
 
     public ConfigPromptWindow()
@@ -18,12 +21,19 @@ public partial class ConfigPromptWindow : Window
         InitializeComponent();
         ContentRendered += OnContentRendered;
         PreviewKeyDown += OnPreviewKeyDown;
+        Activated += OnActivated;
+        PreviewGotKeyboardFocus += OnPreviewGotKeyboardFocus;
     }
 
     private void OnContentRendered(object? sender, EventArgs e)
     {
         // Focus fiable sur le premier champ (texte ou checkbox), sinon les lecteurs d'écran annoncent souvent "liste"
         // ou le nom interne des items avant l'élément utile.
+        if (_autoFocusDone || !string.IsNullOrWhiteSpace(_lastFocusedFieldKey))
+        {
+            return;
+        }
+
         Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new Action(() =>
         {
             try
@@ -40,6 +50,7 @@ public partial class ConfigPromptWindow : Window
                 {
                     tb.SelectAll();
                 }
+                _autoFocusDone = true;
             }
             catch
             {
@@ -55,6 +66,53 @@ public partial class ConfigPromptWindow : Window
         {
             e.Handled = true;
         }
+    }
+
+    private void OnActivated(object? sender, EventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_lastFocusedFieldKey))
+        {
+            return;
+        }
+
+        var target = FindFocusableInputByAutomationId(_lastFocusedFieldKey);
+        if (target == null)
+        {
+            return;
+        }
+
+        Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new Action(() =>
+        {
+            try
+            {
+                target.Focus();
+                Keyboard.Focus(target);
+                if (target is TextBox tb)
+                {
+                    tb.SelectAll();
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+        }));
+    }
+
+    private void OnPreviewGotKeyboardFocus(object? sender, KeyboardFocusChangedEventArgs e)
+    {
+        if (e.NewFocus == null)
+        {
+            return;
+        }
+
+        var id = (AutomationProperties.GetAutomationId(e.NewFocus) ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return;
+        }
+
+        _lastFocusedFieldKey = id;
     }
 
     private void OnCancelClick(object sender, RoutedEventArgs e)
@@ -109,6 +167,21 @@ public partial class ConfigPromptWindow : Window
         {
             DialogResult = false;
         }
+    }
+
+    private Control? FindFocusableInputByAutomationId(string automationId)
+    {
+        if (string.IsNullOrWhiteSpace(automationId))
+        {
+            return null;
+        }
+
+        return FindFocusableInputs(this)
+            .FirstOrDefault(c =>
+                string.Equals(
+                    (AutomationProperties.GetAutomationId(c) ?? string.Empty).Trim(),
+                    automationId,
+                    StringComparison.Ordinal));
     }
 
     private static IEnumerable<Control> FindFocusableInputs(DependencyObject root)

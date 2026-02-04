@@ -1,0 +1,221 @@
+﻿export interface DameNatureFamilyCardDefinition {
+  id: string;
+  familyId: string;
+  familyName: string;
+  memberName: string;
+  type: 'family';
+}
+
+export interface DameNatureQuizCardDefinition {
+  id: string;
+  question: string;
+  options: string[];
+  answer: string;
+  type: 'quiz';
+}
+
+export interface DameNatureNatureCardDefinition {
+  id: string;
+  description: string;
+  delta: number;
+  type: 'nature';
+}
+
+const families = [
+  {
+    id: 'famille-sylvestre',
+    name: 'Famille Sylvestre',
+    members: [
+      'grand-pere-olivier',
+      'grand-mere-cerisier',
+      'pere-chene',
+      'mere-sequoia',
+      'enfant-tilleul',
+      'bebe-pommier',
+    ],
+  },
+  {
+    id: 'famille-coeursauvage',
+    name: 'Famille Coeursauvage',
+    members: [
+      'grand-pere-hibou',
+      'grand-mere-renarde',
+      'pere-cerf',
+      'mere-louve',
+      'enfant-ecureuil',
+      'bebe-herisson',
+    ],
+  },
+  {
+    id: 'famille-abysse',
+    name: 'Famille Abysse',
+    members: [
+      'grand-pere-crabe',
+      'grand-mere-pieuvre',
+      'pere-dauphin',
+      'mere-otarie',
+      'enfant-tortue',
+      'bebe-poisson-clown',
+    ],
+  },
+  {
+    id: 'famille-hauteterre',
+    name: 'Famille Hauteterre',
+    members: [
+      'grand-pere-rocher',
+      'grand-mere-grotte',
+      'pere-mont-blanc',
+      'mere-volcan',
+      'enfant-colline',
+      'bebe-caillou',
+    ],
+  },
+  {
+    id: 'famille-fleurie',
+    name: 'Famille Fleurie',
+    members: [
+      'grand-pere-cactus',
+      'grand-mere-lavande',
+      'pere-tournesol',
+      'mere-rose',
+      'enfant-jonquille',
+      'bebe-coquelicot',
+    ],
+  },
+  {
+    id: 'famille-celeste',
+    name: 'Famille Céleste',
+    members: [
+      'grand-pere-brouillard',
+      'grand-mere-tempete',
+      'pere-orage',
+      'mere-pluie',
+      'enfant-flocon',
+      'bebe-eclaire',
+    ],
+  },
+  {
+    id: 'famille-sixpattes',
+    name: 'Famille Sixpattes',
+    members: [
+      'grand-pere-grillon',
+      'grand-mere-abeille',
+      'pere-scarabee',
+      'mere-coccinelle',
+      'enfant-papillon',
+      'bebe-fourmi',
+    ],
+  },
+];
+
+const familyCardDefinitions: DameNatureFamilyCardDefinition[] = families.flatMap((family) =>
+  family.members.map((member) => ({
+    id: `${family.id}-${member}`,
+    familyId: family.id,
+    familyName: family.name,
+    memberName: member.replace(/-/g, ' '),
+    type: 'family',
+  })),
+);
+
+const quizCards: DameNatureQuizCardDefinition[] = [
+  { id: 'quiz-01', question: 'Quelle plante produit de l’oxygène grâce au soleil ?', options: ['Le cactus', 'L’algue', 'Le champignon'], answer: 'L’algue', type: 'quiz' },
+  { id: 'quiz-02', question: 'Quel animal est en danger à cause du plastique dans les océans ?', options: ['Le lion', 'Le dauphin', 'Le pigeon'], answer: 'Le dauphin', type: 'quiz' },
+  { id: 'quiz-03', question: 'Quelle action aide la planète ?', options: ['Laisser couler l’eau', 'Planter un arbre', 'Prendre l’avion tous les jours'], answer: 'Planter un arbre', type: 'quiz' },
+  { id: 'quiz-04', question: 'Quelle saison vient après l’été ?', options: ['L’hiver', 'Le printemps', 'L’automne'], answer: 'L’automne', type: 'quiz' },
+  { id: 'quiz-05', question: 'Quel objet met le plus longtemps à disparaître dans la nature ?', options: ['Une peau de banane', 'Une bouteille en plastique', 'Une feuille d’arbre'], answer: 'Une bouteille en plastique', type: 'quiz' },
+  { id: 'quiz-06', question: 'Où vit l’ours polaire ?', options: ['En Antarctique', 'En Afrique', 'En Arctique'], answer: 'En Arctique', type: 'quiz' },
+  { id: 'quiz-07', question: 'Quelle partie de l’arbre transporte la sève ?', options: ['Les feuilles', 'Le tronc', 'Les racines'], answer: 'Le tronc', type: 'quiz' },
+  { id: 'quiz-08', question: 'Quel insecte joue un rôle essentiel dans la pollinisation ?', options: ['Le moustique', 'L’abeille', 'Le scarabée'], answer: 'L’abeille', type: 'quiz' },
+  { id: 'quiz-09', question: 'Quelle source d’énergie est renouvelable ?', options: ['Le charbon', 'Le vent', 'Le pétrole'], answer: 'Le vent', type: 'quiz' },
+  { id: 'quiz-10', question: 'Quel animal construit des barrages en bois ?', options: ['Le castor', 'Le rat', 'Le renard'], answer: 'Le castor', type: 'quiz' },
+  { id: 'quiz-11', question: 'Quelle fleur suit la lumière du soleil ?', options: ['Le tournesol', 'La rose', 'Le lys'], answer: 'Le tournesol', type: 'quiz' },
+  { id: 'quiz-12', question: 'Où trouve-t-on la majorité de l’eau douce sur Terre ?', options: ['Dans les rivières', 'Dans les glaciers', 'Dans les nuages'], answer: 'Dans les glaciers', type: 'quiz' },
+  { id: 'quiz-13', question: 'Quel est le plus grand mammifère du monde ?', options: ['L’éléphant', 'La baleine bleue', 'Le rhinocéros'], answer: 'La baleine bleue', type: 'quiz' },
+  { id: 'quiz-14', question: 'Quelle forêt est la plus grande du monde ?', options: ['L’Amazonie', 'La forêt de Brocéliande', 'La Taïga'], answer: 'L’Amazonie', type: 'quiz' },
+  { id: 'quiz-15', question: 'Quel geste aide à réduire les déchets ?', options: ['Recycler', 'Jeter tout à la poubelle', 'Mettre tout en sac au grenier'], answer: 'Recycler', type: 'quiz' },
+  { id: 'quiz-16', question: 'Que libèrent les volcans lors d’une éruption ?', options: ['De la neige', 'De la lave', 'Du sable'], answer: 'De la lave', type: 'quiz' },
+  { id: 'quiz-17', question: 'Quelle partie de la plante pousse sous la terre ?', options: ['Les racines', 'Les feuilles', 'Les fleurs'], answer: 'Les racines', type: 'quiz' },
+  { id: 'quiz-18', question: 'Quel animal vit à la fois dans l’eau et sur la terre ?', options: ['La grenouille', 'Le renard', 'Le hibou'], answer: 'La grenouille', type: 'quiz' },
+  { id: 'quiz-19', question: 'Quelle est la principale source d’énergie de la Terre ?', options: ['Le soleil', 'La lune', 'Le vent'], answer: 'Le soleil', type: 'quiz' },
+  { id: 'quiz-20', question: 'Quel animal dort pendant tout l’hiver ?', options: ['L’ours', 'Le lapin', 'Le cerf'], answer: 'L’ours', type: 'quiz' },
+  { id: 'quiz-21', question: 'Quel fruit pousse sur un palmier ?', options: ['La date', 'La pomme', 'La fraise'], answer: 'La date', type: 'quiz' },
+  { id: 'quiz-22', question: 'Que fait une chenille avant de devenir papillon ?', options: ['Elle forme une chrysalide', 'Elle change de couleur', 'Elle apprend à voler'], answer: 'Elle forme une chrysalide', type: 'quiz' },
+  { id: 'quiz-23', question: 'Quelle action pollue le plus l’air ?', options: ['Marcher à pied', 'Faire du vélo', 'Utiliser la voiture'], answer: 'Utiliser la voiture', type: 'quiz' },
+  { id: 'quiz-24', question: 'Comment appelle-t-on les arbres qui perdent leurs feuilles en hiver ?', options: ['Les feuillus', 'Les conifères', 'Les tropicaux'], answer: 'Les feuillus', type: 'quiz' },
+  { id: 'quiz-25', question: 'Quel animal fabrique du miel ?', options: ['L’abeille', 'Le papillon', 'La coccinelle'], answer: 'L’abeille', type: 'quiz' },
+  { id: 'quiz-26', question: 'Quelle mer borde la côte sud de la France ?', options: ['La mer du Nord', 'L’océan Atlantique', 'La mer Méditerranée'], answer: 'La mer Méditerranée', type: 'quiz' },
+  { id: 'quiz-27', question: 'Quelle partie de la fleur contient le pollen ?', options: ['Les étamines', 'Les pétales', 'Les racines'], answer: 'Les étamines', type: 'quiz' },
+  { id: 'quiz-28', question: 'Quel animal peut changer de couleur pour se camoufler ?', options: ['Le caméléon', 'Le serpent', 'Le lézard'], answer: 'Le caméléon', type: 'quiz' },
+  { id: 'quiz-29', question: 'Quelle est la plus grande source de pollution des océans ?', options: ['Le sable', 'Le plastique', 'Le sel'], answer: 'Le plastique', type: 'quiz' },
+  { id: 'quiz-30', question: 'Quel arbre donne des glands ?', options: ['Le chêne', 'Le sapin', 'Le bouleau'], answer: 'Le chêne', type: 'quiz' },
+  { id: 'quiz-31', question: 'Quel animal vit dans une ruche ?', options: ['L’abeille', 'La fourmi', 'Le moustique'], answer: 'L’abeille', type: 'quiz' },
+  { id: 'quiz-32', question: 'Quel phénomène naturel provoque le tonnerre ?', options: ['L’orage', 'Le vent', 'La neige'], answer: 'L’orage', type: 'quiz' },
+  { id: 'quiz-33', question: 'Quelle est la principale nourriture du panda géant ?', options: ['Les fruits', 'Le bambou', 'Le poisson'], answer: 'Le bambou', type: 'quiz' },
+  { id: 'quiz-34', question: 'Quelle montagne est la plus haute du monde ?', options: ['Le Kilimandjaro', 'Le Mont-Blanc', 'L’Everest'], answer: 'L’Everest', type: 'quiz' },
+  { id: 'quiz-35', question: 'Quelle action permet d’économiser l’eau ?', options: ['Laisser le robinet ouvert', 'Prendre un bain', 'Fermer le robinet pendant le brossage des dents'], answer: 'Fermer le robinet pendant le brossage des dents', type: 'quiz' },
+  { id: 'quiz-36', question: 'Quel animal a une coquille pour se protéger ?', options: ['L’escargot', 'La limace', 'Le hérisson'], answer: 'L’escargot', type: 'quiz' },
+  { id: 'quiz-37', question: 'Quel gaz les plantes absorbent-elles pour vivre ?', options: ['L’oxygène', 'Le dioxyde de carbone', 'L’hélium'], answer: 'Le dioxyde de carbone', type: 'quiz' },
+  { id: 'quiz-38', question: 'Quel animal construit un terrier sous la terre ?', options: ['Le lapin', 'Le hibou', 'Le cerf'], answer: 'Le lapin', type: 'quiz' },
+  { id: 'quiz-39', question: 'Que deviennent les feuilles mortes en forêt ?', options: ['Elles disparaissent sans laisser de trace', 'Elles se transforment en humus', 'Elles se cristallisent'], answer: 'Elles se transforment en humus', type: 'quiz' },
+  { id: 'quiz-40', question: 'Quel est le principal habitat du manchot empereur ?', options: ['L’Antarctique', 'L’Arctique', 'Le Canada'], answer: 'L’Antarctique', type: 'quiz' },
+  { id: 'quiz-41', question: 'Quelle est la seule plante carnivore courante en Europe ?', options: ['La droséra', 'La fougère', 'Le nénuphar'], answer: 'La droséra', type: 'quiz' },
+  { id: 'quiz-42', question: 'Quelle matière est recyclable ?', options: ['Le verre', 'Le plastique', 'Les deux'], answer: 'Les deux', type: 'quiz' },
+  { id: 'quiz-43', question: 'Quel animal célèbre pour sa lenteur porte sa maison sur son dos ?', options: ['La tortue', 'Le crabe', 'Le lézard'], answer: 'La tortue', type: 'quiz' },
+  { id: 'quiz-44', question: 'Que produit un arbre fruitier ?', options: ['Des fruits', 'Des champignons', 'Des pommes de pin'], answer: 'Des fruits', type: 'quiz' },
+  { id: 'quiz-45', question: 'Quel animal vit dans les rivières et peut remonter les cascades ?', options: ['Le saumon', 'Le requin', 'Le crocodile'], answer: 'Le saumon', type: 'quiz' },
+  { id: 'quiz-46', question: 'Que produit la pluie quand elle tombe après une journée ensoleillée ?', options: ['Du brouillard', 'Des éclairs', 'Un arc-en-ciel'], answer: 'Un arc-en-ciel', type: 'quiz' },
+  { id: 'quiz-47', question: 'Quel animal transporte sa progéniture dans une poche ?', options: ['Le kangourou', 'Le panda', 'Le singe'], answer: 'Le kangourou', type: 'quiz' },
+  { id: 'quiz-48', question: 'Quelle partie de la plante capte la lumière du soleil ?', options: ['Les feuilles', 'Les racines', 'Le tronc'], answer: 'Les feuilles', type: 'quiz' },
+  { id: 'quiz-49', question: 'Quelle ressource naturelle utilise-t-on pour fabriquer du papier ?', options: ['Le sable', 'Le bois', 'Le métal'], answer: 'Le bois', type: 'quiz' },
+  { id: 'quiz-50', question: 'Quel animal vit dans une coquille et marche de travers ?', options: ['Le crabe', 'Le dauphin', 'Le serpent'], answer: 'Le crabe', type: 'quiz' },
+  { id: 'quiz-51', question: 'Quelle saison correspond au réveil de la nature ?', options: ['L’hiver', 'Le printemps', 'L’automne'], answer: 'Le printemps', type: 'quiz' },
+  { id: 'quiz-52', question: 'Que fait la Terre autour du Soleil ?', options: ['Elle tourne', 'Elle dort', 'Elle flotte, immobile'], answer: 'Elle tourne', type: 'quiz' },
+  { id: 'quiz-53', question: 'Quelle ressource naturelle est indispensable à la vie ?', options: ['L’or', 'Le pétrole', 'L’eau'], answer: 'L’eau', type: 'quiz' },
+  { id: 'quiz-54', question: 'Quel animal est connu pour son cri “meuh” ?', options: ['La vache', 'Le mouton', 'Le cochon'], answer: 'La vache', type: 'quiz' },
+  { id: 'quiz-55', question: 'Quel est le principal danger pour les abeilles ?', options: ['Le vent', 'Les fleurs', 'Les pesticides'], answer: 'Les pesticides', type: 'quiz' },
+  { id: 'quiz-56', question: 'Quelle énergie utilise un panneau solaire ?', options: ['La lumière du soleil', 'Le vent', 'L’eau'], answer: 'La lumière du soleil', type: 'quiz' },
+  { id: 'quiz-57', question: 'Quel oiseau est le symbole de la paix ?', options: ['La colombe', 'Le corbeau', 'Le moineau'], answer: 'La colombe', type: 'quiz' },
+  { id: 'quiz-58', question: 'Quelle plante pousse souvent dans le désert ?', options: ['Le cactus', 'Le nénuphar', 'La mousse'], answer: 'Le cactus', type: 'quiz' },
+  { id: 'quiz-59', question: 'Pourquoi les arbres sont-ils essentiels à la vie sur Terre ?', options: ['Ils produisent de l’oxygène et abritent de nombreuses espèces', 'Ils servent uniquement à fabriquer du papier', 'Ils empêchent totalement les catastrophes naturelles de traverser un continent'], answer: 'Ils produisent de l’oxygène et abritent de nombreuses espèces', type: 'quiz' },
+  { id: 'quiz-60', question: 'Quelle ressource naturelle sert à fabriquer le verre ?', options: ['Le sable', 'Le sel', 'Le charbon'], answer: 'Le sable', type: 'quiz' },
+  { id: 'quiz-61', question: 'Quel animal vit dans les montagnes et grimpe très bien ?', options: ['Le chamois', 'Le phoque', 'Le flamant rose'], answer: 'Le chamois', type: 'quiz' },
+  { id: 'quiz-62', question: 'Quelle est la plus grande forêt de France ?', options: ['La forêt d’Orléans', 'La forêt de Fontainebleau', 'La forêt de Brocéliande'], answer: 'La forêt d’Orléans', type: 'quiz' },
+  { id: 'quiz-63', question: 'Quel phénomène naturel provoque des vagues géantes sur l’océan ?', options: ['Le vent léger', 'La pluie', 'Le tsunami'], answer: 'Le tsunami', type: 'quiz' },
+  { id: 'quiz-64', question: 'Quelle mer sépare l’Europe et l’Afrique ?', options: ['La mer du Nord', 'La mer Méditerranée', 'La mer Noire'], answer: 'La mer Méditerranée', type: 'quiz' },
+  { id: 'quiz-65', question: 'Quel animal vit dans la savane africaine ?', options: ['Le manchot', 'L’ours polaire', 'Le lion'], answer: 'Le lion', type: 'quiz' },
+  { id: 'quiz-66', question: 'Quelle couleur représente souvent la nature et l’écologie ?', options: ['Le vert', 'Le bleu', 'Le rouge'], answer: 'Le vert', type: 'quiz' },
+  { id: 'quiz-67', question: 'Quel animal a une trompe pour se nourrir et respirer ?', options: ['L’éléphant', 'Le singe', 'Le tigre'], answer: 'L’éléphant', type: 'quiz' },
+  { id: 'quiz-68', question: 'Quelle plante aromatique sent très fort et attire les abeilles ?', options: ['La lavande', 'La fougère', 'Le lichen'], answer: 'La lavande', type: 'quiz' },
+  { id: 'quiz-69', question: 'Quelle est la principale cause du réchauffement climatique ?', options: ['Les marées', 'La pollution et les gaz à effet de serre', 'Les éclairs'], answer: 'La pollution et les gaz à effet de serre', type: 'quiz' },
+  { id: 'quiz-70', question: 'Quelle est la planète bleue de notre système solaire ?', options: ['La Terre', 'Mars', 'Vénus'], answer: 'La Terre', type: 'quiz' },
+];
+
+const natureCards: DameNatureNatureCardDefinition[] = [
+  { id: 'nature-01', description: 'Un feu ravage une grande forêt', delta: 2, type: 'nature' },
+  { id: 'nature-02', description: 'Une marée noire pollue l’océan', delta: 3, type: 'nature' },
+  { id: 'nature-03', description: 'Il fait trop chaud pendant plusieurs jours', delta: 1, type: 'nature' },
+  { id: 'nature-04', description: 'Une grande zone de forêt est coupée pour une ville', delta: 2, type: 'nature' },
+  { id: 'nature-05', description: 'Une vieille usine pollue l’air', delta: 2, type: 'nature' },
+  { id: 'nature-06', description: 'La circulation devient dense', delta: 1, type: 'nature' },
+  { id: 'nature-07', description: 'Des déchets plastiques blessent les animaux marins', delta: 2, type: 'nature' },
+  { id: 'nature-08', description: 'Les lampadaires perturbent la faune nocturne', delta: 1, type: 'nature' },
+  { id: 'nature-09', description: 'Des produits chimiques contaminent un champ', delta: 3, type: 'nature' },
+  { id: 'nature-10', description: 'Une tempête arrache des arbres', delta: 1, type: 'nature' },
+  { id: 'nature-11', description: 'Des enfants plantent des arbres', delta: -2, type: 'nature' },
+  { id: 'nature-12', description: 'Une réserve naturelle voit le jour', delta: -2, type: 'nature' },
+];
+
+export const DAME_NATURE_FAMILY_CARD_DEFINITIONS = familyCardDefinitions;
+export const DAME_NATURE_QUIZ_CARDS = quizCards;
+export const DAME_NATURE_NATURE_CARDS = natureCards;
+
+export const DAME_NATURE_CARD_BY_ID = {
+  ...Object.fromEntries(familyCardDefinitions.map((card) => [card.id, card])),
+  ...Object.fromEntries(quizCards.map((card) => [card.id, card])),
+  ...Object.fromEntries(natureCards.map((card) => [card.id, card])),
+};
+
+export const DAME_NATURE_FAMILY_CARD_IDS = familyCardDefinitions.map((card) => card.id);
+export const DAME_NATURE_QUIZ_CARD_IDS = quizCards.map((card) => card.id);
+export const DAME_NATURE_NATURE_CARD_IDS = natureCards.map((card) => card.id);
