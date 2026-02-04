@@ -83,24 +83,24 @@ export class LesMainsPresenterService {
     return catalog;
   }
 
-  private buildHandCards(hand: string[]): Array<{ familyId?: string; memberId: string; label: string }> {
-    return hand
-      .map((cardId) => {
-        const card = LES_MAINS_CARD_BY_ID[cardId];
-        if (!card) {
-          return null;
-        }
-        const familyId = card.family ?? undefined;
-        const familyLabel =
-          (familyId && FAMILY_LABELS[familyId as LesMainsFamily]) || (familyId ?? 'Carte');
-        const label = card.name ? `${familyLabel} - ${card.name}` : cardId;
-        return {
-          familyId,
-          memberId: card.id,
-          label,
-        };
-      })
-      .filter((entry): entry is { familyId?: string; memberId: string; label: string } => Boolean(entry));
+  private buildHandCards(hand: string[]): Array<{ familyId?: LesMainsFamily; memberId: string; label: string }> {
+    type LesMainsHandCard = { familyId?: LesMainsFamily; memberId: string; label: string };
+
+    const cards: Array<LesMainsHandCard | null> = hand.map((cardId) => {
+      const card = LES_MAINS_CARD_BY_ID[cardId];
+      if (!card) {
+        return null;
+      }
+      const familyId = card.family ?? undefined;
+      const familyLabel = (familyId && FAMILY_LABELS[familyId]) || (familyId ?? 'Carte');
+      const label = card.name ? `${familyLabel} - ${card.name}` : cardId;
+      return {
+        familyId,
+        memberId: card.id,
+        label,
+      };
+    });
+    return cards.filter((entry): entry is LesMainsHandCard => entry !== null);
   }
 
   private buildPlayerViews(players?: GameStateEntity['players']): Array<{ id: number; username: string }> {

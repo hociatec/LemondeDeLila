@@ -114,7 +114,7 @@ export class GerardPresidentPresenterService {
     return counts;
   }
 
-  private buildCatalog(): GameStateWithActions['catalog'] {
+  private buildCatalog(): Record<string, unknown> {
     return {
       phases: ['round'],
       victory: null,

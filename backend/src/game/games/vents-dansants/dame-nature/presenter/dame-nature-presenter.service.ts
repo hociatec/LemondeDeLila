@@ -77,11 +77,7 @@ export class DameNaturePresenterService {
         continue;
       }
       const label =
-        definition.type === 'quiz'
-          ? definition.question
-          : definition.type === 'nature'
-            ? definition.description
-            : definition.id;
+        definition.type === 'quiz' ? definition.question : definition.description;
       cards.push({
         familyId: undefined,
         memberId: definition.id,
