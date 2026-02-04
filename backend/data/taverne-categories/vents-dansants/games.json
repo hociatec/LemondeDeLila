@@ -1,20 +1,7 @@
 {
   "categoryId": "vents-dansants",
-  "categoryName": "Étagère Des Vents Dansants",
+  "categoryName": "Etagère Des Vents Dansants",
   "games": [
-    "cat-pattes",
-    "cercles-sacres",
-    "dame-nature",
-    "entre-rites-et-lumieres",
-    "gerard-president",
-    "la-bande-a-banane",
-    "la-grande-mine-de-barbak",
-    "la-parade-sucree",
-    "les-absurdissimes",
-    "les-mains-de-la-terre",
-    "nawak",
-    "olympia",
-    "pimp-my-ride",
-    "zig-et-zag"
+    "dame-nature"
   ]
 }

@@ -8,6 +8,7 @@ import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-ada
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
 import * as Rulebook from './rulebook/rulebook';
 import { LesMainsActionService } from './actions/les-mains-de-la-terre-action.service';
+import { LesMainsDeLaTerreBotService } from './bots/les-mains-de-la-terre-bot.service';
 import { LesMainsPresenterService } from './presenter/les-mains-de-la-terre-presenter.service';
 import { LesMainsSetupService } from './setup/les-mains-de-la-terre-setup.service';
 import { LES_MAINS_GAME } from './definitions/game.definition';
@@ -27,6 +28,7 @@ export class LesMainsDeLaTerreService implements GameRulesAdapter, OnModuleInit 
     private readonly setup: LesMainsSetupService,
     private readonly actions: LesMainsActionService,
     private readonly presenter: LesMainsPresenterService,
+    private readonly bots: LesMainsDeLaTerreBotService,
   ) {}
 
   onModuleInit(): void {
@@ -57,7 +59,7 @@ export class LesMainsDeLaTerreService implements GameRulesAdapter, OnModuleInit 
     return this.presenter.exposeStateForUser(state, userId);
   }
 
-  getBotActions(_state: GameStateEntity, _botPlayerId: number): GameSingleActionDto[] {
-    return [];
+  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+    return this.bots.getBotActions(state, botPlayerId);
   }
 }

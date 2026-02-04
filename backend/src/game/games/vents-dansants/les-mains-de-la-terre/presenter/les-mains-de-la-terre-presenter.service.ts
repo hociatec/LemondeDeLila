@@ -1,10 +1,24 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
 import * as Rulebook from '../rulebook/rulebook';
-import { LES_MAINS_CARD_BY_ID } from '../model/les-mains-de-la-terre-cards';
+import {
+  LES_MAINS_CARD_BY_ID,
+  LES_MAINS_FAMILIES,
+  LesMainsFamily,
+} from '../model/les-mains-de-la-terre-cards';
 import { LES_MAINS_GAME } from '../definitions/game.definition';
 import type { LesMainsMetadata } from '../model/les-mains-de-la-terre-state.entity';
+
+const FAMILY_LABELS: Record<LesMainsFamily, string> = {
+  tradition: 'Tradition',
+  nature: 'Nature',
+  mer: 'Mer',
+  art: 'Art',
+  insolites: 'Insolites',
+  innovation: 'Innovation',
+  sante: 'Santé',
+};
 
 @Injectable()
 export class LesMainsPresenterService {
@@ -15,13 +29,16 @@ export class LesMainsPresenterService {
     const meta = (state.metadata ?? {}) as LesMainsMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
     const hand = Array.isArray(meta.hands?.[userId]) ? meta.hands[userId] : [];
+    const familyCatalog = this.buildFamilyCatalog();
+    const catalog = {
+      phases: LES_MAINS_GAME.phaseOrder.map((phase) => phase.id),
+      victory: null,
+      ...familyCatalog,
+    };
 
     return {
       ...state,
-      catalog: {
-        phases: LES_MAINS_GAME.phaseOrder.map((phase) => phase.id),
-        victory: null,
-      },
+      catalog,
       actions: actions.map((action) => ({
         type: action.type,
         label: this.buildLabel(action),
@@ -29,10 +46,13 @@ export class LesMainsPresenterService {
       })),
       extras: {
         hand,
+        handCards: this.buildHandCards(hand),
+        catalog,
         deckCount: meta.deck?.length ?? 0,
         completedFamilies: meta.completedFamilies,
         freeRequest: Boolean(meta.freeFamilyRequest?.[userId]),
         statuses: meta.statuses,
+        playerViews: this.buildPlayerViews(state.players),
       },
       pending: state.pending ?? null,
     } as any;
@@ -44,5 +64,56 @@ export class LesMainsPresenterService {
       return `Demander ${LES_MAINS_CARD_BY_ID[cardId]?.name ?? cardId}`;
     }
     return action.type;
+  }
+
+  private buildFamilyCatalog(): Record<string, Array<{ id: string; name: string }>> {
+    const catalog: Record<string, Array<{ id: string; name: string }>> = {};
+    const cards = Object.values(LES_MAINS_CARD_BY_ID);
+    for (const family of LES_MAINS_FAMILIES) {
+      const members = cards
+        .filter((card) => card.family === family)
+        .map((card) => ({
+          id: card.id,
+          name: `${FAMILY_LABELS[family] ?? family} - ${card.name}`,
+        }));
+      if (members.length) {
+        catalog[family] = members;
+      }
+    }
+    return catalog;
+  }
+
+  private buildHandCards(hand: string[]): Array<{ familyId?: string; memberId: string; label: string }> {
+    return hand
+      .map((cardId) => {
+        const card = LES_MAINS_CARD_BY_ID[cardId];
+        if (!card) {
+          return null;
+        }
+        const familyId = card.family ?? undefined;
+        const familyLabel =
+          (familyId && FAMILY_LABELS[familyId as LesMainsFamily]) || (familyId ?? 'Carte');
+        const label = card.name ? `${familyLabel} - ${card.name}` : cardId;
+        return {
+          familyId,
+          memberId: card.id,
+          label,
+        };
+      })
+      .filter((entry): entry is { familyId?: string; memberId: string; label: string } => Boolean(entry));
+  }
+
+  private buildPlayerViews(players?: GameStateEntity['players']): Array<{ id: number; username: string }> {
+    if (!Array.isArray(players)) return [];
+    return players
+      .map((player) => {
+        if (!player?.id) return null;
+        const username =
+          typeof player.username === 'string' && player.username.trim().length > 0
+            ? player.username.trim()
+            : `Joueur ${player.id}`;
+        return { id: player.id, username };
+      })
+      .filter((view): view is { id: number; username: string } => view != null);
   }
 }

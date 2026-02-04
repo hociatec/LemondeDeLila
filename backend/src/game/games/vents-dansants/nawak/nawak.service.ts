@@ -8,6 +8,7 @@ import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-ada
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
 import * as Rulebook from './rulebook/rulebook';
 import { NawakActionService } from './actions/nawak-action.service';
+import { NawakBotService } from './bots/nawak-bot.service';
 import { NawakPresenterService } from './presenter/nawak-presenter.service';
 import { NawakSetupService } from './setup/nawak-setup.service';
 import { NAWAK_GAME } from './definitions/game.definition';
@@ -27,6 +28,7 @@ export class NawakService implements GameRulesAdapter, OnModuleInit {
     private readonly setup: NawakSetupService,
     private readonly actions: NawakActionService,
     private readonly presenter: NawakPresenterService,
+    private readonly bots: NawakBotService,
   ) {}
 
   onModuleInit(): void {
@@ -64,5 +66,12 @@ export class NawakService implements GameRulesAdapter, OnModuleInit {
     userId: number,
   ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
+  }
+
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
+    return this.bots.getBotActions(state, botPlayerId);
   }
 }
