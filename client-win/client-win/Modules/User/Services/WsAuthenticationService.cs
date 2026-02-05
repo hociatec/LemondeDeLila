@@ -60,7 +60,7 @@ public sealed class WsAuthenticationService : IAuthenticationService
             return LoginResult.Fail(response.Error ?? "La connexion a échoué.");
         }
 
-        var token = _validator.Validate(response.Payload.Token);
+        var token = await _validator.ValidateAsync(response.Payload.Token).ConfigureAwait(false);
         string resolvedUsername = token.Payload.TryGetValue("username", out var u) ? u?.ToString() ?? username : username;
         int resolvedUserId = token.Payload.TryGetValue("id", out var idVal) && int.TryParse(idVal?.ToString(), out var uid) ? uid : 0;
 
@@ -113,7 +113,7 @@ public sealed class WsAuthenticationService : IAuthenticationService
         {
             try
             {
-                var token = _validator.Validate(user.Token);
+                var token = await _validator.ValidateAsync(user.Token).ConfigureAwait(false);
                 userId = token.Payload.TryGetValue("id", out var idVal) && int.TryParse(idVal?.ToString(), out var uid) ? uid : 0;
             }
             catch

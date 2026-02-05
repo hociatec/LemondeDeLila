@@ -32,6 +32,7 @@ public sealed class StatsViewModel : ObservableObject
     private string _status = string.Empty;
     private string _details = string.Empty;
     private bool _isBusy;
+    private bool _initialized;
 
     private const string ConsultMyStats = "Consulter mon livre des contes";
     private const string OpenLeaderboard = "Classement";
@@ -60,12 +61,32 @@ public sealed class StatsViewModel : ObservableObject
         {
             // Si on consulte le livre d'un autre utilisateur (depuis Présence/Social),
             // ouvrir directement le contenu sans repasser par l'écran "Consulter le livre...".
-            _ = LoadGamesAsync();
+            BuildRoot();
         }
         else
         {
             BuildRoot();
         }
+    }
+
+    // Called by the view once it is visible: ensures we don't trigger network calls before the UI is shown.
+    public Task InitializeAsync()
+    {
+        if (_initialized)
+        {
+            return Task.CompletedTask;
+        }
+
+        _initialized = true;
+
+        if (HasTargetUser())
+        {
+            // Si on consulte le livre d'un autre utilisateur (depuis PrÃ©sence/Social),
+            // ouvrir directement le contenu sans repasser par l'Ã©cran "Consulter le livre...".
+            return LoadGamesAsync();
+        }
+
+        return Task.CompletedTask;
     }
 
     public ObservableCollection<StatsMenuItem> Items { get; }

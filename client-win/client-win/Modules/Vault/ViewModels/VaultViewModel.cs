@@ -20,6 +20,7 @@ public sealed class VaultViewModel : ObservableObject, IDisposable
     private readonly Action _close;
     private readonly object _returnContent;
     private bool _isBusy;
+    private bool _initialized;
     private string _status = "Chargement du coffre fort…";
     private VaultSnapshotItem? _selected;
 
@@ -43,7 +44,18 @@ public sealed class VaultViewModel : ObservableObject, IDisposable
         DeleteCommand = new AsyncRelayCommand(DeleteAsync, () => !IsBusy && Selected != null);
         CloseCommand = new RelayCommand(_close);
 
-        _ = LoadAsync();
+    }
+
+    // Called by the view once it is visible: ensures we don't trigger network calls before the UI is shown.
+    public Task InitializeAsync()
+    {
+        if (_initialized)
+        {
+            return Task.CompletedTask;
+        }
+
+        _initialized = true;
+        return LoadAsync();
     }
 
     public ObservableCollection<VaultSnapshotItem> Items { get; } = new();

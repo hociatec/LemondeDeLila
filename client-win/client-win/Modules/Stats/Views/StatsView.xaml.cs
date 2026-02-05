@@ -19,6 +19,26 @@ public partial class StatsView : UserControl, IInitialFocusTarget
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         FocusWhenContainersGenerated();
+
+        // Defer network calls until the view is visible (UI first).
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
+        {
+            try
+            {
+                if (DataContext is StatsViewModel vm)
+                {
+                    await vm.InitializeAsync().ConfigureAwait(true);
+                    if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
+                    {
+                        FocusWhenContainersGenerated();
+                    }
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+        }));
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)

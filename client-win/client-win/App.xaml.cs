@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using System.ComponentModel;
 using System.IO;
 using System.Windows;
@@ -82,123 +83,8 @@ namespace client_win
             base.OnStartup(e);
 
             var window = new MainWindow();
-            var host = AppBootstrapper.Build();
-
-            try
-            {
-                SpaceKeyAnnouncer.Initialize(host.Services.GetRequiredService<IScreenReaderAnnouncer>());
-            }
-            catch
-            {
-                // best-effort
-            }
-
-            var shell = new ShellViewModel(
-                host,
-                requestClose: window.Close,
-                logger: host.Services.GetRequiredService<ILogger<ShellViewModel>>(),
-                options: host.Services.GetRequiredService<IOptionsService>(),
-                notify: host.Services.GetRequiredService<INotifyListener>(),
-                presence: host.Services.GetRequiredService<IPresenceMonitor>(),
-                presenceUi: host.Services.GetRequiredService<IPresenceLauncher>(),
-                homeAccessor: host.Services.GetRequiredService<IHomeViewAccessor>(),
-                menuRouter: host.Services.GetRequiredService<IMenuRouter>(),
-                audio: host.Services.GetRequiredService<IAppAudioCoordinator>());
-
-            window.DataContext = shell;
-
-            // MVVM strict:
-            // - Le DataContext de la fenêtre doit rester le ShellViewModel.
-            // - Le Title ne doit jamais dépendre du DataContext courant (sinon WPF affiche ToString() -> type du VM).
-            var applyingShellState = 0;
-            void ApplyWindowShellState(string reason)
-            {
-                if (Interlocked.Exchange(ref applyingShellState, 1) == 1)
-                {
-                    return;
-                }
-
-                try
-                {
-                    var expectedTitle = shell.WindowTitle;
-
-                    BindingOperations.ClearBinding(window, Window.TitleProperty);
-                    if (!string.Equals(window.Title, expectedTitle, StringComparison.Ordinal))
-                    {
-                        window.Title = expectedTitle;
-                    }
-
-                    // NVDA/UIA: certains lecteurs d'écran s'appuient sur AutomationProperties.Name
-                    // pour annoncer la fenêtre courante.
-                    try { AutomationProperties.SetName(window, expectedTitle); } catch { /* ignore */ }
-                    try
-                    {
-                        // Fallback: certains lecteurs d'écran lisent le nom du host focalisé plutôt que celui de la fenêtre.
-                        if (window.FindName("RootHost") is DependencyObject rootHost)
-                        {
-                            AutomationProperties.SetName(rootHost, expectedTitle);
-                        }
-                    }
-                    catch
-                    {
-                        // ignore
-                    }
-                }
-                catch
-                {
-                    // ignore
-                }
-
-                try
-                {
-                    if (!ReferenceEquals(window.DataContext, shell))
-                    {
-                        window.DataContext = shell;
-                    }
-                }
-                catch
-                {
-                    // ignore
-                }
-                finally
-                {
-                    Volatile.Write(ref applyingShellState, 0);
-                }
-            }
-            ApplyWindowShellState("startup");
-
-            PropertyChangedEventHandler? onShellPropertyChanged = null;
-            onShellPropertyChanged = (_, args) =>
-            {
-                if (string.Equals(args.PropertyName, nameof(ShellViewModel.WindowTitle), StringComparison.Ordinal))
-                {
-                    ApplyWindowShellState("windowTitle.changed");
-                }
-            };
-            shell.PropertyChanged += onShellPropertyChanged;
-
-            DependencyPropertyChangedEventHandler? onWindowDataContextChanged = null;
-            onWindowDataContextChanged = (_, _) => ApplyWindowShellState("window.datacontext.changed");
-            window.DataContextChanged += onWindowDataContextChanged;
-
-            // Dernière ligne de défense: si quelqu'un change le Title après coup, on le remet immédiatement.
-            var titleDescriptor = DependencyPropertyDescriptor.FromProperty(Window.TitleProperty, typeof(Window));
-            EventHandler? onWindowTitleChanged = null;
-            onWindowTitleChanged = (_, _) =>
-            {
-                if (!string.Equals(window.Title, shell.WindowTitle, StringComparison.Ordinal))
-                {
-                    ApplyWindowShellState("window.title.changed");
-                }
-            };
-            titleDescriptor.AddValueChanged(window, onWindowTitleChanged);
-
-            window.Closed += (_, _) =>
-            {
-                try { shell.PropertyChanged -= onShellPropertyChanged; } catch { /* ignore */ }
-                try { window.DataContextChanged -= onWindowDataContextChanged; } catch { /* ignore */ }
-                try { titleDescriptor.RemoveValueChanged(window, onWindowTitleChanged); } catch { /* ignore */ }
-            };
+            var bootstrap = new BootstrapShellViewModel();
+            window.DataContext = bootstrap;
 
             MainWindow = window;
             window.Show();
@@ -278,6 +164,185 @@ namespace client_win
                     // best-effort
                 }
             }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+
+            // Run heavy startup work after the window is visible so the UI feels responsive.
+            _ = BuildAndShowShellAsync(window, bootstrap);
+        }
+
+        private async Task BuildAndShowShellAsync(MainWindow window, BootstrapShellViewModel bootstrap)
+        {
+            AppHost? host = null;
+            try
+            {
+                bootstrap.Status = "Initialisation...";
+                host = await Task.Run(() => AppBootstrapper.Build()).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    await window.Dispatcher.InvokeAsync(() =>
+                    {
+                        bootstrap.SetError($"Erreur au demarrage : {ex.Message}");
+                    });
+                }
+                catch
+                {
+                    // ignore
+                }
+                return;
+            }
+
+            try
+            {
+                try
+                {
+                    SpaceKeyAnnouncer.Initialize(host.Services.GetRequiredService<IScreenReaderAnnouncer>());
+                }
+                catch
+                {
+                    // best-effort
+                }
+
+                await await window.Dispatcher.InvokeAsync(async () =>
+                {
+                    var shell = new ShellViewModel(
+                        host,
+                        requestClose: window.Close,
+                        logger: host.Services.GetRequiredService<ILogger<ShellViewModel>>(),
+                        options: host.Services.GetRequiredService<IOptionsService>(),
+                        notify: host.Services.GetRequiredService<INotifyListener>(),
+                        presence: host.Services.GetRequiredService<IPresenceMonitor>(),
+                        presenceUi: host.Services.GetRequiredService<IPresenceLauncher>(),
+                        homeAccessor: host.Services.GetRequiredService<IHomeViewAccessor>(),
+                        menuRouter: host.Services.GetRequiredService<IMenuRouter>(),
+                        audio: host.Services.GetRequiredService<IAppAudioCoordinator>());
+
+                    window.DataContext = shell;
+                    AttachShellWindowGuards(window, shell);
+
+                    // ShellWindowBehavior calls OnLoadedAsync on Window.Loaded. If the window was loaded already
+                    // (bootstrap phase), we must trigger the startup ourselves.
+                    if (window.IsLoaded)
+                    {
+                        await shell.OnLoadedAsync().ConfigureAwait(true);
+                    }
+                }).Task;
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    await window.Dispatcher.InvokeAsync(() =>
+                    {
+                        bootstrap.SetError($"Erreur au demarrage : {ex.Message}");
+                        window.DataContext = bootstrap;
+                    });
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                try { await host.DisposeAsync().ConfigureAwait(false); } catch { /* ignore */ }
+            }
+        }
+
+        private static void AttachShellWindowGuards(Window window, ShellViewModel shell)
+        {
+            // MVVM strict:
+            // - Le DataContext de la fenêtre doit rester le ShellViewModel.
+            // - Le Title ne doit jamais dépendre du DataContext courant (sinon WPF affiche ToString() -> type du VM).
+            var applyingShellState = 0;
+            void ApplyWindowShellState(string reason)
+            {
+                if (Interlocked.Exchange(ref applyingShellState, 1) == 1)
+                {
+                    return;
+                }
+
+                try
+                {
+                    var expectedTitle = shell.WindowTitle;
+
+                    BindingOperations.ClearBinding(window, Window.TitleProperty);
+                    if (!string.Equals(window.Title, expectedTitle, StringComparison.Ordinal))
+                    {
+                        window.Title = expectedTitle;
+                    }
+
+                    // NVDA/UIA: certains lecteurs d'écran s'appuient sur AutomationProperties.Name
+                    // pour annoncer la fenêtre courante.
+                    try { AutomationProperties.SetName(window, expectedTitle); } catch { /* ignore */ }
+                    try
+                    {
+                        // Fallback: certains lecteurs d'écran lisent le nom du host focalisé plutôt que celui de la fenêtre.
+                        if (window.FindName("RootHost") is DependencyObject rootHost)
+                        {
+                            AutomationProperties.SetName(rootHost, expectedTitle);
+                        }
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                try
+                {
+                    if (!ReferenceEquals(window.DataContext, shell))
+                    {
+                        window.DataContext = shell;
+                    }
+                }
+                catch
+                {
+                    // ignore
+                }
+                finally
+                {
+                    Volatile.Write(ref applyingShellState, 0);
+                }
+            }
+
+            ApplyWindowShellState("startup");
+
+            PropertyChangedEventHandler? onShellPropertyChanged = null;
+            onShellPropertyChanged = (_, args) =>
+            {
+                if (string.Equals(args.PropertyName, nameof(ShellViewModel.WindowTitle), StringComparison.Ordinal))
+                {
+                    ApplyWindowShellState("windowTitle.changed");
+                }
+            };
+            shell.PropertyChanged += onShellPropertyChanged;
+
+            DependencyPropertyChangedEventHandler? onWindowDataContextChanged = null;
+            onWindowDataContextChanged = (_, _) => ApplyWindowShellState("window.datacontext.changed");
+            window.DataContextChanged += onWindowDataContextChanged;
+
+            // Dernière ligne de défense: si quelqu'un change le Title après coup, on le remet immédiatement.
+            var titleDescriptor = DependencyPropertyDescriptor.FromProperty(Window.TitleProperty, typeof(Window));
+            EventHandler? onWindowTitleChanged = null;
+            onWindowTitleChanged = (_, _) =>
+            {
+                if (!string.Equals(window.Title, shell.WindowTitle, StringComparison.Ordinal))
+                {
+                    ApplyWindowShellState("window.title.changed");
+                }
+            };
+            titleDescriptor.AddValueChanged(window, onWindowTitleChanged);
+
+            window.Closed += (_, _) =>
+            {
+                try { shell.PropertyChanged -= onShellPropertyChanged; } catch { /* ignore */ }
+                try { window.DataContextChanged -= onWindowDataContextChanged; } catch { /* ignore */ }
+                try { titleDescriptor.RemoveValueChanged(window, onWindowTitleChanged); } catch { /* ignore */ }
+            };
         }
 
         protected override void OnExit(ExitEventArgs e)

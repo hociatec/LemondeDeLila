@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Threading.Tasks;
 using client_win.Modules.Config;
 using client_win.Core.Constants;
 using client_win.Core.Network;
@@ -49,6 +50,25 @@ public sealed class JwtTokenValidator
         }
     }
 
+    public async Task<JwtSecurityToken> ValidateAsync(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            throw new Microsoft.IdentityModel.Tokens.SecurityTokenException("Token manquant");
+        }
+
+        try
+        {
+            return await ValidateInternalAsync(token).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            throw new Microsoft.IdentityModel.Tokens.SecurityTokenException(
+                $"Token invalide : {ex.Message}",
+                ex);
+        }
+    }
+
     private JwtSecurityToken ValidateInternal(string token)
     {
         var handler = new JwtSecurityTokenHandler();
@@ -75,6 +95,34 @@ public sealed class JwtTokenValidator
 
         var signingKey = CreateRsaPublicKeyFromPem(File.ReadAllText(publicKeyPath));
 
+        return ValidateWithKey(handler, token, signingKey);
+    }
+
+    private async Task<JwtSecurityToken> ValidateInternalAsync(string token)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var publicKeyPath = _config.JwtSignaturePublicKeyPath;
+
+        if (string.IsNullOrWhiteSpace(publicKeyPath) || !File.Exists(publicKeyPath))
+        {
+            var jwksKey = await TryGetSigningKeyFromJwksAsync().ConfigureAwait(false);
+            if (jwksKey != null)
+            {
+                return ValidateWithKey(handler, token, jwksKey);
+            }
+
+            // In production/staging we fail closed: a missing public key would mean we cannot verify signatures.
+            if (_environment != EnvironmentDetector.AppEnvironment.Development)
+            {
+                Log.Error("JWT signature verification is required but public key/JWKS is missing. Path={Path}", publicKeyPath ?? "(null)");
+                throw new Microsoft.IdentityModel.Tokens.SecurityTokenException("ClÃ© publique JWT manquante (signature non vÃ©rifiable)");
+            }
+
+            Log.Warning("JWT signature not verified (missing public key + JWKS). Development mode only. Path={Path}", publicKeyPath ?? "(null)");
+            return DecodeAndValidateLifetimeOnly(handler, token);
+        }
+
+        var signingKey = CreateRsaPublicKeyFromPem(File.ReadAllText(publicKeyPath));
         return ValidateWithKey(handler, token, signingKey);
     }
 
@@ -129,54 +177,74 @@ public sealed class JwtTokenValidator
 
         try
         {
-            var jwksUris = new[]
-            {
-                // Non-standard alias (some reverse proxies block /.well-known/*).
-                new Uri(_config.HttpBase, "jwks.json"),
-                // If the reverse proxy strips /api before forwarding.
-                new Uri(_config.HttpBase, "../jwks.json"),
-                // Prefer /api/.well-known when HttpBase ends with /api/ and the reverse proxy only exposes /api/*
-                new Uri(_config.HttpBase, ".well-known/jwks.json"),
-                // Fallback to the standards path at the origin root.
-                new Uri(_config.HttpBase, "../.well-known/jwks.json"),
-            };
-
-            RsaSecurityKey? key = null;
-            foreach (var jwksUri in jwksUris)
-            {
-                try
-                {
-                    using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(6));
-                    using var req = new HttpRequestMessage(HttpMethod.Get, jwksUri);
-                    using var res = HttpClientProvider.Shared.SendAsync(req, cts.Token).GetAwaiter().GetResult();
-                    res.EnsureSuccessStatusCode();
-                    var json = res.Content.ReadAsStringAsync(cts.Token).GetAwaiter().GetResult();
-                    var jwks = JsonSerializer.Deserialize<JwksDto>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    key = jwks?.GetFirstRsaKey();
-                    if (key != null)
-                    {
-                        break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Debug(ex, "JWKS fetch failed ({Uri})", jwksUri);
-                }
-            }
-
-            if (key == null) return null;
-
-            lock (JwksGate)
-            {
-                _jwksCache = (key, DateTime.UtcNow);
-            }
-            return key;
+            // Synchronous wrapper kept for compatibility; avoid calling on the UI thread.
+            return TryGetSigningKeyFromJwksAsync().GetAwaiter().GetResult();
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "JWKS fetch failed; cannot verify JWT signature.");
             return null;
         }
+    }
+
+    private async Task<RsaSecurityKey?> TryGetSigningKeyFromJwksAsync()
+    {
+        if (_environment == EnvironmentDetector.AppEnvironment.Development)
+        {
+            // En dev, si la clÃ© n'est pas packagÃ©e, on prÃ©fÃ¨re garder le flux existant (mode permissif).
+            return null;
+        }
+
+        lock (JwksGate)
+        {
+            if (_jwksCache.HasValue && DateTime.UtcNow - _jwksCache.Value.CachedAtUtc < TimeSpan.FromHours(6))
+            {
+                return _jwksCache.Value.Key;
+            }
+        }
+
+        var jwksUris = new[]
+        {
+            // Non-standard alias (some reverse proxies block /.well-known/*).
+            new Uri(_config.HttpBase, "jwks.json"),
+            // If the reverse proxy strips /api before forwarding.
+            new Uri(_config.HttpBase, "../jwks.json"),
+            // Prefer /api/.well-known when HttpBase ends with /api/ and the reverse proxy only exposes /api/*
+            new Uri(_config.HttpBase, ".well-known/jwks.json"),
+            // Fallback to the standards path at the origin root.
+            new Uri(_config.HttpBase, "../.well-known/jwks.json"),
+        };
+
+        RsaSecurityKey? key = null;
+        foreach (var jwksUri in jwksUris)
+        {
+            try
+            {
+                using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(6));
+                using var req = new HttpRequestMessage(HttpMethod.Get, jwksUri);
+                using var res = await HttpClientProvider.Shared.SendAsync(req, cts.Token).ConfigureAwait(false);
+                res.EnsureSuccessStatusCode();
+                var json = await res.Content.ReadAsStringAsync(cts.Token).ConfigureAwait(false);
+                var jwks = JsonSerializer.Deserialize<JwksDto>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                key = jwks?.GetFirstRsaKey();
+                if (key != null)
+                {
+                    break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "JWKS fetch failed ({Uri})", jwksUri);
+            }
+        }
+
+        if (key == null) return null;
+
+        lock (JwksGate)
+        {
+            _jwksCache = (key, DateTime.UtcNow);
+        }
+        return key;
     }
 
     private sealed class JwksDto

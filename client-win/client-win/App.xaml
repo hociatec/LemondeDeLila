@@ -32,11 +32,16 @@
              xmlns:presenceView="clr-namespace:client_win.Modules.Presence.Views"
              xmlns:vaultVm="clr-namespace:client_win.Modules.Vault.ViewModels"
              xmlns:vaultView="clr-namespace:client_win.Modules.Vault.Views"
+             xmlns:shellVm="clr-namespace:client_win.Modules.Shell.ViewModels"
+             xmlns:shellView="clr-namespace:client_win.Modules.Shell.Views"
              xmlns:roomVm="clr-namespace:client_win.Modules.Game.Shell.ViewModels"
              xmlns:roomView="clr-namespace:client_win.Modules.Game.Shell.Views"
              xmlns:playVm="clr-namespace:client_win.Modules.Game.Play.GamePlay.ViewModels"
              xmlns:playView="clr-namespace:client_win.Modules.Game.Play.GamePlay.Views">
     <Application.Resources>
+        <DataTemplate DataType="{x:Type shellVm:BootstrapShellViewModel}">
+            <shellView:BootstrapShellView />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type homeVm:HomeViewModel}">
             <homeView:HomeView />
         </DataTemplate>

@@ -18,6 +18,26 @@ public partial class VaultView : UserControl, IInitialFocusTarget
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         RequestInitialFocus();
+
+        // Defer network calls until the view is visible (UI first).
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
+        {
+            try
+            {
+                if (DataContext is VaultViewModel vm)
+                {
+                    await vm.InitializeAsync().ConfigureAwait(true);
+                    if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
+                    {
+                        RequestInitialFocus();
+                    }
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+        }));
     }
 
     public void RequestInitialFocus()
@@ -86,4 +106,3 @@ public partial class VaultView : UserControl, IInitialFocusTarget
         }
     }
 }
-
