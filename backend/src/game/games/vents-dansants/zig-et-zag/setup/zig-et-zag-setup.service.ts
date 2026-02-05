@@ -39,11 +39,27 @@ export class ZigEtZagSetupService {
       winnerId: null,
     };
 
+    const roundState = buildInitialRoundState(metadata, players);
+
+    // For bot scheduling: if a bot has an available action (i.e. still has cards),
+    // make it the "current player" so the engine can trigger the bot turn.
+    const waitingSet = new Set<number>(roundState.waitingPlayers ?? []);
+    const bot = players.find((p: any) => p?.isBot && waitingSet.has(p.id));
+    const currentPlayerId =
+      bot && typeof (bot as any).id === 'number'
+        ? (bot as any).id
+        : (baseState.turn?.currentPlayerId ?? players[0]?.id ?? null);
+
     return {
       ...baseState,
+      turn: {
+        ...(baseState.turn ?? { direction: 1 }),
+        currentPlayerId: typeof currentPlayerId === 'number' ? currentPlayerId : null,
+        direction: 1,
+      },
       metadata: {
         ...metadata,
-        roundState: buildInitialRoundState(metadata, players),
+        roundState,
       },
     };
   }

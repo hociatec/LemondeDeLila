@@ -21,7 +21,21 @@ export function getAvailableActions(
   if (status !== 'started') return [];
   if (getMeta(state).winnerId != null) return [];
   const round = getMeta(state).roundState;
-  if (!round || !round.waitingPlayers.includes(playerId)) return [];
+  if (!round) return [];
+
+  // Robustness: number ids can round-trip as strings depending on the storage layer.
+  const waiting = (round.waitingPlayers ?? [])
+    .map((v: any) => {
+      if (typeof v === 'number' && Number.isFinite(v)) return v;
+      if (typeof v === 'string') {
+        const n = Number(v.trim());
+        return Number.isFinite(n) ? n : null;
+      }
+      return null;
+    })
+    .filter((v: any): v is number => typeof v === 'number');
+
+  if (!waiting.includes(playerId)) return [];
   const cards = getSelectableCards(getMeta(state), playerId);
   return cards.map((cardId) => ({
     type: 'select_card',
@@ -50,7 +64,20 @@ export function validateAction(
     throw new Error('La partie est terminée.');
   }
   const round = meta.roundState;
-  if (!round || !round.waitingPlayers.includes(actorId)) {
+  if (!round) {
+    throw new Error("Ce n'est pas votre tour.");
+  }
+  const waiting = (round.waitingPlayers ?? [])
+    .map((v: any) => {
+      if (typeof v === 'number' && Number.isFinite(v)) return v;
+      if (typeof v === 'string') {
+        const n = Number(v.trim());
+        return Number.isFinite(n) ? n : null;
+      }
+      return null;
+    })
+    .filter((v: any): v is number => typeof v === 'number');
+  if (!waiting.includes(actorId)) {
     throw new Error("Ce n'est pas votre tour.");
   }
   const cardId = String((action.payload as any)?.cardId ?? '').trim();

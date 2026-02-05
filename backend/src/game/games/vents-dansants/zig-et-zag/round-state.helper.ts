@@ -93,7 +93,21 @@ export function getSelectableCards(
   playerId: number,
 ): string[] {
   const round = metadata.roundState;
-  if (!round || !round.waitingPlayers.includes(playerId)) return [];
+  if (!round) return [];
+
+  // Robustness: some stores/serializers can round-trip number ids as strings.
+  const waiting = (round.waitingPlayers ?? [])
+    .map((v: any) => {
+      if (typeof v === 'number' && Number.isFinite(v)) return v;
+      if (typeof v === 'string') {
+        const n = Number(v.trim());
+        return Number.isFinite(n) ? n : null;
+      }
+      return null;
+    })
+    .filter((v: any): v is number => typeof v === 'number');
+
+  if (!waiting.includes(playerId)) return [];
   return getPlayerHand(metadata, playerId).filter((cardId) =>
     isCardAllowed(round, playerId, cardId),
   );

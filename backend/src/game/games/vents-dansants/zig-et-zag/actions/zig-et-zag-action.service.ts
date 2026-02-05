@@ -85,12 +85,15 @@ export class ZigEtZagActionService {
     meta = drainedMeta;
 
     const nextRound = this.recordPlayedCard(round, actorId, cardId);
-    nextRound.waitingPlayers = nextRound.waitingPlayers.filter(
+    nextRound.waitingPlayers = (nextRound.waitingPlayers ?? []).filter(
       (pid) => pid !== actorId,
     );
 
     state = this.setRoundState(state, meta, nextRound);
-    state = this.setCurrentPlayer(state, actorId);
+    state = this.setCurrentPlayer(
+      state,
+      this.pickNextCurrentPlayerId(players, nextRound, actorId),
+    );
 
     if (!nextRound.waitingPlayers.length) {
       state = this.finalizeStage(state, players);
@@ -346,6 +349,12 @@ export class ZigEtZagActionService {
       } as GameStateEntity;
     } else {
       nextState = this.turns.advanceTurn(nextState);
+      // Ensure a round state exists right away so bot selection can be scheduled deterministically.
+      const ensured = this.ensureRoundState(nextState, players);
+      nextState = this.setCurrentPlayer(
+        ensured.state,
+        this.pickNextCurrentPlayerId(players, ensured.round, ensured.state.turn?.currentPlayerId ?? 0),
+      );
     }
 
     return this.logRound(nextState, summary, players);
@@ -428,12 +437,71 @@ export class ZigEtZagActionService {
   ): { state: GameStateEntity; round: ZigEtZagRoundState } {
     const meta = this.getMeta(state);
     if (meta.roundState) {
-      return { state, round: meta.roundState };
+      const normalized = this.normalizeRoundState(meta.roundState);
+      const nextState = this.setRoundState(state, meta, normalized);
+      return { state: nextState, round: normalized };
     }
     const safePlayers = Array.isArray(players) ? players : [];
     const round = buildInitialRoundState(meta, safePlayers);
-    const nextState = this.setRoundState(state, meta, round);
-    return { state: nextState, round };
+    const normalized = this.normalizeRoundState(round);
+    const nextState = this.setRoundState(state, meta, normalized);
+    return { state: nextState, round: normalized };
+  }
+
+  private normalizeRoundState(round: ZigEtZagRoundState): ZigEtZagRoundState {
+    const asNumberOrNull = (value: unknown): number | null => {
+      if (typeof value === 'number' && Number.isFinite(value)) return value;
+      if (typeof value === 'string') {
+        const n = Number(value.trim());
+        return Number.isFinite(n) ? n : null;
+      }
+      return null;
+    };
+
+    const normalizeIdList = (list: unknown): number[] => {
+      const arr = Array.isArray(list) ? list : [];
+      return arr
+        .map((v) => asNumberOrNull(v))
+        .filter((v): v is number => typeof v === 'number');
+    };
+
+    const plays = Array.isArray(round?.plays) ? round.plays : [];
+    const normalizedPlays = plays
+      .map((play: any) => {
+        const pid = asNumberOrNull(play?.playerId);
+        if (pid == null) return null;
+        return {
+          ...play,
+          playerId: pid,
+          playedCards: Array.isArray(play?.playedCards) ? play.playedCards : [],
+        } as any;
+      })
+      .filter((p): p is ZigEtZagRoundState['plays'][number] => Boolean(p));
+
+    return {
+      ...round,
+      plays: normalizedPlays,
+      waitingPlayers: normalizeIdList((round as any)?.waitingPlayers),
+      tiedPlayers: normalizeIdList((round as any)?.tiedPlayers),
+    };
+  }
+
+  private pickNextCurrentPlayerId(
+    players: GameStateEntity['players'],
+    round: ZigEtZagRoundState,
+    fallback: number,
+  ): number {
+    const list = Array.isArray(players) ? players : [];
+    const waiting = Array.isArray(round?.waitingPlayers) ? round.waitingPlayers : [];
+    if (!waiting.length) return fallback;
+
+    const waitingSet = new Set(waiting);
+    const bot = list.find((p: any) => p?.isBot && waitingSet.has(p.id));
+    if (bot && typeof (bot as any).id === 'number') {
+      return (bot as any).id;
+    }
+
+    return waiting[0] ?? fallback;
   }
 
   private recordPlayedCard(
