@@ -654,9 +654,9 @@
       "wrong1": "Pétunia",
       "wrong2": "Molly",
       "wrong3": "Narcissa",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:02:50.757Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "2f2aa533-d5a6-46a8-a50f-37bce43c7e9b",
@@ -666,9 +666,9 @@
       "wrong1": "Dragon de feu",
       "wrong2": "Dragon chinois à cornes",
       "wrong3": "Dragon des forêts",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:04:05.194Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "b954bc67-f99f-4285-a6f5-8c795c94d424",
@@ -678,9 +678,9 @@
       "wrong1": "Albus Percival Grindelwald",
       "wrong2": "Albus Severus Dumbledore",
       "wrong3": "Albus Pius Arthur Thomas Dumbledore",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:06:10.279Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "212cd397-89dc-40ef-953f-7826d22f5cb3",
@@ -690,9 +690,9 @@
       "wrong1": "Luna",
       "wrong2": "Fleur",
       "wrong3": "Jennifer",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:07:18.928Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "7c8706a8-c836-4fd2-9fe6-4ae2b52f547f",
@@ -702,9 +702,9 @@
       "wrong1": "Accio",
       "wrong2": "Lumos",
       "wrong3": "Expelliarmus",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:08:18.693Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "627a7a3c-db3c-4044-bb2f-a9f4fbbca38f",
@@ -714,9 +714,9 @@
       "wrong1": "Remus Lupin",
       "wrong2": "Severus Rogue",
       "wrong3": "Dolores Ombrage",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:09:17.615Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "e3d42361-2791-4523-a775-b7857184fa4d",
@@ -726,9 +726,9 @@
       "wrong1": "Venin de Basilic",
       "wrong2": "Peau de serpent",
       "wrong3": "Sang de dragon",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:10:13.257Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "fc583188-e8f8-46af-ba97-60422b39f63e",
@@ -738,9 +738,9 @@
       "wrong1": "Rowena",
       "wrong2": "Helga",
       "wrong3": "Godric",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:11:27.086Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "65755470-b9a5-4b13-b8ea-f11442469d97",
@@ -750,9 +750,9 @@
       "wrong1": "Daim",
       "wrong2": "Biche",
       "wrong3": "Cheval",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:12:21.306Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "b5fd77f0-1c9e-473b-97a0-1e4e3b79764e",
@@ -762,9 +762,9 @@
       "wrong1": "Bellatrix Lestrange",
       "wrong2": "Voldemort",
       "wrong3": "Drago Malefoy",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:13:12.569Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "36ebc5b3-8aa0-47d8-97fa-596c17fcc4ea",
@@ -774,9 +774,9 @@
       "wrong1": "Ils sont tous invisibles",
       "wrong2": "Ils viennent uniquement de Grande-Bretagne",
       "wrong3": "Ils sont tous agressifs envers les sorciers",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:14:01.169Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "b8ce40fa-80c5-406a-8ca4-a093370aac6a",
@@ -786,9 +786,9 @@
       "wrong1": "Tome 2",
       "wrong2": "Tome 6",
       "wrong3": "Tome 3",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:14:39.203Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "7a8d8ede-d79b-4033-996b-94e7973f83ad",
@@ -798,9 +798,9 @@
       "wrong1": "Albus Severus",
       "wrong2": "Dudley Remus",
       "wrong3": "Arthur Ronald",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:15:26.763Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "1426604b-7734-4325-846b-2b9af9a98fde",
@@ -810,9 +810,9 @@
       "wrong1": "Auror",
       "wrong2": "Professeur à Poudlard",
       "wrong3": "Ministre de la Magie",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:17:29.584Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "f5e3a2c1-95e8-4673-a152-553f9ef4314d",
@@ -822,9 +822,9 @@
       "wrong1": "Severus Rogue",
       "wrong2": "Albus Dumbledore",
       "wrong3": "Gilderoy Lockhart",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:18:27.100Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "7d287bb1-7ac1-4809-9306-8edabcb55d4b",
@@ -834,9 +834,9 @@
       "wrong1": "Luminos",
       "wrong2": "Accio",
       "wrong3": "Nox",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:19:13.582Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "6526c88c-145c-4a92-93df-11f80b14b84f",
@@ -846,9 +846,9 @@
       "wrong1": "Severus Rogue",
       "wrong2": "Pomela Chourave",
       "wrong3": "Albus Dumbledore",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:20:06.493Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "7414ca11-bad9-4135-9093-a59cdc9db740",
@@ -858,9 +858,9 @@
       "wrong1": "Alastor Buffy",
       "wrong2": "Victor Bley",
       "wrong3": "Joshua Bryan  Riddle",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:20:53.368Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "e5f530d3-fbeb-4310-96df-a487c04c95b7",
@@ -870,9 +870,9 @@
       "wrong1": "Blaireau",
       "wrong2": "Aigle",
       "wrong3": "Serpent",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:21:42.294Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "49487763-cea6-4bcd-a913-5404d5522a80",
@@ -882,9 +882,9 @@
       "wrong1": "Voldemort",
       "wrong2": "Lucius Malfoy",
       "wrong3": "Dumbledore",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:22:26.944Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "b11f0a71-9859-4d9c-9386-9de4c07af42a",
@@ -894,9 +894,9 @@
       "wrong1": "Fleury et Bott",
       "wrong2": "Chaudron baveur",
       "wrong3": "Weasley’s Wizard Wheezes",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:23:32.456Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "3808838e-24d5-4843-aa1d-9262d5bdee09",
@@ -906,9 +906,9 @@
       "wrong1": "Les Acromentules",
       "wrong2": "Les Mangemorts",
       "wrong3": "Les Détraqueurs",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:24:28.137Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "1cf2b820-0a13-4848-91e9-ea383e976f73",
@@ -918,9 +918,9 @@
       "wrong1": "Le Bal d'halloween",
       "wrong2": "Le Bal des Sorciers",
       "wrong3": "Le Bal des Quatre Maisons",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:25:15.483Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "6fba6e92-7cdb-456a-9c2d-123b2bd3e705",
@@ -930,9 +930,9 @@
       "wrong1": "Philosopher’s Ring",
       "wrong2": "Blood Stone",
       "wrong3": "Sorcerer’s Ring",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:26:07.617Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "c0838007-4dee-4d1c-a198-29cd0c9dc140",
@@ -942,9 +942,9 @@
       "wrong1": "Remus",
       "wrong2": "Mondingus",
       "wrong3": "Nigulus",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:26:57.847Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "68f46f6c-c446-4ec8-8240-81b6df636686",
@@ -954,9 +954,9 @@
       "wrong1": "Gellert Grindelwald",
       "wrong2": "Bathilda Bagshot",
       "wrong3": "Xenophilius Lovegood",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:27:49.387Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "6359b677-9600-4c96-8834-54d2aa7df974",
@@ -966,9 +966,9 @@
       "wrong1": "Détraqueur",
       "wrong2": "Elfes de maison",
       "wrong3": "Mandragore",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:28:45.116Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "93965b9c-90e8-4da9-b571-ab65899e5145",
@@ -978,9 +978,9 @@
       "wrong1": "Au Royaume du Hibou",
       "wrong2": "Fleury et Bott",
       "wrong3": "Ollivanders",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:30:05.173Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "db686dd8-74b2-4385-b091-d582378cec5c",
@@ -990,9 +990,9 @@
       "wrong1": "Voldemort",
       "wrong2": "Albus Dumbledore",
       "wrong3": "Severus Rogue",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:34:09.196Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "9d938228-6be2-46fb-8cbf-92d03d36f228",
@@ -1002,9 +1002,9 @@
       "wrong1": "Iceblind",
       "wrong2": "Bobath",
       "wrong3": "Nurmengard",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:35:02.129Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "1703cc22-7ab8-4452-955a-d1b4d8533f5b",
@@ -1014,9 +1014,9 @@
       "wrong1": "Molly Luna",
       "wrong2": "Rose Luna",
       "wrong3": "Pétunia Luna",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:36:13.822Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "6845d655-3952-48e1-87ed-fc00bcd27e41",
@@ -1026,9 +1026,9 @@
       "wrong1": "Bellatrix Lestrange",
       "wrong2": "Lucius Malefoy",
       "wrong3": "Severus Rogue",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:37:02.918Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "b1febc47-09d8-4c54-900c-64233b959970",
@@ -1038,9 +1038,9 @@
       "wrong1": "Basilic",
       "wrong2": "Croûtard",
       "wrong3": "Aragog",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:37:48.494Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "ee008635-e50f-433d-91d7-34a6f14ce633",
@@ -1050,9 +1050,9 @@
       "wrong1": "Ragnuk le Rogue",
       "wrong2": "Bogrod",
       "wrong3": "Travers",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:38:48.627Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "69c07582-e933-4def-acc7-5d6b444bedaa",
@@ -1062,9 +1062,9 @@
       "wrong1": "Cho Chang",
       "wrong2": "Draco Malefoy",
       "wrong3": "Cédric Diggory",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:39:40.910Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "af19ef2c-8805-4384-9dda-33a6e7497934",
@@ -1074,9 +1074,9 @@
       "wrong1": "Le Baron Sanglant",
       "wrong2": "Moaning Myrtle",
       "wrong3": "Mimie géniarde",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:41:05.955Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "b4bbc9aa-ca52-407f-8e8f-1ebda5986f17",
@@ -1086,9 +1086,9 @@
       "wrong1": "Bibliothèque",
       "wrong2": "Bureau de Dumbledore",
       "wrong3": "Grande Salle",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:42:15.854Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "14eb8bef-733c-487a-9388-0cca5e2b7465",
@@ -1098,9 +1098,9 @@
       "wrong1": "Courage",
       "wrong2": "Loyauté",
       "wrong3": "Ruse",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:43:01.100Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "3d86dbc8-28e6-452a-9746-76713ee52b08",
@@ -1110,9 +1110,9 @@
       "wrong1": "Petrificus Totalus",
       "wrong2": "Visemdium",
       "wrong3": "Episkey",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:44:30.803Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "a8957918-23c6-4746-950d-1eb8825211ae",
@@ -1122,9 +1122,9 @@
       "wrong1": "Prophétie de Merlin",
       "wrong2": "Prophétie de Bathilda",
       "wrong3": "Prophétie d’Ollivander",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:45:22.835Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "a3cc0460-c77f-4fbb-800e-7fa4baee1d1e",
@@ -1134,9 +1134,9 @@
       "wrong1": "Rowena",
       "wrong2": "Godric",
       "wrong3": "Salazar",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:46:10.212Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "5a3cdb8a-f739-49ff-8aa2-50c6897e4527",
@@ -1146,9 +1146,9 @@
       "wrong1": "Ennemi seulement",
       "wrong2": "Frères adoptifs",
       "wrong3": "Ils sont amis secrets",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:47:04.251Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "a8eff573-3394-4def-8d9c-e0f6320777ad",
@@ -1158,9 +1158,9 @@
       "wrong1": "Molly Weasley",
       "wrong2": "Severus Rogue",
       "wrong3": "Gilderoy Lockhart",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:47:49.512Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "b8c31f5f-ec02-4902-b5a0-a3ac21b41111",
@@ -1170,9 +1170,9 @@
       "wrong1": "Pierre du Sorcier",
       "wrong2": "Horcruxe",
       "wrong3": "Elixir de Vie",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:48:42.692Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "200dee6b-db9a-4175-9449-6de1766b0200",
@@ -1182,9 +1182,9 @@
       "wrong1": "Nymphadora",
       "wrong2": "Bellatrix",
       "wrong3": "Andromeda",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:49:32.213Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "0a995c13-c79a-45b6-b836-e2c48dcbb77a",
@@ -1194,9 +1194,9 @@
       "wrong1": "Dumbledore",
       "wrong2": "Ron",
       "wrong3": "Hermione",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:50:20.233Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "e72487b8-8ce3-4c78-8078-106d58bfbe62",
@@ -1206,9 +1206,9 @@
       "wrong1": "Echecs sorciers",
       "wrong2": "Gobstones",
       "wrong3": "Exploding Snap",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:52:50.755Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "8aca3ba2-c4fb-4d4c-a8a7-5b60e2f839da",
@@ -1218,9 +1218,9 @@
       "wrong1": "Le Livre des Ombres",
       "wrong2": "Le Grimoire de Voldemort",
       "wrong3": "La Bible des Mangemorts",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:53:34.304Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "c99a1610-6d32-46f6-8ab2-d82d6f7e292e",
@@ -1230,9 +1230,9 @@
       "wrong1": "Expecto Patronum",
       "wrong2": "Imperio",
       "wrong3": "Accio",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:54:27.358Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "d6a83f54-c248-40a0-a7bc-e47fd9a34ecc",
@@ -1242,9 +1242,9 @@
       "wrong1": "Pomona Chourave",
       "wrong2": "Minerva McGonagall",
       "wrong3": "Severus Rogue",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-16T19:55:40.477Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "7e71f418-b29e-44ce-b1ef-1da72dc26b90",
@@ -4614,9 +4614,9 @@
       "wrong1": "Miroir de l’Âme",
       "wrong2": "Miroir des Anciens",
       "wrong3": "Miroir éternel",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-19T17:50:37.438Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "19047b44-5a27-4365-8eda-051d3b76e5c3",
@@ -4626,9 +4626,9 @@
       "wrong1": "Amos",
       "wrong2": "Arthur",
       "wrong3": "Elphias",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-19T17:52:17.784Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "bc73f563-2d67-4f29-a2ce-348add566996",
@@ -4638,9 +4638,9 @@
       "wrong1": "Marius",
       "wrong2": "Percival",
       "wrong3": "Tobias",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-19T17:53:10.611Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "524e6d1e-eeb1-4cb9-9c16-9197d57ef244",
@@ -4650,9 +4650,9 @@
       "wrong1": "Un dragon empaillé grandeur nature",
       "wrong2": "Un sablier en or",
       "wrong3": "Une année sans examens",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-20T09:02:41.405Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "a4b79689-4214-47c7-bb94-f5bce3cda70f",
@@ -4662,9 +4662,9 @@
       "wrong1": "Dine Thomas",
       "wrong2": "Olivier Dubois",
       "wrong3": "Luna Lovegood",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-20T09:03:55.572Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "2d865475-cc08-4242-8106-c7adcb248e1a",
@@ -4674,9 +4674,9 @@
       "wrong1": "Sombrâle",
       "wrong2": "Croup",
       "wrong3": "Hippogriffe",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-20T09:04:45.165Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "1c694725-0dd9-48c9-ae0e-5507481cca81",
@@ -4686,9 +4686,9 @@
       "wrong1": "Occamy",
       "wrong2": "Basilic",
       "wrong3": "Niffleur",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-20T09:05:38.843Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "316440b9-27fe-45d9-a34d-337af716c3a5",
@@ -4698,9 +4698,9 @@
       "wrong1": "Geminio",
       "wrong2": "Engorgio",
       "wrong3": "Reparo",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-20T09:06:21.341Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "3f28089d-a364-4562-89d8-8a8ef6128310",
@@ -4710,9 +4710,9 @@
       "wrong1": "La 5e année de Harry",
       "wrong2": "L’attaque de Godric’s Hollow",
       "wrong3": "La bataille finale de Poudlard",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-20T09:07:25.234Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "adceb75d-70d5-4b8d-805f-a77811220e55",
@@ -4722,9 +4722,9 @@
       "wrong1": "Petrificus totalus",
       "wrong2": "Expelliarmus",
       "wrong3": "Accio",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-20T09:08:35.139Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "2998ae2a-9e36-474e-8207-c5b6334abe81",
@@ -4734,9 +4734,9 @@
       "wrong1": "Barty Croupton Jr",
       "wrong2": "Slughorn",
       "wrong3": "Dumbledore",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-20T09:09:35.556Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "3b5a6cf3-e81a-4663-93ee-edebb566d57b",
@@ -4746,9 +4746,9 @@
       "wrong1": "Une baguette",
       "wrong2": "Un miroir",
       "wrong3": "Une plume",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-20T09:10:34.818Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "df712eb5-c982-4481-a642-3158e0817cb4",
@@ -4758,9 +4758,9 @@
       "wrong1": "Errol",
       "wrong2": "Hedwige",
       "wrong3": "Pattenrond",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-20T09:11:57.098Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "46746aba-45e4-4f2c-806a-d0eb54db12f8",
@@ -4770,9 +4770,9 @@
       "wrong1": "Stupefix",
       "wrong2": "Alohomora",
       "wrong3": "Reducto",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-20T09:12:59.968Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "d5bf3f36-d2da-419d-8b49-e567cf9e1f4c",
@@ -4782,9 +4782,9 @@
       "wrong1": "Crée un double",
       "wrong2": "Lance un sort aléatoire",
       "wrong3": "Désarme l’adversaire",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-20T09:13:49.153Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "7430025e-26e7-4e0b-83e2-e7bcb300c446",
@@ -4794,9 +4794,9 @@
       "wrong1": "Soins aux créatures magiques",
       "wrong2": "Divination",
       "wrong3": "Étude des Moldus",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-20T09:15:00.922Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "96edeb42-39f2-4ca6-acce-8e137f916c38",
@@ -4806,9 +4806,9 @@
       "wrong1": "Muriel",
       "wrong2": "Augusta",
       "wrong3": "Alice",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-20T09:15:45.055Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "99b5257b-6d58-4b00-8d7b-5697bc637f28",
@@ -4818,9 +4818,9 @@
       "wrong1": "Amortentia",
       "wrong2": "Jus de citrouille",
       "wrong3": "Polynectar",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-20T09:16:31.133Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "c541c02d-93e1-4661-9772-623e335861b7",
@@ -4830,9 +4830,9 @@
       "wrong1": "Protego",
       "wrong2": "Crache limace",
       "wrong3": "Rictusempra",
-      "status": "validated",
+      "status": "trash",
       "createdAt": "2026-01-20T09:17:32.885Z",
-      "updatedAt": "2026-02-05T20:45:12.961Z"
+      "updatedAt": "2026-02-02T22:18:06.818Z"
     },
     {
       "id": "19e54e12-89da-439b-a25b-4383a17adcce",

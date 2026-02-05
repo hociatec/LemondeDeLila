@@ -1370,6 +1370,11 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     const isCurrent = currentId === userId;
 
     if (phase === 'setup') {
+      // Tant que la configuration n'est pas validée (prompt présent), aucun autre acteur ne doit pouvoir démarrer.
+      // Cela évite qu'un bot premier joueur tente mnemo_start et se fasse rejeter en boucle.
+      if (meta.prompt) {
+        return [];
+      }
       if (isCurrent) {
         for (const c of this.store.listCategories()) {
           actions.push({ type: 'mnemo_start', payload: { categoryId: c.id } });

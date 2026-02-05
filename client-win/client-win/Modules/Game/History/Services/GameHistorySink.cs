@@ -110,11 +110,16 @@ public sealed class GameHistorySink : IGameHistorySink
         }
 
         var now = ParseTimestampOrNow(timestamp);
-        if (_lastAnnouncements.TryGetValue(normalized, out var last))
+        // Interface shortcuts (ex: score/turn) should always announce, even if the message is identical
+        // within the dedup window. `flushPending` is used for UI shortcuts ([ui] prefix).
+        if (!flushPending)
         {
-            if (now <= last || now - last <= AnnouncementDedupWindow)
+            if (_lastAnnouncements.TryGetValue(normalized, out var last))
             {
-                return false;
+                if (now <= last || now - last <= AnnouncementDedupWindow)
+                {
+                    return false;
+                }
             }
         }
 

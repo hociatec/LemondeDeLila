@@ -29,6 +29,58 @@ describe('ArcheDeMnemosyneService prompt actions', () => {
     expect(available).toContain('mnemo_prompt_cancel');
   });
 
+  it('prevents bot from starting until setup config is validated, then allows it', () => {
+    const service = new ArcheDeMnemosyneService(
+      { register: jest.fn() } as any,
+      { appendLog: (s: any) => s } as any,
+      {} as any,
+      { listCategories: () => [{ id: 'c1', name: 'Cat 1' }], listQuestions: () => [] } as any,
+      {} as any,
+    );
+
+    const base: GameStateEntity = {
+      status: 'open',
+      phase: 'lobby',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: -1, username: 'Bot', isBot: true } as any,
+        { id: 1, username: 'Owner' } as any,
+      ],
+      metadata: { roomOwnerId: 1 } as any,
+    };
+
+    const state = service.hydrateInitialState(base);
+
+    const botAvailableBefore = service.getAvailableActions(state, -1);
+    expect(botAvailableBefore.length).toBe(0);
+
+    const config = service.validateAction(
+      state,
+      {
+        type: 'mnemo_set_config',
+        payload: { useTimer: 'oui', timerSeconds: 30, targetPoints: 20 },
+      } as any,
+      1,
+    ) as any;
+    const afterConfig = service.applyActions(state, [
+      { ...config, meta: { actorId: 1 } } as any,
+    ]);
+
+    const botAvailableAfter = service.getAvailableActions(afterConfig, -1).map((a: any) => a.type);
+    expect(botAvailableAfter).toContain('mnemo_start');
+
+    expect(() =>
+      service.validateAction(
+        afterConfig,
+        { type: 'mnemo_start', payload: { categoryId: null } } as any,
+        -1,
+      ),
+    ).not.toThrow();
+  });
+
   it('shows setup config prompt to room owner even if a bot is first in players[]', () => {
     const service = new ArcheDeMnemosyneService(
       { register: jest.fn() } as any,
