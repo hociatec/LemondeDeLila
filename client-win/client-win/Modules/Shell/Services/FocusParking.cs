@@ -59,7 +59,10 @@ public static class FocusParking
             }
             else
             {
-                _ = window.Dispatcher.BeginInvoke((Action)ParkOnUiThread, DispatcherPriority.Send);
+                // IMPORTANT (NVDA):
+                // This must be synchronous when called from a background thread, otherwise the caller may
+                // swap/destroy the focused element before we "park" focus, which leads to "indisponible".
+                window.Dispatcher.Invoke((Action)ParkOnUiThread, DispatcherPriority.Send);
             }
         }
         catch

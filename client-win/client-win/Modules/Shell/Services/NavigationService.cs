@@ -1,4 +1,6 @@
 using System;
+using System.Windows;
+using System.Windows.Threading;
 
 namespace client_win.Modules.Shell.Services;
 
@@ -32,6 +34,14 @@ public sealed class NavigationService : INavigationService
 
     public void Show(object content)
     {
+        // Navigation must run on the UI thread to keep focus transitions deterministic for screen readers.
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher != null && !dispatcher.CheckAccess())
+        {
+            dispatcher.Invoke(() => Show(content), DispatcherPriority.Send);
+            return;
+        }
+
         try
         {
             _focusParking?.ParkFocus();
