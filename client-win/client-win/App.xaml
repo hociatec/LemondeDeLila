@@ -114,11 +114,5 @@
         <Style TargetType="DataGrid">
             <Setter Property="behaviors:ItemsControlFocusGuardBehavior.Enable" Value="True" />
         </Style>
-        <Style TargetType="TreeView">
-            <Setter Property="behaviors:ItemsControlFocusGuardBehavior.Enable" Value="True" />
-        </Style>
-        <Style TargetType="ComboBox">
-            <Setter Property="behaviors:ItemsControlFocusGuardBehavior.Enable" Value="True" />
-        </Style>
     </Application.Resources>
 </Application>

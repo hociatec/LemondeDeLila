@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using client_win.Core.Diagnostics;
 using client_win.Core.Input;
 using client_win.Modules.Game.Shell.Views;
 
@@ -56,6 +57,7 @@ public static class ShortcutBindingsBehavior
         public INotifyCollectionChanged? Collection { get; set; }
         public NotifyCollectionChangedEventHandler? Handler { get; set; }
         public KeyEventHandler? PreviewKeyDownHandler { get; set; }
+        public bool PreviewKeyDownAttached { get; set; }
     }
 
     private static readonly ConditionalWeakTable<UIElement, Subscription> _subscriptions = new();
@@ -90,8 +92,23 @@ public static class ShortcutBindingsBehavior
 
         if (subscription.PreviewKeyDownHandler != null)
         {
-            element.PreviewKeyDown -= subscription.PreviewKeyDownHandler;
+            try
+            {
+                if (subscription.PreviewKeyDownAttached)
+                {
+                    element.RemoveHandler(Keyboard.PreviewKeyDownEvent, subscription.PreviewKeyDownHandler);
+                }
+                else
+                {
+                    element.PreviewKeyDown -= subscription.PreviewKeyDownHandler;
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
             subscription.PreviewKeyDownHandler = null;
+            subscription.PreviewKeyDownAttached = false;
         }
     }
 
@@ -112,6 +129,7 @@ public static class ShortcutBindingsBehavior
             {
                 if (e.Handled)
                 {
+                    ShortcutDiagnostics.TryLog("shortcut.skip reason=handled");
                     return;
                 }
 
@@ -119,11 +137,13 @@ public static class ShortcutBindingsBehavior
                 // (ex: historique en lecture seule). On laisse le contrôle/lecteur d'écran gérer l'écho clavier.
                 if (IsTextInputFocused())
                 {
+                    ShortcutDiagnostics.TryLog("shortcut.skip reason=text_input_focused");
                     return;
                 }
 
                 if (IsDisabledForFocusedElement())
                 {
+                    ShortcutDiagnostics.TryLog("shortcut.skip reason=disabled_when_focus_within");
                     return;
                 }
 
@@ -145,6 +165,7 @@ public static class ShortcutBindingsBehavior
                             if (gesture.Key != key) continue;
                             if (gesture.Modifiers != modifiers) continue;
 
+                            ShortcutDiagnostics.TryLog($"shortcut.match kind=gesture key={key} mods={modifiers} code={shortcut.Code ?? ""}");
                             if (shortcut.Command.CanExecute(shortcut.CommandParameter))
                             {
                                 shortcut.Command.Execute(shortcut.CommandParameter);
@@ -166,6 +187,7 @@ public static class ShortcutBindingsBehavior
                 // 2) Char shortcuts
                 if (charShortcuts.Count == 0)
                 {
+                    ShortcutDiagnostics.TryLog("shortcut.skip reason=no_char_shortcuts");
                     return;
                 }
 
@@ -175,6 +197,7 @@ public static class ShortcutBindingsBehavior
                 var hasCtrlAltWin = (modifiers & (ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Windows)) != ModifierKeys.None;
                 if (hasCtrlAltWin)
                 {
+                    ShortcutDiagnostics.TryLog("shortcut.skip reason=ctrl_alt_win_for_char");
                     return;
                 }
 
@@ -184,6 +207,7 @@ public static class ShortcutBindingsBehavior
                 char? typed = KeyToChar(key, upper);
                 if (typed == null)
                 {
+                    ShortcutDiagnostics.TryLog($"shortcut.skip reason=key_to_char_null key={key} mods={modifiers}");
                     return;
                 }
 
@@ -192,6 +216,7 @@ public static class ShortcutBindingsBehavior
                     if (shortcut.Key == null) continue;
                     if (shortcut.Key.Value != typed.Value) continue;
 
+                    ShortcutDiagnostics.TryLog($"shortcut.match kind=char typed={typed.Value} code={shortcut.Code ?? ""}");
                     if (shortcut.Command.CanExecute(shortcut.CommandParameter))
                     {
                         shortcut.Command.Execute(shortcut.CommandParameter);
@@ -244,7 +269,20 @@ public static class ShortcutBindingsBehavior
                     }
                 }
             };
-            element.PreviewKeyDown += subscription.PreviewKeyDownHandler;
+
+            // IMPORTANT: use handledEventsToo to make shortcuts reliable even if a child control marks the event handled.
+            // This prevents "1 fois sur 3" behavior depending on focus or control-specific handlers.
+            try
+            {
+                element.AddHandler(Keyboard.PreviewKeyDownEvent, subscription.PreviewKeyDownHandler, handledEventsToo: true);
+                subscription.PreviewKeyDownAttached = true;
+            }
+            catch
+            {
+                // Fallback: legacy event hookup.
+                element.PreviewKeyDown += subscription.PreviewKeyDownHandler;
+                subscription.PreviewKeyDownAttached = false;
+            }
         }
 
         if (shortcuts is INotifyCollectionChanged notify)
