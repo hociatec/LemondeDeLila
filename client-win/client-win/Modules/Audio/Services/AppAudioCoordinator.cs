@@ -520,6 +520,9 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
     {
         TryPreload(SoundId.TavernOpened, warmUp: true);
         TryPreload(SoundId.TavernAmbience, warmUp: true);
+        // User action: if the app is still behind the startup gate (launch sound playing / skipped),
+        // allow the "entered tavern" feedback to be audible immediately.
+        try { _sounds.OpenStartupGateForApp("tavern entered"); } catch { /* ignore */ }
 
         var shouldTransition = false;
         lock (_stateGate)
@@ -544,6 +547,23 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
     public void SetBackground(AppAudioBackground background)
     {
+        // If we are leaving the tavern, stop/cancel the "enter tavern" one-shot immediately.
+        // UX: the opening sting should not continue playing once the user has left the tavern screen.
+        bool leavingTavern;
+        lock (_stateGate)
+        {
+            leavingTavern = _desiredBackground == AppAudioBackground.Tavern && background != AppAudioBackground.Tavern;
+            if (leavingTavern)
+            {
+                _pendingTavernOpenedSound = 0;
+            }
+        }
+        if (leavingTavern)
+        {
+            try { CancelOneShots(SoundId.TavernOpened); } catch { /* ignore */ }
+            try { _sounds.Stop(SoundId.TavernOpened); } catch { /* ignore */ }
+        }
+
         if (background == AppAudioBackground.MainMenu)
         {
             TryPreload(SoundId.MainMenuMusic, warmUp: true);
