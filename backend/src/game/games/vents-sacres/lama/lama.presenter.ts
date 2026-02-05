@@ -415,14 +415,18 @@ export class LamaPresenter extends BasePresenterService {
       }
       return name;
     };
+    const keyOf = (raw: unknown): string => normalize(raw).toLowerCase();
 
     // Build the same label mapping as the game uses when logging actions.
     const idByLabel = new Map<string, number>();
     for (const p of players) {
       const name = normalize(p?.username);
-      if (name) idByLabel.set(name, p.id);
-      idByLabel.set(normalize(`joueur ${p.id}`), p.id);
+      if (name) idByLabel.set(keyOf(name), p.id);
+      idByLabel.set(keyOf(`joueur ${p.id}`), p.id);
     }
+
+    const viewerName = players.find((p) => p?.id === userId)?.username ?? '';
+    const viewerKeys = new Set([keyOf(viewerName), keyOf(`joueur ${userId}`)].filter((k) => k.length > 0));
 
     const drawRe = /^(.+?) pioche un (.+)\.$/;
 
@@ -432,8 +436,11 @@ export class LamaPresenter extends BasePresenterService {
       if (!m) return entry;
 
       const actorLabel = normalize(m[1]);
-      const actorId = idByLabel.get(actorLabel) ?? null;
-      if (actorId == null || actorId === userId) return entry;
+      const actorKey = keyOf(actorLabel);
+      const actorId = idByLabel.get(actorKey) ?? null;
+
+      // Keep the full info for the drawing player (even if ids mismatch, use label as fallback).
+      if (actorId === userId || (actorKey && viewerKeys.has(actorKey))) return entry;
 
       return { ...entry, message: `${actorLabel} pioche une carte.` };
     });
