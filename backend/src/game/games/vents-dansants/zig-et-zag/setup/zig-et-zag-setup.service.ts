@@ -1,8 +1,9 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { ZIG_ET_ZAG_DECK } from '../model/zig-et-zag-cards';
 import type { ZigEtZagMetadata } from '../model/zig-et-zag-state.entity';
+import { buildInitialRoundState } from '../round-state.helper';
 
 @Injectable()
 export class ZigEtZagSetupService {
@@ -33,13 +34,17 @@ export class ZigEtZagSetupService {
     const metadata: ZigEtZagMetadata = {
       rng: updatedRng,
       playerDecks,
+      roundState: null,
       lastRound: null,
       winnerId: null,
     };
 
     return {
       ...baseState,
-      metadata,
+      metadata: {
+        ...metadata,
+        roundState: buildInitialRoundState(metadata, players),
+      },
     };
   }
 }

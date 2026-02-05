@@ -165,6 +165,8 @@ export class PanierExpressService extends AbstractGameService {
     const players = baseState.players ?? [];
     const inProgress =
       status === 'finished' ||
+      status === 'running' ||
+      status === 'started' ||
       (typeof baseState.turnIndex === 'number' && baseState.turnIndex > 0) ||
       players.some((p) => {
         const hasList =
@@ -685,21 +687,22 @@ export class PanierExpressService extends AbstractGameService {
     const status = (state.status || '').toLowerCase();
     if (status === 'started') return state;
     if (status !== 'starting') return state; // ne démarre que quand la table l'a explicitement demandé
-    const withBots = this.assignBotPawns(state);
-    const players = withBots.players ?? [];
-    if (players.length < this.minPlayers) return withBots;
+    const players = state.players ?? [];
+    if (players.length < this.minPlayers) return state;
     const needsPawnSelection = players.some(
       (p: any) => !p?.pawn && !this.utils.isBot(p),
     );
     if (needsPawnSelection) {
-      return this.queuePawnSelection(withBots);
+      return this.queuePawnSelection(state);
     }
+    const withBots = this.assignBotPawns(state);
+    const readyPlayers = withBots.players ?? [];
     return {
       ...withBots,
       status: 'started',
-      turnIndex: players.length ? 0 : -1,
+      turnIndex: readyPlayers.length ? 0 : -1,
       turn: {
-        currentPlayerId: players[0]?.id ?? null,
+        currentPlayerId: readyPlayers[0]?.id ?? null,
         direction: 1,
       },
     };
@@ -2397,27 +2400,27 @@ export class PanierExpressService extends AbstractGameService {
         const picked = this.random.pickOne(metaRng.getMeta(), others);
         next = { ...next, metadata: picked.meta };
         const targetId = Number(picked.value);
-        const players = (next.players ?? []).map((p: any) => {
+        const playersWithInventory = (next.players ?? []).map((p: any) => {
           if (p.id !== playerId && p.id !== targetId) return p;
-          return { ...p, basket: this.utils.toStringArray(p.basket) };
+          return { ...p, inventory: this.utils.toStringArray(p.inventory) };
         });
-        const me = players.find((p: any) => p.id === playerId);
-        const target = players.find((p: any) => p.id === targetId);
-        const myBasket = this.utils.toStringArray(me?.basket);
-        const theirBasket = this.utils.toStringArray(target?.basket);
-        const swapped = players.map((p: any) => {
-          if (p.id === playerId) return { ...p, basket: theirBasket };
-          if (p.id === targetId) return { ...p, basket: myBasket };
+        const me = playersWithInventory.find((p: any) => p.id === playerId);
+        const target = playersWithInventory.find((p: any) => p.id === targetId);
+        const myInventory = this.utils.toStringArray(me?.inventory);
+        const theirInventory = this.utils.toStringArray(target?.inventory);
+        const swapped = playersWithInventory.map((p: any) => {
+          if (p.id === playerId) return { ...p, inventory: theirInventory };
+          if (p.id === targetId) return { ...p, inventory: myInventory };
           return p;
         });
         next = { ...next, players: swapped };
         next = this.core.appendLog(
           next,
-          `[Panier Express] Inversion de panier : échange de panier avec ${this.utils.playerName(state, targetId)}.`,
+          `[Panier Express] Inversion de panier : échange d'inventaire avec ${this.utils.playerName(state, targetId)}.`,
         );
         next = this.appendActionLog(next, playerId, 'event', {
           event,
-          effect: 'swap_basket',
+          effect: 'swap_inventory',
           targetId,
         });
         break;

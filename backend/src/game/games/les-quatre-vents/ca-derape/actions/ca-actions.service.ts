@@ -55,9 +55,9 @@ export class CaActionService {
         // choose_target also handles mirror roll when pendingContext=mirror_next_roll
         continue;
       }
-    }
-    return next;
-  }
+        }
+        return finalize(next);
+      }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
@@ -295,7 +295,7 @@ export class CaActionService {
         override.kind === 'choose_next_delta' ||
         override.kind === 'mirror_next_roll')
     ) {
-      return next;
+      return finalize(next);
     }
 
     // Règle: après une carte résolue, le tour passe au joueur suivant.
@@ -465,12 +465,17 @@ export class CaActionService {
     let meta = this.getMeta(next);
 
     const lastIndex = Math.max(0, (meta.tiles?.length ?? 0) - 1);
+    let movedByCard = false;
+    let lastLandingPos: number | null = null;
+    let lastLandingIsNeutral = true;
 
     const logLanding = (pos: number) => {
       const tile = meta.tiles?.[pos] as any;
       const label = String(tile?.label ?? '').trim();
       const desc = String(tile?.description ?? '').trim();
       const isNeutral = Boolean(tile?.isNeutral);
+      lastLandingPos = pos;
+      lastLandingIsNeutral = isNeutral;
       next = this.core.appendLog(
         next,
         this.playerName(next, actorId) +
@@ -482,6 +487,31 @@ export class CaActionService {
       if (desc) {
         next = this.core.appendLog(next, desc);
       }
+    };
+
+    const finalize = (state: GameStateEntity): GameStateEntity => {
+      const finalMeta = this.getMeta(state);
+      if (finalMeta.winnerId != null) {
+        return state;
+      }
+      if (
+        movedByCard &&
+        lastLandingPos != null &&
+        !lastLandingIsNeutral &&
+        !state.pending
+      ) {
+        return {
+          ...state,
+          pending: {
+            type: 'draw',
+            playerId: actorId,
+            blocking: true,
+            label: 'Piocher une carte (Espace).',
+            data: { landedPos: lastLandingPos },
+          },
+        };
+      }
+      return state;
     };
 
     const applyMove = (delta: number, reason: string) => {
@@ -531,6 +561,7 @@ export class CaActionService {
       );
 
       logLanding(after);
+      movedByCard = true;
 
       if (after >= lastIndex) {
         meta = { ...meta, winnerId: actorId };
@@ -580,21 +611,21 @@ export class CaActionService {
 
     // No-op cards
     if (card.kind === 'neutral') {
-      return next;
+      return finalize(next);
     }
 
     // Global cards
     if (card.kind === 'global') {
       next = this.applyGlobal(next, actorId, card);
       meta = this.getMeta(next);
-      return next;
+      return finalize(next);
     }
 
     // Conditional cards
     if (card.kind === 'conditional') {
       next = this.applyConditional(next, actorId, card);
       meta = this.getMeta(next);
-      return next;
+      return finalize(next);
     }
 
     // Rule cards (ids 61..70)
@@ -603,14 +634,14 @@ export class CaActionService {
       // They behave like a card effect applied after landing on a non-neutral tile.
       if (card.id >= 33 && card.id <= 37) {
         const delta = Number(card.moveDelta ?? 0);
-        if (Number.isFinite(delta) && delta !== 0) {
-          applyMove(delta, 'carte');
-          meta = this.getMeta(next);
-          if (meta.winnerId != null) return next;
-        }
+          if (Number.isFinite(delta) && delta !== 0) {
+            applyMove(delta, 'carte');
+            meta = this.getMeta(next);
+            if (meta.winnerId != null) return finalize(next);
+          }
 
         next = this.applySpecialAfterMove(next, actorId, card);
-        return next;
+        return finalize(next);
       }
       // 61) roll twice and move total
       if (card.id === 61) {
@@ -624,12 +655,12 @@ export class CaActionService {
           this.playerName(next, actorId) + ' lance deux dés: ' + String(r1.roll) + ' et ' + String(r2.roll) + '.',
         );
         applyMove(r1.roll + r2.roll, 'règle');
-        return next;
+        return finalize(next);
       }
 
       // 62) extra draw
       if (card.id === 62) {
-        return {
+        return finalize({
           ...next,
           pending: {
             type: 'draw',
@@ -638,7 +669,7 @@ export class CaActionService {
             label: 'Piocher une carte supplémentaire (Espace).',
             data: { reason: 'extra_draw' },
           },
-        };
+        });
       }
 
       // 63) double next move
@@ -653,13 +684,13 @@ export class CaActionService {
             },
           },
         };
-        return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+        return finalize({ ...next, metadata: { ...(next.metadata ?? {}), ...meta } });
       }
 
       // 64) back 3 then forward 2 => net -1
       if (card.id === 64) {
         applyMove(-1, 'règle');
-        return next;
+        return finalize(next);
       }
 
       // 65) ignore next penalty
@@ -674,13 +705,13 @@ export class CaActionService {
             },
           },
         };
-        return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+        return finalize({ ...next, metadata: { ...(next.metadata ?? {}), ...meta } });
       }
 
       // 66) forward 3 then back 1 => net +2
       if (card.id === 66) {
         applyMove(2, 'règle');
-        return next;
+        return finalize(next);
       }
 
       // 67) choose next player
@@ -699,11 +730,11 @@ export class CaActionService {
           ...meta,
           pendingContext: { kind: 'choose_next_player', actorId } satisfies PendingContext,
         };
-        return {
+        return finalize({
           ...next,
           pending,
           metadata: { ...(next.metadata ?? {}), ...meta },
-        };
+        });
       }
 
       // 68) choose next delta
@@ -720,11 +751,11 @@ export class CaActionService {
           ...meta,
           pendingContext: { kind: 'choose_next_delta', actorId } satisfies PendingContext,
         };
-        return {
+        return finalize({
           ...next,
           pending,
           metadata: { ...(next.metadata ?? {}), ...meta },
-        };
+        });
       }
 
       // 69) double next roll
@@ -739,7 +770,7 @@ export class CaActionService {
             },
           },
         };
-        return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+        return finalize({ ...next, metadata: { ...(next.metadata ?? {}), ...meta } });
       }
 
       // 70) mirror next roll from a chosen player
@@ -772,27 +803,27 @@ export class CaActionService {
         }
       }
 
-      return next;
+      return finalize(next);
     }
 
     // Skip
     if (card.kind === 'skip') {
       applySkip(1, 'carte');
-      return next;
+      return finalize(next);
     }
 
     // Direct movement
     if (card.kind === 'move') {
       applyMove(Number(card.moveDelta ?? 0), 'carte');
       meta = this.getMeta(next);
-      return next;
+      return finalize(next);
     }
 
     // Swap: move then choose target to swap positions.
     if (card.kind === 'swap') {
       applyMove(Number(card.moveDelta ?? 0), 'carte');
       meta = this.getMeta(next);
-      if (meta.winnerId != null) return next;
+      if (meta.winnerId != null) return finalize(next);
 
       const targets = this.otherPlayers(next, actorId);
       if (targets.length) {
@@ -814,18 +845,18 @@ export class CaActionService {
           ...meta,
           pendingContext: { kind: 'swap_after_move', actorId } satisfies PendingContext,
         };
-        return {
+        return finalize({
           ...next,
           pending,
           metadata: { ...(next.metadata ?? {}), ...meta },
-        };
+        });
       }
-      return next;
+      return finalize(next);
     }
 
     // Special cards in 'rule'/'move' categories that need extra effects after a move.
     next = this.applySpecialAfterMove(next, actorId, card);
-    return next;
+    return finalize(next);
   }
 
 

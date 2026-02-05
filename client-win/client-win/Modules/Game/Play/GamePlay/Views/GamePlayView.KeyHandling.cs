@@ -53,7 +53,17 @@ public partial class GamePlayView
             return false;
         }
 
-        if (ChoicesList.Visibility != Visibility.Visible || ChoicesList.Items.Count <= 0)
+        ListBox? targetList = null;
+        if (HandList.Visibility == Visibility.Visible && HandList.Items.Count > 0)
+        {
+            targetList = HandList;
+        }
+        else if (ChoicesList.Visibility == Visibility.Visible && ChoicesList.Items.Count > 0)
+        {
+            targetList = ChoicesList;
+        }
+
+        if (targetList == null)
         {
             return false;
         }
@@ -61,15 +71,14 @@ public partial class GamePlayView
         // Naviguer la liste même si le focus est ailleurs (Tab/Maj+Tab, historique, etc.).
         e.Handled = true;
 
-        var count = ChoicesList.Items.Count;
-        var current = ChoicesList.SelectedIndex;
-
+        var count = targetList.Items.Count;
+        var current = targetList.SelectedIndex;
         var delta = e.Key == Key.Up ? -1 : 1;
+        var isChoices = ReferenceEquals(targetList, ChoicesList);
 
         int next;
-        if (DataContext is GamePlayViewModel vm2 && vm2.IsQuizPending)
+        if (isChoices && DataContext is GamePlayViewModel vm2 && vm2.IsQuizPending)
         {
-            // Quiz: no wrap-around (top/bottom blocked). La question est la 1ère ligne (index 0).
             if (current < 0) current = 0;
             next = current + delta;
             if (next < 0) next = 0;
@@ -82,47 +91,44 @@ public partial class GamePlayView
                 current = 0;
             }
 
-            // Other modes (ex: LAMA hand): keep wrap behavior.
             next = (current + delta) % count;
             if (next < 0) next += count;
         }
 
-        ChoicesList.SelectedIndex = next;
-        ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+        targetList.SelectedIndex = next;
+        targetList.ScrollIntoView(targetList.Items[next]);
 
-        TryFocusChoiceIndex(next);
+        TryFocusListIndex(targetList, next);
 
         return true;
     }
 
-    private void TryFocusChoiceIndex(int index)
+    private void TryFocusListIndex(ListBox list, int index)
     {
-        if (ChoicesList.Visibility != Visibility.Visible || ChoicesList.Items.Count <= 0)
+        if (list == null || list.Visibility != Visibility.Visible || list.Items.Count <= 0)
         {
             return;
         }
 
-        if (index < 0 || index >= ChoicesList.Items.Count)
+        if (index < 0 || index >= list.Items.Count)
         {
             index = 0;
         }
 
-        ChoicesList.UpdateLayout();
+        list.UpdateLayout();
 
-        if (ChoicesList.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)
+        if (list.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)
         {
             item.Focus();
             Keyboard.Focus(item);
             return;
         }
 
-        // Virtualisation: container pas encore créé.
-        // Forcer la matérialisation avant de retenter (important pour la 1ère navigation).
         try
         {
-            ChoicesList.ScrollIntoView(ChoicesList.Items[index]);
-            ChoicesList.UpdateLayout();
-            if (ChoicesList.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item1)
+            list.ScrollIntoView(list.Items[index]);
+            list.UpdateLayout();
+            if (list.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item1)
             {
                 item1.Focus();
                 Keyboard.Focus(item1);
@@ -134,12 +140,11 @@ public partial class GamePlayView
             // ignore
         }
 
-        // Retenter après layout, sans "intermédiaire" focus sur la liste (qui peut empêcher NVDA d'annoncer l'item).
         Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
         {
             try
             {
-                if (ChoicesList.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item2)
+                if (list.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item2)
                 {
                     item2.Focus();
                     Keyboard.Focus(item2);
@@ -266,6 +271,28 @@ public partial class GamePlayView
 
         if (DataContext is not GamePlayViewModel vm)
         {
+            return;
+        }
+
+        // UX clavier (ex: LAMA) : la main extra (pas les choix de pending) prend la priorité.
+        if ((e.Key == Key.Enter || e.Key == Key.Return) &&
+            HandList.Visibility == Visibility.Visible &&
+            HandList.Items.Count > 0 &&
+            !vm.Grid.IsVisible)
+        {
+            e.Handled = true;
+            try
+            {
+                var sent = await vm.SubmitSelectedHandCardAsync(CancellationToken.None).ConfigureAwait(true);
+                if (sent)
+                {
+                    NoteChoiceSubmittedForFocusRestore();
+                }
+            }
+            catch
+            {
+                // ignore
+            }
             return;
         }
 

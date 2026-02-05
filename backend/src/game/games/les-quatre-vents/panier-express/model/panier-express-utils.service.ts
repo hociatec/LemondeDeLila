@@ -30,6 +30,7 @@ export class PanierExpressUtils {
 
   private static readonly EVENT_LABELS: Record<string, string> = {
     'produit-avarie': 'Produit avarié',
+    'producteur-genereux': 'Producteur généreux',
   };
 
   playerName(state: GameStateEntity, playerId: number): string {
@@ -190,6 +191,7 @@ export class PanierExpressUtils {
       impose: 'imposé',
       perce: 'percé',
       spontane: 'spontané',
+      genereux: 'généreux',
     };
     const extraTokenMap: Record<string, string> = {
       recompensee: 'r\u00e9compens\u00e9e',
@@ -199,8 +201,8 @@ export class PanierExpressUtils {
       bonde: 'bond\u00e9',
       defectueux: 'd\u00e9fectueux',
       oublie: 'oubli\u00e9',
-      anime: 'anim\\u00e9',
-      spontanee: 'spontan\\u00e9e',
+      anime: 'animé',
+      spontanee: 'spontanée',
     };
     const words = raw
       .split('-')

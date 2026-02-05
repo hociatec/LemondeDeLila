@@ -420,7 +420,7 @@ export class PanierExpressExchangeService {
           type: 'pick',
           playerId,
           blocking: true,
-          label: 'Choisissez un joueur pour le troc, puis Entr?e.',
+          label: 'Choisissez un joueur pour le troc, puis Entrée.',
           choices,
           data: { kind: 'exchange.troc_fruit_legume.choose_target', targets },
         } as any,
@@ -701,7 +701,7 @@ export class PanierExpressExchangeService {
       if (!pot.length || contributors.length < 2) {
         return this.core.appendLog(
           next,
-          `[Panier Express] Panier collectif : pas assez de cartes dans le pot.`,
+          `[Panier Express] Inventaire collectif : pas assez de cartes dans le pot.`,
         );
       }
       const shuffledPot = this.random.shuffle(
@@ -715,7 +715,7 @@ export class PanierExpressExchangeService {
       }
       return this.core.appendLog(
         next,
-        `[Panier Express] Panier collectif : redistribution effectuée.`,
+        `[Panier Express] Inventaire collectif : redistribution d'inventaire effectuée.`,
       );
     }
 

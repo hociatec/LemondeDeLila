@@ -1,13 +1,15 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
 import * as Rulebook from '../rulebook/rulebook';
 import { ZIG_ET_ZAG_GAME } from '../definitions/game.definition';
 import type { ZigEtZagMetadata } from '../model/zig-et-zag-state.entity';
+import { ZIG_ET_ZAG_CARD_BY_ID } from '../model/zig-et-zag-cards';
 import {
   buildLamaLikePanels,
   summarizeHandCounts,
 } from '../../../../presenters/lamalike-presenter.helper';
+import { getPlayerHand, getSelectableCards } from '../round-state.helper';
 
 @Injectable()
 export class ZigEtZagPresenterService {
@@ -16,21 +18,37 @@ export class ZigEtZagPresenterService {
     userId: number,
   ): GameStateWithActions {
     const meta = (state.metadata ?? {}) as ZigEtZagMetadata;
-    const actions = Rulebook.getAvailableActions(state, userId);
     const deckCounts: Record<number, number> = {};
-    const decks = meta.playerDecks ?? {};
-    const hand = Array.isArray(decks[String(userId)]) ? [...decks[String(userId)]] : [];
-    const handCounts = summarizeHandCounts(decks);
+    const hand = getPlayerHand(meta, userId);
+    const handCounts = summarizeHandCounts(meta.playerDecks);
+    const selectable = getSelectableCards(meta, userId);
     const panels = buildLamaLikePanels({
       hand,
       handCounts,
       discardLabel: 'Paquet',
       tableMessage: `Statut: ${state.status ?? 'en attente'}`,
     });
-    Object.entries(decks).forEach(([key, cards]) => {
+    Object.entries(meta.playerDecks ?? {}).forEach(([key, cards]) => {
       const pid = Number(key);
       deckCounts[pid] = Array.isArray(cards) ? cards.length : 0;
     });
+
+    const stage = meta.roundState?.stage ?? 'selection';
+    const waitingPlayers = meta.roundState?.waitingPlayers ?? [];
+
+    const handRows = hand.map((cardId, index) => {
+      const definition = ZIG_ET_ZAG_CARD_BY_ID[cardId];
+      return {
+        id: cardId,
+        label: definition?.name ?? cardId,
+        color: definition?.color,
+        family: definition?.family,
+        disabled: selectable.length > 0 ? !selectable.includes(cardId) : false,
+        index,
+      };
+    });
+
+    const actions = Rulebook.getAvailableActions(state, userId);
 
     return {
       ...state,
@@ -40,11 +58,16 @@ export class ZigEtZagPresenterService {
       },
       actions: actions.map((action) => ({
         type: action.type,
-        label: 'Jouer une manche',
+        label: `Jouer ${
+          ZIG_ET_ZAG_CARD_BY_ID[action.payload?.cardId as string]?.name ??
+          'une carte'
+        }`,
         payload: action.payload ?? {},
       })),
       extras: {
-        hand,
+        hand: handRows,
+        stage,
+        waitingPlayers,
         deckCounts,
         lastRound: meta.lastRound ?? null,
         ui: { panels },

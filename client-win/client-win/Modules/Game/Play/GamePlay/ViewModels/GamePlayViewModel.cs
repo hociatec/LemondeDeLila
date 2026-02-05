@@ -208,6 +208,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             refreshCanExecute: RefreshCanExecute);
 
         RebuildDisplayChoices();
+        InitializeHandSupport();
     }
 
     public ObservableCollection<string> PendingChoices => _choices.PendingChoices;
@@ -484,6 +485,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
         _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
         {
+            SyncHandFromState(state);
             PendingType = (state.Pending?.Type ?? string.Empty).Trim();
             var question = ExtractQuizQuestion(state);
             QuizQuestionText = question;
@@ -1208,4 +1210,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 	        _choices.PropertyChanged -= _choicesPropertyChangedHandler;
 	        await _connection.DisposeAsync().ConfigureAwait(false);
 	    }
+
+    partial void InitializeHandSupport();
 }

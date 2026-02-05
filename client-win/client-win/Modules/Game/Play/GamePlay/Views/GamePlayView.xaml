@@ -234,6 +234,127 @@
                         </Style>
                     </TextBlock.Style>
                 </TextBlock>
+                <StackPanel Margin="0 8 0 0"
+                            Visibility="{Binding HasHand, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="Main"
+                               Foreground="#F2C14E"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Margin="0 0 0 2" />
+                    <TextBlock Text="{Binding HandStageLabel}"
+                               Foreground="#9CB2D1"
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               Margin="0 0 0 2">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HandStageLabel}" Value="">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding HandStageLabel}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Text="{Binding HandWaitingLabel}"
+                               Foreground="#C3D2EA"
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               Margin="0 0 0 2">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HandWaitingLabel}" Value="">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding HandWaitingLabel}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <ListBox x:Name="HandList"
+                             ItemsSource="{Binding HandCards}"
+                             SelectedIndex="{Binding SelectedHandIndex, Mode=TwoWay}"
+                             PreviewKeyDown="OnChoicesPreviewKeyDown"
+                             Background="Transparent"
+                             BorderThickness="1"
+                             BorderBrush="#284C75"
+                             Foreground="White"
+                             FontSize="12"
+                             MaxHeight="160"
+                             Margin="0 0 0 4"
+                             AutomationProperties.Name="Main des cartes"
+                             AutomationProperties.LabeledBy="{Binding ElementName=ChoicesLabelText}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Label}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding Family}"
+                                                   Foreground="#7EA3C7"
+                                                   FontSize="11"
+                                                   Margin="8 0 0 0">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Family}" Value="">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Family}" Value="{x:Null}">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Color}"
+                                               Foreground="#7EA3C7"
+                                               FontSize="11"
+                                               Margin="8 0 0 0" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Margin" Value="0 4 0 4" />
+                                <Setter Property="Padding" Value="10" />
+                                <Setter Property="Background" Value="#10223A" />
+                                <Setter Property="BorderBrush" Value="#1F3C60" />
+                                <Setter Property="BorderThickness" Value="1" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                <Setter Property="AutomationProperties.Name" Value="{Binding Label}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Disabled}" Value="True">
+                                        <Setter Property="Opacity" Value="0.35" />
+                                    </DataTrigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#1B3554" />
+                                        <Setter Property="BorderBrush" Value="#F2C14E" />
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#214570" />
+                                        <Setter Property="BorderBrush" Value="{StaticResource HighlightBrush}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+                </StackPanel>
                 <!--
                     Label d'accessibilité pour la liste de choix : NVDA utilise parfois LabeledBy (plus fiable que Name).
                     Le texte vient du serveur (pending.label) et change selon la situation.

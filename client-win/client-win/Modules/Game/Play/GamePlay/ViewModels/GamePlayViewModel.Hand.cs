@@ -1,0 +1,196 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using client_win.Modules.Game.Play.Actions.Dtos;
+using client_win.Modules.Game.Play.State.Dtos;
+using client_win.Modules.Game.Play.State.Services;
+
+namespace client_win.Modules.Game.Play.GamePlay.ViewModels;
+
+public sealed partial class GamePlayViewModel
+{
+    private readonly ObservableCollection<HandCardLine> _handCards = new();
+    private int _selectedHandIndex = -1;
+    private string _handStageLabel = string.Empty;
+    private string _handWaitingLabel = string.Empty;
+
+    public ObservableCollection<HandCardLine> HandCards => _handCards;
+
+    public int SelectedHandIndex
+    {
+        get => _selectedHandIndex;
+        set => SetProperty(ref _selectedHandIndex, value);
+    }
+
+    public bool HasHand => HandCards.Count > 0;
+
+    public string HandStageLabel
+    {
+        get => _handStageLabel;
+        private set => SetProperty(ref _handStageLabel, value ?? string.Empty);
+    }
+
+    public string HandWaitingLabel
+    {
+        get => _handWaitingLabel;
+        private set => SetProperty(ref _handWaitingLabel, value ?? string.Empty);
+    }
+
+    partial void InitializeHandSupport()
+    {
+        HandCards.CollectionChanged += OnHandCollectionChanged;
+    }
+
+    private void OnHandCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        OnPropertyChanged(nameof(HasHand));
+    }
+
+    internal void SyncHandFromState(GameStateDto state)
+    {
+        var cards = GamePlayExtrasParser.ExtractHandCards(state);
+        UpdateHandCards(cards);
+        HandStageLabel = GamePlayExtrasParser.ExtractHandStage(state) ?? string.Empty;
+        var waiting = GamePlayExtrasParser.ExtractWaitingPlayers(state);
+        HandWaitingLabel = BuildWaitingLabel(waiting);
+    }
+
+    public async Task<bool> SubmitSelectedHandCardAsync(CancellationToken cancellationToken = default)
+    {
+        if (_isSpectator)
+        {
+            return false;
+        }
+
+        var session = _session;
+        if (session == null || !session.IsConnected)
+        {
+            return false;
+        }
+
+        var card = GetSelectedHandCard();
+        if (card == null || card.Disabled)
+        {
+            return false;
+        }
+
+        var state = session.LastState;
+        if (state == null)
+        {
+            return false;
+        }
+
+        var actions = state.Actions ?? new List<GameAvailableActionDto>();
+        var hasActionForCard = actions.Any(action =>
+            string.Equals(action.Type, "select_card", StringComparison.OrdinalIgnoreCase) &&
+            TryExtractCardId(action.Payload, out var payloadCardId) &&
+            string.Equals(payloadCardId, card.CardId, StringComparison.OrdinalIgnoreCase));
+
+        if (!hasActionForCard)
+        {
+            return false;
+        }
+
+        return await TrySendActionAsync("select_card", new { cardId = card.CardId }, cancellationToken).ConfigureAwait(false);
+    }
+
+    private void UpdateHandCards(IReadOnlyList<GamePlayExtrasParser.HandCardInfo> cards)
+    {
+        var previousCardId = GetSelectedHandCard()?.CardId;
+        HandCards.Clear();
+
+        foreach (var card in cards)
+        {
+            HandCards.Add(new HandCardLine(
+                card.CardId,
+                card.Label,
+                card.Disabled,
+                card.Color,
+                card.Family,
+                card.Index));
+        }
+
+        if (previousCardId != null)
+        {
+            for (var i = 0; i < HandCards.Count; i++)
+            {
+                if (string.Equals(HandCards[i].CardId, previousCardId, StringComparison.OrdinalIgnoreCase))
+                {
+                    SelectedHandIndex = i;
+                    return;
+                }
+            }
+        }
+
+        SelectedHandIndex = HandCards.Count > 0 ? 0 : -1;
+    }
+
+    private static string BuildWaitingLabel(IReadOnlyList<int> waitingPlayers)
+    {
+        if (waitingPlayers == null || waitingPlayers.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        return $"Joueurs en attente : {string.Join(", ", waitingPlayers)}";
+    }
+
+    private HandCardLine? GetSelectedHandCard()
+    {
+        if (SelectedHandIndex < 0 || SelectedHandIndex >= HandCards.Count)
+        {
+            return null;
+        }
+
+        return HandCards[SelectedHandIndex];
+    }
+
+    private static bool TryExtractCardId(JsonElement payload, out string cardId)
+    {
+        cardId = string.Empty;
+        if (payload.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        if (!payload.TryGetProperty("cardId", out var candidate) ||
+            candidate.ValueKind != JsonValueKind.String)
+        {
+            return false;
+        }
+
+        var value = candidate.GetString();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        cardId = value.Trim();
+        return true;
+    }
+
+    public sealed class HandCardLine
+    {
+        public HandCardLine(string cardId, string label, bool disabled, string? color, string? family, int order)
+        {
+            CardId = cardId ?? string.Empty;
+            Label = label ?? string.Empty;
+            Disabled = disabled;
+            Color = color;
+            Family = family;
+            Order = order;
+        }
+
+        public string CardId { get; }
+        public string Label { get; }
+        public bool Disabled { get; }
+        public string? Color { get; }
+        public string? Family { get; }
+        public int Order { get; }
+    }
+}

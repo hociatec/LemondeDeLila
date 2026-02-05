@@ -2,7 +2,7 @@
 
 export type ZigEtZagGameId = 'zig-et-zag';
 export type ZigEtZagPhaseId = 'turn';
-export type ZigEtZagActionType = 'play_round';
+export type ZigEtZagActionType = 'select_card';
 
 export const ZIG_ET_ZAG_GAME: GameDefinition<
   ZigEtZagGameId,
@@ -16,7 +16,7 @@ export const ZIG_ET_ZAG_GAME: GameDefinition<
   minPlayers: 2,
   maxPlayers: 2,
   roles: [],
-  actions: ['play_round'],
+  actions: ['select_card'],
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,
 } as const;
