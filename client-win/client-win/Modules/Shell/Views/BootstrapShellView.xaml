@@ -11,6 +11,13 @@
              KeyboardNavigation.DirectionalNavigation="Contained"
              AutomationProperties.Name="Chargement">
     <Grid Margin="24">
+        <Button x:Name="FocusAnchor"
+                Width="1" Height="1"
+                Opacity="0"
+                Focusable="True"
+                IsHitTestVisible="False"
+                KeyboardNavigation.IsTabStop="False"
+                AutomationProperties.Name="Point de focus invisible" />
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -29,12 +36,10 @@
                        Foreground="#C3D2EA"
                        FontSize="13"
                        TextWrapping="Wrap"
-                       AutomationProperties.LiveSetting="Polite"
-                       AutomationProperties.Name="{Binding Status}" />
+                       AutomationProperties.LiveSetting="Off" />
             <ProgressBar Margin="0 10 0 0"
                          Height="10"
                          IsIndeterminate="True" />
         </StackPanel>
     </Grid>
 </UserControl>
-
