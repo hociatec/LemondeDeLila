@@ -253,11 +253,11 @@ public partial class GamePlayView
             return;
         }
 
-        // Échap sert de "reset focus" côté client; ne pas l'envoyer au serveur (qui n'a souvent aucun raccourci ESC).
+        // ESC: do nothing locally. Previously we used it as a "reset focus" which made screen readers
+        // re-announce the root/hand controls on every press or during frequent state refreshes (bot turns).
+        // The inline prompt overlay still handles ESC separately (cancel) when visible.
         if (e.Key == Key.Escape)
         {
-            e.Handled = true;
-            ForceFocusGameZone();
             return;
         }
 
@@ -289,7 +289,7 @@ public partial class GamePlayView
                 var sent = await vm.SubmitSelectedHandCardAsync(CancellationToken.None).ConfigureAwait(true);
                 if (sent)
                 {
-                    NoteChoiceSubmittedForFocusRestore();
+                    NoteHandSubmittedForFocusRestore();
                 }
             }
             catch

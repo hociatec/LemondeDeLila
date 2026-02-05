@@ -13,6 +13,7 @@ public partial class GamePlayView
         UpdateChoicesAccessibility();
         var vm = DataContext as GamePlayViewModel;
         HookChoiceAutoFocus(vm);
+        HookHandAutoFocus(vm);
         HookInlinePromptAutoFocus(vm);
         TryStartInitialization(vm);
 
@@ -34,6 +35,7 @@ public partial class GamePlayView
     {
         var vm = DataContext as GamePlayViewModel;
         HookChoiceAutoFocus(vm);
+        HookHandAutoFocus(vm);
         HookInlinePromptAutoFocus(vm);
         TryStartInitialization(vm);
 
@@ -53,6 +55,7 @@ public partial class GamePlayView
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         HookChoiceAutoFocus(null);
+        HookHandAutoFocus(null);
         HookInlinePromptAutoFocus(null);
         CancelInitialization();
         UnhookGridGenerator();

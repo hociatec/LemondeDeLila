@@ -17,12 +17,22 @@ public partial class GamePlayView
     private DateTime _suppressChoiceAutoFocusUntilUtc;
     private bool _restoreChoiceFocusAfterSubmit;
     private int _restoreChoiceFocusIndex;
+    private DateTime _suppressHandAutoFocusUntilUtc;
+    private bool _restoreHandFocusAfterSubmit;
+    private int _restoreHandFocusIndex;
 
     private void NoteChoiceSubmittedForFocusRestore()
     {
         _suppressChoiceAutoFocusUntilUtc = DateTime.UtcNow.AddSeconds(1);
         _restoreChoiceFocusAfterSubmit = true;
         _restoreChoiceFocusIndex = ChoicesList?.SelectedIndex ?? -1;
+    }
+
+    private void NoteHandSubmittedForFocusRestore()
+    {
+        _suppressHandAutoFocusUntilUtc = DateTime.UtcNow.AddSeconds(1);
+        _restoreHandFocusAfterSubmit = true;
+        _restoreHandFocusIndex = HandList?.SelectedIndex ?? -1;
     }
 
     private void HookChoiceAutoFocus(GamePlayViewModel? vm)
@@ -368,9 +378,116 @@ public partial class GamePlayView
             return;
         }
 
+        if (HandList.Visibility == Visibility.Visible && HandList.Items.Count > 0)
+        {
+            if (HandList.SelectedIndex < 0)
+            {
+                HandList.SelectedIndex = 0;
+            }
+
+            HandList.ScrollIntoView(HandList.SelectedItem);
+            HandList.UpdateLayout();
+
+            var idx = HandList.SelectedIndex < 0 ? 0 : HandList.SelectedIndex;
+            if (HandList.ItemContainerGenerator.ContainerFromIndex(idx) is ListBoxItem item)
+            {
+                item.Focus();
+                Keyboard.Focus(item);
+                return;
+            }
+
+            HandList.Focus();
+            Keyboard.Focus(HandList);
+            return;
+        }
+
         Focus();
         Keyboard.Focus(this);
     }
+
+    private bool IsFocusWithinHandList()
+    {
+        if (HandList == null)
+        {
+            return false;
+        }
+
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        while (focused != null)
+        {
+            if (ReferenceEquals(focused, HandList))
+            {
+                return true;
+            }
+
+            focused = System.Windows.Media.VisualTreeHelper.GetParent(focused);
+        }
+
+        return false;
+    }
+
+    private void HookHandAutoFocus(GamePlayViewModel? vm)
+    {
+        if (_handCardsCollection != null && _handCardsChanged != null)
+        {
+            _handCardsCollection.CollectionChanged -= _handCardsChanged;
+        }
+
+        _handCardsCollection = null;
+        _handCardsChanged = null;
+
+        if (vm?.HandCards is not INotifyCollectionChanged handNotify)
+        {
+            return;
+        }
+
+        _handCardsCollection = handNotify;
+        _handCardsChanged = (_, __) =>
+        {
+            if (IsTextInputFocused())
+            {
+                return;
+            }
+
+            // If the hand list is visible, keep keyboard focus anchored there to avoid NVDA re-announcing
+            // the root "Partie en cours" on every state refresh (bot turns, played cards, etc.).
+            var shouldRestore = DateTime.UtcNow < _suppressHandAutoFocusUntilUtc || IsFocusWithinHandList();
+            if (!shouldRestore)
+            {
+                return;
+            }
+
+            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+            {
+                try
+                {
+                    if (HandList.Visibility != Visibility.Visible || HandList.Items.Count <= 0)
+                    {
+                        return;
+                    }
+
+                    var count = HandList.Items.Count;
+                    var idx = _restoreHandFocusAfterSubmit ? _restoreHandFocusIndex : HandList.SelectedIndex;
+                    _restoreHandFocusAfterSubmit = false;
+
+                    if (idx < 0) idx = 0;
+                    if (idx >= count) idx = count - 1;
+
+                    HandList.SelectedIndex = idx;
+                    HandList.ScrollIntoView(HandList.SelectedItem);
+                    TryFocusChoiceIndex(HandList, idx);
+                }
+                catch
+                {
+                    // ignore
+                }
+            }));
+        };
+        handNotify.CollectionChanged += _handCardsChanged;
+    }
+
+    private INotifyCollectionChanged? _handCardsCollection;
+    private NotifyCollectionChangedEventHandler? _handCardsChanged;
 
     private async void OnChoicesKeyDown(object sender, KeyEventArgs e)
     {

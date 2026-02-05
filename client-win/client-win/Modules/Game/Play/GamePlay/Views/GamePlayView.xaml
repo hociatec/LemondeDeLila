@@ -11,7 +11,7 @@
               Focusable="True"
               IsTabStop="True"
               KeyboardNavigation.DirectionalNavigation="Contained"
-              AutomationProperties.Name="Partie en cours"
+              AutomationProperties.Name=""
               PreviewKeyDown="OnRootPreviewKeyDown"
               Loaded="OnLoaded">
     <UserControl.Resources>
@@ -239,7 +239,8 @@
                 </TextBlock>
                 <StackPanel Margin="0 8 0 0"
                             Visibility="{Binding HasHand, Converter={StaticResource BoolToVis}}">
-                    <TextBlock Text="Main"
+                    <TextBlock x:Name="HandLabelText"
+                               Text="Main"
                                Foreground="#F2C14E"
                                FontSize="12"
                                FontWeight="SemiBold"
@@ -293,8 +294,8 @@
                              FontSize="12"
                              MaxHeight="160"
                              Margin="0 0 0 4"
-                             AutomationProperties.Name="Main des cartes"
-                             AutomationProperties.LabeledBy="{Binding ElementName=ChoicesLabelText}">
+                             AutomationProperties.Name=""
+                             AutomationProperties.LabeledBy="{Binding ElementName=HandLabelText}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
