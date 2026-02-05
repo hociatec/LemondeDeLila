@@ -1177,7 +1177,9 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             if (GamePlayUiPanelsParser.TryGetPanelMessage(state, panelId.Trim(), out var message) &&
                 !string.IsNullOrWhiteSpace(message))
             {
-                MessageReceived?.Invoke(new GamePlayHistoryMessage(message.Trim()));
+                // Mark as UI/shortcut message so the history sink can announce it assertively
+                // without replaying queued older announcements.
+                MessageReceived?.Invoke(new GamePlayHistoryMessage($"[ui] {message.Trim()}"));
                 return true;
             }
         }

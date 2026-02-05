@@ -166,7 +166,8 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
                 if (!IsTextInputFocused() && !IsNavigationKey(key))
                 {
                     _announcements?.CancelPending(cancelSpeech: false);
-                    _screenReader?.CancelSpeech();
+                    // Do not force-cancel NVDA speech here: it often re-announces the currently focused control,
+                    // which users perceive as "repeating the previous information" before the new one.
                 }
             }
         }

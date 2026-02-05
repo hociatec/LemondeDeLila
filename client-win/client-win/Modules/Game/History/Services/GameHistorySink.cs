@@ -36,7 +36,9 @@ public sealed class GameHistorySink : IGameHistorySink
         {
             foreach (var part in parts)
             {
-                var cleaned = StripGamePrefix((part ?? string.Empty).Trim());
+                var raw = (part ?? string.Empty).Trim();
+                var isUiShortcut = raw.StartsWith("[ui]", StringComparison.OrdinalIgnoreCase);
+                var cleaned = StripGamePrefix(raw);
                 if (string.IsNullOrWhiteSpace(cleaned))
                 {
                     continue;
@@ -44,7 +46,11 @@ public sealed class GameHistorySink : IGameHistorySink
 
                 _history.Entries.Add(cleaned);
 
-                TryAnnounce(cleaned, timestamp);
+                TryAnnounce(
+                    cleaned,
+                    timestamp,
+                    priority: isUiShortcut ? AnnouncementPriority.Assertive : AnnouncementPriority.Polite,
+                    flushPending: isUiShortcut);
             }
         }
 
@@ -86,7 +92,11 @@ public sealed class GameHistorySink : IGameHistorySink
         }
     }
 
-    private bool TryAnnounce(string message, string? timestamp)
+    private bool TryAnnounce(
+        string message,
+        string? timestamp,
+        AnnouncementPriority priority,
+        bool flushPending)
     {
         if (_announcements == null)
         {
@@ -121,7 +131,13 @@ public sealed class GameHistorySink : IGameHistorySink
         }
 
         _lastAnnouncements[normalized] = now;
-        _announcements.Enqueue(normalized, AnnouncementPriority.Polite);
+        if (flushPending)
+        {
+            // When the user triggers an interface shortcut, prefer the related information immediately.
+            // This avoids replaying stale queued announcements before the shortcut message.
+            _announcements.CancelPending(cancelSpeech: true);
+        }
+        _announcements.Enqueue(normalized, priority);
         return true;
     }
 

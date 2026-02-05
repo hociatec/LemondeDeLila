@@ -11,7 +11,7 @@
               Focusable="True"
               IsTabStop="True"
               KeyboardNavigation.DirectionalNavigation="Contained"
-              AutomationProperties.Name=""
+              AutomationProperties.Name="Zone de jeu"
               PreviewKeyDown="OnRootPreviewKeyDown"
               Loaded="OnLoaded">
     <UserControl.Resources>

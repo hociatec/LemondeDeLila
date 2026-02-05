@@ -364,7 +364,15 @@ internal sealed class GamePlayRealtimeController
                         var added = InferSingleAddedCard(previousHandCounts, currentHandCounts);
                         return added != null ? $"Vous piochez un {added}." : "Vous piochez.";
                     }
-                    return "Vous piochez une carte.";
+
+                    // If the server includes the drawn card label (ex: "Alice pioche un 5."),
+                    // keep it for the local player.
+                    var remainder = msg.Substring(drawIndex + drawMarker.Length).Trim();
+                    if (string.IsNullOrWhiteSpace(remainder) || string.Equals(remainder, ".", StringComparison.Ordinal))
+                    {
+                        return "Vous piochez.";
+                    }
+                    return $"Vous piochez {remainder}";
                 }
                 return $"{actor} pioche une carte.";
             }
