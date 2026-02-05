@@ -43,6 +43,9 @@ public sealed class SoundService : ISoundService, IDisposable
     private readonly Dictionary<SoundId, TimeSpan> _soundDurations = new();
     private readonly object _warmUpGate = new();
     private readonly Dictionary<SoundId, TaskCompletionSource<bool>> _warmUpSignals = new();
+    // If a cached server-provided sound fails to decode/play on a given machine, blacklist it and fall back to
+    // local assets (or per-user overrides). This prevents "silent" table open/join sounds when a remote file is bad.
+    private readonly HashSet<SoundId> _remoteBroken = new();
     private MediaPlayer? _previewPlayer;
     private EventHandler? _previewOpenedHandler;
     private EventHandler<ExceptionEventArgs>? _previewFailedHandler;
@@ -2360,6 +2363,15 @@ public sealed class SoundService : ISoundService, IDisposable
 
         if (_remoteSoundsEnabled)
         {
+            // If a remote cached file already failed on this machine, don't try it again.
+            lock (_gate)
+            {
+                if (_remoteBroken.Contains(sound))
+                {
+                    return ResolveFilePath(entry);
+                }
+            }
+
             var remotePath = _remote?.TryGetPath(sound);
             if (!string.IsNullOrWhiteSpace(remotePath))
             {
@@ -2445,6 +2457,65 @@ public sealed class SoundService : ISoundService, IDisposable
                 sound,
                 args.ErrorException?.Message ?? "unknown error");
             CompleteWarmUp(sound);
+
+            // Fallback to local if the remote cached file fails to decode/play.
+            try
+            {
+                string? loadedPath = null;
+                SoundEntry? entry = null;
+                lock (_gate)
+                {
+                    _loadedPaths.TryGetValue(sound, out loadedPath);
+                    _sounds.TryGetValue(sound, out entry);
+                }
+
+                if (!string.IsNullOrWhiteSpace(loadedPath) &&
+                    IsFromSoundsCache(loadedPath) &&
+                    entry != null)
+                {
+                    var localPath = ResolveFilePath(entry);
+                    if (!string.IsNullOrWhiteSpace(localPath) &&
+                        !string.Equals(localPath, loadedPath, StringComparison.OrdinalIgnoreCase) &&
+                        File.Exists(localPath))
+                    {
+                        var shouldFallback = false;
+                        lock (_gate)
+                        {
+                            if (!_remoteBroken.Contains(sound))
+                            {
+                                _remoteBroken.Add(sound);
+                                shouldFallback = true;
+                            }
+                        }
+
+                        if (shouldFallback)
+                        {
+                            _logger.LogWarning(
+                                "Audio: remote sound marked broken -> fallback to local for {Sound} (remote={RemoteFile} local={LocalFile})",
+                                sound,
+                                Path.GetFileName(loadedPath),
+                                Path.GetFileName(localPath));
+
+                            // For loops, restart via StartLoop (will resolve to local due to blacklist).
+                            // For one-shots, enqueue a local play explicitly.
+                            if (_looping.Contains(sound))
+                            {
+                                try { StopLoop(sound); } catch { /* ignore */ }
+                                try { StartLoop(sound); } catch { /* ignore */ }
+                            }
+                            else
+                            {
+                                EnqueuePlayback(new PlayRequest(sound, entry, localPath));
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+
             lock (_gate)
             {
                 if (sound == SoundId.ClientOpened)
