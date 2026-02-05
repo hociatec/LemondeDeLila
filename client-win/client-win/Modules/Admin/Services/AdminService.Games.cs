@@ -41,6 +41,7 @@ public sealed partial class AdminService
     public async Task UpdateGameAsync(
         string gameType,
         bool? enabled = null,
+        string? status = null,
         int? minPlayers = null,
         int? maxPlayers = null,
         string? name = null,
@@ -58,6 +59,10 @@ public sealed partial class AdminService
         if (enabled.HasValue)
         {
             payload["enabled"] = enabled.Value;
+        }
+        if (status != null)
+        {
+            payload["status"] = status;
         }
         if (minPlayers.HasValue)
         {

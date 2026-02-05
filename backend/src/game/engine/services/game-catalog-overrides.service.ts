@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import type { GameDefinition } from '../interfaces/game-rules-adapter.interface';
 import { GameCatalogOverrideEntity } from '../entities/game-catalog-override.entity';
 
+export type GameCatalogStatus = 'construction' | 'beta' | 'finished';
+
 export type GameCatalogOverride = {
   enabled?: boolean;
   minPlayers?: number;
@@ -11,6 +13,7 @@ export type GameCatalogOverride = {
   name?: string;
   description?: string;
   rules?: string;
+  status?: GameCatalogStatus;
   chatEnabled?: boolean;
   chatSoundsEnabled?: boolean;
 };
@@ -23,6 +26,17 @@ type OverridesRoot = {
 export class GameCatalogOverridesService implements OnModuleInit {
   private readonly logger = new Logger(GameCatalogOverridesService.name);
   private cache: OverridesRoot | null = null;
+
+  private static normalizeStatus(
+    value: unknown,
+  ): GameCatalogStatus | undefined {
+    if (typeof value !== 'string') return undefined;
+    const v = value.trim().toLowerCase();
+    if (v === 'construction' || v === 'beta' || v === 'finished') {
+      return v;
+    }
+    return undefined;
+  }
 
   constructor(
     @InjectRepository(GameCatalogOverrideEntity)
@@ -51,6 +65,7 @@ export class GameCatalogOverridesService implements OnModuleInit {
       enabled: ov.enabled !== false,
       name: ov.name ?? def.name,
       description: ov.description ?? def.description,
+      status: ov.status ?? 'finished',
       minPlayers:
         typeof ov.minPlayers === 'number' ? ov.minPlayers : def.minPlayers,
       maxPlayers:
@@ -85,6 +100,7 @@ export class GameCatalogOverridesService implements OnModuleInit {
       name: root.games[gameType].name ?? null,
       description: root.games[gameType].description ?? null,
       rules: root.games[gameType].rules ?? null,
+      status: root.games[gameType].status ?? null,
       chatEnabled: root.games[gameType].chatEnabled ?? null,
       chatSoundsEnabled: root.games[gameType].chatSoundsEnabled ?? null,
     });
@@ -109,6 +125,16 @@ export class GameCatalogOverridesService implements OnModuleInit {
     if (typeof next.description === 'string' && !next.description.trim())
       delete next.description;
     if (typeof next.rules === 'string' && !next.rules.trim()) delete next.rules;
+    if (typeof (next as any).status === 'string') {
+      const normalized = GameCatalogOverridesService.normalizeStatus(
+        (next as any).status,
+      );
+      if (!normalized) {
+        delete (next as any).status;
+      } else {
+        (next as any).status = normalized;
+      }
+    }
 
     root.games[gameType] = next;
     await this.repo.save({
@@ -120,6 +146,7 @@ export class GameCatalogOverridesService implements OnModuleInit {
       description:
         typeof next.description === 'string' ? next.description : null,
       rules: typeof next.rules === 'string' ? next.rules : null,
+      status: next.status ?? null,
       chatEnabled:
         typeof next.chatEnabled === 'boolean' ? next.chatEnabled : null,
       chatSoundsEnabled:
@@ -158,6 +185,7 @@ export class GameCatalogOverridesService implements OnModuleInit {
           name: row.name ?? undefined,
           description: row.description ?? undefined,
           rules: row.rules ?? undefined,
+          status: GameCatalogOverridesService.normalizeStatus(row.status),
           chatEnabled:
             typeof row.chatEnabled === 'boolean' ? row.chatEnabled : undefined,
           chatSoundsEnabled:

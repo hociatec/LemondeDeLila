@@ -5,7 +5,8 @@
         Width="900"
         Height="650"
         Background="#0F1D2D"
-        WindowStartupLocation="CenterOwner">
+        WindowStartupLocation="CenterOwner"
+        PreviewKeyDown="OnPreviewKeyDown">
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -42,6 +43,7 @@
                 Height="32"
                 HorizontalAlignment="Right"
                 Margin="0 12 0 0"
+                IsCancel="True"
                 Click="OnCloseClicked" />
     </Grid>
 </Window>

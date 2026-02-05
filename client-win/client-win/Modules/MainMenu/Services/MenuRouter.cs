@@ -185,6 +185,8 @@ public sealed class MenuRouter : IMenuRouter
         CatalogViewModel? vm = null;
         vm = new CatalogViewModel(
             _catalog,
+            _options,
+            _session,
             onClose: () =>
             {
                 vm?.Dispose();

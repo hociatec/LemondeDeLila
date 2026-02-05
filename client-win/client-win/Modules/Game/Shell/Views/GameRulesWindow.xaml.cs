@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using System.Windows.Input;
 
 namespace client_win.Modules.Game.Shell.Views;
 
@@ -38,5 +39,15 @@ public partial class GameRulesWindow : Window
     {
         Close();
     }
-}
 
+    private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Escape)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        Close();
+    }
+}

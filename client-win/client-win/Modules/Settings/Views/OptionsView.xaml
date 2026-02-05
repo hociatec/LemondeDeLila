@@ -110,6 +110,7 @@
                                                     <TextBlock Text="Général" FontSize="22" Foreground="White" />
                                                     <TextBlock Text="Comportement général du client." Foreground="#9CB2D1" Margin="0 2 0 10" />
                                                     <CheckBox Content="Demander confirmation à la fermeture" IsChecked="{Binding ConfirmExit}" />
+                                                    <CheckBox Content="Activer les jeux en bêta (instable)" IsChecked="{Binding EnableBetaGames}" />
                                                 </StackPanel>
                                             </ScrollViewer>
                                                 </Setter.Value>

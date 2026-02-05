@@ -48,9 +48,17 @@ export class RoomDirectoryWsHandler {
   async listPublic(session: WsSession, payload: any) {
     const user = requireUser(session);
     const dto = this.validator.validate(RoomsPublicListDto, payload);
-    const allowed = new Set(
-      (await this.catalog.getAllGames()).map((g) => g.id),
-    );
+    const isAdmin = Array.isArray(user.roles)
+      ? user.roles.includes('ROLE_ADMIN') || user.roles.includes('admin')
+      : false;
+    const allowedGames = (await this.catalog.getAllGames()).filter((g) => {
+      const status = String((g as any)?.status ?? 'finished').toLowerCase();
+      if (status === 'construction') {
+        return isAdmin;
+      }
+      return true;
+    });
+    const allowed = new Set(allowedGames.map((g) => g.id));
     if (dto.gameType && !allowed.has(dto.gameType)) {
       return {
         type: 'rooms.public.listed',

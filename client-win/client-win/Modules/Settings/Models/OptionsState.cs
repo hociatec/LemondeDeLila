@@ -4,6 +4,9 @@ public sealed class OptionsState
 {
     public bool MuteAll { get; set; } = false;
     public bool ConfirmExit { get; set; } = false;
+
+    // Allow browsing/playing games marked as "beta" in the catalog (local-only setting).
+    public bool EnableBetaGames { get; set; } = false;
     public bool SoundAmbience { get; set; } = true;
     public bool SoundAppLaunch { get; set; } = true;
     public bool SoundNavigate { get; set; } = true;

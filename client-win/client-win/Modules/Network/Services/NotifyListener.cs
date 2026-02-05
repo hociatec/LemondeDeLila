@@ -1395,7 +1395,12 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                     if (!_friendPresenceById.TryGetValue(id, out var previous))
                     {
                         _friendPresenceById[id] = connected;
-                        return;
+                        // If we're past the startup hydration burst, the first event for a friend is a real
+                        // connect/disconnect and must be announced with sound. Otherwise it feels "randomly missing".
+                        if (IsInStartupQuietPeriod())
+                        {
+                            return;
+                        }
                     }
 
                     if (previous == connected)

@@ -23,6 +23,9 @@ export class GameCatalogOverrideEntity {
   @Column({ type: 'text', nullable: true })
   rules?: string | null;
 
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  status?: string | null;
+
   @Column({ name: 'chat_enabled', type: 'boolean', nullable: true })
   chatEnabled?: boolean | null;
 

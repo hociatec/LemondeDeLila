@@ -32,6 +32,9 @@ public sealed class AdminGameDto
     [JsonPropertyName("enabled")]
     public bool Enabled { get; set; }
 
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = "finished";
+
     [JsonPropertyName("chatEnabled")]
     public bool ChatEnabled { get; set; } = true;
 

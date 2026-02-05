@@ -37,6 +37,11 @@ export class RoomService {
   private readonly roomPayloadTtlSeconds: number;
   private readonly roomBans = new Map<number, Set<number>>();
 
+  private static isAdminRoles(roles: unknown): boolean {
+    const list = Array.isArray(roles) ? roles : [];
+    return list.includes('ROLE_ADMIN') || list.includes('admin');
+  }
+
   /**
    * Hook optionnel pour notifier les clients WS room (set par RoomGateway).
    */
@@ -449,6 +454,10 @@ export class RoomService {
     if (!known) {
       throw new BadRequestException('Type de jeu invalide');
     }
+    const status = String((known as any)?.status ?? 'finished').toLowerCase();
+    if (status === 'construction' && !RoomService.isAdminRoles(owner.roles)) {
+      throw new ForbiddenException('Jeu en construction: rÃ©servÃ© aux admins');
+    }
     const resolvedMaxPlayers =
       maxPlayers && maxPlayers > 0
         ? maxPlayers
@@ -513,6 +522,12 @@ export class RoomService {
       throw new BadRequestException('Table privée');
     }
     const user = await this.requireUser(userId);
+
+    const manifest = await this.catalog.getGame(room.gameType);
+    const status = String((manifest as any)?.status ?? 'finished').toLowerCase();
+    if (status === 'construction' && !RoomService.isAdminRoles(user.roles)) {
+      throw new ForbiddenException('Jeu en construction: rÃ©servÃ© aux admins');
+    }
 
     const existing = await this.participants.findOne({
       where: { room: { id: room.id }, user: { id: user.id }, leftAt: IsNull() },

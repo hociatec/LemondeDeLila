@@ -7,8 +7,11 @@ namespace client_win.Modules.Admin.ViewModels;
 
 public sealed partial class AdminViewModel
 {
-    private static bool IsUserBannedNow(AdminUserDto user) =>
+    private static bool IsUserBanActiveNow(AdminUserDto user) =>
         user.BannedUntil.HasValue && user.BannedUntil.Value.ToUniversalTime() > DateTime.UtcNow;
+
+    private static bool HasUserBanMarker(AdminUserDto user) =>
+        user.BannedUntil.HasValue || !string.IsNullOrWhiteSpace(user.BanReason);
 
     private static bool IsUserChatBannedNow(AdminUserDto user) =>
         user.ChatBannedUntil.HasValue && user.ChatBannedUntil.Value.ToUniversalTime() > DateTime.UtcNow;
@@ -24,7 +27,9 @@ public sealed partial class AdminViewModel
         IsSecondaryInputVisible = false;
         Items.Clear();
 
-        if (IsUserBannedNow(user))
+        // UX: proposer "Débannir" dès qu'un ban est enregistré (même expiré),
+        // pour permettre de nettoyer le statut et redonner accès immédiatement.
+        if (HasUserBanMarker(user))
         {
             Items.Add(new AdminMenuItem("Débannir", tag: "unban"));
         }

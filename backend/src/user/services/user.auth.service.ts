@@ -89,6 +89,17 @@ export class UserAuthService {
     if (!user.emailVerified) {
       throw new UnauthorizedException('Email non vérifié');
     }
+
+    // Auto-unban: si la date de ban est passée, nettoyer les champs pour que l'admin ne voie plus "banni".
+    if (user.bannedUntil && user.bannedUntil.getTime() <= Date.now()) {
+      user.bannedUntil = null;
+      user.banReason = null;
+      try {
+        await this.users.save(user);
+      } catch {
+        // best-effort: don't block login for a cleanup failure
+      }
+    }
     if (user.bannedUntil && user.bannedUntil.getTime() > Date.now()) {
       const until = formatDateFr(user.bannedUntil);
       const banReason = this.sanitizeBanReason(user.banReason);

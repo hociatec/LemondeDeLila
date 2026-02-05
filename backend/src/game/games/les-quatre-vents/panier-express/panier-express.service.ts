@@ -658,7 +658,19 @@ export class PanierExpressService extends AbstractGameService {
     }
     const pawns = this.setup.pawns();
     if (!pawns.length) return state;
-    const players = state.players ?? [];
+
+    // Bots do not go through the pawn selection UI. If they already have a pawn from a previous run
+    // (restart/reconnect), keep the setup consistent for humans by clearing bot pawns while the game
+    // is still asking humans to choose. Bots will be assigned unique pawns once setup is complete.
+    const players = (state.players ?? []).map((p: any) => {
+      const pawn = typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
+      if (!pawn) return p;
+      if (!this.utils.isBot(p)) return p;
+      return { ...p, pawn: null };
+    });
+    if (players !== (state.players ?? [])) {
+      state = { ...state, players };
+    }
     const missing = players.filter(
       (p: any) => !p?.pawn && !this.utils.isBot(p),
     );

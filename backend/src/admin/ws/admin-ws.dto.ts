@@ -232,6 +232,10 @@ export class AdminGameUpdateWsDto {
   rules?: string;
 
   @IsOptional()
+  @IsIn(['construction', 'beta', 'finished'])
+  status?: 'construction' | 'beta' | 'finished';
+
+  @IsOptional()
   @IsBoolean()
   chatEnabled?: boolean;
 

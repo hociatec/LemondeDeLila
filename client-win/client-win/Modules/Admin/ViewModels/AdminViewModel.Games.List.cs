@@ -7,8 +7,35 @@ namespace client_win.Modules.Admin.ViewModels;
 
 public sealed partial class AdminViewModel
 {
+    private void RestoreSelectedGameInList(string? desiredGameId)
+    {
+        if (Items.Count == 0)
+        {
+            SelectedItem = null;
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(desiredGameId))
+        {
+            var match = Items.FirstOrDefault(i =>
+                i?.Tag is AdminGameDto dto &&
+                string.Equals(dto.Id, desiredGameId, StringComparison.OrdinalIgnoreCase));
+            if (match != null)
+            {
+                SelectedItem = match;
+                return;
+            }
+        }
+
+        SelectedItem = Items.FirstOrDefault();
+    }
+
     private async Task LoadGamesAsync()
     {
+        var desiredGameId =
+            _selectedGame?.Id ??
+            (SelectedItem?.Tag as AdminGameDto)?.Id;
+
         _page = AdminPage.Games;
         ConfigureItemsViewForPage();
         Title = "Gestion des jeux";
@@ -24,6 +51,11 @@ public sealed partial class AdminViewModel
         {
             var list = await _admin.ListGamesAsync().ConfigureAwait(true);
             _loadedGames = (list.Games ?? new()).ToArray();
+            if (!string.IsNullOrWhiteSpace(desiredGameId))
+            {
+                _selectedGame = _loadedGames.FirstOrDefault(g =>
+                    string.Equals(g.Id, desiredGameId, StringComparison.OrdinalIgnoreCase)) ?? _selectedGame;
+            }
             _dispatcher.Invoke(() =>
             {
                 Items.Clear();
@@ -36,7 +68,7 @@ public sealed partial class AdminViewModel
                 {
                     Items.Add(new AdminMenuItem("Aucun jeu."));
                 }
-                SelectedItem = Items.FirstOrDefault();
+                RestoreSelectedGameInList(desiredGameId);
                 Status = "Entrée : options du jeu. Échap : retour.";
                 RestoreFocusIfAny();
             });
@@ -49,6 +81,10 @@ public sealed partial class AdminViewModel
 
     private void ShowGames()
     {
+        var desiredGameId =
+            _selectedGame?.Id ??
+            (SelectedItem?.Tag as AdminGameDto)?.Id;
+
         _page = AdminPage.Games;
         ConfigureItemsViewForPage();
         Title = "Gestion des jeux";
@@ -66,7 +102,7 @@ public sealed partial class AdminViewModel
         {
             Items.Add(new AdminMenuItem("Aucun jeu."));
         }
-        SelectedItem = Items.FirstOrDefault();
+        RestoreSelectedGameInList(desiredGameId);
         Status = "Entrée : options du jeu. Échap : retour.";
         UpdateFilterVisibility();
         RestoreFocusIfAny();
@@ -78,8 +114,18 @@ public sealed partial class AdminViewModel
         _page = AdminPage.GameActions;
         ConfigureItemsViewForPage();
         _selectedGame = game;
+        static string FormatStatus(string? raw)
+        {
+            var v = (raw ?? string.Empty).Trim().ToLowerInvariant();
+            return v switch
+            {
+                "construction" => "en construction",
+                "beta" => "bêta",
+                _ => "terminé"
+            };
+        }
         Title = $"Jeu : {game.Name}";
-        Details = $"Type: {game.Id}. Joueurs: {game.MinPlayers ?? 0}-{game.MaxPlayers ?? 0}. Statut: {(game.Enabled ? "actif" : "désactivé")}. Chat: {(game.ChatEnabled ? "activé" : "désactivé")}. Sons chat: {(game.ChatSoundsEnabled ? "activés" : "désactivés")}.";
+        Details = $"Type: {game.Id}. Joueurs: {game.MinPlayers ?? 0}-{game.MaxPlayers ?? 0}. Statut: {(game.Enabled ? "actif" : "désactivé")}. Phase: {FormatStatus(game.Status)}. Chat: {(game.ChatEnabled ? "activé" : "désactivé")}. Sons chat: {(game.ChatSoundsEnabled ? "activés" : "désactivés")}.";
         IsTextInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         IsSecondaryInputVisible = false;
@@ -87,6 +133,7 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem(game.Enabled ? "Désactiver" : "Activer", tag: "game.toggle"));
         Items.Add(new AdminMenuItem(game.ChatEnabled ? "Désactiver le chat en table" : "Activer le chat en table", tag: "game.chat.toggle"));
         Items.Add(new AdminMenuItem(game.ChatSoundsEnabled ? "Désactiver les sons du chat" : "Activer les sons du chat", tag: "game.chat.sounds.toggle"));
+        Items.Add(new AdminMenuItem("Modifier le statut (construction / bêta / terminé)", tag: "game.edit.status"));
         Items.Add(new AdminMenuItem("Modifier le nom", tag: "game.edit.name"));
         Items.Add(new AdminMenuItem("Modifier la description", tag: "game.edit.description"));
         Items.Add(new AdminMenuItem("Règles du jeu", tag: "game.edit.rules"));
@@ -134,6 +181,44 @@ public sealed partial class AdminViewModel
         if (action == "game.edit.description")
         {
             BuildEditText(game, title: $"Description : {game.Name}", label: "Nouvelle description", initialValue: game.Description ?? string.Empty, mode: "description");
+            return;
+        }
+        if (action == "game.edit.status")
+        {
+            var options = new[] { "Terminé", "Bêta", "En construction" };
+            var picked = await _dialogs.Pick(
+                "Statut du jeu",
+                $"Choisir le statut de {game.Name}.\n\n- Terminé : visible pour tous\n- Bêta : visible pour les admins + joueurs ayant activé l'option bêta\n- En construction : admins uniquement",
+                options).ConfigureAwait(true);
+
+            if (picked == null)
+            {
+                return;
+            }
+
+            var status = picked switch
+            {
+                "Bêta" => "beta",
+                "En construction" => "construction",
+                _ => "finished"
+            };
+
+            IsBusy = true;
+            try
+            {
+                await _admin.UpdateGameAsync(game.Id, status: status).ConfigureAwait(true);
+                await LoadGamesAsync().ConfigureAwait(true);
+                var updated = _loadedGames.FirstOrDefault(g => string.Equals(g.Id, game.Id, StringComparison.OrdinalIgnoreCase));
+                if (updated != null)
+                {
+                    BuildGameActions(updated);
+                }
+                await _dialogs.ShowInfo("Jeu", $"Statut mis à jour pour {game.Name}.");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
             return;
         }
         if (action == "game.edit.rules")

@@ -72,7 +72,15 @@ public sealed class WsRequestClient
                              p.TryGetProperty("message", out var msg)
                 ? msg.GetString() ?? "Erreur temps réel"
                 : "Erreur temps réel";
-            _errorBus?.Publish(new Modules.Error.AppError(message, Modules.Error.ErrorSeverity.Error, context: type, detail: context));
+            // UX: le backend renvoie parfois un context identique au type de requête (ex: "auth.login").
+            // Éviter d'afficher un "Détail: auth.login" inutile aux joueurs.
+            var detail = string.IsNullOrWhiteSpace(context) ? null : context.Trim();
+            if (!string.IsNullOrWhiteSpace(detail) &&
+                string.Equals(detail, type, StringComparison.OrdinalIgnoreCase))
+            {
+                detail = null;
+            }
+            _errorBus?.Publish(new Modules.Error.AppError(message, Modules.Error.ErrorSeverity.Error, context: type, detail: detail));
             // On conserve le type demandé pour faciliter le diagnostic côté appelant.
             return WsResponse<TPayload>.Fail(type, message);
         }

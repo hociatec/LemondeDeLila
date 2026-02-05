@@ -76,16 +76,6 @@ public partial class VaultView : UserControl, IInitialFocusTarget
             return;
         }
 
-        if (e.Key == Key.F5)
-        {
-            e.Handled = true;
-            if (vm.RefreshCommand.CanExecute(null))
-            {
-                vm.RefreshCommand.Execute(null);
-            }
-            return;
-        }
-
         if (e.Key == Key.Delete)
         {
             e.Handled = true;

@@ -39,7 +39,6 @@ public sealed class VaultViewModel : ObservableObject, IDisposable
         _returnContent = returnContent ?? throw new ArgumentNullException(nameof(returnContent));
         _close = onClose ?? (() => { });
 
-        RefreshCommand = new AsyncRelayCommand(LoadAsync, () => !IsBusy);
         RestoreCommand = new AsyncRelayCommand(RestoreAsync, () => !IsBusy && Selected != null);
         DeleteCommand = new AsyncRelayCommand(DeleteAsync, () => !IsBusy && Selected != null);
         CloseCommand = new RelayCommand(_close);
@@ -86,14 +85,12 @@ public sealed class VaultViewModel : ObservableObject, IDisposable
         {
             if (SetProperty(ref _isBusy, value))
             {
-                (RefreshCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
                 (RestoreCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
                 (DeleteCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
             }
         }
     }
 
-    public ICommand RefreshCommand { get; }
     public ICommand RestoreCommand { get; }
     public ICommand DeleteCommand { get; }
     public ICommand CloseCommand { get; }

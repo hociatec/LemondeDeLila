@@ -160,7 +160,7 @@
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Margin="0 4 0 4">
-                                <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" Foreground="White" />
+                                <TextBlock Text="{Binding DisplayName}" FontSize="15" FontWeight="SemiBold" Foreground="White" />
                                 <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" Foreground="#BFD0E6" FontSize="12" Margin="0 2 0 4" />
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding Engine, StringFormat='Moteur : {0}'}" Foreground="#9CB2D1" FontSize="11" Margin="0 0 8 0" />

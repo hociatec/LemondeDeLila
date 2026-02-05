@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows;
@@ -10,6 +13,8 @@ using client_win.Core;
 using client_win.Core.Network;
 using client_win.Modules.Catalog.Models;
 using client_win.Modules.Catalog.Services;
+using client_win.Modules.Settings.Services;
+using client_win.Modules.User.Services;
 
 namespace client_win.Modules.Catalog.ViewModels;
 
@@ -27,6 +32,8 @@ public sealed class CatalogViewModel : ObservableObject
     , IDisposable
 {
     private readonly ICatalogService _service;
+    private readonly IOptionsService _options;
+    private readonly ISessionService _session;
     private readonly Func<CatalogGame, Task> _openGame;
     private readonly Action _close;
     private readonly Dispatcher _dispatcher;
@@ -42,9 +49,27 @@ public sealed class CatalogViewModel : ObservableObject
     private bool _refreshAfterBusy;
     private bool _isDisposed;
     private const string ActionPrefix = "action:";
+    private static readonly CultureInfo CatalogCulture = CultureInfo.GetCultureInfo("fr-FR");
+    private readonly EventHandler _onOptionsChanged;
+
+    private static int CompareCatalogStrings(string? a, string? b)
+    {
+        // UX: sort A->Z consistently regardless of case/accents (é == e).
+        var x = (a ?? string.Empty).Trim();
+        var y = (b ?? string.Empty).Trim();
+        var cmp = CatalogCulture.CompareInfo.Compare(
+            x,
+            y,
+            CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace | CompareOptions.IgnoreSymbols);
+        if (cmp != 0) return cmp;
+        // Stable tie-breaker.
+        return string.CompareOrdinal(x, y);
+    }
 
     public CatalogViewModel(
         ICatalogService service,
+        IOptionsService options,
+        ISessionService session,
         Action onClose,
         Func<CatalogGame, Task> openGame,
         Func<Task<string>>? joinGame = null,
@@ -52,12 +77,21 @@ public sealed class CatalogViewModel : ObservableObject
         Func<Task<string>>? openVault = null)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
+        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _session = session ?? throw new ArgumentNullException(nameof(session));
         _openGame = openGame ?? throw new ArgumentNullException(nameof(openGame));
         _close = onClose ?? (() => { });
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         CloseCommand = new RelayCommand(_close);
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
         _service.CacheInvalidated += OnCatalogInvalidated;
+
+        _onOptionsChanged = (_, __) =>
+        {
+            if (_isDisposed) return;
+            _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(ReloadGamesForCurrentSelection));
+        };
+        _options.Changed += _onOptionsChanged;
 
         if (joinGame != null)
         {
@@ -175,6 +209,61 @@ public sealed class CatalogViewModel : ObservableObject
 
         _isDisposed = true;
         _service.CacheInvalidated -= OnCatalogInvalidated;
+        _options.Changed -= _onOptionsChanged;
+    }
+
+    private bool IsAdmin()
+    {
+        var token = _session.CurrentUser?.Token;
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return false;
+        }
+
+        try
+        {
+            var parts = token.Split('.');
+            if (parts.Length < 2) return false;
+
+            static string Pad(string s)
+            {
+                s = s.Replace('-', '+').Replace('_', '/');
+                var mod = s.Length % 4;
+                return mod == 0 ? s : s + new string('=', 4 - mod);
+            }
+
+            var payloadJson = Encoding.UTF8.GetString(Convert.FromBase64String(Pad(parts[1])));
+            using var doc = JsonDocument.Parse(payloadJson);
+            if (!doc.RootElement.TryGetProperty("roles", out var rolesEl))
+            {
+                return false;
+            }
+
+            bool IsAdminRole(string? role) =>
+                string.Equals(role, "ROLE_ADMIN", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(role, "admin", StringComparison.OrdinalIgnoreCase);
+
+            if (rolesEl.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var roleEl in rolesEl.EnumerateArray())
+                {
+                    if (roleEl.ValueKind == JsonValueKind.String && IsAdminRole(roleEl.GetString()))
+                    {
+                        return true;
+                    }
+                }
+            }
+            else if (rolesEl.ValueKind == JsonValueKind.String && IsAdminRole(rolesEl.GetString()))
+            {
+                return true;
+            }
+
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public bool TryActivateSelectedShelfAction()
@@ -332,7 +421,8 @@ public sealed class CatalogViewModel : ObservableObject
                 Shelves.Add(action);
             }
 
-            foreach (var cat in categories)
+            foreach (var cat in categories
+                         .OrderBy(c => c?.Name ?? string.Empty, Comparer<string>.Create(CompareCatalogStrings)))
             {
                 Shelves.Add(cat);
             }
@@ -390,7 +480,8 @@ public sealed class CatalogViewModel : ObservableObject
         }
 
         var children = SelectedShelf.Children ?? new List<CatalogCategory>();
-        foreach (var cat in children)
+        foreach (var cat in children
+                     .OrderBy(c => c?.Name ?? string.Empty, Comparer<string>.Create(CompareCatalogStrings)))
         {
             SubShelves.Add(cat);
         }
@@ -427,7 +518,21 @@ public sealed class CatalogViewModel : ObservableObject
         }
 
         var filtered = _allGames.Where(g => g.Categories.Contains(categoryId, StringComparer.OrdinalIgnoreCase)).ToList();
-        foreach (var game in filtered)
+        var isAdmin = IsAdmin();
+        var enableBeta = _options.Current.EnableBetaGames;
+        filtered = filtered.Where(g =>
+        {
+            var status = (g?.Status ?? string.Empty).Trim().ToLowerInvariant();
+            return status switch
+            {
+                "construction" => isAdmin,
+                "beta" => isAdmin || enableBeta,
+                _ => true
+            };
+        }).ToList();
+        foreach (var game in filtered
+                     .OrderBy(g => g?.Name ?? string.Empty, Comparer<string>.Create(CompareCatalogStrings))
+                     .ThenBy(g => g?.Id ?? string.Empty, StringComparer.OrdinalIgnoreCase))
         {
             Games.Add(game);
         }

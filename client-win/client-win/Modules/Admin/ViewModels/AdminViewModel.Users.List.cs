@@ -85,7 +85,9 @@ public sealed partial class AdminViewModel
                 foreach (var user in _loadedUsers.OrderBy(u => u.Username))
                 {
                     var roles = user.Roles != null && user.Roles.Count > 0 ? string.Join(',', user.Roles) : "ROLE_USER";
-                    var banned = user.BannedUntil.HasValue ? $"Banni (jusqu'au {user.BannedUntil:dd/MM/yyyy})" : "Actif";
+                    var banned = IsUserBanActiveNow(user)
+                        ? $"Banni (jusqu'au {user.BannedUntil:dd/MM/yyyy})"
+                        : HasUserBanMarker(user) ? "Ban expiré" : "Actif";
                     Items.Add(new AdminMenuItem($"{user.Username} (id {user.Id}) - {roles} - {banned}", tag: user));
                 }
                 if (_loadedUsers.Length == 0)
@@ -122,7 +124,9 @@ public sealed partial class AdminViewModel
         foreach (var user in _loadedUsers.OrderBy(u => u.Username))
         {
             var roles = user.Roles != null && user.Roles.Count > 0 ? string.Join(',', user.Roles) : "ROLE_USER";
-            var banned = user.BannedUntil.HasValue ? $"Banni (jusqu'au {user.BannedUntil:dd/MM/yyyy})" : "Actif";
+            var banned = IsUserBanActiveNow(user)
+                ? $"Banni (jusqu'au {user.BannedUntil:dd/MM/yyyy})"
+                : HasUserBanMarker(user) ? "Ban expiré" : "Actif";
             Items.Add(new AdminMenuItem($"{user.Username} (id {user.Id}) - {roles} - {banned}", tag: user));
         }
         if (_loadedUsers.Length == 0)

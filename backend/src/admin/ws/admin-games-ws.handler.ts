@@ -55,6 +55,7 @@ export class AdminGamesWsHandler {
             : typeof g.chatSoundsEnabled === 'boolean'
               ? g.chatSoundsEnabled
               : true;
+        const status = ov?.status ?? 'finished';
         const categoryId = this.categories.getAssignment(g.id);
         return {
           id: g.id,
@@ -67,6 +68,7 @@ export class AdminGamesWsHandler {
           minPlayers: g.minPlayers,
           maxPlayers: g.maxPlayers,
           enabled,
+          status,
           chatEnabled,
           chatSoundsEnabled,
         };
@@ -149,6 +151,7 @@ export class AdminGamesWsHandler {
     if (typeof dto.name === 'string') update.name = dto.name;
     if (typeof dto.description === 'string') update.description = dto.description;
     if (typeof dto.rules === 'string') update.rules = dto.rules;
+    if (typeof dto.status === 'string') update.status = dto.status;
     if (typeof dto.chatEnabled === 'boolean') update.chatEnabled = dto.chatEnabled;
     if (typeof dto.chatSoundsEnabled === 'boolean')
       update.chatSoundsEnabled = dto.chatSoundsEnabled;

@@ -576,6 +576,8 @@ public sealed class GameTableOpener : IGameTableOpener
                     CatalogViewModel? catalogVm = null;
                     catalogVm = new CatalogViewModel(
                         _catalog,
+                        _options,
+                        _sessionService,
                         onClose: () =>
                         {
                             try { catalogVm?.Dispose(); } catch { /* ignore */ }

@@ -169,6 +169,7 @@ public sealed class OptionsService : IOptionsService
     {
         MuteAll = source.MuteAll,
         ConfirmExit = source.ConfirmExit,
+        EnableBetaGames = source.EnableBetaGames,
         SoundAmbience = source.SoundAmbience,
         SoundAppLaunch = source.SoundAppLaunch,
         SoundAmbienceVolume = source.SoundAmbienceVolume,

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Config;
@@ -13,6 +14,7 @@ public sealed class OptionsViewModel : ObservableObject
     private readonly ClientConfiguration? _config;
     private readonly IDialogService? _dialogs;
     private string _selectedCategory = "Général";
+    private bool _betaConfirmInProgress;
 
     public OptionsViewModel(
         OptionsState state,
@@ -65,6 +67,27 @@ public sealed class OptionsViewModel : ObservableObject
     {
         get => _state.ConfirmExit;
         set => Update(() => _state.ConfirmExit, v => _state.ConfirmExit = v, value);
+    }
+
+    public bool EnableBetaGames
+    {
+        get => _state.EnableBetaGames;
+        set
+        {
+            var wasEnabled = _state.EnableBetaGames;
+            if (!Update(() => _state.EnableBetaGames, v => _state.EnableBetaGames = v, value))
+            {
+                return;
+            }
+
+            if (!value || wasEnabled || _betaConfirmInProgress)
+            {
+                return;
+            }
+
+            _betaConfirmInProgress = true;
+            _ = ConfirmEnableBetaAsync();
+        }
     }
 
     public bool SoundAmbience
@@ -204,6 +227,33 @@ public sealed class OptionsViewModel : ObservableObject
 
     public ICommand SaveCommand { get; }
     public ICommand CancelCommand { get; }
+
+    private async Task ConfirmEnableBetaAsync()
+    {
+        try
+        {
+            if (_dialogs == null)
+            {
+                return;
+            }
+
+            var ok = await _dialogs.Confirm(
+                "Mode bêta",
+                "Vous allez activer l'accès aux jeux en bêta.\n\nCes jeux peuvent contenir des bugs, des plantages, ou des comportements inattendus. En activant cette option, vous acceptez de tester à vos risques et périls.",
+                okText: "J'accepte",
+                cancelText: "Annuler").ConfigureAwait(true);
+
+            if (ok != true)
+            {
+                _state.EnableBetaGames = false;
+                OnPropertyChanged(nameof(EnableBetaGames));
+            }
+        }
+        finally
+        {
+            _betaConfirmInProgress = false;
+        }
+    }
 
     public OptionsState ToState()
     {

@@ -21,7 +21,28 @@ export class AdminUsersService {
     @InjectRepository(User) private readonly users: Repository<User>,
   ) {}
 
+  private async clearExpiredBans(): Promise<void> {
+    const now = new Date();
+
+    await this.users
+      .createQueryBuilder()
+      .update(User)
+      .set({ bannedUntil: null, banReason: null })
+      .where('banned_until IS NOT NULL AND banned_until <= :now', { now })
+      .execute();
+
+    await this.users
+      .createQueryBuilder()
+      .update(User)
+      .set({ chatBannedUntil: null, chatBanReason: null })
+      .where('chat_banned_until IS NOT NULL AND chat_banned_until <= :now', {
+        now,
+      })
+      .execute();
+  }
+
   async list(query: AdminListUsersDto) {
+    await this.clearExpiredBans();
     const page = query.page && query.page > 0 ? query.page : 1;
     const limit =
       query.limit && query.limit > 0 ? Math.min(query.limit, 100) : 20;
@@ -79,6 +100,7 @@ export class AdminUsersService {
   }
 
   async get(id: number): Promise<SafeUser> {
+    await this.clearExpiredBans();
     const user = await this.users.findOne({
       where: { id },
       select: [

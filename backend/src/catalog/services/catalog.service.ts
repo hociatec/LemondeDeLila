@@ -4,6 +4,7 @@ import { GameRegistryService } from '../../game/engine/services/game-registry.se
 export type CatalogGame = {
   id: string;
   name: string;
+  status: string;
   minPlayers: number;
   maxPlayers: number;
   chatEnabled: boolean;
@@ -112,6 +113,7 @@ export class CatalogService {
       return {
         id: def.id,
         name: def.name,
+        status: String((def as any)?.status ?? 'finished'),
         minPlayers: def.minPlayers ?? 2,
         maxPlayers: def.maxPlayers ?? 6,
         chatEnabled:

@@ -43,6 +43,25 @@ public sealed class CatalogGame
     public string Engine { get; set; } = string.Empty;
     public List<string> Categories { get; set; } = new();
 
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = "finished";
+
+    [JsonIgnore]
+    public string DisplayName
+    {
+        get
+        {
+            var name = Name ?? string.Empty;
+            var status = (Status ?? string.Empty).Trim().ToLowerInvariant();
+            return status switch
+            {
+                "beta" => $"{name} (Bêta)",
+                "construction" => $"{name} (En construction)",
+                _ => name
+            };
+        }
+    }
+
     [JsonPropertyName("chatEnabled")]
     public bool ChatEnabled { get; set; } = true;
 

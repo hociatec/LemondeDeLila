@@ -55,6 +55,23 @@ describe('PanierExpressService', () => {
     expect(choices.length).toBeGreaterThan(0);
   });
 
+  it('propose tous les pions quand un bot en a déjà un (reset bot pawn pendant setup)', () => {
+    const base: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B', isBot: true, pawn: 'sac en toile' },
+      ],
+      status: 'started',
+    } as any);
+
+    const pending: any = base.pending as any;
+    expect(pending?.type).toBe('pick');
+    expect(pending?.data?.kind).toBe('setup.choose_pawn');
+    const choices = Array.isArray(pending?.choices) ? pending.choices : [];
+    // pawns.json currently contains 6 options; ensure bot pawn doesn't reduce the list for the first human.
+    expect(choices.length).toBeGreaterThanOrEqual(6);
+  });
+
   it('expose correctement les pending non-quiz et les vues joueurs', () => {
     const base: any = service.hydrateInitialState({
       players: [
