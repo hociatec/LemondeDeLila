@@ -494,7 +494,7 @@ public sealed class GameTableOpener : IGameTableOpener
         Action<client_win.Modules.Network.WebSockets.WebSocketState>? onRoomConnectionStateChanged = null;
         Action<string>? onSessionLeft = null;
         var isExiting = 0;
-        var playedEarlyOpenSound = false;
+        var playedEarlyOpenSound = 0;
 
         // UX: the first table creation can feel "silent" while the first network/session handshake happens.
         // For new tables, play the open one-shot immediately (best-effort) so the user gets instant feedback.
@@ -505,11 +505,11 @@ public sealed class GameTableOpener : IGameTableOpener
             {
                 _sounds.Preload(SoundId.RoomOpened, warmUp: true);
                 _sounds.Play(SoundId.RoomOpened);
-                playedEarlyOpenSound = true;
+                Interlocked.Exchange(ref playedEarlyOpenSound, 1);
             }
             catch
             {
-                playedEarlyOpenSound = false;
+                Interlocked.Exchange(ref playedEarlyOpenSound, 0);
             }
         }
 
@@ -1247,7 +1247,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
                     var openSound = isNew ? SoundId.RoomOpened : SoundId.RoomJoined;
 
-                    if (!playedEarlyOpenSound)
+                    if (Volatile.Read(ref playedEarlyOpenSound) == 0)
                     {
                         // UX: prioritize immediate feedback. Play the open/join one-shot first, then warm up other sounds.
                         try

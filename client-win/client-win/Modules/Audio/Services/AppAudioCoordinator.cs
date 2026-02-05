@@ -546,12 +546,18 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         {
             if (_desiredBackground == background)
             {
-                return;
+                // Healing: the loop can be skipped (placeholder/remote not ready) or stopped by races.
+                // Force a reapply so we reliably (re)start the expected background when returning home/tavern.
+                _pendingReapplyBackground = 1;
+                _backgroundRequestedAtTicks = Stopwatch.GetTimestamp();
+                shouldTransition = true;
             }
-
-            _desiredBackground = background;
-            _backgroundRequestedAtTicks = Stopwatch.GetTimestamp();
-            shouldTransition = true;
+            else
+            {
+                _desiredBackground = background;
+                _backgroundRequestedAtTicks = Stopwatch.GetTimestamp();
+                shouldTransition = true;
+            }
         }
 
         if (shouldTransition)
