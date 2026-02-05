@@ -924,6 +924,15 @@ public sealed class SoundService : ISoundService, IDisposable
             return;
         }
 
+        // UX: table open/join feedback should feel instant, especially on the very first table opening
+        // where MediaOpened can be noticeably slower. Use a fresh MediaPlayer path with a best-effort
+        // immediate start fallback instead of waiting strictly on MediaOpened.
+        if (sound == SoundId.RoomOpened || sound == SoundId.RoomJoined)
+        {
+            PlayOneShotWithNewPlayer(sound, entry, filePath);
+            return;
+        }
+
         EnqueuePlayback(new PlayRequest(sound, entry, filePath));
     }
 
@@ -2179,7 +2188,9 @@ public sealed class SoundService : ISoundService, IDisposable
         }
         else
         {
-            _ = _dispatcher.BeginInvoke((Action)StopOnUiThread, DispatcherPriority.Background);
+            // Stop loops promptly to avoid races where a new StartLoop() (Send) is scheduled after a StopLoop()
+            // (Background) and then gets stopped late, leaving the app without ambience/music.
+            _ = _dispatcher.BeginInvoke((Action)StopOnUiThread, DispatcherPriority.Send);
         }
     }
 

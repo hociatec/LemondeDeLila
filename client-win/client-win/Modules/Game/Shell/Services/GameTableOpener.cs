@@ -494,6 +494,7 @@ public sealed class GameTableOpener : IGameTableOpener
         Action<client_win.Modules.Network.WebSockets.WebSocketState>? onRoomConnectionStateChanged = null;
         Action<string>? onSessionLeft = null;
         var isExiting = 0;
+        var playedEarlyOpenSound = false;
 
         async Task ExitAsync(string? reason = null, bool forceTavern = false)
         {
@@ -1121,6 +1122,23 @@ public sealed class GameTableOpener : IGameTableOpener
             vm.Chat.IsConnected = false;
 
             _navigation.Show(vm);
+
+            // UX: the first table creation can feel "silent" while the first network/session handshake happens.
+            // For new tables, play the open one-shot immediately (best-effort) so the user gets instant feedback.
+            // The success confirmation remains the history + screen reader announcements.
+            if (isNew)
+            {
+                try
+                {
+                    playedEarlyOpenSound = true;
+                    _sounds.Preload(SoundId.RoomOpened, warmUp: true);
+                    _sounds.Play(SoundId.RoomOpened);
+                }
+                catch
+                {
+                    playedEarlyOpenSound = false;
+                }
+            }
         }, DispatcherPriority.Normal);
 
         _ = Task.Run(async () =>
@@ -1229,30 +1247,33 @@ public sealed class GameTableOpener : IGameTableOpener
 
                     var openSound = isNew ? SoundId.RoomOpened : SoundId.RoomJoined;
 
-                    // UX: prioritize immediate feedback. Play the open/join one-shot first, then warm up other sounds.
-                    try
+                    if (!playedEarlyOpenSound)
                     {
-                        _sounds.Preload(openSound, warmUp: true);
-                    }
-                    catch
-                    {
-                        // best-effort
-                    }
-
-                    _ = Task.Run(async () =>
-                    {
+                        // UX: prioritize immediate feedback. Play the open/join one-shot first, then warm up other sounds.
                         try
                         {
-                            // Allow warm-up to enqueue first but don't delay feedback too much.
-                            await Task.Delay(50).ConfigureAwait(false);
+                            _sounds.Preload(openSound, warmUp: true);
                         }
                         catch
                         {
-                            // ignore
+                            // best-effort
                         }
 
-                        try { _sounds.Play(openSound); } catch { }
-                    });
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                // Allow warm-up to enqueue first but don't delay feedback too much.
+                                await Task.Delay(50).ConfigureAwait(false);
+                            }
+                            catch
+                            {
+                                // ignore
+                            }
+
+                            try { _sounds.Play(openSound); } catch { }
+                        });
+                    }
 
                     // Preload table + common gameplay one-shots early (async/background) so first actions feel snappy.
                     try

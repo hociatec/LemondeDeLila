@@ -612,7 +612,17 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             TryPreload(SoundId.QuizCorrect, warmUp: true);
             TryPreload(SoundId.QuizWrong, warmUp: true);
 
-            if (reapplyBackground)
+            // If remote overrides were updated, background loops might have been skipped earlier (e.g. placeholder).
+            // Reapply the current background so menu/tavern ambience starts as soon as the files are available.
+            var shouldReapply = reapplyBackground;
+            if (!shouldReapply)
+            {
+                lock (_stateGate)
+                {
+                    shouldReapply = _isConnected && _pauseCount == 0 && _desiredBackground != AppAudioBackground.None;
+                }
+            }
+            if (shouldReapply)
             {
                 lock (_stateGate)
                 {
@@ -816,6 +826,19 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             catch
             {
                 // ignore
+            }
+
+            // UX: if we are leaving the tavern context, the "TavernOpened" one-shot should not keep playing
+            // over other screens (unlike the loop ambience which is already handled by StopBackgroundLoops()).
+            // Also cancel any queued TavernOpened requests to avoid it playing late when coming back.
+            if (desiredBackground != AppAudioBackground.Tavern)
+            {
+                try { CancelOneShots(SoundId.TavernOpened); } catch { /* ignore */ }
+                try { _sounds.Stop(SoundId.TavernOpened); } catch { /* ignore */ }
+                lock (_stateGate)
+                {
+                    _pendingTavernOpenedSound = 0;
+                }
             }
 
             // Application launch sound is independent of connection state.
