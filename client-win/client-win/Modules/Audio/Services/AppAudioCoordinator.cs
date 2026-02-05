@@ -1015,27 +1015,16 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 return;
             }
 
-            // One-shot on entering the tavern (played before the ambience loop).
-                if (desiredBackground == AppAudioBackground.Tavern &&
-                    playTavernOpened &&
-                    tavernSeq != Volatile.Read(ref _tavernOpenedSoundPlayedSequence))
-                {
-                    _ = ScheduleOneShotAsync(
-                        SoundId.TavernOpened,
-                        priority: 2,
-                        GetSoundWaitTimeout(SoundId.TavernOpened, TimeSpan.FromSeconds(5)));
+            var shouldPlayTavernOpened = desiredBackground == AppAudioBackground.Tavern &&
+                                        playTavernOpened &&
+                                        tavernSeq != Volatile.Read(ref _tavernOpenedSoundPlayedSequence);
+            if (shouldPlayTavernOpened)
+            {
                 lock (_stateGate)
                 {
                     _pendingTavernOpenedSound = 0;
                 }
                 Volatile.Write(ref _tavernOpenedSoundPlayedSequence, tavernSeq);
-
-                // Give the one-shot a tiny head start to avoid being masked by the loop.
-                try { await Task.Delay(200, token).ConfigureAwait(false); } catch { return; }
-                if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
-                {
-                    return;
-                }
             }
 
             switch (desiredBackground)
@@ -1047,6 +1036,12 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 case AppAudioBackground.Tavern:
                     _sounds.StartLoop(SoundId.TavernAmbience);
                     _appliedBackground = desiredBackground;
+                    if (shouldPlayTavernOpened)
+                    {
+                        // StartLoop is queued at DispatcherPriority.Send; enqueue the one-shot after it so the loop
+                        // doesn't cut the opening sting on picky audio stacks.
+                        try { _sounds.Play(SoundId.TavernOpened); } catch { /* ignore */ }
+                    }
                     break;
             }
         }

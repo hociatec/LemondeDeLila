@@ -969,6 +969,14 @@ public sealed class SoundService : ISoundService, IDisposable
             return;
         }
 
+        // UX/reliability: the tavern opening sting should play reliably and be able to overlap with loops.
+        // Some setups are sensitive to cached MediaPlayer instances during loop transitions.
+        if (sound == SoundId.TavernOpened)
+        {
+            PlayOneShotWithNewPlayer(sound, entry, filePath);
+            return;
+        }
+
         EnqueuePlayback(new PlayRequest(sound, entry, filePath));
     }
 
