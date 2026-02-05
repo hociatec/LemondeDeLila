@@ -10,6 +10,8 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Automation;
 using System.Windows.Interop;
+using System.Windows.Input;
+using System.Windows.Media;
 using client_win.Core.Accessibility;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Config;
@@ -32,6 +34,7 @@ namespace client_win
         private Mutex? _singleInstanceMutex;
         private bool _ownsSingleInstanceMutex;
         private FileStream? _singleInstanceLockFile;
+        private static int _focusSafetyInstalled;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -81,6 +84,8 @@ namespace client_win
             }
 
             base.OnStartup(e);
+
+            InstallGlobalFocusSafety();
 
             var window = new MainWindow();
             var bootstrap = new BootstrapShellViewModel();
@@ -167,6 +172,91 @@ namespace client_win
 
             // Run heavy startup work after the window is visible so the UI feels responsive.
             _ = BuildAndShowShellAsync(window, bootstrap);
+        }
+
+        private static void InstallGlobalFocusSafety()
+        {
+            if (Interlocked.Exchange(ref _focusSafetyInstalled, 1) == 1)
+            {
+                return;
+            }
+
+            try
+            {
+                // NVDA: when a focused element is unloaded (navigation, template swap, list refresh),
+                // NVDA can announce "indisponible". Park focus on a stable window element before it happens.
+                EventManager.RegisterClassHandler(
+                    typeof(FrameworkElement),
+                    FrameworkElement.UnloadedEvent,
+                    new RoutedEventHandler((sender, args) =>
+                    {
+                        try
+                        {
+                            var focused = Keyboard.FocusedElement as DependencyObject;
+                            if (focused == null)
+                            {
+                                return;
+                            }
+
+                            var unloaded = args.OriginalSource as DependencyObject;
+                            if (unloaded == null)
+                            {
+                                return;
+                            }
+
+                            if (!IsDescendant(focused, unloaded))
+                            {
+                                return;
+                            }
+
+                            var owner = sender as Window ?? Window.GetWindow(unloaded) ?? Application.Current?.MainWindow;
+                            FocusParking.Park(owner);
+                        }
+                        catch
+                        {
+                            // best-effort
+                        }
+                    }),
+                    handledEventsToo: true);
+            }
+            catch
+            {
+                // best-effort
+            }
+        }
+
+        private static bool IsDescendant(DependencyObject node, DependencyObject ancestor)
+        {
+            for (DependencyObject? current = node; current != null; current = GetParent(current))
+            {
+                if (ReferenceEquals(current, ancestor))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static DependencyObject? GetParent(DependencyObject current)
+        {
+            try
+            {
+                if (current is Visual || current is System.Windows.Media.Media3D.Visual3D)
+                {
+                    return VisualTreeHelper.GetParent(current);
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+
+            if (current is FrameworkElement fe)
+            {
+                return fe.Parent ?? fe.TemplatedParent;
+            }
+
+            return LogicalTreeHelper.GetParent(current);
         }
 
         private async Task BuildAndShowShellAsync(MainWindow window, BootstrapShellViewModel bootstrap)

@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Shell.Views;
 
@@ -95,6 +96,10 @@ public static class ContentHostFocusBehavior
     {
         try
         {
+            // NVDA: park focus on a stable element before trying to focus inside the new content.
+            // This avoids "indisponible" when the previously focused element disappears during navigation.
+            try { FocusParking.Park(Window.GetWindow(host) ?? Application.Current?.MainWindow); } catch { }
+
             void TryFocus(bool allowFallback)
             {
                 try
