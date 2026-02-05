@@ -984,9 +984,22 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 return;
             }
 
+            var shouldPlayTavernOpened = desiredBackground == AppAudioBackground.Tavern &&
+                                        playTavernOpened &&
+                                        tavernSeq != Volatile.Read(ref _tavernOpenedSoundPlayedSequence);
+
             // Continue immediately to apply background loops.
             if (_appliedBackground == desiredBackground && !reapplyBackground)
             {
+                if (shouldPlayTavernOpened)
+                {
+                    lock (_stateGate)
+                    {
+                        _pendingTavernOpenedSound = 0;
+                    }
+                    Volatile.Write(ref _tavernOpenedSoundPlayedSequence, tavernSeq);
+                    try { _sounds.Play(SoundId.TavernOpened); } catch { /* ignore */ }
+                }
                 return;
             }
 
@@ -1015,9 +1028,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 return;
             }
 
-            var shouldPlayTavernOpened = desiredBackground == AppAudioBackground.Tavern &&
-                                        playTavernOpened &&
-                                        tavernSeq != Volatile.Read(ref _tavernOpenedSoundPlayedSequence);
             if (shouldPlayTavernOpened)
             {
                 lock (_stateGate)
