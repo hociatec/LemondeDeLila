@@ -212,8 +212,10 @@ public sealed class SoundService : ISoundService, IDisposable
                 // Configurable globalement via l'interface admin (son uploadé = RemoteSoundCache).
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "TavernOpened.wav"),
                 OverridePath: null,
-                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundNavigate,
-                Volume: () => Clamp01(_options.Current.SoundNavigateVolume / 100.0)),
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundAmbience,
+                Volume: () => Clamp01((_options.Current.SoundAmbienceSplit
+                    ? _options.Current.SoundTavernAmbienceVolume
+                    : _options.Current.SoundAmbienceVolume) / 100.0)),
             [SoundId.DiceRolled] = new SoundEntry(
                 // Son déclenché à chaque lancer de dé (générique, basé sur `lastRoll`).
                 // Configurable globalement via l'interface admin (son uploadé = RemoteSoundCache).

@@ -524,8 +524,9 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         var shouldTransition = false;
         lock (_stateGate)
         {
-            // Redundant event: ignore while already in tavern background.
-            if (_desiredBackground == AppAudioBackground.Tavern && _pendingTavernOpenedSound == 0)
+            // Debounce: avoid queueing the same "entered tavern" one-shot multiple times
+            // during rapid navigation/content refreshes.
+            if (_pendingTavernOpenedSound == 1)
             {
                 return;
             }
