@@ -52,6 +52,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
     private int _pendingReapplyBackground;
     private Task? _pendingConnectedOneShot;
     private Task? _pendingDisconnectedOneShot;
+    private CancellationTokenSource? _tableOpenWarmUpCts;
 
     // ClickOnce peut relancer le client pendant une mise à jour et démarrer un nouveau process
     // dans un autre dossier "Apps\\2.0". On supprime le son d'ouverture sur cette relance uniquement.
@@ -323,6 +324,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         }
 
         _ = WarmRefreshAfterLoginAsync();
+        StartTableOpenWarmUp(loginSeq);
 
         // Failsafe: if rapid navigation/overlays cancel transitions, ensure the connection one-shot still plays.
         // This keeps login feedback reliable even if background audio is paused or transitions are superseded.
@@ -375,6 +377,10 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
     private void HandleDisconnect(bool userInitiated)
     {
+        try { _tableOpenWarmUpCts?.Cancel(); } catch { /* ignore */ }
+        try { _tableOpenWarmUpCts?.Dispose(); } catch { /* ignore */ }
+        _tableOpenWarmUpCts = null;
+
         var shouldTransition = false;
         var logoutSeq = 0;
         lock (_stateGate)
@@ -444,6 +450,41 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         {
             RequestTransition();
         }
+    }
+
+    private void StartTableOpenWarmUp(int loginSeq)
+    {
+        try { _tableOpenWarmUpCts?.Cancel(); } catch { /* ignore */ }
+        try { _tableOpenWarmUpCts?.Dispose(); } catch { /* ignore */ }
+
+        var cts = new CancellationTokenSource();
+        _tableOpenWarmUpCts = cts;
+
+        // Warm-up the "table created/joined" sounds early so the first table open feels instant.
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, timeout.Token);
+
+                // Exit early if a newer login happened.
+                lock (_stateGate)
+                {
+                    if (_loginSequence != loginSeq)
+                    {
+                        return;
+                    }
+                }
+
+                await _sounds.WarmUpAsync(SoundId.RoomOpened, linked.Token).ConfigureAwait(false);
+                await _sounds.WarmUpAsync(SoundId.RoomJoined, linked.Token).ConfigureAwait(false);
+            }
+            catch
+            {
+                // best-effort
+            }
+        });
     }
 
     public void NotifyTavernEntered()

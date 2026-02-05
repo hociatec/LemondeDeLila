@@ -2106,7 +2106,9 @@ public sealed class SoundService : ISoundService, IDisposable
         }
         else
         {
-            _ = _dispatcher.BeginInvoke((Action)StartOnUiThread, DispatcherPriority.Background);
+            // Loops (table ambience/music) are user-perceived as "instant feedback" too. Use higher priority so they
+            // don't get stuck behind bulk preloads/warm-ups when joining a table.
+            _ = _dispatcher.BeginInvoke((Action)StartOnUiThread, DispatcherPriority.Send);
         }
     }
 

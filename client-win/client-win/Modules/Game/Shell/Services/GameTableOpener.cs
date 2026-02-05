@@ -1229,6 +1229,31 @@ public sealed class GameTableOpener : IGameTableOpener
 
                     var openSound = isNew ? SoundId.RoomOpened : SoundId.RoomJoined;
 
+                    // UX: prioritize immediate feedback. Play the open/join one-shot first, then warm up other sounds.
+                    try
+                    {
+                        _sounds.Preload(openSound, warmUp: true);
+                    }
+                    catch
+                    {
+                        // best-effort
+                    }
+
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            // Allow warm-up to enqueue first but don't delay feedback too much.
+                            await Task.Delay(50).ConfigureAwait(false);
+                        }
+                        catch
+                        {
+                            // ignore
+                        }
+
+                        try { _sounds.Play(openSound); } catch { }
+                    });
+
                     // Preload table + common gameplay one-shots early (async/background) so first actions feel snappy.
                     try
                     {
@@ -1249,8 +1274,6 @@ public sealed class GameTableOpener : IGameTableOpener
                         // best-effort
                     }
 
-                    var openWarm = _sounds.WarmUpAsync(openSound);
-
                     var soundsToWarm = new[]
                     {
                         SoundId.DiceRolled,
@@ -1268,11 +1291,6 @@ public sealed class GameTableOpener : IGameTableOpener
                     {
                         _ = _sounds.WarmUpAsync(sound);
                     }
-
-                    _ = openWarm.ContinueWith(_ =>
-                    {
-                        try { _sounds.Play(openSound); } catch { }
-                    }, TaskScheduler.Default);
 
                     bindings = new GameTableBindings(
                         dispatcher: dispatcher,

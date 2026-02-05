@@ -204,6 +204,10 @@ namespace client_win
                     // best-effort
                 }
 
+                // IMPORTANT: eager-resolve audio services while we're still on a background thread.
+                // AudioDispatcher waits for a dedicated STA thread to start; if resolved on the UI thread it can freeze the UI.
+                PrewarmBackgroundOnlyServices(host);
+
                 await await window.Dispatcher.InvokeAsync(async () =>
                 {
                     var shell = new ShellViewModel(
@@ -245,6 +249,19 @@ namespace client_win
                 }
 
                 try { await host.DisposeAsync().ConfigureAwait(false); } catch { /* ignore */ }
+            }
+        }
+
+        private static void PrewarmBackgroundOnlyServices(AppHost host)
+        {
+            try
+            {
+                // Forces creation of AudioDispatcher/SoundService/AppAudioCoordinator off the UI thread.
+                _ = host.Services.GetRequiredService<IAppAudioCoordinator>();
+            }
+            catch
+            {
+                // best-effort
             }
         }
 

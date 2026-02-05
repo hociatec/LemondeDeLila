@@ -20,8 +20,21 @@ public static class WsConnectionTester
             socket.Options.KeepAliveInterval = TimeSpan.FromSeconds(10);
             await socket.ConnectAsync(endpoint, cancellationToken).ConfigureAwait(false);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Best-effort startup check: a timeout/cancel should not become a scary user-facing error.
+            throw;
+        }
         catch (Exception ex)
         {
+            if (cancellationToken.IsCancellationRequested ||
+                ex is TaskCanceledException ||
+                ex is OperationCanceledException)
+            {
+                // Same as above: ignore timeouts/cancellations for the connectivity test.
+                throw;
+            }
+
             errors?.Publish(new Modules.Error.AppError(
                 "Impossible de se connecter au serveur WS (vérifie l'URL et la connectivité).",
                 Modules.Error.ErrorSeverity.Error,
