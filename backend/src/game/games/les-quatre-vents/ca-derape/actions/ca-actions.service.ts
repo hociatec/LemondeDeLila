@@ -51,13 +51,9 @@ export class CaActionService {
         next = this.handleChooseNextDelta(next, action);
         continue;
       }
-      if (type === 'choose_target') {
-        // choose_target also handles mirror roll when pendingContext=mirror_next_roll
-        continue;
-      }
-        }
-        return finalize(next);
-      }
+    }
+    return finalize(next);
+  }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;

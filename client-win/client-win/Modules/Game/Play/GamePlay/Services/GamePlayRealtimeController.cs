@@ -349,14 +349,28 @@ internal sealed class GamePlayRealtimeController
             return msg;
         }
 
-        var user = viewerUsername.Trim();
-
-        // Pioche : ne révèle la carte piochée qu'au joueur concerné.
-        if (string.Equals(msg, $"{user} pioche.", StringComparison.OrdinalIgnoreCase))
+        var viewerName = viewerUsername.Trim();
+        const string drawMarker = " pioche";
+        var drawIndex = msg.IndexOf(drawMarker, StringComparison.OrdinalIgnoreCase);
+        if (drawIndex > 0)
         {
-            var added = InferSingleAddedCard(previousHandCounts, currentHandCounts);
-            return added != null ? $"Vous piochez un {added}." : "Vous piochez.";
+            var actor = msg.Substring(0, drawIndex).Trim();
+            if (!string.IsNullOrWhiteSpace(actor))
+            {
+                if (string.Equals(actor, viewerName, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (string.Equals(msg, $"{actor} pioche.", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var added = InferSingleAddedCard(previousHandCounts, currentHandCounts);
+                        return added != null ? $"Vous piochez un {added}." : "Vous piochez.";
+                    }
+                    return "Vous piochez une carte.";
+                }
+                return $"{actor} pioche une carte.";
+            }
         }
+
+        var user = viewerName;
 
         if (string.Equals(msg, $"{user} passe.", StringComparison.OrdinalIgnoreCase))
         {

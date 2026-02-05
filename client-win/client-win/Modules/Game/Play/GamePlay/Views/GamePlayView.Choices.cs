@@ -123,7 +123,7 @@ public partial class GamePlayView
 
                             ChoicesList.SelectedIndex = idx;
                             ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
-                            TryFocusChoiceIndex(idx);
+                            TryFocusChoiceIndex(ChoicesList, idx);
                         }
                         catch
                         {
@@ -207,7 +207,7 @@ public partial class GamePlayView
         {
             ChoicesList.SelectedIndex = 0;
             ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
-            TryFocusChoiceIndex(0);
+            TryFocusChoiceIndex(ChoicesList, 0);
             return true;
         }
         catch
@@ -399,7 +399,7 @@ public partial class GamePlayView
             {
                 ChoicesList.SelectedIndex = 1;
                 ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
-                TryFocusChoiceIndex(1);
+                TryFocusChoiceIndex(ChoicesList, 1);
             }
         }
         catch
