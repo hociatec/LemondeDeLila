@@ -11,7 +11,12 @@ import { lamaCardLabel, lamaCardScore, nextLamaValue, LAMA_VALUE } from './model
 @Injectable()
 export class LamaPresenter extends BasePresenterService {
   exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
-    return this.buildExposedStateForUser(state, userId);
+    const exposed = this.buildExposedStateForUser(state, userId);
+    // The internal game log contains the drawn card label. We redact it for opponents,
+    // while still letting the drawing player see what they drew.
+    const players = Array.isArray(state.players) ? state.players : [];
+    const log = this.redactDrawLogForUser(exposed.log, players, userId);
+    return { ...exposed, log };
   }
 
   private isSetup(state: GameStateEntity): boolean {
@@ -390,5 +395,47 @@ export class LamaPresenter extends BasePresenterService {
     if (!top) return null;
     if (top < 1 || top > LAMA_VALUE) return null;
     return top as LamaCardValue;
+  }
+
+  private redactDrawLogForUser(
+    log: Array<{ message: string; timestamp?: string }> | undefined,
+    players: Array<{ id: number; username?: string }>,
+    userId: number,
+  ): Array<{ message: string; timestamp?: string }> {
+    if (!Array.isArray(log) || log.length === 0) return Array.isArray(log) ? [...log] : [];
+
+    const normalize = (raw: unknown): string => {
+      let name = String(raw ?? '').trim();
+      name = name
+        .replace(/[\r\n\t]+/g, ' ')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+      if (name.startsWith('"') && name.endsWith('"')) {
+        name = name.slice(1, -1).trim();
+      }
+      return name;
+    };
+
+    // Build the same label mapping as the game uses when logging actions.
+    const idByLabel = new Map<string, number>();
+    for (const p of players) {
+      const name = normalize(p?.username);
+      if (name) idByLabel.set(name, p.id);
+      idByLabel.set(normalize(`joueur ${p.id}`), p.id);
+    }
+
+    const drawRe = /^(.+?) pioche un (.+)\.$/;
+
+    return log.map((entry) => {
+      const msg = String(entry?.message ?? '').trim();
+      const m = msg.match(drawRe);
+      if (!m) return entry;
+
+      const actorLabel = normalize(m[1]);
+      const actorId = idByLabel.get(actorLabel) ?? null;
+      if (actorId == null || actorId === userId) return entry;
+
+      return { ...entry, message: `${actorLabel} pioche une carte.` };
+    });
   }
 }

@@ -405,6 +405,58 @@ describe('LamaService', () => {
     expect(messages.filter((m: string) => (m ?? '').startsWith('Bot pioche ')).length).toBe(1);
   });
 
+  it('redacts drawn card labels in the log for opponents (only the drawer sees the card)', async () => {
+    const { service } = createLamaServiceForTest();
+
+    const state: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: null,
+      log: [
+        { message: 'A pioche un 5.' },
+        { message: 'B pioche un LAMA.' },
+        { message: 'B passe.' },
+      ],
+      metadata: {
+        step: 'turn_choice',
+        allowPlayAfterDraw: false,
+        roundNumber: 1,
+        roundStarterIndex: 0,
+        deck: [2, 3, 4],
+        discard: [1],
+        handsByPlayerId: { '1': [1], '2': [1] },
+        droppedOutByPlayerId: { '1': false, '2': false },
+        scoresByPlayerId: { '1': 0, '2': 0 },
+        turnTracker: { playerId: 1, drawn: false, played: false },
+        pendingReturnQueue: [],
+        pendingReturnPlayerId: null,
+        winnerId: null,
+      },
+    };
+
+    const exposedA: any = service.exposeStateForUser(state, 1);
+    const exposedB: any = service.exposeStateForUser(state, 2);
+
+    const messagesA = (exposedA.log ?? []).map((l: any) => String(l?.message ?? ''));
+    const messagesB = (exposedB.log ?? []).map((l: any) => String(l?.message ?? ''));
+
+    expect(messagesA).toContain('A pioche un 5.');
+    expect(messagesA).toContain('B pioche une carte.');
+    expect(messagesA).not.toContain('B pioche un LAMA.');
+
+    expect(messagesB).toContain('B pioche un LAMA.');
+    expect(messagesB).toContain('A pioche une carte.');
+    expect(messagesB).not.toContain('A pioche un 5.');
+  });
+
   it('prevents a bot from drawing multiple times while still on its turn', async () => {
     const { service } = createLamaServiceForTest();
 

@@ -147,7 +147,10 @@
                 Padding="10"
                 Margin="0 0 0 10"
                 Visibility="{Binding ShowLegacyActionsPanel, Converter={StaticResource BoolToVis}}">
-            <StackPanel>
+            <!-- Scroll to keep the hand visible on narrow/vertical layouts. -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
                 <TextBlock Text="{Binding BoardText}"
                            Foreground="#C3D2EA"
                            FontFamily="Consolas"
@@ -448,6 +451,7 @@
                     </ListBox.Style>
                 </ListBox>
             </StackPanel>
+            </ScrollViewer>
         </Border>
 
         <!-- Prompt inline (remplace les fenêtres modales de configuration/saisie) -->
@@ -554,7 +558,7 @@
                                 Padding="10 6" />
                     </StackPanel>
                 </StackPanel>
-            </Border>
+        </Border>
         </Border>
 
     </Grid>
