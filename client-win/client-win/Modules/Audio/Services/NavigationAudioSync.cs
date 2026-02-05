@@ -28,17 +28,20 @@ public sealed class NavigationAudioSync : IDisposable
             var last = _lastContent;
             _lastContent = content;
 
-            if (IsCatalog(content) && !IsCatalog(last))
-            {
-                _audio.NotifyTavernEntered();
-            }
-
+            // IMPORTANT: set the desired background first, then emit the "entered tavern" one-shot.
+            // This avoids a race where NotifyTavernEntered() requests a transition while the desired
+            // background is still the previous screen.
             _audio.SetBackground(content switch
             {
                 CatalogView or CatalogViewModel => AppAudioBackground.Tavern,
                 MainMenuView or MainMenuViewModel => AppAudioBackground.MainMenu,
                 _ => AppAudioBackground.None
             });
+
+            if (IsCatalog(content) && !IsCatalog(last))
+            {
+                _audio.NotifyTavernEntered();
+            }
         }
         catch
         {

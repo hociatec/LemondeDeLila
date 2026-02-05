@@ -496,6 +496,23 @@ public sealed class GameTableOpener : IGameTableOpener
         var isExiting = 0;
         var playedEarlyOpenSound = false;
 
+        // UX: the first table creation can feel "silent" while the first network/session handshake happens.
+        // For new tables, play the open one-shot immediately (best-effort) so the user gets instant feedback.
+        // This runs outside the UI dispatcher to avoid races (fast connect) that can trigger double-play/cutoffs.
+        if (isNew)
+        {
+            try
+            {
+                _sounds.Preload(SoundId.RoomOpened, warmUp: true);
+                _sounds.Play(SoundId.RoomOpened);
+                playedEarlyOpenSound = true;
+            }
+            catch
+            {
+                playedEarlyOpenSound = false;
+            }
+        }
+
         async Task ExitAsync(string? reason = null, bool forceTavern = false)
         {
             if (Interlocked.Exchange(ref isExiting, 1) == 1)
@@ -1122,23 +1139,6 @@ public sealed class GameTableOpener : IGameTableOpener
             vm.Chat.IsConnected = false;
 
             _navigation.Show(vm);
-
-            // UX: the first table creation can feel "silent" while the first network/session handshake happens.
-            // For new tables, play the open one-shot immediately (best-effort) so the user gets instant feedback.
-            // The success confirmation remains the history + screen reader announcements.
-            if (isNew)
-            {
-                try
-                {
-                    playedEarlyOpenSound = true;
-                    _sounds.Preload(SoundId.RoomOpened, warmUp: true);
-                    _sounds.Play(SoundId.RoomOpened);
-                }
-                catch
-                {
-                    playedEarlyOpenSound = false;
-                }
-            }
         }, DispatcherPriority.Normal);
 
         _ = Task.Run(async () =>

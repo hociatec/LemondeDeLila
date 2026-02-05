@@ -529,6 +529,17 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             TryPreload(SoundId.TavernAmbience, warmUp: true);
             TryPreload(SoundId.TavernOpened, warmUp: true);
         }
+        else
+        {
+            // Leaving the tavern: stop the "enter tavern" one-shot if it is still playing
+            // and cancel any queued play. Background loops are handled by transitions.
+            try { CancelOneShots(SoundId.TavernOpened); } catch { /* ignore */ }
+            try { _sounds.Stop(SoundId.TavernOpened); } catch { /* ignore */ }
+            lock (_stateGate)
+            {
+                _pendingTavernOpenedSound = 0;
+            }
+        }
 
         var shouldTransition = false;
         lock (_stateGate)
@@ -826,19 +837,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             catch
             {
                 // ignore
-            }
-
-            // UX: if we are leaving the tavern context, the "TavernOpened" one-shot should not keep playing
-            // over other screens (unlike the loop ambience which is already handled by StopBackgroundLoops()).
-            // Also cancel any queued TavernOpened requests to avoid it playing late when coming back.
-            if (desiredBackground != AppAudioBackground.Tavern)
-            {
-                try { CancelOneShots(SoundId.TavernOpened); } catch { /* ignore */ }
-                try { _sounds.Stop(SoundId.TavernOpened); } catch { /* ignore */ }
-                lock (_stateGate)
-                {
-                    _pendingTavernOpenedSound = 0;
-                }
             }
 
             // Application launch sound is independent of connection state.
