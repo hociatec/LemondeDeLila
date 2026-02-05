@@ -564,9 +564,9 @@ public sealed class CatalogViewModel : ObservableObject
         IsBusy = true;
         try
         {
-            Status = $"Ouverture de {SelectedGame.Name}...";
+            Status = $"Ouverture de {SelectedGame.DisplayName}...";
             await _openGame(SelectedGame).ConfigureAwait(true);
-            Status = $"Jeu ouvert : {SelectedGame.Name}";
+            Status = $"Jeu ouvert : {SelectedGame.DisplayName}";
         }
         catch (Exception ex)
         {

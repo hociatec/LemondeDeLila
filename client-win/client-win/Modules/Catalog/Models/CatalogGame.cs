@@ -68,5 +68,5 @@ public sealed class CatalogGame
     [JsonPropertyName("chatSoundsEnabled")]
     public bool ChatSoundsEnabled { get; set; } = true;
 
-    public override string ToString() => Name;
+    public override string ToString() => DisplayName;
 }
