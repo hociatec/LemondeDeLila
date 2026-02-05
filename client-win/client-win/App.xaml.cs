@@ -12,6 +12,7 @@ using System.Windows.Automation;
 using System.Windows.Interop;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using client_win.Core.Accessibility;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Config;
@@ -34,8 +35,6 @@ namespace client_win
         private Mutex? _singleInstanceMutex;
         private bool _ownsSingleInstanceMutex;
         private FileStream? _singleInstanceLockFile;
-        private static int _focusSafetyInstalled;
-        private static int _focusHealthChecking;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -85,8 +84,6 @@ namespace client_win
             }
 
             base.OnStartup(e);
-
-            InstallGlobalFocusSafety();
 
             var window = new MainWindow();
             var bootstrap = new BootstrapShellViewModel();
@@ -173,156 +170,6 @@ namespace client_win
 
             // Run heavy startup work after the window is visible so the UI feels responsive.
             _ = BuildAndShowShellAsync(window, bootstrap);
-        }
-
-        private static void InstallGlobalFocusSafety()
-        {
-            if (Interlocked.Exchange(ref _focusSafetyInstalled, 1) == 1)
-            {
-                return;
-            }
-
-            try
-            {
-                // NVDA: when a focused element is unloaded (navigation, template swap, list refresh),
-                // NVDA can announce "indisponible". Park focus on a stable window element before it happens.
-                EventManager.RegisterClassHandler(
-                    typeof(FrameworkElement),
-                    FrameworkElement.UnloadedEvent,
-                    new RoutedEventHandler((sender, args) =>
-                    {
-                        try
-                        {
-                            var focused = Keyboard.FocusedElement as DependencyObject;
-                            if (focused == null)
-                            {
-                                return;
-                            }
-
-                            var unloaded = args.OriginalSource as DependencyObject;
-                            if (unloaded == null)
-                            {
-                                return;
-                            }
-
-                            if (!IsDescendant(focused, unloaded))
-                            {
-                                return;
-                            }
-
-                            var owner = sender as Window ?? Window.GetWindow(unloaded) ?? Application.Current?.MainWindow;
-                            FocusParking.Park(owner);
-                        }
-                        catch
-                        {
-                            // best-effort
-                        }
-                    }),
-                    handledEventsToo: true);
-            }
-            catch
-            {
-                // best-effort
-            }
-
-            try
-            {
-                // NVDA: focus can become "unavailable" without an Unloaded (Visibility/IsEnabled toggles, popup closes, etc).
-                // Check focus health whenever the dispatcher goes idle and re-park if the focused element is no longer usable.
-                var dispatcher = Application.Current?.Dispatcher;
-                if (dispatcher != null)
-                {
-                    dispatcher.Hooks.DispatcherInactive += (_, __) => EnsureFocusHealthy();
-                }
-            }
-            catch
-            {
-                // best-effort
-            }
-
-            try
-            {
-                // Also re-check after focus transitions (covers keyboard-driven navigation where focus ends up on a disabled element).
-                EventManager.RegisterClassHandler(
-                    typeof(UIElement),
-                    Keyboard.GotKeyboardFocusEvent,
-                    new KeyboardFocusChangedEventHandler((_, __) => EnsureFocusHealthy()),
-                    handledEventsToo: true);
-            }
-            catch
-            {
-                // best-effort
-            }
-        }
-
-        private static void EnsureFocusHealthy()
-        {
-            if (Interlocked.Exchange(ref _focusHealthChecking, 1) == 1)
-            {
-                return;
-            }
-
-            try
-            {
-                var app = Application.Current;
-                if (app == null)
-                {
-                    return;
-                }
-
-                var focused = Keyboard.FocusedElement as DependencyObject;
-                if (focused == null)
-                {
-                    // No focused element: park on the active window so NVDA has a stable anchor.
-                    FocusParking.Park(GetActiveWindow(app));
-                    return;
-                }
-
-                // If the focused element is detached, hidden, or disabled, NVDA tends to announce "indisponible".
-                if (PresentationSource.FromDependencyObject(focused) == null)
-                {
-                    FocusParking.Park(Window.GetWindow(focused) ?? GetActiveWindow(app));
-                    return;
-                }
-
-                if (focused is UIElement uie)
-                {
-                    if (!uie.IsVisible || !uie.IsEnabled)
-                    {
-                        FocusParking.Park(Window.GetWindow(uie) ?? GetActiveWindow(app));
-                        return;
-                    }
-                }
-                else if (focused is FrameworkElement fe)
-                {
-                    if (!fe.IsVisible || !fe.IsEnabled)
-                    {
-                        FocusParking.Park(Window.GetWindow(fe) ?? GetActiveWindow(app));
-                        return;
-                    }
-                }
-            }
-            catch
-            {
-                // best-effort
-            }
-            finally
-            {
-                Interlocked.Exchange(ref _focusHealthChecking, 0);
-            }
-        }
-
-        private static Window? GetActiveWindow(Application app)
-        {
-            try
-            {
-                return app.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
-                       ?? app.MainWindow;
-            }
-            catch
-            {
-                return app.MainWindow;
-            }
         }
 
         private static bool IsDescendant(DependencyObject node, DependencyObject ancestor)

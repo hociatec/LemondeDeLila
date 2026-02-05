@@ -21,6 +21,13 @@ public static class FocusParking
                 return;
             }
 
+            // Important: never steal focus back from other applications.
+            // We only "park" focus if this window is active (or already has keyboard focus within).
+            if (!window.IsActive && !window.IsKeyboardFocusWithin)
+            {
+                return;
+            }
+
             void ParkOnUiThread()
             {
                 try
@@ -31,7 +38,11 @@ public static class FocusParking
                         var hwnd = new WindowInteropHelper(window).Handle;
                         if (hwnd != IntPtr.Zero)
                         {
-                            AutomationElement.FromHandle(hwnd)?.SetFocus();
+                            // Avoid re-activating the window: only set UIA focus while already active.
+                            if (window.IsActive)
+                            {
+                                AutomationElement.FromHandle(hwnd)?.SetFocus();
+                            }
                         }
                     }
                     catch

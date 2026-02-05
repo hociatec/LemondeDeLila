@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.ViewModels;
 
 namespace client_win.Modules.Shell.Views;
@@ -24,6 +25,7 @@ public static class ShellWindowBehavior
         public MouseButtonEventHandler? PreviewMouseDown { get; init; }
         public EventHandler? Activated { get; init; }
         public EventHandler? Closed { get; init; }
+        public IDisposable? FocusSafety { get; init; }
     }
 
     private static readonly ConditionalWeakTable<Window, HandlerSet> HandlersByWindow = new();
@@ -55,6 +57,16 @@ public static class ShellWindowBehavior
     private static void Attach(Window window)
     {
         Detach(window);
+
+        IDisposable? focusSafety = null;
+        try
+        {
+            focusSafety = new ShellFocusSafetyCoordinator(window);
+        }
+        catch
+        {
+            // best-effort
+        }
 
         RoutedEventHandler loaded = async (_, _) =>
         {
@@ -119,6 +131,7 @@ public static class ShellWindowBehavior
             PreviewMouseDown = previewMouseDown,
             Activated = activated,
             Closed = closed,
+            FocusSafety = focusSafety,
         });
     }
 
@@ -136,7 +149,8 @@ public static class ShellWindowBehavior
         if (handlers.Activated != null) window.Activated -= handlers.Activated;
         if (handlers.Closed != null) window.Closed -= handlers.Closed;
 
+        try { handlers.FocusSafety?.Dispose(); } catch { /* ignore */ }
+
         HandlersByWindow.Remove(window);
     }
 }
-
