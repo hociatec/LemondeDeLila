@@ -98,12 +98,12 @@ public partial class GamePlayView
         targetList.SelectedIndex = next;
         targetList.ScrollIntoView(targetList.Items[next]);
 
-        TryFocusListIndex(targetList, next);
+        TryFocusChoiceIndex(targetList, next);
 
         return true;
     }
 
-    private void TryFocusListIndex(ListBox list, int index)
+    private void TryFocusChoiceIndex(ListBox list, int index)
     {
         if (list == null || list.Visibility != Visibility.Visible || list.Items.Count <= 0)
         {

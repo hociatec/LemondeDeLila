@@ -96,7 +96,8 @@ public sealed partial class GamePlayViewModel
             return false;
         }
 
-        return await TrySendActionAsync("select_card", new { cardId = card.CardId }, cancellationToken).ConfigureAwait(false);
+        await TrySendActionAsync("select_card", new { cardId = card.CardId }, cancellationToken).ConfigureAwait(false);
+        return true;
     }
 
     private void UpdateHandCards(IReadOnlyList<GamePlayExtrasParser.HandCardInfo> cards)
