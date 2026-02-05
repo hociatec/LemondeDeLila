@@ -1139,9 +1139,10 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             return false;
         }
 
-        // Interface shortcuts should reflect the latest server state (bot turns can update quickly).
-        // Request a fresh game.state and fall back to the last known one.
-        var state = await _panels.RequestFreshStateAsync(session).ConfigureAwait(true) ?? session.LastState;
+        // Use the last known state: requesting a fresh game.state on every key press can cause
+        // extra UI refreshes and screen reader re-announcements (users perceive it as "repeating"
+        // the start-of-game information before the shortcut output).
+        var state = session.LastState;
         if (state == null)
         {
             return false;
