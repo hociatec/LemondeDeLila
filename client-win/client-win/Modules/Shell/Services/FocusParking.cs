@@ -41,8 +41,10 @@ public static class FocusParking
 
                     // 2) Keyboard focus: ensure the focused element is not about to be removed/collapsed.
                     var target =
-                        window.FindName("FocusSentinel") as IInputElement ??
+                        // Prefer the content host: it's a stable, visible element (NVDA can announce "indisponible"
+                        // when focusing an invisible sentinel during heavy navigation).
                         window.FindName("RootHost") as IInputElement ??
+                        window.FindName("FocusSentinel") as IInputElement ??
                         window;
                     try { (target as UIElement)?.Focus(); } catch { /* ignore */ }
                     try { Keyboard.Focus(target); } catch { /* ignore */ }
