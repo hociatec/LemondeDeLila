@@ -77,7 +77,7 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
                     continue;
                 }
 
-                expectedFileNames.Add($"{soundId}-{entry.Sha256}.mp3");
+                expectedFileNames.Add($"{soundId}-{entry.Sha256}.wav");
                 var cached = await EnsureCachedAsync(soundId, entry, cancellationToken).ConfigureAwait(false);
                 if (cached != null)
                 {
@@ -159,7 +159,7 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
                     continue;
                 }
 
-                var fileName = $"{soundId}-{entry.Sha256}.mp3";
+                var fileName = $"{soundId}-{entry.Sha256}.wav";
                 var destPath = Path.Combine(cacheDir, fileName);
                 if (File.Exists(destPath))
                 {
@@ -238,7 +238,7 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
             return bestBySound;
         }
 
-        foreach (var path in Directory.EnumerateFiles(cacheDir, "*.mp3", SearchOption.TopDirectoryOnly))
+        foreach (var path in Directory.EnumerateFiles(cacheDir, "*.wav", SearchOption.TopDirectoryOnly))
         {
             var fileName = Path.GetFileName(path);
             if (string.IsNullOrWhiteSpace(fileName))
@@ -320,7 +320,7 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
                 return;
             }
 
-            // Delete obsolete mp3 files (old hashes) and any leftover temp files.
+            // Delete obsolete wav files (old hashes) and any leftover temp files.
             foreach (var path in Directory.EnumerateFiles(cacheDir, "*", SearchOption.TopDirectoryOnly))
             {
                 var fileName = Path.GetFileName(path);
@@ -335,7 +335,7 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
                     continue;
                 }
 
-                if (!fileName.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase))
+                if (!fileName.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -364,7 +364,7 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
         var cacheDir = GetCacheDir();
         Directory.CreateDirectory(cacheDir);
 
-        var fileName = $"{soundId}-{sha256}.mp3";
+        var fileName = $"{soundId}-{sha256}.wav";
         var destPath = Path.Combine(cacheDir, fileName);
         if (File.Exists(destPath))
         {

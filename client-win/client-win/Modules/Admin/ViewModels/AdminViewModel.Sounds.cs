@@ -369,7 +369,7 @@ public sealed partial class AdminViewModel
         {
             _page = AdminPage.SoundsTableAmbience;
             Title = "Administration - Table - Ambiances";
-            Details = "Créer, renommer, supprimer des ambiances de table, et associer un son (.mp3).";
+            Details = "Créer, renommer, supprimer des ambiances de table, et associer un son (.wav).";
             PreferDetailsFocus = false;
             IsTextInputVisible = false;
             IsSecondaryInputVisible = false;
@@ -411,7 +411,7 @@ public sealed partial class AdminViewModel
             IsAdditionalPermissionsVisible = false;
             Items.Clear();
             Items.Add(new AdminMenuItem("Renommer", tag: "tableAmbience.rename"));
-            Items.Add(new AdminMenuItem("Changer le son (.mp3)", tag: "tableAmbience.sound"));
+            Items.Add(new AdminMenuItem("Changer le son (.wav)", tag: "tableAmbience.sound"));
             Items.Add(new AdminMenuItem("Supprimer", tag: "tableAmbience.delete"));
             SelectedItem = Items.FirstOrDefault();
             Status = "Entrée : action. Échap : retour.";
@@ -508,7 +508,7 @@ public sealed partial class AdminViewModel
             IsSecondaryInputVisible = false;
             IsAdditionalPermissionsVisible = false;
             Details = string.Equals(mode, "tableAmbience.create", StringComparison.OrdinalIgnoreCase)
-                ? "Donnez un nom à l'ambiance. Le fichier .mp3 se choisit ensuite via \"Changer le son (.mp3)\"."
+                ? "Donnez un nom à l'ambiance. Le fichier .wav se choisit ensuite via \"Changer le son (.wav)\"."
                 : string.Empty;
             Status = "Saisissez puis Entrée pour valider. Échap : retour.";
             UpdateFilterVisibility();
@@ -936,7 +936,7 @@ public sealed partial class AdminViewModel
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Aperçu (Entrée pour écouter)", tag: "sound.preview"));
-        Items.Add(new AdminMenuItem("Changer (Entrée pour choisir un fichier .mp3)", tag: "sound.change"));
+        Items.Add(new AdminMenuItem("Changer (Entrée pour choisir un fichier .wav)", tag: "sound.change"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Tab/Entrée : action. Échap : retour.";
         UpdateFilterVisibility();
@@ -956,8 +956,8 @@ public sealed partial class AdminViewModel
 
         var dialog = new OpenFileDialog
         {
-            Title = "Choisir un son (.mp3)",
-            Filter = "Fichiers audio (*.mp3)|*.mp3",
+            Title = "Choisir un son (.wav ou .mp3)",
+            Filter = "Fichiers audio (*.wav;*.mp3)|*.wav;*.mp3",
             Multiselect = false,
             CheckFileExists = true,
             CheckPathExists = true
@@ -1020,7 +1020,7 @@ public sealed partial class AdminViewModel
                 ? "audio/mpeg"
                 : "application/octet-stream";
         fileContent.Headers.ContentType = new MediaTypeHeaderValue(mime);
-        form.Add(fileContent, "file", Path.GetFileName(filePath) ?? "sound.mp3");
+        form.Add(fileContent, "file", Path.GetFileName(filePath) ?? "sound.wav");
 
         HttpResponseMessage resp;
         try

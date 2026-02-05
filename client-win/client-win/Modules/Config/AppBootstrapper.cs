@@ -525,6 +525,7 @@ public sealed class AppHost : IAsyncDisposable
             Configuration.ApplicationName,
             AuthenticationService,
             CredentialStore,
+            WsClient,
             Dialogs,
             navigateToMenu,
             requestExit,

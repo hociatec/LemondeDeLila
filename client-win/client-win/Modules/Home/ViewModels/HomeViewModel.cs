@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Error;
+using client_win.Modules.Network;
 using client_win.Modules.User.Models;
 using client_win.Modules.User.Services;
 
@@ -20,6 +21,7 @@ public sealed class HomeViewModel : ObservableObject, IDisposable
 {
     private readonly IAuthenticationService _authenticationService;
     private readonly ICredentialStore _credentialStore;
+    private readonly PersistentWsClient? _ws;
     private readonly Modules.Shell.Services.IDialogService? _dialogs;
     private readonly Action<AuthenticatedUser>? _navigateToMainMenu;
     private readonly Action? _requestExit;
@@ -33,6 +35,7 @@ public sealed class HomeViewModel : ObservableObject, IDisposable
     public HomeViewModel(string applicationName,
         IAuthenticationService authenticationService,
         ICredentialStore credentialStore,
+        PersistentWsClient? wsClient,
         Modules.Shell.Services.IDialogService? dialogs,
         Action<AuthenticatedUser>? navigateToMainMenu,
         Action? requestExit,
@@ -41,6 +44,7 @@ public sealed class HomeViewModel : ObservableObject, IDisposable
         ApplicationName = applicationName;
         _authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
         _credentialStore = credentialStore ?? throw new ArgumentNullException(nameof(credentialStore));
+        _ws = wsClient;
         _dialogs = dialogs;
         _navigateToMainMenu = navigateToMainMenu;
         _requestExit = requestExit;
@@ -130,6 +134,31 @@ public sealed class HomeViewModel : ObservableObject, IDisposable
         {
             StatusMessage = string.Empty;
         }
+
+        // UX: pre-connect WS in background so the first "Connexion" click doesn't have to wait for handshake.
+        StartWsWarmUp();
+    }
+
+    private void StartWsWarmUp()
+    {
+        var ws = _ws;
+        if (ws == null)
+        {
+            return;
+        }
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(6));
+                await ws.WarmUpAsync(token: null, wsTicket: null, cts.Token).ConfigureAwait(false);
+            }
+            catch
+            {
+                // best-effort
+            }
+        });
     }
 
     private void ShowLanding()
@@ -142,6 +171,7 @@ public sealed class HomeViewModel : ObservableObject, IDisposable
     {
         CurrentPage = HomePage.Login;
         StatusMessage = string.Empty;
+        StartWsWarmUp();
     }
 
     private void ShowRegister()

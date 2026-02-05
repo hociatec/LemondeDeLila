@@ -43,11 +43,6 @@
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <Link>config\client.properties</Link>
     </Content>
-    <Content Include="Assets\Sounds\*.mp3">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-    </Content>
     <Content Include="Assets\Sounds\*.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>

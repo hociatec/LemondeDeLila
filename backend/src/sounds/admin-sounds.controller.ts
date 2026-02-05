@@ -71,7 +71,8 @@ export class AdminSoundsController {
         filename: (_req, file, cb) =>
           cb(null, `lila-sound-${Date.now()}-${file.originalname}`),
       }),
-      limits: { fileSize: 15 * 1024 * 1024 },
+      // WAV files are much larger than MP3. Keep this generous; only admins can upload.
+      limits: { fileSize: 250 * 1024 * 1024 },
     }),
   )
   async upload(@Param('soundId') soundId: string, @UploadedFile() file?: any) {

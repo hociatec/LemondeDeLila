@@ -148,14 +148,14 @@ export class SoundsService {
     return String(match[1]).toLowerCase() === '-inf';
   }
 
-  private async transcodeToStableMp3(
+  private async transcodeToStableWav(
     inputPath: string,
   ): Promise<{ outputPath: string; tempDir: string }> {
     const ffmpegPath = this.getFfmpegPath();
     const tempDir = await fs.promises.mkdtemp(
       path.join(tmpdir(), 'lmdl-sound-'),
     );
-    const outputPath = path.join(tempDir, 'sound.mp3');
+    const outputPath = path.join(tempDir, 'sound.wav');
     const res = await this.runProcess(
       ffmpegPath,
       [
@@ -171,9 +171,7 @@ export class SoundsService {
         '-ar',
         '44100',
         '-codec:a',
-        'libmp3lame',
-        '-b:a',
-        '192k',
+        'pcm_s16le',
         '-map_metadata',
         '-1',
         outputPath,
@@ -196,8 +194,9 @@ export class SoundsService {
     try {
       const files = await fs.promises.readdir(soundDir);
       for (const file of files) {
-        if (!file.toLowerCase().endsWith('.mp3')) continue;
-        if (file === `${keepSha256}.mp3`) continue;
+        const lower = file.toLowerCase();
+        if (!(lower.endsWith('.wav') || lower.endsWith('.mp3'))) continue;
+        if (file === `${keepSha256}.wav`) continue;
         try {
           await fs.promises.rm(path.join(soundDir, file), { force: true });
           deleted++;
@@ -397,17 +396,25 @@ export class SoundsService {
   async getPublicManifest(origin?: string | null): Promise<SoundManifest> {
     const manifest = await this.readManifest();
 
-    // Ensure URLs are always correct for current host (optional).
-    // If origin is provided (e.g. from reverse proxy), we can return absolute URLs; otherwise keep relative.
-    if (!origin) {
-      return manifest;
-    }
+    // Always filter to known keys and only publish entries that have an on-disk file.
+    // This prevents the client from trying to download sounds that were removed from disk
+    // but accidentally left behind in the manifest.
     const sounds: SoundManifest['sounds'] = {};
     for (const key of SOUND_KEYS) {
       const entry = manifest.sounds?.[key];
       if (!entry) continue;
-      sounds[key] = { ...entry, url: `${origin}${entry.url}` };
+
+      const root = this.dataRoot();
+      const soundDir = path.join(root, entry.soundId);
+      const wav = path.join(soundDir, `${entry.sha256}.wav`);
+      const mp3 = path.join(soundDir, `${entry.sha256}.mp3`);
+      if (!fs.existsSync(wav) && !fs.existsSync(mp3)) {
+        continue;
+      }
+
+      sounds[key] = origin ? { ...entry, url: `${origin}${entry.url}` } : entry;
     }
+
     return { ...manifest, sounds };
   }
 
@@ -422,20 +429,21 @@ export class SoundsService {
     }
 
     const ext = path.extname(originalName || tempFilePath).toLowerCase();
-    if (ext !== '.mp3') {
-      throw new BadRequestException('Seuls les fichiers .mp3 sont acceptÃ©s.');
+    if (ext !== '.mp3' && ext !== '.wav') {
+      throw new BadRequestException('Seuls les fichiers .mp3 ou .wav sont acceptÃ©s.');
     }
 
     const stat = await fs.promises.stat(tempFilePath);
     // Safety: keep reasonably small. Can be tuned.
-    const maxBytes = 15 * 1024 * 1024;
+    // WAV is much larger than MP3 (PCM). Keep this high; admin-only endpoint.
+    const maxBytes = 250 * 1024 * 1024;
     if (stat.size <= 0 || stat.size > maxBytes) {
       throw new BadRequestException(
         `Taille fichier invalide (max ${maxBytes} bytes).`,
       );
     }
 
-    // Validate input and re-encode to a stable MP3 format.
+    // Validate input and re-encode to a stable WAV (PCM) format.
     const minDurationSeconds = 0.2;
     const inputDuration = await this.probeDurationSeconds(tempFilePath);
     if (inputDuration < minDurationSeconds) {
@@ -448,7 +456,7 @@ export class SoundsService {
     let tempDir: string | null = null;
     let outputPath = tempFilePath;
     try {
-      const transcoded = await this.transcodeToStableMp3(tempFilePath);
+      const transcoded = await this.transcodeToStableWav(tempFilePath);
       outputPath = transcoded.outputPath;
       tempDir = transcoded.tempDir;
 
@@ -486,7 +494,7 @@ export class SoundsService {
     const soundDir = path.join(root, soundId);
     await fs.promises.mkdir(soundDir, { recursive: true });
 
-    const destName = `${sha256}.mp3`;
+    const destName = `${sha256}.wav`;
     const destPath = path.join(soundDir, destName);
     await fs.promises.writeFile(destPath, bytes);
 
@@ -495,7 +503,7 @@ export class SoundsService {
       sha256,
       bytes: encodedSize || bytes.length,
       uploadedAt: new Date().toISOString(),
-      url: `/api/sounds/${encodeURIComponent(soundId)}/${sha256}.mp3`,
+      url: `/api/sounds/${encodeURIComponent(soundId)}/${sha256}.wav`,
     };
 
     const manifest = await this.readManifest();
@@ -582,15 +590,21 @@ export class SoundsService {
       }
 
       const soundDir = path.join(this.dataRoot(), soundId);
-      const srcPath = path.join(soundDir, `${entry.sha256}.mp3`);
-      if (!fs.existsSync(srcPath)) {
+      const srcPathWav = path.join(soundDir, `${entry.sha256}.wav`);
+      const srcPathMp3 = path.join(soundDir, `${entry.sha256}.mp3`);
+      const srcPath = fs.existsSync(srcPathWav)
+        ? srcPathWav
+        : fs.existsSync(srcPathMp3)
+          ? srcPathMp3
+          : null;
+      if (!srcPath) {
         missing.push(soundId);
         continue;
       }
 
       let tempDir: string | null = null;
       try {
-        const transcoded = await this.transcodeToStableMp3(srcPath);
+        const transcoded = await this.transcodeToStableWav(srcPath);
         tempDir = transcoded.tempDir;
         const outputPath = transcoded.outputPath;
 
@@ -611,7 +625,7 @@ export class SoundsService {
           continue;
         }
 
-        const destPath = path.join(soundDir, `${sha256}.mp3`);
+        const destPath = path.join(soundDir, `${sha256}.wav`);
         await fs.promises.mkdir(soundDir, { recursive: true });
         await fs.promises.writeFile(destPath, bytes);
 
@@ -620,7 +634,7 @@ export class SoundsService {
           sha256,
           bytes: bytes.length,
           uploadedAt: new Date().toISOString(),
-          url: `/api/sounds/${encodeURIComponent(soundId)}/${sha256}.mp3`,
+          url: `/api/sounds/${encodeURIComponent(soundId)}/${sha256}.wav`,
         };
 
         await this.removeUnusedFilesForSoundId(soundId, sha256);
@@ -710,8 +724,14 @@ export class SoundsService {
       }
 
       const soundDir = path.join(this.dataRoot(), soundId);
-      const srcPath = path.join(soundDir, `${entry.sha256}.mp3`);
-      if (!fs.existsSync(srcPath)) {
+      const srcPathWav = path.join(soundDir, `${entry.sha256}.wav`);
+      const srcPathMp3 = path.join(soundDir, `${entry.sha256}.mp3`);
+      const srcPath = fs.existsSync(srcPathWav)
+        ? srcPathWav
+        : fs.existsSync(srcPathMp3)
+          ? srcPathMp3
+          : null;
+      if (!srcPath) {
         missing.push(soundId);
         continue;
       }
@@ -731,7 +751,7 @@ export class SoundsService {
 
       let tempDir: string | null = null;
       try {
-        const transcoded = await this.transcodeToStableMp3(srcPath);
+        const transcoded = await this.transcodeToStableWav(srcPath);
         tempDir = transcoded.tempDir;
         const outputPath = transcoded.outputPath;
 
@@ -745,7 +765,7 @@ export class SoundsService {
           continue;
         }
 
-        const destPath = path.join(soundDir, `${sha256}.mp3`);
+        const destPath = path.join(soundDir, `${sha256}.wav`);
         await fs.promises.mkdir(soundDir, { recursive: true });
         await fs.promises.writeFile(destPath, bytes);
 
@@ -754,7 +774,7 @@ export class SoundsService {
           sha256,
           bytes: bytes.length,
           uploadedAt: new Date().toISOString(),
-          url: `/api/sounds/${encodeURIComponent(soundId)}/${sha256}.mp3`,
+          url: `/api/sounds/${encodeURIComponent(soundId)}/${sha256}.wav`,
         };
 
         await this.removeUnusedFilesForSoundId(soundId, sha256);
@@ -836,7 +856,9 @@ export class SoundsService {
       const entry = manifest.sounds?.[soundId];
       const sha256 = entry?.sha256 ?? null;
       const filePath = sha256
-        ? path.join(root, soundId, `${sha256}.mp3`)
+        ? fs.existsSync(path.join(root, soundId, `${sha256}.wav`))
+          ? path.join(root, soundId, `${sha256}.wav`)
+          : path.join(root, soundId, `${sha256}.mp3`)
         : null;
       let exists = false;
       let bytes: number | null = null;
@@ -965,11 +987,14 @@ export class SoundsService {
       // The client asked an old url; 404 encourages them to refresh manifest.
       throw new NotFoundException('Version du son obsolÃ¨te.');
     }
-    const filePath = path.join(this.dataRoot(), soundId, `${entry.sha256}.mp3`);
+    const wav = path.join(this.dataRoot(), soundId, `${entry.sha256}.wav`);
+    const mp3 = path.join(this.dataRoot(), soundId, `${entry.sha256}.mp3`);
+    const filePath = fs.existsSync(wav) ? wav : mp3;
     if (!fs.existsSync(filePath)) {
       throw new NotFoundException('Fichier son introuvable.');
     }
-    return { entry, filePath };
+    const ext = filePath.toLowerCase().endsWith('.wav') ? '.wav' : '.mp3';
+    return { entry, filePath, ext };
   }
 
   // Convenience for local dev: ensure data dir exists

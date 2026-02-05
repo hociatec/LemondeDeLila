@@ -12,6 +12,7 @@ public interface ISoundService
     void PlayPreview(SoundId sound);
     void StopPreview();
     void SetConnected(bool connected);
+    void OpenStartupGateForApp(string reason);
     void StartLoop(SoundId sound);
     void StopLoop(SoundId sound);
     void StopLoopImmediate(SoundId sound);

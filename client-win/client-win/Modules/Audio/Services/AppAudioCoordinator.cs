@@ -291,6 +291,12 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             Volatile.Write(ref _openedSoundPlayedSequence, skipOpenedSeq);
         }
 
+        // UX: do not keep the app behind the startup/connected gates after a successful login.
+        // If the user logs in quickly, ClientOpened may be skipped or still playing; opening the gate here ensures
+        // immediate feedback sounds (e.g. opening a table) are not suppressed.
+        try { _sounds.OpenStartupGateForApp("login succeeded"); } catch { /* ignore */ }
+        try { _sounds.SetConnected(true); } catch { /* ignore */ }
+
         // Allow login sound to overlap with existing audio (startup/menu).
 
         // If a disconnect one-shot is still queued/playing, cancel it to ensure the login feedback is audible.

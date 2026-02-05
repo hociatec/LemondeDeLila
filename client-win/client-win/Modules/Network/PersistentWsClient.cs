@@ -560,6 +560,13 @@ public sealed class PersistentWsClient : IAsyncDisposable
         }
     }
 
+    // Best-effort: establish the WS connection early so the first user action (login) doesn't pay the handshake cost.
+    // This should be called from a background task and exceptions should be swallowed by the caller.
+    public async Task WarmUpAsync(string? token = null, string? wsTicket = null, CancellationToken cancellationToken = default)
+    {
+        _ = await EnsureConnectedAsync(token, wsTicket, cancellationToken).ConfigureAwait(false);
+    }
+
     private static bool IsUpdateRequiredClose(WebSocketCloseStatus? status, string? description)
     {
         var code = status.HasValue ? (int)status.Value : 0;
