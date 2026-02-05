@@ -379,7 +379,30 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
     public void NotifyLogoutRequested() => HandleDisconnect(userInitiated: true);
 
-    public void NotifyDisconnected() => HandleDisconnect(userInitiated: false);
+    public void NotifyDisconnected()
+    {
+        // WS/network hiccup: play a feedback one-shot but do NOT switch the whole app audio state to "disconnected".
+        // Otherwise background music/ambience and other UI feedback sounds can remain muted until a full relogin.
+        if (ShouldSuppressDisconnectSound())
+        {
+            return;
+        }
+
+        try
+        {
+            _logger.LogInformation("Audio: WS disconnected -> ClientDisconnected one-shot (no state change)");
+        }
+        catch
+        {
+            // ignore
+        }
+
+        try { CancelOneShots(SoundId.ClientDisconnected); } catch { /* ignore */ }
+        _ = ScheduleOneShotAsync(
+            SoundId.ClientDisconnected,
+            priority: 1,
+            GetSoundWaitTimeout(SoundId.ClientDisconnected, TimeSpan.FromSeconds(8)));
+    }
 
     private void HandleDisconnect(bool userInitiated)
     {

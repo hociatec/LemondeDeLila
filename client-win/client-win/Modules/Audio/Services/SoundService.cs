@@ -669,6 +669,23 @@ public sealed class SoundService : ISoundService, IDisposable
                 if (_opened.Contains(sound))
                 {
                     RecordDurationIfKnown(sound, player);
+                    try
+                    {
+                        // Never warm up a sound while it is actively playing/looping: warm-up uses Play/Stop
+                        // (muted) and would cut the audible playback.
+                        lock (_gate)
+                        {
+                            if (_playEndSignals.ContainsKey(sound) || _looping.Contains(sound))
+                            {
+                                SignalWarmUpCompletion();
+                                return;
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
                     DoWarmUp();
                 }
                 else
@@ -678,6 +695,23 @@ public sealed class SoundService : ISoundService, IDisposable
                     {
                         try { player.MediaOpened -= handler; } catch { }
                         RecordDurationIfKnown(sound, player);
+                        try
+                        {
+                            // Never warm up a sound while it is actively playing/looping: warm-up uses Play/Stop
+                            // (muted) and would cut the audible playback.
+                            lock (_gate)
+                            {
+                                if (_playEndSignals.ContainsKey(sound) || _looping.Contains(sound))
+                                {
+                                    SignalWarmUpCompletion();
+                                    return;
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            // ignore
+                        }
                         DoWarmUp();
                     };
                     player.MediaOpened += handler;
