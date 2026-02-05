@@ -157,6 +157,9 @@ public partial class GamePlayView
         }));
     }
 
+    private void TryFocusChoiceIndex(int index) =>
+        TryFocusChoiceIndex(ChoicesList, index);
+
     private bool IsFocusWithinChoices()
     {
         if (ChoicesList == null)
