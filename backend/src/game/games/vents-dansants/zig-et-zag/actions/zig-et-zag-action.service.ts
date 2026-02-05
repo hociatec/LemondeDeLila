@@ -430,7 +430,8 @@ export class ZigEtZagActionService {
     if (meta.roundState) {
       return { state, round: meta.roundState };
     }
-    const round = buildInitialRoundState(meta, players);
+    const safePlayers = Array.isArray(players) ? players : [];
+    const round = buildInitialRoundState(meta, safePlayers);
     const nextState = this.setRoundState(state, meta, round);
     return { state: nextState, round };
   }
