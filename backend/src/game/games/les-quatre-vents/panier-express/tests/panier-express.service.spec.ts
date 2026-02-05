@@ -31,6 +31,29 @@ describe('PanierExpressService', () => {
     expect(Array.isArray(meta.tiles)).toBe(true);
     expect(meta.decks?.courses?.deck?.length).toBeGreaterThan(0);
   });
+  it("demande une selection de pion (obligatoire) au demarrage", () => {
+    const state: any = {
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      status: 'started',
+    };
+    const hydrated = service.hydrateInitialState(state);
+    expect(hydrated.status?.toLowerCase()).toBe('started');
+    expect(hydrated.pending?.type).toBe('pick');
+    expect((hydrated.pending as any)?.blocking).toBe(true);
+    expect((hydrated.pending as any)?.playerId).toBe(1);
+    expect((hydrated.pending as any)?.data?.kind).toBe('setup.choose_pawn');
+    const p1: any = (hydrated.players ?? []).find((p: any) => p.id === 1);
+    expect(Array.isArray(p1.shoppingList)).toBe(true);
+    expect(p1.shoppingList.length).toBe(3);
+    expect(Boolean(p1.pawn)).toBe(false);
+    const choices = Array.isArray((hydrated.pending as any)?.choices)
+      ? (hydrated.pending as any).choices
+      : [];
+    expect(choices.length).toBeGreaterThan(0);
+  });
 
   it('expose correctement les pending non-quiz et les vues joueurs', () => {
     const base: any = service.hydrateInitialState({

@@ -163,11 +163,19 @@ export class PanierExpressService extends AbstractGameService {
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const status = (baseState.status || '').toLowerCase();
     const players = baseState.players ?? [];
+    const meta: any = (baseState.metadata ?? {}) as any;
+    const looksInitialized =
+      Boolean(meta?.category) ||
+      Boolean(meta?.subcategory) ||
+      Boolean(meta?.tiles) ||
+      Boolean(meta?.positions) ||
+      Boolean(meta?.decks);
     const inProgress =
       status === 'finished' ||
       status === 'running' ||
-      status === 'started' ||
       (typeof baseState.turnIndex === 'number' && baseState.turnIndex > 0) ||
+      looksInitialized ||
+      Boolean(baseState.pending) ||
       players.some((p) => {
         const hasList =
           Array.isArray(p.shoppingList) && p.shoppingList.length > 0;
