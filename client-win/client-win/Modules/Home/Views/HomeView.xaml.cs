@@ -112,7 +112,7 @@ public partial class HomeView : UserControl, IInitialFocusTarget
                     moved = TryFocusFirstFieldCore(allowInactiveHost: true);
                 }
 
-                e.Handled = true;
+                e.Handled = moved;
             }
             return;
         }
@@ -370,8 +370,7 @@ public partial class HomeView : UserControl, IInitialFocusTarget
     {
         if (LandingPrimaryButton?.IsVisible == true && LandingPrimaryButton.IsEnabled)
         {
-            TryKeyboardFocus(LandingPrimaryButton);
-            return true;
+            return TryKeyboardFocus(LandingPrimaryButton);
         }
         return false;
     }
@@ -380,18 +379,15 @@ public partial class HomeView : UserControl, IInitialFocusTarget
     {
         if (LoginUsernameBox?.IsVisible == true && LoginUsernameBox.IsEnabled)
         {
-            TryKeyboardFocus(LoginUsernameBox);
-            return true;
+            return TryKeyboardFocus(LoginUsernameBox);
         }
         else if (LoginPasswordBox?.IsVisible == true && LoginPasswordBox.IsEnabled)
         {
-            TryKeyboardFocus(LoginPasswordBox);
-            return true;
+            return TryKeyboardFocus(LoginPasswordBox);
         }
         else if (LoginPasswordTextBox?.IsVisible == true && LoginPasswordTextBox.IsEnabled)
         {
-            TryKeyboardFocus(LoginPasswordTextBox);
-            return true;
+            return TryKeyboardFocus(LoginPasswordTextBox);
         }
 
         return false;
@@ -401,32 +397,71 @@ public partial class HomeView : UserControl, IInitialFocusTarget
     {
         if (RegisterUsernameBox?.IsVisible == true && RegisterUsernameBox.IsEnabled)
         {
-            TryKeyboardFocus(RegisterUsernameBox);
-            return true;
+            return TryKeyboardFocus(RegisterUsernameBox);
         }
         else if (RegisterEmailBox?.IsVisible == true && RegisterEmailBox.IsEnabled)
         {
-            TryKeyboardFocus(RegisterEmailBox);
-            return true;
+            return TryKeyboardFocus(RegisterEmailBox);
         }
         else if (RegisterPasswordBox?.IsVisible == true && RegisterPasswordBox.IsEnabled)
         {
-            TryKeyboardFocus(RegisterPasswordBox);
-            return true;
+            return TryKeyboardFocus(RegisterPasswordBox);
         }
         else if (RegisterPasswordTextBox?.IsVisible == true && RegisterPasswordTextBox.IsEnabled)
         {
-            TryKeyboardFocus(RegisterPasswordTextBox);
+            return TryKeyboardFocus(RegisterPasswordTextBox);
+        }
+
+        return false;
+    }
+
+    private static bool TryKeyboardFocus(IInputElement target)
+    {
+        if (target == null)
+        {
+            return false;
+        }
+
+        try { (target as UIElement)?.Focus(); } catch { /* ignore */ }
+        try
+        {
+            var focused = Keyboard.Focus(target);
+            if (ReferenceEquals(focused, target))
+            {
+                return true;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        if (target is UIElement element && element.IsKeyboardFocused)
+        {
+            return true;
+        }
+
+        if (target is DependencyObject targetNode &&
+            Keyboard.FocusedElement is DependencyObject focusedNode &&
+            IsDescendantOrSelf(focusedNode, targetNode))
+        {
             return true;
         }
 
         return false;
     }
 
-    private static void TryKeyboardFocus(IInputElement target)
+    private static bool IsDescendantOrSelf(DependencyObject node, DependencyObject ancestor)
     {
-        try { (target as UIElement)?.Focus(); } catch { /* ignore */ }
-        try { Keyboard.Focus(target); } catch { /* ignore */ }
+        for (DependencyObject? current = node; current != null; current = GetParent(current))
+        {
+            if (ReferenceEquals(current, ancestor))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private bool IsHostWindowActive()
