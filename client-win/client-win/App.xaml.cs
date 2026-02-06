@@ -88,8 +88,19 @@ namespace client_win
             var window = new MainWindow();
             MainWindow = window;
 
-            // Démarrage sans vue "Chargement": on garde la fenêtre cachée jusqu'à la fin du bootstrap.
-            window.Visibility = Visibility.Hidden;
+            // IMPORTANT (NVDA / clavier) :
+            // Si on laisse la fenêtre cachée pendant le bootstrap, Windows peut refuser de lui donner le focus
+            // lorsqu'on l'affiche plus tard (le process n'a plus le "foreground right"). Résultat : NVDA annonce
+            // parfois le champ mais le clavier reste sur l'application précédente, jusqu'à un alt-tab.
+            // On montre donc la fenêtre immédiatement et on initialise le Shell ensuite.
+            try { window.Show(); } catch { /* best-effort */ }
+            try
+            {
+                window.Activate();
+                window.Focus();
+                Keyboard.Focus(window);
+            }
+            catch { /* best-effort */ }
 
             _ = BuildAndShowShellAsync(window);
         }
