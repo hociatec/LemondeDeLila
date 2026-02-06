@@ -294,10 +294,10 @@ namespace client_win
 
                     void EnsureForeground()
                     {
-                        try
-                        {
-                            Log.Debug("EnsureForeground: start (IsVisible={IsVisible}, IsActive={IsActive}, WindowState={WindowState})",
-                                window.IsVisible, window.IsActive, window.WindowState);
+                    try
+                    {
+                        Log.Debug("EnsureForeground: start (IsVisible={IsVisible}, IsActive={IsActive}, WindowState={WindowState})",
+                            window.IsVisible, window.IsActive, window.WindowState);
 
                             if (!window.IsVisible)
                             {
@@ -316,6 +316,12 @@ namespace client_win
                             ForegroundWindowHelper.TryForceForeground(hwnd);
                             Log.Debug("EnsureForeground: foreground request issued (ForegroundWindow={Foreground})",
                                 NativeMethods.GetForegroundWindow());
+
+                            if (!window.IsActive)
+                            {
+                            Log.Debug("EnsureForeground: window still inactive, flashing topmost");
+                            ActivationHelpers.FlashWindowTopmost(window);
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -365,6 +371,7 @@ namespace client_win
                                 }
 
                                 Log.Warning("Window inactive after {Ticks} ticks; announcing NVDA reminder", activationTick);
+                                ActivationHelpers.FlashWindowTopmost(window);
                                 announcer.AnnounceAssertiveEvenIfInactive(
                                     "Le Monde de Lila n'est pas actif. Faites Alt+Tab pour revenir sur la fenêtre, ou appuyez sur Contrôle Alt Majuscule L pour activer la fenêtre.");
                             }
@@ -806,11 +813,17 @@ namespace client_win
                         return;
                     }
 
-                    // If the user already activated it, stop. Also stop after a short burst to avoid stealing focus later.
-                    if (window.IsActive || attempts >= MaxAttempts)
+                    if (window.IsActive)
                     {
-                        Log.Debug("StartupActivationHelper: stopping (IsActive={IsActive}, Attempts={Attempts})",
-                            window.IsActive, attempts);
+                        Log.Debug("StartupActivationHelper: window became active on attempt {Attempt}", attempts);
+                        timer.Stop();
+                        return;
+                    }
+
+                    if (attempts >= MaxAttempts)
+                    {
+                        Log.Warning("StartupActivationHelper: max attempts reached without activation");
+                        ActivationHelpers.FlashWindowTopmost(window);
                         timer.Stop();
                         return;
                     }
@@ -850,6 +863,61 @@ namespace client_win
             {
                 try { timer.Stop(); } catch { /* ignore */ }
             };
+        }
+    }
+
+    internal static class ActivationHelpers
+    {
+        public static void FlashWindowTopmost(Window window)
+        {
+            if (window == null)
+            {
+                return;
+            }
+
+            try
+            {
+                window.Dispatcher.BeginInvoke((Action)(() =>
+                {
+                    try
+                    {
+                        var originalTopmost = window.Topmost;
+                        if (!originalTopmost)
+                        {
+                            window.Topmost = true;
+                        }
+
+                        var timer = new DispatcherTimer(DispatcherPriority.ApplicationIdle, window.Dispatcher)
+                        {
+                            Interval = TimeSpan.FromMilliseconds(120),
+                        };
+                        timer.Tick += (_, _) =>
+                        {
+                            timer.Stop();
+                            try
+                            {
+                                if (!originalTopmost)
+                                {
+                                    window.Topmost = originalTopmost;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Warning(ex, "FlashWindowTopmost: failed to restore Topmost");
+                            }
+                        };
+                        timer.Start();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Warning(ex, "FlashWindowTopmost failed");
+                    }
+                }), DispatcherPriority.Background);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "FlashWindowTopmost dispatch failed");
+            }
         }
     }
 
