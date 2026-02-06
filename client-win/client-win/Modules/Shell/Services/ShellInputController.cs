@@ -1,13 +1,16 @@
 using System;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using client_win.Modules.MainMenu.Services;
 using client_win.Modules.Presence.Services;
 using client_win.Modules.Presence.Views;
 using client_win.Modules.Presence.ViewModels;
 using client_win.Modules.Game.Shell.Views;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Shell.Services;
 
@@ -17,6 +20,7 @@ public sealed class ShellInputController
     private readonly IPresenceLauncher _presenceUi;
     private readonly INavigationService _navigation;
     private readonly IMenuRouter _menuRouter;
+    private int _didInitialActivationFocus;
 
     public ShellInputController(
         IPresenceMonitor presence,
@@ -108,11 +112,107 @@ public sealed class ShellInputController
             if (_navigation.CurrentContent is GameRoomView room)
             {
                 Application.Current?.Dispatcher?.BeginInvoke(DispatcherPriority.Input, new Action(room.RequestFocusGameZone));
+                return;
+            }
+
+            var window = Application.Current?.MainWindow;
+            if (window == null)
+            {
+                return;
+            }
+
+            var root = TryGetContentRoot(window);
+            if (root is IInitialFocusTarget focusTarget)
+            {
+                if (Interlocked.Exchange(ref _didInitialActivationFocus, 1) == 1)
+                {
+                    return;
+                }
+
+                void Request()
+                {
+                    try { focusTarget.RequestInitialFocus(); } catch { }
+                }
+
+                window.Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(Request));
+                window.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(Request));
             }
         }
         catch
         {
             // ignore
         }
+    }
+
+    private static DependencyObject? TryGetContentRoot(Window window)
+    {
+        try
+        {
+            if (window.FindName("RootHost") is not ContentControl host)
+            {
+                return null;
+            }
+
+            if (host.Content is DependencyObject direct && PresentationSource.FromDependencyObject(direct) != null)
+            {
+                return direct;
+            }
+
+            if (FindDescendant<ContentPresenter>(host) is ContentPresenter presenter)
+            {
+                var children = VisualTreeHelper.GetChildrenCount(presenter);
+                if (children > 0)
+                {
+                    return VisualTreeHelper.GetChild(presenter, 0);
+                }
+            }
+
+            if (host.Content != null &&
+                FindDescendant<FrameworkElement>(host, fe =>
+                    !ReferenceEquals(fe, host) &&
+                    fe is not ContentPresenter &&
+                    ReferenceEquals(fe.DataContext, host.Content)) is FrameworkElement dataContextRoot)
+            {
+                return dataContextRoot;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        return null;
+    }
+
+    private static T? FindDescendant<T>(DependencyObject root, Func<T, bool>? predicate = null) where T : DependencyObject
+    {
+        try
+        {
+            var childrenCount = VisualTreeHelper.GetChildrenCount(root);
+            for (var i = 0; i < childrenCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(root, i);
+                if (child == null)
+                {
+                    continue;
+                }
+
+                if (child is T typed && (predicate?.Invoke(typed) ?? true))
+                {
+                    return typed;
+                }
+
+                if (FindDescendant(child, predicate) is T found)
+                {
+                    return found;
+                }
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        return null;
     }
 }

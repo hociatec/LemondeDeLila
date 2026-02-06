@@ -224,6 +224,36 @@ namespace client_win
                     window.Dispatcher.BeginInvoke((Action)EnsureActive, DispatcherPriority.Input);
                     window.Dispatcher.BeginInvoke((Action)EnsureActive, DispatcherPriority.ApplicationIdle);
 
+                    void EnsureForeground()
+                    {
+                        try
+                        {
+                            if (!window.IsVisible)
+                            {
+                                return;
+                            }
+
+                            var hwnd = new WindowInteropHelper(window).Handle;
+                            if (hwnd == IntPtr.Zero)
+                            {
+                                return;
+                            }
+
+                            NativeMethods.ShowWindow(hwnd, NativeMethods.SW_SHOW);
+                            NativeMethods.SetForegroundWindow(hwnd);
+                            NativeMethods.SetActiveWindow(hwnd);
+                            NativeMethods.SetFocus(hwnd);
+                        }
+                        catch
+                        {
+                            // best-effort
+                        }
+                    }
+
+                    EnsureForeground();
+                    window.Dispatcher.BeginInvoke((Action)EnsureForeground, DispatcherPriority.Input);
+                    window.Dispatcher.BeginInvoke((Action)EnsureForeground, DispatcherPriority.ApplicationIdle);
+
                     // ShellWindowBehavior calls OnLoadedAsync on Window.Loaded. If the window was loaded already
                     // (bootstrap phase), we must trigger the startup ourselves.
                     if (window.IsLoaded)
