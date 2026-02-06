@@ -119,6 +119,10 @@ namespace client_win
                             return;
                         }
 
+                        // Activation retry: handle is ready here; try a few quick times while the user-initiated
+                        // foreground allowance window is still open (helps with ClickOnce/launchers).
+                        try { StartupActivationHelper.Begin(window, hwnd); } catch { /* ignore */ }
+
                         // Ctrl+Alt+Shift+L
                         NativeMethods.RegisterHotKey(hwnd, NativeMethods.HOTKEY_ID_ACTIVATE, NativeMethods.MOD_CONTROL | NativeMethods.MOD_ALT | NativeMethods.MOD_SHIFT, NativeMethods.VK_L);
 
@@ -626,6 +630,17 @@ namespace client_win
         [DllImport("user32.dll")]
         public static extern bool BringWindowToTop(IntPtr hWnd);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+        public static readonly IntPtr HWND_TOPMOST = new(-1);
+        public static readonly IntPtr HWND_NOTOPMOST = new(-2);
+
+        public const uint SWP_NOMOVE = 0x0002;
+        public const uint SWP_NOSIZE = 0x0001;
+        public const uint SWP_NOACTIVATE = 0x0010;
+        public const uint SWP_SHOWWINDOW = 0x0040;
+
         public const int WM_HOTKEY = 0x0312;
         public const int HOTKEY_ID_ACTIVATE = 1;
 
@@ -710,6 +725,38 @@ namespace client_win
                     try { NativeMethods.SetActiveWindow(hwnd); } catch { /* ignore */ }
                     try { NativeMethods.SetFocus(hwnd); } catch { /* ignore */ }
                     try { NativeMethods.SwitchToThisWindow(hwnd, fAltTab: true); } catch { /* ignore */ }
+
+                    // Fallback: quick topmost toggle often succeeds when foreground rules block us (best-effort).
+                    try
+                    {
+                        if (NativeMethods.GetForegroundWindow() != hwnd)
+                        {
+                            NativeMethods.SetWindowPos(
+                                hwnd,
+                                NativeMethods.HWND_TOPMOST,
+                                0,
+                                0,
+                                0,
+                                0,
+                                NativeMethods.SWP_NOMOVE | NativeMethods.SWP_NOSIZE | NativeMethods.SWP_SHOWWINDOW);
+                            NativeMethods.SetWindowPos(
+                                hwnd,
+                                NativeMethods.HWND_NOTOPMOST,
+                                0,
+                                0,
+                                0,
+                                0,
+                                NativeMethods.SWP_NOMOVE | NativeMethods.SWP_NOSIZE | NativeMethods.SWP_SHOWWINDOW);
+
+                            try { NativeMethods.SetForegroundWindow(hwnd); } catch { /* ignore */ }
+                            try { NativeMethods.SetActiveWindow(hwnd); } catch { /* ignore */ }
+                            try { NativeMethods.SetFocus(hwnd); } catch { /* ignore */ }
+                        }
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
                 }
                 finally
                 {
@@ -723,6 +770,68 @@ namespace client_win
             {
                 // ignore
             }
+        }
+    }
+
+    internal static class StartupActivationHelper
+    {
+        private const int MaxAttempts = 10;
+        private static readonly TimeSpan AttemptInterval = TimeSpan.FromMilliseconds(120);
+
+        public static void Begin(Window window, IntPtr hwnd)
+        {
+            if (window == null) throw new ArgumentNullException(nameof(window));
+            if (hwnd == IntPtr.Zero) return;
+
+            var attempts = 0;
+            var timer = new DispatcherTimer(DispatcherPriority.Send, window.Dispatcher)
+            {
+                Interval = AttemptInterval,
+            };
+
+            timer.Tick += (_, _) =>
+            {
+                try
+                {
+                    attempts++;
+
+                    if (!window.IsVisible)
+                    {
+                        return;
+                    }
+
+                    // If the user already activated it, stop. Also stop after a short burst to avoid stealing focus later.
+                    if (window.IsActive || attempts >= MaxAttempts)
+                    {
+                        timer.Stop();
+                        return;
+                    }
+
+                    // Some shortcuts / launch contexts can start minimized; restoring triggers activation paths.
+                    try { if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal; } catch { /* ignore */ }
+                    try { NativeMethods.ShowWindow(hwnd, NativeMethods.SW_RESTORE); } catch { /* ignore */ }
+
+                    try { ForegroundWindowHelper.TryForceForeground(hwnd); } catch { /* ignore */ }
+                }
+                catch
+                {
+                    try { timer.Stop(); } catch { /* ignore */ }
+                }
+            };
+
+            // Immediate attempt and then a few retries.
+            try
+            {
+                try { NativeMethods.ShowWindow(hwnd, NativeMethods.SW_RESTORE); } catch { /* ignore */ }
+                ForegroundWindowHelper.TryForceForeground(hwnd);
+            }
+            catch { /* ignore */ }
+
+            timer.Start();
+            window.Closed += (_, _) =>
+            {
+                try { timer.Stop(); } catch { /* ignore */ }
+            };
         }
     }
 
