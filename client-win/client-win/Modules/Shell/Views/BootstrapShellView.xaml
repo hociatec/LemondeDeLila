@@ -18,10 +18,10 @@
         <Button x:Name="FocusAnchor"
                 Width="1" Height="1"
                 Opacity="0"
-                Focusable="True"
+                Focusable="False"
                 IsHitTestVisible="False"
                 KeyboardNavigation.IsTabStop="False"
-                AutomationProperties.Name="Point de focus invisible" />
+                AutomationProperties.Name="" />
 
         <TextBlock Text="{Binding WindowTitle}"
                    Foreground="White"
