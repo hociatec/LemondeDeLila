@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Config;
 using client_win.Modules.Error;
@@ -14,6 +15,7 @@ public sealed class ShellStartupController
     private readonly ClientConfiguration _config;
     private readonly IDialogService _dialogs;
     private readonly ErrorBus _errors;
+    private int _didShowHome;
 
     public ShellStartupController(
         INavigationService navigation,
@@ -29,9 +31,19 @@ public sealed class ShellStartupController
         _errors = errors ?? throw new ArgumentNullException(nameof(errors));
     }
 
+    public void ShowHome()
+    {
+        if (Interlocked.Exchange(ref _didShowHome, 1) == 1)
+        {
+            return;
+        }
+
+        _navigation.Show(_homeViewModel);
+    }
+
     public async Task OnLoadedAsync()
     {
-        _navigation.Show(_homeViewModel);
+        ShowHome();
 
         try
         {

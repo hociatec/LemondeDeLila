@@ -92,6 +92,18 @@ public sealed class ShellViewModel : ObservableObject
         }
     }
 
+    public void ShowHomeForStartup()
+    {
+        try
+        {
+            _startup.ShowHome();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Shell startup show home failed");
+        }
+    }
+
     public void OnClosing(CancelEventArgs e) =>
         _close.OnClosing(() => _host.Session?.CurrentUser != null, e);
 
@@ -131,4 +143,3 @@ public sealed class ShellViewModel : ObservableObject
         try { await _host.DisposeAsync().ConfigureAwait(false); } catch { /* ignore */ }
     }
 }
-

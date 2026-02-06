@@ -27,9 +27,13 @@ public static class ContentHostFocusBehavior
     private sealed class HandlerSet
     {
         public EventHandler? ContentChanged { get; init; }
+        public DispatcherTimer? RetryTimer { get; set; }
+        public int RetryRemaining { get; set; }
     }
 
     private static readonly ConditionalWeakTable<ContentControl, HandlerSet> HandlersByHost = new();
+    private const int FocusRetryMaxAttempts = 8;
+    private static readonly TimeSpan FocusRetryInterval = TimeSpan.FromMilliseconds(120);
 
     public static void SetEnable(DependencyObject element, bool value) =>
         element.SetValue(EnableProperty, value);
@@ -90,6 +94,15 @@ public static class ContentHostFocusBehavior
             // best-effort
         }
 
+        try
+        {
+            handlers.RetryTimer?.Stop();
+        }
+        catch
+        {
+            // best-effort
+        }
+
         HandlersByHost.Remove(host);
     }
 
@@ -101,61 +114,107 @@ public static class ContentHostFocusBehavior
             // This avoids "indisponible" when the previously focused element disappears during navigation.
             try { FocusParking.Park(Window.GetWindow(host) ?? Application.Current?.MainWindow); } catch { }
 
-            void TryFocus(bool allowFallback)
-            {
-                try
-                {
-                    if (TryGetContentRoot(host) is not DependencyObject root)
-                    {
-                        return;
-                    }
-
-                    // Ne pas tenter de focaliser une vue pas encore attachée à une PresentationSource
-                    // (Visual3D n'est pas un Visual -> utiliser FromDependencyObject pour couvrir les deux).
-                    if (PresentationSource.FromDependencyObject(root) == null)
-                    {
-                        return;
-                    }
-
-                    if (root is IInitialFocusTarget focusTarget)
-                    {
-                        if (!allowFallback || !IsFocusWithin(root))
-                        {
-                            focusTarget.RequestInitialFocus();
-                        }
-                        return;
-                    }
-
-                    if (FindFirstFocusable(root) is IInputElement target)
-                    {
-                        Keyboard.Focus(target);
-                        return;
-                    }
-
-                    // Fallback: tenter un MoveFocus à partir du host.
-                    if (!allowFallback)
-                    {
-                        return;
-                    }
-                    if (host.IsVisible)
-                    {
-                        host.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
-                    }
-                }
-                catch
-                {
-                    // best-effort
-                }
-            }
-
             // Essai rapide dès que la vue est chargée + essai tardif une fois idle.
-            host.Dispatcher.BeginInvoke((Action)(() => TryFocus(allowFallback: false)), DispatcherPriority.Loaded);
-            host.Dispatcher.BeginInvoke((Action)(() => TryFocus(allowFallback: true)), DispatcherPriority.ApplicationIdle);
+            host.Dispatcher.BeginInvoke((Action)(() => TryFocus(host, allowFallback: false)), DispatcherPriority.Loaded);
+            host.Dispatcher.BeginInvoke((Action)(() => TryFocus(host, allowFallback: true)), DispatcherPriority.ApplicationIdle);
+            StartRetryTimer(host);
         }
         catch
         {
             // best-effort
         }
+    }
+
+    private static void StartRetryTimer(ContentControl host)
+    {
+        if (!HandlersByHost.TryGetValue(host, out var handlers))
+        {
+            return;
+        }
+
+        handlers.RetryRemaining = FocusRetryMaxAttempts;
+        if (handlers.RetryTimer == null)
+        {
+            handlers.RetryTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle, host.Dispatcher);
+            handlers.RetryTimer.Tick += (_, _) => RetryFocus(host);
+        }
+
+        handlers.RetryTimer.Interval = FocusRetryInterval;
+        handlers.RetryTimer.Start();
+    }
+
+    private static void RetryFocus(ContentControl host)
+    {
+        if (!HandlersByHost.TryGetValue(host, out var handlers))
+        {
+            return;
+        }
+
+        if (handlers.RetryRemaining <= 0)
+        {
+            try { handlers.RetryTimer?.Stop(); } catch { }
+            return;
+        }
+
+        handlers.RetryRemaining--;
+        if (TryFocus(host, allowFallback: true))
+        {
+            try { handlers.RetryTimer?.Stop(); } catch { }
+        }
+    }
+
+    private static bool TryFocus(ContentControl host, bool allowFallback)
+    {
+        try
+        {
+            if (TryGetContentRoot(host) is not DependencyObject root)
+            {
+                return false;
+            }
+
+            // Ne pas tenter de focaliser une vue pas encore attachée à une PresentationSource
+            // (Visual3D n'est pas un Visual -> utiliser FromDependencyObject pour couvrir les deux).
+            if (PresentationSource.FromDependencyObject(root) == null)
+            {
+                return false;
+            }
+
+            if (root is IInitialFocusTarget focusTarget)
+            {
+                if (!allowFallback || !IsFocusWithin(root))
+                {
+                    focusTarget.RequestInitialFocus();
+                }
+
+                if (!allowFallback || IsFocusWithin(root))
+                {
+                    return true;
+                }
+            }
+
+            if (FindFirstFocusable(root) is IInputElement target)
+            {
+                Keyboard.Focus(target);
+                return true;
+            }
+
+            // Fallback: tenter un MoveFocus à partir du host.
+            if (!allowFallback)
+            {
+                return false;
+            }
+            if (host.IsVisible)
+            {
+                host.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+                return true;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        return false;
     }
 
     private static DependencyObject? TryGetContentRoot(ContentControl host)

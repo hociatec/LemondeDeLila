@@ -86,14 +86,12 @@ namespace client_win
             base.OnStartup(e);
 
             var window = new MainWindow();
-            var bootstrap = new BootstrapShellViewModel();
-            window.DataContext = bootstrap;
-
             MainWindow = window;
-            window.Show();
 
-            // Run heavy startup work after the window is visible so the UI feels responsive.
-            _ = BuildAndShowShellAsync(window, bootstrap);
+            // Démarrage sans vue "Chargement": on garde la fenêtre cachée jusqu'à la fin du bootstrap.
+            window.Visibility = Visibility.Hidden;
+
+            _ = BuildAndShowShellAsync(window);
         }
 
         private static bool IsDescendant(DependencyObject node, DependencyObject ancestor)
@@ -130,12 +128,11 @@ namespace client_win
             return LogicalTreeHelper.GetParent(current);
         }
 
-        private async Task BuildAndShowShellAsync(MainWindow window, BootstrapShellViewModel bootstrap)
+        private async Task BuildAndShowShellAsync(MainWindow window)
         {
             AppHost? host = null;
             try
             {
-                bootstrap.Status = "Initialisation...";
                 host = await Task.Run(() => AppBootstrapper.Build()).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -144,7 +141,12 @@ namespace client_win
                 {
                     await window.Dispatcher.InvokeAsync(() =>
                     {
-                        bootstrap.SetError($"Erreur au demarrage : {ex.Message}");
+                        MessageBox.Show(
+                            $"Erreur au demarrage : {ex.Message}",
+                            "Le Monde de Lila",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                        window.Close();
                     });
                 }
                 catch
@@ -186,6 +188,18 @@ namespace client_win
                     window.DataContext = shell;
                     AttachShellWindowGuards(window, shell);
 
+                    // Afficher l'accueil avant de montrer la fenêtre (pas de vue "Chargement").
+                    shell.ShowHomeForStartup();
+
+                    if (window.Visibility != Visibility.Visible)
+                    {
+                        window.Visibility = Visibility.Visible;
+                    }
+                    if (!window.IsVisible)
+                    {
+                        window.Show();
+                    }
+
                     // ShellWindowBehavior calls OnLoadedAsync on Window.Loaded. If the window was loaded already
                     // (bootstrap phase), we must trigger the startup ourselves.
                     if (window.IsLoaded)
@@ -200,8 +214,12 @@ namespace client_win
                 {
                     await window.Dispatcher.InvokeAsync(() =>
                     {
-                        bootstrap.SetError($"Erreur au demarrage : {ex.Message}");
-                        window.DataContext = bootstrap;
+                        MessageBox.Show(
+                            $"Erreur au demarrage : {ex.Message}",
+                            "Le Monde de Lila",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                        window.Close();
                     });
                 }
                 catch
