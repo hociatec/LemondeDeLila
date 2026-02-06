@@ -86,6 +86,21 @@ public partial class HomeView : UserControl, IInitialFocusTarget
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (!e.Handled && e.Key == Key.Tab)
+        {
+            if (IsTabNavigationAllowed(e.OriginalSource))
+            {
+                e.Handled = true;
+                var direction = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift
+                    ? FocusNavigationDirection.Previous
+                    : FocusNavigationDirection.Next;
+
+                var origin = Keyboard.FocusedElement as UIElement ?? (sender as UIElement);
+                origin?.MoveFocus(new TraversalRequest(direction));
+            }
+            return;
+        }
+
         if (_viewModel != null &&
             e.Key == Key.Escape &&
             _viewModel.CurrentPage != HomePage.Landing &&
@@ -184,6 +199,21 @@ public partial class HomeView : UserControl, IInitialFocusTarget
     private static bool IsTextEditingControl(object? source)
     {
         return source is TextBoxBase || source is PasswordBox;
+    }
+
+    private static bool IsTabNavigationAllowed(object? source)
+    {
+        if (source is TextBoxBase tb && tb.AcceptsTab)
+        {
+            return false;
+        }
+
+        if (source is RichTextBox rtb && rtb.AcceptsTab)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private void FocusFirstField(bool immediate = false)
