@@ -24,6 +24,7 @@ using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace client_win
 {
@@ -266,18 +267,24 @@ namespace client_win
                     {
                         try
                         {
-                            if (window.IsActive)
+                            Log.Debug("EnsureActive: start (IsActive={IsActive}, IsVisible={IsVisible}, WindowState={WindowState})",
+                                window.IsActive, window.IsVisible, window.WindowState);
+
+                            if (window.IsActive && window.IsKeyboardFocusWithin)
                             {
+                                Log.Debug("EnsureActive: window already active");
                                 return;
                             }
 
                             window.Activate();
                             window.Focus();
-                            Keyboard.Focus(window);
+                            var focused = Keyboard.Focus(window);
+                            Log.Debug("EnsureActive: post-focus (IsActive={IsActive}, Focused={Focused})",
+                                window.IsActive, focused?.GetType().Name ?? "<null>");
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            // best-effort
+                            Log.Warning(ex, "EnsureActive failed");
                         }
                     }
 
@@ -289,23 +296,30 @@ namespace client_win
                     {
                         try
                         {
+                            Log.Debug("EnsureForeground: start (IsVisible={IsVisible}, IsActive={IsActive}, WindowState={WindowState})",
+                                window.IsVisible, window.IsActive, window.WindowState);
+
                             if (!window.IsVisible)
                             {
+                                Log.Debug("EnsureForeground: window not visible, skipping");
                                 return;
                             }
 
                             var hwnd = new WindowInteropHelper(window).Handle;
                             if (hwnd == IntPtr.Zero)
                             {
+                                Log.Debug("EnsureForeground: hwnd zero, skipping");
                                 return;
                             }
 
                             NativeMethods.ShowWindow(hwnd, NativeMethods.SW_SHOW);
                             ForegroundWindowHelper.TryForceForeground(hwnd);
+                            Log.Debug("EnsureForeground: foreground request issued (ForegroundWindow={Foreground})",
+                                NativeMethods.GetForegroundWindow());
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            // best-effort
+                            Log.Warning(ex, "EnsureForeground failed");
                         }
                     }
 
@@ -323,30 +337,40 @@ namespace client_win
                         {
                             Interval = TimeSpan.FromSeconds(1),
                         };
+                        var activationTick = 0;
 
                         activationTimer.Tick += (_, _) =>
                         {
+                            activationTick++;
+                            Log.Debug("Activation timer tick {Tick} start (IsVisible={IsVisible}, IsActive={IsActive})",
+                                activationTick, window.IsVisible, window.IsActive);
                             try
                             {
                                 activationTimer.Stop();
 
                                 if (!window.IsVisible || window.IsActive)
                                 {
+                                    Log.Debug("Activation timer exit (IsVisible={IsVisible}, IsActive={IsActive})",
+                                        window.IsVisible, window.IsActive);
                                     return;
                                 }
 
                                 var hwnd = new WindowInteropHelper(window).Handle;
                                 if (hwnd != IntPtr.Zero)
                                 {
-                                    try { NativeMethods.FlashWindowUntilForeground(hwnd); } catch { /* ignore */ }
+                                    try { NativeMethods.FlashWindowUntilForeground(hwnd); } catch (Exception ex)
+                                    {
+                                        Log.Warning(ex, "FlashWindowUntilForeground failed");
+                                    }
                                 }
 
+                                Log.Warning("Window inactive after {Ticks} ticks; announcing NVDA reminder", activationTick);
                                 announcer.AnnounceAssertiveEvenIfInactive(
                                     "Le Monde de Lila n'est pas actif. Faites Alt+Tab pour revenir sur la fenêtre, ou appuyez sur Contrôle Alt Majuscule L pour activer la fenêtre.");
                             }
-                            catch
+                            catch (Exception ex)
                             {
-                                // best-effort
+                                Log.Warning(ex, "Activation timer handler failed");
                             }
                         };
 
@@ -766,21 +790,27 @@ namespace client_win
             {
                 Interval = AttemptInterval,
             };
+            Log.Debug("StartupActivationHelper.Begin (hwnd={Hwnd})", hwnd);
 
             timer.Tick += (_, _) =>
             {
                 try
                 {
                     attempts++;
+                    Log.Debug("StartupActivationHelper attempt {Attempt}/{MaxAttempts} (IsActive={IsActive}, IsVisible={IsVisible})",
+                        attempts, MaxAttempts, window.IsActive, window.IsVisible);
 
                     if (!window.IsVisible)
                     {
+                        Log.Debug("StartupActivationHelper: window not visible, skipping attempt");
                         return;
                     }
 
                     // If the user already activated it, stop. Also stop after a short burst to avoid stealing focus later.
                     if (window.IsActive || attempts >= MaxAttempts)
                     {
+                        Log.Debug("StartupActivationHelper: stopping (IsActive={IsActive}, Attempts={Attempts})",
+                            window.IsActive, attempts);
                         timer.Stop();
                         return;
                     }
@@ -789,10 +819,19 @@ namespace client_win
                     try { if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal; } catch { /* ignore */ }
                     try { NativeMethods.ShowWindow(hwnd, NativeMethods.SW_RESTORE); } catch { /* ignore */ }
 
-                    try { ForegroundWindowHelper.TryForceForeground(hwnd); } catch { /* ignore */ }
+                    try
+                    {
+                        ForegroundWindowHelper.TryForceForeground(hwnd);
+                        Log.Debug("StartupActivationHelper: TryForceForeground invoked on attempt {Attempt}", attempts);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Warning(ex, "StartupActivationHelper: TryForceForeground failed on attempt {Attempt}", attempts);
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Log.Warning(ex, "StartupActivationHelper tick failed");
                     try { timer.Stop(); } catch { /* ignore */ }
                 }
             };
@@ -802,6 +841,7 @@ namespace client_win
             {
                 try { NativeMethods.ShowWindow(hwnd, NativeMethods.SW_RESTORE); } catch { /* ignore */ }
                 ForegroundWindowHelper.TryForceForeground(hwnd);
+                Log.Debug("StartupActivationHelper: immediate ForegroundHelper request");
             }
             catch { /* ignore */ }
 
