@@ -284,13 +284,19 @@ public sealed class ClientConfiguration
 
     private static string Get(Dictionary<string, string> map, string key, string fallback)
     {
+        string envKey = key.Replace('.', '_').ToUpperInvariant();
+        string? fromEnv = Environment.GetEnvironmentVariable(envKey);
+        if (!string.IsNullOrWhiteSpace(fromEnv))
+        {
+            return fromEnv.Trim();
+        }
+
         if (map.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value))
         {
             return value.Trim();
         }
-        string envKey = key.Replace('.', '_').ToUpperInvariant();
-        string? fromEnv = Environment.GetEnvironmentVariable(envKey);
-        return string.IsNullOrWhiteSpace(fromEnv) ? fallback : fromEnv.Trim();
+
+        return fallback;
     }
 
     private static string? Normalize(string? candidate)

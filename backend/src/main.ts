@@ -214,6 +214,12 @@ async function bootstrap() {
   bootstrapLogger.log(`listening on ${port}`);
 }
 bootstrap().catch((err) => {
+  // Fallback: ensure we see the failure even if the Nest logger is not flushed/displayed.
+  // eslint-disable-next-line no-console
+  console.error(
+    'bootstrap failed',
+    err instanceof Error ? err.stack : String(err),
+  );
   bootstrapLogger.error(
     'failed',
     err instanceof Error ? err.stack : String(err),

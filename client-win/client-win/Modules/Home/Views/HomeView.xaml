@@ -160,12 +160,14 @@
                                       IsChecked="{Binding LoginForm.RememberMe}"
                                       Foreground="White" Margin="16 0 0 0" />
 	                        </StackPanel>
-	                        <StackPanel Grid.Row="6" Orientation="Horizontal" Margin="0 8 0 0">
+	                        <StackPanel Grid.Row="6" Orientation="Vertical" Margin="0 8 0 0">
 	                            <Button Content="Connexion" Command="{Binding LoginForm.SubmitCommand}"
 	                                    PreviewKeyDown="OnCommandButtonPreviewKeyDown"
 	                                    Background="#2B6CB0" />
-	                            <Button Content="Retour" Command="{Binding LoginForm.BackCommand}"
-	                                    Background="#3B4250" Margin="8 0 0 0" />
+	                            <Button Content="Créer un compte" Command="{Binding ShowRegisterCommand}"
+	                                    Background="#234A7A" />
+	                            <Button Content="Quitter" Command="{Binding QuitCommand}"
+	                                    Background="#742A2A" />
 	                        </StackPanel>
                     </Grid>
 

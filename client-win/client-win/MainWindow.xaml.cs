@@ -82,6 +82,11 @@ public partial class MainWindow : Window
                 return false;
             }
 
+            if (ReferenceEquals(focused, RootHost) || ReferenceEquals(focused, FocusSentinel) || ReferenceEquals(focused, this))
+            {
+                return false;
+            }
+
             if (!IsDescendant(focused, RootHost))
             {
                 return false;
