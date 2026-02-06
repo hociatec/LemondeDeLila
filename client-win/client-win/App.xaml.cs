@@ -114,6 +114,7 @@ namespace client_win
 
                         // Activation retry: handle is ready here; try a few quick times while the user-initiated
                         // foreground allowance window is still open (helps with ClickOnce/launchers).
+                        try { StartupActivationHelper.Begin(window, hwnd); } catch { /* ignore */ }
 
                         // Ctrl+Alt+Shift+L
                         var hotkeyOk = NativeMethods.RegisterHotKey(hwnd, NativeMethods.HOTKEY_ID_ACTIVATE, NativeMethods.MOD_CONTROL | NativeMethods.MOD_ALT | NativeMethods.MOD_SHIFT, NativeMethods.VK_L);
