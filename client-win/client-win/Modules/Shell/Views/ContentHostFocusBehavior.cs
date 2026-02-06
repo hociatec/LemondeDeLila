@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -104,7 +105,7 @@ public static class ContentHostFocusBehavior
             {
                 try
                 {
-                    if (host.Content is not DependencyObject root)
+                    if (TryGetContentRoot(host) is not DependencyObject root)
                     {
                         return;
                     }
@@ -157,6 +158,76 @@ public static class ContentHostFocusBehavior
         }
     }
 
+    private static DependencyObject? TryGetContentRoot(ContentControl host)
+    {
+        try
+        {
+            if (host.Content is DependencyObject direct && PresentationSource.FromDependencyObject(direct) != null)
+            {
+                return direct;
+            }
+
+            // If Content is a ViewModel, WPF creates the View via DataTemplate under a ContentPresenter.
+            // Find that generated view root in the visual tree.
+            if (FindDescendant<ContentPresenter>(host) is ContentPresenter presenter)
+            {
+                var children = VisualTreeHelper.GetChildrenCount(presenter);
+                if (children > 0)
+                {
+                    return VisualTreeHelper.GetChild(presenter, 0);
+                }
+            }
+
+            // Fallback: first FrameworkElement that inherited DataContext == host.Content.
+            if (host.Content != null &&
+                FindDescendant<FrameworkElement>(host, fe =>
+                    !ReferenceEquals(fe, host) &&
+                    fe is not ContentPresenter &&
+                    ReferenceEquals(fe.DataContext, host.Content)) is FrameworkElement dataContextRoot)
+            {
+                return dataContextRoot;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        return null;
+    }
+
+    private static T? FindDescendant<T>(DependencyObject root, Func<T, bool>? predicate = null) where T : DependencyObject
+    {
+        try
+        {
+            var childrenCount = VisualTreeHelper.GetChildrenCount(root);
+            for (var i = 0; i < childrenCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(root, i);
+                if (child == null)
+                {
+                    continue;
+                }
+
+                if (child is T typed && (predicate?.Invoke(typed) ?? true))
+                {
+                    return typed;
+                }
+
+                if (FindDescendant(child, predicate) is T found)
+                {
+                    return found;
+                }
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        return null;
+    }
+
     private static DependencyObject? FindFirstFocusable(DependencyObject root)
     {
         // Ignore elements that are not loaded yet.
@@ -168,6 +239,7 @@ public static class ContentHostFocusBehavior
         if (root is Control control &&
             control.IsVisible &&
             control.IsEnabled &&
+            control.IsHitTestVisible &&
             (control.Focusable || KeyboardNavigation.GetIsTabStop(control)))
         {
             return control;
@@ -176,6 +248,7 @@ public static class ContentHostFocusBehavior
         if (root is UIElement uie &&
             uie.IsVisible &&
             uie.IsEnabled &&
+            uie.IsHitTestVisible &&
             uie.Focusable)
         {
             return uie;

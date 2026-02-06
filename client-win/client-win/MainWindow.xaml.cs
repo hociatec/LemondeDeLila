@@ -207,20 +207,94 @@ namespace client_win
         {
             try
             {
-            if (RootHost?.Content is IInitialFocusTarget initialFocusTarget)
-            {
-                _pendingScreenReaderAnnouncement = true;
-                initialFocusTarget.RequestInitialFocus();
-            }
-            else
-            {
-                _pendingScreenReaderAnnouncement = false;
-            }
+                IInitialFocusTarget? initialFocusTarget = null;
+                try
+                {
+                    initialFocusTarget = RootHost?.Content as IInitialFocusTarget;
+                }
+                catch
+                {
+                    // best-effort
+                }
+
+                if (initialFocusTarget == null)
+                {
+                    initialFocusTarget = FindInitialFocusTargetInRootHost();
+                }
+
+                if (initialFocusTarget != null)
+                {
+                    _pendingScreenReaderAnnouncement = true;
+                    initialFocusTarget.RequestInitialFocus();
+                }
+                else
+                {
+                    _pendingScreenReaderAnnouncement = false;
+                }
             }
             catch
             {
                 // best-effort
             }
+        }
+
+        private IInitialFocusTarget? FindInitialFocusTargetInRootHost()
+        {
+            try
+            {
+                var rootHost = RootHost;
+                if (rootHost == null)
+                {
+                    return null;
+                }
+
+                return FindInitialFocusTargetDescendant(rootHost);
+            }
+            catch
+            {
+                // best-effort
+            }
+
+            return null;
+        }
+
+        private IInitialFocusTarget? FindInitialFocusTargetDescendant(DependencyObject root)
+        {
+            try
+            {
+                var childrenCount = VisualTreeHelper.GetChildrenCount(root);
+                for (var i = 0; i < childrenCount; i++)
+                {
+                    var child = VisualTreeHelper.GetChild(root, i);
+                    if (child == null)
+                    {
+                        continue;
+                    }
+
+                    if (child is IInitialFocusTarget target)
+                    {
+                        if (child is UIElement uie && ShouldSkipStartupFocusTarget(uie))
+                        {
+                            // ignore
+                        }
+                        else
+                        {
+                            return target;
+                        }
+                    }
+
+                    if (FindInitialFocusTargetDescendant(child) is IInitialFocusTarget found)
+                    {
+                        return found;
+                    }
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+
+            return null;
         }
 
         private void StartFocusRetryLoop()
@@ -241,8 +315,10 @@ namespace client_win
 
         private void OnFocusRetryTick(object? sender, EventArgs e)
         {
-            var host = RootHost;
-            if (host != null && host.IsKeyboardFocusWithin)
+            var focused = Keyboard.FocusedElement as IInputElement;
+            if (focused != null &&
+                IsFocusableElementWithinRoot(focused) &&
+                !ShouldSkipStartupFocusTarget(focused))
             {
                 StopFocusRetryLoop();
                 return;
@@ -303,6 +379,16 @@ namespace client_win
 
         private static bool ShouldSkipStartupFocusTarget(UIElement element)
         {
+            if (!element.IsHitTestVisible)
+            {
+                return true;
+            }
+
+            if (element is BootstrapShellView)
+            {
+                return true;
+            }
+
             if (element is FrameworkElement fe)
             {
                 const string sentinelName = "FocusSentinel";

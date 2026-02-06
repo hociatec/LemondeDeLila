@@ -6,11 +6,15 @@
              mc:Ignorable="d"
              d:DesignHeight="300"
              d:DesignWidth="600"
-             Focusable="True"
-             IsTabStop="True"
-             KeyboardNavigation.DirectionalNavigation="Contained"
-             AutomationProperties.Name="Chargement">
+             Focusable="False"
+             IsTabStop="False">
     <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
         <Button x:Name="FocusAnchor"
                 Width="1" Height="1"
                 Opacity="0"
@@ -18,11 +22,6 @@
                 IsHitTestVisible="False"
                 KeyboardNavigation.IsTabStop="False"
                 AutomationProperties.Name="Point de focus invisible" />
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
 
         <TextBlock Text="{Binding WindowTitle}"
                    Foreground="White"
@@ -36,7 +35,7 @@
                        Foreground="#C3D2EA"
                        FontSize="13"
                        TextWrapping="Wrap"
-                       AutomationProperties.LiveSetting="Off" />
+                       AutomationProperties.LiveSetting="Polite" />
             <ProgressBar Margin="0 10 0 0"
                          Height="10"
                          IsIndeterminate="True" />
