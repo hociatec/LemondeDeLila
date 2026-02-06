@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Threading;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Shell.Views;
@@ -17,8 +17,7 @@ public partial class BootstrapShellView : UserControl, IInitialFocusTarget
     {
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
-            try { FocusAnchor?.Focus(); } catch { }
-            try { Keyboard.Focus(FocusAnchor); } catch { }
+            try { FocusParking.Park(System.Windows.Window.GetWindow(this)); } catch { }
         }));
     }
 }
