@@ -102,6 +102,25 @@ namespace client_win
             }
             catch { /* best-effort */ }
 
+            // ClickOnce / dfsvc.exe : au démarrage, Windows peut refuser de donner le "foreground" à l'app
+            // (règles SetForegroundWindow). On tente un bring-to-front best-effort sur le thread UI.
+            try
+            {
+                window.Dispatcher.BeginInvoke(DispatcherPriority.Send, new Action(() =>
+                {
+                    try
+                    {
+                        var hwnd = new WindowInteropHelper(window).Handle;
+                        if (hwnd != IntPtr.Zero)
+                        {
+                            ForegroundWindowHelper.TryForceForeground(hwnd);
+                        }
+                    }
+                    catch { /* best-effort */ }
+                }));
+            }
+            catch { /* best-effort */ }
+
             _ = BuildAndShowShellAsync(window);
         }
 
@@ -251,9 +270,7 @@ namespace client_win
                             }
 
                             NativeMethods.ShowWindow(hwnd, NativeMethods.SW_SHOW);
-                            NativeMethods.SetForegroundWindow(hwnd);
-                            NativeMethods.SetActiveWindow(hwnd);
-                            NativeMethods.SetFocus(hwnd);
+                            ForegroundWindowHelper.TryForceForeground(hwnd);
                         }
                         catch
                         {
@@ -495,6 +512,65 @@ namespace client_win
 
         [DllImport("user32.dll")]
         public static extern IntPtr SetFocus(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+        [DllImport("user32.dll")]
+        public static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+
+        [DllImport("kernel32.dll")]
+        public static extern uint GetCurrentThreadId();
+
+        [DllImport("user32.dll")]
+        public static extern bool BringWindowToTop(IntPtr hWnd);
+    }
+
+    internal static class ForegroundWindowHelper
+    {
+        public static void TryForceForeground(IntPtr hwnd)
+        {
+            // Best-effort: Windows may deny SetForegroundWindow depending on launch context (common with ClickOnce).
+            // AttachThreadInput is a common workaround to synchronize focus/activation with the current foreground thread.
+            try
+            {
+                var foreground = NativeMethods.GetForegroundWindow();
+                var foregroundThread = foreground != IntPtr.Zero
+                    ? NativeMethods.GetWindowThreadProcessId(foreground, out _)
+                    : 0;
+                var currentThread = NativeMethods.GetCurrentThreadId();
+
+                var attached = false;
+                if (foregroundThread != 0 && foregroundThread != currentThread)
+                {
+                    try { attached = NativeMethods.AttachThreadInput(foregroundThread, currentThread, true); } catch { attached = false; }
+                }
+
+                try
+                {
+                    try { NativeMethods.ShowWindow(hwnd, NativeMethods.SW_SHOW); } catch { /* ignore */ }
+                    try { NativeMethods.BringWindowToTop(hwnd); } catch { /* ignore */ }
+                    try { NativeMethods.SetForegroundWindow(hwnd); } catch { /* ignore */ }
+                    try { NativeMethods.SetActiveWindow(hwnd); } catch { /* ignore */ }
+                    try { NativeMethods.SetFocus(hwnd); } catch { /* ignore */ }
+                    try { NativeMethods.SwitchToThisWindow(hwnd, fAltTab: true); } catch { /* ignore */ }
+                }
+                finally
+                {
+                    if (attached)
+                    {
+                        try { NativeMethods.AttachThreadInput(foregroundThread, currentThread, false); } catch { /* ignore */ }
+                    }
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+        }
     }
 
 }
