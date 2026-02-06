@@ -200,6 +200,30 @@ namespace client_win
                         window.Show();
                     }
 
+                    // S'assurer que la fenêtre est réellement active pour que Tab/Shift+Tab fonctionne dès l'ouverture.
+                    void EnsureActive()
+                    {
+                        try
+                        {
+                            if (window.IsActive)
+                            {
+                                return;
+                            }
+
+                            window.Activate();
+                            window.Focus();
+                            Keyboard.Focus(window);
+                        }
+                        catch
+                        {
+                            // best-effort
+                        }
+                    }
+
+                    EnsureActive();
+                    window.Dispatcher.BeginInvoke((Action)EnsureActive, DispatcherPriority.Input);
+                    window.Dispatcher.BeginInvoke((Action)EnsureActive, DispatcherPriority.ApplicationIdle);
+
                     // ShellWindowBehavior calls OnLoadedAsync on Window.Loaded. If the window was loaded already
                     // (bootstrap phase), we must trigger the startup ourselves.
                     if (window.IsLoaded)
