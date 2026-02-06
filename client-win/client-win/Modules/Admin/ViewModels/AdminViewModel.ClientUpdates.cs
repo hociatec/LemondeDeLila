@@ -23,37 +23,97 @@ public sealed partial class AdminViewModel
         IsSecondaryInputVisible = false;
         TextInputLabel = string.Empty;
         TextInput = string.Empty;
-        SecondaryInputLabel = "Version (nouvelle)";
-        SecondaryInput = AppInfo.GetShortVersion();
+        SecondaryInputLabel = "Version (automatique)";
+        SecondaryInput = _publisher.SuggestNextVersion(AppInfo.GetShortVersion());
         SecondaryInputAcceptsReturn = false;
         ClientUpdateMessage = string.Empty;
         PreferDetailsFocus = false;
-        Status = "Choisis une version plus haute que la dernière publiée. Publie puis diffuse la mise à jour.";
+        Status = "La version est calculée automatiquement. Publie puis diffuse la mise à jour.";
 
-        _ = PrefillClientUpdateVersionAsync();
+        _ = RefreshAutomaticClientUpdateVersionAsync();
     }
 
-    private async Task PrefillClientUpdateVersionAsync()
+    private async Task<string?> TryGetLatestPublishedClientVersionAsync()
     {
         try
         {
             var latest = await _publisher.GetLatestPublishedVersionAsync().ConfigureAwait(true);
-            if (string.IsNullOrWhiteSpace(latest))
-            {
-                return;
-            }
-            if (_page != AdminPage.ClientUpdates)
-            {
-                return;
-            }
-
-            Details = $"Dernière version publiée : {latest}";
-            SecondaryInput = _publisher.SuggestNextVersion(latest);
+            return string.IsNullOrWhiteSpace(latest) ? null : latest.Trim();
         }
         catch
         {
             // Non bloquant.
+            return null;
         }
+    }
+
+    private async Task<string> RefreshAutomaticClientUpdateVersionAsync()
+    {
+        var latest = await TryGetLatestPublishedClientVersionAsync().ConfigureAwait(true);
+        var next = ComputeAutomaticClientUpdateVersion(latest);
+
+        if (_page == AdminPage.ClientUpdates)
+        {
+            Details = string.IsNullOrWhiteSpace(latest)
+                ? "Dernière version publiée : inconnue (calcul local)"
+                : $"Dernière version publiée : {latest}";
+            SecondaryInput = next;
+        }
+
+        return next;
+    }
+
+    private string ComputeAutomaticClientUpdateVersion(string? latestPublished)
+    {
+        if (TryParseComparableVersion(latestPublished, out var latestVersion))
+        {
+            var suggested = (_publisher.SuggestNextVersion(latestPublished) ?? string.Empty).Trim();
+            if (TryParseComparableVersion(suggested, out var suggestedVersion) && suggestedVersion > latestVersion)
+            {
+                return suggested;
+            }
+
+            return $"{latestVersion.Major}.{latestVersion.Minor}.{latestVersion.Build + 1}";
+        }
+
+        var fromLocal = (_publisher.SuggestNextVersion(AppInfo.GetShortVersion()) ?? string.Empty).Trim();
+        if (TryParseComparableVersion(fromLocal, out _))
+        {
+            return fromLocal;
+        }
+
+        return "1.0.1";
+    }
+
+    private static bool TryParseComparableVersion(string? value, out Version parsed)
+    {
+        parsed = new Version(0, 0, 0, 0);
+
+        var raw = (value ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return false;
+        }
+
+        var parts = raw.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length is < 1 or > 4)
+        {
+            return false;
+        }
+
+        var nums = new int[4];
+        for (var i = 0; i < parts.Length; i++)
+        {
+            if (!int.TryParse(parts[i], out var current) || current < 0)
+            {
+                return false;
+            }
+
+            nums[i] = current;
+        }
+
+        parsed = new Version(nums[0], nums[1], nums[2], nums[3]);
+        return true;
     }
 
     private async Task ForceClientUpdateLatestAsync()
@@ -73,9 +133,26 @@ public sealed partial class AdminViewModel
         }
     }
 
-    private async Task AnnounceClientUpdateAsync()
+    private Task AnnounceClientUpdateAsync()
+        => AnnounceClientUpdateInternalAsync(null);
+
+    private async Task AnnounceClientUpdateInternalAsync(string? forcedVersion)
     {
-        var version = (SecondaryInput ?? string.Empty).Trim();
+        var version = (forcedVersion ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(version))
+        {
+            var latest = await TryGetLatestPublishedClientVersionAsync().ConfigureAwait(true);
+            if (!string.IsNullOrWhiteSpace(latest))
+            {
+                version = latest;
+                if (_page == AdminPage.ClientUpdates)
+                {
+                    Details = $"Dernière version publiée : {latest}";
+                    SecondaryInput = ComputeAutomaticClientUpdateVersion(latest);
+                }
+            }
+        }
+
         IsBusy = true;
         try
         {
@@ -83,7 +160,11 @@ public sealed partial class AdminViewModel
                     message: NormalizeClientUpdateMessage(),
                     version: string.IsNullOrWhiteSpace(version) ? null : version)
                 .ConfigureAwait(true);
-            await _dialogs.ShowInfo("Mise à jour", $"Proposition envoyée à {delivered} utilisateur(s).").ConfigureAwait(true);
+
+            var details = string.IsNullOrWhiteSpace(version)
+                ? $"Proposition envoyée à {delivered} utilisateur(s)."
+                : $"Proposition ({version}) envoyée à {delivered} utilisateur(s).";
+            await _dialogs.ShowInfo("Mise à jour", details).ConfigureAwait(true);
         }
         finally
         {
@@ -93,19 +174,8 @@ public sealed partial class AdminViewModel
 
     private async Task BuildAndUploadClientUpdateAsync()
     {
-        var version = (SecondaryInput ?? string.Empty).Trim();
+        var version = await RefreshAutomaticClientUpdateVersionAsync().ConfigureAwait(true);
         var message = NormalizeClientUpdateMessage();
-
-        var latest = await _publisher.GetLatestPublishedVersionAsync().ConfigureAwait(true);
-        if (!string.IsNullOrWhiteSpace(latest) &&
-            !string.IsNullOrWhiteSpace(version) &&
-            string.Equals(latest, version, StringComparison.OrdinalIgnoreCase))
-        {
-            var suggested = _publisher.SuggestNextVersion(latest);
-            SecondaryInput = suggested;
-            version = suggested;
-            await _dialogs.ShowInfo("Mise à jour", $"La version {latest} est déjà publiée. Version ajustée automatiquement en {suggested}.").ConfigureAwait(true);
-        }
 
         IsBusy = true;
         try
@@ -139,7 +209,7 @@ public sealed partial class AdminViewModel
                             settings.Save();
                             result = await _publisher.BuildAndUploadAsync(
                                     message: null,
-                                    string.IsNullOrWhiteSpace(version) ? null : version)
+                                    version)
                                 .ConfigureAwait(true);
                             if (!result.Success)
                             {
@@ -164,13 +234,21 @@ public sealed partial class AdminViewModel
                 }
             }
 
+            await RefreshAutomaticClientUpdateVersionAsync().ConfigureAwait(true);
+
             var confirm = await _dialogs.Confirm(
                     "Mise à jour",
                     $"{result.StatusMessage}\n\nProposer la mise à jour à tous les clients maintenant ?")
                 .ConfigureAwait(true);
             if (confirm == true)
             {
-                await AnnounceClientUpdateAsync().ConfigureAwait(true);
+                var publishedVersion = (result.PublishedVersion ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(publishedVersion))
+                {
+                    publishedVersion = version;
+                }
+
+                await AnnounceClientUpdateInternalAsync(publishedVersion).ConfigureAwait(true);
             }
             else
             {

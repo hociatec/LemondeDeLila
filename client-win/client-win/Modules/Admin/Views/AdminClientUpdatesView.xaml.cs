@@ -14,6 +14,13 @@ public partial class AdminClientUpdatesView : UserControl
 
     public void FocusPrimaryInput()
     {
+        if (MessageInput != null)
+        {
+            MessageInput.Focus();
+            MessageInput.SelectAll();
+            return;
+        }
+
         if (VersionInput == null)
         {
             return;

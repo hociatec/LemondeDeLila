@@ -284,8 +284,8 @@ namespace client_win
                     }
 
                     EnsureActive();
-                    window.Dispatcher.BeginInvoke((Action)EnsureActive, DispatcherPriority.Input);
-                    window.Dispatcher.BeginInvoke((Action)EnsureActive, DispatcherPriority.ApplicationIdle);
+                    _ = window.Dispatcher.BeginInvoke((Action)EnsureActive, DispatcherPriority.Input);
+                    _ = window.Dispatcher.BeginInvoke((Action)EnsureActive, DispatcherPriority.ApplicationIdle);
 
                     void EnsureForeground()
                     {
@@ -312,8 +312,8 @@ namespace client_win
                     }
 
                     EnsureForeground();
-                    window.Dispatcher.BeginInvoke((Action)EnsureForeground, DispatcherPriority.Input);
-                    window.Dispatcher.BeginInvoke((Action)EnsureForeground, DispatcherPriority.ApplicationIdle);
+                    _ = window.Dispatcher.BeginInvoke((Action)EnsureForeground, DispatcherPriority.Input);
+                    _ = window.Dispatcher.BeginInvoke((Action)EnsureForeground, DispatcherPriority.ApplicationIdle);
 
                     // Si la fenêtre n'obtient pas le focus OS (fréquent sur certains démarrages ClickOnce),
                     // éviter l'effet "NVDA annonce un champ mais je ne peux pas taper".

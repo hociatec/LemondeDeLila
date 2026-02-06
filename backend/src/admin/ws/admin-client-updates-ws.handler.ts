@@ -31,6 +31,7 @@ export class AdminClientUpdatesWsHandler {
       AdminClientUpdateAnnounceWsDto,
       payload,
     );
+    const latest = await this.clientUpdates.getLatest();
 
     const ids = await this.userRepo
       .createQueryBuilder('u')
@@ -45,7 +46,8 @@ export class AdminClientUpdatesWsHandler {
 
     const payloadOut = {
       message,
-      version: dto.version?.trim() || null,
+      // Robustesse: toujours diffuser la version réellement publiée côté serveur.
+      version: latest?.version?.trim() || dto.version?.trim() || null,
       fromUserId: admin.id,
       fromUsername: admin.username,
       timestamp: new Date().toISOString(),

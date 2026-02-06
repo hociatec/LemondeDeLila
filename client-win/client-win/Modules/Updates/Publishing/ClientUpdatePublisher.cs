@@ -55,28 +55,14 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
 
     public string SuggestNextVersion(string? currentVersion)
     {
-        var raw = (currentVersion ?? string.Empty).Trim();
-        if (string.IsNullOrWhiteSpace(raw))
+        if (TryNormalizeClickOnceVersion(currentVersion, out var normalized) &&
+            Version.TryParse(normalized, out var parsed))
         {
-            return "1.0.1";
+            var nextPatch = parsed.Build + 1;
+            return $"{parsed.Major}.{parsed.Minor}.{nextPatch}";
         }
 
-        var parts = raw.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (parts.Length == 1 && int.TryParse(parts[0], out var majorOnly))
-        {
-            return $"{majorOnly}.0.1";
-        }
-
-        if (parts.Length >= 3 &&
-            int.TryParse(parts[0], out var major) &&
-            int.TryParse(parts[1], out var minor) &&
-            int.TryParse(parts[2], out var patch))
-        {
-            var nextPatch = patch + 1;
-            return $"{major}.{minor}.{nextPatch}";
-        }
-
-        return raw;
+        return "1.0.1";
     }
 
     public async Task<ClientUpdatePublishResult> BuildAndUploadAsync(
@@ -116,8 +102,7 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
 
         try
         {
-            // If the user doesn't provide a version, ClickOnce may re-publish the same one
-            // (resulting in "it did something" but no real update for clients).
+            var latestPublished = await GetLatestPublishedVersionAsync(cancellationToken).ConfigureAwait(true);
             var effectiveVersion = (version ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(effectiveVersion))
             {
@@ -125,11 +110,27 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
             }
             if (string.IsNullOrWhiteSpace(effectiveVersion))
             {
-                var latest = await GetLatestPublishedVersionAsync(cancellationToken).ConfigureAwait(true);
-                effectiveVersion = SuggestNextVersion(latest);
+                effectiveVersion = SuggestNextVersion(latestPublished);
             }
 
-            version = string.IsNullOrWhiteSpace(effectiveVersion) ? null : effectiveVersion;
+            // Robustesse: ne jamais republier la même version (ou plus basse).
+            if (!string.IsNullOrWhiteSpace(latestPublished) &&
+                TryCompareVersions(effectiveVersion, latestPublished, out var cmp) &&
+                cmp <= 0)
+            {
+                effectiveVersion = SuggestNextVersion(latestPublished);
+            }
+
+            if (!TryNormalizeClickOnceVersion(effectiveVersion, out var normalizedEffective))
+            {
+                var fallback = SuggestNextVersion(latestPublished);
+                if (!TryNormalizeClickOnceVersion(fallback, out normalizedEffective))
+                {
+                    normalizedEffective = "1.0.1.0";
+                }
+            }
+
+            version = normalizedEffective;
             _logger.LogInformation("Client update publish: version={Version}", version ?? "(none)");
 
             var publishResult = await RunDotnetPublishAsync(projectPath, publishDir, baseUrl, version, cancellationToken)
@@ -154,7 +155,8 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
 
             return new ClientUpdatePublishResult(
                 true,
-                $"Build+upload OK. BaseUrl ClickOnce: {baseUrl}");
+                $"Build+upload OK ({version}). BaseUrl ClickOnce: {baseUrl}",
+                version);
         }
         finally
         {
@@ -490,6 +492,26 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
         }
 
         normalized = $"{nums[0]}.{nums[1]}.{nums[2]}.{nums[3]}";
+        return true;
+    }
+
+    private static bool TryCompareVersions(string? left, string? right, out int comparison)
+    {
+        comparison = 0;
+
+        if (!TryNormalizeClickOnceVersion(left, out var normalizedLeft) ||
+            !TryNormalizeClickOnceVersion(right, out var normalizedRight))
+        {
+            return false;
+        }
+
+        if (!Version.TryParse(normalizedLeft, out var parsedLeft) ||
+            !Version.TryParse(normalizedRight, out var parsedRight))
+        {
+            return false;
+        }
+
+        comparison = parsedLeft.CompareTo(parsedRight);
         return true;
     }
 

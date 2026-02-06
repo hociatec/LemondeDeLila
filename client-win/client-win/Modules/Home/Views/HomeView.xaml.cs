@@ -90,13 +90,29 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         {
             if (IsTabNavigationAllowed(e.OriginalSource))
             {
-                e.Handled = true;
                 var direction = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift
                     ? FocusNavigationDirection.Previous
                     : FocusNavigationDirection.Next;
 
                 var origin = Keyboard.FocusedElement as UIElement ?? (sender as UIElement);
-                origin?.MoveFocus(new TraversalRequest(direction));
+                var moved = false;
+                try
+                {
+                    moved = origin?.MoveFocus(new TraversalRequest(direction)) == true;
+                }
+                catch
+                {
+                    moved = false;
+                }
+
+                // First-launch fallback: if there is no usable focus yet, place focus explicitly
+                // on the first interactive field (username/password/landing button).
+                if (!moved)
+                {
+                    moved = TryFocusFirstFieldCore(allowInactiveHost: true);
+                }
+
+                e.Handled = true;
             }
             return;
         }
@@ -226,11 +242,11 @@ public partial class HomeView : UserControl, IInitialFocusTarget
             }
         }
 
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => TryFocusFirstFieldCore()));
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => TryFocusFirstFieldCore()));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => TryFocusFirstFieldCore(allowInactiveHost: false)));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => TryFocusFirstFieldCore(allowInactiveHost: false)));
     }
 
-    private bool TryFocusFirstFieldCore()
+    private bool TryFocusFirstFieldCore(bool allowInactiveHost = false)
     {
         var vm = _viewModel;
         if (vm == null)
@@ -238,7 +254,12 @@ public partial class HomeView : UserControl, IInitialFocusTarget
             return false;
         }
 
-        if (!IsLoaded || !IsVisible || !IsHostWindowActive())
+        if (!IsLoaded || !IsVisible)
+        {
+            return false;
+        }
+
+        if (!allowInactiveHost && !IsHostWindowActive())
         {
             return false;
         }
@@ -328,7 +349,7 @@ public partial class HomeView : UserControl, IInitialFocusTarget
             return;
         }
 
-        if (TryFocusFirstFieldCore())
+        if (TryFocusFirstFieldCore(allowInactiveHost: true))
         {
             _initialFocusRemaining = 0;
             StopInitialFocusTimer();
