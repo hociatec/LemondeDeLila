@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 
 namespace client_win
@@ -62,6 +63,7 @@ namespace client_win
                     // Retry loop: utile quand la fenêtre est visible mais n'a pas encore le focus OS
                     // (ClickOnce / démarrage silencieux).
                     StartFocusRetryLoop();
+                    EnsureInitialKeyboardFocus();
                 }
                 catch
                 {
@@ -143,29 +145,60 @@ namespace client_win
             {
                 try
                 {
-                    EnsureWindowForeground();
-                    var currentlyFocused = Keyboard.FocusedElement as IInputElement;
-                    if (currentlyFocused != null &&
-                        IsFocusableElementWithinRoot(currentlyFocused) &&
-                        !ShouldSkipStartupFocusTarget(currentlyFocused))
-                    {
-                        _pendingScreenReaderAnnouncement = false;
-                        return;
-                    }
-
-                    var target = FindFirstFocusableElement() ?? this;
-                    FocusAndAnnounce(target);
-                    RequestContentInitialFocus();
-                    if (!IsKeyboardFocusWithin)
-                    {
-                        StartFocusRetryLoop();
-                    }
+                    EnsureInitialKeyboardFocus();
                 }
                 finally
                 {
                     _isHandlingActivation = false;
                 }
             }), DispatcherPriority.Input);
+        }
+
+        private void EnsureInitialKeyboardFocus()
+        {
+            try
+            {
+                if (!IsVisible || !IsLoaded)
+                {
+                    return;
+                }
+
+                // Best-effort: request OS activation (may fail due to Windows focus rules).
+                try { Activate(); } catch { /* ignore */ }
+                try { Focus(); } catch { /* ignore */ }
+
+                // Some startups show the window without giving it OS focus; a brief Topmost toggle can help.
+                try
+                {
+                    if (!IsActive)
+                    {
+                        var previousTopmost = Topmost;
+                        Topmost = true;
+                        Topmost = previousTopmost;
+                        try { Activate(); } catch { /* ignore */ }
+                    }
+                }
+                catch
+                {
+                    // best-effort
+                }
+
+                // Best-effort: bring the window to foreground.
+                EnsureWindowForeground();
+
+                // Ensure WPF has a focused element so Tab / Shift+Tab have a starting point.
+                try { FocusParking.Park(this); } catch { /* ignore */ }
+
+                // Try view-provided initial focus (Home/Menu implement IInitialFocusTarget).
+                RequestContentInitialFocus();
+
+                // Fallback: traverse to first focusable in content.
+                TryMoveFocusIntoContent();
+            }
+            catch
+            {
+                // best-effort
+            }
         }
 
         private void EnsureWindowForeground()
@@ -364,11 +397,6 @@ namespace client_win
 
         private void OnFocusRetryTick(object? sender, EventArgs e)
         {
-            if (!IsActive && !IsKeyboardFocusWithin)
-            {
-                return;
-            }
-
             var focused = Keyboard.FocusedElement as IInputElement;
             if (focused != null &&
                 IsFocusableElementWithinRoot(focused) &&
@@ -390,7 +418,7 @@ namespace client_win
                 return;
             }
 
-            RequestContentInitialFocus();
+            EnsureInitialKeyboardFocus();
         }
 
         private void StopFocusRetryLoop()
