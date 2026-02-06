@@ -102,6 +102,60 @@ namespace client_win
             }
             catch { /* best-effort */ }
 
+            // Contournement "serein" et valable quel que soit le mode de lancement :
+            // on enregistre un raccourci global qui permet à l'utilisateur de ramener la fenêtre au premier plan
+            // même si Windows refuse le foreground au lancement (cas fréquent ClickOnce / launchers / tâches).
+            // Un raccourci global (RegisterHotKey) est considéré comme une interaction utilisateur, donc
+            // SetForegroundWindow est beaucoup plus fiable ensuite.
+            try
+            {
+                window.SourceInitialized += (_, _) =>
+                {
+                    try
+                    {
+                        var hwnd = new WindowInteropHelper(window).Handle;
+                        if (hwnd == IntPtr.Zero)
+                        {
+                            return;
+                        }
+
+                        // Ctrl+Alt+Shift+L
+                        NativeMethods.RegisterHotKey(hwnd, NativeMethods.HOTKEY_ID_ACTIVATE, NativeMethods.MOD_CONTROL | NativeMethods.MOD_ALT | NativeMethods.MOD_SHIFT, NativeMethods.VK_L);
+
+                        if (HwndSource.FromHwnd(hwnd) is HwndSource source)
+                        {
+                            source.AddHook((IntPtr h, int msg, IntPtr wParam, IntPtr lParam, ref bool handled) =>
+                            {
+                                if (msg == NativeMethods.WM_HOTKEY && wParam.ToInt32() == NativeMethods.HOTKEY_ID_ACTIVATE)
+                                {
+                                    handled = true;
+                                    try { ForegroundWindowHelper.TryForceForeground(h); } catch { /* ignore */ }
+                                }
+                                return IntPtr.Zero;
+                            });
+                        }
+                    }
+                    catch
+                    {
+                        // best-effort
+                    }
+                };
+
+                window.Closed += (_, _) =>
+                {
+                    try
+                    {
+                        var hwnd = new WindowInteropHelper(window).Handle;
+                        if (hwnd != IntPtr.Zero)
+                        {
+                            NativeMethods.UnregisterHotKey(hwnd, NativeMethods.HOTKEY_ID_ACTIVATE);
+                        }
+                    }
+                    catch { /* best-effort */ }
+                };
+            }
+            catch { /* best-effort */ }
+
             // ClickOnce / dfsvc.exe : au démarrage, Windows peut refuser de donner le "foreground" à l'app
             // (règles SetForegroundWindow). On tente un bring-to-front best-effort sur le thread UI.
             try
@@ -281,6 +335,50 @@ namespace client_win
                     EnsureForeground();
                     window.Dispatcher.BeginInvoke((Action)EnsureForeground, DispatcherPriority.Input);
                     window.Dispatcher.BeginInvoke((Action)EnsureForeground, DispatcherPriority.ApplicationIdle);
+
+                    // Si la fenêtre n'obtient pas le focus OS (fréquent sur certains démarrages ClickOnce),
+                    // éviter l'effet "NVDA annonce un champ mais je ne peux pas taper".
+                    // Stratégie plus sereine : attirer l'attention (flash) + message NVDA, sans voler le focus.
+                    try
+                    {
+                        var announcer = host.Services.GetRequiredService<IScreenReaderAnnouncer>();
+                        var activationTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle, window.Dispatcher)
+                        {
+                            Interval = TimeSpan.FromSeconds(1),
+                        };
+
+                        activationTimer.Tick += (_, _) =>
+                        {
+                            try
+                            {
+                                activationTimer.Stop();
+
+                                if (!window.IsVisible || window.IsActive)
+                                {
+                                    return;
+                                }
+
+                                var hwnd = new WindowInteropHelper(window).Handle;
+                                if (hwnd != IntPtr.Zero)
+                                {
+                                    try { NativeMethods.FlashWindowUntilForeground(hwnd); } catch { /* ignore */ }
+                                }
+
+                                announcer.AnnounceAssertiveEvenIfInactive(
+                                    "Le Monde de Lila n'est pas actif. Faites Alt+Tab pour revenir sur la fenêtre, ou appuyez sur Contrôle Alt Majuscule L pour activer la fenêtre.");
+                            }
+                            catch
+                            {
+                                // best-effort
+                            }
+                        };
+
+                        activationTimer.Start();
+                    }
+                    catch
+                    {
+                        // best-effort
+                    }
 
                     // ShellWindowBehavior calls OnLoadedAsync on Window.Loaded. If the window was loaded already
                     // (bootstrap phase), we must trigger the startup ourselves.
@@ -527,6 +625,61 @@ namespace client_win
 
         [DllImport("user32.dll")]
         public static extern bool BringWindowToTop(IntPtr hWnd);
+
+        public const int WM_HOTKEY = 0x0312;
+        public const int HOTKEY_ID_ACTIVATE = 1;
+
+        public const uint MOD_ALT = 0x0001;
+        public const uint MOD_CONTROL = 0x0002;
+        public const uint MOD_SHIFT = 0x0004;
+
+        public const uint VK_L = 0x4C;
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct FLASHWINFO
+        {
+            public uint cbSize;
+            public IntPtr hwnd;
+            public uint dwFlags;
+            public uint uCount;
+            public uint dwTimeout;
+        }
+
+        public const uint FLASHW_STOP = 0;
+        public const uint FLASHW_CAPTION = 1;
+        public const uint FLASHW_TRAY = 2;
+        public const uint FLASHW_ALL = 3;
+        public const uint FLASHW_TIMERNOFG = 12;
+
+        [DllImport("user32.dll")]
+        public static extern bool FlashWindowEx(ref FLASHWINFO pwfi);
+
+        public static void FlashWindowUntilForeground(IntPtr hwnd)
+        {
+            try
+            {
+                var info = new FLASHWINFO
+                {
+                    cbSize = (uint)Marshal.SizeOf<FLASHWINFO>(),
+                    hwnd = hwnd,
+                    // Flash taskbar button until foreground, but don't loop forever if focus comes quickly.
+                    dwFlags = FLASHW_TRAY | FLASHW_TIMERNOFG,
+                    uCount = 3,
+                    dwTimeout = 0,
+                };
+                FlashWindowEx(ref info);
+            }
+            catch
+            {
+                // ignore
+            }
+        }
     }
 
     internal static class ForegroundWindowHelper

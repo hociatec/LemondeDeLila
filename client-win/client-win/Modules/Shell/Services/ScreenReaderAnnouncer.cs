@@ -28,6 +28,9 @@ public sealed class ScreenReaderAnnouncer : IScreenReaderAnnouncer, IDisposable
 
     public void AnnounceAssertive(string message) => Announce(message, interrupt: true);
 
+    public void AnnounceAssertiveEvenIfInactive(string message) =>
+        Announce(message, interrupt: true, requireAppActive: false);
+
     public bool IsRunning => _nvda?.IsRunning == true;
 
     public void CancelSpeech()
@@ -45,14 +48,14 @@ public sealed class ScreenReaderAnnouncer : IScreenReaderAnnouncer, IDisposable
         }
     }
 
-    private void Announce(string message, bool interrupt)
+    private void Announce(string message, bool interrupt, bool requireAppActive = true)
     {
         if (string.IsNullOrWhiteSpace(message))
         {
             return;
         }
 
-        if (!IsAppActive())
+        if (requireAppActive && !IsAppActive())
         {
             return;
         }

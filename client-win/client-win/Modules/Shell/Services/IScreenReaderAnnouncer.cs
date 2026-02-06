@@ -5,5 +5,6 @@ public interface IScreenReaderAnnouncer
     bool IsRunning { get; }
     void AnnouncePolite(string message);
     void AnnounceAssertive(string message);
+    void AnnounceAssertiveEvenIfInactive(string message);
     void CancelSpeech();
 }

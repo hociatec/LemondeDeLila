@@ -110,6 +110,15 @@ public static class ContentHostFocusBehavior
     {
         try
         {
+            // Ne jamais déplacer le focus dans une fenêtre non active : sur certains démarrages (notamment ClickOnce),
+            // Windows refuse le foreground. Si on focus quand même, NVDA peut annoncer un champ mais le clavier reste
+            // sur l'appli précédente, donnant l'impression que l'UI "ne répond pas" jusqu'à un alt-tab.
+            var window = Window.GetWindow(host) ?? Application.Current?.MainWindow;
+            if (window != null && !window.IsActive)
+            {
+                return;
+            }
+
             // NVDA: park focus on a stable element before trying to focus inside the new content.
             // This avoids "indisponible" when the previously focused element disappears during navigation.
             try { FocusParking.Park(Window.GetWindow(host) ?? Application.Current?.MainWindow); } catch { }
