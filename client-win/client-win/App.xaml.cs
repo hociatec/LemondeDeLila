@@ -94,13 +94,6 @@ namespace client_win
             // parfois le champ mais le clavier reste sur l'application précédente, jusqu'à un alt-tab.
             // On montre donc la fenêtre immédiatement et on initialise le Shell ensuite.
             try { window.Show(); } catch { /* best-effort */ }
-            try
-            {
-                window.Activate();
-                window.Focus();
-                Keyboard.Focus(window);
-            }
-            catch { /* best-effort */ }
 
             // Contournement "serein" et valable quel que soit le mode de lancement :
             // on enregistre un raccourci global qui permet à l'utilisateur de ramener la fenêtre au premier plan
@@ -121,7 +114,6 @@ namespace client_win
 
                         // Activation retry: handle is ready here; try a few quick times while the user-initiated
                         // foreground allowance window is still open (helps with ClickOnce/launchers).
-                        try { StartupActivationHelper.Begin(window, hwnd); } catch { /* ignore */ }
 
                         // Ctrl+Alt+Shift+L
                         var hotkeyOk = NativeMethods.RegisterHotKey(hwnd, NativeMethods.HOTKEY_ID_ACTIVATE, NativeMethods.MOD_CONTROL | NativeMethods.MOD_ALT | NativeMethods.MOD_SHIFT, NativeMethods.VK_L);
@@ -158,25 +150,6 @@ namespace client_win
                     }
                     catch { /* best-effort */ }
                 };
-            }
-            catch { /* best-effort */ }
-
-            // ClickOnce / dfsvc.exe : au démarrage, Windows peut refuser de donner le "foreground" à l'app
-            // (règles SetForegroundWindow). On tente un bring-to-front best-effort sur le thread UI.
-            try
-            {
-                window.Dispatcher.BeginInvoke(DispatcherPriority.Send, new Action(() =>
-                {
-                    try
-                    {
-                        var hwnd = new WindowInteropHelper(window).Handle;
-                        if (hwnd != IntPtr.Zero)
-                        {
-                            ForegroundWindowHelper.TryForceForeground(hwnd);
-                        }
-                    }
-                    catch { /* best-effort */ }
-                }));
             }
             catch { /* best-effort */ }
 

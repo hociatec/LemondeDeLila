@@ -24,11 +24,25 @@ public static class ContentHostFocusBehavior
             typeof(ContentHostFocusBehavior),
             new PropertyMetadata(false, OnEnableChanged));
 
+    /// <summary>
+    /// When enabled, the behavior will skip its first focus attempt for a given host. This is useful to keep
+    /// the initial window opening behavior native (no forced focus on startup), while still allowing focus
+    /// management on later content changes.
+    /// </summary>
+    public static readonly DependencyProperty SkipInitialFocusProperty =
+        DependencyProperty.RegisterAttached(
+            "SkipInitialFocus",
+            typeof(bool),
+            typeof(ContentHostFocusBehavior),
+            new PropertyMetadata(false));
+
     private sealed class HandlerSet
     {
         public EventHandler? ContentChanged { get; init; }
         public DispatcherTimer? RetryTimer { get; set; }
         public int RetryRemaining { get; set; }
+        public bool SkipInitialFocus { get; init; }
+        public bool InitialFocusSkipped { get; set; }
     }
 
     private static readonly ConditionalWeakTable<ContentControl, HandlerSet> HandlersByHost = new();
@@ -40,6 +54,12 @@ public static class ContentHostFocusBehavior
 
     public static bool GetEnable(DependencyObject element) =>
         (bool)element.GetValue(EnableProperty);
+
+    public static void SetSkipInitialFocus(DependencyObject element, bool value) =>
+        element.SetValue(SkipInitialFocusProperty, value);
+
+    public static bool GetSkipInitialFocus(DependencyObject element) =>
+        (bool)element.GetValue(SkipInitialFocusProperty);
 
     private static void OnEnableChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -68,7 +88,12 @@ public static class ContentHostFocusBehavior
         EventHandler changed = (_, _) => FocusFirstInteractive(host);
         descriptor.AddValueChanged(host, changed);
 
-        HandlersByHost.Add(host, new HandlerSet { ContentChanged = changed });
+        HandlersByHost.Add(host, new HandlerSet
+        {
+            ContentChanged = changed,
+            SkipInitialFocus = GetSkipInitialFocus(host),
+            InitialFocusSkipped = false,
+        });
 
         // Also run once after load.
         host.Dispatcher.BeginInvoke((Action)(() => FocusFirstInteractive(host)), DispatcherPriority.Background);
@@ -110,6 +135,14 @@ public static class ContentHostFocusBehavior
     {
         try
         {
+            if (HandlersByHost.TryGetValue(host, out var handlers) &&
+                handlers.SkipInitialFocus &&
+                !handlers.InitialFocusSkipped)
+            {
+                handlers.InitialFocusSkipped = true;
+                return;
+            }
+
             // Ne jamais déplacer le focus dans une fenêtre non active : sur certains démarrages (notamment ClickOnce),
             // Windows refuse le foreground. Si on focus quand même, NVDA peut annoncer un champ mais le clavier reste
             // sur l'appli précédente, donnant l'impression que l'UI "ne répond pas" jusqu'à un alt-tab.

@@ -9,6 +9,8 @@
         WindowStartupLocation="CenterScreen"
         ShowActivated="True"
         Background="#0B1523"
+        AutomationProperties.AutomationId="MainWindow"
+        AutomationProperties.Name="{Binding WindowTitle, TargetNullValue=Le Monde de Lila, FallbackValue=Le Monde de Lila}"
         shellViews:ShellWindowBehavior.Enable="True">
     <Grid>
         <!-- Focus sentinel (NVDA): element stable that never disappears during navigation.
@@ -19,12 +21,15 @@
                 Focusable="True"
                 IsHitTestVisible="False"
                 KeyboardNavigation.IsTabStop="False"
+                AutomationProperties.AutomationId="FocusSentinel"
                 AutomationProperties.Name="{Binding WindowTitle, TargetNullValue=Le Monde de Lila, FallbackValue=Le Monde de Lila}" />
         <ContentControl x:Name="RootHost"
                         Focusable="True"
                         KeyboardNavigation.IsTabStop="False"
+                        AutomationProperties.AutomationId="RootHost"
                         AutomationProperties.Name="{Binding WindowTitle, TargetNullValue=Le Monde de Lila, FallbackValue=Le Monde de Lila}"
                         Content="{Binding CurrentContent}"
+                        shellViews:ContentHostFocusBehavior.SkipInitialFocus="True"
                         shellViews:ContentHostFocusBehavior.Enable="True" />
     </Grid>
 </Window>
