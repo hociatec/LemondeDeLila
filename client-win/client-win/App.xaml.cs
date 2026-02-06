@@ -124,7 +124,8 @@ namespace client_win
                         try { StartupActivationHelper.Begin(window, hwnd); } catch { /* ignore */ }
 
                         // Ctrl+Alt+Shift+L
-                        NativeMethods.RegisterHotKey(hwnd, NativeMethods.HOTKEY_ID_ACTIVATE, NativeMethods.MOD_CONTROL | NativeMethods.MOD_ALT | NativeMethods.MOD_SHIFT, NativeMethods.VK_L);
+                        var hotkeyOk = NativeMethods.RegisterHotKey(hwnd, NativeMethods.HOTKEY_ID_ACTIVATE, NativeMethods.MOD_CONTROL | NativeMethods.MOD_ALT | NativeMethods.MOD_SHIFT, NativeMethods.VK_L);
+                        _ = hotkeyOk; // best-effort; if it fails, Alt+Tab remains available.
 
                         if (HwndSource.FromHwnd(hwnd) is HwndSource source)
                         {
@@ -720,6 +721,7 @@ namespace client_win
                 try
                 {
                     try { NativeMethods.ShowWindow(hwnd, NativeMethods.SW_SHOW); } catch { /* ignore */ }
+                    try { NativeMethods.ShowWindow(hwnd, NativeMethods.SW_RESTORE); } catch { /* ignore */ }
                     try { NativeMethods.BringWindowToTop(hwnd); } catch { /* ignore */ }
                     try { NativeMethods.SetForegroundWindow(hwnd); } catch { /* ignore */ }
                     try { NativeMethods.SetActiveWindow(hwnd); } catch { /* ignore */ }
@@ -731,6 +733,10 @@ namespace client_win
                     {
                         if (NativeMethods.GetForegroundWindow() != hwnd)
                         {
+                            // Extra fallback: emulate the user action that "unblocks" in practice (restore/maximize).
+                            // This triggers a non-client state change similar to clicking "agrandir".
+                            try { NativeMethods.ShowWindow(hwnd, NativeMethods.SW_MAXIMIZE); } catch { /* ignore */ }
+
                             NativeMethods.SetWindowPos(
                                 hwnd,
                                 NativeMethods.HWND_TOPMOST,

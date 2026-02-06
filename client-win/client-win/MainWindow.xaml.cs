@@ -10,15 +10,54 @@ public partial class MainWindow : Window
 {
     private int _focusNudgeAttempts;
     private const int MaxFocusNudgeAttempts = 6;
+    private int _didApplyInitialWindowState;
 
     public MainWindow()
     {
         InitializeComponent();
-        WindowState = WindowState.Maximized;
 
-        Loaded += (_, _) => ScheduleFocusNudge();
-        ContentRendered += (_, _) => ScheduleFocusNudge();
-        Activated += (_, _) => ScheduleFocusNudge();
+        Loaded += (_, _) =>
+        {
+            ApplyInitialWindowState();
+            ScheduleFocusNudge();
+        };
+        ContentRendered += (_, _) =>
+        {
+            ApplyInitialWindowState();
+            ScheduleFocusNudge();
+        };
+        Activated += (_, _) =>
+        {
+            ApplyInitialWindowState();
+            ScheduleFocusNudge();
+        };
+    }
+
+    private void ApplyInitialWindowState()
+    {
+        // Ne pas maximiser dans le constructeur : selon le mode de lancement, cela peut arriver
+        // avant que la fenêtre soit réellement activée, et on perd ensuite le focus clavier.
+        // En le faisant sur Loaded/ContentRendered/Activated, on force un vrai "state change"
+        // proche du comportement "agrandir" qui débloque l'interaction chez NVDA.
+        if (System.Threading.Interlocked.Exchange(ref _didApplyInitialWindowState, 1) == 1)
+        {
+            return;
+        }
+
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() =>
+        {
+            try
+            {
+                if (WindowState != WindowState.Maximized)
+                {
+                    WindowState = WindowState.Maximized;
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+        }));
     }
 
     private void ScheduleFocusNudge()
