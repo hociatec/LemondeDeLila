@@ -38,49 +38,36 @@ namespace client_win
                 return;
             _didStartupFocusNudge = true;
 
-            await Task.Delay(150);
-
-            await Dispatcher.InvokeAsync(() =>
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(async () =>
             {
                 try
                 {
-                    if (!IsVisible)
+                    // Laisser WPF finaliser la création de la fenêtre / templates avant d'appliquer le focus.
+                    await Task.Delay(200);
+
+                    if (!IsVisible || !IsLoaded)
+                    {
                         return;
-
-                    if (!IsActive)
-                    {
-                        Activate();
-                        var helper = new WindowInteropHelper(this);
-                        helper.EnsureHandle();
-                        NativeMethods.SetForegroundWindow(helper.Handle);
                     }
 
-            Task.Delay(50).ContinueWith(_ =>
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    var firstFocusable = FindFirstFocusableElement();
-                    if (firstFocusable == null)
-                    {
-                        MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
-                        firstFocusable = FocusManager.GetFocusedElement(this) as IInputElement;
-                        if (ShouldSkipStartupFocusTarget(firstFocusable))
-                        {
-                            firstFocusable = null;
-                        }
-                    }
+                    // Best-effort: demander l'activation (peut échouer selon les règles Windows de focus).
+                    try { Activate(); } catch { /* ignore */ }
 
+                    // Best-effort: tenter de mettre la fenêtre au premier plan sans casser l'utilisateur.
                     EnsureWindowForeground();
-                    FocusAndAnnounce(firstFocusable ?? this);
+
+                    // Injecter le focus dans le contenu (Home/Menu).
+                    RequestContentInitialFocus();
+
+                    // Retry loop: utile quand la fenêtre est visible mais n'a pas encore le focus OS
+                    // (ClickOnce / démarrage silencieux).
                     StartFocusRetryLoop();
-                });
-            });
-        }
+                }
                 catch
                 {
                     // Ignorer les erreurs (best-effort)
                 }
-            }, DispatcherPriority.ApplicationIdle);
+            }));
         }
 
         private IInputElement? FindFirstFocusableElement()
@@ -95,41 +82,44 @@ namespace client_win
             return PredictionServices.GetFirstFocusableChild(host, element => !ShouldSkipStartupFocusTarget(element));
         }
 
-    private bool IsFocusableElementWithinRoot(IInputElement element)
-    {
-        if (element is not DependencyObject dependency) return false;
-
-        var host = FindName("RootHost") as DependencyObject ?? this;
-        for (var current = dependency; current != null; current = GetParent(current))
+        private bool IsFocusableElementWithinRoot(IInputElement element)
         {
-            if (ReferenceEquals(current, host))
+            if (element is not DependencyObject dependency)
             {
-                return true;
+                return false;
             }
+
+            var host = FindName("RootHost") as DependencyObject ?? this;
+            for (var current = dependency; current != null; current = GetParent(current))
+            {
+                if (ReferenceEquals(current, host))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
-        return false;
-    }
-
-    private static DependencyObject? GetParent(DependencyObject current)
-    {
-        if (current == null)
+        private static DependencyObject? GetParent(DependencyObject current)
         {
-            return null;
-        }
+            if (current == null)
+            {
+                return null;
+            }
 
-        if (current is Visual || current is System.Windows.Media.Media3D.Visual3D)
-        {
-            return VisualTreeHelper.GetParent(current);
-        }
+            if (current is Visual || current is System.Windows.Media.Media3D.Visual3D)
+            {
+                return VisualTreeHelper.GetParent(current);
+            }
 
-        if (current is FrameworkElement fe)
-        {
-            return fe.Parent ?? fe.TemplatedParent;
-        }
+            if (current is FrameworkElement fe)
+            {
+                return fe.Parent ?? fe.TemplatedParent;
+            }
 
-        return LogicalTreeHelper.GetParent(current);
-    }
+            return LogicalTreeHelper.GetParent(current);
+        }
 
         private void FocusAndAnnounce(IInputElement element)
         {
@@ -226,10 +216,69 @@ namespace client_win
                 {
                     _pendingScreenReaderAnnouncement = true;
                     initialFocusTarget.RequestInitialFocus();
+
+                    if (!IsKeyboardFocusWithinRootInteractive())
+                    {
+                        TryMoveFocusIntoContent();
+                    }
                 }
                 else
                 {
                     _pendingScreenReaderAnnouncement = false;
+                    TryMoveFocusIntoContent();
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+        }
+
+        private bool IsKeyboardFocusWithinRootInteractive()
+        {
+            try
+            {
+                var focused = Keyboard.FocusedElement as IInputElement;
+                if (focused == null)
+                {
+                    return false;
+                }
+
+                if (!IsFocusableElementWithinRoot(focused))
+                {
+                    return false;
+                }
+
+                return !ShouldSkipStartupFocusTarget(focused);
+            }
+            catch
+            {
+                // best-effort
+            }
+
+            return false;
+        }
+
+        private void TryMoveFocusIntoContent()
+        {
+            try
+            {
+                if (!IsVisible || !IsLoaded)
+                {
+                    return;
+                }
+
+                // Ne pas voler le focus à d'autres applications.
+                if (!IsActive && !IsKeyboardFocusWithin)
+                {
+                    return;
+                }
+
+                try { RootHost?.MoveFocus(new TraversalRequest(FocusNavigationDirection.First)); } catch { /* ignore */ }
+
+                if (!IsKeyboardFocusWithinRootInteractive())
+                {
+                    try { MoveFocus(new TraversalRequest(FocusNavigationDirection.First)); } catch { /* ignore */ }
                 }
             }
             catch
@@ -315,6 +364,11 @@ namespace client_win
 
         private void OnFocusRetryTick(object? sender, EventArgs e)
         {
+            if (!IsActive && !IsKeyboardFocusWithin)
+            {
+                return;
+            }
+
             var focused = Keyboard.FocusedElement as IInputElement;
             if (focused != null &&
                 IsFocusableElementWithinRoot(focused) &&

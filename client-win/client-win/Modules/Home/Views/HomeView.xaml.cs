@@ -224,7 +224,7 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         {
             if (LandingPrimaryButton?.IsVisible == true && LandingPrimaryButton.IsEnabled)
             {
-                LandingPrimaryButton.Focus();
+                TryKeyboardFocus(LandingPrimaryButton);
                 return true;
             }
             return false;
@@ -234,17 +234,17 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         {
             if (LoginUsernameBox?.IsVisible == true && LoginUsernameBox.IsEnabled)
             {
-                LoginUsernameBox.Focus();
+                TryKeyboardFocus(LoginUsernameBox);
                 return true;
             }
             else if (LoginPasswordBox?.IsVisible == true && LoginPasswordBox.IsEnabled)
             {
-                LoginPasswordBox.Focus();
+                TryKeyboardFocus(LoginPasswordBox);
                 return true;
             }
             else if (LoginPasswordTextBox?.IsVisible == true && LoginPasswordTextBox.IsEnabled)
             {
-                LoginPasswordTextBox.Focus();
+                TryKeyboardFocus(LoginPasswordTextBox);
                 return true;
             }
 
@@ -255,26 +255,32 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         {
             if (RegisterUsernameBox?.IsVisible == true && RegisterUsernameBox.IsEnabled)
             {
-                RegisterUsernameBox.Focus();
+                TryKeyboardFocus(RegisterUsernameBox);
                 return true;
             }
             else if (RegisterEmailBox?.IsVisible == true && RegisterEmailBox.IsEnabled)
             {
-                RegisterEmailBox.Focus();
+                TryKeyboardFocus(RegisterEmailBox);
                 return true;
             }
             else if (RegisterPasswordBox?.IsVisible == true && RegisterPasswordBox.IsEnabled)
             {
-                RegisterPasswordBox.Focus();
+                TryKeyboardFocus(RegisterPasswordBox);
                 return true;
             }
             else if (RegisterPasswordTextBox?.IsVisible == true && RegisterPasswordTextBox.IsEnabled)
             {
-                RegisterPasswordTextBox.Focus();
+                TryKeyboardFocus(RegisterPasswordTextBox);
                 return true;
             }
 
             return false;
+        }
+
+        private static void TryKeyboardFocus(IInputElement target)
+        {
+            try { (target as UIElement)?.Focus(); } catch { /* ignore */ }
+            try { Keyboard.Focus(target); } catch { /* ignore */ }
         }
 
     private void AttachHostWindowFocusRetry()

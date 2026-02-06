@@ -66,6 +66,7 @@ public partial class MainMenuView : UserControl, IInitialFocusTarget
         if (e.Key == Key.Tab)
         {
             e.Handled = true;
+            CycleSelectionByTab();
             return;
         }
 
@@ -110,6 +111,43 @@ public partial class MainMenuView : UserControl, IInitialFocusTarget
         }));
 
         return;
+    }
+
+    private void CycleSelectionByTab()
+    {
+        try
+        {
+            var list = ItemsList;
+            if (list == null)
+            {
+                return;
+            }
+
+            var count = list.Items.Count;
+            if (count <= 0)
+            {
+                return;
+            }
+
+            var delta = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift ? -1 : 1;
+            if (list.SelectedIndex < 0)
+            {
+                list.SelectedIndex = 0;
+            }
+
+            var nextIndex = (list.SelectedIndex + delta) % count;
+            if (nextIndex < 0)
+            {
+                nextIndex += count;
+            }
+            list.SelectedIndex = nextIndex;
+
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+        }
+        catch
+        {
+            // best-effort
+        }
     }
 
     private void FocusFirstItem()
