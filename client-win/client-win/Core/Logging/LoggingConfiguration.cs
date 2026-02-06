@@ -1,6 +1,6 @@
-using System.IO;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Serilog;
 using Serilog.Events;
@@ -12,11 +12,18 @@ namespace client_win.Core.Logging;
 /// </summary>
 public static class LoggingConfiguration
 {
+    private const string DebugLogFlagFileName = "debug-logs.flag";
+
     private static LogEventLevel ResolveMinimumLevel(LogEventLevel fallback)
     {
         var raw = Environment.GetEnvironmentVariable("LOG_LEVEL");
         if (string.IsNullOrWhiteSpace(raw))
         {
+            if (IsDebugFlagSet())
+            {
+                return LogEventLevel.Debug;
+            }
+
             return fallback;
         }
 
@@ -40,6 +47,31 @@ public static class LoggingConfiguration
             "fatal" => LogEventLevel.Fatal,
             _ => fallback
         };
+    }
+
+    private static bool IsDebugFlagSet()
+    {
+        try
+        {
+            var debugFlag = Environment.GetEnvironmentVariable("LEMONDEDELILA_DEBUG_LOGS");
+            if (!string.IsNullOrWhiteSpace(debugFlag))
+            {
+                return true;
+            }
+
+            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            if (string.IsNullOrWhiteSpace(localAppData))
+            {
+                return false;
+            }
+
+            var flagPath = Path.Combine(localAppData, "LeMondeDeLila", DebugLogFlagFileName);
+            return File.Exists(flagPath);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     /// <summary>
