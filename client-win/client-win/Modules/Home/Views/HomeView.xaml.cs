@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using client_win.Modules.Home.ViewModels;
 using client_win.Modules.Shell.Services;
@@ -19,6 +20,9 @@ public partial class HomeView : UserControl, IInitialFocusTarget
     private HomeViewModel? _viewModel;
     private Window? _hostWindow;
     private EventHandler? _hostWindowActivatedHandler;
+    private const int InitialFocusMaxAttempts = 6;
+    private int _initialFocusRemaining;
+    private bool _initialFocusScheduled;
 
     public HomeView()
     {
@@ -29,7 +33,7 @@ public partial class HomeView : UserControl, IInitialFocusTarget
     {
         AttachViewModel();
         AttachHostWindowFocusRetry();
-        FocusFirstField();
+        EnsureInitialFocus();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -43,7 +47,10 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         DetachViewModel();
         AttachViewModel();
         AttachHostWindowFocusRetry();
-        FocusFirstField();
+        if (IsLoaded)
+        {
+            EnsureInitialFocus();
+        }
     }
 
     private void AttachViewModel()
@@ -178,46 +185,97 @@ public partial class HomeView : UserControl, IInitialFocusTarget
 
         private void FocusFirstField(bool immediate = false)
         {
-            var vm = _viewModel;
-            if (vm == null)
-            {
-                return;
-            }
-
-            bool TryFocus()
-            {
-                try
-                {
-                    if (!ReferenceEquals(_viewModel, vm) || !IsLoaded || !IsVisible)
-                    {
-                        return false;
-                    }
-
-                    return vm.CurrentPage switch
-                    {
-                        HomePage.Landing => FocusLandingButton(),
-                        HomePage.Login => FocusLoginField(),
-                        HomePage.Register => FocusRegisterField(),
-                        _ => false,
-                    };
-                }
-                catch
-                {
-                    // Focus is best-effort: never crash the UI thread.
-                }
-
-                return false;
-            }
-
             if (immediate && Dispatcher.CheckAccess())
             {
-                if (TryFocus())
+                if (TryFocusFirstFieldCore())
                 {
                     return;
                 }
             }
 
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => TryFocus()));
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => TryFocusFirstFieldCore()));
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => TryFocusFirstFieldCore()));
+        }
+
+        private bool TryFocusFirstFieldCore()
+        {
+            var vm = _viewModel;
+            if (vm == null)
+            {
+                return false;
+            }
+
+            if (!IsLoaded || !IsVisible || !IsHostWindowActive())
+            {
+                return false;
+            }
+
+            try
+            {
+                return vm.CurrentPage switch
+                {
+                    HomePage.Landing => FocusLandingButton(),
+                    HomePage.Login => FocusLoginField(),
+                    HomePage.Register => FocusRegisterField(),
+                    _ => false,
+                };
+            }
+            catch
+            {
+                // Focus is best-effort: never crash the UI thread.
+            }
+
+            return false;
+        }
+
+        private void EnsureInitialFocus()
+        {
+            _initialFocusRemaining = InitialFocusMaxAttempts;
+            QueueInitialFocusAttempt();
+        }
+
+        private void QueueInitialFocusAttempt()
+        {
+            if (_initialFocusRemaining <= 0 || _initialFocusScheduled)
+            {
+                return;
+            }
+
+            _initialFocusScheduled = true;
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(InitialFocusAttempt));
+        }
+
+        private void InitialFocusAttempt()
+        {
+            _initialFocusScheduled = false;
+
+            if (_initialFocusRemaining <= 0)
+            {
+                return;
+            }
+
+            if (!IsLoaded || !IsVisible)
+            {
+                return;
+            }
+
+            if (IsFocusWithinView())
+            {
+                _initialFocusRemaining = 0;
+                return;
+            }
+
+            if (TryFocusFirstFieldCore())
+            {
+                _initialFocusRemaining = 0;
+                return;
+            }
+
+            _initialFocusRemaining--;
+            if (_initialFocusRemaining > 0)
+            {
+                QueueInitialFocusAttempt();
+            }
         }
 
         private bool FocusLandingButton()
@@ -283,6 +341,67 @@ public partial class HomeView : UserControl, IInitialFocusTarget
             try { Keyboard.Focus(target); } catch { /* ignore */ }
         }
 
+    private bool IsHostWindowActive()
+    {
+        try
+        {
+            var window = Window.GetWindow(this);
+            if (window == null)
+            {
+                return false;
+            }
+
+            return window.IsActive || window.IsKeyboardFocusWithin;
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        return false;
+    }
+
+    private bool IsFocusWithinView()
+    {
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        if (focused == null)
+        {
+            return false;
+        }
+
+        for (DependencyObject? current = focused; current != null; current = GetParent(current))
+        {
+            if (ReferenceEquals(current, this))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static DependencyObject? GetParent(DependencyObject current)
+    {
+        try
+        {
+            if (current is Visual || current is System.Windows.Media.Media3D.Visual3D)
+            {
+                return VisualTreeHelper.GetParent(current);
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        if (current is FrameworkElement fe)
+        {
+            return fe.Parent ?? fe.TemplatedParent;
+        }
+
+        return LogicalTreeHelper.GetParent(current);
+    }
+
     private void AttachHostWindowFocusRetry()
     {
         try
@@ -317,7 +436,7 @@ public partial class HomeView : UserControl, IInitialFocusTarget
                     {
                         try
                         {
-                            FocusFirstField();
+                            EnsureInitialFocus();
                         }
                         catch
                         {
@@ -342,7 +461,7 @@ public partial class HomeView : UserControl, IInitialFocusTarget
                 {
                     try
                     {
-                        FocusFirstField();
+                        EnsureInitialFocus();
                     }
                     catch
                     {
@@ -379,6 +498,6 @@ public partial class HomeView : UserControl, IInitialFocusTarget
 
         public void RequestInitialFocus()
         {
-            FocusFirstField(immediate: true);
+            EnsureInitialFocus();
         }
 }
