@@ -1,23 +1,11 @@
-using System;
-using System.Windows.Controls;
-using System.Windows.Threading;
-using client_win.Modules.Shell.Services;
-using client_win.Modules.Shell.Views;
+﻿using System.Windows.Controls;
 
 namespace client_win.Modules.Shell.Views;
 
-public partial class BootstrapShellView : UserControl, IInitialFocusTarget
+public partial class BootstrapShellView : UserControl
 {
     public BootstrapShellView()
     {
         InitializeComponent();
-    }
-
-    public void RequestInitialFocus()
-    {
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-        {
-            try { FocusParking.Park(System.Windows.Window.GetWindow(this)); } catch { }
-        }));
     }
 }

@@ -15,14 +15,6 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Button x:Name="FocusAnchor"
-                Width="1" Height="1"
-                Opacity="0"
-                Focusable="False"
-                IsHitTestVisible="False"
-                KeyboardNavigation.IsTabStop="False"
-                AutomationProperties.Name="" />
-
         <TextBlock Text="{Binding WindowTitle}"
                    Foreground="White"
                    FontSize="22"
