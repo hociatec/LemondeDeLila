@@ -20,9 +20,11 @@ public partial class HomeView : UserControl, IInitialFocusTarget
     private HomeViewModel? _viewModel;
     private Window? _hostWindow;
     private EventHandler? _hostWindowActivatedHandler;
-    private const int InitialFocusMaxAttempts = 6;
+    private const int InitialFocusMaxAttempts = 12;
+    private static readonly TimeSpan InitialFocusRetryInterval = TimeSpan.FromMilliseconds(120);
     private int _initialFocusRemaining;
     private bool _initialFocusScheduled;
+    private DispatcherTimer? _initialFocusTimer;
 
     public HomeView()
     {
@@ -38,6 +40,7 @@ public partial class HomeView : UserControl, IInitialFocusTarget
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
+        StopInitialFocusTimer();
         DetachHostWindowFocusRetry();
         DetachViewModel();
     }
@@ -183,163 +186,197 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         return source is TextBoxBase || source is PasswordBox;
     }
 
-        private void FocusFirstField(bool immediate = false)
+    private void FocusFirstField(bool immediate = false)
+    {
+        if (immediate && Dispatcher.CheckAccess())
         {
-            if (immediate && Dispatcher.CheckAccess())
-            {
-                if (TryFocusFirstFieldCore())
-                {
-                    return;
-                }
-            }
-
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => TryFocusFirstFieldCore()));
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => TryFocusFirstFieldCore()));
-        }
-
-        private bool TryFocusFirstFieldCore()
-        {
-            var vm = _viewModel;
-            if (vm == null)
-            {
-                return false;
-            }
-
-            if (!IsLoaded || !IsVisible || !IsHostWindowActive())
-            {
-                return false;
-            }
-
-            try
-            {
-                return vm.CurrentPage switch
-                {
-                    HomePage.Landing => FocusLandingButton(),
-                    HomePage.Login => FocusLoginField(),
-                    HomePage.Register => FocusRegisterField(),
-                    _ => false,
-                };
-            }
-            catch
-            {
-                // Focus is best-effort: never crash the UI thread.
-            }
-
-            return false;
-        }
-
-        private void EnsureInitialFocus()
-        {
-            _initialFocusRemaining = InitialFocusMaxAttempts;
-            QueueInitialFocusAttempt();
-        }
-
-        private void QueueInitialFocusAttempt()
-        {
-            if (_initialFocusRemaining <= 0 || _initialFocusScheduled)
-            {
-                return;
-            }
-
-            _initialFocusScheduled = true;
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(InitialFocusAttempt));
-        }
-
-        private void InitialFocusAttempt()
-        {
-            _initialFocusScheduled = false;
-
-            if (_initialFocusRemaining <= 0)
-            {
-                return;
-            }
-
-            if (!IsLoaded || !IsVisible)
-            {
-                return;
-            }
-
-            if (IsFocusWithinView())
-            {
-                _initialFocusRemaining = 0;
-                return;
-            }
-
             if (TryFocusFirstFieldCore())
             {
-                _initialFocusRemaining = 0;
                 return;
             }
-
-            _initialFocusRemaining--;
-            if (_initialFocusRemaining > 0)
-            {
-                QueueInitialFocusAttempt();
-            }
         }
 
-        private bool FocusLandingButton()
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => TryFocusFirstFieldCore()));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => TryFocusFirstFieldCore()));
+    }
+
+    private bool TryFocusFirstFieldCore()
+    {
+        var vm = _viewModel;
+        if (vm == null)
         {
-            if (LandingPrimaryButton?.IsVisible == true && LandingPrimaryButton.IsEnabled)
-            {
-                TryKeyboardFocus(LandingPrimaryButton);
-                return true;
-            }
             return false;
         }
 
-        private bool FocusLoginField()
+        if (!IsLoaded || !IsVisible || !IsHostWindowActive())
         {
-            if (LoginUsernameBox?.IsVisible == true && LoginUsernameBox.IsEnabled)
-            {
-                TryKeyboardFocus(LoginUsernameBox);
-                return true;
-            }
-            else if (LoginPasswordBox?.IsVisible == true && LoginPasswordBox.IsEnabled)
-            {
-                TryKeyboardFocus(LoginPasswordBox);
-                return true;
-            }
-            else if (LoginPasswordTextBox?.IsVisible == true && LoginPasswordTextBox.IsEnabled)
-            {
-                TryKeyboardFocus(LoginPasswordTextBox);
-                return true;
-            }
-
             return false;
         }
 
-        private bool FocusRegisterField()
+        try
         {
-            if (RegisterUsernameBox?.IsVisible == true && RegisterUsernameBox.IsEnabled)
+            return vm.CurrentPage switch
             {
-                TryKeyboardFocus(RegisterUsernameBox);
-                return true;
-            }
-            else if (RegisterEmailBox?.IsVisible == true && RegisterEmailBox.IsEnabled)
-            {
-                TryKeyboardFocus(RegisterEmailBox);
-                return true;
-            }
-            else if (RegisterPasswordBox?.IsVisible == true && RegisterPasswordBox.IsEnabled)
-            {
-                TryKeyboardFocus(RegisterPasswordBox);
-                return true;
-            }
-            else if (RegisterPasswordTextBox?.IsVisible == true && RegisterPasswordTextBox.IsEnabled)
-            {
-                TryKeyboardFocus(RegisterPasswordTextBox);
-                return true;
-            }
-
-            return false;
+                HomePage.Landing => FocusLandingButton(),
+                HomePage.Login => FocusLoginField(),
+                HomePage.Register => FocusRegisterField(),
+                _ => false,
+            };
+        }
+        catch
+        {
+            // Focus is best-effort: never crash the UI thread.
         }
 
-        private static void TryKeyboardFocus(IInputElement target)
+        return false;
+    }
+
+    private void EnsureInitialFocus()
+    {
+        _initialFocusRemaining = InitialFocusMaxAttempts;
+        StartInitialFocusTimer();
+        QueueInitialFocusAttempt();
+    }
+
+    private void StartInitialFocusTimer()
+    {
+        if (_initialFocusTimer == null)
         {
-            try { (target as UIElement)?.Focus(); } catch { /* ignore */ }
-            try { Keyboard.Focus(target); } catch { /* ignore */ }
+            _initialFocusTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle, Dispatcher);
+            _initialFocusTimer.Tick += OnInitialFocusTimerTick;
         }
+
+        _initialFocusTimer.Interval = InitialFocusRetryInterval;
+        _initialFocusTimer.Start();
+    }
+
+    private void StopInitialFocusTimer()
+    {
+        if (_initialFocusTimer == null)
+        {
+            return;
+        }
+
+        _initialFocusTimer.Stop();
+    }
+
+    private void OnInitialFocusTimerTick(object? sender, EventArgs e)
+    {
+        InitialFocusAttempt();
+    }
+
+    private void QueueInitialFocusAttempt()
+    {
+        if (_initialFocusRemaining <= 0 || _initialFocusScheduled)
+        {
+            return;
+        }
+
+        _initialFocusScheduled = true;
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(InitialFocusAttempt));
+    }
+
+    private void InitialFocusAttempt()
+    {
+        _initialFocusScheduled = false;
+
+        if (_initialFocusRemaining <= 0)
+        {
+            StopInitialFocusTimer();
+            return;
+        }
+
+        if (!IsLoaded || !IsVisible)
+        {
+            return;
+        }
+
+        if (IsFocusWithinView())
+        {
+            _initialFocusRemaining = 0;
+            StopInitialFocusTimer();
+            return;
+        }
+
+        if (TryFocusFirstFieldCore())
+        {
+            _initialFocusRemaining = 0;
+            StopInitialFocusTimer();
+            return;
+        }
+
+        _initialFocusRemaining--;
+        if (_initialFocusRemaining <= 0)
+        {
+            StopInitialFocusTimer();
+            return;
+        }
+
+        QueueInitialFocusAttempt();
+    }
+
+    private bool FocusLandingButton()
+    {
+        if (LandingPrimaryButton?.IsVisible == true && LandingPrimaryButton.IsEnabled)
+        {
+            TryKeyboardFocus(LandingPrimaryButton);
+            return true;
+        }
+        return false;
+    }
+
+    private bool FocusLoginField()
+    {
+        if (LoginUsernameBox?.IsVisible == true && LoginUsernameBox.IsEnabled)
+        {
+            TryKeyboardFocus(LoginUsernameBox);
+            return true;
+        }
+        else if (LoginPasswordBox?.IsVisible == true && LoginPasswordBox.IsEnabled)
+        {
+            TryKeyboardFocus(LoginPasswordBox);
+            return true;
+        }
+        else if (LoginPasswordTextBox?.IsVisible == true && LoginPasswordTextBox.IsEnabled)
+        {
+            TryKeyboardFocus(LoginPasswordTextBox);
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool FocusRegisterField()
+    {
+        if (RegisterUsernameBox?.IsVisible == true && RegisterUsernameBox.IsEnabled)
+        {
+            TryKeyboardFocus(RegisterUsernameBox);
+            return true;
+        }
+        else if (RegisterEmailBox?.IsVisible == true && RegisterEmailBox.IsEnabled)
+        {
+            TryKeyboardFocus(RegisterEmailBox);
+            return true;
+        }
+        else if (RegisterPasswordBox?.IsVisible == true && RegisterPasswordBox.IsEnabled)
+        {
+            TryKeyboardFocus(RegisterPasswordBox);
+            return true;
+        }
+        else if (RegisterPasswordTextBox?.IsVisible == true && RegisterPasswordTextBox.IsEnabled)
+        {
+            TryKeyboardFocus(RegisterPasswordTextBox);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void TryKeyboardFocus(IInputElement target)
+    {
+        try { (target as UIElement)?.Focus(); } catch { /* ignore */ }
+        try { Keyboard.Focus(target); } catch { /* ignore */ }
+    }
 
     private bool IsHostWindowActive()
     {
@@ -496,8 +533,8 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         }
     }
 
-        public void RequestInitialFocus()
-        {
-            EnsureInitialFocus();
-        }
+    public void RequestInitialFocus()
+    {
+        EnsureInitialFocus();
+    }
 }
