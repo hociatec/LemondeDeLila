@@ -149,6 +149,7 @@ public static class ContentHostFocusBehavior
             var window = Window.GetWindow(host) ?? Application.Current?.MainWindow;
             if (window != null && !window.IsActive)
             {
+                StartRetryTimer(host);
                 return;
             }
 
