@@ -88,13 +88,6 @@ namespace client_win
             var window = new MainWindow();
             MainWindow = window;
 
-            // IMPORTANT (NVDA / clavier) :
-            // Si on laisse la fenêtre cachée pendant le bootstrap, Windows peut refuser de lui donner le focus
-            // lorsqu'on l'affiche plus tard (le process n'a plus le "foreground right"). Résultat : NVDA annonce
-            // parfois le champ mais le clavier reste sur l'application précédente, jusqu'à un alt-tab.
-            // On montre donc la fenêtre immédiatement et on initialise le Shell ensuite.
-            try { window.Show(); } catch { /* best-effort */ }
-
             // Contournement "serein" et valable quel que soit le mode de lancement :
             // on enregistre un raccourci global qui permet à l'utilisateur de ramener la fenêtre au premier plan
             // même si Windows refuse le foreground au lancement (cas fréquent ClickOnce / launchers / tâches).
@@ -153,6 +146,11 @@ namespace client_win
                 };
             }
             catch { /* best-effort */ }
+
+            // IMPORTANT (NVDA / clavier) :
+            // On installe d'abord les hooks SourceInitialized, puis on montre la fenêtre.
+            // Sinon SourceInitialized peut déjà être passé et on perd les retries d'activation au démarrage.
+            try { window.Show(); } catch { /* best-effort */ }
 
             _ = BuildAndShowShellAsync(window);
         }
