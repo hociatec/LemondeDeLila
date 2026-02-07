@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Threading;
+using client_win.Modules.Game.History.Services;
 using client_win.Modules.Game.History.ViewModels;
 using client_win.Modules.Shell.Services;
 
