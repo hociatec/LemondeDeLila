@@ -38,6 +38,12 @@ public partial class MainMenuView : UserControl, IInitialFocusTarget
             return;
         }
 
+        if (e.Key == Key.Tab)
+        {
+            e.Handled = true;
+            return;
+        }
+
         if (e.Key == Key.Enter || e.Key == Key.Return)
         {
             if (DataContext is not MainMenuViewModel vm)
@@ -66,7 +72,6 @@ public partial class MainMenuView : UserControl, IInitialFocusTarget
         if (e.Key == Key.Tab)
         {
             e.Handled = true;
-            CycleSelectionByTab();
             return;
         }
 

@@ -391,7 +391,7 @@ internal sealed class GamePlayRealtimeController
                     }
                     return $"Vous piochez {remainder}";
                 }
-                return $"{actor} pioche une carte.";
+                return msg;
             }
         }
 

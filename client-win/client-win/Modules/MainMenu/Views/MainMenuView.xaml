@@ -82,6 +82,8 @@
  	                         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
  	                         DisplayMemberPath="Label"
  	                         SelectionMode="Single"
+	                         KeyboardNavigation.TabNavigation="None"
+	                         KeyboardNavigation.ControlTabNavigation="None"
  	                         VirtualizingStackPanel.IsVirtualizing="True"
  	                         VirtualizingStackPanel.VirtualizationMode="Recycling"
  	                         ScrollViewer.CanContentScroll="True"

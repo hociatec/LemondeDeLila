@@ -346,11 +346,7 @@ export class FrousseActionService {
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     if (!draw.card) return next;
 
-    const cardName = `${draw.card.category} ${draw.card.localNumber}`.trim();
-    next = this.core.appendLog(
-      next,
-      `${this.playerName(next, playerId)} pioche "${cardName}".`,
-    );
+    let ignored = false;
 
     // Ignore traps until next symbol (one draw).
     if ((meta.statuses as any)?.ignoreTrapUntilNextDraw?.[playerId]) {
@@ -366,11 +362,11 @@ export class FrousseActionService {
       };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       if (/Piège/i.test(draw.card.category)) {
-        return this.core.appendLog(next, 'Piège ignoré.');
+        ignored = true;
       }
     }
 
-    // Ignore ghost/trap.
+    // Ignore ghost/trap/prank.
     if (
       /Fantôme/i.test(draw.card.category) &&
       meta.statuses.ignoreNextGhost?.[playerId]
@@ -386,7 +382,7 @@ export class FrousseActionService {
         },
       };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      return this.core.appendLog(next, 'Carte fantôme ignorée.');
+      ignored = true;
     }
     if (
       /Farce/i.test(draw.card.category) &&
@@ -403,7 +399,7 @@ export class FrousseActionService {
         },
       };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      return this.core.appendLog(next, 'Farce ignorée.');
+      ignored = true;
     }
     if (
       /Piège/i.test(draw.card.category) &&
@@ -420,13 +416,21 @@ export class FrousseActionService {
         },
       };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      return this.core.appendLog(next, 'Piège ignoré.');
+      ignored = true;
     }
 
+    const effectLabel = ignored
+      ? 'Effet ignoré.'
+      : describeCardEffect(draw.card);
     next = this.core.appendLog(
       next,
-      `Carte (${draw.card.category}) : ${draw.card.text}`,
+      `${this.playerName(next, playerId)} pioche une carte (${draw.card.text}) : ${effectLabel}`,
     );
+
+    if (ignored) {
+      return next;
+    }
+
     const applied = this.applyCard(next, playerId, draw.card);
     const appliedMeta = this.getMeta(applied);
     if (applied.pending) return applied;
@@ -487,8 +491,8 @@ export class FrousseActionService {
 
     // Swap with another player (choice).
     if (
-      /échange(r|z) votre place/i.test(text) ||
-      /Echangez immédiatement vos places/i.test(text)
+      /échang|echange/i.test(text) &&
+      (/votre place/i.test(text) || /vos places/i.test(text))
     ) {
       const targets = this.otherPlayers(next, playerId);
       if (!targets.length) return next;
@@ -1049,4 +1053,50 @@ function extractSkipTurns(text: string): number {
   if (/Passez votre tour/i.test(text) || /Passez un tour/i.test(text))
     return 1;
   return 0;
+}
+
+function describeCardEffect(card: FrousseCard): string {
+  const text = card.text ?? '';
+
+  if (/Fantôme/i.test(card.category) && /fantôme farceur/i.test(text) && /échang|echange/i.test(text)) {
+    return 'Échange aléatoire de place.';
+  }
+  if (/échang|echange/i.test(text) && (/votre place/i.test(text) || /vos places/i.test(text))) {
+    return 'Échangez votre place avec un autre joueur.';
+  }
+  if (/Ignorez le prochain piège/i.test(text)) return 'Ignore le prochain piège.';
+  if (/Ignorez les pièges jusqu['’]au prochain symbole/i.test(text)) return 'Ignore les pièges jusqu’au prochain symbole.';
+  if (/Ignorez la prochaine carte Fantôme/i.test(text)) return 'Ignore la prochaine carte Fantôme.';
+  if (/annule une farce/i.test(text) || /rien ne vous arrive/i.test(text)) return 'Ignore la prochaine farce.';
+  if (/Sautez\s+6\s+cases/i.test(text) || (/Bonus/i.test(card.category) && card.localNumber === 13)) return 'Saute 6 cases.';
+  if (/Doublez votre prochain lancer/i.test(text)) return 'Double le prochain lancer de dé.';
+  if (/gardez le plus petit/i.test(text) || /gardez le chiffre le plus bas/i.test(text)) return 'Rejouez en gardant le plus petit résultat.';
+  if (/malus de moins 2/i.test(text) || /malus de -2/i.test(text)) return 'Rejouez avec un malus de -2 au lancer.';
+  if (/Si vous faites un trois, reculez de 2 cases/i.test(text)) return 'Si vous faites un trois, reculez de 2 cases.';
+  if (/jusqu['’]à la case 40/i.test(text)) return 'Aller directement à la case 40.';
+  if (/Relancez le dé/i.test(text) || (/Relancez/i.test(text) && /dé/i.test(text))) return 'Rejouez immédiatement.';
+  if (/laissant les autres joueurs (filer|avancer) de 3 cases/i.test(text)) return 'Les autres avancent de 3 cases, vous passez 1 tour.';
+  if (/si le résultat est impair, passez votre tour/i.test(text)) return 'Test : si impair, passez 1 tour.';
+  const skip = extractSkipTurns(text);
+  if (skip > 0) return `Passez ${skip} tour${skip > 1 ? 's' : ''}.`;
+  if (/case départ/i.test(text) || /Retour à la case une/i.test(text)) return 'Retournez à la case départ.';
+  if (/Allez en cuisine/i.test(text)) return 'Allez en cuisine.';
+
+  const combo = text.match(/Avancez\s+de\s+(\d+)\s+cases?,\s+puis\s+reculez\s+de\s+(\d+)\s+cases?/i);
+  if (combo) return `Avancez de ${combo[1]} cases, puis reculez de ${combo[2]}.`;
+  const delta = extractMoveDelta(text);
+  if (delta > 0) return `Avancez de ${delta} case${delta > 1 ? 's' : ''}.`;
+  if (delta < 0) return `Reculez de ${Math.abs(delta)} case${Math.abs(delta) > 1 ? 's' : ''}.`;
+
+  const need56 = text.match(/lancer un (\d) ou un (\d)/i);
+  if (need56) return `Bloqué : lancez un ${need56[1]} ou un ${need56[2]} pour vous libérer.`;
+  const need6 = text.match(/obtenir un 6/i);
+  if (need6 && /jusqu/i.test(text)) return 'Bloqué : obtenez un 6 pour vous libérer.';
+  const needMin = text.match(/obtenez pas un (\d) ou plus/i);
+  if (needMin) return `Bloqué : obtenez ${needMin[1]} ou plus pour vous libérer.`;
+  if (/nombre pair/i.test(text)) return 'Bloqué : obtenez un nombre pair pour vous libérer.';
+
+  if (/n['’]avancerez que d['’](une|un)e seule case/i.test(text)) return 'Au prochain tour, avancez d’une seule case.';
+
+  return 'Effet immédiat.';
 }

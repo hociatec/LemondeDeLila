@@ -57,6 +57,20 @@ public sealed class GameHistorySink : IGameHistorySink
                     continue;
                 }
 
+                for (var i = _history.Entries.Count - 1; i >= 0; i--)
+                {
+                    var prev = _history.Entries[i];
+                    if (string.Equals(prev, GameHistoryMessageSplitter.BlankLineToken, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+                    if (string.Equals(prev, cleaned, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return;
+                    }
+                    break;
+                }
+
                 _history.Entries.Add(cleaned);
                 _lastAddedEntry = cleaned;
 
