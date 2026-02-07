@@ -14,6 +14,7 @@ internal sealed class GamePlayDiceSoundPlayer
     private int _lastLogCount;
     private int _lastTurnIndex;
     private string _lastLogSignature = string.Empty;
+    private string _lastDiceLogSignature = string.Empty;
 
     internal GamePlayDiceSoundPlayer(ISoundService sounds)
     {
@@ -26,6 +27,7 @@ internal sealed class GamePlayDiceSoundPlayer
         _lastRoll = null;
         _lastLogCount = 0;
         _lastTurnIndex = 0;
+        _lastDiceLogSignature = string.Empty;
     }
 
     internal void TryPlayDiceRollSound(GameStateDto? state)
@@ -93,6 +95,7 @@ internal sealed class GamePlayDiceSoundPlayer
 
         var matchedLastSignature = string.IsNullOrEmpty(_lastLogSignature);
         var triggered = false;
+        var triggeredSignature = string.Empty;
         foreach (var entry in log)
         {
             var signature = BuildLogSignature(entry);
@@ -110,9 +113,12 @@ internal sealed class GamePlayDiceSoundPlayer
                 continue;
             }
 
-            if (!triggered && IsDiceLogMessage(entry.Message))
+            if (IsDiceLogMessage(entry.Message) &&
+                !string.Equals(signature, _lastDiceLogSignature, StringComparison.Ordinal))
             {
                 triggered = true;
+                triggeredSignature = signature;
+                break;
             }
         }
 
@@ -120,15 +126,28 @@ internal sealed class GamePlayDiceSoundPlayer
         {
             foreach (var entry in log)
             {
-                if (IsDiceLogMessage(entry?.Message ?? string.Empty))
+                var signature = BuildLogSignature(entry);
+                if (string.IsNullOrEmpty(signature))
+                {
+                    continue;
+                }
+
+                if (IsDiceLogMessage(entry.Message) &&
+                    !string.Equals(signature, _lastDiceLogSignature, StringComparison.Ordinal))
                 {
                     triggered = true;
+                    triggeredSignature = signature;
                     break;
                 }
             }
         }
 
         UpdateLogSignature(log);
+        if (triggered && !string.IsNullOrEmpty(triggeredSignature))
+        {
+            _lastDiceLogSignature = triggeredSignature;
+        }
+
         return triggered;
     }
 

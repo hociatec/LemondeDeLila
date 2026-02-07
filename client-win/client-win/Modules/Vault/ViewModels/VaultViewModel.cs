@@ -114,8 +114,8 @@ public sealed class VaultViewModel : ObservableObject, IDisposable
             }
             Selected = Items.FirstOrDefault();
             Status = Items.Count == 0
-                ? "Coffre fort vide."
-                : "Entrée : restaurer. Suppr : supprimer. Échap : fermer.";
+                ? "Aucune table sauvegardée."
+                : "Sélectionnez une sauvegarde pour la restaurer ou la supprimer.";
         }
         catch (Exception ex)
         {

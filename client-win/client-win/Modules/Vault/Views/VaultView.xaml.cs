@@ -48,15 +48,49 @@ public partial class VaultView : UserControl, IInitialFocusTarget
             {
                 if (ItemsList?.HasItems == true)
                 {
-                    ItemsList.SelectedIndex = ItemsList.SelectedIndex >= 0 ? ItemsList.SelectedIndex : 0;
+                    var targetIndex = ItemsList.SelectedIndex >= 0 ? ItemsList.SelectedIndex : 0;
+                    ItemsList.SelectedIndex = targetIndex;
+                    if (TryFocusSavedTable(targetIndex))
+                    {
+                        return;
+                    }
+                    ItemsList.Focus();
+                    return;
                 }
-                ItemsList?.Focus();
+
+                StatusText?.Focus();
             }
             catch
             {
                 // best-effort
             }
         }));
+    }
+
+    private bool TryFocusSavedTable(int index)
+    {
+        if (ItemsList == null || ItemsList.Items.Count == 0)
+        {
+            return false;
+        }
+
+        var safeIndex = Math.Max(0, Math.Min(index, ItemsList.Items.Count - 1));
+        ItemsList.ScrollIntoView(ItemsList.Items[safeIndex]);
+        ItemsList.UpdateLayout();
+        var container = ItemsList.ItemContainerGenerator.ContainerFromIndex(safeIndex) as ListBoxItem;
+        if (container == null)
+        {
+            ItemsList.UpdateLayout();
+            container = ItemsList.ItemContainerGenerator.ContainerFromIndex(safeIndex) as ListBoxItem;
+        }
+
+        if (container != null)
+        {
+            container.Focus();
+            return true;
+        }
+
+        return false;
     }
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)

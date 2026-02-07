@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -249,13 +250,14 @@ public sealed partial class AdminViewModel
             _ => string.Empty
         };
         var normalizedReportContent = NormalizeReportText(report.Content);
-        Details =
+        var details =
             statusLine +
             $"Par: {report.CreatedByUsername} (id {report.CreatedByUserId})\n" +
             $"Créé: {report.CreatedAt}\n" +
             $"Maj: {report.UpdatedAt}\n" +
             $"Sujet: {report.Subject}\n\n" +
             normalizedReportContent;
+        SetDetailsWithSegments(details, BuildDetailSegments(details));
 
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
@@ -364,7 +366,8 @@ public sealed partial class AdminViewModel
                             .TrimEnd();
                 }));
 
-        Details = header + "\n\n====================\nCommentaires\n\n" + commentsBlock;
+        var details = header + "\n\n====================\nCommentaires\n\n" + commentsBlock;
+        SetDetailsWithSegments(details, BuildDetailSegments(details));
 
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
@@ -424,7 +427,8 @@ public sealed partial class AdminViewModel
 
         if (_loadedBugReportComments.Length == 0)
         {
-            Details = $"Sujet: {subject}\n\nAucun commentaire.";
+            var details = $"Sujet: {subject}\n\nAucun commentaire.";
+            SetDetailsWithSegments(details, BuildDetailSegments(details));
         }
         else
         {
@@ -437,7 +441,8 @@ public sealed partial class AdminViewModel
                             .TrimEnd();
                 })
                 .ToArray();
-            Details = $"Sujet: {subject}\n\n" + string.Join("\n\n---\n\n", lines);
+            var details = $"Sujet: {subject}\n\n" + string.Join("\n\n---\n\n", lines);
+            SetDetailsWithSegments(details, BuildDetailSegments(details));
         }
 
         IsTextInputVisible = false;
@@ -671,5 +676,21 @@ public sealed partial class AdminViewModel
 
         normalized = Regex.Replace(normalized, "\n{3,}", "\n\n");
         return normalized.TrimEnd('\n');
+    }
+
+    private static IReadOnlyList<string> BuildDetailSegments(string details)
+    {
+        if (string.IsNullOrWhiteSpace(details))
+        {
+            return Array.Empty<string>();
+        }
+
+        var parts = details
+            .Split(new[] { "\n\n" }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(part => part.Trim())
+            .Where(part => !string.IsNullOrEmpty(part))
+            .ToArray();
+
+        return parts.Length > 0 ? parts : Array.Empty<string>();
     }
 }

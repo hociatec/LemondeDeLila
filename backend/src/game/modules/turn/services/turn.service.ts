@@ -48,6 +48,11 @@ export class TurnService {
       remainingBefore: number;
       remainingAfter: number;
     }> = [];
+    const totalSkips = Object.values(skipTurn).reduce(
+      (sum, value) => sum + Math.max(0, value ?? 0),
+      0,
+    );
+    const maxAttempts = players.length + totalSkips;
 
     do {
       nextIndex = (nextIndex + 1) % players.length;
@@ -57,11 +62,11 @@ export class TurnService {
         const remainingAfter = remaining - 1;
         updatedSkip[pid] = remainingAfter;
         skipped.push({ id: pid, remainingBefore: remaining, remainingAfter });
-        attempts += 1;
-        continue;
-      }
-      break;
-    } while (attempts < players.length);
+      attempts += 1;
+      continue;
+    }
+    break;
+    } while (attempts < maxAttempts);
 
     return {
       turnIndex: nextIndex,

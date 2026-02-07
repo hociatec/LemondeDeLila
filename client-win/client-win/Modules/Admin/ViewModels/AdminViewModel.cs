@@ -223,10 +223,51 @@ public sealed partial class AdminViewModel : ObservableObject
         private set => SetProperty(ref _status, value);
     }
 
+    private bool _suppressDetailsSegments;
+    private IReadOnlyList<string>? _detailsSegments;
+
     public string Details
     {
         get => _details;
-        private set => SetProperty(ref _details, value);
+        private set
+        {
+            if (SetProperty(ref _details, value))
+            {
+                if (!_suppressDetailsSegments)
+                {
+                    DetailsSegments = null;
+                }
+            }
+        }
+    }
+
+    public IReadOnlyList<string>? DetailsSegments
+    {
+        get => _detailsSegments;
+        private set
+        {
+            if (SetProperty(ref _detailsSegments, value))
+            {
+                OnPropertyChanged(nameof(HasDetailSegments));
+            }
+        }
+    }
+
+    public bool HasDetailSegments => DetailsSegments?.Count > 0;
+
+    private void SetDetailsWithSegments(string? text, IReadOnlyList<string>? segments)
+    {
+        try
+        {
+            _suppressDetailsSegments = true;
+            Details = text ?? string.Empty;
+        }
+        finally
+        {
+            _suppressDetailsSegments = false;
+        }
+
+        DetailsSegments = segments != null && segments.Count > 0 ? segments : null;
     }
 
     public bool PreferDetailsFocus

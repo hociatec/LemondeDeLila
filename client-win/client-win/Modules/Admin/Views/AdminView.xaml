@@ -82,22 +82,45 @@
                                               Grid.Row="1"
                                               Visibility="{Binding ShowClientUpdatesPanel, Converter={StaticResource BoolToVis}}" />
 
-                <TextBox x:Name="DetailsBox"
-                         Grid.Row="2"
-                         Style="{StaticResource HideWhenClientUpdates}"
-                         Text="{Binding Details, Mode=OneWay}"
-                         Foreground="#BFD0E6"
-                         FontSize="14"
-                         TextWrapping="Wrap"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         Margin="0,12,0,0"
-                         IsReadOnly="True"
-                         IsReadOnlyCaretVisible="True"
-                         AcceptsReturn="True"
-                         VerticalScrollBarVisibility="Auto"
-                         HorizontalScrollBarVisibility="Disabled"
-                         AutomationProperties.LiveSetting="Polite" />
+                <Grid Grid.Row="2" Style="{StaticResource HideWhenClientUpdates}">
+                    <ScrollViewer x:Name="DetailsSegmentsScroll"
+                                  Visibility="{Binding HasDetailSegments, Converter={StaticResource BoolToVis}}"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  Focusable="True"
+                                  IsTabStop="True"
+                                  Margin="0,12,0,0"
+                                  AutomationProperties.LabeledBy="{Binding ElementName=TitleText}">
+                        <ItemsControl ItemsSource="{Binding DetailsSegments}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}"
+                                               Foreground="#BFD0E6"
+                                               FontSize="14"
+                                               TextWrapping="Wrap"
+                                               Margin="0 0 0 12" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <TextBox x:Name="DetailsBox"
+                             Style="{StaticResource InputTextBox}"
+                             Text="{Binding Details, Mode=OneWay}"
+                             Foreground="#BFD0E6"
+                             FontSize="14"
+                             TextWrapping="Wrap"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Margin="0,12,0,0"
+                             IsReadOnly="True"
+                             IsReadOnlyCaretVisible="True"
+                             AcceptsReturn="True"
+                             VerticalScrollBarVisibility="Auto"
+                             HorizontalScrollBarVisibility="Disabled"
+                             AutomationProperties.LiveSetting="Polite"
+                             Visibility="{Binding HasDetailSegments, Converter={StaticResource BoolToVisInverse}}" />
+                </Grid>
             </Grid>
         </Border>
 

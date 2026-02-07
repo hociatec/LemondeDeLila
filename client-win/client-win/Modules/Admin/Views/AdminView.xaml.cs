@@ -428,6 +428,16 @@ public partial class AdminView : UserControl, IInitialFocusTarget
 
     private void FocusDetails(bool resetCaret)
     {
+        if (DataContext is AdminViewModel vm && vm.HasDetailSegments && DetailsSegmentsScroll != null)
+        {
+            DetailsSegmentsScroll.Focus();
+            if (resetCaret)
+            {
+                DetailsSegmentsScroll.ScrollToTop();
+            }
+            return;
+        }
+
         if (DetailsBox == null)
         {
             return;
