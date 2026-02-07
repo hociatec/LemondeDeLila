@@ -735,18 +735,14 @@ namespace client_win
                     try { NativeMethods.BringWindowToTop(hwnd); } catch { /* ignore */ }
                     try { NativeMethods.SetForegroundWindow(hwnd); } catch { /* ignore */ }
                     try { NativeMethods.SetActiveWindow(hwnd); } catch { /* ignore */ }
-                    try { NativeMethods.SetFocus(hwnd); } catch { /* ignore */ }
-                    try { NativeMethods.SwitchToThisWindow(hwnd, fAltTab: true); } catch { /* ignore */ }
+                    // NVDA/UIA: avoid forcing Win32 focus to the top-level window handle.
+                    // It can disrupt control-level focus announcements right after startup.
 
                     // Fallback: quick topmost toggle often succeeds when foreground rules block us (best-effort).
                     try
                     {
                         if (NativeMethods.GetForegroundWindow() != hwnd)
                         {
-                            // Extra fallback: emulate the user action that "unblocks" in practice (restore/maximize).
-                            // This triggers a non-client state change similar to clicking "agrandir".
-                            try { NativeMethods.ShowWindow(hwnd, NativeMethods.SW_MAXIMIZE); } catch { /* ignore */ }
-
                             NativeMethods.SetWindowPos(
                                 hwnd,
                                 NativeMethods.HWND_TOPMOST,
@@ -766,7 +762,6 @@ namespace client_win
 
                             try { NativeMethods.SetForegroundWindow(hwnd); } catch { /* ignore */ }
                             try { NativeMethods.SetActiveWindow(hwnd); } catch { /* ignore */ }
-                            try { NativeMethods.SetFocus(hwnd); } catch { /* ignore */ }
                         }
                     }
                     catch

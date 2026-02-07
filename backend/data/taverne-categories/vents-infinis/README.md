@@ -2,7 +2,7 @@
 
 - id: `vents-infinis`
 - parentId: `null`
-- syncedAt: `2026-02-07T00:44:42.897Z`
+- syncedAt: `2026-02-07T00:55:50.205Z`
 
 Ce dossier est un miroir automatique de la taverne.
 Ne pas y mettre de code: il peut être renommé/supprimé automatiquement.
