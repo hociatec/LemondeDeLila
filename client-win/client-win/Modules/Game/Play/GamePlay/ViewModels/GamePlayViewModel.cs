@@ -156,7 +156,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             choices: _choices,
             canStartAskCardSelection: CanStartAskCardSelection,
             requestTurnAsync: RequestTurnAsync,
-            emitMessage: msg => MessageReceived?.Invoke(new GamePlayHistoryMessage(msg)));
+            emitMessage: msg => MessageReceived?.Invoke(new GamePlayHistoryMessage(msg)),
+            onDrawActionSent: () => _logSounds.TryPlayDrawSound());
 
         _shortcuts = new GamePlayShortcutsViewModel(_commands.SendKey);
 

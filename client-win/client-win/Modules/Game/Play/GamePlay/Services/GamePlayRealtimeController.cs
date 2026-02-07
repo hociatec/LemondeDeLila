@@ -44,6 +44,7 @@ internal sealed class GamePlayRealtimeController
     private int? _lastStateTurnPlayerId;
     private int _pendingForcedTurnAnnouncements;
     private Dictionary<string, int>? _lastViewerHandCounts;
+    private string? _lastDrawActionToken;
 
     internal GamePlayRealtimeController(
         Dispatcher dispatcher,
@@ -181,6 +182,8 @@ internal sealed class GamePlayRealtimeController
             _setActionsText(presented.actionsText);
             _setBoardText(GamePlayBoardTextBuilder.Build(state));
 
+            TryPlayDrawSoundFromState(state);
+
             _syncShortcuts(state);
             _grid.SyncFromState(state, _viewerPlayerId);
 
@@ -188,6 +191,20 @@ internal sealed class GamePlayRealtimeController
             _refreshCanExecute();
             TryAnnounceTurnFromState(state);
         }, DispatcherPriority.Background);
+    }
+
+    private void TryPlayDrawSoundFromState(GameStateDto state)
+    {
+        if (state == null) return;
+        var draw = state.LastDraw;
+        if (draw == null) return;
+        var token = $"draw|{draw.At}|{draw.PlayerId}";
+        if (string.Equals(_lastDrawActionToken, token, StringComparison.Ordinal))
+        {
+            return;
+        }
+        _lastDrawActionToken = token;
+        _logSounds.TryPlayDrawSound();
     }
 
     private static string NormalizeStatus(GameStateDto state)

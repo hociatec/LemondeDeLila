@@ -7,6 +7,8 @@ namespace client_win.Modules.Game.Play.GamePlay.Services;
 internal sealed class GamePlayLogSoundPlayer
 {
     private readonly ISoundService _sounds;
+    private DateTime _lastDrawSoundUtc = DateTime.MinValue;
+    private static readonly TimeSpan DrawSoundCooldown = TimeSpan.FromSeconds(1.5);
 
     internal GamePlayLogSoundPlayer(ISoundService sounds)
     {
@@ -18,13 +20,6 @@ internal sealed class GamePlayLogSoundPlayer
         var msg = (message ?? string.Empty).Trim();
         if (msg.Length == 0)
         {
-            return;
-        }
-
-        // Pioche (tous jeux): jouer un son dédié quand l'historique annonce une pioche.
-        if (msg.Contains("pioche", StringComparison.OrdinalIgnoreCase))
-        {
-            _sounds.Play(SoundId.DrawCard);
             return;
         }
 
@@ -53,5 +48,16 @@ internal sealed class GamePlayLogSoundPlayer
         {
             _sounds.Play(SoundId.RoundEnded);
         }
+    }
+
+    internal void TryPlayDrawSound()
+    {
+        var now = DateTime.UtcNow;
+        if (now - _lastDrawSoundUtc < DrawSoundCooldown)
+        {
+            return;
+        }
+        _lastDrawSoundUtc = now;
+        _sounds.Play(SoundId.DrawCard);
     }
 }

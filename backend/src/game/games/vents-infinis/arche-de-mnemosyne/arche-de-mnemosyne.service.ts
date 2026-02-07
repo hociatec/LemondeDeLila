@@ -449,6 +449,8 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       }
       const categoryId = typeof payload.categoryId === 'string' ? payload.categoryId.trim() : null;
       const selected = categoryId && categoryId.length ? categoryId : null;
+      const categories = this.store.listCategories();
+      const actorId = (action as any)?.meta?.actorId ?? null;
       const withSelection: MnemoQuizMetadata = {
         ...meta,
         selectedCategoryId: selected,
@@ -456,7 +458,17 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
         prompt: null,
         promptOwnerId: null,
       };
-      const started = { ...state, phase: 'play', metadata: withSelection };
+      let started: GameStateEntity = { ...state, phase: 'play', metadata: withSelection };
+      if (actorId != null) {
+        const label = selected
+          ? (categories.find((c) => c.id === selected)?.name ?? selected)
+          : 'Mélange (toutes catégories)';
+        started = this.core.appendLog(
+          started,
+          `${this.playerName(started, actorId)} choisit la catégorie : ${label}.`,
+        );
+      }
+
       return this.core.appendLog(
         started,
         'Quiz : appuyez sur Espace pour piocher la première question.',
@@ -1149,6 +1161,35 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 
       const meta = this.getMeta(state);
       const players = Array.isArray(state.players) ? state.players : [];
+      const phase = String(state.phase ?? '').toLowerCase().trim();
+      const promptOwnerId =
+        typeof (meta as any).promptOwnerId === 'number'
+          ? (meta as any).promptOwnerId
+          : null;
+
+      if (phase === 'setup') {
+        if (meta.prompt && typeof promptOwnerId === 'number') {
+          const promptOwner = players.find((p: any) => p?.id === promptOwnerId) ?? null;
+          if (!state.pending && promptOwner?.isBot) {
+            return {
+              ...state,
+              pending: { type: 'mnemo_set_config', playerId: promptOwnerId, blocking: true } as any,
+            };
+          }
+          return state.pending ? { ...state, pending: null } : state;
+        }
+
+        const currentId = state.turn?.currentPlayerId ?? null;
+        const currentPlayer = players.find((p: any) => p?.id === currentId) ?? null;
+        if (!state.pending && currentPlayer?.isBot && typeof currentId === 'number') {
+          return {
+            ...state,
+            pending: { type: 'mnemo_start', playerId: currentId, blocking: true } as any,
+          };
+        }
+        return state.pending ? { ...state, pending: null } : state;
+      }
+
       if (!meta.currentQuestion) {
         const currentId = state.turn?.currentPlayerId ?? null;
         const currentPlayer =

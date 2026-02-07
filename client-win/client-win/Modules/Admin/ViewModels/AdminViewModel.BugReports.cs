@@ -702,8 +702,19 @@ public sealed partial class AdminViewModel
             return string.Empty;
         }
 
-        return text.Replace("\r\n", "\n")
-            .Replace("\r", "\n")
-            .Replace("\n", Environment.NewLine);
+        var normalized = text.Replace("\r\n", "\n")
+            .Replace("\r", "\n");
+
+        // Preserve empty lines so screen readers announce them (avoid repeating the next line).
+        var lines = normalized.Split('\n');
+        for (var i = 0; i < lines.Length; i++)
+        {
+            if (lines[i].Length == 0)
+            {
+                lines[i] = " ";
+            }
+        }
+
+        return string.Join(Environment.NewLine, lines);
     }
 }

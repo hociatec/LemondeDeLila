@@ -796,6 +796,17 @@ export class GameEngineService {
     const next = await handler.applyActions(current, sanitizedActions);
     const botTurn = this.isBotTurn(next);
     let marked = await this.markBotThinking(roomId, gameType, next, botTurn);
+    const drawAction = sanitizedActions.find(a =>
+      string.Equals(String(a.type ?? '').trim(), 'draw', StringComparison.OrdinalIgnoreCase));
+    if (drawAction) {
+      const actionPlayerId = allowBotTurn
+        ? (botActorId ?? null)
+        : (actorId ?? null);
+      marked = {
+        ...marked,
+        lastDraw: { playerId: actionPlayerId, at: new Date().toISOString() },
+      };
+    }
     marked = this.normalizeWinnerMetadata(marked);
     marked = this.forceFinishedIfWinnerDetected(marked);
     marked = this.appendBoardArrivalAnnouncements(gameType, current, marked);

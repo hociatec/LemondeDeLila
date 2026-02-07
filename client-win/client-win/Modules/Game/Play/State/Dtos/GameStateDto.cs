@@ -22,6 +22,9 @@ public sealed class GameStateDto
     [JsonPropertyName("lastRoll")]
     public int? LastRoll { get; set; }
 
+    [JsonPropertyName("lastDraw")]
+    public GameDrawDto? LastDraw { get; set; }
+
     [JsonPropertyName("log")]
     public List<GameLogEntryDto> Log { get; set; } = new();
 
@@ -82,6 +85,15 @@ public sealed class GameTurnDto
 
     [JsonPropertyName("label")]
     public string? Label { get; set; }
+}
+
+public sealed class GameDrawDto
+{
+    [JsonPropertyName("playerId")]
+    public int? PlayerId { get; set; }
+
+    [JsonPropertyName("at")]
+    public string? At { get; set; }
 }
 
 public sealed class GamePlayerDto

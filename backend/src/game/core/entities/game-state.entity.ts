@@ -41,6 +41,7 @@ export type GameStateEntity = {
   round: number;
   turnIndex: number;
   lastRoll: number | null;
+  lastDraw?: { playerId: number | null; at: string } | null;
   log: GameLogEntry[];
   players?: PlayerStateEntity[];
   turn?: TurnStateEntity;

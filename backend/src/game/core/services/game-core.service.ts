@@ -46,6 +46,7 @@ export class GameCoreService {
       round: 1,
       turnIndex: 0,
       lastRoll: null,
+      lastDraw: null,
       log: [],
       players,
       turn: {

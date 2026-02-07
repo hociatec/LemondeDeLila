@@ -18,6 +18,7 @@ internal sealed class GamePlayCommands
     private readonly Func<GameStateDto?, bool> _canStartAskCardSelection;
     private readonly Func<Task> _requestTurnAsync;
     private readonly Action<string> _emitMessage;
+    private readonly Action? _onDrawActionSent;
 
     internal GamePlayCommands(
         Func<GameSession?> getSession,
@@ -26,7 +27,8 @@ internal sealed class GamePlayCommands
         GamePlayChoicesViewModel choices,
         Func<GameStateDto?, bool> canStartAskCardSelection,
         Func<Task> requestTurnAsync,
-        Action<string> emitMessage)
+        Action<string> emitMessage,
+        Action? onDrawActionSent = null)
     {
         _getSession = getSession ?? throw new ArgumentNullException(nameof(getSession));
         _isSpectator = isSpectator ?? throw new ArgumentNullException(nameof(isSpectator));
@@ -35,6 +37,7 @@ internal sealed class GamePlayCommands
         _canStartAskCardSelection = canStartAskCardSelection ?? throw new ArgumentNullException(nameof(canStartAskCardSelection));
         _requestTurnAsync = requestTurnAsync ?? throw new ArgumentNullException(nameof(requestTurnAsync));
         _emitMessage = emitMessage ?? throw new ArgumentNullException(nameof(emitMessage));
+        _onDrawActionSent = onDrawActionSent;
 
         Roll = new AsyncRelayCommand(
             async () => { await TrySendRollAsync().ConfigureAwait(true); },
@@ -163,6 +166,10 @@ internal sealed class GamePlayCommands
         if (session == null) return;
         if (!CanSendActionNow(session)) return;
         await _actions.SendSimpleActionAsync(session, actionType, cancellationToken).ConfigureAwait(false);
+        if (string.Equals(actionType, "draw", StringComparison.OrdinalIgnoreCase))
+        {
+            _onDrawActionSent?.Invoke();
+        }
     }
 
     private async Task TrySendFirstAvailableSimpleActionAsync(params string[] actionTypes)

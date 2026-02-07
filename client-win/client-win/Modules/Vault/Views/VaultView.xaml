@@ -24,19 +24,10 @@
         <Border Grid.Row="1" Background="#12263C" CornerRadius="8" Padding="12">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock x:Name="StatusText"
-                           Text="{Binding Status}"
-                           Foreground="#7CA3D6"
-                           FontSize="13"
-                           Margin="0 0 0 10"
-                           TextWrapping="Wrap"
-                           Focusable="True" />
-
-                <ListBox Grid.Row="1"
+                <ListBox Grid.Row="0"
                          x:Name="ItemsList"
                          ItemsSource="{Binding Items}"
                          SelectedItem="{Binding Selected}"
