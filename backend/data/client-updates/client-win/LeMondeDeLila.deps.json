@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v8.0": {
-      "LeMondeDeLila/2.2.82.0": {
+      "LeMondeDeLila/2.2.83.0": {
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection": "10.0.0",
           "Microsoft.Extensions.Logging": "10.0.0",
@@ -917,7 +917,7 @@
     }
   },
   "libraries": {
-    "LeMondeDeLila/2.2.82.0": {
+    "LeMondeDeLila/2.2.83.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

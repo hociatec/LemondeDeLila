@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-02-05T09:02:58.568Z",
+  "updatedAt": "2026-02-07T14:42:12.190Z",
   "sounds": {
     "RoomJoined": {
       "soundId": "RoomJoined",
@@ -87,10 +87,10 @@
     },
     "ClientDisconnected": {
       "soundId": "ClientDisconnected",
-      "sha256": "06c6cef54a65cb209c46ecc8a82bb71cddb61e8d58952bb3ff154c7628b0f915",
-      "bytes": 37130,
-      "uploadedAt": "2026-02-03T02:37:17.288Z",
-      "url": "/api/sounds/ClientDisconnected/06c6cef54a65cb209c46ecc8a82bb71cddb61e8d58952bb3ff154c7628b0f915.wav"
+      "sha256": "3dbe1bf919e5072e868f3f060e679860f1e16406e70890db1099654f9f5a8e86",
+      "bytes": 427674,
+      "uploadedAt": "2026-02-07T14:41:55.934Z",
+      "url": "/api/sounds/ClientDisconnected/3dbe1bf919e5072e868f3f060e679860f1e16406e70890db1099654f9f5a8e86.wav"
     },
     "FriendInvitationSent": {
       "soundId": "FriendInvitationSent",
@@ -143,17 +143,17 @@
     },
     "TavernOpened": {
       "soundId": "TavernOpened",
-      "sha256": "2ae85a00d0e84b3bfee16c49da30b78fddebee5d82634639a4cec48a908ff1f5",
-      "bytes": 2540238,
-      "uploadedAt": "2026-02-03T19:17:15.742Z",
-      "url": "/api/sounds/TavernOpened/2ae85a00d0e84b3bfee16c49da30b78fddebee5d82634639a4cec48a908ff1f5.wav"
+      "sha256": "3dbe1bf919e5072e868f3f060e679860f1e16406e70890db1099654f9f5a8e86",
+      "bytes": 427674,
+      "uploadedAt": "2026-02-07T14:41:28.529Z",
+      "url": "/api/sounds/TavernOpened/3dbe1bf919e5072e868f3f060e679860f1e16406e70890db1099654f9f5a8e86.wav"
     },
     "DiceRolled": {
       "soundId": "DiceRolled",
-      "sha256": "788655eb0d902c33c9e79fc4cca19a61b11a4c4318acb502d6de008290f9b878",
+      "sha256": "0ec59e2f105cf41aacdd1cf5252056ced28671109dd93f0f0ae7ba5a2ae3c537",
       "bytes": 179978,
-      "uploadedAt": "2026-02-03T19:42:10.685Z",
-      "url": "/api/sounds/DiceRolled/788655eb0d902c33c9e79fc4cca19a61b11a4c4318acb502d6de008290f9b878.wav"
+      "uploadedAt": "2026-02-07T14:42:12.190Z",
+      "url": "/api/sounds/DiceRolled/0ec59e2f105cf41aacdd1cf5252056ced28671109dd93f0f0ae7ba5a2ae3c537.wav"
     },
     "FriendInvitationReceived": {
       "soundId": "FriendInvitationReceived",

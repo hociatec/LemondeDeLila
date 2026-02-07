@@ -1184,6 +1184,7 @@ export class GameEngineService {
       const roomBotNames = roomBots
         .map((b: any) => String(b?.name ?? '').trim())
         .filter((n: string) => n.length > 0);
+      const allowedBotNames = new Set(roomBotNames);
 
       // Bots "sièges" (id négatif) proviennent de payload.room.bots (GameCoreService buildPlayers).
       // Si un bot est retiré de la room pendant une partie, il doit aussi disparaître du roster du jeu
@@ -1241,8 +1242,13 @@ export class GameEngineService {
       const filteredPlayers = mappedPlayers.filter((p) => {
         const id = Number((p as any)?.id ?? 0);
         if (!Number.isFinite(id) || id === 0) return true;
+        const isBot = (p as any)?.isBot === true;
+        const name = String((p as any)?.username ?? '').trim();
+        if (isBot && (!name || !allowedBotNames.has(name))) {
+          return false;
+        }
         if (id >= 0) return true;
-        if ((p as any)?.isBot !== true) return true;
+        if (!isBot) return true;
         return allowedBotIds.has(id);
       });
       const nextPlayers = filteredPlayers;

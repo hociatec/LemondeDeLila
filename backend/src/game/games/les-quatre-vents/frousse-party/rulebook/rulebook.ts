@@ -14,12 +14,19 @@ export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
+  const toPlayerId = (value: unknown): number | null => {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') return [];
 
   const pending = state.pending as any;
   if (pending) {
-    if (pending.playerId !== playerId) return [];
+    const pendingPlayerId = toPlayerId(pending.playerId);
+    if (pendingPlayerId == null || pendingPlayerId !== playerId) return [];
     if (pending.type === 'draw') {
       return [{ type: 'draw', payload: {} }];
     }
@@ -49,8 +56,8 @@ export function getAvailableActions(
     return [];
   }
 
-  const current = state.turn?.currentPlayerId ?? null;
-  if (current !== playerId) return [];
+  const current = toPlayerId(state.turn?.currentPlayerId ?? null);
+  if (current == null || current !== playerId) return [];
   return [{ type: 'roll' }, { type: 'ROLL_DICE' }];
 }
 
@@ -59,6 +66,12 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
+  const toPlayerId = (value: unknown): number | null => {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
   const rawType = String(action?.type ?? '').trim();
   const type = (
     rawType === 'roll_dice' ? 'ROLL_DICE' : rawType
@@ -82,7 +95,8 @@ export function validateAction(
 
   const pending = state.pending as any;
   if (pending) {
-    if (pending.playerId !== actorId) {
+    const pendingPlayerId = toPlayerId(pending.playerId);
+    if (pendingPlayerId == null || pendingPlayerId !== actorId) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
         gameType: 'frousse-party',
       });
@@ -148,7 +162,7 @@ export function validateAction(
     });
   }
 
-  const current = state.turn?.currentPlayerId ?? null;
+  const current = toPlayerId(state.turn?.currentPlayerId ?? null);
   if (current != null && actorId !== current) {
     throw new PlayerActionError("Ce n'est pas votre tour.", {
       gameType: 'frousse-party',

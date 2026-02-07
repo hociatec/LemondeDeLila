@@ -304,7 +304,7 @@ export class FrousseActionService {
         `${this.playerName(next, playerId)} arrive sur Case ${tile.n} - ${tile.title}.`,
       );
       if (tile.type === 'card') {
-        next = this.core.appendLog(next, `Effet : piochez une carte.`);
+        next = this.core.appendLog(next, `Pioche une carte.`);
       } else if (tile.type === 'finish') {
         next = this.core.appendLog(next, `Effet : case d'arrivée.`);
       }
