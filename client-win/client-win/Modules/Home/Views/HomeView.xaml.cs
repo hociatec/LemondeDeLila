@@ -28,6 +28,7 @@ public partial class HomeView : UserControl, IInitialFocusTarget
     private int _initialFocusRemaining;
     private bool _initialFocusScheduled;
     private DispatcherTimer? _initialFocusTimer;
+    private DispatcherTimer? _loginFocusTimer;
 
     public HomeView()
     {
@@ -46,6 +47,7 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         StopInitialFocusTimer();
         DetachHostWindowFocusRetry();
         DetachViewModel();
+        EnsureLoginFocusTimerStopped();
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -88,7 +90,14 @@ public partial class HomeView : UserControl, IInitialFocusTarget
 
         if (e.PropertyName == nameof(HomeViewModel.IsLoginVisible))
         {
-            TryFocusLoginUsernameAsync();
+            if (_viewModel?.IsLoginVisible == true)
+            {
+                ForceLoginFocus();
+            }
+            else
+            {
+                EnsureLoginFocusTimerStopped();
+            }
         }
     }
 
@@ -635,7 +644,71 @@ public partial class HomeView : UserControl, IInitialFocusTarget
 
     private void OnLoginPanelLoaded(object sender, RoutedEventArgs e)
     {
+        ForceLoginFocus();
+    }
+
+    public void ForceLoginFocus()
+    {
         TryFocusLoginUsernameAsync();
+        StartLoginFocusTimer();
+    }
+
+    private void EnsureLoginFocusTimerStopped()
+    {
+        try
+        {
+            _loginFocusTimer?.Stop();
+            _loginFocusTimer = null;
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    private void StartLoginFocusTimer()
+    {
+        EnsureLoginFocusTimerStopped();
+
+        _loginFocusTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
+        {
+            Interval = TimeSpan.FromMilliseconds(200),
+        };
+        _loginFocusTimer.Tick += (_, _) =>
+        {
+            if (IsLoginFocusActive())
+            {
+                EnsureLoginFocusTimerStopped();
+                return;
+            }
+
+            TryFocusLoginUsernameAsync();
+        };
+        _loginFocusTimer.Start();
+    }
+
+    private bool IsLoginFocusActive()
+    {
+        try
+        {
+            var focused = Keyboard.FocusedElement;
+            if (focused is DependencyObject current)
+            {
+                for (var node = current; node != null; node = GetParent(node))
+                {
+                    if (ReferenceEquals(node, LoginUsernameBox))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        catch
+        {
+            return false;
+        }
+
+        return false;
     }
 
     private void TryFocusLoginUsernameAsync()
@@ -647,15 +720,15 @@ public partial class HomeView : UserControl, IInitialFocusTarget
                 return;
             }
 
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            var success = TryKeyboardFocus(LoginUsernameBox);
+            Log.Debug("TryFocusLoginUsernameAsync invoked (success={Success})", success);
+            if (!success)
             {
-                var success = TryKeyboardFocus(LoginUsernameBox);
-                Log.Debug("TryFocusLoginUsernameAsync invoked (success={Success})", success);
-                if (!success)
-                {
-                    TrySetAutomationFocus(LoginUsernameBox);
-                }
-            }));
+                TrySetAutomationFocus(LoginUsernameBox);
+            }
+        }));
         }
         catch (Exception ex)
         {
