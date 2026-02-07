@@ -346,6 +346,12 @@ export class FrousseActionService {
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     if (!draw.card) return next;
 
+    const cardName = `${draw.card.category} ${draw.card.localNumber}`.trim();
+    next = this.core.appendLog(
+      next,
+      `${this.playerName(next, playerId)} pioche "${cardName}".`,
+    );
+
     // Ignore traps until next symbol (one draw).
     if ((meta.statuses as any)?.ignoreTrapUntilNextDraw?.[playerId]) {
       meta = {
