@@ -236,7 +236,7 @@ public partial class HomeView : UserControl, IInitialFocusTarget
     {
         if (immediate && Dispatcher.CheckAccess())
         {
-            if (TryFocusFirstFieldCore())
+            if (TryFocusFirstFieldCore(allowInactiveHost: true))
             {
                 return;
             }
@@ -287,6 +287,7 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         _initialFocusRemaining = InitialFocusMaxAttempts;
         StartInitialFocusTimer();
         QueueInitialFocusAttempt();
+        FocusFirstField(immediate: true);
     }
 
     private void StartInitialFocusTimer()
