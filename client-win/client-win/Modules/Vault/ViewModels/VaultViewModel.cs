@@ -115,7 +115,7 @@ public sealed class VaultViewModel : ObservableObject, IDisposable
             Selected = Items.FirstOrDefault();
             Status = Items.Count == 0
                 ? "Aucune table sauvegardée."
-                : "Sélectionnez une sauvegarde pour la restaurer ou la supprimer.";
+                : string.Empty;
         }
         catch (Exception ex)
         {

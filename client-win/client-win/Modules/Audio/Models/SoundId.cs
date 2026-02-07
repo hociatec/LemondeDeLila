@@ -11,6 +11,7 @@ public enum SoundId
     TavernAmbience,
     TavernOpened,
     DiceRolled,
+    DrawCard,
     ChatMessageSent,
     ChatMessageReceived,
     TableChatMessageSent,

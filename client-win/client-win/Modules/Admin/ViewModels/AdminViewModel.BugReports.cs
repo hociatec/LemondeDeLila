@@ -367,7 +367,8 @@ public sealed partial class AdminViewModel
                 }));
 
         var details = header + "\n\n====================\nCommentaires\n\n" + commentsBlock;
-        SetDetailsWithSegments(details, BuildDetailSegments(details));
+        details = NormalizeDetailsForScreenReader(details);
+        SetDetailsWithSegments(details, null);
 
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
@@ -692,5 +693,17 @@ public sealed partial class AdminViewModel
             .ToArray();
 
         return parts.Length > 0 ? parts : Array.Empty<string>();
+    }
+
+    private static string NormalizeDetailsForScreenReader(string? text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return string.Empty;
+        }
+
+        return text.Replace("\r\n", "\n")
+            .Replace("\r", "\n")
+            .Replace("\n", Environment.NewLine);
     }
 }

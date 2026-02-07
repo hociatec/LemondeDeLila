@@ -223,6 +223,13 @@ public sealed class SoundService : ISoundService, IDisposable
                 OverridePath: null,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundSelect,
                 Volume: () => Clamp01(_options.Current.SoundSelectVolume / 100.0)),
+            [SoundId.DrawCard] = new SoundEntry(
+                // Son déclenché à chaque action de pioche (générique, basé sur les logs "pioche").
+                // PLACEHOLDER: remplacez via l'interface admin (son uploadé = RemoteSoundCache).
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "DiceRolled.wav"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundSelect,
+                Volume: () => Clamp01(_options.Current.SoundSelectVolume / 100.0)),
             [SoundId.ChatMessageSent] = new SoundEntry(
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "ChatMessageSent.wav"),
                 OverridePath: () => _options.Current.SoundChatMessageSentPath,

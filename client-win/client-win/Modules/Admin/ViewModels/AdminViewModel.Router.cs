@@ -649,6 +649,12 @@ public sealed partial class AdminViewModel
 	                    BuildSoundDetails(Modules.Audio.Models.SoundId.DiceRolled);
 	                    return;
 	                }
+	                if (gameSound == "sounds.games.draw")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundDetails(Modules.Audio.Models.SoundId.DrawCard);
+	                    return;
+	                }
                     if (gameSound == "sounds.games.quiz.correct")
                     {
                         PushReturnFocus();

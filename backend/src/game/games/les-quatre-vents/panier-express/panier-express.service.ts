@@ -721,12 +721,36 @@ export class PanierExpressService extends AbstractGameService {
     }
     const withBots = this.assignBotPawns(state);
     const readyPlayers = withBots.players ?? [];
+    const meta = this.getMetadata(withBots) as any;
+    let withLogs: GameStateEntity = withBots;
+    if (!meta.pawnAnnouncementsDone) {
+      readyPlayers.forEach((p: any) => {
+        const pawn =
+          typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
+        if (!pawn) return;
+        withLogs = this.core.appendLog(
+          withLogs,
+          `[Panier Express] ${this.utils.playerName(withLogs, p.id)} re\u00e7oit le pion: ${pawn}.`,
+        );
+      });
+      withLogs = {
+        ...withLogs,
+        metadata: { ...meta, pawnAnnouncementsDone: true },
+      };
+    }
+    const starterId = readyPlayers[0]?.id ?? null;
+    if (typeof starterId === 'number') {
+      withLogs = this.core.appendLog(
+        withLogs,
+        `[Panier Express] D\u00e9but de partie : ${this.utils.playerName(withLogs, starterId)} commence.`,
+      );
+    }
     return {
-      ...withBots,
+      ...withLogs,
       status: 'started',
       turnIndex: readyPlayers.length ? 0 : -1,
       turn: {
-        currentPlayerId: readyPlayers[0]?.id ?? null,
+        currentPlayerId: starterId,
         direction: 1,
       },
     };

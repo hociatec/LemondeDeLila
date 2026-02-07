@@ -107,6 +107,7 @@ export type PanierExpressMetadata = {
   botProfile: BotProfile;
   movementDirection?: 1 | -1;
   movementDirectionOwnerId?: number | null;
+  pawnAnnouncementsDone?: boolean;
   lastObtainedCourse?: Record<number, string | null>;
   discards?: {
     courses?: string[];

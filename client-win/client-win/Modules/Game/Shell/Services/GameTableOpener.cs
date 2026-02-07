@@ -1283,6 +1283,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         _sounds.Preload(SoundId.RoomOpened, warmUp: true);
                         _sounds.Preload(SoundId.RoomJoined, warmUp: true);
                         _sounds.Preload(SoundId.DiceRolled, warmUp: true);
+                        _sounds.Preload(SoundId.DrawCard, warmUp: true);
                         _sounds.Preload(SoundId.QuizCorrect, warmUp: true);
                         _sounds.Preload(SoundId.QuizWrong, warmUp: true);
                         _sounds.Preload(SoundId.RoundEnded, warmUp: true);
@@ -1300,6 +1301,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     var soundsToWarm = new[]
                     {
                         SoundId.DiceRolled,
+                        SoundId.DrawCard,
                         SoundId.QuizCorrect,
                         SoundId.QuizWrong,
                         SoundId.RoundEnded,

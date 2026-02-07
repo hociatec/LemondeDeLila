@@ -21,6 +21,13 @@ internal sealed class GamePlayLogSoundPlayer
             return;
         }
 
+        // Pioche (tous jeux): jouer un son dédié quand l'historique annonce une pioche.
+        if (msg.Contains("pioche", StringComparison.OrdinalIgnoreCase))
+        {
+            _sounds.Play(SoundId.DrawCard);
+            return;
+        }
+
         // Quiz (Arche de Mnémosyne): le serveur écrit explicitement "Bonne réponse"/"Mauvaise réponse".
         // Jouer le son uniquement pour la réponse du joueur local (évite le spam sonore).
         if (!string.IsNullOrWhiteSpace(viewerUsername))

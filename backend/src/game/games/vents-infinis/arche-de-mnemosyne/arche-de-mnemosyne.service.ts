@@ -1082,10 +1082,33 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 
   getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] | null {
     const meta = this.getMeta(state);
+    const phase = String(state.phase ?? '').toLowerCase().trim();
+    const currentId = state.turn?.currentPlayerId ?? null;
+
+    if (currentId !== botPlayerId) return null;
+
+    if (phase === 'setup') {
+      if (meta.prompt) {
+        const ownerId =
+          typeof (meta as any).promptOwnerId === 'number'
+            ? (meta as any).promptOwnerId
+            : null;
+        if (ownerId === botPlayerId) {
+          return [{ type: 'mnemo_set_config', payload: {} } as any];
+        }
+        return null;
+      }
+
+      const categories = this.store.listCategories();
+      const categoryIds = categories.map((c) => c.id);
+      const choices = [...categoryIds, null];
+      const pickIndex = Math.floor(Math.random() * choices.length);
+      const chosen = choices[pickIndex] ?? null;
+      return [{ type: 'mnemo_start', payload: { categoryId: chosen } } as any];
+    }
+
     const q = meta.currentQuestion;
     if (!q) {
-      const currentId = state.turn?.currentPlayerId ?? null;
-      if (currentId !== botPlayerId) return null;
       return [{ type: 'draw', payload: {} } as any];
     }
 
