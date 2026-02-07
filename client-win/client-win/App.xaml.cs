@@ -312,6 +312,13 @@ namespace client_win
                                 return;
                             }
 
+                            var foreground = NativeMethods.GetForegroundWindow();
+                            if (window.IsActive && foreground == hwnd)
+                            {
+                                Log.Debug("EnsureForeground: already foreground, skipping");
+                                return;
+                            }
+
                             NativeMethods.ShowWindow(hwnd, NativeMethods.SW_SHOW);
                             ForegroundWindowHelper.TryForceForeground(hwnd);
                             Log.Debug("EnsureForeground: foreground request issued (ForegroundWindow={Foreground})",

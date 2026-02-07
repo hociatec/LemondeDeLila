@@ -6,8 +6,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using System.Windows.Interop;
-using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using Serilog;
 using client_win.Modules.Home.ViewModels;
 using client_win.Modules.Shell.Services;
@@ -720,15 +719,23 @@ public partial class HomeView : UserControl, IInitialFocusTarget
                 return;
             }
 
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
-        {
-            var success = TryKeyboardFocus(LoginUsernameBox);
-            Log.Debug("TryFocusLoginUsernameAsync invoked (success={Success})", success);
-            if (!success)
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
-                TrySetAutomationFocus(LoginUsernameBox);
-            }
-        }));
+                var success = TryKeyboardFocus(LoginUsernameBox);
+                Log.Debug("TryFocusLoginUsernameAsync invoked (success={Success})", success);
+                if (IsHostWindowActive())
+                {
+                    TrySetAutomationFocus(LoginUsernameBox);
+                }
+            }));
+
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+            {
+                if (IsHostWindowActive() && IsLoginFocusActive())
+                {
+                    TrySetAutomationFocus(LoginUsernameBox);
+                }
+            }));
         }
         catch (Exception ex)
         {
@@ -745,16 +752,13 @@ public partial class HomeView : UserControl, IInitialFocusTarget
 
         try
         {
-            var hwndSource = PresentationSource.FromVisual(control) as HwndSource;
-            if (hwndSource == null)
+            if (!control.IsVisible || !control.IsEnabled)
             {
                 return;
             }
 
-            var rect = control.TransformToAncestor(Application.Current?.MainWindow ?? control).TransformBounds(new Rect(0, 0, control.ActualWidth, control.ActualHeight));
-            var point = hwndSource.CompositionTarget.TransformToDevice.Transform(new Point(rect.Left, rect.Top));
-            var automationElement = AutomationElement.FromHandle(hwndSource.Handle);
-            automationElement?.SetFocus();
+            var peer = UIElementAutomationPeer.FromElement(control) ?? UIElementAutomationPeer.CreatePeerForElement(control);
+            peer?.SetFocus();
         }
         catch (Exception ex)
         {
