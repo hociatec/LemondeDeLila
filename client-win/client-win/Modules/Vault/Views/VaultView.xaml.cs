@@ -57,8 +57,6 @@ public partial class VaultView : UserControl, IInitialFocusTarget
                     ItemsList.Focus();
                     return;
                 }
-
-                StatusText?.Focus();
             }
             catch
             {
