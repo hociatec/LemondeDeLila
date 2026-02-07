@@ -104,7 +104,9 @@
                         </StackPanel>
                     </Grid>
 
-                    <Grid Visibility="{Binding IsLoginVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid x:Name="LoginPanel"
+                          Visibility="{Binding IsLoginVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                          Loaded="OnLoginPanelLoaded">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />

@@ -82,6 +82,11 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         {
             FocusFirstField();
         }
+
+        if (e.PropertyName == nameof(HomeViewModel.IsLoginVisible))
+        {
+            TryFocusLoginUsernameAsync();
+        }
     }
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
@@ -623,5 +628,30 @@ public partial class HomeView : UserControl, IInitialFocusTarget
     public void RequestInitialFocus()
     {
         EnsureInitialFocus();
+    }
+
+    private void OnLoginPanelLoaded(object sender, RoutedEventArgs e)
+    {
+        TryFocusLoginUsernameAsync();
+    }
+
+    private void TryFocusLoginUsernameAsync()
+    {
+        try
+        {
+            if (LoginUsernameBox == null || !LoginUsernameBox.IsVisible || !LoginUsernameBox.IsEnabled)
+            {
+                return;
+            }
+
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+            {
+                TryKeyboardFocus(LoginUsernameBox);
+            }));
+        }
+        catch
+        {
+            // best-effort
+        }
     }
 }
