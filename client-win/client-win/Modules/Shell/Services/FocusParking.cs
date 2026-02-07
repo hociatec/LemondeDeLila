@@ -1,10 +1,11 @@
 using System;
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Linq;
 using System.Windows.Threading;
+using Serilog;
 
 namespace client_win.Modules.Shell.Services;
 
@@ -32,16 +33,32 @@ public static class FocusParking
             {
                 try
                 {
-                    // 1) UIA focus: tends to be more reliable for NVDA than WPF keyboard focus alone.
+                    // Keyboard focus: ensure the focused element is not about to be removed/collapsed.
+                    var target =
+                        // Prefer the content host: it's a stable, visible element (NVDA can announce "indisponible"
+                        // when focusing an invisible sentinel during heavy navigation).
+                        window.FindName("RootHost") as IInputElement ??
+                        window.FindName("FocusSentinel") as IInputElement ??
+                        window;
+                    Log.Debug("FocusParking.Park target={Target} windowActive={IsActive} keyboardWithin={KeyboardWithin}",
+                        target?.GetType().Name ?? "<null>",
+                        window.IsActive,
+                        window.IsKeyboardFocusWithin);
+                    try { (target as UIElement)?.Focus(); } catch { /* ignore */ }
+                    try { Keyboard.Focus(target); } catch { /* ignore */ }
+
+                    // UIA focus: align with the parked target, not the top-level window handle.
+                    // Forcing UIA focus to the window can leave NVDA stuck on "fenêtre" after startup.
                     try
                     {
-                        var hwnd = new WindowInteropHelper(window).Handle;
-                        if (hwnd != IntPtr.Zero)
+                        if (target is UIElement uiTarget && uiTarget.IsVisible && uiTarget.IsEnabled)
                         {
-                            // Avoid re-activating the window: only set UIA focus while already active.
-                            if (window.IsActive)
+                            var peer = UIElementAutomationPeer.FromElement(uiTarget) ?? UIElementAutomationPeer.CreatePeerForElement(uiTarget);
+                            if (peer != null)
                             {
-                                AutomationElement.FromHandle(hwnd)?.SetFocus();
+                                Log.Debug("FocusParking.Park UIA focus target={Target}", uiTarget.GetType().Name);
+                                try { peer.SetFocus(); } catch { /* ignore */ }
+                                try { peer.RaiseAutomationEvent(AutomationEvents.AutomationFocusChanged); } catch { /* ignore */ }
                             }
                         }
                     }
@@ -49,16 +66,6 @@ public static class FocusParking
                     {
                         // ignore
                     }
-
-                    // 2) Keyboard focus: ensure the focused element is not about to be removed/collapsed.
-                    var target =
-                        // Prefer the content host: it's a stable, visible element (NVDA can announce "indisponible"
-                        // when focusing an invisible sentinel during heavy navigation).
-                        window.FindName("RootHost") as IInputElement ??
-                        window.FindName("FocusSentinel") as IInputElement ??
-                        window;
-                    try { (target as UIElement)?.Focus(); } catch { /* ignore */ }
-                    try { Keyboard.Focus(target); } catch { /* ignore */ }
                 }
                 catch
                 {

@@ -29,6 +29,7 @@
                         AutomationProperties.AutomationId="RootHost"
                         AutomationProperties.Name="{Binding WindowTitle, TargetNullValue=Le Monde de Lila, FallbackValue=Le Monde de Lila}"
                         Content="{Binding CurrentContent}"
-                        shellViews:ContentHostFocusBehavior.Enable="True" />
+                        shellViews:ContentHostFocusBehavior.Enable="True"
+                        shellViews:ContentHostFocusBehavior.SkipInitialFocus="True" />
     </Grid>
 </Window>
