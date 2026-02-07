@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Game.Play.State.Dtos;
@@ -12,6 +13,7 @@ internal sealed class GamePlayDiceSoundPlayer
     private int? _lastRoll;
     private int _lastLogCount;
     private int _lastTurnIndex;
+    private string _lastLogSignature = string.Empty;
 
     internal GamePlayDiceSoundPlayer(ISoundService sounds)
     {
@@ -43,24 +45,12 @@ internal sealed class GamePlayDiceSoundPlayer
             _lastRoll = roll;
             _lastTurnIndex = turnIndex;
             _lastLogCount = logCount;
+            UpdateLogSignature(log);
             return;
         }
 
-        // Prefer log-based detection so consecutive identical rolls still trigger a sound.
-        // Most dice-based games log: "X lance le dé : "N"." or "X relance le dé : "N"."
-        if (logCount > _lastLogCount && log != null)
+        if (TryPlayDiceSoundFromLog(log))
         {
-            for (var i = _lastLogCount; i < logCount; i++)
-            {
-                var msg = (log[i]?.Message ?? string.Empty).Trim();
-                if (msg.Length == 0) continue;
-                if (msg.IndexOf("lance le dé", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                    msg.IndexOf("relance le dé", StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    _sounds.Play(SoundId.DiceRolled);
-                    break;
-                }
-            }
             _lastLogCount = logCount;
             _lastRoll = roll;
             _lastTurnIndex = turnIndex;
@@ -74,6 +64,7 @@ internal sealed class GamePlayDiceSoundPlayer
             _lastRoll = roll;
             _lastTurnIndex = turnIndex;
             _lastLogCount = logCount;
+            UpdateLogSignature(log);
             return;
         }
 
@@ -84,10 +75,99 @@ internal sealed class GamePlayDiceSoundPlayer
         _lastRoll = roll;
         _lastTurnIndex = turnIndex;
         _lastLogCount = logCount;
+        UpdateLogSignature(log);
         if (shouldPlay)
         {
             _sounds.Play(SoundId.DiceRolled);
         }
+    }
+
+    private bool TryPlayDiceSoundFromLog(IList<GameLogEntryDto>? log)
+    {
+        if (log == null || log.Count == 0)
+        {
+            UpdateLogSignature(log);
+            return false;
+        }
+
+        var matchedLastSignature = string.IsNullOrEmpty(_lastLogSignature);
+        var triggered = false;
+        foreach (var entry in log)
+        {
+            var signature = BuildLogSignature(entry);
+            if (string.IsNullOrEmpty(signature))
+            {
+                continue;
+            }
+
+            if (!matchedLastSignature)
+            {
+                if (string.Equals(signature, _lastLogSignature, StringComparison.Ordinal))
+                {
+                    matchedLastSignature = true;
+                }
+                continue;
+            }
+
+            if (!triggered && IsDiceLogMessage(entry.Message))
+            {
+                triggered = true;
+            }
+        }
+
+        if (!matchedLastSignature && !string.IsNullOrEmpty(_lastLogSignature))
+        {
+            foreach (var entry in log)
+            {
+                if (IsDiceLogMessage(entry?.Message ?? string.Empty))
+                {
+                    triggered = true;
+                    break;
+                }
+            }
+        }
+
+        UpdateLogSignature(log);
+        return triggered;
+    }
+
+    private void UpdateLogSignature(IList<GameLogEntryDto>? log)
+    {
+        if (log == null || log.Count == 0)
+        {
+            _lastLogSignature = string.Empty;
+            return;
+        }
+        var lastEntry = log[log.Count - 1];
+        var signature = BuildLogSignature(lastEntry);
+        _lastLogSignature = string.IsNullOrEmpty(signature) ? string.Empty : signature;
+    }
+
+    private static string BuildLogSignature(GameLogEntryDto entry)
+    {
+        if (entry == null)
+        {
+            return string.Empty;
+        }
+        var timestamp = entry.Timestamp?.Trim() ?? string.Empty;
+        var message = entry.Message?.Trim() ?? string.Empty;
+        if (string.IsNullOrEmpty(timestamp) && string.IsNullOrEmpty(message))
+        {
+            return string.Empty;
+        }
+        return $"{timestamp}|{message}";
+    }
+
+    private static bool IsDiceLogMessage(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return false;
+        }
+
+        var trimmed = message.Trim();
+        return trimmed.IndexOf("lance le dé", StringComparison.OrdinalIgnoreCase) >= 0 ||
+               trimmed.IndexOf("relance le dé", StringComparison.OrdinalIgnoreCase) >= 0;
     }
 }
 
