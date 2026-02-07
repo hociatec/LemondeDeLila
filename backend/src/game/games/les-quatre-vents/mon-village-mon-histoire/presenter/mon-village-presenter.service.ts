@@ -6,6 +6,7 @@ import { MON_VILLAGE_GAME } from '../definitions/mon-village.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type {
   MonVillageCollection,
+  MonVillageCard,
   MonVillageMetadata,
 } from '../model/mon-village-state.entity';
 
@@ -34,6 +35,13 @@ export class MonVillagePresenterService {
     const me = players.find((p) => p?.id === userId);
 
     const collection = meta.collections?.[userId] ?? null;
+    const availableMessage = this.buildAvailableMessage(
+      (meta.decks ?? {}) as Record<number, MonVillageCard[]>,
+    );
+    const scoreMessage = this.buildScoresMessage(
+      players,
+      (meta.collections ?? {}) as Record<number, MonVillageCollection>,
+    );
 
     return {
       ...state,
@@ -67,6 +75,14 @@ export class MonVillagePresenterService {
               title: 'Cartes',
               message: this.buildCollectionMessage(collection),
             },
+            available: {
+              title: 'Disponibles',
+              message: availableMessage,
+            },
+            score: {
+              title: 'Scores',
+              message: scoreMessage,
+            },
           },
         },
       },
@@ -95,6 +111,52 @@ export class MonVillagePresenterService {
     if (zoneEntries.length) {
       lines.push(zoneEntries.join(' | '));
     }
+    return lines.join('\n');
+  }
+
+  private buildAvailableMessage(decks: Record<number, MonVillageCard[]>): string {
+    const entries = Object.entries(decks ?? {})
+      .map(([zoneId, cards]) => ({
+        zoneId: Number(zoneId),
+        label: ZONE_LABELS[Number(zoneId)] ?? `Zone ${zoneId}`,
+        count: Array.isArray(cards) ? cards.length : 0,
+      }))
+      .sort((a, b) => a.zoneId - b.zoneId);
+
+    if (!entries.length) {
+      return 'Aucune carte disponible.';
+    }
+
+    return entries.map((entry) => `${entry.label} (${entry.count})`).join(' | ');
+  }
+
+  private buildScoresMessage(
+    players: Array<{ id: number; username?: string }>,
+    collections: Record<number, MonVillageCollection>,
+  ): string {
+    if (!players.length) return 'Scores: indisponibles.';
+
+    const lines = players.map((p) => {
+      const name =
+        typeof p?.username === 'string' && p.username.trim().length > 0
+          ? p.username.trim()
+          : `Joueur ${p?.id ?? '?'}`;
+      const collection = collections?.[p?.id ?? -1] ?? null;
+      if (!collection) return `${name} : 0`;
+      const zoneEntries = Object.entries(collection.byZone ?? {})
+        .map(([zoneId, count]) => ({
+          zoneId: Number(zoneId),
+          label: ZONE_LABELS[Number(zoneId)] ?? `Zone ${zoneId}`,
+          count,
+        }))
+        .sort((a, b) => a.zoneId - b.zoneId)
+        .map((entry) => `${entry.label} (${entry.count})`);
+      const total = collection.total ?? 0;
+      return zoneEntries.length
+        ? `${name} : ${total} | ${zoneEntries.join(' | ')}`
+        : `${name} : ${total}`;
+    });
+
     return lines.join('\n');
   }
 }

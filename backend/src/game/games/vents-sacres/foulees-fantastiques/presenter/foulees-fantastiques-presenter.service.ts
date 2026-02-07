@@ -21,6 +21,20 @@ export class FouleesFantastiquesPresenterService {
     const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
+    const scoreLines = players.map((p) => {
+      const name =
+        typeof p?.username === 'string' && p.username.trim().length > 0
+          ? p.username.trim()
+          : `Joueur ${p?.id ?? '?'}`;
+      const pid = p?.id ?? -1;
+      const pawns = Array.isArray(meta.pawnsByPlayer?.[pid])
+        ? meta.pawnsByPlayer[pid]
+        : [];
+      const arrived = pawns.filter(
+        (pawn: any) => (pawn?.progress ?? -1) >= arrivalProgress,
+      ).length;
+      return `${name} : ${arrived} arrivé${arrived > 1 ? 's' : ''}`;
+    });
 
     const arrivalProgress =
       (meta.trackLength ?? 0) + (meta.homeLength ?? 0) - 1;
@@ -122,6 +136,12 @@ export class FouleesFantastiquesPresenterService {
                   lapsRaw: meta.laps,
                   playerId: userId,
                 }),
+          },
+          score: {
+            title: 'Scores',
+            message: scoreLines.length
+              ? scoreLines.join('\n')
+              : 'Scores: indisponibles.',
           },
         },
       },

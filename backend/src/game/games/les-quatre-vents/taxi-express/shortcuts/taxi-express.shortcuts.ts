@@ -1,5 +1,8 @@
 import type { GameShortcutsBuilder } from '../../../../engine/shortcuts/game-shortcuts';
+import { actionShortcut, interfaceShortcut } from '../../../../engine/shortcuts/shortcut-utils';
 
 export const buildTaxiExpressShortcuts: GameShortcutsBuilder = () => [
-  { key: 'roll', type: 'action', actionType: 'roll' },
+  interfaceShortcut('P', 'position'),
+  actionShortcut('SPACE', 'roll'),
+  interfaceShortcut('S', 'score'),
 ];

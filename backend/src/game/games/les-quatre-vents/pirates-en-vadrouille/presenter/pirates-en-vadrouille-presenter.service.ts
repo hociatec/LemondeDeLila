@@ -18,6 +18,17 @@ export class PiratesEnVadrouillePresenterService {
     const meta = this.getMeta(state);
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
+    const scoreLines = players.map((p) => {
+      const name =
+        typeof p?.username === 'string' && p.username.trim().length > 0
+          ? p.username.trim()
+          : `Joueur ${p?.id ?? '?'}`;
+      const collection = meta.collections?.[p?.id ?? -1] ?? null;
+      const treasures = Array.isArray(collection?.treasures)
+        ? collection.treasures.length
+        : 0;
+      return `${name} : ${treasures} trésor${treasures > 1 ? 's' : ''}`;
+    });
 
     return {
       ...state,
@@ -50,6 +61,12 @@ export class PiratesEnVadrouillePresenterService {
             collection: {
               title: 'Cartes & pièces',
               message: this.buildCollectionMessage(meta.collections?.[userId] ?? null),
+            },
+            score: {
+              title: 'Trésors',
+              message: scoreLines.length
+                ? scoreLines.join('\n')
+                : 'Trésors: indisponible.',
             },
           },
         },

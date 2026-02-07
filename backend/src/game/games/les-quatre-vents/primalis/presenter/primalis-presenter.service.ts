@@ -19,6 +19,14 @@ export class PrimalisPresenterService {
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
     const myResources = this.getResources(meta, userId);
+    const scoreLines = players.map((p) => {
+      const name =
+        typeof p?.username === 'string' && p.username.trim().length > 0
+          ? p.username.trim()
+          : `Joueur ${p?.id ?? '?'}`;
+      const resources = this.getResources(meta, p?.id ?? -1);
+      return `${name} : Feuilles ${resources.leaves}, Herbivores ${resources.herbivores}, Carnivores ${resources.carnivores}`;
+    });
 
     return {
       ...state,
@@ -40,9 +48,23 @@ export class PrimalisPresenterService {
         },
         ui: {
           panels: {
+            position: {
+              title: 'Position',
+              message: this.boardPayload.buildPositionPanelMessage({
+                tilesRaw: meta.tiles,
+                positionsRaw: meta.positions,
+                playerId: userId,
+              }),
+            },
             ressources: {
               title: 'Tribu',
               message: this.renderResources(myResources),
+            },
+            score: {
+              title: 'Score',
+              message: scoreLines.length
+                ? scoreLines.join('\n')
+                : 'Score: indisponible.',
             },
           },
         },

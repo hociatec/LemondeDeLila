@@ -9,7 +9,7 @@ import { GameRegistryService } from '../../../engine/services/game-registry.serv
 import { GameCoreService } from '../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../modules/turn/services/turn-flow.service';
 import { RandomService } from '../../../modules/random/services/random.service';
-import { interfaceShortcut } from '../../../engine/shortcuts/shortcut-utils';
+import { actionShortcut, interfaceShortcut } from '../../../engine/shortcuts/shortcut-utils';
 import { MnemoQuizStoreService } from './store/mnemo-quiz-store.service';
 import type {
   MnemoAdminPage,
@@ -279,7 +279,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     }
 
     // "S" : afficher le score (panneau UI géré côté client).
-    return [interfaceShortcut('S', 'score')];
+    return [interfaceShortcut('S', 'score'), actionShortcut('SPACE', 'draw')];
   }
 
   exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {

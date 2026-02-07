@@ -156,9 +156,11 @@ export class MinuitActionService {
     meta = draw.meta;
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     if (!draw.card) return next;
-    const effectText = Array.isArray(draw.card.lines)
-      ? draw.card.lines.join(' ')
-      : '';
+    const effectText = this.formatCardEffect(draw.card);
+    next = this.core.appendLog(
+      next,
+      `${this.playerName(next, playerId)} pioche "${draw.card.title}".`,
+    );
     next = this.core.appendLog(
       next,
       `${draw.card.title}: ${effectText}`.trim(),
@@ -611,7 +613,6 @@ export class MinuitActionService {
     if (quiz) {
       meta = { ...meta, pendingQuiz: quiz };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      next = this.core.appendLog(next, `Question : ${quiz.question}`);
       return next;
     }
 
@@ -848,6 +849,15 @@ export class MinuitActionService {
     }
 
     return next;
+  }
+
+  private formatCardEffect(card: MinuitCard): string {
+    const lines = Array.isArray(card.lines) ? card.lines : [];
+    const filtered = lines.filter(
+      (line) =>
+        !/^si le joueur a la bonne réponse/i.test(String(line ?? '').trim()),
+    );
+    return filtered.join(' ').trim();
   }
 
   private move(

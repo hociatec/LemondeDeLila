@@ -25,6 +25,15 @@ export class TaxiExpressPresenterService {
     const client = this.getActiveClient(meta, userId);
     const event = this.getActiveEvent(meta);
     const completed = meta.completedTrips?.[userId] ?? 0;
+    const players = Array.isArray(state.players) ? state.players : [];
+    const scoreLines = players.map((p) => {
+      const name =
+        typeof p?.username === 'string' && p.username.trim().length > 0
+          ? p.username.trim()
+          : `Joueur ${p?.id ?? '?'}`;
+      const count = meta.completedTrips?.[p?.id ?? -1] ?? 0;
+      return `${name} : ${count} trajet${count > 1 ? 's' : ''}`;
+    });
 
     return {
       ...state,
@@ -60,6 +69,24 @@ export class TaxiExpressPresenterService {
                 event.blockedTileId,
               )}.`
             : 'Pas d’obstacle identifié.',
+        },
+        ui: {
+          panels: {
+            position: {
+              title: 'Position',
+              message: this.boardPayload.buildPositionPanelMessage({
+                tilesRaw: meta.tiles,
+                positionsRaw: meta.positions,
+                playerId: userId,
+              }),
+            },
+            score: {
+              title: 'Trajets',
+              message: scoreLines.length
+                ? scoreLines.join('\n')
+                : 'Trajets: indisponible.',
+            },
+          },
         },
       },
       board: this.boardPayload.buildTilesPositionsLaps(

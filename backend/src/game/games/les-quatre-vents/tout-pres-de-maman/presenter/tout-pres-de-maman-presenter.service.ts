@@ -19,6 +19,15 @@ export class ToutPresDeMamanPresenterService {
     const tokens = meta.tokens?.[userId] ?? 0;
     const totalNeeded = 3;
     const nextCard = this.peekNextCard(meta);
+    const players = Array.isArray(state.players) ? state.players : [];
+    const scoreLines = players.map((p) => {
+      const name =
+        typeof p?.username === 'string' && p.username.trim().length > 0
+          ? p.username.trim()
+          : `Joueur ${p?.id ?? '?'}`;
+      const count = meta.tokens?.[p?.id ?? -1] ?? 0;
+      return `${name} : ${count} eucalyptus`;
+    });
 
     return {
       ...state,
@@ -41,6 +50,24 @@ export class ToutPresDeMamanPresenterService {
         ...(state as any).extras,
         tokens: `${tokens} / ${totalNeeded} jetons eucalyptus`,
         nextCard: nextCard?.text ?? 'Pile de cartes vide',
+        ui: {
+          panels: {
+            position: {
+              title: 'Position',
+              message: this.boardPayload.buildPositionPanelMessage({
+                tilesRaw: meta.tiles,
+                positionsRaw: meta.positions,
+                playerId: userId,
+              }),
+            },
+            score: {
+              title: 'Eucalyptus',
+              message: scoreLines.length
+                ? scoreLines.join('\n')
+                : 'Eucalyptus: indisponible.',
+            },
+          },
+        },
       },
       board: this.boardPayload.buildTilesPositionsLaps(
         meta.tiles,

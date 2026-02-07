@@ -18,6 +18,14 @@ export class GaloponsPresenterService {
     const meta = (state.metadata ?? {}) as any as GaloponsMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
+    const applesLines = players.map((p) => {
+      const name =
+        typeof p?.username === 'string' && p.username.trim().length > 0
+          ? p.username.trim()
+          : `Joueur ${p?.id ?? '?'}`;
+      const count = meta.apples?.[p?.id ?? -1] ?? 0;
+      return `${name} : ${count} pomme${count > 1 ? 's' : ''}`;
+    });
 
     return {
       ...state,
@@ -46,6 +54,12 @@ export class GaloponsPresenterService {
                 positionsRaw: meta.positions,
                 playerId: userId,
               }),
+            },
+            apples: {
+              title: 'Pommes',
+              message: applesLines.length
+                ? applesLines.join('\n')
+                : 'Pommes: indisponible.',
             },
           },
         },

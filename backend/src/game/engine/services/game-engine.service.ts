@@ -2178,18 +2178,27 @@ export class GameEngineService {
         const name = p.username || `joueur ${p.id}`;
 
         // Éviter les doublons évidents : si la dernière entrée mentionne déjà l'arrivée sur cette case.
-        const lastMsg = (() => {
+        const recentMsgs = (() => {
           const log = Array.isArray(out.log) ? out.log : [];
-          const last = log.length ? log[log.length - 1] : null;
-          return typeof (last as any)?.message === 'string' ? String((last as any).message).trim() : '';
+          const msgs: string[] = [];
+          for (let i = log.length - 1; i >= 0 && msgs.length < 4; i -= 1) {
+            const msg = (log[i] as any)?.message;
+            if (typeof msg === 'string' && msg.trim().length > 0) {
+              msgs.push(String(msg).trim());
+            }
+          }
+          return msgs;
         })();
         const needleByNumber = `arrive sur case ${caseNumber}`.toLowerCase();
         const needleByLabel = label ? `arrive sur ${label}`.toLowerCase() : '';
-        const lastLower = lastMsg.toLowerCase();
-        if (
-          lastLower.includes(needleByNumber) ||
-          (needleByLabel && lastLower.includes(needleByLabel))
-        ) {
+        const hasRecentArrival = recentMsgs.some((m) => {
+          const lower = m.toLowerCase();
+          return (
+            lower.includes(needleByNumber) ||
+            (needleByLabel && lower.includes(needleByLabel))
+          );
+        });
+        if (hasRecentArrival) {
           continue;
         }
 

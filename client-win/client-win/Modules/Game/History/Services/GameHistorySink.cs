@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Windows.Threading;
 using client_win.Modules.Game.History.ViewModels;
 using client_win.Modules.Shell.Services;
@@ -9,14 +7,9 @@ namespace client_win.Modules.Game.History.Services;
 
 public sealed class GameHistorySink : IGameHistorySink
 {
-    private static readonly TimeSpan AnnouncementDedupWindow = TimeSpan.FromSeconds(3);
-    private static readonly TimeSpan CleanupThreshold = TimeSpan.FromMinutes(5);
-
     private readonly Dispatcher _dispatcher;
     private readonly GameHistoryViewModel _history;
     private readonly IAnnouncementService? _announcements;
-    private readonly Dictionary<string, DateTime> _lastAnnouncements = new(StringComparer.OrdinalIgnoreCase);
-    private string? _lastAddedEntry;
 
     public GameHistorySink(Dispatcher dispatcher, GameHistoryViewModel history, IAnnouncementService? announcements = null)
     {
@@ -52,27 +45,7 @@ public sealed class GameHistorySink : IGameHistorySink
                     continue;
                 }
 
-                if (string.Equals(_lastAddedEntry, cleaned, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                for (var i = _history.Entries.Count - 1; i >= 0; i--)
-                {
-                    var prev = _history.Entries[i];
-                    if (string.Equals(prev, GameHistoryMessageSplitter.BlankLineToken, StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-                    if (string.Equals(prev, cleaned, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return;
-                    }
-                    break;
-                }
-
                 _history.Entries.Add(cleaned);
-                _lastAddedEntry = cleaned;
 
                 TryAnnounce(
                     cleaned,
@@ -136,34 +109,6 @@ public sealed class GameHistorySink : IGameHistorySink
         {
             return false;
         }
-
-        var now = ParseTimestampOrNow(timestamp);
-        // Interface shortcuts (ex: score/turn) should always announce, even if the message is identical
-        // within the dedup window. `flushPending` is used for UI shortcuts ([ui] prefix).
-        if (!flushPending)
-        {
-            if (_lastAnnouncements.TryGetValue(normalized, out var last))
-            {
-                if (now <= last || now - last <= AnnouncementDedupWindow)
-                {
-                    return false;
-                }
-            }
-        }
-
-        if (_lastAnnouncements.Count > 512)
-        {
-            var cutoff = DateTime.UtcNow - CleanupThreshold;
-            foreach (var key in new List<string>(_lastAnnouncements.Keys))
-            {
-                if (_lastAnnouncements.TryGetValue(key, out var recorded) && recorded < cutoff)
-                {
-                    _lastAnnouncements.Remove(key);
-                }
-            }
-        }
-
-        _lastAnnouncements[normalized] = now;
         if (flushPending)
         {
             // When the user triggers an interface shortcut, prefer the related information immediately.
@@ -172,21 +117,6 @@ public sealed class GameHistorySink : IGameHistorySink
         }
         _announcements.Enqueue(normalized, priority);
         return true;
-    }
-
-    private static DateTime ParseTimestampOrNow(string? timestamp)
-    {
-        if (string.IsNullOrWhiteSpace(timestamp))
-        {
-            return DateTime.UtcNow;
-        }
-
-        if (DateTime.TryParse(timestamp, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var parsed))
-        {
-            return parsed.ToUniversalTime();
-        }
-
-        return DateTime.UtcNow;
     }
 
     private static string NormalizeSingleLine(string? message)

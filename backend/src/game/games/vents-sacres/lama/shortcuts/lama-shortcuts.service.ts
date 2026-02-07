@@ -34,6 +34,7 @@ export class LamaShortcutsService {
       hand.some((v) => v === topDiscard || v === nextLamaValue(topDiscard));
 
     return [
+      actionShortcut('SPACE', 'draw'),
       interfaceShortcut('C', 'discard'),
       interfaceShortcut('E', 'hands'),
       interfaceShortcut('S', 'score'),

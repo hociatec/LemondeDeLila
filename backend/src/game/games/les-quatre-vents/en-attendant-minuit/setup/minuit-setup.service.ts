@@ -6,8 +6,18 @@ import type {
   MinuitBoardJsonV1,
   MinuitCardsJsonV1,
   MinuitMetadata,
+  MinuitPawn,
   MinuitPawnsJsonV1,
 } from '../model/minuit.types';
+
+const DEFAULT_PAWNS = [
+  'Le Lutin',
+  'Le Bonhomme de Neige',
+  'La Fée des Flocons',
+  'Le Père Noël',
+  'Le Renne',
+  "Le Petit Bonhomme en Pain d'Épices",
+];
 
 @Injectable()
 export class MinuitSetupService {
@@ -45,16 +55,84 @@ export class MinuitSetupService {
       winnerId: null,
     };
 
+    const pending = this.buildPawnPending(base, meta, pawns.pawns ?? []);
+
     return {
       ...base,
       phase: 'playing',
-      pending: null,
+      pending,
+      turn: pending?.playerId
+        ? {
+            ...(base.turn ?? { direction: 1 }),
+            currentPlayerId: pending.playerId,
+            direction: 1,
+          }
+        : base.turn,
       metadata: {
         ...(base.metadata ?? {}),
         ...shuffled.meta,
         ...meta,
       },
     };
+  }
+
+  private buildPawnPending(
+    base: GameStateEntity,
+    meta: MinuitMetadata,
+    pawns: MinuitPawn[],
+  ): GameStateEntity['pending'] {
+    const players = Array.isArray(base.players) ? base.players : [];
+    const missing = players.filter(
+      (p) => !!p && !p.isBot && !String(p.pawn ?? '').trim(),
+    );
+    if (!missing.length) return null;
+
+    const taken = new Set<string>(
+      players
+        .map((p) => (typeof p?.pawn === 'string' ? String(p.pawn).trim() : ''))
+        .filter((pawn) => pawn.length > 0),
+    );
+
+    const choiceEntries = this.listPawnChoiceEntries(meta, pawns);
+    const available = choiceEntries.filter((entry) => !taken.has(entry.title));
+    const entries = available.length ? available : [...choiceEntries];
+    const choices = entries.map((entry) => entry.label);
+    const choiceMap = Object.fromEntries(entries.map((e) => [e.label, e.title]));
+    const chooser = missing[0];
+
+    return {
+      type: 'pick_pawn',
+      playerId: chooser.id,
+      blocking: true,
+      label: 'Choisissez votre pion, puis Entrée.',
+      choices,
+      data: { choices, choiceMap },
+    } as any;
+  }
+
+  private listPawnChoiceEntries(
+    meta: MinuitMetadata,
+    pawns: MinuitPawn[],
+  ): Array<{ title: string; label: string }> {
+    const fromContent = Array.isArray(meta.pawnChoices)
+      ? meta.pawnChoices
+      : Array.isArray(pawns)
+        ? pawns
+        : [];
+
+    if (fromContent.length) {
+      return fromContent
+        .map((pawn) => {
+          const title = String(pawn?.title ?? '').trim();
+          if (!title) return null;
+          const description = String(pawn?.description ?? '').trim();
+          const label = description ? `${title} — ${description}` : title;
+          return { title, label };
+        })
+        .filter(Boolean) as Array<{ title: string; label: string }>;
+    }
+
+    return DEFAULT_PAWNS.map((title) => ({ title, label: title }));
   }
 
   private loadBoard(): MinuitBoardJsonV1 {
