@@ -6,7 +6,9 @@ import type {
   FrousseBoardJsonV1,
   FrousseCardsJsonV1,
   FrousseMetadata,
+  FroussePawnsJsonV1,
 } from '../model/frousse.types';
+import { buildPawnSelectionPending } from '../pawn-selection';
 
 @Injectable()
 export class FrousseSetupService {
@@ -18,6 +20,7 @@ export class FrousseSetupService {
   hydrateInitialState(base: GameStateEntity): GameStateEntity {
     const board = this.loadBoard();
     const cards = this.loadCards();
+    const pawns = this.loadPawns();
 
     const players = Array.isArray(base.players) ? base.players : [];
     const positions: Record<number, number> = {};
@@ -42,20 +45,25 @@ export class FrousseSetupService {
         blocked: {},
       },
       decks: { cards: shuffled.values as any, discard: [] },
+      pawns: Array.isArray(pawns.pawns) ? pawns.pawns : [],
       pendingContext: null,
       winnerId: null,
     };
 
-    return {
+    const baseMetadata = (base.metadata ?? {}) as Record<string, unknown>;
+    const initial: GameStateEntity = {
       ...base,
       phase: 'playing',
       pending: null,
       metadata: {
-        ...(base.metadata ?? {}),
+        ...baseMetadata,
         ...shuffled.meta,
         ...meta,
       },
     };
+
+    const pending = buildPawnSelectionPending(players, meta);
+    return pending ? { ...initial, pending } : initial;
   }
 
   private loadBoard(): FrousseBoardJsonV1 {
@@ -78,6 +86,18 @@ export class FrousseSetupService {
       validators: [
         this.contentLoader.validators.version(1),
         this.contentLoader.validators.arrayField('cards', 1),
+      ],
+    });
+  }
+
+  private loadPawns(): FroussePawnsJsonV1 {
+    return this.contentLoader.loadContent<FroussePawnsJsonV1>({
+      gameType: 'frousse-party',
+      baseDir: __dirname,
+      filename: 'pawns.json',
+      validators: [
+        this.contentLoader.validators.version(1),
+        this.contentLoader.validators.arrayField('pawns', 1),
       ],
     });
   }

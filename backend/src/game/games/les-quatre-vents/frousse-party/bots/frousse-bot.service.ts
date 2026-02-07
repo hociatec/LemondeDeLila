@@ -18,7 +18,7 @@ export class FrousseBotService {
       { state, playerId: botPlayerId },
       'random',
       {
-        preferTypes: ['draw', 'choose_target', 'roll'],
+        preferTypes: ['choose_pawn', 'draw', 'choose_target', 'roll'],
         fallbackTypes: ['draw', 'choose_target', 'roll'],
       },
     );

@@ -2742,7 +2742,7 @@ export class PanierExpressService extends AbstractGameService {
         "[Panier Express] Acceptation du marchand invalide.",
       );
     }
-    let next = { ...state, pending: null };
+    let next: GameStateEntity = { ...state, pending: null };
     next = this.removeIngredientFromInventory(next, actorId, ingredient);
     next = this.addCourseToDiscards(next, ingredient);
     const label = this.utils.formatCourseLabel(ingredient);
@@ -2779,7 +2779,7 @@ export class PanierExpressService extends AbstractGameService {
       pending && pending.type === 'merchant_request'
         ? String(pending.data?.ingredient ?? '').trim()
         : '';
-    let next = { ...state, pending: null };
+    let next: GameStateEntity = { ...state, pending: null };
     next = this.applySkipTurnTile(next, actorId, 2);
     const label = ingredient
       ? ` "${this.utils.formatCourseLabel(ingredient)}"`
@@ -4029,21 +4029,20 @@ export class PanierExpressService extends AbstractGameService {
         ? meta.tiles
         : this.buildTiles();
     const stands = tiles
-      .map((tile, idx) =>
-        tile?.type === 'stand'
-          ? {
-              position: idx,
-              label: this.tileLabel(tile),
-              standId: tile.standId ?? undefined,
-              caseNumber: idx + 1,
-            }
-          : null,
-      )
+      .map((tile, idx) => {
+        if (tile?.type !== 'stand') return null;
+        return {
+          position: idx,
+          label: this.tileLabel(tile),
+          standId: tile.standId,
+          caseNumber: idx + 1,
+        };
+      })
       .filter(
         (entry): entry is {
           position: number;
           label: string;
-          standId?: string;
+          standId: string;
           caseNumber: number;
         } => Boolean(entry),
       );

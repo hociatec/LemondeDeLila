@@ -9,6 +9,12 @@ export type FrousseCard = {
   text: string;
 };
 
+export type FroussePawn = {
+  id: string;
+  title: string;
+  description?: string;
+};
+
 export type FrousseMetadata = {
   tiles: FrousseTile[];
   positions: Record<number, number>;
@@ -31,9 +37,11 @@ export type FrousseMetadata = {
     >;
   };
   decks: { cards: FrousseCard[]; discard: FrousseCard[] };
+  pawns: FroussePawn[];
   pendingContext?: { kind: 'swap'; actorId: number } | null;
   winnerId?: number | null;
 };
 
 export type FrousseCardsJsonV1 = { version: 1; cards: FrousseCard[] };
 export type FrousseBoardJsonV1 = { version: 1; tiles: FrousseTile[] };
+export type FroussePawnsJsonV1 = { version: 1; pawns: FroussePawn[] };

@@ -439,10 +439,14 @@ export class PanierExpressPresenterService extends BasePresenterService {
     };
 
     const scoreMessage = () => {
-      if (!Array.isArray(params.playerViews) || params.playerViews.length === 0) {
+      const views =
+        Array.isArray(params.fullPlayerViews) && params.fullPlayerViews.length
+          ? params.fullPlayerViews
+          : params.playerViews;
+      if (!Array.isArray(views) || views.length === 0) {
         return 'Scores: (aucun joueur).';
       }
-      const lines = params.playerViews.map((p) => {
+      const lines = views.map((p) => {
         const name =
           typeof p.username === 'string' && p.username.trim().length > 0
             ? p.username.trim()

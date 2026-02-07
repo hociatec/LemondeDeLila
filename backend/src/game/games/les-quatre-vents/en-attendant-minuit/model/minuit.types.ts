@@ -34,6 +34,7 @@ export type MinuitPendingQuiz = {
 export type MinuitMetadata = {
   tiles: MinuitTile[];
   positions: Record<number, number>;
+  pawns?: Record<number, string>;
   statuses: {
     skipTurn: Record<number, number>;
     ignoreNextMalus: Record<number, boolean>;

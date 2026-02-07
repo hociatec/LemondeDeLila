@@ -12,6 +12,8 @@ import type {
   FrousseMetadata,
   FrousseTile,
 } from '../model/frousse.types';
+import { buildPawnSelectionPending } from '../pawn-selection';
+import { resolvePawnId } from '../pawns.utils';
 
 @Injectable()
 export class FrousseActionService {
@@ -25,9 +27,14 @@ export class FrousseActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
+    let next = this.ensurePawnSelection(state);
     for (const action of actions ?? []) {
       const type = String(action?.type ?? '').trim();
+      if (type === 'choose_pawn') {
+        next = this.handleChoosePawn(next, action);
+        next = this.ensurePawnSelection(next);
+        continue;
+      }
       if (type === 'roll' || type === 'ROLL_DICE' || type === 'roll_dice') {
         next = this.handleRoll(next);
         continue;
@@ -40,7 +47,63 @@ export class FrousseActionService {
         next = this.handleChooseTarget(next, action);
       }
     }
+    next = this.ensurePawnSelection(next);
     return next;
+  }
+
+  private handleChoosePawn(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'choose_pawn') return state;
+
+    const playerId =
+      typeof pending.playerId === 'number'
+        ? pending.playerId
+        : state.turn?.currentPlayerId ?? null;
+    if (playerId == null) return state;
+
+    const payload = (action.payload ?? {}) as any;
+    const pawnId = resolvePawnId(
+      payload.pawnId ?? payload.pawn ?? payload.value ?? null,
+    );
+    if (!pawnId) return state;
+
+    const options = Array.isArray(pending?.data?.pawns)
+      ? pending.data.pawns
+      : [];
+    const chosen = options.find((p: any) => resolvePawnId(p?.id) === pawnId);
+    if (!chosen) return state;
+
+    const players = (state.players ?? []).map((p) => {
+      if (p?.id !== playerId) return p;
+      return {
+        ...p,
+        pawn: chosen.id,
+        pawnLabel: String(chosen.title ?? chosen.id ?? ''),
+      };
+    });
+
+    const next: GameStateEntity = {
+      ...state,
+      players,
+      pending: null,
+    };
+
+    const label = chosen.title ?? chosen.id ?? 'pion';
+    return this.core.appendLog(
+      next,
+      `[Frousse Party] ${this.playerName(next, playerId)} choisit le pion: ${label}.`,
+    );
+  }
+
+  private ensurePawnSelection(state: GameStateEntity): GameStateEntity {
+    if (state.pending) return state;
+    const players = Array.isArray(state.players) ? state.players : [];
+    const pending = buildPawnSelectionPending(players, this.getMeta(state));
+    if (!pending) return state;
+    return { ...state, pending };
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {

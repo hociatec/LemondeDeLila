@@ -8,6 +8,7 @@ import {
   FROUSSE_GAME,
   type FrousseActionType,
 } from '../definitions/frousse.definition';
+import { resolvePawnId } from '../pawns.utils';
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -21,6 +22,18 @@ export function getAvailableActions(
     if (pending.playerId !== playerId) return [];
     if (pending.type === 'draw') {
       return [{ type: 'draw', payload: {} }];
+    }
+    if (pending.type === 'choose_pawn') {
+      const options = Array.isArray(pending?.data?.pawns)
+        ? pending.data.pawns
+        : [];
+      return options
+        .map((p) => resolvePawnId(p?.id))
+        .filter((id): id is string => Boolean(id))
+        .map((pawnId) => ({
+          type: 'choose_pawn',
+          payload: { pawnId },
+        }));
     }
     if (pending.type === 'choose_target') {
       const targets: Array<{ targetPlayerId: number }> = Array.isArray(
@@ -81,6 +94,31 @@ export function validateAction(
         });
       }
       return { type: 'draw', payload: {} };
+    }
+    if (pending.type === 'choose_pawn') {
+      if (type !== 'choose_pawn') {
+        throw new PlayerActionError('Choix invalide.', {
+          gameType: 'frousse-party',
+        });
+      }
+      const payload = (action.payload ?? {}) as any;
+      const rawPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
+      const resolvedId = resolvePawnId(rawPawn);
+      const options = Array.isArray(pending?.data?.pawns)
+        ? pending.data.pawns
+        : [];
+      const chosen =
+        resolvedId != null
+          ? options.find((p: any) => resolvePawnId(p?.id) === resolvedId)
+          : null;
+      if (!chosen) {
+        throw new GameValidationError('Pion invalide.', {
+          gameType: 'frousse-party',
+          pawnId: rawPawn,
+        });
+      }
+      const targetPawnId = resolvePawnId(chosen.id);
+      return { type: 'choose_pawn', payload: { pawnId: targetPawnId } };
     }
     if (pending.type === 'choose_target') {
       if (type !== 'choose_target') {

@@ -15,13 +15,13 @@ export function getAvailableActions(
   playerId: number,
 ): GameSingleActionDto[] {
   const status = String(state.status ?? '').toLowerCase();
-  const pending = state.pending as any;
-  if (pending && pending.type === 'pick_pawn') {
-    if (pending.playerId !== playerId) return [];
-    const providedChoices = Array.isArray(pending.choices)
-      ? pending.choices
-      : Array.isArray(pending?.data?.choices)
-        ? pending.data.choices
+  const pawnPending = state.pending as any;
+  if (pawnPending && pawnPending.type === 'pick_pawn') {
+    if (pawnPending.playerId !== playerId) return [];
+    const providedChoices = Array.isArray(pawnPending.choices)
+      ? pawnPending.choices
+      : Array.isArray(pawnPending?.data?.choices)
+        ? pawnPending.data.choices
         : [];
     return providedChoices
       .map((choice) => String(choice ?? '').trim())
@@ -43,17 +43,17 @@ export function getAvailableActions(
     }));
   }
 
-  const pending = state.pending as any;
-  if (pending) {
-    if (pending.playerId !== playerId) return [];
-    if (pending.type === 'draw') {
+  const activePending = state.pending as any;
+  if (activePending) {
+    if (activePending.playerId !== playerId) return [];
+    if (activePending.type === 'draw') {
       return [{ type: 'draw', payload: {} }];
     }
-    if (pending.type === 'choose_target') {
+    if (activePending.type === 'choose_target') {
       const targets: Array<{ targetPlayerId: number }> = Array.isArray(
-        pending?.data?.targets,
+        activePending?.data?.targets,
       )
-        ? pending.data.targets
+        ? activePending.data.targets
         : [];
       return targets.map((t) => ({
         type: 'choose_target',
@@ -90,9 +90,9 @@ export function validateAction(
     });
   }
 
-  const pending = state.pending as any;
-  if (pending && pending.type === 'pick_pawn') {
-    if (pending.playerId !== actorId) {
+  const pickPawnPending = state.pending as any;
+  if (pickPawnPending && pickPawnPending.type === 'pick_pawn') {
+    if (pickPawnPending.playerId !== actorId) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
         gameType: 'en-attendant-minuit',
       });
@@ -102,10 +102,10 @@ export function validateAction(
         gameType: 'en-attendant-minuit',
       });
     }
-    const providedChoices = Array.isArray(pending.choices)
-      ? pending.choices
-      : Array.isArray(pending?.data?.choices)
-        ? pending.data.choices
+    const providedChoices = Array.isArray(pickPawnPending.choices)
+      ? pickPawnPending.choices
+      : Array.isArray(pickPawnPending?.data?.choices)
+        ? pickPawnPending.data.choices
         : [];
     const normalizedChoices = new Set(
       providedChoices.map((choice) => String(choice ?? '').trim()),
@@ -150,14 +150,14 @@ export function validateAction(
     return { type: 'answer_quiz', payload: { answer } };
   }
 
-  const pending = state.pending as any;
-  if (pending) {
-    if (pending.playerId !== actorId) {
+  const actionPending = state.pending as any;
+  if (actionPending) {
+    if (actionPending.playerId !== actorId) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
         gameType: 'en-attendant-minuit',
       });
     }
-    if (pending.type === 'draw') {
+    if (actionPending.type === 'draw') {
       if (type !== 'draw') {
         throw new PlayerActionError('Action non disponible.', {
           gameType: 'en-attendant-minuit',
@@ -166,16 +166,16 @@ export function validateAction(
       }
       return { type: 'draw', payload: {} };
     }
-    if (pending.type === 'choose_target') {
+    if (actionPending.type === 'choose_target') {
       if (type !== 'choose_target') {
         throw new PlayerActionError('Choix invalide.', {
           gameType: 'en-attendant-minuit',
         });
       }
       const targets: Array<{ targetPlayerId: number }> = Array.isArray(
-        pending?.data?.targets,
+        actionPending?.data?.targets,
       )
-        ? pending.data.targets
+        ? actionPending.data.targets
         : [];
       const targetPlayerId = Number((action.payload as any)?.targetPlayerId);
       if (
