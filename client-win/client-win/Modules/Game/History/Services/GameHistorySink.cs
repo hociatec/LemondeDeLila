@@ -16,6 +16,7 @@ public sealed class GameHistorySink : IGameHistorySink
     private readonly GameHistoryViewModel _history;
     private readonly IAnnouncementService? _announcements;
     private readonly Dictionary<string, DateTime> _lastAnnouncements = new(StringComparer.OrdinalIgnoreCase);
+    private string? _lastAddedEntry;
 
     public GameHistorySink(Dispatcher dispatcher, GameHistoryViewModel history, IAnnouncementService? announcements = null)
     {
@@ -51,7 +52,13 @@ public sealed class GameHistorySink : IGameHistorySink
                     continue;
                 }
 
+                if (string.Equals(_lastAddedEntry, cleaned, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 _history.Entries.Add(cleaned);
+                _lastAddedEntry = cleaned;
 
                 TryAnnounce(
                     cleaned,

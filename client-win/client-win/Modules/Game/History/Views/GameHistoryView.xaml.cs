@@ -130,8 +130,19 @@ public partial class GameHistoryView : UserControl
 
     private void AppendEntries(IEnumerable<string> entries)
     {
-        foreach (var entry in entries.Where(s => !string.IsNullOrWhiteSpace(s)))
+        foreach (var entry in entries)
         {
+            if (entry == GameHistoryMessageSplitter.BlankLineToken)
+            {
+                HistoryViewer.Document.Blocks.Add(new Paragraph(new Run(" ")));
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(entry))
+            {
+                continue;
+            }
+
             HistoryViewer.Document.Blocks.Add(new Paragraph(new Run(entry)));
         }
 
@@ -164,8 +175,19 @@ public partial class GameHistoryView : UserControl
         }
 
         HistoryViewer.Document.Blocks.Clear();
-        foreach (var entry in _viewModel.Entries.Where(s => !string.IsNullOrEmpty(s)))
+        foreach (var entry in _viewModel.Entries)
         {
+            if (entry == GameHistoryMessageSplitter.BlankLineToken)
+            {
+                HistoryViewer.Document.Blocks.Add(new Paragraph(new Run(" ")));
+                continue;
+            }
+
+            if (string.IsNullOrEmpty(entry))
+            {
+                continue;
+            }
+
             HistoryViewer.Document.Blocks.Add(new Paragraph(new Run(entry)));
         }
 
@@ -222,6 +244,7 @@ public partial class GameHistoryView : UserControl
         }
 
         var added = entries
+            .Where(s => !string.Equals(s, GameHistoryMessageSplitter.BlankLineToken, StringComparison.Ordinal))
             .Select(s => (s ?? string.Empty).Trim())
             .Where(s => !string.IsNullOrWhiteSpace(s))
             .ToList();

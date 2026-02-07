@@ -446,6 +446,16 @@ export class FrousseActionService {
     let meta = this.getMeta(next);
     const text = card.text;
 
+    // Bonus 13: mirror to exit (jump 6).
+    if (/Bonus/i.test(card.category) && card.localNumber === 13) {
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, playerId)} saute 6 cases.`,
+      );
+      next = this.move(next, playerId, 6);
+      return this.applyLanding(next, playerId);
+    }
+
     // Ghost random swap (admin: random target).
     if (
       /Fantôme/i.test(card.category) &&
