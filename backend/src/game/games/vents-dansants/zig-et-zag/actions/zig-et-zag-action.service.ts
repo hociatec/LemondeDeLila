@@ -3,6 +3,7 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+import { RandomService } from '../../../../modules/random/services/random.service';
 import type {
   ZigEtZagMetadata,
   ZigEtZagRoundState,
@@ -11,19 +12,19 @@ import type {
 import { ZIG_ET_ZAG_CARD_BY_ID, ZIG_ET_ZAG_TOTAL_CARDS } from '../model/zig-et-zag-cards';
 import {
   buildInitialRoundState,
+  getPlayerHand,
   getPlayerHandSize,
   playerHasCard,
   removeCardFromHand,
   isCardAllowed,
 } from '../round-state.helper';
 
-type ZigEtZagActionType = 'select_card';
-
 @Injectable()
 export class ZigEtZagActionService {
   constructor(
     private readonly core: GameCoreService,
     private readonly turns: TurnFlowService,
+    private readonly random: RandomService,
   ) {}
 
   applyActions(
@@ -33,8 +34,14 @@ export class ZigEtZagActionService {
     let next = state;
     for (const action of actions ?? []) {
       const type = String(action?.type ?? '').trim().toLowerCase();
-      if (type !== 'select_card') continue;
-      next = this.handleSelectCard(next, action);
+      if (type === 'select_card') {
+        next = this.handleSelectCard(next, action);
+        continue;
+      }
+      if (type === 'draw_card') {
+        next = this.handleDrawCard(next, action);
+        continue;
+      }
     }
     return next;
   }
@@ -62,9 +69,9 @@ export class ZigEtZagActionService {
 
     const ensured = this.ensureRoundState(state, players);
     state = ensured.state;
-    let meta = this.getMeta(state);
-    const round = meta.roundState;
-    if (!round || !round.waitingPlayers.includes(actorId)) {
+    const meta = this.getMeta(state);
+    const round = ensured.round;
+    if (!round || !this.isWaitingPlayer(round, actorId)) {
       return state;
     }
     if (!playerHasCard(meta, actorId, cardId)) {
@@ -74,32 +81,48 @@ export class ZigEtZagActionService {
       return state;
     }
 
-    const { metadata: drainedMeta, removed } = removeCardFromHand(
-      meta,
-      actorId,
-      cardId,
-    );
-    if (!removed) {
+    return this.playCardWithId(state, players, meta, round, actorId, cardId);
+  }
+
+  private handleDrawCard(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    const actorId = this.getActorId(action, state);
+    if (actorId == null) {
       return state;
     }
-    meta = drainedMeta;
-
-    const nextRound = this.recordPlayedCard(round, actorId, cardId);
-    nextRound.waitingPlayers = (nextRound.waitingPlayers ?? []).filter(
-      (pid) => pid !== actorId,
-    );
-
-    state = this.setRoundState(state, meta, nextRound);
-    state = this.setCurrentPlayer(
-      state,
-      this.pickNextCurrentPlayerId(players, nextRound, actorId),
-    );
-
-    if (!nextRound.waitingPlayers.length) {
-      state = this.finalizeStage(state, players);
+    if (String(state.status ?? '').toLowerCase() !== 'started') {
+      return state;
     }
 
-    return state;
+    const players = Array.isArray(state.players) ? state.players : [];
+    if (!players.length) {
+      return state;
+    }
+
+    const ensured = this.ensureRoundState(state, players);
+    state = ensured.state;
+    const meta = this.getMeta(state);
+    const round = ensured.round;
+    if (!round || !this.isWaitingPlayer(round, actorId)) {
+      return state;
+    }
+
+    const hand = getPlayerHand(meta, actorId);
+    if (!hand.length) {
+      return state;
+    }
+
+    const rngMeta = meta.rng ?? {};
+    const { index, meta: nextRng } = this.random.pickIndex(rngMeta, hand.length);
+    const cardId = hand[index];
+    if (!cardId) {
+      return state;
+    }
+    const metaWithRng = { ...meta, rng: nextRng };
+
+    return this.playCardWithId(state, players, metaWithRng, round, actorId, cardId);
   }
 
   private finalizeStage(
@@ -243,7 +266,8 @@ export class ZigEtZagActionService {
       (play) =>
         round.tiedPlayers.includes(play.playerId) &&
         !play.lostByNoCard &&
-        play.faceUpCard,
+        play.faceUpCard &&
+        !play.invalidJoker,
     );
     const results = faceUpPlays
       .map((play) => {
@@ -381,8 +405,8 @@ export class ZigEtZagActionService {
       })
       .filter((message): message is string => Boolean(message));
 
-    if (revealMessages.length) {
-      next = this.core.appendLog(next, revealMessages.join(' '));
+    for (const message of revealMessages) {
+      next = this.core.appendLog(next, message);
     }
 
     for (const message of summary.battleLog ?? []) {
@@ -530,6 +554,61 @@ export class ZigEtZagActionService {
       ...round,
       plays,
     };
+  }
+
+  private playCardWithId(
+    state: GameStateEntity,
+    players: GameStateEntity['players'],
+    meta: ZigEtZagMetadata,
+    round: ZigEtZagRoundState,
+    playerId: number,
+    cardId: string,
+  ): GameStateEntity {
+    const { metadata: drainedMeta, removed } = removeCardFromHand(
+      meta,
+      playerId,
+      cardId,
+    );
+    if (!removed) {
+      return state;
+    }
+
+    const nextRound = this.recordPlayedCard(round, playerId, cardId);
+    nextRound.waitingPlayers = this.normalizeWaitingPlayers(nextRound).filter(
+      (pid) => pid !== playerId,
+    );
+
+    let nextState = this.setRoundState(state, drainedMeta, nextRound);
+    nextState = this.setCurrentPlayer(
+      nextState,
+      this.pickNextCurrentPlayerId(players, nextRound, playerId),
+    );
+
+    if (!nextRound.waitingPlayers.length) {
+      nextState = this.finalizeStage(nextState, players);
+    }
+
+    return nextState;
+  }
+
+  private isWaitingPlayer(
+    round: ZigEtZagRoundState,
+    playerId: number,
+  ): boolean {
+    return this.normalizeWaitingPlayers(round).includes(playerId);
+  }
+
+  private normalizeWaitingPlayers(round: ZigEtZagRoundState): number[] {
+    return (round.waitingPlayers ?? [])
+      .map((value: any) => {
+        if (typeof value === 'number' && Number.isFinite(value)) return value;
+        if (typeof value === 'string') {
+          const n = Number(value.trim());
+          return Number.isFinite(n) ? n : null;
+        }
+        return null;
+      })
+      .filter((value): value is number => typeof value === 'number');
   }
 
   private collectTableCards(plays: ZigEtZagRoundState['plays']): string[] {

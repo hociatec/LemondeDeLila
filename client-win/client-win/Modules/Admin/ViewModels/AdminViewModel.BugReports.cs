@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using client_win.Modules.Admin.Dtos;
 
@@ -247,13 +248,14 @@ public sealed partial class AdminViewModel
             AdminBugReportStatus.Refused => "Statut: Refus\u00E9\n",
             _ => string.Empty
         };
+        var normalizedReportContent = NormalizeReportText(report.Content);
         Details =
             statusLine +
             $"Par: {report.CreatedByUsername} (id {report.CreatedByUserId})\n" +
             $"Créé: {report.CreatedAt}\n" +
             $"Maj: {report.UpdatedAt}\n" +
             $"Sujet: {report.Subject}\n\n" +
-            $"{report.Content}";
+            normalizedReportContent;
 
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
@@ -348,14 +350,19 @@ public sealed partial class AdminViewModel
             $"Créé: {report.CreatedAt}\n" +
             $"Maj: {report.UpdatedAt}\n" +
             $"Sujet: {report.Subject}\n\n" +
-            $"{report.Content}";
+            NormalizeReportText(report.Content);
 
         var commentsBlock = _loadedBugReportComments.Length == 0
             ? "Aucun commentaire."
             : string.Join(
                 "\n\n---\n\n",
                 _loadedBugReportComments.Select(c =>
-                    $"[{c.CreatedAt}] {c.CreatedByUsername} (id {c.CreatedByUserId})\n{c.Content}".TrimEnd()));
+                {
+                    var normalized = NormalizeReportText(c.Content);
+                    return
+                        $"[{c.CreatedAt}] {c.CreatedByUsername} (id {c.CreatedByUserId})\n{normalized}"
+                            .TrimEnd();
+                }));
 
         Details = header + "\n\n====================\nCommentaires\n\n" + commentsBlock;
 
@@ -423,7 +430,12 @@ public sealed partial class AdminViewModel
         {
             var lines = _loadedBugReportComments
                 .Select(c =>
-                    $"[{c.CreatedAt}] {c.CreatedByUsername} (id {c.CreatedByUserId})\n{c.Content}".TrimEnd())
+                {
+                    var normalized = NormalizeReportText(c.Content);
+                    return
+                        $"[{c.CreatedAt}] {c.CreatedByUsername} (id {c.CreatedByUserId})\n{normalized}"
+                            .TrimEnd();
+                })
                 .ToArray();
             Details = $"Sujet: {subject}\n\n" + string.Join("\n\n---\n\n", lines);
         }
@@ -644,5 +656,20 @@ public sealed partial class AdminViewModel
         {
             IsBusy = false;
         }
+    }
+
+    private static string NormalizeReportText(string? rawText)
+    {
+        if (string.IsNullOrWhiteSpace(rawText))
+        {
+            return string.Empty;
+        }
+
+        var normalized = rawText
+            .Replace("\r\n", "\n")
+            .Replace("\r", "\n");
+
+        normalized = Regex.Replace(normalized, "\n{3,}", "\n\n");
+        return normalized.TrimEnd('\n');
     }
 }

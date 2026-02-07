@@ -27,7 +27,6 @@ import { GameContentLoaderService } from '../../../../engine/services/game-conte
 @Injectable()
 export class PanierExpressSetupService {
   private static readonly MAX_STAND_ITEMS = 3;
-  private static readonly MAX_SHOPPING_LIST_ITEMS = 3;
 
   constructor(
     private readonly decks: DeckManagerService,
@@ -213,12 +212,6 @@ export class PanierExpressSetupService {
       ),
     );
     pool = this.setDeck(pool, 'quizzes', this.buildQuizDeck(seed));
-    pool = this.setDeck(
-      pool,
-      'shoppingLists',
-      this.buildShoppingListDeck(seed),
-    );
-
     const standMap = this.standCourseMap();
     const standIds = new Set<string>();
     this.buildTiles()
@@ -236,25 +229,6 @@ export class PanierExpressSetupService {
     });
 
     return pool;
-  }
-
-  buildShoppingListDeck(seed?: number | null): string[][] {
-    const lists = this.loadShoppingLists().lists ?? [];
-    const normalized = lists
-      .map((entry) =>
-        Array.isArray(entry)
-          ? entry
-              .map((v) => String(v))
-              .map((v) => v.trim())
-              .filter((v) => v.length > 0)
-              .slice(0, PanierExpressSetupService.MAX_SHOPPING_LIST_ITEMS)
-          : [],
-      )
-      .filter((entry) => entry.length > 0);
-    if (seed != null) {
-      return seededShuffle(normalized, seed, 'panier-express:shoppingLists');
-    }
-    return this.decks.shuffle(normalized);
   }
 
   buildQuizDeck(seed?: number | null): Array<{

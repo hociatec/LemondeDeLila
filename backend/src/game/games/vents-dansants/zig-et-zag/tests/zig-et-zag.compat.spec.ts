@@ -7,10 +7,11 @@ import { ZigEtZagSetupService } from '../setup/zig-et-zag-setup.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 
 describe('ZigEtZag compat', () => {
-  it('exposes select_card actions even if waitingPlayers ids are serialized as strings', async () => {
+  it('exposes draw_card actions even if waitingPlayers ids are serialized as strings', async () => {
     const service = new ZigEtZagActionService(
       new GameCoreService(),
       new TurnFlowService(new TurnService()),
+      new RandomService(),
     );
 
     const state: any = {
@@ -48,14 +49,14 @@ describe('ZigEtZag compat', () => {
 
     const actions = Rulebook.getAvailableActions(state, 2);
     expect(actions.length).toBeGreaterThan(0);
-    expect(actions.every((a: any) => String(a?.type) === 'select_card')).toBe(true);
+    expect(actions.every((a: any) => String(a?.type) === 'draw_card')).toBe(true);
 
     // The service should be able to apply the action even if ids are strings in the roundState.
     const after: any = service.applyActions(state, [
-      { type: 'select_card', payload: { cardId: 'zig-2' }, meta: { actorId: 2 } },
+      { type: 'draw_card', payload: {}, meta: { actorId: 2 } },
     ] as any);
 
-    expect((after.metadata?.playerDecks?.['2'] ?? []).includes('zig-2')).toBe(false);
+    expect((after.metadata?.playerDecks?.['2'] ?? []).length).toBe(0);
   });
 
   it('prefers a waiting bot as currentPlayerId on hydrateInitialState (for bot scheduling)', async () => {

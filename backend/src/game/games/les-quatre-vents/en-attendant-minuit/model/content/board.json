@@ -1,397 +1,397 @@
-ï»¿{
-    "version":  1,
-    "tiles":  [
-                  {
-                      "n":  1,
-                      "title":  "DÃ©part â€“ Le Village du PÃ¨re NoÃ«l",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  2,
-                      "title":  "neutre â€“ ForÃªt de sapins",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  3,
-                      "title":  "Carte NoÃ«l",
-                      "type":  "card",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  4,
-                      "title":  "Avance â€“ TraÃ®neau express",
-                      "type":  "move",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  5,
-                      "title":  "neutre â€“ Boulangerie des lutins",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  6,
-                      "title":  "Recule â€“ Neige fondue",
-                      "type":  "move",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  7,
-                      "title":  "Carte NoÃ«l",
-                      "type":  "card",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  8,
-                      "title":  "Ã‰vÃ©nement â€“ Lettre Ã©garÃ©e",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  9,
-                      "title":  "neutre â€“ MarchÃ© de NoÃ«l",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  10,
-                      "title":  "neutre â€“ Lac gelÃ©",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  11,
-                      "title":  "Carte NoÃ«l",
-                      "type":  "card",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  12,
-                      "title":  "neutre â€“ Chalet dÃ©corÃ©",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  13,
-                      "title":  "Ã‰vÃ©nement â€“ Nez rouge du renne",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  14,
-                      "title":  "Carte NoÃ«l",
-                      "type":  "card",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  15,
-                      "title":  "neutre â€“ Fabrique de jouets",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  16,
-                      "title":  "neutre â€“ Pont de givre",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  17,
-                      "title":  "Carte NoÃ«l",
-                      "type":  "card",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  18,
-                      "title":  "neutre â€“ Montagne enneigÃ©e",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  19,
-                      "title":  "Recule â€“ Boule de neige gÃ©ante",
-                      "type":  "move",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  20,
-                      "title":  "Ã‰vÃ©nement â€“ Tu as bien chantÃ©",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  21,
-                      "title":  "neutre â€“ Hotte oubliÃ©e",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  22,
-                      "title":  "Carte NoÃ«l",
-                      "type":  "card",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  23,
-                      "title":  "neutre â€“ ForÃªt enchantÃ©e",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  24,
-                      "title":  "neutre â€“ Troupeau de rennes",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  25,
-                      "title":  "Carte NoÃ«l",
-                      "type":  "card",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  26,
-                      "title":  "Passe ton tour â€“ Grippe du bonhomme de neige",
-                      "type":  "skip",
-                      "delta":  0,
-                      "skipTurns":  1
-                  },
-                  {
-                      "n":  27,
-                      "title":  "Avance â€“ Bonnet chanceux",
-                      "type":  "move",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  28,
-                      "title":  "neutre â€“ Atelier des dÃ©corations",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  29,
-                      "title":  "Carte NoÃ«l",
-                      "type":  "card",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  30,
-                      "title":  "Ã‰vÃ©nement â€“ Chocolat chaud brÃ»lant",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  31,
-                      "title":  "neutre â€“ Mur des souhaits",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  32,
-                      "title":  "Carte NoÃ«l",
-                      "type":  "card",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  33,
-                      "title":  "Recule â€“ Lutin farceur",
-                      "type":  "move",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  34,
-                      "title":  "neutre â€“ Sous les guirlandes",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  35,
-                      "title":  "neutre â€“ Boule cassÃ©e",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  36,
-                      "title":  "Carte NoÃ«l",
-                      "type":  "card",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  37,
-                      "title":  "Avance â€“ Chanson en chÅ“ur",
-                      "type":  "move",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  38,
-                      "title":  "neutre â€“ Rue enneigÃ©e",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  39,
-                      "title":  "Carte NoÃ«l",
-                      "type":  "card",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  40,
-                      "title":  "Ã‰vÃ©nement â€“ Panne du traÃ®neau",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  41,
-                      "title":  "neutre â€“ BoÃ®te Ã  lettres magique",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  42,
-                      "title":  "Carte NoÃ«l",
-                      "type":  "card",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  43,
-                      "title":  "neutre â€“ Casse-noisette gÃ©ant",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  44,
-                      "title":  "neutre â€“ Cadeau trop lourd",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  45,
-                      "title":  "Recule â€“ Chute dans la cheminÃ©e",
-                      "type":  "move",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  46,
-                      "title":  "Carte NoÃ«l",
-                      "type":  "card",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  47,
-                      "title":  "neutre â€“ DerniÃ¨re ligne droite",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  48,
-                      "title":  "Avance â€“ Lâ€™esprit de NoÃ«l vous guide",
-                      "type":  "move",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  49,
-                      "title":  "Carte NoÃ«l",
-                      "type":  "card",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  50,
-                      "title":  "Ã‰vÃ©nement â€“ Trop de sucre dâ€™orge",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  51,
-                      "title":  "neutre â€“ Devant le grand sapin",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  52,
-                      "title":  "Carte NoÃ«l",
-                      "type":  "card",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  53,
-                      "title":  "neutre â€“ Les cloches de minuit",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  54,
-                      "title":  "neutre â€“ La neige scintillante",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  55,
-                      "title":  "neutre â€“ Le seuil de la fÃªte",
-                      "type":  "neutral",
-                      "delta":  0,
-                      "skipTurns":  0
-                  },
-                  {
-                      "n":  56,
-                      "title":  "ArrivÃ©e â€“ La Grande FÃªte de NoÃ«l",
-                      "type":  "finish",
-                      "delta":  0,
-                      "skipTurns":  0
-                  }
-              ]
+{
+    "version": 1,
+    "tiles": [
+        {
+            "n": 1,
+            "title": "Départ - Le Village du Père Noël",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 2,
+            "title": "neutre - Forêt de sapins",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 3,
+            "title": "Carte Noël",
+            "type": "card",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 4,
+            "title": "Avance - Traîneau express",
+            "type": "move",
+            "delta": 2,
+            "skipTurns": 0
+        },
+        {
+            "n": 5,
+            "title": "neutre - Boulangerie des lutins",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 6,
+            "title": "Recule - Neige fondue",
+            "type": "move",
+            "delta": -1,
+            "skipTurns": 0
+        },
+        {
+            "n": 7,
+            "title": "Carte Noël",
+            "type": "card",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 8,
+            "title": "Événement - Lettre égarée",
+            "type": "skip",
+            "delta": 0,
+            "skipTurns": 1
+        },
+        {
+            "n": 9,
+            "title": "neutre - Marché de Noël",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 10,
+            "title": "neutre - Lac gelé",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 11,
+            "title": "Carte Noël",
+            "type": "card",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 12,
+            "title": "neutre - Chalet décoré",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 13,
+            "title": "Événement - Nez rouge du renne",
+            "type": "skip",
+            "delta": 0,
+            "skipTurns": 1
+        },
+        {
+            "n": 14,
+            "title": "Carte Noël",
+            "type": "card",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 15,
+            "title": "neutre - Fabrique de jouets",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 16,
+            "title": "neutre - Pont de givre",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 17,
+            "title": "Carte Noël",
+            "type": "card",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 18,
+            "title": "neutre - Montagne enneigée",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 19,
+            "title": "Recule - Boule de neige géante",
+            "type": "move",
+            "delta": -3,
+            "skipTurns": 0
+        },
+        {
+            "n": 20,
+            "title": "Événement - Vous avez bien chanté",
+            "type": "move",
+            "delta": 2,
+            "skipTurns": 0
+        },
+        {
+            "n": 21,
+            "title": "neutre - Hotte oubliée",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 22,
+            "title": "Carte Noël",
+            "type": "card",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 23,
+            "title": "neutre - Forêt enchantée",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 24,
+            "title": "neutre - Troupeau de rennes",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 25,
+            "title": "Carte Noël",
+            "type": "card",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 26,
+            "title": "Passe ton tour - Grippe du bonhomme de neige",
+            "type": "skip",
+            "delta": 0,
+            "skipTurns": 1
+        },
+        {
+            "n": 27,
+            "title": "Avance - Bonnet chanceux",
+            "type": "move",
+            "delta": 1,
+            "skipTurns": 0
+        },
+        {
+            "n": 28,
+            "title": "neutre - Atelier des décorations",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 29,
+            "title": "Carte Noël",
+            "type": "card",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 30,
+            "title": "Événement - Chocolat chaud brûlant",
+            "type": "move",
+            "delta": -1,
+            "skipTurns": 0
+        },
+        {
+            "n": 31,
+            "title": "neutre - Mur des souhaits",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 32,
+            "title": "Carte Noël",
+            "type": "card",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 33,
+            "title": "Recule - Lutin farceur",
+            "type": "move",
+            "delta": -2,
+            "skipTurns": 0
+        },
+        {
+            "n": 34,
+            "title": "neutre - Sous les guirlandes",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 35,
+            "title": "neutre - Boule cassée",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 36,
+            "title": "Carte Noël",
+            "type": "card",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 37,
+            "title": "Avance - Chanson en choeur",
+            "type": "move",
+            "delta": 2,
+            "skipTurns": 0
+        },
+        {
+            "n": 38,
+            "title": "neutre - Rue enneigée",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 39,
+            "title": "Carte Noël",
+            "type": "card",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 40,
+            "title": "Événement - Panne du traîneau",
+            "type": "skip",
+            "delta": 0,
+            "skipTurns": 1
+        },
+        {
+            "n": 41,
+            "title": "neutre - Boîte à lettres magique",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 42,
+            "title": "Carte Noël",
+            "type": "card",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 43,
+            "title": "neutre - Casse-noisette géant",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 44,
+            "title": "neutre - Cadeau trop lourd",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 45,
+            "title": "Recule - Chute dans la cheminée",
+            "type": "move",
+            "delta": -1,
+            "skipTurns": 0
+        },
+        {
+            "n": 46,
+            "title": "Carte Noël",
+            "type": "card",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 47,
+            "title": "neutre - Dernière ligne droite",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 48,
+            "title": "Avance - L’esprit de Noël vous guide",
+            "type": "move",
+            "delta": 1,
+            "skipTurns": 0
+        },
+        {
+            "n": 49,
+            "title": "Carte Noël",
+            "type": "card",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 50,
+            "title": "Événement - Trop de sucre d’orge",
+            "type": "skip",
+            "delta": 0,
+            "skipTurns": 1
+        },
+        {
+            "n": 51,
+            "title": "neutre - Devant le grand sapin",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 52,
+            "title": "Carte Noël",
+            "type": "card",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 53,
+            "title": "neutre - Les cloches de minuit",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 54,
+            "title": "neutre - La neige scintillante",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 55,
+            "title": "neutre - Le seuil de la fête",
+            "type": "neutral",
+            "delta": 0,
+            "skipTurns": 0
+        },
+        {
+            "n": 56,
+            "title": "Arrivée - La Grande Fête de Noël",
+            "type": "finish",
+            "delta": 0,
+            "skipTurns": 0
+        }
+    ]
 }

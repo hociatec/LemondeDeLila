@@ -1125,9 +1125,22 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       }
 
       const meta = this.getMeta(state);
-      if (!meta.currentQuestion) {
-        return state.pending ? { ...state, pending: null } : state;
+    if (!meta.currentQuestion) {
+      const currentId = state.turn?.currentPlayerId ?? null;
+      const currentPlayer =
+        players.find((p: any) => p?.id === currentId) ?? null;
+      if (
+        !state.pending &&
+        currentPlayer?.isBot &&
+        typeof currentId === 'number'
+      ) {
+        return {
+          ...state,
+          pending: { type: 'draw', playerId: currentId, blocking: true } as any,
+        };
       }
+      return state.pending ? { ...state, pending: null } : state;
+    }
 
       const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<number, number>;
       const players = Array.isArray(state.players) ? state.players : [];
@@ -1151,6 +1164,19 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
   private buildPendingForUser(state: GameStateEntity, userId: number): any {
     const meta = this.getMeta(state);
     const currentId = state.turn?.currentPlayerId ?? null;
+
+    const pendingState = state.pending as any;
+    if (
+      !meta.currentQuestion &&
+      pendingState?.type === 'draw' &&
+      pendingState.playerId === userId
+    ) {
+      return {
+        type: 'draw',
+        playerId: userId,
+        label: "Piochez une question (Espace).",
+      };
+    }
 
     const promptOwnerId =
       typeof (meta as any).promptOwnerId === 'number' ? (meta as any).promptOwnerId : null;

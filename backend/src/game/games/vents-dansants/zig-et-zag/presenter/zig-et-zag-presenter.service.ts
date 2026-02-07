@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+import type {
+  GameSingleActionDto,
+  GameStateWithActions,
+} from '../../../../engine/dto/game-action.dto';
 import * as Rulebook from '../rulebook/rulebook';
 import { ZIG_ET_ZAG_GAME } from '../definitions/game.definition';
 import type { ZigEtZagMetadata } from '../model/zig-et-zag-state.entity';
@@ -58,10 +61,7 @@ export class ZigEtZagPresenterService {
       },
       actions: actions.map((action) => ({
         type: action.type,
-        label: `Jouer ${
-          ZIG_ET_ZAG_CARD_BY_ID[action.payload?.cardId as string]?.name ??
-          'une carte'
-        }`,
+        label: this.actionLabel(action),
         payload: action.payload ?? {},
       })),
       extras: {
@@ -74,5 +74,18 @@ export class ZigEtZagPresenterService {
       },
       pending: state.pending ?? null,
     } as any;
+  }
+
+  private actionLabel(action: GameSingleActionDto): string {
+    const type = String(action.type ?? '').toLowerCase();
+    if (type === 'draw_card') {
+      return 'Piocher une carte';
+    }
+    if (type === 'select_card') {
+      const cardId = String((action.payload as any)?.cardId ?? '').trim();
+      const definition = ZIG_ET_ZAG_CARD_BY_ID[cardId];
+      return `Jouer ${definition?.name ?? 'une carte'}`;
+    }
+    return 'Jouer une carte';
   }
 }

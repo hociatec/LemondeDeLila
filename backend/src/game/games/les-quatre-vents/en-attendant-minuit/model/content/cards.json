@@ -413,7 +413,7 @@
                                     "a) Frank Sinatra",
                                     "*b) Bing Crosby",
                                     "c) Dean Martin",
-                                    "Si vous choisissez la bonne réponse, avancez de 2 cases. ✅"
+                                    "Si vous choisissez la bonne réponse, avancez de deux cases."
                                 ]
                   },
                   {
@@ -457,7 +457,7 @@
                   },
                   {
                       "id":  47,
-                      "title":  "Guillaume, prends ...",
+                      "title":  "Guillaume, prends 🟥🟥🟥",
                       "category":  "Chants de Noël",
                       "kind":  "Chant de Noël",
                       "lines":  [
@@ -608,7 +608,7 @@
                                     "a) Partager ses jouets avec quelqu’un",
                                     "b) Aider un voisin à décorer sa maison",
                                     "c) Offrir un sourire ou un mot gentil à quelqu’un",
-                                    "Les trois réponses sont juste, peut importe laquelle, avancez de deux cases."
+                                    "Les trois réponses sont justes ; peu importe laquelle, avancez de trois cases."
                                 ]
                   },
                   {

@@ -158,6 +158,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
       playerViews: sanitizedViews,
       players,
       revealInventory: reveal,
+      fullPlayerViews: playerViews,
     });
   }
 
@@ -354,6 +355,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
       playerViews: PanierExpressPlayerView[];
       players: PanierExpressPlayerSummary[];
       revealInventory: Record<number, number>;
+      fullPlayerViews: PanierExpressPlayerView[];
     },
   ): Record<string, unknown> {
     const baseExtras = this.getBaseExtras(state);
@@ -382,7 +384,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
       }
 
       const max = 12;
-      const lines = params.playerViews.map((p) => {
+      const lines = params.fullPlayerViews.map((p) => {
         const name =
           typeof p.username === 'string' && p.username.trim().length > 0
             ? p.username.trim()

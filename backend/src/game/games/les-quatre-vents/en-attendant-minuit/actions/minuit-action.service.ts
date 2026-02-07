@@ -7,12 +7,22 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+import { MINUIT_GAME } from '../definitions/minuit.definition';
 import type {
   MinuitCard,
   MinuitMetadata,
   MinuitPendingQuiz,
   MinuitTile,
 } from '../model/minuit.types';
+
+const MINUIT_PAWNS = [
+  'Le Lutin',
+  'Le Bonhomme de Neige',
+  'La Fée des Flocons',
+  'Le Père Noël',
+  'Le Renne',
+  "Le Petit Bonhomme en Pain d’Épices",
+];
 
 @Injectable()
 export class MinuitActionService {
@@ -26,9 +36,13 @@ export class MinuitActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
+    let next = this.ensurePawnSelection(state);
     for (const action of actions ?? []) {
       const type = String(action?.type ?? '').trim();
+      if (type === 'pick_pawn') {
+        next = this.handlePickPawn(next, action);
+        continue;
+      }
       if (type === 'roll' || type === 'ROLL_DICE' || type === 'roll_dice') {
         next = this.handleRoll(next);
         continue;
@@ -260,6 +274,167 @@ export class MinuitActionService {
     }
 
     return { ...state, pending: null };
+  }
+
+  private ensurePawnSelection(state: GameStateEntity): GameStateEntity {
+    const status = (state.status ?? '').toLowerCase();
+    if (status === 'started') return state;
+    if (status !== 'starting' && status !== 'setup') return state;
+    const players = Array.isArray(state.players) ? state.players : [];
+    if (players.length < MINUIT_GAME.minPlayers) return state;
+    const needsPawnSelection = players.some(
+      (p) => !!p && !p.isBot && !String(p.pawn ?? '').trim(),
+    );
+    if (needsPawnSelection) {
+      return this.queuePawnSelection(state);
+    }
+    const withBots = this.assignBotPawns(state);
+    const readyPlayers = Array.isArray(withBots.players)
+      ? withBots.players
+      : [];
+    return {
+      ...withBots,
+      status: 'started',
+      turnIndex: readyPlayers.length ? 0 : -1,
+      turn: {
+        currentPlayerId: readyPlayers[0]?.id ?? null,
+        direction: 1,
+      },
+    };
+  }
+
+  private queuePawnSelection(state: GameStateEntity): GameStateEntity {
+    const pending = state.pending as any;
+    if (pending && pending.type === 'pick_pawn') return state;
+    const players = Array.isArray(state.players) ? state.players : [];
+    const missing = players.filter(
+      (p) => !!p && !p.isBot && !String(p.pawn ?? '').trim(),
+    );
+    if (!missing.length) return state;
+    const taken = new Set<string>(
+      players
+        .map((p) => (typeof p?.pawn === 'string' ? String(p.pawn).trim() : ''))
+        .filter((pawn) => pawn.length > 0),
+    );
+    const available = MINUIT_PAWNS.filter((pawn) => !taken.has(pawn));
+    const choices = available.length ? available : [...MINUIT_PAWNS];
+    const chooser = missing[0];
+    return {
+      ...state,
+      pending: {
+        type: 'pick_pawn',
+        playerId: chooser.id,
+        blocking: true,
+        label: 'Choisissez votre pion, puis Entrée.',
+        choices,
+        data: { choices },
+      } as PendingState,
+      turn: {
+        ...(state.turn ?? { currentPlayerId: chooser.id, direction: 1 }),
+        currentPlayerId: chooser.id,
+        direction: 1,
+      },
+    };
+  }
+
+  private assignBotPawns(state: GameStateEntity): GameStateEntity {
+    const players = Array.isArray(state.players) ? state.players : [];
+    const meta = this.getMeta(state);
+    const assigned: Record<number, string> = { ...(meta.pawns ?? {}) };
+    const taken = new Set<string>(
+      Object.values(assigned)
+        .map((pawn) => (typeof pawn === 'string' ? pawn.trim() : ''))
+        .filter((pawn) => pawn.length > 0),
+    );
+    let changed = false;
+    const updatedPlayers = players.map((p) => {
+      if (!p) return p;
+      const pawn = typeof p.pawn === 'string' ? String(p.pawn).trim() : '';
+      if (!p.isBot) {
+        if (pawn.length > 0) {
+          assigned[p.id] = pawn;
+          taken.add(pawn);
+        }
+        return p;
+      }
+      if (pawn.length > 0) {
+        assigned[p.id] = pawn;
+        taken.add(pawn);
+        return p;
+      }
+      const available = MINUIT_PAWNS.find((candidate) => !taken.has(candidate));
+      if (!available) return p;
+      taken.add(available);
+      assigned[p.id] = available;
+      changed = true;
+      return { ...p, pawn: available };
+    });
+    const metaChanged = !this.arePawnsEqual(meta.pawns, assigned);
+    if (!changed && !metaChanged) return state;
+    const nextMeta: MinuitMetadata = { ...meta, pawns: assigned };
+    return {
+      ...state,
+      players: updatedPlayers,
+      metadata: { ...(state.metadata ?? {}), ...nextMeta },
+    };
+  }
+
+  private handlePickPawn(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'pick_pawn') return state;
+    const playerId = Number(pending.playerId);
+    if (!Number.isFinite(playerId)) return state;
+    const requestedPawn = String((action.payload as any)?.pawn ?? '').trim();
+    if (!requestedPawn) return state;
+    const players = Array.isArray(state.players) ? state.players : [];
+    const takenByOthers = new Set<string>(
+      players
+        .filter((p) => p?.id !== playerId)
+        .map((p) => (typeof p?.pawn === 'string' ? p.pawn.trim() : ''))
+        .filter((pawn) => pawn.length > 0),
+    );
+    if (takenByOthers.has(requestedPawn)) return state;
+    const updatedPlayers = players.map((p) =>
+      p?.id === playerId ? { ...p, pawn: requestedPawn } : p,
+    );
+    const meta = this.getMeta(state);
+    const nextPawns: Record<number, string> = {
+      ...(meta.pawns ?? {}),
+      [playerId]: requestedPawn,
+    };
+    let next: GameStateEntity = {
+      ...state,
+      players: updatedPlayers,
+      pending: null,
+      metadata: {
+        ...(state.metadata ?? {}),
+        ...{ ...meta, pawns: nextPawns },
+      },
+    };
+    next = this.core.appendLog(
+      next,
+      `${this.playerName(next, playerId)} choisit le pion ${requestedPawn}.`,
+    );
+    return this.ensurePawnSelection(next);
+  }
+
+  private arePawnsEqual(
+    a: Record<number, string> | undefined,
+    b: Record<number, string>,
+  ): boolean {
+    const keys = new Set<string>([
+      ...Object.keys(a ?? {}),
+      ...Object.keys(b ?? {}),
+    ]);
+    for (const key of keys) {
+      const ai = a ? a[Number(key)] ?? '' : '';
+      const bi = b ? b[Number(key)] ?? '' : '';
+      if (ai !== bi) return false;
+    }
+    return true;
   }
 
   private applyLanding(

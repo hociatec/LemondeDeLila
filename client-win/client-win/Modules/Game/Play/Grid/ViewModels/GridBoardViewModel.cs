@@ -33,6 +33,10 @@ public sealed partial class GridBoardViewModel : ObservableObject
     private bool _wallLayoutPrimed;
     private int _lastWallLayoutHash;
     private bool _pendingSelfWallSound;
+    private int _lastSeenTurnIndex = -1;
+    private int? _lastSeenCurrentPlayerId;
+    private HashSet<string> _previousHorizontalWalls = new(StringComparer.OrdinalIgnoreCase);
+    private HashSet<string> _previousVerticalWalls = new(StringComparer.OrdinalIgnoreCase);
 
     public GridBoardViewModel(
         IDialogService dialogs,

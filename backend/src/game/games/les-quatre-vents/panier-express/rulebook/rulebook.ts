@@ -74,6 +74,14 @@ export function getAvailableActions(
   ) {
     return [];
   }
+  if (rawPending && rawPending.type === 'merchant_request') {
+    return pendingPlayerId === playerId
+      ? [
+          { type: 'merchant_request_accept' },
+          { type: 'merchant_request_refuse' },
+        ]
+      : [];
+  }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== playerId) return [];
 
@@ -184,6 +192,8 @@ export function validateAction(
       'exchange_choose_give',
       'exchange_accept',
       'exchange_refuse',
+      'merchant_request_accept',
+      'merchant_request_refuse',
     ]);
     const isAllowed = allowedWhileBlocking.has(normalizedType);
     if (!isAllowed) {
@@ -320,6 +330,26 @@ export function validateAction(
       pid !== actorId
     ) {
       throw new PlayerActionError('Aucun échange à confirmer.', {
+        gameType: 'panier-express',
+        playerId: actorId ?? undefined,
+      });
+    }
+    return { ...action, type, payload: {} };
+  }
+
+  if (
+    type === 'merchant_request_accept' ||
+    type === 'merchant_request_refuse'
+  ) {
+    const pending = state.pending as any;
+    const pid = normalizeNumber(pending?.playerId);
+    if (
+      !pending ||
+      pending.type !== 'merchant_request' ||
+      pid == null ||
+      pid !== actorId
+    ) {
+      throw new PlayerActionError("Aucune demande du marchand en attente.", {
         gameType: 'panier-express',
         playerId: actorId ?? undefined,
       });

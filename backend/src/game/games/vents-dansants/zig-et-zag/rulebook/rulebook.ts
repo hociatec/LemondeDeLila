@@ -1,13 +1,10 @@
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import type { ZigEtZagMetadata } from '../model/zig-et-zag-state.entity';
-import {
-  getSelectableCards,
-  isCardAllowed,
-  playerHasCard,
-} from '../round-state.helper';
-
-type ZigEtZagActionType = 'select_card';
+import type {
+  ZigEtZagMetadata,
+  ZigEtZagRoundState,
+} from '../model/zig-et-zag-state.entity';
+import { isCardAllowed, playerHasCard } from '../round-state.helper';
 
 function getMeta(state: GameStateEntity): ZigEtZagMetadata {
   return (state.metadata ?? {}) as ZigEtZagMetadata;
@@ -23,24 +20,8 @@ export function getAvailableActions(
   const round = getMeta(state).roundState;
   if (!round) return [];
 
-  // Robustness: number ids can round-trip as strings depending on the storage layer.
-  const waiting = (round.waitingPlayers ?? [])
-    .map((v: any) => {
-      if (typeof v === 'number' && Number.isFinite(v)) return v;
-      if (typeof v === 'string') {
-        const n = Number(v.trim());
-        return Number.isFinite(n) ? n : null;
-      }
-      return null;
-    })
-    .filter((v: any): v is number => typeof v === 'number');
-
-  if (!waiting.includes(playerId)) return [];
-  const cards = getSelectableCards(getMeta(state), playerId);
-  return cards.map((cardId) => ({
-    type: 'select_card',
-    payload: { cardId },
-  }));
+  if (!waitingPlayerIds(round).includes(playerId)) return [];
+  return [{ type: 'draw_card', payload: {} }];
 }
 
 export function validateAction(
@@ -50,7 +31,9 @@ export function validateAction(
 ): GameSingleActionDto {
   const type = String(action?.type ?? '').trim().toLowerCase();
   if (type !== 'select_card') {
-    throw new Error(`Action inconnue: ${action?.type}`);
+    if (type !== 'draw_card') {
+      throw new Error(`Action inconnue: ${action?.type}`);
+    }
   }
   if (actorId == null) {
     throw new Error('Acteur requis');
@@ -80,6 +63,9 @@ export function validateAction(
   if (!waiting.includes(actorId)) {
     throw new Error("Ce n'est pas votre tour.");
   }
+  if (type === 'draw_card') {
+    return { type: 'draw_card', payload: {} };
+  }
   const cardId = String((action.payload as any)?.cardId ?? '').trim();
   if (!cardId) {
     throw new Error('Carte manquante.');
@@ -94,4 +80,17 @@ export function validateAction(
     type: 'select_card',
     payload: { cardId },
   };
+}
+
+function waitingPlayerIds(round: ZigEtZagRoundState): number[] {
+  return (round.waitingPlayers ?? [])
+    .map((v: any) => {
+      if (typeof v === 'number' && Number.isFinite(v)) return v;
+      if (typeof v === 'string') {
+        const n = Number(v.trim());
+        return Number.isFinite(n) ? n : null;
+      }
+      return null;
+    })
+    .filter((v: any): v is number => typeof v === 'number');
 }

@@ -93,6 +93,7 @@ public sealed partial class GridBoardViewModel
         var enterActions = actionsHere.Where(a => MatchesUiKey(a.Payload, "ENTER")).ToList();
         if (enterActions.Count == 0)
         {
+            TryAnnounceWallBlock(cell);
             return;
         }
 
@@ -220,6 +221,61 @@ public sealed partial class GridBoardViewModel
         catch
         {
             return true;
+        }
+    }
+
+    private void TryAnnounceWallBlock(GridCellViewModel cell)
+    {
+        if (cell == null || _viewerPlayerId is not > 0)
+        {
+            return;
+        }
+
+        if (!_lastPawnPosByOwnerId.TryGetValue(_viewerPlayerId.Value, out var viewerPos))
+        {
+            return;
+        }
+
+        var dx = cell.X - viewerPos.X;
+        var dy = cell.Y - viewerPos.Y;
+        if (Math.Abs(dx) + Math.Abs(dy) != 1)
+        {
+            return;
+        }
+
+        var viewerCell = Cells.FirstOrDefault(c => c.X == viewerPos.X && c.Y == viewerPos.Y);
+        if (viewerCell == null)
+        {
+            return;
+        }
+
+        bool blocked = false;
+        var direction = string.Empty;
+
+        if (dx == 1)
+        {
+            blocked = cell.WallWest || viewerCell.WallEast;
+            direction = "à droite";
+        }
+        else if (dx == -1)
+        {
+            blocked = cell.WallEast || viewerCell.WallWest;
+            direction = "à gauche";
+        }
+        else if (dy == -1)
+        {
+            blocked = cell.WallSouth || viewerCell.WallNorth;
+            direction = "devant";
+        }
+        else // dy == 1
+        {
+            blocked = cell.WallNorth || viewerCell.WallSouth;
+            direction = "derrière";
+        }
+
+        if (blocked)
+        {
+            _announce($"Mur {direction} : déplacement impossible.");
         }
     }
 

@@ -15,6 +15,22 @@ export function getAvailableActions(
   playerId: number,
 ): GameSingleActionDto[] {
   const status = String(state.status ?? '').toLowerCase();
+  const pending = state.pending as any;
+  if (pending && pending.type === 'pick_pawn') {
+    if (pending.playerId !== playerId) return [];
+    const providedChoices = Array.isArray(pending.choices)
+      ? pending.choices
+      : Array.isArray(pending?.data?.choices)
+        ? pending.data.choices
+        : [];
+    return providedChoices
+      .map((choice) => String(choice ?? '').trim())
+      .filter((choice) => choice.length > 0)
+      .map((choice) => ({
+        type: 'pick_pawn',
+        payload: { pawn: choice },
+      }));
+  }
   if (status !== 'started') return [];
 
   const meta = (state.metadata ?? {}) as any as MinuitMetadata;
@@ -72,6 +88,36 @@ export function validateAction(
     throw new PlayerActionError('Acteur requis.', {
       gameType: 'en-attendant-minuit',
     });
+  }
+
+  const pending = state.pending as any;
+  if (pending && pending.type === 'pick_pawn') {
+    if (pending.playerId !== actorId) {
+      throw new PlayerActionError("Ce n'est pas votre action.", {
+        gameType: 'en-attendant-minuit',
+      });
+    }
+    if (type !== 'pick_pawn') {
+      throw new PlayerActionError('Action non disponible.', {
+        gameType: 'en-attendant-minuit',
+      });
+    }
+    const providedChoices = Array.isArray(pending.choices)
+      ? pending.choices
+      : Array.isArray(pending?.data?.choices)
+        ? pending.data.choices
+        : [];
+    const normalizedChoices = new Set(
+      providedChoices.map((choice) => String(choice ?? '').trim()),
+    );
+    const requestedPawn = String((action.payload as any)?.pawn ?? '').trim();
+    if (!requestedPawn || !normalizedChoices.has(requestedPawn)) {
+      throw new GameValidationError('Choix de pion invalide.', {
+        gameType: 'en-attendant-minuit',
+        pawn: requestedPawn,
+      });
+    }
+    return { type: 'pick_pawn', payload: { pawn: requestedPawn } };
   }
 
   if (String(state.status ?? '').toLowerCase() !== 'started') {

@@ -31,7 +31,7 @@
       "id": "case-5-echange",
       "type": "exchange",
       "label": "\u00c9change",
-      "description": "Un autre client semble int\u00e9ress\u00e9 par vos courses. Piochez une carte \u00c9change et suivez son effet."
+      "description": "Un marchand semble int\u00e9ress\u00e9 par les l\u00e9gumes de votre chariot. Il vous demande un ingr\u00e9dient qui lui ferait plaisir. Si vous l'avez dans votre inventaire, donnez-lui, sinon passez deux tours."
     },
     {
       "id": "case-6-stand-bio",
@@ -189,9 +189,8 @@
     {
       "id": "case-29-meteo",
       "type": "move",
-      "delta": -3,
       "label": "M\u00e9t\u00e9o",
-      "description": "Un orage \u00e9clate soudainement. Reculez de 3 cases."
+      "description": "Un orage \u00e9clate soudainement. Reculez de 1 \u00e0 10 cases (fl\u00e8ches + Entr\u00e9e)."
     },
     {
       "id": "case-30-stand-fruits-hiver",

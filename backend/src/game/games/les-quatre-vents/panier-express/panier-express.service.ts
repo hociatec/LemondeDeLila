@@ -61,6 +61,7 @@ export class PanierExpressService extends AbstractGameService {
     'Course au marché : compléter sa liste puis revenir pile sur la case départ.';
   readonly minPlayers = 2;
   readonly maxPlayers = 10;
+  private static readonly SHOPPING_LIST_SIZE = 3;
   private readonly phaseOrder = PANIER_EXPRESS_PHASES;
 
   constructor(
@@ -202,7 +203,6 @@ export class PanierExpressService extends AbstractGameService {
         ? { ...baseMeta.decks, ...existingMeta.decks }
         : baseMeta.decks,
     };
-    const shoppingDeck = this.extractShoppingLists(metadata);
     const pawns = this.setup.pawns();
 
     // Attribution stable des listes/pions:
@@ -214,9 +214,9 @@ export class PanierExpressService extends AbstractGameService {
       if (aBot !== bBot) return aBot ? 1 : -1;
       return (a?.id ?? 0) - (b?.id ?? 0);
     });
-    let listIndex = 0;
     let pawnIndex = 0;
     const usedPawns = new Set<string>();
+    const usedLists = new Set<string>();
     const assignedById = new Map<
       number,
       { list: string[]; pawn?: string; isBot: boolean }
@@ -225,10 +225,13 @@ export class PanierExpressService extends AbstractGameService {
       const username = (p.username ?? '').toLowerCase();
       const isBot = p.isBot === true || username.includes('bot');
       const existingList = this.toStringArray(p.shoppingList).slice(0, 3);
+      if (existingList.length > 0) {
+        usedLists.add(this.listKey(existingList));
+      }
       const list =
         existingList.length > 0
           ? existingList
-          : (shoppingDeck[listIndex++] ?? this.buildShoppingList());
+          : this.buildShoppingList(usedLists);
       const existingPawn =
         typeof (p as any)?.pawn === 'string'
           ? String((p as any).pawn).trim()
@@ -291,10 +294,7 @@ export class PanierExpressService extends AbstractGameService {
       if (hadList) {
         return; // ne pas relogger une liste déjà attribuée (évite l'impression de réinitialisation).
       }
-      const normalizedList = this.toStringArray(p.shoppingList).slice(0, 3);
-      const list: string[] = normalizedList.length
-        ? normalizedList
-        : (shoppingDeck[idx] ?? []);
+      const list = Array.isArray(p.shoppingList) ? p.shoppingList : [];
       const listLabel = this.utils.formatCourseLabels(list);
       const label = (p.username ?? '').trim() || 'Joueur ' + p.id;
       withLogs = this.core.appendLog(
@@ -359,6 +359,10 @@ export class PanierExpressService extends AbstractGameService {
         return this.handleExchangeAccept(state, action);
       case 'exchange_refuse':
         return this.handleExchangeRefuse(state, action);
+      case 'merchant_request_accept':
+        return this.handleMerchantRequestAccept(state, action);
+      case 'merchant_request_refuse':
+        return this.handleMerchantRequestRefuse(state, action);
       case 'skip_turn':
         return this.handleSkipTurn(state, action);
       // Compat actions depuis le client Java
@@ -1242,19 +1246,28 @@ export class PanierExpressService extends AbstractGameService {
         'Piocher une carte Événement (Espace).',
       ),
     );
-    this.tileRegistry.register('exchange', (s, ctx) =>
-      this.applyExchange(s, ctx.playerId),
-    );
+    this.tileRegistry.register('exchange', (s, ctx) => {
+      if (ctx.tile?.id === 'case-5-echange') {
+        return this.applyMerchantRequest(s, ctx.playerId);
+      }
+      return this.applyExchange(s, ctx.playerId);
+    });
     this.tileRegistry.register('quiz', (s, ctx) =>
       this.applyQuiz(s, ctx.playerId),
     );
-    this.tileRegistry.register('move', (s, ctx) =>
-      this.applyMoveDelta(
+    this.tileRegistry.register('move', (s, ctx) => {
+      if (ctx.tile?.id === 'case-7-avance-1') {
+        return this.applyMoveToStandChoice(s, ctx.playerId);
+      }
+      if (ctx.tile?.id === 'case-29-meteo') {
+        return this.applyWeatherBack(s, ctx.playerId);
+      }
+      return this.applyMoveDelta(
         s,
         ctx.playerId,
         ctx.tile.type === 'move' ? (ctx.tile.delta ?? 0) : 0,
-      ),
-    );
+      );
+    });
     this.tileRegistry.register('move_choice', (s, ctx) =>
       this.applyMoveChoice(
         s,
@@ -1279,6 +1292,53 @@ export class PanierExpressService extends AbstractGameService {
     this.tileRegistry.register('move_to_stand', (s, ctx) =>
       this.applyMoveToNextStand(s, ctx.playerId),
     );
+  }
+
+  private applyMerchantRequest(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
+    let next = this.ensureMetadata(state);
+    const pool = this.setup.courseItems();
+    const meta = this.getMetadata(next);
+    const rng = this.random.createMetaRng(meta as any);
+    const pick = this.random.pickOne(rng.getMeta(), pool);
+    next = {
+      ...next,
+      metadata: pick.meta as PanierExpressMetadata,
+    };
+    const ingredient = String(pick.value ?? '').trim();
+    const label = this.utils.formatCourseLabel(ingredient);
+    const playerName = this.utils.playerName(state, playerId);
+    if (!ingredient) {
+      return this.core.appendLog(
+        next,
+        `[Panier Express] Case Échange : ${playerName} n'obtient aucune demande.`,
+      );
+    }
+    next = this.core.appendLog(
+      next,
+      `[Panier Express] Case Échange : ${playerName} est sollicité pour "${label}".`,
+    );
+    const player = (next.players ?? []).find((p) => p.id === playerId);
+    const inventory = player ? this.utils.toStringArray(player.inventory) : [];
+    const hasIngredient = inventory.includes(ingredient);
+    if (!hasIngredient) {
+      const skipped = this.applySkipTurnTile(next, playerId, 2);
+      return this.core.appendLog(
+        skipped,
+        `[Panier Express] Case Échange : ${playerName} n'a pas "${label}" et perd 2 tours.`,
+      );
+    }
+    const pending: PendingState = {
+      type: 'merchant_request',
+      playerId,
+      blocking: true,
+      question: `Le marchand souhaite "${label}". (Entrée = accepter, R = refuser)`,
+      choices: ['Accepter', 'Refuser'],
+      data: { ingredient },
+    };
+    return { ...next, pending };
   }
 
   private registerStandHandlers(): void {
@@ -2654,7 +2714,88 @@ export class PanierExpressService extends AbstractGameService {
         `[Panier Express] Troc équitable : échange refusé, quiz pour ${this.utils.playerName(state, initiatorId)}.`,
       );
     }
-    return this.phaseFlow.advanceTurn(resolved);
+      return this.phaseFlow.advanceTurn(resolved);
+  }
+
+  private handleMerchantRequestAccept(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    const actorId =
+      typeof (action.meta as any)?.actorId === 'number'
+        ? (action.meta as any).actorId
+        : null;
+    if (typeof actorId !== 'number') {
+      return this.core.appendLog(
+        state,
+        "[Panier Express] Acceptation du marchand invalide.",
+      );
+    }
+    const pending = state.pending as any;
+    const ingredient =
+      pending && pending.type === 'merchant_request'
+        ? String(pending.data?.ingredient ?? '').trim()
+        : '';
+    if (!ingredient) {
+      return this.core.appendLog(
+        state,
+        "[Panier Express] Acceptation du marchand invalide.",
+      );
+    }
+    let next = { ...state, pending: null };
+    next = this.removeIngredientFromInventory(next, actorId, ingredient);
+    next = this.addCourseToDiscards(next, ingredient);
+    const label = this.utils.formatCourseLabel(ingredient);
+    next = this.core.appendLog(
+      next,
+      `[Panier Express] Case Échange : ${this.utils.playerName(
+        next,
+        actorId,
+      )} accepte et donne "${label}".`,
+    );
+    next = this.appendActionLog(next, actorId, 'event', {
+      effect: 'merchant_request_accept',
+      ingredient,
+    });
+    return this.phaseFlow.advanceTurn(next);
+  }
+
+  private handleMerchantRequestRefuse(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    const actorId =
+      typeof (action.meta as any)?.actorId === 'number'
+        ? (action.meta as any).actorId
+        : null;
+    if (typeof actorId !== 'number') {
+      return this.core.appendLog(
+        state,
+        "[Panier Express] Refus du marchand invalide.",
+      );
+    }
+    const pending = state.pending as any;
+    const ingredient =
+      pending && pending.type === 'merchant_request'
+        ? String(pending.data?.ingredient ?? '').trim()
+        : '';
+    let next = { ...state, pending: null };
+    next = this.applySkipTurnTile(next, actorId, 2);
+    const label = ingredient
+      ? ` "${this.utils.formatCourseLabel(ingredient)}"`
+      : '';
+    next = this.core.appendLog(
+      next,
+      `[Panier Express] Case Échange : ${this.utils.playerName(
+        next,
+        actorId,
+      )} refuse${label} et perd 2 tours.`,
+    );
+    next = this.appendActionLog(next, actorId, 'event', {
+      effect: 'merchant_request_refuse',
+      ingredient: ingredient || null,
+    });
+    return this.phaseFlow.advanceTurn(next);
   }
   private handleSkipTurn(
     state: GameStateEntity,
@@ -3242,6 +3383,59 @@ export class PanierExpressService extends AbstractGameService {
       } as any;
     }
 
+    if (kind === 'tile.move_to_stand_choice') {
+      const targets = Array.isArray(pending?.data?.targets)
+        ? pending.data.targets
+        : [];
+      const target = targets[index];
+      if (!target || !Number.isFinite(Number(target.position))) {
+        return clearPending(state);
+      }
+      const ensured = this.ensureMetadata(state);
+      const meta = this.getMetadata(ensured);
+      const tiles =
+        Array.isArray(meta.tiles) && meta.tiles.length
+          ? meta.tiles
+          : this.buildTiles();
+      if (!tiles.length) {
+        return clearPending(state);
+      }
+      const currentPos = meta.positions[actorId] ?? 0;
+      const total = tiles.length;
+      const targetPos = Math.max(
+        0,
+        Math.min(total - 1, Math.floor(Number(target.position))),
+      );
+      const delta =
+        ((targetPos - currentPos) % total + total) % total;
+      if (delta === 0) {
+        let next = clearPending(state);
+        next = this.core.appendLog(
+          next,
+          `[Panier Express] ${this.utils.playerName(
+            state,
+            actorId,
+          )} reste sur place (stand déjà atteint).`,
+        );
+        return next;
+      }
+      let next = clearPending(state);
+      next = this.core.appendLog(
+        next,
+        `[Panier Express] ${this.utils.playerName(
+          state,
+          actorId,
+        )} choisit de rejoindre ${target.label} (case ${target.caseNumber}).`,
+      );
+      next = this.movePlayer(next, actorId, delta);
+      next = this.appendActionLog(next, actorId, 'tile', {
+        tile: 'move_to_stand_choice',
+        standId: target.standId ?? undefined,
+        caseNumber: target.caseNumber,
+      });
+      return next;
+    }
+
     if (kind === 'tile.move_choice') {
       const delta = Math.max(1, Math.abs(Number(pending?.data?.delta ?? 2)));
       const signed = index === 0 ? delta : -delta;
@@ -3817,6 +4011,92 @@ export class PanierExpressService extends AbstractGameService {
     };
   }
 
+  private applyMoveToStandChoice(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
+    if (state.pending) {
+      return this.core.appendLog(
+        state,
+        `[Panier Express] Un autre choix est déjà en attente.`,
+      );
+    }
+
+    const ensured = this.ensureMetadata(state);
+    const meta = this.getMetadata(ensured);
+    const tiles =
+      Array.isArray(meta.tiles) && meta.tiles.length
+        ? meta.tiles
+        : this.buildTiles();
+    const stands = tiles
+      .map((tile, idx) =>
+        tile?.type === 'stand'
+          ? {
+              position: idx,
+              label: this.tileLabel(tile),
+              standId: tile.standId ?? undefined,
+              caseNumber: idx + 1,
+            }
+          : null,
+      )
+      .filter(
+        (entry): entry is {
+          position: number;
+          label: string;
+          standId?: string;
+          caseNumber: number;
+        } => Boolean(entry),
+      );
+
+    if (!stands.length) {
+      return this.core.appendLog(
+        ensured,
+        `[Panier Express] aucun stand disponible pour effectuer un choix.`,
+      );
+    }
+
+    const choices = stands.map(
+      (entry) => `${entry.label} (case ${entry.caseNumber})`,
+    );
+
+    return {
+      ...ensured,
+      pending: {
+        type: 'pick',
+        playerId,
+        blocking: true,
+        label: 'Choisissez le stand à rejoindre (flèches puis Entrée).',
+        choices,
+        data: {
+          kind: 'tile.move_to_stand_choice',
+          targets: stands.map((entry) => ({
+            position: entry.position,
+            standId: entry.standId ?? null,
+            label: entry.label,
+            caseNumber: entry.caseNumber,
+          })),
+        },
+      } as any,
+    };
+  }
+
+  private applyWeatherBack(state: GameStateEntity, playerId: number): GameStateEntity {
+    if (state.pending) {
+      return this.core.appendLog(
+        state,
+        `[Panier Express] Un autre choix est déjà en attente.`,
+      );
+    }
+
+    const ensured = this.ensureMetadata(state);
+    const meta = this.getMetadata(ensured);
+    const rng = this.random.nextInt(meta, 10);
+    const steps = rng.value + 1;
+    const baseState = { ...ensured, metadata: rng.meta };
+    const moved = this.movePlayer(baseState, playerId, -steps);
+    return this.resolveTile(moved, playerId);
+  }
+
   private applyMoveToNextStand(
     state: GameStateEntity,
     playerId: number,
@@ -3852,6 +4132,44 @@ export class PanierExpressService extends AbstractGameService {
       next,
       `[Panier Express] ${this.utils.playerName(state, playerId)} perd ${count} tour(s).`,
     );
+  }
+
+  private removeIngredientFromInventory(
+    state: GameStateEntity,
+    playerId: number,
+    ingredient: string,
+  ): GameStateEntity {
+    const trimmed = String(ingredient ?? '').trim();
+    if (!trimmed) return state;
+    const players = (state.players ?? []).map((player) => {
+      if (player.id !== playerId) return player;
+      const inventory = this.utils.toStringArray(player.inventory);
+      if (!inventory.includes(trimmed)) return player;
+      return { ...player, inventory: this.utils.removeOne(inventory, trimmed) };
+    });
+    return { ...state, players };
+  }
+
+  private addCourseToDiscards(
+    state: GameStateEntity,
+    course: string,
+  ): GameStateEntity {
+    const trimmed = String(course ?? '').trim();
+    if (!trimmed) return state;
+    const meta = this.getMetadata(state);
+    const current = Array.isArray(meta.discards?.courses)
+      ? meta.discards?.courses.map((v) => String(v))
+      : [];
+    return {
+      ...state,
+      metadata: {
+        ...meta,
+        discards: {
+          ...meta.discards,
+          courses: [...current, trimmed],
+        },
+      },
+    };
   }
 
   private applyVictory(state: GameStateEntity): GameStateEntity {
@@ -4072,19 +4390,37 @@ export class PanierExpressService extends AbstractGameService {
     return [];
   }
 
-  private extractShoppingLists(meta: PanierExpressMetadata): string[][] {
-    const deck = meta.decks?.shoppingLists?.deck ?? [];
-    if (!Array.isArray(deck)) {
-      return [];
-    }
-    return deck.map((entry) =>
-      Array.isArray(entry)
-        ? entry.map((item) => String(item))
-        : this.toStringArray(entry),
-    );
+  private listKey(list: string[]): string {
+    return list
+      .map((item) => String(item ?? '').trim())
+      .filter((item) => item.length > 0)
+      .join('|');
   }
 
-  private buildShoppingList(): string[] {
-    return this.deckPool.shuffle([...this.setup.courseItems()]).slice(0, 5);
+  private buildShoppingList(used?: Set<string>): string[] {
+    const items = this.setup.courseItems();
+    if (!items.length) return [];
+    const size = Math.min(
+      PanierExpressService.SHOPPING_LIST_SIZE,
+      items.length,
+    );
+    const attempt = () => {
+      const shuffled = this.deckPool.shuffle([...items]);
+      return shuffled.slice(0, size);
+    };
+    for (let i = 0; i < 10; i += 1) {
+      const candidate = attempt();
+      const key = this.listKey(candidate);
+      if (!used || !used.has(key)) {
+        used?.add(key);
+        return candidate;
+      }
+    }
+    const fallback = attempt();
+    const fallbackKey = this.listKey(fallback);
+    if (used && !used.has(fallbackKey)) {
+      used.add(fallbackKey);
+    }
+    return fallback;
   }
 }

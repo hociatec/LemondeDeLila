@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Windows;
 using client_win.Modules.Audio.Models;
 using client_win.Modules.Game.Play.Grid.Services;
@@ -27,6 +29,16 @@ public sealed partial class GridBoardViewModel
 
         _viewerPlayerId = viewerPlayerId;
 
+        var currentTurnIndex = state.TurnIndex;
+        var currentTurnPlayerId = state.Turn?.CurrentPlayerId;
+        int? actorPlayerId = null;
+        if (_lastSeenTurnIndex >= 0 && currentTurnIndex != _lastSeenTurnIndex)
+        {
+            actorPlayerId = _lastSeenCurrentPlayerId;
+        }
+        _lastSeenTurnIndex = currentTurnIndex;
+        _lastSeenCurrentPlayerId = currentTurnPlayerId;
+
         if (!TryReadGridSize(state, out var size))
         {
             IsVisible = false;
@@ -45,14 +57,13 @@ public sealed partial class GridBoardViewModel
 
         var entitiesByKey = TryReadGridEntities(state);
         var cellTagsByKey = TryReadGridCellTags(state);
-
-        TryPlayPawnPlaceSounds(entitiesByKey);
         var playerNameById = (state.Players ?? new List<GamePlayerDto>())
-            .Where(p => p != null && p.Id > 0)
+            .Where(p => p != null && p.Id != 0)
             .GroupBy(p => p.Id)
             .ToDictionary(
                 g => g.Key,
                 g => (g.FirstOrDefault()?.Username ?? string.Empty).Trim());
+        TryPlayPawnPlaceSounds(entitiesByKey, playerNameById);
 
         foreach (var cell in Cells)
         {
@@ -131,6 +142,7 @@ public sealed partial class GridBoardViewModel
         SyncGridStatus(state);
         ApplyGridRender(state);
         TryPlayWallPlacedSound();
+        SyncWallHistory(state.Metadata, playerNameById, actorPlayerId);
 
         BuildGridActionsIndex(state);
         _isEntityGrabbed = false;
@@ -205,7 +217,9 @@ public sealed partial class GridBoardViewModel
         }
     }
 
-    private void TryPlayPawnPlaceSounds(Dictionary<string, List<GridEntity>> entitiesByKey)
+    private void TryPlayPawnPlaceSounds(
+        Dictionary<string, List<GridEntity>> entitiesByKey,
+        Dictionary<int, string> playerNameById)
     {
         if (_viewerPlayerId is not > 0)
         {
@@ -252,6 +266,7 @@ public sealed partial class GridBoardViewModel
         var viewerId = _viewerPlayerId.Value;
         var selfMoved = false;
         var opponentMoved = false;
+        var movementDiffs = new List<(int PlayerId, (int X, int Y) From, (int X, int Y) To)>();
 
         foreach (var kv in next)
         {
@@ -273,6 +288,7 @@ public sealed partial class GridBoardViewModel
             {
                 opponentMoved = true;
             }
+            movementDiffs.Add((kv.Key, prev, kv.Value));
         }
 
         if (selfMoved)
@@ -283,6 +299,8 @@ public sealed partial class GridBoardViewModel
         {
             _sounds.Play(SoundId.PawnPlacedOpponent);
         }
+
+        AnnouncePawnMoves(movementDiffs, playerNameById);
 
         _lastPawnPosByOwnerId.Clear();
         foreach (var kv in next)
@@ -389,5 +407,161 @@ public sealed partial class GridBoardViewModel
         }
 
         return int.TryParse(parts[0], out x) && int.TryParse(parts[1], out y);
+    }
+
+    private void AnnouncePawnMoves(
+        List<(int PlayerId, (int X, int Y) From, (int X, int Y) To)> moves,
+        Dictionary<int, string> playerNameById)
+    {
+        if (moves == null || moves.Count == 0 || _viewerPlayerId is not > 0 || !_pawnPositionsPrimed)
+        {
+            return;
+        }
+
+        var viewerId = _viewerPlayerId.Value;
+        foreach (var diff in moves)
+        {
+            if (diff.PlayerId == viewerId)
+            {
+                continue;
+            }
+
+            var actorName = FormatPlayerName(diff.PlayerId, playerNameById);
+            var from = FormatCellRef(diff.From.X, diff.From.Y, Size);
+            var to = FormatCellRef(diff.To.X, diff.To.Y, Size);
+            _announce($"{actorName} se déplace de {from} à {to}.");
+        }
+    }
+
+    private void SyncWallHistory(
+        JsonElement metadata,
+        Dictionary<int, string> playerNameById,
+        int? actorId)
+    {
+        var (horizontal, vertical) = ExtractWallSets(metadata);
+        var newHorizontals = horizontal.Except(_previousHorizontalWalls).ToList();
+        var newVerticals = vertical.Except(_previousVerticalWalls).ToList();
+
+        if (actorId != null)
+        {
+            var actorName = FormatPlayerName(actorId.Value, playerNameById);
+            foreach (var key in newHorizontals)
+            {
+                if (TryParseWallKey(key, out var x, out var y))
+                {
+                    var cell = FormatCellRef(x, y, Size);
+                    _announce($"{actorName} place un mur horizontal en {cell}.");
+                }
+            }
+            foreach (var key in newVerticals)
+            {
+                if (TryParseWallKey(key, out var x, out var y))
+                {
+                    var cell = FormatCellRef(x, y, Size);
+                    _announce($"{actorName} place un mur vertical en {cell}.");
+                }
+            }
+        }
+
+        _previousHorizontalWalls = horizontal;
+        _previousVerticalWalls = vertical;
+    }
+
+    private static (HashSet<string> Horizontal, HashSet<string> Vertical) ExtractWallSets(JsonElement metadata)
+    {
+        var horizontal = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var vertical = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        if (metadata.ValueKind != JsonValueKind.Object)
+        {
+            return (horizontal, vertical);
+        }
+
+        if (!metadata.TryGetProperty("walls", out var walls) || walls.ValueKind != JsonValueKind.Object)
+        {
+            return (horizontal, vertical);
+        }
+
+        void Collect(JsonElement parent, string property, HashSet<string> target)
+        {
+            if (!parent.TryGetProperty(property, out var arr) || arr.ValueKind != JsonValueKind.Array)
+            {
+                return;
+            }
+
+            foreach (var entry in arr.EnumerateArray())
+            {
+                string? value = entry.ValueKind switch
+                {
+                    JsonValueKind.String => entry.GetString(),
+                    JsonValueKind.Number => entry.GetRawText(),
+                    _ => entry.ToString()
+                };
+
+                var trimmed = (value ?? string.Empty).Trim();
+                if (trimmed.Length > 0)
+                {
+                    target.Add(trimmed);
+                }
+            }
+        }
+
+        Collect(walls, "h", horizontal);
+        Collect(walls, "v", vertical);
+        return (horizontal, vertical);
+    }
+
+    private static bool TryParseWallKey(string raw, out int x, out int y)
+    {
+        x = 0;
+        y = 0;
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return false;
+        }
+
+        var parts = raw.Split(',');
+        if (parts.Length != 2)
+        {
+            return false;
+        }
+
+        return int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out x) &&
+               int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out y);
+    }
+
+    private static string FormatCellRef(int x, int y, int size)
+    {
+        if (size <= 0)
+        {
+            return $"{x},{y}";
+        }
+
+        var column = ToColumnLetters(x + 1);
+        var row = Math.Max(1, size - y);
+        return $"{column}{row}";
+    }
+
+    private static string ToColumnLetters(int column)
+    {
+        var n = Math.Max(1, column);
+        var builder = string.Empty;
+        while (n > 0)
+        {
+            n--;
+            builder = $"{(char)('A' + (n % 26))}{builder}";
+            n /= 26;
+        }
+        return builder;
+    }
+
+    private static string FormatPlayerName(int playerId, Dictionary<int, string> names)
+    {
+        if (names != null && names.TryGetValue(playerId, out var name) && !string.IsNullOrWhiteSpace(name))
+        {
+            return name;
+        }
+
+        return playerId <= 0 ? $"Bot {Math.Abs(playerId)}" : $"Joueur {playerId}";
     }
 }
