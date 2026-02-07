@@ -5,8 +5,8 @@
     <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
     <BooleanToVisibilityConverter x:Key="BoolToVis" />
     <BooleanToVisibilityConverter x:Key="BoolToVisInverse"
-                                  TrueVisibility="Collapsed"
-                                  FalseVisibility="Visible" />
+                                  TrueValue="{x:Static Visibility.Collapsed}"
+                                  FalseValue="{x:Static Visibility.Visible}" />
 
     <Style x:Key="InputTextBox" TargetType="TextBox">
         <Setter Property="Foreground" Value="White" />

@@ -34,8 +34,7 @@
                            FontSize="13"
                            Margin="0 0 0 10"
                            TextWrapping="Wrap"
-                           Focusable="True"
-                           IsTabStop="False" />
+                           Focusable="True" />
 
                 <ListBox Grid.Row="1"
                          x:Name="ItemsList"
