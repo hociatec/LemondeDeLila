@@ -797,7 +797,7 @@ export class GameEngineService {
     const botTurn = this.isBotTurn(next);
     let marked = await this.markBotThinking(roomId, gameType, next, botTurn);
     const drawAction = sanitizedActions.find(a =>
-      string.Equals(String(a.type ?? '').trim(), 'draw', StringComparison.OrdinalIgnoreCase));
+      String(a.type ?? '').trim().toLowerCase() === 'draw');
     if (drawAction) {
       const actionPlayerId = allowBotTurn
         ? (botActorId ?? null)
