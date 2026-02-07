@@ -355,6 +355,27 @@ export class ClientUpdatesService {
       maxBuffer: 50 * 1024 * 1024,
     });
 
+    const stagingEntries = await fs.promises.readdir(stagingDir, {
+      withFileTypes: true,
+    });
+    const extractedApplication = stagingEntries
+      .filter((e) => e.isFile())
+      .map((e) => e.name)
+      .find((name) => name.toLowerCase().endsWith('.application'));
+
+    if (!extractedApplication) {
+      throw new Error('Archive invalide : manifeste ClickOnce (.application) manquant.');
+    }
+
+    const applicationFilesDir = stagingEntries
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name)
+      .find((name) => name === 'Application Files');
+
+    if (!applicationFilesDir) {
+      throw new Error('Archive invalide : dossier "Application Files" introuvable.');
+    }
+
     const targetDir = this.getTargetDir();
     const parent = path.dirname(targetDir);
     const releasesDir = path.join(parent, 'client-win.releases');
@@ -459,9 +480,9 @@ export class ClientUpdatesService {
   private async ensureLegacyAliases(targetDir: string): Promise<void> {
     try {
       const legacyPath = path.join(targetDir, this.legacyApplicationName);
-      if (fs.existsSync(legacyPath)) {
-        return;
-      }
+      await fs.promises.rm(legacyPath, { force: true }).catch(() => {
+        /* ignore */
+      });
 
       const entries = await fs.promises.readdir(targetDir, {
         withFileTypes: true,

@@ -54,6 +54,7 @@ internal sealed class GamePlayDiceSoundPlayer
             _lastLogCount = logCount;
             _lastRoll = roll;
             _lastTurnIndex = turnIndex;
+            _sounds.Play(SoundId.DiceRolled);
             return;
         }
 
