@@ -45,7 +45,7 @@
       "type": "move",
       "delta": 1,
       "label": "Avanc\u00e9e",
-      "description": "Une all\u00e9e d\u00e9gag\u00e9e vous permet de vous rapprocher d\u2019un stand de votre choix. Avancez d\u2019une case."
+      "description": "Une all\u00e9e d\u00e9gag\u00e9e vous permet de vous rapprocher d\u2019un stand de votre choix."
     },
     {
       "id": "case-8-stand-primeur",
@@ -190,7 +190,7 @@
       "id": "case-29-meteo",
       "type": "move",
       "label": "M\u00e9t\u00e9o",
-      "description": "Un orage \u00e9clate soudainement. Reculez de 1 \u00e0 10 cases (fl\u00e8ches + Entr\u00e9e)."
+      "description": "Un orage \u00e9clate soudainement. Reculez de 1 \u00e0 10 cases al\u00e9atoirement."
     },
     {
       "id": "case-30-stand-fruits-hiver",

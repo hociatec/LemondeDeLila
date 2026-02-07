@@ -87,6 +87,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       targetPoints: 20,
       useTimer: true,
       timerSeconds: 30,
+      interQuestionSeconds: 5,
       correctSoloPoints: 2,
       correctMultiPoints: 1,
       wrongPoints: 0,
@@ -427,15 +428,21 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 	      const targetPoints = Math.max(1, Math.min(200, Number(payload.targetPoints ?? 20)));
 	      const timerSeconds = Math.max(5, Math.min(300, Number(payload.timerSeconds ?? 30)));
 	      const useTimer = this.parseBool(payload.useTimer, false);
-	      const config: MnemoQuizConfig = {
-	        targetPoints,
-	        useTimer,
-	        timerSeconds,
-	        correctSoloPoints,
-	        correctMultiPoints,
-	        wrongPoints,
-	        timeoutPoints,
-	      };
+    const config: MnemoQuizConfig = {
+      targetPoints,
+      useTimer,
+      timerSeconds,
+      interQuestionSeconds: this.clampInt(
+        payload.interQuestionSeconds,
+        1,
+        60,
+        Number(meta.config.interQuestionSeconds ?? 5),
+      ),
+      correctSoloPoints,
+      correctMultiPoints,
+      wrongPoints,
+      timeoutPoints,
+    };
 	      const next = {
 	        ...state,
 	        metadata: { ...meta, config, prompt: null, promptOwnerId: null },
@@ -478,9 +485,19 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     if (type === 'draw') {
       const actorId = (action as any)?.meta?.actorId ?? null;
       if (actorId == null) return state;
+      const interUntilMs =
+        typeof (meta as any).interQuestionUntilMs === 'number'
+          ? (meta as any).interQuestionUntilMs
+          : null;
+      if (interUntilMs != null && Date.now() < interUntilMs) return state;
       if (meta.currentQuestion) return state;
       const currentId = state.turn?.currentPlayerId ?? null;
       if (currentId != null && actorId !== currentId) return state;
+      if (interUntilMs != null) {
+        const clearedMeta: MnemoQuizMetadata = { ...meta, interQuestionUntilMs: null };
+        const clearedState = { ...state, metadata: clearedMeta as any };
+        return this.syncBotPending(this.drawNextQuestionOrStay(clearedState));
+      }
       return this.syncBotPending(this.drawNextQuestionOrStay(state));
     }
 
@@ -898,10 +915,10 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     const target = meta.config?.targetPoints ?? 20;
     const willFinish = playerIds.some((id) => Number(nextScores[id] ?? 0) >= target);
 
-    if (force || endedBecauseAllAnswered) {
-      for (const id of playerIds) {
-        const idx = answers[id];
-        const who = this.playerName(next, id);
+      if (force || endedBecauseAllAnswered) {
+        for (const id of playerIds) {
+          const idx = answers[id];
+          const who = this.playerName(next, id);
         if (idx == null) {
           next = this.core.appendLog(next, `${who} répond : Temps écoulé.`);
           continue;
@@ -919,17 +936,24 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       }
       next = this.core.appendLog(next, `Fin de la manche ${currentRound}.`);
       if (!willFinish) {
-        next = this.core.appendLog(next, 'Prochaine question : appuyez sur Espace.');
+        const interSeconds = this.clampInt(meta.config?.interQuestionSeconds, 1, 60, 5);
+        next = this.core.appendLog(
+          next,
+          `Prochaine question dans ${interSeconds} secondes. Appuyez sur Espace.`,
+        );
       }
     }
 
+    const interQuestionSeconds = this.clampInt(meta.config?.interQuestionSeconds, 1, 60, 5);
     const afterMeta: MnemoQuizMetadata = {
       ...meta,
       scoresByPlayerId: nextScores,
       currentQuestion: null,
       quizAnswersByPlayerId: {},
       quizDeadlineAtMs: null,
-      interQuestionUntilMs: null,
+      interQuestionUntilMs: willFinish
+        ? null
+        : Date.now() + Math.max(1, interQuestionSeconds) * 1000,
     };
 
     const reached = playerIds
@@ -1194,6 +1218,13 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
         const currentId = state.turn?.currentPlayerId ?? null;
         const currentPlayer =
           players.find((p: any) => p?.id === currentId) ?? null;
+        const interUntilMs =
+          typeof (meta as any).interQuestionUntilMs === 'number'
+            ? (meta as any).interQuestionUntilMs
+            : null;
+        if (interUntilMs != null && Date.now() < interUntilMs) {
+          return state.pending ? { ...state, pending: null } : state;
+        }
         if (
           !state.pending &&
           currentPlayer?.isBot &&
@@ -1230,6 +1261,14 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     const currentId = state.turn?.currentPlayerId ?? null;
 
     const pendingState = state.pending as any;
+    const interUntilMs =
+      typeof (meta as any).interQuestionUntilMs === 'number'
+        ? (meta as any).interQuestionUntilMs
+        : null;
+    if (interUntilMs != null && Date.now() < interUntilMs) {
+      return null;
+    }
+
     if (
       !meta.currentQuestion &&
       pendingState?.type === 'draw' &&
@@ -1591,51 +1630,57 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 	      actionType: 'mnemo_set_config',
 	      cancelActionType: 'mnemo_prompt_cancel',
 	      fields: [
-	        {
-	          key: 'correctSoloPoints',
-	          label: 'Points : bonne réponse (seul)',
-	          kind: 'number',
-	          initialText: String((config as any)?.correctSoloPoints ?? 2),
-	        },
-	        {
-	          key: 'correctMultiPoints',
-	          label: 'Points : bonne réponse (plusieurs)',
-	          kind: 'number',
-	          initialText: String((config as any)?.correctMultiPoints ?? 1),
-	        },
-	        {
-	          key: 'wrongPoints',
-	          label: 'Points : mauvaise réponse',
-	          kind: 'number',
-	          initialText: String((config as any)?.wrongPoints ?? 0),
-	        },
-	        {
-	          key: 'timeoutPoints',
-	          label: 'Points : temps écoulé / tour passé',
-	          kind: 'number',
-	          initialText: String((config as any)?.timeoutPoints ?? -1),
-	        },
-	        {
-	          key: 'targetPoints',
-	          label: 'Points à atteindre',
-	          kind: 'number',
-	          initialText: String(config?.targetPoints ?? 20),
-	        },
-	        {
-	          key: 'useTimer',
-	          label: 'Chrono (oui/non)',
-	          kind: 'boolean',
-	          initialText: config?.useTimer ? 'oui' : 'non',
-	        },
-	        {
-	          key: 'timerSeconds',
-	          label: 'Secondes (si chrono)',
-	          kind: 'number',
-	          initialText: String(config?.timerSeconds ?? 30),
-	        },
-	      ],
-	    };
-	  }
+        {
+          key: 'correctSoloPoints',
+          label: 'Points accordés si un seul joueur répond correctement',
+          kind: 'number',
+          initialText: String((config as any)?.correctSoloPoints ?? 2),
+        },
+        {
+          key: 'correctMultiPoints',
+          label: 'Points accordés par joueur en cas de bonnes réponses multiples',
+          kind: 'number',
+          initialText: String((config as any)?.correctMultiPoints ?? 1),
+        },
+        {
+          key: 'wrongPoints',
+          label: 'Points appliqués en cas de mauvaise réponse',
+          kind: 'number',
+          initialText: String((config as any)?.wrongPoints ?? 0),
+        },
+        {
+          key: 'timeoutPoints',
+          label: 'Points appliqués si le joueur ne répond pas à temps',
+          kind: 'number',
+          initialText: String((config as any)?.timeoutPoints ?? -1),
+        },
+        {
+          key: 'targetPoints',
+          label: 'Score cible pour gagner la partie',
+          kind: 'number',
+          initialText: String(config?.targetPoints ?? 20),
+        },
+        {
+          key: 'useTimer',
+          label: 'Activer le chrono par question (oui/non)',
+          kind: 'boolean',
+          initialText: config?.useTimer ? 'oui' : 'non',
+        },
+        {
+          key: 'timerSeconds',
+          label: 'Durée du chrono par question (secondes)',
+          kind: 'number',
+          initialText: String(config?.timerSeconds ?? 30),
+        },
+        {
+          key: 'interQuestionSeconds',
+          label: 'Délai avant la question suivante (secondes)',
+          kind: 'number',
+          initialText: String((config as any)?.interQuestionSeconds ?? 5),
+        },
+      ],
+    };
+  }
 
 	  private clampInt(value: any, min: number, max: number, fallback: number): number {
 	    const candidate = Number(value);
@@ -1701,14 +1746,15 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     const config =
       raw?.config && typeof raw.config === 'object'
         ? raw.config
-        : ({
-            targetPoints: 20,
-            useTimer: true,
-            timerSeconds: 30,
-            correctSoloPoints: 2,
-            correctMultiPoints: 1,
-            wrongPoints: 0,
-            timeoutPoints: -1,
+          : ({
+              targetPoints: 20,
+              useTimer: true,
+              timerSeconds: 30,
+              interQuestionSeconds: 5,
+              correctSoloPoints: 2,
+              correctMultiPoints: 1,
+              wrongPoints: 0,
+              timeoutPoints: -1,
           } as MnemoQuizConfig);
 
     return { ...(raw as any), adminView, config } as any;

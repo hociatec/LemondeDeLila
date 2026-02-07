@@ -119,15 +119,16 @@ export class PanierExpressDrawService {
       metadata: nextMeta as any,
     };
     const courseLabel = this.utils.formatCourseLabel(card);
+    const playerLabel = this.utils.playerName(state, playerId);
     const message = discarded
       ? discarded === 'duplicate'
         ? duplicateSource === 'panier'
-          ? `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}" mais l'a déjà dans son panier et la défausse.`
+          ? `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'a déjà dans son panier. Cet ingrédient part donc à la défausse.`
           : duplicateSource === 'inventaire'
-            ? `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}" mais l'a déjà dans son inventaire et la défausse.`
-            : `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}" mais l'a déjà et la défausse.`
-        : `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}" mais son inventaire est plein et la défausse.`
-      : `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}".`;
+            ? `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'a déjà dans son inventaire. Cet ingrédient part donc à la défausse.`
+            : `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'a déjà. Cet ingrédient part donc à la défausse.`
+        : `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais son inventaire est plein. Cet ingrédient part donc à la défausse.`
+      : `[Panier Express] ${playerLabel} pioche "${courseLabel}".`;
     const logged = this.core.appendLog(nextState, message);
 
     const playerView = players.find((p) => p.id === playerId);

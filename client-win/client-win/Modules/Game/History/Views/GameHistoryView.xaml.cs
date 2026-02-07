@@ -131,11 +131,19 @@ public partial class GameHistoryView : UserControl
 
     private void AppendEntries(IEnumerable<string> entries)
     {
+        var paragraph = HistoryViewer.Document.Blocks.LastBlock as Paragraph;
+        if (paragraph == null)
+        {
+            paragraph = new Paragraph();
+            HistoryViewer.Document.Blocks.Add(paragraph);
+        }
+
         foreach (var entry in entries)
         {
             if (entry == GameHistoryMessageSplitter.BlankLineToken)
             {
-                HistoryViewer.Document.Blocks.Add(new Paragraph(new Run(" ")));
+                paragraph.Inlines.Add(new Run(" "));
+                paragraph.Inlines.Add(new LineBreak());
                 continue;
             }
 
@@ -144,7 +152,8 @@ public partial class GameHistoryView : UserControl
                 continue;
             }
 
-            HistoryViewer.Document.Blocks.Add(new Paragraph(new Run(entry)));
+            paragraph.Inlines.Add(new Run(entry));
+            paragraph.Inlines.Add(new LineBreak());
         }
 
         if (!HistoryViewer.IsKeyboardFocusWithin)
@@ -176,11 +185,13 @@ public partial class GameHistoryView : UserControl
         }
 
         HistoryViewer.Document.Blocks.Clear();
+        var paragraph = new Paragraph();
         foreach (var entry in _viewModel.Entries)
         {
             if (entry == GameHistoryMessageSplitter.BlankLineToken)
             {
-                HistoryViewer.Document.Blocks.Add(new Paragraph(new Run(" ")));
+                paragraph.Inlines.Add(new Run(" "));
+                paragraph.Inlines.Add(new LineBreak());
                 continue;
             }
 
@@ -189,8 +200,10 @@ public partial class GameHistoryView : UserControl
                 continue;
             }
 
-            HistoryViewer.Document.Blocks.Add(new Paragraph(new Run(entry)));
+            paragraph.Inlines.Add(new Run(entry));
+            paragraph.Inlines.Add(new LineBreak());
         }
+        HistoryViewer.Document.Blocks.Add(paragraph);
 
         if (scrollToEnd && !HistoryViewer.IsKeyboardFocusWithin)
         {

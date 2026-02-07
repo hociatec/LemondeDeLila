@@ -181,10 +181,17 @@ export class FrousseActionService {
       metadata: { ...(state.metadata ?? {}), ...meta },
       lastRoll: roll.value,
     };
-    next = this.core.appendLog(
-      next,
-      `${this.playerName(next, currentId)} lance le dé : "${roll.value}".`,
-    );
+    if (roll.rolls && roll.rolls.length >= 2) {
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, currentId)} lance deux dés : "${roll.rolls[0]}" et "${roll.rolls[1]}" (garde "${roll.value}").`,
+      );
+    } else {
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, currentId)} lance le dé : "${roll.value}".`,
+      );
+    }
 
     // Effet conditionnel: "Si vous faites un trois, reculez de 2 cases."
     if (meta.statuses?.nextRollIfThreeBackTwo?.[currentId] === true) {
@@ -309,7 +316,7 @@ export class FrousseActionService {
         : `${this.playerName(next, playerId)} arrive sur ${label}.`;
       next = this.core.appendLog(next, arrival);
       if (tile.type === 'card') {
-        next = this.core.appendLog(next, `Pioche une carte.`);
+        next = this.core.appendLog(next, `Piochez une carte.`);
       } else if (tile.type === 'finish') {
         next = this.core.appendLog(next, `Effet : case d'arrivée.`);
       }
@@ -419,12 +426,12 @@ export class FrousseActionService {
       ignored = true;
     }
 
-    const effectLabel = ignored
-      ? 'Effet ignoré.'
-      : describeCardEffect(draw.card);
+    const effectLabel = ignored ? 'Effet ignoré.' : describeCardEffect(draw.card);
+    const narrative = extractNarrative(draw.card.text);
+    const cardText = narrative || draw.card.text;
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} pioche une carte (${draw.card.text}) : ${effectLabel}`,
+      `${this.playerName(next, playerId)} pioche une carte (${cardText}) : ${effectLabel}`,
     );
 
     if (ignored) {
@@ -728,7 +735,12 @@ export class FrousseActionService {
           },
         },
       };
-      return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+      (meta as any).keepTurnNow = true;
+      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+      return this.core.appendLog(
+        next,
+        `${this.playerName(next, playerId)} rejoue (test du 3).`,
+      );
     }
 
     // Téléport jusqu'à la case 40.
@@ -833,7 +845,7 @@ export class FrousseActionService {
   private roll(
     meta: FrousseMetadata,
     playerId: number,
-  ): { value: number; meta: FrousseMetadata } {
+  ): { value: number; meta: FrousseMetadata; rolls?: number[] } {
     let outMeta = meta;
 
     const keepLowest = outMeta.statuses.nextRollKeepLowest?.[playerId] === true;
@@ -842,6 +854,7 @@ export class FrousseActionService {
       outMeta = { ...outMeta, ...a.meta };
       const b = this.random.rollDice(outMeta as any, 6);
       outMeta = { ...outMeta, ...b.meta };
+      const rolls = [a.roll, b.roll];
       outMeta = {
         ...outMeta,
         statuses: {
@@ -852,7 +865,7 @@ export class FrousseActionService {
           },
         },
       };
-      return { value: Math.min(a.roll, b.roll), meta: outMeta };
+      return { value: Math.min(a.roll, b.roll), meta: outMeta, rolls };
     }
 
     const single = this.random.rollDice(outMeta as any, 6);
@@ -1099,4 +1112,38 @@ function describeCardEffect(card: FrousseCard): string {
   if (/n['’]avancerez que d['’](une|un)e seule case/i.test(text)) return 'Au prochain tour, avancez d’une seule case.';
 
   return 'Effet immédiat.';
+}
+
+function extractNarrative(text: string): string {
+  const cleaned = String(text ?? '').replace('\r', '').trim();
+  if (!cleaned) return '';
+  const parts = cleaned
+    .split(/\n+/)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+
+  const isEffectLine = (line: string) => {
+    const l = line.toLowerCase();
+    return (
+      l.includes('avancez') ||
+      l.includes('reculez') ||
+      l.includes('passez') ||
+      l.includes('relancez') ||
+      l.includes('lancez le dé') ||
+      l.includes('doublez') ||
+      l.includes('ignorez') ||
+      l.includes('échange') ||
+      l.includes('echange') ||
+      l.includes('allez en cuisine') ||
+      l.includes('retour') ||
+      l.includes('case départ') ||
+      l.includes('obtenez') ||
+      l.includes('ne bougez pas') ||
+      l.includes('vous ne rejouez') ||
+      l.includes('sautez')
+    );
+  };
+
+  const narrative = parts.filter((p) => !isEffectLine(p));
+  return narrative.join(' ');
 }

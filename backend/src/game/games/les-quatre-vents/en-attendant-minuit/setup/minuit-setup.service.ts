@@ -6,6 +6,7 @@ import type {
   MinuitBoardJsonV1,
   MinuitCardsJsonV1,
   MinuitMetadata,
+  MinuitPawnsJsonV1,
 } from '../model/minuit.types';
 
 @Injectable()
@@ -18,6 +19,7 @@ export class MinuitSetupService {
   hydrateInitialState(base: GameStateEntity): GameStateEntity {
     const board = this.loadBoard();
     const cards = this.loadCards();
+    const pawns = this.loadPawns();
 
     const players = Array.isArray(base.players) ? base.players : [];
     const positions: Record<number, number> = {};
@@ -29,11 +31,13 @@ export class MinuitSetupService {
     const meta: MinuitMetadata = {
       tiles: board.tiles ?? [],
       positions,
+      pawnChoices: Array.isArray(pawns.pawns) ? pawns.pawns : [],
       statuses: {
         skipTurn: {},
         ignoreNextMalus: {},
         ignoreNextSkip: {},
         forceDrawNextTurn: {},
+        keepTurn: {},
       },
       decks: { cards: shuffled.values as any, discard: [] },
       pendingQuiz: null,
@@ -73,6 +77,18 @@ export class MinuitSetupService {
       validators: [
         this.contentLoader.validators.version(1),
         this.contentLoader.validators.arrayField('cards', 1),
+      ],
+    });
+  }
+
+  private loadPawns(): MinuitPawnsJsonV1 {
+    return this.contentLoader.loadContent<MinuitPawnsJsonV1>({
+      gameType: 'en-attendant-minuit',
+      baseDir: __dirname,
+      filename: 'pawns.json',
+      validators: [
+        this.contentLoader.validators.version(1),
+        this.contentLoader.validators.arrayField('pawns', 1),
       ],
     });
   }

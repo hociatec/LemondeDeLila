@@ -860,22 +860,38 @@ export class PanierExpressService extends AbstractGameService {
     if (kind === 'event.tirage_chanceux') {
       const metaNow = this.getMetadata(next) as any;
       const metaRng = this.random.createMetaRng(metaNow);
-      const drawnCourses = this.deckPool.drawMany<string>(
-        metaNow.decks ?? {},
-        'courses-bonus',
-        3,
-        metaRng.rng,
-      );
+      let nextPool = (metaNow.decks ?? {}) as any;
+      const offered: string[] = [];
+      const seen = new Set<string>();
+      let safety = 0;
+      while (offered.length < 3 && safety < 30) {
+        const draw = this.deckPool.draw<string>(
+          nextPool,
+          'courses-bonus',
+          metaRng.rng,
+        );
+        nextPool = draw.pool as any;
+        const card = String(draw.card ?? '').trim();
+        if (!card) break;
+        if (seen.has(card)) {
+          nextPool = this.deckPool.discard<string>(
+            nextPool,
+            'courses-bonus',
+            card,
+          );
+        } else {
+          seen.add(card);
+          offered.push(card);
+        }
+        safety += 1;
+      }
       next = {
         ...next,
         metadata: {
           ...metaRng.getMeta(),
-          decks: drawnCourses.pool as any,
+          decks: nextPool as any,
         },
       };
-      const offered = (drawnCourses.cards ?? [])
-        .map((v: any) => String(v))
-        .filter((v: string) => v.length > 0);
       if (!offered.length) {
         next = this.core.appendLog(
           next,
@@ -898,17 +914,47 @@ export class PanierExpressService extends AbstractGameService {
 
     if (kind === 'event.producteur_genereux') {
       next = this.drawSvc.drawCourse(next, pendingPlayerId, 'bonus');
-      const me = (next.players ?? []).find(
-        (p) => p.id === pendingPlayerId,
-      ) as any;
-      const inv = this.utils.toStringArray(me?.inventory);
+      const metaNow = this.getMetadata(next) as any;
+      const metaRng = this.random.createMetaRng(metaNow);
+      const draw = this.deckPool.draw<string>(
+        metaNow.decks ?? {},
+        'courses-bonus',
+        metaRng.rng,
+      );
+      const offer = String(draw.card ?? '').trim();
+      next = {
+        ...next,
+        metadata: {
+          ...metaRng.getMeta(),
+          decks: draw.pool as any,
+        },
+      };
       const targets = (next.players ?? [])
         .filter((p) => p.id !== pendingPlayerId)
         .map((p: any) => ({ playerId: p.id, username: p.username }));
-      if (!inv.length || !targets.length) {
+      if (!offer) {
         next = this.core.appendLog(
           next,
-          `[Panier Express] Producteur généreux : aucun don possible.`,
+          `[Panier Express] Producteur généreux : aucune carte à offrir.`,
+        );
+        return this.advanceAfterDraw(next);
+      }
+      if (!targets.length) {
+        const metaNowAfter = this.getMetadata(next) as any;
+        next = {
+          ...next,
+          metadata: {
+            ...metaNowAfter,
+            decks: this.deckPool.discard<string>(
+              metaNowAfter.decks ?? {},
+              'courses-bonus',
+              offer,
+            ) as any,
+          },
+        };
+        next = this.core.appendLog(
+          next,
+          `[Panier Express] Producteur généreux : aucun joueur disponible pour recevoir une carte.`,
         );
         return this.advanceAfterDraw(next);
       }
@@ -918,9 +964,11 @@ export class PanierExpressService extends AbstractGameService {
           type: 'pick',
           playerId: pendingPlayerId,
           blocking: true,
-          label: 'Choisissez une carte à offrir (inventaire), puis Entrée.',
-          choices: inv,
-          data: { kind: 'event.producteur_genereux.choose_card', cards: inv, targets },
+          label: 'Choisissez un joueur pour recevoir la carte, puis Entrée.',
+          choices: targets
+            .map((t: any) => String(t?.username ?? ''))
+            .filter((v: string) => v.length > 0),
+          data: { kind: 'event.producteur_genereux.choose_target', offer, targets },
         },
       } as any;
     }
@@ -1348,10 +1396,10 @@ export class PanierExpressService extends AbstractGameService {
     const inventory = player ? this.utils.toStringArray(player.inventory) : [];
     const hasIngredient = inventory.includes(ingredient);
     if (!hasIngredient) {
-      const skipped = this.applySkipTurnTile(next, playerId, 2);
+      const skipped = this.applySkipTurnTile(next, playerId, 2, true);
       return this.core.appendLog(
         skipped,
-        `[Panier Express] Case Échange : ${playerName} n'a pas "${label}" et perd 2 tours.`,
+        `[Panier Express] Case Échange : ${playerName} refuse "${label}" et perd 2 tours.`,
       );
     }
     const pending: PendingState = {
@@ -1703,7 +1751,7 @@ export class PanierExpressService extends AbstractGameService {
           next,
           playerId,
           { kind: 'event.producteur_genereux' },
-          'Producteur généreux : piocher une course bonus (Espace).',
+          'Producteur généreux : piocher 2 courses bonus (Espace).',
         );
         next = this.appendActionLog(next, playerId, 'event', {
           event,
@@ -2555,14 +2603,11 @@ export class PanierExpressService extends AbstractGameService {
         });
         break;
       case 'chariot-perce': {
-        const metaNow = this.getMetadata(next) as any;
-        const last = String(
-          metaNow?.lastObtainedCourse?.[playerId] ?? '',
-        ).trim();
-        if (!last) {
+        const discarded = discardRandomCourse(playerId);
+        if (!discarded) {
           next = this.core.appendLog(
             next,
-            `[Panier Express] Chariot percé : aucune dernière carte à défausser.`,
+            `[Panier Express] Chariot percé : aucun ingrédient à défausser.`,
           );
           next = this.appendActionLog(next, playerId, 'event', {
             event,
@@ -2570,38 +2615,16 @@ export class PanierExpressService extends AbstractGameService {
           });
           break;
         }
-        const removed = removeOneCourseFromPlayer(playerId, last);
-        if (!removed.updated) {
-          next = this.core.appendLog(
-            next,
-            `[Panier Express] Chariot percé : "${this.utils.formatCourseLabel(last)}" introuvable.`,
-          );
-          next = this.appendActionLog(next, playerId, 'event', {
-            event,
-            effect: 'none',
-          });
-          break;
-        }
-        addToDiscard(last);
-        const metaAfter = this.getMetadata(next) as any;
-        next = {
-          ...next,
-          metadata: {
-            ...metaAfter,
-            lastObtainedCourse: {
-              ...(metaAfter?.lastObtainedCourse ?? {}),
-              [playerId]: null,
-            },
-          },
-        };
         next = this.core.appendLog(
           next,
-          `[Panier Express] Chariot percé : défausse "${this.utils.formatCourseLabel(last)}".`,
+          `[Panier Express] Chariot percé : défausse "${this.utils.formatCourseLabel(
+            discarded,
+          )}".`,
         );
         next = this.appendActionLog(next, playerId, 'event', {
           event,
-          effect: 'discard_last',
-          card: last,
+          effect: 'discard_random',
+          card: discarded,
         });
         break;
       }
@@ -2804,7 +2827,7 @@ export class PanierExpressService extends AbstractGameService {
         ? String(pending.data?.ingredient ?? '').trim()
         : '';
     let next: GameStateEntity = { ...state, pending: null };
-    next = this.applySkipTurnTile(next, actorId, 2);
+    next = this.applySkipTurnTile(next, actorId, 2, true);
     const label = ingredient
       ? ` "${this.utils.formatCourseLabel(ingredient)}"`
       : '';
@@ -3106,6 +3129,7 @@ export class PanierExpressService extends AbstractGameService {
           data: {
             kind: 'event.producteur_genereux.choose_target',
             give: chosen,
+            offerFromInventory: true,
             targets,
           },
         },
@@ -3118,27 +3142,32 @@ export class PanierExpressService extends AbstractGameService {
         : [];
       const chosenTarget = targets[index];
       const targetPlayerId = Number(chosenTarget?.playerId);
+      const offer = String(pending?.data?.offer ?? '').trim();
       const give = String(pending?.data?.give ?? '').trim();
-      if (!Number.isFinite(targetPlayerId) || !give) {
+      const card = offer || give;
+      const offerFromInventory = Boolean(pending?.data?.offerFromInventory);
+      if (!Number.isFinite(targetPlayerId) || !card) {
         return clearPending(state);
       }
 
       let next = clearPending(state);
-      const removed = removeCourseFromPlayer(next, actorId, give);
-      next = removed.state;
-      if (removed.removed) {
-        next = addCourseToPlayer(next, targetPlayerId, give);
+      if (offerFromInventory || give) {
+        const removed = removeCourseFromPlayer(next, actorId, card);
+        next = removed.state;
       }
+      next = addCourseToPlayer(next, targetPlayerId, card);
       next = this.core.appendLog(
         next,
-        `[Panier Express] ${this.utils.playerName(
+        `[Panier Express] Producteur g\u00e9n\u00e9reux : ${this.utils.playerName(
           state,
           actorId,
-        )} offre "${give}" \u00e0 ${this.utils.playerName(state, targetPlayerId)}.`,
+        )} pioche 2 cartes et offre "${this.utils.formatCourseLabel(
+          card,
+        )}" \u00e0 ${this.utils.playerName(state, targetPlayerId)}.`,
       );
       next = this.appendActionLog(next, actorId, 'event', {
         event: 'producteur-genereux',
-        give,
+        give: card,
         targetPlayerId,
       });
       return this.phaseFlow.advanceTurn(next);
@@ -3329,6 +3358,15 @@ export class PanierExpressService extends AbstractGameService {
       if (removed.removed) {
         next = addCourseToPlayer(next, receiverId, give);
       }
+      next = this.core.appendLog(
+        next,
+        `[Panier Express] Troc improvis\u00e9 : ${this.utils.playerName(
+          state,
+          giverId,
+        )} donne "${this.utils.formatCourseLabel(
+          give,
+        )}" \u00e0 ${this.utils.playerName(state, receiverId)}.`,
+      );
 
       let nextCursor = (giverIndex + 1) % order.length;
       let nextProcessed = processed + 1;
@@ -3452,6 +3490,7 @@ export class PanierExpressService extends AbstractGameService {
         )} choisit de rejoindre ${target.label} (case ${target.caseNumber}).`,
       );
       next = this.movePlayer(next, actorId, delta);
+      next = this.resolveTile(next, actorId);
       next = this.appendActionLog(next, actorId, 'tile', {
         tile: 'move_to_stand_choice',
         standId: target.standId ?? undefined,
@@ -4148,9 +4187,11 @@ export class PanierExpressService extends AbstractGameService {
     state: GameStateEntity,
     playerId: number,
     turns: number,
+    silent = false,
   ): GameStateEntity {
     const count = Math.max(1, turns || 1);
     const next = this.turnStatus.setStatus(state, playerId, 'skipTurn', count);
+    if (silent) return next;
     return this.core.appendLog(
       next,
       `[Panier Express] ${this.utils.playerName(state, playerId)} perd ${count} tour(s).`,

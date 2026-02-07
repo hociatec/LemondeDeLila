@@ -1592,14 +1592,30 @@ export class GameEngineService {
     if (this.botScheduler.has(key)) return;
 
     const baseDelayMs = this.botSettings.getBotTurnDelayMs();
+    const meta: any =
+      state?.metadata && typeof state.metadata === 'object' ? state.metadata : {};
+    const immediateStart = meta?.botImmediateStartPending === true;
     const pending: any = state.pending as any;
     const isQuizPending = gameType === 'arche-de-mnemosyne' && pending?.type === 'quiz';
-    const delayMs = isQuizPending
-      ? Math.min(baseDelayMs, 800)
-      : gameType === 'frousse-party'
-        ? 0
-        : baseDelayMs;
-    const thinking = await this.markBotThinking(roomId, gameType, state, true);
+    const delayMs = immediateStart
+      ? 0
+      : isQuizPending
+        ? Math.min(baseDelayMs, 800)
+        : gameType === 'frousse-party'
+          ? 0
+          : baseDelayMs;
+    const stateForSchedule = immediateStart
+      ? {
+          ...state,
+          metadata: { ...(meta as any), botImmediateStartPending: false },
+        }
+      : state;
+    const thinking = await this.markBotThinking(
+      roomId,
+      gameType,
+      stateForSchedule,
+      true,
+    );
     this.broadcaster?.(gameType, roomId, thinking);
     this.gameLogger.debug('Bot turn scheduled', {
       roomId,
@@ -1746,11 +1762,27 @@ export class GameEngineService {
     const handler = this.registry.getHandler(gameType);
     if (handler) {
       const hydrated = handler.hydrateInitialState(baseState);
-      return this.appendFirstTurnAnnouncement(hydrated);
+      const withMeta = {
+        ...hydrated,
+        metadata: {
+          ...(hydrated.metadata ?? {}),
+          botImmediateStartPending: true,
+        },
+      } as GameStateEntity;
+      return this.appendFirstTurnAnnouncement(withMeta);
     }
-    return this.appendFirstTurnAnnouncement(
-      this.core.appendLog(baseState, `Type de jeu non spécialisé: ${gameType}`),
+    const logged = this.core.appendLog(
+      baseState,
+      `Type de jeu non spécialisé: ${gameType}`,
     );
+    const withMeta = {
+      ...logged,
+      metadata: {
+        ...(logged.metadata ?? {}),
+        botImmediateStartPending: true,
+      },
+    } as GameStateEntity;
+    return this.appendFirstTurnAnnouncement(withMeta);
   }
 
   private appendFirstTurnAnnouncement(state: GameStateEntity): GameStateEntity {

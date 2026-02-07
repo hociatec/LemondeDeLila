@@ -21,7 +21,7 @@ const MINUIT_PAWNS = [
   'La Fée des Flocons',
   'Le Père Noël',
   'Le Renne',
-  "Le Petit Bonhomme en Pain d’Épices",
+  "Le Petit Bonhomme en Pain d'Épices",
 ];
 
 @Injectable()
@@ -126,8 +126,7 @@ export class MinuitActionService {
     meta = this.getMeta(next);
     if (meta.winnerId != null) return { ...next, status: 'finished' };
     if (meta.pendingQuiz || next.pending) return next;
-
-    return this.turns.advanceTurn(next);
+    return this.advanceTurnOrKeep(next, currentId);
   }
 
   private handleDraw(state: GameStateEntity): GameStateEntity {
@@ -147,8 +146,7 @@ export class MinuitActionService {
     const meta = this.getMeta(next);
     if (meta.winnerId != null) return { ...next, status: 'finished' };
     if (meta.pendingQuiz || next.pending) return next;
-
-    return this.turns.advanceTurn(next);
+    return this.advanceTurnOrKeep(next, currentId);
   }
 
   private applyDrawCard(state: GameStateEntity, playerId: number): GameStateEntity {
@@ -158,7 +156,13 @@ export class MinuitActionService {
     meta = draw.meta;
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     if (!draw.card) return next;
-    next = this.core.appendLog(next, `Carte Noël : ${draw.card.title}.`);
+    const effectText = Array.isArray(draw.card.lines)
+      ? draw.card.lines.join(' ')
+      : '';
+    next = this.core.appendLog(
+      next,
+      `${draw.card.title}: ${effectText}`.trim(),
+    );
     return this.applyCard(next, playerId, draw.card);
   }
 
@@ -197,6 +201,11 @@ export class MinuitActionService {
         next,
         `${who} répond : ${answer}. Mauvaise réponse.`,
       );
+      const failDelta =
+        typeof pending.failureDelta === 'number' ? pending.failureDelta : 0;
+      if (failDelta !== 0) {
+        next = this.move(next, currentId, failDelta);
+      }
     }
 
     meta = this.getMeta(next);
@@ -208,7 +217,7 @@ export class MinuitActionService {
     meta = this.getMeta(next);
     if (meta.winnerId != null) return { ...next, status: 'finished' };
     if (meta.pendingQuiz || next.pending) return next;
-    return this.turns.advanceTurn(next);
+    return this.advanceTurnOrKeep(next, currentId);
   }
 
   private handleChooseTarget(
@@ -316,8 +325,11 @@ export class MinuitActionService {
         .map((p) => (typeof p?.pawn === 'string' ? String(p.pawn).trim() : ''))
         .filter((pawn) => pawn.length > 0),
     );
-    const available = MINUIT_PAWNS.filter((pawn) => !taken.has(pawn));
-    const choices = available.length ? available : [...MINUIT_PAWNS];
+    const choiceEntries = this.listPawnChoiceEntries(this.getMeta(state));
+    const available = choiceEntries.filter((entry) => !taken.has(entry.title));
+    const entries = available.length ? available : [...choiceEntries];
+    const choices = entries.map((entry) => entry.label);
+    const choiceMap = Object.fromEntries(entries.map((e) => [e.label, e.title]));
     const chooser = missing[0];
     return {
       ...state,
@@ -327,7 +339,7 @@ export class MinuitActionService {
         blocking: true,
         label: 'Choisissez votre pion, puis Entrée.',
         choices,
-        data: { choices },
+        data: { choices, choiceMap },
       } as PendingState,
       turn: {
         ...(state.turn ?? { currentPlayerId: chooser.id, direction: 1 }),
@@ -362,7 +374,9 @@ export class MinuitActionService {
         taken.add(pawn);
         return p;
       }
-      const available = MINUIT_PAWNS.find((candidate) => !taken.has(candidate));
+      const available = this.listPawnChoices(meta).find(
+        (candidate) => !taken.has(candidate),
+      );
       if (!available) return p;
       taken.add(available);
       assigned[p.id] = available;
@@ -389,6 +403,12 @@ export class MinuitActionService {
     if (!Number.isFinite(playerId)) return state;
     const requestedPawn = String((action.payload as any)?.pawn ?? '').trim();
     if (!requestedPawn) return state;
+    const choiceMap =
+      pending && typeof pending?.data?.choiceMap === 'object'
+        ? (pending.data.choiceMap as Record<string, string>)
+        : {};
+    const resolvedPawn = String(choiceMap[requestedPawn] ?? requestedPawn).trim();
+    if (!resolvedPawn) return state;
     const players = Array.isArray(state.players) ? state.players : [];
     const takenByOthers = new Set<string>(
       players
@@ -396,14 +416,14 @@ export class MinuitActionService {
         .map((p) => (typeof p?.pawn === 'string' ? p.pawn.trim() : ''))
         .filter((pawn) => pawn.length > 0),
     );
-    if (takenByOthers.has(requestedPawn)) return state;
+    if (takenByOthers.has(resolvedPawn)) return state;
     const updatedPlayers = players.map((p) =>
-      p?.id === playerId ? { ...p, pawn: requestedPawn } : p,
+      p?.id === playerId ? { ...p, pawn: resolvedPawn } : p,
     );
     const meta = this.getMeta(state);
     const nextPawns: Record<number, string> = {
       ...(meta.pawns ?? {}),
-      [playerId]: requestedPawn,
+      [playerId]: resolvedPawn,
     };
     let next: GameStateEntity = {
       ...state,
@@ -416,9 +436,32 @@ export class MinuitActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} choisit le pion ${requestedPawn}.`,
+      `${this.playerName(next, playerId)} choisit le pion ${resolvedPawn}.`,
     );
     return this.ensurePawnSelection(next);
+  }
+
+  private listPawnChoices(meta: MinuitMetadata): string[] {
+    return this.listPawnChoiceEntries(meta).map((entry) => entry.title);
+  }
+
+  private listPawnChoiceEntries(
+    meta: MinuitMetadata,
+  ): Array<{ title: string; label: string }> {
+    const fromContent = Array.isArray(meta.pawnChoices)
+      ? meta.pawnChoices
+          .map((p) => ({
+            title: String(p?.title ?? '').trim(),
+            description: String((p as any)?.description ?? '').trim(),
+          }))
+          .filter((p) => p.title.length > 0)
+          .map((p) => ({
+            title: p.title,
+            label: p.description ? `${p.title} — ${p.description}` : p.title,
+          }))
+      : [];
+    if (fromContent.length) return fromContent;
+    return MINUIT_PAWNS.map((title) => ({ title, label: title }));
   }
 
   private arePawnsEqual(
@@ -463,16 +506,11 @@ export class MinuitActionService {
     const afterPos = meta.positions?.[playerId] ?? 0;
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} arrive sur Case ${tile.n} - ${tile.title}.`,
+      `${this.playerName(next, playerId)} arrive sur ${tile.title}.`,
     );
-    if (tile.type === 'card') {
-      next = this.core.appendLog(next, `Effet : piochez une carte Noël.`);
-    } else if (tile.type === 'move') {
-      next = this.core.appendLog(next, `Effet : déplacement.`);
-    } else if (tile.type === 'skip') {
-      next = this.core.appendLog(next, `Effet : passez des tours.`);
-    } else if (tile.type === 'finish') {
-      next = this.core.appendLog(next, `Effet : arrivée.`);
+    const description = String((tile as any)?.description ?? '').trim();
+    if (description) {
+      next = this.core.appendLog(next, description);
     }
     if (afterPos === 55) {
       meta = { ...meta, winnerId: playerId };
@@ -684,7 +722,7 @@ export class MinuitActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       return this.core.appendLog(
         next,
-        'Effet : au prochain tour, piochez une carte à la place du dé.',
+        'Au prochain tour, piochez une carte à la place du dé.',
       );
     }
 
@@ -780,10 +818,18 @@ export class MinuitActionService {
       /Relancez immédiatement le dé/i.test(text) ||
       /Relancez le dé maintenant/i.test(text)
     ) {
-      return this.core.appendLog(
-        next,
-        `${this.playerName(next, playerId)} rejoue.`,
-      );
+      meta = {
+        ...meta,
+        statuses: {
+          ...meta.statuses,
+          keepTurn: {
+            ...(meta.statuses.keepTurn ?? {}),
+            [playerId]: (meta.statuses.keepTurn?.[playerId] ?? 0) + 1,
+          },
+        },
+      };
+      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+      return this.core.appendLog(next, `${this.playerName(next, playerId)} rejoue.`);
     }
 
     if (/Lancez le dé et avancez du nombre obtenu/i.test(text)) {
@@ -797,7 +843,6 @@ export class MinuitActionService {
 
     const delta = extractMoveDelta(text);
     if (delta !== 0) {
-      next = this.core.appendLog(next, `Effet : déplacement ${delta}.`);
       next = this.move(next, playerId, delta);
       return this.applyLanding(next, playerId);
     }
@@ -876,10 +921,20 @@ export class MinuitActionService {
       ? answerLine.replace(/^[*]?[abc]\)\s*/i, '').trim()
       : undefined;
     const anyCorrect = lines.some((l) =>
-      /Les trois réponses sont juste/i.test(l),
+      /Les trois réponses sont just(e|es)/i.test(l),
     );
-    const successDelta = extractMoveDelta(lines.join(' '));
-    return { playerId, question, choices, answer, anyCorrect, successDelta };
+    const fullText = lines.join(' ');
+    const successDelta = extractMoveDelta(fullText);
+    const failureDelta = extractFailureDelta(fullText);
+    return {
+      playerId,
+      question,
+      choices,
+      answer,
+      anyCorrect,
+      successDelta,
+      failureDelta,
+    };
   }
 
   private otherPlayers(
@@ -918,6 +973,25 @@ export class MinuitActionService {
         : null;
     return u ?? `Joueur ${id}`;
   }
+
+  private advanceTurnOrKeep(state: GameStateEntity, playerId: number): GameStateEntity {
+    const meta = this.getMeta(state);
+    const keep = meta.statuses?.keepTurn?.[playerId] ?? 0;
+    if (keep > 0) {
+      const nextMeta: MinuitMetadata = {
+        ...meta,
+        statuses: {
+          ...meta.statuses,
+          keepTurn: {
+            ...(meta.statuses.keepTurn ?? {}),
+            [playerId]: Math.max(0, keep - 1),
+          },
+        },
+      };
+      return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
+    }
+    return this.turns.advanceTurn(state);
+  }
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -951,20 +1025,51 @@ function extractMoveDelta(text: string): number {
     return map[v] ?? 0;
   };
   const forward = text.match(
-    /avancez\s+de\s+([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
+    /avancez?\s+(?:de|d['’])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
   );
   if (forward) return parse(forward[1]);
   const backward = text.match(
-    /reculez\s+de\s+([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
+    /reculez?\s+(?:de|d['’])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
   );
   if (backward) return -parse(backward[1]);
+  return 0;
+}
+
+function extractFailureDelta(text: string): number {
+  const parse = (raw: string) => {
+    const v = raw.trim().toLowerCase();
+    const n = Number(v);
+    if (Number.isFinite(n)) return n;
+    const map: Record<string, number> = {
+      un: 1,
+      une: 1,
+      deux: 2,
+      trois: 3,
+      quatre: 4,
+      cinq: 5,
+      six: 6,
+    };
+    return map[v] ?? 0;
+  };
+  const backward = text.match(
+    /sinon[^.]*reculez?\s+(?:de|d['’])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
+  );
+  if (backward) return -parse(backward[1]);
+  const forward = text.match(
+    /sinon[^.]*avancez?\s+(?:de|d['’])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
+  );
+  if (forward) return parse(forward[1]);
   return 0;
 }
 
 function extractSkipTurns(text: string): number {
   if (/Passez trois tours/i.test(text)) return 3;
   if (/Passez deux tours/i.test(text)) return 2;
+  if (/Passez un tour/i.test(text)) return 1;
   if (/Passez votre tour/i.test(text) || /Passe ton tour/i.test(text)) return 1;
+  if (/Vous passez trois tours/i.test(text)) return 3;
+  if (/Vous passez deux tours/i.test(text)) return 2;
+  if (/Vous passez un tour/i.test(text)) return 1;
   return 0;
 }
 

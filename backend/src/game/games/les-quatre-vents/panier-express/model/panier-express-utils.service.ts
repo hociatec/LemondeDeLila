@@ -192,6 +192,7 @@ export class PanierExpressUtils {
       perce: 'percé',
       spontane: 'spontané',
       genereux: 'généreux',
+      improvise: 'improvisé',
     };
     const extraTokenMap: Record<string, string> = {
       recompensee: 'r\u00e9compens\u00e9e',
@@ -242,5 +243,4 @@ export class PanierExpressUtils {
     }
   }
 }
-
 
