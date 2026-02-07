@@ -6,6 +6,8 @@ namespace client_win.Modules.Game.History.Services;
 
 internal static class GameHistoryMessageSplitter
 {
+    internal const string BlankLineToken = "\u200B";
+
     public static IReadOnlyList<string> Split(string? message)
     {
         if (string.IsNullOrWhiteSpace(message))
@@ -24,6 +26,7 @@ internal static class GameHistoryMessageSplitter
             var line = (rawLine ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(line))
             {
+                result.Add(BlankLineToken);
                 continue;
             }
 
@@ -149,4 +152,3 @@ internal static class GameHistoryMessageSplitter
         return char.IsUpper(token[0]);
     }
 }
-

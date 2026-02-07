@@ -299,20 +299,20 @@ export class FrousseActionService {
     const tile = meta.tiles[pos] as FrousseTile | undefined;
 
     if (tile) {
-      next = this.core.appendLog(
-        next,
-        `${this.playerName(next, playerId)} arrive sur Case ${tile.n} - ${tile.title}.`,
-      );
+      const labelRaw = String((tile as any)?.label ?? '').trim();
+      const descRaw = String((tile as any)?.description ?? '').trim();
+      const typeLabel = tile.type === 'card' ? 'case symbole' : 'case neutre';
+      const fallbackLabel = `case ${tile.n}. ${tile.title} (${typeLabel})`;
+      const label = labelRaw || fallbackLabel;
+      const arrival = descRaw
+        ? `${this.playerName(next, playerId)} arrive sur ${label}.\n${descRaw}`
+        : `${this.playerName(next, playerId)} arrive sur ${label}.`;
+      next = this.core.appendLog(next, arrival);
       if (tile.type === 'card') {
         next = this.core.appendLog(next, `Pioche une carte.`);
       } else if (tile.type === 'finish') {
         next = this.core.appendLog(next, `Effet : case d'arrivée.`);
       }
-    } else {
-      next = this.core.appendLog(
-        next,
-        `${this.playerName(next, playerId)} arrive sur Case ${pos + 1}.`,
-      );
     }
 
     if (pos >= 49) {
@@ -345,6 +345,24 @@ export class FrousseActionService {
     meta = draw.meta;
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     if (!draw.card) return next;
+
+    // Ignore traps until next symbol (one draw).
+    if ((meta.statuses as any)?.ignoreTrapUntilNextDraw?.[playerId]) {
+      meta = {
+        ...meta,
+        statuses: {
+          ...meta.statuses,
+          ignoreTrapUntilNextDraw: {
+            ...((meta.statuses as any).ignoreTrapUntilNextDraw ?? {}),
+            [playerId]: false,
+          },
+        },
+      };
+      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+      if (/Piège/i.test(draw.card.category)) {
+        return this.core.appendLog(next, 'Piège ignoré.');
+      }
+    }
 
     // Ignore ghost/trap.
     if (
@@ -403,7 +421,14 @@ export class FrousseActionService {
       next,
       `Carte (${draw.card.category}) : ${draw.card.text}`,
     );
-    return this.applyCard(next, playerId, draw.card);
+    const applied = this.applyCard(next, playerId, draw.card);
+    const appliedMeta = this.getMeta(applied);
+    if (applied.pending) return applied;
+    if ((appliedMeta as any).keepTurnNow === true) {
+      delete (appliedMeta as any).keepTurnNow;
+      return { ...applied, metadata: { ...(applied.metadata ?? {}), ...appliedMeta } };
+    }
+    return this.turns.advanceTurn(applied);
   }
 
   private applyCard(
@@ -415,7 +440,36 @@ export class FrousseActionService {
     let meta = this.getMeta(next);
     const text = card.text;
 
-    // Swap with another player.
+    // Ghost random swap (admin: random target).
+    if (
+      /Fantôme/i.test(card.category) &&
+      /fantôme farceur/i.test(text) &&
+      /échang|échange/i.test(text)
+    ) {
+      const targets = this.otherPlayers(next, playerId);
+      if (!targets.length) return next;
+      const pick = this.random.pickOne(meta as any, targets);
+      meta = pick.meta;
+      const target = pick.value;
+      if (!target) return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+      const actorPos = meta.positions?.[playerId] ?? 0;
+      const targetPos = meta.positions?.[target.id] ?? 0;
+      meta = {
+        ...meta,
+        positions: {
+          ...(meta.positions ?? {}),
+          [playerId]: targetPos,
+          [target.id]: actorPos,
+        },
+      };
+      next = this.core.appendLog(
+        { ...next, metadata: { ...(next.metadata ?? {}), ...meta } },
+        `${this.playerName(next, playerId)} échange sa position avec ${this.playerName(next, target.id)}.`,
+      );
+      return next;
+    }
+
+    // Swap with another player (choice).
     if (
       /échange(r|z) votre place/i.test(text) ||
       /Echangez immédiatement vos places/i.test(text)
@@ -441,6 +495,21 @@ export class FrousseActionService {
         pending,
         metadata: { ...(next.metadata ?? {}), ...meta },
       };
+    }
+
+    // Ignore traps until next symbol (one draw).
+    if (/Ignorez les pièges jusqu['’]au prochain symbole/i.test(text)) {
+      meta = {
+        ...meta,
+        statuses: {
+          ...meta.statuses,
+          ignoreTrapUntilNextDraw: {
+            ...(meta.statuses as any).ignoreTrapUntilNextDraw,
+            [playerId]: true,
+          },
+        },
+      };
+      return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
     // Ignore next trap / ghost.
@@ -661,7 +730,7 @@ export class FrousseActionService {
     }
 
     // Global: others +3 and you skip.
-    if (/laissant les autres joueurs filer de 3 cases/i.test(text)) {
+    if (/laissant les autres joueurs (filer|avancer) de 3 cases/i.test(text)) {
       const others = this.otherPlayerIds(meta, playerId);
       for (const pid of others) {
         meta.positions[pid] = clamp((meta.positions[pid] ?? 0) + 3, 0, 49);
@@ -719,6 +788,7 @@ export class FrousseActionService {
 
     // Go to case 1.
     if (
+      /case départ/i.test(text) ||
       /Retour à la case une/i.test(text) ||
       (/Retournez/i.test(text) && /case une/i.test(text))
     ) {
@@ -953,8 +1023,14 @@ function extractMoveDelta(text: string): number {
 }
 
 function extractSkipTurns(text: string): number {
+  const numeric = text.match(/Passez\\s+(\\d+)\\s+tour/i);
+  if (numeric) {
+    const n = Number(numeric[1]);
+    if (Number.isFinite(n) && n > 0) return Math.trunc(n);
+  }
   if (/Passez deux tours/i.test(text)) return 2;
   if (/Passez trois tours/i.test(text)) return 3;
-  if (/Passez votre tour/i.test(text) || /Passez un tour/i.test(text)) return 1;
+  if (/Passez votre tour/i.test(text) || /Passez un tour/i.test(text))
+    return 1;
   return 0;
 }

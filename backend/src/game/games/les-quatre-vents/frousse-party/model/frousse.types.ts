@@ -21,6 +21,7 @@ export type FrousseMetadata = {
   statuses: {
     skipTurn: Record<number, number>;
     ignoreNextTrap: Record<number, boolean>;
+    ignoreTrapUntilNextDraw?: Record<number, boolean>;
     ignoreNextPrank: Record<number, boolean>;
     ignoreNextGhost: Record<number, boolean>;
     nextMoveCap: Record<number, number>;

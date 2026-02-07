@@ -36,9 +36,16 @@ public sealed class GameHistorySink : IGameHistorySink
         {
             foreach (var part in parts)
             {
-                var raw = (part ?? string.Empty).Trim();
-                var isUiShortcut = raw.StartsWith("[ui]", StringComparison.OrdinalIgnoreCase);
-                var cleaned = StripGamePrefix(raw);
+                var raw = part ?? string.Empty;
+                if (raw == GameHistoryMessageSplitter.BlankLineToken)
+                {
+                    _history.Entries.Add(raw);
+                    continue;
+                }
+
+                var trimmed = raw.Trim();
+                var isUiShortcut = trimmed.StartsWith("[ui]", StringComparison.OrdinalIgnoreCase);
+                var cleaned = StripGamePrefix(trimmed);
                 if (string.IsNullOrWhiteSpace(cleaned))
                 {
                     continue;

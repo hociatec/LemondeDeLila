@@ -35,6 +35,7 @@ export class FrousseSetupService {
       statuses: {
         skipTurn: {},
         ignoreNextTrap: {},
+        ignoreTrapUntilNextDraw: {},
         ignoreNextPrank: {},
         ignoreNextGhost: {},
         nextMoveCap: {},

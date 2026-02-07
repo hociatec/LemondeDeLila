@@ -2062,7 +2062,6 @@ export class GameEngineService {
     // Les Quatre Vents (plateaux) : annoncer l'arrivée sur une case (titre + description si dispo).
     // Panier Express gère déjà ses annonces de case dans son service, on évite le doublon.
     'en-attendant-minuit',
-    'frousse-party',
     'galopons-ensemble',
   ]);
 
@@ -2129,11 +2128,15 @@ export class GameEngineService {
         }
 
         const tile: any = tiles[idx] ?? {};
-        const titleRaw = String(tile.title ?? tile.label ?? tile.name ?? '').trim();
+        const labelRaw = String(tile.label ?? '').trim();
+        const titleRaw = String(tile.title ?? tile.name ?? '').trim();
         const descriptionRaw = String(tile.description ?? '').trim();
 
         const caseNumber = idx + 1;
-        const title = titleRaw ? ` - ${titleRaw}` : '';
+        const label =
+          labelRaw || titleRaw
+            ? (labelRaw || titleRaw)
+            : '';
         const desc = descriptionRaw ? ` ${descriptionRaw}` : '';
 
         const name = p.username || `joueur ${p.id}`;
@@ -2144,12 +2147,22 @@ export class GameEngineService {
           const last = log.length ? log[log.length - 1] : null;
           return typeof (last as any)?.message === 'string' ? String((last as any).message).trim() : '';
         })();
-        const needle = `arrive sur case ${caseNumber}`.toLowerCase();
-        if (lastMsg.toLowerCase().includes(needle)) {
+        const needleByNumber = `arrive sur case ${caseNumber}`.toLowerCase();
+        const needleByLabel = label ? `arrive sur ${label}`.toLowerCase() : '';
+        const lastLower = lastMsg.toLowerCase();
+        if (
+          lastLower.includes(needleByNumber) ||
+          (needleByLabel && lastLower.includes(needleByLabel))
+        ) {
           continue;
         }
 
-        out = this.core.appendLog(out, `${name} arrive sur case ${caseNumber}${title}.${desc}`.trim());
+        if (label && /^case\\s+\\d+/i.test(label)) {
+          out = this.core.appendLog(out, `${name} arrive sur ${label}.${desc}`.trim());
+        } else {
+          const suffix = label ? ` - ${label}` : '';
+          out = this.core.appendLog(out, `${name} arrive sur case ${caseNumber}${suffix}.${desc}`.trim());
+        }
       }
 
       return out;
