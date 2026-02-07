@@ -6,6 +6,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using Serilog;
 using client_win.Modules.Home.ViewModels;
@@ -106,29 +107,17 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         {
             if (IsTabNavigationAllowed(e.OriginalSource))
             {
-                var direction = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift
-                    ? FocusNavigationDirection.Previous
-                    : FocusNavigationDirection.Next;
-
-                var origin = Keyboard.FocusedElement as UIElement ?? (sender as UIElement);
-                var moved = false;
-                try
+                // Let WPF perform normal tab navigation. We only intervene if no focus is yet
+                // inside this view (startup edge case).
+                if (!IsFocusWithinView())
                 {
-                    moved = origin?.MoveFocus(new TraversalRequest(direction)) == true;
+                    var moved = TryFocusFirstFieldCore(allowInactiveHost: true);
+                    if (moved)
+                    {
+                        QueueAutomationFocusSync();
+                        e.Handled = true;
+                    }
                 }
-                catch
-                {
-                    moved = false;
-                }
-
-                // First-launch fallback: if there is no usable focus yet, place focus explicitly
-                // on the first interactive field (username/password/landing button).
-                if (!moved)
-                {
-                    moved = TryFocusFirstFieldCore(allowInactiveHost: true);
-                }
-
-                e.Handled = moved;
             }
             return;
         }
@@ -743,7 +732,61 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         }
     }
 
-    private static void TrySetAutomationFocus(Control control)
+    private void QueueAutomationFocusSync()
+    {
+        try
+        {
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+            {
+                try
+                {
+                    if (!IsHostWindowActive())
+                    {
+                        return;
+                    }
+
+                    if (Keyboard.FocusedElement is not DependencyObject focused ||
+                        !IsDescendantOrSelf(focused, this))
+                    {
+                        return;
+                    }
+
+                    var target = FindAutomationFocusTarget(focused);
+                    if (target != null)
+                    {
+                        Log.Debug("QueueAutomationFocusSync target={TargetType}", target.GetType().Name);
+                        TrySetAutomationFocus(target);
+                    }
+                }
+                catch
+                {
+                    // best-effort
+                }
+            }));
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    private static UIElement? FindAutomationFocusTarget(DependencyObject start)
+    {
+        for (DependencyObject? current = start; current != null; current = GetParent(current))
+        {
+            if (current is UIElement ui &&
+                ui.IsVisible &&
+                ui.IsEnabled &&
+                ui.Focusable)
+            {
+                return ui;
+            }
+        }
+
+        return null;
+    }
+
+    private static void TrySetAutomationFocus(UIElement control)
     {
         if (control == null)
         {
@@ -758,7 +801,16 @@ public partial class HomeView : UserControl, IInitialFocusTarget
             }
 
             var peer = UIElementAutomationPeer.FromElement(control) ?? UIElementAutomationPeer.CreatePeerForElement(control);
-            peer?.SetFocus();
+            if (peer == null)
+            {
+                return;
+            }
+
+            Log.Debug("TrySetAutomationFocus target={TargetType} name={TargetName}",
+                control.GetType().Name,
+                AutomationProperties.GetName(control) ?? string.Empty);
+            try { peer.SetFocus(); } catch { /* ignore */ }
+            try { peer.RaiseAutomationEvent(AutomationEvents.AutomationFocusChanged); } catch { /* ignore */ }
         }
         catch (Exception ex)
         {
