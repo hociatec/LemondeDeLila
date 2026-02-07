@@ -6,6 +6,9 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using System.Windows.Interop;
+using System.Windows.Automation;
+using Serilog;
 using client_win.Modules.Home.ViewModels;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
@@ -644,14 +647,45 @@ public partial class HomeView : UserControl, IInitialFocusTarget
                 return;
             }
 
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
-                TryKeyboardFocus(LoginUsernameBox);
+                var success = TryKeyboardFocus(LoginUsernameBox);
+                Log.Debug("TryFocusLoginUsernameAsync invoked (success={Success})", success);
+                if (!success)
+                {
+                    TrySetAutomationFocus(LoginUsernameBox);
+                }
             }));
         }
-        catch
+        catch (Exception ex)
         {
-            // best-effort
+            Log.Warning(ex, "TryFocusLoginUsernameAsync failed");
+        }
+    }
+
+    private static void TrySetAutomationFocus(Control control)
+    {
+        if (control == null)
+        {
+            return;
+        }
+
+        try
+        {
+            var hwndSource = PresentationSource.FromVisual(control) as HwndSource;
+            if (hwndSource == null)
+            {
+                return;
+            }
+
+            var rect = control.TransformToAncestor(Application.Current?.MainWindow ?? control).TransformBounds(new Rect(0, 0, control.ActualWidth, control.ActualHeight));
+            var point = hwndSource.CompositionTarget.TransformToDevice.Transform(new Point(rect.Left, rect.Top));
+            var automationElement = AutomationElement.FromHandle(hwndSource.Handle);
+            automationElement?.SetFocus();
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "TrySetAutomationFocus failed");
         }
     }
 }
