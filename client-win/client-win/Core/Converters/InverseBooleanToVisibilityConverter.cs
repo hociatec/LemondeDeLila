@@ -14,13 +14,6 @@ public sealed class InverseBooleanToVisibilityConverter : IValueConverter
             return flag ? Visibility.Collapsed : Visibility.Visible;
         }
 
-        if (value is bool? nullableFlag)
-        {
-            return nullableFlag.GetValueOrDefault()
-                ? Visibility.Collapsed
-                : Visibility.Visible;
-        }
-
         return Visibility.Visible;
     }
 
