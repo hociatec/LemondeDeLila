@@ -29,7 +29,7 @@ public sealed class HomeViewModel : ObservableObject, IDisposable
     private readonly ErrorBus? _errorBus;
 
     private string _statusMessage = string.Empty;
-    private HomePage _currentPage = HomePage.Login;
+    private HomePage _currentPage = HomePage.Landing;
     private bool _isBusy;
 
     public HomeViewModel(string applicationName,
