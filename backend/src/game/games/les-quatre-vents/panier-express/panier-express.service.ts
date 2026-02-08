@@ -634,6 +634,7 @@ export class PanierExpressService extends AbstractGameService {
         .filter((p: string) => p.length > 0),
     );
     let fallbackIndex = 0;
+    const assignedBots: Array<{ id: number; pawn: string }> = [];
     const updated = players.map((p: any) => {
       const currentPawn =
         typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
@@ -646,9 +647,17 @@ export class PanierExpressService extends AbstractGameService {
       const chosen = available ?? pawns[fallbackIndex++ % pawns.length];
       if (!chosen) return p;
       used.add(chosen);
+      assignedBots.push({ id: p.id, pawn: chosen });
       return { ...p, pawn: chosen };
     });
-    return { ...state, players: updated };
+    let next: GameStateEntity = { ...state, players: updated };
+    assignedBots.forEach((bot) => {
+      next = this.core.appendLog(
+        next,
+        `[Panier Express] ${this.utils.playerName(next, bot.id)} choisit le pion: ${bot.pawn}.`,
+      );
+    });
+    return next;
   }
 
   private queuePawnSelection(state: GameStateEntity): GameStateEntity {

@@ -398,7 +398,7 @@ export class MinuitActionService {
     for (const bot of assignedBots) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, bot.id)} choisit le pion ${bot.pawn}.`,
+        `${this.playerName(next, bot.id)} choisit le pion: ${bot.pawn}.`,
       );
     }
     return next;
@@ -447,7 +447,7 @@ export class MinuitActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} choisit le pion ${resolvedPawn}.`,
+      `${this.playerName(next, playerId)} choisit le pion: ${resolvedPawn}.`,
     );
     return this.ensurePawnSelection(next);
   }
