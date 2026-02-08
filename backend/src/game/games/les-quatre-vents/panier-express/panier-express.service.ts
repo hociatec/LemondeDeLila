@@ -3051,17 +3051,17 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     if (kind === 'event.tirage_chanceux') {
-      const offered = Array.isArray(pending?.data?.offered)
+      const offered: string[] = Array.isArray(pending?.data?.offered)
         ? pending.data.offered.map((v: any) => String(v))
         : Array.isArray(pending?.data?.cards)
           ? pending.data.cards.map((v: any) => String(v))
           : [];
-      const uniqueOffered = Array.from(new Set(offered));
-      const chosen = uniqueOffered[index] ?? '';
+      const uniqueOffered: string[] = Array.from(new Set(offered));
+      const chosen: string = uniqueOffered[index] ?? '';
       let next = clearPending(state);
 
       // Les 3 cartes proposées ont été retirées du deck lors du tirage ; remettre les non-choisies en discard.
-      const unchosen = uniqueOffered.filter(
+      const unchosen: string[] = uniqueOffered.filter(
         (_v: string, i: number) => i !== index,
       );
       if (unchosen.length) {
