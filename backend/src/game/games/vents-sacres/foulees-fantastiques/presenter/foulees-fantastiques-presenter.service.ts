@@ -19,6 +19,8 @@ export class FouleesFantastiquesPresenterService {
       userId,
     );
     const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
+    const arrivalProgress =
+      (meta.trackLength ?? 0) + (meta.homeLength ?? 0) - 1;
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
     const scoreLines = players.map((p) => {
@@ -35,9 +37,6 @@ export class FouleesFantastiquesPresenterService {
       ).length;
       return `${name} : ${arrived} arrivé${arrived > 1 ? 's' : ''}`;
     });
-
-    const arrivalProgress =
-      (meta.trackLength ?? 0) + (meta.homeLength ?? 0) - 1;
     const myPawns = Array.isArray(meta.pawnsByPlayer?.[userId])
       ? meta.pawnsByPlayer[userId]
       : [];

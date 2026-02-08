@@ -70,7 +70,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const players = Array.isArray(baseState.players) ? baseState.players : [];
-    const firstId = players[0]?.id ?? null;
+    const initialFirstId = players[0]?.id ?? null;
     const baseMeta = (baseState.metadata ?? {}) as any;
     const ownerPlayerId = (() => {
       // Le moteur (GameCoreService) expose généralement le propriétaire de table via `roomOwnerId`.
@@ -80,14 +80,14 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       if (typeof baseMeta.ownerPlayerId === 'number') return baseMeta.ownerPlayerId;
 
       const firstHumanId = players.find((p: any) => p && !(p as any).isBot)?.id ?? null;
-      return firstHumanId ?? firstId;
+      return firstHumanId ?? initialFirstId;
     })();
 
     const config: MnemoQuizConfig = {
       targetPoints: 20,
       useTimer: true,
       timerSeconds: 30,
-      interQuestionSeconds: 5,
+      interQuestionSeconds: 15,
       correctSoloPoints: 2,
       correctMultiPoints: 1,
       wrongPoints: 0,
@@ -111,6 +111,9 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 	      promptOwnerId: ownerPlayerId,
 	      winnerId: null,
 	    };
+
+    const firstId =
+      players.find((p: any) => p?.id === ownerPlayerId)?.id ?? initialFirstId;
 
     const state: GameStateEntity = {
       ...baseState,
@@ -436,7 +439,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
         payload.interQuestionSeconds,
         1,
         60,
-        Number(meta.config.interQuestionSeconds ?? 5),
+        Number(meta.config.interQuestionSeconds ?? 15),
       ),
       correctSoloPoints,
       correctMultiPoints,
@@ -931,12 +934,12 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
         );
       }
 
-      if (wrongAnsweredIds.length) {
+      if (wrongAnsweredIds.length && correctIds.length > 0) {
         next = this.core.appendLog(next, `La bonne réponse était : ${q.correctChoice}.`);
       }
       next = this.core.appendLog(next, `Fin de la manche ${currentRound}.`);
       if (!willFinish) {
-        const interSeconds = this.clampInt(meta.config?.interQuestionSeconds, 1, 60, 5);
+        const interSeconds = this.clampInt(meta.config?.interQuestionSeconds, 1, 60, 15);
         next = this.core.appendLog(
           next,
           `Prochaine question dans ${interSeconds} secondes. Appuyez sur Espace.`,
@@ -944,7 +947,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       }
     }
 
-    const interQuestionSeconds = this.clampInt(meta.config?.interQuestionSeconds, 1, 60, 5);
+    const interQuestionSeconds = this.clampInt(meta.config?.interQuestionSeconds, 1, 60, 15);
     const afterMeta: MnemoQuizMetadata = {
       ...meta,
       scoresByPlayerId: nextScores,
@@ -1337,6 +1340,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 
     // Menus (setup/admin) : visibles uniquement à Lila (admin) + au joueur courant pour démarrer.
     const isCurrent = currentId === userId;
+    const isOwner = this.isOwner(state, userId);
 
     if (meta.adminView.page !== 'setup' && !this.isOwner(state, userId)) {
       return null;
@@ -1348,7 +1352,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       }
       const categories = this.store.listCategories();
       const choices: string[] = [];
-      if (isCurrent) {
+      if (isCurrent || isOwner) {
         for (const c of categories) {
           choices.push(c.name);
         }
@@ -1497,6 +1501,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     }
 
     const isCurrent = currentId === userId;
+    const isOwner = this.isOwner(state, userId);
 
     if (phase === 'setup') {
       // Tant que la configuration n'est pas validée (prompt présent), aucun autre acteur ne doit pouvoir démarrer.
@@ -1504,7 +1509,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       if (meta.prompt) {
         return [];
       }
-      if (isCurrent) {
+      if (isCurrent || isOwner) {
         for (const c of this.store.listCategories()) {
           actions.push({ type: 'mnemo_start', payload: { categoryId: c.id } });
         }
@@ -1676,7 +1681,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
           key: 'interQuestionSeconds',
           label: 'Délai avant la question suivante (secondes)',
           kind: 'number',
-          initialText: String((config as any)?.interQuestionSeconds ?? 5),
+          initialText: String((config as any)?.interQuestionSeconds ?? 15),
         },
       ],
     };
@@ -1750,7 +1755,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
               targetPoints: 20,
               useTimer: true,
               timerSeconds: 30,
-              interQuestionSeconds: 5,
+              interQuestionSeconds: 15,
               correctSoloPoints: 2,
               correctMultiPoints: 1,
               wrongPoints: 0,

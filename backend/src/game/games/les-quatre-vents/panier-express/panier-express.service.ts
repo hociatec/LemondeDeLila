@@ -892,6 +892,11 @@ export class PanierExpressService extends AbstractGameService {
           decks: nextPool as any,
         },
       };
+      const uniqueOffered = Array.from(new Set(offered));
+      if (uniqueOffered.length !== offered.length) {
+        offered.length = 0;
+        offered.push(...uniqueOffered);
+      }
       if (!offered.length) {
         next = this.core.appendLog(
           next,
@@ -3051,11 +3056,14 @@ export class PanierExpressService extends AbstractGameService {
         : Array.isArray(pending?.data?.cards)
           ? pending.data.cards.map((v: any) => String(v))
           : [];
-      const chosen = offered[index] ?? '';
+      const uniqueOffered = Array.from(new Set(offered));
+      const chosen = uniqueOffered[index] ?? '';
       let next = clearPending(state);
 
       // Les 3 cartes proposées ont été retirées du deck lors du tirage ; remettre les non-choisies en discard.
-      const unchosen = offered.filter((_v: string, i: number) => i !== index);
+      const unchosen = uniqueOffered.filter(
+        (_v: string, i: number) => i !== index,
+      );
       if (unchosen.length) {
         const metaNow = this.getMetadata(next) as any;
         next = {
@@ -3077,7 +3085,7 @@ export class PanierExpressService extends AbstractGameService {
         `[Panier Express] Tirage chanceux : ${this.utils.playerName(
           state,
           actorId,
-        )} choisit "${chosen}".`,
+        )} choisit "${this.utils.formatCourseLabel(chosen)}".`,
       );
       next = this.appendActionLog(next, actorId, 'event', {
         event: 'tirage-chanceux',
@@ -3479,7 +3487,7 @@ export class PanierExpressService extends AbstractGameService {
             actorId,
           )} reste sur place (stand déjà atteint).`,
         );
-        return next;
+        return this.advanceAfterDraw(next);
       }
       let next = clearPending(state);
       next = this.core.appendLog(
@@ -3496,7 +3504,7 @@ export class PanierExpressService extends AbstractGameService {
         standId: target.standId ?? undefined,
         caseNumber: target.caseNumber,
       });
-      return next;
+      return this.advanceAfterDraw(next);
     }
 
     if (kind === 'tile.move_choice') {

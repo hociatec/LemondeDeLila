@@ -106,13 +106,24 @@ internal sealed class GamePlayChoicesStateSynchronizer
     private static bool ShouldHidePendingChoices(GameStateDto state, int? viewerPlayerId)
     {
         var pendingPlayerId = state.Pending?.PlayerId;
-        // Si le viewer est inconnu (serveur ancien / payload incomplet), ne pas masquer :
-        // mieux vaut afficher que cacher une main (ex: LAMA hors tour).
-        if (viewerPlayerId == null) return false;
+        var pendingType = (state.Pending?.Type ?? string.Empty).Trim();
+        var isQuiz = string.Equals(pendingType, "quiz", StringComparison.OrdinalIgnoreCase);
+        var canAnswerQuiz = !isQuiz || HasAction(state, "answer_quiz");
+        // Si le viewer est inconnu (serveur ancien / payload incomplet), on masque les choix de quiz
+        // sauf si on détecte une action de réponse (joueur actif).
+        if (viewerPlayerId == null)
+        {
+            return isQuiz && !canAnswerQuiz;
+        }
 
         if (pendingPlayerId != null &&
             viewerPlayerId != null &&
             pendingPlayerId.Value != viewerPlayerId.Value)
+        {
+            return true;
+        }
+
+        if (isQuiz && !canAnswerQuiz)
         {
             return true;
         }

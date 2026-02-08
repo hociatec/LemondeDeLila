@@ -349,8 +349,6 @@ export class FrousseActionService {
       next = this.core.appendLog(next, arrival);
       if (tile.type === 'card') {
         next = this.core.appendLog(next, `Piochez une carte.`);
-      } else if (tile.type === 'finish') {
-        next = this.core.appendLog(next, `Effet : case d'arrivée.`);
       }
     }
 
@@ -460,14 +458,21 @@ export class FrousseActionService {
 
     const effectLabel = ignored ? 'Effet ignoré.' : describeCardEffect(draw.card);
     const narrative = extractNarrative(draw.card.text);
-    const cardText = narrative || draw.card.text;
+    let cardText = narrative || draw.card.text;
+    if (!narrative && effectLabel !== 'Effet immédiat.' && cardText) {
+      const lowered = cardText.toLowerCase();
+      const loweredEffect = effectLabel.toLowerCase();
+      if (lowered.includes(loweredEffect)) {
+        cardText = cardText.replace(new RegExp(escapeRegex(effectLabel), 'i'), '').replace(/\s{2,}/g, ' ').trim();
+      }
+    }
     next = this.core.appendLog(
       next,
       `${this.playerName(next, playerId)} pioche une carte (${cardText}) : ${effectLabel}`,
     );
 
     if (ignored) {
-      return next;
+      return this.turns.advanceTurn(next);
     }
 
     const applied = this.applyCard(next, playerId, draw.card);
@@ -811,7 +816,11 @@ export class FrousseActionService {
     }
 
     // Immediate roll: if odd then skip.
-    if (/si le résultat est impair, passez votre tour/i.test(text)) {
+    if (
+      /si le résultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(
+        text,
+      )
+    ) {
       const out = this.random.rollDice(meta as any, 6);
       meta = { ...meta, ...out.meta };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
@@ -1130,7 +1139,9 @@ function describeCardEffect(card: FrousseCard): string {
   if (/jusqu['’]à la case 40/i.test(text)) return 'Aller directement à la case 40.';
   if (/Relancez le dé/i.test(text) || (/Relancez/i.test(text) && /dé/i.test(text))) return 'Rejouez immédiatement.';
   if (/laissant les autres joueurs (filer|avancer) de 3 cases/i.test(text)) return 'Les autres avancent de 3 cases, vous passez 1 tour.';
-  if (/si le résultat est impair, passez votre tour/i.test(text)) return 'Test : si impair, passez 1 tour.';
+  if (/si le résultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(text)) {
+    return 'Test : si impair, passez 1 tour.';
+  }
   const skip = extractSkipTurns(text);
   if (skip > 0) return `Passez ${skip} tour${skip > 1 ? 's' : ''}.`;
   if (/case départ/i.test(text) || /Retour à la case une/i.test(text)) return 'Retournez à la case départ.';
@@ -1158,8 +1169,10 @@ function describeCardEffect(card: FrousseCard): string {
 function extractNarrative(text: string): string {
   const cleaned = String(text ?? '').replace('\r', '').trim();
   if (!cleaned) return '';
-  const parts = cleaned
-    .split(/\n+/)
+  const hasNewlines = /\n/.test(cleaned);
+  const parts = (hasNewlines
+    ? cleaned.split(/\n+/)
+    : cleaned.split(/(?<=[.!?])\s+/))
     .map((p) => p.trim())
     .filter((p) => p.length > 0);
 
@@ -1187,4 +1200,8 @@ function extractNarrative(text: string): string {
 
   const narrative = parts.filter((p) => !isEffectLine(p));
   return narrative.join(' ');
+}
+
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

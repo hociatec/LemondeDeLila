@@ -437,17 +437,6 @@ export class ContesActionService {
       next,
       `${this.playerName(next, playerId)} arrive sur ${label}.`,
     );
-    if (tile?.type === 'bonus')
-      next = this.core.appendLog(next, `Effet : piochez une carte Bonus.`);
-    else if (tile?.type === 'malus')
-      next = this.core.appendLog(next, `Effet : piochez une carte Malus.`);
-    else if (tile?.type === 'surprise')
-      next = this.core.appendLog(next, `Effet : piochez une carte Surprise.`);
-    else if (tile?.type === 'conte')
-      next = this.core.appendLog(next, `Effet : piochez une carte Conte.`);
-    else if (tile?.type === 'finish')
-      next = this.core.appendLog(next, `Effet : case d'arrivée.`);
-
     if (raw >= finishIndex) {
       next = this.setWinner(next, playerId);
       next = this.core.appendLog(

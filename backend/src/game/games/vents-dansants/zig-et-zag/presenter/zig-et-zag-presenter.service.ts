@@ -12,7 +12,6 @@ import {
   buildLamaLikePanels,
   summarizeHandCounts,
 } from '../../../../presenters/lamalike-presenter.helper';
-import { getPlayerHand, getSelectableCards } from '../round-state.helper';
 
 @Injectable()
 export class ZigEtZagPresenterService {
@@ -22,13 +21,12 @@ export class ZigEtZagPresenterService {
   ): GameStateWithActions {
     const meta = (state.metadata ?? {}) as ZigEtZagMetadata;
     const deckCounts: Record<number, number> = {};
-    const hand = getPlayerHand(meta, userId);
     const handCounts = summarizeHandCounts(meta.playerDecks);
-    const selectable = getSelectableCards(meta, userId);
     const panels = buildLamaLikePanels({
-      hand,
+      hand: [],
       handCounts,
       discardLabel: 'Paquet',
+      playMessage: 'Main : (cachée). Espace piocher.',
       tableMessage: `Statut: ${state.status ?? 'en attente'}`,
     });
     Object.entries(meta.playerDecks ?? {}).forEach(([key, cards]) => {
@@ -39,17 +37,7 @@ export class ZigEtZagPresenterService {
     const stage = meta.roundState?.stage ?? 'selection';
     const waitingPlayers = meta.roundState?.waitingPlayers ?? [];
 
-    const handRows = hand.map((cardId, index) => {
-      const definition = ZIG_ET_ZAG_CARD_BY_ID[cardId];
-      return {
-        id: cardId,
-        label: definition?.name ?? cardId,
-        color: definition?.color,
-        family: definition?.family,
-        disabled: selectable.length > 0 ? !selectable.includes(cardId) : false,
-        index,
-      };
-    });
+    const handRows: Array<any> = [];
 
     const actions = Rulebook.getAvailableActions(state, userId);
 

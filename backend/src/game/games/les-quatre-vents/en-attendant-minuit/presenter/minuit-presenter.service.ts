@@ -19,16 +19,22 @@ export class MinuitPresenterService {
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
 
-    const pending = meta.pendingQuiz
-      ? {
-          type: 'quiz',
-          label: 'Réponses possibles',
-          question: meta.pendingQuiz.question,
-          choices: meta.pendingQuiz.choices,
-          playerId: meta.pendingQuiz.playerId,
-          blocking: true,
-        }
-      : (state.pending ?? null);
+    const pendingQuiz =
+      meta.pendingQuiz && meta.pendingQuiz.playerId === userId
+        ? {
+            type: 'quiz',
+            label: 'Réponses possibles',
+            question: meta.pendingQuiz.question,
+            choices: meta.pendingQuiz.choices,
+            playerId: meta.pendingQuiz.playerId,
+            blocking: true,
+          }
+        : null;
+    const pending =
+      pendingQuiz ??
+      (state.pending && (state.pending as any)?.playerId === userId
+        ? state.pending
+        : null);
 
     return {
       ...state,

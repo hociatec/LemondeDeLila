@@ -7,6 +7,8 @@ export const buildPanierExpressShortcuts: GameShortcutsBuilder<
 > = () => {
   return [
     interfaceShortcut('S', 'score'),
+    interfaceShortcut('L', 'shopping'),
+    interfaceShortcut('SHIFT+L', 'shopping_all'),
     interfaceShortcut('B', 'basket'),
     interfaceShortcut('I', 'inventory'),
     interfaceShortcut('SHIFT+I', 'inventory_all'),

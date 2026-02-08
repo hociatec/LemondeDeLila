@@ -4,7 +4,6 @@ import type {
   ZigEtZagMetadata,
   ZigEtZagRoundState,
 } from '../model/zig-et-zag-state.entity';
-import { isCardAllowed, playerHasCard } from '../round-state.helper';
 
 function getMeta(state: GameStateEntity): ZigEtZagMetadata {
   return (state.metadata ?? {}) as ZigEtZagMetadata;
@@ -21,7 +20,10 @@ export function getAvailableActions(
   if (!round) return [];
 
   if (!waitingPlayerIds(round).includes(playerId)) return [];
-  return [{ type: 'draw_card', payload: {} }];
+  const meta = getMeta(state);
+  const actions: GameSingleActionDto[] = [];
+  actions.push({ type: 'draw_card', payload: {} });
+  return actions;
 }
 
 export function validateAction(
@@ -30,10 +32,8 @@ export function validateAction(
   actorId: number | null,
 ): GameSingleActionDto {
   const type = String(action?.type ?? '').trim().toLowerCase();
-  if (type !== 'select_card') {
-    if (type !== 'draw_card') {
-      throw new Error(`Action inconnue: ${action?.type}`);
-    }
+  if (type !== 'draw_card') {
+    throw new Error(`Action inconnue: ${action?.type}`);
   }
   if (actorId == null) {
     throw new Error('Acteur requis');
@@ -63,22 +63,9 @@ export function validateAction(
   if (!waiting.includes(actorId)) {
     throw new Error("Ce n'est pas votre tour.");
   }
-  if (type === 'draw_card') {
-    return { type: 'draw_card', payload: {} };
-  }
-  const cardId = String((action.payload as any)?.cardId ?? '').trim();
-  if (!cardId) {
-    throw new Error('Carte manquante.');
-  }
-  if (!playerHasCard(meta, actorId, cardId)) {
-    throw new Error('Vous ne possédez pas cette carte.');
-  }
-  if (!isCardAllowed(round, actorId, cardId)) {
-    throw new Error('Carte non valide pour cette phase.');
-  }
   return {
-    type: 'select_card',
-    payload: { cardId },
+    type: 'draw_card',
+    payload: {},
   };
 }
 

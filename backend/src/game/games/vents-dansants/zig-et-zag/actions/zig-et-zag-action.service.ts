@@ -152,20 +152,30 @@ export class ZigEtZagActionService {
     round: ZigEtZagRoundState,
   ): GameStateEntity {
     const meta = this.getMeta(state);
+    let nextState = this.appendRevealLogs(state, players, round);
+    if (this.hasSelectionJoker(round)) {
+      nextState = this.core.appendLog(
+        nextState,
+        'Joker joué hors bataille : les cartes sont défaussées.',
+      );
+      return this.finishRound(nextState, players, round, null);
+    }
+
     const evaluation = this.evaluateFaceUpPlays(round);
     if (evaluation.tiePlayers.length > 1) {
       const nextRound = this.prepareBattle(round, evaluation.tiePlayers, meta);
+      nextState = this.core.appendLog(nextState, 'Bataille déclenchée !');
       if (!nextRound.waitingPlayers.length) {
         return this.finishRound(
-          state,
+          nextState,
           players,
           nextRound,
           nextRound.tiedPlayers[0] ?? null,
         );
       }
-      return this.setRoundState(state, meta, nextRound);
+      return this.setRoundState(nextState, meta, nextRound);
     }
-    return this.finishRound(state, players, round, evaluation.winnerId);
+    return this.finishRound(nextState, players, round, evaluation.winnerId);
   }
 
   private prepareBattle(
@@ -218,6 +228,7 @@ export class ZigEtZagActionService {
     const plays = round.plays.map((play) => ({ ...play }));
     const battleLog = [...round.battleLog];
     const waitingPlayers: number[] = [];
+    let nextState = state;
 
     round.tiedPlayers.forEach((playerId) => {
       if (getPlayerHandSize(meta, playerId) <= 0) {
@@ -225,19 +236,21 @@ export class ZigEtZagActionService {
         if (entry) {
           entry.lostByNoCard = true;
         }
-        battleLog.push(`${this.playerName(players, playerId)} n'a plus de cartes.`);
+        const message = `${this.playerName(players, playerId)} n'a plus de cartes.`;
+        battleLog.push(message);
+        nextState = this.core.appendLog(nextState, message);
         return;
       }
       waitingPlayers.push(playerId);
     });
 
     if (!waitingPlayers.length) {
-      return this.finishRound(state, players, { ...round, plays }, null);
+      return this.finishRound(nextState, players, { ...round, plays }, null);
     }
 
     if (waitingPlayers.length === 1) {
       return this.finishRound(
-        state,
+        nextState,
         players,
         { ...round, plays },
         waitingPlayers[0],
@@ -253,7 +266,7 @@ export class ZigEtZagActionService {
       battleLog,
     };
 
-    return this.setRoundState(state, meta, nextRound);
+    return this.setRoundState(nextState, meta, nextRound);
   }
 
   private resolveBattle(
@@ -261,6 +274,7 @@ export class ZigEtZagActionService {
     players: GameStateEntity['players'],
     round: ZigEtZagRoundState,
   ): GameStateEntity {
+    let nextState = this.appendRevealLogs(state, players, round, round.tiedPlayers);
     const meta = this.getMeta(state);
     const faceUpPlays = round.plays.filter(
       (play) =>
@@ -279,12 +293,11 @@ export class ZigEtZagActionService {
       .filter((entry) => entry.value >= 0);
 
     if (!results.length) {
-      return this.finishRound(
-        state,
-        players,
-        round,
-        round.tiedPlayers[0] ?? null,
+      nextState = this.core.appendLog(
+        nextState,
+        'Aucune carte valide : les cartes sont défaussées.',
       );
+      return this.finishRound(nextState, players, round, null);
     }
 
     const maxValue = Math.max(...results.map((entry) => entry.value));
@@ -293,7 +306,7 @@ export class ZigEtZagActionService {
       .map((entry) => entry.playerId);
 
     if (winners.length === 1) {
-      return this.finishRound(state, players, round, winners[0]);
+      return this.finishRound(nextState, players, round, winners[0]);
     }
 
     const triggerColors = { ...round.triggerColors };
@@ -311,7 +324,7 @@ export class ZigEtZagActionService {
 
     if (!waitingPlayers.length) {
       return this.finishRound(
-        state,
+        nextState,
         players,
         round,
         winners[0] ?? null,
@@ -331,7 +344,11 @@ export class ZigEtZagActionService {
       ],
     };
 
-    return this.setRoundState(state, meta, nextRound);
+    nextState = this.core.appendLog(
+      nextState,
+      'Égalité persistante, la bataille continue !',
+    );
+    return this.setRoundState(nextState, meta, nextRound);
   }
 
   private finishRound(
@@ -390,29 +407,6 @@ export class ZigEtZagActionService {
     players: GameStateEntity['players'],
   ): GameStateEntity {
     let next = state;
-    const revealMessages = summary.plays
-      .map((play) => {
-        const label = play.faceUpCard
-          ? this.formatCardLabel(play.faceUpCard)
-          : null;
-        if (play.lostByNoCard) {
-          return `${this.playerName(players, play.playerId)} n'a plus de cartes.`;
-        }
-        if (label) {
-          return `${this.playerName(players, play.playerId)} dévoile ${label}.`;
-        }
-        return null;
-      })
-      .filter((message): message is string => Boolean(message));
-
-    for (const message of revealMessages) {
-      next = this.core.appendLog(next, message);
-    }
-
-    for (const message of summary.battleLog ?? []) {
-      next = this.core.appendLog(next, message);
-    }
-
     if (summary.winnerId != null && summary.cardsWon > 0) {
       next = this.core.appendLog(
         next,
@@ -421,6 +415,45 @@ export class ZigEtZagActionService {
     }
 
     return next;
+  }
+
+  private appendRevealLogs(
+    state: GameStateEntity,
+    players: GameStateEntity['players'],
+    round: ZigEtZagRoundState,
+    onlyPlayers?: number[],
+  ): GameStateEntity {
+    let next = state;
+    const filter = Array.isArray(onlyPlayers) && onlyPlayers.length
+      ? new Set(onlyPlayers)
+      : null;
+
+    for (const play of round.plays ?? []) {
+      if (filter && !filter.has(play.playerId)) continue;
+      if (round.stage === 'selection' && play.lostByNoCard) {
+        next = this.core.appendLog(
+          next,
+          `${this.playerName(players, play.playerId)} n'a plus de cartes.`,
+        );
+        continue;
+      }
+      if (play.faceUpCard) {
+        next = this.core.appendLog(
+          next,
+          `${this.playerName(players, play.playerId)} dévoile ${this.formatCardLabel(play.faceUpCard)}.`,
+        );
+      }
+    }
+
+    return next;
+  }
+
+  private hasSelectionJoker(round: ZigEtZagRoundState): boolean {
+    return (round.plays ?? []).some((play) => {
+      if (!play.faceUpCard) return false;
+      const def = ZIG_ET_ZAG_CARD_BY_ID[play.faceUpCard];
+      return def?.type === 'joker';
+    });
   }
 
   private setCurrentPlayer(

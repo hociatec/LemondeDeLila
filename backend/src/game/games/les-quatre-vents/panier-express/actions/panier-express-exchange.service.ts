@@ -567,7 +567,9 @@ export class PanierExpressExchangeService {
         next = addCardToPlayerState(this.utils, next, targetPlayerId, aCard);
       if (bCard) next = addCardToPlayerState(this.utils, next, playerId, bCard);
       const positionLabel =
-        resolvedCard === 'echange-devant' ? 'devant' : 'derrière';
+        resolvedCard === 'echange-devant'
+          ? 'juste devant vous'
+          : 'juste derrière vous';
       return this.core.appendLog(
         next,
         `[Panier Express] ${exchangeLabel} : échange au hasard avec le joueur ${positionLabel} (${this.utils.playerName(state, targetPlayerId)}).`,
@@ -759,10 +761,7 @@ export class PanierExpressExchangeService {
           )}" à ${this.utils.playerName(state, targetId)}.`,
         );
       }
-      return this.core.appendLog(
-        next,
-        `[Panier Express] Échange simultané : cartes passées au joueur suivant.`,
-      );
+      return next;
     }
 
     if (resolvedCard === 'defausse-aleatoire') {

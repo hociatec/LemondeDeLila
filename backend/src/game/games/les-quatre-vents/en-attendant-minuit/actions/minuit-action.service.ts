@@ -161,10 +161,9 @@ export class MinuitActionService {
       next,
       `${this.playerName(next, playerId)} pioche "${draw.card.title}".`,
     );
-    next = this.core.appendLog(
-      next,
-      `${draw.card.title}: ${effectText}`.trim(),
-    );
+    if (effectText) {
+      next = this.core.appendLog(next, effectText);
+    }
     return this.applyCard(next, playerId, draw.card);
   }
 
@@ -193,7 +192,7 @@ export class MinuitActionService {
         typeof pending.successDelta === 'number' ? pending.successDelta : 0;
       next = this.core.appendLog(
         next,
-        `${who} répond : ${answer}. Bonne réponse.`,
+        `${who} répond. Bonne réponse.`,
       );
       if (delta > 0) {
         next = this.move(next, currentId, delta);
@@ -201,7 +200,7 @@ export class MinuitActionService {
     } else {
       next = this.core.appendLog(
         next,
-        `${who} répond : ${answer}. Mauvaise réponse.`,
+        `${who} répond. Mauvaise réponse.`,
       );
       const failDelta =
         typeof pending.failureDelta === 'number' ? pending.failureDelta : 0;
@@ -361,6 +360,7 @@ export class MinuitActionService {
         .filter((pawn) => pawn.length > 0),
     );
     let changed = false;
+    const assignedBots: Array<{ id: number; pawn: string }> = [];
     const updatedPlayers = players.map((p) => {
       if (!p) return p;
       const pawn = typeof p.pawn === 'string' ? String(p.pawn).trim() : '';
@@ -383,16 +383,24 @@ export class MinuitActionService {
       taken.add(available);
       assigned[p.id] = available;
       changed = true;
+      assignedBots.push({ id: p.id, pawn: available });
       return { ...p, pawn: available };
     });
     const metaChanged = !this.arePawnsEqual(meta.pawns, assigned);
     if (!changed && !metaChanged) return state;
     const nextMeta: MinuitMetadata = { ...meta, pawns: assigned };
-    return {
+    let next: GameStateEntity = {
       ...state,
       players: updatedPlayers,
       metadata: { ...(state.metadata ?? {}), ...nextMeta },
     };
+    for (const bot of assignedBots) {
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, bot.id)} choisit le pion ${bot.pawn}.`,
+      );
+    }
+    return next;
   }
 
   private handlePickPawn(
@@ -541,11 +549,12 @@ export class MinuitActionService {
         return this.core.appendLog(next, 'Malus ignoré.');
       }
       if (delta !== 0) {
-        next = this.core.appendLog(
-          next,
-          `${tile.title} : déplacement ${delta}.`,
-        );
+        const beforePos = meta.positions?.[playerId] ?? 0;
         next = this.move(next, playerId, delta);
+        const afterMeta = this.getMeta(next);
+        const afterPos = afterMeta.positions?.[playerId] ?? beforePos;
+        if (afterPos === beforePos) return next;
+        return this.applyLanding(next, playerId);
       }
       return next;
     }
@@ -579,10 +588,7 @@ export class MinuitActionService {
         },
       };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      return this.core.appendLog(
-        next,
-        `${tile.title} : ${this.playerName(next, playerId)} passe ${turns} tour(s).`,
-      );
+      return next;
     }
 
     if (tile.type === 'card') {
@@ -857,7 +863,20 @@ export class MinuitActionService {
       (line) =>
         !/^si le joueur a la bonne réponse/i.test(String(line ?? '').trim()),
     );
-    return filtered.join(' ').trim();
+    const withoutChoices = filtered.filter(
+      (line) => !/^[*]?[abc]\)/i.test(String(line ?? '').trim()),
+    );
+    const isQuiz = filtered.some((line) =>
+      /^[*]?[abc]\)/i.test(String(line ?? '').trim()),
+    );
+    if (isQuiz) {
+      const question =
+        withoutChoices.find((l) => String(l).includes('?')) ??
+        withoutChoices[0] ??
+        '';
+      return String(question).trim();
+    }
+    return withoutChoices.join(' ').trim();
   }
 
   private move(

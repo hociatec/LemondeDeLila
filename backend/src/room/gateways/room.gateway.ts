@@ -114,9 +114,22 @@ export class RoomGateway
     const targets = this.rooms.get(roomId);
     const silentTargets = this.silentRooms.get(roomId);
 
-    const all: WebSocket[] = [];
-    if (targets) all.push(...Array.from(targets));
-    if (silentTargets) all.push(...Array.from(silentTargets));
+    const socketSet = new Set<WebSocket>();
+    if (targets) {
+      for (const socket of targets) socketSet.add(socket);
+    }
+    if (silentTargets) {
+      for (const socket of silentTargets) socketSet.add(socket);
+    }
+    // Fallback: certains sockets peuvent ne pas être dans les sets (état dégradé).
+    // On éjecte tout client encore associé à la room pour éviter les "écrans bloqués".
+    for (const [socket, meta] of this.clients.entries()) {
+      if (meta?.roomId === roomId) {
+        socketSet.add(socket);
+      }
+    }
+
+    const all = Array.from(socketSet);
 
     // Important: `ws` send is async; closing immediately can drop the last message.
     // We therefore send 'room.deleted' and close the socket in the send callback.

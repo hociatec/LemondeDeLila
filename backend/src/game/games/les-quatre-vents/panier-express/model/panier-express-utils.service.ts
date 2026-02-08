@@ -31,6 +31,7 @@ export class PanierExpressUtils {
   private static readonly EVENT_LABELS: Record<string, string> = {
     'produit-avarie': 'Produit avarié',
     'producteur-genereux': 'Producteur généreux',
+    'troc-improvise': 'Troc improvisé',
   };
 
   playerName(state: GameStateEntity, playerId: number): string {
@@ -243,4 +244,3 @@ export class PanierExpressUtils {
     }
   }
 }
-

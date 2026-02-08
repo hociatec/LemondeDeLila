@@ -156,8 +156,6 @@ public partial class GameHistoryView : UserControl
             paragraph.Inlines.Add(new LineBreak());
         }
 
-        MoveCaretAndScrollToEnd();
-
         if (!HistoryViewer.IsKeyboardFocusWithin)
         {
             MoveCaretAndScrollToEnd();

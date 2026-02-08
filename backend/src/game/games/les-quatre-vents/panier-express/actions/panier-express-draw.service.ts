@@ -123,11 +123,11 @@ export class PanierExpressDrawService {
     const message = discarded
       ? discarded === 'duplicate'
         ? duplicateSource === 'panier'
-          ? `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'a déjà dans son panier. Cet ingrédient part donc à la défausse.`
+          ? `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'a déjà dans le panier. Cet ingrédient part donc à la défausse.`
           : duplicateSource === 'inventaire'
-            ? `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'a déjà dans son inventaire. Cet ingrédient part donc à la défausse.`
+            ? `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'a déjà dans l'inventaire. Cet ingrédient part donc à la défausse.`
             : `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'a déjà. Cet ingrédient part donc à la défausse.`
-        : `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais son inventaire est plein. Cet ingrédient part donc à la défausse.`
+        : `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'inventaire est plein. Cet ingrédient part donc à la défausse.`
       : `[Panier Express] ${playerLabel} pioche "${courseLabel}".`;
     const logged = this.core.appendLog(nextState, message);
 

@@ -10,8 +10,23 @@ import type {
 export class ContesCacahuetesSetupService {
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const players = Array.isArray(baseState.players) ? baseState.players : [];
+    const pawnNames = [
+      'Aika',
+      'Freja',
+      'Lani',
+      'Niko',
+      'Tavi',
+      'Arman',
+    ];
+    const updatedPlayers = players.map((p, index) => {
+      if (!p) return p as any;
+      const pawn = typeof (p as any).pawn === 'string' ? String((p as any).pawn).trim() : '';
+      if (pawn) return p as any;
+      const chosen = pawnNames[index] ?? `Pion ${index + 1}`;
+      return { ...p, pawn: chosen };
+    });
     const positions: Record<number, number> = {};
-    for (const p of players) positions[p.id] = 0;
+    for (const p of updatedPlayers) positions[p.id] = 0;
 
     const metaBase: ContesCacahuetesMetadata = {
       tiles: buildTiles(),
@@ -37,6 +52,7 @@ export class ContesCacahuetesSetupService {
 
     return {
       ...baseState,
+      players: updatedPlayers,
       phase: 'playing',
       pending: null,
       metadata: { ...(baseState.metadata ?? {}), ...metaBase },
@@ -49,7 +65,7 @@ function buildTiles(): ContesCacahuetesTile[] {
     {
       type: 'start',
       label:
-        `Case Départ - Vous ouvrez le grand livre des contes, et un vent de magie emporte vos feuilles volantes Chaque pas vous rapproche d'histoires fantastiques, de surprises et de rires à profusion. L'aventure commence maintenant !`,
+        `Case Départ - Vous ouvrez le grand livre des contes, et un vent de magie emporte vos feuilles volantes… Chaque pas vous rapproche d'histoires fantastiques, de surprises et de rires à profusion. L'aventure commence maintenant !`,
     },
     {
       type: 'bonus',
@@ -58,16 +74,16 @@ function buildTiles(): ContesCacahuetesTile[] {
     { type: 'conte', label: `Case Conte - Japon : Momotarō` },
     { type: 'surprise', label: `Case Surprise - Le conte réserve toujours des rebondissements.` },
     { type: 'conte', label: `Case Conte - Sénégal : Le lièvre et la hyène` },
-    { type: 'malus', label: `Case Malus - Oups le conte vous joue un vilain tour.` },
+    { type: 'malus', label: `Case Malus - Oups… le conte vous joue un vilain tour.` },
     { type: 'conte', label: `Case Conte - Russie : Vassilissa la très belle` },
     {
       type: 'bonus',
-      label: `Case Bonus - Une bonne fée passait par là et elle était de bonne humeur !`,
+      label: `Case Bonus - Une bonne fée passait par là… et elle était de bonne humeur !`,
     },
     { type: 'conte', label: `Case Conte - Canada : L'ours géant et l'enfant` },
-    { type: 'surprise', label: `Case Surprise - Personne ne s'y attendait pas même vous !` },
+    { type: 'surprise', label: `Case Surprise - Personne ne s'y attendait… pas même vous !` },
     { type: 'conte', label: `Case Conte - Maroc : Le figuier magique` },
-    { type: 'malus', label: `Case Malus - Tout ne se passe pas comme prévu dans les histoires` },
+    { type: 'malus', label: `Case Malus - Tout ne se passe pas comme prévu dans les histoires…` },
     { type: 'conte', label: `Case Conte - Chine : La princesse éventail` },
     { type: 'bonus', label: `Case Bonus - Le vent tourne en votre faveur, avancez avec le sourire.` },
     { type: 'conte', label: `Case Conte - Irlande : Le géant Fionn et Benandonner` },
@@ -81,11 +97,11 @@ function buildTiles(): ContesCacahuetesTile[] {
     { type: 'conte', label: `Case Conte - Allemagne : Le joueur de flûte d'Hamelin` },
     { type: 'malus', label: `Case Malus - Même les héros trébuchent parfois.` },
     { type: 'conte', label: `Case Conte - Inde : Le prince au cobra` },
-    { type: 'bonus', label: `Case Bonus - Vous trouvez un trèfle à quatre feuilles, évidemment !` },
+    { type: 'bonus', label: `Case Bonus - Vous trouvez un trèfle… à quatre feuilles, évidemment !` },
     { type: 'conte', label: `Case Conte - Groenland : L'ourse et la chasseuse` },
     { type: 'surprise', label: `Case Surprise - Le hasard adore se mêler aux histoires.` },
     { type: 'conte', label: `Case Conte - Italie : Giufà et l'âne` },
-    { type: 'malus', label: `Case Malus - Le sort s'emmêle et vous avec.` },
+    { type: 'malus', label: `Case Malus - Le sort s'emmêle… et vous avec.` },
     { type: 'conte', label: `Case Conte - Kenya : Le feu volant` },
     { type: 'bonus', label: `Case Bonus - Le conte vous applaudit. À vous la récompense !` },
     { type: 'conte', label: `Case Conte - Chili : La lune et le renard` },
@@ -95,7 +111,7 @@ function buildTiles(): ContesCacahuetesTile[] {
     { type: 'conte', label: `Case Conte - Corée du Sud : La grue reconnaissante` },
     { type: 'bonus', label: `Case Bonus - Les esprits du récit vous encouragent chaleureusement.` },
     { type: 'conte', label: `Case Conte - Brésil : La tortue et le jaguar` },
-    { type: 'surprise', label: `Case Surprise - Le conte vous observe et agit !` },
+    { type: 'surprise', label: `Case Surprise - Le conte vous observe… et agit !` },
     { type: 'conte', label: `Case Conte - Iran : Le tapis volant` },
     { type: 'malus', label: `Case Malus - Une mauvaise surprise surgit entre deux pages.` },
     { type: 'conte', label: `Case Conte - Thaïlande : La mangue du roi` },
@@ -109,9 +125,9 @@ function buildTiles(): ContesCacahuetesTile[] {
     { type: 'conte', label: `Case Conte - Haïti : Ti-Jean et le diable` },
     { type: 'surprise', label: `Case Surprise - Une surprise tombe pile au bon, ou, mauvais moment.` },
     { type: 'conte', label: `Case Conte - Turquie : Nasreddine et l'âne` },
-    { type: 'malus', label: `Case Malus - Le destin vous teste courage !` },
+    { type: 'malus', label: `Case Malus - Le destin vous teste… courage !` },
     { type: 'conte', label: `Case Conte - Nouvelle-Zélande : Maui ralentit le soleil` },
-    { type: 'bonus', label: `Case Bonus - Un moment de gloire savourez-le !` },
+    { type: 'bonus', label: `Case Bonus - Un moment de gloire… savourez-le !` },
     { type: 'conte', label: `Case Conte - Mali : L'hippopotame et les étoiles` },
     { type: 'malus', label: `Case Malus - Même à la fin, le conte aime faire durer le suspense.` },
     { type: 'conte', label: `Case Conte - Pologne : Le roi grenouille` },
@@ -229,7 +245,7 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 2,
       type: 'malus',
       title: `Ronce Enchevêtrée`,
-      text: `Vous êtes coincé dans une forêt de ronces. Reculez de 2 cases.`,
+      text: `Vous êtes coincé dans une forêt de ronces… Reculez de 2 cases.`,
     },
     {
       id: 3,
@@ -265,7 +281,7 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 8,
       type: 'malus',
       title: `Confusion de Contes`,
-      text: `Les histoires s’emmêlent ! Avancez de 3 cases puis reculez de 4. Zut, ce n’était pas dans cet ordre-là !`,
+      text: `Les histoires s’emmêlent ! Avancez de 3 cases… puis reculez de 4. Zut, ce n’était pas dans cet ordre-là !`,
     },
     {
       id: 9,
@@ -277,7 +293,7 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 10,
       type: 'malus',
       title: `Ombre Farceuse`,
-      text: `Une créature invisible vous embête. Relancez votre dé, mais cette fois, reculez au lieu d’avancer.`,
+      text: `Une créature invisible vous embête… Relancez votre dé, mais cette fois, reculez au lieu d’avancer.`,
     },
     {
       id: 11,
@@ -294,7 +310,7 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
     {
       id: 13,
       type: 'malus',
-      title: `Chaussures Enchantées mais trop petites`,
+      title: `Chaussures Enchantées… mais trop petites`,
       text: `Reculez de deux cases pour changer de chaussures. Aïe !`,
     },
     {
@@ -316,7 +332,7 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 1,
       type: 'surprise',
       title: `Baguette Malicieuse`,
-      text: `Une baguette magique s’agite toute seule ! Avancez d’une case puis reculez de deux.`,
+      text: `Une baguette magique s’agite toute seule ! Avancez d’une case… puis reculez de deux.`,
     },
     {
       id: 2,
