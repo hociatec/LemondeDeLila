@@ -1597,13 +1597,18 @@ export class GameEngineService {
     const immediateStart = meta?.botImmediateStartPending === true;
     const pending: any = state.pending as any;
     const isQuizPending = gameType === 'arche-de-mnemosyne' && pending?.type === 'quiz';
-    const delayMs = immediateStart
-      ? 0
-      : isQuizPending
-        ? Math.min(baseDelayMs, 800)
-        : gameType === 'frousse-party'
-          ? 0
-          : baseDelayMs;
+    const quizTimerSeconds =
+      isQuizPending && typeof meta?.config?.timerSeconds === 'number'
+        ? Number(meta.config.timerSeconds)
+        : null;
+    const quizTimerMs =
+      quizTimerSeconds != null && Number.isFinite(quizTimerSeconds)
+        ? Math.max(1, quizTimerSeconds) * 1000
+        : null;
+    let delayMs = immediateStart ? 0 : baseDelayMs;
+    if (isQuizPending && quizTimerMs != null) {
+      delayMs = Math.min(delayMs, quizTimerMs);
+    }
     const stateForSchedule = immediateStart
       ? {
           ...state,

@@ -292,16 +292,17 @@ export class MinuitActionService {
     if (status !== 'starting' && status !== 'setup') return state;
     const players = Array.isArray(state.players) ? state.players : [];
     if (players.length < MINUIT_GAME.minPlayers) return state;
-    const needsPawnSelection = players.some(
-      (p) => !!p && !p.isBot && !String(p.pawn ?? '').trim(),
-    );
-    if (needsPawnSelection) {
-      return this.queuePawnSelection(state);
-    }
+    // Always assign bot pawns early so humans cannot pick them.
     const withBots = this.assignBotPawns(state);
     const readyPlayers = Array.isArray(withBots.players)
       ? withBots.players
       : [];
+    const needsPawnSelection = players.some(
+      (p) => !!p && !p.isBot && !String(p.pawn ?? '').trim(),
+    );
+    if (needsPawnSelection) {
+      return this.queuePawnSelection(withBots);
+    }
     return {
       ...withBots,
       status: 'started',
