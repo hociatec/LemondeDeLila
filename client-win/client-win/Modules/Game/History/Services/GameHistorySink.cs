@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Threading;
 using client_win.Modules.Game.History.ViewModels;
 using client_win.Modules.Shell.Services;
@@ -10,6 +12,10 @@ public sealed class GameHistorySink : IGameHistorySink
     private readonly Dispatcher _dispatcher;
     private readonly GameHistoryViewModel _history;
     private readonly IAnnouncementService? _announcements;
+    private string? _lastMessage;
+    private DateTime _lastMessageAtUtc;
+    private readonly List<(string Key, DateTime AtUtc)> _recentDedupe = new();
+    private static readonly TimeSpan RecentDedupeWindow = TimeSpan.FromSeconds(10);
 
     public GameHistorySink(Dispatcher dispatcher, GameHistoryViewModel history, IAnnouncementService? announcements = null)
     {
@@ -41,6 +47,11 @@ public sealed class GameHistorySink : IGameHistorySink
                 var isUiShortcut = trimmed.StartsWith("[ui]", StringComparison.OrdinalIgnoreCase);
                 var cleaned = StripGamePrefix(trimmed);
                 if (string.IsNullOrWhiteSpace(cleaned))
+                {
+                    continue;
+                }
+
+                if (ShouldSkipDuplicate(cleaned))
                 {
                     continue;
                 }
@@ -185,5 +196,75 @@ public sealed class GameHistorySink : IGameHistorySink
     {
         var trimmed = (message ?? string.Empty).Trim();
         return string.IsNullOrWhiteSpace(trimmed) ? string.Empty : trimmed;
+    }
+
+    private bool ShouldSkipDuplicate(string cleaned)
+    {
+        if (string.IsNullOrWhiteSpace(cleaned))
+        {
+            return true;
+        }
+
+        var now = DateTime.UtcNow;
+        var key = BuildDedupeKey(cleaned);
+        if (!string.IsNullOrWhiteSpace(key))
+        {
+            _recentDedupe.RemoveAll(e => now - e.AtUtc > RecentDedupeWindow);
+            if (_recentDedupe.Any(e => string.Equals(e.Key, key, StringComparison.Ordinal)))
+            {
+                return true;
+            }
+            _recentDedupe.Add((key, now));
+        }
+
+        if (_lastMessage != null &&
+            string.Equals(_lastMessage, cleaned, StringComparison.Ordinal) &&
+            now - _lastMessageAtUtc < TimeSpan.FromSeconds(2))
+        {
+            return true;
+        }
+
+        _lastMessage = cleaned;
+        _lastMessageAtUtc = now;
+        return false;
+    }
+
+    private static string? BuildDedupeKey(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return null;
+        }
+
+        var normalized = message.Trim();
+        var lower = normalized.ToLowerInvariant();
+
+        if (lower.StartsWith("table de ", StringComparison.Ordinal) ||
+            lower.StartsWith("table créée", StringComparison.Ordinal) ||
+            lower.StartsWith("table demarree", StringComparison.Ordinal) ||
+            lower.StartsWith("table démarrée", StringComparison.Ordinal))
+        {
+            return NormalizeDedupeText(normalized);
+        }
+
+        if (lower.StartsWith("c'est à ", StringComparison.Ordinal) &&
+            lower.Contains(" de jouer", StringComparison.Ordinal))
+        {
+            return NormalizeDedupeText(normalized);
+        }
+
+        return null;
+    }
+
+    private static string NormalizeDedupeText(string message)
+    {
+        var cleaned = (message ?? string.Empty).Trim();
+        cleaned = cleaned.Replace("(Entrée)", string.Empty, StringComparison.OrdinalIgnoreCase)
+                         .Replace("(entrée)", string.Empty, StringComparison.OrdinalIgnoreCase);
+        cleaned = cleaned.Trim().TrimEnd('.', '!', '?');
+
+        var parts = cleaned
+            .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return parts.Length == 0 ? string.Empty : string.Join(' ', parts).ToLowerInvariant();
     }
 }

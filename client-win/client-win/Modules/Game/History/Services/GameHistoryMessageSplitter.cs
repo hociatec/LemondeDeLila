@@ -6,7 +6,7 @@ namespace client_win.Modules.Game.History.Services;
 
 internal static class GameHistoryMessageSplitter
 {
-    internal const string BlankLineToken = "\u200B";
+    internal const string BlankLineToken = "\u00A0";
 
     public static IReadOnlyList<string> Split(string? message)
     {

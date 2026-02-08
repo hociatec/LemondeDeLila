@@ -7,6 +7,7 @@
              d:DesignHeight="720"
              d:DesignWidth="1280"
              Loaded="OnLoaded"
+             Unloaded="OnUnloaded"
              PreviewKeyDown="OnPreviewKeyDown"
              AutomationProperties.Name="Mon coffre fort"
              AutomationProperties.HelpText="Mon coffre fort.">

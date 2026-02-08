@@ -115,6 +115,32 @@ export class FrousseActionService {
 
     let meta = this.getMeta(state);
 
+    // Saut de tour: si l'état courant indique un tour à passer, on consomme et on avance.
+    const skipNow = meta.statuses?.skipTurn?.[currentId] ?? 0;
+    if (skipNow > 0) {
+      meta = {
+        ...meta,
+        statuses: {
+          ...meta.statuses,
+          skipTurn: {
+            ...(meta.statuses?.skipTurn ?? {}),
+            [currentId]: Math.max(0, skipNow - 1),
+          },
+        },
+      };
+      let next: GameStateEntity = {
+        ...state,
+        metadata: { ...(state.metadata ?? {}), ...meta },
+      };
+      const remaining = Math.max(0, skipNow - 1);
+      const suffix = remaining > 0 ? ` (${remaining} restant)` : '';
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, currentId)} passe son tour${suffix}.`,
+      );
+      return this.turns.advanceTurn(next);
+    }
+
     // Blocages (tentatives de sortie).
     const blocked = meta.statuses?.blocked?.[currentId] ?? null;
     if (blocked) {
@@ -125,9 +151,12 @@ export class FrousseActionService {
         metadata: { ...(state.metadata ?? {}), ...meta },
         lastRoll: roll.value,
       };
+      const rollLabel = roll.doubledFrom != null
+        ? `${roll.doubledFrom}" (doublé -> ${roll.value})`
+        : `${roll.value}`;
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} tente de se libérer : dé = "${roll.value}".`,
+        `${this.playerName(next, currentId)} tente de se libérer : dé = "${rollLabel}".`,
       );
       const ok =
         blocked.kind === 'need_roll_one_of'
@@ -187,9 +216,12 @@ export class FrousseActionService {
         `${this.playerName(next, currentId)} lance deux dés : "${roll.rolls[0]}" et "${roll.rolls[1]}" (garde "${roll.value}").`,
       );
     } else {
+      const rollLabel = roll.doubledFrom != null
+        ? `${roll.doubledFrom}" (doublé -> ${roll.value})`
+        : `${roll.value}`;
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} lance le dé : "${roll.value}".`,
+        `${this.playerName(next, currentId)} lance le dé : "${rollLabel}".`,
       );
     }
 
@@ -845,7 +877,12 @@ export class FrousseActionService {
   private roll(
     meta: FrousseMetadata,
     playerId: number,
-  ): { value: number; meta: FrousseMetadata; rolls?: number[] } {
+  ): {
+    value: number;
+    meta: FrousseMetadata;
+    rolls?: number[];
+    doubledFrom?: number;
+  } {
     let outMeta = meta;
 
     const keepLowest = outMeta.statuses.nextRollKeepLowest?.[playerId] === true;
@@ -888,6 +925,7 @@ export class FrousseActionService {
     }
 
     if (outMeta.statuses.nextRollDouble?.[playerId]) {
+      const doubledFrom = value;
       value = value * 2;
       outMeta = {
         ...outMeta,
@@ -899,6 +937,7 @@ export class FrousseActionService {
           },
         },
       };
+      return { value, meta: outMeta, doubledFrom };
     }
 
     return { value, meta: outMeta };
@@ -1056,11 +1095,13 @@ function extractMoveDelta(text: string): number {
 }
 
 function extractSkipTurns(text: string): number {
-  const numeric = text.match(/Passez\\s+(\\d+)\\s+tour/i);
+  const numeric = text.match(/Passez\\s+(\\d+)\\s+tours?/i);
   if (numeric) {
     const n = Number(numeric[1]);
     if (Number.isFinite(n) && n > 0) return Math.trunc(n);
   }
+  const oneWord = text.match(/Passez\\s+(un|une)\\s+tour/i);
+  if (oneWord) return 1;
   if (/Passez deux tours/i.test(text)) return 2;
   if (/Passez trois tours/i.test(text)) return 3;
   if (/Passez votre tour/i.test(text) || /Passez un tour/i.test(text))

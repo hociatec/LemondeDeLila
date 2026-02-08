@@ -20,6 +20,10 @@ public sealed class GameSession : IAsyncDisposable
     private readonly CancellationTokenSource _lifetimeCts = new();
     private Task? _watchdogLoop;
     private DateTime _lastPongUtc = DateTime.MinValue;
+    private readonly object _actionDedupeLock = new();
+    private string? _lastActionKey;
+    private DateTime _lastActionAtUtc;
+    private static readonly TimeSpan ActionDedupeWindow = TimeSpan.FromMilliseconds(250);
 
     // NOTE: GameSession est créé après ConnectAsync côté GameGatewayClient (souvent socket déjà connecté).
     // L'état initial est lu depuis IWebSocketConnection.State.
@@ -162,6 +166,11 @@ public sealed class GameSession : IAsyncDisposable
             return;
         }
 
+        if (IsDuplicateAction(actions))
+        {
+            return;
+        }
+
         var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
         actions ??= Array.Empty<GameClientAction>();
         var msg = JsonSerializer.Serialize(
@@ -178,6 +187,64 @@ public sealed class GameSession : IAsyncDisposable
             },
             _json);
         await TrySendAsync(msg, cancellationToken).ConfigureAwait(false);
+    }
+
+    private bool IsDuplicateAction(IReadOnlyList<GameClientAction> actions)
+    {
+        try
+        {
+            var key = BuildActionKey(actions);
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return false;
+            }
+
+            var now = DateTime.UtcNow;
+            lock (_actionDedupeLock)
+            {
+                if (_lastActionKey != null &&
+                    string.Equals(_lastActionKey, key, StringComparison.Ordinal) &&
+                    now - _lastActionAtUtc < ActionDedupeWindow)
+                {
+                    return true;
+                }
+
+                _lastActionKey = key;
+                _lastActionAtUtc = now;
+            }
+        }
+        catch
+        {
+            // best-effort: ne pas bloquer l'envoi si la déduplication échoue.
+        }
+
+        return false;
+    }
+
+    private static string BuildActionKey(IReadOnlyList<GameClientAction> actions)
+    {
+        if (actions == null || actions.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        try
+        {
+            var normalized = actions
+                .Select(a => new
+                {
+                    type = (a?.Type ?? string.Empty).Trim(),
+                    payload = a?.Payload,
+                    meta = a?.Meta
+                })
+                .ToList();
+            return JsonSerializer.Serialize(normalized, _json);
+        }
+        catch
+        {
+            // Fallback: clé basée uniquement sur les types d'action.
+            return string.Join("|", actions.Select(a => (a?.Type ?? string.Empty).Trim()));
+        }
     }
 
     public async Task SendKeyAsync(string key, CancellationToken cancellationToken = default)

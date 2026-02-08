@@ -142,7 +142,7 @@ public partial class GameHistoryView : UserControl
         {
             if (entry == GameHistoryMessageSplitter.BlankLineToken)
             {
-                paragraph.Inlines.Add(new Run(" "));
+                paragraph.Inlines.Add(new Run(GameHistoryMessageSplitter.BlankLineToken));
                 paragraph.Inlines.Add(new LineBreak());
                 continue;
             }
@@ -155,6 +155,8 @@ public partial class GameHistoryView : UserControl
             paragraph.Inlines.Add(new Run(entry));
             paragraph.Inlines.Add(new LineBreak());
         }
+
+        MoveCaretAndScrollToEnd();
 
         if (!HistoryViewer.IsKeyboardFocusWithin)
         {
@@ -190,7 +192,7 @@ public partial class GameHistoryView : UserControl
         {
             if (entry == GameHistoryMessageSplitter.BlankLineToken)
             {
-                paragraph.Inlines.Add(new Run(" "));
+                paragraph.Inlines.Add(new Run(GameHistoryMessageSplitter.BlankLineToken));
                 paragraph.Inlines.Add(new LineBreak());
                 continue;
             }

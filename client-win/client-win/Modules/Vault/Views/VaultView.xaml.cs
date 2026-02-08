@@ -10,6 +10,8 @@ namespace client_win.Modules.Vault.Views;
 
 public partial class VaultView : UserControl, IInitialFocusTarget
 {
+    private Window? _hostWindow;
+
     public VaultView()
     {
         InitializeComponent();
@@ -17,6 +19,7 @@ public partial class VaultView : UserControl, IInitialFocusTarget
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        HookWindowKeys();
         RequestInitialFocus();
 
         // Defer network calls until the view is visible (UI first).
@@ -38,6 +41,11 @@ public partial class VaultView : UserControl, IInitialFocusTarget
                 // best-effort
             }
         }));
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        UnhookWindowKeys();
     }
 
     public void RequestInitialFocus()
@@ -126,5 +134,55 @@ public partial class VaultView : UserControl, IInitialFocusTarget
                 vm.RestoreCommand.Execute(null);
             }
         }
+    }
+
+    private void HookWindowKeys()
+    {
+        try
+        {
+            var window = Window.GetWindow(this);
+            if (window == null || ReferenceEquals(_hostWindow, window))
+            {
+                return;
+            }
+
+            UnhookWindowKeys();
+            _hostWindow = window;
+            _hostWindow.PreviewKeyDown += OnWindowPreviewKeyDown;
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    private void UnhookWindowKeys()
+    {
+        try
+        {
+            if (_hostWindow != null)
+            {
+                _hostWindow.PreviewKeyDown -= OnWindowPreviewKeyDown;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+        finally
+        {
+            _hostWindow = null;
+        }
+    }
+
+    private void OnWindowPreviewKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (!IsLoaded || !IsVisible)
+        {
+            return;
+        }
+
+        // Route through the same handler to keep behavior consistent.
+        OnPreviewKeyDown(this, e);
     }
 }
