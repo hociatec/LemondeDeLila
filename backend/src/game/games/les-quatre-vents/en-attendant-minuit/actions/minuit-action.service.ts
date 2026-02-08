@@ -41,6 +41,7 @@ export class MinuitActionService {
       const type = String(action?.type ?? '').trim();
       if (type === 'pick_pawn') {
         next = this.handlePickPawn(next, action);
+        next = this.ensurePawnSelection(next);
         continue;
       }
       if (type === 'roll' || type === 'ROLL_DICE' || type === 'roll_dice') {
@@ -288,18 +289,29 @@ export class MinuitActionService {
 
   private ensurePawnSelection(state: GameStateEntity): GameStateEntity {
     const status = (state.status ?? '').toLowerCase();
-    if (status === 'started') return state;
-    if (status !== 'starting' && status !== 'setup') return state;
     const players = Array.isArray(state.players) ? state.players : [];
     if (players.length < MINUIT_GAME.minPlayers) return state;
+    const hasPendingPick = (state.pending as any)?.type === 'pick_pawn';
+    const needsPawnSelection = players.some(
+      (p) => !!p && !p.isBot && !String(p.pawn ?? '').trim(),
+    );
+    const needsBotPawns = players.some(
+      (p) => !!p && p.isBot && !String(p.pawn ?? '').trim(),
+    );
+    if (status === 'started') {
+      if (!needsPawnSelection && !needsBotPawns && !hasPendingPick) return state;
+      const withBots = this.assignBotPawns(state);
+      if (needsPawnSelection || hasPendingPick) {
+        return this.queuePawnSelection(withBots);
+      }
+      return withBots;
+    }
+    if (status !== 'starting' && status !== 'setup') return state;
     // Always assign bot pawns early so humans cannot pick them.
     const withBots = this.assignBotPawns(state);
     const readyPlayers = Array.isArray(withBots.players)
       ? withBots.players
       : [];
-    const needsPawnSelection = players.some(
-      (p) => !!p && !p.isBot && !String(p.pawn ?? '').trim(),
-    );
     if (needsPawnSelection) {
       return this.queuePawnSelection(withBots);
     }

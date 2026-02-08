@@ -311,7 +311,7 @@ export class PanierExpressService extends AbstractGameService {
       if (!hadPawn && pawn) {
         withLogs = this.core.appendLog(
           withLogs,
-          '[Panier Express] ' + label + ' re\u00e7oit le pion: ' + pawn,
+          '[Panier Express] ' + label + ' choisit le pion: ' + pawn,
         );
       }
     });
@@ -672,15 +672,30 @@ export class PanierExpressService extends AbstractGameService {
     const pawns = this.setup.pawns();
     if (!pawns.length) return state;
 
-    // Assign bot pawns early so humans cannot pick them.
-    const withBots = this.assignBotPawns(state);
-    const players = withBots.players ?? [];
+    const players = state.players ?? [];
     const missing = players.filter(
       (p: any) => !p?.pawn && !this.utils.isBot(p),
     );
-    if (!missing.length) return state;
+    if (!missing.length) {
+      return this.assignBotPawns(state);
+    }
+
+    // Reset bot pawns during setup so humans can pick among all options.
+    const normalizedPlayers = players.map((p: any) => {
+      if (!this.utils.isBot(p)) return p;
+      const pawn =
+        typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
+      if (!pawn) return p;
+      return { ...p, pawn: undefined };
+    });
+    const withClearedBots =
+      normalizedPlayers === players
+        ? state
+        : { ...state, players: normalizedPlayers };
+
     const taken = new Set(
-      players
+      normalizedPlayers
+        .filter((p: any) => !this.utils.isBot(p))
         .map((p: any) =>
           typeof p?.pawn === 'string' ? String(p.pawn).trim() : '',
         )
@@ -690,7 +705,7 @@ export class PanierExpressService extends AbstractGameService {
     const choices = available.length ? available : pawns;
     const chooser = missing[0];
     return {
-      ...withBots,
+      ...withClearedBots,
       pending: {
         type: 'pick',
         playerId: chooser.id,
@@ -730,7 +745,7 @@ export class PanierExpressService extends AbstractGameService {
         if (!pawn) return;
         withLogs = this.core.appendLog(
           withLogs,
-          `[Panier Express] ${this.utils.playerName(withLogs, p.id)} re\u00e7oit le pion: ${pawn}.`,
+          `[Panier Express] ${this.utils.playerName(withLogs, p.id)} choisit le pion: ${pawn}.`,
         );
       });
       withLogs = {
