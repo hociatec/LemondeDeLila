@@ -26,6 +26,13 @@ export class MinuitSetupService {
     private readonly random: RandomService,
   ) {}
 
+  private isBotLike(player: any): boolean {
+    if (!player) return false;
+    if (player.isBot === true) return true;
+    const username = String(player?.username ?? '').toLowerCase();
+    return username.includes('bot');
+  }
+
   hydrateInitialState(base: GameStateEntity): GameStateEntity {
     const board = this.loadBoard();
     const cards = this.loadCards();
@@ -83,7 +90,7 @@ export class MinuitSetupService {
   ): GameStateEntity['pending'] {
     const players = Array.isArray(base.players) ? base.players : [];
     const missing = players.filter(
-      (p) => !!p && !p.isBot && !String(p.pawn ?? '').trim(),
+      (p) => !!p && !this.isBotLike(p) && !String(p.pawn ?? '').trim(),
     );
     if (!missing.length) return null;
 
