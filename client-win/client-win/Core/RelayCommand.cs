@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using System.Windows;
 using System.Windows.Input;
 
 namespace client_win.Core;
@@ -28,6 +29,15 @@ public sealed class RelayCommand : ICommand
         var handler = CanExecuteChanged;
         if (handler == null)
         {
+            return;
+        }
+
+        // If the command was created off the UI thread (no captured sync context),
+        // still marshal to the WPF dispatcher to avoid cross-thread crashes.
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher != null && !dispatcher.CheckAccess())
+        {
+            dispatcher.BeginInvoke(() => handler(this, EventArgs.Empty));
             return;
         }
 

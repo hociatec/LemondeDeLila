@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace client_win.Core;
@@ -86,6 +87,13 @@ public sealed class AsyncRelayCommand<T> : ICommand
         var handler = CanExecuteChanged;
         if (handler == null)
         {
+            return;
+        }
+
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher != null && !dispatcher.CheckAccess())
+        {
+            dispatcher.BeginInvoke(() => handler(this, EventArgs.Empty));
             return;
         }
 
