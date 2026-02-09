@@ -1876,10 +1876,14 @@ export class GameEngineService {
     const handler = this.registry.getHandler(gameType);
     if (handler) {
       const hydrated = handler.hydrateInitialState(baseState);
+      const randomizedStarter = this.ensureRandomStarterAtGameStart(
+        baseState,
+        hydrated,
+      );
       const withMeta = {
-        ...hydrated,
+        ...randomizedStarter,
         metadata: {
-          ...(hydrated.metadata ?? {}),
+          ...(randomizedStarter.metadata ?? {}),
           botImmediateStartPending: true,
         },
       } as GameStateEntity;
@@ -1897,6 +1901,59 @@ export class GameEngineService {
       },
     } as GameStateEntity;
     return this.appendFirstTurnAnnouncement(withMeta);
+  }
+
+  private ensureRandomStarterAtGameStart(
+    baseState: GameStateEntity,
+    state: GameStateEntity,
+  ): GameStateEntity {
+    const status = String(state.status ?? '').toLowerCase().trim();
+    if (status !== 'started') return state;
+
+    const players = Array.isArray(state.players) ? state.players : [];
+    if (!players.length) return state;
+
+    const pending = state.pending as any;
+    const pendingPlayerId =
+      typeof pending?.playerId === 'number' ? pending.playerId : null;
+    const blockingPending = pending?.blocking === true;
+    if (blockingPending && pendingPlayerId != null) {
+      // Les jeux avec setup bloquant (choix de pion/config propriétaire) gardent leur acteur pending.
+      return state;
+    }
+
+    if ((state.metadata as any)?.starterChosenAfterPawnSelection === true) {
+      // Certains jeux tirent explicitement le starter après setup (ex: choix de pion).
+      return state;
+    }
+
+    const baseStarterId = baseState.turn?.currentPlayerId ?? null;
+    const starterId =
+      typeof baseStarterId === 'number' &&
+      players.some((p) => p?.id === baseStarterId)
+        ? baseStarterId
+        : (players[0]?.id ?? null);
+    if (typeof starterId !== 'number') return state;
+
+    const currentId = state.turn?.currentPlayerId ?? null;
+    const starterIndex = Math.max(
+      0,
+      players.findIndex((p) => p?.id === starterId),
+    );
+    const currentTurnIndex =
+      typeof state.turnIndex === 'number' ? state.turnIndex : 0;
+    if (currentId === starterId && currentTurnIndex === starterIndex) {
+      return state;
+    }
+
+    return {
+      ...state,
+      turnIndex: starterIndex,
+      turn: {
+        ...(state.turn ?? { direction: 1 }),
+        currentPlayerId: starterId,
+      },
+    };
   }
 
   private appendFirstTurnAnnouncement(state: GameStateEntity): GameStateEntity {

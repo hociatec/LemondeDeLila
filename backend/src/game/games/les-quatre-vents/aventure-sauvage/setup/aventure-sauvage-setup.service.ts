@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { ensureSeededRng } from '../../../../../common/utils/seeded-rng';
+import { seededShuffle } from '../../../../../common/utils/seeded-shuffle';
 import type {
   AventureSauvageCard,
   AventureSauvageMetadata,
@@ -26,7 +27,7 @@ export class AventureSauvageSetupService {
     const setupStarterId =
       typeof baseMeta?.setupStarterId === 'number'
         ? baseMeta.setupStarterId
-        : (baseState.turn?.currentPlayerId ?? players[0]?.id ?? null);
+        : resolveSeededStarterId(players, baseState.metadata ?? {}, baseState.turn?.currentPlayerId ?? null);
 
     const metaBase: AventureSauvageMetadata = {
       tiles,
@@ -78,6 +79,20 @@ export class AventureSauvageSetupService {
       metadata: { ...(baseState.metadata ?? {}), ...metaBase, rng: rngMeta?.rng ?? (baseState.metadata as any)?.rng },
     };
   }
+}
+
+function resolveSeededStarterId(
+  players: Array<{ id: number }>,
+  meta: unknown,
+  fallbackId: number | null,
+): number | null {
+  if (!players.length) return fallbackId;
+  if (typeof fallbackId === 'number' && players.some((p) => p?.id === fallbackId)) {
+    return fallbackId;
+  }
+  const seed = ensureSeededRng((meta ?? {}) as Record<string, unknown>).seed;
+  const shuffled = seededShuffle(players, seed, 'aventure-sauvage:setup-starter');
+  return shuffled[0]?.id ?? fallbackId ?? players[0]?.id ?? null;
 }
 
 function buildTiles(): AventureSauvageTile[] {

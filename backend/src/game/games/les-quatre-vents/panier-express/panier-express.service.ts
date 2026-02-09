@@ -260,7 +260,8 @@ export class PanierExpressService extends AbstractGameService {
         inventory: Array.isArray(p.inventory)
           ? p.inventory.map((item) => String(item))
           : [],
-        shoppingList: assigned?.list ?? this.toStringArray(p.shoppingList).slice(0, 3),
+        shoppingList:
+          assigned?.list ?? this.toStringArray(p.shoppingList).slice(0, 3),
         pawn: assigned?.pawn,
       };
     });
@@ -626,6 +627,7 @@ export class PanierExpressService extends AbstractGameService {
     const pawns = this.setup.pawns();
     if (!pawns.length) return state;
     const players = state.players ?? [];
+    let meta = this.getMetadata(state) as any;
     const used = new Set(
       players
         .map((p: any) =>
@@ -633,7 +635,6 @@ export class PanierExpressService extends AbstractGameService {
         )
         .filter((p: string) => p.length > 0),
     );
-    let fallbackIndex = 0;
     const assignedBots: Array<{ id: number; pawn: string }> = [];
     const updated = players.map((p: any) => {
       const currentPawn =
@@ -643,14 +644,25 @@ export class PanierExpressService extends AbstractGameService {
         return p;
       }
       if (!this.utils.isBot(p)) return p;
-      const available = pawns.find((pawn) => !used.has(pawn));
-      const chosen = available ?? pawns[fallbackIndex++ % pawns.length];
+      const available = pawns.filter((pawn) => !used.has(pawn));
+      const pool = available.length > 0 ? available : pawns;
+      const picked = this.random.pickOne(meta as any, pool);
+      meta = picked.meta;
+      const chosen =
+        typeof picked.value === 'string' ? String(picked.value).trim() : '';
       if (!chosen) return p;
       used.add(chosen);
       assignedBots.push({ id: p.id, pawn: chosen });
       return { ...p, pawn: chosen };
     });
-    let next: GameStateEntity = { ...state, players: updated };
+    let next: GameStateEntity = {
+      ...state,
+      players: updated,
+      metadata: {
+        ...(state.metadata ?? {}),
+        ...meta,
+      },
+    };
     assignedBots.forEach((bot) => {
       next = this.core.appendLog(
         next,
@@ -677,14 +689,14 @@ export class PanierExpressService extends AbstractGameService {
       (p: any) => !p?.pawn && !this.utils.isBot(p),
     );
     if (!missing.length) {
-      return this.assignBotPawns(state);
+      const withBots = this.assignBotPawns(state);
+      return this.finalizeStarterAfterPawnSelection(withBots);
     }
 
     // Reset bot pawns during setup so humans can pick among all options.
     const normalizedPlayers = players.map((p: any) => {
       if (!this.utils.isBot(p)) return p;
-      const pawn =
-        typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
+      const pawn = typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
       if (!pawn) return p;
       return { ...p, pawn: undefined };
     });
@@ -740,8 +752,7 @@ export class PanierExpressService extends AbstractGameService {
     let withLogs: GameStateEntity = withBots;
     if (!meta.pawnAnnouncementsDone) {
       readyPlayers.forEach((p: any) => {
-        const pawn =
-          typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
+        const pawn = typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
         if (!pawn) return;
         withLogs = this.core.appendLog(
           withLogs,
@@ -753,22 +764,60 @@ export class PanierExpressService extends AbstractGameService {
         metadata: { ...meta, pawnAnnouncementsDone: true },
       };
     }
-    const starterId = readyPlayers[0]?.id ?? null;
-    if (typeof starterId === 'number') {
-      withLogs = this.core.appendLog(
-        withLogs,
-        `[Panier Express] D\u00e9but de partie : ${this.utils.playerName(withLogs, starterId)} commence.`,
-      );
-    }
-    return {
+    const started: GameStateEntity = {
       ...withLogs,
       status: 'started',
       turnIndex: readyPlayers.length ? 0 : -1,
       turn: {
-        currentPlayerId: starterId,
+        currentPlayerId: readyPlayers[0]?.id ?? null,
         direction: 1,
       },
     };
+    return this.finalizeStarterAfterPawnSelection(started);
+  }
+
+  private finalizeStarterAfterPawnSelection(
+    state: GameStateEntity,
+  ): GameStateEntity {
+    const status = String(state.status ?? '').toLowerCase();
+    if (status !== 'started' && status !== 'starting') return state;
+
+    const players = state.players ?? [];
+    if (!players.length) return state;
+
+    const meta = this.getMetadata(state) as any;
+    if (meta?.starterChosenAfterPawnSelection === true) {
+      return state;
+    }
+
+    const pick = this.random.nextInt(meta as any, players.length);
+    const starterIndex = Math.max(0, Math.min(players.length - 1, pick.value));
+    const starter = players[starterIndex] ?? players[0];
+    const nextMeta = {
+      ...meta,
+      ...(pick.meta as any),
+      starterChosenAfterPawnSelection: true,
+    };
+    let next: GameStateEntity = {
+      ...state,
+      turnIndex: starterIndex,
+      turn: {
+        ...(state.turn ?? { direction: 1 }),
+        currentPlayerId: starter?.id ?? null,
+        direction: 1,
+      },
+      metadata: {
+        ...(state.metadata ?? {}),
+        ...nextMeta,
+      },
+    };
+    if (typeof starter?.id === 'number') {
+      next = this.core.appendLog(
+        next,
+        `[Panier Express] D\u00e9but de partie : ${this.utils.playerName(next, starter.id)} commence.`,
+      );
+    }
+    return next;
   }
 
   private handleRoll(
@@ -988,7 +1037,11 @@ export class PanierExpressService extends AbstractGameService {
           choices: targets
             .map((t: any) => String(t?.username ?? ''))
             .filter((v: string) => v.length > 0),
-          data: { kind: 'event.producteur_genereux.choose_target', offer, targets },
+          data: {
+            kind: 'event.producteur_genereux.choose_target',
+            offer,
+            targets,
+          },
         },
       } as any;
     }
@@ -1000,7 +1053,11 @@ export class PanierExpressService extends AbstractGameService {
         : [];
       const cursor = Number(data?.cursor);
       const processed = Number(data?.processed);
-      if (!order.length || !Number.isFinite(cursor) || !Number.isFinite(processed)) {
+      if (
+        !order.length ||
+        !Number.isFinite(cursor) ||
+        !Number.isFinite(processed)
+      ) {
         return this.advanceAfterDraw(next);
       }
 
@@ -1178,7 +1235,12 @@ export class PanierExpressService extends AbstractGameService {
 
     const keepTurn = this.turnStatus.getStatus(state, currentId, 'keepTurn');
     if (keepTurn > 0) {
-      const cleared = this.turnStatus.setStatus(state, currentId, 'keepTurn', 0);
+      const cleared = this.turnStatus.setStatus(
+        state,
+        currentId,
+        'keepTurn',
+        0,
+      );
       return this.core.appendLog(
         cleared,
         `[Panier Express] ${this.utils.playerName(state, currentId)} rejoue (bonus de tour).`,
@@ -1612,10 +1674,12 @@ export class PanierExpressService extends AbstractGameService {
       const metaNow = this.getMetadata(next) as any;
       const playerNow = (next.players ?? []).find((p: any) => p.id === pid);
       const hasCard =
-        this.utils.toStringArray((playerNow as any)?.basket).includes(trimmed) ||
-        this.utils.toStringArray((playerNow as any)?.inventory).includes(
-          trimmed,
-        );
+        this.utils
+          .toStringArray((playerNow as any)?.basket)
+          .includes(trimmed) ||
+        this.utils
+          .toStringArray((playerNow as any)?.inventory)
+          .includes(trimmed);
       if (hasCard) {
         next = {
           ...next,
@@ -2781,7 +2845,7 @@ export class PanierExpressService extends AbstractGameService {
         `[Panier Express] Troc équitable : échange refusé, quiz pour ${this.utils.playerName(state, initiatorId)}.`,
       );
     }
-      return this.phaseFlow.advanceTurn(resolved);
+    return this.phaseFlow.advanceTurn(resolved);
   }
 
   private handleMerchantRequestAccept(
@@ -2795,7 +2859,7 @@ export class PanierExpressService extends AbstractGameService {
     if (typeof actorId !== 'number') {
       return this.core.appendLog(
         state,
-        "[Panier Express] Acceptation du marchand invalide.",
+        '[Panier Express] Acceptation du marchand invalide.',
       );
     }
     const pending = state.pending as any;
@@ -2806,7 +2870,7 @@ export class PanierExpressService extends AbstractGameService {
     if (!ingredient) {
       return this.core.appendLog(
         state,
-        "[Panier Express] Acceptation du marchand invalide.",
+        '[Panier Express] Acceptation du marchand invalide.',
       );
     }
     let next: GameStateEntity = { ...state, pending: null };
@@ -2838,7 +2902,7 @@ export class PanierExpressService extends AbstractGameService {
     if (typeof actorId !== 'number') {
       return this.core.appendLog(
         state,
-        "[Panier Express] Refus du marchand invalide.",
+        '[Panier Express] Refus du marchand invalide.',
       );
     }
     const pending = state.pending as any;
@@ -3023,7 +3087,10 @@ export class PanierExpressService extends AbstractGameService {
             ...next,
             metadata: {
               ...nextMeta,
-              discards: { ...nextMeta.discards, courses: [...discards, trimmed] },
+              discards: {
+                ...nextMeta.discards,
+                courses: [...discards, trimmed],
+              },
             },
           } as any);
       if (!kept) return withDiscard;
@@ -3062,7 +3129,10 @@ export class PanierExpressService extends AbstractGameService {
       if (statusNow === 'starting') {
         return this.ensureStarted({ ...next, status: 'starting' });
       }
-      return this.queuePawnSelection({ ...next, status: state.status ?? 'open' });
+      return this.queuePawnSelection({
+        ...next,
+        status: state.status ?? 'open',
+      });
     }
 
     if (kind === 'event.tirage_chanceux') {
@@ -3491,8 +3561,7 @@ export class PanierExpressService extends AbstractGameService {
         0,
         Math.min(total - 1, Math.floor(Number(target.position))),
       );
-      const delta =
-        ((targetPos - currentPos) % total + total) % total;
+      const delta = (((targetPos - currentPos) % total) + total) % total;
       if (delta === 0) {
         let next = clearPending(state);
         next = this.core.appendLog(
@@ -4125,7 +4194,9 @@ export class PanierExpressService extends AbstractGameService {
         };
       })
       .filter(
-        (entry): entry is {
+        (
+          entry,
+        ): entry is {
           position: number;
           label: string;
           standId: string;
@@ -4165,7 +4236,10 @@ export class PanierExpressService extends AbstractGameService {
     };
   }
 
-  private applyWeatherBack(state: GameStateEntity, playerId: number): GameStateEntity {
+  private applyWeatherBack(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
     if (state.pending) {
       return this.core.appendLog(
         state,
@@ -4443,7 +4517,10 @@ export class PanierExpressService extends AbstractGameService {
     const effectiveAnswer = answer ?? choices[0];
     return actions.map((a) => {
       if (!a || (a.type || '').toLowerCase() !== 'answer_quiz') return a;
-      return { ...a, payload: { ...(a.payload ?? {}), answer: effectiveAnswer } };
+      return {
+        ...a,
+        payload: { ...(a.payload ?? {}), answer: effectiveAnswer },
+      };
     });
   }
 

@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { ensureSeededRng } from '../../../../../common/utils/seeded-rng';
+import { seededShuffle } from '../../../../../common/utils/seeded-shuffle';
 import type {
   SacBoardJsonV1,
   SacCardsJsonV1,
@@ -54,7 +56,11 @@ export class SacAMalicesSetupService {
     const starterId =
       typeof meta.setupStarterId === 'number'
         ? meta.setupStarterId
-        : (base.turn?.currentPlayerId ?? players[0]?.id ?? null);
+        : this.resolveSeededStarterId(
+            players,
+            base.metadata ?? {},
+            base.turn?.currentPlayerId ?? null,
+          );
 
     return {
       ...base,
@@ -131,7 +137,11 @@ export class SacAMalicesSetupService {
     const starterId =
       typeof metaBase.setupStarterId === 'number'
         ? metaBase.setupStarterId
-        : (base.turn?.currentPlayerId ?? players[0]?.id ?? null);
+        : this.resolveSeededStarterId(
+            players,
+            base.metadata ?? {},
+            base.turn?.currentPlayerId ?? null,
+          );
 
     return {
       ...base,
@@ -148,6 +158,20 @@ export class SacAMalicesSetupService {
         ...meta,
       },
     };
+  }
+
+  private resolveSeededStarterId(
+    players: Array<{ id: number }>,
+    meta: unknown,
+    fallbackId: number | null,
+  ): number | null {
+    if (!players.length) return fallbackId;
+    if (typeof fallbackId === 'number' && players.some((p) => p?.id === fallbackId)) {
+      return fallbackId;
+    }
+    const seed = ensureSeededRng((meta ?? {}) as Record<string, unknown>).seed;
+    const shuffled = seededShuffle(players, seed, 'sac-a-malices:setup-starter');
+    return shuffled[0]?.id ?? fallbackId ?? players[0]?.id ?? null;
   }
 
   private loadBoard(variant: SacVariantConfig): SacBoardJsonV1 {

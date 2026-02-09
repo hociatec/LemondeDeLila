@@ -2,6 +2,8 @@
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { ensureSeededRng } from '../../../../../common/utils/seeded-rng';
+import { seededShuffle } from '../../../../../common/utils/seeded-shuffle';
 import type {
   AFondLesBallonsCard,
   AFondLesBallonsCharacter,
@@ -38,7 +40,11 @@ export class AFondLesBallonsSetupService {
     const setupStarterId =
       typeof metaSeed?.setupStarterId === 'number'
         ? metaSeed.setupStarterId
-        : (baseState.turn?.currentPlayerId ?? players[0]?.id ?? null);
+        : resolveSeededStarterId(
+            players,
+            baseState.metadata ?? {},
+            baseState.turn?.currentPlayerId ?? null,
+          );
     const charactersByPlayerId = buildCharactersByPlayerId(pawnByPlayerId);
 
     const metaBase: AFondLesBallonsMetadata = {
@@ -89,6 +95,20 @@ export class AFondLesBallonsSetupService {
 
     return next;
   }
+}
+
+function resolveSeededStarterId(
+  players: Array<{ id: number }>,
+  meta: unknown,
+  fallbackId: number | null,
+): number | null {
+  if (!players.length) return fallbackId;
+  if (typeof fallbackId === 'number' && players.some((p) => p?.id === fallbackId)) {
+    return fallbackId;
+  }
+  const seed = ensureSeededRng((meta ?? {}) as Record<string, unknown>).seed;
+  const shuffled = seededShuffle(players, seed, 'a-fond-les-ballons:setup-starter');
+  return shuffled[0]?.id ?? fallbackId ?? players[0]?.id ?? null;
 }
 
 function buildTiles(): AFondLesBallonsTile[] {
@@ -450,6 +470,4 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
   ];
 }
-
-
 

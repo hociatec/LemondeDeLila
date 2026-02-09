@@ -41,6 +41,7 @@ export type FrousseMetadata = {
   pawns: FroussePawn[];
   pendingContext?: { kind: 'swap'; actorId: number } | null;
   winnerId?: number | null;
+  starterChosenAfterPawnSelection?: boolean;
 };
 
 export type FrousseCardsJsonV1 = { version: 1; cards: FrousseCard[] };

@@ -92,10 +92,11 @@ export class FrousseActionService {
     };
 
     const label = chosen.title ?? chosen.id ?? 'pion';
-    return this.core.appendLog(
+    const withLog = this.core.appendLog(
       next,
       `[Frousse Party] ${this.playerName(next, playerId)} choisit le pion: ${label}.`,
     );
+    return this.finalizeStarterAfterPawnSelection(withLog);
   }
 
   private ensurePawnSelection(state: GameStateEntity): GameStateEntity {
@@ -1033,6 +1034,48 @@ export class FrousseActionService {
         ? String(p.username).trim()
         : null;
     return u ?? `Joueur ${id}`;
+  }
+
+  private finalizeStarterAfterPawnSelection(
+    state: GameStateEntity,
+  ): GameStateEntity {
+    if (state.pending) return state;
+    const players = Array.isArray(state.players) ? state.players : [];
+    if (!players.length) return state;
+
+    const everyoneHasPawn = players.every((p: any) => resolvePawnId(p?.pawn));
+    if (!everyoneHasPawn) return state;
+
+    const meta = this.getMeta(state);
+    if ((meta as any)?.starterChosenAfterPawnSelection === true) {
+      return state;
+    }
+
+    const pick = this.random.nextInt(meta as any, players.length);
+    const starterIndex = Math.max(0, Math.min(players.length - 1, pick.value));
+    const starter = players[starterIndex] ?? players[0];
+    const nextMeta = {
+      ...meta,
+      ...(pick.meta as any),
+      starterChosenAfterPawnSelection: true,
+    };
+    let next: GameStateEntity = {
+      ...state,
+      turnIndex: starterIndex,
+      turn: {
+        ...(state.turn ?? { direction: 1 }),
+        currentPlayerId: starter?.id ?? null,
+        direction: 1,
+      },
+      metadata: { ...(state.metadata ?? {}), ...nextMeta },
+    };
+    if (typeof starter?.id === 'number') {
+      next = this.core.appendLog(
+        next,
+        `[Frousse Party] Début de partie : ${this.playerName(next, starter.id)} commence.`,
+      );
+    }
+    return next;
   }
 }
 

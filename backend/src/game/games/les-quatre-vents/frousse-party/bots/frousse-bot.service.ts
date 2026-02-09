@@ -13,6 +13,14 @@ export class FrousseBotService {
     botPlayerId: number,
   ): GameSingleActionDto[] {
     const available = Rulebook.getAvailableActions(state, botPlayerId);
+    const pawnChoices = available.filter(
+      (a) => String(a?.type ?? '').toLowerCase() === 'choose_pawn',
+    );
+    if (pawnChoices.length > 0) {
+      const idx = Math.floor(Math.random() * pawnChoices.length);
+      const picked = pawnChoices[idx] ?? pawnChoices[0];
+      return picked ? [picked] : [];
+    }
     return this.botRunner.choose(
       available,
       { state, playerId: botPlayerId },
