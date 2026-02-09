@@ -38,9 +38,49 @@ namespace client_win
         private bool _ownsSingleInstanceMutex;
         private FileStream? _singleInstanceLockFile;
 
+        private static string EnsureAppDataPath()
+        {
+            var appDataPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                Core.Constants.AppConstants.AppDataFolderName);
+            Directory.CreateDirectory(appDataPath);
+            return appDataPath;
+        }
+
+        private static void TryAppendStartupLog(string appDataPath, string message, Exception? ex = null)
+        {
+            try
+            {
+                var path = Path.Combine(appDataPath, "startup.log");
+                var line = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}";
+                if (ex != null)
+                {
+                    line += $" | {ex.GetType().Name}: {ex.Message}";
+                }
+                File.AppendAllText(path, line + Environment.NewLine);
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
+<<<<<<< HEAD
             AnimationDisabler.Disable();
+=======
+            string? appDataPath = null;
+            try
+            {
+                appDataPath = EnsureAppDataPath();
+                TryAppendStartupLog(appDataPath, "OnStartup: begin");
+            }
+            catch
+            {
+                // ignore (best-effort)
+            }
+>>>>>>> 441217fb0dd2c967a37b930fe42405f4bd4212d7
 
             // Empêche l'ouverture de plusieurs fenêtres/applications quand l'utilisateur relance le client
             // (raccourci, clickonce, restart update, etc.).
@@ -51,6 +91,11 @@ namespace client_win
                 _ownsSingleInstanceMutex = createdNew;
                 if (!createdNew)
                 {
+                    if (!string.IsNullOrWhiteSpace(appDataPath))
+                    {
+                        TryAppendStartupLog(appDataPath, "Single-instance: existing instance detected (mutex)");
+                    }
+
                     // Une instance existe déjà : tenter de la ramener au premier plan et quitter.
                     try
                     {
@@ -59,6 +104,20 @@ namespace client_win
                     catch
                     {
                         // ignore (best-effort)
+                    }
+
+                    try
+                    {
+                        MessageBox.Show(
+                            "Le Monde de Lila est déjà ouvert.\n\n" +
+                            "Solution : ouvre le Gestionnaire des tâches et termine \"LeMondeDeLila\" si la fenêtre est invisible, puis relance.",
+                            "Le Monde de Lila",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                    catch
+                    {
+                        // ignore
                     }
                     Shutdown();
                     return;
@@ -73,16 +132,31 @@ namespace client_win
             // Si un autre process détient le lock, on active l'instance existante et on quitte.
             try
             {
-                var appDataPath = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    Core.Constants.AppConstants.AppDataFolderName);
-                Directory.CreateDirectory(appDataPath);
+                appDataPath ??= EnsureAppDataPath();
                 var lockPath = Path.Combine(appDataPath, "single-instance.lock");
                 _singleInstanceLockFile = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
             }
-            catch
+            catch (Exception ex)
             {
+                if (!string.IsNullOrWhiteSpace(appDataPath))
+                {
+                    TryAppendStartupLog(appDataPath, "Single-instance: failed to acquire lock file", ex);
+                }
                 try { SingleInstanceActivator.TryActivateExistingInstance(); } catch { /* ignore */ }
+                try
+                {
+                    MessageBox.Show(
+                        "Impossible de démarrer (verrou d'instance).\n\n" +
+                        "Vérifie qu'aucun processus \"LeMondeDeLila\" n'est en cours dans le Gestionnaire des tâches.\n\n" +
+                        "Un log peut être présent dans %LOCALAPPDATA%\\LeMondeDeLila\\startup.log",
+                        "Le Monde de Lila",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+                catch
+                {
+                    // ignore
+                }
                 Shutdown();
                 return;
             }
