@@ -295,9 +295,13 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
 	            "/p:PublishProtocol=ClickOnce",
 	            "/p:Install=true",
 	            "/p:InstallFrom=Web",
-	            // IMPORTANT: on désactive l'auto-update ClickOnce (qui peut afficher des boîtes système).
-	            // Les mises à jour sont gérées par le client via ApplicationDeployment.Update() (silencieux).
-	            "/p:UpdateEnabled=false",
+	            // IMPORTANT: on active l'auto-update ClickOnce pour garantir qu'un client "cassé"
+	            // (crash au login, etc.) puisse se réparer au simple relancement après publication.
+	            // En mode Background, ClickOnce reste le plus discret possible.
+	            "/p:UpdateEnabled=true",
+	            "/p:UpdateMode=Background",
+	            "/p:UpdateInterval=0",
+	            "/p:UpdateIntervalUnits=Days",
 	            // IMPORTANT: ClickOnce + CreateDesktopShortcut peut dupliquer le raccourci sur le bureau à chaque update.
 	            "/p:CreateDesktopShortcut=false",
             "/p:GenerateManifests=true",
