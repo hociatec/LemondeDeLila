@@ -46,8 +46,8 @@ public static class ContentHostFocusBehavior
     }
 
     private static readonly ConditionalWeakTable<ContentControl, HandlerSet> HandlersByHost = new();
-    private const int FocusRetryMaxAttempts = 8;
-    private static readonly TimeSpan FocusRetryInterval = TimeSpan.FromMilliseconds(120);
+    private const int FocusRetryMaxAttempts = 24;
+    private static readonly TimeSpan FocusRetryInterval = TimeSpan.FromMilliseconds(125);
 
     public static void SetEnable(DependencyObject element, bool value) =>
         element.SetValue(EnableProperty, value);
@@ -195,6 +195,7 @@ public static class ContentHostFocusBehavior
 
         if (handlers.RetryRemaining <= 0)
         {
+            try { FocusParking.ParkIfNeeded(Window.GetWindow(host) ?? Application.Current?.MainWindow); } catch { }
             try { handlers.RetryTimer?.Stop(); } catch { }
             return;
         }
@@ -224,12 +225,12 @@ public static class ContentHostFocusBehavior
 
             if (root is IInitialFocusTarget focusTarget)
             {
-                if (!allowFallback || !IsFocusWithin(root))
+                if (!IsFocusWithin(root))
                 {
                     focusTarget.RequestInitialFocus();
                 }
 
-                if (!allowFallback || IsFocusWithin(root))
+                if (IsFocusWithin(root))
                 {
                     return true;
                 }
@@ -237,8 +238,10 @@ public static class ContentHostFocusBehavior
 
             if (FindFirstFocusable(root) is IInputElement target)
             {
-                Keyboard.Focus(target);
-                return true;
+                if (TrySetKeyboardFocus(target, root))
+                {
+                    return true;
+                }
             }
 
             // Fallback: tenter un MoveFocus à partir du host.
@@ -246,10 +249,10 @@ public static class ContentHostFocusBehavior
             {
                 return false;
             }
-            if (host.IsVisible)
+            if (host.IsVisible && host.IsEnabled)
             {
                 host.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
-                return true;
+                return IsFocusWithin(root) || IsFocusWithin(host);
             }
         }
         catch
@@ -258,6 +261,25 @@ public static class ContentHostFocusBehavior
         }
 
         return false;
+    }
+
+    private static bool TrySetKeyboardFocus(IInputElement target, DependencyObject expectedRoot)
+    {
+        try
+        {
+            if (target is UIElement uiTarget)
+            {
+                try { uiTarget.Focus(); } catch { /* ignore */ }
+            }
+
+            try { Keyboard.Focus(target); } catch { /* ignore */ }
+
+            return IsFocusWithin(expectedRoot);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static DependencyObject? TryGetContentRoot(ContentControl host)
