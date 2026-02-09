@@ -1091,11 +1091,6 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 function extractMoveDelta(text: string): number {
-  const combo = text.match(
-    /Avancez\s+de\s+(\d+)\s+cases?,\s+puis\s+reculez\s+de\s+(\d+)\s+cases?/i,
-  );
-  if (combo) return (Number(combo[1]) || 0) - (Number(combo[2]) || 0);
-
   const numWords: Record<string, number> = {
     un: 1,
     une: 1,
@@ -1108,10 +1103,30 @@ function extractMoveDelta(text: string): number {
 
   const parseNumberish = (raw: string): number => {
     const n = Number(raw);
-    if (Number.isFinite(n) && n !== 0) return n;
+    if (Number.isFinite(n) && n > 0) return n;
     const key = raw.trim().toLowerCase();
     return numWords[key] ?? 0;
   };
+
+  // Gère les effets composés (ex: "Avancez de 5 cases, puis reculez de 3")
+  // en cumulant toutes les consignes de mouvement présentes dans le texte.
+  let total = 0;
+  const forwardOrBackPattern =
+    /(avancez|reculez)\s+(?:de|d['’])\s*(\d+|un|une|deux|trois|quatre|cinq|six)(?:\s+cases?)?/gi;
+  let fbMatch: RegExpExecArray | null;
+  while ((fbMatch = forwardOrBackPattern.exec(text)) !== null) {
+    const amount = parseNumberish(fbMatch[2]);
+    if (amount <= 0) continue;
+    const verb = String(fbMatch[1] ?? '').toLowerCase();
+    total += verb.startsWith('recul') ? -amount : amount;
+  }
+  const jumpPattern = /sautez\s+(\d+|un|une|deux|trois|quatre|cinq|six)(?:\s+cases?)?/gi;
+  let jumpMatch: RegExpExecArray | null;
+  while ((jumpMatch = jumpPattern.exec(text)) !== null) {
+    const amount = parseNumberish(jumpMatch[1]);
+    if (amount > 0) total += amount;
+  }
+  if (total !== 0) return total;
 
   const narrativeForward = text.match(
     /avancez[\s\S]*?d['’]\s*(\d+|un|une|deux|trois|quatre|cinq|six)\s+case/i,

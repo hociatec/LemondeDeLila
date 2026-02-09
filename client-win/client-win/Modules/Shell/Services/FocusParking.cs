@@ -13,6 +13,16 @@ public static class FocusParking
 {
     public static void Park(Window? window = null)
     {
+        ParkCore(window, force: false);
+    }
+
+    public static void ForcePark(Window? window = null)
+    {
+        ParkCore(window, force: true);
+    }
+
+    private static void ParkCore(Window? window, bool force)
+    {
         try
         {
             window ??= Application.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
@@ -26,6 +36,12 @@ public static class FocusParking
             // We only "park" focus if this window is active (or already has keyboard focus within).
             if (!window.IsActive && !window.IsKeyboardFocusWithin)
             {
+                return;
+            }
+
+            if (!force && IsCurrentFocusHealthyForWindow(window))
+            {
+                // Soft mode: avoid unnecessary focus churn/announcements when focus is already valid.
                 return;
             }
 
@@ -47,25 +63,8 @@ public static class FocusParking
                     try { (target as UIElement)?.Focus(); } catch { /* ignore */ }
                     try { Keyboard.Focus(target); } catch { /* ignore */ }
 
-                    // UIA focus: align with the parked target, not the top-level window handle.
-                    // Forcing UIA focus to the window can leave NVDA stuck on "fenêtre" after startup.
-                    try
-                    {
-                        if (target is UIElement uiTarget && uiTarget.IsVisible && uiTarget.IsEnabled)
-                        {
-                            var peer = UIElementAutomationPeer.FromElement(uiTarget) ?? UIElementAutomationPeer.CreatePeerForElement(uiTarget);
-                            if (peer != null)
-                            {
-                                Log.Debug("FocusParking.Park UIA focus target={Target}", uiTarget.GetType().Name);
-                                try { peer.SetFocus(); } catch { /* ignore */ }
-                                try { peer.RaiseAutomationEvent(AutomationEvents.AutomationFocusChanged); } catch { /* ignore */ }
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        // ignore
-                    }
+                    // Intentionally avoid forcing UIA focus events here.
+                    // Repeated synthetic UIA focus changes can trigger noisy "indisponible" announcements in NVDA.
                 }
                 catch
                 {
@@ -88,6 +87,45 @@ public static class FocusParking
         catch
         {
             // best-effort
+        }
+    }
+
+    private static bool IsCurrentFocusHealthyForWindow(Window window)
+    {
+        try
+        {
+            var focused = Keyboard.FocusedElement as DependencyObject;
+            if (focused == null)
+            {
+                return false;
+            }
+
+            var owner = Window.GetWindow(focused);
+            if (owner != null && !ReferenceEquals(owner, window))
+            {
+                return false;
+            }
+
+            if (PresentationSource.FromDependencyObject(focused) == null)
+            {
+                return false;
+            }
+
+            if (focused is UIElement ui)
+            {
+                return ui.IsVisible && ui.IsEnabled;
+            }
+
+            if (focused is FrameworkElement fe)
+            {
+                return fe.IsVisible && fe.IsEnabled;
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 }

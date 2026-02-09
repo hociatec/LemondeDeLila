@@ -88,7 +88,7 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
             // If the focused element is being unloaded, park focus before NVDA tries to announce it.
             if (IsDescendant(focused, unloaded))
             {
-                FocusParking.Park(_window);
+                FocusParking.ForcePark(_window);
             }
         }
         catch
