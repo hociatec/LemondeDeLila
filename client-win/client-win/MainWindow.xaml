@@ -24,6 +24,7 @@
                 IsHitTestVisible="False"
                 KeyboardNavigation.IsTabStop="False"
                 AutomationProperties.AutomationId="FocusSentinel"
+                AutomationProperties.IsOffscreenBehavior="Onscreen"
                 AutomationProperties.Name="{Binding WindowTitle, TargetNullValue=Le Monde de Lila, FallbackValue=Le Monde de Lila}" />
         <ContentControl x:Name="RootHost"
                         Focusable="True"

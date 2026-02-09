@@ -45,6 +45,7 @@
 	                                           HorizontalAlignment="Left"
 	                                           VerticalAlignment="Top"
 	                                           AutomationProperties.Name="Zone de jeu"
+	                                           AutomationProperties.IsOffscreenBehavior="Onscreen"
 	                                           PreviewKeyDown="OnAnchorPreviewKeyDown" />
 
 	                <local:GameZoneFocusAnchor x:Name="GameZoneEmptyAnchor"
@@ -55,7 +56,8 @@
                                            BorderThickness="0"
 	                                           Padding="0"
 	                                           PreviewKeyDown="OnAnchorPreviewKeyDown"
-	                                           AutomationProperties.Name="Table. Entrée pour démarrer.">
+	                                           AutomationProperties.Name="Table. Entrée pour démarrer."
+	                                           AutomationProperties.IsOffscreenBehavior="Onscreen">
                     <local:GameZoneFocusAnchor.Style>
                         <Style TargetType="{x:Type local:GameZoneFocusAnchor}">
                             <Setter Property="Visibility" Value="Collapsed" />

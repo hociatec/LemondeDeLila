@@ -365,12 +365,16 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
 
     private bool IsChatEnabled()
     {
-        return DataContext is GameRoomViewModel vm && vm.Chat?.IsEnabled == true && ChatHost?.Visibility == Visibility.Visible;
+        return DataContext is GameRoomViewModel vm
+               && vm.Chat?.IsEnabled == true
+               && vm.Chat.IsConnected
+               && ChatHost?.Visibility == Visibility.Visible
+               && ChatInput?.IsEnabled == true;
     }
 
     private void FocusChatInput()
     {
-        if (ChatInput != null && ChatHost?.Visibility == Visibility.Visible)
+        if (ChatInput != null && ChatInput.IsEnabled && ChatHost?.Visibility == Visibility.Visible)
         {
             ChatInput.Focus();
             Keyboard.Focus(ChatInput);
