@@ -35,9 +35,12 @@ jobs:
           $major = $parts[0]
           $minor = if ($parts.Length -ge 2) { $parts[1] } else { "0" }
           $run = "${{ github.run_number }}"
-          $ver = "$major.$minor.$run"
-          "version=$ver" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          "version4=$ver.0" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          # IMPORTANT: github.run_number ne change pas quand on "Re-run jobs".
+          # github.run_attempt permet d'avoir une version ClickOnce différente sur chaque tentative.
+          $attempt = "${{ github.run_attempt }}"
+          $ver4 = "$major.$minor.$run.$attempt"
+          "version=$ver4" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "version4=$ver4" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Prepare ClickOnce signing cert
         id: cert
