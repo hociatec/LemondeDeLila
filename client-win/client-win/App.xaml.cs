@@ -997,26 +997,34 @@ namespace client_win
         }
     }
 
-    internal static class AnimationDisabler
-    {
-        private static bool _disabled;
+	    internal static class AnimationDisabler
+	    {
+	        private static bool _disabled;
 
-        public static void Disable()
-        {
-            if (_disabled)
-            {
-                return;
-            }
+	        public static void Disable()
+	        {
+	            if (_disabled)
+	            {
+	                return;
+	            }
 
-            _disabled = true;
-            Timeline.SpeedRatioProperty.OverrideMetadata(
-                typeof(Timeline),
-                new FrameworkPropertyMetadata(
-                    defaultValue: MinimumSpeedRatio,
-                    FrameworkPropertyMetadataOptions.None,
-                    propertyChangedCallback: null,
-                    coerceValueCallback: CoerceToMinimum));
-        }
+	            _disabled = true;
+	            try
+	            {
+	                Timeline.SpeedRatioProperty.OverrideMetadata(
+	                    typeof(Timeline),
+	                    new FrameworkPropertyMetadata(
+	                        defaultValue: MinimumSpeedRatio,
+	                        FrameworkPropertyMetadataOptions.None,
+	                        propertyChangedCallback: null,
+	                        coerceValueCallback: CoerceToMinimum));
+	            }
+	            catch (ArgumentException)
+	            {
+	                // Best-effort: OverrideMetadata throws if already applied for the type.
+	                // In some hosting/load scenarios (ClickOnce, multiple load contexts), this can happen even if our static guard runs.
+	            }
+	        }
 
         private const double MinimumSpeedRatio = 1_000_000.0;
 
