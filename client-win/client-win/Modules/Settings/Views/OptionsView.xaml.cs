@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using System.Windows.Media;
 using client_win.Modules.Settings.ViewModels;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Settings.Views;
@@ -77,7 +78,22 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
         if (DataContext is OptionsViewModel vm && vm.CancelCommand?.CanExecute(null) == true)
         {
             e.Handled = true;
-            vm.CancelCommand.Execute(null);
+            FocusParking.Park(Window.GetWindow(this) ?? Application.Current?.MainWindow);
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+            {
+                try
+                {
+                    if (DataContext is OptionsViewModel deferredVm &&
+                        deferredVm.CancelCommand?.CanExecute(null) == true)
+                    {
+                        deferredVm.CancelCommand.Execute(null);
+                    }
+                }
+                catch
+                {
+                    // best-effort
+                }
+            }));
         }
     }
 

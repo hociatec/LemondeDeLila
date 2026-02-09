@@ -190,25 +190,36 @@ public partial class MessagingView : UserControl, IInitialFocusTarget
             return;
         }
 
-        switch (_currentScreen)
-        {
-            case MessagingScreen.Menu:
-                vm.CloseCommand.Execute(null);
-                break;
-            case MessagingScreen.List:
-                ShowScreen(MessagingScreen.Menu);
-                break;
-            case MessagingScreen.Detail:
-                ShowScreen(MessagingScreen.List);
-                break;
-            case MessagingScreen.Compose:
-                var target = _screenBeforeCompose == MessagingScreen.Compose
-                    ? MessagingScreen.Menu
-                    : _screenBeforeCompose;
-                ShowScreen(target);
-                break;
-        }
         e.Handled = true;
+        FocusParking.Park();
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            try
+            {
+                switch (_currentScreen)
+                {
+                    case MessagingScreen.Menu:
+                        vm.CloseCommand.Execute(null);
+                        break;
+                    case MessagingScreen.List:
+                        ShowScreen(MessagingScreen.Menu);
+                        break;
+                    case MessagingScreen.Detail:
+                        ShowScreen(MessagingScreen.List);
+                        break;
+                    case MessagingScreen.Compose:
+                        var target = _screenBeforeCompose == MessagingScreen.Compose
+                            ? MessagingScreen.Menu
+                            : _screenBeforeCompose;
+                        ShowScreen(target);
+                        break;
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+        }));
     }
 
     private void ShowScreen(MessagingScreen screen)

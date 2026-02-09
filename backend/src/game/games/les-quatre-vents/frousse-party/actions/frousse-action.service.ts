@@ -466,9 +466,14 @@ export class FrousseActionService {
       ? 'Effet ignoré.'
       : describeCardEffect(draw.card);
     const cardText = normalizeCardText(draw.card.text);
+    const withEffect = formatCardDrawLog(
+      this.playerName(next, playerId),
+      cardText,
+      effectLabel,
+    );
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} pioche une carte (${cardText}) : ${effectLabel}`,
+      withEffect,
     );
 
     if (ignored) {
@@ -1257,5 +1262,35 @@ function normalizeCardText(text: string): string {
     .replace(/\r/g, '')
     .replace(/\n+/g, ' ')
     .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+function formatCardDrawLog(
+  playerName: string,
+  cardText: string,
+  effectLabel: string,
+): string {
+  const base = `${playerName} pioche une carte (${cardText})`;
+  if (shouldSuppressRepeatedEffect(cardText, effectLabel)) {
+    return `${base}.`;
+  }
+  return `${base} : ${effectLabel}`;
+}
+
+function shouldSuppressRepeatedEffect(cardText: string, effectLabel: string): boolean {
+  const effect = normalizeForContains(effectLabel);
+  if (!effect) return false;
+  const card = normalizeForContains(cardText);
+  if (!card) return false;
+  return card.includes(effect);
+}
+
+function normalizeForContains(value: string): string {
+  return String(value ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }

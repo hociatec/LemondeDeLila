@@ -127,8 +127,24 @@ public partial class HomeView : UserControl, IInitialFocusTarget
             _viewModel.CurrentPage != HomePage.Landing &&
             _viewModel.ShowLandingCommand.CanExecute(null))
         {
-            _viewModel.ShowLandingCommand.Execute(null);
             e.Handled = true;
+            FocusParking.Park();
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+            {
+                try
+                {
+                    if (_viewModel != null &&
+                        _viewModel.CurrentPage != HomePage.Landing &&
+                        _viewModel.ShowLandingCommand.CanExecute(null))
+                    {
+                        _viewModel.ShowLandingCommand.Execute(null);
+                    }
+                }
+                catch
+                {
+                    // best-effort
+                }
+            }));
             return;
         }
 

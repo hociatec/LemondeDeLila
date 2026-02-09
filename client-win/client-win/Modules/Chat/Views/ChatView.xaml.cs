@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using client_win.Modules.Chat.ViewModels;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Chat.Views;
@@ -36,8 +37,22 @@ public partial class ChatView : UserControl, IInitialFocusTarget
     {
         if (e.Key == Key.Escape && DataContext is ChatViewModel vm && vm.CloseCommand.CanExecute(null))
         {
-            vm.CloseCommand.Execute(null);
             e.Handled = true;
+            FocusParking.Park();
+            _ = Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+            {
+                try
+                {
+                    if (vm.CloseCommand.CanExecute(null))
+                    {
+                        vm.CloseCommand.Execute(null);
+                    }
+                }
+                catch
+                {
+                    // best-effort
+                }
+            }));
         }
     }
 

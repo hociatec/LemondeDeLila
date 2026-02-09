@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Notifications.ViewModels;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Notifications.Views;
@@ -77,11 +78,25 @@ public partial class NotificationsView : UserControl, IInitialFocusTarget
         if (e.Key == Key.Escape && DataContext is NotificationsViewModel vm)
         {
             e.Handled = true;
-            var stayOpen = vm.HandleEscape();
-            if (stayOpen)
+            FocusParking.Park();
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
-                FocusFirstItem();
-            }
+                try
+                {
+                    var stayOpen = vm.HandleEscape();
+                    if (stayOpen &&
+                        IsLoaded &&
+                        IsVisible &&
+                        ReferenceEquals(DataContext, vm))
+                    {
+                        FocusFirstItem();
+                    }
+                }
+                catch
+                {
+                    // best-effort
+                }
+            }));
             return;
         }
     }

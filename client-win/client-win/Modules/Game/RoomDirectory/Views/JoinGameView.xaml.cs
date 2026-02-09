@@ -53,7 +53,7 @@ public partial class JoinGameView : UserControl, IInitialFocusTarget
             if (DataContext is JoinGameViewModel vm && vm.CloseCommand.CanExecute(null))
             {
                 e.Handled = true;
-                vm.CloseCommand.Execute(null);
+                ExecuteCloseDeferred(vm);
             }
         }
     }
@@ -69,7 +69,7 @@ public partial class JoinGameView : UserControl, IInitialFocusTarget
         if (DataContext is JoinGameViewModel vm && vm.CloseCommand.CanExecute(null))
         {
             e.Handled = true;
-            vm.CloseCommand.Execute(null);
+            ExecuteCloseDeferred(vm);
         }
     }
 
@@ -351,8 +351,27 @@ public partial class JoinGameView : UserControl, IInitialFocusTarget
         if (DataContext is JoinGameViewModel vm && vm.CloseCommand.CanExecute(null))
         {
             e.Handled = true;
-            vm.CloseCommand.Execute(null);
+            ExecuteCloseDeferred(vm);
         }
+    }
+
+    private void ExecuteCloseDeferred(JoinGameViewModel vm)
+    {
+        FocusParking.Park();
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            try
+            {
+                if (vm.CloseCommand.CanExecute(null))
+                {
+                    vm.CloseCommand.Execute(null);
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+        }));
     }
 
     public void RequestInitialFocus()

@@ -39,12 +39,26 @@ public partial class LeaderboardView : UserControl, IInitialFocusTarget
         if (e.Key == Key.Escape && DataContext is LeaderboardViewModel vm)
         {
             e.Handled = true;
-            var result = vm.HandleEscape();
-            if (result != LeaderboardNavResult.Closed)
+            FocusParking.Park();
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
-                ItemsList?.Focus();
-                FocusWhenContainersGenerated();
-            }
+                try
+                {
+                    var result = vm.HandleEscape();
+                    if (result != LeaderboardNavResult.Closed &&
+                        IsLoaded &&
+                        IsVisible &&
+                        ReferenceEquals(DataContext, vm))
+                    {
+                        ItemsList?.Focus();
+                        FocusWhenContainersGenerated();
+                    }
+                }
+                catch
+                {
+                    // best-effort
+                }
+            }));
         }
     }
 

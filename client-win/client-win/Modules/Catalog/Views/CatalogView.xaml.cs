@@ -32,15 +32,29 @@ public partial class CatalogView : UserControl, IInitialFocusTarget
         }
         if (e.Key == System.Windows.Input.Key.Escape && DataContext is CatalogViewModel vm)
         {
+            e.Handled = true;
             var inCategoriesColumn = CategoriesList?.IsKeyboardFocusWithin == true;
             var inSubCategoriesColumn = SubCategoriesList?.IsKeyboardFocusWithin == true;
-            var result = vm.HandleEscape(inCategoriesColumn, inSubCategoriesColumn);
-            e.Handled = true;
-            // Repositionner le focus après navigation
-            Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
+            FocusParking.Park();
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
-                FocusAfterEscape(result);
-            });
+                try
+                {
+                    var result = vm.HandleEscape(inCategoriesColumn, inSubCategoriesColumn);
+                    if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
+                    {
+                        // Repositionner le focus après navigation
+                        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+                        {
+                            FocusAfterEscape(result);
+                        }));
+                    }
+                }
+                catch
+                {
+                    // best-effort
+                }
+            }));
         }
     }
 

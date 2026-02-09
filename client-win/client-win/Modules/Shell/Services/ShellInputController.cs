@@ -89,7 +89,20 @@ public sealed class ShellInputController
             // NVDA: ensure focus is parked on a stable element before swapping the view.
             // Otherwise the currently focused element can vanish during the shortcut KeyDown and be reported as "indisponible".
             try { FocusParking.Park(window); } catch { /* best-effort */ }
-            _ = _presenceUi.OpenAsync(window);
+            var owner = window;
+            _ = owner.Dispatcher.BeginInvoke(
+                DispatcherPriority.Background,
+                new Action(async () =>
+                {
+                    try
+                    {
+                        await _presenceUi.OpenAsync(owner).ConfigureAwait(true);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }));
         }
     }
 

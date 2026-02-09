@@ -76,8 +76,22 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
         if (e.Key == Key.Escape && DataContext is PresenceViewModel vm)
         {
             e.Handled = true;
-            vm.HandleEscape();
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusCurrentPage));
+            FocusParking.Park();
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+            {
+                try
+                {
+                    vm.HandleEscape();
+                    if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
+                    {
+                        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusCurrentPage));
+                    }
+                }
+                catch
+                {
+                    // best-effort
+                }
+            }));
         }
     }
 
@@ -86,8 +100,22 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
         if (e.Key == Key.Escape && DataContext is PresenceViewModel vmEsc)
         {
             e.Handled = true;
-            vmEsc.HandleEscape();
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusCurrentPage));
+            FocusParking.Park();
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+            {
+                try
+                {
+                    vmEsc.HandleEscape();
+                    if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vmEsc))
+                    {
+                        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusCurrentPage));
+                    }
+                }
+                catch
+                {
+                    // best-effort
+                }
+            }));
             return;
         }
 

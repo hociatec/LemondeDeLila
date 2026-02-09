@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Social.ViewModels;
 using client_win.Core;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Social.Views;
@@ -124,23 +125,32 @@ public partial class SocialView : UserControl, IInitialFocusTarget
             return;
         }
 
-        if (_currentScreen == SocialScreen.Section)
-        {
-            if (vm.SelectedSection == SocialSection.Profile && vm.TryExitProfile(out var returnSection))
-            {
-                vm.SelectedSection = returnSection;
-                FocusSection(returnSection);
-                e.Handled = true;
-                return;
-            }
-
-            SetScreen(SocialScreen.Menu);
-            e.Handled = true;
-            return;
-        }
-
-        vm.CloseCommand.Execute(null);
         e.Handled = true;
+        FocusParking.Park();
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            try
+            {
+                if (_currentScreen == SocialScreen.Section)
+                {
+                    if (vm.SelectedSection == SocialSection.Profile && vm.TryExitProfile(out var returnSection))
+                    {
+                        vm.SelectedSection = returnSection;
+                        FocusSection(returnSection);
+                        return;
+                    }
+
+                    SetScreen(SocialScreen.Menu);
+                    return;
+                }
+
+                vm.CloseCommand.Execute(null);
+            }
+            catch
+            {
+                // best-effort
+            }
+        }));
     }
 
     private void OnMenuKeyDown(object sender, KeyEventArgs e)

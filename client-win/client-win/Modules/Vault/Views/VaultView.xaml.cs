@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 using client_win.Modules.Vault.ViewModels;
 
@@ -109,10 +110,21 @@ public partial class VaultView : UserControl, IInitialFocusTarget
         if (e.Key == Key.Escape)
         {
             e.Handled = true;
-            if (vm.CloseCommand.CanExecute(null))
+            FocusParking.Park();
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
-                vm.CloseCommand.Execute(null);
-            }
+                try
+                {
+                    if (vm.CloseCommand.CanExecute(null))
+                    {
+                        vm.CloseCommand.Execute(null);
+                    }
+                }
+                catch
+                {
+                    // best-effort
+                }
+            }));
             return;
         }
 

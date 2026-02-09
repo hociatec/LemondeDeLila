@@ -37,11 +37,25 @@ public partial class AboutView : UserControl, IInitialFocusTarget
         if (e.Key == Key.Escape && DataContext is AboutViewModel vm)
         {
             e.Handled = true;
-            var result = vm.HandleEscape();
-            if (result != AboutNavResult.Closed)
+            FocusParking.Park();
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
-                _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusCurrentPage));
-            }
+                try
+                {
+                    var result = vm.HandleEscape();
+                    if (result != AboutNavResult.Closed &&
+                        IsLoaded &&
+                        IsVisible &&
+                        ReferenceEquals(DataContext, vm))
+                    {
+                        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusCurrentPage));
+                    }
+                }
+                catch
+                {
+                    // best-effort
+                }
+            }));
         }
     }
 

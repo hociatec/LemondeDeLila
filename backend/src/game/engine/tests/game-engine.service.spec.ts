@@ -28,6 +28,38 @@ jest.mock(
 );
 
 describe('GameEngineService', () => {
+  it('silently ignores unavailable draw action (even with payload)', async () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const state: any = {
+      metadata: { gameType: 'frousse-party', roomId: 1 },
+    };
+    const handler: any = {
+      getAvailableActions: jest.fn(() => [{ type: 'roll', payload: {} }]),
+    };
+
+    const out = await (engine as any).validateActions(
+      state,
+      handler,
+      [{ type: 'draw', payload: { deck: 'any' } }],
+      1,
+    );
+
+    expect(out).toEqual([]);
+  });
+
   it('rejects gameType mismatches for a room', async () => {
     const rooms = {
       getRoomPayload: jest.fn().mockResolvedValue({

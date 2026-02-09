@@ -860,25 +860,8 @@ export class GameEngineService {
       };
     }
 
-    // Log générique: le serveur annonce le joueur suivant au moment où le tour change.
-    // Le client reste "bête": il ne décide pas quand annoncer, il lit l'historique.
-    const previousPlayerId = current.turn?.currentPlayerId ?? null;
-    const nextPlayerId = marked.turn?.currentPlayerId ?? null;
-    const markedMeta = (marked as any)?.metadata ?? {};
-    const skipTurnAnnouncement = Boolean(markedMeta?.suppressTurnAnnouncement);
-    if (
-      !skipTurnAnnouncement &&
-      previousPlayerId != null &&
-      nextPlayerId != null &&
-      previousPlayerId !== nextPlayerId &&
-      String(marked.status ?? '').toLowerCase() === 'started'
-    ) {
-      const nextPlayer =
-        marked.players?.find((p) => p.id === nextPlayerId) ?? null;
-      const name = this.normalizeUsernameForLog(nextPlayer?.username);
-      const who = name ? name : `joueur ${nextPlayerId}`;
-      marked = this.core.appendLog(marked, `C'est au tour de ${who}.`);
-    }
+    // L'annonce de tour est déjà exposée via le label "C'est à X de jouer.".
+    // Ne pas logger une seconde phrase dans l'historique pour éviter les doublons.
     await this.scheduleBotTurn(roomId, gameType, marked);
     this.broadcaster?.(gameType, roomId, marked);
 
@@ -1499,21 +1482,7 @@ export class GameEngineService {
       marked = this.appendBoardArrivalAnnouncements(gameType, current, marked);
       marked = this.appendSkipTurnAnnouncements(marked);
 
-      const previousPlayerId = current.turn?.currentPlayerId ?? null;
-      const nextPlayerId = marked.turn?.currentPlayerId ?? null;
-      if (
-        previousPlayerId != null &&
-        nextPlayerId != null &&
-        previousPlayerId !== nextPlayerId &&
-        String(marked.status ?? '').toLowerCase() === 'started'
-      ) {
-        const nextPlayer =
-          marked.players?.find((p) => p.id === nextPlayerId) ?? null;
-        const name = this.normalizeUsernameForLog(nextPlayer?.username);
-        const who = name ? name : `joueur ${nextPlayerId}`;
-        marked = this.core.appendLog(marked, `C'est au tour de ${who}.`);
-        await this.store.set(roomId, gameType, marked);
-      }
+      // Pas d'annonce de tour dans l'historique (évite doublon avec le label de tour).
 
       await this.scheduleBotTurn(roomId, gameType, marked);
       this.broadcaster?.(gameType, roomId, marked);
@@ -1957,29 +1926,7 @@ export class GameEngineService {
   }
 
   private appendFirstTurnAnnouncement(state: GameStateEntity): GameStateEntity {
-    if (
-      String(state.status ?? '')
-        .toLowerCase()
-        .trim() !== 'started'
-    ) {
-      return state;
-    }
-    const currentPlayerId = state.turn?.currentPlayerId ?? null;
-    if (typeof currentPlayerId !== 'number') return state;
-
-    const log = Array.isArray(state.log) ? state.log : [];
-    const alreadyAnnounced = log.some((entry: any) => {
-      const msg =
-        typeof entry?.message === 'string' ? entry.message.trim() : '';
-      return msg.toLowerCase().startsWith("c'est au tour de ");
-    });
-    if (alreadyAnnounced) return state;
-
-    const current =
-      state.players?.find((p) => p?.id === currentPlayerId) ?? null;
-    const name = this.normalizeUsernameForLog((current as any)?.username);
-    const who = name ? name : `joueur ${currentPlayerId}`;
-    return this.core.appendLog(state, `C'est au tour de ${who}.`);
+    return state;
   }
 
   private buildKey(roomId: number, gameType: string): string {
@@ -2129,6 +2076,9 @@ export class GameEngineService {
       }
 
       if (allowedTypes && !allowedTypes.has(type)) {
+        if (this.shouldSilentlyIgnoreUnavailableAction(type, action)) {
+          continue;
+        }
         throw new BadRequestException(
           `Action inconnue ou indisponible: ${type}`,
         );
@@ -2186,6 +2136,15 @@ export class GameEngineService {
     }
 
     return out;
+  }
+
+  private shouldSilentlyIgnoreUnavailableAction(
+    type: string,
+    _action: GameSingleActionDto,
+  ): boolean {
+    // UX: appuyer sur Espace hors contexte ne doit pas afficher d'erreur.
+    // On ignore donc silencieusement toute tentative de "draw" indisponible.
+    return type === 'draw';
   }
 
   private exposeState(

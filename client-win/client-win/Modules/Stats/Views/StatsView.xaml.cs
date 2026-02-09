@@ -52,11 +52,25 @@ public partial class StatsView : UserControl, IInitialFocusTarget
         if (e.Key == Key.Escape && DataContext is StatsViewModel vm)
         {
             e.Handled = true;
-            var result = vm.HandleEscape();
-            if (result != StatsNavResult.Closed)
+            FocusParking.Park();
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
-                FocusWhenContainersGenerated();
-            }
+                try
+                {
+                    var result = vm.HandleEscape();
+                    if (result != StatsNavResult.Closed &&
+                        IsLoaded &&
+                        IsVisible &&
+                        ReferenceEquals(DataContext, vm))
+                    {
+                        FocusWhenContainersGenerated();
+                    }
+                }
+                catch
+                {
+                    // best-effort
+                }
+            }));
         }
     }
 
