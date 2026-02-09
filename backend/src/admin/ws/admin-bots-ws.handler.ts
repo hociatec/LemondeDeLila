@@ -52,6 +52,8 @@ export class AdminBotsWsHandler {
     const dto = this.validator.validate(AdminBotSettingsUpdateWsDto, payload);
     const updated = await this.botSettings.updateSettings({
       botTurnDelayMs: dto.botTurnDelayMs,
+      botStartDelayMs: dto.botStartDelayMs,
+      botDrawDelayMs: dto.botDrawDelayMs,
     });
     return { type: 'admin.bots.settings.update', payload: updated };
   }

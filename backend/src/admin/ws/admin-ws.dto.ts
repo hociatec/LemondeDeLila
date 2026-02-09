@@ -434,7 +434,18 @@ export class AdminBotSettingsGetWsDto {
 }
 
 export class AdminBotSettingsUpdateWsDto {
+  @IsOptional()
   @IsInt()
   @Min(0)
-  botTurnDelayMs!: number;
+  botTurnDelayMs?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  botStartDelayMs?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  botDrawDelayMs?: number;
 }

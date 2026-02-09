@@ -25,6 +25,8 @@ public sealed partial class AdminViewModel
             var settings = await _admin.GetBotSettingsAsync().ConfigureAwait(true);
             _loadedBotNames = (names.Names ?? new()).ToArray();
             _botTurnDelayMs = settings.BotTurnDelayMs;
+            _botStartDelayMs = settings.BotStartDelayMs;
+            _botDrawDelayMs = settings.BotDrawDelayMs;
             _dispatcher.Invoke(ShowBots);
         }
         finally
@@ -37,12 +39,17 @@ public sealed partial class AdminViewModel
     {
         _page = AdminPage.Bots;
         Title = "Gérer les bots";
-        Details = "Gérer la liste de noms de bots et la vitesse des tours.";
+        Details = "Gérer la liste de noms de bots et les délais d'action.";
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
+        IsThirdInputVisible = false;
+        IsFourthInputVisible = false;
+        IsFifthInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
-        Items.Add(new AdminMenuItem($"Délai bot : {_botTurnDelayMs} ms", tag: "bots.settings"));
+        Items.Add(new AdminMenuItem($"Délai tour bot : {_botTurnDelayMs} ms", tag: "bots.settings"));
+        Items.Add(new AdminMenuItem($"Délai démarrage bot : {_botStartDelayMs} ms", tag: "bots.settings"));
+        Items.Add(new AdminMenuItem($"Délai pioche bot : {_botDrawDelayMs} ms", tag: "bots.settings"));
         Items.Add(new AdminMenuItem("Créer un bot", tag: "bots.create"));
         foreach (var bot in _loadedBotNames.OrderBy(b => b.Name, StringComparer.OrdinalIgnoreCase))
         {

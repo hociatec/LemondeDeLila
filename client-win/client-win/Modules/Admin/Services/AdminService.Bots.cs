@@ -38,12 +38,16 @@ public sealed partial class AdminService
         return response.Payload;
     }
 
-    public async Task<AdminBotSettingsDto> UpdateBotSettingsAsync(int botTurnDelayMs, CancellationToken cancellationToken = default)
+    public async Task<AdminBotSettingsDto> UpdateBotSettingsAsync(
+        int botTurnDelayMs,
+        int botStartDelayMs,
+        int botDrawDelayMs,
+        CancellationToken cancellationToken = default)
     {
         var token = EnsureAuth();
         var response = await _ws.RequestAsync<AdminBotSettingsDto>(
             WsMessageTypes.Admin.BotSettingsUpdate,
-            new { botTurnDelayMs },
+            new { botTurnDelayMs, botStartDelayMs, botDrawDelayMs },
             token,
             cancellationToken).ConfigureAwait(false);
         if (!response.Success || response.Payload == null)

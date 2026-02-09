@@ -30,11 +30,18 @@ public sealed partial class AdminViewModel
     {
         _page = AdminPage.BotSettingsForm;
         Title = "Paramètres bots";
-        Details = "Ajuster le délai avant qu'un bot joue son tour.";
-        TextInputLabel = "Délai (ms)";
+        Details = "Ajuster les délais des actions bots (en millisecondes).";
+        TextInputLabel = "Délai tour (ms)";
         TextInput = _botTurnDelayMs.ToString();
+        SecondaryInputLabel = "Délai démarrage (ms)";
+        SecondaryInput = _botStartDelayMs.ToString();
+        ThirdInputLabel = "Délai pioche (ms)";
+        ThirdInput = _botDrawDelayMs.ToString();
         IsTextInputVisible = true;
-        IsSecondaryInputVisible = false;
+        IsSecondaryInputVisible = true;
+        IsThirdInputVisible = true;
+        IsFourthInputVisible = false;
+        IsFifthInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Valider", tag: "bots.settings.submit"));
@@ -44,10 +51,25 @@ public sealed partial class AdminViewModel
 
     private async Task SubmitBotSettingsFormAsync()
     {
-        var raw = (TextInput ?? string.Empty).Trim();
-        if (!int.TryParse(raw, out var delayMs) || delayMs < 0)
+        var turnRaw = (TextInput ?? string.Empty).Trim();
+        var startRaw = (SecondaryInput ?? string.Empty).Trim();
+        var drawRaw = (ThirdInput ?? string.Empty).Trim();
+
+        if (!int.TryParse(turnRaw, out var turnDelayMs) || turnDelayMs < 0)
         {
-            await _dialogs.ShowError("Bots", "Délai invalide (ms).").ConfigureAwait(true);
+            await _dialogs.ShowError("Bots", "Délai tour invalide (ms).").ConfigureAwait(true);
+            return;
+        }
+
+        if (!int.TryParse(startRaw, out var startDelayMs) || startDelayMs < 0)
+        {
+            await _dialogs.ShowError("Bots", "Délai démarrage invalide (ms).").ConfigureAwait(true);
+            return;
+        }
+
+        if (!int.TryParse(drawRaw, out var drawDelayMs) || drawDelayMs < 0)
+        {
+            await _dialogs.ShowError("Bots", "Délai pioche invalide (ms).").ConfigureAwait(true);
             return;
         }
 
@@ -55,8 +77,10 @@ public sealed partial class AdminViewModel
         IsBusy = true;
         try
         {
-            var updated = await _admin.UpdateBotSettingsAsync(delayMs).ConfigureAwait(true);
+            var updated = await _admin.UpdateBotSettingsAsync(turnDelayMs, startDelayMs, drawDelayMs).ConfigureAwait(true);
             _botTurnDelayMs = updated.BotTurnDelayMs;
+            _botStartDelayMs = updated.BotStartDelayMs;
+            _botDrawDelayMs = updated.BotDrawDelayMs;
             _dispatcher.Invoke(() =>
             {
                 ShowBots();
