@@ -2,7 +2,7 @@
 
 - id: `les-quatre-vents`
 - parentId: `null`
-- syncedAt: `2026-02-09T11:08:51.822Z`
+- syncedAt: `2026-02-09T11:25:50.718Z`
 
 Ce dossier est un miroir automatique de la taverne.
 Ne pas y mettre de code: il peut être renommé/supprimé automatiquement.

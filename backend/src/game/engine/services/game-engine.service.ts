@@ -1388,6 +1388,19 @@ export class GameEngineService {
   ): number | null {
     if ((state.status || '').toLowerCase() === 'finished') return null;
 
+    const hasAvailableActions = (playerId: number): boolean => {
+      if (!handler?.getAvailableActions) {
+        return true;
+      }
+      try {
+        const available = handler.getAvailableActions(state, playerId);
+        return !Array.isArray(available) || available.length > 0;
+      } catch {
+        // Fallback permissif: ne pas casser le flux bot si le handler lève ici.
+        return true;
+      }
+    };
+
     // Priorité: si une action "pending" est attendue d'un bot (même si ce n'est pas son tour),
     // déclencher ce bot d'abord. Certains jeux utilisent `pending` pour des choix bloquants
     // (pick/exchange/quiz) et peuvent laisser `turn.currentPlayerId` inchangé.
@@ -1398,11 +1411,14 @@ export class GameEngineService {
       const pendingPlayer =
         state.players?.find((p) => p.id === pendingPlayerId) ?? null;
       if (pendingPlayer?.isBot) {
-        const available =
-          handler?.getAvailableActions?.(state, pendingPlayerId) ?? [];
-        if (Array.isArray(available) && available.length > 0) {
+        if (hasAvailableActions(pendingPlayerId)) {
           return pendingPlayerId;
         }
+        return null;
+      }
+      if (pending?.blocking === true) {
+        // Pending bloquant attendu d'un humain: ne pas planifier le bot courant.
+        return null;
       }
     }
 
@@ -1410,6 +1426,9 @@ export class GameEngineService {
     const currentPlayer =
       state.players?.find((p) => p.id === currentId) ?? null;
     if (currentPlayer?.isBot && typeof currentId === 'number') {
+      if (!hasAvailableActions(currentId)) {
+        return null;
+      }
       return currentId;
     }
 
@@ -1945,12 +1964,11 @@ export class GameEngineService {
     botTurn?: boolean,
   ): Promise<GameStateEntity> {
     const handler = this.registry.getHandler(gameType);
-    // Certains jeux attendent une action d'un bot via `pending` (quiz, échanges, etc.)
-    // même si `turn.currentPlayerId` n'est pas ce bot. Dans ce cas, il faut aussi activer
-    // `botThinking` pour déclencher le scheduler.
-    const hasPendingBot = this.getBotActorIdForState(state, handler) != null;
-    const isBot =
-      botTurn !== undefined ? botTurn || hasPendingBot : hasPendingBot;
+    // `botThinking` doit refléter un bot réellement actionnable.
+    // Sinon, on bloque les humains avec "Un bot joue..." alors qu'aucune action bot n'est possible
+    // (ex: pending bloquant pour un humain pendant setup).
+    const actionableBotId = this.getBotActorIdForState(state, handler);
+    const isBot = actionableBotId != null || (botTurn === true && !handler);
     const now = GameEngineService.nowMs();
     const marked = {
       ...(this.store.markBotThinking(state, isBot) as any),

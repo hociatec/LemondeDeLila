@@ -181,6 +181,59 @@ describe('GameEngineService', () => {
     expect(out).toEqual([]);
   });
 
+  it('does not mark botThinking when a blocking pending action targets a human', async () => {
+    const state: any = {
+      status: 'started',
+      turnIndex: 0,
+      players: [
+        { id: -1, username: 'Bot', isBot: true },
+        { id: 1, username: 'Lilas', isBot: false },
+      ],
+      turn: { currentPlayerId: -1, direction: 1 },
+      pending: { type: 'choose_pawn', playerId: 1, blocking: true },
+      metadata: {},
+    };
+
+    const store = {
+      markBotThinking: jest.fn((s: any, botThinking: boolean) => ({
+        ...s,
+        botThinking,
+      })),
+      set: jest.fn().mockResolvedValue(undefined),
+    };
+    const handler = {
+      getAvailableActions: jest.fn((s: any, playerId: number) =>
+        playerId === 1 && s.pending?.type === 'choose_pawn'
+          ? [{ type: 'choose_pawn', payload: { pawnId: 'x' } }]
+          : [],
+      ),
+    };
+
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      { getHandler: jest.fn(() => handler) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      store as any,
+      {} as any,
+      {} as any,
+    );
+
+    const marked = await (engine as any).markBotThinking(
+      1,
+      'frousse-party',
+      state,
+      true,
+    );
+
+    expect(store.markBotThinking).toHaveBeenCalledWith(state, false);
+    expect(marked.botThinking).toBe(false);
+  });
+
   it('rejects gameType mismatches for a room', async () => {
     const rooms = {
       getRoomPayload: jest.fn().mockResolvedValue({

@@ -13,6 +13,13 @@ public static class FocusParking
 {
     public static void Park(Window? window = null)
     {
+        // Default behavior: callers typically invoke Park() just before a navigation
+        // that may remove the currently focused control.
+        ParkCore(window, force: true);
+    }
+
+    public static void ParkIfNeeded(Window? window = null)
+    {
         ParkCore(window, force: false);
     }
 

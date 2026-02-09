@@ -117,7 +117,7 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
             {
                 if (!TryRecoverFocusInCurrentContent())
                 {
-                    FocusParking.Park(_window);
+                    FocusParking.ParkIfNeeded(_window);
                 }
                 return;
             }
@@ -133,7 +133,7 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
             {
                 if (!TryRecoverFocusInCurrentContent())
                 {
-                    FocusParking.Park(_window);
+                    FocusParking.ParkIfNeeded(_window);
                 }
                 return;
             }
@@ -144,7 +144,7 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
                 {
                     if (!TryRecoverFocusInCurrentContent())
                     {
-                        FocusParking.Park(_window);
+                        FocusParking.ParkIfNeeded(_window);
                     }
                 }
                 return;
@@ -156,7 +156,7 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
                 {
                     if (!TryRecoverFocusInCurrentContent())
                     {
-                        FocusParking.Park(_window);
+                        FocusParking.ParkIfNeeded(_window);
                     }
                 }
             }
