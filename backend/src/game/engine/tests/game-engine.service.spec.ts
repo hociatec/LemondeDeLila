@@ -28,6 +28,127 @@ jest.mock(
 );
 
 describe('GameEngineService', () => {
+  it('does not replay stale skip-turn announcements on subsequent actions', async () => {
+    const startedAt = '2026-02-09T00:00:00.000Z';
+    const players = [
+      { id: 1, username: 'hacene', isBot: false },
+      { id: 2, username: 'Polynesia', isBot: false },
+    ];
+
+    let stateRef: any = {
+      status: 'started',
+      turnIndex: 0,
+      players,
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: null,
+      metadata: {
+        gameType: 'frousse-party',
+        roomId: 1,
+        roomStartedAt: startedAt,
+        statuses: { skipTurn: {} },
+        turnFlow: {
+          skipped: [{ id: 2, remainingBefore: 1, remainingAfter: 0 }],
+        },
+      },
+      log: [],
+      extras: {},
+    };
+
+    const rooms = {
+      getRoomPayload: jest.fn().mockResolvedValue({
+        room: {
+          id: 1,
+          gameType: 'frousse-party',
+          status: 'started',
+          startedAt,
+          players,
+          bots: [],
+        },
+      }),
+      resetRoomSystem: jest.fn(),
+      notifyRoomStateUpdated: jest.fn(),
+    };
+
+    const core = {
+      buildBaseState: jest.fn(),
+      appendLog: jest.fn((state: any, message: string) => ({
+        ...state,
+        log: [...(Array.isArray(state?.log) ? state.log : []), { message }],
+      })),
+    };
+
+    const store = {
+      buildKey: jest.fn(() => '1:frousse-party'),
+      delete: jest.fn().mockResolvedValue(undefined),
+      get: jest.fn(async () => stateRef),
+      set: jest.fn(async (_roomId: number, _gameType: string, next: any) => {
+        stateRef = next;
+      }),
+      markBotThinking: jest.fn((state: any) => state),
+      syncRoomStatus: jest.fn((state: any) => state),
+    };
+
+    let actionTick = 0;
+    const handler = {
+      getAvailableActions: jest.fn(() => [{ type: 'roll', payload: {} }]),
+      validateAction: jest.fn((_state: any, action: any) => action),
+      applyActions: jest.fn(async (state: any) =>
+        core.appendLog(state, `action-${++actionTick}`),
+      ),
+    };
+
+    const botScheduler = {
+      clear: jest.fn(),
+      has: jest.fn(() => false),
+      schedule: jest.fn(),
+    };
+
+    const gameLogger = {
+      info: jest.fn(),
+      debug: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      logPlayerAction: jest.fn(),
+      logValidationFailure: jest.fn(),
+    };
+
+    const engine = new GameEngineService(
+      rooms as any,
+      core as any,
+      { getHandler: jest.fn(() => handler) } as any,
+      { compute: jest.fn(() => null) } as any,
+      {} as any,
+      botScheduler as any,
+      { getBotTurnDelayMs: jest.fn(() => 0) } as any,
+      { attachGridRenderDescriptors: jest.fn((s: any) => s) } as any,
+      store as any,
+      gameLogger as any,
+      { finalizeFinished: jest.fn() } as any,
+    );
+
+    const first = (await engine.applyActions(
+      1,
+      'frousse-party',
+      [{ type: 'roll', payload: {} }],
+      1,
+      false,
+    )) as any;
+    const second = (await engine.applyActions(
+      1,
+      'frousse-party',
+      [{ type: 'roll', payload: {} }],
+      1,
+      false,
+    )) as any;
+
+    const firstMessages = (first.log ?? []).map((e: any) => String(e?.message ?? ''));
+    const secondMessages = (second.log ?? []).map((e: any) => String(e?.message ?? ''));
+
+    expect(firstMessages.at(-1)).toBe('Polynesia passe son tour.');
+    expect(secondMessages.at(-1)).toBe('action-2');
+    expect((stateRef.metadata as any)?.turnFlow?.skipped ?? []).toEqual([]);
+  });
+
   it('silently ignores unavailable draw action (even with payload)', async () => {
     const engine = new GameEngineService(
       {} as any,

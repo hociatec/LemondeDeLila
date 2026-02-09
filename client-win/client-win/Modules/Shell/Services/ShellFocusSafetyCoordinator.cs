@@ -1,8 +1,10 @@
 using System;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Shell.Services;
 
@@ -13,7 +15,6 @@ namespace client_win.Modules.Shell.Services;
 internal sealed class ShellFocusSafetyCoordinator : IDisposable
 {
     private readonly Window _window;
-    private readonly ProcessInputEventHandler _postProcessInput;
     private readonly KeyboardFocusChangedEventHandler _gotKeyboardFocus;
     private readonly RoutedEventHandler _unloaded;
     private int _checking;
@@ -22,21 +23,8 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
     {
         _window = window ?? throw new ArgumentNullException(nameof(window));
 
-        _postProcessInput = OnPostProcessInput;
         _gotKeyboardFocus = OnGotKeyboardFocus;
         _unloaded = OnUnloaded;
-
-        try
-        {
-            if (InputManager.Current != null)
-            {
-                InputManager.Current.PostProcessInput += _postProcessInput;
-            }
-        }
-        catch
-        {
-            // best-effort
-        }
 
         try
         {
@@ -60,37 +48,8 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
 
     public void Dispose()
     {
-        try
-        {
-            if (InputManager.Current != null)
-            {
-                InputManager.Current.PostProcessInput -= _postProcessInput;
-            }
-        }
-        catch
-        {
-            // best-effort
-        }
-
         try { _window.RemoveHandler(Keyboard.GotKeyboardFocusEvent, _gotKeyboardFocus); } catch { }
         try { _window.RemoveHandler(FrameworkElement.UnloadedEvent, _unloaded); } catch { }
-    }
-
-    private void OnPostProcessInput(object? sender, ProcessInputEventArgs e)
-    {
-        try
-        {
-            if (e?.StagingItem?.Input is not (KeyboardEventArgs or MouseEventArgs))
-            {
-                return;
-            }
-
-            EnsureFocusHealthy();
-        }
-        catch
-        {
-            // best-effort
-        }
     }
 
     private void OnGotKeyboardFocus(object? sender, KeyboardFocusChangedEventArgs e)
@@ -156,7 +115,10 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
             var focusTarget = newFocus ?? (Keyboard.FocusedElement as DependencyObject);
             if (focusTarget == null)
             {
-                FocusParking.Park(_window);
+                if (!TryRecoverFocusInCurrentContent())
+                {
+                    FocusParking.Park(_window);
+                }
                 return;
             }
 
@@ -169,7 +131,10 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
 
             if (PresentationSource.FromDependencyObject(focusTarget) == null)
             {
-                FocusParking.Park(_window);
+                if (!TryRecoverFocusInCurrentContent())
+                {
+                    FocusParking.Park(_window);
+                }
                 return;
             }
 
@@ -177,7 +142,10 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
             {
                 if (!uie.IsVisible || !uie.IsEnabled)
                 {
-                    FocusParking.Park(_window);
+                    if (!TryRecoverFocusInCurrentContent())
+                    {
+                        FocusParking.Park(_window);
+                    }
                 }
                 return;
             }
@@ -186,7 +154,10 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
             {
                 if (!fe.IsVisible || !fe.IsEnabled)
                 {
-                    FocusParking.Park(_window);
+                    if (!TryRecoverFocusInCurrentContent())
+                    {
+                        FocusParking.Park(_window);
+                    }
                 }
             }
         }
@@ -198,6 +169,44 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
         {
             Interlocked.Exchange(ref _checking, 0);
         }
+    }
+
+    private bool TryRecoverFocusInCurrentContent()
+    {
+        try
+        {
+            if (!_window.IsActive)
+            {
+                return false;
+            }
+
+            var root = TryGetContentRoot(_window);
+            if (root == null)
+            {
+                return false;
+            }
+
+            if (root is IInitialFocusTarget initialFocusTarget)
+            {
+                initialFocusTarget.RequestInitialFocus();
+                if (_window.IsKeyboardFocusWithin)
+                {
+                    return true;
+                }
+            }
+
+            if (FindFirstFocusable(root) is IInputElement inputTarget)
+            {
+                try { Keyboard.Focus(inputTarget); } catch { /* ignore */ }
+                return _window.IsKeyboardFocusWithin;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        return false;
     }
 
     private static bool IsDescendant(DependencyObject node, DependencyObject ancestor)
@@ -232,5 +241,103 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
         }
 
         return LogicalTreeHelper.GetParent(current);
+    }
+
+    private static DependencyObject? TryGetContentRoot(Window window)
+    {
+        try
+        {
+            if (window.FindName("RootHost") is not ContentControl host)
+            {
+                return null;
+            }
+
+            if (host.Content is DependencyObject direct && PresentationSource.FromDependencyObject(direct) != null)
+            {
+                return direct;
+            }
+
+            if (FindDescendant<ContentPresenter>(host) is ContentPresenter presenter)
+            {
+                var children = VisualTreeHelper.GetChildrenCount(presenter);
+                if (children > 0)
+                {
+                    return VisualTreeHelper.GetChild(presenter, 0);
+                }
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        return null;
+    }
+
+    private static T? FindDescendant<T>(DependencyObject root) where T : DependencyObject
+    {
+        try
+        {
+            var childrenCount = VisualTreeHelper.GetChildrenCount(root);
+            for (var i = 0; i < childrenCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(root, i);
+                if (child == null)
+                {
+                    continue;
+                }
+
+                if (child is T typed)
+                {
+                    return typed;
+                }
+
+                if (FindDescendant<T>(child) is T found)
+                {
+                    return found;
+                }
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        return null;
+    }
+
+    private static IInputElement? FindFirstFocusable(DependencyObject root)
+    {
+        try
+        {
+            if (root is UIElement element &&
+                element.IsVisible &&
+                element.IsEnabled &&
+                element.Focusable)
+            {
+                return element;
+            }
+
+            var childrenCount = VisualTreeHelper.GetChildrenCount(root);
+            for (var i = 0; i < childrenCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(root, i);
+                if (child == null)
+                {
+                    continue;
+                }
+
+                if (FindFirstFocusable(child) is IInputElement found)
+                {
+                    return found;
+                }
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        return null;
     }
 }

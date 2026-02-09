@@ -860,6 +860,10 @@ export class GameEngineService {
       };
     }
 
+    // Persiste l'état final post-traité (logs d'arrivée / sauts de tour nettoyés).
+    // Sans cette écriture, des métadonnées temporaires (ex: turnFlow.skipped) peuvent être rejouées au tour suivant.
+    await this.store.set(roomId, gameType, marked);
+
     // L'annonce de tour est déjà exposée via le label "C'est à X de jouer.".
     // Ne pas logger une seconde phrase dans l'historique pour éviter les doublons.
     await this.scheduleBotTurn(roomId, gameType, marked);
@@ -1481,6 +1485,7 @@ export class GameEngineService {
       marked = this.forceFinishedIfWinnerDetected(marked);
       marked = this.appendBoardArrivalAnnouncements(gameType, current, marked);
       marked = this.appendSkipTurnAnnouncements(marked);
+      await this.store.set(roomId, gameType, marked);
 
       // Pas d'annonce de tour dans l'historique (évite doublon avec le label de tour).
 
