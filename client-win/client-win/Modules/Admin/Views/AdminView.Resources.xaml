@@ -2,8 +2,6 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:converters="clr-namespace:client_win.Core.Converters">
     <SolidColorBrush x:Key="ShellBackground" Color="#0B111A" />
-    <SolidColorBrush x:Key="PanelBrush" Color="#12263C" />
-    <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
     <BooleanToVisibilityConverter x:Key="BoolToVis" />
     <converters:InverseBooleanToVisibilityConverter x:Key="BoolToVisInverse" />
 
@@ -56,7 +54,7 @@
         </DataTemplate.Triggers>
     </DataTemplate>
 
-    <Style TargetType="ListBox">
+    <Style TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Foreground" Value="White" />

@@ -66,9 +66,9 @@ public interface IAdminService
     Task<AdminBotNamesListResponseDto> DeleteBotNameAsync(int id, CancellationToken cancellationToken = default);
     Task<AdminBotSettingsDto> GetBotSettingsAsync(CancellationToken cancellationToken = default);
     Task<AdminBotSettingsDto> UpdateBotSettingsAsync(
-        int botTurnDelayMs,
-        int botStartDelayMs,
-        int botDrawDelayMs,
+        int? botTurnDelayMs = null,
+        int? botStartDelayMs = null,
+        int? botDrawDelayMs = null,
         CancellationToken cancellationToken = default);
 
     Task<AdminPerfSnapshotDto> GetPerfSnapshotAsync(int? windowSeconds = null, CancellationToken cancellationToken = default);

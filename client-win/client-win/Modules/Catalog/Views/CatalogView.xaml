@@ -6,6 +6,7 @@
              mc:Ignorable="d"
              d:DesignHeight="720" d:DesignWidth="1280"
              KeyDown="OnKeyDown"
+             SizeChanged="OnSizeChanged"
              Loaded="OnLoaded">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
@@ -14,8 +15,6 @@
             <GradientStop Color="#1C3B5E" Offset="0.55" />
             <GradientStop Color="#0E1724" Offset="1" />
         </LinearGradientBrush>
-        <SolidColorBrush x:Key="PanelBrush" Color="#12263C" />
-        <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
         <Style TargetType="Button">
             <Setter Property="Height" Value="40" />
             <Setter Property="Margin" Value="0 6 0 0" />
@@ -27,7 +26,7 @@
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
-        <Style TargetType="ListBox">
+        <Style TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Foreground" Value="White" />
@@ -83,113 +82,116 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="260" />
-            <ColumnDefinition Width="260" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBlock Text="Étagères" FontSize="28" FontWeight="SemiBold" Foreground="White"
                        TextOptions.TextFormattingMode="Ideal" />
             <TextBlock Text="Parcourir les catégories, sous-catégories et jeux" Foreground="#9CB2D1" FontSize="14"
                        HorizontalAlignment="Center" Margin="0,4,0,0" />
         </StackPanel>
 
-        <Border Grid.Row="1" Grid.Column="0" Background="{StaticResource PanelBrush}" CornerRadius="12"
-                Margin="16" Padding="12">
-            <StackPanel>
-                <TextBlock Text="Catégories" Foreground="White" FontSize="18" Margin="0 0 0 8" />
-                <ListBox x:Name="CategoriesList"
-                         ItemsSource="{Binding Shelves}"
-                         SelectedItem="{Binding SelectedShelf, Mode=TwoWay}"
-                         SelectionMode="Single"
-                         VirtualizingStackPanel.IsVirtualizing="True"
-                         VirtualizingStackPanel.VirtualizationMode="Recycling"
-                         ScrollViewer.CanContentScroll="True"
-                         KeyboardNavigation.TabNavigation="None"
-                         IsTabStop="False"
-                         KeyDown="OnCategoriesKeyDown">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </StackPanel>
-        </Border>
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Focusable="False"
+                      KeyboardNavigation.IsTabStop="False">
+            <Grid x:Name="PanelsGrid" Margin="8">
+                <Border x:Name="CategoriesPanel" Background="{StaticResource PanelBrush}" CornerRadius="12"
+                        Margin="8" Padding="12" MinHeight="220">
+                    <StackPanel>
+                        <TextBlock Text="Catégories" Foreground="White" FontSize="18" Margin="0 0 0 8" />
+                        <ListBox x:Name="CategoriesList"
+                                 ItemsSource="{Binding Shelves}"
+                                 SelectedItem="{Binding SelectedShelf, Mode=TwoWay}"
+                                 SelectionMode="Single"
+                                 VirtualizingStackPanel.IsVirtualizing="True"
+                                 VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                 ScrollViewer.CanContentScroll="True"
+                                 KeyboardNavigation.TabNavigation="None"
+                                 IsTabStop="False"
+                                 KeyDown="OnCategoriesKeyDown">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Border>
 
-        <Border Grid.Row="1" Grid.Column="1" Background="{StaticResource PanelBrush}" CornerRadius="12"
-                Margin="0 16 16 16" Padding="12">
-            <StackPanel>
-                <TextBlock Text="Sous-catégories" Foreground="White" FontSize="18" Margin="0 0 0 8" />
-                <ListBox x:Name="SubCategoriesList"
-                         ItemsSource="{Binding SubShelves}"
-                         SelectedItem="{Binding SelectedSubShelf, Mode=TwoWay}"
-                         SelectionMode="Single"
-                         VirtualizingStackPanel.IsVirtualizing="True"
-                         VirtualizingStackPanel.VirtualizationMode="Recycling"
-                         ScrollViewer.CanContentScroll="True"
-                         KeyboardNavigation.TabNavigation="None"
-                         IsTabStop="False"
-                         KeyDown="OnSubCategoriesKeyDown">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Name}" FontSize="14" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </StackPanel>
-        </Border>
+                <Border x:Name="SubCategoriesPanel" Background="{StaticResource PanelBrush}" CornerRadius="12"
+                        Margin="8" Padding="12" MinHeight="220">
+                    <StackPanel>
+                        <TextBlock Text="Sous-catégories" Foreground="White" FontSize="18" Margin="0 0 0 8" />
+                        <ListBox x:Name="SubCategoriesList"
+                                 ItemsSource="{Binding SubShelves}"
+                                 SelectedItem="{Binding SelectedSubShelf, Mode=TwoWay}"
+                                 SelectionMode="Single"
+                                 VirtualizingStackPanel.IsVirtualizing="True"
+                                 VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                 ScrollViewer.CanContentScroll="True"
+                                 KeyboardNavigation.TabNavigation="None"
+                                 IsTabStop="False"
+                                 KeyDown="OnSubCategoriesKeyDown">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}" FontSize="14" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Border>
 
-        <Border Grid.Row="1" Grid.Column="2" Background="{StaticResource PanelBrush}" CornerRadius="12"
-                Margin="0 16 16 16" Padding="16">
-            <Grid>
-                <ListBox x:Name="GamesList"
-                         ItemsSource="{Binding Games}"
-                         SelectedItem="{Binding SelectedGame, Mode=TwoWay}"
-                         SelectionMode="Single"
-                         VirtualizingStackPanel.IsVirtualizing="True"
-                         VirtualizingStackPanel.VirtualizationMode="Recycling"
-                         ScrollViewer.CanContentScroll="True"
-                         KeyboardNavigation.TabNavigation="None"
-                         IsTabStop="False"
-                         PreviewKeyDown="OnGamesPreviewKeyDown"
-                         KeyDown="OnGamesKeyDown"
-                         MouseDoubleClick="OnGamesDoubleClick">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Margin="0 4 0 4">
-                                <TextBlock Text="{Binding DisplayName}" FontSize="15" FontWeight="SemiBold" Foreground="White" />
-                                <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" Foreground="#BFD0E6" FontSize="12" Margin="0 2 0 4" />
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Engine, StringFormat='Moteur : {0}'}" Foreground="#9CB2D1" FontSize="11" Margin="0 0 8 0" />
-                                    <TextBlock Text="{Binding MinPlayers, StringFormat='Min {0} joueurs'}" Foreground="#9CB2D1" FontSize="11" Margin="0 0 8 0" />
-                                    <TextBlock Text="{Binding MaxPlayers, StringFormat='Max {0} joueurs'}" Foreground="#9CB2D1" FontSize="11" />
-                                </StackPanel>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-                <TextBlock Text="Sélectionnez une catégorie ou sous-catégorie."
-                           Foreground="#9CB2D1"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Games.Count}" Value="0">
-                                    <Setter Property="Visibility" Value="Visible" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
+                <Border x:Name="GamesPanel" Background="{StaticResource PanelBrush}" CornerRadius="12"
+                        Margin="8" Padding="16" MinHeight="260">
+                    <Grid>
+                        <ListBox x:Name="GamesList"
+                                 ItemsSource="{Binding Games}"
+                                 SelectedItem="{Binding SelectedGame, Mode=TwoWay}"
+                                 SelectionMode="Single"
+                                 VirtualizingStackPanel.IsVirtualizing="True"
+                                 VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                 ScrollViewer.CanContentScroll="True"
+                                 KeyboardNavigation.TabNavigation="None"
+                                 IsTabStop="False"
+                                 PreviewKeyDown="OnGamesPreviewKeyDown"
+                                 KeyDown="OnGamesKeyDown"
+                                 MouseDoubleClick="OnGamesDoubleClick">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0 4 0 4">
+                                        <TextBlock Text="{Binding DisplayName}" FontSize="15" FontWeight="SemiBold" Foreground="White" />
+                                        <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" Foreground="#BFD0E6" FontSize="12" Margin="0 2 0 4" />
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Engine, StringFormat='Moteur : {0}'}" Foreground="#9CB2D1" FontSize="11" Margin="0 0 8 0" />
+                                            <TextBlock Text="{Binding MinPlayers, StringFormat='Min {0} joueurs'}" Foreground="#9CB2D1" FontSize="11" Margin="0 0 8 0" />
+                                            <TextBlock Text="{Binding MaxPlayers, StringFormat='Max {0} joueurs'}" Foreground="#9CB2D1" FontSize="11" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <TextBlock Text="Sélectionnez une catégorie ou sous-catégorie."
+                                   Foreground="#9CB2D1"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Games.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </Border>
             </Grid>
-        </Border>
+        </ScrollViewer>
 
-        <Grid Grid.Row="2" Grid.ColumnSpan="3" Margin="16 0 16 16">
+        <Grid Grid.Row="2" Margin="16 0 16 16">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <TextBlock Text="{Binding Status}" Foreground="{StaticResource HighlightBrush}" VerticalAlignment="Center" Margin="0 0 12 0" />
             </StackPanel>

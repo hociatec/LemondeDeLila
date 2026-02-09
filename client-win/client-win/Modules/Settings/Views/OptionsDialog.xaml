@@ -7,8 +7,6 @@
         Loaded="OnLoaded"
         PreviewKeyDown="OnPreviewKeyDown">
     <Window.Resources>
-        <SolidColorBrush x:Key="PanelBrush" Color="#12263C" />
-        <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
         <Style TargetType="CheckBox">
             <Setter Property="Foreground" Value="White" />
             <Setter Property="Margin" Value="0 6 0 6" />
@@ -19,7 +17,7 @@
             <Setter Property="Margin" Value="8 0 0 0" />
             <Setter Property="FontSize" Value="15" />
         </Style>
-        <Style TargetType="ListBox">
+        <Style TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
             <Setter Property="Background" Value="#0F1D2D" />
             <Setter Property="BorderBrush" Value="#244A75" />
             <Setter Property="BorderThickness" Value="1" />

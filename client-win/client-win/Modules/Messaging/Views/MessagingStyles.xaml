@@ -12,21 +12,11 @@
     <SolidColorBrush x:Key="BoxesPanelBrush" Color="#0D2236" />
     <SolidColorBrush x:Key="MessagesPanelBrush" Color="#142B44" />
     <SolidColorBrush x:Key="ConversationPanelBrush" Color="#1A3352" />
-
-    <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
     <SolidColorBrush x:Key="FocusBorderBrush" Color="#FFD966" />
     <SolidColorBrush x:Key="SentBrush" Color="#1F3F62" />
     <SolidColorBrush x:Key="ReceivedBrush" Color="#193047" />
 
     <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
-
-    <!-- Drop Shadow pour isolation visuelle -->
-    <DropShadowEffect x:Key="PanelShadow"
-                      Color="Black"
-                      Opacity="0.6"
-                      BlurRadius="20"
-                      ShadowDepth="4"
-                      Direction="315" />
 
     <!-- Style pour les boutons -->
     <Style x:Key="BoxButton" TargetType="Button">

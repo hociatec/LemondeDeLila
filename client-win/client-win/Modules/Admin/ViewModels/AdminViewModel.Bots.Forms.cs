@@ -34,24 +34,24 @@ public sealed partial class AdminViewModel
     {
         _botSettingsFormMode = mode;
         _page = AdminPage.BotSettingsForm;
-        Title = "Paramètres bots";
+        Title = "Paramètres des délais bots";
         if (string.Equals(mode, BotSettingsModeStart, StringComparison.Ordinal))
         {
-            Details = "Temps d'attente avant la toute première action du bot après le démarrage de la partie.";
-            TextInputLabel = "Délai démarrage de partie (ms)";
+            Details = "Appliqué une seule fois au début de la partie, avant la toute première action d'un bot.";
+            TextInputLabel = "Début de partie - 1re action bot (ms)";
             TextInput = _botStartDelayMs.ToString();
         }
         else if (string.Equals(mode, BotSettingsModeDraw, StringComparison.Ordinal))
         {
-            Details = "Temps d'attente appliqué quand le bot enchaîne une action après une pioche.";
-            TextInputLabel = "Délai après pioche (ms)";
+            Details = "Appliqué quand un bot doit enchaîner une action juste après une pioche.";
+            TextInputLabel = "Après pioche - action suivante (ms)";
             TextInput = _botDrawDelayMs.ToString();
         }
         else
         {
             _botSettingsFormMode = BotSettingsModeTurn;
-            Details = "Temps d'attente standard avant qu'un bot joue pendant son tour.";
-            TextInputLabel = "Délai tour normal (ms)";
+            Details = "Appliqué pendant un tour normal du bot (hors début de partie et hors séquence après pioche).";
+            TextInputLabel = "Tour normal - réflexion bot (ms)";
             TextInput = _botTurnDelayMs.ToString();
         }
         SecondaryInput = string.Empty;
@@ -74,35 +74,31 @@ public sealed partial class AdminViewModel
         if (!int.TryParse(rawValue, out var parsedDelayMs) || parsedDelayMs < 0)
         {
             var message = string.Equals(_botSettingsFormMode, BotSettingsModeStart, StringComparison.Ordinal)
-                ? "Délai démarrage invalide (ms)."
+                ? "Délai de démarrage de partie invalide (ms)."
                 : string.Equals(_botSettingsFormMode, BotSettingsModeDraw, StringComparison.Ordinal)
                     ? "Délai après pioche invalide (ms)."
-                    : "Délai tour normal invalide (ms).";
+                    : "Délai de tour normal invalide (ms).";
             await _dialogs.ShowError("Bots", message).ConfigureAwait(true);
             return;
-        }
-
-        var turnDelayMs = _botTurnDelayMs;
-        var startDelayMs = _botStartDelayMs;
-        var drawDelayMs = _botDrawDelayMs;
-        if (string.Equals(_botSettingsFormMode, BotSettingsModeStart, StringComparison.Ordinal))
-        {
-            startDelayMs = parsedDelayMs;
-        }
-        else if (string.Equals(_botSettingsFormMode, BotSettingsModeDraw, StringComparison.Ordinal))
-        {
-            drawDelayMs = parsedDelayMs;
-        }
-        else
-        {
-            turnDelayMs = parsedDelayMs;
         }
 
         if (IsBusy) return;
         IsBusy = true;
         try
         {
-            var updated = await _admin.UpdateBotSettingsAsync(turnDelayMs, startDelayMs, drawDelayMs).ConfigureAwait(true);
+            AdminBotSettingsDto updated;
+            if (string.Equals(_botSettingsFormMode, BotSettingsModeStart, StringComparison.Ordinal))
+            {
+                updated = await _admin.UpdateBotSettingsAsync(botStartDelayMs: parsedDelayMs).ConfigureAwait(true);
+            }
+            else if (string.Equals(_botSettingsFormMode, BotSettingsModeDraw, StringComparison.Ordinal))
+            {
+                updated = await _admin.UpdateBotSettingsAsync(botDrawDelayMs: parsedDelayMs).ConfigureAwait(true);
+            }
+            else
+            {
+                updated = await _admin.UpdateBotSettingsAsync(botTurnDelayMs: parsedDelayMs).ConfigureAwait(true);
+            }
             _botTurnDelayMs = updated.BotTurnDelayMs;
             _botStartDelayMs = updated.BotStartDelayMs;
             _botDrawDelayMs = updated.BotDrawDelayMs;

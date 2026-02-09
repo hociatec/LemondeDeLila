@@ -39,7 +39,7 @@ public sealed partial class AdminViewModel
     {
         _page = AdminPage.Bots;
         Title = "Gérer les bots";
-        Details = "Gérer la liste des bots et leurs délais de réflexion.";
+        Details = "Gérer la liste des bots et régler séparément chaque délai d'action.";
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsThirdInputVisible = false;
@@ -47,9 +47,9 @@ public sealed partial class AdminViewModel
         IsFifthInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
-        Items.Add(new AdminMenuItem($"Délai bot - tour normal : {_botTurnDelayMs} ms", tag: "bots.settings.turn"));
-        Items.Add(new AdminMenuItem($"Délai bot - démarrage de partie : {_botStartDelayMs} ms", tag: "bots.settings.start"));
-        Items.Add(new AdminMenuItem($"Délai bot - après pioche : {_botDrawDelayMs} ms", tag: "bots.settings.draw"));
+        Items.Add(new AdminMenuItem($"Délai du tour bot (réflexion standard) : {_botTurnDelayMs} ms", tag: "bots.settings.turn"));
+        Items.Add(new AdminMenuItem($"Délai du démarrage de partie (1re action bot) : {_botStartDelayMs} ms", tag: "bots.settings.start"));
+        Items.Add(new AdminMenuItem($"Délai après pioche (action suivante du bot) : {_botDrawDelayMs} ms", tag: "bots.settings.draw"));
         Items.Add(new AdminMenuItem("Créer un bot", tag: "bots.create"));
         foreach (var bot in _loadedBotNames.OrderBy(b => b.Name, StringComparer.OrdinalIgnoreCase))
         {

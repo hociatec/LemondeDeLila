@@ -1,7 +1,15 @@
+using System.Collections.Generic;
+
 namespace client_win.Modules.Settings.Models;
 
 public sealed class OptionsState
 {
+    public sealed class TableAmbienceSnapshotPrefs
+    {
+        public bool Enabled { get; set; } = true;
+        public int Volume { get; set; } = 15;
+    }
+
     public bool MuteAll { get; set; } = false;
     public bool ConfirmExit { get; set; } = false;
 
@@ -30,6 +38,10 @@ public sealed class OptionsState
     // Per-user settings: affects only the local client.
     public bool SoundTableAmbience { get; set; } = true;
     public int SoundTableAmbienceVolume { get; set; } = 15;
+
+    // Persist per-snapshot table ambience prefs so restore can reapply them even if the user
+    // created other rooms in-between (which resets to defaults).
+    public Dictionary<string, TableAmbienceSnapshotPrefs> TableAmbiencePrefsByVaultSnapshotId { get; set; } = new();
 
     // Overrides de sons (stockés dans AppData), pour permettre la personnalisation sans casser ClickOnce.
     public string? SoundRoomOpenedPath { get; set; }

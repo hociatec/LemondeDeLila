@@ -16,6 +16,7 @@ public partial class JoinGameView : UserControl, IInitialFocusTarget
     private int _lastRoomsCount = -1;
     private Window? _hostWindow;
     private bool _isActive;
+    private int _focusRequestId;
 
     public JoinGameView()
     {
@@ -110,6 +111,42 @@ public partial class JoinGameView : UserControl, IInitialFocusTarget
 
     private void FocusFirstItem()
     {
+        void FocusSelectedWithRetry(int requestId, int attemptsRemaining)
+        {
+            if (RoomsList == null || RoomsList.Items.Count == 0)
+            {
+                RoomsList?.Focus();
+                return;
+            }
+
+            if (RoomsList.SelectedIndex < 0)
+            {
+                RoomsList.SelectedIndex = 0;
+            }
+
+            var index = RoomsList.SelectedIndex;
+            if (index >= 0 && index < RoomsList.Items.Count)
+            {
+                RoomsList.ScrollIntoView(RoomsList.Items[index]);
+            }
+
+            if (index >= 0 && RoomsList.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)
+            {
+                item.Focus();
+                return;
+            }
+
+            if (attemptsRemaining > 0 && requestId == _focusRequestId)
+            {
+                _ = Dispatcher.BeginInvoke(
+                    DispatcherPriority.Loaded,
+                    new Action(() => FocusSelectedWithRetry(requestId, attemptsRemaining - 1)));
+                return;
+            }
+
+            RoomsList.Focus();
+        }
+
         if (RoomsList == null || RoomsList.Items.Count == 0)
         {
             if (EmptyOnlyText != null && EmptyOnlyText.IsVisible)
@@ -128,15 +165,8 @@ public partial class JoinGameView : UserControl, IInitialFocusTarget
             RoomsList.SelectedIndex = 0;
         }
 
-        RoomsList.UpdateLayout();
-        if (RoomsList.ItemContainerGenerator.ContainerFromIndex(RoomsList.SelectedIndex) is ListBoxItem item)
-        {
-            item.Focus();
-        }
-        else
-        {
-            RoomsList.Focus();
-        }
+        var id = unchecked(++_focusRequestId);
+        FocusSelectedWithRetry(id, attemptsRemaining: 8);
     }
 
     private void FocusAfterLoad()

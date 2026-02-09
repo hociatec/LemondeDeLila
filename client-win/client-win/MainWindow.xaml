@@ -9,6 +9,8 @@
         WindowStartupLocation="CenterScreen"
         ShowActivated="True"
         Background="#0B1523"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
         AutomationProperties.AutomationId="MainWindow"
         AutomationProperties.Name="{Binding WindowTitle, TargetNullValue=Le Monde de Lila, FallbackValue=Le Monde de Lila}"
         shellViews:ShellWindowBehavior.Enable="True">
@@ -30,6 +32,7 @@
                         AutomationProperties.Name="{Binding WindowTitle, TargetNullValue=Le Monde de Lila, FallbackValue=Le Monde de Lila}"
                         Content="{Binding CurrentContent}"
                         shellViews:ContentHostFocusBehavior.Enable="True"
-                        shellViews:ContentHostFocusBehavior.SkipInitialFocus="True" />
+                        shellViews:ContentHostFocusBehavior.SkipInitialFocus="True"
+                        shellViews:ContentHostFadeBehavior.Enable="True" />
     </Grid>
 </Window>

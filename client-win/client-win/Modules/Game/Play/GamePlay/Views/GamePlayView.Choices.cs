@@ -306,26 +306,7 @@ public partial class GamePlayView
         }
 
         ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
-        ChoicesList.UpdateLayout();
-
-        if (ChoicesList.ItemContainerGenerator.ContainerFromIndex(0) is ListBoxItem firstItem)
-        {
-            firstItem.Focus();
-            Keyboard.Focus(firstItem);
-            return;
-        }
-
-        // Fallback: focus la liste, puis on retente après layout pour que le container existe.
-        ChoicesList.Focus();
-        Keyboard.Focus(ChoicesList);
-        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
-        {
-            if (ChoicesList.ItemContainerGenerator.ContainerFromIndex(0) is ListBoxItem item)
-            {
-                item.Focus();
-                Keyboard.Focus(item);
-            }
-        }));
+        TryFocusChoiceIndex(ChoicesList, 0);
     }
 
     private void ForceFocusGameZone()
@@ -363,18 +344,9 @@ public partial class GamePlayView
             }
 
             ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
-            ChoicesList.UpdateLayout();
 
             var idx = ChoicesList.SelectedIndex < 0 ? 0 : ChoicesList.SelectedIndex;
-            if (ChoicesList.ItemContainerGenerator.ContainerFromIndex(idx) is ListBoxItem item)
-            {
-                item.Focus();
-                Keyboard.Focus(item);
-                return;
-            }
-
-            ChoicesList.Focus();
-            Keyboard.Focus(ChoicesList);
+            TryFocusChoiceIndex(ChoicesList, idx);
             return;
         }
 
@@ -386,18 +358,9 @@ public partial class GamePlayView
             }
 
             HandList.ScrollIntoView(HandList.SelectedItem);
-            HandList.UpdateLayout();
 
             var idx = HandList.SelectedIndex < 0 ? 0 : HandList.SelectedIndex;
-            if (HandList.ItemContainerGenerator.ContainerFromIndex(idx) is ListBoxItem item)
-            {
-                item.Focus();
-                Keyboard.Focus(item);
-                return;
-            }
-
-            HandList.Focus();
-            Keyboard.Focus(HandList);
+            TryFocusChoiceIndex(HandList, idx);
             return;
         }
 

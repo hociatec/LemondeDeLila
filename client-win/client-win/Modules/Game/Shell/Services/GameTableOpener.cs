@@ -21,6 +21,7 @@ using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Presence.Services;
 using client_win.Modules.Social.Services;
+using client_win.Modules.Settings.Models;
 using client_win.Modules.Settings.Services;
 using client_win.Modules.User.Services;
 using client_win.Modules.TextPrompts.Services;
@@ -159,6 +160,25 @@ public sealed class GameTableOpener : IGameTableOpener
     {
         if (game == null) throw new ArgumentNullException(nameof(game));
         if (returnContent == null) throw new ArgumentNullException(nameof(returnContent));
+
+        // Table-only controls (volume/enable) should not leak across new table creation.
+        // Reset to defaults when creating a new room.
+        try
+        {
+            var defaults = new OptionsState();
+            var state = _options.Current;
+            if (state.SoundTableAmbience != defaults.SoundTableAmbience ||
+                state.SoundTableAmbienceVolume != defaults.SoundTableAmbienceVolume)
+            {
+                state.SoundTableAmbience = defaults.SoundTableAmbience;
+                state.SoundTableAmbienceVolume = defaults.SoundTableAmbienceVolume;
+                _options.Update(state);
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
 
         await OpenDeferredAsync(
                 placeholderGame: game,
@@ -442,6 +462,9 @@ public sealed class GameTableOpener : IGameTableOpener
         if (roomId <= 0) throw new ArgumentException("roomId invalide", nameof(roomId));
         if (returnContent == null) throw new ArgumentNullException(nameof(returnContent));
 
+        // Restore per-snapshot local table ambience prefs (volume/enable), if any.
+        TryApplyTableAmbiencePrefsForSnapshot(vaultSnapshotId);
+
         var placeholderGame = new CatalogGame(
             code: "unknown",
             name: $"Table #{roomId}",
@@ -476,6 +499,68 @@ public sealed class GameTableOpener : IGameTableOpener
                 isNew: false,
                 vaultSnapshotId: vaultSnapshotId)
             .ConfigureAwait(true);
+    }
+
+    private void TryApplyTableAmbiencePrefsForSnapshot(string? vaultSnapshotId)
+    {
+        var id = (vaultSnapshotId ?? string.Empty).Trim();
+        if (id.Length == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            var state = _options.Current;
+            var map = state.TableAmbiencePrefsByVaultSnapshotId;
+            if (map == null || !map.TryGetValue(id, out var prefs) || prefs == null)
+            {
+                return;
+            }
+
+            var nextEnabled = prefs.Enabled;
+            var nextVolume = Math.Max(0, Math.Min(100, prefs.Volume));
+            if (state.SoundTableAmbience == nextEnabled && state.SoundTableAmbienceVolume == nextVolume)
+            {
+                return;
+            }
+
+            state.SoundTableAmbience = nextEnabled;
+            state.SoundTableAmbienceVolume = nextVolume;
+            _options.Update(state);
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    private void TryPersistTableAmbiencePrefsForSnapshot(string? vaultSnapshotId)
+    {
+        var id = (vaultSnapshotId ?? string.Empty).Trim();
+        if (id.Length == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            var state = _options.Current;
+            state.TableAmbiencePrefsByVaultSnapshotId ??= new();
+
+            var enabled = state.SoundTableAmbience;
+            var volume = Math.Max(0, Math.Min(100, state.SoundTableAmbienceVolume));
+            state.TableAmbiencePrefsByVaultSnapshotId[id] = new OptionsState.TableAmbienceSnapshotPrefs
+            {
+                Enabled = enabled,
+                Volume = volume
+            };
+            _options.Update(state);
+        }
+        catch
+        {
+            // best-effort
+        }
     }
 
     private async Task OpenDeferredAsync(
@@ -720,6 +805,7 @@ public sealed class GameTableOpener : IGameTableOpener
             try
             {
                 boundSnapshotId = await _vault.SaveAsync(current.RoomId, boundSnapshotId).ConfigureAwait(true);
+                TryPersistTableAmbiencePrefsForSnapshot(boundSnapshotId);
                 _announcementService.Enqueue(
                     "Table sauvegardée dans Mon coffre fort. Retour à la taverne.",
                     AnnouncementPriority.Polite);

@@ -12,6 +12,17 @@ namespace client_win.Modules.Catalog.Views;
 
 public partial class CatalogView : UserControl, IInitialFocusTarget
 {
+    private enum CatalogLayoutMode
+    {
+        Wide,
+        Medium,
+        Narrow
+    }
+
+    private const double CatalogLayoutMediumBreakpoint = 1300;
+    private const double CatalogLayoutNarrowBreakpoint = 980;
+    private CatalogLayoutMode _layoutMode = CatalogLayoutMode.Wide;
+
     public CatalogView()
     {
         InitializeComponent();
@@ -19,8 +30,25 @@ public partial class CatalogView : UserControl, IInitialFocusTarget
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        ApplyResponsiveLayout(ActualWidth);
         // À l'entrée dans la taverne, le focus doit être sur la liste principale (actions + catégories).
         Dispatcher.BeginInvoke(DispatcherPriority.Input, () => FocusWhenContainersGenerated(CategoriesList));
+    }
+
+    private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (!IsLoaded)
+        {
+            return;
+        }
+
+        // Ignore micro-resizes triggered by layout rounding.
+        if (Math.Abs(e.PreviousSize.Width - e.NewSize.Width) < 0.5)
+        {
+            return;
+        }
+
+        ApplyResponsiveLayout(e.NewSize.Width);
     }
 
     private void OnKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -284,5 +312,97 @@ public partial class CatalogView : UserControl, IInitialFocusTarget
         {
             FocusWhenContainersGenerated(CategoriesList);
         }));
+    }
+
+    private void ApplyResponsiveLayout(double width)
+    {
+        if (PanelsGrid == null || CategoriesPanel == null || SubCategoriesPanel == null || GamesPanel == null)
+        {
+            return;
+        }
+
+        var nextMode = width < CatalogLayoutNarrowBreakpoint
+            ? CatalogLayoutMode.Narrow
+            : width < CatalogLayoutMediumBreakpoint
+                ? CatalogLayoutMode.Medium
+                : CatalogLayoutMode.Wide;
+
+        if (_layoutMode == nextMode && PanelsGrid.ColumnDefinitions.Count > 0 && PanelsGrid.RowDefinitions.Count > 0)
+        {
+            return;
+        }
+
+        _layoutMode = nextMode;
+        PanelsGrid.ColumnDefinitions.Clear();
+        PanelsGrid.RowDefinitions.Clear();
+
+        switch (nextMode)
+        {
+            case CatalogLayoutMode.Wide:
+                PanelsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                PanelsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                PanelsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) });
+                PanelsGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+                Grid.SetColumn(CategoriesPanel, 0);
+                Grid.SetRow(CategoriesPanel, 0);
+                Grid.SetColumnSpan(CategoriesPanel, 1);
+                Grid.SetRowSpan(CategoriesPanel, 1);
+
+                Grid.SetColumn(SubCategoriesPanel, 1);
+                Grid.SetRow(SubCategoriesPanel, 0);
+                Grid.SetColumnSpan(SubCategoriesPanel, 1);
+                Grid.SetRowSpan(SubCategoriesPanel, 1);
+
+                Grid.SetColumn(GamesPanel, 2);
+                Grid.SetRow(GamesPanel, 0);
+                Grid.SetColumnSpan(GamesPanel, 1);
+                Grid.SetRowSpan(GamesPanel, 1);
+                break;
+
+            case CatalogLayoutMode.Medium:
+                PanelsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                PanelsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.4, GridUnitType.Star) });
+                PanelsGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+                PanelsGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+                Grid.SetColumn(CategoriesPanel, 0);
+                Grid.SetRow(CategoriesPanel, 0);
+                Grid.SetColumnSpan(CategoriesPanel, 1);
+                Grid.SetRowSpan(CategoriesPanel, 1);
+
+                Grid.SetColumn(SubCategoriesPanel, 0);
+                Grid.SetRow(SubCategoriesPanel, 1);
+                Grid.SetColumnSpan(SubCategoriesPanel, 1);
+                Grid.SetRowSpan(SubCategoriesPanel, 1);
+
+                Grid.SetColumn(GamesPanel, 1);
+                Grid.SetRow(GamesPanel, 0);
+                Grid.SetColumnSpan(GamesPanel, 1);
+                Grid.SetRowSpan(GamesPanel, 2);
+                break;
+
+            default:
+                PanelsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                PanelsGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                PanelsGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                PanelsGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+                Grid.SetColumn(CategoriesPanel, 0);
+                Grid.SetRow(CategoriesPanel, 0);
+                Grid.SetColumnSpan(CategoriesPanel, 1);
+                Grid.SetRowSpan(CategoriesPanel, 1);
+
+                Grid.SetColumn(SubCategoriesPanel, 0);
+                Grid.SetRow(SubCategoriesPanel, 1);
+                Grid.SetColumnSpan(SubCategoriesPanel, 1);
+                Grid.SetRowSpan(SubCategoriesPanel, 1);
+
+                Grid.SetColumn(GamesPanel, 0);
+                Grid.SetRow(GamesPanel, 2);
+                Grid.SetColumnSpan(GamesPanel, 1);
+                Grid.SetRowSpan(GamesPanel, 1);
+                break;
+        }
     }
 }

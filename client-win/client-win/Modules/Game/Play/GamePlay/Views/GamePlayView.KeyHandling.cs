@@ -115,46 +115,20 @@ public partial class GamePlayView
             index = 0;
         }
 
-        list.UpdateLayout();
-
-        if (list.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)
+        if (TryFocusListBoxIndexNow(list, index))
         {
-            item.Focus();
-            Keyboard.Focus(item);
             return;
         }
 
-        try
+        // Retry without forcing layout (UpdateLayout can freeze during frequent state refreshes).
+        if (ReferenceEquals(list, HandList))
         {
-            list.ScrollIntoView(list.Items[index]);
-            list.UpdateLayout();
-            if (list.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item1)
-            {
-                item1.Focus();
-                Keyboard.Focus(item1);
-                return;
-            }
+            RequestFocusHandListIndex(index);
         }
-        catch
+        else
         {
-            // ignore
+            RequestFocusChoiceListIndex(index);
         }
-
-        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
-        {
-            try
-            {
-                if (list.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item2)
-                {
-                    item2.Focus();
-                    Keyboard.Focus(item2);
-                }
-            }
-            catch
-            {
-                // ignore
-            }
-        }));
     }
 
     private void TryFocusChoiceIndex(int index) =>

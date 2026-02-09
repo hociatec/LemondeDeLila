@@ -115,6 +115,14 @@ public partial class StatsView : UserControl, IInitialFocusTarget
 
     private void FocusFirstItem()
     {
+        var id = unchecked(++_focusRequestId);
+        FocusSelectedOrFirstItemWithRetry(id, attemptsRemaining: 8);
+    }
+
+    private int _focusRequestId;
+
+    private void FocusSelectedOrFirstItemWithRetry(int requestId, int attemptsRemaining)
+    {
         if (ItemsList == null || ItemsList.Items.Count == 0)
         {
             ItemsList?.Focus();
@@ -126,15 +134,27 @@ public partial class StatsView : UserControl, IInitialFocusTarget
             ItemsList.SelectedIndex = 0;
         }
 
-        ItemsList.UpdateLayout();
-        if (ItemsList.ItemContainerGenerator.ContainerFromIndex(ItemsList.SelectedIndex) is ListBoxItem item)
+        var index = ItemsList.SelectedIndex;
+        if (index >= 0 && index < ItemsList.Items.Count)
+        {
+            ItemsList.ScrollIntoView(ItemsList.Items[index]);
+        }
+
+        if (index >= 0 && ItemsList.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)
         {
             item.Focus();
+            return;
         }
-        else
+
+        if (attemptsRemaining > 0 && requestId == _focusRequestId)
         {
-            ItemsList.Focus();
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.Loaded,
+                new Action(() => FocusSelectedOrFirstItemWithRetry(requestId, attemptsRemaining - 1)));
+            return;
         }
+
+        ItemsList.Focus();
     }
 
     private void FocusWhenContainersGenerated()

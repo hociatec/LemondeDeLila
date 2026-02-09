@@ -39,15 +39,29 @@ public sealed partial class AdminService
     }
 
     public async Task<AdminBotSettingsDto> UpdateBotSettingsAsync(
-        int botTurnDelayMs,
-        int botStartDelayMs,
-        int botDrawDelayMs,
+        int? botTurnDelayMs = null,
+        int? botStartDelayMs = null,
+        int? botDrawDelayMs = null,
         CancellationToken cancellationToken = default)
     {
         var token = EnsureAuth();
+        var payload = new System.Collections.Generic.Dictionary<string, object?>();
+        if (botTurnDelayMs.HasValue)
+        {
+            payload["botTurnDelayMs"] = botTurnDelayMs.Value;
+        }
+        if (botStartDelayMs.HasValue)
+        {
+            payload["botStartDelayMs"] = botStartDelayMs.Value;
+        }
+        if (botDrawDelayMs.HasValue)
+        {
+            payload["botDrawDelayMs"] = botDrawDelayMs.Value;
+        }
+
         var response = await _ws.RequestAsync<AdminBotSettingsDto>(
             WsMessageTypes.Admin.BotSettingsUpdate,
-            new { botTurnDelayMs, botStartDelayMs, botDrawDelayMs },
+            payload,
             token,
             cancellationToken).ConfigureAwait(false);
         if (!response.Success || response.Payload == null)

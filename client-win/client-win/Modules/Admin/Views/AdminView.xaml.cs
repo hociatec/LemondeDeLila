@@ -13,6 +13,7 @@ public partial class AdminView : UserControl, IInitialFocusTarget
     private AdminViewModel? _vm;
     private bool _inputsFocusTrackingAttached;
     private InputFocusSlot _lastInputFocus = InputFocusSlot.None;
+    private int _focusRequestId;
 
     private enum InputFocusSlot
     {
@@ -408,15 +409,49 @@ public partial class AdminView : UserControl, IInitialFocusTarget
             ItemsList.ScrollIntoView(selected);
         }
 
-        ItemsList.UpdateLayout();
-        if (ItemsList.ItemContainerGenerator.ContainerFromIndex(ItemsList.SelectedIndex) is ListBoxItem item)
+        var requestId = unchecked(++_focusRequestId);
+        FocusSelectedItemWithRetry(requestId, attemptsRemaining: 8);
+    }
+
+    private void FocusSelectedItemWithRetry(int requestId, int attemptsRemaining)
+    {
+        if (ItemsList == null)
         {
-            item.Focus();
+            return;
         }
-        else
+
+        if (ItemsList.Items.Count == 0)
         {
             ItemsList.Focus();
+            return;
         }
+
+        if (ItemsList.SelectedIndex < 0)
+        {
+            ItemsList.SelectedIndex = 0;
+        }
+
+        var index = ItemsList.SelectedIndex;
+        if (index >= 0 && index < ItemsList.Items.Count)
+        {
+            ItemsList.ScrollIntoView(ItemsList.Items[index]);
+        }
+
+        if (index >= 0 && ItemsList.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)
+        {
+            item.Focus();
+            return;
+        }
+
+        if (attemptsRemaining > 0 && requestId == _focusRequestId)
+        {
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.Loaded,
+                new Action(() => FocusSelectedItemWithRetry(requestId, attemptsRemaining - 1)));
+            return;
+        }
+
+        ItemsList.Focus();
     }
 
     public void RequestInitialFocus()

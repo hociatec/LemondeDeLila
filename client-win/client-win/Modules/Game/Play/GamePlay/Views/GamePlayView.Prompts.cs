@@ -64,18 +64,48 @@ public partial class GamePlayView
                 return;
             }
 
-            InlinePromptOverlay.UpdateLayout();
-
-            if (FindFirstFocusable(InlinePromptOverlay) is IInputElement el)
+            var requestId = ++_inlinePromptFocusRequestId;
+            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
             {
-                Keyboard.Focus(el);
-                (el as UIElement)?.Focus();
-            }
+                TryFocusFirstInlinePromptFieldWithRetry(requestId, remainingAttempts: 8);
+            }));
         }
         catch
         {
             // best-effort
         }
+    }
+
+    private void TryFocusFirstInlinePromptFieldWithRetry(int requestId, int remainingAttempts)
+    {
+        if (requestId != _inlinePromptFocusRequestId)
+        {
+            return;
+        }
+
+        if (InlinePromptOverlay == null || InlinePromptOverlay.Visibility != Visibility.Visible)
+        {
+            return;
+        }
+
+        if (FindFirstFocusable(InlinePromptOverlay) is IInputElement el)
+        {
+            Keyboard.Focus(el);
+            (el as UIElement)?.Focus();
+            return;
+        }
+
+        if (remainingAttempts <= 0)
+        {
+            InlinePromptOverlay.Focus();
+            Keyboard.Focus(InlinePromptOverlay);
+            return;
+        }
+
+        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+        {
+            TryFocusFirstInlinePromptFieldWithRetry(requestId, remainingAttempts - 1);
+        }));
     }
 
     private static DependencyObject? FindFirstFocusable(DependencyObject root)
@@ -155,12 +185,11 @@ public partial class GamePlayView
                 return;
             }
 
-            InlinePromptOverlay.UpdateLayout();
-
             var focusables = new System.Collections.Generic.List<Control>();
             CollectFocusableControls(InlinePromptOverlay, focusables);
             if (focusables.Count == 0)
             {
+                FocusFirstInlinePromptField();
                 return;
             }
 

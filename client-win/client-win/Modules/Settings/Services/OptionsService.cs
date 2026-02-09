@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using client_win.Core.Settings;
@@ -185,6 +186,17 @@ public sealed class OptionsService : IOptionsService
         SoundChatMessagesVolume = source.SoundChatMessagesVolume,
         SoundTableAmbience = source.SoundTableAmbience,
         SoundTableAmbienceVolume = source.SoundTableAmbienceVolume,
+        TableAmbiencePrefsByVaultSnapshotId = source.TableAmbiencePrefsByVaultSnapshotId == null
+            ? new()
+            : source.TableAmbiencePrefsByVaultSnapshotId.ToDictionary(
+                kv => kv.Key,
+                kv => kv.Value == null
+                    ? new OptionsState.TableAmbienceSnapshotPrefs()
+                    : new OptionsState.TableAmbienceSnapshotPrefs
+                    {
+                        Enabled = kv.Value.Enabled,
+                        Volume = kv.Value.Volume
+                    }),
         SoundRoomOpenedPath = source.SoundRoomOpenedPath,
         SoundRoomJoinedPath = source.SoundRoomJoinedPath,
         SoundRoomExitPath = source.SoundRoomExitPath,

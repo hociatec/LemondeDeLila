@@ -16,7 +16,6 @@
               Loaded="OnLoaded">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
-        <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -441,7 +440,7 @@
                         </Style>
                     </ListBox.ItemContainerStyle>
                     <ListBox.Style>
-                        <Style TargetType="ListBox">
+                        <Style TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
                             <Setter Property="Visibility" Value="Visible"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding DisplayChoices.Count}" Value="0">

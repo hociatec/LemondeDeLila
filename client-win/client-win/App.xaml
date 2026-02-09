@@ -40,6 +40,9 @@
              xmlns:playVm="clr-namespace:client_win.Modules.Game.Play.GamePlay.ViewModels"
              xmlns:playView="clr-namespace:client_win.Modules.Game.Play.GamePlay.Views">
     <Application.Resources>
+        <SolidColorBrush x:Key="PanelBrush" Color="#12263C" />
+        <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
+
         <DataTemplate DataType="{x:Type shellVm:BootstrapShellViewModel}">
             <shellView:BootstrapShellView />
         </DataTemplate>

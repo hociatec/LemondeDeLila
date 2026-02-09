@@ -12,6 +12,7 @@ namespace client_win.Modules.Vault.Views;
 public partial class VaultView : UserControl, IInitialFocusTarget
 {
     private Window? _hostWindow;
+    private int _focusRequestId;
 
     public VaultView()
     {
@@ -59,11 +60,10 @@ public partial class VaultView : UserControl, IInitialFocusTarget
                 {
                     var targetIndex = ItemsList.SelectedIndex >= 0 ? ItemsList.SelectedIndex : 0;
                     ItemsList.SelectedIndex = targetIndex;
-                    if (TryFocusSavedTable(targetIndex))
+                    if (!TryFocusSavedTable(targetIndex))
                     {
-                        return;
+                        ItemsList.Focus();
                     }
-                    ItemsList.Focus();
                     return;
                 }
             }
@@ -82,22 +82,34 @@ public partial class VaultView : UserControl, IInitialFocusTarget
         }
 
         var safeIndex = Math.Max(0, Math.Min(index, ItemsList.Items.Count - 1));
-        ItemsList.ScrollIntoView(ItemsList.Items[safeIndex]);
-        ItemsList.UpdateLayout();
-        var container = ItemsList.ItemContainerGenerator.ContainerFromIndex(safeIndex) as ListBoxItem;
-        if (container == null)
+        var requestId = unchecked(++_focusRequestId);
+        FocusSavedTableWithRetry(requestId, safeIndex, attemptsRemaining: 8);
+        return true;
+    }
+
+    private void FocusSavedTableWithRetry(int requestId, int index, int attemptsRemaining)
+    {
+        if (ItemsList == null || ItemsList.Items.Count == 0)
         {
-            ItemsList.UpdateLayout();
-            container = ItemsList.ItemContainerGenerator.ContainerFromIndex(safeIndex) as ListBoxItem;
+            return;
         }
 
-        if (container != null)
+        var safeIndex = Math.Max(0, Math.Min(index, ItemsList.Items.Count - 1));
+        ItemsList.ScrollIntoView(ItemsList.Items[safeIndex]);
+
+        if (ItemsList.ItemContainerGenerator.ContainerFromIndex(safeIndex) is ListBoxItem container)
         {
             container.Focus();
-            return true;
+            return;
         }
 
-        return false;
+        if (attemptsRemaining > 0 && requestId == _focusRequestId)
+        {
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.Loaded,
+                new Action(() => FocusSavedTableWithRetry(requestId, safeIndex, attemptsRemaining - 1)));
+            return;
+        }
     }
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)

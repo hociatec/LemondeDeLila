@@ -191,32 +191,80 @@ public partial class GamePlayView
         }
 
         _gridFocusIndex = index;
+        var requestId = ++_gridFocusRequestId;
+        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+        {
+            TryFocusGridCellIndexWithRetry(index, requestId, remainingAttempts: 8);
+        }));
 
-        GridItems.UpdateLayout();
+        return true;
+    }
+
+    private void TryFocusGridCellIndexWithRetry(int index, int requestId, int remainingAttempts)
+    {
+        if (requestId != _gridFocusRequestId)
+        {
+            return;
+        }
+
+        if (GridItems == null || GridItems.Visibility != Visibility.Visible)
+        {
+            return;
+        }
+
+        if (DataContext is not GamePlayViewModel vm || !vm.Grid.IsVisible || vm.Grid.Size <= 0 || vm.Grid.Cells.Count == 0)
+        {
+            return;
+        }
+
+        index = Math.Clamp(index, 0, vm.Grid.Cells.Count - 1);
+
+        if (GridItems.ItemContainerGenerator.Status != GeneratorStatus.ContainersGenerated)
+        {
+            if (remainingAttempts <= 0)
+            {
+                return;
+            }
+
+            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+            {
+                TryFocusGridCellIndexWithRetry(index, requestId, remainingAttempts - 1);
+            }));
+            return;
+        }
+
         var container = GridItems.ItemContainerGenerator.ContainerFromIndex(index) as DependencyObject;
         if (container == null)
         {
-            // Fallback: retente après layout, sinon aucune annonce.
+            if (remainingAttempts <= 0)
+            {
+                return;
+            }
+
             Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
             {
-                FocusGridCellIndex(_gridFocusIndex);
+                TryFocusGridCellIndexWithRetry(index, requestId, remainingAttempts - 1);
             }));
-            return true;
+            return;
         }
 
         var button = FindVisualChild<Button>(container) ?? container as Button;
         if (button == null)
         {
+            if (remainingAttempts <= 0)
+            {
+                return;
+            }
+
             Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
             {
-                FocusGridCellIndex(_gridFocusIndex);
+                TryFocusGridCellIndexWithRetry(index, requestId, remainingAttempts - 1);
             }));
-            return true;
+            return;
         }
 
         button.Focus();
         Keyboard.Focus(button);
-        return true;
     }
 
     private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject

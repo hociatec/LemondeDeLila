@@ -18,4 +18,8 @@ public partial class GamePlayView
     private EventHandler? _gridGeneratorStatusChanged;
     private string _lastAutoFocusedQuizQuestionText = string.Empty;
     private PropertyChangedEventHandler? _vmPropertyChangedHandler;
+    private int _choicesFocusRequestId;
+    private int _handFocusRequestId;
+    private int _gridFocusRequestId;
+    private int _inlinePromptFocusRequestId;
 }

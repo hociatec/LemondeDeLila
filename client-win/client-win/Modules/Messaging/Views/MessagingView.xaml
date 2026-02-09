@@ -55,8 +55,7 @@
                     CornerRadius="16"
                     Padding="20"
                     BorderBrush="#1E3C5B"
-                    BorderThickness="3"
-                    Effect="{StaticResource PanelShadow}">
+                    BorderThickness="3">
                 <StackPanel KeyboardNavigation.TabNavigation="Continue">
                     <Border Background="#0A1A2D"
                             CornerRadius="8"
@@ -74,6 +73,9 @@
                     <ListBox x:Name="MenuList"
                              Style="{StaticResource MenuListBox}"
                              ItemContainerStyle="{StaticResource MenuListItem}"
+                             VirtualizingStackPanel.IsVirtualizing="True"
+                             VirtualizingStackPanel.VirtualizationMode="Recycling"
+                             ScrollViewer.CanContentScroll="True"
                              KeyDown="OnMenuKeyDown"
                              PreviewMouseLeftButtonUp="OnMenuClick"
                              IsTabStop="True"
@@ -101,7 +103,6 @@
                     Padding="20"
                     BorderBrush="#2A4A6A"
                     BorderThickness="3"
-                    Effect="{StaticResource PanelShadow}"
                     Visibility="Collapsed">
                 <Grid KeyboardNavigation.TabNavigation="Continue">
                     <Grid.RowDefinitions>
@@ -162,6 +163,9 @@
                              ItemsSource="{Binding BoxMessages}"
                              SelectedItem="{Binding SelectedMessage, Mode=TwoWay}"
                              SelectionMode="Extended"
+                             VirtualizingStackPanel.IsVirtualizing="True"
+                             VirtualizingStackPanel.VirtualizationMode="Recycling"
+                             ScrollViewer.CanContentScroll="True"
                              MouseDoubleClick="OnMessagesDoubleClick"
                              KeyDown="OnMessagesKeyDown"
                              ItemContainerStyle="{StaticResource ListButtonItem}"
@@ -192,7 +196,6 @@
                     Padding="20"
                     BorderBrush="#3A5E8C"
                     BorderThickness="3"
-                    Effect="{StaticResource PanelShadow}"
                     Visibility="Collapsed">
                 <Grid KeyboardNavigation.TabNavigation="Continue">
                     <Grid.RowDefinitions>
@@ -338,7 +341,6 @@
                     Padding="20"
                     BorderBrush="#3A5E8C"
                     BorderThickness="3"
-                    Effect="{StaticResource PanelShadow}"
                     Visibility="Collapsed">
                 <Grid KeyboardNavigation.TabNavigation="Continue">
                     <Grid.RowDefinitions>

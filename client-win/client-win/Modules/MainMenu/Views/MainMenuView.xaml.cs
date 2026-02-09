@@ -14,6 +14,7 @@ namespace client_win.Modules.MainMenu.Views;
 public partial class MainMenuView : UserControl, IInitialFocusTarget
 {
     private long _lastAutoFocusTicks;
+    private int _focusRequestId;
 
     public MainMenuView()
     {
@@ -157,21 +158,6 @@ public partial class MainMenuView : UserControl, IInitialFocusTarget
 
     private void FocusFirstItem()
     {
-        void FocusItemAtIndex(int index)
-        {
-            ItemsList.UpdateLayout();
-            ItemsList.ScrollIntoView(ItemsList.SelectedItem);
-            if (ItemsList.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)
-            {
-                item.Focus();
-                Keyboard.Focus(item);
-            }
-            else
-            {
-                ItemsList.Focus();
-            }
-        }
-
         if (ItemsList == null || ItemsList.Items.Count == 0)
         {
             ItemsList?.Focus();
@@ -183,7 +169,45 @@ public partial class MainMenuView : UserControl, IInitialFocusTarget
             ItemsList.SelectedIndex = 0;
         }
 
-        FocusItemAtIndex(ItemsList.SelectedIndex);
+        var id = unchecked(++_focusRequestId);
+        FocusSelectedItemWithRetry(id, attemptsRemaining: 8);
+    }
+
+    private void FocusSelectedItemWithRetry(int requestId, int attemptsRemaining)
+    {
+        if (ItemsList == null || ItemsList.Items.Count == 0)
+        {
+            ItemsList?.Focus();
+            return;
+        }
+
+        if (ItemsList.SelectedIndex < 0)
+        {
+            ItemsList.SelectedIndex = 0;
+        }
+
+        var index = ItemsList.SelectedIndex;
+        if (index >= 0 && index < ItemsList.Items.Count)
+        {
+            ItemsList.ScrollIntoView(ItemsList.Items[index]);
+        }
+
+        if (index >= 0 && ItemsList.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)
+        {
+            item.Focus();
+            Keyboard.Focus(item);
+            return;
+        }
+
+        if (attemptsRemaining > 0 && requestId == _focusRequestId)
+        {
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.Loaded,
+                new Action(() => FocusSelectedItemWithRetry(requestId, attemptsRemaining - 1)));
+            return;
+        }
+
+        ItemsList.Focus();
     }
 
     private void OnListGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)

@@ -8,8 +8,6 @@
              Loaded="OnLoaded"
              PreviewKeyDown="OnPreviewKeyDown">
     <UserControl.Resources>
-        <SolidColorBrush x:Key="PanelBrush" Color="#12263C" />
-        <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
         <LinearGradientBrush x:Key="ShellBackground" StartPoint="0,0" EndPoint="1,1">
             <GradientStop Color="#0F1D2D" Offset="0" />
             <GradientStop Color="#1C3B5E" Offset="0.55" />
@@ -25,7 +23,7 @@
             <Setter Property="Margin" Value="8 0 0 0" />
             <Setter Property="FontSize" Value="15" />
         </Style>
-        <Style TargetType="ListBox">
+        <Style TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
             <Setter Property="Background" Value="#0F1D2D" />
             <Setter Property="BorderBrush" Value="#244A75" />
             <Setter Property="BorderThickness" Value="1" />

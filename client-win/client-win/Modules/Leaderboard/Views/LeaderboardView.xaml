@@ -13,9 +13,7 @@
             <GradientStop Color="#1C3B5E" Offset="0.55" />
             <GradientStop Color="#0E1724" Offset="1" />
         </LinearGradientBrush>
-        <SolidColorBrush x:Key="PanelBrush" Color="#12263C" />
-        <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
-        <Style TargetType="ListBox">
+        <Style TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Foreground" Value="White" />

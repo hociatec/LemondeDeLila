@@ -13,8 +13,6 @@
             <GradientStop Color="#1C3B5E" Offset="0.55" />
             <GradientStop Color="#0E1724" Offset="1" />
         </LinearGradientBrush>
-        <SolidColorBrush x:Key="PanelBrush" Color="#12263C" />
-        <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
         <Style TargetType="Button">
             <Setter Property="Padding" Value="12 8" />

@@ -21,6 +21,7 @@ public partial class SocialView : UserControl, IInitialFocusTarget
 
     private SocialScreen _currentScreen = SocialScreen.Menu;
     private int _lastMenuIndex = -1;
+    private int _focusRequestId;
     private SocialViewModel? _focusVm;
     private Action? _profileFocusHandler;
     private Action? _returnToMenuHandler;
@@ -302,22 +303,8 @@ public partial class SocialView : UserControl, IInitialFocusTarget
 
     private void FocusMenu()
     {
-        MenuList.UpdateLayout();
-        if (MenuList.Items.Count == 0)
-        {
-            MenuList.Focus();
-            return;
-        }
-
-        var index = MenuList.SelectedIndex >= 0 ? MenuList.SelectedIndex : 0;
-        MenuList.ScrollIntoView(MenuList.Items[index]);
-        if (MenuList.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)
-        {
-            item.Focus();
-            return;
-        }
-
-        MenuList.Focus();
+        var requestId = unchecked(++_focusRequestId);
+        FocusListWithRetry(requestId, MenuList, fallback: MenuList, attemptsRemaining: 8);
     }
 
     private void OnMenuSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -389,12 +376,23 @@ public partial class SocialView : UserControl, IInitialFocusTarget
         return false;
     }
 
-    private static void FocusListOrEmpty(ListBox listBox, TextBlock emptyText)
+    private void FocusListOrEmpty(ListBox listBox, TextBlock emptyText)
     {
-        listBox.UpdateLayout();
         if (listBox.Items.Count == 0)
         {
             emptyText.Focus();
+            return;
+        }
+
+        var requestId = unchecked(++_focusRequestId);
+        FocusListWithRetry(requestId, listBox, fallback: emptyText, attemptsRemaining: 8);
+    }
+
+    private void FocusListWithRetry(int requestId, ListBox listBox, UIElement fallback, int attemptsRemaining)
+    {
+        if (listBox.Items.Count == 0)
+        {
+            fallback.Focus();
             return;
         }
 
@@ -402,11 +400,24 @@ public partial class SocialView : UserControl, IInitialFocusTarget
         {
             listBox.SelectedIndex = 0;
         }
-        var index = listBox.SelectedIndex >= 0 ? listBox.SelectedIndex : 0;
-        listBox.ScrollIntoView(listBox.Items[index]);
-        if (listBox.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)
+
+        var index = listBox.SelectedIndex;
+        if (index >= 0 && index < listBox.Items.Count)
+        {
+            listBox.ScrollIntoView(listBox.Items[index]);
+        }
+
+        if (index >= 0 && listBox.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)
         {
             item.Focus();
+            return;
+        }
+
+        if (attemptsRemaining > 0 && requestId == _focusRequestId)
+        {
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.Loaded,
+                new Action(() => FocusListWithRetry(requestId, listBox, fallback, attemptsRemaining - 1)));
             return;
         }
 

@@ -219,7 +219,6 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
             ItemsList.ScrollIntoView(ItemsList.Items[ItemsList.SelectedIndex]);
         }
 
-        ItemsList.UpdateLayout();
         if (ItemsList.SelectedIndex >= 0 &&
             ItemsList.ItemContainerGenerator.ContainerFromIndex(ItemsList.SelectedIndex) is ListBoxItem item)
         {
