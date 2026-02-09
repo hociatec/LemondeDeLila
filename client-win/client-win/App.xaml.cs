@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using System.IO;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Automation;
+using System.Windows.Data;
 using System.Windows.Interop;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using client_win.Core.Accessibility;
 using client_win.Modules.Audio.Services;
@@ -39,6 +40,8 @@ namespace client_win
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            AnimationDisabler.Disable();
+
             // Empêche l'ouverture de plusieurs fenêtres/applications quand l'utilisateur relance le client
             // (raccourci, clickonce, restart update, etc.).
             const string mutexName = "LeMondeDeLila.Client.SingleInstance";
@@ -920,6 +923,40 @@ namespace client_win
             {
                 Log.Warning(ex, "FlashWindowTopmost dispatch failed");
             }
+        }
+    }
+
+    internal static class AnimationDisabler
+    {
+        private static bool _disabled;
+
+        public static void Disable()
+        {
+            if (_disabled)
+            {
+                return;
+            }
+
+            _disabled = true;
+            Timeline.SpeedRatioProperty.OverrideMetadata(
+                typeof(Timeline),
+                new FrameworkPropertyMetadata(
+                    defaultValue: MinimumSpeedRatio,
+                    FrameworkPropertyMetadataOptions.None,
+                    propertyChangedCallback: null,
+                    coerceValueCallback: CoerceToMinimum));
+        }
+
+        private const double MinimumSpeedRatio = 1_000_000.0;
+
+        private static object CoerceToMinimum(DependencyObject _, object baseValue)
+        {
+            if (baseValue is double d && double.IsFinite(d))
+            {
+                return Math.Max(MinimumSpeedRatio, d);
+            }
+
+            return MinimumSpeedRatio;
         }
     }
 

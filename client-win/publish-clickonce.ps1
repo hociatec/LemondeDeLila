@@ -44,7 +44,7 @@ $msbuildProps = @(
 )
 
 function Normalize-Version4([string]$v) {
-    $raw = ($v ?? "").Trim()
+    $raw = if ([string]::IsNullOrWhiteSpace($v)) { "" } else { $v.Trim() }
     if ([string]::IsNullOrWhiteSpace($raw)) { return $null }
     $parts = $raw.Split(".") | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
     if ($parts.Length -lt 1 -or $parts.Length -gt 4) { return $null }
@@ -59,7 +59,7 @@ function Get-Project-Version([string]$csprojPath) {
     try {
         [xml]$xml = Get-Content $csprojPath
         $v = $xml.Project.PropertyGroup.Version | Select-Object -First 1
-        return ($v ?? "").Trim()
+        return if ([string]::IsNullOrWhiteSpace($v)) { "" } else { $v.Trim() }
     } catch {
         return ""
     }
