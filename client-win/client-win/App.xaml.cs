@@ -67,9 +67,7 @@ namespace client_win
 
         protected override void OnStartup(StartupEventArgs e)
         {
-<<<<<<< HEAD
             AnimationDisabler.Disable();
-=======
             string? appDataPath = null;
             try
             {
@@ -80,7 +78,6 @@ namespace client_win
             {
                 // ignore (best-effort)
             }
->>>>>>> 441217fb0dd2c967a37b930fe42405f4bd4212d7
 
             // Empêche l'ouverture de plusieurs fenêtres/applications quand l'utilisateur relance le client
             // (raccourci, clickonce, restart update, etc.).
