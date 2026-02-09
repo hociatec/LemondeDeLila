@@ -57,6 +57,7 @@ public sealed partial class AdminViewModel : ObservableObject
     private int _botTurnDelayMs = 4000;
     private int _botStartDelayMs = 4000;
     private int _botDrawDelayMs = 4000;
+    private string _botSettingsFormMode = "turn";
     private string _botNameFormMode = string.Empty;
     private int _botNameFormId;
     private string _botNameFormOriginalName = string.Empty;

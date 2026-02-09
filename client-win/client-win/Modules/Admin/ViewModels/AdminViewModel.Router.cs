@@ -944,9 +944,19 @@ public sealed partial class AdminViewModel
 
             if (_page == AdminPage.Bots)
             {
-                if (tag is string botsAction && botsAction == "bots.settings")
+                if (tag is string botsAction && botsAction == "bots.settings.turn")
                 {
-                    BuildBotSettingsForm();
+                    BuildBotSettingsForm(BotSettingsModeTurn);
+                    return;
+                }
+                if (tag is string botsStartAction && botsStartAction == "bots.settings.start")
+                {
+                    BuildBotSettingsForm(BotSettingsModeStart);
+                    return;
+                }
+                if (tag is string botsDrawAction && botsDrawAction == "bots.settings.draw")
+                {
+                    BuildBotSettingsForm(BotSettingsModeDraw);
                     return;
                 }
                 if (tag is string createBot && createBot == "bots.create")

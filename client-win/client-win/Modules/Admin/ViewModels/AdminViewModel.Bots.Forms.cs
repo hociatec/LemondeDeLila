@@ -7,6 +7,10 @@ namespace client_win.Modules.Admin.ViewModels;
 
 public sealed partial class AdminViewModel
 {
+    private const string BotSettingsModeTurn = "turn";
+    private const string BotSettingsModeStart = "start";
+    private const string BotSettingsModeDraw = "draw";
+
     private void BuildBotNameForm(string mode, AdminBotNameDto? bot = null)
     {
         _page = AdminPage.BotNameForm;
@@ -26,20 +30,35 @@ public sealed partial class AdminViewModel
         Status = "Entrée : valider. Échap : retour.";
     }
 
-    private void BuildBotSettingsForm()
+    private void BuildBotSettingsForm(string mode)
     {
+        _botSettingsFormMode = mode;
         _page = AdminPage.BotSettingsForm;
         Title = "Paramètres bots";
-        Details = "Ajuster les délais des actions bots (en millisecondes).";
-        TextInputLabel = "Délai tour (ms)";
-        TextInput = _botTurnDelayMs.ToString();
-        SecondaryInputLabel = "Délai démarrage (ms)";
-        SecondaryInput = _botStartDelayMs.ToString();
-        ThirdInputLabel = "Délai pioche (ms)";
-        ThirdInput = _botDrawDelayMs.ToString();
+        if (string.Equals(mode, BotSettingsModeStart, StringComparison.Ordinal))
+        {
+            Details = "Temps d'attente avant la toute première action du bot après le démarrage de la partie.";
+            TextInputLabel = "Délai démarrage de partie (ms)";
+            TextInput = _botStartDelayMs.ToString();
+        }
+        else if (string.Equals(mode, BotSettingsModeDraw, StringComparison.Ordinal))
+        {
+            Details = "Temps d'attente appliqué quand le bot enchaîne une action après une pioche.";
+            TextInputLabel = "Délai après pioche (ms)";
+            TextInput = _botDrawDelayMs.ToString();
+        }
+        else
+        {
+            _botSettingsFormMode = BotSettingsModeTurn;
+            Details = "Temps d'attente standard avant qu'un bot joue pendant son tour.";
+            TextInputLabel = "Délai tour normal (ms)";
+            TextInput = _botTurnDelayMs.ToString();
+        }
+        SecondaryInput = string.Empty;
+        ThirdInput = string.Empty;
         IsTextInputVisible = true;
-        IsSecondaryInputVisible = true;
-        IsThirdInputVisible = true;
+        IsSecondaryInputVisible = false;
+        IsThirdInputVisible = false;
         IsFourthInputVisible = false;
         IsFifthInputVisible = false;
         IsAdditionalPermissionsVisible = false;
@@ -51,26 +70,32 @@ public sealed partial class AdminViewModel
 
     private async Task SubmitBotSettingsFormAsync()
     {
-        var turnRaw = (TextInput ?? string.Empty).Trim();
-        var startRaw = (SecondaryInput ?? string.Empty).Trim();
-        var drawRaw = (ThirdInput ?? string.Empty).Trim();
-
-        if (!int.TryParse(turnRaw, out var turnDelayMs) || turnDelayMs < 0)
+        var rawValue = (TextInput ?? string.Empty).Trim();
+        if (!int.TryParse(rawValue, out var parsedDelayMs) || parsedDelayMs < 0)
         {
-            await _dialogs.ShowError("Bots", "Délai tour invalide (ms).").ConfigureAwait(true);
+            var message = string.Equals(_botSettingsFormMode, BotSettingsModeStart, StringComparison.Ordinal)
+                ? "Délai démarrage invalide (ms)."
+                : string.Equals(_botSettingsFormMode, BotSettingsModeDraw, StringComparison.Ordinal)
+                    ? "Délai après pioche invalide (ms)."
+                    : "Délai tour normal invalide (ms).";
+            await _dialogs.ShowError("Bots", message).ConfigureAwait(true);
             return;
         }
 
-        if (!int.TryParse(startRaw, out var startDelayMs) || startDelayMs < 0)
+        var turnDelayMs = _botTurnDelayMs;
+        var startDelayMs = _botStartDelayMs;
+        var drawDelayMs = _botDrawDelayMs;
+        if (string.Equals(_botSettingsFormMode, BotSettingsModeStart, StringComparison.Ordinal))
         {
-            await _dialogs.ShowError("Bots", "Délai démarrage invalide (ms).").ConfigureAwait(true);
-            return;
+            startDelayMs = parsedDelayMs;
         }
-
-        if (!int.TryParse(drawRaw, out var drawDelayMs) || drawDelayMs < 0)
+        else if (string.Equals(_botSettingsFormMode, BotSettingsModeDraw, StringComparison.Ordinal))
         {
-            await _dialogs.ShowError("Bots", "Délai pioche invalide (ms).").ConfigureAwait(true);
-            return;
+            drawDelayMs = parsedDelayMs;
+        }
+        else
+        {
+            turnDelayMs = parsedDelayMs;
         }
 
         if (IsBusy) return;
