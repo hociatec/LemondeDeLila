@@ -61,7 +61,7 @@ export class FrousseActionService {
     const playerId =
       typeof pending.playerId === 'number'
         ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
+        : (state.turn?.currentPlayerId ?? null);
     if (playerId == null) return state;
 
     const payload = (action.payload ?? {}) as any;
@@ -151,9 +151,10 @@ export class FrousseActionService {
         metadata: { ...(state.metadata ?? {}), ...meta },
         lastRoll: roll.value,
       };
-      const rollLabel = roll.doubledFrom != null
-        ? `${roll.doubledFrom}" (doublé -> ${roll.value})`
-        : `${roll.value}`;
+      const rollLabel =
+        roll.doubledFrom != null
+          ? `${roll.doubledFrom}" (doublé -> ${roll.value})`
+          : `${roll.value}`;
       next = this.core.appendLog(
         next,
         `${this.playerName(next, currentId)} tente de se libérer : dé = "${rollLabel}".`,
@@ -216,9 +217,10 @@ export class FrousseActionService {
         `${this.playerName(next, currentId)} lance deux dés : "${roll.rolls[0]}" et "${roll.rolls[1]}" (garde "${roll.value}").`,
       );
     } else {
-      const rollLabel = roll.doubledFrom != null
-        ? `${roll.doubledFrom}" (doublé -> ${roll.value})`
-        : `${roll.value}`;
+      const rollLabel =
+        roll.doubledFrom != null
+          ? `${roll.doubledFrom}" (doublé -> ${roll.value})`
+          : `${roll.value}`;
       next = this.core.appendLog(
         next,
         `${this.playerName(next, currentId)} lance le dé : "${rollLabel}".`,
@@ -321,7 +323,7 @@ export class FrousseActionService {
     const playerId =
       typeof pending.playerId === 'number'
         ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
+        : (state.turn?.currentPlayerId ?? null);
     if (!playerId) return state;
 
     const cleared: GameStateEntity = { ...state, pending: null };
@@ -374,7 +376,10 @@ export class FrousseActionService {
     };
   }
 
-  private applyDrawCard(state: GameStateEntity, playerId: number): GameStateEntity {
+  private applyDrawCard(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
     let next = state;
     let meta = this.getMeta(next);
 
@@ -456,16 +461,10 @@ export class FrousseActionService {
       ignored = true;
     }
 
-    const effectLabel = ignored ? 'Effet ignoré.' : describeCardEffect(draw.card);
-    const narrative = extractNarrative(draw.card.text);
-    let cardText = narrative || draw.card.text;
-    if (!narrative && effectLabel !== 'Effet immédiat.' && cardText) {
-      const lowered = cardText.toLowerCase();
-      const loweredEffect = effectLabel.toLowerCase();
-      if (lowered.includes(loweredEffect)) {
-        cardText = cardText.replace(new RegExp(escapeRegex(effectLabel), 'i'), '').replace(/\s{2,}/g, ' ').trim();
-      }
-    }
+    const effectLabel = ignored
+      ? 'Effet ignoré.'
+      : describeCardEffect(draw.card);
+    const cardText = normalizeCardText(draw.card.text);
     next = this.core.appendLog(
       next,
       `${this.playerName(next, playerId)} pioche une carte (${cardText}) : ${effectLabel}`,
@@ -480,7 +479,10 @@ export class FrousseActionService {
     if (applied.pending) return applied;
     if ((appliedMeta as any).keepTurnNow === true) {
       delete (appliedMeta as any).keepTurnNow;
-      return { ...applied, metadata: { ...(applied.metadata ?? {}), ...appliedMeta } };
+      return {
+        ...applied,
+        metadata: { ...(applied.metadata ?? {}), ...appliedMeta },
+      };
     }
     return this.turns.advanceTurn(applied);
   }
@@ -515,7 +517,8 @@ export class FrousseActionService {
       const pick = this.random.pickOne(meta as any, targets);
       meta = pick.meta;
       const target = pick.value;
-      if (!target) return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+      if (!target)
+        return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       const actorPos = meta.positions?.[playerId] ?? 0;
       const targetPos = meta.positions?.[target.id] ?? 0;
       meta = {
@@ -782,7 +785,8 @@ export class FrousseActionService {
 
     // Téléport jusqu'à la case 40.
     if (/jusqu'à la case 40/i.test(text) || /jusqu’à la case 40/i.test(text)) {
-      return this.setPos(next, playerId, 39);
+      next = this.setPos(next, playerId, 39);
+      return this.applyLanding(next, playerId);
     }
 
     // Relance immédiate.
@@ -817,9 +821,7 @@ export class FrousseActionService {
 
     // Immediate roll: if odd then skip.
     if (
-      /si le résultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(
-        text,
-      )
+      /si le résultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(text)
     ) {
       const out = this.random.rollDice(meta as any, 6);
       meta = { ...meta, ...out.meta };
@@ -865,12 +867,14 @@ export class FrousseActionService {
       /Retour à la case une/i.test(text) ||
       (/Retournez/i.test(text) && /case une/i.test(text))
     ) {
-      return this.setPos(next, playerId, 0);
+      next = this.setPos(next, playerId, 0);
+      return this.applyLanding(next, playerId);
     }
 
     // Go to kitchen (case 20 => index 19).
     if (/Allez en cuisine/i.test(text)) {
-      return this.setPos(next, playerId, 19);
+      next = this.setPos(next, playerId, 19);
+      return this.applyLanding(next, playerId);
     }
 
     // Move delta (inclut "avance X puis recule Y").
@@ -1104,104 +1108,111 @@ function extractMoveDelta(text: string): number {
 }
 
 function extractSkipTurns(text: string): number {
-  const numeric = text.match(/Passez\\s+(\\d+)\\s+tours?/i);
+  const numeric = text.match(/Passez\s+(\d+)\s+tours?/i);
   if (numeric) {
     const n = Number(numeric[1]);
     if (Number.isFinite(n) && n > 0) return Math.trunc(n);
   }
-  const oneWord = text.match(/Passez\\s+(un|une)\\s+tour/i);
+  const oneWord = text.match(/Passez\s+(un|une)\s+tour/i);
   if (oneWord) return 1;
   if (/Passez deux tours/i.test(text)) return 2;
   if (/Passez trois tours/i.test(text)) return 3;
-  if (/Passez votre tour/i.test(text) || /Passez un tour/i.test(text))
-    return 1;
+  if (/Passez votre tour/i.test(text) || /Passez un tour/i.test(text)) return 1;
   return 0;
 }
 
 function describeCardEffect(card: FrousseCard): string {
   const text = card.text ?? '';
 
-  if (/Fantôme/i.test(card.category) && /fantôme farceur/i.test(text) && /échang|echange/i.test(text)) {
+  if (
+    /Fantôme/i.test(card.category) &&
+    /fantôme farceur/i.test(text) &&
+    /échang|echange/i.test(text)
+  ) {
     return 'Échange aléatoire de place.';
   }
-  if (/échang|echange/i.test(text) && (/votre place/i.test(text) || /vos places/i.test(text))) {
+  if (
+    /échang|echange/i.test(text) &&
+    (/votre place/i.test(text) || /vos places/i.test(text))
+  ) {
     return 'Échangez votre place avec un autre joueur.';
   }
-  if (/Ignorez le prochain piège/i.test(text)) return 'Ignore le prochain piège.';
-  if (/Ignorez les pièges jusqu['’]au prochain symbole/i.test(text)) return 'Ignore les pièges jusqu’au prochain symbole.';
-  if (/Ignorez la prochaine carte Fantôme/i.test(text)) return 'Ignore la prochaine carte Fantôme.';
-  if (/annule une farce/i.test(text) || /rien ne vous arrive/i.test(text)) return 'Ignore la prochaine farce.';
-  if (/Sautez\s+6\s+cases/i.test(text) || (/Bonus/i.test(card.category) && card.localNumber === 13)) return 'Saute 6 cases.';
-  if (/Doublez votre prochain lancer/i.test(text)) return 'Double le prochain lancer de dé.';
-  if (/gardez le plus petit/i.test(text) || /gardez le chiffre le plus bas/i.test(text)) return 'Rejouez en gardant le plus petit résultat.';
-  if (/malus de moins 2/i.test(text) || /malus de -2/i.test(text)) return 'Rejouez avec un malus de -2 au lancer.';
-  if (/Si vous faites un trois, reculez de 2 cases/i.test(text)) return 'Si vous faites un trois, reculez de 2 cases.';
-  if (/jusqu['’]à la case 40/i.test(text)) return 'Aller directement à la case 40.';
-  if (/Relancez le dé/i.test(text) || (/Relancez/i.test(text) && /dé/i.test(text))) return 'Rejouez immédiatement.';
-  if (/laissant les autres joueurs (filer|avancer) de 3 cases/i.test(text)) return 'Les autres avancent de 3 cases, vous passez 1 tour.';
-  if (/si le résultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(text)) {
-    return 'Test : si impair, passez 1 tour.';
+  if (/Ignorez le prochain piège/i.test(text))
+    return 'Ignorez le prochain piège.';
+  if (/Ignorez les pièges jusqu['’]au prochain symbole/i.test(text))
+    return 'Ignorez les pièges jusqu’au prochain symbole.';
+  if (/Ignorez la prochaine carte Fantôme/i.test(text))
+    return 'Ignorez la prochaine carte Fantôme.';
+  if (/annule une farce/i.test(text) || /rien ne vous arrive/i.test(text))
+    return 'Ignorez la prochaine farce.';
+  if (
+    /Sautez\s+6\s+cases/i.test(text) ||
+    (/Bonus/i.test(card.category) && card.localNumber === 13)
+  )
+    return 'Sautez 6 cases.';
+  if (/Doublez votre prochain lancer/i.test(text))
+    return 'Doublez le prochain lancer de dé.';
+  if (
+    /gardez le plus petit/i.test(text) ||
+    /gardez le chiffre le plus bas/i.test(text)
+  )
+    return 'Rejouez en gardant le plus petit résultat.';
+  if (/malus de moins 2/i.test(text) || /malus de -2/i.test(text))
+    return 'Rejouez avec un malus de -2 au lancer.';
+  if (/Si vous faites un trois, reculez de 2 cases/i.test(text))
+    return 'Si vous faites un trois, reculez de 2 cases.';
+  if (/jusqu['’]à la case 40/i.test(text))
+    return 'Allez directement à la case 40.';
+  if (
+    /Relancez le dé/i.test(text) ||
+    (/Relancez/i.test(text) && /dé/i.test(text))
+  )
+    return 'Rejouez immédiatement.';
+  if (/laissant les autres joueurs (filer|avancer) de 3 cases/i.test(text))
+    return 'Les autres avancent de 3 cases, vous passez 1 tour.';
+  if (
+    /si le résultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(text)
+  ) {
+    return 'Lancez le dé : si le résultat est impair, passez 1 tour.';
   }
   const skip = extractSkipTurns(text);
   if (skip > 0) return `Passez ${skip} tour${skip > 1 ? 's' : ''}.`;
-  if (/case départ/i.test(text) || /Retour à la case une/i.test(text)) return 'Retournez à la case départ.';
+  if (/case départ/i.test(text) || /Retour à la case une/i.test(text))
+    return 'Retournez à la case départ.';
   if (/Allez en cuisine/i.test(text)) return 'Allez en cuisine.';
 
-  const combo = text.match(/Avancez\s+de\s+(\d+)\s+cases?,\s+puis\s+reculez\s+de\s+(\d+)\s+cases?/i);
-  if (combo) return `Avancez de ${combo[1]} cases, puis reculez de ${combo[2]}.`;
+  const combo = text.match(
+    /Avancez\s+de\s+(\d+)\s+cases?,\s+puis\s+reculez\s+de\s+(\d+)\s+cases?/i,
+  );
+  if (combo)
+    return `Avancez de ${combo[1]} cases, puis reculez de ${combo[2]}.`;
   const delta = extractMoveDelta(text);
   if (delta > 0) return `Avancez de ${delta} case${delta > 1 ? 's' : ''}.`;
-  if (delta < 0) return `Reculez de ${Math.abs(delta)} case${Math.abs(delta) > 1 ? 's' : ''}.`;
+  if (delta < 0)
+    return `Reculez de ${Math.abs(delta)} case${Math.abs(delta) > 1 ? 's' : ''}.`;
 
   const need56 = text.match(/lancer un (\d) ou un (\d)/i);
-  if (need56) return `Bloqué : lancez un ${need56[1]} ou un ${need56[2]} pour vous libérer.`;
+  if (need56)
+    return `Bloqué : lancez un ${need56[1]} ou un ${need56[2]} pour vous libérer.`;
   const need6 = text.match(/obtenir un 6/i);
-  if (need6 && /jusqu/i.test(text)) return 'Bloqué : obtenez un 6 pour vous libérer.';
+  if (need6 && /jusqu/i.test(text))
+    return 'Bloqué : obtenez un 6 pour vous libérer.';
   const needMin = text.match(/obtenez pas un (\d) ou plus/i);
-  if (needMin) return `Bloqué : obtenez ${needMin[1]} ou plus pour vous libérer.`;
-  if (/nombre pair/i.test(text)) return 'Bloqué : obtenez un nombre pair pour vous libérer.';
+  if (needMin)
+    return `Bloqué : obtenez ${needMin[1]} ou plus pour vous libérer.`;
+  if (/nombre pair/i.test(text))
+    return 'Bloqué : obtenez un nombre pair pour vous libérer.';
 
-  if (/n['’]avancerez que d['’](une|un)e seule case/i.test(text)) return 'Au prochain tour, avancez d’une seule case.';
+  if (/n['’]avancerez que d['’](une|un)e seule case/i.test(text))
+    return 'Au prochain tour, avancez d’une seule case.';
 
   return 'Effet immédiat.';
 }
 
-function extractNarrative(text: string): string {
-  const cleaned = String(text ?? '').replace('\r', '').trim();
-  if (!cleaned) return '';
-  const hasNewlines = /\n/.test(cleaned);
-  const parts = (hasNewlines
-    ? cleaned.split(/\n+/)
-    : cleaned.split(/(?<=[.!?])\s+/))
-    .map((p) => p.trim())
-    .filter((p) => p.length > 0);
-
-  const isEffectLine = (line: string) => {
-    const l = line.toLowerCase();
-    return (
-      l.includes('avancez') ||
-      l.includes('reculez') ||
-      l.includes('passez') ||
-      l.includes('relancez') ||
-      l.includes('lancez le dé') ||
-      l.includes('doublez') ||
-      l.includes('ignorez') ||
-      l.includes('échange') ||
-      l.includes('echange') ||
-      l.includes('allez en cuisine') ||
-      l.includes('retour') ||
-      l.includes('case départ') ||
-      l.includes('obtenez') ||
-      l.includes('ne bougez pas') ||
-      l.includes('vous ne rejouez') ||
-      l.includes('sautez')
-    );
-  };
-
-  const narrative = parts.filter((p) => !isEffectLine(p));
-  return narrative.join(' ');
-}
-
-function escapeRegex(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function normalizeCardText(text: string): string {
+  return String(text ?? '')
+    .replace(/\r/g, '')
+    .replace(/\n+/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
 }

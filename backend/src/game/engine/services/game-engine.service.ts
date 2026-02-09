@@ -157,10 +157,17 @@ export class GameEngineService {
     const withLabel = this.attachTurnLabel(exposed, label);
     const withDescriptors = this.attachUiDescriptors(
       this.gridRender.attachGridRenderDescriptors(
-        this.attachViewerContext(this.attachCurrentPlayerView(withLabel), userId),
+        this.attachViewerContext(
+          this.attachCurrentPlayerView(withLabel),
+          userId,
+        ),
       ),
     );
-    const withShortcuts = this.attachShortcuts(withDescriptors, handler, userId);
+    const withShortcuts = this.attachShortcuts(
+      withDescriptors,
+      handler,
+      userId,
+    );
     return this.stripBoardAndGridIfNotStarted(withShortcuts);
   }
 
@@ -175,7 +182,9 @@ export class GameEngineService {
     | { kind: 'room'; op: 'reset' | 'start' | 'restart' }
     | null
   > {
-    const normalized = String(key ?? '').trim().toUpperCase();
+    const normalized = String(key ?? '')
+      .trim()
+      .toUpperCase();
     if (!normalized) return null;
 
     const state = await this.getStateForUser(roomId, gameType, userId);
@@ -201,7 +210,9 @@ export class GameEngineService {
     });
 
     if (!match || typeof match !== 'object') {
-      const status = String(state?.status ?? '').toLowerCase().trim();
+      const status = String(state?.status ?? '')
+        .toLowerCase()
+        .trim();
       if (normalized === 'X') {
         return { kind: 'room', op: 'reset' };
       }
@@ -368,14 +379,19 @@ export class GameEngineService {
         previousStatus === 'finished'
           ? existing
           : (this.forceFinishedIfWinnerDetected(existing as any) as any);
-      const maybeFinishedStatus = String(maybeFinished?.status ?? '').toLowerCase();
+      const maybeFinishedStatus = String(
+        maybeFinished?.status ?? '',
+      ).toLowerCase();
       if (roomStatus === 'started' && maybeFinishedStatus === 'finished') {
-        this.gameLogger.warn('Stale finished game detected while room is started; auto-resetting room', {
-          roomId,
-          gameType,
-          previousStatus,
-          roomStatus,
-        });
+        this.gameLogger.warn(
+          'Stale finished game detected while room is started; auto-resetting room',
+          {
+            roomId,
+            gameType,
+            previousStatus,
+            roomStatus,
+          },
+        );
 
         try {
           await this.rooms.resetRoomSystem(roomId);
@@ -497,8 +513,10 @@ export class GameEngineService {
         turnIndex: withRoster.turnIndex,
         currentPlayerId: withRoster.turn?.currentPlayerId ?? null,
         players:
-          withRoster.players?.map((p) => ({ id: p.id, isBot: (p as any).isBot })) ??
-          [],
+          withRoster.players?.map((p) => ({
+            id: p.id,
+            isBot: (p as any).isBot,
+          })) ?? [],
         incomingPlayers,
         gameStarted,
       });
@@ -796,8 +814,12 @@ export class GameEngineService {
     const next = await handler.applyActions(current, sanitizedActions);
     const botTurn = this.isBotTurn(next);
     let marked = await this.markBotThinking(roomId, gameType, next, botTurn);
-    const drawAction = sanitizedActions.find(a =>
-      String(a.type ?? '').trim().toLowerCase() === 'draw');
+    const drawAction = sanitizedActions.find(
+      (a) =>
+        String(a.type ?? '')
+          .trim()
+          .toLowerCase() === 'draw',
+    );
     if (drawAction) {
       const actionPlayerId = allowBotTurn
         ? (botActorId ?? null)
@@ -964,7 +986,10 @@ export class GameEngineService {
 
   private normalizeUsernameForLog(username: unknown): string {
     let name = String(username ?? '').trim();
-    name = name.replace(/[\r\n\t]+/g, ' ').replace(/\s{2,}/g, ' ').trim();
+    name = name
+      .replace(/[\r\n\t]+/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
     if (name.startsWith('"') && name.endsWith('"')) {
       name = name.slice(1, -1).trim();
     }
@@ -1011,11 +1036,19 @@ export class GameEngineService {
     // déclencher le reset automatique de table côté moteur.
     const finishedAt = (meta as any)?.finishedAt;
     if (typeof finishedAt === 'string' && finishedAt.trim().length > 0) {
-      return state.status === 'finished' ? state : { ...state, status: 'finished' };
+      return state.status === 'finished'
+        ? state
+        : { ...state, status: 'finished' };
     }
     const outcomes = (meta as any)?.outcomesByPlayerId;
-    if (outcomes && typeof outcomes === 'object' && Object.keys(outcomes).length > 0) {
-      return state.status === 'finished' ? state : { ...state, status: 'finished' };
+    if (
+      outcomes &&
+      typeof outcomes === 'object' &&
+      Object.keys(outcomes).length > 0
+    ) {
+      return state.status === 'finished'
+        ? state
+        : { ...state, status: 'finished' };
     }
 
     for (const key of ['winnerPlayerId', 'winnerId', 'winner_id']) {
@@ -1158,7 +1191,9 @@ export class GameEngineService {
     try {
       if (
         !state ||
-        String(state.status ?? '').toLowerCase().trim() !== 'started'
+        String(state.status ?? '')
+          .toLowerCase()
+          .trim() !== 'started'
       ) {
         return state;
       }
@@ -1221,7 +1256,10 @@ export class GameEngineService {
 
         // Human is present in room: ensure player is human with correct username.
         if (roomUsername) {
-          if (isBot || String((p as any)?.username ?? '').trim() !== roomUsername) {
+          if (
+            isBot ||
+            String((p as any)?.username ?? '').trim() !== roomUsername
+          ) {
             changed = true;
             return { ...(p as any), isBot: false, username: roomUsername };
           }
@@ -1263,9 +1301,16 @@ export class GameEngineService {
         !nextPlayers.some((p) => p?.id === currentPlayerId)
       ) {
         // Keep a stable index if possible; otherwise fallback to first player.
-        const prevIndex = Math.max(0, players.findIndex((p) => p?.id === currentPlayerId));
-        const fallbackIndex = Math.min(prevIndex, Math.max(0, nextPlayers.length - 1));
-        const fallbackId = nextPlayers[fallbackIndex]?.id ?? nextPlayers[0]?.id ?? null;
+        const prevIndex = Math.max(
+          0,
+          players.findIndex((p) => p?.id === currentPlayerId),
+        );
+        const fallbackIndex = Math.min(
+          prevIndex,
+          Math.max(0, nextPlayers.length - 1),
+        );
+        const fallbackId =
+          nextPlayers[fallbackIndex]?.id ?? nextPlayers[0]?.id ?? null;
         if (fallbackId !== currentPlayerId) {
           changed = true;
           state = {
@@ -1287,7 +1332,9 @@ export class GameEngineService {
         changed = true;
         state = {
           ...state,
-          pending: state.pending ? { ...(state.pending as any), playerId: null } : state.pending,
+          pending: state.pending
+            ? { ...(state.pending as any), playerId: null }
+            : state.pending,
         };
       }
 
@@ -1396,7 +1443,11 @@ export class GameEngineService {
     });
   }
 
-  private buildSystemTimerKey(roomId: number, gameType: string, suffix: string): string {
+  private buildSystemTimerKey(
+    roomId: number,
+    gameType: string,
+    suffix: string,
+  ): string {
     return `${this.buildKey(roomId, gameType)}:${suffix}`;
   }
 
@@ -1420,20 +1471,25 @@ export class GameEngineService {
         return;
       }
 
-      const meta: any = current?.metadata && typeof current.metadata === 'object' ? current.metadata : {};
+      const meta: any =
+        current?.metadata && typeof current.metadata === 'object'
+          ? current.metadata
+          : {};
       const fallbackActorId =
         typeof meta.ownerPlayerId === 'number'
           ? meta.ownerPlayerId
           : (current.turn?.currentPlayerId ?? current.players?.[0]?.id ?? null);
 
-      const sanitizedActions = (Array.isArray(actions) ? actions : []).map((action) => ({
-        ...action,
-        meta: {
-          ...(action?.meta ?? {}),
-          actor: 'system',
-          actorId: fallbackActorId,
-        },
-      }));
+      const sanitizedActions = (Array.isArray(actions) ? actions : []).map(
+        (action) => ({
+          ...action,
+          meta: {
+            ...(action?.meta ?? {}),
+            actor: 'system',
+            actorId: fallbackActorId,
+          },
+        }),
+      );
 
       const next = await handler.applyActions(current, sanitizedActions);
       const botTurn = this.isBotTurn(next);
@@ -1451,7 +1507,8 @@ export class GameEngineService {
         previousPlayerId !== nextPlayerId &&
         String(marked.status ?? '').toLowerCase() === 'started'
       ) {
-        const nextPlayer = marked.players?.find((p) => p.id === nextPlayerId) ?? null;
+        const nextPlayer =
+          marked.players?.find((p) => p.id === nextPlayerId) ?? null;
         const name = this.normalizeUsernameForLog(nextPlayer?.username);
         const who = name ? name : `joueur ${nextPlayerId}`;
         marked = this.core.appendLog(marked, `C'est au tour de ${who}.`);
@@ -1486,10 +1543,18 @@ export class GameEngineService {
     // Timed transitions (currently used by LAMA for "pause between rounds").
     if (gameType === 'lama') {
       const meta: any =
-        state?.metadata && typeof state.metadata === 'object' ? state.metadata : {};
+        state?.metadata && typeof state.metadata === 'object'
+          ? state.metadata
+          : {};
       if (String(meta.step ?? '') === 'round_pause') {
-        const untilMs = typeof meta.roundPauseUntilMs === 'number' ? meta.roundPauseUntilMs : null;
-        const delayMs = untilMs != null ? Math.max(0, untilMs - GameEngineService.nowMs()) : 0;
+        const untilMs =
+          typeof meta.roundPauseUntilMs === 'number'
+            ? meta.roundPauseUntilMs
+            : null;
+        const delayMs =
+          untilMs != null
+            ? Math.max(0, untilMs - GameEngineService.nowMs())
+            : 0;
         this.botScheduler.clear(key);
         this.botScheduler.schedule({
           key: systemKey,
@@ -1500,7 +1565,9 @@ export class GameEngineService {
             const latest = (await this.store.get(roomId, gameType)) ?? null;
             if (!latest) return;
             const latestMeta: any =
-              latest?.metadata && typeof latest.metadata === 'object' ? latest.metadata : {};
+              latest?.metadata && typeof latest.metadata === 'object'
+                ? latest.metadata
+                : {};
             if (String(latestMeta.step ?? '') !== 'round_pause') return;
             if (
               typeof latestMeta.roundPauseUntilMs === 'number' &&
@@ -1525,11 +1592,22 @@ export class GameEngineService {
     // Timed transitions: Arche de Mnemosyne quiz timeout.
     if (gameType === 'arche-de-mnemosyne') {
       const meta: any =
-        state?.metadata && typeof state.metadata === 'object' ? state.metadata : {};
+        state?.metadata && typeof state.metadata === 'object'
+          ? state.metadata
+          : {};
       const useTimer = Boolean(meta?.config?.useTimer);
-      const untilMs = typeof meta.quizDeadlineAtMs === 'number' ? meta.quizDeadlineAtMs : null;
-      const questionId = typeof meta?.currentQuestion?.id === 'string' ? meta.currentQuestion.id : null;
-      const interUntilMs = typeof meta?.interQuestionUntilMs === 'number' ? meta.interQuestionUntilMs : null;
+      const untilMs =
+        typeof meta.quizDeadlineAtMs === 'number'
+          ? meta.quizDeadlineAtMs
+          : null;
+      const questionId =
+        typeof meta?.currentQuestion?.id === 'string'
+          ? meta.currentQuestion.id
+          : null;
+      const interUntilMs =
+        typeof meta?.interQuestionUntilMs === 'number'
+          ? meta.interQuestionUntilMs
+          : null;
 
       if (interUntilMs != null && !questionId) {
         const delayMs = Math.max(0, interUntilMs - GameEngineService.nowMs());
@@ -1543,11 +1621,15 @@ export class GameEngineService {
             const latest = (await this.store.get(roomId, gameType)) ?? null;
             if (!latest) return;
             const latestMeta: any =
-              latest?.metadata && typeof latest.metadata === 'object' ? latest.metadata : {};
+              latest?.metadata && typeof latest.metadata === 'object'
+                ? latest.metadata
+                : {};
             if (typeof latestMeta?.currentQuestion?.id === 'string') return;
             if (typeof latestMeta?.interQuestionUntilMs !== 'number') return;
             if (latestMeta.interQuestionUntilMs !== interUntilMs) return;
-            await this.applySystemActions(roomId, gameType, [{ type: 'mnemo_timeout', payload: {} }]);
+            await this.applySystemActions(roomId, gameType, [
+              { type: 'mnemo_timeout', payload: {} },
+            ]);
           },
           onStale: () => this.cleanupRoom(roomId, gameType),
         });
@@ -1563,14 +1645,21 @@ export class GameEngineService {
             const latest = (await this.store.get(roomId, gameType)) ?? null;
             if (!latest) return;
             const latestMeta: any =
-              latest?.metadata && typeof latest.metadata === 'object' ? latest.metadata : {};
+              latest?.metadata && typeof latest.metadata === 'object'
+                ? latest.metadata
+                : {};
             if (!Boolean(latestMeta?.config?.useTimer)) return;
             if (typeof latestMeta?.currentQuestion?.id !== 'string') return;
             if (latestMeta.currentQuestion.id !== questionId) return;
-            if (typeof latestMeta.quizDeadlineAtMs === 'number' && latestMeta.quizDeadlineAtMs !== untilMs) {
+            if (
+              typeof latestMeta.quizDeadlineAtMs === 'number' &&
+              latestMeta.quizDeadlineAtMs !== untilMs
+            ) {
               return;
             }
-            await this.applySystemActions(roomId, gameType, [{ type: 'mnemo_timeout', payload: {} }]);
+            await this.applySystemActions(roomId, gameType, [
+              { type: 'mnemo_timeout', payload: {} },
+            ]);
           },
           onStale: () => this.cleanupRoom(roomId, gameType),
         });
@@ -1593,10 +1682,28 @@ export class GameEngineService {
 
     const baseDelayMs = this.botSettings.getBotTurnDelayMs();
     const meta: any =
-      state?.metadata && typeof state.metadata === 'object' ? state.metadata : {};
+      state?.metadata && typeof state.metadata === 'object'
+        ? state.metadata
+        : {};
     const immediateStart = meta?.botImmediateStartPending === true;
     const pending: any = state.pending as any;
-    const isQuizPending = gameType === 'arche-de-mnemosyne' && pending?.type === 'quiz';
+    const pendingType =
+      typeof pending?.type === 'string'
+        ? String(pending.type).trim().toLowerCase()
+        : '';
+    const pendingPlayerIdRaw = pending?.playerId;
+    const pendingPlayerId =
+      typeof pendingPlayerIdRaw === 'number'
+        ? pendingPlayerIdRaw
+        : Number(pendingPlayerIdRaw);
+    const fastPendingBotAction =
+      Number.isFinite(pendingPlayerId) &&
+      pendingPlayerId === botActorId &&
+      (pendingType === 'draw' ||
+        pendingType === 'choose_pawn' ||
+        pendingType === 'choose_target');
+    const isQuizPending =
+      gameType === 'arche-de-mnemosyne' && pending?.type === 'quiz';
     const quizTimerSeconds =
       isQuizPending && typeof meta?.config?.timerSeconds === 'number'
         ? Number(meta.config.timerSeconds)
@@ -1605,7 +1712,7 @@ export class GameEngineService {
       quizTimerSeconds != null && Number.isFinite(quizTimerSeconds)
         ? Math.max(1, quizTimerSeconds) * 1000
         : null;
-    let delayMs = immediateStart ? 0 : baseDelayMs;
+    let delayMs = immediateStart || fastPendingBotAction ? 0 : baseDelayMs;
     if (isQuizPending && quizTimerMs != null) {
       delayMs = Math.min(delayMs, quizTimerMs);
     }
@@ -1757,7 +1864,9 @@ export class GameEngineService {
     gameType: string,
   ): Promise<GameStateEntity> {
     const baseState = this.core.buildBaseState(payload, gameType);
-    const status = String(baseState.status ?? '').toLowerCase().trim();
+    const status = String(baseState.status ?? '')
+      .toLowerCase()
+      .trim();
     // Tant que la table n'est pas en "started", on ne doit pas hydrater un état de partie :
     // sinon certains jeux reconstruisent un plateau "started" et empêchent d'ajouter/retirer des bots
     // ou de relancer proprement après une fin de partie.
@@ -1791,7 +1900,11 @@ export class GameEngineService {
   }
 
   private appendFirstTurnAnnouncement(state: GameStateEntity): GameStateEntity {
-    if (String(state.status ?? '').toLowerCase().trim() !== 'started') {
+    if (
+      String(state.status ?? '')
+        .toLowerCase()
+        .trim() !== 'started'
+    ) {
       return state;
     }
     const currentPlayerId = state.turn?.currentPlayerId ?? null;
@@ -1799,7 +1912,8 @@ export class GameEngineService {
 
     const log = Array.isArray(state.log) ? state.log : [];
     const alreadyAnnounced = log.some((entry: any) => {
-      const msg = typeof entry?.message === 'string' ? entry.message.trim() : '';
+      const msg =
+        typeof entry?.message === 'string' ? entry.message.trim() : '';
       return msg.toLowerCase().startsWith("c'est au tour de ");
     });
     if (alreadyAnnounced) return state;
@@ -2040,7 +2154,9 @@ export class GameEngineService {
   private stripBoardAndGridIfNotStarted(
     state: GameStateWithActions,
   ): GameStateWithActions {
-    const status = String(state?.status ?? '').toLowerCase().trim();
+    const status = String(state?.status ?? '')
+      .toLowerCase()
+      .trim();
     if (status === 'started') return state;
 
     const extras =
@@ -2050,7 +2166,12 @@ export class GameEngineService {
       delete nextExtras.grid;
     }
 
-    const out: any = { ...state, actions: [], pending: null, extras: nextExtras };
+    const out: any = {
+      ...state,
+      actions: [],
+      pending: null,
+      extras: nextExtras,
+    };
     if (out.board !== undefined) {
       delete out.board;
     }
@@ -2112,25 +2233,41 @@ export class GameEngineService {
     next: GameStateEntity,
   ): GameStateEntity {
     try {
-      if (!GameEngineService.BOARD_ANNOUNCE_GAMES.has(String(gameType ?? '').trim())) {
+      if (
+        !GameEngineService.BOARD_ANNOUNCE_GAMES.has(
+          String(gameType ?? '').trim(),
+        )
+      ) {
         return next;
       }
-      if (String(next.status ?? '').toLowerCase().trim() !== 'started') {
+      if (
+        String(next.status ?? '')
+          .toLowerCase()
+          .trim() !== 'started'
+      ) {
         return next;
       }
 
       const prevMeta: any =
-        previous?.metadata && typeof previous.metadata === 'object' ? previous.metadata : {};
+        previous?.metadata && typeof previous.metadata === 'object'
+          ? previous.metadata
+          : {};
       const nextMeta: any =
-        next?.metadata && typeof next.metadata === 'object' ? next.metadata : {};
+        next?.metadata && typeof next.metadata === 'object'
+          ? next.metadata
+          : {};
 
       const tiles = Array.isArray(nextMeta.tiles) ? nextMeta.tiles : [];
       const prevPositions =
-        prevMeta.positions && typeof prevMeta.positions === 'object' && !Array.isArray(prevMeta.positions)
+        prevMeta.positions &&
+        typeof prevMeta.positions === 'object' &&
+        !Array.isArray(prevMeta.positions)
           ? prevMeta.positions
           : {};
       const nextPositions =
-        nextMeta.positions && typeof nextMeta.positions === 'object' && !Array.isArray(nextMeta.positions)
+        nextMeta.positions &&
+        typeof nextMeta.positions === 'object' &&
+        !Array.isArray(nextMeta.positions)
           ? nextMeta.positions
           : {};
 
@@ -2140,13 +2277,18 @@ export class GameEngineService {
 
       const players = Array.isArray(next.players) ? next.players : [];
       const changed = players
-        .map((p: any) => ({ id: p?.id, username: String(p?.username ?? '').trim() }))
+        .map((p: any) => ({
+          id: p?.id,
+          username: String(p?.username ?? '').trim(),
+        }))
         .filter((p: any) => typeof p.id === 'number' && Number.isFinite(p.id))
         .map((p: any) => {
           const prevRaw = (prevPositions as any)[String(p.id)];
           const nextRaw = (nextPositions as any)[String(p.id)];
-          const prevPos = typeof prevRaw === 'number' ? prevRaw : Number(prevRaw);
-          const nextPos = typeof nextRaw === 'number' ? nextRaw : Number(nextRaw);
+          const prevPos =
+            typeof prevRaw === 'number' ? prevRaw : Number(prevRaw);
+          const nextPos =
+            typeof nextRaw === 'number' ? nextRaw : Number(nextRaw);
           return {
             id: p.id as number,
             username: p.username,
@@ -2154,7 +2296,10 @@ export class GameEngineService {
             nextPos: Number.isFinite(nextPos) ? Math.trunc(nextPos) : null,
           };
         })
-        .filter((p: any) => p.nextPos != null && p.prevPos != null && p.nextPos !== p.prevPos)
+        .filter(
+          (p: any) =>
+            p.nextPos != null && p.prevPos != null && p.nextPos !== p.prevPos,
+        )
         .sort((a: any, b: any) => (a.id as number) - (b.id as number));
 
       if (changed.length === 0) {
@@ -2174,10 +2319,7 @@ export class GameEngineService {
         const descriptionRaw = String(tile.description ?? '').trim();
 
         const caseNumber = idx + 1;
-        const label =
-          labelRaw || titleRaw
-            ? (labelRaw || titleRaw)
-            : '';
+        const label = labelRaw || titleRaw ? labelRaw || titleRaw : '';
         const desc = descriptionRaw ? ` ${descriptionRaw}` : '';
 
         const name = p.username || `joueur ${p.id}`;
@@ -2208,10 +2350,16 @@ export class GameEngineService {
         }
 
         if (label && /^case\\s+\\d+/i.test(label)) {
-          out = this.core.appendLog(out, `${name} arrive sur ${label}.${desc}`.trim());
+          out = this.core.appendLog(
+            out,
+            `${name} arrive sur ${label}.${desc}`.trim(),
+          );
         } else {
           const suffix = label ? ` - ${label}` : '';
-          out = this.core.appendLog(out, `${name} arrive sur case ${caseNumber}${suffix}.${desc}`.trim());
+          out = this.core.appendLog(
+            out,
+            `${name} arrive sur case ${caseNumber}${suffix}.${desc}`.trim(),
+          );
         }
       }
 
@@ -2221,16 +2369,16 @@ export class GameEngineService {
     }
   }
 
-  private appendSkipTurnAnnouncements(
-    state: GameStateEntity,
-  ): GameStateEntity {
+  private appendSkipTurnAnnouncements(state: GameStateEntity): GameStateEntity {
     try {
       const meta: any =
         state?.metadata && typeof state.metadata === 'object'
           ? state.metadata
           : {};
       const turnFlow: any =
-        meta?.turnFlow && typeof meta.turnFlow === 'object' ? meta.turnFlow : {};
+        meta?.turnFlow && typeof meta.turnFlow === 'object'
+          ? meta.turnFlow
+          : {};
       const skippedRaw = turnFlow?.skipped;
       const skipped = Array.isArray(skippedRaw) ? skippedRaw : [];
       if (!skipped.length) {
@@ -2243,8 +2391,7 @@ export class GameEngineService {
         if (id == null) continue;
         const remaining =
           typeof entry?.remainingAfter === 'number' ? entry.remainingAfter : 0;
-        const player =
-          out.players?.find((p: any) => p?.id === id) ?? null;
+        const player = out.players?.find((p: any) => p?.id === id) ?? null;
         const name = this.normalizeUsernameForLog(player?.username);
         const who = name ? name : `joueur ${id}`;
         const suffix = remaining > 0 ? ` (${remaining} restant)` : '';
@@ -2294,7 +2441,9 @@ export class GameEngineService {
     };
   }
 
-  private attachUiDescriptors(state: GameStateWithActions): GameStateWithActions {
+  private attachUiDescriptors(
+    state: GameStateWithActions,
+  ): GameStateWithActions {
     // Les panneaux UI doivent Ļtre entiĶrement dķfinis par les jeux via `extras.ui.panels`.
     // Le moteur n'infĶre plus de panneaux gķnķriques (shopping, position, pollution, etc.).
     // Provide a generic "turn" panel derived from `turn.label` (no game rules).
@@ -2376,7 +2525,8 @@ export class GameEngineService {
           ? (existing as any).message
           : null;
       const hasMessage =
-        typeof existingMessage === 'string' && existingMessage.trim().length > 0;
+        typeof existingMessage === 'string' &&
+        existingMessage.trim().length > 0;
       if (hasMessage) return;
 
       panels[id] = { title, message };
@@ -2415,7 +2565,10 @@ export class GameEngineService {
       upsertPanel(
         'shopping',
         'Shopping list',
-        buildListMessage('Shopping list', (currentPlayerView as any).shoppingList),
+        buildListMessage(
+          'Shopping list',
+          (currentPlayerView as any).shoppingList,
+        ),
       );
       upsertPanel(
         'basket',
@@ -2435,17 +2588,37 @@ export class GameEngineService {
       upsertPanel(
         'position',
         'Position',
-        buildJoinedLinesMessage('Position', (currentPlayerView as any).position),
+        buildJoinedLinesMessage(
+          'Position',
+          (currentPlayerView as any).position,
+        ),
       );
     }
 
-    upsertPanel('score', 'Score', buildListMessage('Score', (extras as any).score));
+    upsertPanel(
+      'score',
+      'Score',
+      buildListMessage('Score', (extras as any).score),
+    );
     upsertPanel('hand', 'Main', buildListMessage('Main', (extras as any).hand));
-    upsertPanel('books', 'Familles', buildListMessage('Familles', (extras as any).books));
+    upsertPanel(
+      'books',
+      'Familles',
+      buildListMessage('Familles', (extras as any).books),
+    );
 
-    if (typeof (metadata as any).pollution === 'number' || typeof (metadata as any).maxPollution === 'number') {
-      const p = typeof (metadata as any).pollution === 'number' ? (metadata as any).pollution : null;
-      const max = typeof (metadata as any).maxPollution === 'number' ? (metadata as any).maxPollution : null;
+    if (
+      typeof (metadata as any).pollution === 'number' ||
+      typeof (metadata as any).maxPollution === 'number'
+    ) {
+      const p =
+        typeof (metadata as any).pollution === 'number'
+          ? (metadata as any).pollution
+          : null;
+      const max =
+        typeof (metadata as any).maxPollution === 'number'
+          ? (metadata as any).maxPollution
+          : null;
 
       let message = 'Pollution: inconnue.';
       if (p !== null && max !== null) message = `Pollution: ${p}/${max}.`;
