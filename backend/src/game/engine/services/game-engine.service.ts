@@ -1674,6 +1674,8 @@ export class GameEngineService {
     if (this.botScheduler.has(key)) return;
 
     const baseDelayMs = this.botSettings.getBotTurnDelayMs();
+    const initialDelayMs = this.botSettings.getBotStartDelayMs();
+    const drawDelayMs = this.botSettings.getBotDrawDelayMs();
     const meta: any =
       state?.metadata && typeof state.metadata === 'object'
         ? state.metadata
@@ -1705,7 +1707,14 @@ export class GameEngineService {
       quizTimerSeconds != null && Number.isFinite(quizTimerSeconds)
         ? Math.max(1, quizTimerSeconds) * 1000
         : null;
-    let delayMs = immediateStart || fastPendingBotAction ? 0 : baseDelayMs;
+    let delayMs = baseDelayMs;
+    if (immediateStart) {
+      delayMs = initialDelayMs;
+    } else if (pendingType === 'draw') {
+      delayMs = drawDelayMs;
+    } else if (fastPendingBotAction) {
+      delayMs = 0;
+    }
     if (isQuizPending && quizTimerMs != null) {
       delayMs = Math.min(delayMs, quizTimerMs);
     }

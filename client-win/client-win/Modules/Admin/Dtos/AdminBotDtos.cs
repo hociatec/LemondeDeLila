@@ -28,4 +28,10 @@ public sealed class AdminBotSettingsDto
 {
     [JsonPropertyName("botTurnDelayMs")]
     public int BotTurnDelayMs { get; set; }
+
+    [JsonPropertyName("botStartDelayMs")]
+    public int BotStartDelayMs { get; set; }
+
+    [JsonPropertyName("botDrawDelayMs")]
+    public int BotDrawDelayMs { get; set; }
 }
