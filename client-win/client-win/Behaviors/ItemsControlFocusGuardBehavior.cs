@@ -82,7 +82,7 @@ public static class ItemsControlFocusGuardBehavior
                     or NotifyCollectionChangedAction.Reset)
                 {
                     sub.ParkedForRefresh = true;
-                    FocusParking.Park(Window.GetWindow(control) ?? Application.Current?.MainWindow);
+                    FocusParking.ForcePark(Window.GetWindow(control) ?? Application.Current?.MainWindow);
                 }
             }
             catch
@@ -137,7 +137,7 @@ public static class ItemsControlFocusGuardBehavior
                         return;
                     }
                     sub.ParkedForRefresh = true;
-                    FocusParking.Park(Window.GetWindow(control) ?? Application.Current?.MainWindow);
+                    FocusParking.ForcePark(Window.GetWindow(control) ?? Application.Current?.MainWindow);
                 }
                 catch
                 {

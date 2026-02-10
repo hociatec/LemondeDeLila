@@ -63,7 +63,6 @@ public partial class CatalogView : UserControl, IInitialFocusTarget
             e.Handled = true;
             var inCategoriesColumn = CategoriesList?.IsKeyboardFocusWithin == true;
             var inSubCategoriesColumn = SubCategoriesList?.IsKeyboardFocusWithin == true;
-            FocusParking.Park();
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
                 try
@@ -148,7 +147,6 @@ public partial class CatalogView : UserControl, IInitialFocusTarget
 	        }
 
 	        e.Handled = true;
-	        FocusParking.Park();
 
 	        // Garantit que la sélection VM est à jour avant activation (évite un "Enter" qui ne fait rien).
 	        if (GamesList?.HasItems == true)
@@ -184,7 +182,6 @@ public partial class CatalogView : UserControl, IInitialFocusTarget
         }
 
 	        e.Handled = true;
-	        FocusParking.Park();
 
 	        if (GamesList?.HasItems == true)
 	        {

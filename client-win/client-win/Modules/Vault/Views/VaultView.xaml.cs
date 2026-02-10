@@ -122,7 +122,6 @@ public partial class VaultView : UserControl, IInitialFocusTarget
         if (e.Key == Key.Escape)
         {
             e.Handled = true;
-            FocusParking.Park();
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
                 try

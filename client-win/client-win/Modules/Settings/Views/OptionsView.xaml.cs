@@ -78,7 +78,6 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
         if (DataContext is OptionsViewModel vm && vm.CancelCommand?.CanExecute(null) == true)
         {
             e.Handled = true;
-            FocusParking.Park(Window.GetWindow(this) ?? Application.Current?.MainWindow);
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
                 try

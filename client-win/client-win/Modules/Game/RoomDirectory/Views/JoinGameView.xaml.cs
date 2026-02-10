@@ -87,7 +87,6 @@ public partial class JoinGameView : UserControl, IInitialFocusTarget
         e.Handled = true;
 
         // IMPORTANT (NVDA): exécuter l'action après l'événement clavier.
-        FocusParking.Park();
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
         {
             try
@@ -387,7 +386,6 @@ public partial class JoinGameView : UserControl, IInitialFocusTarget
 
     private void ExecuteCloseDeferred(JoinGameViewModel vm)
     {
-        FocusParking.Park();
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
         {
             try

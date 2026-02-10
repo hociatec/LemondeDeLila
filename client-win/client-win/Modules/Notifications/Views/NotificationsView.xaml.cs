@@ -79,7 +79,6 @@ public partial class NotificationsView : UserControl, IInitialFocusTarget
         if (e.Key == Key.Escape && DataContext is NotificationsViewModel vm)
         {
             e.Handled = true;
-            FocusParking.Park();
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
                 try

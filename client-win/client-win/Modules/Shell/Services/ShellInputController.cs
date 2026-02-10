@@ -86,9 +86,6 @@ public sealed class ShellInputController
                 return;
             }
 
-            // NVDA: ensure focus is parked on a stable element before swapping the view.
-            // Otherwise the currently focused element can vanish during the shortcut KeyDown and be reported as "indisponible".
-            try { FocusParking.Park(window); } catch { /* best-effort */ }
             var owner = window;
             _ = owner.Dispatcher.BeginInvoke(
                 DispatcherPriority.Background,

@@ -38,7 +38,6 @@ public partial class ChatView : UserControl, IInitialFocusTarget
         if (e.Key == Key.Escape && DataContext is ChatViewModel vm && vm.CloseCommand.CanExecute(null))
         {
             e.Handled = true;
-            FocusParking.Park();
             _ = Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
             {
                 try

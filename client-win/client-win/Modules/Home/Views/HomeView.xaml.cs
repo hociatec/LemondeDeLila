@@ -128,7 +128,6 @@ public partial class HomeView : UserControl, IInitialFocusTarget
             _viewModel.ShowLandingCommand.CanExecute(null))
         {
             e.Handled = true;
-            FocusParking.Park();
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
                 try
@@ -207,7 +206,6 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         // IMPORTANT (NVDA): if navigation happens while the key event is still being processed,
         // the focused button may disappear -> "indisponible". Park focus and defer execution.
         e.Handled = true;
-        FocusParking.Park();
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
         {
             try

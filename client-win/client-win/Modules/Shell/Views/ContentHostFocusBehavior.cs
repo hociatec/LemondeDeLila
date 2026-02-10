@@ -155,7 +155,7 @@ public static class ContentHostFocusBehavior
 
             // NVDA: park focus on a stable element before trying to focus inside the new content.
             // This avoids "indisponible" when the previously focused element disappears during navigation.
-            try { FocusParking.Park(Window.GetWindow(host) ?? Application.Current?.MainWindow); } catch { }
+            try { FocusParking.ParkIfNeeded(Window.GetWindow(host) ?? Application.Current?.MainWindow); } catch { }
 
             // Essai rapide dès que la vue est chargée + essai tardif une fois idle.
             host.Dispatcher.BeginInvoke((Action)(() => TryFocus(host, allowFallback: false)), DispatcherPriority.Loaded);

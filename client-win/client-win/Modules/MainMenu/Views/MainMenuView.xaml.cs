@@ -53,7 +53,6 @@ public partial class MainMenuView : UserControl, IInitialFocusTarget
             }
 
             e.Handled = true;
-            FocusParking.Park();
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
             {
                 try
@@ -91,12 +90,8 @@ public partial class MainMenuView : UserControl, IInitialFocusTarget
         }
         e.Handled = true;
 
-        // IMPORTANT (NVDA): park focus immediately before a potential navigation.
-        // Otherwise the focused ListBoxItem may disappear while still focused -> "indisponible".
-        FocusParking.Park();
-
         // Exécuter l'action après l'événement clavier (navigation potentielle = remplacement de vue).
-        // Évite de manipuler le focus vers un "hôte" intermédiaire (souvent annoncé "indisponible" par NVDA).
+        // NVDA: éviter les stratégies "park focus" locales; le Shell gère la sécurité de focus au moment du swap.
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
         {
             try

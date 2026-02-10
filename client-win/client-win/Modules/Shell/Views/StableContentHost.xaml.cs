@@ -92,7 +92,7 @@ public partial class StableContentHost : UserControl
         _retryRemaining = FocusRetryMaxAttempts;
 
         // Park focus on a stable element before anything is removed.
-        try { FocusParking.Park(Window.GetWindow(this) ?? Application.Current?.MainWindow); } catch { /* ignore */ }
+        try { FocusParking.ParkIfNeeded(Window.GetWindow(this) ?? Application.Current?.MainWindow); } catch { /* ignore */ }
 
         Dispatcher.BeginInvoke((Action)(() => TryFocusAndMaybeFinalize()), DispatcherPriority.Loaded);
         Dispatcher.BeginInvoke((Action)(() => TryFocusAndMaybeFinalize()), DispatcherPriority.ApplicationIdle);
@@ -347,4 +347,3 @@ public partial class StableContentHost : UserControl
         return LogicalTreeHelper.GetParent(current);
     }
 }
-

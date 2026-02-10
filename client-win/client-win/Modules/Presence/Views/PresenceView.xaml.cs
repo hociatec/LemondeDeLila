@@ -76,7 +76,6 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
         if (e.Key == Key.Escape && DataContext is PresenceViewModel vm)
         {
             e.Handled = true;
-            FocusParking.Park();
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
                 try
@@ -100,7 +99,6 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
         if (e.Key == Key.Escape && DataContext is PresenceViewModel vmEsc)
         {
             e.Handled = true;
-            FocusParking.Park();
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
                 try
@@ -131,7 +129,6 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
 
         // IMPORTANT (NVDA): exécuter l'action après l'événement clavier.
         // Sinon l'élément focalisé peut disparaître pendant le KeyDown -> annonce "indisponible".
-        FocusParking.Park();
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
         {
             try

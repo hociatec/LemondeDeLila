@@ -127,7 +127,6 @@ public partial class SocialView : UserControl, IInitialFocusTarget
         }
 
         e.Handled = true;
-        FocusParking.Park();
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
         {
             try

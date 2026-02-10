@@ -40,7 +40,6 @@ public partial class LeaderboardView : UserControl, IInitialFocusTarget
         if (e.Key == Key.Escape && DataContext is LeaderboardViewModel vm)
         {
             e.Handled = true;
-            FocusParking.Park();
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
                 try
@@ -76,7 +75,6 @@ public partial class LeaderboardView : UserControl, IInitialFocusTarget
         e.Handled = true;
 
         // IMPORTANT (NVDA): exécuter l'action après l'événement clavier.
-        FocusParking.Park();
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
         {
             try

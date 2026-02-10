@@ -192,7 +192,6 @@ public partial class MessagingView : UserControl, IInitialFocusTarget
         }
 
         e.Handled = true;
-        FocusParking.Park();
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
         {
             try
@@ -226,8 +225,8 @@ public partial class MessagingView : UserControl, IInitialFocusTarget
     private void ShowScreen(MessagingScreen screen)
     {
         // IMPORTANT (NVDA): before collapsing panels, move focus to a stable element that won't disappear.
-        // Otherwise NVDA may announce "indisponible" when the currently focused control is collapsed.
-        FocusParking.Park();
+        // Otherwise NVDA may announce "indisponible" when the currently focused control becomes invisible.
+        FocusParking.ForcePark();
 
         _currentScreen = screen;
         MenuPanel.Visibility = screen == MessagingScreen.Menu ? Visibility.Visible : Visibility.Collapsed;

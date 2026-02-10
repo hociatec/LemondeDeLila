@@ -92,7 +92,6 @@ public partial class OptionsDialog : Window
         if (DataContext is OptionsViewModel vm && vm.CancelCommand?.CanExecute(null) == true)
         {
             e.Handled = true;
-            FocusParking.Park(this);
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
             {
                 try

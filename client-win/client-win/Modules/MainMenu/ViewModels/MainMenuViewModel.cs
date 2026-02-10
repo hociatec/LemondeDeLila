@@ -193,9 +193,7 @@ public sealed class MainMenuViewModel : ObservableObject
         try
         {
             // IMPORTANT (NVDA): éviter "indisponible" quand une navigation remplace la vue pendant un événement clavier.
-            // On park le focus sur un élément stable (MainWindow.FocusSentinel), puis on décale l'exécution
-            // à l'UI idle/background pour sortir complètement du traitement de l'entrée.
-            try { FocusParking.Park(); } catch { /* ignore */ }
+            // Stratégie: ne pas déplacer le focus localement; sortir du traitement clavier via un passage dispatcher.
             try
             {
                 var dispatcher = Application.Current?.Dispatcher;
