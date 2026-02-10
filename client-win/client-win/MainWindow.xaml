@@ -26,7 +26,7 @@
                 AutomationProperties.AutomationId="FocusSentinel"
                 AutomationProperties.IsOffscreenBehavior="Onscreen"
                 AutomationProperties.Name="{Binding WindowTitle, TargetNullValue=Le Monde de Lila, FallbackValue=Le Monde de Lila}" />
-        <shellViews:StableContentHost x:Name="RootHost"
+        <shellViews:CachedContentHost x:Name="RootHost"
                                       Focusable="True"
                                       KeyboardNavigation.IsTabStop="False"
                                       AutomationProperties.AutomationId="RootHost"

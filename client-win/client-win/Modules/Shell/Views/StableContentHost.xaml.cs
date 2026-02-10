@@ -13,6 +13,7 @@ namespace client_win.Modules.Shell.Views;
 /// This avoids NVDA announcing "indisponible" when focus lands on an element that is removed during a view swap.
 /// </summary>
 public partial class StableContentHost : UserControl
+    , ICurrentContentRootProvider
 {
     public static readonly DependencyProperty CurrentContentProperty =
         DependencyProperty.Register(
