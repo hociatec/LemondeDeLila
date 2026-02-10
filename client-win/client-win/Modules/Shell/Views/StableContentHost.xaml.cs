@@ -35,6 +35,7 @@ public partial class StableContentHost : UserControl
     private int _retryRemaining;
     private int _transitionId;
     private DateTime _transitionStartedUtc;
+    private bool _isTransitioning;
 
     public StableContentHost()
     {
@@ -78,6 +79,8 @@ public partial class StableContentHost : UserControl
 
         // Keep the old view alive behind the new one until focus successfully lands in the new view.
         PreviousContent = oldContent;
+        _isTransitioning = oldContent != null;
+        ApplyPresenterZOrder();
 
         BeginFocusPass();
     }
@@ -90,6 +93,7 @@ public partial class StableContentHost : UserControl
         }
 
         _retryRemaining = FocusRetryMaxAttempts;
+        ApplyPresenterZOrder();
 
         // Park focus on a stable element before anything is removed.
         try { FocusParking.ParkIfNeeded(Window.GetWindow(this) ?? Application.Current?.MainWindow); } catch { /* ignore */ }
@@ -169,6 +173,8 @@ public partial class StableContentHost : UserControl
         var currentRoot = TryGetPresenterRoot(CurrentPresenter);
         if (currentRoot != null && IsFocusWithin(currentRoot))
         {
+            _isTransitioning = false;
+            ApplyPresenterZOrder();
             PreviousContent = null;
             return;
         }
@@ -177,6 +183,8 @@ public partial class StableContentHost : UserControl
         var previousRoot = TryGetPresenterRoot(PreviousPresenter);
         if (previousRoot == null || !IsFocusWithin(previousRoot))
         {
+            _isTransitioning = false;
+            ApplyPresenterZOrder();
             PreviousContent = null;
         }
     }
@@ -211,7 +219,33 @@ public partial class StableContentHost : UserControl
         }
         finally
         {
+            _isTransitioning = false;
+            ApplyPresenterZOrder();
             PreviousContent = null;
+        }
+    }
+
+    private void ApplyPresenterZOrder()
+    {
+        try
+        {
+            // NVDA: if the old focused element becomes fully obscured while still focused,
+            // NVDA can announce "non disponible". Keep the previous view visually on top during
+            // the transition; once focus has moved into the new view, bring the new view to front.
+            if (_isTransitioning && PreviousContent != null)
+            {
+                Panel.SetZIndex(PreviousPresenter, 1);
+                Panel.SetZIndex(CurrentPresenter, 0);
+            }
+            else
+            {
+                Panel.SetZIndex(PreviousPresenter, 0);
+                Panel.SetZIndex(CurrentPresenter, 1);
+            }
+        }
+        catch
+        {
+            // best-effort
         }
     }
 
