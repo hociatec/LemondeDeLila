@@ -8,7 +8,8 @@
              d:DesignHeight="720" d:DesignWidth="1280"
              Loaded="OnLoaded"
              PreviewKeyDown="OnRootKeyDown"
-             KeyboardNavigation.TabNavigation="Continue">
+             KeyboardNavigation.TabNavigation="Cycle"
+             KeyboardNavigation.DirectionalNavigation="Contained">
     <UserControl.Resources>
         <ResourceDictionary>
             <SolidColorBrush x:Key="ShellBackground" Color="#0F1D2D" />
@@ -138,7 +139,10 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource ShellBackground}" KeyboardNavigation.TabNavigation="Continue">
+    <Grid Background="{StaticResource ShellBackground}"
+          FocusManager.IsFocusScope="True"
+          KeyboardNavigation.TabNavigation="Cycle"
+          KeyboardNavigation.DirectionalNavigation="Contained">
         <Grid.RowDefinitions>
             <RowDefinition Height="80" />
             <RowDefinition Height="*" />

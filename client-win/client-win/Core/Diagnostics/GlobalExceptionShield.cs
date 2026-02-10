@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -69,7 +70,18 @@ public static class GlobalExceptionShield
     {
         try
         {
-            HandleException(e.Exception, context: "unhandled.task", mayTerminate: false);
+            // Unobserved task exceptions are typically "fire-and-forget" failures.
+            // Avoid a modal error dialog: publish as Warning, but keep full details in logs/crash files.
+            var aggregate = e.Exception;
+            var root = aggregate is AggregateException agg
+                ? (agg.Flatten().InnerExceptions.FirstOrDefault() ?? aggregate)
+                : aggregate;
+            HandleException(
+                root,
+                context: "unhandled.task",
+                mayTerminate: false,
+                severityOverride: ErrorSeverity.Warning,
+                detailOverride: aggregate.ToString());
         }
         catch
         {
@@ -100,17 +112,33 @@ public static class GlobalExceptionShield
         }
     }
 
-    private static void HandleException(Exception exception, string context, bool mayTerminate)
+    private static void HandleException(
+        Exception exception,
+        string context,
+        bool mayTerminate,
+        ErrorSeverity? severityOverride = null,
+        string? detailOverride = null)
     {
         var message = string.IsNullOrWhiteSpace(exception.Message)
             ? "Erreur inattendue"
             : exception.Message;
 
-        TryWriteCrashTextFiles(exception, context);
+        var severity = severityOverride ?? ErrorSeverity.Error;
+        var detail = detailOverride;
+
+        var fullDetail = detail ?? exception.ToString();
+        TryWriteCrashTextFiles(context, fullDetail);
 
         try
         {
-            Log.Fatal(exception, "Exception non gérée ({Context})", context);
+            if (severity == ErrorSeverity.Warning)
+            {
+                Log.Warning(exception, "Exception non observée ({Context})", context);
+            }
+            else
+            {
+                Log.Fatal(exception, "Exception non gérée ({Context})", context);
+            }
         }
         catch
         {
@@ -121,9 +149,9 @@ public static class GlobalExceptionShield
         {
             _crashReporter?.ReportCrash(exception, new AppError(
                 message,
-                ErrorSeverity.Error,
+                severity,
                 context: context,
-                detail: exception.ToString()));
+                detail: detail ?? exception.ToString()));
         }
         catch
         {
@@ -134,9 +162,9 @@ public static class GlobalExceptionShield
         {
             _errors?.Publish(new AppError(
                 message,
-                ErrorSeverity.Error,
+                severity,
                 context: context,
-                detail: mayTerminate ? "Le runtime a signalé une terminaison imminente." : null));
+                detail: mayTerminate ? "Le runtime a signalé une terminaison imminente." : detail));
         }
         catch
         {
@@ -145,7 +173,15 @@ public static class GlobalExceptionShield
 
         try
         {
-            _announcer?.AnnounceAssertive($"Erreur: {message}");
+            var prefix = severity == ErrorSeverity.Warning ? "Avertissement" : "Erreur";
+            if (severity == ErrorSeverity.Warning)
+            {
+                _announcer?.AnnouncePolite($"{prefix}: {message}");
+            }
+            else
+            {
+                _announcer?.AnnounceAssertive($"{prefix}: {message}");
+            }
         }
         catch
         {
@@ -153,16 +189,22 @@ public static class GlobalExceptionShield
         }
     }
 
-    private static void TryWriteCrashTextFiles(Exception exception, string context)
+    private static void TryWriteCrashTextFiles(string context, string detail)
     {
         try
         {
             var timestamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
             var content =
-                $"[{timestamp}] {context}{Environment.NewLine}{exception}{Environment.NewLine}{Environment.NewLine}";
+                $"[{timestamp}] {context}{Environment.NewLine}{detail}{Environment.NewLine}{Environment.NewLine}";
 
             TryAppend(Path.Combine(Directory.GetCurrentDirectory(), "client", "log", "crash-latest.txt"), content);
             TryAppend(Path.Combine(AppContext.BaseDirectory, "client", "log", "crash-latest.txt"), content);
+            TryAppend(
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "LeMondeDeLila",
+                    "crash-latest.txt"),
+                content);
         }
         catch
         {
@@ -188,4 +230,3 @@ public static class GlobalExceptionShield
         }
     }
 }
-

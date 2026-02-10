@@ -14,6 +14,32 @@ public partial class StatsView : UserControl, IInitialFocusTarget
     public StatsView()
     {
         InitializeComponent();
+        IsVisibleChanged += OnIsVisibleChanged;
+    }
+
+    private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (IsVisible != true)
+        {
+            return;
+        }
+
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            try
+            {
+                if (!IsVisible || IsKeyboardFocusWithin)
+                {
+                    return;
+                }
+
+                FocusWhenContainersGenerated();
+            }
+            catch
+            {
+                // best-effort
+            }
+        }));
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)

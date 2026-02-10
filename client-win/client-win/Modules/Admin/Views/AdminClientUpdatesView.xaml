@@ -68,7 +68,9 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <StackPanel Orientation="Vertical">
+    <StackPanel Orientation="Vertical"
+                KeyboardNavigation.TabNavigation="Local"
+                KeyboardNavigation.DirectionalNavigation="Contained">
         <Border Background="#0E2034" CornerRadius="10" Padding="16" Margin="0,0,0,12">
             <Grid>
                 <Grid.ColumnDefinitions>

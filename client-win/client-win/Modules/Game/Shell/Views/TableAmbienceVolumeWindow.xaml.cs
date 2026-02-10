@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Game.Shell.Views;
 
@@ -59,7 +60,11 @@ public partial class TableAmbienceVolumeWindow : Window
     public static void Show(Window? owner, bool initialEnabled, int initialVolume, Action<bool, int> onSave)
     {
         var w = new TableAmbienceVolumeWindow(initialEnabled, initialVolume, onSave) { Owner = owner };
+        var previousFocus = Keyboard.FocusedElement;
+        FocusParking.Park(owner);
+        NvdaDialogFocus.Configure(w, owner, focusTargetFactory: () => w.VolumeSlider);
         w.ShowDialog();
+        DialogFocusRestorer.Restore(owner, previousFocus);
     }
 
     private void OnCancelClicked(object sender, RoutedEventArgs e)

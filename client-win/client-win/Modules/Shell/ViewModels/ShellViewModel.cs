@@ -69,7 +69,7 @@ public sealed class ShellViewModel : ObservableObject
             _host.CrashReporter);
         _startup = new ShellStartupController(_navigation, _homeViewModel, _host.Configuration, dialogs, _host.Errors);
         _session = new ShellSessionController(_host, _navigation, homeAccessor, notify, presence, audio);
-        _input = new ShellInputController(presence, presenceUi, _navigation, menuRouter);
+        _input = new ShellInputController(presence, presenceUi, _navigation, menuRouter, homeAccessor);
         _close = new ShellCloseCoordinator(dialogs, options, audio);
     }
 

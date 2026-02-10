@@ -23,6 +23,32 @@ public partial class JoinGameView : UserControl, IInitialFocusTarget
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
         Unloaded += OnUnloaded;
+        IsVisibleChanged += OnIsVisibleChanged;
+    }
+
+    private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (IsVisible != true)
+        {
+            return;
+        }
+
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            try
+            {
+                if (!IsVisible || IsKeyboardFocusWithin)
+                {
+                    return;
+                }
+
+                FocusEmptyOrList();
+            }
+            catch
+            {
+                // ignore
+            }
+        }));
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -61,6 +87,18 @@ public partial class JoinGameView : UserControl, IInitialFocusTarget
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (e.Handled)
+        {
+            return;
+        }
+
+        // Keep navigation inside the view (Tab can otherwise escape to the shell host).
+        if (e.Key == Key.Tab)
+        {
+            e.Handled = true;
+            return;
+        }
+
         if (e.Key != Key.Escape)
         {
             return;

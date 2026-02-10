@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.TextPrompts.Views;
 
@@ -27,9 +28,11 @@ public sealed class TextPromptService : ITextPromptService
                 DataContext = vm
             };
 
+            var previousFocus = Keyboard.FocusedElement;
             FocusParking.Park(owner);
             NvdaDialogFocus.Configure(w, owner);
             bool? result = w.ShowDialog();
+            DialogFocusRestorer.Restore(owner, previousFocus);
             if (result != true)
             {
                 return (string?)null;
@@ -74,9 +77,11 @@ public sealed class TextPromptService : ITextPromptService
                 DataContext = vm
             };
 
+            var previousFocus = Keyboard.FocusedElement;
             FocusParking.Park(owner);
             NvdaDialogFocus.Configure(w, owner);
             bool? result = w.ShowDialog();
+            DialogFocusRestorer.Restore(owner, previousFocus);
             if (result != true)
             {
                 return (Dictionary<string, string>?)null;
@@ -138,9 +143,11 @@ public sealed class TextPromptService : ITextPromptService
                 DataContext = vm
             };
 
+            var previousFocus = Keyboard.FocusedElement;
             FocusParking.Park(owner);
             NvdaDialogFocus.Configure(w, owner);
             bool? result = w.ShowDialog();
+            DialogFocusRestorer.Restore(owner, previousFocus);
             if (result != true)
             {
                 return ((string Subject, string Message)?)null;

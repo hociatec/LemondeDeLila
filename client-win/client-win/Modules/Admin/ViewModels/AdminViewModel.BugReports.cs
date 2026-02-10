@@ -129,7 +129,7 @@ public sealed partial class AdminViewModel
         }
 
         SelectedItem = Items.FirstOrDefault();
-        Status = "Entrée : sélectionner. Échap : retour.";
+        SetLiveStatus("Rapports de bug. Flèches : choisir. Entrée : sélectionner. Échap : retour.");
         UpdateFilterVisibility();
         RestoreFocusIfAny();
     }
@@ -172,7 +172,7 @@ public sealed partial class AdminViewModel
         }
 
         SelectedItem = Items.FirstOrDefault();
-        Status = "Entr\u00E9e : ouvrir. \u00C9chap : retour.";
+        SetLiveStatus("Rapports. Liste : flèches puis Entrée. Échap : retour.");
         UpdateFilterVisibility();
         RestoreFocusIfAny();
     }
@@ -288,7 +288,7 @@ public sealed partial class AdminViewModel
             Items.Add(new AdminMenuItem("Passer en: Refus\u00E9", tag: "bugReports.status.refused"));
         }
         SelectedItem = Items.FirstOrDefault();
-        Status = "Entrée : action. Échap : retour.";
+        SetLiveStatus("Rapport de bug. Actions : flèches puis Entrée. Échap : retour.");
         UpdateFilterVisibility();
         RestoreFocusIfAny();
     }
@@ -457,7 +457,7 @@ public sealed partial class AdminViewModel
             Items.Add(new AdminMenuItem("Passer en: Refus\u00E9", tag: "bugReports.status.refused"));
         }
         SelectedItem = Items.FirstOrDefault();
-        Status = "Entrée : action. Échap : retour.";
+        SetLiveStatus("Rapport. Commentaires : actions. Flèches puis Entrée. Échap : retour.");
         UpdateFilterVisibility();
         RestoreFocusIfAny();
     }

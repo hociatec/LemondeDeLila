@@ -8,6 +8,7 @@ export const SOUND_KEYS = [
   'TavernAmbience',
   'TavernOpened',
   'DiceRolled',
+  'DrawCard',
   'ChatMessageSent',
   'ChatMessageReceived',
   'TableChatMessageSent',

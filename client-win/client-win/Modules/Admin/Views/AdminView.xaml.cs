@@ -120,6 +120,20 @@ public partial class AdminView : UserControl, IInitialFocusTarget
         {
             // Dans le menu principal admin, éviter Tab/Maj+Tab qui déplace le focus hors de la liste.
             e.Handled = true;
+            return;
+        }
+
+        var hasAnyInputVisible =
+            vm.IsTextInputVisible ||
+            vm.IsSecondaryInputVisible ||
+            vm.IsThirdInputVisible ||
+            vm.IsFourthInputVisible ||
+            vm.IsFifthInputVisible;
+
+        if (!hasAnyInputVisible && vm.SuppressTabInMenuList)
+        {
+            // Dans les rapports de bug, la navigation se fait à la flèche.
+            e.Handled = true;
         }
     }
 
@@ -146,12 +160,19 @@ public partial class AdminView : UserControl, IInitialFocusTarget
             return;
         }
 
-        if (!vm.IsTextInputVisible &&
-            !vm.IsSecondaryInputVisible &&
-            !vm.IsThirdInputVisible &&
-            !vm.IsFourthInputVisible &&
-            !vm.IsFifthInputVisible)
+        var hasAnyInputVisible =
+            vm.IsTextInputVisible ||
+            vm.IsSecondaryInputVisible ||
+            vm.IsThirdInputVisible ||
+            vm.IsFourthInputVisible ||
+            vm.IsFifthInputVisible;
+
+        if (!hasAnyInputVisible)
         {
+            if (vm.SuppressTabInMenuList)
+            {
+                e.Handled = true;
+            }
             return;
         }
 
@@ -440,6 +461,7 @@ public partial class AdminView : UserControl, IInitialFocusTarget
         if (index >= 0 && ItemsList.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)
         {
             item.Focus();
+            Keyboard.Focus(item);
             return;
         }
 
@@ -452,6 +474,7 @@ public partial class AdminView : UserControl, IInitialFocusTarget
         }
 
         ItemsList.Focus();
+        Keyboard.Focus(ItemsList);
     }
 
     public void RequestInitialFocus()
@@ -465,11 +488,27 @@ public partial class AdminView : UserControl, IInitialFocusTarget
     {
         if (DataContext is AdminViewModel vm && vm.HasDetailSegments && DetailsSegmentsScroll != null)
         {
-            DetailsSegmentsScroll.Focus();
             if (resetCaret)
             {
                 DetailsSegmentsScroll.ScrollToTop();
             }
+
+            // NVDA: préférer un élément texte stable plutôt que le ScrollViewer (sinon silence possible).
+            if (DetailsA11yBox != null)
+            {
+                DetailsA11yBox.Focus();
+                Keyboard.Focus(DetailsA11yBox);
+                if (resetCaret)
+                {
+                    DetailsA11yBox.CaretIndex = 0;
+                    DetailsA11yBox.SelectionStart = 0;
+                    DetailsA11yBox.SelectionLength = 0;
+                    DetailsA11yBox.ScrollToHome();
+                }
+                return;
+            }
+
+            DetailsSegmentsScroll.Focus();
             return;
         }
 

@@ -23,6 +23,29 @@ export class FrousseActionService {
     private readonly core: GameCoreService,
   ) {}
 
+  private advanceTurnWithAnnouncement(state: GameStateEntity): GameStateEntity {
+    const prevPlayerId = state.turn?.currentPlayerId ?? null;
+    const next = this.turns.advanceTurn(state);
+
+    if (String(next.status ?? '').toLowerCase() !== 'started') {
+      return next;
+    }
+
+    const nextPlayerId = next.turn?.currentPlayerId ?? null;
+    if (
+      prevPlayerId == null ||
+      nextPlayerId == null ||
+      prevPlayerId === nextPlayerId
+    ) {
+      return next;
+    }
+
+    return this.core.appendLog(
+      next,
+      `C'est au tour de ${this.playerName(next, nextPlayerId)}.`,
+    );
+  }
+
   applyActions(
     state: GameStateEntity,
     actions: GameSingleActionDto[],
@@ -139,7 +162,7 @@ export class FrousseActionService {
         next,
         `${this.playerName(next, currentId)} passe son tour${suffix}.`,
       );
-      return this.turns.advanceTurn(next);
+      return this.advanceTurnWithAnnouncement(next);
     }
 
     // Blocages (tentatives de sortie).
@@ -173,7 +196,7 @@ export class FrousseActionService {
           next,
           `${this.playerName(next, currentId)} reste bloqué.`,
         );
-        return this.turns.advanceTurn(next);
+        return this.advanceTurnWithAnnouncement(next);
       }
       meta = this.getMeta(next);
       meta = {
@@ -188,7 +211,7 @@ export class FrousseActionService {
         next,
         `${this.playerName(next, currentId)} se libère !`,
       );
-      return this.turns.advanceTurn(next);
+      return this.advanceTurnWithAnnouncement(next);
     }
 
     const roll = this.roll(meta, currentId);
@@ -265,7 +288,7 @@ export class FrousseActionService {
       );
     }
 
-    return this.turns.advanceTurn(next);
+    return this.advanceTurnWithAnnouncement(next);
   }
 
   private handleChooseTarget(
@@ -313,7 +336,7 @@ export class FrousseActionService {
       next,
       `${this.playerName(next, currentId)} échange sa position avec ${this.playerName(next, targetPlayerId)}.`,
     );
-    return this.turns.advanceTurn(next);
+    return this.advanceTurnWithAnnouncement(next);
   }
 
   private handleDraw(state: GameStateEntity): GameStateEntity {
@@ -477,7 +500,7 @@ export class FrousseActionService {
     );
 
     if (ignored) {
-      return this.turns.advanceTurn(next);
+      return this.advanceTurnWithAnnouncement(next);
     }
 
     const applied = this.applyCard(next, playerId, draw.card);
@@ -490,7 +513,7 @@ export class FrousseActionService {
         metadata: { ...(applied.metadata ?? {}), ...appliedMeta },
       };
     }
-    return this.turns.advanceTurn(applied);
+    return this.advanceTurnWithAnnouncement(applied);
   }
 
   private applyCard(
@@ -1078,6 +1101,10 @@ export class FrousseActionService {
       next = this.core.appendLog(
         next,
         `[Frousse Party] Début de partie : ${this.playerName(next, starter.id)} commence.`,
+      );
+      next = this.core.appendLog(
+        next,
+        `C'est au tour de ${this.playerName(next, starter.id)}.`,
       );
     }
     return next;

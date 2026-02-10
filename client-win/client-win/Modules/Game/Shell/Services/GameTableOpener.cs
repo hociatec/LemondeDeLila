@@ -31,6 +31,7 @@ using client_win.Modules.Game.RoomDirectory.ViewModels;
 using client_win.Modules.Vault.Services;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.Catalog.ViewModels;
+using client_win.Modules.MainMenu.ViewModels;
 using client_win.Modules.Vault.ViewModels;
 
 namespace client_win.Modules.Game.Shell.Services;
@@ -186,6 +187,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 connect: ct => _rooms.CreateAndConnectAsync(game.Id, ct),
                 buildGameFromSession: _ => game,
                 isNew: true,
+                silent: false,
                 vaultSnapshotId: null)
             .ConfigureAwait(true);
     }
@@ -497,6 +499,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         categories: Array.Empty<string>());
                 },
                 isNew: false,
+                silent: silent,
                 vaultSnapshotId: vaultSnapshotId)
             .ConfigureAwait(true);
     }
@@ -569,6 +572,7 @@ public sealed class GameTableOpener : IGameTableOpener
         Func<CancellationToken, Task<RoomSession>> connect,
         Func<RoomSession, CatalogGame> buildGameFromSession,
         bool isNew,
+        bool silent,
         string? vaultSnapshotId)
     {
         var dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
@@ -581,15 +585,21 @@ public sealed class GameTableOpener : IGameTableOpener
         var isExiting = 0;
         var playedEarlyOpenSound = 0;
 
-        // UX: the first table creation can feel "silent" while the first network/session handshake happens.
-        // For new tables, play the open one-shot immediately (best-effort) so the user gets instant feedback.
+        // Warm-up the exit sound immediately so quitting right after opening doesn't feel laggy.
+        // IMPORTANT: do it synchronously on the audio dispatcher (no queued BeginInvoke), otherwise a very fast quit
+        // can happen before the preload runs.
+        try { _sounds.PreloadImmediate(SoundId.RoomExit, warmUp: true); } catch { /* ignore */ }
+
+        // UX: joining/restoring a table can feel "silent" while the first network/session handshake happens.
+        // Play the open/join one-shot immediately (best-effort) so the user gets instant feedback.
         // This runs outside the UI dispatcher to avoid races (fast connect) that can trigger double-play/cutoffs.
-        if (isNew)
+        if (!silent)
         {
+            var earlySound = isNew ? SoundId.RoomOpened : SoundId.RoomJoined;
             try
             {
-                _sounds.Preload(SoundId.RoomOpened, warmUp: true);
-                _sounds.Play(SoundId.RoomOpened);
+                _sounds.Preload(earlySound, warmUp: true);
+                _sounds.Play(earlySound);
                 Interlocked.Exchange(ref playedEarlyOpenSound, 1);
             }
             catch
@@ -651,12 +661,19 @@ public sealed class GameTableOpener : IGameTableOpener
                     session = null;
                 }
 
-                try { _sounds.Play(SoundId.RoomExit); } catch { }
+                try
+                {
+                    _sounds.PreloadImmediate(SoundId.RoomExit, warmUp: true);
+                    _sounds.Play(SoundId.RoomExit);
+                }
+                catch { }
                 _ = _presence.SetHomeAsync();
 
                 object BuildTavernFallback()
                 {
-                    var safeReturn = returnContent is GameRoomViewModel ? null : returnContent;
+                    // Après une sortie de table, la taverne est un "hub" et ne doit pas servir de back-stack vers
+                    // des vues modales (ex: Mon coffre fort). Fermer la taverne doit ramener au menu principal.
+                    var safeReturn = returnContent is MainMenuViewModel ? returnContent : null;
 
                     CatalogViewModel? catalogVm = null;
                     catalogVm = new CatalogViewModel(

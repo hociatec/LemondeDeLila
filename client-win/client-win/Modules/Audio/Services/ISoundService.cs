@@ -20,5 +20,6 @@ public interface ISoundService
     Task WaitForSoundToEndAsync(SoundId sound, TimeSpan timeout, CancellationToken cancellationToken = default);
     Task WarmUpAsync(SoundId sound, CancellationToken cancellationToken = default);
     void Preload(SoundId sound, bool warmUp = false);
+    void PreloadImmediate(SoundId sound, bool warmUp = false);
     void PreloadAll();
 }

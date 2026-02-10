@@ -1,9 +1,12 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Updates;
 using Microsoft.Win32;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Admin.ViewModels;
 
@@ -203,7 +206,11 @@ public sealed partial class AdminViewModel
                             CheckFileExists = true,
                             Multiselect = false
                         };
-                        if (ofd.ShowDialog() == true)
+                        var owner = Application.Current?.MainWindow;
+                        var previousFocus = Keyboard.FocusedElement;
+                        var selected = ofd.ShowDialog(owner) == true;
+                        DialogFocusRestorer.Restore(owner, previousFocus);
+                        if (selected)
                         {
                             var settings = UpdatePublisherLocalSettings.Load() with { ProjectPath = ofd.FileName };
                             settings.Save();

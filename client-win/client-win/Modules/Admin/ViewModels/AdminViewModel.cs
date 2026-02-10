@@ -226,6 +226,18 @@ public sealed partial class AdminViewModel : ObservableObject
         private set => SetProperty(ref _status, value);
     }
 
+    private bool _statusLiveToggle;
+
+    private void SetLiveStatus(string? status)
+    {
+        var text = (status ?? string.Empty).Trim();
+        // Forcer une mise à jour de la LiveRegion même si le texte est identique
+        // (NVDA peut rester silencieux sur certains changements de focus programmatiques).
+        _statusLiveToggle = !_statusLiveToggle;
+        var unique = _statusLiveToggle ? $"{text}\u2060" : $"{text}\u200B";
+        Status = unique;
+    }
+
     private bool _suppressDetailsSegments;
     private IReadOnlyList<string>? _detailsSegments;
 
@@ -448,6 +460,16 @@ public sealed partial class AdminViewModel : ObservableObject
     public bool ShowLogControls => _page == AdminPage.Logs;
     public bool ShowClientUpdatesPanel => _page == AdminPage.ClientUpdates;
     public bool ShowPermissionMatrix => IsAdditionalPermissionsVisible;
+
+    // Accessibilité (NVDA):
+    // Dans les rapports de bug, la navigation se fait à la flèche (liste) + Entrée (action).
+    // Tab/Maj+Tab peut faire "sortir" le focus de la liste et provoquer des lectures incohérentes ou un silence.
+    public bool SuppressTabInMenuList =>
+        _page is AdminPage.BugReports
+            or AdminPage.BugReportsStatusReports
+            or AdminPage.BugReportDetails
+            or AdminPage.BugReportConsult
+            or AdminPage.BugReportComments;
 
     public IEnumerable<PermissionModuleState> PermissionModules => _permissionModules;
 

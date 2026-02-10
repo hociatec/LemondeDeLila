@@ -5,7 +5,10 @@
         WindowStartupLocation="CenterOwner"
         Background="#0B1523"
         Loaded="OnLoaded"
-        PreviewKeyDown="OnPreviewKeyDown">
+        PreviewKeyDown="OnPreviewKeyDown"
+        FocusManager.IsFocusScope="True"
+        KeyboardNavigation.TabNavigation="Cycle"
+        KeyboardNavigation.DirectionalNavigation="Contained">
     <Window.Resources>
         <Style TargetType="CheckBox">
             <Setter Property="Foreground" Value="White" />
@@ -53,7 +56,10 @@
         </Style>
     </Window.Resources>
 
-    <Grid Margin="16">
+    <Grid Margin="16"
+          FocusManager.IsFocusScope="True"
+          KeyboardNavigation.TabNavigation="Cycle"
+          KeyboardNavigation.DirectionalNavigation="Contained">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

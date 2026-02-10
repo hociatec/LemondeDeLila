@@ -162,7 +162,10 @@ internal sealed class GamePlayRealtimeController
             if (string.Equals(previousStatus, "started", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase))
             {
-                _requestFocus();
+                // IMPORTANT (NVDA):
+                // Le changement de focus peut interrompre la lecture des dernières lignes d'historique.
+                // On diffère légèrement la demande de focus pour laisser les messages du tour/fin être annoncés d'abord.
+                _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
             }
 
             _viewerPlayerId = viewerId;

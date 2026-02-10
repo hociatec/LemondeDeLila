@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ public sealed class VaultViewModel : ObservableObject, IDisposable
     private readonly object _returnContent;
     private bool _isBusy;
     private bool _initialized;
+    private bool _hasLoaded;
     private string _status = "Chargement du coffre fort…";
     private VaultSnapshotItem? _selected;
 
@@ -43,6 +45,12 @@ public sealed class VaultViewModel : ObservableObject, IDisposable
         DeleteCommand = new AsyncRelayCommand(DeleteAsync, () => !IsBusy && Selected != null);
         CloseCommand = new RelayCommand(_close);
 
+        Items.CollectionChanged += OnItemsChanged;
+    }
+
+    private void OnItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        try { OnPropertyChanged(nameof(ShowEmpty)); } catch { /* ignore */ }
     }
 
     // Called by the view once it is visible: ensures we don't trigger network calls before the UI is shown.
@@ -58,6 +66,20 @@ public sealed class VaultViewModel : ObservableObject, IDisposable
     }
 
     public ObservableCollection<VaultSnapshotItem> Items { get; } = new();
+
+    public bool HasLoaded
+    {
+        get => _hasLoaded;
+        private set
+        {
+            if (SetProperty(ref _hasLoaded, value))
+            {
+                OnPropertyChanged(nameof(ShowEmpty));
+            }
+        }
+    }
+
+    public bool ShowEmpty => HasLoaded && !IsBusy && Items.Count == 0;
 
     public VaultSnapshotItem? Selected
     {
@@ -87,6 +109,7 @@ public sealed class VaultViewModel : ObservableObject, IDisposable
             {
                 (RestoreCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
                 (DeleteCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+                OnPropertyChanged(nameof(ShowEmpty));
             }
         }
     }
@@ -125,6 +148,7 @@ public sealed class VaultViewModel : ObservableObject, IDisposable
         finally
         {
             IsBusy = false;
+            HasLoaded = true;
         }
     }
 

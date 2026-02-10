@@ -6,7 +6,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using client_win.Modules.Shell.Services;
 
@@ -36,10 +35,9 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
     private readonly Dictionary<object, Entry> _entries = new(ReferenceEqualityComparer.Instance);
     private Entry? _current;
     private Entry? _previous;
+    private readonly ConditionalWeakTable<object, WeakReference<IInputElement>> _lastFocusByContent = new();
     private int _transitionId;
     private DateTime _transitionStartedUtc;
-    private int _fadeOutStartedForTransitionId;
-    private Entry? _fadeOutEntry;
 
     private const int FocusRetryMaxAttempts = 24;
     private static readonly TimeSpan FocusRetryInterval = TimeSpan.FromMilliseconds(125);
@@ -47,12 +45,23 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
     private int _retryRemaining;
 
     private const int MaxCacheEntries = 10;
-    private static readonly TimeSpan VisualTransitionDuration = TimeSpan.FromMilliseconds(160);
 
     public CachedContentHost()
     {
         InitializeComponent();
         Loaded += (_, _) => BeginFocusPass();
+
+        try
+        {
+            // Memorize the last focused element per cached content.
+            // This improves "Escape -> back" UX: when returning to a previous view instance,
+            // restore focus exactly where the user left off (instead of forcing initial focus).
+            AddHandler(Keyboard.GotKeyboardFocusEvent, new KeyboardFocusChangedEventHandler(OnGotKeyboardFocus), handledEventsToo: true);
+        }
+        catch
+        {
+            // best-effort
+        }
     }
 
     public object? CurrentContent
@@ -74,8 +83,6 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
     {
         _transitionId = unchecked(_transitionId + 1);
         _transitionStartedUtc = DateTime.UtcNow;
-        _fadeOutStartedForTransitionId = 0;
-        _fadeOutEntry = null;
 
         _previous = _current;
         _current = newContent == null ? null : GetOrCreateEntry(newContent);
@@ -137,8 +144,6 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
     {
         foreach (var kv in _entries.Values)
         {
-            try { kv.Presenter.BeginAnimation(UIElement.OpacityProperty, null); } catch { /* ignore */ }
-            kv.Presenter.Opacity = 1;
             kv.Presenter.Visibility = Visibility.Collapsed;
             kv.Presenter.IsHitTestVisible = false;
         }
@@ -184,7 +189,8 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
             Panel.SetZIndex(_current!.Presenter, 1);
             Panel.SetZIndex(_previous.Presenter, 0);
             _previous.Presenter.IsHitTestVisible = false;
-            BeginFadeOutAndDropPrevious(_transitionId, _previous);
+            _previous = null;
+            EvictIfNeeded();
             return;
         }
 
@@ -198,78 +204,7 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
             }
             Panel.SetZIndex(_previous.Presenter, 0);
             _previous.Presenter.IsHitTestVisible = false;
-            BeginFadeOutAndDropPrevious(_transitionId, _previous);
-        }
-    }
-
-    private void BeginFadeOutAndDropPrevious(int transitionId, Entry previous)
-    {
-        if (_fadeOutStartedForTransitionId == transitionId && ReferenceEquals(_fadeOutEntry, previous))
-        {
-            return;
-        }
-
-        _fadeOutStartedForTransitionId = transitionId;
-        _fadeOutEntry = previous;
-
-        try
-        {
-            previous.Presenter.BeginAnimation(UIElement.OpacityProperty, null);
-            var anim = new DoubleAnimation
-            {
-                From = 1,
-                To = 0,
-                Duration = new Duration(VisualTransitionDuration),
-                FillBehavior = FillBehavior.Stop
-            };
-            anim.Completed += (_, _) =>
-            {
-                if (_transitionId != transitionId)
-                {
-                    return;
-                }
-                if (_previous == null || !ReferenceEquals(_previous, previous))
-                {
-                    return;
-                }
-
-                try
-                {
-                    previous.Presenter.BeginAnimation(UIElement.OpacityProperty, null);
-                    previous.Presenter.Opacity = 1;
-                    previous.Presenter.Visibility = Visibility.Collapsed;
-                    previous.Presenter.IsHitTestVisible = false;
-                }
-                catch
-                {
-                    // ignore
-                }
-
-                _previous = null;
-                _fadeOutEntry = null;
-                _fadeOutStartedForTransitionId = 0;
-                EvictIfNeeded();
-            };
-
-            previous.Presenter.BeginAnimation(UIElement.OpacityProperty, anim, HandoffBehavior.SnapshotAndReplace);
-        }
-        catch
-        {
-            try
-            {
-                previous.Presenter.BeginAnimation(UIElement.OpacityProperty, null);
-                previous.Presenter.Opacity = 1;
-                previous.Presenter.Visibility = Visibility.Collapsed;
-                previous.Presenter.IsHitTestVisible = false;
-            }
-            catch
-            {
-                // ignore
-            }
-
             _previous = null;
-            _fadeOutEntry = null;
-            _fadeOutStartedForTransitionId = 0;
             EvictIfNeeded();
         }
     }
@@ -284,7 +219,25 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         _retryRemaining = FocusRetryMaxAttempts;
 
         // Park focus on a stable element before anything is removed.
-        try { FocusParking.ParkIfNeeded(Window.GetWindow(this) ?? Application.Current?.MainWindow); } catch { /* ignore */ }
+        // IMPORTANT (NVDA): when a "previous" view remains temporarily visible (focus-safety transition),
+        // we must move keyboard focus off the old view, otherwise it can keep receiving input (Enter/Tab/etc)
+        // and the transition may never finalize.
+        try
+        {
+            var win = Window.GetWindow(this) ?? Application.Current?.MainWindow;
+            if (_previous != null)
+            {
+                FocusParking.ForcePark(win);
+            }
+            else
+            {
+                FocusParking.ParkIfNeeded(win);
+            }
+        }
+        catch
+        {
+            /* ignore */
+        }
 
         Dispatcher.BeginInvoke((Action)(() => TryFocusAndMaybeFinalize()), DispatcherPriority.Loaded);
         Dispatcher.BeginInvoke((Action)(() => TryFocusAndMaybeFinalize()), DispatcherPriority.ApplicationIdle);
@@ -403,6 +356,14 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
             return false;
         }
 
+        // If we have a remembered focus target for this content, restore it first.
+        // This is especially important for "back" navigation, where the user expects to land
+        // on the previous selected item / input.
+        if (!IsFocusWithin(root) && TryRestoreLastFocus(_current.Content, root))
+        {
+            return true;
+        }
+
         if (root is IInitialFocusTarget focusTarget)
         {
             if (!IsFocusWithin(root))
@@ -425,29 +386,128 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         return false;
     }
 
+    private void OnGotKeyboardFocus(object? sender, KeyboardFocusChangedEventArgs e)
+    {
+        try
+        {
+            if (_current == null)
+            {
+                return;
+            }
+
+            if (e.NewFocus is not DependencyObject focused)
+            {
+                return;
+            }
+
+            var root = TryGetPresenterRoot(_current.Presenter);
+            if (root == null)
+            {
+                return;
+            }
+
+            if (!IsDescendantOrSelf(focused, root))
+            {
+                return;
+            }
+
+            if (e.NewFocus is not IInputElement input)
+            {
+                return;
+            }
+
+            // Avoid storing focus on the host itself/sentinels.
+            if (focused is FrameworkElement fe)
+            {
+                if (string.Equals(fe.Name, "RootHost", StringComparison.Ordinal) ||
+                    string.Equals(fe.Name, "FocusSentinel", StringComparison.Ordinal))
+                {
+                    return;
+                }
+            }
+
+            _lastFocusByContent.Remove(_current.Content);
+            _lastFocusByContent.Add(_current.Content, new WeakReference<IInputElement>(input));
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    private bool TryRestoreLastFocus(object content, DependencyObject expectedRoot)
+    {
+        try
+        {
+            if (!_lastFocusByContent.TryGetValue(content, out var weak) || weak == null)
+            {
+                return false;
+            }
+
+            if (!weak.TryGetTarget(out var target) || target == null)
+            {
+                return false;
+            }
+
+            if (target is not DependencyObject dep)
+            {
+                return false;
+            }
+
+            if (PresentationSource.FromDependencyObject(dep) == null)
+            {
+                return false;
+            }
+
+            if (!IsDescendantOrSelf(dep, expectedRoot))
+            {
+                return false;
+            }
+
+            if (target is UIElement ui)
+            {
+                if (!ui.IsVisible || !ui.IsEnabled)
+                {
+                    return false;
+                }
+                try { ui.Focus(); } catch { /* ignore */ }
+            }
+
+            try { Keyboard.Focus(target); } catch { /* ignore */ }
+            return IsFocusWithin(expectedRoot);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool IsDescendantOrSelf(DependencyObject child, DependencyObject root)
+    {
+        for (DependencyObject? current = child; current != null; current = GetParent(current))
+        {
+            if (ReferenceEquals(current, root))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void EvictIfNeeded()
     {
         try
         {
-            var protectedContents = new HashSet<object>(ReferenceEqualityComparer.Instance);
-            if (_current != null) protectedContents.Add(_current.Content);
-            if (_previous != null) protectedContents.Add(_previous.Content);
-
-            // Never retain ephemeral views: they are meant to be created on demand and disposed by their onClose handlers.
-            foreach (var candidate in _entries.Values
-                         .Where(e => !e.Cacheable && !protectedContents.Contains(e.Content))
-                         .ToArray())
-            {
-                HostGrid.Children.Remove(candidate.Presenter);
-                _entries.Remove(candidate.Content);
-            }
-
             // Do not evict while an entry is still the previous visible presenter.
             var count = _entries.Count(e => e.Value.Cacheable);
             if (count <= MaxCacheEntries)
             {
                 return;
             }
+
+            var protectedContents = new HashSet<object>(ReferenceEqualityComparer.Instance);
+            if (_current != null) protectedContents.Add(_current.Content);
+            if (_previous != null) protectedContents.Add(_previous.Content);
 
             foreach (var candidate in _entries.Values
                          .Where(e => e.Cacheable && !protectedContents.Contains(e.Content))

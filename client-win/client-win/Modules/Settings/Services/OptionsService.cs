@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using client_win.Core.Settings;
 using client_win.Modules.Config;
 using client_win.Modules.Settings.Models;
@@ -158,7 +159,9 @@ public sealed class OptionsService : IOptionsService
 
         dialog.DataContext = vm;
         dialog.Owner = Application.Current?.MainWindow;
+        var previousFocus = Keyboard.FocusedElement;
         dialog.ShowDialog();
+        DialogFocusRestorer.Restore(dialog.Owner, previousFocus);
 
         if (!tcs.Task.IsCompleted)
         {

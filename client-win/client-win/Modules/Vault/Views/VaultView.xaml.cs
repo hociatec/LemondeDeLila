@@ -17,6 +17,32 @@ public partial class VaultView : UserControl, IInitialFocusTarget
     public VaultView()
     {
         InitializeComponent();
+        IsVisibleChanged += OnIsVisibleChanged;
+    }
+
+    private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (IsVisible != true)
+        {
+            return;
+        }
+
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            try
+            {
+                if (!IsVisible || IsKeyboardFocusWithin)
+                {
+                    return;
+                }
+
+                RequestInitialFocus();
+            }
+            catch
+            {
+                // best-effort
+            }
+        }));
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -56,6 +82,13 @@ public partial class VaultView : UserControl, IInitialFocusTarget
         {
             try
             {
+                if (EmptyText?.IsVisible == true)
+                {
+                    EmptyText.Focus();
+                    Keyboard.Focus(EmptyText);
+                    return;
+                }
+
                 if (ItemsList?.HasItems == true)
                 {
                     var targetIndex = ItemsList.SelectedIndex >= 0 ? ItemsList.SelectedIndex : 0;
@@ -116,6 +149,22 @@ public partial class VaultView : UserControl, IInitialFocusTarget
     {
         if (DataContext is not VaultViewModel vm)
         {
+            return;
+        }
+
+        // Keep navigation inside the view (Tab can otherwise escape to the shell host).
+        if (e.Key == Key.Tab)
+        {
+            e.Handled = true;
+            return;
+        }
+
+        // When the list is empty, arrow keys can escape focus to the shell host depending on where focus is parked.
+        // Swallow them so the user stays in the vault and Escape remains the way out.
+        if (ItemsList?.HasItems != true &&
+            e.Key is Key.Up or Key.Down or Key.Left or Key.Right or Key.Home or Key.End or Key.PageUp or Key.PageDown)
+        {
+            e.Handled = true;
             return;
         }
 
@@ -205,7 +254,19 @@ public partial class VaultView : UserControl, IInitialFocusTarget
             return;
         }
 
-        // Route through the same handler to keep behavior consistent.
+        // Escape must work even if focus is temporarily parked on a stable shell element.
+        if (e.Key == Key.Escape)
+        {
+            OnPreviewKeyDown(this, e);
+            return;
+        }
+
+        // Other actions (Enter/Delete) must never fire unless the user is actually in the vault UI.
+        if (!IsKeyboardFocusWithin)
+        {
+            return;
+        }
+
         OnPreviewKeyDown(this, e);
     }
 }

@@ -11,7 +11,12 @@
              PreviewKeyDown="OnPreviewKeyDown"
              AutomationProperties.Name="Mon coffre fort"
              AutomationProperties.HelpText="Mon coffre fort.">
-    <Grid Background="#0F1D2D" Margin="20">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </UserControl.Resources>
+    <Grid Background="#0F1D2D" Margin="20"
+          KeyboardNavigation.TabNavigation="Cycle"
+          KeyboardNavigation.ControlTabNavigation="Cycle">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -46,6 +51,29 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
+
+                <!-- Empty state: keep focus inside the view when there are no saved tables -->
+                <TextBlock x:Name="EmptyText"
+                           Grid.Row="0"
+                           Text="Aucune table sauvegardée."
+                           Foreground="#9CB2D1"
+                           FontSize="16"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           TextAlignment="Center"
+                           Focusable="True"
+                           KeyboardNavigation.IsTabStop="True">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ShowEmpty}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
             </Grid>
         </Border>
 

@@ -22,10 +22,46 @@ public partial class CatalogView : UserControl, IInitialFocusTarget
     private const double CatalogLayoutMediumBreakpoint = 1300;
     private const double CatalogLayoutNarrowBreakpoint = 980;
     private CatalogLayoutMode _layoutMode = CatalogLayoutMode.Wide;
+    private int _enterFromCategoriesRequestId;
 
     public CatalogView()
     {
         InitializeComponent();
+
+        // With CachedContentHost, views can be hidden/shown without being unloaded/reloaded.
+        // Ensure we restore a usable keyboard focus when the tavern becomes visible again (e.g. after Vault/JoinGame).
+        IsVisibleChanged += OnIsVisibleChanged;
+    }
+
+    internal bool IsCategoriesColumnFocused => CategoriesList?.IsKeyboardFocusWithin == true;
+
+    internal bool IsSubCategoriesColumnFocused => SubCategoriesList?.IsKeyboardFocusWithin == true;
+
+    internal void FocusAfterEscapeFromShell(CatalogEscapeResult result) => FocusAfterEscape(result);
+
+    private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (IsVisible != true)
+        {
+            return;
+        }
+
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            try
+            {
+                if (!IsVisible || IsKeyboardFocusWithin)
+                {
+                    return;
+                }
+
+                FocusWhenContainersGenerated(CategoriesList);
+            }
+            catch
+            {
+                // best-effort
+            }
+        }));
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -85,6 +121,42 @@ public partial class CatalogView : UserControl, IInitialFocusTarget
         }
     }
 
+    private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Handled)
+        {
+            return;
+        }
+
+        if (e.Key != Key.Escape || DataContext is not CatalogViewModel vm)
+        {
+            return;
+        }
+
+        // Preview => fiable même si un contrôle enfant absorbe KeyDown.
+        e.Handled = true;
+        var inCategoriesColumn = CategoriesList?.IsKeyboardFocusWithin == true;
+        var inSubCategoriesColumn = SubCategoriesList?.IsKeyboardFocusWithin == true;
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            try
+            {
+                var result = vm.HandleEscape(inCategoriesColumn, inSubCategoriesColumn);
+                if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
+                {
+                    _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+                    {
+                        FocusAfterEscape(result);
+                    }));
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+        }));
+    }
+
     private void OnCategoriesKeyDown(object sender, KeyEventArgs e)
     {
         if ((e.Key != Key.Enter && e.Key != Key.Return) || DataContext is not CatalogViewModel vm)
@@ -99,6 +171,50 @@ public partial class CatalogView : UserControl, IInitialFocusTarget
         }
 
         // Force propagation vers sous-catégories ou jeux.
+        // If the user presses Enter quickly after changing selection, subcategories/games may not be populated yet
+        // (they are updated on the dispatcher). Retry briefly so Enter doesn't feel like a no-op.
+        if (SubCategoriesList?.HasItems != true && GamesList?.HasItems != true)
+        {
+            e.Handled = true;
+            var requestId = unchecked(++_enterFromCategoriesRequestId);
+
+            void TryFocusNext(int attemptsRemaining)
+            {
+                if (requestId != _enterFromCategoriesRequestId)
+                {
+                    return;
+                }
+
+                if (SubCategoriesList?.HasItems == true)
+                {
+                    SubCategoriesList.SelectedIndex = SubCategoriesList.SelectedIndex >= 0 ? SubCategoriesList.SelectedIndex : 0;
+                    vm.SelectedSubShelf = SubCategoriesList.SelectedItem as Modules.Catalog.Models.CatalogCategory;
+                    FocusFirstItem(SubCategoriesList);
+                    return;
+                }
+
+                if (GamesList?.HasItems == true)
+                {
+                    GamesList.SelectedIndex = GamesList.SelectedIndex >= 0 ? GamesList.SelectedIndex : 0;
+                    vm.SelectedGame = GamesList.SelectedItem as Modules.Catalog.Models.CatalogGame;
+                    FocusFirstItem(GamesList);
+                    return;
+                }
+
+                if (attemptsRemaining <= 0)
+                {
+                    return;
+                }
+
+                _ = Dispatcher.BeginInvoke(
+                    DispatcherPriority.Background,
+                    new Action(() => TryFocusNext(attemptsRemaining - 1)));
+            }
+
+            TryFocusNext(attemptsRemaining: 10);
+            return;
+        }
+
         if (SubCategoriesList?.HasItems == true)
         {
             SubCategoriesList.SelectedIndex = SubCategoriesList.SelectedIndex >= 0 ? SubCategoriesList.SelectedIndex : 0;

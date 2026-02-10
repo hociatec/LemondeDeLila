@@ -113,9 +113,11 @@ public sealed class GameActionMenuWindow : Window
         }
 
         var w = new GameActionMenuWindow(title, filtered) { Owner = owner };
+        var previousFocus = Keyboard.FocusedElement;
         FocusParking.Park(owner);
         NvdaDialogFocus.Configure(w, owner);
         w.ShowDialog();
+        DialogFocusRestorer.Restore(owner, previousFocus);
         return true;
     }
 

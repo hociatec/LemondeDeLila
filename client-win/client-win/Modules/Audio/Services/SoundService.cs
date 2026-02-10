@@ -749,6 +749,140 @@ public sealed class SoundService : ISoundService, IDisposable
         }
     }
 
+    public void PreloadImmediate(SoundId sound, bool warmUp = false)
+    {
+        if (!_sounds.TryGetValue(sound, out var entry))
+        {
+            return;
+        }
+
+        var warmUpSignaled = false;
+        void SignalWarmUpCompletion()
+        {
+            if (!warmUp || warmUpSignaled)
+            {
+                return;
+            }
+            warmUpSignaled = true;
+            CompleteWarmUp(sound);
+        }
+
+        var filePath = ResolveFilePath(sound, entry);
+        if (!File.Exists(filePath))
+        {
+            _logger.LogDebug("Sound file missing: {Path}", filePath);
+            SignalWarmUpCompletion();
+            return;
+        }
+
+        void PreloadNowOnUiThread()
+        {
+            try
+            {
+                MediaPlayer player;
+                int generationSnapshot;
+                lock (_gate)
+                {
+                    EnsurePlayerLoaded(sound, filePath, canInterruptPlayback: false);
+                    player = _players[sound];
+                    _playGeneration.TryGetValue(sound, out generationSnapshot);
+                }
+
+                if (!warmUp)
+                {
+                    return;
+                }
+
+                void DoWarmUp()
+                {
+                    try
+                    {
+                        player.IsMuted = true;
+                        player.Volume = 0;
+                        player.Play();
+                        player.Stop();
+                        player.Position = TimeSpan.Zero;
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                    finally
+                    {
+                        SignalWarmUpCompletion();
+                    }
+                }
+
+                if (_opened.Contains(sound))
+                {
+                    RecordDurationIfKnown(sound, player);
+                    try
+                    {
+                        lock (_gate)
+                        {
+                            if (_playEndSignals.ContainsKey(sound) || _looping.Contains(sound))
+                            {
+                                SignalWarmUpCompletion();
+                                return;
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+
+                    DoWarmUp();
+                    return;
+                }
+
+                EventHandler? handler = null;
+                handler = (_, _) =>
+                {
+                    try
+                    {
+                        // If a newer player was created, ignore this callback.
+                        lock (_gate)
+                        {
+                            if (!_players.TryGetValue(sound, out var current) || !ReferenceEquals(current, player))
+                            {
+                                return;
+                            }
+                            _playGeneration.TryGetValue(sound, out var gen);
+                            if (gen != generationSnapshot)
+                            {
+                                return;
+                            }
+                        }
+
+                        player.MediaOpened -= handler;
+                        DoWarmUp();
+                    }
+                    catch
+                    {
+                        try { player.MediaOpened -= handler; } catch { /* ignore */ }
+                        SignalWarmUpCompletion();
+                    }
+                };
+
+                player.MediaOpened += handler;
+            }
+            catch
+            {
+                SignalWarmUpCompletion();
+            }
+        }
+
+        if (_dispatcher.CheckAccess())
+        {
+            PreloadNowOnUiThread();
+        }
+        else
+        {
+            _dispatcher.Invoke((Action)PreloadNowOnUiThread, DispatcherPriority.Send);
+        }
+    }
+
     public void Play(SoundId sound)
     {
         if (!_sounds.TryGetValue(sound, out var entry))

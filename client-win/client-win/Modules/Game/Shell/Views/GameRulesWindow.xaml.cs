@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Input;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Game.Shell.Views;
 
@@ -32,7 +33,11 @@ public partial class GameRulesWindow : Window
     public static void Show(Window? owner, string title, string rules)
     {
         var w = new GameRulesWindow(title, rules) { Owner = owner };
+        var previousFocus = Keyboard.FocusedElement;
+        FocusParking.Park(owner);
+        NvdaDialogFocus.Configure(w, owner, focusTargetFactory: () => w.RulesEditor);
         w.ShowDialog();
+        DialogFocusRestorer.Restore(owner, previousFocus);
     }
 
     private void OnCloseClicked(object sender, RoutedEventArgs e)

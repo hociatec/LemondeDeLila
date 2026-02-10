@@ -67,6 +67,15 @@ public sealed class RoomSession : IAsyncDisposable
     public event Action<string>? Left;
     public event Action<WebSocketState>? ConnectionStateChanged;
 
+    public Task RequestStateRefreshAsync(bool force = false)
+    {
+        if (force)
+        {
+            _lastStateRefreshUtc = DateTime.MinValue;
+        }
+        return RequestStateRefreshCoreAsync();
+    }
+
     public async Task SendCommandAsync(string type, object? payload = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(type)) throw new ArgumentException("type requis", nameof(type));
@@ -195,7 +204,7 @@ public sealed class RoomSession : IAsyncDisposable
             {
                 // Some server updates broadcast a lightweight "state-updated" message first.
                 // If the subsequent room.updated broadcast is missed (disconnect/race), force a refresh.
-                _ = RequestStateRefreshAsync();
+                _ = RequestStateRefreshCoreAsync();
                 return;
             }
 
@@ -297,7 +306,7 @@ public sealed class RoomSession : IAsyncDisposable
         return false;
     }
 
-    private async Task RequestStateRefreshAsync()
+    private async Task RequestStateRefreshCoreAsync()
     {
         if (_state != WebSocketState.Connected)
         {

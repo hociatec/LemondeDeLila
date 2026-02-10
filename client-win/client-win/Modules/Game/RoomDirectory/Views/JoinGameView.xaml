@@ -59,7 +59,11 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource ShellBackground}" FocusManager.IsFocusScope="True" Focusable="True">
+    <Grid Background="{StaticResource ShellBackground}"
+          FocusManager.IsFocusScope="True"
+          Focusable="True"
+          KeyboardNavigation.TabNavigation="Cycle"
+          KeyboardNavigation.ControlTabNavigation="Cycle">
         <Grid.RowDefinitions>
             <RowDefinition Height="80" />
             <RowDefinition Height="*" />
@@ -91,6 +95,8 @@
                              VirtualizingStackPanel.IsVirtualizing="True"
                              VirtualizingStackPanel.VirtualizationMode="Recycling"
                              ScrollViewer.CanContentScroll="True"
+                             KeyboardNavigation.TabNavigation="None"
+                             IsTabStop="False"
                              PreviewKeyDown="OnListPreviewKeyDown"
                              KeyDown="OnListKeyDown"
                              AutomationProperties.LabeledBy="{Binding ElementName=TitleText}">

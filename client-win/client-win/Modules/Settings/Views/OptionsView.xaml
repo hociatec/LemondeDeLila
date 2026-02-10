@@ -6,7 +6,9 @@
              mc:Ignorable="d"
              d:DesignHeight="720" d:DesignWidth="1280"
              Loaded="OnLoaded"
-             PreviewKeyDown="OnPreviewKeyDown">
+             PreviewKeyDown="OnPreviewKeyDown"
+             KeyboardNavigation.TabNavigation="Cycle"
+             KeyboardNavigation.DirectionalNavigation="Contained">
     <UserControl.Resources>
         <LinearGradientBrush x:Key="ShellBackground" StartPoint="0,0" EndPoint="1,1">
             <GradientStop Color="#0F1D2D" Offset="0" />
@@ -60,7 +62,9 @@
     </UserControl.Resources>
 
     <Grid Background="{StaticResource ShellBackground}"
-          FocusManager.IsFocusScope="True">
+          FocusManager.IsFocusScope="True"
+          KeyboardNavigation.TabNavigation="Cycle"
+          KeyboardNavigation.DirectionalNavigation="Contained">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

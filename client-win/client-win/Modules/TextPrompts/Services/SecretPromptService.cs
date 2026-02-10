@@ -118,9 +118,11 @@ public sealed class SecretPromptService : ISecretPromptService
                 input.SelectAll();
             };
 
+            var previousFocus = Keyboard.FocusedElement;
             FocusParking.Park(owner);
             NvdaDialogFocus.Configure(dialog, owner, focusTargetFactory: () => input);
             dialog.ShowDialog();
+            DialogFocusRestorer.Restore(owner, previousFocus);
             return result;
         }).Task;
     }

@@ -6,6 +6,7 @@
              mc:Ignorable="d"
              d:DesignHeight="720" d:DesignWidth="1280"
              KeyDown="OnKeyDown"
+             PreviewKeyDown="OnPreviewKeyDown"
              SizeChanged="OnSizeChanged"
              Loaded="OnLoaded">
     <UserControl.Resources>

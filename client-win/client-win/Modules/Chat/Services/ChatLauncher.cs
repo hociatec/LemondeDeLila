@@ -51,6 +51,10 @@ public sealed class ChatLauncher : IChatLauncher
                 _previousContent = _navigation.CurrentContent;
                 _viewModel = new ChatViewModel(_chat, () => _ = CloseAsync(), _dialogs, _announcements);
             }
+
+            // UX: when reopening quickly after a close, the service may still report "Tchat fermé." (disconnected).
+            // Force an "opening" status immediately to avoid confusing flashes.
+            try { _viewModel.Status = "Ouverture du tchat..."; } catch { /* ignore */ }
             _navigation.Show(_viewModel);
         });
 
@@ -69,6 +73,18 @@ public sealed class ChatLauncher : IChatLauncher
         try
         {
             bool opened = await _chat.OpenAsync().ConfigureAwait(false);
+
+            // If the view was closed while opening, don't surface errors/status to the UI.
+            // Close the connection if it did open, then stop.
+            if (_viewModel == null || !ReferenceEquals(_navigation.CurrentContent, _viewModel))
+            {
+                if (opened)
+                {
+                    try { await _chat.CloseAsync().ConfigureAwait(false); } catch { /* ignore */ }
+                }
+                return;
+            }
+
             if (opened)
             {
                 return;

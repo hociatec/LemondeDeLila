@@ -105,6 +105,24 @@
                         </ItemsControl>
                     </ScrollViewer>
 
+                    <!-- Accessibilité: surface stable à focus pour NVDA quand on affiche des segments.
+                         Certains lecteurs d'écran n'annoncent rien si le focus est sur le ScrollViewer.
+                         Ce TextBox invisible reçoit le focus programmatique et contient le texte complet. -->
+                    <TextBox x:Name="DetailsA11yBox"
+                             Text="{Binding Details, Mode=OneWay}"
+                             IsReadOnly="True"
+                             IsReadOnlyCaretVisible="True"
+                             AcceptsReturn="True"
+                             Opacity="0"
+                             Width="1"
+                             Height="1"
+                             HorizontalAlignment="Left"
+                             VerticalAlignment="Top"
+                             IsHitTestVisible="False"
+                             KeyboardNavigation.IsTabStop="False"
+                             AutomationProperties.LiveSetting="Polite"
+                             Visibility="{Binding HasDetailSegments, Converter={StaticResource BoolToVis}}" />
+
                     <TextBox x:Name="DetailsBox"
                              Style="{StaticResource InputTextBox}"
                              Text="{Binding Details, Mode=OneWay}"

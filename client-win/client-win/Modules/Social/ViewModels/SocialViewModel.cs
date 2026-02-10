@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using client_win.Core;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Social.Models;
 using client_win.Modules.Social.Services;
 
@@ -662,11 +663,14 @@ public sealed class SocialViewModel : ObservableObject
         {
             Profile = updated;
             Status = "Profil mis à jour.";
+            var owner = Application.Current?.MainWindow;
+            var previousFocus = Keyboard.FocusedElement;
             MessageBox.Show(
                 "Votre profil a été mis à jour.",
                 "Profil enregistré",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
+            DialogFocusRestorer.Restore(owner, previousFocus);
         }
     }
 

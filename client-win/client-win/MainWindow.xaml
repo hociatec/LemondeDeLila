@@ -13,6 +13,9 @@
         SnapsToDevicePixels="True"
         AutomationProperties.AutomationId="MainWindow"
         AutomationProperties.Name="{Binding WindowTitle, TargetNullValue=Le Monde de Lila, FallbackValue=Le Monde de Lila}"
+        FocusManager.IsFocusScope="True"
+        KeyboardNavigation.TabNavigation="Cycle"
+        KeyboardNavigation.DirectionalNavigation="Contained"
         shellViews:ShellWindowBehavior.Enable="True">
     <Grid>
         <!-- Focus sentinel (NVDA): element stable that never disappears during navigation.
@@ -28,7 +31,10 @@
                 AutomationProperties.Name="{Binding WindowTitle, TargetNullValue=Le Monde de Lila, FallbackValue=Le Monde de Lila}" />
         <shellViews:CachedContentHost x:Name="RootHost"
                                       Focusable="True"
+                                      FocusManager.IsFocusScope="True"
                                       KeyboardNavigation.IsTabStop="False"
+                                      KeyboardNavigation.TabNavigation="Cycle"
+                                      KeyboardNavigation.DirectionalNavigation="Contained"
                                       AutomationProperties.AutomationId="RootHost"
                                       AutomationProperties.IsOffscreenBehavior="Onscreen"
                                       AutomationProperties.Name="{Binding WindowTitle, TargetNullValue=Le Monde de Lila, FallbackValue=Le Monde de Lila}"

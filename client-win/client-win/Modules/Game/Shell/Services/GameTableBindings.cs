@@ -50,7 +50,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private Action<GamePlayHistoryMessage>? _onGameMessage;
 	    private Action<string, string>? _onGameStatusChanged;
 
-    private string? _lastStatus;
+    private bool _lastRoomStarted;
     private Dictionary<int, (string Username, bool Spectator)> _participants = new();
     private Dictionary<int, string> _botsById = new();
     private int _ownerId = 0;
@@ -96,10 +96,25 @@ internal sealed class GameTableBindings : IAsyncDisposable
     public Task ToggleRoleAsync() => _role.ToggleRoleAsync(ComputeSelfSpectator());
     public Task RequestInfoAsync() => _info.RequestInfoAsync();
 
+    private static bool IsRoomStarted(RoomDto? room)
+    {
+        if (room == null)
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(room.StartedAt))
+        {
+            return true;
+        }
+
+        return string.Equals(room.Status, "started", StringComparison.OrdinalIgnoreCase);
+    }
+
     public void Attach()
     {
         var last = _session.LastRoomState;
-        _lastStatus = last?.Room?.Status;
+        _lastRoomStarted = IsRoomStarted(last?.Room);
         SeedParticipants(last?.Room);
         _selfIsSpectator = ComputeSelfSpectator();
         SyncChatEnabled(last?.Manifest);
@@ -263,10 +278,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     TrackOwner(payload.Room);
                     ApplySpectatorState();
 
-                    var nextStatus = payload.Room?.Status;
-                    var wasStarted = string.Equals(_lastStatus, "started", StringComparison.OrdinalIgnoreCase);
-                    var nowStarted = string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase);
-                    _lastStatus = nextStatus;
+                    var wasStarted = _lastRoomStarted;
+                    var nowStarted = IsRoomStarted(payload.Room);
+                    _lastRoomStarted = nowStarted;
 
                     // Keep table ambience loop in sync with room settings (start/stop/change).
                     SyncTableAmbience(payload, started: nowStarted);
@@ -281,7 +295,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
                         // Forcer le focus sur la zone de jeu.
                         _ = _dispatcher.BeginInvoke(
-                            DispatcherPriority.Input,
+                            DispatcherPriority.ApplicationIdle,
                             new Action(_tableVm.GameZone.RequestFocus));
                         return;
                     }
@@ -307,7 +321,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
                         // Forcer le focus sur la zone de jeu (le contenu a été déchargé).
                         _ = _dispatcher.BeginInvoke(
-                            DispatcherPriority.Input,
+                            DispatcherPriority.ApplicationIdle,
                             new Action(_tableVm.GameZone.RequestFocus));
                     }
                 }
@@ -334,7 +348,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 var last = _session.LastRoomState;
                 if (last != null)
                 {
-                    var isStarted = string.Equals(_lastStatus, "started", StringComparison.OrdinalIgnoreCase);
+                    var isStarted = _lastRoomStarted;
                     SyncTableAmbience(last, started: isStarted);
                 }
             }
@@ -356,7 +370,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 SyncChatEnabled(last.Manifest);
             }
 
-            var isStarted = string.Equals(_lastStatus, "started", StringComparison.OrdinalIgnoreCase);
+            var isStarted = IsRoomStarted(last?.Room);
+            _lastRoomStarted = isStarted;
             SetRoomShortcutsForStarted(isStarted);
             if (isStarted)
             {
@@ -754,6 +769,18 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	            return;
 	        }
 
+            // Fin de partie : le serveur remet la table en "setup" (reset système).
+            // En cas de race/déconnexion courte, forcer un refresh explicite de l'état de table
+            // pour réactiver ajout/retrait de bots et relance via Entrée.
+            try
+            {
+                _ = _session.RequestStateRefreshAsync(force: true);
+            }
+            catch
+            {
+                // best-effort
+            }
+
 	        // Le jeu n'est plus en "started" : on doit pouvoir relancer via Entrée (room.start),
 	        // donc on décharge la zone de jeu et on refocus l'ancre.
 	        if (_tableVm.GameZone.IsStarted)
@@ -780,7 +807,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
 	        // Le contenu a été déchargé, refocus sur l'ancre pour permettre Entrée (room.start).
 	        _ = _dispatcher.BeginInvoke(
-	            DispatcherPriority.Input,
+	            DispatcherPriority.ApplicationIdle,
 	            new Action(_tableVm.GameZone.RequestFocus));
 	    }
 
