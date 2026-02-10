@@ -17,7 +17,7 @@ namespace client_win.Modules.Shell.Services;
 /// </summary>
 public sealed class NavigationFocusManager : INavigationFocusManager
 {
-    private const int FocusRetryMaxAttempts = 20;
+    private const int FocusRetryMaxAttempts = 40;
     private static readonly TimeSpan FocusRetryInterval = TimeSpan.FromMilliseconds(100);
 
     private readonly Dispatcher _dispatcher;
@@ -110,6 +110,7 @@ public sealed class NavigationFocusManager : INavigationFocusManager
                     if (_retryRemaining <= 0)
                     {
                         _retryTimer.Stop();
+                        TryForceFallbackFocus();
                         NavigationTransaction.End(_navToken);
                         return;
                     }
@@ -184,6 +185,72 @@ public sealed class NavigationFocusManager : INavigationFocusManager
         catch (Exception ex)
         {
             Log.Debug(ex, "NavigationFocusManager.TryEnsureInitialFocus failed");
+        }
+    }
+
+    private static void TryForceFallbackFocus()
+    {
+        try
+        {
+            var window = Application.Current?.MainWindow;
+            if (window == null || (!window.IsActive && !window.IsKeyboardFocusWithin))
+            {
+                return;
+            }
+
+            var root = TryGetCurrentContentRoot(window);
+            if (root == null)
+            {
+                // Absolute last resort: keep focus on RootHost/window (stable).
+                if (TryGetRootHost(window) is UIElement host)
+                {
+                    TryFocus(host);
+                    TrySetAutomationFocus(host);
+                }
+                else
+                {
+                    TryFocus(window);
+                }
+                return;
+            }
+
+            // If we already have focus in content, just sync UIA.
+            if (IsFocusWithin(root))
+            {
+                SyncAutomationToCurrentFocus();
+                return;
+            }
+
+            // Try focusing the first focusable element again, even if the view didn't implement IInitialFocusTarget.
+            if (FindFirstFocusable(root) is UIElement target)
+            {
+                TryFocus(target);
+                TrySetAutomationFocus(target);
+                return;
+            }
+
+            // Otherwise focus the root itself if possible.
+            if (root is UIElement uiRoot && uiRoot.IsVisible && uiRoot.IsEnabled)
+            {
+                TryFocus(uiRoot);
+                TrySetAutomationFocus(uiRoot);
+                return;
+            }
+
+            // Fallback: RootHost/window.
+            if (TryGetRootHost(window) is UIElement host2)
+            {
+                TryFocus(host2);
+                TrySetAutomationFocus(host2);
+            }
+            else
+            {
+                TryFocus(window);
+            }
+        }
+        catch
+        {
+            // best-effort
         }
     }
 
