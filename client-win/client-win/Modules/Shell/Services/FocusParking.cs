@@ -82,13 +82,16 @@ public static class FocusParking
             {
                 try
                 {
+                    var parkTarget = TryGetParkTarget(window) ?? (IInputElement)window;
+
                     // Keyboard focus: ensure the focused element is not about to be removed/collapsed.
                     //
                     // NVDA reliability:
-                    // - Parking on an "invisible" sentinel often triggers "indisponible".
-                    // - Parking on a ContentControl host may still be announced as unavailable depending on UIA.
-                    // The Window itself is stable and consistently announced.
-                    var target = (IInputElement)window;
+                    // - The Window itself does not always become Keyboard.FocusedElement (depending on what had focus),
+                    //   which breaks "parked" detection and focus-restore guards.
+                    // - Prefer a stable, always-present host element (RootHost / FocusSentinel) so that
+                    //   Keyboard.FocusedElement reliably moves off the soon-to-disappear control.
+                    var target = parkTarget;
                     Log.Debug("FocusParking.Park target={Target} windowActive={IsActive} keyboardWithin={KeyboardWithin}",
                         target?.GetType().Name ?? "<null>",
                         window.IsActive,
@@ -121,6 +124,32 @@ public static class FocusParking
         {
             // best-effort
         }
+    }
+
+    private static IInputElement? TryGetParkTarget(Window window)
+    {
+        try
+        {
+            // Prefer the stable content host (named in MainWindow.xaml).
+            var rootHost = window.FindName("RootHost");
+            if (rootHost is UIElement { IsVisible: true, IsEnabled: true, Focusable: true } uiRootHost)
+            {
+                return uiRootHost;
+            }
+
+            // Fallback: focus sentinel (also stable, never removed during navigation).
+            var sentinel = window.FindName("FocusSentinel");
+            if (sentinel is UIElement { IsVisible: true, IsEnabled: true, Focusable: true } uiSentinel)
+            {
+                return uiSentinel;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        return null;
     }
 
     private static bool IsCurrentFocusHealthyForWindow(Window window)
