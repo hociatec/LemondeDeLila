@@ -81,6 +81,23 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
                 return;
             }
 
+            // During a navigation swap, block focus changes that would leave the stable shell host.
+            // This prevents transient focus landing on elements that are about to disappear / detach,
+            // which NVDA often reports as "non disponible".
+            if (NavigationTransaction.IsActive)
+            {
+                var rootHost = TryGetRootHost(_window);
+                if (rootHost != null && newFocus is not Window)
+                {
+                    if (!IsDescendant(newFocus, rootHost) && !ReferenceEquals(newFocus, rootHost))
+                    {
+                        e.Handled = true;
+                        TryFocusRootHost(rootHost);
+                        return;
+                    }
+                }
+            }
+
             // If the target isn't attached to a PresentationSource, it's a transient/unloaded element.
             // Allowing the focus change is a common source of NVDA "indisponible".
             if (PresentationSource.FromDependencyObject(newFocus) == null)
@@ -152,6 +169,16 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
             // If the focused element is being unloaded, park focus before NVDA tries to announce it.
             if (IsDescendant(focused, unloaded))
             {
+                if (NavigationTransaction.IsActive)
+                {
+                    var rootHost = TryGetRootHost(_window);
+                    if (rootHost != null)
+                    {
+                        TryFocusRootHost(rootHost);
+                        return;
+                    }
+                }
+
                 FocusParking.ForcePark(_window);
             }
         }
@@ -342,6 +369,34 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
         }
 
         return null;
+    }
+
+    private static DependencyObject? TryGetRootHost(Window window)
+    {
+        try
+        {
+            return window.FindName("RootHost") as DependencyObject;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static void TryFocusRootHost(DependencyObject rootHost)
+    {
+        try
+        {
+            if (rootHost is UIElement ui && ui.IsVisible && ui.IsEnabled)
+            {
+                try { ui.Focus(); } catch { /* ignore */ }
+                try { Keyboard.Focus(ui); } catch { /* ignore */ }
+            }
+        }
+        catch
+        {
+            // ignore
+        }
     }
 
     private static T? FindDescendant<T>(DependencyObject root) where T : DependencyObject

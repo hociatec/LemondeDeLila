@@ -24,6 +24,7 @@ public sealed class NavigationFocusManager : INavigationFocusManager
     private DispatcherTimer? _retryTimer;
     private int _retryRemaining;
     private int _navId;
+    private int _navToken;
 
     public NavigationFocusManager(Dispatcher dispatcher)
     {
@@ -40,6 +41,8 @@ public sealed class NavigationFocusManager : INavigationFocusManager
 
         try
         {
+            _navToken = NavigationTransaction.Begin();
+
             var window = Application.Current?.MainWindow;
             if (window == null || (!window.IsActive && !window.IsKeyboardFocusWithin))
             {
@@ -107,6 +110,7 @@ public sealed class NavigationFocusManager : INavigationFocusManager
                     if (_retryRemaining <= 0)
                     {
                         _retryTimer.Stop();
+                        NavigationTransaction.End(_navToken);
                         return;
                     }
 
@@ -186,6 +190,7 @@ public sealed class NavigationFocusManager : INavigationFocusManager
     private void StopRetryTimer()
     {
         try { _retryTimer?.Stop(); } catch { /* ignore */ }
+        try { NavigationTransaction.End(_navToken); } catch { /* ignore */ }
     }
 
     private static UIElement? TryGetRootHost(Window window)
@@ -427,4 +432,3 @@ public sealed class NavigationFocusManager : INavigationFocusManager
         return LogicalTreeHelper.GetParent(current);
     }
 }
-
