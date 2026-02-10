@@ -162,17 +162,33 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
             Panel.SetZIndex(_current.Presenter, 0);
         }
 
-        // When not transitioning, bring current to front.
-        if (_previous == null || _current == null)
+        // Z-order policy (NVDA + UX):
+        // - During transition, keep the previous view on top ONLY if keyboard focus is still within it.
+        //   Otherwise, show the new view immediately to avoid a perceived "latency" (up to 3s timeout).
+        // - When not transitioning, always keep current on top.
+        try
         {
-            if (_current != null)
+            if (_previous != null && _current != null)
             {
-                Panel.SetZIndex(_current.Presenter, 1);
+                var previousRoot = TryGetPresenterRoot(_previous.Presenter);
+                var keepPreviousFront = previousRoot != null && IsFocusWithin(previousRoot);
+                Panel.SetZIndex(_previous.Presenter, keepPreviousFront ? 1 : 0);
+                Panel.SetZIndex(_current.Presenter, keepPreviousFront ? 0 : 1);
+                return;
             }
-            if (_previous != null)
-            {
-                Panel.SetZIndex(_previous.Presenter, 0);
-            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        if (_current != null)
+        {
+            Panel.SetZIndex(_current.Presenter, 1);
+        }
+        if (_previous != null)
+        {
+            Panel.SetZIndex(_previous.Presenter, 0);
         }
     }
 

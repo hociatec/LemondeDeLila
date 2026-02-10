@@ -230,19 +230,21 @@ public partial class StableContentHost : UserControl
     {
         try
         {
-            // NVDA: if the old focused element becomes fully obscured while still focused,
-            // NVDA can announce "non disponible". Keep the previous view visually on top during
-            // the transition; once focus has moved into the new view, bring the new view to front.
+            // NVDA + UX:
+            // - If the old focused element becomes fully obscured while still focused, NVDA can announce
+            //   "non disponible". Keep the previous view on top ONLY while focus is still within it.
+            // - Otherwise, show the new view immediately to avoid perceived navigation latency.
             if (_isTransitioning && PreviousContent != null)
             {
-                Panel.SetZIndex(PreviousPresenter, 1);
-                Panel.SetZIndex(CurrentPresenter, 0);
+                var previousRoot = TryGetPresenterRoot(PreviousPresenter);
+                var keepPreviousFront = previousRoot != null && IsFocusWithin(previousRoot);
+                Panel.SetZIndex(PreviousPresenter, keepPreviousFront ? 1 : 0);
+                Panel.SetZIndex(CurrentPresenter, keepPreviousFront ? 0 : 1);
+                return;
             }
-            else
-            {
-                Panel.SetZIndex(PreviousPresenter, 0);
-                Panel.SetZIndex(CurrentPresenter, 1);
-            }
+
+            Panel.SetZIndex(PreviousPresenter, 0);
+            Panel.SetZIndex(CurrentPresenter, 1);
         }
         catch
         {
