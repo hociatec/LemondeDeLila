@@ -110,12 +110,21 @@
         <!-- NVDA: when list containers regenerate (navigation/refresh), park/restore focus to avoid "indisponible". -->
         <Style TargetType="ListBox">
             <Setter Property="behaviors:ItemsControlFocusGuardBehavior.Enable" Value="True" />
+            <!-- Screen readers (NVDA): avoid container recycling which can invalidate focused items and cause "non disponible". -->
+            <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
+            <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Standard" />
         </Style>
         <Style TargetType="ListView">
             <Setter Property="behaviors:ItemsControlFocusGuardBehavior.Enable" Value="True" />
+            <!-- Screen readers (NVDA): avoid container recycling which can invalidate focused items and cause "non disponible". -->
+            <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
+            <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Standard" />
         </Style>
         <Style TargetType="DataGrid">
             <Setter Property="behaviors:ItemsControlFocusGuardBehavior.Enable" Value="True" />
+            <!-- DataGrid virtualization is a common source of transient UIA focus issues with NVDA. -->
+            <Setter Property="EnableRowVirtualization" Value="False" />
+            <Setter Property="EnableColumnVirtualization" Value="False" />
         </Style>
     </Application.Resources>
 </Application>
