@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using client_win.Core.Diagnostics;
 using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Shell.Views;
@@ -75,6 +76,7 @@ public partial class StableContentHost : UserControl
 
     private void OnCurrentContentChanged(object? oldContent, object? newContent)
     {
+        using var _ = PerfTrace.Measure($"nav.swap {(newContent?.GetType().Name ?? "<null>")}");
         _transitionId = unchecked(_transitionId + 1);
         _transitionStartedUtc = DateTime.UtcNow;
 
@@ -88,6 +90,7 @@ public partial class StableContentHost : UserControl
 
     private void BeginFocusPass()
     {
+        using var _ = PerfTrace.Measure("nav.focusPass");
         if (!IsLoaded)
         {
             return;
@@ -97,7 +100,26 @@ public partial class StableContentHost : UserControl
         ApplyPresenterZOrder();
 
         // Park focus on a stable element before anything is removed.
-        try { FocusParking.ParkIfNeeded(Window.GetWindow(this) ?? Application.Current?.MainWindow); } catch { /* ignore */ }
+        try
+        {
+            var win = Window.GetWindow(this) ?? Application.Current?.MainWindow;
+            if (_isTransitioning && PreviousContent != null)
+            {
+                FocusParking.ForcePark(win);
+            }
+            else
+            {
+                FocusParking.ParkIfNeeded(win);
+            }
+        }
+        catch
+        {
+            /* ignore */
+        }
+
+        // After parking focus, re-evaluate z-order immediately so we don't keep the previous view on top
+        // longer than necessary (perceived latency).
+        ApplyPresenterZOrder();
 
         Dispatcher.BeginInvoke((Action)(() => TryFocusAndMaybeFinalize()), DispatcherPriority.Loaded);
         Dispatcher.BeginInvoke((Action)(() => TryFocusAndMaybeFinalize()), DispatcherPriority.ApplicationIdle);
@@ -254,6 +276,7 @@ public partial class StableContentHost : UserControl
 
     private bool TryFocusCurrent()
     {
+        using var _ = PerfTrace.Measure("nav.tryFocusCurrent");
         var root = TryGetPresenterRoot(CurrentPresenter);
         if (root == null)
         {
@@ -275,6 +298,10 @@ public partial class StableContentHost : UserControl
             {
                 return true;
             }
+
+            // IMPORTANT (perf): if a view provides a focus target, don't deep-scan the visual tree on each retry.
+            // Deep scans can be expensive and may freeze the UI on slower machines during navigation.
+            return false;
         }
 
         if (FindFirstFocusable(root) is IInputElement target)

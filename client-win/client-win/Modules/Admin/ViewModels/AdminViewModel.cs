@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
@@ -19,6 +20,7 @@ using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Game.RoomDirectory.Services;
 using client_win.Modules.Network.Services;
 using client_win.Modules.TextPrompts.Services;
+using Serilog;
 
 namespace client_win.Modules.Admin.ViewModels;
 
@@ -150,6 +152,7 @@ public sealed partial class AdminViewModel : ObservableObject
         Func<int, string, Task<string>>? openStoryBookForUser,
         Action onClose)
     {
+        var ctorStart = Stopwatch.GetTimestamp();
         _admin = admin ?? throw new ArgumentNullException(nameof(admin));
         _maintenance = maintenance ?? throw new ArgumentNullException(nameof(maintenance));
         _maintenanceTokenStore = maintenanceTokenStore ?? throw new ArgumentNullException(nameof(maintenanceTokenStore));
@@ -198,6 +201,23 @@ public sealed partial class AdminViewModel : ObservableObject
         });
 
         BuildRoot();
+
+        try
+        {
+            var ms = (Stopwatch.GetTimestamp() - ctorStart) * 1000.0 / Stopwatch.Frequency;
+            if (ms >= 250)
+            {
+                Log.Warning("AdminViewModel ctor slow: {Ms:0.0}ms", ms);
+            }
+            else
+            {
+                Log.Debug("AdminViewModel ctor: {Ms:0.0}ms", ms);
+            }
+        }
+        catch
+        {
+            // ignore
+        }
     }
 
     public event Action? NavigationChanged;

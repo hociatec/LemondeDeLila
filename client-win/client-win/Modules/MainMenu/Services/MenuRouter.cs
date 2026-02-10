@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.Logging;
+using client_win.Core.Diagnostics;
 using client_win.Modules.Admin.ViewModels;
 using client_win.Modules.Admin.Views;
 using client_win.Modules.Config;
@@ -82,6 +83,8 @@ public sealed class MenuRouter : IMenuRouter
     private readonly Modules.Presence.Services.IPresenceMonitor _presence;
     private readonly IVaultClient _vault;
     private bool _contactAdminOpen;
+    private AdminViewModel? _adminVm;
+    private object? _adminReturnContent;
 
     public MenuRouter(
         ILogger<MenuRouter> logger,
@@ -611,25 +614,52 @@ public sealed class MenuRouter : IMenuRouter
     {
         _logger.LogInformation("Ouverture du panneau d'administration");
 
-        var previous = _navigation.CurrentContent;
-        AdminViewModel? vm = null;
-        vm = new AdminViewModel(_admin, _adminMaintenance, _maintenanceTokenStore, _secretPrompts, _roomDirectory, _apiCapabilities, _config, _publisher, _dialogs, _options, _sounds, _session, _remoteSounds, _tables, returnContent: () => vm,
-            openNotifications: async () =>
-            {
-                return await OpenNotifications().ConfigureAwait(true);
-            },
-            openStoryBookForUser: async (userId, username) =>
-            {
-                return await OpenStatsForUser(userId, username).ConfigureAwait(true);
-            },
-            onClose: () =>
+        var perfStart = PerfTrace.Start();
+
+        if (_navigation.CurrentContent is AdminViewModel)
         {
-            if (previous != null)
-            {
-                _navigation.Show(previous);
-            }
-        });
-        _navigation.Show(vm);
+            return Task.FromResult("Panneau d'administration déjà ouvert.");
+        }
+
+        _adminReturnContent = _navigation.CurrentContent;
+
+        if (_adminVm == null)
+        {
+            _adminVm = new AdminViewModel(
+                _admin,
+                _adminMaintenance,
+                _maintenanceTokenStore,
+                _secretPrompts,
+                _roomDirectory,
+                _apiCapabilities,
+                _config,
+                _publisher,
+                _dialogs,
+                _options,
+                _sounds,
+                _session,
+                _remoteSounds,
+                _tables,
+                returnContent: () => _adminVm,
+                openNotifications: async () => await OpenNotifications().ConfigureAwait(true),
+                openStoryBookForUser: async (userId, username) => await OpenStatsForUser(userId, username).ConfigureAwait(true),
+                onClose: () =>
+                {
+                    var previous = _adminReturnContent;
+                    _adminReturnContent = null;
+                    if (previous != null)
+                    {
+                        _navigation.Show(previous);
+                        SetPresenceContextForContent(previous);
+                    }
+                });
+        }
+
+        try { _adminVm.ShowRootMenu(); } catch { /* ignore */ }
+
+        PerfTrace.Mark("menu.openAdmin.vmReady", perfStart);
+        _navigation.Show(_adminVm);
+        PerfTrace.Mark("menu.openAdmin.navigated", perfStart);
 
         return Task.FromResult("Panneau d'administration ouvert.");
     }
@@ -662,6 +692,9 @@ public sealed class MenuRouter : IMenuRouter
     public Task<string> Logout()
     {
         _logger.LogInformation("Déconnexion demandée par l'utilisateur");
+        _adminVm = null;
+        _adminReturnContent = null;
+        _contactAdminOpen = false;
         // La déconnexion est gérée par le MainMenuViewModel
         return Task.FromResult("Déconnexion en cours...");
     }

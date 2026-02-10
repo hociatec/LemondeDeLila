@@ -1,10 +1,12 @@
 using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Admin.ViewModels;
 using client_win.Modules.Shell.Views;
+using Serilog;
 
 namespace client_win.Modules.Admin.Views;
 
@@ -27,7 +29,24 @@ public partial class AdminView : UserControl, IInitialFocusTarget
 
     public AdminView()
     {
+        var start = Stopwatch.GetTimestamp();
         InitializeComponent();
+        try
+        {
+            var ms = (Stopwatch.GetTimestamp() - start) * 1000.0 / Stopwatch.Frequency;
+            if (ms >= 250)
+            {
+                Log.Warning("AdminView InitializeComponent slow: {Ms:0.0}ms", ms);
+            }
+            else
+            {
+                Log.Debug("AdminView InitializeComponent: {Ms:0.0}ms", ms);
+            }
+        }
+        catch
+        {
+            // ignore
+        }
         DataContextChanged += (_, __) => AttachViewModel(DataContext as AdminViewModel);
         Unloaded += (_, __) => AttachViewModel(null);
     }

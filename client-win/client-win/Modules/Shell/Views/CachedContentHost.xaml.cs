@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using client_win.Core.Diagnostics;
 using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Shell.Views;
@@ -81,6 +82,8 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
 
     private void OnCurrentContentChanged(object? oldContent, object? newContent)
     {
+        using var _ = PerfTrace.Measure($"nav.swap {(newContent?.GetType().Name ?? "<null>")}");
+
         _transitionId = unchecked(_transitionId + 1);
         _transitionStartedUtc = DateTime.UtcNow;
 
@@ -227,6 +230,7 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
 
     private void BeginFocusPass()
     {
+        using var _ = PerfTrace.Measure("nav.focusPass");
         if (!IsLoaded)
         {
             return;
@@ -254,6 +258,11 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         {
             /* ignore */
         }
+
+        // After parking focus, re-evaluate z-order immediately.
+        // This avoids showing the previous view "on top" for a few seconds on slower machines,
+        // where focus can take longer to land in the new view.
+        try { UpdatePresenterVisibilities(); } catch { /* ignore */ }
 
         Dispatcher.BeginInvoke((Action)(() => TryFocusAndMaybeFinalize()), DispatcherPriority.Loaded);
         Dispatcher.BeginInvoke((Action)(() => TryFocusAndMaybeFinalize()), DispatcherPriority.ApplicationIdle);
@@ -356,6 +365,7 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
 
     private bool TryFocusCurrent()
     {
+        using var _ = PerfTrace.Measure("nav.tryFocusCurrent");
         if (_current == null)
         {
             return false;
@@ -390,6 +400,11 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
             {
                 return true;
             }
+
+            // IMPORTANT (perf): avoid scanning the whole visual tree when a view provides a focus target.
+            // On slower machines (or during heavy view creation), repeated deep scans can freeze the UI.
+            // Let the next retry tick attempt RequestInitialFocus again once the view is fully loaded.
+            return false;
         }
 
         if (FindFirstFocusable(root) is IInputElement target)
