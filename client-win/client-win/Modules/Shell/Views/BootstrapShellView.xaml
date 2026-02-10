@@ -28,9 +28,6 @@
                        FontSize="13"
                        TextWrapping="Wrap"
                        AutomationProperties.LiveSetting="Polite" />
-            <ProgressBar Margin="0 10 0 0"
-                         Height="10"
-                         IsIndeterminate="True" />
         </StackPanel>
     </Grid>
 </UserControl>

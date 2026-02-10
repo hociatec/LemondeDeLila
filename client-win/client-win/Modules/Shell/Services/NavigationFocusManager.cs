@@ -278,9 +278,9 @@ public sealed class NavigationFocusManager : INavigationFocusManager
         try
         {
             var rootHost = window.FindName("RootHost");
-            if (rootHost is StableContentHost stable)
+            if (rootHost is ICurrentContentRootProvider rootProvider)
             {
-                return stable.TryGetCurrentContentRoot();
+                return rootProvider.TryGetCurrentContentRoot();
             }
 
             if (rootHost is not ContentControl host)

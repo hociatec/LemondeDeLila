@@ -242,6 +242,9 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             RequestTransition();
         }
 
+        // Perf/UX: warm up the startup sound (MediaOpened) so the first play doesn't stall for seconds on some setups.
+        TryPreload(SoundId.ClientOpened, warmUp: true);
+
         _ = ScheduleOneShotAsync(
             SoundId.ClientOpened,
             priority: 1,

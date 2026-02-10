@@ -231,9 +231,9 @@ public sealed class HomeViewModel : ObservableObject, IDisposable
                 }
 
                 StatusMessage = $"Connexion réussie. Bienvenue {result.Username}.";
+                StatusMessage = $"Connexion OK. Bienvenue {result.Username}. Chargement du menu...";
                 var user = new AuthenticatedUser(result.Username, result.Token, result.UserId ?? 0);
                 _navigateToMainMenu?.Invoke(user);
-                ShowLanding();
             }
             else
             {

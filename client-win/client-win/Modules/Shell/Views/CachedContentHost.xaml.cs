@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using client_win.Modules.Shell.Services;
 
@@ -37,6 +38,8 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
     private Entry? _previous;
     private int _transitionId;
     private DateTime _transitionStartedUtc;
+    private int _fadeOutStartedForTransitionId;
+    private Entry? _fadeOutEntry;
 
     private const int FocusRetryMaxAttempts = 24;
     private static readonly TimeSpan FocusRetryInterval = TimeSpan.FromMilliseconds(125);
@@ -44,6 +47,7 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
     private int _retryRemaining;
 
     private const int MaxCacheEntries = 10;
+    private static readonly TimeSpan VisualTransitionDuration = TimeSpan.FromMilliseconds(160);
 
     public CachedContentHost()
     {
@@ -70,6 +74,8 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
     {
         _transitionId = unchecked(_transitionId + 1);
         _transitionStartedUtc = DateTime.UtcNow;
+        _fadeOutStartedForTransitionId = 0;
+        _fadeOutEntry = null;
 
         _previous = _current;
         _current = newContent == null ? null : GetOrCreateEntry(newContent);
@@ -131,6 +137,8 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
     {
         foreach (var kv in _entries.Values)
         {
+            try { kv.Presenter.BeginAnimation(UIElement.OpacityProperty, null); } catch { /* ignore */ }
+            kv.Presenter.Opacity = 1;
             kv.Presenter.Visibility = Visibility.Collapsed;
             kv.Presenter.IsHitTestVisible = false;
         }
@@ -176,8 +184,7 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
             Panel.SetZIndex(_current!.Presenter, 1);
             Panel.SetZIndex(_previous.Presenter, 0);
             _previous.Presenter.IsHitTestVisible = false;
-            _previous = null;
-            EvictIfNeeded();
+            BeginFadeOutAndDropPrevious(_transitionId, _previous);
             return;
         }
 
@@ -185,10 +192,84 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         var previousRoot = TryGetPresenterRoot(_previous.Presenter);
         if (previousRoot == null || !IsFocusWithin(previousRoot))
         {
-            Panel.SetZIndex(_current!.Presenter, 1);
+            if (_current != null)
+            {
+                Panel.SetZIndex(_current.Presenter, 1);
+            }
             Panel.SetZIndex(_previous.Presenter, 0);
             _previous.Presenter.IsHitTestVisible = false;
+            BeginFadeOutAndDropPrevious(_transitionId, _previous);
+        }
+    }
+
+    private void BeginFadeOutAndDropPrevious(int transitionId, Entry previous)
+    {
+        if (_fadeOutStartedForTransitionId == transitionId && ReferenceEquals(_fadeOutEntry, previous))
+        {
+            return;
+        }
+
+        _fadeOutStartedForTransitionId = transitionId;
+        _fadeOutEntry = previous;
+
+        try
+        {
+            previous.Presenter.BeginAnimation(UIElement.OpacityProperty, null);
+            var anim = new DoubleAnimation
+            {
+                From = 1,
+                To = 0,
+                Duration = new Duration(VisualTransitionDuration),
+                FillBehavior = FillBehavior.Stop
+            };
+            anim.Completed += (_, _) =>
+            {
+                if (_transitionId != transitionId)
+                {
+                    return;
+                }
+                if (_previous == null || !ReferenceEquals(_previous, previous))
+                {
+                    return;
+                }
+
+                try
+                {
+                    previous.Presenter.BeginAnimation(UIElement.OpacityProperty, null);
+                    previous.Presenter.Opacity = 1;
+                    previous.Presenter.Visibility = Visibility.Collapsed;
+                    previous.Presenter.IsHitTestVisible = false;
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                _previous = null;
+                _fadeOutEntry = null;
+                _fadeOutStartedForTransitionId = 0;
+                EvictIfNeeded();
+            };
+
+            previous.Presenter.BeginAnimation(UIElement.OpacityProperty, anim, HandoffBehavior.SnapshotAndReplace);
+        }
+        catch
+        {
+            try
+            {
+                previous.Presenter.BeginAnimation(UIElement.OpacityProperty, null);
+                previous.Presenter.Opacity = 1;
+                previous.Presenter.Visibility = Visibility.Collapsed;
+                previous.Presenter.IsHitTestVisible = false;
+            }
+            catch
+            {
+                // ignore
+            }
+
             _previous = null;
+            _fadeOutEntry = null;
+            _fadeOutStartedForTransitionId = 0;
             EvictIfNeeded();
         }
     }
@@ -348,16 +429,25 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
     {
         try
         {
+            var protectedContents = new HashSet<object>(ReferenceEqualityComparer.Instance);
+            if (_current != null) protectedContents.Add(_current.Content);
+            if (_previous != null) protectedContents.Add(_previous.Content);
+
+            // Never retain ephemeral views: they are meant to be created on demand and disposed by their onClose handlers.
+            foreach (var candidate in _entries.Values
+                         .Where(e => !e.Cacheable && !protectedContents.Contains(e.Content))
+                         .ToArray())
+            {
+                HostGrid.Children.Remove(candidate.Presenter);
+                _entries.Remove(candidate.Content);
+            }
+
             // Do not evict while an entry is still the previous visible presenter.
             var count = _entries.Count(e => e.Value.Cacheable);
             if (count <= MaxCacheEntries)
             {
                 return;
             }
-
-            var protectedContents = new HashSet<object>(ReferenceEqualityComparer.Instance);
-            if (_current != null) protectedContents.Add(_current.Content);
-            if (_previous != null) protectedContents.Add(_previous.Content);
 
             foreach (var candidate in _entries.Values
                          .Where(e => e.Cacheable && !protectedContents.Contains(e.Content))

@@ -6,6 +6,7 @@ using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Config;
+using client_win.Modules.Error;
 using client_win.Modules.Home.ViewModels;
 using client_win.Modules.MainMenu.Services;
 using client_win.Modules.Network.Services;
@@ -125,7 +126,24 @@ public sealed class ShellViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "Navigate to main menu failed");
+            WindowTitle = "Le Monde de Lila";
+            try { _host.Session.Clear(); } catch { /* ignore */ }
+            try { _navigation.ClearUser(); } catch { /* ignore */ }
+
+            try
+            {
+                _host.Errors.Publish(new AppError(
+                    "Connexion OK, mais l'ouverture du menu a échoué.",
+                    ErrorSeverity.Error,
+                    context: "shell.navigate",
+                    detail: ex.Message));
+            }
+            catch
+            {
+                // ignore
+            }
+
+            _logger.LogError(ex, "Navigate to main menu failed");
         }
     }
 

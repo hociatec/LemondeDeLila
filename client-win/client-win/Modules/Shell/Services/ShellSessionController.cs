@@ -8,6 +8,7 @@ using client_win.Modules.Network.Services;
 using client_win.Modules.User.Models;
 using client_win.Modules.User.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 namespace client_win.Modules.Shell.Services;
 
@@ -36,6 +37,36 @@ public sealed class ShellSessionController
         _audio = audio ?? throw new ArgumentNullException(nameof(audio));
     }
 
+    private static void SafeKickoff(Func<Task> start, string name)
+    {
+        try
+        {
+            var task = start();
+            _ = task.ContinueWith(t =>
+            {
+                try
+                {
+                    Log.Warning(t.Exception, "Background task failed: {TaskName}", name);
+                }
+                catch
+                {
+                    // ignore
+                }
+            }, TaskContinuationOptions.OnlyOnFaulted);
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                Log.Warning(ex, "Background task threw synchronously: {TaskName}", name);
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+    }
+
     public async Task NavigateToMainMenuAsync(AuthenticatedUser user, Action onLogoutRequested)
     {
         _navigation.SetUser(new UserContext(user.Username, user.Token));
@@ -43,9 +74,9 @@ public sealed class ShellSessionController
         _audio.NotifyLoginSucceeded();
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
-        _ = _host.Services.GetRequiredService<Modules.Catalog.Services.ICatalogService>().PreloadAsync(cts.Token);
-        _ = _notify.StartAsync();
-        _ = _presence.StartAsync();
+        SafeKickoff(() => _host.Services.GetRequiredService<Modules.Catalog.Services.ICatalogService>().PreloadAsync(cts.Token), "catalog.preload");
+        SafeKickoff(() => _notify.StartAsync(), "notify.start");
+        SafeKickoff(() => _presence.StartAsync(), "presence.start");
 
         try
         {

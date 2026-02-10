@@ -69,6 +69,7 @@ namespace client_win
         {
             AnimationDisabler.Disable();
             string? appDataPath = null;
+            var boot = Stopwatch.StartNew();
             try
             {
                 appDataPath = EnsureAppDataPath();
@@ -124,6 +125,7 @@ namespace client_win
             {
                 // Best-effort: si le mutex échoue, on laisse l'app démarrer normalement.
             }
+            if (!string.IsNullOrWhiteSpace(appDataPath)) TryAppendStartupLog(appDataPath, $"OnStartup: single-instance ok (+{boot.ElapsedMilliseconds}ms)");
 
             // Fallback/renfort : lockfile dans AppData (plus robuste avec ClickOnce/relances rapides).
             // Si un autre process détient le lock, on active l'instance existante et on quitte.
@@ -157,8 +159,10 @@ namespace client_win
                 Shutdown();
                 return;
             }
+            if (!string.IsNullOrWhiteSpace(appDataPath)) TryAppendStartupLog(appDataPath, $"OnStartup: lockfile ok (+{boot.ElapsedMilliseconds}ms)");
 
             base.OnStartup(e);
+            if (!string.IsNullOrWhiteSpace(appDataPath)) TryAppendStartupLog(appDataPath, $"OnStartup: base.OnStartup done (+{boot.ElapsedMilliseconds}ms)");
 
             var window = new MainWindow();
             MainWindow = window;
@@ -226,6 +230,7 @@ namespace client_win
             // On installe d'abord les hooks SourceInitialized, puis on montre la fenêtre.
             // Sinon SourceInitialized peut déjà être passé et on perd les retries d'activation au démarrage.
             try { window.Show(); } catch { /* best-effort */ }
+            if (!string.IsNullOrWhiteSpace(appDataPath)) TryAppendStartupLog(appDataPath, $"OnStartup: window.Show called (+{boot.ElapsedMilliseconds}ms)");
 
             _ = BuildAndShowShellAsync(window);
         }
@@ -266,10 +271,16 @@ namespace client_win
 
         private async Task BuildAndShowShellAsync(MainWindow window)
         {
+            var appDataPath = EnsureAppDataPath();
+            var boot = Stopwatch.StartNew();
+            TryAppendStartupLog(appDataPath, "BuildAndShowShellAsync: begin");
+
             AppHost? host = null;
             try
             {
+                TryAppendStartupLog(appDataPath, $"BuildAndShowShellAsync: building host (bg) (+{boot.ElapsedMilliseconds}ms)");
                 host = await Task.Run(() => AppBootstrapper.Build()).ConfigureAwait(false);
+                TryAppendStartupLog(appDataPath, $"BuildAndShowShellAsync: host built (+{boot.ElapsedMilliseconds}ms)");
             }
             catch (Exception ex)
             {
@@ -306,9 +317,11 @@ namespace client_win
                 // IMPORTANT: eager-resolve audio services while we're still on a background thread.
                 // AudioDispatcher waits for a dedicated STA thread to start; if resolved on the UI thread it can freeze the UI.
                 PrewarmBackgroundOnlyServices(host);
+                TryAppendStartupLog(appDataPath, $"BuildAndShowShellAsync: services prewarmed (+{boot.ElapsedMilliseconds}ms)");
 
                 await await window.Dispatcher.InvokeAsync(async () =>
                 {
+                    TryAppendStartupLog(appDataPath, $"BuildAndShowShellAsync: dispatcher enter (+{boot.ElapsedMilliseconds}ms)");
                     var shell = new ShellViewModel(
                         host,
                         requestClose: window.Close,
@@ -326,6 +339,7 @@ namespace client_win
 
                     // Afficher l'accueil avant de montrer la fenêtre (pas de vue "Chargement").
                     shell.ShowHomeForStartup();
+                    TryAppendStartupLog(appDataPath, $"BuildAndShowShellAsync: ShowHomeForStartup (+{boot.ElapsedMilliseconds}ms)");
 
                     if (window.Visibility != Visibility.Visible)
                     {
@@ -474,6 +488,7 @@ namespace client_win
                     if (window.IsLoaded)
                     {
                         await shell.OnLoadedAsync().ConfigureAwait(true);
+                        TryAppendStartupLog(appDataPath, $"BuildAndShowShellAsync: shell.OnLoadedAsync done (+{boot.ElapsedMilliseconds}ms)");
                     }
                 }).Task;
             }

@@ -91,7 +91,8 @@ public static class AppBootstrapper
         }
 
         // Best-effort hygiene: ClickOnce can duplicate desktop shortcuts on updates ("(1)/(2)").
-        DesktopShortcutDeduplicator.DeduplicateBestEffort();
+        // Startup perf: run in background to avoid delaying the first screen/sound on slower disks/AV.
+        try { _ = Task.Run(() => DesktopShortcutDeduplicator.DeduplicateBestEffort()); } catch { /* ignore */ }
 
         // 2. Détecter environnement et valider exigences de production
         Log.Information("Environnement détecté: {Environment}", environment);

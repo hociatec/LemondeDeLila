@@ -20,17 +20,21 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
     private readonly object _gate = new();
     private readonly Dictionary<SoundId, string> _pathsBySound = new();
     private DateTime _lastRefreshUtc = DateTime.MinValue;
+    private int _initStarted;
 
     public RemoteSoundCache(ClientConfiguration config, ILogger<RemoteSoundCache> logger)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        TryLoadFromDisk();
-        TryFillMissingFromCacheDir();
+
+        // Startup perf: do not block app boot on disk scans (AV/slow disks can add seconds).
+        // We initialize best-effort in background; until then, sounds fall back to local assets.
+        EnsureInitializedBackground();
     }
 
     public string? TryGetPath(SoundId sound)
     {
+        EnsureInitializedBackground();
         lock (_gate)
         {
             return _pathsBySound.TryGetValue(sound, out var path) ? path : null;
@@ -39,6 +43,7 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
 
     public async Task RefreshAsync(bool force = false, CancellationToken cancellationToken = default)
     {
+        EnsureInitializedBackground();
         if (!force && DateTime.UtcNow - _lastRefreshUtc < TimeSpan.FromMinutes(2))
         {
             return;
@@ -115,6 +120,35 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
     }
 
     private static string GetManifestPath() => Path.Combine(GetCacheDir(), "sounds-manifest.json");
+
+    private void EnsureInitializedBackground()
+    {
+        if (Interlocked.Exchange(ref _initStarted, 1) == 1)
+        {
+            return;
+        }
+
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                TryLoadFromDisk();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Remote sound cache init (manifest) failed");
+            }
+
+            try
+            {
+                TryFillMissingFromCacheDir();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Remote sound cache init (scan) failed");
+            }
+        });
+    }
 
     private bool TryLoadFromDisk()
     {
@@ -238,8 +272,17 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
             return bestBySound;
         }
 
+        // Safety valve: keep scans bounded (very large cache directories can slow startup).
+        var scanned = 0;
+        const int MaxScanFiles = 500;
         foreach (var path in Directory.EnumerateFiles(cacheDir, "*.wav", SearchOption.TopDirectoryOnly))
         {
+            scanned++;
+            if (scanned > MaxScanFiles)
+            {
+                break;
+            }
+
             var fileName = Path.GetFileName(path);
             if (string.IsNullOrWhiteSpace(fileName))
             {
