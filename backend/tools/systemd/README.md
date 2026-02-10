@@ -37,6 +37,25 @@ sudo systemctl daemon-reload
 sudo systemctl restart lila-backend.service
 ```
 
+### ClickOnce (ne pas casser les clients lors d'un `git pull`)
+
+Si vous hébergez les updates ClickOnce via le backend (`/updates/client-win/`) et que votre déploiement fait un `git pull`
+dans le dossier du dépôt, stocker les artifacts dans `backend/data/client-updates/` est fragile : un pull peut écraser
+les fichiers publiés et empêcher les clients ClickOnce de démarrer / se mettre à jour.
+
+Solution recommandée : configurer `CLIENT_UPDATES_DIR` vers un dossier persistant **hors du repo**.
+
+Exemple (drop-in systemd) :
+
+- Copier `backend/tools/systemd/lila-backend.service.d/20-client-updates.conf` vers `/etc/systemd/system/lila-backend.service.d/20-client-updates.conf`
+- Adapter les chemins + l'URL publique
+- Puis :
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart lila-backend.service
+```
+
 ### API (résumé)
 
 - `POST /api/admin/maintenance/deploy` (JWT admin + header `x-admin-maintenance-token`)

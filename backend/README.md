@@ -63,6 +63,9 @@ Ce mécanisme remplace le secret partagé statique côté client (déconseillé)
 | `CORS_ORIGINS` | Liste d’origines autorisées (séparées par des virgules). En production, si vide : CORS est désactivé. |
 | `RATE_LIMIT_TTL` / `RATE_LIMIT_COUNT` | Fenêtre (s) et nombre de requêtes maximum pour le throttling global. |
 | `LOG_DIR`, `LOG_FILES_ENABLED`, `LOG_LEVEL` | Contrôlent l’écriture des logs Winston (dossier, activation fichiers, niveau). En container : préférer `LOG_FILES_ENABLED=false` pour loguer sur stdout. |
+| `CLIENT_UPDATES_DIR` | Dossier servi sur `/updates/client-win/` (ClickOnce/ZIP). Recommandé: un chemin persistant hors du dépôt. |
+| `CLIENT_UPDATES_META_PATH` | Chemin du fichier `latest.json` (métadonnées), recommandé hors du dépôt. |
+| `CLIENT_UPDATES_PUBLIC_URL` | URL publique des updates (ex: `https://api.lilas.hociatec.fr/updates/client-win/`). |
 
 ## Tests
 

@@ -111,6 +111,19 @@ async function bootstrap() {
     // IMPORTANT: do not depend on process.cwd() (can vary between systemd / manual runs).
     // Keep a stable default path relative to the backend project root.
     path.resolve(__dirname, '..', 'data', 'client-updates', 'client-win');
+  if (
+    !config.get<string>('CLIENT_UPDATES_DIR') &&
+    (process.env.NODE_ENV || '').toLowerCase() === 'production'
+  ) {
+    // This is the most common cause of "my ClickOnce client stopped working after a backend deploy":
+    // deployments that run `git pull` in-place can overwrite backend/data/client-updates/*.
+    // Keeping artifacts in a persistent directory outside the repo avoids that class of outage.
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[updates] CLIENT_UPDATES_DIR is not set; using default inside repo: ${updatesDir}. ` +
+        `In production, set CLIENT_UPDATES_DIR to a persistent directory outside the git checkout to avoid losing ClickOnce artifacts on deploy.`,
+    );
+  }
   try {
     fs.mkdirSync(updatesDir, { recursive: true });
   } catch {
