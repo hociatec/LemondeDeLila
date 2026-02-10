@@ -10,16 +10,16 @@ namespace client_win.Modules.Shell.Services;
 public sealed class NavigationService : INavigationService
 {
     private UserContext _currentUser = UserContext.Empty;
-    private readonly IFocusParkingService? _focusParking;
+    private readonly INavigationFocusManager? _focusManager;
 
     public object? CurrentContent { get; private set; }
     public UserContext CurrentUser => _currentUser;
 
     public event EventHandler<object?>? CurrentContentChanged;
 
-    public NavigationService(IFocusParkingService? focusParking = null)
+    public NavigationService(INavigationFocusManager? focusManager = null)
     {
-        _focusParking = focusParking;
+        _focusManager = focusManager;
     }
 
     public void SetUser(UserContext user)
@@ -44,7 +44,7 @@ public sealed class NavigationService : INavigationService
 
         try
         {
-            _focusParking?.ParkFocus();
+            _focusManager?.BeforeNavigation();
         }
         catch
         {
@@ -59,6 +59,15 @@ public sealed class NavigationService : INavigationService
         catch
         {
             // Best-effort : ne pas casser la navigation si un listener échoue.
+        }
+
+        try
+        {
+            _focusManager?.AfterNavigation(content);
+        }
+        catch
+        {
+            // best-effort
         }
 
         // Accessibilité : donner une opportunité au focus clavier d'atterrir dans la nouvelle vue.

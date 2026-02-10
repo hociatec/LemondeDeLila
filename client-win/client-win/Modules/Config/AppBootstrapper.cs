@@ -133,6 +133,7 @@ public static class AppBootstrapper
         services.AddSingleton(settingsManager);
 
         // Enregistrement des services UI
+        services.AddSingleton<Modules.Shell.Services.INavigationFocusManager, Modules.Shell.Services.NavigationFocusManager>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<Modules.Shell.Services.IHomeViewAccessor, Modules.Shell.Services.HomeViewAccessor>();
         services.AddSingleton<Modules.Shell.Services.IFocusParkingService, Modules.Shell.Services.FocusParkingService>();
