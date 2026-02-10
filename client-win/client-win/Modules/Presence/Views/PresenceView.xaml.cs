@@ -15,11 +15,27 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
 {
     private PresenceViewModel? _viewModel;
     private int _focusRequestId;
+    private long _lastListAutoFocusTicks;
 
     public PresenceView()
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
+        Loaded += (_, _) =>
+        {
+            try
+            {
+                if (ItemsList != null)
+                {
+                    ItemsList.GotKeyboardFocus -= OnItemsListGotKeyboardFocus;
+                    ItemsList.GotKeyboardFocus += OnItemsListGotKeyboardFocus;
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+        };
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -168,9 +184,9 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
     private void RequestFocusSelectedOrFirstItem()
     {
         var id = ++_focusRequestId;
-        _ = Dispatcher.BeginInvoke(
-            DispatcherPriority.ApplicationIdle,
-            new Action(() => FocusSelectedOrFirstItemWithRetry(requestId: id, attemptsRemaining: 12)));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => FocusSelectedOrFirstItemWithRetry(requestId: id, attemptsRemaining: 12)));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => FocusSelectedOrFirstItemWithRetry(requestId: id, attemptsRemaining: 12)));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => FocusSelectedOrFirstItemWithRetry(requestId: id, attemptsRemaining: 12)));
 
         // Si la virtualisation retarde la génération des containers, on retente au moment opportun.
         if (ItemsList?.ItemContainerGenerator != null &&
@@ -191,10 +207,42 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
 
                 ItemsList.ItemContainerGenerator.StatusChanged -= handler;
                 _ = Dispatcher.BeginInvoke(
-                    DispatcherPriority.ApplicationIdle,
+                    DispatcherPriority.Loaded,
                     new Action(() => FocusSelectedOrFirstItemWithRetry(requestId: id, attemptsRemaining: 12)));
             };
             ItemsList.ItemContainerGenerator.StatusChanged += handler;
+        }
+    }
+
+    private void OnItemsListGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+    {
+        try
+        {
+            if (ItemsList == null)
+            {
+                return;
+            }
+
+            // If focus lands on the list itself, immediately move it to the selected item
+            // so NVDA announces the entry instead of bouncing through a transient "list" focus.
+            if (!ReferenceEquals(e.NewFocus, ItemsList))
+            {
+                return;
+            }
+
+            var now = DateTime.UtcNow.Ticks;
+            // Simple anti-bounce guard.
+            if (_lastListAutoFocusTicks != 0 && (now - _lastListAutoFocusTicks) < TimeSpan.FromSeconds(1).Ticks)
+            {
+                return;
+            }
+            _lastListAutoFocusTicks = now;
+
+            RequestFocusSelectedOrFirstItem();
+        }
+        catch
+        {
+            // best-effort
         }
     }
 
@@ -202,7 +250,9 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
     {
         if (ItemsList == null || ItemsList.Items.Count == 0)
         {
-            ItemsList?.Focus();
+            // Empty list: keep focus on the view itself (stable) rather than the list control.
+            try { Focus(); } catch { /* ignore */ }
+            try { Keyboard.Focus(this); } catch { /* ignore */ }
             return;
         }
 
@@ -220,9 +270,10 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
             ItemsList.ItemContainerGenerator.ContainerFromIndex(ItemsList.SelectedIndex) is ListBoxItem item)
         {
             // Certaines configs WPF + virtualisation + SR "accrochent" mieux si le ListBox reçoit d'abord le focus.
-            ItemsList.Focus();
+            try { ItemsList.Focus(); } catch { /* ignore */ }
             item.IsSelected = true;
-            item.Focus();
+            try { item.Focus(); } catch { /* ignore */ }
+            try { Keyboard.Focus(item); } catch { /* ignore */ }
             item.BringIntoView();
             RaiseAutomationFocusChanged(item);
             return;
@@ -236,7 +287,7 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
             return;
         }
 
-        ItemsList.Focus();
+        try { ItemsList.Focus(); } catch { /* ignore */ }
     }
 
     private static void RaiseAutomationFocusChanged(UIElement element)

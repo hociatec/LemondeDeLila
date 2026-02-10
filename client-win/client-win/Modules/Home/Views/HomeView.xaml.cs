@@ -206,6 +206,9 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         // IMPORTANT (NVDA): if navigation happens while the key event is still being processed,
         // the focused button may disappear -> "indisponible". Park focus and defer execution.
         e.Handled = true;
+        // Keep focus on a stable element within this view while the command swaps visibility/navigates.
+        // This avoids NVDA announcing "non disponible" when the pressed button is collapsed/replaced.
+        TryKeyboardFocus(this);
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
         {
             try

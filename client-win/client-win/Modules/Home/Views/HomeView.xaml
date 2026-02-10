@@ -7,6 +7,8 @@
              xmlns:behaviors="clr-namespace:client_win.Behaviors"
               mc:Ignorable="d"
               d:DesignHeight="720" d:DesignWidth="1280"
+              Focusable="True"
+              IsTabStop="False"
               Loaded="OnLoaded"
               Unloaded="OnUnloaded"
               PreviewKeyDown="OnPreviewKeyDown"
