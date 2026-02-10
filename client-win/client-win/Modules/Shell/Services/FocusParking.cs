@@ -60,10 +60,9 @@ public static class FocusParking
                     if (string.Equals(name, "RootHost", StringComparison.Ordinal) ||
                         string.Equals(name, "FocusSentinel", StringComparison.Ordinal))
                     {
-                        if (!force)
-                        {
-                            return;
-                        }
+                        // Even in "force" mode, avoid churning focus repeatedly on the same stable host.
+                        // Churn is a frequent source of transient NVDA "indisponible" announcements.
+                        return;
                     }
                 }
             }
@@ -82,22 +81,30 @@ public static class FocusParking
             {
                 try
                 {
-                    var parkTarget = TryGetParkTarget(window) ?? (IInputElement)window;
-
                     // Keyboard focus: ensure the focused element is not about to be removed/collapsed.
                     //
                     // NVDA reliability:
-                    // - The Window itself does not always become Keyboard.FocusedElement (depending on what had focus),
-                    //   which breaks "parked" detection and focus-restore guards.
-                    // - Prefer a stable, always-present host element (RootHost / FocusSentinel) so that
-                    //   Keyboard.FocusedElement reliably moves off the soon-to-disappear control.
-                    var target = parkTarget;
+                    // - Prefer a stable, always-present host element (RootHost) so that Keyboard.FocusedElement
+                    //   reliably moves off the soon-to-disappear control.
+                    // - Avoid the invisible FocusSentinel here: NVDA frequently announces it as "indisponible".
+                    var parkTarget = TryGetParkTarget(window);
+                    var target = parkTarget ?? (IInputElement)window;
                     Log.Debug("FocusParking.Park target={Target} windowActive={IsActive} keyboardWithin={KeyboardWithin}",
                         target?.GetType().Name ?? "<null>",
                         window.IsActive,
                         window.IsKeyboardFocusWithin);
-                    try { (target as UIElement)?.Focus(); } catch { /* ignore */ }
-                    try { Keyboard.Focus(target); } catch { /* ignore */ }
+                    if (parkTarget is UIElement uiPark)
+                    {
+                        try { uiPark.Focus(); } catch { /* ignore */ }
+                        try { Keyboard.Focus(uiPark); } catch { /* ignore */ }
+                    }
+
+                    // Fallback: try the Window if the host element didn't take keyboard focus.
+                    if (Keyboard.FocusedElement == null || (parkTarget != null && !ReferenceEquals(Keyboard.FocusedElement, parkTarget)))
+                    {
+                        try { (window as UIElement)?.Focus(); } catch { /* ignore */ }
+                        try { Keyboard.Focus(window); } catch { /* ignore */ }
+                    }
 
                     // Intentionally avoid forcing UIA focus events here.
                     // Repeated synthetic UIA focus changes can trigger noisy "indisponible" announcements in NVDA.
@@ -135,13 +142,6 @@ public static class FocusParking
             if (rootHost is UIElement { IsVisible: true, IsEnabled: true, Focusable: true } uiRootHost)
             {
                 return uiRootHost;
-            }
-
-            // Fallback: focus sentinel (also stable, never removed during navigation).
-            var sentinel = window.FindName("FocusSentinel");
-            if (sentinel is UIElement { IsVisible: true, IsEnabled: true, Focusable: true } uiSentinel)
-            {
-                return uiSentinel;
             }
         }
         catch
