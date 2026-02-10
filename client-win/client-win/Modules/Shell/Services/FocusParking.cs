@@ -46,6 +46,32 @@ public static class FocusParking
                 return;
             }
 
+            // Avoid repetitive announcements: if focus is already parked on a stable host element, don't churn it.
+            try
+            {
+                var focused = Keyboard.FocusedElement;
+                if (focused is Window)
+                {
+                    return;
+                }
+                if (focused is FrameworkElement fe)
+                {
+                    var name = fe.Name ?? string.Empty;
+                    if (string.Equals(name, "RootHost", StringComparison.Ordinal) ||
+                        string.Equals(name, "FocusSentinel", StringComparison.Ordinal))
+                    {
+                        if (!force)
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+
             if (!force && IsCurrentFocusHealthyForWindow(window))
             {
                 // Soft mode: avoid unnecessary focus churn/announcements when focus is already valid.
@@ -57,12 +83,12 @@ public static class FocusParking
                 try
                 {
                     // Keyboard focus: ensure the focused element is not about to be removed/collapsed.
-                    var target =
-                        // Prefer the content host: it's a stable, visible element (NVDA can announce "indisponible"
-                        // when focusing an invisible sentinel during heavy navigation).
-                        window.FindName("RootHost") as IInputElement ??
-                        window.FindName("FocusSentinel") as IInputElement ??
-                        window;
+                    //
+                    // NVDA reliability:
+                    // - Parking on an "invisible" sentinel often triggers "indisponible".
+                    // - Parking on a ContentControl host may still be announced as unavailable depending on UIA.
+                    // The Window itself is stable and consistently announced.
+                    var target = (IInputElement)window;
                     Log.Debug("FocusParking.Park target={Target} windowActive={IsActive} keyboardWithin={KeyboardWithin}",
                         target?.GetType().Name ?? "<null>",
                         window.IsActive,

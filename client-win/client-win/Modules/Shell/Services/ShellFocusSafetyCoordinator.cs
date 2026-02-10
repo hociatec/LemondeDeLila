@@ -15,6 +15,7 @@ namespace client_win.Modules.Shell.Services;
 internal sealed class ShellFocusSafetyCoordinator : IDisposable
 {
     private readonly Window _window;
+    private readonly KeyboardFocusChangedEventHandler _previewGotKeyboardFocus;
     private readonly KeyboardFocusChangedEventHandler _gotKeyboardFocus;
     private readonly RoutedEventHandler _unloaded;
     private int _checking;
@@ -23,8 +24,20 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
     {
         _window = window ?? throw new ArgumentNullException(nameof(window));
 
+        _previewGotKeyboardFocus = OnPreviewGotKeyboardFocus;
         _gotKeyboardFocus = OnGotKeyboardFocus;
         _unloaded = OnUnloaded;
+
+        try
+        {
+            // Intercept invalid focus transitions before they are committed.
+            // This prevents NVDA from announcing transient/unloaded controls as "indisponible".
+            _window.AddHandler(Keyboard.PreviewGotKeyboardFocusEvent, _previewGotKeyboardFocus, handledEventsToo: true);
+        }
+        catch
+        {
+            // best-effort
+        }
 
         try
         {
@@ -48,8 +61,59 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
 
     public void Dispose()
     {
+        try { _window.RemoveHandler(Keyboard.PreviewGotKeyboardFocusEvent, _previewGotKeyboardFocus); } catch { }
         try { _window.RemoveHandler(Keyboard.GotKeyboardFocusEvent, _gotKeyboardFocus); } catch { }
         try { _window.RemoveHandler(FrameworkElement.UnloadedEvent, _unloaded); } catch { }
+    }
+
+    private void OnPreviewGotKeyboardFocus(object? sender, KeyboardFocusChangedEventArgs e)
+    {
+        try
+        {
+            // Never steal focus from other apps.
+            if (!_window.IsActive)
+            {
+                return;
+            }
+
+            if (e.NewFocus is not DependencyObject newFocus)
+            {
+                return;
+            }
+
+            // If the target isn't attached to a PresentationSource, it's a transient/unloaded element.
+            // Allowing the focus change is a common source of NVDA "indisponible".
+            if (PresentationSource.FromDependencyObject(newFocus) == null)
+            {
+                e.Handled = true;
+                FocusParking.ForcePark(_window);
+                return;
+            }
+
+            // If the target is disabled/invisible, block it and recover focus.
+            if (newFocus is UIElement uie)
+            {
+                if (!uie.IsVisible || !uie.IsEnabled)
+                {
+                    e.Handled = true;
+                    FocusParking.ForcePark(_window);
+                    return;
+                }
+            }
+            else if (newFocus is FrameworkElement fe)
+            {
+                if (!fe.IsVisible || !fe.IsEnabled)
+                {
+                    e.Handled = true;
+                    FocusParking.ForcePark(_window);
+                    return;
+                }
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
     }
 
     private void OnGotKeyboardFocus(object? sender, KeyboardFocusChangedEventArgs e)

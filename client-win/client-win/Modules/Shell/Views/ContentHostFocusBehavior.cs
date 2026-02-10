@@ -244,16 +244,10 @@ public static class ContentHostFocusBehavior
                 }
             }
 
-            // Fallback: tenter un MoveFocus à partir du host.
-            if (!allowFallback)
-            {
-                return false;
-            }
-            if (host.IsVisible && host.IsEnabled)
-            {
-                host.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
-                return IsFocusWithin(root) || IsFocusWithin(host);
-            }
+            // Fallback: do not MoveFocus from the host.
+            // It can land on transient/unloaded elements during template swaps, which is a common trigger for
+            // NVDA "indisponible". If we couldn't find a focus target, keep focus parked and let retries handle it.
+            return false;
         }
         catch
         {
