@@ -246,12 +246,13 @@ export class ClientUpdatesService {
       forceLatestRaw === 'y';
 
     const metaMin = (latest?.minRequiredVersion || '').trim();
-    const publishedClickOnce = forceLatest
-      ? await this.getPublishedClickOnceVersionFromDisk()
-      : null;
-    const latestAsMin = forceLatest
-      ? (publishedClickOnce || latest?.version || '').trim()
-      : '';
+    const publishedClickOnce = await this.getPublishedClickOnceVersionFromDisk();
+    const hasClickOnce = Boolean(publishedClickOnce && parseVersion(publishedClickOnce) != null);
+
+    // "Force latest" must never lock clients out if ClickOnce artifacts are missing.
+    // If ClickOnce isn't published/served, forcing a min version is pointless (clients can't update).
+    const latestAsMin =
+      forceLatest && hasClickOnce ? (publishedClickOnce || '').trim() : '';
 
     const candidates = [env, metaMin, latestAsMin].filter((v) => Boolean(v));
     if (candidates.length === 0) return null;
@@ -265,7 +266,19 @@ export class ClientUpdatesService {
       return env || metaMin || latestAsMin || null;
     }
     parsed.sort((a, b) => b.p - a.p);
-    return parsed[0].v;
+
+    // Safety: never return a minRequiredVersion higher than what we can actually serve via ClickOnce.
+    // This prevents a common outage where deployments overwrite the ClickOnce folder, leaving clients unable to update.
+    if (hasClickOnce) {
+      const clickOncePacked = parseVersion(publishedClickOnce!);
+      if (clickOncePacked != null && parsed[0].p > clickOncePacked) {
+        return publishedClickOnce!;
+      }
+      return parsed[0].v;
+    }
+
+    // No ClickOnce on disk: only allow an explicit env override. Ignore metaMin/forceLatest to avoid lockout.
+    return env || null;
   }
 
   private async assertZipSafe(zipPath: string) {

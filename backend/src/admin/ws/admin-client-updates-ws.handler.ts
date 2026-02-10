@@ -77,7 +77,8 @@ export class AdminClientUpdatesWsHandler {
     );
 
     const latest = await this.clientUpdates.getLatest();
-    const latestVersion = latest?.version?.trim() || null;
+    const publishedClickOnce = await this.clientUpdates.getPublishedClickOnceVersionFromDisk();
+    const latestVersion = (publishedClickOnce || latest?.version || '').trim() || null;
     if (!latestVersion) {
       throw new BadRequestException(
         'Impossible de forcer la mise à jour : aucune version publiée (latest.json manquant).',
@@ -90,6 +91,7 @@ export class AdminClientUpdatesWsHandler {
         : 'Une mise à jour du client est requise pour continuer.';
 
     await this.clientUpdates.saveLatest({
+      // Keep the metadata version aligned with what clients can actually download.
       version: latestVersion,
       publishedAt: latest?.publishedAt ?? new Date().toISOString(),
       message: latest?.message ?? null,
