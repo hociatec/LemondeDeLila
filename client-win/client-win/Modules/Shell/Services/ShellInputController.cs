@@ -161,7 +161,13 @@ public sealed class ShellInputController
     {
         try
         {
-            if (window.FindName("RootHost") is not ContentControl host)
+            var rootHost = window.FindName("RootHost");
+            if (rootHost is Views.StableContentHost stable)
+            {
+                return stable.TryGetCurrentContentRoot();
+            }
+
+            if (rootHost is not ContentControl host)
             {
                 return null;
             }
