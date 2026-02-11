@@ -48,7 +48,7 @@ public sealed class GameHistorySink : IGameHistorySink
                 var isUiTurn = trimmed.StartsWith("[ui.turn]", StringComparison.OrdinalIgnoreCase);
                 var isUiShortcutTagged = trimmed.StartsWith("[ui.shortcut]", StringComparison.OrdinalIgnoreCase);
                 var isUiShortcut = isUi || isUiTurn || isUiShortcutTagged;
-                var cleaned = StripGamePrefix(trimmed);
+                var cleaned = RemoveInvisibleFormattingChars(StripGamePrefix(trimmed));
                 if (string.IsNullOrWhiteSpace(cleaned))
                 {
                     continue;
@@ -197,8 +197,24 @@ public sealed class GameHistorySink : IGameHistorySink
 
     private static string NormalizeAnnouncement(string? message)
     {
-        var trimmed = (message ?? string.Empty).Trim();
+        var trimmed = RemoveInvisibleFormattingChars((message ?? string.Empty).Trim());
         return string.IsNullOrWhiteSpace(trimmed) ? string.Empty : trimmed;
+    }
+
+    private static string RemoveInvisibleFormattingChars(string? input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            return string.Empty;
+        }
+
+        return (input ?? string.Empty)
+            .Replace("\u2060", string.Empty, StringComparison.Ordinal) // WORD JOINER
+            .Replace("\u200B", string.Empty, StringComparison.Ordinal) // ZERO WIDTH SPACE
+            .Replace("\u200C", string.Empty, StringComparison.Ordinal) // ZERO WIDTH NON-JOINER
+            .Replace("\u200D", string.Empty, StringComparison.Ordinal) // ZERO WIDTH JOINER
+            .Replace("\uFEFF", string.Empty, StringComparison.Ordinal) // ZERO WIDTH NO-BREAK SPACE / BOM
+            .Trim();
     }
 
     private bool ShouldSkipDuplicate(string cleaned)

@@ -21,12 +21,38 @@ internal static class GameHistoryMessageSplitter
 
         var result = new List<string>();
 
-        foreach (var rawLine in normalized.Split('\n'))
+        var lines = normalized.Split('\n');
+        for (var i = 0; i < lines.Length; i++)
         {
+            var rawLine = lines[i];
             var line = (rawLine ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(line))
             {
-                result.Add(BlankLineToken);
+                // Keep blank separators only between non-empty content (drop leading/trailing empties).
+                if (result.Count == 0)
+                {
+                    continue;
+                }
+
+                var hasNonEmptyAhead = false;
+                for (var j = i + 1; j < lines.Length; j++)
+                {
+                    if (!string.IsNullOrWhiteSpace(lines[j]))
+                    {
+                        hasNonEmptyAhead = true;
+                        break;
+                    }
+                }
+
+                if (!hasNonEmptyAhead)
+                {
+                    continue;
+                }
+
+                if (!string.Equals(result[^1], BlankLineToken, StringComparison.Ordinal))
+                {
+                    result.Add(BlankLineToken);
+                }
                 continue;
             }
 

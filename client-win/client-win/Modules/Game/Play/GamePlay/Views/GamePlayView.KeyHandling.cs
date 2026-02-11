@@ -32,12 +32,56 @@ public partial class GamePlayView
         return false;
     }
 
-    private void OnChoicesPreviewKeyDown(object sender, KeyEventArgs e)
+    private async void OnChoicesPreviewKeyDown(object sender, KeyEventArgs e)
     {
-        // Assure un comportement "boucle" pour la main (LAMA) même quand le focus est dans la ListBox.
         if (TryHandleHandNavigation(e))
         {
             return;
+        }
+
+        if (e.Key is not (Key.Enter or Key.Return))
+        {
+            return;
+        }
+
+        if (DataContext is not GamePlayViewModel vm || vm.Grid.IsVisible)
+        {
+            return;
+        }
+
+        if (sender is ListBox list && ReferenceEquals(list, HandList) && HandList.Items.Count > 0)
+        {
+            e.Handled = true;
+            try
+            {
+                var sent = await vm.SubmitSelectedHandCardAsync(CancellationToken.None).ConfigureAwait(true);
+                if (sent)
+                {
+                    NoteHandSubmittedForFocusRestore();
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+            return;
+        }
+
+        if (sender is ListBox choiceList && ReferenceEquals(choiceList, ChoicesList) && ChoicesList.Items.Count > 0)
+        {
+            e.Handled = true;
+            try
+            {
+                var sent = await vm.SubmitSelectedChoiceAsync(CancellationToken.None).ConfigureAwait(true);
+                if (sent)
+                {
+                    NoteChoiceSubmittedForFocusRestore();
+                }
+            }
+            catch
+            {
+                // ignore
+            }
         }
     }
 
@@ -386,3 +430,4 @@ public partial class GamePlayView
         return !string.IsNullOrWhiteSpace(normalized);
     }
 }
+

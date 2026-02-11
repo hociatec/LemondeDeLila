@@ -284,7 +284,10 @@ export class LamaPresenter extends BasePresenterService {
     const players = Array.isArray(state.players) ? state.players : [];
 
     const handValues = ((metadata.handsByPlayerId ?? {})[String(userId)] ?? []) as LamaCardValue[];
-    const hand = handValues.filter((v) => typeof v === 'number' && v >= 1 && v <= LAMA_VALUE).map(lamaCardLabel);
+    const hand = handValues
+      .filter((v) => typeof v === 'number' && v >= 1 && v <= LAMA_VALUE)
+      .sort((a, b) => a - b)
+      .map(lamaCardLabel);
 
     const scoreBy = metadata.scoresByPlayerId ?? {};
     const myScore = Number(scoreBy[String(userId)] ?? 0);
