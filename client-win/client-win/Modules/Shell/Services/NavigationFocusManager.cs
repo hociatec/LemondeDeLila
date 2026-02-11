@@ -49,19 +49,14 @@ public sealed class NavigationFocusManager : INavigationFocusManager
                 return;
             }
 
-            // Move keyboard focus off the soon-to-disappear control.
-            // IMPORTANT: avoid focusing RootHost here (it is a focus scope and can restore the last focused element
-            // inside it). Prefer the FocusSentinel.
-            FocusParking.ForcePark(window);
-
-            if (TryGetFocusSentinel(window) is UIElement sentinel)
-            {
-                TrySetAutomationFocus(sentinel);
-            }
-        }
-        catch
-        {
-            // best-effort
+             // Move keyboard focus off the soon-to-disappear control.
+             // IMPORTANT: avoid focusing RootHost here (it is a focus scope and can restore the last focused element
+             // inside it). Prefer the FocusSentinel.
+             FocusParking.ForcePark(window);
+         }
+         catch
+         {
+             // best-effort
         }
     }
 
