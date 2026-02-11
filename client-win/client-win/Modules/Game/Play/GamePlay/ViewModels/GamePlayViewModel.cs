@@ -72,6 +72,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private Task? _initializeTask;
 
     private GameSession? _session;
+    private bool _turnRepeatToggle;
     private bool _isSpectator;
     private PendingTextPrompt? _pendingTextPrompt;
     private PendingConfigPrompt? _pendingConfigPrompt;
@@ -1179,6 +1180,13 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             if (GamePlayUiPanelsParser.TryGetPanelMessage(state, panelId.Trim(), out var message) &&
                 !string.IsNullOrWhiteSpace(message))
             {
+                // Robustesse lecteur d'écran: certains lecteurs/dédup peuvent ignorer les messages identiques.
+                // On rend le message unique sans impact visuel/audible en alternant un caractère invisible.
+                if (string.Equals(pressed, "T", StringComparison.Ordinal))
+                {
+                    message = MakeTurnRepeatAnnouncementUnique(message.Trim());
+                }
+
                 // Mark as UI/shortcut message so the history sink can announce it assertively
                 // without replaying queued older announcements.
                 MessageReceived?.Invoke(new GamePlayHistoryMessage($"[ui] {message.Trim()}"));
@@ -1189,7 +1197,14 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         return false;
     }
 
-	    public Task RequestTurnInfoAsync() => RequestTurnAsync();
+    private string MakeTurnRepeatAnnouncementUnique(string message)
+    {
+        _turnRepeatToggle = !_turnRepeatToggle;
+        // U+2060 (WORD JOINER) / U+200B (ZERO WIDTH SPACE) : invisibles, généralement ignorés par la synthèse.
+        return _turnRepeatToggle ? $"{message}\u2060" : $"{message}\u200B";
+    }
+
+ 	    public Task RequestTurnInfoAsync() => RequestTurnAsync();
 
 	    private void OnGameStatusChanged(string previousStatus, string nextStatus)
 	    {

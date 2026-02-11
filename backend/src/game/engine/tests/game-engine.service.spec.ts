@@ -28,6 +28,33 @@ jest.mock(
 );
 
 describe('GameEngineService', () => {
+  it('returns a fallback turn message on T even when panels are missing', async () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      { getHandler: jest.fn(() => ({})) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    (engine as any).getStateForUser = jest.fn().mockResolvedValue({
+      status: 'started',
+      players: [{ id: 1, username: 'Lila' }],
+      turn: { currentPlayerId: 1, direction: 1 },
+      extras: {},
+      log: [],
+    });
+
+    const out = await engine.handleKeyPress(1, 'any', 1, 'T');
+    expect(out).toEqual({ kind: 'panel', panelId: 'turn', message: 'À toi de jouer.' });
+  });
+
   it('does not replay stale skip-turn announcements on subsequent actions', async () => {
     const startedAt = '2026-02-09T00:00:00.000Z';
     const players = [

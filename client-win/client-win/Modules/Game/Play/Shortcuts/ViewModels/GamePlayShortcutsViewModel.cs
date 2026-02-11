@@ -40,7 +40,7 @@ internal sealed class GamePlayShortcutsViewModel
         var hints = GamePlayExtrasParser.ExtractShortcutHints(state);
         foreach (var hint in hints)
         {
-            if (!TryParseShortcutKey(hint.Key, out var keyChar, out var normalizedKey))
+            if (!TryParseShortcutKey(hint, out var keyChar, out var gesture, out var normalizedKey))
             {
                 continue;
             }
@@ -51,13 +51,21 @@ internal sealed class GamePlayShortcutsViewModel
                 continue;
             }
 
-            desired[code] = new ShortcutDefinition(
-                keyChar,
-                _sendKey,
-                commandParameter: normalizedKey,
-                description: "Raccourci serveur",
-                code: code,
-                availableInGame: true);
+            desired[code] = gesture != null
+                ? new ShortcutDefinition(
+                    gesture,
+                    _sendKey,
+                    commandParameter: normalizedKey,
+                    description: "Raccourci serveur",
+                    code: code,
+                    availableInGame: true)
+                : new ShortcutDefinition(
+                    keyChar,
+                    _sendKey,
+                    commandParameter: normalizedKey,
+                    description: "Raccourci serveur",
+                    code: code,
+                    availableInGame: true);
         }
 
         // Remove old server.key.* shortcuts.
@@ -106,12 +114,22 @@ internal sealed class GamePlayShortcutsViewModel
         return null;
     }
 
-    private static bool TryParseShortcutKey(string? raw, out char keyChar, out string normalizedKey)
+    private static bool TryParseShortcutKey(
+        GamePlayExtrasParser.ShortcutHint? hint,
+        out char keyChar,
+        out KeyGesture? gesture,
+        out string normalizedKey)
     {
         keyChar = default;
+        gesture = null;
         normalizedKey = string.Empty;
 
-        var s = raw ?? string.Empty;
+        if (hint == null)
+        {
+            return false;
+        }
+
+        var s = hint.Key ?? string.Empty;
         const string prefix = "pressed ";
         if (s.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         {
@@ -125,7 +143,19 @@ internal sealed class GamePlayShortcutsViewModel
             return true;
         }
 
+        // Zig et Zag: allow SPACE for draw_card (server-side shortcut).
+        // We keep this narrow to avoid conflicting with GamePlayView root key forwarding for common keys
+        // (Enter/Space) in other games/views (grid/buttons, choices lists, etc.).
+        if (string.Equals(hint.Type, "action", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(hint.ActionType, "draw_card", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(s, "SPACE", StringComparison.OrdinalIgnoreCase))
+        {
+            gesture = new KeyGesture(Key.Space);
+            normalizedKey = "SPACE";
+            return true;
+        }
+
         return false;
     }
 }
-
+ 

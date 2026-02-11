@@ -2,5 +2,5 @@ import type { GameShortcutsBuilder } from '../../../engine/shortcuts/game-shortc
 import { actionShortcut } from '../../../engine/shortcuts/shortcut-utils';
 
 export const buildZigEtZagShortcuts: GameShortcutsBuilder = () => [
-  actionShortcut('P', 'draw_card'),
+  actionShortcut('SPACE', 'draw_card'),
 ];

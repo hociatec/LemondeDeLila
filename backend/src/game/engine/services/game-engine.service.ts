@@ -243,10 +243,44 @@ export class GameEngineService {
       const panels = ui && typeof ui === 'object' ? (ui as any).panels : null;
       const panel =
         panels && typeof panels === 'object' ? (panels as any)[panelId] : null;
-      const message =
+      let message =
         panel && typeof panel === 'object' && typeof panel.message === 'string'
           ? String(panel.message).trim()
           : '';
+
+      if (!message && panelId === 'turn') {
+        const status = String(state?.status ?? '').toLowerCase().trim();
+        if (status === 'finished') {
+          message = 'Partie terminée.';
+        } else if (status !== 'started') {
+          message = 'Partie non démarrée.';
+        } else if (typeof state?.turn?.label === 'string' && state.turn.label.trim()) {
+          message = state.turn.label.trim();
+        } else {
+          const currentPlayerId =
+            typeof state?.turn?.currentPlayerId === 'number' &&
+            Number.isFinite(state.turn.currentPlayerId)
+              ? state.turn.currentPlayerId
+              : null;
+          const players = Array.isArray((state as any)?.players) ? (state as any).players : [];
+          const name =
+            currentPlayerId != null
+              ? String(
+                  players.find((p: any) => Number(p?.id) === currentPlayerId)
+                    ?.username ?? '',
+                ).trim()
+              : '';
+          if (currentPlayerId != null && currentPlayerId === userId) {
+            message = 'À toi de jouer.';
+          } else if (currentPlayerId != null && name) {
+            message = `C'est au tour de ${name}.`;
+          } else if (currentPlayerId != null) {
+            message = `C'est au tour du joueur ${currentPlayerId}.`;
+          } else {
+            message = 'Tour en cours indisponible.';
+          }
+        }
+      }
 
       return message ? { kind: 'panel', panelId, message } : null;
     }

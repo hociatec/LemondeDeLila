@@ -168,17 +168,21 @@ public static class ShortcutBindingsBehavior
                             ShortcutDiagnostics.TryLog($"shortcut.match kind=gesture key={key} mods={modifiers} code={shortcut.Code ?? ""}");
                             if (shortcut.Command.CanExecute(shortcut.CommandParameter))
                             {
-                                shortcut.Command.Execute(shortcut.CommandParameter);
-                                var code = shortcut.Code ?? string.Empty;
-                                var isGameShortcut =
-                                    code.StartsWith("ui.", StringComparison.OrdinalIgnoreCase) ||
-                                    code.StartsWith("game.", StringComparison.OrdinalIgnoreCase);
-                                e.Handled = isGameShortcut;
-                                if (shouldRefocus)
-                                {
-                                    RequestRefocusGameZone(element);
-                                }
-                            }
+                                 shortcut.Command.Execute(shortcut.CommandParameter);
+                                 var code = shortcut.Code ?? string.Empty;
+                                 var isGameShortcut =
+                                     code.StartsWith("ui.", StringComparison.OrdinalIgnoreCase) ||
+                                     code.StartsWith("game.", StringComparison.OrdinalIgnoreCase);
+                                 // "server.key.*" is also forwarded by GamePlayView root key handling;
+                                 // consume it here to prevent double-send / duplicated announcements.
+                                 e.Handled =
+                                     isGameShortcut ||
+                                     code.StartsWith("server.key.", StringComparison.OrdinalIgnoreCase);
+                                 if (shouldRefocus)
+                                 {
+                                     RequestRefocusGameZone(element);
+                                 }
+                             }
                             return;
                         }
                     }
