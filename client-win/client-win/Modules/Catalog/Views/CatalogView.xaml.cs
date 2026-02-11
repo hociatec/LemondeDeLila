@@ -10,7 +10,7 @@ using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Catalog.Views;
 
-public partial class CatalogView : UserControl, IInitialFocusTarget
+public partial class CatalogView : UserControl, IInitialFocusTarget, IFocusReady
 {
     private enum CatalogLayoutMode
     {
@@ -23,6 +23,7 @@ public partial class CatalogView : UserControl, IInitialFocusTarget
     private const double CatalogLayoutNarrowBreakpoint = 980;
     private CatalogLayoutMode _layoutMode = CatalogLayoutMode.Wide;
     private int _enterFromCategoriesRequestId;
+    private bool _isFocusReady;
 
     public CatalogView()
     {
@@ -32,6 +33,10 @@ public partial class CatalogView : UserControl, IInitialFocusTarget
         // Ensure we restore a usable keyboard focus when the tavern becomes visible again (e.g. after Vault/JoinGame).
         IsVisibleChanged += OnIsVisibleChanged;
     }
+
+    public bool IsFocusReady => _isFocusReady;
+
+    public event EventHandler? FocusReadyChanged;
 
     internal bool IsCategoriesColumnFocused => CategoriesList?.IsKeyboardFocusWithin == true;
 
@@ -45,6 +50,8 @@ public partial class CatalogView : UserControl, IInitialFocusTarget
         {
             return;
         }
+
+        UpdateFocusReady();
 
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
@@ -67,6 +74,21 @@ public partial class CatalogView : UserControl, IInitialFocusTarget
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         ApplyResponsiveLayout(ActualWidth);
+
+        try
+        {
+            if (CategoriesList != null)
+            {
+                CategoriesList.ItemContainerGenerator.StatusChanged -= OnCategoriesContainersStatusChanged;
+                CategoriesList.ItemContainerGenerator.StatusChanged += OnCategoriesContainersStatusChanged;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        UpdateFocusReady();
         // À l'entrée dans la taverne, le focus doit être sur la liste principale (actions + catégories).
         Dispatcher.BeginInvoke(DispatcherPriority.Input, () => FocusWhenContainersGenerated(CategoriesList));
     }
@@ -85,6 +107,7 @@ public partial class CatalogView : UserControl, IInitialFocusTarget
         }
 
         ApplyResponsiveLayout(e.NewSize.Width);
+        UpdateFocusReady();
     }
 
     private void OnKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -517,5 +540,49 @@ public partial class CatalogView : UserControl, IInitialFocusTarget
                 Grid.SetRowSpan(GamesPanel, 1);
                 break;
         }
+    }
+
+    private void OnCategoriesContainersStatusChanged(object? sender, EventArgs e)
+    {
+        UpdateFocusReady();
+    }
+
+    private void UpdateFocusReady()
+    {
+        try
+        {
+            var ready = ComputeFocusReady();
+            if (ready == _isFocusReady)
+            {
+                return;
+            }
+
+            _isFocusReady = ready;
+            FocusReadyChanged?.Invoke(this, EventArgs.Empty);
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    private bool ComputeFocusReady()
+    {
+        if (!IsLoaded || !IsVisible)
+        {
+            return false;
+        }
+
+        if (CategoriesList == null)
+        {
+            return false;
+        }
+
+        if (CategoriesList.Items.Count == 0)
+        {
+            return true;
+        }
+
+        return CategoriesList.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated;
     }
 }

@@ -10,13 +10,15 @@ using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Game.RoomDirectory.Views;
 
-public partial class JoinGameView : UserControl, IInitialFocusTarget
+public partial class JoinGameView : UserControl, IInitialFocusTarget, IFocusReady
 {
     private INotifyCollectionChanged? _roomsObservable;
     private int _lastRoomsCount = -1;
     private Window? _hostWindow;
     private bool _isActive;
     private int _focusRequestId;
+    private bool _isFocusReady;
+    private bool _containersHooked;
 
     public JoinGameView()
     {
@@ -26,12 +28,18 @@ public partial class JoinGameView : UserControl, IInitialFocusTarget
         IsVisibleChanged += OnIsVisibleChanged;
     }
 
+    public bool IsFocusReady => _isFocusReady;
+
+    public event EventHandler? FocusReadyChanged;
+
     private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         if (IsVisible != true)
         {
             return;
         }
+
+        UpdateFocusReady();
 
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
@@ -57,6 +65,21 @@ public partial class JoinGameView : UserControl, IInitialFocusTarget
         HookRoomsCollection(DataContext as JoinGameViewModel);
         HookWindowEscape();
         HookEmptyVisibility();
+
+        try
+        {
+            if (!_containersHooked && RoomsList != null)
+            {
+                _containersHooked = true;
+                RoomsList.ItemContainerGenerator.StatusChanged += OnRoomsContainersStatusChanged;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        UpdateFocusReady();
         FocusAfterLoad();
     }
 
@@ -71,6 +94,18 @@ public partial class JoinGameView : UserControl, IInitialFocusTarget
         UnhookWindowEscape();
         UnhookEmptyVisibility();
         HookRoomsCollection(null);
+        try
+        {
+            if (_containersHooked && RoomsList != null)
+            {
+                RoomsList.ItemContainerGenerator.StatusChanged -= OnRoomsContainersStatusChanged;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+        _containersHooked = false;
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)
@@ -263,6 +298,8 @@ public partial class JoinGameView : UserControl, IInitialFocusTarget
             return;
         }
 
+        UpdateFocusReady();
+
         _ = Dispatcher.BeginInvoke(
             DispatcherPriority.Input,
             new Action(() =>
@@ -353,6 +390,7 @@ public partial class JoinGameView : UserControl, IInitialFocusTarget
             return;
         }
         _lastRoomsCount = current;
+        UpdateFocusReady();
 
         _ = Dispatcher.BeginInvoke(
             DispatcherPriority.Input,
@@ -365,6 +403,55 @@ public partial class JoinGameView : UserControl, IInitialFocusTarget
                 }
                 FocusEmptyOrList();
             }));
+    }
+
+    private void OnRoomsContainersStatusChanged(object? sender, EventArgs e)
+    {
+        UpdateFocusReady();
+    }
+
+    private void UpdateFocusReady()
+    {
+        try
+        {
+            var ready = ComputeFocusReady();
+            if (ready == _isFocusReady)
+            {
+                return;
+            }
+
+            _isFocusReady = ready;
+            FocusReadyChanged?.Invoke(this, EventArgs.Empty);
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private bool ComputeFocusReady()
+    {
+        if (!IsLoaded || !IsVisible)
+        {
+            return false;
+        }
+
+        if (EmptyOnlyText != null && EmptyOnlyText.IsVisible)
+        {
+            return true;
+        }
+
+        if (RoomsList == null)
+        {
+            return false;
+        }
+
+        if (RoomsList.Items.Count == 0)
+        {
+            return true;
+        }
+
+        return RoomsList.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated;
     }
 
     private void HookWindowEscape()

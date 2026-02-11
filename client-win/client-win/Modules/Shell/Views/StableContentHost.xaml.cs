@@ -30,14 +30,18 @@ public partial class StableContentHost : UserControl
             typeof(StableContentHost),
             new PropertyMetadata(null));
 
-    private const int FocusRetryMaxAttempts = 24;
-    private static readonly TimeSpan FocusRetryInterval = TimeSpan.FromMilliseconds(125);
+    // Navigation focus retries are used to wait for async-populated views to become focusable.
+    // This used to allow up to ~3s of "previous view still alive" time; keep it short to reduce perceived latency.
+    private const int FocusRetryMaxAttempts = 16;
+    private static readonly TimeSpan FocusRetryInterval = TimeSpan.FromMilliseconds(80);
 
     private DispatcherTimer? _retryTimer;
     private int _retryRemaining;
     private int _transitionId;
     private DateTime _transitionStartedUtc;
     private bool _isTransitioning;
+    private IFocusReady? _currentFocusReady;
+    private int _currentFocusReadyHookedForTransitionId;
 
     public StableContentHost()
     {
@@ -80,6 +84,13 @@ public partial class StableContentHost : UserControl
         _transitionId = unchecked(_transitionId + 1);
         _transitionStartedUtc = DateTime.UtcNow;
 
+        if (_currentFocusReady != null)
+        {
+            try { _currentFocusReady.FocusReadyChanged -= OnCurrentFocusReadyChanged; } catch { /* ignore */ }
+            _currentFocusReady = null;
+        }
+        _currentFocusReadyHookedForTransitionId = 0;
+
         // Keep the old view alive behind the new one until focus successfully lands in the new view.
         PreviousContent = oldContent;
         _isTransitioning = oldContent != null;
@@ -120,6 +131,14 @@ public partial class StableContentHost : UserControl
         // After parking focus, re-evaluate z-order immediately so we don't keep the previous view on top
         // longer than necessary (perceived latency).
         ApplyPresenterZOrder();
+
+        // Fast path: if the new view is already loaded/focusable (e.g. cached or lightweight),
+        // finalize immediately without waiting for dispatcher/timer ticks.
+        if (TryFocusAndMaybeFinalize())
+        {
+            try { _retryTimer?.Stop(); } catch { /* ignore */ }
+            return;
+        }
 
         Dispatcher.BeginInvoke((Action)(() => TryFocusAndMaybeFinalize()), DispatcherPriority.Loaded);
         Dispatcher.BeginInvoke((Action)(() => TryFocusAndMaybeFinalize()), DispatcherPriority.ApplicationIdle);
@@ -219,14 +238,6 @@ public partial class StableContentHost : UserControl
             return;
         }
 
-        // Wait a bit: some views populate async and will only become focusable later.
-        if ((DateTime.UtcNow - _transitionStartedUtc) < TimeSpan.FromSeconds(3))
-        {
-            _retryRemaining = Math.Max(_retryRemaining, 1);
-            EnsureRetryTimer();
-            return;
-        }
-
         try
         {
             // If focus is still within the previous view, park it to the window before removing it.
@@ -288,6 +299,13 @@ public partial class StableContentHost : UserControl
             return false;
         }
 
+        HookFocusReadyIfNeeded(root);
+
+        if (_currentFocusReady is { IsFocusReady: false })
+        {
+            return false;
+        }
+
         if (root is IInitialFocusTarget focusTarget)
         {
             if (!IsFocusWithin(root))
@@ -312,6 +330,57 @@ public partial class StableContentHost : UserControl
         }
 
         return false;
+    }
+
+    private void HookFocusReadyIfNeeded(DependencyObject root)
+    {
+        if (root is not IFocusReady ready)
+        {
+            if (_currentFocusReady != null)
+            {
+                try { _currentFocusReady.FocusReadyChanged -= OnCurrentFocusReadyChanged; } catch { /* ignore */ }
+                _currentFocusReady = null;
+            }
+            return;
+        }
+
+        if (ReferenceEquals(_currentFocusReady, ready) && _currentFocusReadyHookedForTransitionId == _transitionId)
+        {
+            return;
+        }
+
+        if (_currentFocusReady != null)
+        {
+            try { _currentFocusReady.FocusReadyChanged -= OnCurrentFocusReadyChanged; } catch { /* ignore */ }
+        }
+
+        _currentFocusReady = ready;
+        _currentFocusReadyHookedForTransitionId = _transitionId;
+        try { _currentFocusReady.FocusReadyChanged += OnCurrentFocusReadyChanged; } catch { /* ignore */ }
+    }
+
+    private void OnCurrentFocusReadyChanged(object? sender, EventArgs e)
+    {
+        try
+        {
+            var transitionId = _transitionId;
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+            {
+                if (transitionId != _transitionId)
+                {
+                    return;
+                }
+
+                if (TryFocusAndMaybeFinalize())
+                {
+                    try { _retryTimer?.Stop(); } catch { /* ignore */ }
+                }
+            }));
+        }
+        catch
+        {
+            // ignore
+        }
     }
 
     private static DependencyObject? TryGetPresenterRoot(FrameworkElement presenter)

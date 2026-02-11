@@ -9,10 +9,12 @@ using client_win.Modules.Vault.ViewModels;
 
 namespace client_win.Modules.Vault.Views;
 
-public partial class VaultView : UserControl, IInitialFocusTarget
+public partial class VaultView : UserControl, IInitialFocusTarget, IFocusReady
 {
     private Window? _hostWindow;
     private int _focusRequestId;
+    private bool _isFocusReady;
+    private bool _containersHooked;
 
     public VaultView()
     {
@@ -20,12 +22,18 @@ public partial class VaultView : UserControl, IInitialFocusTarget
         IsVisibleChanged += OnIsVisibleChanged;
     }
 
+    public bool IsFocusReady => _isFocusReady;
+
+    public event EventHandler? FocusReadyChanged;
+
     private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         if (IsVisible != true)
         {
             return;
         }
+
+        UpdateFocusReady();
 
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
@@ -48,6 +56,21 @@ public partial class VaultView : UserControl, IInitialFocusTarget
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         HookWindowKeys();
+
+        try
+        {
+            if (!_containersHooked && ItemsList != null)
+            {
+                _containersHooked = true;
+                ItemsList.ItemContainerGenerator.StatusChanged += OnItemsContainersStatusChanged;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        UpdateFocusReady();
         RequestInitialFocus();
 
         // Defer network calls until the view is visible (UI first).
@@ -60,6 +83,7 @@ public partial class VaultView : UserControl, IInitialFocusTarget
                     await vm.InitializeAsync().ConfigureAwait(true);
                     if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
                     {
+                        UpdateFocusReady();
                         RequestInitialFocus();
                     }
                 }
@@ -74,6 +98,18 @@ public partial class VaultView : UserControl, IInitialFocusTarget
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         UnhookWindowKeys();
+        try
+        {
+            if (_containersHooked && ItemsList != null)
+            {
+                ItemsList.ItemContainerGenerator.StatusChanged -= OnItemsContainersStatusChanged;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+        _containersHooked = false;
     }
 
     public void RequestInitialFocus()
@@ -268,5 +304,54 @@ public partial class VaultView : UserControl, IInitialFocusTarget
         }
 
         OnPreviewKeyDown(this, e);
+    }
+
+    private void OnItemsContainersStatusChanged(object? sender, EventArgs e)
+    {
+        UpdateFocusReady();
+    }
+
+    private void UpdateFocusReady()
+    {
+        try
+        {
+            var ready = ComputeFocusReady();
+            if (ready == _isFocusReady)
+            {
+                return;
+            }
+
+            _isFocusReady = ready;
+            FocusReadyChanged?.Invoke(this, EventArgs.Empty);
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    private bool ComputeFocusReady()
+    {
+        if (!IsLoaded || !IsVisible)
+        {
+            return false;
+        }
+
+        if (EmptyText != null && EmptyText.IsVisible)
+        {
+            return true;
+        }
+
+        if (ItemsList == null)
+        {
+            return false;
+        }
+
+        if (ItemsList.Items.Count == 0)
+        {
+            return true;
+        }
+
+        return ItemsList.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated;
     }
 }

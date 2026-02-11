@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading.Tasks;
+using client_win.Core.Diagnostics;
 using client_win.Modules.Config;
 using client_win.Core.Constants;
 using client_win.Core.Network;
@@ -178,6 +179,7 @@ public sealed class JwtTokenValidator
         try
         {
             // Synchronous wrapper kept for compatibility; avoid calling on the UI thread.
+            UiThreadGuard.WarnIfOnUiThread("jwt.jwks.get");
             return TryGetSigningKeyFromJwksAsync().GetAwaiter().GetResult();
         }
         catch (Exception ex)

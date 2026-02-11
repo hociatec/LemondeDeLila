@@ -2,6 +2,7 @@ using System;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using client_win.Core.Diagnostics;
 using client_win.Modules.Network.Services;
 using Serilog;
 
@@ -32,10 +33,13 @@ public sealed class WsRequestClient
 
     public async Task<WsResponse<TPayload>> RequestAsync<TPayload>(string type, object payload, string? token, CancellationToken cancellationToken = default)
     {
+        UiThreadGuard.WarnIfOnUiThread("ws.request", type);
+
         string raw;
         try
         {
             Log.Debug("WS request: {Type}", type);
+            using var _ = UiThreadGuard.MeasureUiThreadContinuation("ws.request", type);
             var wsTicket = await GetApiTicketOrThrowAsync(token, cancellationToken).ConfigureAwait(false);
             raw = await _client.SendAsync(type, payload, token, wsTicket, cancellationToken).ConfigureAwait(false);
         }

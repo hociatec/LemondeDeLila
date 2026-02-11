@@ -7,6 +7,7 @@ using System.Windows.Threading;
 using client_win.Core;
 using client_win.Modules.Leaderboard.Dtos;
 using client_win.Modules.Leaderboard.Services;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Leaderboard.ViewModels;
 
@@ -17,7 +18,7 @@ public enum LeaderboardNavResult
     Closed
 }
 
-public sealed class LeaderboardViewModel : ObservableObject
+public sealed class LeaderboardViewModel : ObservableObject, IShellContentCachePolicy
 {
     private readonly ILeaderboardService _service;
     private readonly Action _close;
@@ -42,6 +43,8 @@ public sealed class LeaderboardViewModel : ObservableObject
     }
 
     public ObservableCollection<LeaderboardMenuItem> Items { get; }
+
+    public bool IsCacheable => true;
 
     public LeaderboardMenuItem? SelectedItem
     {

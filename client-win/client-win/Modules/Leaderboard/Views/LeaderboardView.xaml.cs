@@ -9,10 +9,11 @@ using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Leaderboard.Views;
 
-public partial class LeaderboardView : UserControl, IInitialFocusTarget
+public partial class LeaderboardView : UserControl, IInitialFocusTarget, IFocusReady
 {
     private bool _containersHooked;
     private int _focusRequestId;
+    private bool _isFocusReady;
 
     public LeaderboardView()
     {
@@ -20,12 +21,18 @@ public partial class LeaderboardView : UserControl, IInitialFocusTarget
         IsVisibleChanged += OnIsVisibleChanged;
     }
 
+    public bool IsFocusReady => _isFocusReady;
+
+    public event EventHandler? FocusReadyChanged;
+
     private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         if (IsVisible != true)
         {
             return;
         }
+
+        UpdateFocusReady();
 
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
@@ -52,6 +59,7 @@ public partial class LeaderboardView : UserControl, IInitialFocusTarget
             _containersHooked = true;
             ItemsList.ItemContainerGenerator.StatusChanged += OnContainersStatusChanged;
         }
+        UpdateFocusReady();
         FocusWhenContainersGenerated();
     }
 
@@ -175,6 +183,8 @@ public partial class LeaderboardView : UserControl, IInitialFocusTarget
             return;
         }
 
+        UpdateFocusReady();
+
         if (ItemsList.ItemContainerGenerator.Status != System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
         {
             return;
@@ -215,5 +225,44 @@ public partial class LeaderboardView : UserControl, IInitialFocusTarget
     public void RequestInitialFocus()
     {
         FocusWhenContainersGenerated();
+    }
+
+    private void UpdateFocusReady()
+    {
+        try
+        {
+            var ready = ComputeFocusReady();
+            if (ready == _isFocusReady)
+            {
+                return;
+            }
+
+            _isFocusReady = ready;
+            FocusReadyChanged?.Invoke(this, EventArgs.Empty);
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    private bool ComputeFocusReady()
+    {
+        if (!IsLoaded || !IsVisible)
+        {
+            return false;
+        }
+
+        if (ItemsList == null)
+        {
+            return false;
+        }
+
+        if (ItemsList.Items.Count == 0)
+        {
+            return true;
+        }
+
+        return ItemsList.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated;
     }
 }

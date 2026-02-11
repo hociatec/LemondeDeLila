@@ -9,13 +9,19 @@ using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Stats.Views;
 
-public partial class StatsView : UserControl, IInitialFocusTarget
+public partial class StatsView : UserControl, IInitialFocusTarget, IFocusReady
 {
+    private bool _isFocusReady;
+
     public StatsView()
     {
         InitializeComponent();
         IsVisibleChanged += OnIsVisibleChanged;
     }
+
+    public bool IsFocusReady => _isFocusReady;
+
+    public event EventHandler? FocusReadyChanged;
 
     private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
@@ -23,6 +29,8 @@ public partial class StatsView : UserControl, IInitialFocusTarget
         {
             return;
         }
+
+        UpdateFocusReady();
 
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
@@ -44,6 +52,20 @@ public partial class StatsView : UserControl, IInitialFocusTarget
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        try
+        {
+            if (ItemsList != null)
+            {
+                ItemsList.ItemContainerGenerator.StatusChanged -= OnItemsContainersStatusChanged;
+                ItemsList.ItemContainerGenerator.StatusChanged += OnItemsContainersStatusChanged;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        UpdateFocusReady();
         FocusWhenContainersGenerated();
 
         // Defer network calls until the view is visible (UI first).
@@ -56,6 +78,7 @@ public partial class StatsView : UserControl, IInitialFocusTarget
                     await vm.InitializeAsync().ConfigureAwait(true);
                     if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
                     {
+                        UpdateFocusReady();
                         FocusWhenContainersGenerated();
                     }
                 }
@@ -212,5 +235,49 @@ public partial class StatsView : UserControl, IInitialFocusTarget
     public void RequestInitialFocus()
     {
         FocusWhenContainersGenerated();
+    }
+
+    private void OnItemsContainersStatusChanged(object? sender, EventArgs e)
+    {
+        UpdateFocusReady();
+    }
+
+    private void UpdateFocusReady()
+    {
+        try
+        {
+            var ready = ComputeFocusReady();
+            if (ready == _isFocusReady)
+            {
+                return;
+            }
+
+            _isFocusReady = ready;
+            FocusReadyChanged?.Invoke(this, EventArgs.Empty);
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    private bool ComputeFocusReady()
+    {
+        if (!IsLoaded || !IsVisible)
+        {
+            return false;
+        }
+
+        if (ItemsList == null)
+        {
+            return false;
+        }
+
+        if (ItemsList.Items.Count == 0)
+        {
+            return true;
+        }
+
+        return ItemsList.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated;
     }
 }

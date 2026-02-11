@@ -23,7 +23,7 @@
         <Button x:Name="FocusSentinel"
                 Width="1" Height="1"
                 Opacity="0"
-                Focusable="False"
+                Focusable="True"
                 IsHitTestVisible="False"
                 KeyboardNavigation.IsTabStop="False"
                 AutomationProperties.AutomationId="FocusSentinel"

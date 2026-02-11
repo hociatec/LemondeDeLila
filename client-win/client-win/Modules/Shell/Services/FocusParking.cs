@@ -87,7 +87,7 @@ public static class FocusParking
                     // - Prefer a stable, always-present host element (RootHost) so that Keyboard.FocusedElement
                     //   reliably moves off the soon-to-disappear control.
                     // - Avoid the invisible FocusSentinel here: NVDA frequently announces it as "indisponible".
-                    var parkTarget = TryGetParkTarget(window);
+                    var parkTarget = TryGetParkTarget(window, force);
                     var target = parkTarget ?? (IInputElement)window;
                     Log.Debug("FocusParking.Park target={Target} windowActive={IsActive} keyboardWithin={KeyboardWithin}",
                         target?.GetType().Name ?? "<null>",
@@ -133,10 +133,21 @@ public static class FocusParking
         }
     }
 
-    private static IInputElement? TryGetParkTarget(Window window)
+    private static IInputElement? TryGetParkTarget(Window window, bool force)
     {
         try
         {
+            // During navigation swaps we must avoid focusing RootHost (it is a focus scope and may restore the last
+            // focused element inside it, which defeats parking and can trigger NVDA "indisponible").
+            if (force)
+            {
+                var sentinel = window.FindName("FocusSentinel");
+                if (sentinel is UIElement { IsVisible: true, IsEnabled: true, Focusable: true } uiSentinel)
+                {
+                    return uiSentinel;
+                }
+            }
+
             // Prefer the stable content host (named in MainWindow.xaml).
             var rootHost = window.FindName("RootHost");
             if (rootHost is UIElement { IsVisible: true, IsEnabled: true, Focusable: true } uiRootHost)

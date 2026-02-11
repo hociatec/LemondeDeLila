@@ -1,8 +1,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Threading;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Config;
+using client_win.Modules.MainMenu.Services;
 using client_win.Modules.MainMenu.ViewModels;
 using client_win.Modules.Network.Services;
 using client_win.Modules.User.Models;
@@ -125,6 +128,42 @@ public sealed class ShellSessionController
         var menuVm = _host.CreateMainMenuViewModel(user, onLogoutRequested);
         _homeAccessor.HomeContent = menuVm;
         _navigation.Show(menuVm);
+
+        // UI warm-up: create the most-used shell view-models and kick off their background loads.
+        // This reduces the perceived "mini transition" the first time each screen is opened.
+        try
+        {
+            var dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+            _ = dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+            {
+                try
+                {
+                    if (_host.Services.GetService<IMenuRouter>() is MenuRouter router)
+                    {
+                        var contents = router.WarmUpShellPages();
+                        if (Application.Current?.MainWindow is Window win)
+                        {
+                            var rootHost = win.FindName("RootHost");
+                            if (rootHost is client_win.Modules.Shell.Views.CachedContentHost cached)
+                            {
+                                foreach (var c in contents)
+                                {
+                                    try { cached.Preload(c); } catch { /* ignore */ }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // best-effort
+                }
+            }));
+        }
+        catch
+        {
+            // ignore
+        }
     }
 
     public void LogoutToHome(object homeContent)

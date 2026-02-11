@@ -726,7 +726,7 @@ public sealed class GameTableOpener : IGameTableOpener
                                 this,
                                 _dialogs,
                                 AnnouncementService,
-                                returnContent: catalogVm,
+                                returnContent: () => catalogVm,
                                 onClose: () =>
                                 {
                                     try { vaultVm?.Dispose(); } catch { /* ignore */ }

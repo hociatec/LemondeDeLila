@@ -86,6 +86,30 @@ public sealed class MenuRouter : IMenuRouter
     private AdminViewModel? _adminVm;
     private object? _adminReturnContent;
 
+    private CatalogViewModel? _catalogVm;
+    private object? _catalogReturnContent;
+
+    private VaultViewModel? _vaultVm;
+    private object? _vaultReturnContent;
+
+    private StatsViewModel? _statsVm;
+    private object? _statsReturnContent;
+
+    private LeaderboardViewModel? _leaderboardVm;
+    private object? _leaderboardReturnContent;
+
+    private MessagingViewModel? _messagingVm;
+    private object? _messagingReturnContent;
+
+    private SocialViewModel? _socialVm;
+    private object? _socialReturnContent;
+
+    private NotificationsViewModel? _notificationsVm;
+    private object? _notificationsReturnContent;
+
+    private AboutViewModel? _aboutVm;
+    private object? _aboutReturnContent;
+
     public MenuRouter(
         ILogger<MenuRouter> logger,
         ClientConfiguration config,
@@ -185,41 +209,36 @@ public sealed class MenuRouter : IMenuRouter
         _logger.LogInformation("Ouverture du catalogue de jeux");
 
         var previous = _navigation.CurrentContent;
-        CatalogViewModel? vm = null;
-        vm = new CatalogViewModel(
-            _catalog,
-            _options,
-            _session,
-            onClose: () =>
-            {
-                vm?.Dispose();
+        _catalogReturnContent = previous;
 
-                if (previous != null)
+        if (_catalogVm == null)
+        {
+            _catalogVm = new CatalogViewModel(
+                _catalog,
+                _options,
+                _session,
+                onClose: () =>
                 {
-                    _navigation.Show(previous);
-                    SetPresenceContextForContent(previous);
-                }
-            },
-            openGame: async game =>
-            {
-                if (vm == null) return;
-                await _tables.OpenAsync(game, vm).ConfigureAwait(true);
-            },
-            joinGame: async () =>
-            {
-                return await JoinGame().ConfigureAwait(true);
-            },
-            openStoryBook: async () =>
-            {
-                return await OpenStats().ConfigureAwait(true);
-            },
-            openVault: async () =>
-            {
-                return await OpenVault().ConfigureAwait(true);
-            });
+                    var returnTo = _catalogReturnContent;
+                    _catalogReturnContent = null;
+                    if (returnTo != null)
+                    {
+                        _navigation.Show(returnTo);
+                        SetPresenceContextForContent(returnTo);
+                    }
+                },
+                openGame: async game =>
+                {
+                    if (_catalogVm == null) return;
+                    await _tables.OpenAsync(game, _catalogVm).ConfigureAwait(true);
+                },
+                joinGame: async () => await JoinGame().ConfigureAwait(true),
+                openStoryBook: async () => await OpenStats().ConfigureAwait(true),
+                openVault: async () => await OpenVault().ConfigureAwait(true));
+        }
 
-        SetPresenceContextForContent(vm);
-        _navigation.Show(vm);
+        SetPresenceContextForContent(_catalogVm);
+        _navigation.Show(_catalogVm);
 
         return Task.FromResult("Catalogue ouvert.");
     }
@@ -234,22 +253,29 @@ public sealed class MenuRouter : IMenuRouter
             return Task.FromResult("Impossible d'ouvrir Mon coffre fort (vue précédente indisponible).");
         }
 
-        VaultViewModel? vm = null;
-        vm = new VaultViewModel(
-            _vault,
-            _tables,
-            _dialogs,
-            _announcements,
-            returnContent: previous,
-            onClose: () =>
-            {
-                vm?.Dispose();
-                _navigation.Show(previous);
-                SetPresenceContextForContent(previous);
-            });
+        _vaultReturnContent = previous;
+        if (_vaultVm == null)
+        {
+            _vaultVm = new VaultViewModel(
+                _vault,
+                _tables,
+                _dialogs,
+                _announcements,
+                returnContent: () => _vaultReturnContent,
+                onClose: () =>
+                {
+                    var returnTo = _vaultReturnContent;
+                    _vaultReturnContent = null;
+                    if (returnTo != null)
+                    {
+                        _navigation.Show(returnTo);
+                        SetPresenceContextForContent(returnTo);
+                    }
+                });
+        }
 
-        SetPresenceContextForContent(vm);
-        _navigation.Show(vm);
+        SetPresenceContextForContent(_vaultVm);
+        _navigation.Show(_vaultVm);
         return Task.FromResult("Mon coffre fort ouvert.");
     }
 
@@ -258,16 +284,27 @@ public sealed class MenuRouter : IMenuRouter
         _logger.LogInformation("Ouverture du livre des contes");
 
         var previous = _navigation.CurrentContent;
-        var vm = new StatsViewModel(_stats, onClose: () =>
+        _statsReturnContent = previous;
+        if (_statsVm == null)
         {
-            if (previous != null)
-            {
-                _navigation.Show(previous);
-                SetPresenceContextForContent(previous);
-            }
-        }, openLeaderboard: async () => { await OpenLeaderboard().ConfigureAwait(true); });
-        SetPresenceContextForContent(vm);
-        _navigation.Show(vm);
+            _statsVm = new StatsViewModel(
+                _stats,
+                onClose: () =>
+                {
+                    var returnTo = _statsReturnContent;
+                    _statsReturnContent = null;
+                    if (returnTo != null)
+                    {
+                        _navigation.Show(returnTo);
+                        SetPresenceContextForContent(returnTo);
+                    }
+                },
+                openLeaderboard: async () => { await OpenLeaderboard().ConfigureAwait(true); },
+                cacheable: true);
+        }
+
+        SetPresenceContextForContent(_statsVm);
+        _navigation.Show(_statsVm);
 
         return Task.FromResult("Livre des contes ouvert.");
     }
@@ -289,7 +326,8 @@ public sealed class MenuRouter : IMenuRouter
             },
             openLeaderboard: async () => { await OpenLeaderboard().ConfigureAwait(true); },
             targetUserId: userId,
-            targetUsername: username);
+            targetUsername: username,
+            cacheable: false);
         SetPresenceContextForContent(vm);
         _navigation.Show(vm);
 
@@ -301,14 +339,23 @@ public sealed class MenuRouter : IMenuRouter
         _logger.LogInformation("Ouverture du classement");
 
         var previous = _navigation.CurrentContent;
-        var vm = new LeaderboardViewModel(_leaderboard, onClose: () =>
+        _leaderboardReturnContent = previous;
+        if (_leaderboardVm == null)
         {
-            if (previous != null)
+            _leaderboardVm = new LeaderboardViewModel(_leaderboard, onClose: () =>
             {
-                _navigation.Show(previous);
-            }
-        });
-        _navigation.Show(vm);
+                var returnTo = _leaderboardReturnContent;
+                _leaderboardReturnContent = null;
+                if (returnTo != null)
+                {
+                    _navigation.Show(returnTo);
+                    SetPresenceContextForContent(returnTo);
+                }
+            });
+        }
+
+        SetPresenceContextForContent(_leaderboardVm);
+        _navigation.Show(_leaderboardVm);
 
         return Task.FromResult("Classement ouvert.");
     }
@@ -520,20 +567,27 @@ public sealed class MenuRouter : IMenuRouter
         _logger.LogInformation("Ouverture de la messagerie");
 
         var previous = _navigation.CurrentContent;
-        var vm = new MessagingViewModel(_messaging, _dialogs, onClose: () =>
+        _messagingReturnContent = previous;
+        if (_messagingVm == null)
         {
-            if (previous != null)
+            _messagingVm = new MessagingViewModel(_messaging, _dialogs, onClose: () =>
             {
-                if (previous is client_win.Modules.Social.ViewModels.SocialViewModel socialVm)
+                var returnTo = _messagingReturnContent;
+                _messagingReturnContent = null;
+                if (returnTo != null)
                 {
-                    socialVm.RequestReturnToMenu();
+                    if (returnTo is client_win.Modules.Social.ViewModels.SocialViewModel socialVm)
+                    {
+                        socialVm.RequestReturnToMenu();
+                    }
+                    _navigation.Show(returnTo);
+                    SetPresenceContextForContent(returnTo);
                 }
-                _navigation.Show(previous);
-                SetPresenceContextForContent(previous);
-            }
-        });
-        SetPresenceContextForContent(vm);
-        _navigation.Show(vm);
+            });
+        }
+
+        SetPresenceContextForContent(_messagingVm);
+        _navigation.Show(_messagingVm);
 
         return Task.FromResult("Messagerie ouverte.");
     }
@@ -543,26 +597,27 @@ public sealed class MenuRouter : IMenuRouter
         _logger.LogInformation("Ouverture du réseau social");
 
         var previous = _navigation.CurrentContent;
-        var vm = new SocialViewModel(
-            _social,
-            openStoryBook: async (userId, username) =>
-            {
-                return await OpenStatsForUser(userId, username).ConfigureAwait(true);
-            },
-            openMessaging: async () =>
-            {
-                return await OpenMessaging().ConfigureAwait(true);
-            },
-            onClose: () =>
+        _socialReturnContent = previous;
+        if (_socialVm == null)
         {
-            if (previous != null)
-            {
-                _navigation.Show(previous);
-                SetPresenceContextForContent(previous);
-            }
-        });
-        SetPresenceContextForContent(vm);
-        _navigation.Show(vm);
+            _socialVm = new SocialViewModel(
+                _social,
+                openStoryBook: async (userId, username) => await OpenStatsForUser(userId, username).ConfigureAwait(true),
+                openMessaging: async () => await OpenMessaging().ConfigureAwait(true),
+                onClose: () =>
+                {
+                    var returnTo = _socialReturnContent;
+                    _socialReturnContent = null;
+                    if (returnTo != null)
+                    {
+                        _navigation.Show(returnTo);
+                        SetPresenceContextForContent(returnTo);
+                    }
+                });
+        }
+
+        SetPresenceContextForContent(_socialVm);
+        _navigation.Show(_socialVm);
 
         return Task.FromResult("Réseau social ouvert.");
     }
@@ -572,16 +627,23 @@ public sealed class MenuRouter : IMenuRouter
         _logger.LogInformation("Ouverture des notifications");
 
         var previous = _navigation.CurrentContent;
-        var vm = new NotificationsViewModel(_inbox, _notify, _session, _dialogs, onClose: () =>
+        _notificationsReturnContent = previous;
+        if (_notificationsVm == null)
         {
-            if (previous != null)
+            _notificationsVm = new NotificationsViewModel(_inbox, _notify, _session, _dialogs, onClose: () =>
             {
-                _navigation.Show(previous);
-                SetPresenceContextForContent(previous);
-            }
-        });
-        SetPresenceContextForContent(vm);
-        _navigation.Show(vm);
+                var returnTo = _notificationsReturnContent;
+                _notificationsReturnContent = null;
+                if (returnTo != null)
+                {
+                    _navigation.Show(returnTo);
+                    SetPresenceContextForContent(returnTo);
+                }
+            });
+        }
+
+        SetPresenceContextForContent(_notificationsVm);
+        _navigation.Show(_notificationsVm);
 
         return Task.FromResult("Notifications ouvertes.");
     }
@@ -669,15 +731,23 @@ public sealed class MenuRouter : IMenuRouter
         _logger.LogInformation("Ouverture de la page À propos");
 
         var previous = _navigation.CurrentContent;
-        var vm = new AboutViewModel(_config, _dialogs, _notify, _sounds, onClose: () =>
+        _aboutReturnContent = previous;
+        if (_aboutVm == null)
         {
-            if (previous != null)
+            _aboutVm = new AboutViewModel(_config, _dialogs, _notify, _sounds, onClose: () =>
             {
-                _navigation.Show(previous);
-            }
+                var returnTo = _aboutReturnContent;
+                _aboutReturnContent = null;
+                if (returnTo != null)
+                {
+                    _navigation.Show(returnTo);
+                    SetPresenceContextForContent(returnTo);
+                }
+            });
+        }
 
-        });
-        _navigation.Show(vm);
+        SetPresenceContextForContent(_aboutVm);
+        _navigation.Show(_aboutVm);
 
         return Task.FromResult("À propos ouvert.");
     }
@@ -689,12 +759,261 @@ public sealed class MenuRouter : IMenuRouter
         return OpenOptionsAndRestoreAsync();
     }
 
+    public object[] WarmUpShellPages()
+    {
+        var warmed = new System.Collections.Generic.List<object>(capacity: 12);
+
+        try
+        {
+            if (_catalogVm == null)
+            {
+                _catalogVm = new CatalogViewModel(
+                    _catalog,
+                    _options,
+                    _session,
+                    onClose: () =>
+                    {
+                        var returnTo = _catalogReturnContent;
+                        _catalogReturnContent = null;
+                        if (returnTo != null)
+                        {
+                            _navigation.Show(returnTo);
+                            SetPresenceContextForContent(returnTo);
+                        }
+                    },
+                    openGame: async game =>
+                    {
+                        if (_catalogVm == null) return;
+                        await _tables.OpenAsync(game, _catalogVm).ConfigureAwait(true);
+                    },
+                    joinGame: async () => await JoinGame().ConfigureAwait(true),
+                    openStoryBook: async () => await OpenStats().ConfigureAwait(true),
+                    openVault: async () => await OpenVault().ConfigureAwait(true));
+            }
+
+            if (_catalogVm != null) warmed.Add(_catalogVm);
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        try
+        {
+            if (_statsVm == null)
+            {
+                _statsVm = new StatsViewModel(
+                    _stats,
+                    onClose: () =>
+                    {
+                        var returnTo = _statsReturnContent;
+                        _statsReturnContent = null;
+                        if (returnTo != null)
+                        {
+                            _navigation.Show(returnTo);
+                            SetPresenceContextForContent(returnTo);
+                        }
+                    },
+                    openLeaderboard: async () => { await OpenLeaderboard().ConfigureAwait(true); },
+                    cacheable: true);
+            }
+
+            if (_statsVm != null) warmed.Add(_statsVm);
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        try
+        {
+            if (_leaderboardVm == null)
+            {
+                _leaderboardVm = new LeaderboardViewModel(_leaderboard, onClose: () =>
+                {
+                    var returnTo = _leaderboardReturnContent;
+                    _leaderboardReturnContent = null;
+                    if (returnTo != null)
+                    {
+                        _navigation.Show(returnTo);
+                        SetPresenceContextForContent(returnTo);
+                    }
+                });
+            }
+
+            if (_leaderboardVm != null) warmed.Add(_leaderboardVm);
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        try
+        {
+            if (_vaultVm == null)
+            {
+                _vaultVm = new VaultViewModel(
+                    _vault,
+                    _tables,
+                    _dialogs,
+                    _announcements,
+                    returnContent: () => _vaultReturnContent,
+                    onClose: () =>
+                    {
+                        var returnTo = _vaultReturnContent;
+                        _vaultReturnContent = null;
+                        if (returnTo != null)
+                        {
+                            _navigation.Show(returnTo);
+                            SetPresenceContextForContent(returnTo);
+                        }
+                    });
+            }
+
+            _ = _vaultVm.InitializeAsync();
+            if (_vaultVm != null) warmed.Add(_vaultVm);
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        try
+        {
+            if (_socialVm == null)
+            {
+                _socialVm = new SocialViewModel(
+                    _social,
+                    openStoryBook: async (userId, username) => await OpenStatsForUser(userId, username).ConfigureAwait(true),
+                    openMessaging: async () => await OpenMessaging().ConfigureAwait(true),
+                    onClose: () =>
+                    {
+                        var returnTo = _socialReturnContent;
+                        _socialReturnContent = null;
+                        if (returnTo != null)
+                        {
+                            _navigation.Show(returnTo);
+                            SetPresenceContextForContent(returnTo);
+                        }
+                    });
+            }
+
+            if (_socialVm != null) warmed.Add(_socialVm);
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        try
+        {
+            if (_messagingVm == null)
+            {
+                _messagingVm = new MessagingViewModel(_messaging, _dialogs, onClose: () =>
+                {
+                    var returnTo = _messagingReturnContent;
+                    _messagingReturnContent = null;
+                    if (returnTo != null)
+                    {
+                        if (returnTo is client_win.Modules.Social.ViewModels.SocialViewModel socialVm)
+                        {
+                            socialVm.RequestReturnToMenu();
+                        }
+                        _navigation.Show(returnTo);
+                        SetPresenceContextForContent(returnTo);
+                    }
+                });
+            }
+
+            if (_messagingVm != null) warmed.Add(_messagingVm);
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        try
+        {
+            if (_notificationsVm == null)
+            {
+                _notificationsVm = new NotificationsViewModel(_inbox, _notify, _session, _dialogs, onClose: () =>
+                {
+                    var returnTo = _notificationsReturnContent;
+                    _notificationsReturnContent = null;
+                    if (returnTo != null)
+                    {
+                        _navigation.Show(returnTo);
+                        SetPresenceContextForContent(returnTo);
+                    }
+                });
+            }
+
+            _ = _notificationsVm.InitializeAsync();
+            if (_notificationsVm != null) warmed.Add(_notificationsVm);
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        try
+        {
+            if (_aboutVm == null)
+            {
+                _aboutVm = new AboutViewModel(_config, _dialogs, _notify, _sounds, onClose: () =>
+                {
+                    var returnTo = _aboutReturnContent;
+                    _aboutReturnContent = null;
+                    if (returnTo != null)
+                    {
+                        _navigation.Show(returnTo);
+                        SetPresenceContextForContent(returnTo);
+                    }
+                });
+            }
+
+            if (_aboutVm != null) warmed.Add(_aboutVm);
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        return warmed.ToArray();
+    }
+
     public Task<string> Logout()
     {
         _logger.LogInformation("Déconnexion demandée par l'utilisateur");
         _adminVm = null;
         _adminReturnContent = null;
         _contactAdminOpen = false;
+
+        try { _catalogVm?.Dispose(); } catch { /* ignore */ }
+        _catalogVm = null;
+        _catalogReturnContent = null;
+
+        try { _vaultVm?.Dispose(); } catch { /* ignore */ }
+        _vaultVm = null;
+        _vaultReturnContent = null;
+
+        _statsVm = null;
+        _statsReturnContent = null;
+
+        _leaderboardVm = null;
+        _leaderboardReturnContent = null;
+
+        _messagingVm = null;
+        _messagingReturnContent = null;
+
+        _socialVm = null;
+        _socialReturnContent = null;
+
+        _notificationsVm = null;
+        _notificationsReturnContent = null;
+
+        _aboutVm = null;
+        _aboutReturnContent = null;
         // La déconnexion est gérée par le MainMenuViewModel
         return Task.FromResult("Déconnexion en cours...");
     }

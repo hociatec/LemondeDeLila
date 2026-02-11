@@ -49,15 +49,15 @@ public sealed class NavigationFocusManager : INavigationFocusManager
                 return;
             }
 
-            var host = TryGetRootHost(window);
-            if (host == null)
-            {
-                return;
-            }
-
             // Move keyboard focus off the soon-to-disappear control.
-            TryFocus(host);
-            TrySetAutomationFocus(host);
+            // IMPORTANT: avoid focusing RootHost here (it is a focus scope and can restore the last focused element
+            // inside it). Prefer the FocusSentinel.
+            FocusParking.ForcePark(window);
+
+            if (TryGetFocusSentinel(window) is UIElement sentinel)
+            {
+                TrySetAutomationFocus(sentinel);
+            }
         }
         catch
         {
@@ -266,6 +266,18 @@ public sealed class NavigationFocusManager : INavigationFocusManager
         {
             var rootHost = window.FindName("RootHost");
             return rootHost as UIElement;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static UIElement? TryGetFocusSentinel(Window window)
+    {
+        try
+        {
+            return window.FindName("FocusSentinel") as UIElement;
         }
         catch
         {

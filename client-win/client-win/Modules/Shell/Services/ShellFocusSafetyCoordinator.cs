@@ -89,10 +89,20 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
                 var rootHost = TryGetRootHost(_window);
                 if (rootHost != null && newFocus is not Window)
                 {
+                    // Allow focusing the sentinel used by FocusParking during navigation swaps.
+                    // Without this exception, we can end up in an infinite focus-recovery loop
+                    // (PreviewGotKeyboardFocus -> ForcePark -> PreviewGotKeyboardFocus ...),
+                    // which ultimately crashes with a StackOverflowException in PresentationCore.
+                    if (newFocus is FrameworkElement fe &&
+                        string.Equals(fe.Name, "FocusSentinel", StringComparison.Ordinal))
+                    {
+                        return;
+                    }
+
                     if (!IsDescendant(newFocus, rootHost) && !ReferenceEquals(newFocus, rootHost))
                     {
                         e.Handled = true;
-                        TryFocusRootHost(rootHost);
+                        FocusParking.ForcePark(_window);
                         return;
                     }
                 }
@@ -174,7 +184,7 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
                     var rootHost = TryGetRootHost(_window);
                     if (rootHost != null)
                     {
-                        TryFocusRootHost(rootHost);
+                        FocusParking.ForcePark(_window);
                         return;
                     }
                 }
@@ -339,6 +349,11 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
         try
         {
             var rootHost = window.FindName("RootHost");
+            if (rootHost is ICurrentContentRootProvider provider)
+            {
+                return provider.TryGetCurrentContentRoot();
+            }
+
             if (rootHost is Views.StableContentHost stable)
             {
                 return stable.TryGetCurrentContentRoot();
@@ -380,22 +395,6 @@ internal sealed class ShellFocusSafetyCoordinator : IDisposable
         catch
         {
             return null;
-        }
-    }
-
-    private static void TryFocusRootHost(DependencyObject rootHost)
-    {
-        try
-        {
-            if (rootHost is UIElement ui && ui.IsVisible && ui.IsEnabled)
-            {
-                try { ui.Focus(); } catch { /* ignore */ }
-                try { Keyboard.Focus(ui); } catch { /* ignore */ }
-            }
-        }
-        catch
-        {
-            // ignore
         }
     }
 

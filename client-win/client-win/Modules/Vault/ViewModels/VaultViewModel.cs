@@ -12,14 +12,14 @@ using client_win.Modules.Vault.Services;
 
 namespace client_win.Modules.Vault.ViewModels;
 
-public sealed class VaultViewModel : ObservableObject, IDisposable
+public sealed class VaultViewModel : ObservableObject, IDisposable, IShellContentCachePolicy
 {
     private readonly IVaultClient _vault;
     private readonly IGameTableOpener _tables;
     private readonly IDialogService _dialogs;
     private readonly IAnnouncementService _announcements;
     private readonly Action _close;
-    private readonly object _returnContent;
+    private readonly Func<object?> _returnContent;
     private bool _isBusy;
     private bool _initialized;
     private bool _hasLoaded;
@@ -31,7 +31,7 @@ public sealed class VaultViewModel : ObservableObject, IDisposable
         IGameTableOpener tables,
         IDialogService dialogs,
         IAnnouncementService announcements,
-        object returnContent,
+        Func<object?> returnContent,
         Action onClose)
     {
         _vault = vault ?? throw new ArgumentNullException(nameof(vault));
@@ -66,6 +66,8 @@ public sealed class VaultViewModel : ObservableObject, IDisposable
     }
 
     public ObservableCollection<VaultSnapshotItem> Items { get; } = new();
+
+    public bool IsCacheable => true;
 
     public bool HasLoaded
     {
@@ -162,7 +164,13 @@ public sealed class VaultViewModel : ObservableObject, IDisposable
             Status = "Restauration…";
             var roomId = await _vault.RestoreAsync(selected.Id).ConfigureAwait(true);
             _announcements.Enqueue("Partie restaurée. Ouverture de la table…", AnnouncementPriority.Polite);
-            await _tables.OpenExistingAsync(roomId, _returnContent, spectator: false, silent: false, vaultSnapshotId: selected.Id)
+            var returnContent = _returnContent();
+            if (returnContent == null)
+            {
+                Status = "Retour indisponible.";
+                return;
+            }
+            await _tables.OpenExistingAsync(roomId, returnContent, spectator: false, silent: false, vaultSnapshotId: selected.Id)
                 .ConfigureAwait(true);
         }
         catch (Exception ex)

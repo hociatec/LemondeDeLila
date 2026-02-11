@@ -31,6 +31,7 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         public required ContentPresenter Presenter { get; init; }
         public long LastAccessTicks { get; set; }
         public bool Cacheable { get; init; }
+        public bool IsInHostGrid { get; set; }
     }
 
     private readonly Dictionary<object, Entry> _entries = new(ReferenceEqualityComparer.Instance);
@@ -40,12 +41,19 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
     private int _transitionId;
     private DateTime _transitionStartedUtc;
 
-    private const int FocusRetryMaxAttempts = 24;
-    private static readonly TimeSpan FocusRetryInterval = TimeSpan.FromMilliseconds(125);
+    // Navigation focus retries are used to wait for async-populated views to become focusable.
+    // This used to allow up to ~3s of "previous view still alive" time; keep it short to reduce perceived latency.
+    private const int FocusRetryMaxAttempts = 16;
+    private static readonly TimeSpan FocusRetryInterval = TimeSpan.FromMilliseconds(80);
     private DispatcherTimer? _retryTimer;
     private int _retryRemaining;
+    private IFocusReady? _currentFocusReady;
+    private int _currentFocusReadyHookedForTransitionId;
 
     private const int MaxCacheEntries = 10;
+
+    private readonly Queue<object> _preloadQueue = new();
+    private bool _preloadScheduled;
 
     public CachedContentHost()
     {
@@ -71,6 +79,94 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         set => SetValue(CurrentContentProperty, value);
     }
 
+    /// <summary>
+    /// Pre-creates the presenter and materializes the view template for the given content without navigating to it.
+    /// This shifts the first-time WPF DataTemplate + layout cost to an idle/background moment.
+    /// </summary>
+    public void Preload(object content)
+    {
+        if (content == null)
+        {
+            return;
+        }
+
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.BeginInvoke(new Action(() => Preload(content)), DispatcherPriority.Background);
+            return;
+        }
+
+        if (!IsLoaded)
+        {
+            RoutedEventHandler? handler = null;
+            handler = (_, __) =>
+            {
+                Loaded -= handler;
+                try { Preload(content); } catch { /* ignore */ }
+            };
+            Loaded += handler;
+            return;
+        }
+
+        try
+        {
+            _preloadQueue.Enqueue(content);
+            SchedulePreloadPump();
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    private void SchedulePreloadPump()
+    {
+        if (_preloadScheduled)
+        {
+            return;
+        }
+
+        _preloadScheduled = true;
+        Dispatcher.BeginInvoke(new Action(ProcessPreloadQueue), DispatcherPriority.Background);
+    }
+
+    private void ProcessPreloadQueue()
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.BeginInvoke(new Action(ProcessPreloadQueue), DispatcherPriority.Background);
+            return;
+        }
+
+        try
+        {
+            if (_preloadQueue.Count == 0)
+            {
+                _preloadScheduled = false;
+                return;
+            }
+
+            var content = _preloadQueue.Dequeue();
+            var entry = GetOrCreateEntry(content, ensureInHostGrid: false);
+            MaterializePresenter(entry.Presenter);
+        }
+        catch
+        {
+            // best-effort
+        }
+        finally
+        {
+            if (_preloadQueue.Count > 0)
+            {
+                Dispatcher.BeginInvoke(new Action(ProcessPreloadQueue), DispatcherPriority.Background);
+            }
+            else
+            {
+                _preloadScheduled = false;
+            }
+        }
+    }
+
     public DependencyObject? TryGetCurrentContentRoot()
         => _current != null ? TryGetPresenterRoot(_current.Presenter) : null;
 
@@ -87,8 +183,15 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         _transitionId = unchecked(_transitionId + 1);
         _transitionStartedUtc = DateTime.UtcNow;
 
+        if (_currentFocusReady != null)
+        {
+            try { _currentFocusReady.FocusReadyChanged -= OnCurrentFocusReadyChanged; } catch { /* ignore */ }
+            _currentFocusReady = null;
+        }
+        _currentFocusReadyHookedForTransitionId = 0;
+
         _previous = _current;
-        _current = newContent == null ? null : GetOrCreateEntry(newContent);
+        _current = newContent == null ? null : GetOrCreateEntry(newContent, ensureInHostGrid: true);
 
         UpdatePresenterVisibilities();
         EvictIfNeeded();
@@ -96,11 +199,15 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         BeginFocusPass();
     }
 
-    private Entry GetOrCreateEntry(object content)
+    private Entry GetOrCreateEntry(object content, bool ensureInHostGrid)
     {
         if (_entries.TryGetValue(content, out var existing))
         {
             existing.LastAccessTicks = DateTime.UtcNow.Ticks;
+            if (ensureInHostGrid)
+            {
+                EnsureEntryInHostGrid(existing);
+            }
             return existing;
         }
 
@@ -118,16 +225,83 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
             Content = content,
             Presenter = presenter,
             Cacheable = cacheable,
-            LastAccessTicks = DateTime.UtcNow.Ticks
+            LastAccessTicks = DateTime.UtcNow.Ticks,
+            IsInHostGrid = false
         };
 
         _entries.Add(content, entry);
-        HostGrid.Children.Add(presenter);
+        if (ensureInHostGrid)
+        {
+            EnsureEntryInHostGrid(entry);
+        }
         return entry;
+    }
+
+    private void EnsureEntryInHostGrid(Entry entry)
+    {
+        if (entry.IsInHostGrid)
+        {
+            return;
+        }
+
+        try
+        {
+            HostGrid.Children.Add(entry.Presenter);
+            entry.IsInHostGrid = true;
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    private void MaterializePresenter(ContentPresenter presenter)
+    {
+        try
+        {
+            // The presenter is normally Collapsed until navigated to. Collapsed content is not measured/arranged,
+            // so we temporarily make it non-rendered but measurable to force template/materialization.
+            var oldVisibility = presenter.Visibility;
+            var oldOpacity = presenter.Opacity;
+            var oldHitTest = presenter.IsHitTestVisible;
+            var oldZ = Panel.GetZIndex(presenter);
+
+            presenter.IsHitTestVisible = false;
+            presenter.Focusable = false;
+            presenter.Opacity = 0;
+            presenter.Visibility = Visibility.Hidden;
+            Panel.SetZIndex(presenter, -1000);
+
+            presenter.ApplyTemplate();
+
+            var w = ActualWidth;
+            var h = ActualHeight;
+            if (double.IsNaN(w) || w <= 0) w = 1280;
+            if (double.IsNaN(h) || h <= 0) h = 720;
+
+            var size = new Size(w, h);
+            presenter.Measure(size);
+            presenter.Arrange(new Rect(new Point(0, 0), size));
+            presenter.UpdateLayout();
+
+            presenter.Visibility = oldVisibility;
+            presenter.Opacity = oldOpacity;
+            presenter.IsHitTestVisible = oldHitTest;
+            Panel.SetZIndex(presenter, oldZ);
+        }
+        catch
+        {
+            // best-effort
+        }
     }
 
     private static bool IsCacheable(object content)
     {
+        if (content is IShellContentCachePolicy policy)
+        {
+            return policy.IsCacheable;
+        }
+
         // Cache only "shell pages" that are frequently revisited and known to be single-instance per navigation.
         // Ephemeral pages (catalog/stats/leaderboard/join game/game room) are intentionally not cached.
         var t = content.GetType();
@@ -173,8 +347,9 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         {
             if (_previous != null && _current != null)
             {
+                var keepPreviousFront = false;
                 var previousRoot = TryGetPresenterRoot(_previous.Presenter);
-                var keepPreviousFront = previousRoot != null && IsFocusWithin(previousRoot);
+                keepPreviousFront = previousRoot != null && IsFocusWithin(previousRoot);
                 Panel.SetZIndex(_previous.Presenter, keepPreviousFront ? 1 : 0);
                 Panel.SetZIndex(_current.Presenter, keepPreviousFront ? 0 : 1);
                 return;
@@ -264,6 +439,14 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         // where focus can take longer to land in the new view.
         try { UpdatePresenterVisibilities(); } catch { /* ignore */ }
 
+        // Fast path: if the new view is already loaded/focusable (cached views),
+        // finalize immediately without waiting for dispatcher/timer ticks.
+        if (TryFocusAndMaybeFinalize())
+        {
+            try { _retryTimer?.Stop(); } catch { /* ignore */ }
+            return;
+        }
+
         Dispatcher.BeginInvoke((Action)(() => TryFocusAndMaybeFinalize()), DispatcherPriority.Loaded);
         Dispatcher.BeginInvoke((Action)(() => TryFocusAndMaybeFinalize()), DispatcherPriority.ApplicationIdle);
         EnsureRetryTimer();
@@ -332,13 +515,6 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
             return;
         }
 
-        if ((DateTime.UtcNow - _transitionStartedUtc) < TimeSpan.FromSeconds(3))
-        {
-            _retryRemaining = Math.Max(_retryRemaining, 1);
-            EnsureRetryTimer();
-            return;
-        }
-
         try
         {
             var previousRoot = TryGetPresenterRoot(_previous.Presenter);
@@ -382,6 +558,13 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
             return false;
         }
 
+        HookFocusReadyIfNeeded(root);
+
+        if (_currentFocusReady is { IsFocusReady: false })
+        {
+            return false;
+        }
+
         // If we have a remembered focus target for this content, restore it first.
         // This is especially important for "back" navigation, where the user expects to land
         // on the previous selected item / input.
@@ -415,6 +598,57 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         }
 
         return false;
+    }
+
+    private void HookFocusReadyIfNeeded(DependencyObject root)
+    {
+        if (root is not IFocusReady ready)
+        {
+            if (_currentFocusReady != null)
+            {
+                try { _currentFocusReady.FocusReadyChanged -= OnCurrentFocusReadyChanged; } catch { /* ignore */ }
+                _currentFocusReady = null;
+            }
+            return;
+        }
+
+        if (ReferenceEquals(_currentFocusReady, ready) && _currentFocusReadyHookedForTransitionId == _transitionId)
+        {
+            return;
+        }
+
+        if (_currentFocusReady != null)
+        {
+            try { _currentFocusReady.FocusReadyChanged -= OnCurrentFocusReadyChanged; } catch { /* ignore */ }
+        }
+
+        _currentFocusReady = ready;
+        _currentFocusReadyHookedForTransitionId = _transitionId;
+        try { _currentFocusReady.FocusReadyChanged += OnCurrentFocusReadyChanged; } catch { /* ignore */ }
+    }
+
+    private void OnCurrentFocusReadyChanged(object? sender, EventArgs e)
+    {
+        try
+        {
+            var transitionId = _transitionId;
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+            {
+                if (transitionId != _transitionId)
+                {
+                    return;
+                }
+
+                if (TryFocusAndMaybeFinalize())
+                {
+                    try { _retryTimer?.Stop(); } catch { /* ignore */ }
+                }
+            }));
+        }
+        catch
+        {
+            // ignore
+        }
     }
 
     private void OnGotKeyboardFocus(object? sender, KeyboardFocusChangedEventArgs e)
@@ -529,6 +763,8 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
     {
         try
         {
+            EvictNonCacheables();
+
             // Do not evict while an entry is still the previous visible presenter.
             var count = _entries.Count(e => e.Value.Cacheable);
             if (count <= MaxCacheEntries)
@@ -546,7 +782,39 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
                          .Take(Math.Max(0, count - MaxCacheEntries))
                          .ToArray())
             {
-                HostGrid.Children.Remove(candidate.Presenter);
+                if (candidate.IsInHostGrid)
+                {
+                    HostGrid.Children.Remove(candidate.Presenter);
+                    candidate.IsInHostGrid = false;
+                }
+                _entries.Remove(candidate.Content);
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    private void EvictNonCacheables()
+    {
+        try
+        {
+            // Non-cacheable pages are intentionally not kept beyond the current/previous transition window.
+            // Keeping them would accumulate hidden visual trees and degrade performance over time.
+            var protectedContents = new HashSet<object>(ReferenceEqualityComparer.Instance);
+            if (_current != null) protectedContents.Add(_current.Content);
+            if (_previous != null) protectedContents.Add(_previous.Content);
+
+            foreach (var candidate in _entries.Values
+                         .Where(e => !e.Cacheable && !protectedContents.Contains(e.Content))
+                         .ToArray())
+            {
+                if (candidate.IsInHostGrid)
+                {
+                    HostGrid.Children.Remove(candidate.Presenter);
+                    candidate.IsInHostGrid = false;
+                }
                 _entries.Remove(candidate.Content);
             }
         }

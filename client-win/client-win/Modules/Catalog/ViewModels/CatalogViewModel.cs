@@ -13,6 +13,7 @@ using client_win.Core;
 using client_win.Core.Network;
 using client_win.Modules.Catalog.Models;
 using client_win.Modules.Catalog.Services;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Settings.Services;
 using client_win.Modules.User.Services;
 
@@ -30,6 +31,7 @@ public enum CatalogEscapeResult
 /// </summary>
 public sealed class CatalogViewModel : ObservableObject
     , IDisposable
+    , IShellContentCachePolicy
 {
     private readonly ICatalogService _service;
     private readonly IOptionsService _options;
@@ -124,6 +126,8 @@ public sealed class CatalogViewModel : ObservableObject
     public ObservableCollection<CatalogCategory> Shelves { get; } = new();
     public ObservableCollection<CatalogCategory> SubShelves { get; } = new();
     public ObservableCollection<CatalogGame> Games { get; } = new();
+
+    public bool IsCacheable => true;
 
     public CatalogCategory? SelectedShelf
     {

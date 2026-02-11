@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using client_win.Core;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Stats.Dtos;
 using client_win.Modules.Stats.Services;
 
@@ -17,7 +18,7 @@ public enum StatsNavResult
     Closed
 }
 
-public sealed class StatsViewModel : ObservableObject
+public sealed class StatsViewModel : ObservableObject, IShellContentCachePolicy
 {
     private readonly IStatsService _stats;
     private readonly Func<Task>? _openLeaderboard;
@@ -33,6 +34,7 @@ public sealed class StatsViewModel : ObservableObject
     private string _details = string.Empty;
     private bool _isBusy;
     private bool _initialized;
+    private readonly bool _cacheable;
 
     private const string ConsultMyStats = "Consulter mon livre des contes";
     private const string OpenLeaderboard = "Classement";
@@ -43,7 +45,8 @@ public sealed class StatsViewModel : ObservableObject
         Action onClose,
         Func<Task>? openLeaderboard = null,
         int? targetUserId = null,
-        string? targetUsername = null)
+        string? targetUsername = null,
+        bool cacheable = true)
     {
         _stats = stats ?? throw new ArgumentNullException(nameof(stats));
         _close = onClose ?? (() => { });
@@ -51,6 +54,7 @@ public sealed class StatsViewModel : ObservableObject
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         _targetUserId = targetUserId;
         _targetUsername = targetUsername;
+        _cacheable = cacheable && !HasTargetUser(targetUserId);
 
         Items = new ObservableCollection<StatsMenuItem>();
         ActivateCommand = new AsyncRelayCommand(ActivateSelectedAsync);
@@ -68,6 +72,8 @@ public sealed class StatsViewModel : ObservableObject
             BuildRoot();
         }
     }
+
+    public bool IsCacheable => _cacheable;
 
     // Called by the view once it is visible: ensures we don't trigger network calls before the UI is shown.
     public Task InitializeAsync()
@@ -177,7 +183,9 @@ public sealed class StatsViewModel : ObservableObject
         Status = "Entrée : consulter. Échap : retour.";
     }
 
-    private bool HasTargetUser() => _targetUserId.HasValue && _targetUserId.Value > 0;
+    private static bool HasTargetUser(int? userId) => userId.HasValue && userId.Value > 0;
+
+    private bool HasTargetUser() => HasTargetUser(_targetUserId);
 
     private void BuildGames()
     {
