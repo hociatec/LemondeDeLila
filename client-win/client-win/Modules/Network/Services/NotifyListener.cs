@@ -58,6 +58,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
     private readonly HashSet<int> _handledRestoreReadyRoomIds = new();
 
 	    private IWebSocketConnection? _ws;
+        private readonly SemaphoreSlim _startLock = new(1, 1);
 	    private readonly SemaphoreSlim _connectLock = new(1, 1);
 	    private readonly ConcurrentDictionary<string, TaskCompletionSource<(string Type, string? Error)>> _pendingAcks = new();
 	    private volatile bool _started;
@@ -103,31 +104,44 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
         _badges = badges ?? throw new ArgumentNullException(nameof(badges));
     }
 
-	    public async Task StartAsync(CancellationToken cancellationToken = default)
-	    {
-	        if (_started) return;
-	        var token = _session.CurrentUser?.Token;
-	        if (string.IsNullOrWhiteSpace(token))
-	        {
-	            return;
-	        }
+ 	    public async Task StartAsync(CancellationToken cancellationToken = default)
+ 	    {
+            await _startLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                var token = _session.CurrentUser?.Token;
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    return;
+                }
 
-            // Évite le "spam" sonore lors de l'hydratation initiale (amis en ligne, messages déjà en attente, etc.).
-            // Les événements réellement nouveaux continueront à arriver après ce court délai.
-            _startupQuietUntilTicks = Stopwatch.GetTimestamp() + (long)(Stopwatch.Frequency * 4.0);
+                // StartAsync peut être appelé plusieurs fois rapidement (login + hydratation UI).
+                // Même si _started est déjà true, on doit attendre EnsureConnectedAsync, sinon certains appels
+                // peuvent observer _ws == null et annoncer "WS notify non connecté".
+                if (!_started)
+                {
+                    // Évite le "spam" sonore lors de l'hydratation initiale (amis en ligne, messages déjà en attente, etc.).
+                    // Les événements réellement nouveaux continueront à arriver après ce court délai.
+                    _startupQuietUntilTicks = Stopwatch.GetTimestamp() + (long)(Stopwatch.Frequency * 4.0);
 
-	        _started = true;
-	        _reconnectCts?.Cancel();
-	        _reconnectCts?.Dispose();
-	        _reconnectCts = new CancellationTokenSource();
+                    _started = true;
+                    _reconnectCts?.Cancel();
+                    _reconnectCts?.Dispose();
+                    _reconnectCts = new CancellationTokenSource();
+                }
 
-	        await EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
+                await EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
 
-	        if (_reconnectLoop == null || _reconnectLoop.IsCompleted)
-	        {
-	            _reconnectLoop = Task.Run(() => ReconnectLoopAsync(_reconnectCts.Token), _reconnectCts.Token);
-	        }
-	    }
+                if (_reconnectCts != null && (_reconnectLoop == null || _reconnectLoop.IsCompleted))
+                {
+                    _reconnectLoop = Task.Run(() => ReconnectLoopAsync(_reconnectCts.Token), _reconnectCts.Token);
+                }
+            }
+            finally
+            {
+                _startLock.Release();
+            }
+ 	    }
 
 	    public async Task StopAsync(CancellationToken cancellationToken = default)
 	    {

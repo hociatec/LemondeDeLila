@@ -72,7 +72,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private Task? _initializeTask;
 
     private GameSession? _session;
-    private bool _turnRepeatToggle;
+    private int _turnRepeatCounter;
     private bool _isSpectator;
     private PendingTextPrompt? _pendingTextPrompt;
     private PendingConfigPrompt? _pendingConfigPrompt;
@@ -1189,7 +1189,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
                 // Mark as UI/shortcut message so the history sink can announce it assertively
                 // without replaying queued older announcements.
-                MessageReceived?.Invoke(new GamePlayHistoryMessage($"[ui] {message.Trim()}"));
+                var uiPrefix = string.Equals(pressed, "T", StringComparison.Ordinal) ? "[ui.turn]" : "[ui]";
+                MessageReceived?.Invoke(new GamePlayHistoryMessage($"{uiPrefix} {message.Trim()}"));
                 return true;
             }
         }
@@ -1199,9 +1200,10 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     private string MakeTurnRepeatAnnouncementUnique(string message)
     {
-        _turnRepeatToggle = !_turnRepeatToggle;
-        // U+2060 (WORD JOINER) / U+200B (ZERO WIDTH SPACE) : invisibles, généralement ignorés par la synthèse.
-        return _turnRepeatToggle ? $"{message}\u2060" : $"{message}\u200B";
+        var n = unchecked(++_turnRepeatCounter);
+        var vs = 0xE0100 + (n % 240); // Variation Selector Supplement (U+E0100..U+E01EF)
+        // U+2060 (WORD JOINER) + Variation Selector Supplement : invisibles, généralement ignorés par la synthèse.
+        return string.Concat(message, "\u2060", char.ConvertFromUtf32(vs));
     }
 
  	    public Task RequestTurnInfoAsync() => RequestTurnAsync();

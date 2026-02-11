@@ -13,10 +13,12 @@ namespace client_win.Modules.Network.WebSockets;
 /// </summary>
 public sealed class WebSocketConnection : IWebSocketConnection
 {
+    private readonly object _gate = new();
     private ClientWebSocket? _socket;
     private CancellationTokenSource? _cts;
     private Task? _receiveLoop;
     private WebSocketState _state = WebSocketState.Disconnected;
+    private TaskCompletionSource<bool>? _connectedTcs;
     private static readonly TimeSpan DefaultConnectTimeout = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan DefaultKeepAliveInterval = TimeSpan.FromSeconds(25);
 
@@ -54,6 +56,10 @@ public sealed class WebSocketConnection : IWebSocketConnection
         // - connect timeout: uniquement pour l'appel ConnectAsync (sinon on coupe la room après X secondes d'inactivité)
         // - lifetime token: pour le loop de réception et la fermeture contrôlée
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        lock (_gate)
+        {
+            _connectedTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
         SetState(WebSocketState.Connecting);
 
         try
@@ -64,11 +70,19 @@ public sealed class WebSocketConnection : IWebSocketConnection
             await _socket.ConnectAsync(endpoint, connectCts.Token).ConfigureAwait(false);
             _receiveLoop = Task.Run(() => ReceiveLoopAsync(_cts.Token));
             SetState(WebSocketState.Connected);
+            lock (_gate)
+            {
+                _connectedTcs?.TrySetResult(true);
+            }
         }
         catch (Exception ex)
         {
             SetState(WebSocketState.Error);
             Error?.Invoke($"WebSocket: {ex.Message}");
+            lock (_gate)
+            {
+                _connectedTcs?.TrySetException(ex);
+            }
             await CloseAsync().ConfigureAwait(false);
             throw;
         }
@@ -76,6 +90,25 @@ public sealed class WebSocketConnection : IWebSocketConnection
 
     public async Task SendAsync(string message, CancellationToken cancellationToken = default)
     {
+        // During fast startup/login flows, callers can attempt to send while ConnectAsync is still in-flight.
+        // Instead of throwing immediately, wait for the connection to complete (or fail).
+        if (_state == WebSocketState.Connecting)
+        {
+            TaskCompletionSource<bool>? tcs;
+            lock (_gate) { tcs = _connectedTcs; }
+            if (tcs != null)
+            {
+                try
+                {
+                    await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
+                }
+                catch
+                {
+                    // ignore; we'll validate socket state below
+                }
+            }
+        }
+
         if (_socket == null || _socket.State != System.Net.WebSockets.WebSocketState.Open)
         {
             throw new InvalidOperationException("WebSocket non connecté.");
@@ -127,6 +160,12 @@ public sealed class WebSocketConnection : IWebSocketConnection
 
     public async Task CloseAsync()
     {
+        lock (_gate)
+        {
+            _connectedTcs?.TrySetCanceled();
+            _connectedTcs = null;
+        }
+
         if (_cts != null)
         {
             _cts.Cancel();

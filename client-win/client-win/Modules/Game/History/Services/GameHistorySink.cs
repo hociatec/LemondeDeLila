@@ -44,7 +44,9 @@ public sealed class GameHistorySink : IGameHistorySink
                 }
 
                 var trimmed = raw.Trim();
-                var isUiShortcut = trimmed.StartsWith("[ui]", StringComparison.OrdinalIgnoreCase);
+                var isUi = trimmed.StartsWith("[ui]", StringComparison.OrdinalIgnoreCase);
+                var isUiTurn = trimmed.StartsWith("[ui.turn]", StringComparison.OrdinalIgnoreCase);
+                var isUiShortcut = isUi || isUiTurn;
                 var cleaned = StripGamePrefix(trimmed);
                 if (string.IsNullOrWhiteSpace(cleaned))
                 {
@@ -62,7 +64,7 @@ public sealed class GameHistorySink : IGameHistorySink
                     cleaned,
                     timestamp,
                     priority: isUiShortcut ? AnnouncementPriority.Assertive : AnnouncementPriority.Polite,
-                    flushPending: isUiShortcut);
+                    flushPending: isUi);
             }
         }
 
@@ -124,7 +126,7 @@ public sealed class GameHistorySink : IGameHistorySink
         {
             // When the user triggers an interface shortcut, prefer the related information immediately.
             // This avoids replaying stale queued announcements before the shortcut message.
-            _announcements.CancelPending(cancelSpeech: true);
+            _announcements.CancelPending(cancelSpeech: false);
         }
         _announcements.Enqueue(normalized, priority);
         return true;

@@ -17,7 +17,7 @@ internal sealed class GameSessionMessageRouter
     private readonly Action<string> _emitUiMessage;
     private readonly Action<string> _emitRaw;
     private readonly Action? _emitPong;
-    private bool _turnRepeatToggle;
+    private int _turnRepeatCounter;
 
     internal GameSessionMessageRouter(
         JsonSerializerOptions json,
@@ -147,7 +147,8 @@ internal sealed class GameSessionMessageRouter
                     {
                         message = MakeTurnRepeatAnnouncementUnique(message);
                     }
-                    _emitUiMessage(message);
+                    var prefix = string.Equals(key, "T", StringComparison.Ordinal) ? "[ui.turn]" : "[ui]";
+                    _emitUiMessage($"{prefix} {message}");
                     return;
                 }
 
@@ -171,9 +172,10 @@ internal sealed class GameSessionMessageRouter
 
     private string MakeTurnRepeatAnnouncementUnique(string message)
     {
-        _turnRepeatToggle = !_turnRepeatToggle;
-        // U+2060 (WORD JOINER) / U+200B (ZERO WIDTH SPACE) : invisibles, généralement ignorés par la synthèse.
-        return _turnRepeatToggle ? $"{message}\u2060" : $"{message}\u200B";
+        var n = unchecked(++_turnRepeatCounter);
+        var vs = 0xE0100 + (n % 240); // Variation Selector Supplement (U+E0100..U+E01EF)
+        // U+2060 (WORD JOINER) + Variation Selector Supplement : invisibles, généralement ignorés par la synthèse.
+        return string.Concat(message, "\u2060", char.ConvertFromUtf32(vs));
     }
 
     private void HandlePong(JsonElement root)
