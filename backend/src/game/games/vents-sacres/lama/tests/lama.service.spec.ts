@@ -1,6 +1,48 @@
 import { createLamaServiceForTest } from './lama-test-harness';
 
 describe('LamaService', () => {
+  it('does not assign setup ownership to a bot (prefers first human)', async () => {
+    const { service } = createLamaServiceForTest();
+
+    const state: any = service.hydrateInitialState({
+      status: 'started',
+      turn: { currentPlayerId: 2, direction: 1 },
+      players: [
+        { id: 2, username: 'Bot', isBot: true },
+        { id: 1, username: 'Human' },
+      ],
+      log: [],
+      metadata: {},
+    } as any);
+
+    expect(Number(state?.metadata?.ownerPlayerId ?? 0)).toBe(1);
+    expect(Number(state?.turn?.currentPlayerId ?? 0)).toBe(1);
+
+    const exposedHuman: any = service.exposeStateForUser(state, 1);
+    const exposedBot: any = service.exposeStateForUser(state, 2);
+    expect(exposedHuman.pending).not.toBeNull();
+    expect(Number(exposedHuman.pending?.playerId ?? 0)).toBe(1);
+    expect(exposedBot.pending).toBeNull();
+  });
+
+  it('ignores roomOwnerId if it points to a bot (still prefers a human owner)', async () => {
+    const { service } = createLamaServiceForTest();
+
+    const state: any = service.hydrateInitialState({
+      status: 'started',
+      turn: { currentPlayerId: 2, direction: 1 },
+      players: [
+        { id: 2, username: 'Bot', isBot: true },
+        { id: 1, username: 'Human' },
+      ],
+      log: [],
+      metadata: { roomOwnerId: 2 },
+    } as any);
+
+    expect(Number(state?.metadata?.ownerPlayerId ?? 0)).toBe(1);
+    expect(Number(state?.turn?.currentPlayerId ?? 0)).toBe(1);
+  });
+
   it('exposes pending choices only for current player', async () => {
     const { service } = createLamaServiceForTest();
 
@@ -39,6 +81,7 @@ describe('LamaService', () => {
 
     expect(String(state.status)).toBe('started');
     expect(String(state.phase)).toBe('setup');
+    expect(Boolean(state?.pending?.blocking)).toBe(true);
     const exposed: any = service.exposeStateForUser(state, 1);
     expect(String(exposed?.pending?.type ?? '')).toBe('config_prompt');
     expect((exposed?.actions ?? []).some((a: any) => a?.type === 'lama_set_config')).toBe(true);

@@ -46,14 +46,15 @@ public sealed class GameHistorySink : IGameHistorySink
                 var trimmed = raw.Trim();
                 var isUi = trimmed.StartsWith("[ui]", StringComparison.OrdinalIgnoreCase);
                 var isUiTurn = trimmed.StartsWith("[ui.turn]", StringComparison.OrdinalIgnoreCase);
-                var isUiShortcut = isUi || isUiTurn;
+                var isUiShortcutTagged = trimmed.StartsWith("[ui.shortcut]", StringComparison.OrdinalIgnoreCase);
+                var isUiShortcut = isUi || isUiTurn || isUiShortcutTagged;
                 var cleaned = StripGamePrefix(trimmed);
                 if (string.IsNullOrWhiteSpace(cleaned))
                 {
                     continue;
                 }
 
-                if (ShouldSkipDuplicate(cleaned))
+                if (!isUiShortcutTagged && ShouldSkipDuplicate(cleaned))
                 {
                     continue;
                 }

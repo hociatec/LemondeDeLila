@@ -172,12 +172,12 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
                     return;
                 }
 
-                if (ShouldDedup(msg))
+                var effective = forceAssertive > 0 ? AnnouncementPriority.Assertive : prio;
+                if (ShouldDedup(msg, effective))
                 {
                     continue;
                 }
 
-                var effective = forceAssertive > 0 ? AnnouncementPriority.Assertive : prio;
                 if (effective == AnnouncementPriority.Assertive)
                 {
                     _announcer.AnnounceAssertive(msg);
@@ -205,8 +205,13 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
         }
     }
 
-    private bool ShouldDedup(string message)
+    private bool ShouldDedup(string message, AnnouncementPriority priority)
     {
+        if (priority == AnnouncementPriority.Assertive)
+        {
+            return false;
+        }
+
         var now = Stopwatch.GetTimestamp();
         lock (_gate)
         {

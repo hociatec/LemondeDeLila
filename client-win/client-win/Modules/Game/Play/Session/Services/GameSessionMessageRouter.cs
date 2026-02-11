@@ -17,7 +17,6 @@ internal sealed class GameSessionMessageRouter
     private readonly Action<string> _emitUiMessage;
     private readonly Action<string> _emitRaw;
     private readonly Action? _emitPong;
-    private int _turnRepeatCounter;
 
     internal GameSessionMessageRouter(
         JsonSerializerOptions json,
@@ -143,12 +142,7 @@ internal sealed class GameSessionMessageRouter
                     // Robustesse lecteur d'écran: si l'utilisateur spamme 'T' pour ré-entendre "à qui le tour",
                     // certains lecteurs/dédup peuvent ignorer les messages identiques. On rend le message unique
                     // sans impact visuel/audible en alternant un caractère invisible.
-                    if (string.Equals(key, "T", StringComparison.Ordinal))
-                    {
-                        message = MakeTurnRepeatAnnouncementUnique(message);
-                    }
-                    var prefix = string.Equals(key, "T", StringComparison.Ordinal) ? "[ui.turn]" : "[ui]";
-                    _emitUiMessage($"{prefix} {message}");
+                    _emitUiMessage($"[ui.shortcut] {message}");
                     return;
                 }
 
@@ -158,9 +152,10 @@ internal sealed class GameSessionMessageRouter
                                  reasonProp.ValueKind == JsonValueKind.String
                         ? (reasonProp.GetString() ?? string.Empty).Trim()
                         : string.Empty;
-                    _emitUiMessage(string.IsNullOrWhiteSpace(reason)
+                    var baseMessage = string.IsNullOrWhiteSpace(reason)
                         ? "Raccourci indisponible."
-                        : $"Raccourci indisponible : {reason}");
+                        : $"Raccourci indisponible : {reason}";
+                    _emitUiMessage($"[ui.shortcut] {baseMessage}");
                 }
             }
         }
@@ -170,12 +165,13 @@ internal sealed class GameSessionMessageRouter
         }
     }
 
-    private string MakeTurnRepeatAnnouncementUnique(string message)
+    private string MakeShortcutAnnouncementUnique(string message)
     {
-        var n = unchecked(++_turnRepeatCounter);
-        var vs = 0xE0100 + (n % 240); // Variation Selector Supplement (U+E0100..U+E01EF)
+        return message;
+        // var n = unchecked(++_shortcutAnnouncementCounter);
+        // var vs = 0xE0100 + (n % 240); // Variation Selector Supplement (U+E0100..U+E01EF)
         // U+2060 (WORD JOINER) + Variation Selector Supplement : invisibles, généralement ignorés par la synthèse.
-        return string.Concat(message, "\u2060", char.ConvertFromUtf32(vs));
+        // return string.Concat(message, "\u2060", char.ConvertFromUtf32(vs));
     }
 
     private void HandlePong(JsonElement root)

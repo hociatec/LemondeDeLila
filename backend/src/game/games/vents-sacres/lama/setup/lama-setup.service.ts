@@ -31,10 +31,35 @@ export class LamaSetupService {
 
     const players = Array.isArray(baseState.players) ? baseState.players : [];
     const metaAny = (baseState.metadata ?? {}) as any;
-    const ownerPlayerId =
-      typeof metaAny.roomOwnerId === 'number'
-        ? metaAny.roomOwnerId
-        : (players[0]?.id ?? null);
+
+    const pickFirstHumanId = (): number | null => {
+      const p = players.find((pl) => pl?.id && pl.isBot !== true);
+      return typeof p?.id === 'number' ? p.id : null;
+    };
+
+    const pickOwnerId = (): number | null => {
+      const metaOwner =
+        typeof metaAny.ownerPlayerId === 'number' ? metaAny.ownerPlayerId : null;
+      if (metaOwner != null && players.some((p) => p?.id === metaOwner)) {
+        return metaOwner;
+      }
+
+      const roomOwner =
+        typeof metaAny.roomOwnerId === 'number' ? metaAny.roomOwnerId : null;
+      if (roomOwner != null && players.some((p) => p?.id === roomOwner)) {
+        return roomOwner;
+      }
+
+      return pickFirstHumanId() ?? (players[0]?.id ?? null);
+    };
+
+    let ownerPlayerId = pickOwnerId();
+    if (typeof ownerPlayerId === 'number') {
+      const owner = players.find((p) => p?.id === ownerPlayerId) ?? null;
+      if (owner?.isBot === true) {
+        ownerPlayerId = pickFirstHumanId() ?? ownerPlayerId;
+      }
+    }
     const scoresByPlayerId: Record<string, number> = {};
     for (const p of players) {
       if (!p?.id) continue;
@@ -71,7 +96,8 @@ export class LamaSetupService {
       round: baseState.round ?? 0,
       turnIndex: baseState.turnIndex ?? 0,
       lastRoll: null,
-      pending: { step: 'setup_config', playerId: ownerPlayerId } as any,
+      // Setup bloquant : l'acteur "pending" ne doit pas Ãªtre Ã©crasÃ© par la randomisation du starter au dÃ©marrage.
+      pending: { step: 'setup_config', playerId: ownerPlayerId, blocking: true } as any,
       log: Array.isArray(baseState.log) ? baseState.log : [],
       metadata: meta as any,
       turn: {
