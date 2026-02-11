@@ -64,4 +64,59 @@ describe('FrousseActionService movement effects', () => {
     // 12 -> +5 -> 17 -> -3 -> 14 (index 13)
     expect(meta.positions?.[1]).toBe(13);
   });
+
+  it('logs conditional "roll 3 => back 2" effect as a simple instruction', () => {
+    const random: any = {
+      rollDice: jest.fn(() => ({ roll: 3, meta: {} })),
+      nextInt: jest.fn(() => ({ value: 0, meta: {} })),
+      pickOne: jest.fn(() => ({ value: null, meta: {} })),
+      shuffle: jest.fn((_meta: any, values: any[]) => ({ values, meta: {} })),
+    };
+    const turns: any = {
+      advanceTurn: jest.fn((state: GameStateEntity) => state),
+    };
+    const core: any = {
+      appendLog: jest.fn((state: GameStateEntity, message: string) => ({
+        ...state,
+        log: [...(Array.isArray(state.log) ? state.log : []), { message }],
+      })),
+    };
+
+    const service = new FrousseActionService(random, turns, core);
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [{ id: 1, username: 'lilas' } as any],
+      pending: null,
+      metadata: {
+        positions: { 1: 10 },
+        statuses: {
+          skipTurn: {},
+          blocked: {},
+          nextMoveCap: {},
+          nextRollIfThreeBackTwo: { 1: true },
+          nextRollKeepLowest: {},
+          nextRollMalus: {},
+          nextRollDouble: {},
+          ignoreTrapUntilNextDraw: {},
+          ignoreNextGhost: {},
+          ignoreNextPrank: {},
+          ignoreNextTrap: {},
+        },
+        tiles: [],
+        pawns: [],
+        decks: { cards: [], discard: [] },
+      } as any,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = service.applyActions(state, [{ type: 'roll', payload: {} } as any]);
+    const messages = (next.log ?? []).map((l: any) => l.message);
+
+    expect(messages).toContain('Reculez de 2 cases.');
+    expect(messages).not.toContain('Effet : 3 au dé, recul de 2 cases.');
+  });
 });

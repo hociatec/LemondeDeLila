@@ -26,7 +26,14 @@ public static class PerfTrace
 
         var now = Stopwatch.GetTimestamp();
         var ms = (now - startTicks) * 1000.0 / Stopwatch.Frequency;
+
+#if DEBUG
         Log.Debug("[perf] {Name} +{Ms:0.0}ms", name, ms);
+#else
+        // In production, perf traces are opt-in via env var, but the default log level is typically Information.
+        // Emit at Information so the trace is actually captured without requiring debug logs.
+        Log.Information("[perf] {Name} +{Ms:0.0}ms", name, ms);
+#endif
     }
 
     public static IDisposable Measure(string name)
@@ -48,14 +55,24 @@ public static class PerfTrace
         {
             _name = name;
             _start = Stopwatch.GetTimestamp();
+
+#if DEBUG
             Log.Debug("[perf] {Name} start", _name);
+#else
+            Log.Information("[perf] {Name} start", _name);
+#endif
         }
 
         public void Dispose()
         {
             var end = Stopwatch.GetTimestamp();
             var ms = (end - _start) * 1000.0 / Stopwatch.Frequency;
+
+#if DEBUG
             Log.Debug("[perf] {Name} end +{Ms:0.0}ms", _name, ms);
+#else
+            Log.Information("[perf] {Name} end +{Ms:0.0}ms", _name, ms);
+#endif
         }
     }
 

@@ -265,7 +265,7 @@ export class FrousseActionService {
       };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       if (roll.value === 3) {
-        next = this.core.appendLog(next, 'Effet : 3 au dé, recul de 2 cases.');
+        next = this.core.appendLog(next, 'Reculez de 2 cases.');
         next = this.move(next, currentId, -2);
       }
       meta = this.getMeta(next);
