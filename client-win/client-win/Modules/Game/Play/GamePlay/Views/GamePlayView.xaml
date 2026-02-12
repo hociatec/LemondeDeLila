@@ -214,9 +214,7 @@
                            Foreground="#C3D2EA"
                            FontSize="12"
                            TextWrapping="Wrap"
-                           Margin="0 8 0 0"
-                           AutomationProperties.LiveSetting="Polite"
-                           AutomationProperties.Name="{Binding PendingText}">
+                           Margin="0 8 0 0">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
                             <Setter Property="Visibility" Value="Visible"/>

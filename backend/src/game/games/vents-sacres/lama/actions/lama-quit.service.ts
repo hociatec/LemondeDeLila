@@ -26,6 +26,17 @@ export class LamaQuitService {
     const nextMeta: LamaMetadata = { ...meta, droppedOutByPlayerId, suppressTurnAnnouncement: false };
     const nextStateBase: GameStateEntity = { ...state, metadata: nextMeta as any, log };
 
+    const roundNumber = Number(meta.roundNumber ?? 0);
+    const alreadyLoggedRoundEnd =
+      roundNumber > 0 &&
+      Array.isArray(state.log) &&
+      state.log.some((l: any) => String(l?.message ?? '') === `Fin de la manche ${roundNumber}.`);
+
+    if (alreadyLoggedRoundEnd) {
+      const winnerId = this.round.findRoundWinnerId(nextMeta, players);
+      return this.round.endRound(nextStateBase, winnerId);
+    }
+
     if (this.round.isRoundEnded(nextMeta, players)) {
       const winnerId = this.round.findRoundWinnerId(nextMeta, players);
       return this.round.endRound(nextStateBase, winnerId);

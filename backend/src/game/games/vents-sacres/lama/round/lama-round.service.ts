@@ -298,9 +298,9 @@ export class LamaRoundService {
     if (someoneEmpty) return true;
 
     const active = ids.filter((id) => !dropped[id]);
-    if (active.length <= 1) return true;
-    const allDropped = active.length === 0;
-    if (allDropped) return true;
+    // Continue the round while the last active player can still act.
+    // End only when everyone has dropped out (or someone emptied their hand above).
+    if (active.length === 0) return true;
     return false;
   }
 
