@@ -80,7 +80,7 @@ export class MinuitActionService {
 
     let meta = meta0;
 
-    // Effet : "Piochez à nouveau une carte au lieu de lancer le dé" (tour suivant).
+    // "Piochez à nouveau une carte au lieu de lancer le dé" (tour suivant).
     if (meta.statuses?.forceDrawNextTurn?.[currentId] === true) {
       meta = {
         ...meta,

@@ -401,7 +401,7 @@ export class VoyageActionService {
       }
     }
 
-    // Effet : perdre une carte au hasard (simulation sur les compteurs).
+    // Perdre une carte au hasard (simulation sur les compteurs).
     if (
       /tirez\s+au\s+hasard\s+une\s+carte/i.test(text) &&
       /vous\s+la\s+perdez/i.test(text)
@@ -420,13 +420,13 @@ export class VoyageActionService {
     }
     const delta = extractMoveDelta(text);
     if (delta !== 0) {
-      next = this.core.appendLog(next, `Effet : déplacement ${delta}.`);
+      next = this.core.appendLog(next, `Déplacement ${delta}.`);
       next = this.move(next, playerId, delta);
       return this.applyLanding(next, playerId, { kind: 'none' });
     }
     const skip = extractSkipTurns(text);
     if (skip > 0) {
-      next = this.core.appendLog(next, `Effet : perdez ${skip} tour(s).`);
+      next = this.core.appendLog(next, `Perdez ${skip} tour(s).`);
       return this.addSkip(next, playerId, skip);
     }
 

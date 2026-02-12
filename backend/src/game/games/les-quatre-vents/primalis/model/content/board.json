@@ -4,67 +4,67 @@
     {
       "n": 0,
       "title": "Le ciel est clair. Rien ne presse. La vie respire librement.",
-      "description": "Effet : Pas de bonus ni de malus. Profitez de ce calme pour observer votre tribu.",
+      "description": "Pas de bonus ni de malus. Profitez de ce calme pour observer votre tribu.",
       "type": "comet"
     },
     {
       "n": 1,
       "title": "Une lueur pâle apparaît très loin, comme un grain de poussière brillant.",
-      "description": "Effet : Vous sentez un frisson dans l’air. Si vous lancez Œuf ou Feuille ce tour-ci, vous pouvez doubler la collecte.",
+      "description": "Vous sentez un frisson dans l’air. Si vous lancez Œuf ou Feuille ce tour-ci, vous pouvez doubler la collecte.",
       "type": "comet"
     },
     {
       "n": 2,
       "title": "Les oiseaux anciens changent légèrement leur trajectoire dans le vent.",
-      "description": "Effet : Attention, un prédateur rôde. Si vous avez plus de carnivores que d’herbivores, vous perdez un herbivore.",
+      "description": "Attention, un prédateur rôde. Si vous avez plus de carnivores que d’herbivores, vous perdez un herbivore.",
       "type": "comet"
     },
     {
       "n": 3,
       "title": "Une fine traînée se devine dans le ciel du soir.",
-      "description": "Effet : Le vent porte des graines et petits fruits. Si vous lancez Feuille, vous ajoutez 1 ressource supplémentaire.",
+      "description": "Le vent porte des graines et petits fruits. Si vous lancez Feuille, vous ajoutez 1 ressource supplémentaire.",
       "type": "comet"
     },
     {
       "n": 4,
       "title": "Certains herbivores lèvent la tête, comme à l’écoute d’un souffle lointain.",
-      "description": "Effet : Si vous lancez Carnivore ce tour, vous pouvez prendre un œuf en plus de votre carnivore.",
+      "description": "Si vous lancez Carnivore ce tour, vous pouvez prendre un œuf en plus de votre carnivore.",
       "type": "comet"
     },
     {
       "n": 5,
       "title": "Le sol garde encore sa chaleur paisible, mais l’air semble plus tendu.",
-      "description": "Effet : Les ressources sont rares. Si vous lancez Œuf ou Feuille, vous ne pouvez collecter qu’une seule unité (normal).",
+      "description": "Les ressources sont rares. Si vous lancez Œuf ou Feuille, vous ne pouvez collecter qu’une seule unité (normal).",
       "type": "comet"
     },
     {
       "n": 6,
       "title": "La lueur grandit. Les cimes des arbres scintillent sous un étrange reflet.",
-      "description": "Effet : La tension monte. Tous les joueurs subissent un Danger supplémentaire si quelqu’un lance Danger.",
+      "description": "La tension monte. Tous les joueurs subissent un Danger supplémentaire si quelqu’un lance Danger.",
       "type": "comet"
     },
     {
       "n": 7,
       "title": "Un murmure court parmi les grandes plumes et les écailles anciennes.",
-      "description": "Effet : Un souffle magique vous favorise. Vous gagnez automatiquement 1 Feuille, en plus de vos effets de dé.",
+      "description": "Un souffle magique vous favorise. Vous gagnez automatiquement 1 Feuille, en plus de vos effets de dé.",
       "type": "comet"
     },
     {
       "n": 8,
       "title": "Les ombres s’allongent, la lumière devient plus scintillante, presque irréelle.",
-      "description": "Effet : La comète se rapproche. Si vous lancez Herbivore ou Carnivore, vous pouvez choisir de relancer le dé une fois pour tenter d’obtenir un œuf ou une feuille.",
+      "description": "La comète se rapproche. Si vous lancez Herbivore ou Carnivore, vous pouvez choisir de relancer le dé une fois pour tenter d’obtenir un œuf ou une feuille.",
       "type": "comet"
     },
     {
       "n": 9,
       "title": "Le ciel tremble doucement. Le monde retient sa respiration.",
-      "description": "Effet : Tout danger est amplifié. Si vous lancez Danger, avancez de deux cases sur la piste au lieu d’une.",
+      "description": "Tout danger est amplifié. Si vous lancez Danger, avancez de deux cases sur la piste au lieu d’une.",
       "type": "comet"
     },
     {
       "n": 10,
       "title": "La comète touche la Terre. L’ère s’achève. L’histoire devient souvenir.",
-      "description": "Effet : Fin de partie. Comptez vos dinosaures et votre nourriture pour déterminer le survivant ultime.",
+      "description": "Fin de partie. Comptez vos dinosaures et votre nourriture pour déterminer le survivant ultime.",
       "type": "comet"
     }
   ]

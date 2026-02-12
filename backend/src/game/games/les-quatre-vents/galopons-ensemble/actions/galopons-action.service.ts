@@ -269,13 +269,13 @@ export class GaloponsActionService {
       `${this.playerName(next, playerId)} met ${this.pawnLabel(next, playerId)} en case ${tile.n} (${tile.title}).`,
     );
     if (tile.type === 'card') {
-      next = this.core.appendLog(next, `Effet : piochez une carte Aventure.`);
+      next = this.core.appendLog(next, `Piochez une carte Aventure.`);
     } else if (tile.type === 'bonus') {
-      next = this.core.appendLog(next, `Effet : gagnez des pommes.`);
+      next = this.core.appendLog(next, `Gagnez des pommes.`);
     } else if (tile.type === 'skip') {
-      next = this.core.appendLog(next, `Effet : passez des tours.`);
+      next = this.core.appendLog(next, `Passez des tours.`);
     } else if (tile.type === 'finish') {
-      next = this.core.appendLog(next, `Effet : écurie finale.`);
+      next = this.core.appendLog(next, `Écurie finale.`);
     }
 
     // Si arrivée : déclenche fin de manche.

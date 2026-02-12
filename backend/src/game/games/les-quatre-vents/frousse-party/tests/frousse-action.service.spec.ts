@@ -117,7 +117,7 @@ describe('FrousseActionService movement effects', () => {
     const messages = (next.log ?? []).map((l: any) => l.message);
 
     expect(messages).toContain('Reculez de 2 cases.');
-    expect(messages).not.toContain('Effet : 3 au dé, recul de 2 cases.');
+    expect(messages).not.toContain('3 au dé, recul de 2 cases.');
   });
 
   it('formats doubled roll log with "=" (not "->")', () => {

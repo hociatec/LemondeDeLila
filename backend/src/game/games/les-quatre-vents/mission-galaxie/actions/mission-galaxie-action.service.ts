@@ -336,16 +336,16 @@ export class MissionGalaxieActionService {
       case 'question':
         next = this.core.appendLog(
           next,
-          'Effet : piochez une question galactique.',
+          'Piochez une question galactique.',
         );
         return this.promptDraw(next, playerId, 'questions');
       case 'challenge':
-        next = this.core.appendLog(next, 'Effet : piochez un défi cosmique.');
+        next = this.core.appendLog(next, 'Piochez un défi cosmique.');
         return this.promptDraw(next, playerId, 'challenges');
       case 'event':
         next = this.core.appendLog(
           next,
-          'Effet : piochez un événement spatial.',
+          'Piochez un événement spatial.',
         );
         return this.promptDraw(next, playerId, 'events');
       case 'swapNearest':

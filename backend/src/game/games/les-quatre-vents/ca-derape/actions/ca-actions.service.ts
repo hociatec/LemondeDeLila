@@ -144,7 +144,7 @@ export class CaActionService {
     if (deltaFromPrevious !== 0) {
       next = this.core.appendLog(
         next,
-        'Effet : déplacement ' + (deltaFromPrevious > 0 ? '+1' : '-1') + ' appliqué au lancer.',
+        'Déplacement ' + (deltaFromPrevious > 0 ? '+1' : '-1') + ' appliqué au lancer.',
       );
     }
 
@@ -449,7 +449,7 @@ export class CaActionService {
     };
     next = this.core.appendLog(
       next,
-      `Effet : le prochain joueur aura un déplacement ${delta > 0 ? '+1' : '-1'}.`,
+      `Le prochain joueur aura un déplacement ${delta > 0 ? '+1' : '-1'}.`,
     );
     return this.advanceTurnWithNextDelta(next);
   }
