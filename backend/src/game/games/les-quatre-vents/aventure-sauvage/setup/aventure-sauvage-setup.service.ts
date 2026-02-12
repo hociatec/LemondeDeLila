@@ -410,7 +410,7 @@ function defaultPatteDeck(): AventureSauvageCard[] {
     {
       id: 1,
       deck: 'patte',
-      text: 'Vous croisez une civette endormie en travers du chemin. Surpris, vous restez immobile pour ne pas la réveiller. Passez un tour.',
+      text: 'Vous croisez une civette endormie en travers du chemin. Surpris, vous restez immobile pour ne pas la réveiller. Passez votre tour.',
       skipTurns: 1,
     },
     {
@@ -422,7 +422,7 @@ function defaultPatteDeck(): AventureSauvageCard[] {
     {
       id: 3,
       deck: 'patte',
-      text: "Le vent fait tomber un nid d'aigles serpentier juste devant vous. Vous restez bouche bée à observer les petits oisillons s'agiter dans le nid. Passez un tour.",
+      text: "Le vent fait tomber un nid d'aigles serpentier juste devant vous. Vous restez bouche bée à observer les petits oisillons s'agiter dans le nid. Passez votre tour.",
       skipTurns: 1,
     },
     {
@@ -440,19 +440,19 @@ function defaultPatteDeck(): AventureSauvageCard[] {
     {
       id: 6,
       deck: 'patte',
-      text: 'Vous vous reposez sous un baobab pour reprendre des forces. Passez un tour.',
+      text: 'Vous vous reposez sous un baobab pour reprendre des forces. Passez votre tour.',
       skipTurns: 1,
     },
     {
       id: 7,
       deck: 'patte',
-      text: 'Vous vous arrêtez sous un manguier où un loriquet farceur vous pique votre casquette. Passez un tour pour la récupérer.',
+      text: 'Vous vous arrêtez sous un manguier où un loriquet farceur vous pique votre casquette. Passez votre tour pour la récupérer.',
       skipTurns: 1,
     },
     {
       id: 8,
       deck: 'patte',
-      text: 'Vous glissez sur des feuilles de bananier humides tombées au sol. Passez un tour.',
+      text: 'Vous glissez sur des feuilles de bananier humides tombées au sol. Passez votre tour.',
       skipTurns: 1,
     },
     {
@@ -560,3 +560,5 @@ function buildPawnPending(
     },
   };
 }
+
+

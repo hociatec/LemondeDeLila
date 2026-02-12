@@ -119,4 +119,115 @@ describe('FrousseActionService movement effects', () => {
     expect(messages).toContain('Reculez de 2 cases.');
     expect(messages).not.toContain('Effet : 3 au dé, recul de 2 cases.');
   });
+
+  it('formats doubled roll log with "=" (not "->")', () => {
+    const random: any = {
+      rollDice: jest.fn(() => ({ roll: 1, meta: {} })),
+      nextInt: jest.fn(() => ({ value: 0, meta: {} })),
+      pickOne: jest.fn(() => ({ value: null, meta: {} })),
+      shuffle: jest.fn((_meta: any, values: any[]) => ({ values, meta: {} })),
+    };
+    const turns: any = {
+      advanceTurn: jest.fn((state: GameStateEntity) => state),
+    };
+    const core: any = {
+      appendLog: jest.fn((state: GameStateEntity, message: string) => ({
+        ...state,
+        log: [...(Array.isArray(state.log) ? state.log : []), { message }],
+      })),
+    };
+
+    const service = new FrousseActionService(random, turns, core);
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [{ id: 1, username: 'pumbaa' } as any],
+      pending: null,
+      metadata: {
+        positions: { 1: 0 },
+        statuses: {
+          skipTurn: {},
+          blocked: {},
+          nextMoveCap: {},
+          nextRollIfThreeBackTwo: {},
+          nextRollKeepLowest: {},
+          nextRollMalus: {},
+          nextRollDouble: { 1: true },
+          ignoreTrapUntilNextDraw: {},
+          ignoreNextGhost: {},
+          ignoreNextPrank: {},
+          ignoreNextTrap: {},
+        },
+        tiles: [],
+        pawns: [],
+        decks: { cards: [], discard: [] },
+      } as any,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = service.applyActions(state, [{ type: 'roll', payload: {} } as any]);
+    const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
+    const rollMessage = messages.find((m) => m.includes('lance le')) ?? '';
+
+    expect(rollMessage).toContain('(doublé = 2)');
+    expect(rollMessage).not.toContain('doublé ->');
+  });
+
+  it('formats malus roll log with explicit calculation', () => {
+    const random: any = {
+      rollDice: jest.fn(() => ({ roll: 6, meta: {} })),
+      nextInt: jest.fn(() => ({ value: 0, meta: {} })),
+      pickOne: jest.fn(() => ({ value: null, meta: {} })),
+      shuffle: jest.fn((_meta: any, values: any[]) => ({ values, meta: {} })),
+    };
+    const turns: any = {
+      advanceTurn: jest.fn((state: GameStateEntity) => state),
+    };
+    const core: any = {
+      appendLog: jest.fn((state: GameStateEntity, message: string) => ({
+        ...state,
+        log: [...(Array.isArray(state.log) ? state.log : []), { message }],
+      })),
+    };
+
+    const service = new FrousseActionService(random, turns, core);
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [{ id: 1, username: 'pumbaa' } as any],
+      pending: null,
+      metadata: {
+        positions: { 1: 0 },
+        statuses: {
+          skipTurn: {},
+          blocked: {},
+          nextMoveCap: {},
+          nextRollIfThreeBackTwo: {},
+          nextRollKeepLowest: {},
+          nextRollMalus: { 1: -2 },
+          nextRollDouble: {},
+          ignoreTrapUntilNextDraw: {},
+          ignoreNextGhost: {},
+          ignoreNextPrank: {},
+          ignoreNextTrap: {},
+        },
+        tiles: [],
+        pawns: [],
+        decks: { cards: [], discard: [] },
+      } as any,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = service.applyActions(state, [{ type: 'roll', payload: {} } as any]);
+    const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
+    const rollMessage = messages.find((m) => m.includes('lance le')) ?? '';
+
+    expect(rollMessage).toContain('"6 moins 2 = 4"');
+  });
 });

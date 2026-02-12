@@ -68,9 +68,8 @@
                          SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                          ItemTemplate="{StaticResource AdminMenuItemTemplate}"
                          SelectionMode="Single"
-                         VirtualizingStackPanel.IsVirtualizing="True"
-                         VirtualizingStackPanel.VirtualizationMode="Recycling"
-                         ScrollViewer.CanContentScroll="True"
+                         VirtualizingStackPanel.IsVirtualizing="False"
+                         ScrollViewer.CanContentScroll="False"
                          KeyboardNavigation.TabNavigation="Cycle"
                          AutomationProperties.LabeledBy="{Binding ElementName=TitleText}">
                     <ListBox.InputBindings>

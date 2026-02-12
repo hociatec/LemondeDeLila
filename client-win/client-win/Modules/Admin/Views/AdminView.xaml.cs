@@ -165,6 +165,8 @@ public partial class AdminView : UserControl, IInitialFocusTarget
 
         ItemsList.PreviewKeyDown -= OnItemsListPreviewKeyDown;
         ItemsList.PreviewKeyDown += OnItemsListPreviewKeyDown;
+        ItemsList.SelectionChanged -= OnItemsListSelectionChanged;
+        ItemsList.SelectionChanged += OnItemsListSelectionChanged;
     }
 
     private void OnItemsListPreviewKeyDown(object sender, KeyEventArgs e)
@@ -255,6 +257,72 @@ public partial class AdminView : UserControl, IInitialFocusTarget
             InputsView?.FifthInputTextBox?.Focus();
             e.Handled = true;
         }
+    }
+
+    private void OnItemsListSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ItemsList == null || ItemsList.SelectedIndex < 0)
+        {
+            return;
+        }
+
+        if (!IsFocusWithinItemsList())
+        {
+            return;
+        }
+
+        _ = Dispatcher.BeginInvoke(
+            DispatcherPriority.Input,
+            new Action(FocusCurrentSelectedContainer));
+    }
+
+    private void FocusCurrentSelectedContainer()
+    {
+        if (ItemsList == null || ItemsList.SelectedIndex < 0)
+        {
+            return;
+        }
+
+        if (ItemsList.ItemContainerGenerator.ContainerFromIndex(ItemsList.SelectedIndex) is not ListBoxItem container)
+        {
+            return;
+        }
+
+        if (container.IsKeyboardFocusWithin)
+        {
+            return;
+        }
+
+        container.Focus();
+        Keyboard.Focus(container);
+    }
+
+    private bool IsFocusWithinItemsList()
+    {
+        if (ItemsList == null || Keyboard.FocusedElement is not DependencyObject focused)
+        {
+            return false;
+        }
+
+        for (DependencyObject? current = focused; current != null; current = GetParent(current))
+        {
+            if (ReferenceEquals(current, ItemsList))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static DependencyObject? GetParent(DependencyObject current)
+    {
+        if (current is FrameworkElement fe)
+        {
+            return fe.Parent ?? fe.TemplatedParent;
+        }
+
+        return System.Windows.LogicalTreeHelper.GetParent(current);
     }
 
     private void FocusBestInputIfVisible()

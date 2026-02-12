@@ -53,7 +53,7 @@ describe('AventureSauvageActionService', () => {
         {
           id: 999,
           deck: 'patte',
-          text: 'Test: vous vous reposez. Passez un tour.',
+          text: 'Test: vous vous reposez. Passez votre tour.',
           skipTurns: 1,
         },
       ],
@@ -129,4 +129,5 @@ describe('AventureSauvageActionService', () => {
     expect(animalIds).not.toEqual(sorted);
   });
 });
+
 

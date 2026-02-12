@@ -175,10 +175,7 @@ export class FrousseActionService {
         metadata: { ...(state.metadata ?? {}), ...meta },
         lastRoll: roll.value,
       };
-      const rollLabel =
-        roll.doubledFrom != null
-          ? `${roll.doubledFrom}" (doublé -> ${roll.value})`
-          : `${roll.value}`;
+      const rollLabel = this.formatRollLabel(roll);
       next = this.core.appendLog(
         next,
         `${this.playerName(next, currentId)} tente de se libérer : dé = "${rollLabel}".`,
@@ -241,10 +238,7 @@ export class FrousseActionService {
         `${this.playerName(next, currentId)} lance deux dés : "${roll.rolls[0]}" et "${roll.rolls[1]}" (garde "${roll.value}").`,
       );
     } else {
-      const rollLabel =
-        roll.doubledFrom != null
-          ? `${roll.doubledFrom}" (doublé -> ${roll.value})`
-          : `${roll.value}`;
+      const rollLabel = this.formatRollLabel(roll);
       next = this.core.appendLog(
         next,
         `${this.playerName(next, currentId)} lance le dé : "${rollLabel}".`,
@@ -924,6 +918,9 @@ export class FrousseActionService {
     meta: FrousseMetadata;
     rolls?: number[];
     doubledFrom?: number;
+    baseRoll: number;
+    malusApplied: number;
+    valueAfterMalus: number;
   } {
     let outMeta = meta;
 
@@ -944,15 +941,26 @@ export class FrousseActionService {
           },
         },
       };
-      return { value: Math.min(a.roll, b.roll), meta: outMeta, rolls };
+      const kept = Math.min(a.roll, b.roll);
+      return {
+        value: kept,
+        meta: outMeta,
+        rolls,
+        baseRoll: kept,
+        malusApplied: 0,
+        valueAfterMalus: kept,
+      };
     }
 
     const single = this.random.rollDice(outMeta as any, 6);
     outMeta = { ...outMeta, ...single.meta };
-    let value = single.roll;
+    const baseRoll = single.roll;
+    let value = baseRoll;
 
     const malus = outMeta.statuses.nextRollMalus?.[playerId] ?? 0;
+    let malusApplied = 0;
     if (malus !== 0) {
+      malusApplied = malus;
       value = clamp(value + malus, 1, 6);
       outMeta = {
         ...outMeta,
@@ -965,6 +973,7 @@ export class FrousseActionService {
         },
       };
     }
+    const valueAfterMalus = value;
 
     if (outMeta.statuses.nextRollDouble?.[playerId]) {
       const doubledFrom = value;
@@ -979,10 +988,39 @@ export class FrousseActionService {
           },
         },
       };
-      return { value, meta: outMeta, doubledFrom };
+      return {
+        value,
+        meta: outMeta,
+        doubledFrom,
+        baseRoll,
+        malusApplied,
+        valueAfterMalus,
+      };
     }
 
-    return { value, meta: outMeta };
+    return { value, meta: outMeta, baseRoll, malusApplied, valueAfterMalus };
+  }
+
+  private formatRollLabel(roll: {
+    value: number;
+    doubledFrom?: number;
+    baseRoll: number;
+    malusApplied: number;
+    valueAfterMalus: number;
+  }): string {
+    let label = `${roll.value}`;
+
+    if (roll.malusApplied !== 0) {
+      const amount = Math.abs(roll.malusApplied);
+      const op = roll.malusApplied < 0 ? 'moins' : 'plus';
+      label = `${roll.baseRoll} ${op} ${amount} = ${roll.valueAfterMalus}`;
+    }
+
+    if (roll.doubledFrom != null) {
+      label = `${label} (doublé = ${roll.value})`;
+    }
+
+    return label;
   }
 
   private move(
