@@ -296,6 +296,11 @@ public partial class GamePlayView
         // The inline prompt overlay still handles ESC separately (cancel) when visible.
         if (e.Key == Key.Escape)
         {
+            if (!IsTextInputFocused())
+            {
+                e.Handled = true;
+                ForceFocusGameZone();
+            }
             return;
         }
 
@@ -328,6 +333,25 @@ public partial class GamePlayView
                 if (sent)
                 {
                     NoteHandSubmittedForFocusRestore();
+                    return;
+                }
+
+                // LAMA: cards are submitted via pending choices (lama_play), not select_card.
+                if (ChoicesList.Items.Count > 0)
+                {
+                    var idx = HandList.SelectedIndex;
+                    if (idx < 0) idx = 0;
+                    if (idx >= ChoicesList.Items.Count) idx = ChoicesList.Items.Count - 1;
+                    if (idx >= 0)
+                    {
+                        ChoicesList.SelectedIndex = idx;
+                    }
+
+                    var sentChoice = await vm.SubmitSelectedChoiceAsync(CancellationToken.None).ConfigureAwait(true);
+                    if (sentChoice)
+                    {
+                        NoteChoiceSubmittedForFocusRestore();
+                    }
                 }
             }
             catch

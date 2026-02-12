@@ -21,6 +21,20 @@ public partial class GamePlayView
     private bool _restoreHandFocusAfterSubmit;
     private int _restoreHandFocusIndex;
 
+    public void FocusPreferredInteractiveElement()
+    {
+        ForceFocusGameZoneCore(forceFromOutsideTextInput: true);
+        _ = Dispatcher.BeginInvoke(
+            DispatcherPriority.Input,
+            new Action(() => ForceFocusGameZoneCore(forceFromOutsideTextInput: true)));
+        _ = Dispatcher.BeginInvoke(
+            DispatcherPriority.Loaded,
+            new Action(() => ForceFocusGameZoneCore(forceFromOutsideTextInput: true)));
+        _ = Dispatcher.BeginInvoke(
+            DispatcherPriority.ApplicationIdle,
+            new Action(() => ForceFocusGameZoneCore(forceFromOutsideTextInput: true)));
+    }
+
     private void NoteChoiceSubmittedForFocusRestore()
     {
         _suppressChoiceAutoFocusUntilUtc = DateTime.UtcNow.AddSeconds(1);
@@ -309,7 +323,9 @@ public partial class GamePlayView
         TryFocusChoiceIndex(ChoicesList, 0);
     }
 
-    private void ForceFocusGameZone()
+    private void ForceFocusGameZone() => ForceFocusGameZoneCore(forceFromOutsideTextInput: false);
+
+    private void ForceFocusGameZoneCore(bool forceFromOutsideTextInput)
     {
         if (DataContext is GamePlayViewModel vmPrompt && vmPrompt.HasInlinePrompt)
         {
@@ -319,7 +335,7 @@ public partial class GamePlayView
 
         // Le reset d'une table peut "casser" le focus (l'élément focusé est détruit/collapsé),
         // ce qui oblige ensuite à Tab/Maj+Tab. Ici on force un ancrage stable sur la zone de jeu.
-        if (IsTextInputFocused())
+        if (!forceFromOutsideTextInput && IsTextInputFocused())
         {
             return;
         }
@@ -336,20 +352,6 @@ public partial class GamePlayView
             return;
         }
 
-        if (ChoicesList.Visibility == Visibility.Visible && ChoicesList.Items.Count > 0)
-        {
-            if (ChoicesList.SelectedIndex < 0)
-            {
-                ChoicesList.SelectedIndex = 0;
-            }
-
-            ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
-
-            var idx = ChoicesList.SelectedIndex < 0 ? 0 : ChoicesList.SelectedIndex;
-            TryFocusChoiceIndex(ChoicesList, idx);
-            return;
-        }
-
         if (HandList.Visibility == Visibility.Visible && HandList.Items.Count > 0)
         {
             if (HandList.SelectedIndex < 0)
@@ -361,6 +363,20 @@ public partial class GamePlayView
 
             var idx = HandList.SelectedIndex < 0 ? 0 : HandList.SelectedIndex;
             TryFocusChoiceIndex(HandList, idx);
+            return;
+        }
+
+        if (ChoicesList.Visibility == Visibility.Visible && ChoicesList.Items.Count > 0)
+        {
+            if (ChoicesList.SelectedIndex < 0)
+            {
+                ChoicesList.SelectedIndex = 0;
+            }
+
+            ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+
+            var idx = ChoicesList.SelectedIndex < 0 ? 0 : ChoicesList.SelectedIndex;
+            TryFocusChoiceIndex(ChoicesList, idx);
             return;
         }
 

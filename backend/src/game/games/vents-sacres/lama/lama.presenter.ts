@@ -247,7 +247,7 @@ export class LamaPresenter extends BasePresenterService {
         droppedOut
           ? `Défausse : ${discardTop}. Vous vous êtes retiré de la manche. Main : ${hand.length} cartes (${handScore} jetons). Total : ${meScore} jetons.`
           : currentPlayerId === userId
-            ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (↑/↓ choisir, Entrée jouer, Espace piocher, P se retirer, C défausse, E mains, S jetons)`
+            ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (↑/↓ choisir, Entrée jouer, Espace piocher, P passer, Q se retirer, C défausse, E mains, S jetons)`
             : `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (En attente)`,
       playerId: userId,
       choices,
@@ -258,7 +258,7 @@ export class LamaPresenter extends BasePresenterService {
     if (actionType === 'lama_play') return 'Jouer';
     if (actionType === 'draw') return 'Piocher';
     if (actionType === 'lama_set_config') return 'Configuration';
-    if (actionType === 'lama_quit') return 'Se retirer';
+    if (actionType === 'lama_quit') return 'Passer la manche';
     if (actionType === 'lama_pass') return 'Passer';
     if (actionType === 'lama_return') return 'Rendre jetons';
     if (actionType === 'lama_peek_discard') return 'Voir défausse';
@@ -331,7 +331,7 @@ export class LamaPresenter extends BasePresenterService {
         parts.push(`${lamaCardLabel(value)}×${count}`);
       }
       const list = parts.length ? parts.join(', ') : '(aucune carte jouable)';
-      return `Défausse : ${discardTop}. (↑/↓ choisir, Entrée jouer, Espace piocher, C défausse, E mains, S score)`;
+      return `Défausse : ${discardTop}. (↑/↓ choisir, Entrée jouer, Espace piocher, P passer, Q se retirer, C défausse, E mains, S score)`;
     })();
 
     return {
@@ -449,3 +449,8 @@ export class LamaPresenter extends BasePresenterService {
     });
   }
 }
+
+
+
+
+

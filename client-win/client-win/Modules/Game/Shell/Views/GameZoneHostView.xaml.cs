@@ -3,6 +3,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using client_win.Modules.Game.Play.GamePlay.Views;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Game.Shell.Views;
 
@@ -39,6 +41,24 @@ public partial class GameZoneHostView : UserControl
                 // puis on le focus pour que les handlers clavier du jeu (GamePlayView) prennent le relais.
                 if (FindFocusablePresentedRoot(GameZoneHost, content) is FrameworkElement viewRoot)
                 {
+                    if (viewRoot is IInitialFocusTarget initialFocusTarget)
+                    {
+                        initialFocusTarget.RequestInitialFocus();
+                        return;
+                    }
+
+                    if (viewRoot is GamePlayView gamePlayView)
+                    {
+                        gamePlayView.FocusPreferredInteractiveElement();
+                        return;
+                    }
+
+                    if (FindDescendant<GamePlayView>(viewRoot) is GamePlayView nestedGamePlayView)
+                    {
+                        nestedGamePlayView.FocusPreferredInteractiveElement();
+                        return;
+                    }
+
                     if (viewRoot.Focus())
                     {
                         Keyboard.Focus(viewRoot);
@@ -97,6 +117,29 @@ public partial class GameZoneHostView : UserControl
         }
 
         return candidate;
+    }
+
+    private static T? FindDescendant<T>(DependencyObject root) where T : class
+    {
+        if (root is T direct)
+        {
+            return direct;
+        }
+
+        var count = VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child == null) continue;
+
+            var found = FindDescendant<T>(child);
+            if (found != null)
+            {
+                return found;
+            }
+        }
+
+        return null;
     }
 
     private static DependencyObject? FindFirstFocusableDescendant(DependencyObject root)
