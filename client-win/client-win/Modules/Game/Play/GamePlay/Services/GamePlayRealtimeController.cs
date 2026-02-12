@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using client_win.Modules.Game.Play.Announcements.Services;
@@ -45,6 +46,9 @@ internal sealed class GamePlayRealtimeController
     private int _pendingForcedTurnAnnouncements;
     private Dictionary<string, int>? _lastViewerHandCounts;
     private string? _lastDrawActionToken;
+    private readonly object _statePumpLock = new();
+    private GameStateDto? _latestPendingState;
+    private int _statePumpRunning;
 
     internal GamePlayRealtimeController(
         Dispatcher dispatcher,
@@ -100,6 +104,11 @@ internal sealed class GamePlayRealtimeController
         _viewerPlayerId = null;
         _pendingForcedTurnAnnouncements = 0;
         _lastViewerHandCounts = null;
+        lock (_statePumpLock)
+        {
+            _latestPendingState = null;
+        }
+        Interlocked.Exchange(ref _statePumpRunning, 0);
         _diceSounds.Reset();
     }
 
@@ -114,8 +123,8 @@ internal sealed class GamePlayRealtimeController
         {
             var force = _pendingForcedTurnAnnouncements > 0;
             if (force) _pendingForcedTurnAnnouncements = Math.Max(0, _pendingForcedTurnAnnouncements - 1);
-            // Évite le spam : les tours sont déjà annoncés via l'historique serveur.
-            // Garder seulement les annonces "forcées" (ex: demande manuelle de game.turn).
+            // Ã‰vite le spam : les tours sont dÃ©jÃ  annoncÃ©s via l'historique serveur.
+            // Garder seulement les annonces "forcÃ©es" (ex: demande manuelle de game.turn).
             if (force)
             {
         _announcementRouter.TryHandleTurnUpdate(info, msg => _emitMessage(new GamePlayHistoryMessage(msg)), force: true);
@@ -126,74 +135,148 @@ internal sealed class GamePlayRealtimeController
     internal void HandleStateUpdated(GameStateDto state)
     {
         _panels.OnStateUpdated(state);
+        lock (_statePumpLock)
+        {
+            _latestPendingState = state;
+        }
+
+        if (Interlocked.CompareExchange(ref _statePumpRunning, 1, 0) != 0)
+        {
+            return;
+        }
 
         _dispatcher.InvokeAsync(() =>
         {
-            if (_skipLogReplayOnce)
+            try
             {
-                _projector.PrimeLogCursor(state);
-                _skipLogReplayOnce = false;
+                while (true)
+                {
+                    GameStateDto? next;
+                    lock (_statePumpLock)
+                    {
+                        next = _latestPendingState;
+                        _latestPendingState = null;
+                    }
+
+                    if (next == null)
+                    {
+                        break;
+                    }
+
+                    ProcessStateOnUi(next);
+                }
             }
-
-            var presented = _presenter.Present(state);
-            var viewerId = GamePlayExtrasParser.ExtractViewerPlayerId(state);
-            var viewerUsername = GetUsername(state, viewerId);
-            var currentHandCounts = BuildHandCounts(GamePlayExtrasParser.ExtractViewerHandLabels(state));
-
-            // IMPORTANT:
-            // Annoncer d'abord les nouvelles lignes d'historique (ordre serveur),
-            // puis seulement ensuite appliquer les changements d'interface (ex: liste de choix),
-            // sinon NVDA lit le contrôle (ex: "Échange") avant le message "Case 11: Échange ...".
-            foreach (var entry in presented.newLogMessages)
+            finally
             {
-                var trimmed = entry?.Message ?? string.Empty;
-                _logSounds.TryPlayForLogMessage(trimmed, viewerUsername);
-                var rewritten = RewriteLogForViewer(trimmed, viewerUsername, _lastViewerHandCounts, currentHandCounts);
-                _emitMessage(new GamePlayHistoryMessage(rewritten, entry?.Timestamp));
+                Interlocked.Exchange(ref _statePumpRunning, 0);
+
+                lock (_statePumpLock)
+                {
+                    if (_latestPendingState != null &&
+                        Interlocked.CompareExchange(ref _statePumpRunning, 1, 0) == 0)
+                    {
+                        _dispatcher.InvokeAsync(DrainStateQueueOnUi, DispatcherPriority.Background);
+                    }
+                }
             }
-
-            var nextStatus = NormalizeStatus(state);
-            var previousStatus = _lastGameStatus ?? string.Empty;
-            _lastGameStatus = nextStatus;
-            if (!string.Equals(previousStatus, nextStatus, StringComparison.OrdinalIgnoreCase))
-            {
-                _onGameStatusChanged(previousStatus, nextStatus);
-            }
-            if (string.Equals(previousStatus, "started", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase))
-            {
-                // IMPORTANT (NVDA):
-                // Le changement de focus peut interrompre la lecture des dernières lignes d'historique.
-                // On diffère légèrement la demande de focus pour laisser les messages du tour/fin être annoncés d'abord.
-                _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
-            }
-
-            _viewerPlayerId = viewerId;
-            _choices.UpdateFromState(state, _viewerPlayerId, _canStartAskCardSelection);
-
-            _diceSounds.TryPlayDiceRollSound(state);
-
-            if (!string.Equals(previousStatus, "finished", StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(nextStatus, "finished", StringComparison.OrdinalIgnoreCase))
-            {
-                _endgameSounds.TryPlayEndgameSound(state, _viewerPlayerId);
-            }
-
-            _setIsBotThinking(presented.isBotThinking);
-            _setStateSummary(presented.stateSummary);
-            _setPendingText(presented.pendingText);
-            _setActionsText(presented.actionsText);
-            _setBoardText(GamePlayBoardTextBuilder.Build(state));
-
-            TryPlayDrawSoundFromState(state);
-
-            _syncShortcuts(state);
-            _grid.SyncFromState(state, _viewerPlayerId);
-
-            _lastViewerHandCounts = currentHandCounts;
-            _refreshCanExecute();
-            TryAnnounceTurnFromState(state);
         }, DispatcherPriority.Background);
+    }
+
+    private void DrainStateQueueOnUi()
+    {
+        try
+        {
+            while (true)
+            {
+                GameStateDto? next;
+                lock (_statePumpLock)
+                {
+                    next = _latestPendingState;
+                    _latestPendingState = null;
+                }
+
+                if (next == null)
+                {
+                    break;
+                }
+
+                ProcessStateOnUi(next);
+            }
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _statePumpRunning, 0);
+
+            lock (_statePumpLock)
+            {
+                if (_latestPendingState != null &&
+                    Interlocked.CompareExchange(ref _statePumpRunning, 1, 0) == 0)
+                {
+                    _dispatcher.InvokeAsync(DrainStateQueueOnUi, DispatcherPriority.Background);
+                }
+            }
+        }
+    }
+
+    private void ProcessStateOnUi(GameStateDto state)
+    {
+        if (_skipLogReplayOnce)
+        {
+            _projector.PrimeLogCursor(state);
+            _skipLogReplayOnce = false;
+        }
+
+        var presented = _presenter.Present(state);
+        var viewerId = GamePlayExtrasParser.ExtractViewerPlayerId(state);
+        var viewerUsername = GetUsername(state, viewerId);
+        var currentHandCounts = BuildHandCounts(GamePlayExtrasParser.ExtractViewerHandLabels(state));
+
+        foreach (var entry in presented.newLogMessages)
+        {
+            var trimmed = entry?.Message ?? string.Empty;
+            _logSounds.TryPlayForLogMessage(trimmed, viewerUsername);
+            var rewritten = RewriteLogForViewer(trimmed, viewerUsername, _lastViewerHandCounts, currentHandCounts);
+            _emitMessage(new GamePlayHistoryMessage(rewritten, entry?.Timestamp));
+        }
+
+        var nextStatus = NormalizeStatus(state);
+        var previousStatus = _lastGameStatus ?? string.Empty;
+        _lastGameStatus = nextStatus;
+        if (!string.Equals(previousStatus, nextStatus, StringComparison.OrdinalIgnoreCase))
+        {
+            _onGameStatusChanged(previousStatus, nextStatus);
+        }
+        if (string.Equals(previousStatus, "started", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase))
+        {
+            _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
+        }
+
+        _viewerPlayerId = viewerId;
+        _choices.UpdateFromState(state, _viewerPlayerId, _canStartAskCardSelection);
+
+        _diceSounds.TryPlayDiceRollSound(state);
+
+        if (!string.Equals(previousStatus, "finished", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(nextStatus, "finished", StringComparison.OrdinalIgnoreCase))
+        {
+            _endgameSounds.TryPlayEndgameSound(state, _viewerPlayerId);
+        }
+
+        _setIsBotThinking(presented.isBotThinking);
+        _setStateSummary(presented.stateSummary);
+        _setPendingText(presented.pendingText);
+        _setActionsText(presented.actionsText);
+        _setBoardText(GamePlayBoardTextBuilder.Build(state));
+
+        TryPlayDrawSoundFromState(state);
+
+        _syncShortcuts(state);
+        _grid.SyncFromState(state, _viewerPlayerId);
+
+        _lastViewerHandCounts = currentHandCounts;
+        _refreshCanExecute();
+        TryAnnounceTurnFromState(state);
     }
 
     private void TryPlayDrawSoundFromState(GameStateDto state)
@@ -218,9 +301,9 @@ internal sealed class GamePlayRealtimeController
             return status;
         }
 
-        // Robustesse : si le serveur a déjà marqué un winner/finishedAt dans le metadata,
-        // mais que status reste "started" (race / transition), considérer la partie finie côté client
-        // pour permettre la relance (Entrée) et le reset (X).
+        // Robustesse : si le serveur a dÃ©jÃ  marquÃ© un winner/finishedAt dans le metadata,
+        // mais que status reste "started" (race / transition), considÃ©rer la partie finie cÃ´tÃ© client
+        // pour permettre la relance (EntrÃ©e) et le reset (X).
         try
         {
             var meta = state.Metadata;
@@ -407,7 +490,7 @@ internal sealed class GamePlayRealtimeController
 
         if (msg.StartsWith($"{user} se retire de la manche", StringComparison.OrdinalIgnoreCase))
         {
-            return "Vous vous retirez de la manche. Vos jetons seront comptés à la fin de la manche.";
+            return "Vous vous retirez de la manche. Vos jetons seront comptÃ©s Ã  la fin de la manche.";
         }
 
         if (string.Equals(msg, $"{user} ne rend rien.", StringComparison.OrdinalIgnoreCase))
@@ -422,7 +505,7 @@ internal sealed class GamePlayRealtimeController
         }
 
         // Jeu de carte : annonce toujours la carte, en adaptant la formulation pour le joueur local.
-        // Exemple serveur: "Fantômette joue un 1."
+        // Exemple serveur: "FantÃ´mette joue un 1."
         var prefix = $"{user} joue un ";
         if (msg.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         {
@@ -433,3 +516,4 @@ internal sealed class GamePlayRealtimeController
         return msg;
     }
 }
+

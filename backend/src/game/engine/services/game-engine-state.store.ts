@@ -8,20 +8,25 @@ import { RedisClientFactory } from '../../../common/redis/redis-client.factory';
 @Injectable()
 export class GameEngineStateStore {
   private readonly states = new Map<string, GameStateEntity>();
+  private readonly persistQueue = new Map<string, Promise<void>>();
   private redis: Redis | null = null;
   private readonly logger = new Logger(GameEngineStateStore.name);
   private readonly redisPrefix = 'game:state:';
 
   constructor(
     private readonly config: ConfigService,
-    private readonly redisFactory: RedisClientFactory,
+    private readonly redisFactory?: RedisClientFactory,
   ) {
     const redisUrl =
       this.config.get<string>('GAME_ENGINE_STATE_REDIS_URL') ??
       this.config.get<string>('SESSION_STORE_REDIS_URL') ??
       null;
-    if (redisUrl) {
+    if (redisUrl && this.redisFactory) {
       this.initializeRedis(redisUrl);
+    } else if (redisUrl && !this.redisFactory) {
+      this.logger.warn(
+        'Redis configuré mais RedisClientFactory indisponible : fallback en mémoire.',
+      );
     } else {
       this.logger.warn(
         'GAME_ENGINE_STATE_REDIS_URL non défini : fallback en mémoire (non persistant).',
@@ -63,9 +68,14 @@ export class GameEngineStateStore {
     roomId: number,
     gameType: string,
     state: GameStateEntity,
+    opts?: { asyncPersist?: boolean },
   ): Promise<void> {
     const key = this.buildKey(roomId, gameType);
     this.states.set(key, state);
+    if (opts?.asyncPersist) {
+      this.enqueuePersist(key, state);
+      return;
+    }
     await this.persistState(key, state);
   }
 
@@ -107,6 +117,10 @@ export class GameEngineStateStore {
     return { ...state, status: payloadStatus };
   }
   private initializeRedis(url: string): void {
+    if (!this.redisFactory) {
+      this.redis = null;
+      return;
+    }
     try {
       this.redis = this.redisFactory.create(url, 'game-engine-state-store');
       this.logger.log('GameEngineStateStore connecté à Redis.');
@@ -140,5 +154,18 @@ export class GameEngineStateStore {
         key,
       });
     }
+  }
+
+  private enqueuePersist(key: string, state: GameStateEntity): void {
+    const previous = this.persistQueue.get(key) ?? Promise.resolve();
+    const next = previous
+      .then(() => this.persistState(key, state))
+      .catch(() => undefined);
+    this.persistQueue.set(key, next);
+    next.finally(() => {
+      if (this.persistQueue.get(key) === next) {
+        this.persistQueue.delete(key);
+      }
+    });
   }
 }

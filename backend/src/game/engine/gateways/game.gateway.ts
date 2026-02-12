@@ -452,7 +452,6 @@ export class GameGateway
     await this.perf.measure(
       'ws.game.actions.total',
       async () => {
-        await this.engine.checkPlayAccess(roomId, meta.userId);
         this.setRoom(meta, roomId, gameType, client);
         const actions: GameSingleActionDto[] = Array.isArray(payload?.actions)
           ? payload.actions

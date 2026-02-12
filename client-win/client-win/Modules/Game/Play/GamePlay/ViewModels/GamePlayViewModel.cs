@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Collections.Generic;
@@ -83,7 +83,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private string _inlinePromptSignature = string.Empty;
 
     private string _connectionStatus = "Connexion au moteur de jeu...";
-    private string _stateSummary = "En attente d'un état de jeu (game.state)...";
+    private string _stateSummary = "En attente d'un Ã©tat de jeu (game.state)...";
     private string _pendingText = string.Empty;
     private string _actionsText = string.Empty;
     private string _boardText = string.Empty;
@@ -92,6 +92,9 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private string _quizQuestionText = string.Empty;
     private string _lastQuizQuestionForSelectionReset = string.Empty;
     private int _selectedDisplayIndex = -1;
+    private readonly object _postStateUiLock = new();
+    private GameStateDto? _postStateUiPendingState;
+    private bool _postStateUiScheduled;
 
     public string GameId { get; }
 
@@ -306,8 +309,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public async Task<bool> TryOpenPendingTextPromptAsync(CancellationToken cancellationToken = default)
     {
-        // Les prompts de jeu ne doivent plus ouvrir de fenêtre modale (ils sont affichés inline dans la vue).
-        // Cette méthode est conservée pour compatibilité, mais devient un no-op.
+        // Les prompts de jeu ne doivent plus ouvrir de fenÃªtre modale (ils sont affichÃ©s inline dans la vue).
+        // Cette mÃ©thode est conservÃ©e pour compatibilitÃ©, mais devient un no-op.
         await Task.CompletedTask;
         return false;
     }
@@ -368,7 +371,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                     }
 
                     // Certains jeux rendent la configuration obligatoire (pas de cancelActionType).
-                    // Dans ce cas, on empêche la fermeture silencieuse : on informe et on ré-ouvre.
+                    // Dans ce cas, on empÃªche la fermeture silencieuse : on informe et on rÃ©-ouvre.
                     await _dialogs
                         .ShowError("Configuration", "Configuration obligatoire.")
                         .ConfigureAwait(true);
@@ -410,7 +413,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                     {
                         if (!TryParseBool(text, out var value))
                         {
-                            validationError = $"Veuillez cocher/décocher : {field.Label}.";
+                            validationError = $"Veuillez cocher/dÃ©cocher : {field.Label}.";
                             break;
                         }
                         payload[field.Key] = value;
@@ -483,29 +486,74 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private void OnStateUpdated(GameStateDto state)
     {
         _realtime.HandleStateUpdated(state);
+        SchedulePostStateUiUpdate(state);
+    }
 
-        _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+    private void SchedulePostStateUiUpdate(GameStateDto state)
+    {
+        lock (_postStateUiLock)
         {
-            SyncHandFromState(state);
-            PendingType = (state.Pending?.Type ?? string.Empty).Trim();
-            var question = ExtractQuizQuestion(state);
-            QuizQuestionText = question;
-            ResetQuizSelectionIfNewQuestion(question);
-
-            UpdatePendingTextPrompt(state);
-            OnPropertyChanged(nameof(HasPendingTextPrompt));
-            UpdatePendingConfigPrompt(state);
-            OnPropertyChanged(nameof(HasPendingConfigPrompt));
-
-            // Configuration: ouvrir une boîte de dialogue au lancement (et lors des prompts config_prompt).
-            if (HasPendingConfigPrompt)
+            _postStateUiPendingState = state;
+            if (_postStateUiScheduled)
             {
-                _ = TryOpenPendingConfigPromptAsync(CancellationToken.None);
+                return;
             }
+            _postStateUiScheduled = true;
+        }
 
-            SyncInlinePromptFromPending();
-            OnPropertyChanged(nameof(HasInlinePrompt));
-        }));
+        _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(DrainPostStateUiQueue));
+    }
+
+    private void DrainPostStateUiQueue()
+    {
+        try
+        {
+            while (true)
+            {
+                GameStateDto? next;
+                lock (_postStateUiLock)
+                {
+                    next = _postStateUiPendingState;
+                    _postStateUiPendingState = null;
+                }
+
+                if (next == null)
+                {
+                    break;
+                }
+
+                SyncHandFromState(next);
+                PendingType = (next.Pending?.Type ?? string.Empty).Trim();
+                var question = ExtractQuizQuestion(next);
+                QuizQuestionText = question;
+                ResetQuizSelectionIfNewQuestion(question);
+
+                UpdatePendingTextPrompt(next);
+                OnPropertyChanged(nameof(HasPendingTextPrompt));
+                UpdatePendingConfigPrompt(next);
+                OnPropertyChanged(nameof(HasPendingConfigPrompt));
+
+                if (HasPendingConfigPrompt)
+                {
+                    _ = TryOpenPendingConfigPromptAsync(CancellationToken.None);
+                }
+
+                SyncInlinePromptFromPending();
+                OnPropertyChanged(nameof(HasInlinePrompt));
+            }
+        }
+        finally
+        {
+            lock (_postStateUiLock)
+            {
+                _postStateUiScheduled = false;
+                if (_postStateUiPendingState != null)
+                {
+                    _postStateUiScheduled = true;
+                    _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(DrainPostStateUiQueue));
+                }
+            }
+        }
     }
 
     private void ResetQuizSelectionIfNewQuestion(string? question)
@@ -1061,7 +1109,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                 .ConfigureAwait(false);
             if (sent && string.Equals(pendingType, "quiz", StringComparison.OrdinalIgnoreCase))
             {
-                MessageReceived?.Invoke(new GamePlayHistoryMessage("Réponse envoyée."));
+                MessageReceived?.Invoke(new GamePlayHistoryMessage("RÃ©ponse envoyÃ©e."));
             }
             return sent;
         }
@@ -1218,3 +1266,4 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     partial void InitializeHandSupport();
 }
+

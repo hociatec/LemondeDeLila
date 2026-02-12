@@ -3,8 +3,7 @@ import { GameEngineStateStore } from '../services/game-engine-state.store';
 import { GameStateEntity } from '../../core/entities/game-state.entity';
 
 const redisData = new Map<string, string>();
-
-const mockRedisFactory = jest.fn().mockImplementation(() => ({
+const mockCreateRedisClient = jest.fn().mockImplementation(() => ({
   get: jest.fn(async (key: string) => redisData.get(key) ?? null),
   set: jest.fn(async (key: string, value: string) => {
     redisData.set(key, value);
@@ -14,21 +13,14 @@ const mockRedisFactory = jest.fn().mockImplementation(() => ({
   }),
   on: jest.fn(),
 }));
-
-jest.mock(
-  'ioredis',
-  () => {
-    return function MockRedis(this: unknown, url: string) {
-      return mockRedisFactory(url);
-    };
-  },
-  { virtual: true },
-);
+const mockRedisClientFactory = {
+  create: mockCreateRedisClient,
+} as any;
 
 describe('GameEngineStateStore', () => {
   beforeEach(() => {
     redisData.clear();
-    mockRedisFactory.mockClear();
+    mockCreateRedisClient.mockClear();
   });
 
   afterEach(() => {
@@ -39,7 +31,7 @@ describe('GameEngineStateStore', () => {
     process.env.GAME_ENGINE_STATE_REDIS_URL = 'redis://unit-test';
     const config = new ConfigService();
 
-    const storeA = new GameEngineStateStore(config);
+    const storeA = new GameEngineStateStore(config, mockRedisClientFactory);
     const sampleState: GameStateEntity = {
       status: 'started',
       phase: 'playing',
@@ -55,7 +47,7 @@ describe('GameEngineStateStore', () => {
 
     await storeA.set(7, 'dame-nature', sampleState);
 
-    const storeB = new GameEngineStateStore(config);
+    const storeB = new GameEngineStateStore(config, mockRedisClientFactory);
     const restored = await storeB.get(7, 'dame-nature');
 
     expect(restored).toBeDefined();

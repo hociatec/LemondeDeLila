@@ -13,12 +13,16 @@ namespace client_win.Modules.Game.Play.Grid.ViewModels;
 
 public sealed partial class GridBoardViewModel
 {
+    private readonly Dictionary<string, CellSyncSnapshot> _lastCellSyncByKey =
+        new(StringComparer.OrdinalIgnoreCase);
+
     private void SyncFromStateCore(GameStateDto state, int? viewerPlayerId)
     {
         if (state == null)
         {
             IsVisible = false;
             Status = string.Empty;
+            _lastCellSyncByKey.Clear();
             _pawnPositionsPrimed = false;
             _lastPawnPosByOwnerId.Clear();
             _wallLayoutPrimed = false;
@@ -43,6 +47,7 @@ public sealed partial class GridBoardViewModel
         {
             IsVisible = false;
             Status = string.Empty;
+            _lastCellSyncByKey.Clear();
             _pawnPositionsPrimed = false;
             _lastPawnPosByOwnerId.Clear();
             _wallLayoutPrimed = false;
@@ -64,109 +69,242 @@ public sealed partial class GridBoardViewModel
                 g => g.Key,
                 g => (g.FirstOrDefault()?.Username ?? string.Empty).Trim());
         TryPlayPawnPlaceSounds(entitiesByKey, playerNameById);
-
-        foreach (var cell in Cells)
-        {
-            cell.CellBorderThickness = new Thickness(1);
-            cell.WallNorth = false;
-            cell.WallSouth = false;
-            cell.WallWest = false;
-            cell.WallEast = false;
-            cell.CanPlaceWallH = false;
-            cell.CanPlaceWallV = false;
-            cell.CellTags = new ObservableCollection<string>();
-            cell.Glyph = string.Empty;
-            cell.EntitiesCount = 0;
-            cell.HasOwnPawn = false;
-            cell.HasOpponentPawn = false;
-            cell.OwnPawnUsername = string.Empty;
-            cell.OpponentPawnUsername = string.Empty;
-            cell.EntityTypes = new ObservableCollection<string>();
-        }
-
-        foreach (var kv in entitiesByKey)
-        {
-            if (!TryParseCellKey(kv.Key, out var x, out var y))
-            {
-                continue;
-            }
-
-            var idx = y * Size + x;
-            if (idx < 0 || idx >= Cells.Count)
-            {
-                continue;
-            }
-
-            var entities = kv.Value;
-            if (entities == null || entities.Count == 0)
-            {
-                continue;
-            }
-
-            var cell = Cells[idx];
-            cell.EntitiesCount = entities.Count;
-            cell.Glyph = entities.Select(e => e.Glyph).FirstOrDefault(s => !string.IsNullOrWhiteSpace(s)) ?? string.Empty;
-
-            if (_viewerPlayerId is > 0)
-            {
-                var viewerId = _viewerPlayerId.Value;
-                cell.HasOwnPawn = entities.Any(e => e.OwnerId == viewerId);
-                cell.HasOpponentPawn = entities.Any(e => e.OwnerId != null && e.OwnerId != viewerId);
-
-                if (cell.HasOwnPawn && playerNameById.TryGetValue(viewerId, out var ownName))
-                {
-                    cell.OwnPawnUsername = ownName;
-                }
-
-                var opponentOwnerId = entities
-                    .Select(e => e.OwnerId)
-                    .FirstOrDefault(id => id != null && id.Value != viewerId);
-                if (opponentOwnerId != null &&
-                    playerNameById.TryGetValue(opponentOwnerId.Value, out var opponentName))
-                {
-                    cell.OpponentPawnUsername = opponentName;
-                }
-            }
-
-            var types = entities
-                .Select(e => e.Type)
-                .Where(s => !string.IsNullOrWhiteSpace(s))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-            if (types.Length > 0)
-            {
-                cell.EntityTypes = new ObservableCollection<string>(types);
-            }
-        }
-
         SyncGridStatus(state);
-        ApplyGridRender(state);
+
+        var renderByKey = TryReadGridRenderCells(state);
+        BuildGridActionsIndex(state);
+        _isEntityGrabbed = false;
+
+        for (var i = 0; i < Cells.Count; i++)
+        {
+            var cell = Cells[i];
+            var key = GridCellKey.From(cell);
+
+            var border = new Thickness(1);
+            var wallNorth = false;
+            var wallEast = false;
+            var wallSouth = false;
+            var wallWest = false;
+            if (renderByKey.TryGetValue(key, out var renderCell))
+            {
+                border = renderCell.Border;
+                wallNorth = renderCell.WallNorth;
+                wallEast = renderCell.WallEast;
+                wallSouth = renderCell.WallSouth;
+                wallWest = renderCell.WallWest;
+            }
+
+            var entities = entitiesByKey.TryGetValue(key, out var list) ? list : null;
+            var safeEntities = entities ?? new List<GridEntity>();
+            var entitiesCount = safeEntities.Count;
+            var glyph = entitiesCount > 0
+                ? safeEntities.Select(e => e.Glyph).FirstOrDefault(s => !string.IsNullOrWhiteSpace(s)) ?? string.Empty
+                : string.Empty;
+
+            var hasOwnPawn = false;
+            var hasOpponentPawn = false;
+            var ownPawnUsername = string.Empty;
+            var opponentPawnUsername = string.Empty;
+            var entityTypes = Array.Empty<string>();
+
+            if (entitiesCount > 0)
+            {
+                if (_viewerPlayerId is > 0)
+                {
+                    var viewerId = _viewerPlayerId.Value;
+                    hasOwnPawn = safeEntities.Any(e => e.OwnerId == viewerId);
+                    hasOpponentPawn = safeEntities.Any(e => e.OwnerId != null && e.OwnerId != viewerId);
+
+                    if (hasOwnPawn && playerNameById.TryGetValue(viewerId, out var ownName))
+                    {
+                        ownPawnUsername = ownName;
+                    }
+
+                    var opponentOwnerId = safeEntities
+                        .Select(e => e.OwnerId)
+                        .FirstOrDefault(id => id != null && id.Value != viewerId);
+                    if (opponentOwnerId != null &&
+                        playerNameById.TryGetValue(opponentOwnerId.Value, out var opponentName))
+                    {
+                        opponentPawnUsername = opponentName;
+                    }
+                }
+
+                entityTypes = safeEntities
+                    .Select(e => e.Type)
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+            }
+
+            var tags = cellTagsByKey.TryGetValue(key, out var cellTags) && cellTags.Length > 0
+                ? cellTags
+                : Array.Empty<string>();
+
+            string[] actionLabels = Array.Empty<string>();
+            var canPlaceWallH = false;
+            var canPlaceWallV = false;
+            if (_gridActionsByCellKey.TryGetValue(key, out var actions) && actions.Count > 0)
+            {
+                actionLabels = actions
+                    .Select(a => a.Label)
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .ToArray();
+                canPlaceWallH = actions.Any(a => a.HasOrientation && HasOrientation(a.Payload, "h"));
+                canPlaceWallV = actions.Any(a => a.HasOrientation && HasOrientation(a.Payload, "v"));
+            }
+
+            var snapshot = new CellSyncSnapshot(
+                border,
+                wallNorth,
+                wallEast,
+                wallSouth,
+                wallWest,
+                glyph,
+                entitiesCount,
+                hasOwnPawn,
+                hasOpponentPawn,
+                ownPawnUsername,
+                opponentPawnUsername,
+                entityTypes,
+                tags,
+                actionLabels,
+                canPlaceWallH,
+                canPlaceWallV);
+
+            if (_lastCellSyncByKey.TryGetValue(key, out var previous) &&
+                CellSyncSnapshotEquals(previous, snapshot))
+            {
+                continue;
+            }
+
+            _lastCellSyncByKey[key] = snapshot;
+            ApplyCellSyncSnapshot(cell, snapshot);
+        }
+
         TryPlayWallPlacedSound();
         SyncWallHistory(state.Metadata, playerNameById, actorPlayerId);
 
-        BuildGridActionsIndex(state);
-        _isEntityGrabbed = false;
-        foreach (var cell in Cells)
+        RefreshCanExecute();
+    }
+
+    private readonly record struct CellSyncSnapshot(
+        Thickness Border,
+        bool WallNorth,
+        bool WallEast,
+        bool WallSouth,
+        bool WallWest,
+        string Glyph,
+        int EntitiesCount,
+        bool HasOwnPawn,
+        bool HasOpponentPawn,
+        string OwnPawnUsername,
+        string OpponentPawnUsername,
+        string[] EntityTypes,
+        string[] CellTags,
+        string[] ActionLabels,
+        bool CanPlaceWallH,
+        bool CanPlaceWallV);
+
+    private static bool CellSyncSnapshotEquals(CellSyncSnapshot a, CellSyncSnapshot b)
+    {
+        return a.Border.Equals(b.Border) &&
+               a.WallNorth == b.WallNorth &&
+               a.WallEast == b.WallEast &&
+               a.WallSouth == b.WallSouth &&
+               a.WallWest == b.WallWest &&
+               a.EntitiesCount == b.EntitiesCount &&
+               a.HasOwnPawn == b.HasOwnPawn &&
+               a.HasOpponentPawn == b.HasOpponentPawn &&
+               string.Equals(a.Glyph, b.Glyph, StringComparison.Ordinal) &&
+               string.Equals(a.OwnPawnUsername, b.OwnPawnUsername, StringComparison.Ordinal) &&
+               string.Equals(a.OpponentPawnUsername, b.OpponentPawnUsername, StringComparison.Ordinal) &&
+               SequenceEqualOrdinal(a.EntityTypes, b.EntityTypes) &&
+               SequenceEqualOrdinal(a.CellTags, b.CellTags) &&
+               SequenceEqualOrdinal(a.ActionLabels, b.ActionLabels) &&
+               a.CanPlaceWallH == b.CanPlaceWallH &&
+               a.CanPlaceWallV == b.CanPlaceWallV;
+    }
+
+    private static bool SequenceEqualOrdinal(IReadOnlyList<string> a, IReadOnlyList<string> b)
+    {
+        if (ReferenceEquals(a, b))
         {
-            var key = GridCellKey.From(cell);
-            if (cellTagsByKey.TryGetValue(key, out var tags) && tags.Length > 0)
+            return true;
+        }
+        if (a == null || b == null || a.Count != b.Count)
+        {
+            return false;
+        }
+        for (var i = 0; i < a.Count; i++)
+        {
+            if (!string.Equals(a[i], b[i], StringComparison.Ordinal))
             {
-                cell.CellTags = new ObservableCollection<string>(tags);
+                return false;
             }
+        }
+        return true;
+    }
 
-            if (!_gridActionsByCellKey.TryGetValue(key, out var actions) || actions.Count == 0)
-            {
-                cell.ActionLabels = new ObservableCollection<string>();
-                continue;
-            }
+    private static void ApplyCellSyncSnapshot(GridCellViewModel cell, CellSyncSnapshot snapshot)
+    {
+        cell.CellBorderThickness = snapshot.Border;
+        cell.WallNorth = snapshot.WallNorth;
+        cell.WallEast = snapshot.WallEast;
+        cell.WallSouth = snapshot.WallSouth;
+        cell.WallWest = snapshot.WallWest;
+        cell.Glyph = snapshot.Glyph;
+        cell.EntitiesCount = snapshot.EntitiesCount;
+        cell.HasOwnPawn = snapshot.HasOwnPawn;
+        cell.HasOpponentPawn = snapshot.HasOpponentPawn;
+        cell.OwnPawnUsername = snapshot.OwnPawnUsername;
+        cell.OpponentPawnUsername = snapshot.OpponentPawnUsername;
+        SyncStringCollection(cell.EntityTypes, snapshot.EntityTypes);
+        SyncStringCollection(cell.CellTags, snapshot.CellTags);
+        SyncStringCollection(cell.ActionLabels, snapshot.ActionLabels);
+        cell.CanPlaceWallH = snapshot.CanPlaceWallH;
+        cell.CanPlaceWallV = snapshot.CanPlaceWallV;
+    }
 
-            cell.ActionLabels = new ObservableCollection<string>(
-                actions.Select(a => a.Label).Where(s => !string.IsNullOrWhiteSpace(s)));
-            cell.CanPlaceWallH = actions.Any(a => a.HasOrientation && HasOrientation(a.Payload, "h"));
-            cell.CanPlaceWallV = actions.Any(a => a.HasOrientation && HasOrientation(a.Payload, "v"));
+    private static void SyncStringCollection(
+        ObservableCollection<string> target,
+        IReadOnlyList<string> source)
+    {
+        if (target == null)
+        {
+            return;
         }
 
-        RefreshCanExecute();
+        if (source == null || source.Count == 0)
+        {
+            if (target.Count > 0)
+            {
+                target.Clear();
+            }
+            return;
+        }
+
+        var srcCount = source.Count;
+        for (var i = 0; i < srcCount; i++)
+        {
+            var next = source[i] ?? string.Empty;
+            if (i < target.Count)
+            {
+                if (!string.Equals(target[i], next, StringComparison.Ordinal))
+                {
+                    target[i] = next;
+                }
+            }
+            else
+            {
+                target.Add(next);
+            }
+        }
+
+        while (target.Count > srcCount)
+        {
+            target.RemoveAt(target.Count - 1);
+        }
     }
 
     private void TryPlayWallPlacedSound()
@@ -316,6 +454,7 @@ public sealed partial class GridBoardViewModel
         if (Cells.Count != safe * safe)
         {
             Cells.Clear();
+            _lastCellSyncByKey.Clear();
             for (var y = 0; y < safe; y++)
             {
                 for (var x = 0; x < safe; x++)

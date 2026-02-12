@@ -43,6 +43,10 @@ export class GameEngineService {
     state: GameStateEntity,
   ) => void;
   private readonly mutationQueue = new Map<string, Promise<unknown>>();
+  private readonly exposedStateByUserCache = new WeakMap<
+    GameStateEntity,
+    Map<string, GameStateWithActions>
+  >();
 
   private static readonly MAX_ACTIONS_PER_MESSAGE = 12;
   private static readonly MAX_ACTION_TYPE_LENGTH = 64;
@@ -147,6 +151,13 @@ export class GameEngineService {
     gameType: string,
     userId: number,
   ): GameStateWithActions {
+    const cacheKey = `${gameType}|${userId}`;
+    const byState = this.exposedStateByUserCache.get(state);
+    const cached = byState?.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const label = this.turnLabel.compute(state, gameType);
     const handler = this.registry.getHandler(gameType);
     const exposed = handler?.exposeStateForUser
@@ -168,7 +179,16 @@ export class GameEngineService {
       handler,
       userId,
     );
-    return this.stripBoardAndGridIfNotStarted(withShortcuts);
+    const finalState = this.stripBoardAndGridIfNotStarted(withShortcuts);
+    if (byState) {
+      byState.set(cacheKey, finalState);
+    } else {
+      this.exposedStateByUserCache.set(
+        state,
+        new Map<string, GameStateWithActions>([[cacheKey, finalState]]),
+      );
+    }
+    return finalState;
   }
 
   async handleKeyPress(
@@ -717,6 +737,18 @@ export class GameEngineService {
     const currentPlayer = current.players?.find(
       (p) => p.id === currentPlayerId,
     );
+    const actingPlayer =
+      actorId != null && Number.isFinite(actorId)
+        ? (current.players?.find((p) => p.id === actorId) ?? null)
+        : null;
+
+    if (!allowBotTurn) {
+      if (!actingPlayer || actingPlayer.isBot) {
+        throw new UnauthorizedException(
+          'Mode spectateur : action de jeu interdite',
+        );
+      }
+    }
 
     const allowOutOfTurnActions = (() => {
       if (allowBotTurn) return false;
@@ -894,7 +926,7 @@ export class GameEngineService {
 
     // Persiste l'état final post-traité (logs d'arrivée / sauts de tour nettoyés).
     // Sans cette écriture, des métadonnées temporaires (ex: turnFlow.skipped) peuvent être rejouées au tour suivant.
-    await this.store.set(roomId, gameType, marked);
+    await this.store.set(roomId, gameType, marked, { asyncPersist: true });
 
     // L'annonce de tour est déjà exposée via le label "C'est à X de jouer.".
     // Ne pas logger une seconde phrase dans l'historique pour éviter les doublons.
@@ -1536,7 +1568,7 @@ export class GameEngineService {
       marked = this.forceFinishedIfWinnerDetected(marked);
       marked = this.appendBoardArrivalAnnouncements(gameType, current, marked);
       marked = this.appendSkipTurnAnnouncements(marked);
-      await this.store.set(roomId, gameType, marked);
+      await this.store.set(roomId, gameType, marked, { asyncPersist: true });
 
       // Pas d'annonce de tour dans l'historique (évite doublon avec le label de tour).
 
@@ -2015,7 +2047,7 @@ export class GameEngineService {
       ...(this.store.markBotThinking(state, isBot) as any),
       botThinkingSince: isBot ? now : null,
     } as GameStateEntity;
-    await this.store.set(roomId, gameType, marked);
+    await this.store.set(roomId, gameType, marked, { asyncPersist: true });
     return marked;
   }
 
@@ -2037,7 +2069,7 @@ export class GameEngineService {
         ...(state as any),
         botThinkingSince: GameEngineService.nowMs(),
       } as GameStateEntity;
-      await this.store.set(roomId, gameType, patched);
+      await this.store.set(roomId, gameType, patched, { asyncPersist: true });
       return patched;
     }
     const age = GameEngineService.nowMs() - since;
@@ -2057,7 +2089,7 @@ export class GameEngineService {
       botThinking: false,
       botThinkingSince: null,
     } as GameStateEntity;
-    await this.store.set(roomId, gameType, cleared);
+    await this.store.set(roomId, gameType, cleared, { asyncPersist: true });
     return cleared;
   }
 

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Windows;
 using client_win.Modules.Game.Play.Grid.Services;
@@ -7,6 +9,77 @@ namespace client_win.Modules.Game.Play.Grid.ViewModels;
 
 public sealed partial class GridBoardViewModel
 {
+    private readonly record struct GridRenderCellState(
+        bool WallNorth,
+        bool WallEast,
+        bool WallSouth,
+        bool WallWest,
+        Thickness Border);
+
+    private Dictionary<string, GridRenderCellState> TryReadGridRenderCells(GameStateDto state)
+    {
+        var dict = new Dictionary<string, GridRenderCellState>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            if (state.Extras.ValueKind != JsonValueKind.Object ||
+                !state.Extras.TryGetProperty("grid", out var grid) ||
+                grid.ValueKind != JsonValueKind.Object ||
+                !grid.TryGetProperty("render", out var render) ||
+                render.ValueKind != JsonValueKind.Object ||
+                !render.TryGetProperty("cells", out var cells) ||
+                cells.ValueKind != JsonValueKind.Object)
+            {
+                return dict;
+            }
+
+            foreach (var cellProp in cells.EnumerateObject())
+            {
+                if (cellProp.Value.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                var wallNorth = false;
+                var wallEast = false;
+                var wallSouth = false;
+                var wallWest = false;
+                var border = new Thickness(1);
+
+                if (cellProp.Value.TryGetProperty("walls", out var walls) &&
+                    walls.ValueKind == JsonValueKind.Object)
+                {
+                    wallNorth = walls.TryGetProperty("n", out var n) && n.ValueKind == JsonValueKind.True;
+                    wallEast = walls.TryGetProperty("e", out var e) && e.ValueKind == JsonValueKind.True;
+                    wallSouth = walls.TryGetProperty("s", out var s) && s.ValueKind == JsonValueKind.True;
+                    wallWest = walls.TryGetProperty("w", out var w) && w.ValueKind == JsonValueKind.True;
+                }
+
+                if (cellProp.Value.TryGetProperty("border", out var borderNode) &&
+                    borderNode.ValueKind == JsonValueKind.Object)
+                {
+                    var l = borderNode.TryGetProperty("l", out var ll) && ll.ValueKind == JsonValueKind.Number && ll.TryGetDouble(out var ld) ? ld : 1;
+                    var t = borderNode.TryGetProperty("t", out var tt) && tt.ValueKind == JsonValueKind.Number && tt.TryGetDouble(out var td) ? td : 1;
+                    var r = borderNode.TryGetProperty("r", out var rr) && rr.ValueKind == JsonValueKind.Number && rr.TryGetDouble(out var rd) ? rd : 1;
+                    var b = borderNode.TryGetProperty("b", out var bb) && bb.ValueKind == JsonValueKind.Number && bb.TryGetDouble(out var bd) ? bd : 1;
+                    border = new Thickness(l, t, r, b);
+                }
+
+                var key = (cellProp.Name ?? string.Empty).Trim();
+                if (key.Length == 0)
+                {
+                    continue;
+                }
+                dict[key] = new GridRenderCellState(wallNorth, wallEast, wallSouth, wallWest, border);
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        return dict;
+    }
+
     private void ApplyGridRender(GameStateDto state)
     {
         try
@@ -63,4 +136,3 @@ public sealed partial class GridBoardViewModel
         }
     }
 }
-
