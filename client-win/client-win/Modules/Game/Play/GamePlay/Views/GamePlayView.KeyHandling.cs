@@ -58,6 +58,26 @@ public partial class GamePlayView
                 if (sent)
                 {
                     NoteHandSubmittedForFocusRestore();
+                    return;
+                }
+
+                // LAMA and similar flows expose actionable cards via pending choices (not select_card).
+                // Fallback: align list selection and submit the corresponding pending choice.
+                if (ChoicesList.Items.Count > 0)
+                {
+                    var idx = HandList.SelectedIndex;
+                    if (idx < 0) idx = 0;
+                    if (idx >= ChoicesList.Items.Count) idx = ChoicesList.Items.Count - 1;
+                    if (idx >= 0)
+                    {
+                        ChoicesList.SelectedIndex = idx;
+                    }
+
+                    var sentChoice = await vm.SubmitSelectedChoiceAsync(CancellationToken.None).ConfigureAwait(true);
+                    if (sentChoice)
+                    {
+                        NoteChoiceSubmittedForFocusRestore();
+                    }
                 }
             }
             catch
