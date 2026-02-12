@@ -107,7 +107,7 @@ export class JeuOieActionService {
     const label = tile?.label ?? `Case ${position}`;
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} arrive sur ${label}.`,
+      `${this.playerName(next, playerId)} met ${this.pawnLabel(next, playerId)} en case ${position} (${label}).`,
     );
 
     if (!tile) return next;
@@ -243,5 +243,13 @@ export class JeuOieActionService {
         ? String(p.username).trim()
         : null;
     return u ?? `Joueur ${id}`;
+  }
+
+  private pawnLabel(state: GameStateEntity, id: number): string {
+    const players = Array.isArray(state.players) ? state.players : [];
+    const p = players.find((x: any) => x?.id === id) as any;
+    const pawn = typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
+    const resolved = pawn || this.playerName(state, id);
+    return `le pion "${resolved}"`;
   }
 }

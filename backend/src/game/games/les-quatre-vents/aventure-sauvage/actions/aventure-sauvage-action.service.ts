@@ -368,7 +368,11 @@ export class AventureSauvageActionService {
         playerId: players[nextIndex].id,
         blocking: true,
         label: 'Choisissez votre pion.',
-        choices: choices.map((p) => p.label),
+        choices: choices.map((p) =>
+          p.description && String(p.description).trim().length > 0
+            ? `${p.label}: ${p.description}`
+            : p.label,
+        ),
         data: {
           pawns: choices.map((p) => ({
             id: p.id,
@@ -765,5 +769,7 @@ function defaultPatteDeck(): AventureSauvageCard[] {
   ];
   return deck;
 }
+
+
 
 

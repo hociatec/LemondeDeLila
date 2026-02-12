@@ -487,7 +487,7 @@ export class MinuitActionService {
           .filter((p) => p.title.length > 0)
           .map((p) => ({
             title: p.title,
-            label: p.description ? `${p.title} — ${p.description}` : p.title,
+            label: p.description ? `${p.title}: ${p.description}` : p.title,
           }))
       : [];
     if (fromContent.length) return fromContent;

@@ -205,9 +205,11 @@ export class CaActionService {
     next = this.core.appendLog(
       next,
       this.playerName(next, currentId) +
-        ' arrive sur Case ' +
+        ' met ' +
+        this.pawnLabel(next, currentId) +
+        ' en case ' +
         String(after + 1) +
-        (label ? ' - ' + label : '') +
+        (label ? ' (' + label + ')' : '') +
         (isNeutral ? ' (neutre).' : ' (carte).'),
     );
     if (desc) {
@@ -475,9 +477,11 @@ export class CaActionService {
       next = this.core.appendLog(
         next,
         this.playerName(next, actorId) +
-          ' arrive sur Case ' +
+          ' met ' +
+          this.pawnLabel(next, actorId) +
+          ' en case ' +
           String(pos + 1) +
-          (label ? ' - ' + label : '') +
+          (label ? ' (' + label + ')' : '') +
           (isNeutral ? ' (neutre).' : ' (carte).'),
       );
       if (desc) {
@@ -1187,6 +1191,14 @@ export class CaActionService {
         ? String(p.username).trim()
         : null;
     return u ?? `Joueur ${id}`;
+  }
+
+  private pawnLabel(state: GameStateEntity, id: number): string {
+    const players = Array.isArray(state.players) ? state.players : [];
+    const p = players.find((x: any) => x?.id === id) as any;
+    const pawn = typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
+    const resolved = pawn || this.playerName(state, id);
+    return `le pion "${resolved}"`;
   }
 }
 

@@ -2453,11 +2453,13 @@ export class GameEngineService {
         })();
         const needleByNumber = `arrive sur case ${caseNumber}`.toLowerCase();
         const needleByLabel = label ? `arrive sur ${label}`.toLowerCase() : '';
+        const needleByPlacement = `en case ${caseNumber}`.toLowerCase();
         const hasRecentArrival = recentMsgs.some((m) => {
           const lower = m.toLowerCase();
           return (
             lower.includes(needleByNumber) ||
-            (needleByLabel && lower.includes(needleByLabel))
+            (needleByLabel && lower.includes(needleByLabel)) ||
+            lower.includes(needleByPlacement)
           );
         });
         if (hasRecentArrival) {

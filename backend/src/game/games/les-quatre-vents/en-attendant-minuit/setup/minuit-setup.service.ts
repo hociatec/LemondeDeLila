@@ -133,7 +133,7 @@ export class MinuitSetupService {
           const title = String(pawn?.title ?? '').trim();
           if (!title) return null;
           const description = String(pawn?.description ?? '').trim();
-          const label = description ? `${title} — ${description}` : title;
+          const label = description ? `${title}: ${description}` : title;
           return { title, label };
         })
         .filter(Boolean) as Array<{ title: string; label: string }>;

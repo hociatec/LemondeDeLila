@@ -10,7 +10,7 @@ export function formatPawnChoiceLabel(pawn: FroussePawn): string {
   const title = String(pawn?.title ?? '').trim();
   const description = String(pawn?.description ?? '').trim();
   if (title && description) {
-    return `${title} — ${description}`;
+    return `${title}: ${description}`;
   }
   if (title) {
     return title;

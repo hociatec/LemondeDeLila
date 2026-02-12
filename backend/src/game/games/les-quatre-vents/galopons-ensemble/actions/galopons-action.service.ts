@@ -266,7 +266,7 @@ export class GaloponsActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} arrive sur Case ${tile.n} - ${tile.title}.`,
+      `${this.playerName(next, playerId)} met ${this.pawnLabel(next, playerId)} en case ${tile.n} (${tile.title}).`,
     );
     if (tile.type === 'card') {
       next = this.core.appendLog(next, `Effet : piochez une carte Aventure.`);
@@ -701,6 +701,15 @@ export class GaloponsActionService {
         ? String(p.username).trim()
         : null;
     return u ?? `Joueur ${id}`;
+  }
+
+  private pawnLabel(state: GameStateEntity, id: number): string {
+    const players = Array.isArray(state.players) ? state.players : [];
+    const player = players.find((x: any) => x?.id === id) as any;
+    const pawn =
+      typeof player?.pawn === 'string' ? String(player.pawn).trim() : '';
+    const resolved = pawn || this.playerName(state, id);
+    return `le pion "${resolved}"`;
   }
 }
 

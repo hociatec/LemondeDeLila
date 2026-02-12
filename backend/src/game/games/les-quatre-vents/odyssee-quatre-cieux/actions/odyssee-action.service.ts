@@ -10,6 +10,7 @@ import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.ser
 import type { OdysseeMetadata, OdysseePawnState } from '../model/odyssee.types';
 
 type PendingMove = { pawnIndex: number; targetProgress: number; label: string };
+const ODYSSEE_DEFAULT_PAWN_NAMES = ['Aube', 'Brise', 'Comete', 'Dune'] as const;
 
 @Injectable()
 export class OdysseeActionService {
@@ -136,7 +137,7 @@ export class OdysseeActionService {
           (m) =>
             m.pawnIndex === pawnIndex && m.targetProgress === targetProgress,
         )
-      ] ?? `Pion ${pawnIndex + 1}`;
+      ] ?? this.choicePawnLabel(state, currentId, pawnIndex);
 
     let next: GameStateEntity = { ...state, pending: null };
     next = this.applyMove(
@@ -185,7 +186,7 @@ export class OdysseeActionService {
         moves.push({
           pawnIndex: pawn.pawnIndex,
           targetProgress: 0,
-          label: `Sortir pion ${pawn.pawnIndex + 1}`,
+          label: `Sortir ${this.choicePawnLabel(state, playerId, pawn.pawnIndex)}`,
         });
         continue;
       }
@@ -201,7 +202,7 @@ export class OdysseeActionService {
       moves.push({
         pawnIndex: pawn.pawnIndex,
         targetProgress: target,
-        label: `Jouer pion ${pawn.pawnIndex + 1}`,
+        label: `Jouer ${this.choicePawnLabel(state, playerId, pawn.pawnIndex)}`,
       });
     }
     return moves;
@@ -211,7 +212,7 @@ export class OdysseeActionService {
     state: GameStateEntity,
     playerId: number,
     move: PendingMove,
-    roll: number,
+    _roll: number,
   ): GameStateEntity {
     let meta = this.getMeta(state);
     const trackLen = meta.trackLength;
@@ -236,18 +237,24 @@ export class OdysseeActionService {
       metadata: { ...(state.metadata ?? {}), ...meta },
     };
 
-    const prev =
-      pawns.find((p) => p.pawnIndex === move.pawnIndex)?.progress ?? -1;
-    if (prev < 0 && move.targetProgress === 0) {
+    const pawnLabel = this.pawnLabel(next, playerId, move.pawnIndex);
+    const offset = meta.offsets?.[playerId] ?? 0;
+    if (move.targetProgress >= 0 && move.targetProgress < trackLen) {
+      const pos = (offset + move.targetProgress) % trackLen;
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} sort le pion ${move.pawnIndex + 1}.`,
+        `${this.playerName(next, playerId)} met ${pawnLabel} en case ${pos + 1}.`,
+      );
+    } else if (move.targetProgress >= trackLen && move.targetProgress < pathLen) {
+      const homeIndex = move.targetProgress - trackLen + 1;
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, playerId)} met ${pawnLabel} dans l'échelle finale (${homeIndex}/${homeLen}).`,
       );
     } else {
-      const casesWord = roll === 1 ? 'case' : 'cases';
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} avance le pion ${move.pawnIndex + 1} de ${roll} ${casesWord}.`,
+        `${this.playerName(next, playerId)} met ${pawnLabel} à l'arrivée.`,
       );
     }
 
@@ -303,7 +310,7 @@ export class OdysseeActionService {
         if (pos !== moverPos) return pawn;
         next = this.core.appendLog(
           next,
-          `${this.playerName(next, moverId)} capture ${this.playerName(next, p.id)} (pion ${pawn.pawnIndex + 1}) : retour à la base.`,
+        `${this.playerName(next, moverId)} capture ${this.playerName(next, p.id)} (${this.pawnLabel(next, p.id, pawn.pawnIndex)}) : retour à la base.`,
         );
         return { ...pawn, progress: -1 };
       });
@@ -359,5 +366,47 @@ export class OdysseeActionService {
         ? String(p.username).trim()
         : null;
     return u ?? `Joueur ${id}`;
+  }
+
+  private pawnLabel(
+    state: GameStateEntity,
+    playerId: number,
+    pawnIndex: number,
+  ): string {
+    return `le pion "${this.resolvePawnName(state, playerId, pawnIndex)}"`;
+  }
+
+  private choicePawnLabel(
+    state: GameStateEntity,
+    playerId: number,
+    pawnIndex: number,
+  ): string {
+    return `"${this.resolvePawnName(state, playerId, pawnIndex)}"`;
+  }
+
+  private resolvePawnName(
+    state: GameStateEntity,
+    playerId: number,
+    pawnIndex: number,
+  ): string {
+    const meta = this.getMeta(state) as any;
+    const names = Array.isArray(meta?.pawnNamesByPlayer?.[playerId])
+      ? meta.pawnNamesByPlayer[playerId]
+      : [];
+    const byIndex =
+      typeof names[pawnIndex] === 'string' ? String(names[pawnIndex]).trim() : '';
+    if (byIndex) return byIndex;
+
+    const players = Array.isArray(state.players) ? state.players : [];
+    const p = players.find((x: any) => x?.id === playerId) as any;
+    const singlePawn =
+      typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
+    if (singlePawn) return singlePawn;
+
+    const base =
+      ODYSSEE_DEFAULT_PAWN_NAMES[
+        Math.abs(Math.trunc(pawnIndex)) % ODYSSEE_DEFAULT_PAWN_NAMES.length
+      ];
+    return `${base} (${this.playerName(state, playerId)})`;
   }
 }
