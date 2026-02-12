@@ -34,6 +34,7 @@ export interface ZigEtZagRoundState {
 export interface ZigEtZagMetadata {
   rng?: Record<string, any>;
   playerDecks: Record<number, string[]>;
+  initialDeckCounts?: Record<number, number>;
   roundState?: ZigEtZagRoundState | null;
   lastRound?: ZigEtZagRoundSummary | null;
   winnerId?: number | null;

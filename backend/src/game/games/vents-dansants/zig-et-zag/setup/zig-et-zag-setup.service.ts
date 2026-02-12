@@ -34,6 +34,12 @@ export class ZigEtZagSetupService {
     const metadata: ZigEtZagMetadata = {
       rng: updatedRng,
       playerDecks,
+      initialDeckCounts: Object.fromEntries(
+        Object.entries(playerDecks).map(([pid, cards]) => [
+          Number(pid),
+          Array.isArray(cards) ? cards.length : 0,
+        ]),
+      ),
       roundState: null,
       lastRound: null,
       winnerId: null,

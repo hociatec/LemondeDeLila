@@ -121,8 +121,19 @@ export class ZigEtZagActionService {
       return state;
     }
     const metaWithRng = { ...meta, rng: nextRng };
+    const withDrawLog = this.core.appendLog(
+      state,
+      `${this.playerName(players, actorId)} pioche.`,
+    );
 
-    return this.playCardWithId(state, players, metaWithRng, round, actorId, cardId);
+    return this.playCardWithId(
+      withDrawLog,
+      players,
+      metaWithRng,
+      round,
+      actorId,
+      cardId,
+    );
   }
 
   private finalizeStage(
@@ -152,7 +163,8 @@ export class ZigEtZagActionService {
     round: ZigEtZagRoundState,
   ): GameStateEntity {
     const meta = this.getMeta(state);
-    let nextState = this.appendRevealLogs(state, players, round);
+    let nextState = this.appendCollectiveRevealLog(state, players, round);
+    nextState = this.appendRevealLogs(nextState, players, round);
     if (this.hasSelectionJoker(round)) {
       nextState = this.core.appendLog(
         nextState,
@@ -274,7 +286,13 @@ export class ZigEtZagActionService {
     players: GameStateEntity['players'],
     round: ZigEtZagRoundState,
   ): GameStateEntity {
-    let nextState = this.appendRevealLogs(state, players, round, round.tiedPlayers);
+    let nextState = this.appendCollectiveRevealLog(
+      state,
+      players,
+      round,
+      round.tiedPlayers,
+    );
+    nextState = this.appendRevealLogs(nextState, players, round, round.tiedPlayers);
     const meta = this.getMeta(state);
     const faceUpPlays = round.plays.filter(
       (play) =>
@@ -394,7 +412,10 @@ export class ZigEtZagActionService {
       const ensured = this.ensureRoundState(nextState, players);
       nextState = this.setCurrentPlayer(
         ensured.state,
-        this.pickNextCurrentPlayerId(players, ensured.round, ensured.state.turn?.currentPlayerId ?? 0),
+        this.pickNextCurrentPlayerId(
+          ensured.round,
+          ensured.state.turn?.currentPlayerId ?? 0,
+        ),
       );
     }
 
@@ -446,6 +467,33 @@ export class ZigEtZagActionService {
     }
 
     return next;
+  }
+
+  private appendCollectiveRevealLog(
+    state: GameStateEntity,
+    players: GameStateEntity['players'],
+    round: ZigEtZagRoundState,
+    onlyPlayers?: number[],
+  ): GameStateEntity {
+    const filter = Array.isArray(onlyPlayers) && onlyPlayers.length
+      ? new Set(onlyPlayers)
+      : null;
+    const revealPlayers = (round.plays ?? [])
+      .filter((play) => {
+        if (filter && !filter.has(play.playerId)) return false;
+        return Boolean(play.faceUpCard);
+      })
+      .map((play) => this.playerName(players, play.playerId));
+
+    if (revealPlayers.length <= 1) {
+      return state;
+    }
+
+    const summary =
+      revealPlayers.length === 2
+        ? `${revealPlayers[0]} et ${revealPlayers[1]} devoilent leurs cartes.`
+        : `${revealPlayers.slice(0, -1).join(', ')} et ${revealPlayers[revealPlayers.length - 1]} devoilent leurs cartes.`;
+    return this.core.appendLog(state, summary);
   }
 
   private hasSelectionJoker(round: ZigEtZagRoundState): boolean {
@@ -544,20 +592,11 @@ export class ZigEtZagActionService {
   }
 
   private pickNextCurrentPlayerId(
-    players: GameStateEntity['players'],
     round: ZigEtZagRoundState,
     fallback: number,
   ): number {
-    const list = Array.isArray(players) ? players : [];
     const waiting = Array.isArray(round?.waitingPlayers) ? round.waitingPlayers : [];
     if (!waiting.length) return fallback;
-
-    const waitingSet = new Set(waiting);
-    const bot = list.find((p: any) => p?.isBot && waitingSet.has(p.id));
-    if (bot && typeof (bot as any).id === 'number') {
-      return (bot as any).id;
-    }
-
     return waiting[0] ?? fallback;
   }
 
@@ -614,7 +653,7 @@ export class ZigEtZagActionService {
     let nextState = this.setRoundState(state, drainedMeta, nextRound);
     nextState = this.setCurrentPlayer(
       nextState,
-      this.pickNextCurrentPlayerId(players, nextRound, playerId),
+      this.pickNextCurrentPlayerId(nextRound, playerId),
     );
 
     if (!nextRound.waitingPlayers.length) {
@@ -628,7 +667,8 @@ export class ZigEtZagActionService {
     round: ZigEtZagRoundState,
     playerId: number,
   ): boolean {
-    return this.normalizeWaitingPlayers(round).includes(playerId);
+    const waiting = this.normalizeWaitingPlayers(round);
+    return waiting.length > 0 && waiting[0] === playerId;
   }
 
   private normalizeWaitingPlayers(round: ZigEtZagRoundState): number[] {

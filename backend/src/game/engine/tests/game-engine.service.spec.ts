@@ -208,6 +208,123 @@ describe('GameEngineService', () => {
     expect(out).toEqual([]);
   });
 
+  it('silently ignores unavailable actions when actor is out of turn', async () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const state: any = {
+      turn: { currentPlayerId: 2, direction: 1 },
+      metadata: { gameType: 'frousse-party', roomId: 1 },
+    };
+    const handler: any = {
+      getAvailableActions: jest.fn(() => [{ type: 'roll', payload: {} }]),
+    };
+
+    const out = await (engine as any).validateActions(
+      state,
+      handler,
+      [{ type: 'play_card', payload: { cardId: 'x' } }],
+      1,
+    );
+
+    expect(out).toEqual([]);
+  });
+
+  it('silently ignores game validation errors for out-of-turn messages', async () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const state: any = {
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: { gameType: 'frousse-party', roomId: 1 },
+    };
+    const handler: any = {
+      getAvailableActions: jest.fn(() => [{ type: 'play_card', payload: {} }]),
+      validateAction: jest.fn(() => {
+        throw new Error("Ce n'est pas votre tour.");
+      }),
+    };
+
+    const out = await (engine as any).validateActions(
+      state,
+      handler,
+      [{ type: 'play_card', payload: { cardId: 'x' } }],
+      1,
+    );
+
+    expect(out).toEqual([]);
+  });
+
+  it('returns current state (no error) when a player acts out of turn', async () => {
+    const current: any = {
+      status: 'started',
+      turnIndex: 0,
+      log: [],
+      players: [
+        { id: 1, username: 'A', isBot: false },
+        { id: 2, username: 'B', isBot: false },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: { gameType: 'frousse-party', roomId: 1 },
+    };
+
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      {
+        getHandler: jest.fn(() => ({
+          getAvailableActions: jest.fn(() => []),
+          validateActor: jest.fn(() => false),
+        })),
+      } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    (engine as any).getInternalState = jest.fn(async () => current);
+    (engine as any).normalizeBotThinking = jest.fn(async () => current);
+    (engine as any).exposeState = jest.fn(() => current);
+
+    const out = await (engine as any).applyActionsInternal(
+      1,
+      'frousse-party',
+      [{ type: 'roll', payload: {} }],
+      2,
+      false,
+    );
+
+    expect(out).toBe(current);
+    expect((engine as any).exposeState).toHaveBeenCalledWith(current, 'frousse-party');
+  });
+
   it('does not mark botThinking when a blocking pending action targets a human', async () => {
     const state: any = {
       status: 'started',

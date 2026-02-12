@@ -758,9 +758,7 @@ export class GameEngineService {
       // Si ce n'est pas le tour d'un bot, préférer le message "pas votre tour"
       // (le flag botThinking peut rester true un court instant).
       if (currentPlayer?.isBot) {
-        throw new UnauthorizedException(
-          'Un bot joue actuellement, merci de patienter.',
-        );
+        return this.exposeState(current, gameType);
       }
     }
 
@@ -769,12 +767,10 @@ export class GameEngineService {
       handler?.validateActor?.(current, actions, actorId ?? null) === true;
     if (!allowBotTurn && !actorOverride) {
       if (currentPlayer?.isBot) {
-        throw new UnauthorizedException(
-          'Tour en cours : action réservée au bot.',
-        );
+        return this.exposeState(current, gameType);
       }
       if (currentPlayerId !== actorId) {
-        throw new UnauthorizedException("Ce n'est pas votre tour.");
+        return this.exposeState(current, gameType);
       }
     }
 
@@ -850,9 +846,11 @@ export class GameEngineService {
     let marked = await this.markBotThinking(roomId, gameType, next, botTurn);
     const drawAction = sanitizedActions.find(
       (a) =>
-        String(a.type ?? '')
-          .trim()
-          .toLowerCase() === 'draw',
+        ['draw', 'draw_card'].includes(
+          String(a.type ?? '')
+            .trim()
+            .toLowerCase(),
+        ),
     );
     if (drawAction) {
       const actionPlayerId = allowBotTurn
@@ -2142,7 +2140,14 @@ export class GameEngineService {
       }
 
       if (allowedTypes && !allowedTypes.has(type)) {
-        if (this.shouldSilentlyIgnoreUnavailableAction(type, action)) {
+        if (
+          this.shouldSilentlyIgnoreUnavailableAction(
+            type,
+            action,
+            state,
+            actorId ?? null,
+          )
+        ) {
           continue;
         }
         throw new BadRequestException(
@@ -2185,6 +2190,9 @@ export class GameEngineService {
         } catch (err) {
           const message =
             err instanceof Error ? err.message : String(err ?? '');
+          if (this.isOutOfTurnMessage(message)) {
+            continue;
+          }
           this.gameLogger.logValidationFailure(
             `Game-specific validation failed for action: ${type}`,
             [{ actionType: type, error: message }],
@@ -2207,10 +2215,35 @@ export class GameEngineService {
   private shouldSilentlyIgnoreUnavailableAction(
     type: string,
     _action: GameSingleActionDto,
+    state: GameStateEntity,
+    actorId: number | null,
   ): boolean {
     // UX: appuyer sur Espace hors contexte ne doit pas afficher d'erreur.
     // On ignore donc silencieusement toute tentative de "draw" indisponible.
-    return type === 'draw';
+    if (type === 'draw') {
+      return true;
+    }
+    return this.isOutOfTurn(state, actorId);
+  }
+
+  private isOutOfTurn(state: GameStateEntity, actorId: number | null): boolean {
+    if (actorId == null || !Number.isFinite(actorId)) return false;
+    const currentPlayerId = state?.turn?.currentPlayerId;
+    if (typeof currentPlayerId !== 'number' || !Number.isFinite(currentPlayerId)) {
+      return false;
+    }
+    return actorId !== currentPlayerId;
+  }
+
+  private isOutOfTurnMessage(message: string): boolean {
+    const normalized = String(message ?? '').trim().toLowerCase();
+    if (!normalized) return false;
+    return (
+      normalized.includes("pas votre tour") ||
+      normalized.includes("n'est pas votre tour") ||
+      normalized.includes('attendez votre tour') ||
+      normalized.includes('tour en cours')
+    );
   }
 
   private exposeState(

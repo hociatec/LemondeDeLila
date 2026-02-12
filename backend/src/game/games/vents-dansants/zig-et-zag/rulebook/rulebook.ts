@@ -19,7 +19,8 @@ export function getAvailableActions(
   const round = getMeta(state).roundState;
   if (!round) return [];
 
-  if (!waitingPlayerIds(round).includes(playerId)) return [];
+  const waiting = waitingPlayerIds(round);
+  if (!waiting.length || waiting[0] !== playerId) return [];
   const meta = getMeta(state);
   const actions: GameSingleActionDto[] = [];
   actions.push({ type: 'draw_card', payload: {} });
@@ -50,17 +51,8 @@ export function validateAction(
   if (!round) {
     throw new Error("Ce n'est pas votre tour.");
   }
-  const waiting = (round.waitingPlayers ?? [])
-    .map((v: any) => {
-      if (typeof v === 'number' && Number.isFinite(v)) return v;
-      if (typeof v === 'string') {
-        const n = Number(v.trim());
-        return Number.isFinite(n) ? n : null;
-      }
-      return null;
-    })
-    .filter((v: any): v is number => typeof v === 'number');
-  if (!waiting.includes(actorId)) {
+  const waiting = waitingPlayerIds(round);
+  if (!waiting.length || waiting[0] !== actorId) {
     throw new Error("Ce n'est pas votre tour.");
   }
   return {

@@ -21,6 +21,7 @@ export class ZigEtZagPresenterService {
   ): GameStateWithActions {
     const meta = (state.metadata ?? {}) as ZigEtZagMetadata;
     const deckCounts: Record<number, number> = {};
+    const initialDeckCounts = meta.initialDeckCounts ?? {};
     const handCounts = summarizeHandCounts(meta.playerDecks);
     const panels = buildLamaLikePanels({
       hand: [],
@@ -33,6 +34,21 @@ export class ZigEtZagPresenterService {
       const pid = Number(key);
       deckCounts[pid] = Array.isArray(cards) ? cards.length : 0;
     });
+    const playerList = Array.isArray(state.players) ? state.players : [];
+    const deckSummary = playerList
+      .map((player) => {
+        const pid = Number(player?.id);
+        if (!Number.isFinite(pid)) return null;
+        const name = String(player?.username ?? `Joueur ${pid}`).trim() || `Joueur ${pid}`;
+        const current = deckCounts[pid] ?? 0;
+        const base = initialDeckCounts[pid] ?? current;
+        return `${name}: ${current}/${base}`;
+      })
+      .filter((line): line is string => Boolean(line));
+    panels.decks = {
+      title: 'Cartes',
+      message: deckSummary.length ? deckSummary.join('. ') : 'Aucune carte distribuee.',
+    };
 
     const stage = meta.roundState?.stage ?? 'selection';
     const waitingPlayers = meta.roundState?.waitingPlayers ?? [];
