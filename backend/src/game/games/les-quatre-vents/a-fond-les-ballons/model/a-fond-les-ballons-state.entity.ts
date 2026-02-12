@@ -32,6 +32,17 @@ export type AFondLesBallonsPawn = {
   description: string;
 };
 
+export type AFondLesBallonsPawnJson = {
+  id: string;
+  title: string;
+  description?: string;
+};
+
+export type AFondLesBallonsPawnsJsonV1 = {
+  version: 1;
+  pawns: AFondLesBallonsPawnJson[];
+};
+
 export type AFondLesBallonsPendingSwap = {
   type: 'swap';
   label: string;

@@ -549,7 +549,7 @@ export class SacAMalicesActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} arrive sur ${tile.title}.`,
+      `${this.playerName(next, playerId)} place son pion en case ${pos + 1} (${tile.title}).`,
     );
     if (tile.description && String(tile.description).trim()) {
       next = this.core.appendLog(next, String(tile.description).trim());

@@ -42,7 +42,13 @@ export type PanierExpressShoppingListsJsonV1 = {
   lists: string[][];
 };
 
+export type PanierExpressPawn = {
+  id: string;
+  title: string;
+  description?: string;
+};
+
 export type PanierExpressPawnsJsonV1 = {
   version: 1;
-  pawns: string[];
+  pawns: PanierExpressPawn[];
 };

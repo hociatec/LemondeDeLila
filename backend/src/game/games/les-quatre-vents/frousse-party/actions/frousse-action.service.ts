@@ -363,9 +363,10 @@ export class FrousseActionService {
       const typeLabel = tile.type === 'card' ? 'case symbole' : 'case neutre';
       const fallbackLabel = `case ${tile.n}. ${tile.title} (${typeLabel})`;
       const label = labelRaw || fallbackLabel;
+      const placement = `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${tile.n} (${label}).`;
       const arrival = descRaw
-        ? `${this.playerName(next, playerId)} arrive sur ${label}.\n${descRaw}`
-        : `${this.playerName(next, playerId)} arrive sur ${label}.`;
+        ? `${placement}\n${descRaw}`
+        : placement;
       next = this.core.appendLog(next, arrival);
       if (tile.type === 'card') {
         next = this.core.appendLog(next, `Piochez une carte.`);
@@ -1100,6 +1101,21 @@ export class FrousseActionService {
         ? String(p.username).trim()
         : null;
     return u ?? `Joueur ${id}`;
+  }
+
+  private pawnLabel(state: GameStateEntity, id: number): string {
+    const players = Array.isArray(state.players) ? state.players : [];
+    const player = players.find((p: any) => p?.id === id);
+    const explicitLabel = String((player as any)?.pawnLabel ?? '').trim();
+    if (explicitLabel) return `son pion "${explicitLabel}"`;
+    const pawnId = String((player as any)?.pawn ?? '').trim();
+    const meta = this.getMeta(state);
+    const fromMeta = Array.isArray(meta?.pawns)
+      ? meta.pawns.find((p: any) => String(p?.id ?? '').trim() === pawnId)
+      : null;
+    const title = String((fromMeta as any)?.title ?? pawnId).trim();
+    if (title) return `son pion "${title}"`;
+    return 'son pion';
   }
 
   private finalizeStarterAfterPawnSelection(

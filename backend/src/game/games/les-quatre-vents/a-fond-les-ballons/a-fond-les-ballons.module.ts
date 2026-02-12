@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { GameCoreModule } from '../../../core/core.module';
 import { GameRegistryModule } from '../../../engine/game-registry.module';
+import { EngineServicesModule } from '../../../engine/services/engine-services.module';
 import { RandomModule } from '../../../modules/random/random.module';
 import { BoardModule } from '../../../modules/board/board.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
@@ -15,6 +16,7 @@ import { AFondLesBallonsBotService } from './bots/a-fond-les-ballons-bot.service
   imports: [
     GameCoreModule,
     GameRegistryModule,
+    EngineServicesModule,
     RandomModule,
     BoardModule,
     TurnModule,

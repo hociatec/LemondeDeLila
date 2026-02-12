@@ -103,7 +103,7 @@ export class ToutPresDeMamanActionService {
     const tile = this.getTileByIndex(this.getMeta(next), target);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} avance de ${total} case(s) et arrive sur ${tile?.title ?? `case ${target + 1}`}.`,
+      `${this.playerName(next, playerId)} avance de ${total} case(s) et place son pion en case ${target + 1} (${tile?.title ?? `case ${target + 1}`}).`,
     );
 
     next = this.applyTileEffects(next, playerId, target, 0);

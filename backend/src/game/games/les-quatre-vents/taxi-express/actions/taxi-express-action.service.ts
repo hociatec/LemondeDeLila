@@ -71,7 +71,7 @@ export class TaxiExpressActionService {
     const arrivedTile = this.getTileByIndex(this.getMeta(next), finalIndex);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} avance de ${rollResult.roll} case(s) et arrive sur ${arrivedTile?.title ?? `case ${finalIndex + 1}`}.`,
+      `${this.playerName(next, playerId)} avance de ${rollResult.roll} case(s) et place son taxi en case ${finalIndex + 1} (${arrivedTile?.title ?? `case ${finalIndex + 1}`}).`,
     );
 
     meta = this.getMeta(next);

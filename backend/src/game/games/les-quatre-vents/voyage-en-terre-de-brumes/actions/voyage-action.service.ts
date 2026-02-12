@@ -250,7 +250,7 @@ export class VoyageActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} arrive sur ${label}.`,
+      `${this.playerName(next, playerId)} place son pion en case ${pos + 1} (${label}).`,
     );
     if (tile.description && String(tile.description).trim()) {
       next = this.core.appendLog(next, String(tile.description).trim());

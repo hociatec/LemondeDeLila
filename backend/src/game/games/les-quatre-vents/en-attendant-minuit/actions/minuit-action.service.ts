@@ -524,7 +524,7 @@ export class MinuitActionService {
     if (occupant != null) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} arrive sur une case occupée : recul d'une case.`,
+        `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} sur une case occupée : recul d'une case.`,
       );
       next = this.move(next, playerId, -1);
       meta = this.getMeta(next);
@@ -536,7 +536,7 @@ export class MinuitActionService {
     const afterPos = meta.positions?.[playerId] ?? 0;
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} arrive sur ${tile.title}.`,
+      `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${afterPos + 1} (${tile.title}).`,
     );
     const description = String((tile as any)?.description ?? '').trim();
     if (description) {
@@ -1021,6 +1021,14 @@ export class MinuitActionService {
         ? String(p.username).trim()
         : null;
     return u ?? `Joueur ${id}`;
+  }
+
+  private pawnLabel(state: GameStateEntity, id: number): string {
+    const players = Array.isArray(state.players) ? state.players : [];
+    const player = players.find((p) => p?.id === id);
+    const pawn = String(player?.pawn ?? '').trim();
+    if (pawn) return `son pion "${pawn}"`;
+    return 'son pion';
   }
 
   private advanceTurnOrKeep(state: GameStateEntity, playerId: number): GameStateEntity {

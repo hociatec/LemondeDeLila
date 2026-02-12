@@ -2,25 +2,44 @@
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { ensureSeededRng } from '../../../../../common/utils/seeded-rng';
 import { seededShuffle } from '../../../../../common/utils/seeded-shuffle';
 import type {
   AFondLesBallonsCard,
   AFondLesBallonsCharacter,
   AFondLesBallonsMetadata,
+  AFondLesBallonsPawnsJsonV1,
   AFondLesBallonsTile,
 } from '../model/a-fond-les-ballons-state.entity';
-import {
-  A_FOND_LES_BALLONS_PAWNS,
-  resolvePawnId,
-} from '../a-fond-les-ballons.pawns';
 
 @Injectable()
 export class AFondLesBallonsSetupService {
   constructor(
     private readonly core: GameCoreService,
     private readonly random: RandomService,
+    private readonly contentLoader: GameContentLoaderService,
   ) {}
+
+  private loadPawns() {
+    const raw = this.contentLoader.loadContent<AFondLesBallonsPawnsJsonV1>({
+      gameType: 'a-fond-les-ballons',
+      baseDir: __dirname,
+      filename: 'pawns.json',
+      validators: [
+        this.contentLoader.validators.version(1),
+        this.contentLoader.validators.arrayField('pawns', 1),
+      ],
+    });
+
+    return raw.pawns
+      .map((p) => ({
+        id: String((p as any)?.id ?? '').trim(),
+        label: String((p as any)?.title ?? '').trim(),
+        description: String((p as any)?.description ?? '').trim(),
+      }))
+      .filter((p) => p.id.length > 0 && p.label.length > 0);
+  }
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const players = Array.isArray(baseState.players) ? baseState.players : [];
@@ -33,9 +52,11 @@ export class AFondLesBallonsSetupService {
 
     const metaSeed = (baseState.metadata ?? {}) as any;
     const shuffledDeck = this.random.shuffle(metaSeed, defaultLoufoqueDeck());
+    const pawns = this.loadPawns();
     const pawnByPlayerId = normalizePawnAssignments(
       players,
       metaSeed?.pawnByPlayerId ?? metaSeed?.charactersByPlayerId,
+      pawns,
     );
     const setupStarterId =
       typeof metaSeed?.setupStarterId === 'number'
@@ -45,12 +66,12 @@ export class AFondLesBallonsSetupService {
             baseState.metadata ?? {},
             baseState.turn?.currentPlayerId ?? null,
           );
-    const charactersByPlayerId = buildCharactersByPlayerId(pawnByPlayerId);
+    const charactersByPlayerId = buildCharactersByPlayerId(pawnByPlayerId, pawns);
 
     const metaBase: AFondLesBallonsMetadata = {
       tiles,
       positions,
-      pawns: A_FOND_LES_BALLONS_PAWNS,
+      pawns,
       pawnByPlayerId,
       setupStarterId,
       charactersByPlayerId,
@@ -62,7 +83,12 @@ export class AFondLesBallonsSetupService {
       winnerId: null,
     };
 
-    const pendingInfo = buildPawnPending(players, pawnByPlayerId, setupStarterId);
+    const pendingInfo = buildPawnPending(
+      players,
+      pawnByPlayerId,
+      setupStarterId,
+      pawns,
+    );
     const turnIndex =
       pendingInfo?.turnIndex != null ? pendingInfo.turnIndex : baseState.turnIndex;
     const turnPlayerId =
@@ -89,7 +115,7 @@ export class AFondLesBallonsSetupService {
       "Objectif : atteindre exactement la case 40 (la Grosse Noix Dor�e). Si vous d�passez, vous reculez du surplus.",
     );
     next = this.core.appendLog(next, 'Pions disponibles :');
-    for (const pawn of A_FOND_LES_BALLONS_PAWNS) {
+    for (const pawn of pawns) {
       next = this.core.appendLog(next, `- ${pawn.label}`);
     }
 
@@ -193,13 +219,14 @@ function buildTiles(): AFondLesBallonsTile[] {
 function normalizePawnAssignments(
   players: Array<{ id: number }>,
   raw: unknown,
+  pawns: Array<{ id: string; label: string }>,
 ): Record<number, string> {
   const byId: Record<number, string> = {};
   if (!raw || typeof raw !== 'object') return byId;
   const used = new Set<string>();
   for (const p of players) {
     const value = (raw as any)[p.id];
-    const resolved = resolvePawnId(value);
+    const resolved = resolvePawnIdFromChoices(value, pawns);
     if (!resolved || used.has(resolved)) continue;
     used.add(resolved);
     byId[p.id] = resolved;
@@ -211,6 +238,7 @@ function buildPawnPending(
   players: Array<{ id: number }>,
   pawnByPlayerId: Record<number, string>,
   startId: number | null,
+  pawns: Array<{ id: string; label: string; description: string }>,
 ): { pending: any; playerId: number; turnIndex: number } | null {
   if (!players.length) return null;
   const startIndex =
@@ -232,7 +260,7 @@ function buildPawnPending(
   const used = new Set(
     Object.values(pawnByPlayerId).filter((v) => typeof v === 'string'),
   );
-  const choices = A_FOND_LES_BALLONS_PAWNS.filter((p) => !used.has(p.id));
+  const choices = pawns.filter((p) => !used.has(p.id));
   if (choices.length === 0) return null;
 
   return {
@@ -261,12 +289,13 @@ function buildPawnPending(
 
 function buildCharactersByPlayerId(
   pawnByPlayerId: Record<number, string>,
+  pawns: Array<{ id: string; label: string; description: string }>,
 ): Record<number, AFondLesBallonsCharacter> {
   const byId: Record<number, AFondLesBallonsCharacter> = {};
   for (const [playerIdRaw, pawnId] of Object.entries(pawnByPlayerId ?? {})) {
     const playerId = Number(playerIdRaw);
     if (!Number.isFinite(playerId)) continue;
-    const pawn = A_FOND_LES_BALLONS_PAWNS.find((p) => p.id === pawnId);
+    const pawn = pawns.find((p) => p.id === pawnId);
     if (!pawn) continue;
     byId[playerId] = {
       id: pawn.id,
@@ -275,6 +304,33 @@ function buildCharactersByPlayerId(
     };
   }
   return byId;
+}
+
+function resolvePawnIdFromChoices(
+  raw: unknown,
+  pawns: Array<{ id: string; label: string }>,
+): string | null {
+  if (raw == null) return null;
+  const value =
+    typeof raw === 'object'
+      ? (raw as any)?.id ?? (raw as any)?.pawnId ?? (raw as any)?.value ?? raw
+      : raw;
+  const text = String(value ?? '').trim();
+  if (!text) return null;
+  const key = normalizePawnKey(text);
+  const direct = pawns.find((p) => normalizePawnKey(p.id) === key);
+  if (direct) return direct.id;
+  const byLabel = pawns.find((p) => normalizePawnKey(p.label) === key);
+  return byLabel?.id ?? null;
+}
+
+function normalizePawnKey(value: string): string {
+  return String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '');
 }
 
 const CASE_DESCRIPTIONS: string[] = [

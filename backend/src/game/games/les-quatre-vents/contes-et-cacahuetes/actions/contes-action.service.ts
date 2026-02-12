@@ -435,7 +435,7 @@ export class ContesActionService {
       : `Case ${nextPos + 1}`;
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} arrive sur ${label}.`,
+      `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${nextPos + 1} (${label}).`,
     );
     if (raw >= finishIndex) {
       next = this.setWinner(next, playerId);
@@ -1668,6 +1668,14 @@ export class ContesActionService {
         ? String(p.username).trim()
         : null;
     return u ?? `Joueur ${id}`;
+  }
+
+  private pawnLabel(state: GameStateEntity, id: number): string {
+    const players = Array.isArray(state.players) ? state.players : [];
+    const player = players.find((p) => p?.id === id);
+    const pawn = String((player as any)?.pawn ?? '').trim();
+    if (pawn) return `son pion "${pawn}"`;
+    return 'son pion';
   }
 
   private getMeta(state: GameStateEntity): ContesCacahuetesMetadata {

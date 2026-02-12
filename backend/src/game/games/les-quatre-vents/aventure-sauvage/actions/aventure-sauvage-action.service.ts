@@ -8,7 +8,6 @@ import type {
   AventureSauvageMetadata,
   AventureSauvageTile,
 } from '../model/aventure-sauvage-state.entity';
-import { AVENTURE_SAUVAGE_PAWNS, resolvePawnId } from '../aventure-sauvage.pawns';
 
 @Injectable()
 export class AventureSauvageActionService {
@@ -144,13 +143,8 @@ export class AventureSauvageActionService {
 
     const payload = (action?.payload ?? {}) as any;
     const rawPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
-    const resolved = resolvePawnId(rawPawn);
-
     const options = Array.isArray(pending?.data?.pawns) ? pending.data.pawns : [];
-    const chosen =
-      resolved != null
-        ? options.find((p: any) => resolvePawnId(p?.id) === resolved)
-        : null;
+    const chosen = this.resolvePendingPawn(rawPawn, options);
     if (!chosen) return state;
 
     const meta = this.getMeta(state);
@@ -160,7 +154,14 @@ export class AventureSauvageActionService {
 
     const nextMeta: AventureSauvageMetadata = {
       ...meta,
-      pawns: Array.isArray(meta.pawns) && meta.pawns.length > 0 ? meta.pawns : AVENTURE_SAUVAGE_PAWNS,
+      pawns:
+        Array.isArray(meta.pawns) && meta.pawns.length > 0
+          ? meta.pawns
+          : options.map((p: any) => ({
+              id: String(p?.id ?? '').trim(),
+              label: String(p?.label ?? p?.title ?? '').trim(),
+              description: String(p?.description ?? '').trim(),
+            })),
       pawnByPlayerId: { ...assigned, [playerId]: chosen.id },
     };
 
@@ -233,7 +234,7 @@ export class AventureSauvageActionService {
       : `Case ${position + 1}`;
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} arrive sur ${label}.`,
+      `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${position + 1} (${label}).`,
     );
     const desc = typeof tile?.description === 'string' ? tile.description.trim() : '';
     if (desc) {
@@ -388,14 +389,48 @@ export class AventureSauvageActionService {
     meta: AventureSauvageMetadata,
     pawnByPlayerId: Record<number, string>,
   ): Array<{ id: string; label: string; description: string }> {
-    const pawns =
-      Array.isArray(meta.pawns) && meta.pawns.length > 0
-        ? meta.pawns
-        : AVENTURE_SAUVAGE_PAWNS;
+    const pawns = Array.isArray(meta.pawns) ? meta.pawns : [];
     const used = new Set(
       Object.values(pawnByPlayerId).filter((v) => typeof v === 'string'),
     );
     return pawns.filter((p) => !used.has(p.id));
+  }
+  private resolvePendingPawn(
+    raw: unknown,
+    options: Array<{ id?: string; label?: string; title?: string }>,
+  ): { id: string; label: string; description: string } | null {
+    if (!Array.isArray(options) || options.length === 0) return null;
+    const normalized = options
+      .map((p: any) => ({
+        id: String(p?.id ?? '').trim(),
+        label: String(p?.label ?? p?.title ?? '').trim(),
+        description: String(p?.description ?? '').trim(),
+      }))
+      .filter((p) => p.id.length > 0 && p.label.length > 0);
+    if (!normalized.length) return null;
+
+    const value =
+      typeof raw === 'object'
+        ? (raw as any)?.id ?? (raw as any)?.pawnId ?? (raw as any)?.value ?? raw
+        : raw;
+    const key = this.normalizePawnKey(value);
+    if (!key) return null;
+
+    const byId = normalized.find((p) => this.normalizePawnKey(p.id) === key);
+    if (byId) return byId;
+    const byLabel = normalized.find(
+      (p) => this.normalizePawnKey(p.label) === key,
+    );
+    return byLabel ?? null;
+  }
+
+  private normalizePawnKey(value: unknown): string {
+    return String(value ?? '')
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '');
   }
 
   private moveBy(
@@ -488,6 +523,16 @@ export class AventureSauvageActionService {
         ? String(p.username).trim()
         : null;
     return u ?? `Joueur ${id}`;
+  }
+  private pawnLabel(state: GameStateEntity, id: number): string {
+    const meta = this.getMeta(state);
+    const pawnId = String(meta?.pawnByPlayerId?.[id] ?? '').trim();
+    const pawn = Array.isArray(meta?.pawns)
+      ? meta.pawns.find((p: any) => String(p?.id ?? '').trim() === pawnId)
+      : null;
+    const title = String(pawn?.label ?? '').trim();
+    if (title) return `son pion "${title}"`;
+    return 'son pion';
   }
 
   private appendTurnAnnouncement(
@@ -769,6 +814,10 @@ function defaultPatteDeck(): AventureSauvageCard[] {
   ];
   return deck;
 }
+
+
+
+
 
 
 

@@ -17,6 +17,7 @@ import {
   PanierExpressCoursesJsonV1,
   PanierExpressEventsJsonV1,
   PanierExpressExchangesJsonV1,
+  PanierExpressPawn,
   PanierExpressPawnsJsonV1,
   PanierExpressQuizzesJsonV1,
   PanierExpressShoppingListsJsonV1,
@@ -261,10 +262,17 @@ export class PanierExpressSetupService {
   }
 
   pawns(): string[] {
+    return this.pawnChoices().map((p) => p.title);
+  }
+
+  pawnChoices(): PanierExpressPawn[] {
     return this.loadPawns()
-      .pawns.map((v) => String(v))
-      .map((v) => v.trim())
-      .filter((v) => v.length > 0);
+      .pawns.map((p) => ({
+        id: String((p as any)?.id ?? '').trim(),
+        title: String((p as any)?.title ?? '').trim(),
+        description: String((p as any)?.description ?? '').trim(),
+      }))
+      .filter((p) => p.id.length > 0 && p.title.length > 0);
   }
 
   /**

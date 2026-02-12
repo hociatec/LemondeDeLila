@@ -14,6 +14,17 @@ export type AventureSauvagePawn = {
   description: string;
 };
 
+export type AventureSauvagePawnJson = {
+  id: string;
+  title: string;
+  description?: string;
+};
+
+export type AventureSauvagePawnsJsonV1 = {
+  version: 1;
+  pawns: AventureSauvagePawnJson[];
+};
+
 export type AventureSauvageCard = {
   id: number;
   deck: AventureSauvageCardDeck;

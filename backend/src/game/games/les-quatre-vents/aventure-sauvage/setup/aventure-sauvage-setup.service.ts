@@ -1,18 +1,42 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { ensureSeededRng } from '../../../../../common/utils/seeded-rng';
 import { seededShuffle } from '../../../../../common/utils/seeded-shuffle';
 import type {
   AventureSauvageCard,
   AventureSauvageMetadata,
+  AventureSauvagePawnsJsonV1,
   AventureSauvageTile,
 } from '../model/aventure-sauvage-state.entity';
-import { AVENTURE_SAUVAGE_PAWNS, resolvePawnId } from '../aventure-sauvage.pawns';
 
 @Injectable()
 export class AventureSauvageSetupService {
-  constructor(private readonly random: RandomService) {}
+  constructor(
+    private readonly random: RandomService,
+    private readonly contentLoader: GameContentLoaderService,
+  ) {}
+
+  private loadPawns() {
+    const raw = this.contentLoader.loadContent<AventureSauvagePawnsJsonV1>({
+      gameType: 'aventure-sauvage',
+      baseDir: __dirname,
+      filename: 'pawns.json',
+      validators: [
+        this.contentLoader.validators.version(1),
+        this.contentLoader.validators.arrayField('pawns', 1),
+      ],
+    });
+
+    return raw.pawns
+      .map((p) => ({
+        id: String((p as any)?.id ?? '').trim(),
+        label: String((p as any)?.title ?? '').trim(),
+        description: String((p as any)?.description ?? '').trim(),
+      }))
+      .filter((p) => p.id.length > 0 && p.label.length > 0);
+  }
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const players = Array.isArray(baseState.players) ? baseState.players : [];
@@ -23,7 +47,12 @@ export class AventureSauvageSetupService {
 
     const tiles = buildTiles();
     const baseMeta = (baseState.metadata ?? {}) as any;
-    const pawnByPlayerId = normalizePawnAssignments(players, baseMeta?.pawnByPlayerId);
+    const pawns = this.loadPawns();
+    const pawnByPlayerId = normalizePawnAssignments(
+      players,
+      baseMeta?.pawnByPlayerId,
+      pawns,
+    );
     const setupStarterId =
       typeof baseMeta?.setupStarterId === 'number'
         ? baseMeta.setupStarterId
@@ -33,7 +62,7 @@ export class AventureSauvageSetupService {
       tiles,
       positions,
       statuses: { skipTurn: {} },
-      pawns: AVENTURE_SAUVAGE_PAWNS,
+      pawns,
       pawnByPlayerId,
       setupStarterId,
       decks: {
@@ -58,7 +87,12 @@ export class AventureSauvageSetupService {
       patte: shuffledPatte.values,
     };
 
-    const pendingInfo = buildPawnPending(players, pawnByPlayerId, setupStarterId);
+    const pendingInfo = buildPawnPending(
+      players,
+      pawnByPlayerId,
+      setupStarterId,
+      pawns,
+    );
     const turnIndex =
       pendingInfo?.turnIndex != null ? pendingInfo.turnIndex : baseState.turnIndex;
     const turnPlayerId =
@@ -499,13 +533,14 @@ function hashSeed(value: string): number {
 function normalizePawnAssignments(
   players: Array<{ id: number }>,
   raw: unknown,
+  pawns: Array<{ id: string; label: string }>,
 ): Record<number, string> {
   const byId: Record<number, string> = {};
   if (!raw || typeof raw !== 'object') return byId;
   const used = new Set<string>();
   for (const p of players) {
     const value = (raw as any)[p.id];
-    const resolved = resolvePawnId(value);
+    const resolved = resolvePawnIdFromChoices(value, pawns);
     if (!resolved || used.has(resolved)) continue;
     used.add(resolved);
     byId[p.id] = resolved;
@@ -517,6 +552,7 @@ function buildPawnPending(
   players: Array<{ id: number }>,
   pawnByPlayerId: Record<number, string>,
   startId: number | null,
+  pawns: Array<{ id: string; label: string; description: string }>,
 ): { pending: any; playerId: number; turnIndex: number } | null {
   if (!players.length) return null;
   const startIndex =
@@ -538,7 +574,7 @@ function buildPawnPending(
   const used = new Set(
     Object.values(pawnByPlayerId).filter((v) => typeof v === 'string'),
   );
-  const choices = AVENTURE_SAUVAGE_PAWNS.filter((p) => !used.has(p.id));
+  const choices = pawns.filter((p) => !used.has(p.id));
   if (choices.length === 0) return null;
 
   return {
@@ -563,6 +599,33 @@ function buildPawnPending(
       },
     },
   };
+}
+
+function resolvePawnIdFromChoices(
+  raw: unknown,
+  pawns: Array<{ id: string; label: string }>,
+): string | null {
+  if (raw == null) return null;
+  const value =
+    typeof raw === 'object'
+      ? (raw as any)?.id ?? (raw as any)?.pawnId ?? (raw as any)?.value ?? raw
+      : raw;
+  const text = String(value ?? '').trim();
+  if (!text) return null;
+  const key = normalizePawnKey(text);
+  const direct = pawns.find((p) => normalizePawnKey(p.id) === key);
+  if (direct) return direct.id;
+  const byLabel = pawns.find((p) => normalizePawnKey(p.label) === key);
+  return byLabel?.id ?? null;
+}
+
+function normalizePawnKey(value: string): string {
+  return String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '');
 }
 
 

@@ -624,8 +624,9 @@ export class PanierExpressService extends AbstractGameService {
   }
 
   private assignBotPawns(state: GameStateEntity): GameStateEntity {
-    const pawns = this.setup.pawns();
-    if (!pawns.length) return state;
+    const pawnChoices = this.setup.pawnChoices();
+    if (!pawnChoices.length) return state;
+    const pawns = pawnChoices.map((pawn) => pawn.title);
     const players = state.players ?? [];
     let meta = this.getMetadata(state) as any;
     const used = new Set(
@@ -681,8 +682,8 @@ export class PanierExpressService extends AbstractGameService {
     ) {
       return state;
     }
-    const pawns = this.setup.pawns();
-    if (!pawns.length) return state;
+    const pawnChoices = this.setup.pawnChoices();
+    if (!pawnChoices.length) return state;
 
     const players = state.players ?? [];
     const missing = players.filter(
@@ -713,8 +714,8 @@ export class PanierExpressService extends AbstractGameService {
         )
         .filter((p: string) => p.length > 0),
     );
-    const available = pawns.filter((pawn) => !taken.has(pawn));
-    const choices = available.length ? available : pawns;
+    const available = pawnChoices.filter((pawn) => !taken.has(pawn.title));
+    const choices = available.length ? available : pawnChoices;
     const chooser = missing[0];
     return {
       ...withClearedBots,
@@ -723,8 +724,12 @@ export class PanierExpressService extends AbstractGameService {
         playerId: chooser.id,
         blocking: true,
         label: 'Choisissez votre pion, puis Entrée.',
-        choices,
-        data: { kind: 'setup.choose_pawn', choices },
+        choices: choices.map((pawn) =>
+          pawn.description && pawn.description.length > 0
+            ? `${pawn.title}: ${pawn.description}`
+            : pawn.title,
+        ),
+        data: { kind: 'setup.choose_pawn', pawns: choices },
       } as any,
       turn: {
         ...(state.turn ?? { currentPlayerId: chooser.id, direction: 1 }),
@@ -3113,8 +3118,13 @@ export class PanierExpressService extends AbstractGameService {
     });
 
     if (kind === 'setup.choose_pawn') {
-      const choices = Array.isArray(pending?.choices) ? pending.choices : [];
-      const chosen = String(choices[index] ?? '').trim();
+      const options = Array.isArray(pending?.data?.pawns)
+        ? pending.data.pawns
+        : [];
+      const picked = options[index] as any;
+      const chosen = String(
+        picked?.title ?? pending?.choices?.[index] ?? '',
+      ).trim();
       if (!chosen) {
         return clearPending(state);
       }
