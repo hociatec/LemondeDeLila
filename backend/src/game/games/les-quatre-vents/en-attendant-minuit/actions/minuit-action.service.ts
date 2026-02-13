@@ -355,7 +355,8 @@ export class MinuitActionService {
     const choiceMap = Object.fromEntries(entries.map((e) => [e.label, e.title]));
     const chooser = missing[0];
     const chooserLabel = this.playerName(state, chooser.id);
-    const withPending = {
+    const currentDirection = state.turn?.direction === -1 ? -1 : 1;
+    const withPending: GameStateEntity = {
       ...state,
       pending: {
         type: 'pick_pawn',
@@ -366,9 +367,9 @@ export class MinuitActionService {
         data: { choices, choiceMap },
       } as PendingState,
       turn: {
-        ...(state.turn ?? { currentPlayerId: chooser.id, direction: 1 }),
+        ...(state.turn ?? { currentPlayerId: chooser.id, direction: currentDirection }),
         currentPlayerId: chooser.id,
-        direction: 1,
+        direction: currentDirection,
       },
     };
     return this.appendLogOnce(
