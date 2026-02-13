@@ -1,4 +1,4 @@
-export type CerclesSacresTheme =
+﻿export type CerclesSacresTheme =
   | 'totem'
   | 'nature'
   | 'plante'
@@ -13,9 +13,9 @@ export interface CerclesSacresCardDefinition {
 }
 
 const TOTEM_NAMES = [
-  'L’Aigle visionnaire',
+  'Lâ€™Aigle visionnaire',
   'Le Loup protecteur',
-  'L’Ours guérisseur',
+  'Lâ€™Ours guérisseur',
   'Le Bison sacré',
   'Le Colibri messager',
   'Le Renard rusé',
@@ -27,23 +27,23 @@ const TOTEM_NAMES = [
   'La Grenouille chanteuse',
   'Le Corbeau du mystère',
   'Le Coyote farceur',
-  'La Libellule de l’illusion',
+  'La Libellule de lâ€™illusion',
 ];
 
 const NATURE_NAMES = [
   'Le Feu du renouveau',
-  'L’Eau des profondeurs',
+  'Lâ€™Eau des profondeurs',
   'Le Vent des montagnes',
   'La Terre-mère',
   'La Forêt vivante',
   'La Rivière sacrée',
   'Le Soleil guérisseur',
   'La Lune des cycles',
-  'L’Orage purificateur',
+  'Lâ€™Orage purificateur',
   'La Neige silencieuse',
   'Le Désert des visions',
   'La Pluie nourricière',
-  'L’Arbre aux ancêtres',
+  'Lâ€™Arbre aux ancêtres',
   'La Caverne des esprits',
   'Le Rocher du souvenir',
 ];
@@ -55,13 +55,13 @@ const PLANTE_NAMES = [
   'Le Maïs doré',
   'La Citrouille nourricière',
   'Le Haricot de sagesse',
-  'L’Aloe médicinale',
-  'L’Amarante rouge',
+  'Lâ€™Aloe médicinale',
+  'Lâ€™Amarante rouge',
   'La Mandragore',
   'Le Peyotl',
   'Le Copal fumigène',
-  'L’Achillée guérisseuse',
-  'Le Foin d’odeur',
+  'Lâ€™Achillée guérisseuse',
+  'Le Foin dâ€™odeur',
   'Le Nénuphar lunaire',
   'Le Thé du Labrador',
 ];
@@ -69,55 +69,55 @@ const PLANTE_NAMES = [
 const ESPRIT_NAMES = [
   'Le Grand Esprit',
   'La Femme Bison Blanc',
-  'L’Esprit du Tambour',
-  'L’Ancêtre silencieux',
-  'L’Enfant de lumière',
-  'L’Ombre intérieure',
+  'Lâ€™Esprit du Tambour',
+  'Lâ€™Ancêtre silencieux',
+  'Lâ€™Enfant de lumière',
+  'Lâ€™Ombre intérieure',
   'Le Rêveur du ciel',
-  'L’Observateur invisible',
-  'L’Esprit du Feu',
-  'L’Être-Aigle',
+  'Lâ€™Observateur invisible',
+  'Lâ€™Esprit du Feu',
+  'Lâ€™ÃŠtre-Aigle',
   'Le Cheval sans bride',
-  'L’Esprit des quatre vents',
+  'Lâ€™Esprit des quatre vents',
   'Le Porteur de Plume',
   'Le Veilleur du crépuscule',
-  'La Danse de l’Âme',
+  'La Danse de lâ€™Ã‚me',
 ];
 
 const PAROLE_NAMES = [
-  '“Écoute le vent, il te parle”',
-  '“Nous sommes les gardiens de la Terre”',
-  '“Chaque pas est une prière”',
-  '“Ton cœur connaît le chemin”',
-  '“Tout est lié”',
-  '“Le silence est la voix des Anciens”',
-  '“La vérité est dans le cercle”',
-  '“Respecte ce que tu ne comprends pas”',
-  '“Tu es une étincelle du grand feu”',
-  '“Marche en beauté”',
-  '“Le tambour bat pour tous”',
-  '“Les plumes tombent, mais l’esprit s’élève”',
-  '“Le rêve enseigne mieux que la parole”',
-  '“N’oublie jamais d’où tu viens”',
-  '“Le monde est un miroir sacré”',
+  'â€œÃ‰coute le vent, il te parleâ€',
+  'â€œNous sommes les gardiens de la Terreâ€',
+  'â€œChaque pas est une prièreâ€',
+  'â€œTon cÅ“ur connaît le cheminâ€',
+  'â€œTout est liéâ€',
+  'â€œLe silence est la voix des Anciensâ€',
+  'â€œLa vérité est dans le cercleâ€',
+  'â€œRespecte ce que tu ne comprends pasâ€',
+  'â€œTu es une étincelle du grand feuâ€',
+  'â€œMarche en beautéâ€',
+  'â€œLe tambour bat pour tousâ€',
+  'â€œLes plumes tombent, mais lâ€™esprit sâ€™élèveâ€',
+  'â€œLe rêve enseigne mieux que la paroleâ€',
+  'â€œNâ€™oublie jamais dâ€™où tu viensâ€',
+  'â€œLe monde est un miroir sacréâ€',
 ];
 
 const NATION_NAMES = [
-  'Hopi – Les gardiens du temps',
-  'Navajo – Les tisseurs de lumière',
-  'Lakota – Le peuple du bison',
-  'Cherokee – Ceux qui marchent avec sagesse',
-  'Inuit – Les enfants de la glace',
-  'Haïda – Les sculpteurs de totems',
-  'Mapuche – Les enfants de la Terre du Sud',
-  'Tupi – Les esprits des forêts tropicales',
-  'Quechua – Les bâtisseurs des Andes',
-  'Arawak – Les rêveurs des îles',
-  'Apache – Les guerriers du désert',
-  'Algonquin – Les voix de la rivière',
-  'Zuni – Les protecteurs des anciens savoirs',
-  'Guarani – Les porteurs de chants',
-  'Ojibwé – Ceux qui dessinent les rêves',
+  'Hopi â€“ Les gardiens du temps',
+  'Navajo â€“ Les tisseurs de lumière',
+  'Lakota â€“ Le peuple du bison',
+  'Cherokee â€“ Ceux qui marchent avec sagesse',
+  'Inuit â€“ Les enfants de la glace',
+  'Haïda â€“ Les sculpteurs de totems',
+  'Mapuche â€“ Les enfants de la Terre du Sud',
+  'Tupi â€“ Les esprits des forêts tropicales',
+  'Quechua â€“ Les bâtisseurs des Andes',
+  'Arawak â€“ Les rêveurs des îles',
+  'Apache â€“ Les guerriers du désert',
+  'Algonquin â€“ Les voix de la rivière',
+  'Zuni â€“ Les protecteurs des anciens savoirs',
+  'Guarani â€“ Les porteurs de chants',
+  'Ojibwé â€“ Ceux qui dessinent les rêves',
 ];
 
 const createThemeCards = (
@@ -143,3 +143,4 @@ export const CERCLES_SACRES_DECK = deck;
 export const CERCLES_SACRES_CARD_BY_ID = Object.fromEntries(
   deck.map((card) => [card.id, card]),
 );
+

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
@@ -74,8 +74,8 @@ export class AventureSauvageSetupService {
       winnerId: null,
     };
 
-    // IMPORTANT: les cartes doivent Ãªtre mÃ©langÃ©es au dÃ©but, sinon on pioche toujours dans l'ordre du fichier.
-    // On utilise le RNG seedÃ© cÃ´tÃ© serveur (metadata.rng) pour avoir un comportement stable par "session" (runId/startedAt).
+    // IMPORTANT: les cartes doivent ÃƒÂªtre mÃƒÂ©langÃƒÂ©es au dÃƒÂ©but, sinon on pioche toujours dans l'ordre du fichier.
+    // On utilise le RNG seedÃƒÂ© cÃƒÂ´tÃƒÂ© serveur (metadata.rng) pour avoir un comportement stable par "session" (runId/startedAt).
     let rngMeta: any = buildShuffleMeta(baseState.metadata ?? {});
     const shuffledAnimal = this.random.shuffle(rngMeta, defaultAnimalDeck());
     rngMeta = shuffledAnimal.meta as any;
@@ -165,7 +165,7 @@ function buildTiles(): AventureSauvageTile[] {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        "Vous entendez des bruissements lointains dans les feuillages. Impossible de savoir s'il s'agit du vent… ou d'autre chose.",
+        "Vous entendez des bruissements lointains dans les feuillages. Impossible de savoir s'il s'agit du ventâ€¦ ou d'autre chose.",
     },
     {
       type: 'neutral',
@@ -307,9 +307,9 @@ function buildTiles(): AventureSauvageTile[] {
     },
     {
       type: 'finish',
-      label: 'Case Neutre – Arrivée (verte)',
+      label: 'Case Neutre â€“ Arrivée (verte)',
       description:
-        "Vous atteignez enfin la mare au cœur de la jungle. L'eau est calme, l'air plus frais, et le sentier s'arrête ici. Votre aventure prend fin.",
+        "Vous atteignez enfin la mare au cÅ“ur de la jungle. L'eau est calme, l'air plus frais, et le sentier s'arrête ici. Votre aventure prend fin.",
     },
   ];
 }
@@ -577,6 +577,10 @@ function buildPawnPending(
   const choices = pawns.filter((p) => !used.has(p.id));
   if (choices.length === 0) return null;
 
+  const chooserName = String((players[nextIndex] as any)?.username ?? '').trim();
+  const chooserLabel =
+    chooserName.length > 0 ? chooserName : `Joueur ${players[nextIndex].id}`;
+
   return {
     playerId: players[nextIndex].id,
     turnIndex: nextIndex,
@@ -584,7 +588,7 @@ function buildPawnPending(
       type: 'choose_pawn',
       playerId: players[nextIndex].id,
       blocking: true,
-      label: 'Choisissez votre pion.',
+      label: `C'est à ${chooserLabel} de choisir son pion.`,
       choices: choices.map((p) =>
         p.description && String(p.description).trim().length > 0
           ? `${p.label}: ${p.description}`
@@ -627,5 +631,6 @@ function normalizePawnKey(value: string): string {
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '');
 }
+
 
 

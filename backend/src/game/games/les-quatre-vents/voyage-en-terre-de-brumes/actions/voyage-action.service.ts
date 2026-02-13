@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type {
   GameStateEntity,
   PendingState,
@@ -382,7 +382,7 @@ export class VoyageActionService {
     let next = state;
     const text = String(textRaw ?? '');
 
-    // Effet ciblÃ© : choisir un joueur qui perd son prochain tour.
+    // Effet ciblÃƒÂ© : choisir un joueur qui perd son prochain tour.
     if (
       /choisissez\s+un\s+joueur/i.test(text) &&
       /perd\s+son\s+prochain\s+tour/i.test(text)
@@ -731,7 +731,7 @@ export class VoyageActionService {
     if (allow('farce') && (c.farce ?? 0) > 0) candidates.push('farce');
 
     if (!candidates.length) {
-      return this.core.appendLog(state, 'Aucune carte Ã  perdre.');
+      return this.core.appendLog(state, 'Aucune carte Ãƒ  perdre.');
     }
 
     const picked = this.random.pickOne(meta as any, candidates);
@@ -826,13 +826,13 @@ export class VoyageActionService {
     const player: any = players.find((p) => p?.id === id);
 
     const explicitLabel = String(player?.pawnLabel ?? '').trim();
-    if (explicitLabel) return `le pion "${explicitLabel}"`;
+    if (explicitLabel) return `"${explicitLabel}"`;
 
     const pawnId = String(player?.pawn ?? '').trim();
-    if (pawnId) return `le pion "${pawnId}"`;
+    if (pawnId) return `"${pawnId}"`;
 
     const fallback = this.playerName(state, id);
-    return `le pion "${fallback}"`;
+    return `"${fallback}"`;
   }
 }
 
@@ -888,3 +888,5 @@ function extractCardCount(text: string): number {
   if (/\b3\b/.test(text) || /\btrois\b/i.test(text)) return 3;
   return 1;
 }
+
+

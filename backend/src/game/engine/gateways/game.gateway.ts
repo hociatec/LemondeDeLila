@@ -76,6 +76,9 @@ export class GameGateway
     this.engine.setBroadcaster((gameType, roomId, state) =>
       this.broadcastState(gameType, roomId, state),
     );
+    this.roomService.setRoomDeletedNotifier((roomId: number) => {
+      this.forceDisconnectRoomClients(roomId);
+    });
     // Log d'amorçage pour vérifier le chemin de log.
     playingLog('ws.game.gateway.init', {
       logPath: 'log/playing.log (racine ou backend/log)',
@@ -679,6 +682,55 @@ export class GameGateway
     meta.gameType = gameType;
   }
 
+  private forceDisconnectRoomClients(roomId: number): void {
+    const targets = Array.from(this.clients.entries())
+      .filter(([, meta]) => meta?.roomId === roomId)
+      .map(([socket]) => socket);
+
+    if (targets.length === 0) {
+      return;
+    }
+
+    const errorPayload = JSON.stringify({
+      type: 'error',
+      context: 'room.deleted',
+      payload: { message: 'Table fermee.' },
+    });
+
+    for (const socket of targets) {
+      const meta = this.clients.get(socket);
+      if (meta?.roomId && meta.gameType) {
+        const key = this.buildRoomKey(meta.gameType, meta.roomId);
+        const set = this.rooms.get(key);
+        if (set) {
+          set.delete(socket);
+          if (set.size === 0) {
+            this.rooms.delete(key);
+          }
+        }
+      }
+
+      this.clients.delete(socket);
+      this.lastPayloadBySocket.delete(socket);
+
+      try {
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(errorPayload, () => {
+            try {
+              socket.close();
+            } catch {
+              // ignore
+            }
+          });
+        } else {
+          socket.close();
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }
+
   private sendError(client: WebSocket, message: string, context?: string) {
     if (client.readyState !== WebSocket.OPEN) return;
     this.safeSend(client, { type: 'error', context, payload: { message } });
@@ -966,3 +1018,4 @@ export class GameGateway
     return `${gameType}:${roomId}`;
   }
 }
+

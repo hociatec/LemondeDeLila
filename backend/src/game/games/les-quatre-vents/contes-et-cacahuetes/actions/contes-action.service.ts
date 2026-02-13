@@ -1674,8 +1674,8 @@ export class ContesActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     const player = players.find((p) => p?.id === id);
     const pawn = String((player as any)?.pawn ?? '').trim();
-    if (pawn) return `son pion "${pawn}"`;
-    return 'son pion';
+    if (pawn) return `"${pawn}"`;
+    return 'un pion';
   }
 
   private getMeta(state: GameStateEntity): ContesCacahuetesMetadata {

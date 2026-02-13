@@ -61,7 +61,7 @@ export class AventureSauvageActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} lance le d� : "${roll}".`,
+      `${this.playerName(next, currentId)} lance le dï¿½ : "${roll}".`,
     );
 
     const currentPos = meta.positions?.[currentId] ?? 0;
@@ -205,7 +205,7 @@ export class AventureSauvageActionService {
       turn: { ...(next.turn ?? { direction: 1 }), currentPlayerId: resolvedStarterId, direction: 1 },
     };
     const starterName = this.playerName(started, resolvedStarterId ?? players[0]?.id ?? 0);
-    let withLogs = this.core.appendLog(started, `D�but de partie : ${starterName} commence.`);
+    let withLogs = this.core.appendLog(started, `Dï¿½but de partie : ${starterName} commence.`);
     withLogs = this.appendTurnAnnouncement(withLogs, resolvedStarterId);
     return withLogs;
   }
@@ -228,7 +228,7 @@ export class AventureSauvageActionService {
 
     const labelRaw = String(tile?.label ?? '').trim();
     const label = labelRaw
-      ? /^(case|d�part|arriv�e)\b/i.test(labelRaw)
+      ? /^(case|dï¿½part|arrivï¿½e)\b/i.test(labelRaw)
         ? labelRaw
         : `Case ${position + 1} - ${labelRaw}`
       : `Case ${position + 1}`;
@@ -304,7 +304,7 @@ export class AventureSauvageActionService {
       deck === 'animal' ? 'Carte Animal rigolo' : 'Carte Coup de patte';
     next = this.core.appendLog(next, `${prefix} : ${card.text}`);
 
-    // Cas sp�cial carte 17 (animal) : -1 puis +1 (net 0)
+    // Cas spï¿½cial carte 17 (animal) : -1 puis +1 (net 0)
     if (card.id === 17 && deck === 'animal') {
       next = this.moveBy(next, playerId, -1);
       next = this.moveBy(next, playerId, +1);
@@ -361,14 +361,17 @@ export class AventureSauvageActionService {
     const choices = this.availablePawns(meta, pawnByPlayerId);
     if (choices.length === 0) return null;
 
+    const chooserId = players[nextIndex].id;
+    const chooserLabel = this.playerName(state, chooserId);
+
     return {
-      playerId: players[nextIndex].id,
+      playerId: chooserId,
       turnIndex: nextIndex,
       pending: {
         type: 'choose_pawn',
-        playerId: players[nextIndex].id,
+        playerId: chooserId,
         blocking: true,
-        label: 'Choisissez votre pion.',
+        label: `C'est à ${chooserLabel} de choisir son pion.`,
         choices: choices.map((p) =>
           p.description && String(p.description).trim().length > 0
             ? `${p.label}: ${p.description}`
@@ -482,7 +485,7 @@ export class AventureSauvageActionService {
     let updatedMeta = meta;
 
     if (pile.length === 0) {
-      // R�initialiser le deck (simple).
+      // Rï¿½initialiser le deck (simple).
       const defaults =
         deck === 'animal' ? defaultAnimalDeck() : defaultPatteDeck();
       const shuffled = this.random.shuffle(updatedMeta as any, defaults);
@@ -531,8 +534,8 @@ export class AventureSauvageActionService {
       ? meta.pawns.find((p: any) => String(p?.id ?? '').trim() === pawnId)
       : null;
     const title = String(pawn?.label ?? '').trim();
-    if (title) return `son pion "${title}"`;
-    return 'son pion';
+    if (title) return `"${title}"`;
+    return 'un pion';
   }
 
   private appendTurnAnnouncement(
@@ -629,43 +632,43 @@ function defaultAnimalDeck(): AventureSauvageCard[] {
     {
       id: 1,
       deck: 'animal',
-      text: "Vous entendez soudain le rire strident d'une hy�ne tout pr�s de vous. Surpris, vous tr�buchez, tombez au sol et effectuez un roul�-boul� incontr�l� qui vous propulse plus loin sur le chemin. Avancez de deux cases.",
+      text: "Vous entendez soudain le rire strident d'une hyï¿½ne tout prï¿½s de vous. Surpris, vous trï¿½buchez, tombez au sol et effectuez un roulï¿½-boulï¿½ incontrï¿½lï¿½ qui vous propulse plus loin sur le chemin. Avancez de deux cases.",
       moveDelta: 2,
     },
     {
       id: 2,
       deck: 'animal',
-      text: "Vous surprenez un hippopotame en train de b�iller largement dans l'eau. Effray� par sa gueule immense, vous reculez d'une case avant de retrouver votre �quilibre en riant.",
+      text: "Vous surprenez un hippopotame en train de bï¿½iller largement dans l'eau. Effrayï¿½ par sa gueule immense, vous reculez d'une case avant de retrouver votre ï¿½quilibre en riant.",
       moveDelta: -1,
     },
     {
       id: 3,
       deck: 'animal',
-      text: "Vous voyez un impala sauter agilement devant vous. Vous d�cidez de le suivre et avancez de 3 cases.",
+      text: "Vous voyez un impala sauter agilement devant vous. Vous dï¿½cidez de le suivre et avancez de 3 cases.",
       moveDelta: 3,
     },
     {
       id: 4,
       deck: 'animal',
-      text: 'Vous apercevez un suricate se redresser curieusement. Relancez le d�.',
+      text: 'Vous apercevez un suricate se redresser curieusement. Relancez le dï¿½.',
       reroll: true,
     },
     {
       id: 5,
       deck: 'animal',
-      text: "Vous observez un flamant rose glisser avec gr�ce � la surface de l'eau. Fascin� par sa d�marche �l�gante, vous restez un instant fig� � le contempler. Passez votre tour.",
+      text: "Vous observez un flamant rose glisser avec grï¿½ce ï¿½ la surface de l'eau. Fascinï¿½ par sa dï¿½marche ï¿½lï¿½gante, vous restez un instant figï¿½ ï¿½ le contempler. Passez votre tour.",
       skipTurns: 1,
     },
     {
       id: 6,
       deck: 'animal',
-      text: "Vous entendez le cri joyeux d'un gu�pard. Avancez de 1 case.",
+      text: "Vous entendez le cri joyeux d'un guï¿½pard. Avancez de 1 case.",
       moveDelta: 1,
     },
     {
       id: 7,
       deck: 'animal',
-      text: "Vous surprenez un buffle en train de se secouer apr�s s'�tre roul� dans la boue. Ce spectacle vous amuse et vous fait avancer d'une case.",
+      text: "Vous surprenez un buffle en train de se secouer aprï¿½s s'ï¿½tre roulï¿½ dans la boue. Ce spectacle vous amuse et vous fait avancer d'une case.",
       moveDelta: 1,
     },
     {
@@ -677,37 +680,37 @@ function defaultAnimalDeck(): AventureSauvageCard[] {
     {
       id: 9,
       deck: 'animal',
-      text: "Vous apercevez un calao majestueux battre des ailes au-dessus de vous. Le souffle de son vol vous pousse l�g�rement : avancez d'une case.",
+      text: "Vous apercevez un calao majestueux battre des ailes au-dessus de vous. Le souffle de son vol vous pousse lï¿½gï¿½rement : avancez d'une case.",
       moveDelta: 1,
     },
     {
       id: 10,
       deck: 'animal',
-      text: "Vous �tes surpris par un babouin fac�tieux faisant tomber un r�gime de bananes sur votre t�te. �tourdi, vous passez votre tour.",
+      text: "Vous ï¿½tes surpris par un babouin facï¿½tieux faisant tomber un rï¿½gime de bananes sur votre tï¿½te. ï¿½tourdi, vous passez votre tour.",
       skipTurns: 1,
     },
     {
       id: 11,
       deck: 'animal',
-      text: "Vous entendez le chant joyeux d'un tisserin aux couleurs vives perch� dans un arbre. Son rythme farfelu vous fait battre des mains et taper des pieds : avancez de 2 cases.",
+      text: "Vous entendez le chant joyeux d'un tisserin aux couleurs vives perchï¿½ dans un arbre. Son rythme farfelu vous fait battre des mains et taper des pieds : avancez de 2 cases.",
       moveDelta: 2,
     },
     {
       id: 12,
       deck: 'animal',
-      text: 'Vous improvisez une m�lodie avec des branches, des feuilles et des fruits tomb�s autour de vous. La musique de la jungle vous emporte, et sans vous en rendre compte, vous avancez de 3 cases.',
+      text: 'Vous improvisez une mï¿½lodie avec des branches, des feuilles et des fruits tombï¿½s autour de vous. La musique de la jungle vous emporte, et sans vous en rendre compte, vous avancez de 3 cases.',
       moveDelta: 3,
     },
     {
       id: 13,
       deck: 'animal',
-      text: "Vous voyez un phacoch�re tournoyer sur lui-m�me dans un �lan de folie. Vous rigolez tellement que vous avancez d'une case en suivant son rythme.",
+      text: "Vous voyez un phacochï¿½re tournoyer sur lui-mï¿½me dans un ï¿½lan de folie. Vous rigolez tellement que vous avancez d'une case en suivant son rythme.",
       moveDelta: 1,
     },
     {
       id: 14,
       deck: 'animal',
-      text: "Vous surprenez un gecko en train de taper du pied sur une feuille. L'effet est si dr�le que vous avancez d'une case.",
+      text: "Vous surprenez un gecko en train de taper du pied sur une feuille. L'effet est si drï¿½le que vous avancez d'une case.",
       moveDelta: 1,
     },
     {
@@ -725,24 +728,24 @@ function defaultAnimalDeck(): AventureSauvageCard[] {
     {
       id: 17,
       deck: 'animal',
-      text: "Vous poursuivez une grenouille g�ante de n�nuphar en n�nuphar. � chaque saut, vous glissez, tournez en rond et finissez par reculer d'une case avant de rebondir aussit�t en avant d'une case, en �clatant de rire.",
+      text: "Vous poursuivez une grenouille gï¿½ante de nï¿½nuphar en nï¿½nuphar. ï¿½ chaque saut, vous glissez, tournez en rond et finissez par reculer d'une case avant de rebondir aussitï¿½t en avant d'une case, en ï¿½clatant de rire.",
     },
     {
       id: 18,
       deck: 'animal',
-      text: "Vous apercevez une petite mangouste curieuse sur votre chemin. En essayant de l'�viter, vous bondissez maladroitement et atterrissez avec un petit plouf sur une racine. Avancez de 1 case en riant de vous-m�me.",
+      text: "Vous apercevez une petite mangouste curieuse sur votre chemin. En essayant de l'ï¿½viter, vous bondissez maladroitement et atterrissez avec un petit plouf sur une racine. Avancez de 1 case en riant de vous-mï¿½me.",
       moveDelta: 1,
     },
     {
       id: 19,
       deck: 'animal',
-      text: 'Un rhinoc�ros passe juste � c�t� de vous. Vous grimpez sur son dos et, �merveill�, vous avancez de trois cases.',
+      text: 'Un rhinocï¿½ros passe juste ï¿½ cï¿½tï¿½ de vous. Vous grimpez sur son dos et, ï¿½merveillï¿½, vous avancez de trois cases.',
       moveDelta: 3,
     },
     {
       id: 20,
       deck: 'animal',
-      text: "Vous tentez de grimper � un arbre pour observer la savane, mais vous vous retrouvez coinc� dans les branches, les pieds dans le vide ! Vous passez votre tour b�tement.",
+      text: "Vous tentez de grimper ï¿½ un arbre pour observer la savane, mais vous vous retrouvez coincï¿½ dans les branches, les pieds dans le vide ! Vous passez votre tour bï¿½tement.",
       skipTurns: 1,
     },
   ];
@@ -754,31 +757,31 @@ function defaultPatteDeck(): AventureSauvageCard[] {
     {
       id: 1,
       deck: 'patte',
-      text: 'Vous croisez une civette endormie en travers du chemin. Surpris, vous restez immobile pour ne pas la r�veiller. Passez votre tour.',
+      text: 'Vous croisez une civette endormie en travers du chemin. Surpris, vous restez immobile pour ne pas la rï¿½veiller. Passez votre tour.',
       skipTurns: 1,
     },
     {
       id: 2,
       deck: 'patte',
-      text: "Une pluie tropicale tombe soudainement. Vous vous faites �clabousser et glissez un peu. Reculez d'une case.",
+      text: "Une pluie tropicale tombe soudainement. Vous vous faites ï¿½clabousser et glissez un peu. Reculez d'une case.",
       moveDelta: -1,
     },
     {
       id: 3,
       deck: 'patte',
-      text: "Le vent fait tomber un nid d'aigles serpentier juste devant vous. Vous restez bouche b�e � observer les petits oisillons s'agiter dans le nid. Passez votre tour.",
+      text: "Le vent fait tomber un nid d'aigles serpentier juste devant vous. Vous restez bouche bï¿½e ï¿½ observer les petits oisillons s'agiter dans le nid. Passez votre tour.",
       skipTurns: 1,
     },
     {
       id: 4,
       deck: 'patte',
-      text: "Un jeune scorpion forestier bloque votre chemin et s'amuse � faire des pirouettes, sa queue tourbillonnant dans les airs. Vous sursautez en riant et reculez d'une case.",
+      text: "Un jeune scorpion forestier bloque votre chemin et s'amuse ï¿½ faire des pirouettes, sa queue tourbillonnant dans les airs. Vous sursautez en riant et reculez d'une case.",
       moveDelta: -1,
     },
     {
       id: 5,
       deck: 'patte',
-      text: "Un tr�s jeune fourmilier curieux s'approche de vous et renifle vos bottes comme un petit enfant intrigu�. Amus�, il se jette au sol et se roule � vos pieds. �clatant de rire, vous restez bloqu� un instant et ne bougez pas de votre case. Passez votre tour.",
+      text: "Un trï¿½s jeune fourmilier curieux s'approche de vous et renifle vos bottes comme un petit enfant intriguï¿½. Amusï¿½, il se jette au sol et se roule ï¿½ vos pieds. ï¿½clatant de rire, vous restez bloquï¿½ un instant et ne bougez pas de votre case. Passez votre tour.",
       skipTurns: 1,
     },
     {
@@ -790,25 +793,25 @@ function defaultPatteDeck(): AventureSauvageCard[] {
     {
       id: 7,
       deck: 'patte',
-      text: 'Vous vous arr�tez sous un manguier o� un loriquet farceur vous pique votre casquette. Passez votre tour pour la r�cup�rer.',
+      text: 'Vous vous arrï¿½tez sous un manguier oï¿½ un loriquet farceur vous pique votre casquette. Passez votre tour pour la rï¿½cupï¿½rer.',
       skipTurns: 1,
     },
     {
       id: 8,
       deck: 'patte',
-      text: 'Vous glissez sur des feuilles de bananier humides tomb�es au sol. Passez votre tour.',
+      text: 'Vous glissez sur des feuilles de bananier humides tombï¿½es au sol. Passez votre tour.',
       skipTurns: 1,
     },
     {
       id: 9,
       deck: 'patte',
-      text: 'Votre parcours est interrompu par un cam�l�on changeant de couleur juste devant vous. Vous restez �bahi. Passez votre tour.',
+      text: 'Votre parcours est interrompu par un camï¿½lï¿½on changeant de couleur juste devant vous. Vous restez ï¿½bahi. Passez votre tour.',
       skipTurns: 1,
     },
     {
       id: 10,
       deck: 'patte',
-      text: "Un perroquet gris du Gabon se met � grimper le long d'un tronc et tombe juste � c�t� de vous. Vous sursautez et reculez d'une case.",
+      text: "Un perroquet gris du Gabon se met ï¿½ grimper le long d'un tronc et tombe juste ï¿½ cï¿½tï¿½ de vous. Vous sursautez et reculez d'une case.",
       moveDelta: -1,
     },
   ];

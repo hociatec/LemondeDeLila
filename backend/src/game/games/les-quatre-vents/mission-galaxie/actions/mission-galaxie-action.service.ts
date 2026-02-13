@@ -710,7 +710,7 @@ export class MissionGalaxieActionService {
     const pawn =
       typeof player?.pawn === 'string' ? String(player.pawn).trim() : '';
     const resolved = pawn || this.playerName(state, id);
-    return `le pion "${resolved}"`;
+    return `"${resolved}"`;
   }
 
   private getMeta(state: GameStateEntity): MissionGalaxieMetadata {

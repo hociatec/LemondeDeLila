@@ -1198,7 +1198,7 @@ export class CaActionService {
     const p = players.find((x: any) => x?.id === id) as any;
     const pawn = typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
     const resolved = pawn || this.playerName(state, id);
-    return `le pion "${resolved}"`;
+    return `"${resolved}"`;
   }
 }
 

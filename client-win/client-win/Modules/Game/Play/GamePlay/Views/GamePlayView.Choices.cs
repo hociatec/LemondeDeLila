@@ -85,7 +85,7 @@ public partial class GamePlayView
 
             _vmPropertyChangedHandler = (_, e) =>
             {
-                // Quand la question de quiz apparaÃ®t/change, on veut la lire immÃ©diatement.
+                // Quand la question de quiz apparaÒ®t/change, on veut la lire immÒ©diatement.
                 if (!string.Equals(e.PropertyName, nameof(GamePlayViewModel.QuizQuestionText), StringComparison.Ordinal) &&
                     !string.Equals(e.PropertyName, nameof(GamePlayViewModel.PendingType), StringComparison.Ordinal) &&
                     !string.Equals(e.PropertyName, nameof(GamePlayViewModel.IsQuizPending), StringComparison.Ordinal))
@@ -121,8 +121,8 @@ public partial class GamePlayView
 
             UpdateChoicesAccessibility();
 
-            // AprÃ¨s validation d'un choix (EntrÃ©e), la liste se met Ã  jour (carte jouÃ©e/retirÃ©e).
-            // Ã‰viter de voler le focus / annoncer la nouvelle premiÃ¨re ligne ("LAMA", etc.),
+            // AprÒ¨s validation d'un choix (EntrÒ©e), la liste se met Ò  jour (carte jouÒ©e/retirÒ©e).
+            // Ò⬰viter de voler le focus / annoncer la nouvelle premiÒ¨re ligne ("LAMA", etc.),
             // afin de laisser l'historique serveur annoncer l'action ("X joue un 3.").
             if (DateTime.UtcNow < _suppressChoiceAutoFocusUntilUtc)
             {
@@ -159,9 +159,9 @@ public partial class GamePlayView
 
             if (_vm.PendingChoices.Count <= 0)
             {
-                // Quand les choix disparaissent (ex: quiz aprÇ¸s rÇ¸ponse),
-                // l'Ç¸lÇ¸ment focalisÇ¸ peut Å’tre dÇ¸truit par la virtualisation et WPF dÇ¸porte le focus hors de la zone de jeu.
-                // On rÇ¸-ancre le focus best-effort, sauf si l'utilisateur est dans une zone de saisie.
+                // Quand les choix disparaissent (ex: quiz après réponse),
+                // l'élément focalisé peut être détruit par la virtualisation et WPF déporte le focus hors de la zone de jeu.
+                // On ré-ancre le focus best-effort, sauf si l'utilisateur est dans une zone de saisie.
                 if (!IsTextInputFocused() && (!IsKeyboardFocusWithin || ChoicesList.IsKeyboardFocusWithin))
                 {
                     Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
@@ -205,7 +205,7 @@ public partial class GamePlayView
 
         _lastAutoFocusedQuizQuestionText = question;
 
-        // Quiz: la question est affichÃ©e comme 1Ã¨re ligne de la liste (index 0).
+        // Quiz: la question est affichÒ©e comme 1Ò¨re ligne de la liste (index 0).
         if (ChoicesList.Visibility != Visibility.Visible || ChoicesList.Items.Count <= 0)
         {
             return false;
@@ -233,26 +233,26 @@ public partial class GamePlayView
 
         var label = string.IsNullOrWhiteSpace(_vm.ChoicesLabel) ? string.Empty : _vm.ChoicesLabel.Trim();
 
-        // Quiz: la liste contient "question + rÃ©ponses". Ne pas dupliquer la question dans le nom de liste.
+        // Quiz: la liste contient "question + rÒ©ponses". Ne pas dupliquer la question dans le nom de liste.
         if (_vm.IsQuizPending)
         {
             ChoicesList.ClearValue(AutomationProperties.HelpTextProperty);
-            AutomationProperties.SetName(ChoicesList, "Question et rÃ©ponses");
+            AutomationProperties.SetName(ChoicesList, "Question et réponses");
             ChoicesList.ClearValue(AutomationProperties.LabeledByProperty);
             return;
         }
 
-        // NVDA utilise parfois LabeledBy plutÃ´t que Name.
-        // On force un libellÃ© serveur (pending.label) et on Ã©vite HelpText (valeurs vides/null peuvent provoquer une erreur WPF).
-        // On efface aussi tout HelpText dÃ©fini via XAML/BAML (anciennes versions) pour Ã©viter les annonces gÃ©nÃ©riques.
+        // NVDA utilise parfois LabeledBy plutÒ´t que Name.
+        // On force un libellÒ© serveur (pending.label) et on Ò©vite HelpText (valeurs vides/null peuvent provoquer une erreur WPF).
+        // On efface aussi tout HelpText dÒ©fini via XAML/BAML (anciennes versions) pour Ò©viter les annonces gÒ©nÒ©riques.
         ChoicesList.ClearValue(AutomationProperties.HelpTextProperty);
         if (string.IsNullOrWhiteSpace(label))
         {
-            // Fallback : donner un nom Ã  la liste pour qu'elle soit correctement annoncÃ©e,
-            // mÃªme si le serveur n'a pas fourni de label.
+            // Fallback : donner un nom Ò  la liste pour qu'elle soit correctement annoncÒ©e,
+            // mÒªme si le serveur n'a pas fourni de label.
             if (_vm.IsQuizPending)
             {
-                AutomationProperties.SetName(ChoicesList, "RÃ©ponses");
+                AutomationProperties.SetName(ChoicesList, "Réponses");
             }
             else
             {
@@ -264,8 +264,8 @@ public partial class GamePlayView
             AutomationProperties.SetName(ChoicesList, label);
         }
 
-        // NOTE: On rÃ©cupÃ¨re le label via FindName pour Ã©viter une dÃ©pendance au champ gÃ©nÃ©rÃ© par le XAML,
-        // qui peut ne pas Ãªtre rÃ©gÃ©nÃ©rÃ© dans certains scÃ©narios (build incrÃ©mentale / cache).
+        // NOTE: On rÒ©cupÒ¨re le label via FindName pour Ò©viter une dÒ©pendance au champ gÒ©nÒ©rÒ© par le XAML,
+        // qui peut ne pas Òªtre rÒ©gÒ©nÒ©rÒ© dans certains scÒ©narios (build incrÒ©mentale / cache).
         if (!string.IsNullOrWhiteSpace(label) &&
             FindName("ChoicesLabelText") is FrameworkElement labelElement &&
             labelElement.Visibility == Visibility.Visible)
@@ -317,14 +317,14 @@ public partial class GamePlayView
             return;
         }
 
-        // Le reset d'une table peut "casser" le focus (l'Ã©lÃ©ment focusÃ© est dÃ©truit/collapsÃ©),
-        // ce qui oblige ensuite Ã  Tab/Maj+Tab. Ici on force un ancrage stable sur la zone de jeu.
+        // Le reset d'une table peut "casser" le focus (l'Ò©lÒ©ment focusÒ© est dÒ©truit/collapsÒ©),
+        // ce qui oblige ensuite Ò  Tab/Maj+Tab. Ici on force un ancrage stable sur la zone de jeu.
         if (!forceFromOutsideTextInput && IsTextInputFocused())
         {
             return;
         }
 
-        // PrioritÃ© UX :
+        // PrioritÒ© UX :
         // - si une grille est visible: ancrer sur la grille (jeux type Corridor)
         // - sinon, si une liste de choix est visible: ancrer sur cette liste (ex: LAMA = main)
         // - sinon: ancrer sur la vue racine
@@ -480,8 +480,8 @@ public partial class GamePlayView
         {
             return;
         }
-        // Le ListBox de quiz doit "consommer" Enter pour envoyer la rÃ©ponse sÃ©lectionnÃ©e,
-        // afin de ne pas dÃ©clencher le raccourci global Enter (roll).
+        // Le ListBox de quiz doit "consommer" Enter pour envoyer la rÒ©ponse sÒ©lectionnÒ©e,
+        // afin de ne pas dÒ©clencher le raccourci global Enter (roll).
         e.Handled = true;
         try
         {
@@ -492,7 +492,7 @@ public partial class GamePlayView
                 return;
             }
 
-            // Quiz: si l'utilisateur est sur la ligne "question", Enter doit aller Ã  la 1Ã¨re rÃ©ponse.
+            // Quiz: si l'utilisateur est sur la ligne "question", Enter doit aller Ò  la 1Ò¨re rÒ©ponse.
             if (vm.IsQuizPending && ChoicesList.Items.Count > 1 && ChoicesList.SelectedIndex == 0)
             {
                 ChoicesList.SelectedIndex = 1;
@@ -502,7 +502,9 @@ public partial class GamePlayView
         }
         catch
         {
-            // ignore (Enter reste consommÃ©)
+            // ignore (Enter reste consommÒ©)
         }
     }
 }
+
+

@@ -248,6 +248,33 @@ public partial class GamePlayView
         return false;
     }
 
+    private bool TryFocusHandOrChoicesList()
+    {
+        if (HandList.Visibility == Visibility.Visible && HandList.Items.Count > 0)
+        {
+            var idx = HandList.SelectedIndex;
+            if (idx < 0) idx = 0;
+            if (idx >= HandList.Items.Count) idx = HandList.Items.Count - 1;
+            HandList.SelectedIndex = idx;
+            HandList.ScrollIntoView(HandList.SelectedItem);
+            TryFocusChoiceIndex(HandList, idx);
+            return true;
+        }
+
+        if (ChoicesList.Visibility == Visibility.Visible && ChoicesList.Items.Count > 0)
+        {
+            var idx = ChoicesList.SelectedIndex;
+            if (idx < 0) idx = 0;
+            if (idx >= ChoicesList.Items.Count) idx = ChoicesList.Items.Count - 1;
+            ChoicesList.SelectedIndex = idx;
+            ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+            TryFocusChoiceIndex(ChoicesList, idx);
+            return true;
+        }
+
+        return false;
+    }
+
     private async void OnRootPreviewKeyDown(object sender, KeyEventArgs e)
     {
         // Routed events: si une couche plus haute (ex: ShortcutBindingsBehavior) a déjà consommé la touche,
@@ -291,16 +318,30 @@ public partial class GamePlayView
             return;
         }
 
+        if (e.Key == Key.Tab && DataContext is GamePlayViewModel tabVm)
+        {
+            e.Handled = true;
+
+            // Keep keyboard focus inside the game area when tabbing.
+            // - Non-grid games: prefer hand/choices list.
+            // - Grid games or fallback: re-anchor to game zone.
+            if (!tabVm.Grid.IsVisible && TryFocusHandOrChoicesList())
+            {
+                return;
+            }
+
+            ForceFocusGameZone();
+            return;
+        }
+
         // ESC: do nothing locally. Previously we used it as a "reset focus" which made screen readers
         // re-announce the root/hand controls on every press or during frequent state refreshes (bot turns).
         // The inline prompt overlay still handles ESC separately (cancel) when visible.
         if (e.Key == Key.Escape)
         {
-            if (!IsTextInputFocused())
-            {
-                e.Handled = true;
-                ForceFocusGameZone();
-            }
+            // No-op by design. Mark handled to prevent parent/shell handlers from moving focus
+            // outside the game area and leaving users on an empty/unstable zone.
+            e.Handled = true;
             return;
         }
 

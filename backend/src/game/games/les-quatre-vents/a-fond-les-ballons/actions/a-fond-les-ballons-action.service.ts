@@ -408,15 +408,17 @@ export class AFondLesBallonsActionService {
 
     const choices = this.availablePawns(meta, pawnByPlayerId);
     if (choices.length === 0) return null;
+    const chooserId = players[nextIndex].id;
+    const chooserLabel = this.playerName(state, chooserId);
 
     return {
-      playerId: players[nextIndex].id,
+      playerId: chooserId,
       turnIndex: nextIndex,
       pending: {
         type: 'choose_pawn',
-        playerId: players[nextIndex].id,
+        playerId: chooserId,
         blocking: true,
-        label: 'Choisissez votre pion.',
+        label: `C'est à ${chooserLabel} de choisir son pion.`,
         choices: choices.map((p) =>
           p.description && String(p.description).trim().length > 0
             ? `${p.label}: ${p.description}`
@@ -979,8 +981,8 @@ export class AFondLesBallonsActionService {
       ? meta.pawns.find((p: any) => String(p?.id ?? '').trim() === pawnId)
       : null;
     const title = String(pawn?.label ?? '').trim();
-    if (title) return `son pion "${title}"`;
-    return 'son pion';
+    if (title) return `"${title}"`;
+    return 'un pion';
   }
 }
 

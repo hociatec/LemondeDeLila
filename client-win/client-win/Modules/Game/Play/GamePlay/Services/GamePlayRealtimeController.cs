@@ -123,8 +123,8 @@ internal sealed class GamePlayRealtimeController
         {
             var force = _pendingForcedTurnAnnouncements > 0;
             if (force) _pendingForcedTurnAnnouncements = Math.Max(0, _pendingForcedTurnAnnouncements - 1);
-            // Ã‰vite le spam : les tours sont dÃ©jÃ  annoncÃ©s via l'historique serveur.
-            // Garder seulement les annonces "forcÃ©es" (ex: demande manuelle de game.turn).
+            // Évite le spam : les tours sont déjà annoncés via l'historique serveur.
+            // Garder seulement les annonces "forcées" (ex: demande manuelle de game.turn).
             if (force)
             {
         _announcementRouter.TryHandleTurnUpdate(info, msg => _emitMessage(new GamePlayHistoryMessage(msg)), force: true);
@@ -322,9 +322,9 @@ internal sealed class GamePlayRealtimeController
             return status;
         }
 
-        // Robustesse : si le serveur a dÃ©jÃ  marquÃ© un winner/finishedAt dans le metadata,
-        // mais que status reste "started" (race / transition), considÃ©rer la partie finie cÃ´tÃ© client
-        // pour permettre la relance (EntrÃ©e) et le reset (X).
+        // Robustesse : si le serveur a déjà marqué un winner/finishedAt dans le metadata,
+        // mais que status reste "started" (race / transition), considérer la partie finie côté client
+        // pour permettre la relance (Entrée) et le reset (X).
         try
         {
             var meta = state.Metadata;
@@ -511,7 +511,7 @@ internal sealed class GamePlayRealtimeController
 
         if (msg.StartsWith($"{user} se retire de la manche", StringComparison.OrdinalIgnoreCase))
         {
-            return "Vous vous retirez de la manche. Vos jetons seront comptÃ©s Ã  la fin de la manche.";
+            return "Vous vous retirez de la manche. Vos jetons seront comptés à la fin de la manche.";
         }
 
         if (string.Equals(msg, $"{user} ne rend rien.", StringComparison.OrdinalIgnoreCase))
@@ -526,7 +526,7 @@ internal sealed class GamePlayRealtimeController
         }
 
         // Jeu de carte : annonce toujours la carte, en adaptant la formulation pour le joueur local.
-        // Exemple serveur: "FantÃ´mette joue un 1."
+        // Exemple serveur: "Fantômette joue un 1."
         var prefix = $"{user} joue un ";
         if (msg.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         {
@@ -537,5 +537,6 @@ internal sealed class GamePlayRealtimeController
         return msg;
     }
 }
+
 
 

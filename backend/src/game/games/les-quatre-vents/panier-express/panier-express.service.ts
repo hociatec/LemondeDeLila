@@ -723,7 +723,7 @@ export class PanierExpressService extends AbstractGameService {
         type: 'pick',
         playerId: chooser.id,
         blocking: true,
-        label: 'Choisissez votre pion, puis Entrée.',
+        label: `${this.utils.playerName(withClearedBots, chooser.id)} choisit son pion (puis Entrée).`,
         choices: choices.map((pawn) =>
           pawn.description && pawn.description.length > 0
             ? `${pawn.title}: ${pawn.description}`

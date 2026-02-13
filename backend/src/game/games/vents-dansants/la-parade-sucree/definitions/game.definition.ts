@@ -11,7 +11,7 @@ export const LA_PARADE_SUCREE_GAME: GameDefinition<
   null
 > = {
   id: 'la-parade-sucree',
-  displayName: 'La Parade Sucr�e !',
+  displayName: 'La Parade Sucrï¿½e !',
   minPlayers: 2,
   maxPlayers: 6,
   roles: [],

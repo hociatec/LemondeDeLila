@@ -1110,15 +1110,15 @@ export class FrousseActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     const player = players.find((p: any) => p?.id === id);
     const explicitLabel = String((player as any)?.pawnLabel ?? '').trim();
-    if (explicitLabel) return `son pion "${explicitLabel}"`;
+    if (explicitLabel) return `"${explicitLabel}"`;
     const pawnId = String((player as any)?.pawn ?? '').trim();
     const meta = this.getMeta(state);
     const fromMeta = Array.isArray(meta?.pawns)
       ? meta.pawns.find((p: any) => String(p?.id ?? '').trim() === pawnId)
       : null;
     const title = String((fromMeta as any)?.title ?? pawnId).trim();
-    if (title) return `son pion "${title}"`;
-    return 'son pion';
+    if (title) return `"${title}"`;
+    return 'un pion';
   }
 
   private finalizeStarterAfterPawnSelection(

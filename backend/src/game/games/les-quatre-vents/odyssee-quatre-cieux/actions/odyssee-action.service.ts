@@ -77,8 +77,8 @@ export class OdysseeActionService {
 
     const label =
       roll === 6
-        ? 'Choisissez un pion à sortir ou à jouer dans la liste, puis Entrée.'
-        : 'Choisissez un pion à jouer dans la liste, puis Entrée.';
+        ? `C'est à ${this.playerName(next, currentId)} de choisir un pion à sortir ou à jouer dans la liste, puis Entrée.`
+        : `C'est à ${this.playerName(next, currentId)} de choisir un pion à jouer dans la liste, puis Entrée.`;
 
     const pending: PendingState = {
       type: 'choose_pawn',
@@ -373,7 +373,7 @@ export class OdysseeActionService {
     playerId: number,
     pawnIndex: number,
   ): string {
-    return `le pion "${this.resolvePawnName(state, playerId, pawnIndex)}"`;
+    return `"${this.resolvePawnName(state, playerId, pawnIndex)}"`;
   }
 
   private choicePawnLabel(

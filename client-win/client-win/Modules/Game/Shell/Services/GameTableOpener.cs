@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -470,7 +470,7 @@ public sealed class GameTableOpener : IGameTableOpener
         var placeholderGame = new CatalogGame(
             code: "unknown",
             name: $"Table #{roomId}",
-            summary: "Connexion…",
+            summary: "Connexionâ€¦",
             minPlayers: 1,
             maxPlayers: 8,
             engine: string.Empty,
@@ -667,7 +667,40 @@ public sealed class GameTableOpener : IGameTableOpener
                     _sounds.Play(SoundId.RoomExit);
                 }
                 catch { }
-                _ = _presence.SetHomeAsync();
+                async Task PushPresenceExitContextAsync()
+                {
+                    try
+                    {
+                        if (forceTavern)
+                        {
+                            await _presence.SetContextAsync("tavern").ConfigureAwait(true);
+
+                            // Anti-race: after socket churn (room/game reconnect/close), replay tavern context once.
+                            _ = Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    await Task.Delay(500).ConfigureAwait(false);
+                                    await _presence.SetContextAsync("tavern").ConfigureAwait(false);
+                                }
+                                catch
+                                {
+                                    // ignore
+                                }
+                            });
+                        }
+                        else
+                        {
+                            await _presence.SetHomeAsync().ConfigureAwait(true);
+                        }
+                    }
+                    catch
+                    {
+                        // best effort
+                    }
+                }
+
+                await PushPresenceExitContextAsync().ConfigureAwait(true);
 
                 object BuildTavernFallback()
                 {
@@ -768,8 +801,8 @@ public sealed class GameTableOpener : IGameTableOpener
                     }
                     catch
                     {
-                        // Fallback de sÃ©curitÃ© : si le retour vers l'Ã©cran prÃ©cÃ©dent est impossible,
-                        // ouvrir la liste des tables publiques plutÃ´t que de laisser un "Ã©cran vide".
+                        // Fallback de sÃƒÂ©curitÃƒÂ© : si le retour vers l'ÃƒÂ©cran prÃƒÂ©cÃƒÂ©dent est impossible,
+                        // ouvrir la liste des tables publiques plutÃƒÂ´t que de laisser un "ÃƒÂ©cran vide".
                         _navigation.Show(BuildTavernFallback());
                     }
                 }
@@ -781,6 +814,12 @@ public sealed class GameTableOpener : IGameTableOpener
                 else
                 {
                     Navigate();
+                }
+
+                if (forceTavern)
+                {
+                    // Ensure "tavern" wins after navigation-level context updates.
+                    await PushPresenceExitContextAsync().ConfigureAwait(true);
                 }
             }
             catch (Exception ex)
@@ -861,7 +900,7 @@ public sealed class GameTableOpener : IGameTableOpener
         {
             if (session == null)
             {
-                try { await _dialogs.ShowInfo("Règles", "Connexion à la table…").ConfigureAwait(true); } catch { }
+                try { await _dialogs.ShowInfo("Règles", "Connexion à la tableâ€¦").ConfigureAwait(true); } catch { }
                 return;
             }
 
@@ -916,7 +955,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     {
                         GameRulesWindow.Show(
                             owner: Application.Current?.MainWindow,
-                            title: $"Règles — {gameName}",
+                            title: $"Règles â€” {gameName}",
                             rules: rules);
                     }, DispatcherPriority.Normal).Task.ConfigureAwait(false);
                 }
@@ -944,7 +983,7 @@ public sealed class GameTableOpener : IGameTableOpener
         {
             if (session == null)
             {
-                try { await _dialogs.ShowInfo("Ambiance", "Connexion à la table…").ConfigureAwait(true); } catch { }
+                try { await _dialogs.ShowInfo("Ambiance", "Connexion à la tableâ€¦").ConfigureAwait(true); } catch { }
                 return;
             }
 
@@ -1125,7 +1164,7 @@ public sealed class GameTableOpener : IGameTableOpener
             {
                 if (session == null)
                 {
-                    try { await _dialogs.ShowInfo("Règles", "Connexion à la table…").ConfigureAwait(true); } catch { }
+                    try { await _dialogs.ShowInfo("Règles", "Connexion à la tableâ€¦").ConfigureAwait(true); } catch { }
                     return;
                 }
 
@@ -1180,7 +1219,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         {
                             GameRulesWindow.Show(
                                 owner: Application.Current?.MainWindow,
-                                title: $"Règles — {gameName}",
+                                title: $"Règles â€” {gameName}",
                                 rules: rules);
                         }, DispatcherPriority.Normal).Task.ConfigureAwait(false);
                     }
@@ -1240,7 +1279,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 dialogs: _dialogs,
                 screenReader: _screenReader,
                 announcements: _announcementService);
-            vm.Status = "Connexion à la table…";
+            vm.Status = "Connexion à la tableâ€¦";
             vm.IsReconnecting = true;
             vm.GameZone.IsConnected = false;
             vm.Chat.IsConnected = false;
@@ -1334,7 +1373,7 @@ public sealed class GameTableOpener : IGameTableOpener
 	                            dialogs: _dialogs,
 	                            screenReader: _screenReader,
 	                            announcements: _announcementService);
-	                        newVm.Status = "Connexion à la table…";
+	                        newVm.Status = "Connexion à la tableâ€¦";
 	                        newVm.IsReconnecting = true;
 	                        newVm.GameZone.IsConnected = false;
 	                        newVm.Chat.IsConnected = false;
@@ -1485,7 +1524,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
                         if (state == client_win.Modules.Network.WebSockets.WebSocketState.Connecting)
                         {
-                            vm.Status = "Connexion à la table…";
+                            vm.Status = "Connexion à la tableâ€¦";
                             vm.IsReconnecting = true;
                             vm.GameZone.IsConnected = false;
                             vm.Chat.IsConnected = false;
@@ -1499,14 +1538,14 @@ public sealed class GameTableOpener : IGameTableOpener
                         }
                         else if (state == client_win.Modules.Network.WebSockets.WebSocketState.Disconnected)
                         {
-                            vm.Status = "Connexion table perdue. Reconnexion…";
+                            vm.Status = "Connexion table perdue. Reconnexionâ€¦";
                             vm.IsReconnecting = true;
                             vm.GameZone.IsConnected = false;
                             vm.Chat.IsConnected = false;
                         }
                         else if (state == client_win.Modules.Network.WebSockets.WebSocketState.Error)
                         {
-                            vm.Status = "Connexion table en erreur. Reconnexion…";
+                            vm.Status = "Connexion table en erreur. Reconnexionâ€¦";
                             vm.IsReconnecting = true;
                             vm.GameZone.IsConnected = false;
                             vm.Chat.IsConnected = false;
@@ -1590,3 +1629,4 @@ public sealed class GameTableOpener : IGameTableOpener
         return Task.CompletedTask;
     }
 }
+

@@ -1378,13 +1378,13 @@ export class SacAMalicesActionService {
     const player: any = players.find((p) => p?.id === id);
 
     const explicitLabel = String(player?.pawnLabel ?? '').trim();
-    if (explicitLabel) return `le pion "${explicitLabel}"`;
+    if (explicitLabel) return `"${explicitLabel}"`;
 
     const pawnId = String(player?.pawn ?? '').trim();
-    if (pawnId) return `le pion "${pawnId}"`;
+    if (pawnId) return `"${pawnId}"`;
 
     const fallback = this.playerName(state, id);
-    return `le pion "${fallback}"`;
+    return `"${fallback}"`;
   }
 }
 

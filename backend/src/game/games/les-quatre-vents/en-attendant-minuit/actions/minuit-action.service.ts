@@ -352,13 +352,14 @@ export class MinuitActionService {
     const choices = entries.map((entry) => entry.label);
     const choiceMap = Object.fromEntries(entries.map((e) => [e.label, e.title]));
     const chooser = missing[0];
+    const chooserLabel = this.playerName(state, chooser.id);
     return {
       ...state,
       pending: {
         type: 'pick_pawn',
         playerId: chooser.id,
         blocking: true,
-        label: 'Choisissez votre pion, puis Entrée.',
+        label: `C'est à ${chooserLabel} de choisir son pion, puis Entrée.`,
         choices,
         data: { choices, choiceMap },
       } as PendingState,
@@ -1027,8 +1028,8 @@ export class MinuitActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     const player = players.find((p) => p?.id === id);
     const pawn = String(player?.pawn ?? '').trim();
-    if (pawn) return `son pion "${pawn}"`;
-    return 'son pion';
+    if (pawn) return `"${pawn}"`;
+    return 'un pion';
   }
 
   private advanceTurnOrKeep(state: GameStateEntity, playerId: number): GameStateEntity {

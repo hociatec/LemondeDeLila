@@ -433,12 +433,41 @@ public sealed class RoomSession : IAsyncDisposable
                 _reconnectAttempt = 0;
                 return;
             }
-            catch
+            catch (Exception ex)
             {
+                var message = (ex.Message ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(message))
+                {
+                    try { ErrorReceived?.Invoke(message); } catch { }
+                }
+
+                if (IsFatalReconnectError(message))
+                {
+                    try { Left?.Invoke("room.deleted"); } catch { }
+                    return;
+                }
+
                 // Continue loop: we'll retry.
                 Interlocked.Exchange(ref _reconnectRequested, 1);
             }
         }
+    }
+
+    private static bool IsFatalReconnectError(string message)
+    {
+        if (IsFatalRoomError(message))
+        {
+            return true;
+        }
+
+        var normalized = (message ?? string.Empty).Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return false;
+        }
+
+        return normalized.Contains("room not found", StringComparison.Ordinal) ||
+               normalized.Contains("table not found", StringComparison.Ordinal);
     }
 
     private async Task EnsureJoinedAsync(CancellationToken cancellationToken)

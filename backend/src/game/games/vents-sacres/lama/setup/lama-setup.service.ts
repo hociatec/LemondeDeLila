@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import type { LamaMetadata } from '../model/lama.model';
@@ -96,7 +96,7 @@ export class LamaSetupService {
       round: baseState.round ?? 0,
       turnIndex: baseState.turnIndex ?? 0,
       lastRoll: null,
-      // Setup bloquant : l'acteur "pending" ne doit pas Ãªtre Ã©crasÃ© par la randomisation du starter au dÃ©marrage.
+      // Setup bloquant : l'acteur "pending" ne doit pas ÃƒÂªtre ÃƒÂ©crasÃƒÂ© par la randomisation du starter au dÃƒÂ©marrage.
       pending: { step: 'setup_config', playerId: ownerPlayerId, blocking: true } as any,
       log: Array.isArray(baseState.log) ? baseState.log : [],
       metadata: meta as any,
@@ -195,3 +195,4 @@ export class LamaSetupService {
     );
   }
 }
+

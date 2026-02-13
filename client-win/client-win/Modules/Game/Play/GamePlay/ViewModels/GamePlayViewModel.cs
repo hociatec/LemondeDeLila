@@ -83,7 +83,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private string _inlinePromptSignature = string.Empty;
 
     private string _connectionStatus = "Connexion au moteur de jeu...";
-    private string _stateSummary = "En attente d'un Ã©tat de jeu (game.state)...";
+    private string _stateSummary = "En attente d'un état de jeu (game.state)...";
     private string _pendingText = string.Empty;
     private string _actionsText = string.Empty;
     private string _boardText = string.Empty;
@@ -310,8 +310,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public async Task<bool> TryOpenPendingTextPromptAsync(CancellationToken cancellationToken = default)
     {
-        // Les prompts de jeu ne doivent plus ouvrir de fenÃªtre modale (ils sont affichÃ©s inline dans la vue).
-        // Cette mÃ©thode est conservÃ©e pour compatibilitÃ©, mais devient un no-op.
+        // Les prompts de jeu ne doivent plus ouvrir de fenêtre modale (ils sont affichés inline dans la vue).
+        // Cette méthode est conservée pour compatibilité, mais devient un no-op.
         await Task.CompletedTask;
         return false;
     }
@@ -372,7 +372,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                     }
 
                     // Certains jeux rendent la configuration obligatoire (pas de cancelActionType).
-                    // Dans ce cas, on empÃªche la fermeture silencieuse : on informe et on rÃ©-ouvre.
+                    // Dans ce cas, on empêche la fermeture silencieuse : on informe et on ré-ouvre.
                     await _dialogs
                         .ShowError("Configuration", "Configuration obligatoire.")
                         .ConfigureAwait(true);
@@ -414,7 +414,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                     {
                         if (!TryParseBool(text, out var value))
                         {
-                            validationError = $"Veuillez cocher/dÃ©cocher : {field.Label}.";
+                            validationError = $"Veuillez cocher/décocher : {field.Label}.";
                             break;
                         }
                         payload[field.Key] = value;
@@ -1110,7 +1110,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                 .ConfigureAwait(false);
             if (sent && string.Equals(pendingType, "quiz", StringComparison.OrdinalIgnoreCase))
             {
-                MessageReceived?.Invoke(new GamePlayHistoryMessage("RÃ©ponse envoyÃ©e."));
+                MessageReceived?.Invoke(new GamePlayHistoryMessage("Réponse envoyée."));
             }
             return sent;
         }
@@ -1225,8 +1225,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                 continue;
             }
 
-            if (GamePlayUiPanelsParser.TryGetPanelMessage(state, panelId.Trim(), out var message) &&
-                !string.IsNullOrWhiteSpace(message))
+            var message = GamePlayPanelHistoryMessageBuilder.BuildPanelHistoryMessage(state, panelId.Trim());
+            if (!string.IsNullOrWhiteSpace(message))
             {
                 // Mark as UI/shortcut message so the history sink can announce it assertively
                 // without replaying queued older announcements.

@@ -163,7 +163,7 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       if (gained > 0) {
         log = this.logger.append(
           log,
-          `${p.username ?? `#${pid}`} prend ${gained} jeton${gained > 1 ? 's' : ''} (pÃ©nalitÃ©).`,
+          `${p.username ?? `#${pid}`} prend ${gained} jeton${gained > 1 ? 's' : ''} (pénalité).`,
         );
       }
     }
@@ -237,7 +237,7 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
         }
       }
       let log = state.log;
-      log = this.logger.append(log, `Partie terminÃ©e.`);
+      log = this.logger.append(log, `Partie terminée.`);
       if (winnerId) {
         log = this.logger.append(
           log,
@@ -360,4 +360,5 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
     return roundNumber >= 2;
   }
 }
+
 

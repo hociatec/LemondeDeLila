@@ -8,7 +8,6 @@ import { BotService } from '../../bot/services/bot.service';
 import { RoomBot } from '../../room/entities/room-bot.entity';
 import { GameEngineService } from '../../game/engine/services/game-engine.service';
 import { GameRegistryService } from '../../game/engine/services/game-registry.service';
-import { PresenceService } from '../../presence/services/presence.service';
 import { NotificationService } from '../../notification/services/notification.service';
 import type { VaultRoomSnapshot } from '../vault.types';
 import type { GameStateEntity } from '../../game/core/entities/game-state.entity';
@@ -24,7 +23,6 @@ export class VaultRoomSnapshotsService {
     private readonly bots: BotService,
     private readonly engine: GameEngineService,
     private readonly registry: GameRegistryService,
-    private readonly presence: PresenceService,
     private readonly notifications: NotificationService,
   ) {}
 
@@ -185,19 +183,27 @@ export class VaultRoomSnapshotsService {
       const existing = await this.snapshots.findOne({
         where: { id: requestedId, ownerUserId },
       });
-      if (!existing) {
-        // Safety: if the client passed an id but it doesn't exist, fail loudly rather than creating duplicates.
-        throw new BadRequestException('Sauvegarde introuvable');
+      if (existing) {
+        existing.name = name;
+        existing.gameType = gameType;
+        existing.roomName = snapshot.room.name.slice(0, 255);
+        existing.playersLabel = playersLabel;
+        existing.snapshotJson = JSON.stringify(snapshot);
+        existing.createdAt = new Date();
+        entity = await this.snapshots.save(existing);
+      } else {
+        entity = this.snapshots.create({
+          id: randomUUID(),
+          ownerUserId,
+          name,
+          gameType,
+          roomName: snapshot.room.name.slice(0, 255),
+          playersLabel,
+          snapshotJson: JSON.stringify(snapshot),
+          createdAt: new Date(),
+        });
+        await this.snapshots.save(entity);
       }
-
-      existing.name = name;
-      existing.gameType = gameType;
-      existing.roomName = snapshot.room.name.slice(0, 255);
-      existing.playersLabel = playersLabel;
-      existing.snapshotJson = JSON.stringify(snapshot);
-      // Met à jour l'ordre d'affichage (tri par createdAt côté list).
-      existing.createdAt = new Date();
-      entity = await this.snapshots.save(existing);
     } else {
       entity = this.snapshots.create({
         id: randomUUID(),
@@ -211,7 +217,6 @@ export class VaultRoomSnapshotsService {
       });
       await this.snapshots.save(entity);
     }
-
     // Sauvegarde de table = "archiver et fermer" : tout le monde retourne à la taverne.
     // Le RoomGateway enverra 'room.deleted' à tous les clients connectés.
     await this.rooms.adminDestroyRoom(roomId);
@@ -239,18 +244,18 @@ export class VaultRoomSnapshotsService {
       throw new BadRequestException('Sauvegarde invalide : aucun joueur');
     }
 
-    const missing: string[] = [];
+    const unavailable: string[] = [];
     for (const p of humans) {
       // Le propriétaire ouvre déjà via la réponse à vault.restore côté client.
       if (p.id === ownerUserId) continue;
-      const ok = this.presence.isUserInTavern(p.id);
-      if (!ok) {
-        missing.push(String(p.username ?? `joueur ${p.id}`));
+      const activeRoom = await this.rooms.findLatestActiveRoomForUser(p.id);
+      if (activeRoom?.roomId && activeRoom.roomId > 0) {
+        unavailable.push(String(p.username ?? `joueur ${p.id}`));
       }
     }
-    if (missing.length > 0) {
+    if (unavailable.length > 0) {
       throw new BadRequestException(
-        `Restauration impossible : joueurs absents de la taverne : ${missing.join(', ')}.`,
+        `Restauration impossible : joueurs encore en table : ${unavailable.join(', ')}.`,
       );
     }
 
@@ -474,3 +479,4 @@ export class VaultRoomSnapshotsService {
     return cloned;
   }
 }
+

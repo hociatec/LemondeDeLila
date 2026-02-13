@@ -10,6 +10,7 @@
              d:DesignWidth="900"
               Focusable="True"
               IsTabStop="True"
+              KeyboardNavigation.TabNavigation="Cycle"
               KeyboardNavigation.DirectionalNavigation="Contained"
               AutomationProperties.Name="Zone de jeu"
               PreviewKeyDown="OnRootPreviewKeyDown"

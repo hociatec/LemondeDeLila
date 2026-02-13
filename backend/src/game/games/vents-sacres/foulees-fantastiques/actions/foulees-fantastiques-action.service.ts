@@ -264,10 +264,10 @@ export class FouleesFantastiquesActionService {
       );
     const label =
       hasStableExit && moves.every((m) => m.targetProgress === 0)
-        ? 'Choisissez un animal à sortir dans la liste, puis Entrée.'
+        ? `C'est à ${this.playerName(next, currentId)} de choisir un animal à sortir dans la liste, puis Entrée.`
         : hasStableExit
-          ? 'Choisissez un animal à sortir ou à jouer dans la liste, puis Entrée.'
-          : 'Choisissez un animal à jouer dans la liste, puis Entrée.';
+          ? `C'est à ${this.playerName(next, currentId)} de choisir un animal à sortir ou à jouer dans la liste, puis Entrée.`
+          : `C'est à ${this.playerName(next, currentId)} de choisir un animal à jouer dans la liste, puis Entrée.`;
 
     const pending: PendingState = {
       type: 'choose_pawn',

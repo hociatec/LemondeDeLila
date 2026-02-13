@@ -262,6 +262,9 @@ function buildPawnPending(
   );
   const choices = pawns.filter((p) => !used.has(p.id));
   if (choices.length === 0) return null;
+  const chooserName = String((players[nextIndex] as any)?.username ?? '').trim();
+  const chooserLabel =
+    chooserName.length > 0 ? chooserName : `Joueur ${players[nextIndex].id}`;
 
   return {
     playerId: players[nextIndex].id,
@@ -270,7 +273,7 @@ function buildPawnPending(
       type: 'choose_pawn',
       playerId: players[nextIndex].id,
       blocking: true,
-      label: 'Choisissez votre pion.',
+      label: `C'est à ${chooserLabel} de choisir son pion.`,
       choices: choices.map((p) =>
         p.description && String(p.description).trim().length > 0
           ? `${p.label}: ${p.description}`

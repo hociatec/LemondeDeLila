@@ -23,12 +23,14 @@ export function buildPawnSelectionPending(
 
   const nextPlayer = cleaned.find((p) => !resolvePawnId(p.pawn));
   if (!nextPlayer) return null;
+  const chooserName = String((nextPlayer as any)?.username ?? '').trim();
+  const chooserLabel = chooserName.length > 0 ? chooserName : `Joueur ${nextPlayer.id}`;
 
   return {
     type: 'choose_pawn',
     playerId: nextPlayer.id,
     blocking: true,
-    label: 'Choisissez un pion (flèches puis Entrée).',
+    label: `C'est à ${chooserLabel} de choisir un pion (flèches puis Entrée).`,
     choices: candidates.map((pawn) => formatPawnChoiceLabel(pawn)),
     data: {
       kind: 'choose_pawn',

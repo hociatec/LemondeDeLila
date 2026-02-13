@@ -56,6 +56,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
     private readonly Dictionary<int, bool> _friendPresenceById = new();
     private readonly object _restoreReadyGate = new();
     private readonly HashSet<int> _handledRestoreReadyRoomIds = new();
+    private const double StartupQuietSeconds = 1.5;
 
 	    private IWebSocketConnection? _ws;
         private readonly SemaphoreSlim _startLock = new(1, 1);
@@ -122,7 +123,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 {
                     // Évite le "spam" sonore lors de l'hydratation initiale (amis en ligne, messages déjà en attente, etc.).
                     // Les événements réellement nouveaux continueront à arriver après ce court délai.
-                    _startupQuietUntilTicks = Stopwatch.GetTimestamp() + (long)(Stopwatch.Frequency * 4.0);
+                    _startupQuietUntilTicks = Stopwatch.GetTimestamp() + (long)(Stopwatch.Frequency * StartupQuietSeconds);
 
                     _started = true;
                     _reconnectCts?.Cancel();
@@ -292,7 +293,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 		            Log.Information("Connexion WS notify établie.");
 
                     // À chaque connexion (login ou reconnexion), éviter un pic de sons lors de la remise en état.
-                    _startupQuietUntilTicks = Stopwatch.GetTimestamp() + (long)(Stopwatch.Frequency * 4.0);
+                    _startupQuietUntilTicks = Stopwatch.GetTimestamp() + (long)(Stopwatch.Frequency * StartupQuietSeconds);
                     lock (_friendPresenceGate)
                     {
                         _friendPresenceById.Clear();
@@ -1406,7 +1407,8 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 // On mémorise le premier état observé sans le son/annonce, et on n'annonce que les transitions réelles.
                 lock (_friendPresenceGate)
                 {
-                    if (!_friendPresenceById.TryGetValue(id, out var previous))
+                    var hadPrevious = _friendPresenceById.TryGetValue(id, out var previous);
+                    if (!hadPrevious)
                     {
                         _friendPresenceById[id] = connected;
                         // If we're past the startup hydration burst, the first event for a friend is a real
@@ -1417,7 +1419,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                         }
                     }
 
-                    if (previous == connected)
+                    if (hadPrevious && previous == connected)
                     {
                         return;
                     }

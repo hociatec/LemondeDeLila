@@ -106,12 +106,14 @@ export class MinuitSetupService {
     const choices = entries.map((entry) => entry.label);
     const choiceMap = Object.fromEntries(entries.map((e) => [e.label, e.title]));
     const chooser = missing[0];
+    const chooserName = String((chooser as any)?.username ?? '').trim();
+    const chooserLabel = chooserName.length > 0 ? chooserName : `Joueur ${chooser.id}`;
 
     return {
       type: 'pick_pawn',
       playerId: chooser.id,
       blocking: true,
-      label: 'Choisissez votre pion, puis Entrée.',
+      label: `C'est à ${chooserLabel} de choisir son pion, puis Entrée.`,
       choices,
       data: { choices, choiceMap },
     } as any;

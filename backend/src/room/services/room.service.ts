@@ -26,7 +26,9 @@ import { RedisClientFactory } from '../../common/redis/redis-client.factory';
 @Injectable()
 export class RoomService {
   private realtimeNotifier?: (roomId: number) => Promise<void> | void;
-  private roomDeletedNotifier?: (roomId: number) => Promise<void> | void;
+  private readonly roomDeletedNotifiers: Array<
+    (roomId: number) => Promise<void> | void
+  > = [];
   private directoryNotifier?: (
     roomId: number,
     reason: string,
@@ -54,7 +56,10 @@ export class RoomService {
    * Permet à l'admin d'effacer une room même avec des joueurs connectés, en les renvoyant à l'accueil.
    */
   setRoomDeletedNotifier(fn: (roomId: number) => Promise<void> | void): void {
-    this.roomDeletedNotifier = fn;
+    if (typeof fn !== 'function') {
+      return;
+    }
+    this.roomDeletedNotifiers.push(fn);
   }
 
   /**
@@ -97,10 +102,12 @@ export class RoomService {
       throw new NotFoundException('Room introuvable.');
     }
 
-    try {
-      await this.roomDeletedNotifier?.(id);
-    } catch {
-      // best effort
+    for (const notify of this.roomDeletedNotifiers) {
+      try {
+        await notify(id);
+      } catch {
+        // best effort
+      }
     }
 
     await this.rooms.delete(id);
@@ -704,10 +711,12 @@ export class RoomService {
         activeHumans,
         bots,
       });
-      try {
-        await this.roomDeletedNotifier?.(room.id);
-      } catch {
-        // best effort
+      for (const notify of this.roomDeletedNotifiers) {
+        try {
+          await notify(room.id);
+        } catch {
+          // best effort
+        }
       }
       await this.rooms.delete(room.id);
       this.roomBans.delete(room.id);
