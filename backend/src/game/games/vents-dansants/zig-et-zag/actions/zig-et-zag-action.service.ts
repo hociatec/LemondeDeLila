@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -168,7 +168,7 @@ export class ZigEtZagActionService {
     if (this.hasSelectionJoker(round)) {
       nextState = this.core.appendLog(
         nextState,
-        'Joker joué hors bataille : les cartes sont défaussées.',
+        'Joker jouÃ© hors bataille : les cartes sont dÃ©faussÃ©es.',
       );
       return this.finishRound(nextState, players, round, null);
     }
@@ -176,7 +176,7 @@ export class ZigEtZagActionService {
     const evaluation = this.evaluateFaceUpPlays(round);
     if (evaluation.tiePlayers.length > 1) {
       const nextRound = this.prepareBattle(round, evaluation.tiePlayers, meta);
-      nextState = this.core.appendLog(nextState, 'Bataille déclenchée !');
+      nextState = this.core.appendLog(nextState, 'Bataille dÃ©clenchÃ©e !');
       if (!nextRound.waitingPlayers.length) {
         return this.finishRound(
           nextState,
@@ -185,7 +185,13 @@ export class ZigEtZagActionService {
           nextRound.tiedPlayers[0] ?? null,
         );
       }
-      return this.setRoundState(nextState, meta, nextRound);
+      nextState = this.setRoundState(nextState, meta, nextRound);
+    return this.setCurrentPlayerWithAnnouncement(
+      nextState,
+      players,
+      this.pickNextCurrentPlayerId(nextRound, nextState.turn?.currentPlayerId ?? 0),
+      true,
+    );
     }
     return this.finishRound(nextState, players, round, evaluation.winnerId);
   }
@@ -226,7 +232,7 @@ export class ZigEtZagActionService {
       triggerFamilies,
       battleLog: [
         ...round.battleLog,
-        'Bataille déclenchée !',
+        'Bataille dÃ©clenchÃ©e !',
       ],
     };
   }
@@ -278,7 +284,13 @@ export class ZigEtZagActionService {
       battleLog,
     };
 
-    return this.setRoundState(nextState, meta, nextRound);
+    nextState = this.setRoundState(nextState, meta, nextRound);
+    return this.setCurrentPlayerWithAnnouncement(
+      nextState,
+      players,
+      this.pickNextCurrentPlayerId(nextRound, nextState.turn?.currentPlayerId ?? 0),
+      true,
+    );
   }
 
   private resolveBattle(
@@ -313,7 +325,7 @@ export class ZigEtZagActionService {
     if (!results.length) {
       nextState = this.core.appendLog(
         nextState,
-        'Aucune carte valide : les cartes sont défaussées.',
+        'Aucune carte valide : les cartes sont dÃ©faussÃ©es.',
       );
       return this.finishRound(nextState, players, round, null);
     }
@@ -358,15 +370,21 @@ export class ZigEtZagActionService {
       triggerFamilies,
       battleLog: [
         ...round.battleLog,
-        'Égalité persistante, la bataille continue !',
+        'Ã‰galitÃ© persistante, la bataille continue !',
       ],
     };
 
     nextState = this.core.appendLog(
       nextState,
-      'Égalité persistante, la bataille continue !',
+      'Ã‰galitÃ© persistante, la bataille continue !',
     );
-    return this.setRoundState(nextState, meta, nextRound);
+    nextState = this.setRoundState(nextState, meta, nextRound);
+    return this.setCurrentPlayerWithAnnouncement(
+      nextState,
+      players,
+      this.pickNextCurrentPlayerId(nextRound, nextState.turn?.currentPlayerId ?? 0),
+      true,
+    );
   }
 
   private finishRound(
@@ -417,6 +435,7 @@ export class ZigEtZagActionService {
           ensured.round,
           ensured.state.turn?.currentPlayerId ?? 0,
         ),
+        true,
       );
     }
 
@@ -462,7 +481,7 @@ export class ZigEtZagActionService {
       if (play.faceUpCard) {
         next = this.core.appendLog(
           next,
-          `${this.playerName(players, play.playerId)} dévoile ${this.formatCardLabel(play.faceUpCard)}.`,
+          `${this.playerName(players, play.playerId)} dÃ©voile ${this.formatCardLabel(play.faceUpCard)}.`,
         );
       }
     }
@@ -523,10 +542,12 @@ export class ZigEtZagActionService {
     state: GameStateEntity,
     players: GameStateEntity['players'],
     playerId: number,
+    force = false,
   ): GameStateEntity {
     const previousPlayerId = state.turn?.currentPlayerId ?? null;
     const next = this.setCurrentPlayer(state, playerId);
     if (
+      !force &&
       typeof previousPlayerId === 'number' &&
       previousPlayerId === playerId
     ) {
@@ -797,3 +818,7 @@ export class ZigEtZagActionService {
     return state.turn?.currentPlayerId ?? null;
   }
 }
+
+
+
+

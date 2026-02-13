@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   Injectable,
   NotFoundException,
@@ -73,9 +73,9 @@ export class GameEngineService {
   ) {}
 
   /**
-   * Configure la fonction de broadcast pour notifier les clients des changements d'état.
+   * Configure la fonction de broadcast pour notifier les clients des changements d'Ã©tat.
    *
-   * @param fn - Fonction appelée lors des changements d'état
+   * @param fn - Fonction appelÃ©e lors des changements d'Ã©tat
    * @internal
    */
   setBroadcaster(
@@ -85,16 +85,16 @@ export class GameEngineService {
   }
 
   /**
-   * Récupère l'état complet du jeu pour une room donnée.
+   * RÃ©cupÃ¨re l'Ã©tat complet du jeu pour une room donnÃ©e.
    *
-   * Retourne l'état enrichi avec les actions disponibles et les informations
+   * Retourne l'Ã©tat enrichi avec les actions disponibles et les informations
    * visibles par tous les joueurs. Utilise le cache pour optimiser les performances.
    *
    * @param roomId - ID de la room
    * @param gameType - Type de jeu
-   * @returns État du jeu enrichi avec les actions disponibles
+   * @returns Ã‰tat du jeu enrichi avec les actions disponibles
    *
-   * @throws {GameStateError} Si l'état est introuvable ou invalide
+   * @throws {GameStateError} Si l'Ã©tat est introuvable ou invalide
    *
    * @example
    * ```typescript
@@ -115,17 +115,17 @@ export class GameEngineService {
   }
 
   /**
-   * Récupère l'état du jeu personnalisé pour un utilisateur spécifique.
+   * RÃ©cupÃ¨re l'Ã©tat du jeu personnalisÃ© pour un utilisateur spÃ©cifique.
    *
-   * Retourne l'état avec les informations visibles uniquement par cet utilisateur
-   * (masquage de la main des adversaires, cartes cachées, etc.).
+   * Retourne l'Ã©tat avec les informations visibles uniquement par cet utilisateur
+   * (masquage de la main des adversaires, cartes cachÃ©es, etc.).
    *
    * @param roomId - ID de la room
    * @param gameType - Type de jeu
    * @param userId - ID de l'utilisateur
-   * @returns État personnalisé pour cet utilisateur
+   * @returns Ã‰tat personnalisÃ© pour cet utilisateur
    *
-   * @throws {GameStateError} Si l'état est introuvable ou invalide
+   * @throws {GameStateError} Si l'Ã©tat est introuvable ou invalide
    *
    * @example
    * ```typescript
@@ -271,9 +271,9 @@ export class GameEngineService {
       if (!message && panelId === 'turn') {
         const status = String(state?.status ?? '').toLowerCase().trim();
         if (status === 'finished') {
-          message = 'Partie terminée.';
+          message = 'Partie terminÃ©e.';
         } else if (status !== 'started') {
-          message = 'Partie non démarrée.';
+          message = 'Partie non dÃ©marrÃ©e.';
         } else if (typeof state?.turn?.label === 'string' && state.turn.label.trim()) {
           message = state.turn.label.trim();
         } else {
@@ -412,7 +412,7 @@ export class GameEngineService {
     }
     const actualGameType = String(payload?.room?.gameType ?? '').trim();
     if (actualGameType && actualGameType !== gameType) {
-      // Empêche la création d'un état "fantôme" quand le client passe le mauvais gameType
+      // EmpÃªche la crÃ©ation d'un Ã©tat "fantÃ´me" quand le client passe le mauvais gameType
       // (ex: "generic" alors que la room est en "corridor").
       this.cleanupRoom(roomId, gameType);
       throw new BadRequestException('Type de jeu invalide pour cette table');
@@ -426,8 +426,8 @@ export class GameEngineService {
       ).trim();
       const roomStartedAt = String(payload?.room?.startedAt ?? '').trim();
 
-      // Garde-fou : si un état "finished" est encore stocké alors que la room est restée en "started"
-      // (crash/restart serveur ou événement WS manqué), forcer un reset pour retrouver une table
+      // Garde-fou : si un Ã©tat "finished" est encore stockÃ© alors que la room est restÃ©e en "started"
+      // (crash/restart serveur ou Ã©vÃ©nement WS manquÃ©), forcer un reset pour retrouver une table
       // modifiable (ajout/suppression de bots, relance).
       const maybeFinished =
         previousStatus === 'finished'
@@ -515,14 +515,14 @@ export class GameEngineService {
         const b = Date.parse(roomStartedAt);
         if (Number.isFinite(a) && Number.isFinite(b)) {
           // Certains stockages/serializations tronquent les millisecondes (".000Z").
-          // On ne reconstruit l'état que si la différence est significative (ex: vraie relance de la table).
+          // On ne reconstruit l'Ã©tat que si la diffÃ©rence est significative (ex: vraie relance de la table).
           return Math.abs(a - b) > 2000;
         }
         return storedStartedAt !== roomStartedAt;
       })();
 
-      // Réinitialisation explicite (room repasse en "setup/open/...") :
-      // on repart d'un état neuf pour permettre d'ajouter/retirer des joueurs et relancer une partie.
+      // RÃ©initialisation explicite (room repasse en "setup/open/...") :
+      // on repart d'un Ã©tat neuf pour permettre d'ajouter/retirer des joueurs et relancer une partie.
       if (
         previousStatus === 'started' &&
         roomStatus &&
@@ -574,8 +574,8 @@ export class GameEngineService {
         incomingPlayers,
         gameStarted,
       });
-      // Démarrage : à la transition vers "started", reconstruire l'état initial à partir de la room
-      // (permet d'avoir un premier joueur aléatoire via le GameCoreService).
+      // DÃ©marrage : Ã  la transition vers "started", reconstruire l'Ã©tat initial Ã  partir de la room
+      // (permet d'avoir un premier joueur alÃ©atoire via le GameCoreService).
       if (previousStatus !== 'started' && nextStatus === 'started') {
         const rebuilt = await this.buildInitialState(payload, gameType);
         const marked = await this.normalizeBotThinking(
@@ -587,9 +587,9 @@ export class GameEngineService {
         return marked;
       }
 
-      // Cas spécial : la room a été reset (startedAt remis à null) puis relancée,
-      // mais le moteur n'a pas "vu" la transition setup->started (ex: aucun WS game connecté).
-      // On force la reconstruction si runId a changé (prioritaire) ou si startedAt a changé de manière significative.
+      // Cas spÃ©cial : la room a Ã©tÃ© reset (startedAt remis Ã  null) puis relancÃ©e,
+      // mais le moteur n'a pas "vu" la transition setup->started (ex: aucun WS game connectÃ©).
+      // On force la reconstruction si runId a changÃ© (prioritaire) ou si startedAt a changÃ© de maniÃ¨re significative.
       if (
         previousStatus === 'started' &&
         nextStatus === 'started' &&
@@ -655,27 +655,27 @@ export class GameEngineService {
   }
 
   /**
-   * Applique une liste d'actions au jeu et retourne le nouvel état.
+   * Applique une liste d'actions au jeu et retourne le nouvel Ã©tat.
    *
-   * Cette méthode est le point d'entrée principal pour toutes les actions de jeu.
-   * Elle gère :
+   * Cette mÃ©thode est le point d'entrÃ©e principal pour toutes les actions de jeu.
+   * Elle gÃ¨re :
    * - La validation des actions
-   * - La vérification des permissions
+   * - La vÃ©rification des permissions
    * - L'application via l'adaptateur de jeu
-   * - Le déclenchement des tours de bot
-   * - La sauvegarde de l'état
+   * - Le dÃ©clenchement des tours de bot
+   * - La sauvegarde de l'Ã©tat
    * - Le broadcast aux clients
    *
    * @param roomId - ID de la room
    * @param gameType - Type de jeu
-   * @param actions - Liste des actions à appliquer
-   * @param actorId - ID du joueur effectuant l'action (null pour les actions système)
-   * @param allowBotTurn - Si true, déclenche automatiquement les tours de bot après l'action
-   * @returns Réponse contenant le nouvel état et des métadonnées
+   * @param actions - Liste des actions Ã  appliquer
+   * @param actorId - ID du joueur effectuant l'action (null pour les actions systÃ¨me)
+   * @param allowBotTurn - Si true, dÃ©clenche automatiquement les tours de bot aprÃ¨s l'action
+   * @returns RÃ©ponse contenant le nouvel Ã©tat et des mÃ©tadonnÃ©es
    *
    * @throws {GameValidationError} Si les actions sont invalides
    * @throws {PlayerActionError} Si l'acteur n'a pas les permissions
-   * @throws {GameStateError} Si l'état devient invalide
+   * @throws {GameStateError} Si l'Ã©tat devient invalide
    *
    * @example
    * ```typescript
@@ -686,7 +686,7 @@ export class GameEngineService {
    *   456,                    // actorId
    *   true                    // allowBotTurn
    * );
-   * console.log(response.state.turnIndex); // Nouveau numéro de tour
+   * console.log(response.state.turnIndex); // Nouveau numÃ©ro de tour
    * ```
    */
   async applyActions(
@@ -720,9 +720,9 @@ export class GameEngineService {
       gameType,
       await this.getInternalState(roomId, gameType),
     );
-    // `getInternalState()` peut programmer un timer bot pour l'état courant.
-    // Quand on exécute une action bot immédiatement, ce timer devient obsolète et empêche
-    // la programmation du tour suivant (même clé). On le supprime donc ici.
+    // `getInternalState()` peut programmer un timer bot pour l'Ã©tat courant.
+    // Quand on exÃ©cute une action bot immÃ©diatement, ce timer devient obsolÃ¨te et empÃªche
+    // la programmation du tour suivant (mÃªme clÃ©). On le supprime donc ici.
     if (allowBotTurn) {
       this.botScheduler.clear(this.buildKey(roomId, gameType));
     }
@@ -779,15 +779,15 @@ export class GameEngineService {
         .filter((t) => t.length > 0);
       if (requestedTypes.length === 0) return false;
 
-      // Autorise uniquement si toutes les actions demandées sont explicitement disponibles
+      // Autorise uniquement si toutes les actions demandÃ©es sont explicitement disponibles
       // pour l'acteur (ex: confirm exchange pendant le tour d'un bot).
       return requestedTypes.every((t) => allowedTypes.has(t));
     })();
 
-    // Un bot peut être en "thinking" (timer) pendant qu'un humain doit confirmer un pending
-    // (ex: échange). On n'interdit pas ces actions explicitement autorisées.
+    // Un bot peut Ãªtre en "thinking" (timer) pendant qu'un humain doit confirmer un pending
+    // (ex: Ã©change). On n'interdit pas ces actions explicitement autorisÃ©es.
     if (!allowBotTurn && current.botThinking && !allowOutOfTurnActions) {
-      // Si ce n'est pas le tour d'un bot, préférer le message "pas votre tour"
+      // Si ce n'est pas le tour d'un bot, prÃ©fÃ©rer le message "pas votre tour"
       // (le flag botThinking peut rester true un court instant).
       if (currentPlayer?.isBot) {
         return this.exposeState(current, gameType);
@@ -865,7 +865,7 @@ export class GameEngineService {
     if (!handler) {
       const next = this.core.appendLog(
         current,
-        `Type de jeu non spécialisé: ${gameType}`,
+        `Type de jeu non spÃ©cialisÃ©: ${gameType}`,
       );
       const marked = await this.markBotThinking(roomId, gameType, next);
       await this.scheduleBotTurn(roomId, gameType, marked);
@@ -924,19 +924,19 @@ export class GameEngineService {
       };
     }
 
-    // Persiste l'état final post-traité (logs d'arrivée / sauts de tour nettoyés).
-    // Sans cette écriture, des métadonnées temporaires (ex: turnFlow.skipped) peuvent être rejouées au tour suivant.
+    // Persiste l'Ã©tat final post-traitÃ© (logs d'arrivÃ©e / sauts de tour nettoyÃ©s).
+    // Sans cette Ã©criture, des mÃ©tadonnÃ©es temporaires (ex: turnFlow.skipped) peuvent Ãªtre rejouÃ©es au tour suivant.
     await this.store.set(roomId, gameType, marked, { asyncPersist: true });
 
-    // L'annonce de tour est déjà exposée via le label "C'est à X de jouer.".
-    // Ne pas logger une seconde phrase dans l'historique pour éviter les doublons.
+    // L'annonce de tour est dÃ©jÃ  exposÃ©e via le label "C'est Ã  X de jouer.".
+    // Ne pas logger une seconde phrase dans l'historique pour Ã©viter les doublons.
     await this.scheduleBotTurn(roomId, gameType, marked);
     this.broadcaster?.(gameType, roomId, marked);
 
-    // Fin de partie : remettre la room en "setup" (comme le raccourci X) et réinitialiser l'état du jeu
-    // pour permettre de relancer immédiatement.
+    // Fin de partie : remettre la room en "setup" (comme le raccourci X) et rÃ©initialiser l'Ã©tat du jeu
+    // pour permettre de relancer immÃ©diatement.
     if ((marked.status || '').toLowerCase() === 'finished') {
-      // Best-effort: les stats ne doivent pas empêcher le reset de table.
+      // Best-effort: les stats ne doivent pas empÃªcher le reset de table.
       try {
         await this.stats.finalizeFinished(roomId, marked);
       } catch (err) {
@@ -957,7 +957,7 @@ export class GameEngineService {
         );
       }
 
-      // Reset le state du moteur pour repartir d'un état "setup" propre (sans plateau figé).
+      // Reset le state du moteur pour repartir d'un Ã©tat "setup" propre (sans plateau figÃ©).
       try {
         await this.store.delete(roomId, gameType);
       } catch (err) {
@@ -974,7 +974,7 @@ export class GameEngineService {
         // best effort
       }
 
-      // Diffuser un état "setup" frais aux clients /ws/game pour rafraîchir l'UI immédiatement.
+      // Diffuser un Ã©tat "setup" frais aux clients /ws/game pour rafraÃ®chir l'UI immÃ©diatement.
       try {
         const fresh = await this.getInternalState(roomId, gameType);
         this.broadcaster?.(gameType, roomId, fresh);
@@ -986,7 +986,7 @@ export class GameEngineService {
         );
       }
 
-      // Attente : pas de rebuild tant que la table n'est pas redémarrée.
+      // Attente : pas de rebuild tant que la table n'est pas redÃ©marrÃ©e.
       this.botScheduler.clear(this.buildKey(roomId, gameType));
     }
 
@@ -1048,23 +1048,23 @@ export class GameEngineService {
   }
 
   /**
-   * Déclenche le tour d'un bot dans la partie.
+   * DÃ©clenche le tour d'un bot dans la partie.
    *
-   * Cette méthode :
-   * - Vérifie que le joueur actuel est un bot
-   * - Récupère les actions suggérées par la stratégie du bot
+   * Cette mÃ©thode :
+   * - VÃ©rifie que le joueur actuel est un bot
+   * - RÃ©cupÃ¨re les actions suggÃ©rÃ©es par la stratÃ©gie du bot
    * - Applique automatiquement ces actions
-   * - Peut déclencher récursivement d'autres tours de bot
+   * - Peut dÃ©clencher rÃ©cursivement d'autres tours de bot
    *
    * @param roomId - ID de la room
    * @param gameType - Type de jeu
-   * @returns État mis à jour après le tour du bot
+   * @returns Ã‰tat mis Ã  jour aprÃ¨s le tour du bot
    *
    * @throws {GameStateError} Si aucun bot n'est actif
    *
    * @example
    * ```typescript
-   * // Déclencher manuellement un tour de bot
+   * // DÃ©clencher manuellement un tour de bot
    * const state = await gameEngine.playBotTurn(123, 'dame-nature');
    * console.log(state.turn.currentPlayerId); // Nouveau joueur actif
    * ```
@@ -1082,9 +1082,9 @@ export class GameEngineService {
       return state;
     }
 
-    // Certains jeux peuvent déjà marquer une fin logique via `finishedAt`/`outcomesByPlayerId`
-    // sans avoir basculé `status` -> finished (legacy / bug). On force dans ce cas pour
-    // déclencher le reset automatique de table côté moteur.
+    // Certains jeux peuvent dÃ©jÃ  marquer une fin logique via `finishedAt`/`outcomesByPlayerId`
+    // sans avoir basculÃ© `status` -> finished (legacy / bug). On force dans ce cas pour
+    // dÃ©clencher le reset automatique de table cÃ´tÃ© moteur.
     const finishedAt = (meta as any)?.finishedAt;
     if (typeof finishedAt === 'string' && finishedAt.trim().length > 0) {
       return state.status === 'finished'
@@ -1272,8 +1272,8 @@ export class GameEngineService {
         .filter((n: string) => n.length > 0);
       const allowedBotNames = new Set(roomBotNames);
 
-      // Bots "sièges" (id négatif) proviennent de payload.room.bots (GameCoreService buildPlayers).
-      // Si un bot est retiré de la room pendant une partie, il doit aussi disparaître du roster du jeu
+      // Bots "siÃ¨ges" (id nÃ©gatif) proviennent de payload.room.bots (GameCoreService buildPlayers).
+      // Si un bot est retirÃ© de la room pendant une partie, il doit aussi disparaÃ®tre du roster du jeu
       // sinon l'exclusion est visuellement sans effet et le bot continue de jouer.
       const allowedBotIds = new Set<number>(
         roomBots
@@ -1460,14 +1460,14 @@ export class GameEngineService {
         const available = handler.getAvailableActions(state, playerId);
         return !Array.isArray(available) || available.length > 0;
       } catch {
-        // Fallback permissif: ne pas casser le flux bot si le handler lève ici.
+        // Fallback permissif: ne pas casser le flux bot si le handler lÃ¨ve ici.
         return true;
       }
     };
 
-    // Priorité: si une action "pending" est attendue d'un bot (même si ce n'est pas son tour),
-    // déclencher ce bot d'abord. Certains jeux utilisent `pending` pour des choix bloquants
-    // (pick/exchange/quiz) et peuvent laisser `turn.currentPlayerId` inchangé.
+    // PrioritÃ©: si une action "pending" est attendue d'un bot (mÃªme si ce n'est pas son tour),
+    // dÃ©clencher ce bot d'abord. Certains jeux utilisent `pending` pour des choix bloquants
+    // (pick/exchange/quiz) et peuvent laisser `turn.currentPlayerId` inchangÃ©.
     const pending = state.pending as any;
     const pendingPlayerId =
       pending && typeof pending.playerId === 'number' ? pending.playerId : null;
@@ -1570,7 +1570,7 @@ export class GameEngineService {
       marked = this.appendSkipTurnAnnouncements(marked);
       await this.store.set(roomId, gameType, marked, { asyncPersist: true });
 
-      // Pas d'annonce de tour dans l'historique (évite doublon avec le label de tour).
+      // Pas d'annonce de tour dans l'historique (Ã©vite doublon avec le label de tour).
 
       await this.scheduleBotTurn(roomId, gameType, marked);
       this.broadcaster?.(gameType, roomId, marked);
@@ -1874,11 +1874,11 @@ export class GameEngineService {
     const isOwner = payload?.room?.owner?.id === userId;
     if (ownerOnly && !isOwner) {
       throw new UnauthorizedException(
-        'Seul le propriétaire peut effectuer cette action',
+        'Seul le propriÃ©taire peut effectuer cette action',
       );
     }
     if (!ownerOnly && !isParticipant && !isOwner) {
-      throw new UnauthorizedException('Accès non autorisé à cette table');
+      throw new UnauthorizedException('AccÃ¨s non autorisÃ© Ã  cette table');
     }
   }
 
@@ -1898,7 +1898,7 @@ export class GameEngineService {
     const isParticipant = players.some((p) => p?.id === userId);
     const isOwner = payload?.room?.owner?.id === userId;
     if (payload?.room?.isPrivate && !isParticipant && !isOwner) {
-      throw new UnauthorizedException('Accès non autorisé à cette table');
+      throw new UnauthorizedException('AccÃ¨s non autorisÃ© Ã  cette table');
     }
   }
 
@@ -1933,9 +1933,9 @@ export class GameEngineService {
     const status = String(baseState.status ?? '')
       .toLowerCase()
       .trim();
-    // Tant que la table n'est pas en "started", on ne doit pas hydrater un état de partie :
-    // sinon certains jeux reconstruisent un plateau "started" et empêchent d'ajouter/retirer des bots
-    // ou de relancer proprement après une fin de partie.
+    // Tant que la table n'est pas en "started", on ne doit pas hydrater un Ã©tat de partie :
+    // sinon certains jeux reconstruisent un plateau "started" et empÃªchent d'ajouter/retirer des bots
+    // ou de relancer proprement aprÃ¨s une fin de partie.
     if (status !== 'started') {
       return baseState;
     }
@@ -1957,7 +1957,7 @@ export class GameEngineService {
     }
     const logged = this.core.appendLog(
       baseState,
-      `Type de jeu non spécialisé: ${gameType}`,
+      `Type de jeu non spÃ©cialisÃ©: ${gameType}`,
     );
     const withMeta = {
       ...logged,
@@ -1984,12 +1984,12 @@ export class GameEngineService {
       typeof pending?.playerId === 'number' ? pending.playerId : null;
     const blockingPending = pending?.blocking === true;
     if (blockingPending && pendingPlayerId != null) {
-      // Les jeux avec setup bloquant (choix de pion/config propriétaire) gardent leur acteur pending.
+      // Les jeux avec setup bloquant (choix de pion/config propriÃ©taire) gardent leur acteur pending.
       return state;
     }
 
     if ((state.metadata as any)?.starterChosenAfterPawnSelection === true) {
-      // Certains jeux tirent explicitement le starter après setup (ex: choix de pion).
+      // Certains jeux tirent explicitement le starter aprÃ¨s setup (ex: choix de pion).
       return state;
     }
 
@@ -2023,7 +2023,29 @@ export class GameEngineService {
   }
 
   private appendFirstTurnAnnouncement(state: GameStateEntity): GameStateEntity {
-    return state;
+    const status = String(state.status ?? '').toLowerCase().trim();
+    if (status !== 'started') {
+      return state;
+    }
+
+    const currentPlayerId = state.turn?.currentPlayerId ?? null;
+    if (typeof currentPlayerId !== 'number' || !Number.isFinite(currentPlayerId)) {
+      return state;
+    }
+
+    const log = Array.isArray(state.log) ? state.log : [];
+    const recentMessages = log
+      .slice(-3)
+      .map((entry: any) => String(entry?.message ?? '').trim().toLowerCase());
+    if (recentMessages.some((m) => m.startsWith("c'est au tour de "))) {
+      return state;
+    }
+
+    const players = Array.isArray(state.players) ? state.players : [];
+    const name =
+      players.find((p) => p?.id === currentPlayerId)?.username?.trim() ??
+      `Joueur ${currentPlayerId}`;
+    return this.core.appendLog(state, `C'est au tour de ${name}.`);
   }
 
   private buildKey(roomId: number, gameType: string): string {
@@ -2037,7 +2059,7 @@ export class GameEngineService {
     botTurn?: boolean,
   ): Promise<GameStateEntity> {
     const handler = this.registry.getHandler(gameType);
-    // `botThinking` doit refléter un bot réellement actionnable.
+    // `botThinking` doit reflÃ©ter un bot rÃ©ellement actionnable.
     // Sinon, on bloque les humains avec "Un bot joue..." alors qu'aucune action bot n'est possible
     // (ex: pending bloquant pour un humain pendant setup).
     const actionableBotId = this.getBotActorIdForState(state, handler);
@@ -2194,7 +2216,7 @@ export class GameEngineService {
           payloadBytes = Buffer.byteLength(JSON.stringify(payload), 'utf8');
         } catch {
           throw new BadRequestException(
-            'Action invalide : payload non sérialisable',
+            'Action invalide : payload non sÃ©rialisable',
           );
         }
       }
@@ -2282,8 +2304,8 @@ export class GameEngineService {
     state: GameStateEntity,
     gameType: string,
   ): GameStateWithActions {
-    // Le label de tour doit rester aligné avec l'état interne (source de vérité),
-    // même si exposeState() d'un jeu masque/transforme la liste des joueurs.
+    // Le label de tour doit rester alignÃ© avec l'Ã©tat interne (source de vÃ©ritÃ©),
+    // mÃªme si exposeState() d'un jeu masque/transforme la liste des joueurs.
     const label = this.turnLabel.compute(state, gameType);
     const handler = this.registry.getHandler(gameType);
     const exposed = handler?.exposeState
@@ -2346,7 +2368,7 @@ export class GameEngineService {
     const extras =
       state.extras && typeof state.extras === 'object' ? state.extras : {};
 
-    // Si le jeu a déjà défini currentPlayerView, on ne l'écrase pas
+    // Si le jeu a dÃ©jÃ  dÃ©fini currentPlayerView, on ne l'Ã©crase pas
     if (extras.currentPlayerView !== undefined) return state;
 
     const players = Array.isArray(state.players) ? state.players : [];
@@ -2368,8 +2390,8 @@ export class GameEngineService {
   }
 
   private static readonly BOARD_ANNOUNCE_GAMES = new Set<string>([
-    // Les Quatre Vents (plateaux) : annoncer l'arrivée sur une case (titre + description si dispo).
-    // Panier Express gère déjà ses annonces de case dans son service, on évite le doublon.
+    // Les Quatre Vents (plateaux) : annoncer l'arrivÃ©e sur une case (titre + description si dispo).
+    // Panier Express gÃ¨re dÃ©jÃ  ses annonces de case dans son service, on Ã©vite le doublon.
     'en-attendant-minuit',
     'galopons-ensemble',
   ]);
@@ -2471,7 +2493,7 @@ export class GameEngineService {
 
         const name = p.username || `joueur ${p.id}`;
 
-        // Éviter les doublons évidents : si la dernière entrée mentionne déjà l'arrivée sur cette case.
+        // Ã‰viter les doublons Ã©vidents : si la derniÃ¨re entrÃ©e mentionne dÃ©jÃ  l'arrivÃ©e sur cette case.
         const recentMsgs = (() => {
           const log = Array.isArray(out.log) ? out.log : [];
           const msgs: string[] = [];
@@ -2567,7 +2589,7 @@ export class GameEngineService {
     const extras =
       state.extras && typeof state.extras === 'object' ? state.extras : {};
 
-    // Ne pas écraser si un jeu a déjà défini ces champs.
+    // Ne pas Ã©craser si un jeu a dÃ©jÃ  dÃ©fini ces champs.
     if ((extras as any).viewerPlayerId !== undefined) return state;
 
     const players = Array.isArray(state.players) ? state.players : [];
@@ -2593,8 +2615,8 @@ export class GameEngineService {
   private attachUiDescriptors(
     state: GameStateWithActions,
   ): GameStateWithActions {
-    // Les panneaux UI doivent Ļtre entiĶrement dķfinis par les jeux via `extras.ui.panels`.
-    // Le moteur n'infĶre plus de panneaux gķnķriques (shopping, position, pollution, etc.).
+    // Les panneaux UI doivent Ä»tre entiÄ¶rement dÄ·finis par les jeux via `extras.ui.panels`.
+    // Le moteur n'infÄ¶re plus de panneaux gÄ·nÄ·riques (shopping, position, pollution, etc.).
     // Provide a generic "turn" panel derived from `turn.label` (no game rules).
     const turnLabel = String(state.turn?.label ?? '').trim();
     if (!turnLabel) return state;
@@ -2731,8 +2753,8 @@ export class GameEngineService {
       );
       upsertPanel(
         'stable',
-        'Écurie',
-        buildJoinedLinesMessage('Écurie', (currentPlayerView as any).stable),
+        'Ã‰curie',
+        buildJoinedLinesMessage('Ã‰curie', (currentPlayerView as any).stable),
       );
       upsertPanel(
         'position',
@@ -2807,3 +2829,5 @@ export class GameEngineService {
     this.mutationQueue.delete(key);
   }
 }
+
+
