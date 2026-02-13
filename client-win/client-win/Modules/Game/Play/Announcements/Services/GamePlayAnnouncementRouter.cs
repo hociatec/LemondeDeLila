@@ -47,10 +47,10 @@ internal sealed class GamePlayAnnouncementRouter
         }
 
         var name = raw.Trim();
-        var lower = name.ToLowerInvariant();
-        if (lower.EndsWith("(zone de jeu)", StringComparison.Ordinal) ||
-            lower.EndsWith("(zone de jeux)", StringComparison.Ordinal) ||
-            lower.EndsWith("(game zone)", StringComparison.Ordinal))
+        var lowered = name.ToLowerInvariant();
+        if (lowered.Contains("(zone de jeu)") ||
+            lowered.Contains("(zone de jeux)") ||
+            lowered.Contains("(game zone)"))
         {
             var openParen = name.LastIndexOf('(');
             if (openParen > 0)
@@ -58,6 +58,8 @@ internal sealed class GamePlayAnnouncementRouter
                 name = name.Substring(0, openParen).TrimEnd();
             }
         }
+
+        name = name.TrimEnd('.', ',', ';', ':', '!', '?', ')', ']');
 
         return string.IsNullOrWhiteSpace(name) ? null : name;
     }

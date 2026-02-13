@@ -26,7 +26,7 @@ public partial class GamePlayView
             }
             else
             {
-                ForceFocusGameZone();
+                FocusPreferredInteractiveElement();
             }
         }));
     }
@@ -47,7 +47,7 @@ public partial class GamePlayView
             }
             else
             {
-                ForceFocusGameZone();
+                FocusPreferredInteractiveElement();
             }
         }));
     }

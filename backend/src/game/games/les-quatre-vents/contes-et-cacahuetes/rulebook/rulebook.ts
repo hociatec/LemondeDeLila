@@ -16,6 +16,15 @@ export function getAvailableActions(
     if (type === 'draw') {
       return [{ type: 'draw', payload: {} }];
     }
+    if (type === 'choose_pawn') {
+      const pawns: Array<{ id?: string }> = Array.isArray(pending?.data?.pawns)
+        ? pending.data.pawns
+        : [];
+      return pawns
+        .map((p) => String(p?.id ?? '').trim())
+        .filter((id) => id.length > 0)
+        .map((id) => ({ type: 'choose_pawn', payload: { pawnId: id } }));
+    }
     if (type === 'reroll') {
       return [
         { type: 'reroll_yes', payload: {} },
@@ -94,6 +103,7 @@ export function validateAction(
     type !== 'choose_number' &&
     type !== 'choose_option' &&
     type !== 'choose_card' &&
+    type !== 'choose_pawn' &&
     type !== 'draw'
   ) {
     throw new Error(`Action inconnue: ${type}`);
@@ -112,6 +122,22 @@ export function validateAction(
     if (pType === 'draw') {
       if (type !== 'draw') throw new Error('Choix invalide.');
       return { type: 'draw', payload: {} };
+    }
+    if (pType === 'choose_pawn') {
+      if (type !== 'choose_pawn') throw new Error('Choix invalide.');
+      const pawns: Array<{ id?: string }> = Array.isArray(pending?.data?.pawns)
+        ? pending.data.pawns
+        : [];
+      const pawnId = String(
+        (action.payload as any)?.pawnId ??
+          (action.payload as any)?.pawn ??
+          (action.payload as any)?.value ??
+          '',
+      ).trim();
+      if (!pawnId) throw new Error('Pion invalide.');
+      if (!pawns.some((p) => String(p?.id ?? '').trim() === pawnId))
+        throw new Error('Pion invalide.');
+      return { type: 'choose_pawn', payload: { pawnId } };
     }
     if (pType === 'reroll') {
       if (type !== 'reroll_yes' && type !== 'reroll_no')

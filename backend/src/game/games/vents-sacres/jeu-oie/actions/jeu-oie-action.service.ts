@@ -204,7 +204,7 @@ export class JeuOieActionService {
     const compactLabel = this.compactTileLabel(label, position);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} met ${this.pawnPossessiveLabel(next, playerId)} en case ${position} (${compactLabel}).`,
+      `${this.playerName(next, playerId)} place ${this.pawnPossessiveLabel(next, playerId)} en case ${position} (${compactLabel}).`,
     );
 
     if (!tile) return next;

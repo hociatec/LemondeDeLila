@@ -320,6 +320,13 @@ public partial class GamePlayView
 
         if (e.Key == Key.Tab && DataContext is GamePlayViewModel tabVm)
         {
+            // Si le focus est déjà sur un élément de jeu interactif, laisser WPF gérer Tab/Maj+Tab.
+            // Cela évite l'effet "le focus revient toujours à la zone de jeu".
+            if (IsFocusWithinHandList() || IsFocusWithinChoices() || IsFocusWithinGrid())
+            {
+                return;
+            }
+
             e.Handled = true;
 
             // Keep keyboard focus inside the game area when tabbing.

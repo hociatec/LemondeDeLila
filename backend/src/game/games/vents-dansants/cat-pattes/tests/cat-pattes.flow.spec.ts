@@ -30,6 +30,49 @@ function baseState(): GameStateEntity {
 }
 
 describe('CatPattes flow', () => {
+  it('lets human choose pawn before bot auto-assignment', async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        GameCoreService,
+        RandomService,
+        CatPattesSetupService,
+        {
+          provide: 'TurnFlowService',
+          useValue: {
+            advanceTurn: (state: any) => state,
+          },
+        },
+        {
+          provide: CatPattesActionService,
+          useFactory: (core: GameCoreService, random: RandomService, turns: any) =>
+            new CatPattesActionService(core, random, turns),
+          inject: [GameCoreService, RandomService, 'TurnFlowService'],
+        },
+      ],
+    }).compile();
+
+    const setup = moduleRef.get(CatPattesSetupService);
+    const actionSvc = moduleRef.get(CatPattesActionService);
+    const seeded = baseState();
+    seeded.players = [
+      { id: 1, username: 'Lilas', isBot: false } as any,
+      { id: 2, username: 'Botou', isBot: true } as any,
+    ];
+    seeded.turn = { currentPlayerId: 2, direction: 1 };
+
+    let state = setup.hydrateInitialState(seeded);
+    expect((state.pending as any)?.type).toBe('choose_pawn');
+    expect((state.pending as any)?.playerId).toBe(1);
+
+    state = actionSvc.applyActions(state, [
+      { type: 'choose_pawn', payload: { pawnId: 'Maine Coon' } } as any,
+    ]);
+
+    const meta: any = state.metadata ?? {};
+    expect(String(meta.pawnByPlayerId?.[1] ?? '')).toBe('Maine Coon');
+    expect(String(meta.pawnByPlayerId?.[2] ?? '').length).toBeGreaterThan(0);
+  });
+
   it('requires pawn selection before draw/play', async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [

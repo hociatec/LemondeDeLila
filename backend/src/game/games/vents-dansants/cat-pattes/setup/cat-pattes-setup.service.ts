@@ -75,9 +75,11 @@ export class CatPattesSetupService {
     };
 
     const pendingInfo = this.buildPawnPending(players, metadata, setupStarterId);
+    const metadataWithBots =
+      pendingInfo == null ? this.assignMissingBotPawns(players, metadata) : metadata;
     const next: GameStateEntity = {
       ...baseState,
-      metadata,
+      metadata: metadataWithBots,
       pending: pendingInfo?.pending ?? null,
       turnIndex:
         pendingInfo?.turnIndex != null ? pendingInfo.turnIndex : baseState.turnIndex,
@@ -110,7 +112,7 @@ export class CatPattesSetupService {
       const idx = (baseIndex + i) % players.length;
       const pid = players[idx]?.id;
       if (pid == null) continue;
-      if (!meta.pawnByPlayerId?.[pid]) {
+      if (!meta.pawnByPlayerId?.[pid] && !this.isBotLike(players[idx])) {
         nextIndex = idx;
         break;
       }
@@ -141,5 +143,34 @@ export class CatPattesSetupService {
         },
       },
     };
+  }
+
+  private assignMissingBotPawns(
+    players: Array<{ id: number; username?: string; isBot?: boolean }>,
+    meta: CatPattesMetadata,
+  ): CatPattesMetadata {
+    const assigned = { ...(meta.pawnByPlayerId ?? {}) } as Record<number, string>;
+    const used = new Set(
+      Object.values(assigned).filter((v) => typeof v === 'string' && v.trim().length > 0),
+    );
+    const pool = Array.isArray(meta.pawns) ? [...meta.pawns] : [];
+
+    for (const player of players) {
+      if (!player?.id || !this.isBotLike(player)) continue;
+      if (assigned[player.id]) continue;
+      const nextPawn = pool.find((pawn) => !used.has(pawn));
+      if (!nextPawn) break;
+      assigned[player.id] = nextPawn;
+      used.add(nextPawn);
+    }
+
+    return { ...meta, pawnByPlayerId: assigned };
+  }
+
+  private isBotLike(player: any): boolean {
+    if (!player) return false;
+    if (player.isBot === true) return true;
+    const username = String(player?.username ?? '').toLowerCase();
+    return username.includes('bot');
   }
 }

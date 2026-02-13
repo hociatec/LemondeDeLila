@@ -779,16 +779,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     {
                         if (forceTavern)
                         {
-                            // Après une sauvegarde (Ctrl+S) : revenir à la racine de la taverne (étagères)
-                            // quand on vient du catalogue, plutôt que d'atterrir sur "Rejoindre une table".
-                            if (returnContent is client_win.Modules.Catalog.ViewModels.CatalogViewModel)
-                            {
-                                _navigation.Show(returnContent);
-                            }
-                            else
-                            {
-                                _navigation.Show(BuildTavernFallback());
-                            }
+                            _navigation.Show(BuildTavernFallback());
                         }
                         else if (returnContent is GameRoomViewModel)
                         {
@@ -801,8 +792,8 @@ public sealed class GameTableOpener : IGameTableOpener
                     }
                     catch
                     {
-                        // Fallback de sÃƒÂ©curitÃƒÂ© : si le retour vers l'ÃƒÂ©cran prÃƒÂ©cÃƒÂ©dent est impossible,
-                        // ouvrir la liste des tables publiques plutÃƒÂ´t que de laisser un "ÃƒÂ©cran vide".
+                        // Fallback de sécurité : si le retour vers l'écran précédent est impossible,
+                        // ouvrir la liste des tables publiques plutôt que de laisser un "écran vide".
                         _navigation.Show(BuildTavernFallback());
                     }
                 }

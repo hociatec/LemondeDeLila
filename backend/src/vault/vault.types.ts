@@ -12,6 +12,7 @@ export type VaultRoomSnapshotV1 = {
   roster: {
     ownerUserId: number | null;
     players: Array<{ id: number; username: string }>;
+    spectators?: Array<{ id: number; username: string }>;
     bots: Array<{ id: number; name: string }>;
   };
   game: {

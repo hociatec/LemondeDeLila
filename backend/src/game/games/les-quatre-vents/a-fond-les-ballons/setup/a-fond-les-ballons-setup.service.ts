@@ -118,8 +118,22 @@ export class AFondLesBallonsSetupService {
     for (const pawn of pawns) {
       next = this.core.appendLog(next, `- ${pawn.label}`);
     }
+    if (pendingInfo?.playerId != null) {
+      const chooserLabel = this.playerName(next, pendingInfo.playerId);
+      next = this.core.appendLog(next, `${chooserLabel} doit choisir un pion.`);
+    }
 
     return next;
+  }
+
+  private playerName(state: GameStateEntity, id: number): string {
+    const players = Array.isArray(state.players) ? state.players : [];
+    const player = players.find((p) => p?.id === id);
+    const username =
+      player?.username && String(player.username).trim()
+        ? String(player.username).trim()
+        : null;
+    return username ?? `Joueur ${id}`;
   }
 }
 

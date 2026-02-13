@@ -96,7 +96,7 @@ export class LamaSetupService {
       round: baseState.round ?? 0,
       turnIndex: baseState.turnIndex ?? 0,
       lastRoll: null,
-      // Setup bloquant : l'acteur "pending" ne doit pas ÃƒÂªtre ÃƒÂ©crasÃƒÂ© par la randomisation du starter au dÃƒÂ©marrage.
+      // Setup bloquant : l'acteur "pending" ne doit pas être écrasé par la randomisation du starter au démarrage.
       pending: { step: 'setup_config', playerId: ownerPlayerId, blocking: true } as any,
       log: Array.isArray(baseState.log) ? baseState.log : [],
       metadata: meta as any,

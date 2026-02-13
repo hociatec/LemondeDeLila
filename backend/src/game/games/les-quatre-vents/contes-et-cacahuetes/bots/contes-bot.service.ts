@@ -16,7 +16,7 @@ export class ContesBotService {
     const current = state.turn?.currentPlayerId ?? null;
     if (
       current !== botPlayerId &&
-      !(pending?.type === 'draw' && pending.playerId === botPlayerId)
+      !(typeof pending?.playerId === 'number' && pending.playerId === botPlayerId)
     ) {
       return [];
     }
@@ -27,6 +27,7 @@ export class ContesBotService {
       'random',
       {
         preferTypes: [
+          'choose_pawn',
           'draw',
           'choose_target',
           'choose_option',
@@ -35,6 +36,7 @@ export class ContesBotService {
           'roll',
         ],
         fallbackTypes: [
+          'choose_pawn',
           'draw',
           'choose_target',
           'choose_option',

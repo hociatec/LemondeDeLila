@@ -243,7 +243,7 @@ export class OdysseeActionService {
       const pos = (offset + move.targetProgress) % trackLen;
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} met ${pawnLabel} en case ${pos + 1}.`,
+        `${this.playerName(next, playerId)} place ${pawnLabel} en case ${pos + 1}.`,
       );
     } else if (move.targetProgress >= trackLen && move.targetProgress < pathLen) {
       const homeIndex = move.targetProgress - trackLen + 1;

@@ -292,7 +292,7 @@ export class AFondLesBallonsActionService {
 
     const pendingInfo = this.buildPawnPending(next, playerId);
     if (pendingInfo) {
-      return {
+      const withPending: GameStateEntity = {
         ...next,
         pending: pendingInfo.pending,
         turnIndex: pendingInfo.turnIndex,
@@ -302,6 +302,10 @@ export class AFondLesBallonsActionService {
           direction: 1,
         },
       };
+      return this.core.appendLog(
+        withPending,
+        `${this.playerName(withPending, pendingInfo.playerId)} doit choisir un pion.`,
+      );
     }
 
     const players = Array.isArray(next.players) ? next.players : [];

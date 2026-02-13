@@ -77,7 +77,7 @@ describe('JeuOieActionService', () => {
     const next = actions.applyActions(state, [{ type: 'roll', payload: {} } as any]);
     const messages = (next.log ?? []).map((e: any) => String(e?.message ?? ''));
 
-    expect(messages.some((m) => m.includes('Otis met "son coq rockeur" en case 4 (Case neutre).'))).toBe(true);
+    expect(messages.some((m) => m.includes('Otis place "son coq rockeur" en case 4 (Case neutre).'))).toBe(true);
     expect(messages.some((m) => m.includes('case 4 (Case 4 - Case neutre)'))).toBe(false);
   });
 

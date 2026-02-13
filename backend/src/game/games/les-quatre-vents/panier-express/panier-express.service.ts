@@ -717,7 +717,7 @@ export class PanierExpressService extends AbstractGameService {
     const available = pawnChoices.filter((pawn) => !taken.has(pawn.title));
     const choices = available.length ? available : pawnChoices;
     const chooser = missing[0];
-    return {
+    const withPending: GameStateEntity = {
       ...withClearedBots,
       pending: {
         type: 'pick',
@@ -737,6 +737,10 @@ export class PanierExpressService extends AbstractGameService {
         direction: state.turn?.direction === -1 ? -1 : 1,
       },
     };
+    return this.core.appendLog(
+      withPending,
+      `[Panier Express] ${this.utils.playerName(withPending, chooser.id)} doit choisir un pion.`,
+    );
   }
 
   private ensureStarted(state: GameStateEntity): GameStateEntity {

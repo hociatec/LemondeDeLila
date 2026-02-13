@@ -23,6 +23,7 @@ export type ContesCard = {
 export type ContesCacahuetesMetadata = {
   tiles: ContesCacahuetesTile[];
   positions: Record<number, number>;
+  setupStarterId?: number | null;
   decks: {
     bonus: ContesCard[];
     malus: ContesCard[];
@@ -53,6 +54,16 @@ export type ContesCacahuetesMetadata = {
 
 export type ContesPending =
   | null
+  | {
+      type: 'choose_pawn';
+      label: string;
+      playerId: number;
+      blocking: true;
+      choices: string[];
+      data: {
+        pawns: Array<{ id: string; label: string }>;
+      };
+    }
   | {
       type: 'reroll';
       label: string;

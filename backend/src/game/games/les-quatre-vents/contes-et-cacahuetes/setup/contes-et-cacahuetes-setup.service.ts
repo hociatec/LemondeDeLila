@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import { GameCoreService } from '../../../../core/services/game-core.service';
+import { RandomService } from '../../../../modules/random/services/random.service';
 import type {
   ContesCacahuetesMetadata,
   ContesCacahuetesTile,
@@ -8,6 +10,11 @@ import type {
 
 @Injectable()
 export class ContesCacahuetesSetupService {
+  constructor(
+    private readonly core: GameCoreService,
+    private readonly random: RandomService,
+  ) {}
+
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const players = Array.isArray(baseState.players) ? baseState.players : [];
     const pawnNames = [
@@ -18,19 +25,29 @@ export class ContesCacahuetesSetupService {
       'Tavi - Fidji',
       'Arman - Arménie',
     ];
-    const updatedPlayers = players.map((p, index) => {
+    const updatedPlayers = players.map((p) => {
       if (!p) return p as any;
       const pawn = typeof (p as any).pawn === 'string' ? String((p as any).pawn).trim() : '';
-      if (pawn) return p as any;
-      const chosen = pawnNames[index] ?? `Pion ${index + 1}`;
-      return { ...p, pawn: chosen };
+      return { ...p, pawn: pawn || '' };
     });
     const positions: Record<number, number> = {};
     for (const p of updatedPlayers) positions[p.id] = 0;
+    const seedMeta = (baseState.metadata ?? {}) as any;
+    const starterPick =
+      updatedPlayers.length > 0
+        ? this.random.nextInt(seedMeta, updatedPlayers.length)
+        : { value: 0, meta: seedMeta };
+    const setupStarterId =
+      updatedPlayers.length > 0
+        ? updatedPlayers[
+            Math.max(0, Math.min(updatedPlayers.length - 1, starterPick.value))
+          ]?.id ?? null
+        : null;
 
     const metaBase: ContesCacahuetesMetadata = {
       tiles: buildTiles(),
       positions,
+      setupStarterId,
       decks: buildDecks(),
       statuses: {
         skipTurn: {},
@@ -49,14 +66,90 @@ export class ContesCacahuetesSetupService {
       },
       winnerId: null,
     };
-
-    return {
+    const pendingInfo = this.buildPawnPending(
+      updatedPlayers as Array<{ id: number; username?: string; pawn?: string }>,
+      pawnNames,
+      setupStarterId,
+    );
+    let next: GameStateEntity = {
       ...baseState,
       players: updatedPlayers,
       phase: 'playing',
-      pending: null,
-      metadata: { ...(baseState.metadata ?? {}), ...metaBase },
+      pending: pendingInfo?.pending ?? null,
+      turnIndex:
+        pendingInfo?.turnIndex != null ? pendingInfo.turnIndex : baseState.turnIndex,
+      turn: {
+        ...(baseState.turn ?? { direction: 1 }),
+        currentPlayerId: pendingInfo?.playerId ?? setupStarterId,
+        direction: 1,
+      },
+      metadata: { ...(baseState.metadata ?? {}), ...starterPick.meta, ...metaBase },
     };
+    if (pendingInfo?.playerId != null) {
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, pendingInfo.playerId)} doit choisir un pion.`,
+      );
+    }
+    return next;
+  }
+
+  private buildPawnPending(
+    players: Array<{ id: number; username?: string; pawn?: string }>,
+    pawnNames: string[],
+    startId: number | null,
+  ): { pending: any; playerId: number; turnIndex: number } | null {
+    if (!players.length) return null;
+    const startIndex =
+      startId != null ? players.findIndex((p) => p?.id === startId) : -1;
+    const baseIndex = startIndex >= 0 ? startIndex : 0;
+    let nextIndex = -1;
+    for (let i = 0; i < players.length; i += 1) {
+      const idx = (baseIndex + i) % players.length;
+      const pawn = String(players[idx]?.pawn ?? '').trim();
+      if (!pawn) {
+        nextIndex = idx;
+        break;
+      }
+    }
+    if (nextIndex < 0) return null;
+    const used = new Set(
+      players
+        .map((p) => String(p?.pawn ?? '').trim())
+        .filter((p) => p.length > 0),
+    );
+    const choices = pawnNames.filter((name) => !used.has(name));
+    if (!choices.length) return null;
+    const chooserId = players[nextIndex].id;
+    const chooserLabel = this.playerNameFromEntry(players[nextIndex], chooserId);
+    return {
+      playerId: chooserId,
+      turnIndex: nextIndex,
+      pending: {
+        type: 'choose_pawn',
+        playerId: chooserId,
+        blocking: true,
+        label: `C'est à ${chooserLabel} de choisir son pion.`,
+        choices,
+        data: {
+          pawns: choices.map((name) => ({ id: name, label: name })),
+        },
+      },
+    };
+  }
+
+  private playerName(state: GameStateEntity, id: number): string {
+    const players = Array.isArray(state.players) ? state.players : [];
+    const p = players.find((x: any) => x?.id === id);
+    return this.playerNameFromEntry(p as any, id);
+  }
+
+  private playerNameFromEntry(
+    player: { username?: string } | undefined,
+    id: number,
+  ): string {
+    const name = String(player?.username ?? '').trim();
+    return name || `Joueur ${id}`;
   }
 }
 

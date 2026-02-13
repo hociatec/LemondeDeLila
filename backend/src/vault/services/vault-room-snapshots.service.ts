@@ -9,6 +9,7 @@ import { RoomBot } from '../../room/entities/room-bot.entity';
 import { GameEngineService } from '../../game/engine/services/game-engine.service';
 import { GameRegistryService } from '../../game/engine/services/game-registry.service';
 import { NotificationService } from '../../notification/services/notification.service';
+import { PresenceService } from '../../presence/services/presence.service';
 import type { VaultRoomSnapshot } from '../vault.types';
 import type { GameStateEntity } from '../../game/core/entities/game-state.entity';
 
@@ -24,6 +25,7 @@ export class VaultRoomSnapshotsService {
     private readonly engine: GameEngineService,
     private readonly registry: GameRegistryService,
     private readonly notifications: NotificationService,
+    private readonly presence: PresenceService,
   ) {}
 
   async list(ownerUserId: number): Promise<
@@ -141,6 +143,10 @@ export class VaultRoomSnapshotsService {
           id: p.id,
           username: p.username,
         })),
+        spectators: (payload.room.spectators ?? []).map((s) => ({
+          id: s.id,
+          username: s.username,
+        })),
         bots: (payload.room.bots ?? []).map((b) => ({
           id: b.id,
           name: b.name,
@@ -244,10 +250,25 @@ export class VaultRoomSnapshotsService {
       throw new BadRequestException('Sauvegarde invalide : aucun joueur');
     }
 
+    const rosterHumans = this.uniqueUsers([
+      ...humans,
+      ...(Number.isFinite(snapshot.roster.ownerUserId)
+        ? [{ id: Number(snapshot.roster.ownerUserId), username: 'proprietaire' }]
+        : []),
+    ]);
+    const notInTavern = rosterHumans.filter(
+      (p) => !this.presence.isUserInTavern(p.id),
+    );
+    if (notInTavern.length > 0) {
+      throw new BadRequestException(
+        `Restauration impossible : joueurs absents de la taverne : ${notInTavern
+          .map((p) => String(p.username ?? `joueur ${p.id}`))
+          .join(', ')}.`,
+      );
+    }
+
     const unavailable: string[] = [];
-    for (const p of humans) {
-      // Le propriétaire ouvre déjà via la réponse à vault.restore côté client.
-      if (p.id === ownerUserId) continue;
+    for (const p of rosterHumans) {
       const activeRoom = await this.rooms.findLatestActiveRoomForUser(p.id);
       if (activeRoom?.roomId && activeRoom.roomId > 0) {
         unavailable.push(String(p.username ?? `joueur ${p.id}`));
@@ -451,6 +472,9 @@ export class VaultRoomSnapshotsService {
 
     const cloned = deep(state) as GameStateEntity;
     cloned.status = 'started';
+    if (Array.isArray((state as any)?.log)) {
+      (cloned as any).log = deep((state as any).log);
+    }
 
     // Patch core metadata.
     const meta: any = typeof cloned.metadata === 'object' && cloned.metadata ? cloned.metadata : {};
@@ -478,5 +502,18 @@ export class VaultRoomSnapshotsService {
 
     return cloned;
   }
-}
 
+  private uniqueUsers(
+    users: Array<{ id: number; username?: string }>,
+  ): Array<{ id: number; username: string }> {
+    const map = new Map<number, string>();
+    for (const user of users) {
+      if (!user || !Number.isFinite(user.id) || user.id <= 0) continue;
+      const id = Math.floor(user.id);
+      if (map.has(id)) continue;
+      const username = String(user.username ?? '').trim();
+      map.set(id, username || `joueur ${id}`);
+    }
+    return Array.from(map.entries()).map(([id, username]) => ({ id, username }));
+  }
+}

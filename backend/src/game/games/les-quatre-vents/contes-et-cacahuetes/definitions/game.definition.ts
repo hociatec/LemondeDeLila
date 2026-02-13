@@ -5,6 +5,7 @@ export type ContesCacahuetesPhaseId = 'turn';
 export type ContesCacahuetesActionType =
   | 'roll'
   | 'ROLL_DICE'
+  | 'choose_pawn'
   | 'reroll_yes'
   | 'reroll_no'
   | 'choose_target'
@@ -28,6 +29,7 @@ export const CONTES_CACAHUETES_GAME: GameDefinition<
   actions: [
     'roll',
     'ROLL_DICE',
+    'choose_pawn',
     'reroll_yes',
     'reroll_no',
     'choose_target',

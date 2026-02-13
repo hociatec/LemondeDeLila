@@ -382,7 +382,7 @@ export class VoyageActionService {
     let next = state;
     const text = String(textRaw ?? '');
 
-    // Effet ciblÃƒÂ© : choisir un joueur qui perd son prochain tour.
+    // Effet cible : choisir un joueur qui perd son prochain tour.
     if (
       /choisissez\s+un\s+joueur/i.test(text) &&
       /perd\s+son\s+prochain\s+tour/i.test(text)
@@ -731,7 +731,7 @@ export class VoyageActionService {
     if (allow('farce') && (c.farce ?? 0) > 0) candidates.push('farce');
 
     if (!candidates.length) {
-      return this.core.appendLog(state, 'Aucune carte Ãƒ  perdre.');
+      return this.core.appendLog(state, 'Aucune carte à perdre.');
     }
 
     const picked = this.random.pickOne(meta as any, candidates);

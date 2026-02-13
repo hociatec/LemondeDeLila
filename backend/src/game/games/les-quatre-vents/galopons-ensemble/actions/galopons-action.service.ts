@@ -266,7 +266,7 @@ export class GaloponsActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} met ${this.pawnLabel(next, playerId)} en case ${tile.n} (${tile.title}).`,
+      `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${tile.n} (${tile.title}).`,
     );
     if (tile.type === 'card') {
       next = this.core.appendLog(next, `Piochez une carte Aventure.`);
@@ -708,8 +708,17 @@ export class GaloponsActionService {
     const player = players.find((x: any) => x?.id === id) as any;
     const pawn =
       typeof player?.pawn === 'string' ? String(player.pawn).trim() : '';
-    const resolved = pawn || this.playerName(state, id);
-    return `"${resolved}"`;
+    if (!pawn) return '"son pion"';
+    const lower = pawn.toLowerCase();
+    const feminine = lower.startsWith('la ') || lower.startsWith('une ');
+    const inner = pawn
+      .replace(/^l['’]\s*/i, '')
+      .replace(/^(le|la|les|un|une)\s+/i, '')
+      .trim();
+    const core = inner || pawn;
+    const lowered =
+      core.length <= 1 ? core.toLowerCase() : `${core.charAt(0).toLowerCase()}${core.slice(1)}`;
+    return `"${feminine ? 'sa' : 'son'} ${lowered}"`;
   }
 }
 

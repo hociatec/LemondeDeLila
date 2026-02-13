@@ -1,5 +1,6 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import { GameCoreService } from '../../../../core/services/game-core.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import type {
@@ -22,6 +23,7 @@ const DEFAULT_PAWNS = [
 @Injectable()
 export class MinuitSetupService {
   constructor(
+    private readonly core: GameCoreService,
     private readonly contentLoader: GameContentLoaderService,
     private readonly random: RandomService,
   ) {}
@@ -64,7 +66,7 @@ export class MinuitSetupService {
 
     const pending = this.buildPawnPending(base, meta, pawns.pawns ?? []);
 
-    return {
+    let next: GameStateEntity = {
       ...base,
       phase: 'playing',
       pending,
@@ -81,6 +83,15 @@ export class MinuitSetupService {
         ...meta,
       },
     };
+
+    if (pending && typeof pending.playerId === 'number') {
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, pending.playerId)} doit choisir un pion.`,
+      );
+    }
+
+    return next;
   }
 
   private buildPawnPending(
@@ -179,4 +190,15 @@ export class MinuitSetupService {
       ],
     });
   }
+
+  private playerName(state: GameStateEntity, id: number): string {
+    const players = Array.isArray(state.players) ? state.players : [];
+    const player = players.find((p) => p?.id === id);
+    const username =
+      player?.username && String(player.username).trim()
+        ? String(player.username).trim()
+        : null;
+    return username ?? `Joueur ${id}`;
+  }
 }
+

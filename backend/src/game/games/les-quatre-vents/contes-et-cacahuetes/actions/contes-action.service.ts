@@ -26,6 +26,10 @@ export class ContesActionService {
     let next = state;
     for (const action of actions ?? []) {
       const type = String(action?.type ?? '').trim();
+      if (type === 'choose_pawn') {
+        next = this.handleChoosePawn(next, action);
+        continue;
+      }
       if (type === 'roll' || type === 'ROLL_DICE' || type === 'roll_dice') {
         next = this.handleRoll(next);
         continue;
@@ -55,6 +59,93 @@ export class ContesActionService {
       }
     }
     return next;
+  }
+
+  private handleChoosePawn(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'choose_pawn') return state;
+    const playerId =
+      typeof pending.playerId === 'number'
+        ? pending.playerId
+        : state.turn?.currentPlayerId ?? null;
+    if (playerId == null) return state;
+
+    const options = Array.isArray(pending?.data?.pawns) ? pending.data.pawns : [];
+    const chosen = this.resolvePendingPawn(
+      (action.payload as any)?.pawnId ??
+        (action.payload as any)?.pawn ??
+        (action.payload as any)?.value ??
+        null,
+      options,
+    );
+    if (!chosen) return state;
+
+    const players = Array.isArray(state.players) ? state.players : [];
+    const used = new Set(
+      players
+        .filter((p: any) => p?.id !== playerId)
+        .map((p: any) => String((p as any)?.pawn ?? '').trim())
+        .filter((p: string) => p.length > 0),
+    );
+    if (used.has(chosen.id)) return state;
+
+    const updatedPlayers = players.map((p: any) =>
+      p?.id === playerId ? { ...p, pawn: chosen.id } : p,
+    );
+    let next: GameStateEntity = {
+      ...state,
+      players: updatedPlayers as any,
+      pending: null,
+    };
+    next = this.core.appendLog(
+      next,
+      `${this.playerName(next, playerId)} choisit le pion : ${chosen.label}.`,
+    );
+
+    const starterId =
+      typeof this.getMeta(next).setupStarterId === 'number'
+        ? this.getMeta(next).setupStarterId!
+        : (state.turn?.currentPlayerId ?? null);
+    const pendingInfo = this.buildPawnPending(next, playerId);
+    if (pendingInfo) {
+      const withPending: GameStateEntity = {
+        ...next,
+        pending: pendingInfo.pending,
+        turnIndex: pendingInfo.turnIndex,
+        turn: {
+          ...(next.turn ?? { direction: 1 }),
+          currentPlayerId: pendingInfo.playerId,
+          direction: 1,
+        },
+      };
+      return this.appendLogOnce(
+        withPending,
+        `${this.playerName(withPending, pendingInfo.playerId)} doit choisir un pion.`,
+      );
+    }
+
+    const starterIndex =
+      starterId != null
+        ? updatedPlayers.findIndex((p: any) => p?.id === starterId)
+        : -1;
+    const resolvedStarterId =
+      starterId != null && starterIndex >= 0
+        ? starterId
+        : updatedPlayers[0]?.id ?? null;
+    const started: GameStateEntity = {
+      ...next,
+      pending: null,
+      turnIndex: starterIndex >= 0 ? starterIndex : next.turnIndex,
+      turn: {
+        ...(next.turn ?? { direction: 1 }),
+        currentPlayerId: resolvedStarterId,
+        direction: 1,
+      },
+    };
+    return this.appendTurnAnnouncement(started, resolvedStarterId);
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -1680,6 +1771,93 @@ export class ContesActionService {
     return 'un pion';
   }
 
+  private buildPawnPending(
+    state: GameStateEntity,
+    startId: number | null,
+  ): { pending: any; playerId: number; turnIndex: number } | null {
+    const players = Array.isArray(state.players) ? state.players : [];
+    if (!players.length) return null;
+    const allPawns = [
+      'Aika - Mongolie',
+      'Freja - Su\u00e8de',
+      'Lani - \u00celes Marshall',
+      'Niko - G\u00e9orgie',
+      'Tavi - Fidji',
+      'Arman - Arm\u00e9nie',
+    ];
+    const startIndex =
+      startId != null ? players.findIndex((p) => p?.id === startId) : -1;
+    const baseIndex = startIndex >= 0 ? startIndex : 0;
+    let nextIndex = -1;
+    for (let i = 0; i < players.length; i += 1) {
+      const idx = (baseIndex + i) % players.length;
+      const pawn = String((players[idx] as any)?.pawn ?? '').trim();
+      if (!pawn) {
+        nextIndex = idx;
+        break;
+      }
+    }
+    if (nextIndex < 0) return null;
+    const used = new Set(
+      players
+        .map((p: any) => String((p as any)?.pawn ?? '').trim())
+        .filter((p: string) => p.length > 0),
+    );
+    const choices = allPawns.filter((name) => !used.has(name));
+    if (!choices.length) return null;
+    const chooserId = players[nextIndex].id;
+    const chooserLabel = this.playerName(state, chooserId);
+    return {
+      playerId: chooserId,
+      turnIndex: nextIndex,
+      pending: {
+        type: 'choose_pawn',
+        playerId: chooserId,
+        blocking: true,
+        label: `C'est à ${chooserLabel} de choisir son pion.`,
+        choices,
+        data: {
+          pawns: choices.map((name) => ({ id: name, label: name })),
+        },
+      },
+    };
+  }
+
+  private resolvePendingPawn(
+    raw: unknown,
+    options: Array<{ id?: string; label?: string }>,
+  ): { id: string; label: string } | null {
+    if (!Array.isArray(options) || options.length === 0) return null;
+    const normalized = options
+      .map((p: any) => ({
+        id: String(p?.id ?? '').trim(),
+        label: String(p?.label ?? '').trim(),
+      }))
+      .filter((p) => p.id.length > 0 && p.label.length > 0);
+    if (!normalized.length) return null;
+    const value =
+      typeof raw === 'object'
+        ? (raw as any)?.id ?? (raw as any)?.pawnId ?? (raw as any)?.value ?? raw
+        : raw;
+    const key = this.normalizePawnKey(value);
+    if (!key) return null;
+    const byId = normalized.find((p) => this.normalizePawnKey(p.id) === key);
+    if (byId) return byId;
+    const byLabel = normalized.find(
+      (p) => this.normalizePawnKey(p.label) === key,
+    );
+    return byLabel ?? null;
+  }
+
+  private normalizePawnKey(value: unknown): string {
+    return String(value ?? '')
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '');
+  }
+
   private appendTurnAnnouncement(
     state: GameStateEntity,
     playerId: number | null | undefined,
@@ -1689,6 +1867,13 @@ export class ContesActionService {
       state,
       `C'est au tour de ${this.playerName(state, playerId)}.`,
     );
+  }
+
+  private appendLogOnce(state: GameStateEntity, message: string): GameStateEntity {
+    const log = Array.isArray(state.log) ? state.log : [];
+    const last = String(log[log.length - 1]?.message ?? '').trim();
+    if (last === message) return state;
+    return this.core.appendLog(state, message);
   }
 
   private getMeta(state: GameStateEntity): ContesCacahuetesMetadata {

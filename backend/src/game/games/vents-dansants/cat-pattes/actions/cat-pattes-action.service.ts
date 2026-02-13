@@ -122,6 +122,8 @@ export class CatPattesActionService {
       return this.ensurePawnSelectionPrompt(withPending);
     }
 
+    next = this.assignMissingBotPawns(next);
+
     const players = Array.isArray(next.players) ? next.players : [];
     const starterId =
       typeof nextMeta.setupStarterId === 'number'
@@ -521,7 +523,7 @@ export class CatPattesActionService {
       const idx = (baseIndex + i) % players.length;
       const pid = players[idx]?.id;
       if (pid == null) continue;
-      if (!pawnByPlayerId[pid]) {
+      if (!pawnByPlayerId[pid] && !this.isBotLike(players[idx])) {
         nextIndex = idx;
         break;
       }
@@ -624,5 +626,41 @@ export class CatPattesActionService {
     const last = String(log[log.length - 1]?.message ?? '').trim();
     if (last === message) return state;
     return this.core.appendLog(state, message);
+  }
+
+  private assignMissingBotPawns(state: GameStateEntity): GameStateEntity {
+    const players = Array.isArray(state.players) ? state.players : [];
+    const meta = this.getMeta(state);
+    const assigned = { ...(meta.pawnByPlayerId ?? {}) } as Record<number, string>;
+    const used = new Set(
+      Object.values(assigned).filter((v) => typeof v === 'string' && v.trim().length > 0),
+    );
+    const pawns = Array.isArray(meta.pawns) ? [...meta.pawns] : [];
+
+    let next = state;
+    let changed = false;
+    for (const player of players) {
+      if (!player?.id || !this.isBotLike(player)) continue;
+      if (assigned[player.id]) continue;
+      const nextPawn = pawns.find((pawn) => !used.has(pawn));
+      if (!nextPawn) break;
+      assigned[player.id] = nextPawn;
+      used.add(nextPawn);
+      changed = true;
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, player.id)} choisit le pion : ${nextPawn}.`,
+      );
+    }
+
+    if (!changed) return state;
+    return this.setMeta(next, { ...this.getMeta(next), pawnByPlayerId: assigned });
+  }
+
+  private isBotLike(player: any): boolean {
+    if (!player) return false;
+    if (player.isBot === true) return true;
+    const username = String(player?.username ?? '').toLowerCase();
+    return username.includes('bot');
   }
 }

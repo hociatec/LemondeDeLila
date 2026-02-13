@@ -117,25 +117,8 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
             return;
         }
 
-        zone.TabToHistoryRequested -= OnGameZoneTabToHistoryRequested;
-        zone.TabToHistoryRequested += OnGameZoneTabToHistoryRequested;
-
         zone.StartRequested -= OnGameZoneStartRequested;
         zone.StartRequested += OnGameZoneStartRequested;
-    }
-
-    private void OnGameZoneTabToHistoryRequested(object? sender, EventArgs e)
-    {
-        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-        {
-            if (IsChatEnabled())
-            {
-                FocusChatInput();
-                return;
-            }
-
-            FocusHistory();
-        }));
     }
 
     private void OnGameZoneStartRequested(object? sender, EventArgs e)
@@ -246,78 +229,16 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
 	            return;
 	        }
 
-        // NOTE: Gestion volontairement impérative (code-behind) pour fiabiliser Tab/Maj+Tab avec les lecteurs d'écran :
-        // WPF peut "absorber" la navigation quand le focus est dans un TextBox (historique) ou sur un ContentControl vide.
-        // Ici on force explicitement le basculement Zone de jeu <-> Historique pour garantir l'accessibilité.
-        // On laisse WPF gérer la navigation interne aux contrôles (futurs contrôles de jeu).
-        e.Handled = true;
-
-        var shift = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
-
-        if (HistoryHost?.IsKeyboardFocusWithin == true)
-        {
-            if (shift)
-            {
-                if (IsChatEnabled())
-                {
-                    FocusChatInput();
-                    return;
-                }
-
-                FocusGameZone();
-                return;
-            }
-
-            FocusGameZone();
-            return;
-        }
-
-        if (ChatInput?.IsKeyboardFocusWithin == true || ChatHost?.IsKeyboardFocusWithin == true)
-        {
-            if (shift)
-            {
-                FocusGameZone();
-                return;
-            }
-
-            FocusHistory();
-            return;
-        }
-
+        // Règle UX globale: Tab/Maj+Tab ne doit pas "fuir" vers l'historique/chat pendant la partie.
+        // - Si on est déjà dans la zone de jeu, laisser la vue de jeu gérer Tab (navigation interne).
+        // - Sinon, on ré-ancre explicitement le focus dans la zone de jeu.
         if (GameZoneHost?.IsKeyboardFocusWithin == true)
         {
-            if (shift)
-            {
-                FocusHistory();
-                return;
-            }
-
-            if (IsChatEnabled())
-            {
-                FocusChatInput();
-                return;
-            }
-
-            FocusHistory();
             return;
         }
 
-        if (shift)
-        {
-            FocusGameZone();
-            return;
-        }
-
-        if (IsChatEnabled())
-        {
-            FocusChatInput();
-            return;
-        }
-
-        FocusHistory();
-
-        // Ne pas intercepter Tab quand le focus est déjà dans la zone de jeu : elle délègue (Tab -> Historique).
-        // Ici on ne force Tab vers la zone de jeu que si l'utilisateur n'est ni dans l'historique ni dans la zone de jeu.
+        e.Handled = true;
+        FocusGameZone();
         return;
     }
 

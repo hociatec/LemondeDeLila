@@ -582,14 +582,14 @@ export class FouleesFantastiquesActionService {
       const habitat = this.habitatLabel(state, playerId);
       next = this.core.appendLog(
         next,
-        `${this.playerName(state, playerId)} sort ${pawnLabel} ${this.fromHabitat(habitat)} et le met en case ${pos + 1}.`,
+        `${this.playerName(state, playerId)} sort ${pawnLabel} ${this.fromHabitat(habitat)} et le place en case ${pos + 1}.`,
       );
     } else {
       if (nextProg >= 0 && nextProg < meta.trackLength) {
         const pos = (offset + nextProg) % meta.trackLength;
         next = this.core.appendLog(
           next,
-          `${this.playerName(state, playerId)} met ${pawnLabel} en case ${pos + 1}.`,
+          `${this.playerName(state, playerId)} place ${pawnLabel} en case ${pos + 1}.`,
         );
       } else {
         const homeIndex = nextProg - meta.trackLength + 1;

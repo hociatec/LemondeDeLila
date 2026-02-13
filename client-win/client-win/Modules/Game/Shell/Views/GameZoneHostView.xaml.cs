@@ -15,7 +15,6 @@ public partial class GameZoneHostView : UserControl
         InitializeComponent();
     }
 
-    public event EventHandler? TabToHistoryRequested;
     public event EventHandler? StartRequested;
 
     public void FocusGameZone()
@@ -188,6 +187,6 @@ public partial class GameZoneHostView : UserControl
         }
 
         e.Handled = true;
-        TabToHistoryRequested?.Invoke(this, EventArgs.Empty);
+        FocusGameZone();
     }
 }
