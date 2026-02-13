@@ -292,6 +292,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
                         SyncGameplayShortcuts();
 
                         _announcements.TableInfo("Table démarrée.");
+                        try { _sounds.Play(SoundId.TableStarted); } catch { }
+                        _ = RequestTurnAnnouncementAsync();
 
                         // Forcer le focus sur la zone de jeu.
                         _ = _dispatcher.BeginInvoke(
@@ -700,6 +702,24 @@ internal sealed class GameTableBindings : IAsyncDisposable
 		        ApplySpectatorState();
 		    }
 
+        private async Task RequestTurnAnnouncementAsync()
+        {
+            try
+            {
+                EnsureGamePlayLoaded();
+                if (_gamePlayVm == null)
+                {
+                    return;
+                }
+
+                await _gamePlayVm.RequestTurnInfoAsync().ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "Impossible de récupérer le tour courant après démarrage de table");
+            }
+        }
+
         private void EnsureGamePlayVmCreated()
         {
             if (_gamePlayVm != null)
@@ -753,6 +773,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	            {
 	                SetRoomShortcutsForStarted(started: true);
 	                _announcements.TableInfo("Table démarrée.");
+	                try { _sounds.Play(SoundId.TableStarted); } catch { }
+	                _ = RequestTurnAnnouncementAsync();
 	            }
 	            else
 	            {

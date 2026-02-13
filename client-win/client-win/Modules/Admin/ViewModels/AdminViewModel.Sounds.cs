@@ -356,7 +356,8 @@ public sealed partial class AdminViewModel
 	        Items.Add(new AdminMenuItem("Ambiances de table", tag: "sounds.table.ambience"));
 	        Items.Add(new AdminMenuItem("Entrer dans une table", tag: "sounds.table.enter"));
 	        Items.Add(new AdminMenuItem("Rejoindre une table", tag: "sounds.table.join"));
-	        Items.Add(new AdminMenuItem("Quitter une table", tag: "sounds.table.exit"));
+        Items.Add(new AdminMenuItem("Quitter une table", tag: "sounds.table.exit"));
+        Items.Add(new AdminMenuItem("Démarrage d'une partie", tag: "sounds.table.started"));
 	        Items.Add(new AdminMenuItem("Invitation à une table envoyée", tag: "sounds.table.invite.sent"));
 	        Items.Add(new AdminMenuItem("Invitation à une table reçue", tag: "sounds.table.invite.received"));
 	        SelectedItem = Items.FirstOrDefault();
@@ -841,7 +842,7 @@ public sealed partial class AdminViewModel
 	        {
 	            SoundId.ClientOpened or SoundId.ClientConnected or SoundId.ClientDisconnected => AdminPage.SoundsConnection,
 	            SoundId.MainMenuMusic or SoundId.TavernOpened or SoundId.TavernAmbience => AdminPage.SoundsAmbience,
-	            SoundId.GameVictory or SoundId.GameDefeat or SoundId.RoomOpened or SoundId.RoomJoined or SoundId.RoomExit => AdminPage.SoundsTable,
+	            SoundId.GameVictory or SoundId.GameDefeat or SoundId.RoomOpened or SoundId.RoomJoined or SoundId.RoomExit or SoundId.TableStarted => AdminPage.SoundsTable,
 	            SoundId.TableAmbience1 or SoundId.TableAmbience2 or SoundId.TableAmbience3 or SoundId.TableAmbience4 or SoundId.TableAmbience5 or SoundId.TableAmbience6 or SoundId.TableAmbience7 or SoundId.TableAmbience8 or SoundId.TableAmbience9 or SoundId.TableAmbience10 or SoundId.TableAmbience11 or SoundId.TableAmbience12 or SoundId.TableAmbience13 or SoundId.TableAmbience14 or SoundId.TableAmbience15 or SoundId.TableAmbience16 or SoundId.TableAmbience17 or SoundId.TableAmbience18 or SoundId.TableAmbience19 or SoundId.TableAmbience20 => AdminPage.SoundsTableAmbience,
 	            SoundId.DiceRolled or SoundId.DrawCard or SoundId.QuizCorrect or SoundId.QuizWrong or SoundId.RoundEnded or SoundId.PawnPicked or SoundId.PawnPlacedSelf or SoundId.PawnPlacedOpponent or SoundId.WallPlacedSelf or SoundId.WallPlacedOpponent => AdminPage.SoundsGames,
 	            SoundId.InvitationSent or SoundId.InvitationReceived => AdminPage.SoundsTable,
@@ -887,6 +888,7 @@ public sealed partial class AdminViewModel
             SoundId.RoomOpened => ("Table", "Entrer dans une table", _options.Current.SoundRoomOpenedPath),
             SoundId.RoomJoined => ("Table", "Rejoindre une table", _options.Current.SoundRoomJoinedPath),
             SoundId.RoomExit => ("Table", "Quitter une table", _options.Current.SoundRoomExitPath),
+            SoundId.TableStarted => ("Table", "Démarrage d'une partie", null),
             SoundId.InvitationSent => ("Table", "Invitation à une table envoyée", _options.Current.SoundInvitationSentPath),
             SoundId.InvitationReceived => ("Table", "Invitation à une table reçue", _options.Current.SoundInvitationReceivedPath),
             SoundId.FriendConnected => ("Amis", "Ami connecté", _options.Current.SoundFriendConnectedPath),

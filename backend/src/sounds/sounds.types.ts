@@ -32,6 +32,7 @@ export const SOUND_KEYS = [
   'RoomOpened',
   'RoomJoined',
   'RoomExit',
+  'TableStarted',
   'PawnPicked',
   'PawnPlacedSelf',
   'PawnPlacedOpponent',

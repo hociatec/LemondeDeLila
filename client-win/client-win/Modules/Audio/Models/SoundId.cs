@@ -35,6 +35,7 @@ public enum SoundId
     RoomOpened,
     RoomJoined,
     RoomExit,
+    TableStarted,
     PawnPicked,
     PawnPlacedSelf,
     PawnPlacedOpponent,

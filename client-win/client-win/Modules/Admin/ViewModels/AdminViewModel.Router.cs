@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using client_win.Modules.Admin.Dtos;
 
@@ -562,6 +562,12 @@ public sealed partial class AdminViewModel
                 {
                     PushReturnFocus();
                     BuildSoundDetails(Modules.Audio.Models.SoundId.RoomExit);
+                    return;
+                }
+                if (tableSound == "sounds.table.started")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.TableStarted);
                     return;
                 }
                 if (tableSound == "sounds.table.invite.sent")
