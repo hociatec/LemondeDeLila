@@ -144,6 +144,6 @@ describe('ZigEtZag compat', () => {
     ] as any);
     const afterP2Messages = (afterP2.log ?? []).map((x: any) => x?.message ?? '');
     expect(afterP2Messages).toContain('Lila pioche.');
-    expect(afterP2Messages).toContain('Hacene et Lila devoilent leurs cartes.');
+    expect(afterP2Messages).toContain('Hacene et Lila dévoilent leurs cartes.');
   });
 });

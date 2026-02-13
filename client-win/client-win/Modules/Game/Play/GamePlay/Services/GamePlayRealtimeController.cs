@@ -251,6 +251,27 @@ internal sealed class GamePlayRealtimeController
         {
             _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
         }
+        if (!string.Equals(previousStatus, "started", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase))
+        {
+            var currentPlayerId = state.Turn?.CurrentPlayerId;
+            var currentPlayerUsername = currentPlayerId != null
+                ? state.Players?
+                    .FirstOrDefault(p => p != null && p.Id == currentPlayerId.Value)?
+                    .Username?
+                    .Trim()
+                : null;
+            _announcementRouter.TryHandleTurnUpdate(
+                new TurnInfoDto
+                {
+                    CurrentPlayerId = currentPlayerId,
+                    CurrentPlayerUsername = string.IsNullOrWhiteSpace(currentPlayerUsername)
+                        ? null
+                        : currentPlayerUsername
+                },
+                msg => _emitMessage(new GamePlayHistoryMessage(msg)),
+                force: true);
+        }
 
         _viewerPlayerId = viewerId;
         _choices.UpdateFromState(state, _viewerPlayerId, _canStartAskCardSelection);
@@ -516,4 +537,5 @@ internal sealed class GamePlayRealtimeController
         return msg;
     }
 }
+
 

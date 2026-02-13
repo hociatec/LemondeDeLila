@@ -16,6 +16,7 @@ internal sealed class GamePlayConnectionController : IAsyncDisposable
     private readonly Action<GameSession> _unbindSession;
     private readonly Action<string> _setConnectionStatus;
     private readonly Action _refreshCanExecute;
+    private readonly Action _noteForcedTurnRequest;
 
     private CancellationTokenSource? _reconnectCts;
     private Task? _reconnectLoop;
@@ -28,7 +29,8 @@ internal sealed class GamePlayConnectionController : IAsyncDisposable
         Action<GameSession> bindSession,
         Action<GameSession> unbindSession,
         Action<string> setConnectionStatus,
-        Action refreshCanExecute)
+        Action refreshCanExecute,
+        Action noteForcedTurnRequest)
     {
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _connect = connect ?? throw new ArgumentNullException(nameof(connect));
@@ -38,6 +40,7 @@ internal sealed class GamePlayConnectionController : IAsyncDisposable
         _unbindSession = unbindSession ?? throw new ArgumentNullException(nameof(unbindSession));
         _setConnectionStatus = setConnectionStatus ?? throw new ArgumentNullException(nameof(setConnectionStatus));
         _refreshCanExecute = refreshCanExecute ?? throw new ArgumentNullException(nameof(refreshCanExecute));
+        _noteForcedTurnRequest = noteForcedTurnRequest ?? throw new ArgumentNullException(nameof(noteForcedTurnRequest));
     }
 
     internal async Task InitializeAsync(CancellationToken cancellationToken)
@@ -57,6 +60,7 @@ internal sealed class GamePlayConnectionController : IAsyncDisposable
             }, DispatcherPriority.Background);
 
             await session.RequestStateAsync(cancellationToken).ConfigureAwait(false);
+            _noteForcedTurnRequest();
             await session.RequestTurnAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -191,6 +195,7 @@ internal sealed class GamePlayConnectionController : IAsyncDisposable
 
                 await session.JoinAsync(connectCts.Token).ConfigureAwait(false);
                 await session.RequestStateAsync(connectCts.Token).ConfigureAwait(false);
+                _noteForcedTurnRequest();
                 await session.RequestTurnAsync(connectCts.Token).ConfigureAwait(false);
 
                 await _dispatcher.InvokeAsync(() =>

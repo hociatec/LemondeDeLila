@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Collections.Generic;
@@ -209,7 +209,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                 s.UiMessageReceived -= OnUiMessageReceived;
             },
             setConnectionStatus: status => ConnectionStatus = status,
-            refreshCanExecute: RefreshCanExecute);
+            refreshCanExecute: RefreshCanExecute,
+            noteForcedTurnRequest: _realtime.NoteForcedTurnRequest);
 
         RebuildDisplayChoices();
         InitializeHandSupport();
@@ -1266,4 +1267,3 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     partial void InitializeHandSupport();
 }
-
