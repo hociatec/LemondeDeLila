@@ -8,7 +8,7 @@ internal sealed class GamePlayLogSoundPlayer
 {
     private readonly ISoundService _sounds;
     private DateTime _lastDrawSoundUtc = DateTime.MinValue;
-    private static readonly TimeSpan DrawSoundCooldown = TimeSpan.FromSeconds(1.5);
+    private static readonly TimeSpan DrawSoundCooldown = TimeSpan.FromMilliseconds(350);
 
     internal GamePlayLogSoundPlayer(ISoundService sounds)
     {
@@ -47,6 +47,14 @@ internal sealed class GamePlayLogSoundPlayer
         if (msg.StartsWith("Fin de la manche", StringComparison.OrdinalIgnoreCase))
         {
             _sounds.Play(SoundId.RoundEnded);
+        }
+
+        // Fallback robuste: certains jeux/états n'exposent pas toujours LastDraw de façon stable.
+        // Quand une nouvelle ligne d'historique indique une pioche, jouer aussi le son.
+        if (msg.Contains(" pioche", StringComparison.OrdinalIgnoreCase) &&
+            !msg.Contains("doit piocher", StringComparison.OrdinalIgnoreCase))
+        {
+            TryPlayDrawSound();
         }
     }
 
