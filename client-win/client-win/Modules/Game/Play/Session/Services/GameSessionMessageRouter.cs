@@ -15,6 +15,7 @@ internal sealed class GameSessionMessageRouter
     private readonly Action<string> _emitError;
     private readonly Action<string> _emitCommandAck;
     private readonly Action<string> _emitUiMessage;
+    private readonly Action<string> _emitStatePatch;
     private readonly Action<string> _emitRaw;
     private readonly Action? _emitPong;
 
@@ -26,6 +27,7 @@ internal sealed class GameSessionMessageRouter
         Action<string> emitError,
         Action<string> emitCommandAck,
         Action<string> emitUiMessage,
+        Action<string> emitStatePatch,
         Action<string> emitRaw,
         Action? emitPong = null)
     {
@@ -36,6 +38,7 @@ internal sealed class GameSessionMessageRouter
         _emitError = emitError ?? throw new ArgumentNullException(nameof(emitError));
         _emitCommandAck = emitCommandAck ?? throw new ArgumentNullException(nameof(emitCommandAck));
         _emitUiMessage = emitUiMessage ?? throw new ArgumentNullException(nameof(emitUiMessage));
+        _emitStatePatch = emitStatePatch ?? throw new ArgumentNullException(nameof(emitStatePatch));
         _emitRaw = emitRaw ?? throw new ArgumentNullException(nameof(emitRaw));
         _emitPong = emitPong;
     }
@@ -83,6 +86,12 @@ internal sealed class GameSessionMessageRouter
             if (string.Equals(type, "game.state", StringComparison.OrdinalIgnoreCase))
             {
                 HandleState(root);
+                return;
+            }
+
+            if (string.Equals(type, "game.patch", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleStatePatch(root);
                 return;
             }
 
@@ -290,6 +299,24 @@ internal sealed class GameSessionMessageRouter
         catch (Exception ex)
         {
             Log.Debug(ex, "GameSession: ignore message parse error");
+        }
+    }
+
+    private void HandleStatePatch(JsonElement root)
+    {
+        try
+        {
+            if (!root.TryGetProperty("payload", out var payloadProp) ||
+                payloadProp.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            _emitStatePatch(payloadProp.GetRawText());
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "GameSession: ignore state patch parse error");
         }
     }
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { LamaCardValue, LamaMetadata } from '../model/lama.model';
 import { lamaCardLabel, lamaCardScore, LAMA_VALUE } from '../model/lama.model';
@@ -43,14 +43,23 @@ export class LamaRoundService {
     const discard: LamaCardValue[] = [firstDiscard as LamaCardValue];
 
     const starterPlayerId = players[starterIndex]?.id ?? players[0]?.id ?? null;
-    const log = this.logger.append(
+    const starterName =
+      starterPlayerId != null
+        ? players.find((p) => p?.id === starterPlayerId)?.username ??
+          `#${starterPlayerId}`
+        : null;
+    let log = this.logger.append(
       state.log,
-      `Début de la manche ${meta.roundNumber}. Défausse: ${lamaCardLabel(
-        firstDiscard as LamaCardValue,
-      )}.`,
+      `Début de la manche ${meta.roundNumber}.`,
     );
-
-    const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
+    if (starterName) {
+      log = this.logger.append(log, `C'est au tour de ${starterName}.`);
+    }
+    log = this.logger.append(
+      log,
+      `Défausse: ${lamaCardLabel(firstDiscard as LamaCardValue)}.`,
+    );
+const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       ...meta,
       deck,
       discard,
@@ -154,7 +163,7 @@ export class LamaRoundService {
       if (gained > 0) {
         log = this.logger.append(
           log,
-          `${p.username ?? `#${pid}`} prend ${gained} jeton${gained > 1 ? 's' : ''} (pénalité).`,
+          `${p.username ?? `#${pid}`} prend ${gained} jeton${gained > 1 ? 's' : ''} (pÃ©nalitÃ©).`,
         );
       }
     }
@@ -228,7 +237,7 @@ export class LamaRoundService {
         }
       }
       let log = state.log;
-      log = this.logger.append(log, `Partie terminée.`);
+      log = this.logger.append(log, `Partie terminÃ©e.`);
       if (winnerId) {
         log = this.logger.append(
           log,
@@ -351,3 +360,4 @@ export class LamaRoundService {
     return roundNumber >= 2;
   }
 }
+

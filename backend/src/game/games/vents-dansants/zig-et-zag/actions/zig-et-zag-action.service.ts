@@ -410,8 +410,9 @@ export class ZigEtZagActionService {
       nextState = this.turns.advanceTurn(nextState);
       // Ensure a round state exists right away so bot selection can be scheduled deterministically.
       const ensured = this.ensureRoundState(nextState, players);
-      nextState = this.setCurrentPlayer(
+      nextState = this.setCurrentPlayerWithAnnouncement(
         ensured.state,
+        players,
         this.pickNextCurrentPlayerId(
           ensured.round,
           ensured.state.turn?.currentPlayerId ?? 0,
@@ -516,6 +517,25 @@ export class ZigEtZagActionService {
         direction: 1,
       },
     };
+  }
+
+  private setCurrentPlayerWithAnnouncement(
+    state: GameStateEntity,
+    players: GameStateEntity['players'],
+    playerId: number,
+  ): GameStateEntity {
+    const previousPlayerId = state.turn?.currentPlayerId ?? null;
+    const next = this.setCurrentPlayer(state, playerId);
+    if (
+      typeof previousPlayerId === 'number' &&
+      previousPlayerId === playerId
+    ) {
+      return next;
+    }
+    return this.core.appendLog(
+      next,
+      `C'est au tour de ${this.playerName(players, playerId)}.`,
+    );
   }
 
   private setRoundState(
@@ -651,8 +671,9 @@ export class ZigEtZagActionService {
     );
 
     let nextState = this.setRoundState(state, drainedMeta, nextRound);
-    nextState = this.setCurrentPlayer(
+    nextState = this.setCurrentPlayerWithAnnouncement(
       nextState,
+      players,
       this.pickNextCurrentPlayerId(nextRound, playerId),
     );
 

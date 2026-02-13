@@ -55,9 +55,20 @@ export class ZigEtZagSetupService {
       bot && typeof (bot as any).id === 'number'
         ? (bot as any).id
         : (baseState.turn?.currentPlayerId ?? players[0]?.id ?? null);
+    const starterName =
+      typeof currentPlayerId === 'number'
+        ? players.find((p) => p?.id === currentPlayerId)?.username?.trim() ??
+          `Joueur ${currentPlayerId}`
+        : null;
+    const baseLog = Array.isArray(baseState.log) ? baseState.log : [];
+    const log =
+      starterName != null && starterName.length > 0
+        ? [...baseLog, { message: `C'est au tour de ${starterName}.` }]
+        : baseLog;
 
     return {
       ...baseState,
+      log,
       turn: {
         ...(baseState.turn ?? { direction: 1 }),
         currentPlayerId: typeof currentPlayerId === 'number' ? currentPlayerId : null,

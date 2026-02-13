@@ -36,6 +36,12 @@ type TurnInfoPayload = {
   phase: string | null;
 };
 
+type GameStatePatchPayload = {
+  baseTurnIndex: number | null;
+  set: Record<string, unknown>;
+  unset: string[];
+};
+
 @WebSocketGateway({ path: '/ws/game' })
 export class GameGateway
   implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket>
@@ -47,8 +53,15 @@ export class GameGateway
   private readonly rooms = new Map<string, Set<WebSocket>>();
   private readonly heartbeats = new Map<WebSocket, NodeJS.Timeout>();
   private readonly lastPong = new WeakMap<WebSocket, number>();
+  private readonly encodedStateMessageCache = new WeakMap<object, string>();
+  private readonly topLevelSnapshotCache = new WeakMap<
+    object,
+    Map<string, string>
+  >();
+  private readonly lastPayloadBySocket = new WeakMap<WebSocket, any>();
   private readonly pingIntervalMs = 25000;
   private readonly pongGraceMs = 4000;
+  private readonly minPatchBytesSaved = 96;
   private readonly logger = new Logger(GameGateway.name);
 
   constructor(
@@ -187,6 +200,7 @@ export class GameGateway
       this.heartbeats.delete(client);
     }
     this.clients.delete(client);
+    this.lastPayloadBySocket.delete(client);
   }
 
   private async handleMessage(client: WebSocket, raw: any) {
@@ -295,7 +309,7 @@ export class GameGateway
         );
         this.setRoom(meta, roomId, gameType, client);
         playingLog('ws.game.join', { userId: meta.userId, roomId, gameType });
-        this.safeSend(client, { type: 'game.state', payload: state });
+        this.sendState(client, state);
       },
       { roomId, userId: meta.userId, gameType, traceId, clientToServerMs },
     );
@@ -350,7 +364,7 @@ export class GameGateway
           roomId,
           gameType,
         });
-        this.safeSend(client, { type: 'game.state', payload: state });
+        this.sendState(client, state);
       },
       { roomId, userId: meta.userId, gameType, traceId, clientToServerMs },
     );
@@ -602,10 +616,11 @@ export class GameGateway
     const room = this.buildRoomKey(gameType, roomId);
     const targets = this.rooms.get(room);
     if (!targets) return;
-    const encodedByUserId = new Map<number, string>();
+    const payloadByUserId = new Map<number, any>();
     for (const socket of Array.from(targets)) {
       if (socket.readyState !== WebSocket.OPEN) {
         targets.delete(socket);
+        this.lastPayloadBySocket.delete(socket);
         continue;
       }
       const meta = this.clients.get(socket);
@@ -613,16 +628,26 @@ export class GameGateway
       if (userId == null) {
         continue;
       }
-      let encoded = encodedByUserId.get(userId) ?? null;
-      if (!encoded) {
-        const payload = this.engine.exposeStateForUser(state, gameType, userId);
-        encoded = JSON.stringify({ type: 'game.state', payload });
-        encodedByUserId.set(userId, encoded);
+      let payload = payloadByUserId.get(userId) ?? null;
+      if (!payload) {
+        payload = this.engine.exposeStateForUser(state, gameType, userId);
+        payloadByUserId.set(userId, payload);
       }
+      const previousPayload = this.lastPayloadBySocket.get(socket) ?? null;
+      if (previousPayload === payload) {
+        continue;
+      }
+      const fullStateEncoded = this.getEncodedStateMessage(payload);
+      const encodedPatch = previousPayload
+        ? this.buildEncodedPatch(previousPayload, payload, fullStateEncoded)
+        : null;
+      const encoded = encodedPatch ?? fullStateEncoded;
       try {
         socket.send(encoded);
+        this.lastPayloadBySocket.set(socket, payload);
       } catch {
         targets.delete(socket);
+        this.lastPayloadBySocket.delete(socket);
       }
     }
     playingLog('ws.game.broadcast', {
@@ -671,6 +696,129 @@ export class GameGateway
         /* ignore */
       }
     }
+  }
+
+  private sendState(client: WebSocket, payload: any): void {
+    if (client.readyState !== WebSocket.OPEN) return;
+    const encoded = this.getEncodedStateMessage(payload);
+    try {
+      client.send(encoded);
+      this.lastPayloadBySocket.set(client, payload);
+    } catch (err) {
+      this.logger.warn('Echec envoi WS game.state', err as Error);
+      this.lastPayloadBySocket.delete(client);
+      try {
+        client.close();
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  private getEncodedStateMessage(payload: any): string {
+    if (!payload || typeof payload !== 'object') {
+      return JSON.stringify({ type: 'game.state', payload });
+    }
+    const cached = this.encodedStateMessageCache.get(payload);
+    if (cached) {
+      return cached;
+    }
+    const encoded = JSON.stringify({ type: 'game.state', payload });
+    this.encodedStateMessageCache.set(payload, encoded);
+    return encoded;
+  }
+
+  private buildEncodedPatch(
+    previousPayload: any,
+    nextPayload: any,
+    fullStateEncoded: string,
+  ): string | null {
+    const patch = this.buildTopLevelPatch(previousPayload, nextPayload);
+    if (!patch) {
+      return null;
+    }
+    const encodedPatch = JSON.stringify({ type: 'game.patch', payload: patch });
+    const patchBytes = Buffer.byteLength(encodedPatch, 'utf8');
+    const fullBytes = Buffer.byteLength(fullStateEncoded, 'utf8');
+    if (patchBytes + this.minPatchBytesSaved >= fullBytes) {
+      return null;
+    }
+    return encodedPatch;
+  }
+
+  private buildTopLevelPatch(
+    previousPayload: any,
+    nextPayload: any,
+  ): GameStatePatchPayload | null {
+    if (
+      !previousPayload ||
+      typeof previousPayload !== 'object' ||
+      !nextPayload ||
+      typeof nextPayload !== 'object'
+    ) {
+      return null;
+    }
+
+    const previousSnapshot = this.getTopLevelSnapshot(previousPayload);
+    const nextSnapshot = this.getTopLevelSnapshot(nextPayload);
+    const set: Record<string, unknown> = {};
+    const unset: string[] = [];
+
+    for (const [key, nextSerialized] of nextSnapshot.entries()) {
+      const prevSerialized = previousSnapshot.get(key);
+      if (prevSerialized !== nextSerialized) {
+        set[key] = nextPayload[key];
+      }
+    }
+
+    for (const key of previousSnapshot.keys()) {
+      if (!nextSnapshot.has(key)) {
+        unset.push(key);
+      }
+    }
+
+    if (Object.keys(set).length === 0 && unset.length === 0) {
+      return null;
+    }
+
+    const rawBaseTurnIndex = (previousPayload as any)?.turnIndex;
+    const baseTurnIndex =
+      typeof rawBaseTurnIndex === 'number' && Number.isFinite(rawBaseTurnIndex)
+        ? rawBaseTurnIndex
+        : null;
+
+    return {
+      baseTurnIndex,
+      set,
+      unset,
+    };
+  }
+
+  private getTopLevelSnapshot(payload: any): Map<string, string> {
+    if (!payload || typeof payload !== 'object') {
+      return new Map<string, string>();
+    }
+
+    const cached = this.topLevelSnapshotCache.get(payload);
+    if (cached) {
+      return cached;
+    }
+
+    const snapshot = new Map<string, string>();
+    for (const key of Object.keys(payload)) {
+      const value = payload[key];
+      if (value === undefined) {
+        snapshot.set(key, '__undefined__');
+        continue;
+      }
+      try {
+        snapshot.set(key, JSON.stringify(value));
+      } catch {
+        snapshot.set(key, '__unserializable__');
+      }
+    }
+    this.topLevelSnapshotCache.set(payload, snapshot);
+    return snapshot;
   }
 
   private decode(raw: any): IncomingPayload | null {
@@ -726,7 +874,7 @@ export class GameGateway
           roomId,
           gameType,
         });
-        this.safeSend(client, { type: 'game.state', payload: state });
+        this.sendState(client, state);
       },
       { roomId, userId: meta.userId, gameType },
     );

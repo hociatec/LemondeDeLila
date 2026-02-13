@@ -80,6 +80,8 @@ describe('ZigEtZag compat', () => {
 
     const hydrated: any = setup.hydrateInitialState(base);
     expect(hydrated.turn?.currentPlayerId).toBe(-2);
+    const messages = (hydrated.log ?? []).map((x: any) => String(x?.message ?? ''));
+    expect(messages).toContain("C'est au tour de Bot.");
   });
 
   it('enforces strict draw order and logs draw/reveal flow', async () => {
@@ -134,6 +136,7 @@ describe('ZigEtZag compat', () => {
     expect((afterP1.metadata?.playerDecks?.['1'] ?? []).length).toBe(0);
     const afterP1Messages = (afterP1.log ?? []).map((x: any) => x?.message ?? '');
     expect(afterP1Messages).toContain('Hacene pioche.');
+    expect(afterP1Messages).toContain("C'est au tour de Lila.");
     expect(afterP1.metadata?.roundState?.waitingPlayers).toEqual([2]);
 
     const afterP2: any = service.applyActions(afterP1, [

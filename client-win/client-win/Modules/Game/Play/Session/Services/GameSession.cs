@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Game.Play.Actions.Dtos;
@@ -61,6 +62,20 @@ public sealed class GameSession : IAsyncDisposable
             emitError: msg => ErrorReceived?.Invoke(msg),
             emitCommandAck: msg => CommandAckReceived?.Invoke(msg),
             emitUiMessage: msg => UiMessageReceived?.Invoke(msg),
+            emitStatePatch: raw =>
+            {
+                if (TryApplyStatePatch(raw, out var patched) && patched != null)
+                {
+                    LastState = patched;
+                    StateUpdated?.Invoke(patched);
+                    return;
+                }
+
+                _ = Task.Run(async () =>
+                {
+                    try { await RequestStateAsync().ConfigureAwait(false); } catch { }
+                });
+            },
             emitRaw: msg => RawMessageReceived?.Invoke(msg),
             emitPong: () => _lastPongUtc = DateTime.UtcNow);
         _socket.MessageReceived += _router.HandleRawMessage;
@@ -329,6 +344,84 @@ public sealed class GameSession : IAsyncDisposable
         {
             Log.Debug(ex, "GameSession: send ignored");
             ErrorReceived?.Invoke(ex.Message);
+        }
+    }
+
+    private bool TryApplyStatePatch(string rawPatchPayload, out GameStateDto? patchedState)
+    {
+        patchedState = null;
+        var current = LastState;
+        if (current == null)
+        {
+            return false;
+        }
+
+        try
+        {
+            using var patchDoc = JsonDocument.Parse(rawPatchPayload ?? "{}");
+            var patchRoot = patchDoc.RootElement;
+            if (patchRoot.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            if (patchRoot.TryGetProperty("baseTurnIndex", out var baseTurnProp) &&
+                baseTurnProp.ValueKind == JsonValueKind.Number &&
+                baseTurnProp.TryGetInt32(out var baseTurnIndex))
+            {
+                if (current.TurnIndex != baseTurnIndex)
+                {
+                    return false;
+                }
+            }
+
+            var currentNode = JsonSerializer.SerializeToNode(current, _json) as JsonObject;
+            if (currentNode == null)
+            {
+                return false;
+            }
+
+            if (patchRoot.TryGetProperty("unset", out var unsetProp) &&
+                unsetProp.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var keyNode in unsetProp.EnumerateArray())
+                {
+                    if (keyNode.ValueKind != JsonValueKind.String)
+                    {
+                        continue;
+                    }
+
+                    var key = (keyNode.GetString() ?? string.Empty).Trim();
+                    if (key.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    currentNode.Remove(key);
+                }
+            }
+
+            if (patchRoot.TryGetProperty("set", out var setProp) &&
+                setProp.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var property in setProp.EnumerateObject())
+                {
+                    var key = (property.Name ?? string.Empty).Trim();
+                    if (key.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    currentNode[key] = JsonNode.Parse(property.Value.GetRawText());
+                }
+            }
+
+            patchedState = currentNode.Deserialize<GameStateDto>(_json);
+            return patchedState != null;
+        }
+        catch
+        {
+            return false;
         }
     }
 
