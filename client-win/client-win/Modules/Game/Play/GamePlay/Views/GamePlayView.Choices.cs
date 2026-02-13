@@ -435,6 +435,14 @@ public partial class GamePlayView
             {
                 return;
             }
+            // Avoid re-focusing the same hand item on every state refresh: this can make NVDA
+            // announce "liste" repeatedly ("liste, liste") during turn changes.
+            if (IsFocusWithinHandList() &&
+                !_restoreHandFocusAfterSubmit &&
+                DateTime.UtcNow >= _suppressHandAutoFocusUntilUtc)
+            {
+                return;
+            }
 
             Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
             {
@@ -451,6 +459,12 @@ public partial class GamePlayView
 
                     if (idx < 0) idx = 0;
                     if (idx >= count) idx = count - 1;
+
+                    // Same guard on UI tick: ignore stale queued requests if focus is already correct.
+                    if (IsFocusWithinHandList() && HandList.SelectedIndex == idx)
+                    {
+                        return;
+                    }
 
                     HandList.SelectedIndex = idx;
                     HandList.ScrollIntoView(HandList.SelectedItem);
