@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-02-11T18:08:32.901Z",
+  "updatedAt": "2026-02-13T13:54:25.212Z",
   "sounds": {
     "RoomJoined": {
       "soundId": "RoomJoined",
@@ -350,6 +350,13 @@
       "bytes": 123734,
       "uploadedAt": "2026-02-11T18:08:32.900Z",
       "url": "/api/sounds/DrawCard/5332ddd04a4786729ff40256b7fffb83c2e585b00c798c81158883c8e1562120.wav"
+    },
+    "TableStarted": {
+      "soundId": "TableStarted",
+      "sha256": "1ec1c670d317d06490ab68f9d5d6b884091f017c84861b0d52a49d21af6749f4",
+      "bytes": 393806,
+      "uploadedAt": "2026-02-13T13:54:25.208Z",
+      "url": "/api/sounds/TableStarted/1ec1c670d317d06490ab68f9d5d6b884091f017c84861b0d52a49d21af6749f4.wav"
     }
   }
 }

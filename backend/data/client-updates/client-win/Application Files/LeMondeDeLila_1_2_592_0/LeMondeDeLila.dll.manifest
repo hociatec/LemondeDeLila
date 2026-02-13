@@ -413,13 +413,13 @@
       <dsig:DigestValue>OaxkIsIqDbe665RIuX/b0u+clX7H04t0c/aO8I/y6Ic=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="LeMondeDeLila.dll" size="2146816">
+  <file name="LeMondeDeLila.dll" size="2166272">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>xIDqmaTbK7HiTn3bAO8Me7pn9dWt2OYRNwVi10tsEBQ=</dsig:DigestValue>
+      <dsig:DigestValue>9SqU8Q7Y1zgzGlW13CcQ75wys5FYn7tDR7oltGeXSTY=</dsig:DigestValue>
     </hash>
   </file>
   <file name="LeMondeDeLila.exe" size="151040">
@@ -428,7 +428,7 @@
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>B8C8laHStV2UbApvDyVlHHwX6wPKZnA3RSWrG/hSppg=</dsig:DigestValue>
+      <dsig:DigestValue>U0agXVDLdDfU+LlVgbzgs3fnuiLmNQeZYhckgNHZxn4=</dsig:DigestValue>
     </hash>
   </file>
   <file name="LeMondeDeLila.runtimeconfig.json" size="429">
