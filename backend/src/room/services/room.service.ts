@@ -26,9 +26,8 @@ import { RedisClientFactory } from '../../common/redis/redis-client.factory';
 @Injectable()
 export class RoomService {
   private realtimeNotifier?: (roomId: number) => Promise<void> | void;
-  private readonly roomDeletedNotifiers: Array<
-    (roomId: number) => Promise<void> | void
-  > = [];
+  private roomDeletedNotifiers: Array<(roomId: number) => Promise<void> | void> =
+    [];
   private directoryNotifier?: (
     roomId: number,
     reason: string,
@@ -59,7 +58,7 @@ export class RoomService {
     if (typeof fn !== 'function') {
       return;
     }
-    this.roomDeletedNotifiers.push(fn);
+    this.ensureRoomDeletedNotifiers().push(fn);
   }
 
   /**
@@ -102,7 +101,7 @@ export class RoomService {
       throw new NotFoundException('Room introuvable.');
     }
 
-    for (const notify of this.roomDeletedNotifiers) {
+    for (const notify of this.ensureRoomDeletedNotifiers()) {
       try {
         await notify(id);
       } catch {
@@ -711,7 +710,7 @@ export class RoomService {
         activeHumans,
         bots,
       });
-      for (const notify of this.roomDeletedNotifiers) {
+      for (const notify of this.ensureRoomDeletedNotifiers()) {
         try {
           await notify(room.id);
         } catch {
@@ -733,6 +732,21 @@ export class RoomService {
     this.notifyDirectoryChanged(room.id, 'left');
 
     return room;
+  }
+
+  private ensureRoomDeletedNotifiers(): Array<
+    (roomId: number) => Promise<void> | void
+  > {
+    // En cas de dépendances circulaires, Nest peut injecter une instance "partielle"
+    // (ex: Object.create(prototype)) avant l'initialisation des fields de classe.
+    // Cette méthode garantit que le champ existe avant usage.
+    const self = this as unknown as {
+      roomDeletedNotifiers?: Array<(roomId: number) => Promise<void> | void>;
+    };
+    if (!Array.isArray(self.roomDeletedNotifiers)) {
+      self.roomDeletedNotifiers = [];
+    }
+    return self.roomDeletedNotifiers;
   }
 
   async transferOwnerIfCurrent(roomId: number, userId: number): Promise<void> {
