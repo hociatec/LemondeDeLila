@@ -363,7 +363,10 @@ export class FrousseActionService {
       const typeLabel = tile.type === 'card' ? 'case symbole' : 'case neutre';
       const fallbackLabel = `case ${tile.n}. ${tile.title} (${typeLabel})`;
       const label = labelRaw || fallbackLabel;
-      const placement = `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${tile.n} (${label}).`;
+      const casePrefix = new RegExp(`^case\\s+${tile.n}\\b[\\s.:,;-]*`, 'i');
+      const normalizedLabel = label.replace(casePrefix, '').trim();
+      const labelForParenthesis = normalizedLabel || label;
+      const placement = `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${tile.n} (${labelForParenthesis}).`;
       const arrival = descRaw
         ? `${placement}\n${descRaw}`
         : placement;

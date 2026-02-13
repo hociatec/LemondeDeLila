@@ -410,6 +410,7 @@ export class ZigEtZagActionService {
         lastRound: summary,
       },
     };
+    nextState = this.logRound(nextState, summary, players);
 
     const finalWinner = this.detectWinner(nextMeta, players);
     if (finalWinner != null) {
@@ -439,7 +440,7 @@ export class ZigEtZagActionService {
       );
     }
 
-    return this.logRound(nextState, summary, players);
+    return nextState;
   }
 
   private logRound(

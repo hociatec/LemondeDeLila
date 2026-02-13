@@ -549,7 +549,7 @@ export class SacAMalicesActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} place son pion en case ${pos + 1} (${tile.title}).`,
+      `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${pos + 1} (${tile.title}).`,
     );
     if (tile.description && String(tile.description).trim()) {
       next = this.core.appendLog(next, String(tile.description).trim());
@@ -1371,6 +1371,20 @@ export class SacAMalicesActionService {
         ? String(p.username).trim()
         : null;
     return u ?? `Joueur ${id}`;
+  }
+
+  private pawnLabel(state: GameStateEntity, id: number): string {
+    const players = Array.isArray(state.players) ? state.players : [];
+    const player: any = players.find((p) => p?.id === id);
+
+    const explicitLabel = String(player?.pawnLabel ?? '').trim();
+    if (explicitLabel) return `le pion "${explicitLabel}"`;
+
+    const pawnId = String(player?.pawn ?? '').trim();
+    if (pawnId) return `le pion "${pawnId}"`;
+
+    const fallback = this.playerName(state, id);
+    return `le pion "${fallback}"`;
   }
 }
 

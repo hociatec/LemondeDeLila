@@ -995,7 +995,8 @@ public sealed class GameTableOpener : IGameTableOpener
             var selected = TableAmbiencePickerWindow.Pick(
                 owner: Application.Current?.MainWindow,
                 currentSoundId: current,
-                choices: choices);
+                choices: choices,
+                soundService: _sounds);
 
             if (selected == null)
             {
@@ -1092,7 +1093,8 @@ public sealed class GameTableOpener : IGameTableOpener
                     var selected = TableStartConfigWindow.Pick(
                         owner: Application.Current?.MainWindow,
                         currentSoundId: current,
-                        choices: choices);
+                        choices: choices,
+                        soundService: _sounds);
 
                     if (selected == null)
                     {

@@ -103,7 +103,7 @@ export class ToutPresDeMamanActionService {
     const tile = this.getTileByIndex(this.getMeta(next), target);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} avance de ${total} case(s) et place son pion en case ${target + 1} (${tile?.title ?? `case ${target + 1}`}).`,
+      `${this.playerName(next, playerId)} avance de ${total} case(s) et place ${this.pawnLabel(next, playerId)} en case ${target + 1} (${tile?.title ?? `case ${target + 1}`}).`,
     );
 
     next = this.applyTileEffects(next, playerId, target, 0);
@@ -680,5 +680,19 @@ export class ToutPresDeMamanActionService {
         ? player.username.trim()
         : null;
     return username ?? `Joueur ${playerId}`;
+  }
+
+  private pawnLabel(state: GameStateEntity, playerId: number): string {
+    const players = Array.isArray(state.players) ? state.players : [];
+    const player: any = players.find((p) => p?.id === playerId);
+
+    const explicitLabel = String(player?.pawnLabel ?? '').trim();
+    if (explicitLabel) return `le pion "${explicitLabel}"`;
+
+    const pawnId = String(player?.pawn ?? '').trim();
+    if (pawnId) return `le pion "${pawnId}"`;
+
+    const fallback = this.playerName(state, playerId);
+    return `le pion "${fallback}"`;
   }
 }

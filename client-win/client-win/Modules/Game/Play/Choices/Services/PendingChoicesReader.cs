@@ -14,6 +14,12 @@ internal static class PendingChoicesReader
             return string.Empty;
         }
 
+        var type = (pending.Type ?? string.Empty).Trim();
+        if (type.StartsWith("lama_", StringComparison.OrdinalIgnoreCase))
+        {
+            return string.Empty;
+        }
+
         if (!string.IsNullOrWhiteSpace(pending.Label))
         {
             return pending.Label.Trim();
@@ -24,10 +30,9 @@ internal static class PendingChoicesReader
             return pending.Question.Trim();
         }
 
-        var type = (pending.Type ?? string.Empty).Trim();
         if (string.Equals(type, "quiz", StringComparison.OrdinalIgnoreCase))
         {
-            return "Réponses";
+            return "R\u00E9ponses";
         }
         return string.IsNullOrWhiteSpace(type) ? string.Empty : $"En attente: {type}";
     }
@@ -45,10 +50,10 @@ internal static class PendingChoicesReader
             .Select(c => c.Trim())
             .ToList();
 
-        // Accessibilité: si plusieurs lignes ont le même texte ("3", "3", "3"),
-        // certains lecteurs d'écran n'annoncent pas toujours le changement de sélection.
-        // On rend ces lignes uniques avec des caractères invisibles (U+2060 WORD JOINER),
-        // sans modifier l'affichage.
+        // Accessibility: if multiple rows share the same text ("3", "3", "3"),
+        // some screen readers may skip announcing selection changes.
+        // Make rows unique with invisible characters (U+2060 WORD JOINER),
+        // without changing the visible text.
         return MakeA11yDistinct(choices);
     }
 
