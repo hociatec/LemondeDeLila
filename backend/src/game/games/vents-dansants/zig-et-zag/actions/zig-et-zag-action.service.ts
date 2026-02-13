@@ -401,7 +401,13 @@ export class ZigEtZagActionService {
       plays: round.plays,
       battleLog: round.battleLog,
     };
-    const nextMeta = this.addCardsToWinner(meta, winnerId, cards);
+    const withCollectedCards = this.addCardsToWinner(meta, winnerId, cards);
+    const nextMeta = this.applyWinnerCaptureBonus(
+      withCollectedCards,
+      players,
+      round,
+      winnerId,
+    );
     let nextState: GameStateEntity = {
       ...state,
       metadata: {
@@ -769,6 +775,54 @@ export class ZigEtZagActionService {
     const decks = { ...(metadata.playerDecks ?? {}) };
     const hand = Array.isArray(decks[winnerId]) ? [...decks[winnerId]] : [];
     decks[winnerId] = [...hand, ...cards];
+    return {
+      ...metadata,
+      playerDecks: decks,
+    };
+  }
+
+  private applyWinnerCaptureBonus(
+    metadata: ZigEtZagMetadata,
+    players: GameStateEntity['players'],
+    round: ZigEtZagRoundState,
+    winnerId: number | null,
+  ): ZigEtZagMetadata {
+    if (winnerId == null) {
+      return metadata;
+    }
+
+    const playerIds = (Array.isArray(players) ? players : [])
+      .map((player) => player?.id)
+      .filter((id): id is number => typeof id === 'number');
+    if (playerIds.length !== 2) {
+      return metadata;
+    }
+
+    const loserId = playerIds.find((id) => id !== winnerId);
+    if (loserId == null) {
+      return metadata;
+    }
+
+    const winnerPlayCount =
+      round.plays.find((play) => play.playerId === winnerId)?.playedCards?.length ?? 0;
+    if (winnerPlayCount <= 0) {
+      return metadata;
+    }
+
+    const decks = { ...(metadata.playerDecks ?? {}) };
+    const winnerDeck = Array.isArray(decks[winnerId]) ? [...decks[winnerId]] : [];
+    const loserDeck = Array.isArray(decks[loserId]) ? [...decks[loserId]] : [];
+    if (!loserDeck.length) {
+      return metadata;
+    }
+
+    const moved = loserDeck.splice(0, Math.min(winnerPlayCount, loserDeck.length));
+    if (!moved.length) {
+      return metadata;
+    }
+
+    decks[winnerId] = [...winnerDeck, ...moved];
+    decks[loserId] = loserDeck;
     return {
       ...metadata,
       playerDecks: decks,

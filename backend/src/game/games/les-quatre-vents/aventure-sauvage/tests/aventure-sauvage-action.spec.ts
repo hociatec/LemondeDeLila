@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { AventureSauvageActionService } from '../actions/aventure-sauvage-action.service';
 import { AventureSauvageSetupService } from '../setup/aventure-sauvage-setup.service';
 
@@ -31,11 +32,33 @@ function makeBaseState(): GameStateEntity {
 }
 
 describe('AventureSauvageActionService', () => {
-  it('avance le tour aprÃ¨s une pioche avec "Passez un tour"', async () => {
+  it('annonce qu un joueur doit choisir un pion', async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         GameCoreService,
         RandomService,
+        GameContentLoaderService,
+        AventureSauvageSetupService,
+        AventureSauvageActionService,
+      ],
+    }).compile();
+
+    const setup = moduleRef.get(AventureSauvageSetupService);
+    const actions = moduleRef.get(AventureSauvageActionService);
+
+    const state = setup.hydrateInitialState(makeBaseState());
+    const next = actions.applyActions(state, []);
+
+    const messages = (next.log ?? []).map((e: any) => String(e?.message ?? ''));
+    expect(messages.some((m) => /doit choisir un pion\./.test(m))).toBe(true);
+  });
+
+  it('avance le tour apres une pioche avec Passez un tour', async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        GameCoreService,
+        RandomService,
+        GameContentLoaderService,
         AventureSauvageSetupService,
         AventureSauvageActionService,
       ],
@@ -72,11 +95,12 @@ describe('AventureSauvageActionService', () => {
     expect((next.metadata as any)?.statuses?.skipTurn?.[1]).toBe(1);
   });
 
-  it('saute le joueur suivant si skipTurn est actif (et l\'annonce)', async () => {
+  it('saute le joueur suivant si skipTurn est actif (et l annonce)', async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         GameCoreService,
         RandomService,
+        GameContentLoaderService,
         AventureSauvageSetupService,
         AventureSauvageActionService,
       ],
@@ -108,11 +132,46 @@ describe('AventureSauvageActionService', () => {
     expect(messages.some((m) => /Nino passe son tour\./.test(m))).toBe(true);
   });
 
-  it('mÃ©lange les decks au dÃ©marrage', async () => {
+  it('utilise le libelle possessif pour le pion et le log de de', async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         GameCoreService,
         RandomService,
+        GameContentLoaderService,
+        AventureSauvageSetupService,
+        AventureSauvageActionService,
+      ],
+    }).compile();
+
+    const setup = moduleRef.get(AventureSauvageSetupService);
+    const actions = moduleRef.get(AventureSauvageActionService);
+
+    let state = setup.hydrateInitialState(makeBaseState());
+    const meta: any = state.metadata ?? {};
+    meta.pawnByPlayerId = { 1: 'girafe', 2: 'lion' };
+    meta.positions = { 1: 0, 2: 0 };
+
+    state = {
+      ...state,
+      metadata: meta,
+      pending: null,
+      turn: { currentPlayerId: 1, direction: 1 },
+      turnIndex: 0,
+    };
+
+    const next = actions.applyActions(state, [{ type: 'roll', payload: {} } as any]);
+    const messages = (next.log ?? []).map((e: any) => String(e?.message ?? ''));
+
+    expect(messages.some((m) => /Lilas place "sa girafe" en case/.test(m))).toBe(true);
+    expect(messages.some((m) => /Lilas lance le de : "\d"\./.test(m))).toBe(true);
+  });
+
+  it('melange les decks au demarrage', async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        GameCoreService,
+        RandomService,
+        GameContentLoaderService,
         AventureSauvageSetupService,
         AventureSauvageActionService,
       ],
@@ -129,5 +188,3 @@ describe('AventureSauvageActionService', () => {
     expect(animalIds).not.toEqual(sorted);
   });
 });
-
-

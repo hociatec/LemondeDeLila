@@ -114,7 +114,8 @@ export class FouleesFantastiquesActionService {
           `${p.username} reçoit les pions ${color}. Famille des ${family} (${habitat}) : ${pawns.join(', ')}.`,
         );
       }
-      return this.core.appendLog(next, 'Début de partie.');
+      next = this.core.appendLog(next, 'Début de partie.');
+      return this.appendTurnAnnouncement(next);
     }
 
     const currentId = state.turn?.currentPlayerId ?? players[0]?.id ?? null;
@@ -144,7 +145,9 @@ export class FouleesFantastiquesActionService {
       choices: usable.map((f) => `Famille des ${f.family} (${f.habitat})`),
       data: { familyIds: usable.map((f) => f.id) },
     };
-    return { ...state, pending };
+    const withPending = { ...state, pending };
+    const prompt = `${this.playerName(withPending, currentId)} doit choisir une famille d'animaux.`;
+    return this.appendLogOnce(withPending, prompt);
   }
 
   private handleChooseFamily(
@@ -702,9 +705,29 @@ export class FouleesFantastiquesActionService {
       const currentId = state.turn?.currentPlayerId ?? null;
       const who =
         currentId != null ? this.playerName(state, currentId) : 'Le joueur';
-      return this.core.appendLog(state, `${who} rejoue.`);
+      const next = this.core.appendLog(state, `${who} rejoue.`);
+      return this.appendTurnAnnouncement(next);
     }
-    return this.turns.advanceTurn(state);
+    const advanced = this.turns.advanceTurn(state);
+    return this.appendTurnAnnouncement(advanced);
+  }
+
+  private appendTurnAnnouncement(state: GameStateEntity): GameStateEntity {
+    const currentId = state.turn?.currentPlayerId ?? null;
+    if (currentId == null) {
+      return state;
+    }
+    const message = `C'est au tour de ${this.playerName(state, currentId)}.`;
+    return this.appendLogOnce(state, message);
+  }
+
+  private appendLogOnce(state: GameStateEntity, message: string): GameStateEntity {
+    const log = Array.isArray(state.log) ? state.log : [];
+    const lastMessage = String(log[log.length - 1]?.message ?? '').trim();
+    if (lastMessage === message) {
+      return state;
+    }
+    return this.core.appendLog(state, message);
   }
 
   private isWinner(

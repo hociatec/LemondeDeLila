@@ -18,19 +18,115 @@ export class JeuOieActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
+    let next = this.ensurePawnSelectionPrompt(state);
     for (const action of actions ?? []) {
       const type = String(action?.type ?? '').trim();
+      if (type === 'choose_pawn') {
+        next = this.handleChoosePawn(next, action);
+        next = this.ensurePawnSelectionPrompt(next);
+        continue;
+      }
       if (type === 'roll' || type === 'ROLL_DICE' || type === 'roll_dice') {
         next = this.handleRoll(next);
       }
     }
-    return next;
+    return this.ensurePawnSelectionPrompt(next);
+  }
+
+  private handleChoosePawn(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    if (String(state.status ?? '').toLowerCase() !== 'started') return state;
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'choose_pawn') return state;
+
+    const playerId =
+      typeof pending.playerId === 'number'
+        ? pending.playerId
+        : state.turn?.currentPlayerId ?? null;
+    if (playerId == null) return state;
+
+    const payload = (action?.payload ?? {}) as any;
+    const rawPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
+    const options = Array.isArray(pending?.data?.pawns) ? pending.data.pawns : [];
+    const chosen = this.resolvePendingPawn(rawPawn, options);
+    if (!chosen) return state;
+
+    const meta = this.getMeta(state);
+    const assigned = { ...(meta.pawnByPlayerId ?? {}) } as Record<number, string>;
+    if (assigned[playerId]) return state;
+    if (Object.values(assigned).some((id) => id === chosen.id)) return state;
+
+    const nextMeta: JeuOieMetadata = {
+      ...meta,
+      pawns:
+        Array.isArray(meta.pawns) && meta.pawns.length > 0
+          ? meta.pawns
+          : options.map((p: any) => ({
+              id: String(p?.id ?? '').trim(),
+              label: String(p?.label ?? '').trim(),
+              feminine: Boolean(p?.feminine),
+            })),
+      pawnByPlayerId: { ...assigned, [playerId]: chosen.id },
+    };
+
+    let next: GameStateEntity = {
+      ...state,
+      pending: null,
+      metadata: { ...(state.metadata ?? {}), ...nextMeta },
+    };
+    next = this.core.appendLog(
+      next,
+      `${this.playerName(next, playerId)} choisit le pion : ${String(chosen.label ?? 'pion').trim()}.`,
+    );
+
+    const pendingInfo = this.buildPawnPending(next, playerId);
+    if (pendingInfo) {
+      const withPending: GameStateEntity = {
+        ...next,
+        pending: pendingInfo.pending,
+        turnIndex: pendingInfo.turnIndex,
+        turn: {
+          ...(next.turn ?? { direction: 1 }),
+          currentPlayerId: pendingInfo.playerId,
+          direction: 1,
+        },
+      };
+      return this.ensurePawnSelectionPrompt(withPending);
+    }
+
+    const players = Array.isArray(next.players) ? next.players : [];
+    const starterId =
+      typeof nextMeta.setupStarterId === 'number'
+        ? nextMeta.setupStarterId
+        : players[0]?.id ?? null;
+    const starterIndex =
+      starterId != null ? players.findIndex((p) => p?.id === starterId) : -1;
+    const resolvedStarterId =
+      starterId != null && starterIndex >= 0 ? starterId : players[0]?.id ?? null;
+    let started: GameStateEntity = {
+      ...next,
+      pending: null,
+      turnIndex: starterIndex >= 0 ? starterIndex : next.turnIndex,
+      turn: {
+        ...(next.turn ?? { direction: 1 }),
+        currentPlayerId: resolvedStarterId,
+        direction: 1,
+      },
+    };
+    const starterName = this.playerName(started, resolvedStarterId ?? 0);
+    started = this.core.appendLog(
+      started,
+      `Debut de partie : ${starterName} commence.`,
+    );
+    return this.appendTurnAnnouncement(started, resolvedStarterId);
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
     const status = String(state.status ?? '').toLowerCase();
     if (status !== 'started') return state;
+    if (state.pending) return state;
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
 
@@ -47,16 +143,16 @@ export class JeuOieActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(state, currentId)} lance le dé : "${roll}".`,
+      `${this.playerName(state, currentId)} lance le de : "${roll}".`,
     );
 
     if (inWell) {
       if (roll !== 1) {
         const logged = this.core.appendLog(
           next,
-          `${this.playerName(next, currentId)} reste bloqué dans le puits.`,
+          `${this.playerName(next, currentId)} reste bloque dans le puits.`,
         );
-        return this.turns.advanceTurn(logged);
+        return this.advanceTurnWithAnnouncement(logged);
       }
       const metaAfter = this.getMeta(next);
       const well = { ...(metaAfter.statuses?.well ?? {}) };
@@ -84,7 +180,7 @@ export class JeuOieActionService {
       return { ...next, status: 'finished' };
     }
 
-    return this.turns.advanceTurn(next);
+    return this.advanceTurnWithAnnouncement(next);
   }
 
   private applyLanding(
@@ -105,9 +201,10 @@ export class JeuOieActionService {
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
 
     const label = tile?.label ?? `Case ${position}`;
+    const compactLabel = this.compactTileLabel(label, position);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} met ${this.pawnLabel(next, playerId)} en case ${position} (${label}).`,
+      `${this.playerName(next, playerId)} met ${this.pawnPossessiveLabel(next, playerId)} en case ${position} (${compactLabel}).`,
     );
 
     if (!tile) return next;
@@ -119,7 +216,7 @@ export class JeuOieActionService {
     if (tile.type === 'finish') {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} a gagné !`,
+        `${this.playerName(next, playerId)} a gagne !`,
       );
       meta = this.getMeta(next);
       meta = { ...meta, winnerId: playerId };
@@ -130,20 +227,20 @@ export class JeuOieActionService {
       const jumpTo = 12;
       next = this.core.appendLog(
         next,
-        `Pont : avance directement à la case ${jumpTo}.`,
+        `Pont : avance directement a la case ${jumpTo}.`,
       );
       return this.applyLanding(next, playerId, jumpTo, roll);
     }
 
     if (tile.type === 'death') {
-      next = this.core.appendLog(next, 'Mort : retour au départ.');
+      next = this.core.appendLog(next, 'Mort : retour au depart.');
       return this.applyLanding(next, playerId, tile.backTo, roll);
     }
 
     if (tile.type === 'labyrinth') {
       next = this.core.appendLog(
         next,
-        `Labyrinthe : retour à la case ${tile.backTo}.`,
+        `Labyrinthe : retour a la case ${tile.backTo}.`,
       );
       return this.applyLanding(next, playerId, tile.backTo, roll);
     }
@@ -179,15 +276,15 @@ export class JeuOieActionService {
       };
       next = this.core.appendLog(
         next,
-        `Dé magique : ${this.playerName(next, playerId)} lance "${magicRoll}".`,
+        `De magique : ${this.playerName(next, playerId)} lance "${magicRoll}".`,
       );
       const delta = magicRoll <= 3 ? magicRoll : -magicRoll;
       const moved = this.move(position, delta);
       next = this.core.appendLog(
         next,
         magicRoll <= 3
-          ? `Dé magique : avance de ${magicRoll} case(s).`
-          : `Dé magique : recule de ${magicRoll} case(s).`,
+          ? `De magique : avance de ${magicRoll} case(s).`
+          : `De magique : recule de ${magicRoll} case(s).`,
       );
       return this.applyLanding(next, playerId, moved, magicRoll);
     }
@@ -198,7 +295,7 @@ export class JeuOieActionService {
       well[playerId] = true;
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} est bloqué dans le puits (il faut faire 1 pour sortir).`,
+        `${this.playerName(next, playerId)} est bloque dans le puits (il faut faire 1 pour sortir).`,
       );
       return {
         ...next,
@@ -213,7 +310,7 @@ export class JeuOieActionService {
     if (tile.type === 'goose') {
       next = this.core.appendLog(
         next,
-        `Oie : avance à nouveau de ${roll} case(s).`,
+        `Oie : avance a nouveau de ${roll} case(s).`,
       );
       const moved = this.move(position, roll);
       return this.applyLanding(next, playerId, moved, roll);
@@ -235,6 +332,97 @@ export class JeuOieActionService {
     return (state.metadata ?? {}) as any as JeuOieMetadata;
   }
 
+  private buildPawnPending(
+    state: GameStateEntity,
+    startId: number | null,
+  ): { pending: any; playerId: number; turnIndex: number } | null {
+    const players = Array.isArray(state.players) ? state.players : [];
+    if (!players.length) return null;
+
+    const meta = this.getMeta(state);
+    const pawnByPlayerId = (meta.pawnByPlayerId ?? {}) as Record<number, string>;
+    const startIndex =
+      startId != null ? players.findIndex((p) => p?.id === startId) : -1;
+    const baseIndex = startIndex >= 0 ? startIndex : 0;
+    let nextIndex = -1;
+    for (let i = 0; i < players.length; i += 1) {
+      const idx = (baseIndex + i) % players.length;
+      const pid = players[idx]?.id;
+      if (pid == null) continue;
+      if (!pawnByPlayerId[pid]) {
+        nextIndex = idx;
+        break;
+      }
+    }
+    if (nextIndex < 0) return null;
+
+    const used = new Set(
+      Object.values(pawnByPlayerId).filter((v) => typeof v === 'string'),
+    );
+    const allPawns = Array.isArray(meta.pawns) ? meta.pawns : [];
+    const choices = allPawns.filter((p: any) => !used.has(String(p?.id ?? '')));
+    if (!choices.length) return null;
+
+    const chooserId = players[nextIndex].id;
+    const chooserLabel = this.playerName(state, chooserId);
+    return {
+      playerId: chooserId,
+      turnIndex: nextIndex,
+      pending: {
+        type: 'choose_pawn',
+        playerId: chooserId,
+        blocking: true,
+        label: `C'est à ${chooserLabel} de choisir son pion.`,
+        choices: choices.map((p: any) => String(p?.label ?? '').trim()),
+        data: {
+          pawns: choices.map((p: any) => ({
+            id: String(p?.id ?? '').trim(),
+            label: String(p?.label ?? '').trim(),
+            feminine: Boolean(p?.feminine),
+          })),
+        },
+      },
+    };
+  }
+
+  private resolvePendingPawn(
+    raw: unknown,
+    options: Array<{ id?: string; label?: string; feminine?: boolean }>,
+  ): { id: string; label: string; feminine: boolean } | null {
+    if (!Array.isArray(options) || options.length === 0) return null;
+    const normalized = options
+      .map((p: any) => ({
+        id: String(p?.id ?? '').trim(),
+        label: String(p?.label ?? '').trim(),
+        feminine: Boolean(p?.feminine),
+      }))
+      .filter((p) => p.id.length > 0 && p.label.length > 0);
+    if (!normalized.length) return null;
+
+    const value =
+      typeof raw === 'object'
+        ? (raw as any)?.id ?? (raw as any)?.pawnId ?? (raw as any)?.value ?? raw
+        : raw;
+    const key = this.normalizePawnKey(value);
+    if (!key) return null;
+
+    const byId = normalized.find((p) => this.normalizePawnKey(p.id) === key);
+    if (byId) return byId;
+    const byLabel = normalized.find(
+      (p) => this.normalizePawnKey(p.label) === key,
+    );
+    return byLabel ?? null;
+  }
+
+  private normalizePawnKey(value: unknown): string {
+    return String(value ?? '')
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '');
+  }
+
   private playerName(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
     const p = players.find((x) => x?.id === id);
@@ -246,10 +434,76 @@ export class JeuOieActionService {
   }
 
   private pawnLabel(state: GameStateEntity, id: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const p = players.find((x: any) => x?.id === id) as any;
-    const pawn = typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
-    const resolved = pawn || this.playerName(state, id);
-    return `"${resolved}"`;
+    const meta = this.getMeta(state);
+    const pawnId = String(meta?.pawnByPlayerId?.[id] ?? '').trim();
+    const pawn = Array.isArray(meta?.pawns)
+      ? meta.pawns.find((p: any) => String(p?.id ?? '').trim() === pawnId)
+      : null;
+    const label = String((pawn as any)?.label ?? '').trim();
+    if (label) return label;
+    return 'pion';
+  }
+
+  private pawnPossessiveLabel(state: GameStateEntity, id: number): string {
+    const meta = this.getMeta(state);
+    const pawnId = String(meta?.pawnByPlayerId?.[id] ?? '').trim();
+    const pawn = Array.isArray(meta?.pawns)
+      ? meta.pawns.find((p: any) => String(p?.id ?? '').trim() === pawnId)
+      : null;
+    const label = this.pawnLabel(state, id);
+    const feminine = Boolean((pawn as any)?.feminine);
+    const possessive = feminine ? 'sa' : 'son';
+    return `"${possessive} ${this.lowercaseFirst(label)}"`;
+  }
+
+  private lowercaseFirst(value: string): string {
+    const text = String(value ?? '').trim();
+    if (!text) return text;
+    if (text.length === 1) return text.toLowerCase();
+    return `${text.charAt(0).toLowerCase()}${text.slice(1)}`;
+  }
+
+  private compactTileLabel(label: string, position: number): string {
+    const raw = String(label ?? '').trim();
+    const withPrefix = new RegExp(`^case\\s+${position}\\s*-\\s*`, 'i');
+    const stripped = raw.replace(withPrefix, '').trim();
+    return stripped || raw || `Case ${position}`;
+  }
+
+  private appendTurnAnnouncement(
+    state: GameStateEntity,
+    playerId: number | null | undefined,
+  ): GameStateEntity {
+    if (typeof playerId !== 'number' || !Number.isFinite(playerId)) return state;
+    return this.core.appendLog(
+      state,
+      `C'est au tour de ${this.playerName(state, playerId)}.`,
+    );
+  }
+
+  private advanceTurnWithAnnouncement(state: GameStateEntity): GameStateEntity {
+    const next = this.turns.advanceTurn(state);
+    return this.appendTurnAnnouncement(next, next.turn?.currentPlayerId ?? null);
+  }
+
+  private ensurePawnSelectionPrompt(state: GameStateEntity): GameStateEntity {
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'choose_pawn') return state;
+    const chooserId =
+      typeof pending.playerId === 'number'
+        ? pending.playerId
+        : state.turn?.currentPlayerId ?? null;
+    if (chooserId == null) return state;
+    return this.appendLogOnce(
+      state,
+      `${this.playerName(state, chooserId)} doit choisir un pion.`,
+    );
+  }
+
+  private appendLogOnce(state: GameStateEntity, message: string): GameStateEntity {
+    const log = Array.isArray(state.log) ? state.log : [];
+    const last = String(log[log.length - 1]?.message ?? '').trim();
+    if (last === message) return state;
+    return this.core.appendLog(state, message);
   }
 }

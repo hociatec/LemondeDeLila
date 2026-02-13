@@ -21,8 +21,8 @@ export class JeuOieBotService {
       { state, playerId: botPlayerId },
       'random',
       {
-        preferTypes: ['roll'],
-        fallbackTypes: ['roll'],
+        preferTypes: ['choose_pawn', 'roll'],
+        fallbackTypes: ['choose_pawn', 'roll'],
       },
     );
   }

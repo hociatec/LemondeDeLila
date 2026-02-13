@@ -19,7 +19,7 @@ internal sealed class GamePlayAnnouncementRouter
             return false;
         }
 
-        var who = string.IsNullOrWhiteSpace(info.CurrentPlayerUsername) ? null : info.CurrentPlayerUsername.Trim();
+        var who = NormalizePlayerName(info.CurrentPlayerUsername);
         var msg = who == null
             ? "Tour actuel: inconnu."
             : $"C'est au tour de {who}.";
@@ -37,5 +37,28 @@ internal sealed class GamePlayAnnouncementRouter
 
         emitHistoryMessage(msg);
         return true;
+    }
+
+    private static string? NormalizePlayerName(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return null;
+        }
+
+        var name = raw.Trim();
+        var lower = name.ToLowerInvariant();
+        if (lower.EndsWith("(zone de jeu)", StringComparison.Ordinal) ||
+            lower.EndsWith("(zone de jeux)", StringComparison.Ordinal) ||
+            lower.EndsWith("(game zone)", StringComparison.Ordinal))
+        {
+            var openParen = name.LastIndexOf('(');
+            if (openParen > 0)
+            {
+                name = name.Substring(0, openParen).TrimEnd();
+            }
+        }
+
+        return string.IsNullOrWhiteSpace(name) ? null : name;
     }
 }

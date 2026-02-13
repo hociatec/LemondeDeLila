@@ -1450,7 +1450,8 @@ export class ContesActionService {
     let next = state;
     next = this.decrementPerTurn(next, playerId, 'noBonusCardsTurns');
     const advanced = this.turns.advanceTurn(next);
-    return this.applyTurnSwapIfNeeded(advanced);
+    const swapped = this.applyTurnSwapIfNeeded(advanced);
+    return this.appendTurnAnnouncement(swapped, swapped.turn?.currentPlayerId);
   }
 
   private applyTurnSwapIfNeeded(state: GameStateEntity): GameStateEntity {
@@ -1570,7 +1571,8 @@ export class ContesActionService {
     const msg = `${this.playerName(state, currentId)} est bloqué(e) (Loup dans la forêt) : tour passé.`;
     const logged = this.core.appendLog(state, msg);
     const advanced = this.turns.advanceTurn(logged);
-    return this.applyTurnSwapIfNeeded(advanced);
+    const swapped = this.applyTurnSwapIfNeeded(advanced);
+    return this.appendTurnAnnouncement(swapped, swapped.turn?.currentPlayerId);
   }
 
   private canUseBonusCards(state: GameStateEntity, playerId: number): boolean {
@@ -1676,6 +1678,17 @@ export class ContesActionService {
     const pawn = String((player as any)?.pawn ?? '').trim();
     if (pawn) return `"${pawn}"`;
     return 'un pion';
+  }
+
+  private appendTurnAnnouncement(
+    state: GameStateEntity,
+    playerId: number | null | undefined,
+  ): GameStateEntity {
+    if (typeof playerId !== 'number' || !Number.isFinite(playerId)) return state;
+    return this.core.appendLog(
+      state,
+      `C'est au tour de ${this.playerName(state, playerId)}.`,
+    );
   }
 
   private getMeta(state: GameStateEntity): ContesCacahuetesMetadata {

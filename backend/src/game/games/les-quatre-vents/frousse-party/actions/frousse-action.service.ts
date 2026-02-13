@@ -127,7 +127,16 @@ export class FrousseActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     const pending = buildPawnSelectionPending(players, this.getMeta(state));
     if (!pending) return state;
-    return { ...state, pending };
+    const withPending = { ...state, pending };
+    const chooserId =
+      typeof pending.playerId === 'number' ? pending.playerId : null;
+    if (chooserId == null) {
+      return withPending;
+    }
+    return this.appendLogOnce(
+      withPending,
+      `${this.playerName(withPending, chooserId)} doit choisir un pion.`,
+    );
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -366,7 +375,7 @@ export class FrousseActionService {
       const casePrefix = new RegExp(`^case\\s+${tile.n}\\b[\\s.:,;-]*`, 'i');
       const normalizedLabel = label.replace(casePrefix, '').trim();
       const labelForParenthesis = normalizedLabel || label;
-      const placement = `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${tile.n} (${labelForParenthesis}).`;
+      const placement = `${this.playerName(next, playerId)} place ${this.pawnPossessiveLabel(next, playerId)} en case ${tile.n} (${labelForParenthesis}).`;
       const arrival = descRaw
         ? `${placement}\n${descRaw}`
         : placement;
@@ -745,11 +754,7 @@ export class FrousseActionService {
         },
       };
       (meta as any).keepTurnNow = true;
-      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      return this.core.appendLog(
-        next,
-        `${this.playerName(next, playerId)} rejoue (malus au prochain dé).`,
-      );
+      return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
     // Next roll: keep lowest of two.
@@ -768,11 +773,7 @@ export class FrousseActionService {
         },
       };
       (meta as any).keepTurnNow = true;
-      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      return this.core.appendLog(
-        next,
-        `${this.playerName(next, playerId)} rejoue (garde le plus petit des deux dés).`,
-      );
+      return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
     // Next roll double.
@@ -803,11 +804,7 @@ export class FrousseActionService {
         },
       };
       (meta as any).keepTurnNow = true;
-      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      return this.core.appendLog(
-        next,
-        `${this.playerName(next, playerId)} rejoue (test du 3).`,
-      );
+      return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
     // Téléport jusqu'à la case 40.
@@ -822,11 +819,7 @@ export class FrousseActionService {
       (/Relancez/i.test(text) && /dé/i.test(text))
     ) {
       (meta as any).keepTurnNow = true;
-      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      return this.core.appendLog(
-        next,
-        `${this.playerName(next, playerId)} rejoue.`,
-      );
+      return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
     // Global: others +3 and you skip.
@@ -1119,6 +1112,38 @@ export class FrousseActionService {
     const title = String((fromMeta as any)?.title ?? pawnId).trim();
     if (title) return `"${title}"`;
     return 'un pion';
+  }
+
+  private pawnPossessiveLabel(state: GameStateEntity, id: number): string {
+    const raw = this.pawnLabel(state, id);
+    const inner = String(raw ?? '').trim().replace(/^"(.*)"$/, '$1').trim();
+    if (!inner) {
+      return '"son pion"';
+    }
+    const stripped = inner
+      .replace(/^(un|une|le|la|les)\s+/i, '')
+      .replace(/^l['’]\s*/i, '')
+      .trim();
+    const base = this.lowercaseFirst(stripped || inner);
+    const feminine = /^(une|la)\s+/i.test(inner);
+    const possessive = feminine ? 'sa' : 'son';
+    return `"${possessive} ${base}"`;
+  }
+
+  private lowercaseFirst(value: string): string {
+    const text = String(value ?? '').trim();
+    if (!text) return text;
+    if (text.length === 1) return text.toLowerCase();
+    return `${text.charAt(0).toLowerCase()}${text.slice(1)}`;
+  }
+
+  private appendLogOnce(state: GameStateEntity, message: string): GameStateEntity {
+    const log = Array.isArray(state.log) ? state.log : [];
+    const last = String(log[log.length - 1]?.message ?? '').trim();
+    if (last === message) {
+      return state;
+    }
+    return this.core.appendLog(state, message);
   }
 
   private finalizeStarterAfterPawnSelection(

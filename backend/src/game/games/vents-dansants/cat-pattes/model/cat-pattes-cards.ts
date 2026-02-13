@@ -1,6 +1,11 @@
 export type CatPattesCardType = 'pattes' | 'obstacle' | 'parade' | 'bot';
 
-export type CatPattesObstacleType = 'gamelle' | 'pluie' | 'chien' | 'coussin' | 'sol';
+export type CatPattesObstacleType =
+  | 'gamelle'
+  | 'pluie'
+  | 'chien'
+  | 'coussin'
+  | 'sol';
 export type CatPattesParadeType =
   | 'croquettes'
   | 'rayon'
@@ -12,6 +17,14 @@ export type CatPattesBotType =
   | 'chat-ninja'
   | 'patte-blindee'
   | 'passage-star';
+
+export type CatPattesPawn =
+  | 'Maine Coon'
+  | 'Siamois'
+  | 'Persan'
+  | 'Bengal'
+  | 'Chartreux'
+  | 'Angora';
 
 export interface CatPattesCardDefinition {
   id: string;
@@ -58,7 +71,7 @@ const deck: CatPattesCardDefinition[] = [
   }),
   ...createCopies('pattes-150', 4, {
     type: 'pattes',
-    name: 'Turbo-chat',
+    name: 'Turbochat',
     value: 150,
   }),
   ...createCopies('obstacle-gamelle', 3, {
@@ -132,7 +145,7 @@ const deck: CatPattesCardDefinition[] = [
   {
     id: 'bot-passage-star',
     type: 'bot',
-    name: 'Passage de Star',
+    name: 'Passage de star',
     bot: 'passage-star',
   },
 ];
@@ -140,3 +153,12 @@ const deck: CatPattesCardDefinition[] = [
 export const CAT_PATTES_DECK = deck;
 export const CAT_PATTES_CARD_BY_ID: Record<string, CatPattesCardDefinition> =
   Object.fromEntries(deck.map((card) => [card.id, card]));
+
+export const CAT_PATTES_PAWNS: CatPattesPawn[] = [
+  'Maine Coon',
+  'Siamois',
+  'Persan',
+  'Bengal',
+  'Chartreux',
+  'Angora',
+];

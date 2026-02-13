@@ -1,8 +1,8 @@
-import { buildCatPattesShortcuts } from '../cat-pattes.shortcuts';
+import { buildContesShortcuts } from '../contes.shortcuts';
 
-describe('CatPattesShortcuts', () => {
-  it('declares draw/score/progression shortcuts', () => {
-    const shortcuts = buildCatPattesShortcuts();
+describe('ContesShortcuts', () => {
+  it('declares draw, score and position shortcuts', () => {
+    const shortcuts = buildContesShortcuts();
     expect(Array.isArray(shortcuts)).toBe(true);
     expect(
       shortcuts.some(

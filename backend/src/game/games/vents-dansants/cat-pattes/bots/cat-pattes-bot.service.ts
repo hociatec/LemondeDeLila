@@ -19,8 +19,8 @@ export class CatPattesBotService {
       { state, playerId: botPlayerId },
       'greedy',
       {
-        preferTypes: ['play_card'],
-        fallbackTypes: ['play_card', 'pass'],
+        preferTypes: ['choose_pawn', 'draw', 'play_card', 'discard_card'],
+        fallbackTypes: ['draw', 'play_card', 'discard_card', 'pass'],
       },
     );
   }

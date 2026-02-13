@@ -2,7 +2,7 @@ import type { GameDefinition } from '../../../../engine/model/game-definition.mo
 
 export type JeuOieGameId = 'jeu-oie';
 export type JeuOiePhaseId = 'turn';
-export type JeuOieActionType = 'roll' | 'ROLL_DICE';
+export type JeuOieActionType = 'roll' | 'ROLL_DICE' | 'choose_pawn';
 
 export const JEU_OIE_GAME: GameDefinition<
   JeuOieGameId,
@@ -16,7 +16,7 @@ export const JEU_OIE_GAME: GameDefinition<
   minPlayers: 2,
   maxPlayers: 6,
   roles: [],
-  actions: ['roll', 'ROLL_DICE'],
+  actions: ['roll', 'ROLL_DICE', 'choose_pawn'],
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,
 } as const;

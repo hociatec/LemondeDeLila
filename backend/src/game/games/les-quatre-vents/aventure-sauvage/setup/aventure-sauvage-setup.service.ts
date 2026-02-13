@@ -1,5 +1,6 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { ensureSeededRng } from '../../../../../common/utils/seeded-rng';
@@ -14,6 +15,7 @@ import type {
 @Injectable()
 export class AventureSauvageSetupService {
   constructor(
+    private readonly core: GameCoreService,
     private readonly random: RandomService,
     private readonly contentLoader: GameContentLoaderService,
   ) {}
@@ -74,8 +76,8 @@ export class AventureSauvageSetupService {
       winnerId: null,
     };
 
-    // IMPORTANT: les cartes doivent ÃƒÂªtre mÃƒÂ©langÃƒÂ©es au dÃƒÂ©but, sinon on pioche toujours dans l'ordre du fichier.
-    // On utilise le RNG seedÃƒÂ© cÃƒÂ´tÃƒÂ© serveur (metadata.rng) pour avoir un comportement stable par "session" (runId/startedAt).
+    // IMPORTANT: les cartes doivent etre melangees au debut, sinon on pioche toujours dans l'ordre du fichier.
+    // On utilise le RNG seede cote serveur (metadata.rng) pour avoir un comportement stable par "session" (runId/startedAt).
     let rngMeta: any = buildShuffleMeta(baseState.metadata ?? {});
     const shuffledAnimal = this.random.shuffle(rngMeta, defaultAnimalDeck());
     rngMeta = shuffledAnimal.meta as any;
@@ -99,8 +101,7 @@ export class AventureSauvageSetupService {
       pendingInfo?.playerId != null
         ? pendingInfo.playerId
         : setupStarterId ?? baseState.turn?.currentPlayerId ?? null;
-
-    return {
+    const next: GameStateEntity = {
       ...baseState,
       phase: 'playing',
       pending: pendingInfo?.pending ?? null,
@@ -112,6 +113,13 @@ export class AventureSauvageSetupService {
       turnIndex,
       metadata: { ...(baseState.metadata ?? {}), ...metaBase, rng: rngMeta?.rng ?? (baseState.metadata as any)?.rng },
     };
+
+    if (!pendingInfo) return next;
+    const chooser = players.find((p) => p?.id === pendingInfo.playerId);
+    const chooserName = String((chooser as any)?.username ?? '').trim();
+    const chooserLabel =
+      chooserName.length > 0 ? chooserName : `Joueur ${pendingInfo.playerId}`;
+    return this.core.appendLog(next, `${chooserLabel} doit choisir un pion.`);
   }
 }
 
@@ -165,7 +173,7 @@ function buildTiles(): AventureSauvageTile[] {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        "Vous entendez des bruissements lointains dans les feuillages. Impossible de savoir s'il s'agit du ventâ€¦ ou d'autre chose.",
+        "Vous entendez des bruissements lointains dans les feuillages. Impossible de savoir s'il s'agit du vent... ou d'autre chose.",
     },
     {
       type: 'neutral',
@@ -307,9 +315,9 @@ function buildTiles(): AventureSauvageTile[] {
     },
     {
       type: 'finish',
-      label: 'Case Neutre â€“ Arrivée (verte)',
+      label: 'Case Neutre - Arrivee (verte)',
       description:
-        "Vous atteignez enfin la mare au cÅ“ur de la jungle. L'eau est calme, l'air plus frais, et le sentier s'arrête ici. Votre aventure prend fin.",
+        "Vous atteignez enfin la mare au coeur de la jungle. L'eau est calme, l'air plus frais, et le sentier s'arrête ici. Votre aventure prend fin.",
     },
   ];
 }

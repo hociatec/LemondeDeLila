@@ -138,7 +138,7 @@ export class FouleesFantastiquesSetupService {
       { id: 'poissons', label: 'Famille des Poissons (aquarium)' },
     ];
 
-    return {
+    const withPending = {
       ...withBoard,
       pending: {
         type: 'choose_family',
@@ -149,6 +149,13 @@ export class FouleesFantastiquesSetupService {
         data: { familyIds: families.map((f) => f.id) },
       } as any,
     };
+    const currentName =
+      players.find((p) => p?.id === currentId)?.username?.trim() ||
+      `Joueur ${currentId}`;
+    return this.core.appendLog(
+      withPending,
+      `${currentName} doit choisir une famille d'animaux.`,
+    );
   }
 
   recomputeBoardView(state: GameStateEntity): GameStateEntity {

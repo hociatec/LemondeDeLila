@@ -18,6 +18,15 @@ export class ContesPresenterService {
     const meta = (state.metadata ?? {}) as any as ContesCacahuetesMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
+    const scoreLines = players.map((p) => {
+      const pid = Number(p?.id);
+      const name =
+        p?.username && String(p.username).trim()
+          ? String(p.username).trim()
+          : `Joueur ${pid}`;
+      const position = Number(meta.positions?.[pid] ?? 0) + 1;
+      return `${name} : case ${position}/60.`;
+    });
 
     const extras = {
       ...(state as any).extras,
@@ -34,6 +43,10 @@ export class ContesPresenterService {
               positionsRaw: meta.positions,
               playerId: userId,
             }),
+          },
+          score: {
+            title: 'Score',
+            message: scoreLines.join(' '),
           },
         },
       },

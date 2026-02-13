@@ -2,7 +2,12 @@ import type { GameDefinition } from '../../../../engine/model/game-definition.mo
 
 export type CatPattesGameId = 'cat-pattes';
 export type CatPattesPhaseId = 'turn';
-export type CatPattesActionType = 'play_card' | 'pass';
+export type CatPattesActionType =
+  | 'draw'
+  | 'play_card'
+  | 'discard_card'
+  | 'pass'
+  | 'choose_pawn';
 
 export const CAT_PATTES_GAME: GameDefinition<
   CatPattesGameId,
@@ -16,7 +21,7 @@ export const CAT_PATTES_GAME: GameDefinition<
   minPlayers: 2,
   maxPlayers: 6,
   roles: [],
-  actions: ['play_card', 'pass'],
+  actions: ['draw', 'play_card', 'discard_card', 'pass', 'choose_pawn'],
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,
 } as const;

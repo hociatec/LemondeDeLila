@@ -1,12 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import { GameCoreService } from '../../../../core/services/game-core.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import type { JeuOieCaseTextsJsonV1 } from '../model/jeu-oie-content.entity';
-import type { JeuOieMetadata, JeuOieTile } from '../model/jeu-oie-state.entity';
+import type {
+  JeuOieMetadata,
+  JeuOiePawn,
+  JeuOieTile,
+} from '../model/jeu-oie-state.entity';
+
+const JEU_OIE_PAWNS: JeuOiePawn[] = [
+  { id: 'coq-rockeur', label: 'Coq rockeur', feminine: false },
+  { id: 'vache-artistique', label: 'Vache artistique', feminine: true },
+  { id: 'cochon-gourmand', label: 'Cochon gourmand', feminine: false },
+  { id: 'poule-scientifique', label: 'Poule scientifique', feminine: true },
+  { id: 'chevre-acrobate', label: 'Chevre acrobate', feminine: true },
+  { id: 'marmotte-reveuse', label: 'Marmotte reveuse', feminine: true },
+];
 
 @Injectable()
 export class JeuOieSetupService {
-  constructor(private readonly contentLoader: GameContentLoaderService) {}
+  constructor(
+    private readonly core: GameCoreService,
+    private readonly contentLoader: GameContentLoaderService,
+  ) {}
 
   private loadTexts(): JeuOieCaseTextsJsonV1 {
     return this.contentLoader.loadContent<JeuOieCaseTextsJsonV1>({
@@ -28,23 +45,104 @@ export class JeuOieSetupService {
       positions[p.id] = 1;
       laps[p.id] = 0;
     }
+    const pawnByPlayerId: Record<number, string> = {};
+
+    const starterId =
+      typeof baseState.turn?.currentPlayerId === 'number'
+        ? baseState.turn.currentPlayerId
+        : players[0]?.id ?? null;
+    const pendingInfo = buildPawnPending(
+      players,
+      pawnByPlayerId,
+      starterId,
+      JEU_OIE_PAWNS,
+    );
 
     const meta: JeuOieMetadata = {
       tiles: buildTiles(this.loadTexts()),
       positions,
       laps,
+      pawns: [...JEU_OIE_PAWNS],
+      pawnByPlayerId,
+      setupStarterId: starterId,
       statuses: { skipTurn: {}, well: {} },
       winnerId: null,
     };
 
-    return {
+    const next: GameStateEntity = {
       ...baseState,
       phase: 'turn',
       lastRoll: null,
-      pending: null,
+      pending: pendingInfo?.pending ?? null,
+      turnIndex:
+        pendingInfo?.turnIndex != null ? pendingInfo.turnIndex : baseState.turnIndex,
+      turn: {
+        ...(baseState.turn ?? { direction: 1 }),
+        currentPlayerId: pendingInfo?.playerId ?? starterId,
+        direction: 1,
+      },
       metadata: { ...(baseState.metadata ?? {}), ...meta },
     };
+
+    if (!pendingInfo) return next;
+    const chooser = players.find((p) => p?.id === pendingInfo.playerId);
+    const chooserName = String((chooser as any)?.username ?? '').trim();
+    const chooserLabel =
+      chooserName.length > 0 ? chooserName : `Joueur ${pendingInfo.playerId}`;
+    return this.core.appendLog(next, `${chooserLabel} doit choisir un pion.`);
   }
+}
+
+function buildPawnPending(
+  players: Array<{ id: number; username?: string }>,
+  pawnByPlayerId: Record<number, string>,
+  startId: number | null,
+  pawns: JeuOiePawn[],
+): { pending: any; playerId: number; turnIndex: number } | null {
+  if (!players.length) return null;
+  const startIndex =
+    startId != null ? players.findIndex((p) => p?.id === startId) : -1;
+  const baseIndex = startIndex >= 0 ? startIndex : 0;
+  let nextIndex = -1;
+  for (let i = 0; i < players.length; i += 1) {
+    const idx = (baseIndex + i) % players.length;
+    const pid = players[idx]?.id;
+    if (pid == null) continue;
+    if (!pawnByPlayerId[pid]) {
+      nextIndex = idx;
+      break;
+    }
+  }
+  if (nextIndex < 0) return null;
+
+  const used = new Set(
+    Object.values(pawnByPlayerId).filter((v) => typeof v === 'string'),
+  );
+  const choices = pawns.filter((p) => !used.has(p.id));
+  if (!choices.length) return null;
+
+  const chooserId = players[nextIndex].id;
+  const chooserName = String((players[nextIndex] as any)?.username ?? '').trim();
+  const chooserLabel = chooserName.length > 0 ? chooserName : `Joueur ${chooserId}`;
+
+  return {
+    playerId: chooserId,
+    turnIndex: nextIndex,
+    pending: {
+      type: 'choose_pawn',
+      playerId: chooserId,
+      blocking: true,
+      label: `C'est à ${chooserLabel} de choisir son pion.`,
+      choices: choices.map((p) => p.label),
+      data: {
+        pawns: choices.map((p) => ({
+          id: p.id,
+          label: p.label,
+          feminine: p.feminine,
+        })),
+      },
+    },
+  };
 }
 
 function buildTiles(texts: JeuOieCaseTextsJsonV1): JeuOieTile[] {
@@ -77,7 +175,7 @@ function buildTiles(texts: JeuOieCaseTextsJsonV1): JeuOieTile[] {
       tiles.push({
         id: 'start',
         type: 'start',
-        label: t?.title ? `Case ${i} - ${t.title}` : `Case ${i} - Départ`,
+        label: t?.title ? `Case ${i} - ${t.title}` : `Case ${i} - Depart`,
         description: t?.description || undefined,
       });
       continue;
@@ -87,7 +185,7 @@ function buildTiles(texts: JeuOieCaseTextsJsonV1): JeuOieTile[] {
       tiles.push({
         id: 'finish',
         type: 'finish',
-        label: t?.title ? `Case ${i} - ${t.title}` : `Case ${i} - Arrivée`,
+        label: t?.title ? `Case ${i} - ${t.title}` : `Case ${i} - Arrivee`,
         description: t?.description || undefined,
       });
       continue;
@@ -118,7 +216,7 @@ function buildTiles(texts: JeuOieCaseTextsJsonV1): JeuOieTile[] {
       tiles.push({
         id: 'magic-die',
         type: 'magic_die',
-        label: t?.title ? `Case ${i} - ${t.title}` : `Case ${i} - Dé magique`,
+        label: t?.title ? `Case ${i} - ${t.title}` : `Case ${i} - De magique`,
         description: t?.description || undefined,
       });
       continue;

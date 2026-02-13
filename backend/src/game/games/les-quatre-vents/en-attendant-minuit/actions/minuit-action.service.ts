@@ -272,7 +272,7 @@ export class MinuitActionService {
         next,
         `${this.playerName(next, currentId)} échange sa position avec ${this.playerName(next, targetPlayerId)}.`,
       );
-      return this.turns.advanceTurn(next);
+      return this.advanceTurnOrKeep(next, currentId);
     }
 
     if (ctx.kind === 'gift') {
@@ -288,7 +288,9 @@ export class MinuitActionService {
       next = this.move(next, targetPlayerId, 1);
       next = this.move(next, currentId, 2);
       next = this.applyLanding(next, currentId);
-      return this.turns.advanceTurn(next);
+      const nextMeta = this.getMeta(next);
+      if (nextMeta.pendingQuiz || next.pending) return next;
+      return this.advanceTurnOrKeep(next, currentId);
     }
 
     return { ...state, pending: null };
@@ -353,7 +355,7 @@ export class MinuitActionService {
     const choiceMap = Object.fromEntries(entries.map((e) => [e.label, e.title]));
     const chooser = missing[0];
     const chooserLabel = this.playerName(state, chooser.id);
-    return {
+    const withPending = {
       ...state,
       pending: {
         type: 'pick_pawn',
@@ -369,6 +371,10 @@ export class MinuitActionService {
         direction: 1,
       },
     };
+    return this.appendLogOnce(
+      withPending,
+      `${chooserLabel} doit choisir un pion.`,
+    );
   }
 
   private assignBotPawns(state: GameStateEntity): GameStateEntity {
@@ -525,7 +531,7 @@ export class MinuitActionService {
     if (occupant != null) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} sur une case occupée : recul d'une case.`,
+        `${this.playerName(next, playerId)} place ${this.pawnPossessiveLabel(next, playerId)} sur une case occupée : recul d'une case.`,
       );
       next = this.move(next, playerId, -1);
       meta = this.getMeta(next);
@@ -537,7 +543,7 @@ export class MinuitActionService {
     const afterPos = meta.positions?.[playerId] ?? 0;
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${afterPos + 1} (${tile.title}).`,
+      `${this.playerName(next, playerId)} place ${this.pawnPossessiveLabel(next, playerId)} en case ${afterPos + 1} (${tile.title}).`,
     );
     const description = String((tile as any)?.description ?? '').trim();
     if (description) {
@@ -1032,6 +1038,43 @@ export class MinuitActionService {
     return 'un pion';
   }
 
+  private pawnPossessiveLabel(state: GameStateEntity, id: number): string {
+    const raw = this.pawnLabel(state, id);
+    const inner = String(raw ?? '').trim().replace(/^"(.*)"$/, '$1').trim();
+    if (!inner) return '"son pion"';
+    const stripped = inner
+      .replace(/^(le|la|les|un|une)\s+/i, '')
+      .replace(/^l['’]\s*/i, '')
+      .trim();
+    const base = this.lowercaseFirst(stripped || inner);
+    const feminine = /^(la|une)\s+/i.test(inner);
+    const possessive = feminine ? 'sa' : 'son';
+    return `"${possessive} ${base}"`;
+  }
+
+  private lowercaseFirst(value: string): string {
+    const text = String(value ?? '').trim();
+    if (!text) return text;
+    if (text.length === 1) return text.toLowerCase();
+    return `${text.charAt(0).toLowerCase()}${text.slice(1)}`;
+  }
+
+  private appendTurnAnnouncement(state: GameStateEntity): GameStateEntity {
+    const currentId = state.turn?.currentPlayerId ?? null;
+    if (currentId == null) return state;
+    return this.appendLogOnce(
+      state,
+      `C'est au tour de ${this.playerName(state, currentId)}.`,
+    );
+  }
+
+  private appendLogOnce(state: GameStateEntity, message: string): GameStateEntity {
+    const log = Array.isArray(state.log) ? state.log : [];
+    const last = String(log[log.length - 1]?.message ?? '').trim();
+    if (last === message) return state;
+    return this.core.appendLog(state, message);
+  }
+
   private advanceTurnOrKeep(state: GameStateEntity, playerId: number): GameStateEntity {
     const meta = this.getMeta(state);
     const keep = meta.statuses?.keepTurn?.[playerId] ?? 0;
@@ -1048,7 +1091,8 @@ export class MinuitActionService {
       };
       return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
     }
-    return this.turns.advanceTurn(state);
+    const advanced = this.turns.advanceTurn(state);
+    return this.appendTurnAnnouncement(advanced);
   }
 }
 

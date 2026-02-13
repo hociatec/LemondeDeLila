@@ -11,12 +11,12 @@ export class ContesCacahuetesSetupService {
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const players = Array.isArray(baseState.players) ? baseState.players : [];
     const pawnNames = [
-      'Aika',
-      'Freja',
-      'Lani',
-      'Niko',
-      'Tavi',
-      'Arman',
+      'Aika - Mongolie',
+      'Freja - Suède',
+      'Lani - Îles Marshall',
+      'Niko - Géorgie',
+      'Tavi - Fidji',
+      'Arman - Arménie',
     ];
     const updatedPlayers = players.map((p, index) => {
       if (!p) return p as any;

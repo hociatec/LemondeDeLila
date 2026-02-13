@@ -14,10 +14,19 @@ export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
+  const toPlayerId = (value: unknown): number | null => {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string') {
+      const n = Number(value.trim());
+      return Number.isFinite(n) ? n : null;
+    }
+    return null;
+  };
+
   const status = String(state.status ?? '').toLowerCase();
   const pawnPending = state.pending as any;
   if (pawnPending && pawnPending.type === 'pick_pawn') {
-    if (pawnPending.playerId !== playerId) return [];
+    if (toPlayerId(pawnPending.playerId) !== playerId) return [];
     const providedChoices = Array.isArray(pawnPending.choices)
       ? pawnPending.choices
       : Array.isArray(pawnPending?.data?.choices)
@@ -36,7 +45,7 @@ export function getAvailableActions(
   const meta = (state.metadata ?? {}) as any as MinuitMetadata;
   const pendingQuiz = meta.pendingQuiz ?? null;
   if (pendingQuiz) {
-    if (pendingQuiz.playerId !== playerId) return [];
+    if (toPlayerId(pendingQuiz.playerId) !== playerId) return [];
     return (pendingQuiz.choices ?? []).map((choice) => ({
       type: 'answer_quiz',
       payload: { answer: choice },
@@ -45,7 +54,7 @@ export function getAvailableActions(
 
   const activePending = state.pending as any;
   if (activePending) {
-    if (activePending.playerId !== playerId) return [];
+    if (toPlayerId(activePending.playerId) !== playerId) return [];
     if (activePending.type === 'draw') {
       return [{ type: 'draw', payload: {} }];
     }
@@ -63,7 +72,7 @@ export function getAvailableActions(
     return [];
   }
 
-  const current = state.turn?.currentPlayerId ?? null;
+  const current = toPlayerId(state.turn?.currentPlayerId ?? null);
   if (current !== playerId) return [];
   return [{ type: 'roll' }, { type: 'ROLL_DICE' }];
 }
@@ -73,6 +82,15 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
+  const toPlayerId = (value: unknown): number | null => {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string') {
+      const n = Number(value.trim());
+      return Number.isFinite(n) ? n : null;
+    }
+    return null;
+  };
+
   const rawType = String(action?.type ?? '').trim();
   const type = (
     rawType === 'roll_dice' ? 'ROLL_DICE' : rawType
@@ -92,7 +110,7 @@ export function validateAction(
 
   const pickPawnPending = state.pending as any;
   if (pickPawnPending && pickPawnPending.type === 'pick_pawn') {
-    if (pickPawnPending.playerId !== actorId) {
+    if (toPlayerId(pickPawnPending.playerId) !== actorId) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
         gameType: 'en-attendant-minuit',
       });
@@ -134,7 +152,7 @@ export function validateAction(
         action: type,
       });
     }
-    if (meta.pendingQuiz.playerId !== actorId) {
+    if (toPlayerId(meta.pendingQuiz.playerId) !== actorId) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
         gameType: 'en-attendant-minuit',
         expectedPlayerId: meta.pendingQuiz.playerId,
@@ -152,7 +170,7 @@ export function validateAction(
 
   const actionPending = state.pending as any;
   if (actionPending) {
-    if (actionPending.playerId !== actorId) {
+    if (toPlayerId(actionPending.playerId) !== actorId) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
         gameType: 'en-attendant-minuit',
       });
@@ -194,7 +212,7 @@ export function validateAction(
     });
   }
 
-  const current = state.turn?.currentPlayerId ?? null;
+  const current = toPlayerId(state.turn?.currentPlayerId ?? null);
   if (current != null && actorId !== current) {
     throw new PlayerActionError("Ce n'est pas votre tour.", {
       gameType: 'en-attendant-minuit',

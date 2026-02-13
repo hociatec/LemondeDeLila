@@ -146,4 +146,57 @@ describe('ZigEtZag compat', () => {
     expect(afterP2Messages).toContain('Lila pioche.');
     expect(afterP2Messages).toContain('Hacene et Lila dévoilent leurs cartes.');
   });
+  it('applies full capture count on winner deck summary (+2/-2 on a basic trick)', async () => {
+    const service = new ZigEtZagActionService(
+      new GameCoreService(),
+      new TurnFlowService(new TurnService()),
+      new RandomService(),
+    );
+
+    const state: any = {
+      status: 'started',
+      phase: 'turn',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'Lilas' },
+        { id: 2, username: 'Wally Gator' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: null,
+      metadata: {
+        playerDecks: {
+          '1': ['pantoufle-loup', 'banane-libellule'],
+          '2': ['pantoufle-poisson', 'dentifrice-libellule'],
+        },
+        roundState: {
+          stage: 'selection',
+          plays: [
+            { playerId: 1, playedCards: [] },
+            { playerId: 2, playedCards: [] },
+          ],
+          waitingPlayers: [1, 2],
+          tiedPlayers: [],
+          triggerColors: {},
+          triggerFamilies: {},
+          battleLog: [],
+        },
+        lastRound: null,
+        winnerId: null,
+      },
+    };
+
+    const afterP1: any = service.applyActions(state, [
+      { type: 'select_card', payload: { cardId: 'pantoufle-loup' }, meta: { actorId: 1 } },
+    ] as any);
+    const afterP2: any = service.applyActions(afterP1, [
+      { type: 'select_card', payload: { cardId: 'pantoufle-poisson' }, meta: { actorId: 2 } },
+    ] as any);
+
+    expect((afterP2.metadata?.playerDecks?.['1'] ?? []).length).toBe(4);
+    expect((afterP2.metadata?.playerDecks?.['2'] ?? []).length).toBe(0);
+  });
 });
+

@@ -2,6 +2,12 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePawnId } from '../aventure-sauvage.pawns';
 
+function samePlayerId(a: unknown, b: unknown): boolean {
+  const left = Number(a);
+  const right = Number(b);
+  return Number.isFinite(left) && Number.isFinite(right) && left === right;
+}
+
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
@@ -10,10 +16,13 @@ export function getAvailableActions(
   if (status !== 'started') return [];
   const pending = state.pending as any;
   if (pending) {
-    if (pending.type === 'draw' && pending.playerId === playerId) {
+    if (pending.type === 'draw' && samePlayerId(pending.playerId, playerId)) {
       return [{ type: 'draw', payload: {} }];
     }
-    if (pending.type === 'choose_pawn' && pending.playerId === playerId) {
+    if (
+      pending.type === 'choose_pawn' &&
+      samePlayerId(pending.playerId, playerId)
+    ) {
       const pawns: Array<{ id?: string }> = Array.isArray(pending?.data?.pawns)
         ? pending.data.pawns
         : [];
@@ -25,7 +34,7 @@ export function getAvailableActions(
     return [];
   }
   const current = state.turn?.currentPlayerId ?? null;
-  if (current !== playerId) return [];
+  if (!samePlayerId(current, playerId)) return [];
   return [{ type: 'roll', payload: {} }];
 }
 
@@ -49,17 +58,20 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error('La partie n’est pas démarrée.');
+    throw new Error("La partie n'est pas demarree.");
   }
   const pending = state.pending as any;
   if (pending) {
-    if (pending.type === 'draw' && pending.playerId === actorId) {
+    if (pending.type === 'draw' && samePlayerId(pending.playerId, actorId)) {
       if (type !== 'draw') {
         throw new Error('Action indisponible (pioche requise).');
       }
       return { type: 'draw', payload: {} };
     }
-    if (pending.type === 'choose_pawn' && pending.playerId === actorId) {
+    if (
+      pending.type === 'choose_pawn' &&
+      samePlayerId(pending.playerId, actorId)
+    ) {
       if (type !== 'choose_pawn') {
         throw new Error('Action indisponible (choix de pion requis).');
       }
@@ -81,7 +93,7 @@ export function validateAction(
     throw new Error('Action indisponible (choix en attente).');
   }
   const current = state.turn?.currentPlayerId ?? null;
-  if (current !== actorId) {
+  if (!samePlayerId(current, actorId)) {
     throw new Error("Ce n'est pas votre tour.");
   }
   return { type: 'roll', payload: {} };
