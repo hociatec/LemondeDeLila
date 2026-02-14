@@ -1,6 +1,8 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
@@ -9,6 +11,7 @@ import {
   PIMP_MY_RIDE_CAR_NAMES,
   PIMP_MY_RIDE_CATEGORY_ORDER,
 } from '../model/pimp-my-ride-cards';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
 import type {
   PimpMyRideCompletedCar,
   PimpMyRideMetadata,
@@ -41,23 +44,28 @@ export class PimpMyRideActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'play_card') {
-        next = this.handlePlayCard(next, action);
-        continue;
-      }
-      if (type === 'discard_card') {
-        next = this.handleDiscardCard(next, action);
-        continue;
-      }
-      if (type === 'pass') {
-        next = this.handlePass(next);
-        continue;
-      }
-    }
-    return next;
+    const next = applyActionsSequentially(state, actions, (next, action) => {
+          const type = normalizeActionType(action);
+          return dispatchByActionType(
+            type,
+            {
+              'play_card': () => {
+                next = this.handlePlayCard(next, action);
+                return next;
+              },
+              'discard_card': () => {
+                next = this.handleDiscardCard(next, action);
+                return next;
+              },
+              'pass': () => {
+                next = this.handlePass(next);
+                return next;
+              },
+            },
+            () => next,
+          );
+        });
+        return next;
   }
 
   private handlePass(state: GameStateEntity): GameStateEntity {

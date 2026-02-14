@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+
+import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import { SAC_A_MALICES_GAME } from '../definitions/sac-a-malices.definition';
 import * as Rulebook from '../rulebook/rulebook';
@@ -26,11 +28,7 @@ export class SacAMalicesPresenterService {
         phases: SAC_A_MALICES_GAME.phaseOrder.map((p) => p.id),
         victory: null,
       },
-      actions: actions.map((a) => ({
-        type: a.type,
-        label: a.type,
-        payload: a.payload ?? {},
-      })),
+      actions: formatPresenterActions(actions),
       pending,
       extras: {
         ...(state as any).extras,

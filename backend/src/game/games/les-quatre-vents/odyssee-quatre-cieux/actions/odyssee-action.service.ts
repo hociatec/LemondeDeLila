@@ -3,7 +3,12 @@ import type {
   GameStateEntity,
   PendingState,
 } from '../../../../core/entities/game-state.entity';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+
+
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
@@ -24,18 +29,32 @@ export class OdysseeActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'roll' || type === 'ROLL_DICE' || type === 'roll_dice') {
-        next = this.handleRoll(next);
-        continue;
-      }
-      if (type === 'move_pawn') {
-        next = this.handleMovePawn(next, action);
-      }
-    }
-    return next;
+    const next = applyActionsSequentially(state, actions, (next, action) => {
+          const type = normalizeActionType(action);
+          return dispatchByActionType(
+            type,
+            {
+              'roll': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'ROLL_DICE': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'roll_dice': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'move_pawn': () => {
+                next = this.handleMovePawn(next, action);
+                return next;
+              },
+            },
+            () => next,
+          );
+        });
+        return next;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -410,3 +429,5 @@ export class OdysseeActionService {
     return `${base} (${this.playerName(state, playerId)})`;
   }
 }
+
+

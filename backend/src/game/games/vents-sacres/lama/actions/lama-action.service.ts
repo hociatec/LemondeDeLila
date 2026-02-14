@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import type { LamaMetadata } from '../model/lama.model';
 import { LamaSharedService } from '../shared/lama-shared.service';
 import { LamaDrawService } from './lama-draw.service';
@@ -12,6 +14,7 @@ import { LamaInfoService } from './lama-info.service';
 import { LamaSetupService } from '../setup/lama-setup.service';
 import { LamaLogService } from '../logging/lama-log.service';
 
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
 @Injectable()
 export class LamaActionService {
   constructor(
@@ -72,7 +75,7 @@ export class LamaActionService {
   }
 
   private applyOne(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
-    const type = String(action?.type ?? '').trim();
+    const type = normalizeActionType(action);
     if (!type) return state;
 
     const actorId =

@@ -1,11 +1,11 @@
-﻿import { Injectable, OnModuleInit } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../../../engine/dto/game-action.dto';
-import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
@@ -19,7 +19,7 @@ import { NAWAK_GAME } from './definitions/game.definition';
 import { buildNawakShortcuts } from './nawak.shortcuts';
 
 @Injectable()
-export class NawakService implements GameRulesAdapter, OnModuleInit {
+export class NawakService extends AbstractGameService {
   readonly gameType = 'nawak';
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'VentsDansants';
@@ -29,17 +29,14 @@ export class NawakService implements GameRulesAdapter, OnModuleInit {
   readonly maxPlayers = NAWAK_GAME.maxPlayers;
 
   constructor(
-    private readonly registry: GameRegistryService,
+    registry: GameRegistryService,
     private readonly setup: NawakSetupService,
     private readonly actions: NawakActionService,
     private readonly presenter: NawakPresenterService,
     private readonly bots: NawakBotService,
-  ) {}
-
-  onModuleInit(): void {
-    this.registry.register(this);
+  ) {
+    super(registry);
   }
-
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     return this.setup.hydrateInitialState(baseState);
   }

@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+
+import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import { AVENTURE_SAUVAGE_GAME } from '../definitions/game.definition';
 import * as Rulebook from '../rulebook/rulebook';
@@ -45,11 +47,7 @@ export class AventureSauvagePresenterService {
         phases: AVENTURE_SAUVAGE_GAME.phaseOrder.map((p) => p.id),
         victory: null,
       },
-      actions: actions.map((a) => ({
-        type: a.type,
-        label: a.type,
-        payload: a.payload ?? {},
-      })),
+      actions: formatPresenterActions(actions),
       pending: state.pending ?? null,
       extras,
       board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),

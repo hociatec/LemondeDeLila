@@ -1,11 +1,11 @@
-﻿import { Injectable, OnModuleInit } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../../../engine/dto/game-action.dto';
-import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
@@ -19,7 +19,7 @@ import * as Rulebook from './rulebook/rulebook';
 import { buildFrousseShortcuts } from './frousse.shortcuts';
 
 @Injectable()
-export class FroussePartyService implements GameRulesAdapter, OnModuleInit {
+export class FroussePartyService extends AbstractGameService {
   readonly gameType = 'frousse-party';
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'LesQuatreVents';
@@ -29,17 +29,14 @@ export class FroussePartyService implements GameRulesAdapter, OnModuleInit {
   readonly maxPlayers = FROUSSE_GAME.maxPlayers;
 
   constructor(
-    private readonly registry: GameRegistryService,
+    registry: GameRegistryService,
     private readonly setup: FrousseSetupService,
     private readonly actions: FrousseActionService,
     private readonly presenter: FroussePresenterService,
     private readonly bots: FrousseBotService,
-  ) {}
-
-  onModuleInit(): void {
-    this.registry.register(this);
+  ) {
+    super(registry);
   }
-
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     return this.setup.hydrateInitialState(baseState);
   }

@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
@@ -10,6 +12,9 @@ import type {
   CerclesSacresCircle,
   CerclesSacresMetadata,
 } from '../model/cercles-sacres-state.entity';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
+
+
 import {
   CERCLES_SACRES_GOAL,
   CERCLES_SACRES_HAND_MIN,
@@ -32,23 +37,18 @@ export class CerclesSacresActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'discard_card') {
-        next = this.handleDiscardCard(next, action);
-        continue;
-      }
-      if (type === 'form_circle') {
-        next = this.handleFormCircle(next, action);
-        continue;
-      }
-      if (type === 'pass') {
-        next = this.handlePass(next, action);
-        continue;
-      }
-    }
-    return next;
+    return applyActionsSequentially(state, actions, (next, action) => {
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          discard_card: () => this.handleDiscardCard(next, action),
+          form_circle: () => this.handleFormCircle(next, action),
+          pass: () => this.handlePass(next, action),
+        },
+        () => next,
+      );
+    });
   }
 
   private handlePass(
@@ -89,7 +89,7 @@ export class CerclesSacresActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} défausse ${CERCLES_SACRES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
+      `${this.playerName(next, currentId)} dÃ©fausse ${CERCLES_SACRES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
     );
 
     return next;
@@ -144,7 +144,7 @@ export class CerclesSacresActionService {
       .join(', ');
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} pose son cercle sacré n°${playerCircles.length} (${cardNames}).`,
+      `${this.playerName(next, currentId)} pose son cercle sacrÃ© nÂ°${playerCircles.length} (${cardNames}).`,
     );
 
     next = this.fillHandToMinimum(next, currentId);
@@ -200,7 +200,7 @@ export class CerclesSacresActionService {
         .join(', ');
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} complète sa main (${drawnCards.length} carte(s)) : ${names}.`,
+        `${this.playerName(next, playerId)} complÃ¨te sa main (${drawnCards.length} carte(s)) : ${names}.`,
       );
     }
     return next;
@@ -328,3 +328,5 @@ export class CerclesSacresActionService {
     return player?.username?.trim() || `Joueur ${playerId}`;
   }
 }
+
+

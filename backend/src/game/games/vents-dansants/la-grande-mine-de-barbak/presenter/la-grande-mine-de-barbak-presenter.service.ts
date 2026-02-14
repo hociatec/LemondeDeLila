@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+
+import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import * as Rulebook from '../rulebook/rulebook';
 import type { LaGrandeMineMetadata } from '../model/la-grande-mine-state.entity';
 import {
@@ -30,11 +32,7 @@ export class LaGrandeMineDeBarbakPresenterService {
         phases: ['round'],
         victory: null,
       },
-      actions: actions.map((action) => ({
-        type: action.type,
-        label: action.type,
-        payload: action.payload ?? {},
-      })),
+      actions: formatPresenterActions(actions),
       extras: {
         hand,
         hands: meta.hands,

@@ -1,9 +1,14 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type {
   GameStateEntity,
   PendingState,
 } from '../../../../core/entities/game-state.entity';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
+
+
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
@@ -34,26 +39,20 @@ export class MissionGalaxieActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'roll' || type === 'ROLL_DICE') {
-        next = this.handleRoll(next);
-        continue;
-      }
-      if (type === 'draw') {
-        next = this.handleDraw(next);
-        continue;
-      }
-      if (type === 'choose_option') {
-        next = this.handleChooseOption(next, action);
-        continue;
-      }
-      if (type === 'choose_event_move') {
-        next = this.handleChooseEventMove(next, action);
-      }
-    }
-    return next;
+    return applyActionsSequentially(state, actions, (next, action) => {
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          roll: () => this.handleRoll(next),
+          ROLL_DICE: () => this.handleRoll(next),
+          draw: () => this.handleDraw(next),
+          choose_option: () => this.handleChooseOption(next, action),
+          choose_event_move: () => this.handleChooseEventMove(next, action),
+        },
+        () => next,
+      );
+    });
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -92,7 +91,7 @@ export class MissionGalaxieActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} lance le dé : "${roll}".`,
+      `${this.playerName(next, currentId)} lance le dÃ© : "${roll}".`,
     );
 
     next = this.move(next, currentId, roll);
@@ -170,8 +169,8 @@ export class MissionGalaxieActionService {
       blocking: true,
       label:
         cardKind === 'question'
-          ? 'Répondez à la question galactique.'
-          : 'Résolvez le défi cosmique.',
+          ? 'RÃ©pondez Ã  la question galactique.'
+          : 'RÃ©solvez le dÃ©fi cosmique.',
       choices: (card as MissionGalaxieChoiceCard).choices,
       data: { choices: (card as MissionGalaxieChoiceCard).choices },
     };
@@ -229,7 +228,7 @@ export class MissionGalaxieActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} répond à "${card.title}" : ${
+      `${this.playerName(next, currentId)} rÃ©pond Ã  "${card.title}" : ${
         isCorrect ? 'Correct' : 'Erreur'
       } (${delta >= 0 ? 'avance' : 'recule'} ${Math.abs(delta)}).`,
     );
@@ -276,7 +275,7 @@ export class MissionGalaxieActionService {
       next,
       `${this.playerName(next, currentId)} applique ${
         delta >= 0 ? 'un boost' : 'une perturbation'
-      } à ${this.playerName(next, targetPlayerId)} (${delta >= 0 ? '+' : ''}${delta}).`,
+      } Ã  ${this.playerName(next, targetPlayerId)} (${delta >= 0 ? '+' : ''}${delta}).`,
     );
     next = this.move(next, targetPlayerId, delta);
     next = this.applyLanding(next, targetPlayerId);
@@ -342,12 +341,12 @@ export class MissionGalaxieActionService {
         );
         return this.promptDraw(next, playerId, 'questions');
       case 'challenge':
-        next = this.core.appendLog(next, 'Piochez un défi cosmique.');
+        next = this.core.appendLog(next, 'Piochez un dÃ©fi cosmique.');
         return this.promptDraw(next, playerId, 'challenges');
       case 'event':
         next = this.core.appendLog(
           next,
-          'Piochez un événement spatial.',
+          'Piochez un Ã©vÃ©nement spatial.',
         );
         return this.promptDraw(next, playerId, 'events');
       case 'swapNearest':
@@ -381,7 +380,7 @@ export class MissionGalaxieActionService {
       };
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} reçoit un tour bonus.`,
+        `${this.playerName(next, playerId)} reÃ§oit un tour bonus.`,
       );
     }
 
@@ -399,10 +398,10 @@ export class MissionGalaxieActionService {
       blocking: true,
       label:
         deck === 'events'
-          ? 'Piochez un événement spatial.'
+          ? 'Piochez un Ã©vÃ©nement spatial.'
           : deck === 'questions'
             ? 'Piochez une question galactique.'
-            : 'Piochez un défi cosmique.',
+            : 'Piochez un dÃ©fi cosmique.',
       data: { deck },
     };
     return { ...state, pending };
@@ -442,7 +441,7 @@ export class MissionGalaxieActionService {
     };
     return this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} échangée sa position avec ${this.playerName(next, closest.id)}.`,
+      `${this.playerName(next, playerId)} Ã©changÃ©e sa position avec ${this.playerName(next, closest.id)}.`,
     );
   }
 
@@ -453,7 +452,7 @@ export class MissionGalaxieActionService {
   ): GameStateEntity {
     let next = this.core.appendLog(
       state,
-      `${this.playerName(state, playerId)} déclenche l'événement "${card.title}".`,
+      `${this.playerName(state, playerId)} dÃ©clenche l'Ã©vÃ©nement "${card.title}".`,
     );
     const effect = card.effect;
     switch (effect.kind) {
@@ -476,13 +475,13 @@ export class MissionGalaxieActionService {
         next = this.setKeepTurn(next, playerId);
         return this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} relance immédiatement le dé.`,
+          `${this.playerName(next, playerId)} relance immÃ©diatement le dÃ©.`,
         );
       case 'keepTurn':
         next = this.setKeepTurn(next, playerId);
         return this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} rejoue immédiatement.`,
+          `${this.playerName(next, playerId)} rejoue immÃ©diatement.`,
         );
       case 'goto':
         next = this.setPos(
@@ -495,14 +494,14 @@ export class MissionGalaxieActionService {
         );
         next = this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} avance jusqu'à la case ${effect.target}.`,
+          `${this.playerName(next, playerId)} avance jusqu'Ã  la case ${effect.target}.`,
         );
         return this.applyLanding(next, playerId);
       case 'skipOthers':
         next = this.skipOthers(next, playerId, effect.turns);
         return this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} force les autres à sauter ${effect.turns} tour(s).`,
+          `${this.playerName(next, playerId)} force les autres Ã  sauter ${effect.turns} tour(s).`,
         );
       case 'choosePlayerMove':
         return this.promptPlayerMove(next, playerId, effect.deltas);
@@ -629,7 +628,7 @@ export class MissionGalaxieActionService {
     };
     return this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} atteint la planète légendaire !`,
+      `${this.playerName(next, playerId)} atteint la planÃ¨te lÃ©gendaire !`,
     );
   }
 
@@ -704,7 +703,7 @@ export class MissionGalaxieActionService {
     const lower = pawn.toLowerCase();
     const feminine = lower.startsWith('la ') || lower.startsWith('une ');
     const inner = pawn
-      .replace(/^l['’]\s*/i, '')
+      .replace(/^l['â€™]\s*/i, '')
       .replace(/^(le|la|les|un|une)\s+/i, '')
       .trim();
     const core = inner || pawn;
@@ -717,3 +716,5 @@ export class MissionGalaxieActionService {
     return (state.metadata ?? {}) as MissionGalaxieMetadata;
   }
 }
+
+

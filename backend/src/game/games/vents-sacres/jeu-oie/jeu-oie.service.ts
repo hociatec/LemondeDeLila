@@ -1,11 +1,11 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../../../engine/dto/game-action.dto';
-import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
@@ -20,7 +20,7 @@ import { JeuOieBotService } from './bots/jeu-oie-bot.service';
 import { buildJeuOieShortcuts } from './jeu-oie.shortcuts';
 
 @Injectable()
-export class JeuOieService implements GameRulesAdapter, OnModuleInit {
+export class JeuOieService extends AbstractGameService {
   readonly gameType = 'jeu-oie';
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'Les Vents Sacrés';
@@ -30,18 +30,15 @@ export class JeuOieService implements GameRulesAdapter, OnModuleInit {
   readonly maxPlayers = JEU_OIE_GAME.maxPlayers;
 
   constructor(
-    private readonly registry: GameRegistryService,
+    registry: GameRegistryService,
     private readonly setup: JeuOieSetupService,
     private readonly actions: JeuOieActionService,
     private readonly phases: JeuOiePhaseService,
     private readonly presenter: JeuOiePresenterService,
     private readonly bots: JeuOieBotService,
-  ) {}
-
-  onModuleInit(): void {
-    this.registry.register(this);
+  ) {
+    super(registry);
   }
-
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     return this.setup.hydrateInitialState(baseState);
   }

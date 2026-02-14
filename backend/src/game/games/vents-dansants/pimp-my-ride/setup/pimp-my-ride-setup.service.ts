@@ -1,5 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+
+import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { PIMP_MY_RIDE_DECK } from '../model/pimp-my-ride-cards';
 import type {
@@ -12,7 +14,7 @@ export class PimpMyRideSetupService {
   constructor(private readonly random: RandomService) {}
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
-    const players = Array.isArray(baseState.players) ? baseState.players : [];
+    const players = getSafePlayers(baseState);
     const rngSeed = (baseState.metadata ?? {}) as PimpMyRideMetadata;
     const { values: shuffledDeck, meta: updatedRng } = this.random.shuffle(
       rngSeed.rng ?? {},

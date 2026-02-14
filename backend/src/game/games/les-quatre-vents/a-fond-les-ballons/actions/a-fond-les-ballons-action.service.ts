@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
@@ -11,6 +13,9 @@ import type {
   AFondLesBallonsPendingSwap,
   AFondLesBallonsTile,
 } from '../model/a-fond-les-ballons-state.entity';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+
+
 
 @Injectable()
 export class AFondLesBallonsActionService {
@@ -25,26 +30,40 @@ export class AFondLesBallonsActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'choose_pawn') {
-        next = this.handleChoosePawn(next, action);
-        continue;
-      }
-      if (type === 'roll' || type === 'ROLL_DICE' || type === 'roll_dice') {
-        next = this.handleRoll(next);
-        continue;
-      }
-      if (type === 'draw') {
-        next = this.handleDraw(next);
-        continue;
-      }
-      if (type === 'swap_choose_target') {
-        next = this.handleSwapChooseTarget(next, action);
-      }
-    }
-    return next;
+    const next = applyActionsSequentially(state, actions, (next, action) => {
+          const type = normalizeActionType(action);
+          return dispatchByActionType(
+            type,
+            {
+              'choose_pawn': () => {
+                next = this.handleChoosePawn(next, action);
+                return next;
+              },
+              'roll': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'ROLL_DICE': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'roll_dice': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'draw': () => {
+                next = this.handleDraw(next);
+                return next;
+              },
+              'swap_choose_target': () => {
+                next = this.handleSwapChooseTarget(next, action);
+                return next;
+              },
+            },
+            () => next,
+          );
+        });
+        return next;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -67,7 +86,7 @@ export class AFondLesBallonsActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} lance le dé : "${roll}".`,
+      `${this.playerName(next, currentId)} lance le dÃ© : "${roll}".`,
     );
     next = this.moveBy(next, currentId, roll, 0);
 
@@ -133,7 +152,7 @@ export class AFondLesBallonsActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} échange sa place avec ${this.playerName(next, targetPlayerId)}.`,
+      `${this.playerName(next, currentId)} Ã©change sa place avec ${this.playerName(next, targetPlayerId)}.`,
     );
 
     next = this.decrementTrapImmunity(next, currentId);
@@ -205,7 +224,7 @@ export class AFondLesBallonsActionService {
       if (!chosen) return next;
       next = this.core.appendLog(
         next,
-        'Boutique : application de la carte la plus défavorable.',
+        'Boutique : application de la carte la plus dÃ©favorable.',
       );
       next = this.applyCardEffect(next, playerId, chosen, depth);
     } else {
@@ -424,7 +443,7 @@ export class AFondLesBallonsActionService {
         type: 'choose_pawn',
         playerId: chooserId,
         blocking: true,
-        label: `C'est à ${chooserLabel} de choisir son pion.`,
+        label: `C'est Ã  ${chooserLabel} de choisir son pion.`,
         choices: choices.map((p) =>
           p.description && String(p.description).trim().length > 0
             ? `${p.label}: ${p.description}`
@@ -498,7 +517,7 @@ export class AFondLesBallonsActionService {
   ): GameStateEntity {
     if (!delta) return state;
     if (depth > 10)
-      return this.core.appendLog(state, 'Effet en chaîne interrompu.');
+      return this.core.appendLog(state, 'Effet en chaÃ®ne interrompu.');
 
     const meta = this.getMeta(state);
     const current = meta.positions?.[playerId] ?? 0;
@@ -548,9 +567,9 @@ export class AFondLesBallonsActionService {
 
     if (tile.type === 'piege') {
       if (this.hasTrapImmunity(next, playerId)) {
-        return this.core.appendLog(next, 'Piège ignoré.');
+        return this.core.appendLog(next, 'PiÃ¨ge ignorÃ©.');
       }
-      next = this.core.appendLog(next, 'Piège : reculez de 2 cases.');
+      next = this.core.appendLog(next, 'PiÃ¨ge : reculez de 2 cases.');
       return this.moveBy(next, playerId, -2, depth);
     }
 
@@ -576,12 +595,12 @@ export class AFondLesBallonsActionService {
       return this.startSwapPending(
         next,
         playerId,
-        'Tornade : choisissez un joueur à échanger dans la liste, puis Entrée.',
+        'Tornade : choisissez un joueur Ã  Ã©changer dans la liste, puis EntrÃ©e.',
       );
     }
 
     if (tile.type === 'chaton') {
-      next = this.core.appendLog(next, 'Chaton : retour à la case départ.');
+      next = this.core.appendLog(next, 'Chaton : retour Ã  la case dÃ©part.');
       return this.applyLanding(next, playerId, 0, depth + 1);
     }
 
@@ -639,7 +658,7 @@ export class AFondLesBallonsActionService {
       case 4:
         next = this.core.appendLog(
           next,
-          'La partie est figée : tous les joueurs passent un tour.',
+          'La partie est figÃ©e : tous les joueurs passent un tour.',
         );
         for (const p of next.players ?? []) {
           next = this.core.appendLog(
@@ -714,7 +733,7 @@ export class AFondLesBallonsActionService {
         return this.startSwapPending(
           next,
           playerId,
-          'Échange : choisissez un joueur à échanger dans la liste, puis Entrée.',
+          'Ã‰change : choisissez un joueur Ã  Ã©changer dans la liste, puis EntrÃ©e.',
         );
       case 29:
         return this.applyLanding(next, playerId, 12, depth + 1);
@@ -804,7 +823,7 @@ export class AFondLesBallonsActionService {
     if (!targets.length) {
       return this.core.appendLog(
         state,
-        'Aucun joueur disponible pour un échange de place.',
+        'Aucun joueur disponible pour un Ã©change de place.',
       );
     }
     const pending: AFondLesBallonsPendingSwap = {
@@ -831,7 +850,7 @@ export class AFondLesBallonsActionService {
     if (idx < 0) {
       return this.core.appendLog(
         state,
-        `Aucune case de type ${type} n'a été trouvée devant vous.`,
+        `Aucune case de type ${type} n'a Ã©tÃ© trouvÃ©e devant vous.`,
       );
     }
     return this.applyLanding(state, playerId, idx, depth + 1);
@@ -1011,40 +1030,40 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
   return [
     {
       id: 1,
-      text: 'Vous glissez sur une peau de banane séchée. Reculez de 2 cases.',
+      text: 'Vous glissez sur une peau de banane sÃ©chÃ©e. Reculez de 2 cases.',
     },
     {
       id: 2,
-      text: 'Un muscardin vous livre un cookie géant, beaucoup trop lourd. Passez votre tour.',
+      text: 'Un muscardin vous livre un cookie gÃ©ant, beaucoup trop lourd. Passez votre tour.',
     },
     {
       id: 3,
-      text: 'Vous sautez dans une flaque de confiture collante. Avancez d’une case.',
+      text: 'Vous sautez dans une flaque de confiture collante. Avancez dâ€™une case.',
     },
     {
       id: 4,
-      text: 'Une noix étrange chante et perturbe la tanière. La partie est figée : aucun joueur n’agit pendant ce tour.',
+      text: 'Une noix Ã©trange chante et perturbe la taniÃ¨re. La partie est figÃ©e : aucun joueur nâ€™agit pendant ce tour.',
     },
     {
       id: 5,
-      text: 'Un écureuil volant vous prend pour un ami et vous emporte dans les airs. Avancez de 4 cases.',
+      text: 'Un Ã©cureuil volant vous prend pour un ami et vous emporte dans les airs. Avancez de 4 cases.',
     },
     {
       id: 6,
-      text: 'Vous renversez une bouteille de sirop magique. Tous les joueurs reculent d’une case.',
+      text: 'Vous renversez une bouteille de sirop magique. Tous les joueurs reculent dâ€™une case.',
     },
     {
       id: 7,
-      text: 'Vous trouvez une corde à sauter en réglisse enchantée. Avancez de 2 cases.',
+      text: 'Vous trouvez une corde Ã  sauter en rÃ©glisse enchantÃ©e. Avancez de 2 cases.',
     },
-    { id: 8, text: 'Le Grand Chaton éternue violemment. Reculez d’une case.' },
+    { id: 8, text: 'Le Grand Chaton Ã©ternue violemment. Reculez dâ€™une case.' },
     {
       id: 9,
       text: 'Vous vous prenez les pattes dans du chewing-gum collant. Passez votre tour.',
     },
     {
       id: 10,
-      text: 'Un lérot ninja surgit et vous tend une noisette turbo. Avancez jusqu’à la prochaine case Bonus.',
+      text: 'Un lÃ©rot ninja surgit et vous tend une noisette turbo. Avancez jusquâ€™Ã  la prochaine case Bonus.',
     },
     {
       id: 11,
@@ -1052,11 +1071,11 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 12,
-      text: 'Votre museau vous démange sans raison. Reculez d’une case.',
+      text: 'Votre museau vous dÃ©mange sans raison. Reculez dâ€™une case.',
     },
     {
       id: 13,
-      text: 'Une gerboise farceuse vous chatouille les pattes. Sautez d’une case.',
+      text: 'Une gerboise farceuse vous chatouille les pattes. Sautez dâ€™une case.',
     },
     {
       id: 14,
@@ -1064,23 +1083,23 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 15,
-      text: 'Vous faites tomber une montagne de cacahuètes. Distrait, vous reculez d’une case.',
+      text: 'Vous faites tomber une montagne de cacahuÃ¨tes. Distrait, vous reculez dâ€™une case.',
     },
     {
       id: 16,
-      text: 'Une bulle de savon géante vous emporte. Avancez jusqu’à la prochaine case Folie.',
+      text: 'Une bulle de savon gÃ©ante vous emporte. Avancez jusquâ€™Ã  la prochaine case Folie.',
     },
     {
       id: 17,
-      text: 'Un capybara vous invite à une sieste improvisée. Passez votre tour et ronflez à ses côtés.',
+      text: 'Un capybara vous invite Ã  une sieste improvisÃ©e. Passez votre tour et ronflez Ã  ses cÃ´tÃ©s.',
     },
     {
       id: 18,
-      text: 'Une souris malicieuse vous pique une noisette et file à toute vitesse. Vous la poursuivez et avancez de 2 cases.',
+      text: 'Une souris malicieuse vous pique une noisette et file Ã  toute vitesse. Vous la poursuivez et avancez de 2 cases.',
     },
     {
       id: 19,
-      text: 'Un loir vous montre le chemin en remuant la queue. Avancez d’une case en souriant.',
+      text: 'Un loir vous montre le chemin en remuant la queue. Avancez dâ€™une case en souriant.',
     },
     {
       id: 20,
@@ -1088,13 +1107,13 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 21,
-      text: 'Vous renversez un pot de peinture fluo. Tout le monde avance d’une case.',
+      text: 'Vous renversez un pot de peinture fluo. Tout le monde avance dâ€™une case.',
     },
     {
       id: 22,
       text: 'Une baguette magique vous transforme temporairement en fromage. Passez deux tours.',
     },
-    { id: 23, text: 'Vous trouvez un trampoline géant. Avancez de 4 cases.' },
+    { id: 23, text: 'Vous trouvez un trampoline gÃ©ant. Avancez de 4 cases.' },
     {
       id: 24,
       text: 'Un agouti philosophe vous parle longuement. Passez votre tour.',
@@ -1105,15 +1124,15 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 26,
-      text: 'Vous éternuez des confettis multicolores. Tous les joueurs avancent du même nombre de cases obtenu précédemment.',
+      text: 'Vous Ã©ternuez des confettis multicolores. Tous les joueurs avancent du mÃªme nombre de cases obtenu prÃ©cÃ©demment.',
     },
     {
       id: 27,
-      text: 'Un petit avion de carton vous emporte maladroitement. Avancez d’une case, puis reculez de deux.',
+      text: 'Un petit avion de carton vous emporte maladroitement. Avancez dâ€™une case, puis reculez de deux.',
     },
     {
       id: 28,
-      text: 'Vous lisez un vieux grimoire ronronique. Échangez votre position avec le joueur de votre choix.',
+      text: 'Vous lisez un vieux grimoire ronronique. Ã‰changez votre position avec le joueur de votre choix.',
     },
     {
       id: 29,
@@ -1121,19 +1140,19 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 30,
-      text: 'Vous tombez dans une mare d’épaisse mousse. Passez votre tour.',
+      text: 'Vous tombez dans une mare dâ€™Ã©paisse mousse. Passez votre tour.',
     },
     {
       id: 31,
-      text: 'Un hutia curieux bondit sur votre chemin et vous bouscule gentiment. Avancez d’une case… un peu étourdi.',
+      text: 'Un hutia curieux bondit sur votre chemin et vous bouscule gentiment. Avancez dâ€™une caseâ€¦ un peu Ã©tourdi.',
     },
     {
       id: 32,
-      text: 'Un fromage qui parle vous raconte une irrésistible blague. Avancez de 2 cases.',
+      text: 'Un fromage qui parle vous raconte une irrÃ©sistible blague. Avancez de 2 cases.',
     },
     {
       id: 33,
-      text: 'Vous jouez à saute-rongeur avec un paca. Avancez de 3 cases.',
+      text: 'Vous jouez Ã  saute-rongeur avec un paca. Avancez de 3 cases.',
     },
     {
       id: 34,
@@ -1141,11 +1160,11 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 35,
-      text: 'Un tunnel défectueux vous mène droit chez le Chaton gourmand. Retournez à la case départ.',
+      text: 'Un tunnel dÃ©fectueux vous mÃ¨ne droit chez le Chaton gourmand. Retournez Ã  la case dÃ©part.',
     },
     {
       id: 36,
-      text: 'Vous devenez temporairement invisible. Durant deux tours, vous ignorez les effets des cases Piège.',
+      text: 'Vous devenez temporairement invisible. Durant deux tours, vous ignorez les effets des cases PiÃ¨ge.',
     },
     {
       id: 37,
@@ -1153,7 +1172,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 38,
-      text: 'Un biscuit géant explose. Tous les joueurs se déplacent d’une case aléatoire.',
+      text: 'Un biscuit gÃ©ant explose. Tous les joueurs se dÃ©placent dâ€™une case alÃ©atoire.',
     },
     {
       id: 39,
@@ -1161,7 +1180,9 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 40,
-      text: 'La Reine des Rongeurs vous envoie un message. Si vous êtes sur une case Glissade, avancez jusqu’à la case 40.',
+      text: 'La Reine des Rongeurs vous envoie un message. Si vous Ãªtes sur une case Glissade, avancez jusquâ€™Ã  la case 40.',
     },
   ];
 }
+
+

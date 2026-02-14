@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
@@ -9,6 +11,9 @@ import type {
   RiteFamilyId,
   RiteSpecialCard,
 } from '../model/entre-rites-cards';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
+
+
 import {
   ENTRE_RITES_CARD_BY_ID,
   ENTRE_RITES_CUSTOM_FAMILY_SIZE,
@@ -33,19 +38,17 @@ export class EntreRitesActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'ask_card') {
-        next = this.handleAskCard(next, action);
-        continue;
-      }
-      if (type === 'pass') {
-        next = this.handlePass(next, action);
-        continue;
-      }
-    }
-    return next;
+    return applyActionsSequentially(state, actions, (next, action) => {
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          ask_card: () => this.handleAskCard(next, action),
+          pass: () => this.handlePass(next, action),
+        },
+        () => next,
+      );
+    });
   }
 
   private handleAskCard(
@@ -68,10 +71,10 @@ export class EntreRitesActionService {
     if (!targetHand.includes(cardId)) {
       let next = this.core.appendLog(
         state,
-        `${this.playerName(state, currentId)} demande ${cardId} à ${this.playerName(
+        `${this.playerName(state, currentId)} demande ${cardId} Ã  ${this.playerName(
           state,
           targetId,
-        )} sans succès et doit piocher.`,
+        )} sans succÃ¨s et doit piocher.`,
       );
       next = this.drawCardForPlayer(next, currentId);
       next = this.advanceTurn(next);
@@ -81,7 +84,7 @@ export class EntreRitesActionService {
     let next = this.transferCard(state, targetId, currentId, cardId);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} récupère ${cardId} de ${this.playerName(
+      `${this.playerName(next, currentId)} rÃ©cupÃ¨re ${cardId} de ${this.playerName(
         next,
         targetId,
       )} et continue.`,
@@ -191,7 +194,7 @@ export class EntreRitesActionService {
     if (this.isSilenced(next, playerId)) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} pioche ${card.name} mais ses pouvoirs sont désormais muets.`,
+        `${this.playerName(next, playerId)} pioche ${card.name} mais ses pouvoirs sont dÃ©sormais muets.`,
       );
       next = this.discardCard(next, playerId, card.id);
       next = this.recordSpecial(next, playerId, card.id);
@@ -263,7 +266,7 @@ export class EntreRitesActionService {
   ): GameStateEntity {
     let next = this.core.appendLog(
       state,
-      `${this.playerName(state, playerId)} invoque la Bénédiction et réclame une carte à chaque adversaire.`,
+      `${this.playerName(state, playerId)} invoque la BÃ©nÃ©diction et rÃ©clame une carte Ã  chaque adversaire.`,
     );
     const players = (Array.isArray(next.players) ? next.players : []).filter(
       (p) => p?.id != null && p.id !== playerId,
@@ -285,7 +288,7 @@ export class EntreRitesActionService {
       next = this.rebuildCollections(next, playerId);
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} prend ${cardId} à ${this.playerName(
+        `${this.playerName(next, playerId)} prend ${cardId} Ã  ${this.playerName(
           next,
           opponentId,
         )}.`,
@@ -303,7 +306,7 @@ export class EntreRitesActionService {
     if (!discard.length) {
       return this.core.appendLog(
         state,
-        `${this.playerName(state, playerId)} cherche dans la défausse mais rien n’y est.`,
+        `${this.playerName(state, playerId)} cherche dans la dÃ©fausse mais rien nâ€™y est.`,
       );
     }
     const cardId = discard.pop()!;
@@ -318,7 +321,7 @@ export class EntreRitesActionService {
     const next = this.handleDrawnCard(stateAfterDiscard, playerId, card);
     return this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} reprend ${cardId} depuis la défausse.`,
+      `${this.playerName(next, playerId)} reprend ${cardId} depuis la dÃ©fausse.`,
     );
   }
 
@@ -333,7 +336,7 @@ export class EntreRitesActionService {
     };
     return this.core.appendLog(
       this.setMeta(state, nextMeta),
-      `${this.playerName(state, playerId)} impose le Silence Sacré.`,
+      `${this.playerName(state, playerId)} impose le Silence SacrÃ©.`,
     );
   }
 
@@ -351,7 +354,7 @@ export class EntreRitesActionService {
     if (!target || target.id == null) {
       return this.core.appendLog(
         state,
-        `${this.playerName(state, playerId)} invoque l’Envol Mystique sans adversaire disponible.`,
+        `${this.playerName(state, playerId)} invoque lâ€™Envol Mystique sans adversaire disponible.`,
       );
     }
     const targetId = target.id;
@@ -370,7 +373,7 @@ export class EntreRitesActionService {
     next = this.rebuildCollections(next, targetId);
     return this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} échange sa main avec ${this.playerName(
+      `${this.playerName(next, playerId)} Ã©change sa main avec ${this.playerName(
         next,
         targetId,
       )}.`,
@@ -388,7 +391,7 @@ export class EntreRitesActionService {
     if (!pending) {
       return this.core.appendLog(
         state,
-        `${this.playerName(state, playerId)} active la Clé du Jardin Caché mais toutes les familles sont déjà complètes.`,
+        `${this.playerName(state, playerId)} active la ClÃ© du Jardin CachÃ© mais toutes les familles sont dÃ©jÃ  complÃ¨tes.`,
       );
     }
     completed.add(pending);
@@ -402,7 +405,7 @@ export class EntreRitesActionService {
     const next = this.setMeta(state, nextMeta);
     return this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} pose une famille secrète grâce à la Clé du Jardin Caché.`,
+      `${this.playerName(next, playerId)} pose une famille secrÃ¨te grÃ¢ce Ã  la ClÃ© du Jardin CachÃ©.`,
     );
   }
 
@@ -412,7 +415,7 @@ export class EntreRitesActionService {
   ): GameStateEntity {
     let next = this.core.appendLog(
       state,
-      `${this.playerName(state, playerId)} déclenche L’Aube Nouvelle : tout le monde défausse puis pioche.`,
+      `${this.playerName(state, playerId)} dÃ©clenche Lâ€™Aube Nouvelle : tout le monde dÃ©fausse puis pioche.`,
     );
     const players = (Array.isArray(next.players) ? next.players : []).filter(
       (p) => p?.id != null,
@@ -432,7 +435,7 @@ export class EntreRitesActionService {
     const nextMeta = { ...meta, peaceTurnsRemaining: 2 };
     return this.core.appendLog(
       this.setMeta(state, nextMeta),
-      `Une paix s’installe grâce à L’Étoile de l’Orient : aucune demande n’est possible pendant deux tours.`,
+      `Une paix sâ€™installe grÃ¢ce Ã  Lâ€™Ã‰toile de lâ€™Orient : aucune demande nâ€™est possible pendant deux tours.`,
     );
   }
 
@@ -449,7 +452,7 @@ export class EntreRitesActionService {
       const hand = meta.hands?.[player!.id ?? 0] ?? [];
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, player!.id!)} révèle sa main : ${hand.join(', ') || 'vide'}.`,
+        `${this.playerName(next, player!.id!)} rÃ©vÃ¨le sa main : ${hand.join(', ') || 'vide'}.`,
       );
     }
     const theftTarget = players.find(
@@ -469,7 +472,7 @@ export class EntreRitesActionService {
     next = this.rebuildCollections(next, playerId);
     return this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} s’empare de ${cardId} grâce au Chant du Coq.`,
+      `${this.playerName(next, playerId)} sâ€™empare de ${cardId} grÃ¢ce au Chant du Coq.`,
     );
   }
 
@@ -490,7 +493,7 @@ export class EntreRitesActionService {
     let next = this.setMeta(state, updatedMeta);
     return this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} défausse ${cardId}.`,
+      `${this.playerName(next, playerId)} dÃ©fausse ${cardId}.`,
     );
   }
 
@@ -507,7 +510,7 @@ export class EntreRitesActionService {
     const next = this.setMeta(state, updatedMeta);
     return this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} défausse ${cardId}.`,
+      `${this.playerName(next, playerId)} dÃ©fausse ${cardId}.`,
     );
   }
 
@@ -576,7 +579,7 @@ export class EntreRitesActionService {
       const winnerId = this.findWinner(meta) ?? playerId;
       const next = this.core.appendLog(
         state,
-        `Toutes les familles sont complétées. ${this.playerName(state, winnerId)} remporte la partie !`,
+        `Toutes les familles sont complÃ©tÃ©es. ${this.playerName(state, winnerId)} remporte la partie !`,
       );
       const metaAfter = this.getMeta(next);
       return {
@@ -693,3 +696,5 @@ export class EntreRitesActionService {
     return player?.username?.trim() || `Joueur ${playerId}`;
   }
 }
+
+

@@ -1,18 +1,18 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../../../engine/dto/game-action.dto';
-import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
 import type { MorpionMetadata } from './model/morpion.model';
 import { MorpionPresenter } from './morpion.presenter';
 import type { GameShortcutHint, GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
 import { interfaceShortcut } from '../../../engine/shortcuts/shortcut-utils';
 
 @Injectable()
-export class MorpionService implements GameRulesAdapter, OnModuleInit {
+export class MorpionService extends AbstractGameService {
   readonly gameType = 'morpion';
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'Les Vents Sacrés';
@@ -22,14 +22,11 @@ export class MorpionService implements GameRulesAdapter, OnModuleInit {
   readonly maxPlayers = 2;
 
   constructor(
-    private readonly registry: GameRegistryService,
+    registry: GameRegistryService,
     private readonly presenter: MorpionPresenter,
-  ) {}
-
-  onModuleInit(): void {
-    this.registry.register(this);
+  ) {
+    super(registry);
   }
-
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const players = baseState.players ?? [];
     const firstPlayerId = players[0]?.id ?? null;

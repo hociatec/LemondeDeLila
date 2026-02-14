@@ -1,11 +1,11 @@
-﻿import { Injectable, OnModuleInit } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../../../engine/dto/game-action.dto';
-import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
@@ -19,7 +19,7 @@ import { PIMP_MY_RIDE_GAME } from './definitions/game.definition';
 import { buildPimpMyRideShortcuts } from './pimp-my-ride.shortcuts';
 
 @Injectable()
-export class PimpMyRideService implements GameRulesAdapter, OnModuleInit {
+export class PimpMyRideService extends AbstractGameService {
   readonly gameType = 'pimp-my-ride';
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'VentsDansants';
@@ -30,17 +30,14 @@ export class PimpMyRideService implements GameRulesAdapter, OnModuleInit {
   readonly maxPlayers = PIMP_MY_RIDE_GAME.maxPlayers;
 
   constructor(
-    private readonly registry: GameRegistryService,
+    registry: GameRegistryService,
     private readonly setup: PimpMyRideSetupService,
     private readonly actions: PimpMyRideActionService,
     private readonly presenter: PimpMyRidePresenterService,
     private readonly bots: PimpMyRideBotService,
-  ) {}
-
-  onModuleInit(): void {
-    this.registry.register(this);
+  ) {
+    super(registry);
   }
-
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     return this.setup.hydrateInitialState(baseState);
   }

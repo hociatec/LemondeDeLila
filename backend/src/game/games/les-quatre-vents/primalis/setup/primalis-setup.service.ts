@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+
+import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import type { PrimalisBoardJsonV1 } from '../model/primalis-content.entity';
@@ -18,7 +20,7 @@ export class PrimalisSetupService {
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const board = this.loadBoard();
 
-    const players = Array.isArray(baseState.players) ? baseState.players : [];
+    const players = getSafePlayers(baseState);
     const positions: Record<number, number> = {};
     const collections: Record<number, PrimalisResources> = {};
     for (const player of players) {

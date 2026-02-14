@@ -1,6 +1,8 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { NawakChallengeService } from '../data/nawak-challenge.service';
@@ -8,6 +10,9 @@ import type {
   NawakMetadata,
   NawakRoundSummary,
 } from '../model/nawak-state.entity';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
+
+
 
 type NawakActionPayload = {
   answerIndex?: number | null;
@@ -26,18 +31,17 @@ export class NawakActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'choose_answer') {
-        next = this.handleChooseAnswer(next, action);
-        continue;
-      }
-      if (type === 'vote_answer') {
-        next = this.handleVoteAnswer(next, action);
-      }
-    }
-    return next;
+    return applyActionsSequentially(state, actions, (next, action) => {
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          choose_answer: () => this.handleChooseAnswer(next, action),
+          vote_answer: () => this.handleVoteAnswer(next, action),
+        },
+        () => next,
+      );
+    });
   }
 
   private handleChooseAnswer(
@@ -237,3 +241,5 @@ export class NawakActionService {
     return player?.username?.trim() || `Joueur ${playerId}`;
   }
 }
+
+

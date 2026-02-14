@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
@@ -10,6 +12,9 @@ import type {
   ToutPresDeMamanMetadata,
   ToutPresDeMamanTile,
 } from '../model/tout-pres-de-maman-state.entity';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+
+
 
 @Injectable()
 export class ToutPresDeMamanActionService {
@@ -27,14 +32,28 @@ export class ToutPresDeMamanActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim().toLowerCase();
-      if (type === 'roll' || type === 'roll_dice' || type === 'roll dice') {
-        next = this.handleRoll(next);
-      }
-    }
-    return next;
+    const next = applyActionsSequentially(state, actions, (next, action) => {
+          const type = normalizeLowerActionType(action);
+          return dispatchByActionType(
+            type,
+            {
+              'roll': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'roll_dice': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'roll dice': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+            },
+            () => next,
+          );
+        });
+        return next;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -62,7 +81,7 @@ export class ToutPresDeMamanActionService {
       return this.turns.advanceTurn(
         this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} reste sur place (tour sauté).`,
+          `${this.playerName(next, playerId)} reste sur place (tour sautÃ©).`,
         ),
       );
     }
@@ -396,7 +415,7 @@ export class ToutPresDeMamanActionService {
     if (current <= 0) {
       return this.core.appendLog(
         state,
-        `${this.playerName(state, playerId)} n’a pas de jeton à perdre.`,
+        `${this.playerName(state, playerId)} nâ€™a pas de jeton Ã  perdre.`,
       );
     }
     const updatedMeta: ToutPresDeMamanMetadata = {
@@ -435,7 +454,7 @@ export class ToutPresDeMamanActionService {
     const label =
       'text' in tileOrCard
         ? `carte ${tileOrCard.id}`
-        : tileOrCard?.title ?? 'effet spécial';
+        : tileOrCard?.title ?? 'effet spÃ©cial';
     return this.core.appendLog(
       next,
       `${this.playerName(
@@ -463,7 +482,7 @@ export class ToutPresDeMamanActionService {
     const next = this.replaceMeta(state, updatedMeta);
     return this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} pourra relancer le dé au prochain tour.`,
+      `${this.playerName(next, playerId)} pourra relancer le dÃ© au prochain tour.`,
     );
   }
 
@@ -566,7 +585,7 @@ export class ToutPresDeMamanActionService {
     let next = this.replaceMeta(state, nextMeta);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} relance le dé et avance de ${roll.roll}.`,
+      `${this.playerName(next, playerId)} relance le dÃ© et avance de ${roll.roll}.`,
     );
     return this.moveAndApply(next, playerId, roll.roll, depth);
   }
@@ -581,12 +600,12 @@ export class ToutPresDeMamanActionService {
     let next = this.replaceMeta(state, { ...meta, ...roll.meta });
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} fait ${roll.roll} au dé.`,
+      `${this.playerName(next, playerId)} fait ${roll.roll} au dÃ©.`,
     );
     if (roll.roll >= 4) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} avance d’une case grâce à la réussite.`,
+        `${this.playerName(next, playerId)} avance dâ€™une case grÃ¢ce Ã  la rÃ©ussite.`,
       );
       return this.moveAndApply(next, playerId, 1, depth);
     }
@@ -682,3 +701,5 @@ export class ToutPresDeMamanActionService {
     return `"${fallback}"`;
   }
 }
+
+

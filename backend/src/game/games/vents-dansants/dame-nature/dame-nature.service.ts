@@ -1,11 +1,11 @@
-﻿import { Injectable, OnModuleInit } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../../../engine/dto/game-action.dto';
-import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
@@ -19,7 +19,7 @@ import { DAME_NATURE_GAME } from './definitions/game.definition';
 import { buildDameNatureShortcuts } from './dame-nature.shortcuts';
 
 @Injectable()
-export class DameNatureService implements GameRulesAdapter, OnModuleInit {
+export class DameNatureService extends AbstractGameService {
   readonly gameType = 'dame-nature';
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'VentsDansants';
@@ -30,17 +30,14 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
   readonly maxPlayers = DAME_NATURE_GAME.maxPlayers;
 
   constructor(
-    private readonly registry: GameRegistryService,
+    registry: GameRegistryService,
     private readonly setup: DameNatureSetupService,
     private readonly actions: DameNatureActionService,
     private readonly presenter: DameNaturePresenterService,
     private readonly bots: DameNatureBotService,
-  ) {}
-
-  onModuleInit(): void {
-    this.registry.register(this);
+  ) {
+    super(registry);
   }
-
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     return this.setup.hydrateInitialState(baseState);
   }

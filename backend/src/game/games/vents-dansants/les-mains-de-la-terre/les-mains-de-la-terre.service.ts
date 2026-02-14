@@ -1,11 +1,11 @@
-﻿import { Injectable, OnModuleInit } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../../../engine/dto/game-action.dto';
-import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
@@ -19,7 +19,7 @@ import { LES_MAINS_GAME } from './definitions/game.definition';
 import { buildLesMainsDeLaTerreShortcuts } from './les-mains-de-la-terre.shortcuts';
 
 @Injectable()
-export class LesMainsDeLaTerreService implements GameRulesAdapter, OnModuleInit {
+export class LesMainsDeLaTerreService extends AbstractGameService {
   readonly gameType = LES_MAINS_GAME.id;
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'VentsDansants';
@@ -29,17 +29,14 @@ export class LesMainsDeLaTerreService implements GameRulesAdapter, OnModuleInit 
   readonly maxPlayers = LES_MAINS_GAME.maxPlayers;
 
   constructor(
-    private readonly registry: GameRegistryService,
+    registry: GameRegistryService,
     private readonly setup: LesMainsSetupService,
     private readonly actions: LesMainsActionService,
     private readonly presenter: LesMainsPresenterService,
     private readonly bots: LesMainsDeLaTerreBotService,
-  ) {}
-
-  onModuleInit(): void {
-    this.registry.register(this);
+  ) {
+    super(registry);
   }
-
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     return this.setup.hydrateInitialState(baseState);
   }

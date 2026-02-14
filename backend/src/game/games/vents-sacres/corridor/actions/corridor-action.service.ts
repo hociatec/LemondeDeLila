@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import type { CorridorMetadata } from '../model/corridor.model';
 import * as CorridorRulebook from '../rulebook/rulebook';
 
+import { applyActionsSequentially, dispatchByActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
 @Injectable()
 export class CorridorActionService {
   private toCellRef(pos: { x: number; y: number }, size: number): string {
@@ -27,11 +30,9 @@ export class CorridorActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      next = this.applyOne(next, action);
-    }
-    return next;
+    return applyActionsSequentially(state, actions, (next, action) =>
+      this.applyOne(next, action),
+    );
   }
 
   private applyOne(
@@ -43,15 +44,15 @@ export class CorridorActionService {
     }
 
     const actorId = state.turn?.currentPlayerId ?? null;
-    const type = String(action?.type ?? '').trim().toLowerCase();
-    if (type === 'corridor_move') {
-      return this.applyMove(state, action, actorId);
-    }
-    if (type === 'corridor_place_wall') {
-      return this.applyWall(state, action, actorId);
-    }
-
-    return state;
+    const type = normalizeLowerActionType(action);
+    return dispatchByActionType(
+      type,
+      {
+        corridor_move: () => this.applyMove(state, action, actorId),
+        corridor_place_wall: () => this.applyWall(state, action, actorId),
+      },
+      () => state,
+    );
   }
 
   private applyMove(
@@ -78,7 +79,7 @@ export class CorridorActionService {
     };
 
     return this.advanceTurnAndMaybeFinish(state, validatedActor, nextMeta, {
-      moveMessage: `se déplace de ${this.toCellRef(from, size)} à ${this.toCellRef(to, size)}`,
+      moveMessage: `se dÃ©place de ${this.toCellRef(from, size)} Ã  ${this.toCellRef(to, size)}`,
       maybeWinnerPos: to,
     });
   }

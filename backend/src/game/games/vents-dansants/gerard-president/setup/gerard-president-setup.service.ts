@@ -1,5 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+
+import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import {
   GERARD_PRESIDENT_NAMES,
@@ -14,9 +16,9 @@ export class GerardPresidentSetupService {
   constructor(private readonly random: RandomService) {}
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
-    const players = Array.isArray(baseState.players) ? baseState.players : [];
+    const players = getSafePlayers(baseState);
     const metaSeed = (baseState.metadata ?? {}) as GerardPresidentMetadata;
-    const rng = metaSeed.rng ?? {};
+    const rng = getRngMeta(metaSeed);
 
     const nameDeck = [...GERARD_PRESIDENT_NAMES];
     const themeDeck = [...GERARD_PRESIDENT_THEMES];

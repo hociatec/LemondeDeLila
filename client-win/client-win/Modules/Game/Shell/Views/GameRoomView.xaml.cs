@@ -331,68 +331,68 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
             index = (index + (backwards ? -1 : 1) + regions.Count) % regions.Count;
         }
 
-        FocusRegion(regions[index]);
+        FocusOnRegion(regions[index]);
     }
 
-    private enum FocusRegion
+    private enum FocusRegionKind
     {
         Chat,
         History,
         GameZone,
     }
 
-    private List<FocusRegion> GetAvailableFocusRegions()
+    private List<FocusRegionKind> GetAvailableFocusRegions()
     {
-        var regions = new List<FocusRegion>();
+        var regions = new List<FocusRegionKind>();
         if (IsChatEnabled())
         {
-            regions.Add(FocusRegion.Chat);
+        regions.Add(FocusRegionKind.Chat);
         }
 
         if (IsHistoryEnabled())
         {
-            regions.Add(FocusRegion.History);
+        regions.Add(FocusRegionKind.History);
         }
 
         if (GameZoneHost != null)
         {
-            regions.Add(FocusRegion.GameZone);
+        regions.Add(FocusRegionKind.GameZone);
         }
 
         return regions;
     }
 
-    private FocusRegion? GetCurrentFocusRegion()
+    private FocusRegionKind? GetCurrentFocusRegion()
     {
         if (ChatHost?.IsKeyboardFocusWithin == true)
         {
-            return FocusRegion.Chat;
+            return FocusRegionKind.Chat;
         }
 
         if (HistoryHost?.IsKeyboardFocusWithin == true)
         {
-            return FocusRegion.History;
+            return FocusRegionKind.History;
         }
 
         if (GameZoneHost?.IsKeyboardFocusWithin == true)
         {
-            return FocusRegion.GameZone;
+            return FocusRegionKind.GameZone;
         }
 
         return null;
     }
 
-    private void FocusRegion(FocusRegion region)
+    private void FocusOnRegion(FocusRegionKind region)
     {
         switch (region)
         {
-            case FocusRegion.Chat:
+            case FocusRegionKind.Chat:
                 FocusChatInput();
                 break;
-            case FocusRegion.History:
+            case FocusRegionKind.History:
                 FocusHistory();
                 break;
-            case FocusRegion.GameZone:
+            case FocusRegionKind.GameZone:
                 FocusGameZone();
                 break;
         }

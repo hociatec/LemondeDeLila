@@ -1,9 +1,14 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type {
   GameStateEntity,
   PendingState,
 } from '../../../../core/entities/game-state.entity';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+
+
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
@@ -43,14 +48,28 @@ export class MonVillageActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'roll' || type === 'ROLL_DICE' || type === 'roll_dice') {
-        next = this.handleRoll(next);
-      }
-    }
-    return next;
+    const next = applyActionsSequentially(state, actions, (next, action) => {
+          const type = normalizeActionType(action);
+          return dispatchByActionType(
+            type,
+            {
+              'roll': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'ROLL_DICE': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'roll_dice': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+            },
+            () => next,
+          );
+        });
+        return next;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -90,7 +109,7 @@ export class MonVillageActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} lance le dé : "${rng.roll}".`,
+      `${this.playerName(next, playerId)} lance le dÃ© : "${rng.roll}".`,
     );
 
     next = this.move(next, playerId, rng.roll);
@@ -143,7 +162,7 @@ export class MonVillageActionService {
     if (!card) {
       return this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} n’a plus de cartes dans la zone ${zoneId}.`,
+        `${this.playerName(next, playerId)} nâ€™a plus de cartes dans la zone ${zoneId}.`,
       );
     }
 
@@ -300,7 +319,7 @@ export class MonVillageActionService {
     const lower = pawn.toLowerCase();
     const feminine = lower.startsWith('la ') || lower.startsWith('une ');
     const inner = pawn
-      .replace(/^l['’]\s*/i, '')
+      .replace(/^l['â€™]\s*/i, '')
       .replace(/^(le|la|les|un|une)\s+/i, '')
       .trim();
     const core = inner || pawn;
@@ -309,3 +328,5 @@ export class MonVillageActionService {
     return `"${feminine ? 'sa' : 'son'} ${lowered}"`;
   }
 }
+
+

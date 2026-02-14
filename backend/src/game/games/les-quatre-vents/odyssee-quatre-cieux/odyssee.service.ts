@@ -1,11 +1,11 @@
-﻿import { Injectable, OnModuleInit } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../../../engine/dto/game-action.dto';
-import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
@@ -19,8 +19,7 @@ import * as Rulebook from './rulebook/rulebook';
 import { buildOdysseeShortcuts } from './odyssee.shortcuts';
 
 @Injectable()
-export class OdysseeQuatreCieuxService
-  implements GameRulesAdapter, OnModuleInit
+export class OdysseeQuatreCieuxService extends AbstractGameService
 {
   readonly gameType = 'odyssee-quatre-cieux';
   readonly category = 'JeuxDePlateaux';
@@ -31,17 +30,14 @@ export class OdysseeQuatreCieuxService
   readonly maxPlayers = ODYSSEE_GAME.maxPlayers;
 
   constructor(
-    private readonly registry: GameRegistryService,
+    registry: GameRegistryService,
     private readonly setup: OdysseeSetupService,
     private readonly actions: OdysseeActionService,
     private readonly presenter: OdysseePresenterService,
     private readonly bots: OdysseeBotService,
-  ) {}
-
-  onModuleInit(): void {
-    this.registry.register(this);
+  ) {
+    super(registry);
   }
-
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     return this.setup.hydrateInitialState(baseState);
   }

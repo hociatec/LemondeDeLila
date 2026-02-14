@@ -4,6 +4,8 @@ import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../../../../engine/dto/game-action.dto';
+
+import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import * as Rulebook from '../rulebook/rulebook';
 import { ZIG_ET_ZAG_GAME } from '../definitions/game.definition';
 import type { ZigEtZagMetadata } from '../model/zig-et-zag-state.entity';
@@ -63,11 +65,7 @@ export class ZigEtZagPresenterService {
         phases: ZIG_ET_ZAG_GAME.phaseOrder.map((phase) => phase.id),
         victory: null,
       },
-      actions: actions.map((action) => ({
-        type: action.type,
-        label: this.actionLabel(action),
-        payload: action.payload ?? {},
-      })),
+      actions: formatPresenterActions(actions, (action) => this.actionLabel(action)),
       extras: {
         hand: handRows,
         stage,

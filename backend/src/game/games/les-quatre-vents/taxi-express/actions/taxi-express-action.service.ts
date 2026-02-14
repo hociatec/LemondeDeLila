@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
@@ -10,6 +12,9 @@ import type {
   TaxiExpressEventCard,
   TaxiExpressMetadata,
 } from '../model/taxi-state.entity';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+
+
 
 @Injectable()
 export class TaxiExpressActionService {
@@ -26,14 +31,28 @@ export class TaxiExpressActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim().toLowerCase();
-      if (type === 'roll' || type === 'roll_dice' || type === 'roll dice') {
-        next = this.handleRoll(next);
-      }
-    }
-    return next;
+    const next = applyActionsSequentially(state, actions, (next, action) => {
+          const type = normalizeLowerActionType(action);
+          return dispatchByActionType(
+            type,
+            {
+              'roll': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'roll_dice': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'roll dice': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+            },
+            () => next,
+          );
+        });
+        return next;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -86,7 +105,7 @@ export class TaxiExpressActionService {
         `${this.playerName(
           next,
           playerId,
-        )} croise l’événement ${blockedTile?.title ?? `case ${meta.blockedTileId}`}, le client descend et le taxi retourne à la station.`,
+        )} croise lâ€™Ã©vÃ©nement ${blockedTile?.title ?? `case ${meta.blockedTileId}`}, le client descend et le taxi retourne Ã  la station.`,
       );
       next = this.setPlayerPosition(next, playerId, 0);
       next = this.dropActiveClient(next, playerId);
@@ -100,7 +119,7 @@ export class TaxiExpressActionService {
         `${this.playerName(
           next,
           playerId,
-        )} dépose ${client.clientName} à destination (${arrivedTile?.title ?? ''}).`,
+        )} dÃ©pose ${client.clientName} Ã  destination (${arrivedTile?.title ?? ''}).`,
       );
       next = this.incrementTrip(next, playerId);
       const completed = this.getMeta(next).completedTrips?.[playerId] ?? 0;
@@ -173,12 +192,12 @@ export class TaxiExpressActionService {
       const tile = this.tileTitleById(nextMeta, draw.card.blockedTileId);
       next = this.core.appendLog(
         next,
-        `Événement : ${draw.card.title} (${tile}) – ${draw.card.description}`,
+        `Ã‰vÃ©nement : ${draw.card.title} (${tile}) â€“ ${draw.card.description}`,
       );
     } else {
       next = this.core.appendLog(
         next,
-        'Événement : la ville est calme, aucun obstacle identifié.',
+        'Ã‰vÃ©nement : la ville est calme, aucun obstacle identifiÃ©.',
       );
     }
     return next;
@@ -217,7 +236,7 @@ export class TaxiExpressActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} remporte la course avec ${completed} trajets validés !`,
+      `${this.playerName(next, playerId)} remporte la course avec ${completed} trajets validÃ©s !`,
     );
     return next;
   }
@@ -366,3 +385,5 @@ export class TaxiExpressActionService {
     return username ?? `Joueur ${playerId}`;
   }
 }
+
+

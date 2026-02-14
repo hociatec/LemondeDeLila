@@ -1,6 +1,8 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
@@ -11,6 +13,9 @@ import type {
   AventureSauvageMetadata,
   AventureSauvageTile,
 } from '../model/aventure-sauvage-state.entity';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+
+
 
 @Injectable()
 export class AventureSauvageActionService {
@@ -26,24 +31,37 @@ export class AventureSauvageActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = this.ensurePawnSelectionPrompt(state);
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'choose_pawn') {
-        next = this.handleChoosePawn(next, action);
-        next = this.ensurePawnSelectionPrompt(next);
-        continue;
-      }
-      if (type === 'roll' || type === 'ROLL_DICE' || type === 'roll_dice') {
-        next = this.handleRoll(next);
-        continue;
-      }
-      if (type === 'draw') {
-        next = this.handleDraw(next);
-        continue;
-      }
-    }
-    return this.ensurePawnSelectionPrompt(next);
+    const next = applyActionsSequentially(this.ensurePawnSelectionPrompt(state), actions, (next, action) => {
+          const type = normalizeActionType(action);
+          return dispatchByActionType(
+            type,
+            {
+              'choose_pawn': () => {
+                next = this.handleChoosePawn(next, action);
+            next = this.ensurePawnSelectionPrompt(next);
+                return next;
+              },
+              'roll': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'ROLL_DICE': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'roll_dice': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'draw': () => {
+                next = this.handleDraw(next);
+                return next;
+              },
+            },
+            () => next,
+          );
+        });
+        return this.ensurePawnSelectionPrompt(next);
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -809,6 +827,8 @@ function defaultPatteDeck(): AventureSauvageCard[] {
   ];
   return deck;
 }
+
+
 
 
 

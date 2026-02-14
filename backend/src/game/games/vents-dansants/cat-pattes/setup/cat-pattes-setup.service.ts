@@ -1,5 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+
+import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
@@ -19,9 +21,9 @@ export class CatPattesSetupService {
   ) {}
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
-    const players = Array.isArray(baseState.players) ? baseState.players : [];
+    const players = getSafePlayers(baseState);
     const metaSeed = (baseState.metadata ?? {}) as CatPattesMetadata;
-    const rng = metaSeed.rng ?? {};
+    const rng = getRngMeta(metaSeed);
     const deck = CAT_PATTES_DECK.map((card) => card.id);
     const { values: shuffledDeck, meta: updatedRng } = this.random.shuffle(rng, deck);
 

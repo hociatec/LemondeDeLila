@@ -4,7 +4,12 @@ import type {
   PendingState,
   TurnStateEntity,
 } from '../../../../core/entities/game-state.entity';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+
+
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
@@ -41,31 +46,45 @@ export class MinuitActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = this.ensurePawnSelection(state);
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'pick_pawn') {
-        next = this.handlePickPawn(next, action);
-        next = this.ensurePawnSelection(next);
-        continue;
-      }
-      if (type === 'roll' || type === 'ROLL_DICE' || type === 'roll_dice') {
-        next = this.handleRoll(next);
-        continue;
-      }
-      if (type === 'draw') {
-        next = this.handleDraw(next);
-        continue;
-      }
-      if (type === 'answer_quiz') {
-        next = this.handleAnswerQuiz(next, action);
-        continue;
-      }
-      if (type === 'choose_target') {
-        next = this.handleChooseTarget(next, action);
-      }
-    }
-    return next;
+    const next = applyActionsSequentially(this.ensurePawnSelection(state), actions, (next, action) => {
+          const type = normalizeActionType(action);
+          return dispatchByActionType(
+            type,
+            {
+              'pick_pawn': () => {
+                next = this.handlePickPawn(next, action);
+            next = this.ensurePawnSelection(next);
+                return next;
+              },
+              'roll': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'ROLL_DICE': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'roll_dice': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'draw': () => {
+                next = this.handleDraw(next);
+                return next;
+              },
+              'answer_quiz': () => {
+                next = this.handleAnswerQuiz(next, action);
+                return next;
+              },
+              'choose_target': () => {
+                next = this.handleChooseTarget(next, action);
+                return next;
+              },
+            },
+            () => next,
+          );
+        });
+        return next;
   }
 
   private isBotLike(player: any): boolean {
@@ -1231,3 +1250,5 @@ function findBehind(
   if (idx <= 0) return null;
   return ranked[idx - 1].id;
 }
+
+

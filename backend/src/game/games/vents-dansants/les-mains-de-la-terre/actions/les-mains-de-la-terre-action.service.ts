@@ -1,6 +1,8 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -11,6 +13,7 @@ import {
   LES_MAINS_FAMILIES,
   isLesMainsSpecialCard,
 } from '../model/les-mains-de-la-terre-cards';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
 import type { LesMainsMetadata } from '../model/les-mains-de-la-terre-state.entity';
 
 type LesMainsActionPayload = {
@@ -31,14 +34,20 @@ export class LesMainsActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'request_card') {
-        next = this.handleRequestCard(next, action);
-      }
-    }
-    return next;
+    const next = applyActionsSequentially(state, actions, (next, action) => {
+          const type = normalizeActionType(action);
+          return dispatchByActionType(
+            type,
+            {
+              'request_card': () => {
+                next = this.handleRequestCard(next, action);
+                return next;
+              },
+            },
+            () => next,
+          );
+        });
+        return next;
   }
 
   private handleRequestCard(

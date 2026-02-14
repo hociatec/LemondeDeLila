@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+
+import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import * as Rulebook from '../rulebook/rulebook';
 import { TOUT_PRES_DE_MAMAN_GAME } from '../definitions/tout-pres-de-maman.definition';
@@ -40,11 +42,7 @@ export class ToutPresDeMamanPresenterService {
               }
             : null,
       },
-      actions: actions.map((action) => ({
-        type: action.type,
-        label: 'Lancer le dé',
-        payload: action.payload ?? {},
-      })),
+      actions: formatPresenterActions(actions, (action) => 'Lancer le dé'),
       pending: state.pending ?? null,
       extras: {
         ...(state as any).extras,

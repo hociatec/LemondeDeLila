@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -9,6 +11,9 @@ import type {
   ZigEtZagRoundState,
   ZigEtZagRoundSummary,
 } from '../model/zig-et-zag-state.entity';
+import { applyActionsSequentially, dispatchByActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+
+
 import { ZIG_ET_ZAG_CARD_BY_ID, ZIG_ET_ZAG_TOTAL_CARDS } from '../model/zig-et-zag-cards';
 import {
   buildInitialRoundState,
@@ -31,19 +36,17 @@ export class ZigEtZagActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim().toLowerCase();
-      if (type === 'select_card') {
-        next = this.handleSelectCard(next, action);
-        continue;
-      }
-      if (type === 'draw_card') {
-        next = this.handleDrawCard(next, action);
-        continue;
-      }
-    }
-    return next;
+    return applyActionsSequentially(state, actions, (next, action) => {
+      const type = normalizeLowerActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          select_card: () => this.handleSelectCard(next, action),
+          draw_card: () => this.handleDrawCard(next, action),
+        },
+        () => next,
+      );
+    });
   }
 
   private handleSelectCard(
@@ -168,7 +171,7 @@ export class ZigEtZagActionService {
     if (this.hasSelectionJoker(round)) {
       nextState = this.core.appendLog(
         nextState,
-        'Joker joué hors bataille : les cartes sont défaussées.',
+        'Joker jouÃ© hors bataille : les cartes sont dÃ©faussÃ©es.',
       );
       return this.finishRound(nextState, players, round, null);
     }
@@ -176,7 +179,7 @@ export class ZigEtZagActionService {
     const evaluation = this.evaluateFaceUpPlays(round);
     if (evaluation.tiePlayers.length > 1) {
       const nextRound = this.prepareBattle(round, evaluation.tiePlayers, meta);
-      nextState = this.core.appendLog(nextState, 'Bataille déclenchée !');
+      nextState = this.core.appendLog(nextState, 'Bataille dÃ©clenchÃ©e !');
       if (!nextRound.waitingPlayers.length) {
         return this.finishRound(
           nextState,
@@ -232,7 +235,7 @@ export class ZigEtZagActionService {
       triggerFamilies,
       battleLog: [
         ...round.battleLog,
-        'Bataille déclenchée !',
+        'Bataille dÃ©clenchÃ©e !',
       ],
     };
   }
@@ -325,7 +328,7 @@ export class ZigEtZagActionService {
     if (!results.length) {
       nextState = this.core.appendLog(
         nextState,
-        'Aucune carte valide : les cartes sont défaussées.',
+        'Aucune carte valide : les cartes sont dÃ©faussÃ©es.',
       );
       return this.finishRound(nextState, players, round, null);
     }
@@ -370,13 +373,13 @@ export class ZigEtZagActionService {
       triggerFamilies,
       battleLog: [
         ...round.battleLog,
-        'Égalité persistante, la bataille continue !',
+        'Ã‰galitÃ© persistante, la bataille continue !',
       ],
     };
 
     nextState = this.core.appendLog(
       nextState,
-      'Égalité persistante, la bataille continue !',
+      'Ã‰galitÃ© persistante, la bataille continue !',
     );
     nextState = this.setRoundState(nextState, meta, nextRound);
     return this.setCurrentPlayerWithAnnouncement(
@@ -488,7 +491,7 @@ export class ZigEtZagActionService {
       if (play.faceUpCard) {
         next = this.core.appendLog(
           next,
-          `${this.playerName(players, play.playerId)} dévoile ${this.formatCardLabel(play.faceUpCard)}.`,
+          `${this.playerName(players, play.playerId)} dÃ©voile ${this.formatCardLabel(play.faceUpCard)}.`,
         );
       }
     }
@@ -518,8 +521,8 @@ export class ZigEtZagActionService {
 
     const summary =
       revealPlayers.length === 2
-        ? `${revealPlayers[0]} et ${revealPlayers[1]} dévoilent leurs cartes.`
-        : `${revealPlayers.slice(0, -1).join(', ')} et ${revealPlayers[revealPlayers.length - 1]} dévoilent leurs cartes.`;
+        ? `${revealPlayers[0]} et ${revealPlayers[1]} dÃ©voilent leurs cartes.`
+        : `${revealPlayers.slice(0, -1).join(', ')} et ${revealPlayers[revealPlayers.length - 1]} dÃ©voilent leurs cartes.`;
     return this.core.appendLog(state, summary);
   }
 
@@ -873,3 +876,5 @@ export class ZigEtZagActionService {
     return state.turn?.currentPlayerId ?? null;
   }
 }
+
+

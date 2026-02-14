@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+
+import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import * as JeuOieRulebook from '../rulebook/rulebook';
 import { JEU_OIE_GAME } from '../definitions/game.definition';
@@ -45,11 +47,7 @@ export class JeuOiePresenterService {
         phases: JEU_OIE_GAME.phaseOrder.map((p) => p.id),
         victory: null,
       },
-      actions: actions.map((a) => ({
-        type: a.type,
-        label: a.type,
-        payload: a.payload ?? {},
-      })),
+      actions: formatPresenterActions(actions),
       pending: state.pending ?? null,
       extras,
       board: this.boardPayload.buildTilesPositionsLaps(

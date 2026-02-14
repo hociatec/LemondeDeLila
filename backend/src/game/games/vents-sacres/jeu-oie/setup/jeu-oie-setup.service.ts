@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+
+import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
@@ -42,7 +44,7 @@ export class JeuOieSetupService {
   }
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
-    const players = Array.isArray(baseState.players) ? baseState.players : [];
+    const players = getSafePlayers(baseState);
     const positions: Record<number, number> = {};
     const laps: Record<number, number> = {};
     for (const p of players) {

@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import {
@@ -8,6 +10,7 @@ import {
   OlympiaDeckType,
   OlympiaEffect,
 } from '../model/olympia-cards';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
 import type {
   OlympiaMetadata,
   OlympiaStatus,
@@ -32,23 +35,18 @@ export class OlympiaActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'draw_card') {
-        next = this.handleDrawCard(next, action);
-        continue;
-      }
-      if (type === 'play_card') {
-        next = this.handlePlayCard(next, action);
-        continue;
-      }
-      if (type === 'pass') {
-        next = this.handlePass(next);
-        continue;
-      }
-    }
-    return next;
+    return applyActionsSequentially(state, actions, (next, action) => {
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          draw_card: () => this.handleDrawCard(next, action),
+          play_card: () => this.handlePlayCard(next, action),
+          pass: () => this.handlePass(next),
+        },
+        () => next,
+      );
+    });
   }
 
   private handlePass(state: GameStateEntity): GameStateEntity {
@@ -268,7 +266,7 @@ export class OlympiaActionService {
     if (removed.length) {
       return this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} défausse ${removed.length} carte(s).`,
+        `${this.playerName(next, playerId)} dÃ©fausse ${removed.length} carte(s).`,
       );
     }
     return next;
@@ -318,7 +316,7 @@ export class OlympiaActionService {
     next = this.addPrestige(next, target.id, -amount);
     return this.core.appendLog(
       next,
-      `${this.playerName(next, actorId)} vole ${amount} point(s) à ${this.playerName(next, target.id)}.`,
+      `${this.playerName(next, actorId)} vole ${amount} point(s) Ã  ${this.playerName(next, target.id)}.`,
     );
   }
 

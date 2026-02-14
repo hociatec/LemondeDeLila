@@ -1,5 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+
+import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import {
   DAME_NATURE_CARD_BY_ID,
@@ -14,9 +16,9 @@ export class DameNatureSetupService {
   constructor(private readonly random: RandomService) {}
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
-    const players = Array.isArray(baseState.players) ? baseState.players : [];
+    const players = getSafePlayers(baseState);
     const rngSeed = (baseState.metadata ?? {}) as DameNatureMetadata;
-    let rngMeta = rngSeed.rng ?? {};
+    let rngMeta = getRngMeta(rngSeed);
 
     const { values: shuffledFamilies, meta: updatedMeta } = this.random.shuffle(
       rngMeta,

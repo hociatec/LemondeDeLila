@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+
+import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import * as Rulebook from '../rulebook/rulebook';
 import { ABSURDISSIMES_GAME } from '../definitions/game.definition';
 import type { AbsurdissimesMetadata } from '../model/les-absurdissimes-state.entity';
@@ -36,11 +38,7 @@ export class AbsurdissimesPresenterService {
         phases: ABSURDISSIMES_GAME.phaseOrder.map((phase) => phase.id),
         victory: null,
       },
-      actions: actions.map((action) => ({
-        type: action.type,
-        label: this.buildLabel(action, state),
-        payload: action.payload ?? {},
-      })),
+      actions: formatPresenterActions(actions, (action) => this.buildLabel(action, state)),
       extras: {
         stage: meta.roundStage,
         currentWhite: meta.currentWhite ?? null,

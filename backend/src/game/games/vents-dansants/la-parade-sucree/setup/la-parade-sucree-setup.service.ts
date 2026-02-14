@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+
+import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import {
   INITIAL_CANDIES,
@@ -12,9 +14,9 @@ export class LaParadeSucreeSetupService {
   constructor(private readonly random: RandomService) {}
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
-    const players = Array.isArray(baseState.players) ? baseState.players : [];
+    const players = getSafePlayers(baseState);
     const seedMeta = (baseState.metadata ?? {}) as LaParadeSucreeMetadata;
-    let rngMeta = seedMeta.rng ?? {};
+    let rngMeta = getRngMeta(seedMeta);
     const deck = [...LA_PARADE_CARD_DECK];
     const { values: shuffled, meta: updatedRng } = this.random.shuffle(rngMeta, deck);
     rngMeta = updatedRng;

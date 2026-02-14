@@ -1,9 +1,14 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type {
   GameStateEntity,
   PendingState,
 } from '../../../../core/entities/game-state.entity';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+
+
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -25,9 +30,9 @@ export class FouleesFantastiquesActionService {
   private readonly families = [
     {
       id: 'equides',
-      family: 'Equidés',
-      habitat: 'écurie',
-      pawns: ['Alkhal-téké', 'Andalou', 'Frison', 'Pur-sang'],
+      family: 'EquidÃ©s',
+      habitat: 'Ã©curie',
+      pawns: ['Alkhal-tÃ©kÃ©', 'Andalou', 'Frison', 'Pur-sang'],
     },
     {
       id: 'primates',
@@ -38,14 +43,14 @@ export class FouleesFantastiquesActionService {
     {
       id: 'oiseaux',
       family: 'Oiseaux',
-      habitat: 'volière',
-      pawns: ['Cygne', 'Héron', 'Paon', 'Perroquet'],
+      habitat: 'voliÃ¨re',
+      pawns: ['Cygne', 'HÃ©ron', 'Paon', 'Perroquet'],
     },
     {
       id: 'poissons',
       family: 'Poissons',
       habitat: 'aquarium',
-      pawns: ['Anthias', 'Discus', 'Mandarin', 'Mérou'],
+      pawns: ['Anthias', 'Discus', 'Mandarin', 'MÃ©rou'],
     },
   ] as const;
 
@@ -61,25 +66,39 @@ export class FouleesFantastiquesActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
+    
     const status = String(state.status ?? '').toLowerCase();
     if (status !== 'started') return state;
-
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'choose_family') {
-        next = this.handleChooseFamily(next, action);
-        continue;
-      }
-      if (type === 'ROLL_DICE' || type === 'roll_dice' || type === 'roll') {
-        next = this.handleRoll(next);
-        continue;
-      }
-      if (type === 'move_pawn') {
-        next = this.handleMovePawn(next, action);
-      }
-    }
-    return next;
+    const next = applyActionsSequentially(state, actions, (next, action) => {
+          const type = normalizeActionType(action);
+          return dispatchByActionType(
+            type,
+            {
+              'choose_family': () => {
+                next = this.handleChooseFamily(next, action);
+                return next;
+              },
+              'ROLL_DICE': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'roll_dice': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'roll': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'move_pawn': () => {
+                next = this.handleMovePawn(next, action);
+                return next;
+              },
+            },
+            () => next,
+          );
+        });
+        return next;
   }
 
   private ensureFamilyPending(state: GameStateEntity): GameStateEntity {
@@ -113,17 +132,17 @@ export class FouleesFantastiquesActionService {
         }
         next = this.core.appendLog(
           next,
-          `${p.username} reçoit les pions ${color}. Famille des ${family} (${habitat}) : ${pawns.join(', ')}.`,
+          `${p.username} reÃ§oit les pions ${color}. Famille des ${family} (${habitat}) : ${pawns.join(', ')}.`,
         );
       }
-      next = this.core.appendLog(next, 'Début de partie.');
+      next = this.core.appendLog(next, 'DÃ©but de partie.');
       return this.appendTurnAnnouncement(next);
     }
 
     const currentId = state.turn?.currentPlayerId ?? players[0]?.id ?? null;
     if (currentId == null) return state;
 
-    // Si le joueur courant a déjà choisi, passer au suivant.
+    // Si le joueur courant a dÃ©jÃ  choisi, passer au suivant.
     const already = familyIdByPlayer[currentId];
     if (typeof already === 'string' && already.trim().length > 0) {
       const advanced = this.turns.advanceTurn({ ...state, pending: null });
@@ -152,7 +171,7 @@ export class FouleesFantastiquesActionService {
         label: `Famille des ${f.family} (${f.habitat})`,
       })),
       labelForPlayer: () =>
-        "Choisissez la famille d'animaux que vous souhaitez jouer, puis Entrée.",
+        "Choisissez la famille d'animaux que vous souhaitez jouer, puis EntrÃ©e.",
       dataBuilder: (choices) => ({
         familyIds: choices.map((choice) => choice.id),
       }),
@@ -203,7 +222,7 @@ export class FouleesFantastiquesActionService {
     if (takenByOther) {
       return this.core.appendLog(
         state,
-        'Cette famille a déjà été choisie par un autre joueur.',
+        'Cette famille a dÃ©jÃ  Ã©tÃ© choisie par un autre joueur.',
       );
     }
 
@@ -240,7 +259,7 @@ export class FouleesFantastiquesActionService {
     if (status !== 'started') return state;
     if (state.pending) return state;
 
-    // Tant que les familles ne sont pas choisies, on force l'étape de setup.
+    // Tant que les familles ne sont pas choisies, on force l'Ã©tape de setup.
     if (String(state.phase ?? '').toLowerCase().trim() !== 'turn') {
       return this.ensureFamilyPending(state);
     }
@@ -260,7 +279,7 @@ export class FouleesFantastiquesActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(state, currentId)} lance le dé : "${roll}".`,
+      `${this.playerName(state, currentId)} lance le dÃ© : "${roll}".`,
     );
 
     const moves = this.computeMoves(next, currentId, roll);
@@ -290,10 +309,10 @@ export class FouleesFantastiquesActionService {
       );
     const label =
       hasStableExit && moves.every((m) => m.targetProgress === 0)
-        ? `C'est à ${this.playerName(next, currentId)} de choisir un animal à sortir dans la liste, puis Entrée.`
+        ? `C'est Ã  ${this.playerName(next, currentId)} de choisir un animal Ã  sortir dans la liste, puis EntrÃ©e.`
         : hasStableExit
-          ? `C'est à ${this.playerName(next, currentId)} de choisir un animal à sortir ou à jouer dans la liste, puis Entrée.`
-          : `C'est à ${this.playerName(next, currentId)} de choisir un animal à jouer dans la liste, puis Entrée.`;
+          ? `C'est Ã  ${this.playerName(next, currentId)} de choisir un animal Ã  sortir ou Ã  jouer dans la liste, puis EntrÃ©e.`
+          : `C'est Ã  ${this.playerName(next, currentId)} de choisir un animal Ã  jouer dans la liste, puis EntrÃ©e.`;
 
     const pending: PendingState = {
       type: 'choose_pawn',
@@ -398,8 +417,8 @@ export class FouleesFantastiquesActionService {
       if (prog < 0) {
         if (roll === 6) targetProgress = 0;
       } else if (prog >= meta.trackLength) {
-        // Abri (maison) : progression spéciale.
-        // Règle: pour avancer d'une case dans l'abri, il faut faire le numéro de la prochaine case.
+        // Abri (maison) : progression spÃ©ciale.
+        // RÃ¨gle: pour avancer d'une case dans l'abri, il faut faire le numÃ©ro de la prochaine case.
         // Ex: abri 1 -> abri 2 : faire 2, abri 2 -> abri 3 : faire 3, etc.
         const homeIndex = prog - meta.trackLength + 1; // 1..homeLength
         if (homeIndex >= 1 && homeIndex < meta.homeLength) {
@@ -411,8 +430,8 @@ export class FouleesFantastiquesActionService {
       } else {
         const nextProg = prog + roll;
         if (nextProg <= arrivalProgress) {
-          // Règle : l'entrée dans la maison doit être "pile".
-          // On ne peut pas dépasser l'entrée de maison dans le même lancer : il faut arriver exactement à trackLength.
+          // RÃ¨gle : l'entrÃ©e dans la maison doit Ãªtre "pile".
+          // On ne peut pas dÃ©passer l'entrÃ©e de maison dans le mÃªme lancer : il faut arriver exactement Ã  trackLength.
           if (prog < meta.trackLength && nextProg > meta.trackLength) {
             targetProgress = nextProg === meta.trackLength ? nextProg : null;
           } else {
@@ -423,7 +442,7 @@ export class FouleesFantastiquesActionService {
 
       if (targetProgress == null) continue;
 
-      // Nouvelle règle : un pion adverse sur le chemin bloque.
+      // Nouvelle rÃ¨gle : un pion adverse sur le chemin bloque.
       // Pour avancer, il faut tomber exactement dessus (capture), donc "pile-poil" la distance manquante.
       if (prog >= 0) {
         const blocked = this.isBlockedByOpponentOnPath(
@@ -442,10 +461,10 @@ export class FouleesFantastiquesActionService {
       if (targetProgress >= 0 && targetProgress < meta.trackLength) {
         const destPos = (offset + targetProgress) % meta.trackLength;
         if (occupiedBySelf.has(destPos)) {
-          continue; // blocage : 2 pions du même joueur sur la même case
+          continue; // blocage : 2 pions du mÃªme joueur sur la mÃªme case
         }
 
-        // Interdit de finir sur une case safe occupée par un adversaire (on ne peut pas capturer en safe).
+        // Interdit de finir sur une case safe occupÃ©e par un adversaire (on ne peut pas capturer en safe).
         if (opponentsOnTrack.has(destPos)) {
           const isSafe =
             Array.isArray(meta.safeTiles) && meta.safeTiles.includes(destPos);
@@ -461,7 +480,7 @@ export class FouleesFantastiquesActionService {
       moves.push({
         pawnIndex,
         targetProgress,
-        label: `${pawnLabel} (${from}) : aller à ${to}`,
+        label: `${pawnLabel} (${from}) : aller Ã  ${to}`,
       });
     }
 
@@ -508,7 +527,7 @@ export class FouleesFantastiquesActionService {
       const intermediateProgress = fromProgress + step;
       if (intermediateProgress < 0) continue;
       if (intermediateProgress >= meta.trackLength) {
-        // Dès qu'on quitte la piste, il n'y a plus d'adversaires à "dépasser" (maison/arrivée).
+        // DÃ¨s qu'on quitte la piste, il n'y a plus d'adversaires Ã  "dÃ©passer" (maison/arrivÃ©e).
         break;
       }
 
@@ -518,7 +537,7 @@ export class FouleesFantastiquesActionService {
       }
 
       // On a un pion adverse sur le chemin.
-      // Autorisé seulement si on tombe exactement dessus (capture => étape finale).
+      // AutorisÃ© seulement si on tombe exactement dessus (capture => Ã©tape finale).
       if (intermediateProgress !== toProgress) {
         return true;
       }
@@ -625,7 +644,7 @@ export class FouleesFantastiquesActionService {
       }
     }
 
-    // Messages clairs pour l'entrée dans la maison / arrivée (sans coordonnées "case x/52").
+    // Messages clairs pour l'entrÃ©e dans la maison / arrivÃ©e (sans coordonnÃ©es "case x/52").
     if (
       prevProg >= 0 &&
       prevProg < meta.trackLength &&
@@ -643,7 +662,7 @@ export class FouleesFantastiquesActionService {
     if (prevProg < arrivalProgress && nextProg >= arrivalProgress) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(state, playerId)} met ${pawnLabel} à l'arrivée.`,
+        `${this.playerName(state, playerId)} met ${pawnLabel} Ã  l'arrivÃ©e.`,
       );
     }
 
@@ -652,7 +671,7 @@ export class FouleesFantastiquesActionService {
     if (this.isWinner(next, playerId, arrivalProgress)) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(state, playerId)} a gagné !`,
+        `${this.playerName(state, playerId)} a gagnÃ© !`,
       );
       return {
         ...next,
@@ -702,7 +721,7 @@ export class FouleesFantastiquesActionService {
         const capturedLabel = this.pawnLabel(state, p.id, pawn.pawnIndex);
         next = this.core.appendLog(
           next,
-          `${this.playerName(state, moverId)} capture ${this.playerName(state, p.id)} (${capturedLabel}) : retour au départ.`,
+          `${this.playerName(state, moverId)} capture ${this.playerName(state, p.id)} (${capturedLabel}) : retour au dÃ©part.`,
         );
         changed = true;
         return { ...pawn, progress: -1 };
@@ -774,11 +793,11 @@ export class FouleesFantastiquesActionService {
     progress: number,
   ): string {
     if (!Number.isFinite(progress) || progress < 0) {
-      return 'départ';
+      return 'dÃ©part';
     }
     const arrivalProgress = meta.trackLength + meta.homeLength - 1;
     if (progress >= arrivalProgress) {
-      return 'arrivée';
+      return 'arrivÃ©e';
     }
     if (progress < meta.trackLength) {
       const offset = meta.offsets?.[playerId] ?? 0;
@@ -838,21 +857,23 @@ export class FouleesFantastiquesActionService {
       typeof meta?.habitatByPlayer?.[playerId] === 'string'
         ? String(meta.habitatByPlayer[playerId]).trim()
         : '';
-    return habitat || 'abri de départ';
+    return habitat || 'abri de dÃ©part';
   }
 
   private fromHabitat(habitat: string): string {
     const raw = String(habitat ?? '').trim();
     const h = raw.toLowerCase();
-    if (!raw) return "de l'abri de départ";
-    if (h === 'écurie' || h === 'ecurie') return "de l'écurie";
-    if (h === 'volière' || h === 'voliere') return 'de la volière';
+    if (!raw) return "de l'abri de dÃ©part";
+    if (h === 'Ã©curie' || h === 'ecurie') return "de l'Ã©curie";
+    if (h === 'voliÃ¨re' || h === 'voliere') return 'de la voliÃ¨re';
     if (h === 'primaterie') return 'de la primaterie';
     if (h === 'aquarium') return "de l'aquarium";
-    if (/^[aeiouyhàâäéèêëîïôöùûü]/i.test(raw)) {
+    if (/^[aeiouyhÃ Ã¢Ã¤Ã©Ã¨ÃªÃ«Ã®Ã¯Ã´Ã¶Ã¹Ã»Ã¼]/i.test(raw)) {
       return `de l'${raw}`;
     }
     return `du ${raw}`;
   }
 }
+
+
 

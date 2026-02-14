@@ -1,11 +1,11 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../../../engine/dto/game-action.dto';
-import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
 import { CorridorSetupService } from './setup/corridor-setup.service';
 import { CorridorActionService } from './actions/corridor-action.service';
 import { CorridorPresenterService } from './presenter/corridor-presenter.service';
@@ -13,7 +13,7 @@ import { CORRIDOR_GAME } from './definitions/game.definition';
 import { CorridorBotService } from './bots/corridor-bot.service';
 
 @Injectable()
-export class CorridorService implements GameRulesAdapter, OnModuleInit {
+export class CorridorService extends AbstractGameService {
   readonly gameType = 'corridor';
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'Les Vents Sacrés';
@@ -29,15 +29,11 @@ export class CorridorService implements GameRulesAdapter, OnModuleInit {
     private readonly presenter: CorridorPresenterService,
     private readonly bots: CorridorBotService,
   ) {
+    super(registry);
     this.registry = registry;
   }
 
-  private readonly registry: GameRegistryService;
-
-  onModuleInit(): void {
-    this.registry.register(this);
-  }
-
+  registry: GameRegistryService;
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     return this.setup.hydrateInitialState(baseState);
   }

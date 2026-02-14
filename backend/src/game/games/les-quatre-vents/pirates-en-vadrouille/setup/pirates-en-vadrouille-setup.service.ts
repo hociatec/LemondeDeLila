@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+
+import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import type {
@@ -24,7 +26,7 @@ export class PiratesEnVadrouilleSetupService {
     const board = this.loadBoard();
     const cards = this.loadCards();
 
-    const players = Array.isArray(baseState.players) ? baseState.players : [];
+    const players = getSafePlayers(baseState);
     const positions: Record<number, number> = {};
     const statuses = { skipTurn: {}, obstacleImmunity: {} };
     const collections: Record<number, PiratesEnVadrouilleCollection> = {};

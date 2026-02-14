@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+
+import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import * as Rulebook from '../rulebook/rulebook';
 import {
   LES_MAINS_CARD_BY_ID,
@@ -50,11 +52,7 @@ export class LesMainsPresenterService {
     return {
       ...state,
       catalog,
-      actions: actions.map((action) => ({
-        type: action.type,
-        label: this.buildLabel(action),
-        payload: action.payload ?? {},
-      })),
+      actions: formatPresenterActions(actions, (action) => this.buildLabel(action)),
       extras: {
         hand,
         handCards: this.buildHandCards(hand),

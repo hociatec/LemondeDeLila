@@ -3,7 +3,12 @@ import type {
   GameStateEntity,
   PlayerStateEntity,
 } from '../../../../core/entities/game-state.entity';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
+
+
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { GERARD_PRESIDENT_SPECIAL_CARDS } from '../model/gerard-president-cards';
@@ -30,29 +35,28 @@ export class GerardPresidentActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    return actions.reduce((current, action) => this.applyAction(current, action), state);
+    return applyActionsSequentially(state, actions, (current, action) =>
+      this.applyAction(current, action),
+    );
   }
 
   private applyAction(
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const type = String(action?.type ?? '').trim() as GerardPresidentActionType;
+    const type = normalizeActionType(action) as GerardPresidentActionType;
     const payload = (action.payload ?? {}) as GerardPresidentActionPayload;
-    switch (type) {
-      case 'set_theme':
-        return this.handleSetTheme(state);
-      case 'play_name':
-        return this.handlePlayName(state, payload);
-      case 'play_special':
-        return this.handlePlaySpecial(state, payload);
-      case 'choose_winner':
-        return this.handleChooseWinner(state, payload);
-      case 'pass':
-        return this.handlePass(state);
-      default:
-        return state;
-    }
+    return dispatchByActionType(
+      type,
+      {
+        set_theme: () => this.handleSetTheme(state),
+        play_name: () => this.handlePlayName(state, payload),
+        play_special: () => this.handlePlaySpecial(state, payload),
+        choose_winner: () => this.handleChooseWinner(state, payload),
+        pass: () => this.handlePass(state),
+      },
+      () => state,
+    );
   }
 
   private handleSetTheme(state: GameStateEntity): GameStateEntity {
@@ -706,3 +710,5 @@ export class GerardPresidentActionService {
     return ordered[currentIndex + 1];
   }
 }
+
+

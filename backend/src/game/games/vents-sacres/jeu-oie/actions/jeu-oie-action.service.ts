@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -9,6 +11,7 @@ import { TurnPoliciesService } from '../../../../modules/turn-policies/services/
 import { PromptPoliciesService } from '../../../../modules/prompt-policies/services/prompt-policies.service';
 import type { JeuOieMetadata, JeuOieTile } from '../model/jeu-oie-state.entity';
 
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
 @Injectable()
 export class JeuOieActionService {
   constructor(
@@ -24,18 +27,26 @@ export class JeuOieActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = this.ensurePawnSelectionPrompt(state);
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'choose_pawn') {
-        next = this.handleChoosePawn(next, action);
-        next = this.ensurePawnSelectionPrompt(next);
-        continue;
-      }
-      if (type === 'roll' || type === 'ROLL_DICE' || type === 'roll_dice') {
-        next = this.handleRoll(next);
-      }
-    }
+    const next = applyActionsSequentially(
+      this.ensurePawnSelectionPrompt(state),
+      actions,
+      (current, action) => {
+        const type = normalizeActionType(action);
+        return dispatchByActionType(
+          type,
+          {
+            choose_pawn: () =>
+              this.ensurePawnSelectionPrompt(
+                this.handleChoosePawn(current, action),
+              ),
+            roll: () => this.handleRoll(current),
+            ROLL_DICE: () => this.handleRoll(current),
+            roll_dice: () => this.handleRoll(current),
+          },
+          () => current,
+        );
+      },
+    );
     return this.ensurePawnSelectionPrompt(next);
   }
 
@@ -369,7 +380,7 @@ export class JeuOieActionService {
       isAssigned: (playerId) => Boolean(pawnByPlayerId[playerId]),
       pendingType: 'choose_pawn',
       choices,
-      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
+      labelForPlayer: (playerLabel) => `C'est Ã  ${playerLabel} de choisir son pion.`,
       dataBuilder: (availableChoices) => ({
         pawns: availableChoices.map((p: any) => ({
           id: String(p?.id ?? '').trim(),

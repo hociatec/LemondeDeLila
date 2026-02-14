@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+
+import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import { VOYAGE_GAME } from '../definitions/voyage.definition';
 import * as Rulebook from '../rulebook/rulebook';
@@ -30,11 +32,7 @@ export class VoyagePresenterService {
         phases: VOYAGE_GAME.phaseOrder.map((p) => p.id),
         victory: null,
       },
-      actions: actions.map((a) => ({
-        type: a.type,
-        label: a.type,
-        payload: a.payload ?? {},
-      })),
+      actions: formatPresenterActions(actions),
       pending: state.pending ?? null,
       extras: {
         ...(state as any).extras,

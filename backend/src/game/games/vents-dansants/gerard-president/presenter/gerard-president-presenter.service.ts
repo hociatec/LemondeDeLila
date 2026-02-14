@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+
+import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import * as Rulebook from '../rulebook/rulebook';
 import type { GerardPresidentMetadata } from '../model/gerard-president-state.entity';
 import {
@@ -79,11 +81,7 @@ export class GerardPresidentPresenterService {
         submissions: sanitizedSubmissions,
       },
       catalog,
-      actions: actions.map((action) => ({
-        type: action.type,
-        label: ACTION_LABELS[action.type] ?? action.type,
-        payload: action.payload ?? {},
-      })),
+      actions: formatPresenterActions(actions, (action) => ACTION_LABELS[action.type] ?? action.type),
       extras,
       pending: state.pending ?? null,
     } as GameStateWithActions;

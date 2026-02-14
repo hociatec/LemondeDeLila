@@ -1,5 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+
+import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { BANDE_A_BANANE_DECK } from '../model/la-bande-a-banane-cards';
 import type {
@@ -12,9 +14,9 @@ export class BandeABananeSetupService {
   constructor(private readonly random: RandomService) {}
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
-    const players = Array.isArray(baseState.players) ? baseState.players : [];
+    const players = getSafePlayers(baseState);
     const metaSeed = (baseState.metadata ?? {}) as BandeABananeMetadata;
-    const rngSeed = metaSeed.rng ?? {};
+    const rngSeed = getRngMeta(metaSeed);
 
     const deck = BANDE_A_BANANE_DECK.map((card) => card.id);
     const { values: shuffledDeck, meta: updatedRng } = this.random.shuffle(

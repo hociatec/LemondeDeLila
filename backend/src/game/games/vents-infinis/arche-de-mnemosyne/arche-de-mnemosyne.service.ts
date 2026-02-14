@@ -4,8 +4,8 @@ import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../../../engine/dto/game-action.dto';
-import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
 import { GameCoreService } from '../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../modules/turn/services/turn-flow.service';
 import { RandomService } from '../../../modules/random/services/random.service';
@@ -45,7 +45,7 @@ type ActionType =
   | 'answer_quiz';
 
 @Injectable()
-export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
+export class ArcheDeMnemosyneService extends AbstractGameService {
   readonly gameType = 'arche-de-mnemosyne';
   readonly category = 'Quiz';
   readonly subcategory = 'VentsInfinis';
@@ -57,17 +57,14 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
   private readonly logger = new Logger(ArcheDeMnemosyneService.name);
 
   constructor(
-    private readonly registry: GameRegistryService,
+    registry: GameRegistryService,
     private readonly core: GameCoreService,
     private readonly turns: TurnFlowService,
     private readonly store: MnemoQuizStoreService,
     private readonly random: RandomService,
-  ) {}
-
-  onModuleInit(): void {
-    this.registry.register(this);
+  ) {
+    super(registry);
   }
-
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const players = Array.isArray(baseState.players) ? baseState.players : [];
     const initialFirstId = players[0]?.id ?? null;

@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+
+import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import * as Rulebook from '../rulebook/rulebook';
 import { LA_PARADE_SEQUENCE } from '../model/la-parade-sucree-cards';
 import type { LaParadeSucreeMetadata } from '../model/la-parade-sucree-state.entity';
@@ -32,11 +34,7 @@ export class LaParadeSucreePresenterService {
         phases: ['round'],
         victory: null,
       },
-      actions: actions.map((action) => ({
-        type: action.type,
-        label: action.type,
-        payload: action.payload ?? {},
-      })),
+      actions: formatPresenterActions(actions),
       extras: {
         hand,
         hands: meta.hands,

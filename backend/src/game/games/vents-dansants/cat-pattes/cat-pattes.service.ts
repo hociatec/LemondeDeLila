@@ -1,11 +1,11 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../../../engine/dto/game-action.dto';
-import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
@@ -19,7 +19,7 @@ import { CAT_PATTES_GAME } from './definitions/game.definition';
 import { buildCatPattesShortcuts } from './cat-pattes.shortcuts';
 
 @Injectable()
-export class CatPattesService implements GameRulesAdapter, OnModuleInit {
+export class CatPattesService extends AbstractGameService {
   readonly gameType = 'cat-pattes';
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'VentsDansants';
@@ -29,17 +29,14 @@ export class CatPattesService implements GameRulesAdapter, OnModuleInit {
   readonly maxPlayers = CAT_PATTES_GAME.maxPlayers;
 
   constructor(
-    private readonly registry: GameRegistryService,
+    registry: GameRegistryService,
     private readonly setup: CatPattesSetupService,
     private readonly actions: CatPattesActionService,
     private readonly presenter: CatPattesPresenterService,
     private readonly bots: CatPattesBotService,
-  ) {}
-
-  onModuleInit(): void {
-    this.registry.register(this);
+  ) {
+    super(registry);
   }
-
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     return this.setup.hydrateInitialState(baseState);
   }

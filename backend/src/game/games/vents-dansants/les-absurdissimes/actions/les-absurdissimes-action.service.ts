@@ -1,10 +1,13 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import type { AbsurdissimesMetadata } from '../model/les-absurdissimes-state.entity';
 
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
 type AbsurdissimesActionPayload = {
   cardId?: string | null;
   winnerId?: number | null;
@@ -21,18 +24,17 @@ export class AbsurdissimesActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'play_card') {
-        next = this.handlePlayCard(next, action);
-        continue;
-      }
-      if (type === 'judge_pick') {
-        next = this.handleJudgePick(next, action);
-      }
-    }
-    return next;
+    return applyActionsSequentially(state, actions, (next, action) => {
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          play_card: () => this.handlePlayCard(next, action),
+          judge_pick: () => this.handleJudgePick(next, action),
+        },
+        () => next,
+      );
+    });
   }
 
   private handlePlayCard(

@@ -1,11 +1,11 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../../../engine/dto/game-action.dto';
-import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
@@ -19,8 +19,7 @@ import * as Rulebook from './rulebook/rulebook';
 import { buildPiratesEnVadrouilleShortcuts } from './shortcuts/pirates-en-vadrouille.shortcuts';
 
 @Injectable()
-export class PiratesEnVadrouilleService
-  implements GameRulesAdapter, OnModuleInit
+export class PiratesEnVadrouilleService extends AbstractGameService
 {
   readonly gameType = 'pirates-en-vadrouille';
   readonly category = 'JeuxDePlateaux';
@@ -32,17 +31,14 @@ export class PiratesEnVadrouilleService
   readonly maxPlayers = PIRATES_GAME.maxPlayers;
 
   constructor(
-    private readonly registry: GameRegistryService,
+    registry: GameRegistryService,
     private readonly setup: PiratesEnVadrouilleSetupService,
     private readonly actions: PiratesEnVadrouilleActionService,
     private readonly presenter: PiratesEnVadrouillePresenterService,
     private readonly bots: PiratesEnVadrouilleBotService,
-  ) {}
-
-  onModuleInit(): void {
-    this.registry.register(this);
+  ) {
+    super(registry);
   }
-
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     return this.setup.hydrateInitialState(baseState);
   }

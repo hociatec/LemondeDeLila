@@ -1,5 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+
+import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { AbsurdissimesDeckService } from '../data/absurdissimes-deck.service';
 import type { AbsurdissimesMetadata } from '../model/les-absurdissimes-state.entity';
@@ -14,10 +16,10 @@ export class AbsurdissimesSetupService {
   ) {}
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
-    const players = Array.isArray(baseState.players) ? baseState.players : [];
+    const players = getSafePlayers(baseState);
     const playerIds = players.filter((player) => typeof player?.id === 'number').map((player) => player!.id);
     const seedMeta = (baseState.metadata ?? {}) as Partial<AbsurdissimesMetadata>;
-    let rngMeta = seedMeta.rng ?? {};
+    let rngMeta = getRngMeta(seedMeta);
     const whiteCards = this.deck.getWhiteCards();
     const blackCards = this.deck.getBlackCards();
     const shuffledWhite = this.random.shuffle(rngMeta, whiteCards);

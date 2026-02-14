@@ -1,11 +1,11 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../../../engine/dto/game-action.dto';
-import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
@@ -19,7 +19,7 @@ import * as Rulebook from './rulebook/rulebook';
 import { buildToutPresDeMamanShortcuts } from './shortcuts/tout-pres-de-maman.shortcuts';
 
 @Injectable()
-export class ToutPresDeMamanService implements GameRulesAdapter, OnModuleInit {
+export class ToutPresDeMamanService extends AbstractGameService {
   readonly gameType = TOUT_PRES_DE_MAMAN_GAME.id;
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'LesQuatreVents';
@@ -30,17 +30,14 @@ export class ToutPresDeMamanService implements GameRulesAdapter, OnModuleInit {
   readonly maxPlayers = TOUT_PRES_DE_MAMAN_GAME.maxPlayers;
 
   constructor(
-    private readonly registry: GameRegistryService,
+    registry: GameRegistryService,
     private readonly setup: ToutPresDeMamanSetupService,
     private readonly actions: ToutPresDeMamanActionService,
     private readonly presenter: ToutPresDeMamanPresenterService,
     private readonly bots: ToutPresDeMamanBotService,
-  ) {}
-
-  onModuleInit(): void {
-    this.registry.register(this);
+  ) {
+    super(registry);
   }
-
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     return this.setup.hydrateInitialState(baseState);
   }

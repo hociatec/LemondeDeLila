@@ -1,5 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+
+import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import type { LamaMetadata } from '../model/lama.model';
 import { LamaRoundService } from '../round/lama-round.service';
@@ -29,7 +31,7 @@ export class LamaSetupService {
       };
     }
 
-    const players = Array.isArray(baseState.players) ? baseState.players : [];
+    const players = getSafePlayers(baseState);
     const metaAny = (baseState.metadata ?? {}) as any;
 
     const pickFirstHumanId = (): number | null => {

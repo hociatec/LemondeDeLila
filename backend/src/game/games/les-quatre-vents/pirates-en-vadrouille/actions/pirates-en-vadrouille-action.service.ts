@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity, PendingState } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
@@ -12,6 +14,9 @@ import type {
   PiratesEnVadrouilleObstacleCard,
   PiratesEnVadrouilleTreasureCard,
 } from '../model/pirates-en-vadrouille-state.entity';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+
+
 import { OBSTACLE_CARD_EFFECTS, BONUS_CARD_EFFECTS, PiratesCardEffect } from './pirate-card-effects';
 
 type DeckName = 'bonus' | 'treasure' | 'obstacle';
@@ -29,18 +34,28 @@ export class PiratesEnVadrouilleActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'roll' || type === 'ROLL_DICE') {
-        next = this.handleRoll(next);
-        continue;
-      }
-      if (type === 'choose_target') {
-        next = this.handleChooseTarget(next, action);
-      }
-    }
-    return next;
+    const next = applyActionsSequentially(state, actions, (next, action) => {
+          const type = normalizeActionType(action);
+          return dispatchByActionType(
+            type,
+            {
+              'roll': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'ROLL_DICE': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'choose_target': () => {
+                next = this.handleChooseTarget(next, action);
+                return next;
+              },
+            },
+            () => next,
+          );
+        });
+        return next;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -80,7 +95,7 @@ export class PiratesEnVadrouilleActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} lance le dé : "${rng.roll}".`,
+      `${this.playerName(next, playerId)} lance le dÃ© : "${rng.roll}".`,
     );
 
     next = this.move(next, playerId, rng.roll);
@@ -206,7 +221,7 @@ export class PiratesEnVadrouilleActionService {
     if (!card) {
       return this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} n’a plus de cartes ${deckName}.`,
+        `${this.playerName(next, playerId)} nâ€™a plus de cartes ${deckName}.`,
       );
     }
 
@@ -286,7 +301,7 @@ export class PiratesEnVadrouilleActionService {
       };
       return this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} est protégé et ignore l'obstacle "${card.title}".`,
+        `${this.playerName(next, playerId)} est protÃ©gÃ© et ignore l'obstacle "${card.title}".`,
       );
     }
 
@@ -321,7 +336,7 @@ export class PiratesEnVadrouilleActionService {
         next,
         `${this.playerName(next, ctx.actorId)} applique ${
           ctx.delta >= 0 ? 'un boost' : 'un ralentissement'
-        } à ${this.playerName(next, targetPlayerId)} (${ctx.delta}).`,
+        } Ã  ${this.playerName(next, targetPlayerId)} (${ctx.delta}).`,
       );
       next = this.move(next, targetPlayerId, ctx.delta);
       return next;
@@ -332,10 +347,10 @@ export class PiratesEnVadrouilleActionService {
       if (!stolen) {
         return this.core.appendLog(
           next,
-          `${this.playerName(next, ctx.actorId)} tente de voler un trésor mais ${this.playerName(
+          `${this.playerName(next, ctx.actorId)} tente de voler un trÃ©sor mais ${this.playerName(
             next,
             targetPlayerId,
-          )} n'en possède pas.`,
+          )} n'en possÃ¨de pas.`,
         );
       }
       const trimmed = targetCollection.treasures.slice(0, -1);
@@ -351,7 +366,7 @@ export class PiratesEnVadrouilleActionService {
       );
       return this.core.appendLog(
         next,
-        `${this.playerName(next, ctx.actorId)} dérobe "${stolen.title}" à ${this.playerName(
+        `${this.playerName(next, ctx.actorId)} dÃ©robe "${stolen.title}" Ã  ${this.playerName(
           next,
           targetPlayerId,
         )}.`,
@@ -417,12 +432,12 @@ export class PiratesEnVadrouilleActionService {
       };
       return this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} ouvre le coffre légendaire et gagne la partie !`,
+        `${this.playerName(next, playerId)} ouvre le coffre lÃ©gendaire et gagne la partie !`,
       );
     }
     const next = this.core.appendLog(
       state,
-      `${this.playerName(state, playerId)} n'a pas assez de trésors ou pièces d'or et recule de deux cases.`,
+      `${this.playerName(state, playerId)} n'a pas assez de trÃ©sors ou piÃ¨ces d'or et recule de deux cases.`,
     );
     return this.move(next, playerId, -2);
   }
@@ -442,7 +457,7 @@ export class PiratesEnVadrouilleActionService {
     if (!force && total >= 5) {
       return this.core.appendLog(
         state,
-        `${this.playerName(state, playerId)} a déjà cinq cartes et ne peut pas en ajouter.`,
+        `${this.playerName(state, playerId)} a dÃ©jÃ  cinq cartes et ne peut pas en ajouter.`,
       );
     }
     const updated = { ...collection };
@@ -568,17 +583,17 @@ export class PiratesEnVadrouilleActionService {
         case 'skip':
           return `saute ${effect.turns} tour(s)`;
         case 'immunity':
-          return `est protégé contre ${effect.turns} obstacle(s)`;
+          return `est protÃ©gÃ© contre ${effect.turns} obstacle(s)`;
         case 'gainGold':
-          return `gagne ${effect.amount} pièce(s) d'or`;
+          return `gagne ${effect.amount} piÃ¨ce(s) d'or`;
         case 'loseGold':
-          return `perd ${effect.amount} pièce(s) d'or`;
+          return `perd ${effect.amount} piÃ¨ce(s) d'or`;
         case 'reroll':
-          return 'relance immédiatement le dé';
+          return 'relance immÃ©diatement le dÃ©';
         case 'targetMove':
-          return `rétrograde un adversaire de ${Math.abs(effect.delta)} case(s)`;
+          return `rÃ©trograde un adversaire de ${Math.abs(effect.delta)} case(s)`;
         case 'stealTreasure':
-          return `tente de voler ${effect.count} trésor(s)`;
+          return `tente de voler ${effect.count} trÃ©sor(s)`;
         default:
           return 'applique un effet';
       }
@@ -655,7 +670,7 @@ export class PiratesEnVadrouilleActionService {
     const lower = pawn.toLowerCase();
     const feminine = lower.startsWith('la ') || lower.startsWith('une ');
     const inner = pawn
-      .replace(/^l['’]\s*/i, '')
+      .replace(/^l['â€™]\s*/i, '')
       .replace(/^(le|la|les|un|une)\s+/i, '')
       .trim();
     const core = inner || pawn;
@@ -668,3 +683,5 @@ export class PiratesEnVadrouilleActionService {
     return (state.metadata ?? {}) as PiratesEnVadrouilleMetadata;
   }
 }
+
+

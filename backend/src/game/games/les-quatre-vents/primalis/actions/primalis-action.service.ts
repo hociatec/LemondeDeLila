@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
@@ -9,6 +11,9 @@ import type {
   PrimalisResources,
   PrimalisTile,
 } from '../model/primalis-state.entity';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+
+
 
 type PrimalisFace =
   | 'herbivore'
@@ -30,14 +35,24 @@ export class PrimalisActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'roll' || type === 'ROLL_DICE') {
-        next = this.handleRoll(next);
-      }
-    }
-    return next;
+    const next = applyActionsSequentially(state, actions, (next, action) => {
+          const type = normalizeActionType(action);
+          return dispatchByActionType(
+            type,
+            {
+              'roll': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'ROLL_DICE': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+            },
+            () => next,
+          );
+        });
+        return next;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -59,7 +74,7 @@ export class PrimalisActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} lance le dé : "${rng.roll}".`,
+      `${this.playerName(next, playerId)} lance le dÃ© : "${rng.roll}".`,
     );
 
     if (face === 'relance') {
@@ -144,7 +159,7 @@ export class PrimalisActionService {
           next = this.addResources(next, playerId, addition);
           next = this.core.appendLog(
             next,
-            `${this.playerName(next, playerId)} double sa récolte sur la case 1.`,
+            `${this.playerName(next, playerId)} double sa rÃ©colte sur la case 1.`,
           );
         }
         break;
@@ -162,7 +177,7 @@ export class PrimalisActionService {
           next = this.addResources(next, playerId, { leaves: 1 });
           next = this.core.appendLog(
             next,
-            `${this.playerName(next, playerId)} gagne une feuille supplémentaire (case 3).`,
+            `${this.playerName(next, playerId)} gagne une feuille supplÃ©mentaire (case 3).`,
           );
         }
         break;
@@ -171,7 +186,7 @@ export class PrimalisActionService {
           next = this.addResources(next, playerId, { eggs: 1 });
           next = this.core.appendLog(
             next,
-            `${this.playerName(next, playerId)} récupère un œuf bonus (case 4).`,
+            `${this.playerName(next, playerId)} rÃ©cupÃ¨re un Å“uf bonus (case 4).`,
           );
         }
         break;
@@ -209,7 +224,7 @@ export class PrimalisActionService {
     let next = state;
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} déclenche un Danger : la comète avance.`,
+      `${this.playerName(next, playerId)} dÃ©clenche un Danger : la comÃ¨te avance.`,
     );
     next = this.advanceAllPlayers(next, 1);
     if (this.getMeta(next).statuses.dangerAmplified) {
@@ -223,7 +238,7 @@ export class PrimalisActionService {
     if (tile?.n === 9) {
       next = this.core.appendLog(
         next,
-        'Case 9 : le Danger est amplifié, tout le monde avance de deux cases supplémentaires.',
+        'Case 9 : le Danger est amplifiÃ©, tout le monde avance de deux cases supplÃ©mentaires.',
       );
       next = this.advanceAllPlayers(next, 1);
     }
@@ -330,7 +345,7 @@ export class PrimalisActionService {
     };
     return this.core.appendLog(
       next,
-      `${this.playerName(next, best.id)} survit à la comète avec ${
+      `${this.playerName(next, best.id)} survit Ã  la comÃ¨te avec ${
         best.resources.herbivores + best.resources.carnivores
       } dinosaures et ${best.resources.leaves} feuilles.`,
     );
@@ -436,3 +451,5 @@ export class PrimalisActionService {
     return state;
   }
 }
+
+

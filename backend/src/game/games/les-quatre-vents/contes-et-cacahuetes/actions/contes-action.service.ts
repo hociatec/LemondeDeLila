@@ -1,6 +1,8 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
@@ -12,6 +14,9 @@ import type {
   ContesCacahuetesTile,
   ContesPending,
 } from '../model/contes-et-cacahuetes-state.entity';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+
+
 
 @Injectable()
 export class ContesActionService {
@@ -27,42 +32,60 @@ export class ContesActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'choose_pawn') {
-        next = this.handleChoosePawn(next, action);
-        continue;
-      }
-      if (type === 'roll' || type === 'ROLL_DICE' || type === 'roll_dice') {
-        next = this.handleRoll(next);
-        continue;
-      }
-      if (type === 'reroll_yes' || type === 'reroll_no') {
-        next = this.handleRerollDecision(next, type === 'reroll_yes');
-        continue;
-      }
-      if (type === 'choose_target') {
-        next = this.handleChooseTarget(next, action);
-        continue;
-      }
-      if (type === 'choose_number') {
-        next = this.handleChooseNumber(next, action);
-        continue;
-      }
-      if (type === 'choose_option') {
-        next = this.handleChooseOption(next, action);
-        continue;
-      }
-      if (type === 'draw') {
-        next = this.handleDraw(next);
-        continue;
-      }
-      if (type === 'choose_card') {
-        next = this.handleChooseCard(next, action);
-      }
-    }
-    return next;
+    const next = applyActionsSequentially(state, actions, (next, action) => {
+          const type = normalizeActionType(action);
+          return dispatchByActionType(
+            type,
+            {
+              'choose_pawn': () => {
+                next = this.handleChoosePawn(next, action);
+                return next;
+              },
+              'roll': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'ROLL_DICE': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'roll_dice': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'reroll_yes': () => {
+                next = this.handleRerollDecision(next, type === 'reroll_yes');
+                return next;
+              },
+              'reroll_no': () => {
+                next = this.handleRerollDecision(next, type === 'reroll_yes');
+                return next;
+              },
+              'choose_target': () => {
+                next = this.handleChooseTarget(next, action);
+                return next;
+              },
+              'choose_number': () => {
+                next = this.handleChooseNumber(next, action);
+                return next;
+              },
+              'choose_option': () => {
+                next = this.handleChooseOption(next, action);
+                return next;
+              },
+              'draw': () => {
+                next = this.handleDraw(next);
+                return next;
+              },
+              'choose_card': () => {
+                next = this.handleChooseCard(next, action);
+                return next;
+              },
+            },
+            () => next,
+          );
+        });
+        return next;
   }
 
   private handleChoosePawn(
@@ -1846,6 +1869,8 @@ export class ContesActionService {
     return (state.metadata ?? {}) as any as ContesCacahuetesMetadata;
   }
 }
+
+
 
 
 

@@ -1,6 +1,8 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
@@ -11,6 +13,7 @@ import {
   CAT_PATTES_CARD_BY_ID,
   CatPattesCardDefinition,
 } from '../model/cat-pattes-cards';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
 import type { CatPattesMetadata } from '../model/cat-pattes-state.entity';
 import { CAT_PATTES_GOAL } from '../model/cat-pattes-state.entity';
 import {
@@ -42,28 +45,37 @@ export class CatPattesActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = this.ensurePawnSelectionPrompt(state);
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'choose_pawn') {
-        next = this.handleChoosePawn(next, action);
-        next = this.ensurePawnSelectionPrompt(next);
-        continue;
-      }
-      if (type === 'draw') {
-        next = this.handleDraw(next);
-        continue;
-      }
-      if (type === 'play_card') {
-        next = this.handlePlayCard(next, action);
-        continue;
-      }
-      if (type === 'discard_card' || type === 'pass') {
-        next = this.handleDiscard(next, action);
-        continue;
-      }
-    }
-    return this.ensurePawnSelectionPrompt(next);
+    const next = applyActionsSequentially(this.ensurePawnSelectionPrompt(state), actions, (next, action) => {
+          const type = normalizeActionType(action);
+          return dispatchByActionType(
+            type,
+            {
+              'choose_pawn': () => {
+                next = this.handleChoosePawn(next, action);
+            next = this.ensurePawnSelectionPrompt(next);
+                return next;
+              },
+              'draw': () => {
+                next = this.handleDraw(next);
+                return next;
+              },
+              'play_card': () => {
+                next = this.handlePlayCard(next, action);
+                return next;
+              },
+              'discard_card': () => {
+                next = this.handleDiscard(next, action);
+                return next;
+              },
+              'pass': () => {
+                next = this.handleDiscard(next, action);
+                return next;
+              },
+            },
+            () => next,
+          );
+        });
+        return this.ensurePawnSelectionPrompt(next);
   }
 
   private handleChoosePawn(

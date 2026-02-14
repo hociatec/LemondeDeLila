@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+
+import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import { PIRATES_GAME } from '../definitions/pirates-en-vadrouille.definition';
 import * as Rulebook from '../rulebook/rulebook';
@@ -36,11 +38,7 @@ export class PiratesEnVadrouillePresenterService {
         phases: PIRATES_GAME.phaseOrder.map((p) => p.id),
         victory: null,
       },
-      actions: actions.map((action) => ({
-        type: action.type,
-        label: action.type === 'roll' ? 'Lancer le dé' : action.type,
-        payload: action.payload ?? {},
-      })),
+      actions: formatPresenterActions(actions, (action) => action.type === 'roll' ? 'Lancer le dé' : action.type),
       pending: state.pending ?? null,
       extras: {
         ...(state as any).extras,

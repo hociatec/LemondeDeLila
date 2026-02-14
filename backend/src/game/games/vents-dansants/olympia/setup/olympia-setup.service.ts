@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+
+import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { OLYMPIA_DECKS } from '../model/olympia-cards';
 import type { OlympiaDeckType } from '../model/olympia-cards';
@@ -20,9 +22,9 @@ export class OlympiaSetupService {
   constructor(private readonly random: RandomService) {}
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
-    const players = Array.isArray(baseState.players) ? baseState.players : [];
+    const players = getSafePlayers(baseState);
     const seedMeta = (baseState.metadata ?? {}) as OlympiaMetadata;
-    let rngMeta = seedMeta.rng ?? {};
+    let rngMeta = getRngMeta(seedMeta);
 
     const decks: Record<OlympiaDeckType, string[]> = {} as Record<
       OlympiaDeckType,

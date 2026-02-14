@@ -1,11 +1,11 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../../../engine/dto/game-action.dto';
-import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
@@ -19,7 +19,7 @@ import { buildTaxiExpressShortcuts } from './shortcuts/taxi-express.shortcuts';
 import { TAXI_EXPRESS_GAME } from './definitions/taxi-express.definition';
 
 @Injectable()
-export class TaxiExpressService implements GameRulesAdapter, OnModuleInit {
+export class TaxiExpressService extends AbstractGameService {
   readonly gameType = TAXI_EXPRESS_GAME.id;
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'LesQuatreVents';
@@ -30,17 +30,14 @@ export class TaxiExpressService implements GameRulesAdapter, OnModuleInit {
   readonly maxPlayers = TAXI_EXPRESS_GAME.maxPlayers;
 
   constructor(
-    private readonly registry: GameRegistryService,
+    registry: GameRegistryService,
     private readonly setup: TaxiExpressSetupService,
     private readonly actions: TaxiExpressActionService,
     private readonly presenter: TaxiExpressPresenterService,
     private readonly bots: TaxiExpressBotService,
-  ) {}
-
-  onModuleInit(): void {
-    this.registry.register(this);
+  ) {
+    super(registry);
   }
-
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     return this.setup.hydrateInitialState(baseState);
   }

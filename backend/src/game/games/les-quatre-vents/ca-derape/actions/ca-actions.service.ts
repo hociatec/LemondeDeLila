@@ -1,9 +1,14 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type {
   GameStateEntity,
   PendingState,
 } from '../../../../core/entities/game-state.entity';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+
+
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -30,31 +35,44 @@ export class CaActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'roll' || type === 'ROLL_DICE' || type === 'roll_dice') {
-        next = this.handleRoll(next);
-        continue;
-      }
-      if (type === 'draw') {
-        next = this.handleDraw(next);
-        continue;
-      }
-      if (type === 'choose_target') {
-        next = this.handleChooseTarget(next, action);
-        continue;
-      }
-      if (type === 'choose_next_player') {
-        next = this.handleChooseNextPlayer(next, action);
-        continue;
-      }
-      if (type === 'choose_next_delta') {
-        next = this.handleChooseNextDelta(next, action);
-        continue;
-      }
-    }
-    return finalize(next);
+    const next = applyActionsSequentially(state, actions, (next, action) => {
+          const type = normalizeActionType(action);
+          return dispatchByActionType(
+            type,
+            {
+              'roll': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'ROLL_DICE': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'roll_dice': () => {
+                next = this.handleRoll(next);
+                return next;
+              },
+              'draw': () => {
+                next = this.handleDraw(next);
+                return next;
+              },
+              'choose_target': () => {
+                next = this.handleChooseTarget(next, action);
+                return next;
+              },
+              'choose_next_player': () => {
+                next = this.handleChooseNextPlayer(next, action);
+                return next;
+              },
+              'choose_next_delta': () => {
+                next = this.handleChooseNextDelta(next, action);
+                return next;
+              },
+            },
+            () => next,
+          );
+        });
+        return finalize(next);
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -66,7 +84,7 @@ export class CaActionService {
 
     let meta = this.getMeta(state);
 
-    // "Ton prochain lancer devient égal au sien."
+    // "Ton prochain lancer devient Ã©gal au sien."
     const mirrorFrom = meta.statuses?.mirrorNextRollFrom?.[currentId] ?? null;
     let mirrorApplied = false;
     let roll = 0;
@@ -136,7 +154,7 @@ export class CaActionService {
 
     next = this.core.appendLog(
       next,
-      this.playerName(next, currentId) + ' lance le dé : "' + String(roll) + '".',
+      this.playerName(next, currentId) + ' lance le dÃ© : "' + String(roll) + '".',
     );
 
     // Move by roll, plus optional +/-1.
@@ -146,11 +164,11 @@ export class CaActionService {
     if (deltaFromPrevious !== 0) {
       next = this.core.appendLog(
         next,
-        'Déplacement ' + (deltaFromPrevious > 0 ? '+1' : '-1') + ' appliqué au lancer.',
+        'DÃ©placement ' + (deltaFromPrevious > 0 ? '+1' : '-1') + ' appliquÃ© au lancer.',
       );
     }
 
-    // "Votre prochain déplacement est doublé." (applies to the next roll movement).
+    // "Votre prochain dÃ©placement est doublÃ©." (applies to the next roll movement).
     if (meta.statuses?.doubleNextMove?.[currentId]) {
       move *= 2;
       meta = {
@@ -194,7 +212,7 @@ export class CaActionService {
         this.playerName(next, currentId) + ' ' + verb + ' de ' + String(Math.abs(move)) + ' ' + casesWord + '.',
       );
     } else {
-      next = this.core.appendLog(next, this.playerName(next, currentId) + ' ne se déplace pas.');
+      next = this.core.appendLog(next, this.playerName(next, currentId) + ' ne se dÃ©place pas.');
     }
 
     // Landing tile info (neutral vs card).
@@ -298,7 +316,7 @@ export class CaActionService {
       return finalize(next);
     }
 
-    // Règle: après une carte résolue, le tour passe au joueur suivant.
+    // RÃ¨gle: aprÃ¨s une carte rÃ©solue, le tour passe au joueur suivant.
     return this.advanceTurnWithNextDelta(next);
   }
 
@@ -346,7 +364,7 @@ export class CaActionService {
       };
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} échange sa position avec ${this.playerName(next, targetPlayerId)}.`,
+        `${this.playerName(next, currentId)} Ã©change sa position avec ${this.playerName(next, targetPlayerId)}.`,
       );
       return this.advanceTurnWithNextDelta(next);
     }
@@ -451,7 +469,7 @@ export class CaActionService {
     };
     next = this.core.appendLog(
       next,
-      `Le prochain joueur aura un déplacement ${delta > 0 ? '+1' : '-1'}.`,
+      `Le prochain joueur aura un dÃ©placement ${delta > 0 ? '+1' : '-1'}.`,
     );
     return this.advanceTurnWithNextDelta(next);
   }
@@ -532,7 +550,7 @@ export class CaActionService {
           },
         };
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-        next = this.core.appendLog(next, 'Pénalité ignorée.');
+        next = this.core.appendLog(next, 'PÃ©nalitÃ© ignorÃ©e.');
         return;
       }
 
@@ -589,7 +607,7 @@ export class CaActionService {
           },
         };
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-        next = this.core.appendLog(next, 'Pénalité ignorée.');
+        next = this.core.appendLog(next, 'PÃ©nalitÃ© ignorÃ©e.');
         return;
       }
 
@@ -654,9 +672,9 @@ export class CaActionService {
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
         next = this.core.appendLog(
           next,
-          this.playerName(next, actorId) + ' lance deux dés: ' + String(r1.roll) + ' et ' + String(r2.roll) + '.',
+          this.playerName(next, actorId) + ' lance deux dÃ©s: ' + String(r1.roll) + ' et ' + String(r2.roll) + '.',
         );
-        applyMove(r1.roll + r2.roll, 'règle');
+        applyMove(r1.roll + r2.roll, 'rÃ¨gle');
         return finalize(next);
       }
 
@@ -668,7 +686,7 @@ export class CaActionService {
             type: 'draw',
             playerId: actorId,
             blocking: true,
-            label: 'Piocher une carte supplémentaire (Espace).',
+            label: 'Piocher une carte supplÃ©mentaire (Espace).',
             data: { reason: 'extra_draw' },
           },
         });
@@ -691,7 +709,7 @@ export class CaActionService {
 
       // 64) back 3 then forward 2 => net -1
       if (card.id === 64) {
-        applyMove(-1, 'règle');
+        applyMove(-1, 'rÃ¨gle');
         return finalize(next);
       }
 
@@ -712,7 +730,7 @@ export class CaActionService {
 
       // 66) forward 3 then back 1 => net +2
       if (card.id === 66) {
-        applyMove(2, 'règle');
+        applyMove(2, 'rÃ¨gle');
         return finalize(next);
       }
 
@@ -722,7 +740,7 @@ export class CaActionService {
         const ids = players.map((p) => p.id);
         const pending: PendingState = {
           type: 'choose_next_player',
-          label: 'Choisissez le prochain joueur dans la liste, puis Entrée.',
+          label: 'Choisissez le prochain joueur dans la liste, puis EntrÃ©e.',
           playerId: actorId,
           blocking: true,
           choices: players.map((p) => p.username),
@@ -743,7 +761,7 @@ export class CaActionService {
       if (card.id === 68) {
         const pending: PendingState = {
           type: 'choose_next_delta',
-          label: 'Choisissez l\'effet pour le prochain joueur dans la liste, puis Entrée.',
+          label: 'Choisissez l\'effet pour le prochain joueur dans la liste, puis EntrÃ©e.',
           playerId: actorId,
           blocking: true,
           choices: ['Avancer de 1', 'Reculer de 1'],
@@ -781,7 +799,7 @@ export class CaActionService {
         if (targets.length) {
           const pending: PendingState = {
             type: 'choose_target',
-            label: 'Choisissez un joueur dans la liste, puis Entrée.',
+            label: 'Choisissez un joueur dans la liste, puis EntrÃ©e.',
             playerId: actorId,
             blocking: true,
             choices: targets.map((t) => t.username),
@@ -831,7 +849,7 @@ export class CaActionService {
       if (targets.length) {
         const pending: PendingState = {
           type: 'choose_target',
-          label: 'Choisissez un joueur dans la liste, puis Entrée.',
+          label: 'Choisissez un joueur dans la liste, puis EntrÃ©e.',
           playerId: actorId,
           blocking: true,
           choices: targets.map((t) => t.username),
@@ -1002,7 +1020,7 @@ export class CaActionService {
           },
         };
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-        next = this.core.appendLog(next, "Condition : un tour d'attente est annulé.");
+        next = this.core.appendLog(next, "Condition : un tour d'attente est annulÃ©.");
       }
     } else if (card.id === 55) {
       const isMultiple = (pos + 1) % 5 === 0;
@@ -1020,8 +1038,8 @@ export class CaActionService {
         next = this.core.appendLog(next, 'Condition : ' + this.playerName(next, actorId) + ' et ' + this.playerName(next, same) + ' avancent de 2 cases.');
       }
     } else if (card.id === 58) {
-      // "Rejouez immédiatement" est ignoré (règle du jeu: la carte termine toujours le tour).
-      next = this.core.appendLog(next, "Condition : effet 'rejouer' ignoré.");
+      // "Rejouez immÃ©diatement" est ignorÃ© (rÃ¨gle du jeu: la carte termine toujours le tour).
+      next = this.core.appendLog(next, "Condition : effet 'rejouer' ignorÃ©.");
     } else if (card.id === 59) {
       // If you are just behind someone by 1, join them.
       const aheadId = ordered[ordered.indexOf(actorId) + 1];
@@ -1130,7 +1148,7 @@ export class CaActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       next = this.core.appendLog(
         next,
-        this.playerName(next, actorId) + " avance jusqu'à une case multiple de 5.",
+        this.playerName(next, actorId) + " avance jusqu'Ã  une case multiple de 5.",
       );
       return next;
     }
@@ -1224,3 +1242,5 @@ function clamp(value: number, min: number, max: number): number {
 function finalize(state: GameStateEntity): GameStateEntity {
   return state;
 }
+
+

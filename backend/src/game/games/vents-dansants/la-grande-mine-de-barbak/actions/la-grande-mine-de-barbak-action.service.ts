@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -9,6 +11,7 @@ import {
   LA_GRANDE_MINE_CARD_BY_ID,
   type LaGrandeMineCard,
 } from '../model/la-grande-mine-cards';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
 import type { LaGrandeMineMetadata } from '../model/la-grande-mine-state.entity';
 
 type LaGrandeMineActionPayload = {
@@ -29,19 +32,17 @@ export class LaGrandeMineDeBarbakActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'play_card') {
-        next = this.handlePlayCard(next, action);
-        continue;
-      }
-      if (type === 'pass') {
-        next = this.handlePass(next);
-        continue;
-      }
-    }
-    return next;
+    return applyActionsSequentially(state, actions, (next, action) => {
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          play_card: () => this.handlePlayCard(next, action),
+          pass: () => this.handlePass(next),
+        },
+        () => next,
+      );
+    });
   }
 
   private handlePass(state: GameStateEntity): GameStateEntity {
@@ -157,7 +158,7 @@ export class LaGrandeMineDeBarbakActionService {
     let next = this.setMeta(state, { ...meta, domains });
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} pose le trésor ${card.name} (+${card.points ?? 0} pts).`,
+      `${this.playerName(next, playerId)} pose le trÃ©sor ${card.name} (+${card.points ?? 0} pts).`,
     );
     return next;
   }
@@ -189,7 +190,7 @@ export class LaGrandeMineDeBarbakActionService {
   ): GameStateEntity {
     const message = played
       ? `${this.playerName(state, playerId)} utilise ${card.name} (${card.description}).`
-      : `${this.playerName(state, playerId)} déclenche ${card.name} (${card.description}).`;
+      : `${this.playerName(state, playerId)} dÃ©clenche ${card.name} (${card.description}).`;
     return this.core.appendLog(state, message);
   }
 
@@ -248,7 +249,7 @@ export class LaGrandeMineDeBarbakActionService {
       next = this.finishGame(next);
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} déclenche un effondrement final !`,
+        `${this.playerName(next, playerId)} dÃ©clenche un effondrement final !`,
       );
     }
     if (played) {
@@ -267,7 +268,7 @@ export class LaGrandeMineDeBarbakActionService {
       if (player?.id == null) continue;
       next = this.discardRandomFromHand(next, player.id, 1);
     }
-    return this.core.appendLog(next, 'Un éboulement mineur secoue la mine !');
+    return this.core.appendLog(next, 'Un Ã©boulement mineur secoue la mine !');
   }
 
   private applyMajorCollapse(state: GameStateEntity): GameStateEntity {
@@ -277,7 +278,7 @@ export class LaGrandeMineDeBarbakActionService {
       if (player?.id == null) continue;
       next = this.removeRandomTreasure(next, player.id, 2);
     }
-    return this.core.appendLog(next, 'Un éboulement majeur fait voler les trésors !');
+    return this.core.appendLog(next, 'Un Ã©boulement majeur fait voler les trÃ©sors !');
   }
 
   private discardRandomFromHand(
@@ -309,7 +310,7 @@ export class LaGrandeMineDeBarbakActionService {
         next = this.addCardToDiscard(next, cardId);
         next = this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} défausse ${cardId}.`,
+          `${this.playerName(next, playerId)} dÃ©fausse ${cardId}.`,
         );
       }
     }
@@ -349,7 +350,7 @@ export class LaGrandeMineDeBarbakActionService {
         next = this.addCardToDiscard(next, cardId);
         next = this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} perd le trésor ${cardId}.`,
+          `${this.playerName(next, playerId)} perd le trÃ©sor ${cardId}.`,
         );
       }
     }
@@ -394,7 +395,7 @@ export class LaGrandeMineDeBarbakActionService {
       return this.addCardToDiscard(
         this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} perd ${cardId} face à une attaque.`,
+          `${this.playerName(next, playerId)} perd ${cardId} face Ã  une attaque.`,
         ),
         cardId,
       );
@@ -414,7 +415,7 @@ export class LaGrandeMineDeBarbakActionService {
       next = this.addCardToDiscard(next, removed);
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} réduit sa main et défausse ${removed}.`,
+        `${this.playerName(next, playerId)} rÃ©duit sa main et dÃ©fausse ${removed}.`,
       );
       meta = this.getMeta(next);
     }
@@ -497,7 +498,7 @@ export class LaGrandeMineDeBarbakActionService {
     return this.core.appendLog(
       next,
       winnerId
-        ? `${this.playerName(next, winnerId)} devient le Nain suprême !`
+        ? `${this.playerName(next, winnerId)} devient le Nain suprÃªme !`
         : 'La mine s\'effondre et personne ne l\'emporte.',
     );
   }

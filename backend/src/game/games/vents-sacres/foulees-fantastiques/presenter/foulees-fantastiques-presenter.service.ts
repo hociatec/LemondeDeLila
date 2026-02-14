@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+
+import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import * as FouleesFantastiquesRulebook from '../rulebook/rulebook';
 import { FOULEES_FANTASTIQUES_GAME } from '../definitions/game.definition';
@@ -161,11 +163,7 @@ export class FouleesFantastiquesPresenterService {
         phases: FOULEES_FANTASTIQUES_GAME.phaseOrder.map((p) => p.id),
         victory: null,
       },
-      actions: actions.map((a) => ({
-        type: a.type,
-        label: a.type,
-        payload: a.payload ?? {},
-      })),
+      actions: formatPresenterActions(actions),
       pending: pendingForUser,
       extras,
       board: this.boardPayload.buildTilesPositionsLaps(

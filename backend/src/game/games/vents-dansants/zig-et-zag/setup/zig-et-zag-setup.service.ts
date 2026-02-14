@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+
+import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { ZIG_ET_ZAG_DECK } from '../model/zig-et-zag-cards';
 import type { ZigEtZagMetadata } from '../model/zig-et-zag-state.entity';
@@ -10,9 +12,9 @@ export class ZigEtZagSetupService {
   constructor(private readonly random: RandomService) {}
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
-    const players = Array.isArray(baseState.players) ? baseState.players : [];
+    const players = getSafePlayers(baseState);
     const metaSeed = (baseState.metadata ?? {}) as ZigEtZagMetadata;
-    const rng = metaSeed.rng ?? {};
+    const rng = getRngMeta(metaSeed);
     const deck = ZIG_ET_ZAG_DECK.map((card) => card.id);
     const { values: shuffledDeck, meta: updatedRng } = this.random.shuffle(rng, deck);
 

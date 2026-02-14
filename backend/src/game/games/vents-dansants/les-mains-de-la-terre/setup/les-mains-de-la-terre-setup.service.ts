@@ -1,5 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+
+import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import {
   LES_MAINS_DECK,
@@ -13,12 +15,12 @@ export class LesMainsSetupService {
   constructor(private readonly random: RandomService) {}
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
-    const players = Array.isArray(baseState.players) ? baseState.players : [];
+    const players = getSafePlayers(baseState);
     const playerIds = players
       .filter((player) => typeof player?.id === 'number')
       .map((player) => player!.id);
     const seedMeta = (baseState.metadata ?? {}) as LesMainsMetadata;
-    const rngSeed = seedMeta.rng ?? {};
+    const rngSeed = getRngMeta(seedMeta);
     const deck = LES_MAINS_DECK.map((card) => card.id);
     const { values: shuffledDeck, meta: updatedRng } = this.random.shuffle(rngSeed, deck);
 

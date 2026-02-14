@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+
+
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import {
@@ -9,6 +11,7 @@ import {
   LA_PARADE_SEQUENCE,
   LA_PARADE_SPECIAL_REWARDS,
 } from '../model/la-parade-sucree-cards';
+import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
 import type {
   CandyCounts,
   LaParadeSucreeMetadata,
@@ -29,19 +32,17 @@ export class LaParadeSucreeActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const type = String(action?.type ?? '').trim();
-      if (type === 'play_card') {
-        next = this.handlePlayCard(next, action);
-        continue;
-      }
-      if (type === 'pass') {
-        next = this.handlePass(next);
-        continue;
-      }
-    }
-    return next;
+    return applyActionsSequentially(state, actions, (next, action) => {
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          play_card: () => this.handlePlayCard(next, action),
+          pass: () => this.handlePass(next),
+        },
+        () => next,
+      );
+    });
   }
 
   private handlePlayCard(
@@ -176,7 +177,7 @@ export class LaParadeSucreeActionService {
     return this.core.appendLog(
       next,
       winnerId
-        ? `${this.playerName(next, winnerId)} rafle la Parade Sucrée !`
+        ? `${this.playerName(next, winnerId)} rafle la Parade SucrÃ©e !`
         : 'Match nul gourmand !',
     );
   }

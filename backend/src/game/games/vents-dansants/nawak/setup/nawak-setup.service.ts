@@ -1,5 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+
+import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import { NawakChallengeService } from '../data/nawak-challenge.service';
 import type { NawakMetadata } from '../model/nawak-state.entity';
 
@@ -8,7 +10,7 @@ export class NawakSetupService {
   constructor(private readonly challengeService: NawakChallengeService) {}
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
-    const players = Array.isArray(baseState.players) ? baseState.players : [];
+    const players = getSafePlayers(baseState);
     const playerIds = players
       .filter((player) => typeof player?.id === 'number')
       .map((player) => player!.id);
