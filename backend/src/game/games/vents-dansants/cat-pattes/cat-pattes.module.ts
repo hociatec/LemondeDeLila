@@ -7,6 +7,8 @@ import { BotModule } from '../../../modules/bot/bot.module';
 import { BoardModule } from '../../../modules/board/board.module';
 import { SetupFlowModule } from '../../../modules/setup-flow/setup-flow.module';
 import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
+import { TurnPoliciesModule } from '../../../modules/turn-policies/turn-policies.module';
+import { PromptPoliciesModule } from '../../../modules/prompt-policies/prompt-policies.module';
 import { CatPattesService } from './cat-pattes.service';
 import { CatPattesSetupService } from './setup/cat-pattes-setup.service';
 import { CatPattesActionService } from './actions/cat-pattes-action.service';
@@ -23,6 +25,8 @@ import { CatPattesBotService } from './bots/cat-pattes-bot.service';
     BotModule,
     SetupFlowModule,
     DeckPoliciesModule,
+    TurnPoliciesModule,
+    PromptPoliciesModule,
   ],
   providers: [
     CatPattesService,

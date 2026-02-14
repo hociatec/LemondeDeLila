@@ -9,6 +9,8 @@ import { BotModule } from '../../../modules/bot/bot.module';
 import { SetupFlowModule } from '../../../modules/setup-flow/setup-flow.module';
 import { BoardEffectsPoliciesModule } from '../../../modules/board-effects-policies/board-effects-policies.module';
 import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
+import { TurnPoliciesModule } from '../../../modules/turn-policies/turn-policies.module';
+import { PromptPoliciesModule } from '../../../modules/prompt-policies/prompt-policies.module';
 import { FroussePartyService } from './frousse-party.service';
 import { FrousseSetupService } from './setup/frousse-setup.service';
 import { FrousseActionService } from './actions/frousse-action.service';
@@ -27,6 +29,8 @@ import { FrousseBotService } from './bots/frousse-bot.service';
     SetupFlowModule,
     BoardEffectsPoliciesModule,
     DeckPoliciesModule,
+    TurnPoliciesModule,
+    PromptPoliciesModule,
   ],
   providers: [
     FroussePartyService,

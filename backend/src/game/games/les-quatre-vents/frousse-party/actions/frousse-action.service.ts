@@ -29,26 +29,7 @@ export class FrousseActionService {
   ) {}
 
   private advanceTurnWithAnnouncement(state: GameStateEntity): GameStateEntity {
-    const prevPlayerId = state.turn?.currentPlayerId ?? null;
-    const next = this.turns.advanceTurn(state);
-
-    if (String(next.status ?? '').toLowerCase() !== 'started') {
-      return next;
-    }
-
-    const nextPlayerId = next.turn?.currentPlayerId ?? null;
-    if (
-      prevPlayerId == null ||
-      nextPlayerId == null ||
-      prevPlayerId === nextPlayerId
-    ) {
-      return next;
-    }
-
-    return this.core.appendLog(
-      next,
-      `C'est au tour de ${this.playerName(next, nextPlayerId)}.`,
-    );
+    return this.turns.advanceTurn(state);
   }
 
   applyActions(

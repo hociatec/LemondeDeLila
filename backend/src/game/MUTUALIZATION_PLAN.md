@@ -167,3 +167,81 @@ Add thin policy-level modules over existing low-level modules:
 
 ## Next Immediate Step
 - Produce `MUTUALIZATION_MATRIX.md` with capability tags per game, then start `PR-01` (`setup-flow` module).
+
+---
+
+## Full Program (1 -> 10)
+
+This section maps the validated target program to concrete backend/client deliveries.
+
+1. Turn Cycle Policy
+- Deliverable: `modules/turn-policies` (shared turn transitions, replay/skip/reverse helpers).
+- Migration target: all action services with duplicated turn-advance and announcement logic.
+
+2. Prompt/Choice Policy
+- Deliverable: `modules/prompt-policies` (typed builders/resolvers for draw/target/option/pawn prompts).
+- Migration target: all games using ad-hoc pending state contracts.
+
+3. Board Landing Policy
+- Deliverable: enrich `modules/board-effects-policies` to cover neutral/card/bonus/malus/chain finish rules.
+- Migration target: all board games with duplicated landing switch blocks.
+
+4. Card Effect DSL
+- Deliverable: effect runner over shared primitives (move, skip, draw, swap, steal, immunity, replay).
+- Migration target: games with large card `switch` handlers.
+
+5. Win/Scoring Policy
+- Deliverable: `modules/victory-policies` (score, exact-target, arrival, collection, tie-break).
+- Migration target: games implementing winner logic inline.
+
+6. Player Setup Policy
+- Deliverable: extend `modules/setup-flow` for first-player randomization, pawn uniqueness, setup prompts/logs.
+- Migration target: all games with custom setup selection loops.
+
+7. Focus/Shortcut Client Policy
+- Deliverable: unify keyboard/focus behavior in `client-win/Modules/Game/*` with one tab/focus policy.
+- Migration target: game shell + gameplay key handlers.
+
+8. Save/Restore Policy
+- Deliverable: stable snapshot/restore flow in room/table services (state + history + participant/spectator cleanup).
+- Migration target: all game table restore paths.
+
+9. Common Test Kit
+- Deliverable: shared fixtures/assertions for setup/turn/pending/deck/restore.
+- Migration target: all migrated games.
+
+10. Migration Batches
+- Batch A: setup + prompt standardization.
+- Batch B: turn + board landing standardization.
+- Batch C: card effects + victory/scoring standardization.
+- Batch D: save/restore + client focus convergence.
+
+### Global Definition Of Done
+1. Backend build green.
+2. Client build green.
+3. Shared policy tests green.
+4. No per-game behavioral regression on critical journeys:
+- setup selection,
+- turn progression,
+- draw/pending flow,
+- victory/scoring,
+- save/restore,
+- focus/keyboard traversal.
+
+## Progress Update (2026-02-14)
+
+Completed foundations:
+- `setup-flow` is active on key pawn-selection games.
+- `deck-policies` and `board-effects-policies` are in production use.
+- New `turn-policies` module added.
+- New `prompt-policies` module added.
+
+Games migrated in latest batch:
+- `vents-sacres/jeu-oie` now uses shared `turn-policies` and `prompt-policies`.
+- `vents-dansants/cat-pattes` now uses shared `turn-policies` and `prompt-policies`.
+- `les-quatre-vents/frousse-party` now uses shared `turn-policies` and `prompt-policies`.
+- `les-quatre-vents/a-fond-les-ballons` setup flow aligned with shared `setup-flow`.
+
+Validation:
+- Backend build: green.
+- Targeted game tests: green (`jeu-oie`, `cat-pattes`, `frousse-party`).

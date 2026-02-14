@@ -1,12 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { GameStateEntity } from '../../../core/entities/game-state.entity';
 import { TurnService } from './turn.service';
+import { TurnPoliciesService } from '../../turn-policies/services/turn-policies.service';
+
+export interface AdvanceTurnOptions {
+  skipAnnouncement?: boolean;
+  playerNameResolver?: (state: GameStateEntity, playerId: number) => string;
+}
 
 @Injectable()
 export class TurnFlowService {
-  constructor(private readonly turns: TurnService) {}
+  constructor(
+    private readonly turns: TurnService,
+    private readonly turnPolicies: TurnPoliciesService,
+  ) {}
 
-  advanceTurn(state: GameStateEntity): GameStateEntity {
+  advanceTurn(state: GameStateEntity, options?: AdvanceTurnOptions): GameStateEntity {
     const players = Array.isArray(state.players) ? state.players : [];
     if (!players.length) return state;
 
@@ -24,13 +33,9 @@ export class TurnFlowService {
       currentIndex >= 0 ? currentIndex : state.turnIndex,
       skipTurn,
     );
-    const skipped = Array.isArray((next as any).skipped)
-      ? (next as any).skipped
-      : [];
+    const skipped = Array.isArray((next as any).skipped) ? (next as any).skipped : [];
     const turnFlow =
-      meta && typeof meta === 'object' && !Array.isArray(meta)
-        ? (meta as any).turnFlow
-        : null;
+      meta && typeof meta === 'object' && !Array.isArray(meta) ? (meta as any).turnFlow : null;
     const nextTurnFlow =
       skipped.length > 0
         ? {
@@ -39,7 +44,7 @@ export class TurnFlowService {
           }
         : turnFlow;
 
-    return {
+    let result: GameStateEntity = {
       ...state,
       turnIndex: next.turnIndex,
       turn: { currentPlayerId: next.currentPlayerId, direction: 1 },
@@ -49,5 +54,15 @@ export class TurnFlowService {
         ...(nextTurnFlow ? { turnFlow: nextTurnFlow } : {}),
       },
     };
+
+    if (!(options?.skipAnnouncement ?? false)) {
+      const playerId = result.turn?.currentPlayerId ?? null;
+      result = this.turnPolicies.appendTurnAnnouncement(
+        result,
+        playerId,
+        options?.playerNameResolver,
+      );
+    }
+    return result;
   }
 }

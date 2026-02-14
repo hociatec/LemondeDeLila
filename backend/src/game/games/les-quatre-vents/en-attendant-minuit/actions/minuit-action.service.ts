@@ -2,6 +2,7 @@
 import type {
   GameStateEntity,
   PendingState,
+  TurnStateEntity,
 } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -373,14 +374,19 @@ export class MinuitActionService {
     });
     if (!pendingInfo) return state;
     const chooserLabel = this.playerName(state, pendingInfo.playerId);
+    const fallbackTurn: TurnStateEntity = {
+      currentPlayerId: pendingInfo.playerId,
+      direction: 1,
+    };
+    const existingTurn: TurnStateEntity = state.turn ?? fallbackTurn;
     const withPending: GameStateEntity = {
       ...state,
       pending: pendingInfo.pending,
       turnIndex: pendingInfo.turnIndex,
       turn: {
-        ...(state.turn ?? { currentPlayerId: pendingInfo.playerId, direction: 1 }),
+        ...existingTurn,
         currentPlayerId: pendingInfo.playerId,
-        direction: state.turn?.direction === -1 ? -1 : 1,
+        direction: existingTurn.direction === -1 ? -1 : 1,
       },
     };
     return this.appendLogOnce(

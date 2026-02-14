@@ -5,6 +5,8 @@ import { RandomService } from '../../../../modules/random/services/random.servic
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
+import { PromptPoliciesService } from '../../../../modules/prompt-policies/services/prompt-policies.service';
 import type { JeuOieMetadata, JeuOieTile } from '../model/jeu-oie-state.entity';
 
 @Injectable()
@@ -14,6 +16,8 @@ export class JeuOieActionService {
     private readonly turns: TurnFlowService,
     private readonly core: GameCoreService,
     private readonly setupFlow: SetupFlowService,
+    private readonly turnPolicies?: TurnPoliciesService,
+    private readonly promptPolicies?: PromptPoliciesService,
   ) {}
 
   applyActions(
@@ -122,7 +126,11 @@ export class JeuOieActionService {
       started,
       `Debut de partie : ${starterName} commence.`,
     );
-    return this.appendTurnAnnouncement(started, resolvedStarterId);
+    return this.getTurnPolicies().appendTurnAnnouncement(
+      started,
+      resolvedStarterId,
+      (s, id) => this.playerName(s, id),
+    );
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -154,7 +162,9 @@ export class JeuOieActionService {
           next,
           `${this.playerName(next, currentId)} reste bloque dans le puits.`,
         );
-        return this.advanceTurnWithAnnouncement(logged);
+        return this.turns.advanceTurn(logged, {
+          playerNameResolver: (s, id) => this.playerName(s, id),
+        });
       }
       const metaAfter = this.getMeta(next);
       const well = { ...(metaAfter.statuses?.well ?? {}) };
@@ -182,7 +192,9 @@ export class JeuOieActionService {
       return { ...next, status: 'finished' };
     }
 
-    return this.advanceTurnWithAnnouncement(next);
+    return this.turns.advanceTurn(next, {
+      playerNameResolver: (s, id) => this.playerName(s, id),
+    });
   }
 
   private applyLanding(
@@ -435,40 +447,21 @@ export class JeuOieActionService {
     return stripped || raw || `Case ${position}`;
   }
 
-  private appendTurnAnnouncement(
-    state: GameStateEntity,
-    playerId: number | null | undefined,
-  ): GameStateEntity {
-    if (typeof playerId !== 'number' || !Number.isFinite(playerId)) return state;
-    return this.core.appendLog(
-      state,
-      `C'est au tour de ${this.playerName(state, playerId)}.`,
-    );
-  }
-
-  private advanceTurnWithAnnouncement(state: GameStateEntity): GameStateEntity {
-    const next = this.turns.advanceTurn(state);
-    return this.appendTurnAnnouncement(next, next.turn?.currentPlayerId ?? null);
-  }
-
   private ensurePawnSelectionPrompt(state: GameStateEntity): GameStateEntity {
-    const pending = state.pending as any;
-    if (!pending || pending.type !== 'choose_pawn') return state;
-    const chooserId =
-      typeof pending.playerId === 'number'
-        ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
-    if (chooserId == null) return state;
-    return this.appendLogOnce(
+    return this.getPromptPolicies().ensurePendingPlayerPrompt(
       state,
-      `${this.playerName(state, chooserId)} doit choisir un pion.`,
+      'choose_pawn',
+      (playerId) => `${this.playerName(state, playerId)} doit choisir un pion.`,
     );
   }
 
-  private appendLogOnce(state: GameStateEntity, message: string): GameStateEntity {
-    const log = Array.isArray(state.log) ? state.log : [];
-    const last = String(log[log.length - 1]?.message ?? '').trim();
-    if (last === message) return state;
-    return this.core.appendLog(state, message);
+  private getTurnPolicies(): TurnPoliciesService {
+    return this.turnPolicies ?? new TurnPoliciesService(this.core);
+  }
+
+  private getPromptPolicies(): PromptPoliciesService {
+    return this.promptPolicies ?? new PromptPoliciesService(this.core);
   }
 }
+
+

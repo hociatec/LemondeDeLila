@@ -5,6 +5,8 @@ import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
+import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
+import { PromptPoliciesService } from '../../../../modules/prompt-policies/services/prompt-policies.service';
 import {
   CAT_PATTES_CARD_BY_ID,
   CatPattesCardDefinition,
@@ -32,6 +34,8 @@ export class CatPattesActionService {
     private readonly turns: TurnFlowService,
     private readonly setupFlow: SetupFlowService,
     private readonly deckPolicies: DeckPoliciesService,
+    private readonly turnPolicies?: TurnPoliciesService,
+    private readonly promptPolicies?: PromptPoliciesService,
   ) {}
 
   applyActions(
@@ -150,7 +154,11 @@ export class CatPattesActionService {
       started,
       `Début de partie : ${this.playerName(started, resolvedStarterId ?? 0)} commence.`,
     );
-    return this.appendTurnAnnouncement(started, resolvedStarterId);
+    return this.getTurnPolicies().appendTurnAnnouncement(
+      started,
+      resolvedStarterId,
+      (s, id) => this.playerName(s, id),
+    );
   }
 
   private handleDraw(state: GameStateEntity): GameStateEntity {
@@ -199,7 +207,7 @@ export class CatPattesActionService {
       `${this.playerName(next, currentId)} défausse ${CAT_PATTES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
     );
     next = this.clearDrawn(next);
-    return this.advanceTurnWithAnnouncement(next);
+    return this.turns.advanceTurn(next);
   }
 
   private handlePlayCard(
@@ -258,7 +266,7 @@ export class CatPattesActionService {
     }
 
     next = this.clearDrawn(next);
-    return this.advanceTurnWithAnnouncement(next);
+    return this.turns.advanceTurn(next);
   }
 
   private playPattes(
@@ -545,41 +553,20 @@ export class CatPattesActionService {
       | null;
   }
 
-  private appendTurnAnnouncement(
-    state: GameStateEntity,
-    playerId: number | null | undefined,
-  ): GameStateEntity {
-    if (typeof playerId !== 'number' || !Number.isFinite(playerId)) return state;
-    return this.core.appendLog(
-      state,
-      `C'est au tour de ${this.playerName(state, playerId)}.`,
-    );
-  }
-
-  private advanceTurnWithAnnouncement(state: GameStateEntity): GameStateEntity {
-    const next = this.turns.advanceTurn(state);
-    return this.appendTurnAnnouncement(next, next.turn?.currentPlayerId ?? null);
-  }
-
   private ensurePawnSelectionPrompt(state: GameStateEntity): GameStateEntity {
-    const pending = state.pending as any;
-    if (!pending || pending.type !== 'choose_pawn') return state;
-    const chooserId =
-      typeof pending.playerId === 'number'
-        ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
-    if (chooserId == null) return state;
-    return this.appendLogOnce(
+    return this.getPromptPolicies().ensurePendingPlayerPrompt(
       state,
-      `${this.playerName(state, chooserId)} doit choisir un pion.`,
+      'choose_pawn',
+      (playerId) => `${this.playerName(state, playerId)} doit choisir un pion.`,
     );
   }
 
-  private appendLogOnce(state: GameStateEntity, message: string): GameStateEntity {
-    const log = Array.isArray(state.log) ? state.log : [];
-    const last = String(log[log.length - 1]?.message ?? '').trim();
-    if (last === message) return state;
-    return this.core.appendLog(state, message);
+  private getTurnPolicies(): TurnPoliciesService {
+    return this.turnPolicies ?? new TurnPoliciesService(this.core);
+  }
+
+  private getPromptPolicies(): PromptPoliciesService {
+    return this.promptPolicies ?? new PromptPoliciesService(this.core);
   }
 
   private assignMissingBotPawns(state: GameStateEntity): GameStateEntity {

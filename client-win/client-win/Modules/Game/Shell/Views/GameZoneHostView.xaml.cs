@@ -73,11 +73,17 @@ public partial class GameZoneHostView : UserControl
                     }
                     return;
                 }
-            }
-            catch
-            {
-                // best-effort
-            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        if (FindDescendant<GamePlayView>(GameZoneHost) is GamePlayView fallbackPlayView)
+        {
+            fallbackPlayView.FocusPreferredInteractiveElement();
+            return;
+        }
         }
 
         if (GameZoneFocusAnchor?.Focus() == true)

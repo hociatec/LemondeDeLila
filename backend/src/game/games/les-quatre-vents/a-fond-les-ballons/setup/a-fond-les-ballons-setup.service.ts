@@ -3,6 +3,7 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { ensureSeededRng } from '../../../../../common/utils/seeded-rng';
 import { seededShuffle } from '../../../../../common/utils/seeded-shuffle';
 import type {
@@ -19,6 +20,7 @@ export class AFondLesBallonsSetupService {
     private readonly core: GameCoreService,
     private readonly random: RandomService,
     private readonly contentLoader: GameContentLoaderService,
+    private readonly setupFlow: SetupFlowService,
   ) {}
 
   private loadPawns() {
@@ -83,12 +85,21 @@ export class AFondLesBallonsSetupService {
       winnerId: null,
     };
 
-    const pendingInfo = buildPawnPending(
-      players,
-      pawnByPlayerId,
-      setupStarterId,
-      pawns,
-    );
+    const pendingInfo = this.setupFlow.createSequentialChoicePending({
+      players: players.map((p) => ({ id: p.id, username: p.username ?? null })),
+      startPlayerId: setupStarterId,
+      isAssigned: (playerId) => Boolean(pawnByPlayerId[playerId]),
+      pendingType: 'choose_pawn',
+      choices: pawns,
+      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
+      dataBuilder: (choices) => ({
+        pawns: choices.map((p: any) => ({
+          id: p.id,
+          label: p.label,
+          description: p.description ?? '',
+        })),
+      }),
+    });
     const turnIndex =
       pendingInfo?.turnIndex != null ? pendingInfo.turnIndex : baseState.turnIndex;
     const turnPlayerId =
@@ -246,62 +257,6 @@ function normalizePawnAssignments(
     byId[p.id] = resolved;
   }
   return byId;
-}
-
-function buildPawnPending(
-  players: Array<{ id: number }>,
-  pawnByPlayerId: Record<number, string>,
-  startId: number | null,
-  pawns: Array<{ id: string; label: string; description: string }>,
-): { pending: any; playerId: number; turnIndex: number } | null {
-  if (!players.length) return null;
-  const startIndex =
-    startId != null ? players.findIndex((p) => p?.id === startId) : -1;
-  const count = players.length;
-  const baseIndex = startIndex >= 0 ? startIndex : 0;
-  let nextIndex = -1;
-  for (let i = 0; i < count; i += 1) {
-    const idx = (baseIndex + i) % count;
-    const pid = players[idx]?.id;
-    if (pid == null) continue;
-    if (!pawnByPlayerId[pid]) {
-      nextIndex = idx;
-      break;
-    }
-  }
-  if (nextIndex < 0) return null;
-
-  const used = new Set(
-    Object.values(pawnByPlayerId).filter((v) => typeof v === 'string'),
-  );
-  const choices = pawns.filter((p) => !used.has(p.id));
-  if (choices.length === 0) return null;
-  const chooserName = String((players[nextIndex] as any)?.username ?? '').trim();
-  const chooserLabel =
-    chooserName.length > 0 ? chooserName : `Joueur ${players[nextIndex].id}`;
-
-  return {
-    playerId: players[nextIndex].id,
-    turnIndex: nextIndex,
-    pending: {
-      type: 'choose_pawn',
-      playerId: players[nextIndex].id,
-      blocking: true,
-      label: `C'est à ${chooserLabel} de choisir son pion.`,
-      choices: choices.map((p) =>
-        p.description && String(p.description).trim().length > 0
-          ? `${p.label}: ${p.description}`
-          : p.label,
-      ),
-      data: {
-        pawns: choices.map((p) => ({
-          id: p.id,
-          label: p.label,
-          description: p.description,
-        })),
-      },
-    },
-  };
 }
 
 function buildCharactersByPlayerId(

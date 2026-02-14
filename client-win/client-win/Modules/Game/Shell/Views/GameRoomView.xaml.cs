@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -224,22 +225,13 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
 	            return;
 	        }
 
-	        if (e.Key != Key.Tab)
-	        {
-	            return;
-	        }
-
-        // Règle UX globale: Tab/Maj+Tab ne doit pas "fuir" vers l'historique/chat pendant la partie.
-        // - Si on est déjà dans la zone de jeu, laisser la vue de jeu gérer Tab (navigation interne).
-        // - Sinon, on ré-ancre explicitement le focus dans la zone de jeu.
-        if (GameZoneHost?.IsKeyboardFocusWithin == true)
+        if (e.Key == Key.Tab)
         {
+            e.Handled = true;
+            var backwards = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
+            CycleTabFocus(backwards);
             return;
         }
-
-        e.Handled = true;
-        FocusGameZone();
-        return;
     }
 
     private void FocusGameZone()
@@ -303,6 +295,112 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
         }
 
         FocusHistory();
+    }
+
+    private bool IsFocusWithinChatOrHistory()
+    {
+        if (ChatHost?.IsKeyboardFocusWithin == true)
+        {
+            return true;
+        }
+
+        if (HistoryHost?.IsKeyboardFocusWithin == true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private void CycleTabFocus(bool backwards)
+    {
+        var regions = GetAvailableFocusRegions();
+        if (!regions.Any())
+        {
+            return;
+        }
+
+        var current = GetCurrentFocusRegion();
+        var index = regions.IndexOf(current ?? regions.First());
+        if (index < 0)
+        {
+            index = backwards ? regions.Count - 1 : 0;
+        }
+        else
+        {
+            index = (index + (backwards ? -1 : 1) + regions.Count) % regions.Count;
+        }
+
+        FocusRegion(regions[index]);
+    }
+
+    private enum FocusRegion
+    {
+        Chat,
+        History,
+        GameZone,
+    }
+
+    private List<FocusRegion> GetAvailableFocusRegions()
+    {
+        var regions = new List<FocusRegion>();
+        if (IsChatEnabled())
+        {
+            regions.Add(FocusRegion.Chat);
+        }
+
+        if (IsHistoryEnabled())
+        {
+            regions.Add(FocusRegion.History);
+        }
+
+        if (GameZoneHost != null)
+        {
+            regions.Add(FocusRegion.GameZone);
+        }
+
+        return regions;
+    }
+
+    private FocusRegion? GetCurrentFocusRegion()
+    {
+        if (ChatHost?.IsKeyboardFocusWithin == true)
+        {
+            return FocusRegion.Chat;
+        }
+
+        if (HistoryHost?.IsKeyboardFocusWithin == true)
+        {
+            return FocusRegion.History;
+        }
+
+        if (GameZoneHost?.IsKeyboardFocusWithin == true)
+        {
+            return FocusRegion.GameZone;
+        }
+
+        return null;
+    }
+
+    private void FocusRegion(FocusRegion region)
+    {
+        switch (region)
+        {
+            case FocusRegion.Chat:
+                FocusChatInput();
+                break;
+            case FocusRegion.History:
+                FocusHistory();
+                break;
+            case FocusRegion.GameZone:
+                FocusGameZone();
+                break;
+        }
+    }
+
+    private bool IsHistoryEnabled()
+    {
+        return HistoryHost != null && HistoryHost.Visibility == Visibility.Visible;
     }
 
     private bool IsTextInputFocused()

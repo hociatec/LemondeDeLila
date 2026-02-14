@@ -7,6 +7,7 @@ import { BoardModule } from '../../../modules/board/board.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
 import { BotModule } from '../../../modules/bot/bot.module';
 import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
+import { SetupFlowModule } from '../../../modules/setup-flow/setup-flow.module';
 import { AFondLesBallonsService } from './a-fond-les-ballons.service';
 import { AFondLesBallonsSetupService } from './setup/a-fond-les-ballons-setup.service';
 import { AFondLesBallonsActionService } from './actions/a-fond-les-ballons-action.service';
@@ -20,6 +21,7 @@ import { AFondLesBallonsBotService } from './bots/a-fond-les-ballons-bot.service
     EngineServicesModule,
     RandomModule,
     DeckPoliciesModule,
+    SetupFlowModule,
     BoardModule,
     TurnModule,
     BotModule,
