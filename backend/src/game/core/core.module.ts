@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { GameCoreService } from './services/game-core.service';
 import { BoardModule } from '../modules/board/board.module';
 import { MovementModule } from '../modules/movement/movement.module';
@@ -11,6 +11,7 @@ import { BotModule } from '../modules/bot/bot.module';
 import { TurnModule } from '../modules/turn/turn.module';
 import { VictoryModule } from '../modules/victory/victory.module';
 
+@Global()
 @Module({
   imports: [
     BoardModule,

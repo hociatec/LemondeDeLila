@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { NotificationGateway } from './gateways/notification.gateway';
 import { NotificationService } from './services/notification.service';
@@ -48,7 +48,13 @@ import { UserBadgeCountsService } from './services/user-badge-counts.service';
           redisUrl,
           redisFactory,
         );
-        await transport.connect();
+        transport.connect().catch((error) => {
+          const logger = new Logger('NotificationTransport');
+          logger.warn(
+            'Échec de la connexion Redis pour les notifications',
+            error instanceof Error ? error.stack : String(error),
+          );
+        });
         return transport;
       },
     },

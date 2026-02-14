@@ -1,8 +1,10 @@
+import { Logger } from '@nestjs/common';
 import Redis from 'ioredis';
 
 export class RedisPubSubTransport<TEvent> {
   private readonly publisher: Redis;
   private readonly subscriber: Redis;
+  private readonly logger = new Logger(RedisPubSubTransport.name);
 
   constructor(
     private readonly url: string,
@@ -23,7 +25,14 @@ export class RedisPubSubTransport<TEvent> {
   }
 
   async connect(): Promise<void> {
-    await Promise.all([this.publisher.connect(), this.subscriber.connect()]);
+    try {
+      await Promise.all([this.publisher.connect(), this.subscriber.connect()]);
+    } catch (error) {
+      this.logger.warn(
+        `Impossible de se connecter à Redis pubsub (${this.channel})`,
+        error instanceof Error ? error.stack : String(error),
+      );
+    }
   }
 
   async publish(event: TEvent): Promise<void> {

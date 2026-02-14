@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ChatModule } from '../chat/chat.module';
 import { NotificationModule } from '../notification/notification.module';
@@ -38,7 +38,13 @@ import { RedisClientFactory } from '../common/redis/redis-client.factory';
           );
         }
         const transport = new RedisPresenceTransport(redisUrl, redisFactory);
-        await transport.connect();
+        transport.connect().catch((error) => {
+          const logger = new Logger('PresenceTransport');
+          logger.warn(
+            'Échec de la connexion Redis pour les présences',
+            error instanceof Error ? error.stack : String(error),
+          );
+        });
         return transport;
       },
     },
