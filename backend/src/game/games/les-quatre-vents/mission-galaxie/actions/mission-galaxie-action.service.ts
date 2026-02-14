@@ -7,6 +7,7 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import type {
   MissionGalaxieChoiceCard,
   MissionGalaxieDeckName,
@@ -26,6 +27,7 @@ export class MissionGalaxieActionService {
     private readonly random: RandomService,
     private readonly turns: TurnFlowService,
     private readonly core: GameCoreService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -665,33 +667,22 @@ export class MissionGalaxieActionService {
     card: MissionGalaxieChoiceCard | MissionGalaxieEventCard | null;
     meta: MissionGalaxieMetadata;
   } {
-    const deckList = Array.isArray(meta.decks[deck]) ? meta.decks[deck] : [];
-    const discardList = Array.isArray(meta.discards[deck])
-      ? meta.discards[deck]
-      : [];
-    if (!deckList.length && discardList.length) {
-      const reshuffle = this.random.shuffle(meta as any, discardList as any[]);
-      const reshuffled: MissionGalaxieMetadata = {
-        ...meta,
-        decks: { ...meta.decks, [deck]: reshuffle.values as any },
-        discards: { ...meta.discards, [deck]: [] },
-      };
-      return this.drawCard(
-        {
-          ...reshuffled,
-          ...(reshuffle.meta ?? {}),
-        } as MissionGalaxieMetadata,
-        deck,
-      );
-    }
-    if (!deckList.length) return { card: null, meta };
-    const [card, ...rest] = deckList;
+    const draw = this.deckPolicies.drawFromPile<
+      MissionGalaxieChoiceCard | MissionGalaxieEventCard,
+      MissionGalaxieMetadata
+    >({
+      meta,
+      pile: Array.isArray(meta.decks?.[deck]) ? meta.decks[deck] : [],
+      discard: Array.isArray(meta.discards?.[deck]) ? meta.discards[deck] : [],
+      useWholeMetaRng: true,
+      discardDrawnCard: true,
+    });
     const nextMeta: MissionGalaxieMetadata = {
-      ...meta,
-      decks: { ...meta.decks, [deck]: rest },
-      discards: { ...meta.discards, [deck]: [...discardList, card as any] },
+      ...draw.meta,
+      decks: { ...draw.meta.decks, [deck]: draw.pile as any[] },
+      discards: { ...draw.meta.discards, [deck]: draw.discard as any[] },
     };
-    return { card, meta: nextMeta };
+    return { card: draw.card, meta: nextMeta };
   }
 
   private playerName(state: GameStateEntity, id: number): string {

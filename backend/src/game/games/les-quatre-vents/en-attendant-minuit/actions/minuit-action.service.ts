@@ -6,6 +6,8 @@ import type {
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { MINUIT_GAME } from '../definitions/minuit.definition';
 import type {
@@ -30,6 +32,8 @@ export class MinuitActionService {
     private readonly random: RandomService,
     private readonly turns: TurnFlowService,
     private readonly core: GameCoreService,
+    private readonly setupFlow: SetupFlowService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -339,10 +343,6 @@ export class MinuitActionService {
     const pending = state.pending as any;
     if (pending && pending.type === 'pick_pawn') return state;
     const players = Array.isArray(state.players) ? state.players : [];
-    const missing = players.filter(
-      (p) => !!p && !this.isBotLike(p) && !String(p.pawn ?? '').trim(),
-    );
-    if (!missing.length) return state;
     const taken = new Set<string>(
       players
         .map((p) => (typeof p?.pawn === 'string' ? String(p.pawn).trim() : ''))
@@ -351,25 +351,36 @@ export class MinuitActionService {
     const choiceEntries = this.listPawnChoiceEntries(this.getMeta(state));
     const available = choiceEntries.filter((entry) => !taken.has(entry.title));
     const entries = available.length ? available : [...choiceEntries];
-    const choices = entries.map((entry) => entry.label);
-    const choiceMap = Object.fromEntries(entries.map((e) => [e.label, e.title]));
-    const chooser = missing[0];
-    const chooserLabel = this.playerName(state, chooser.id);
-    const currentDirection: 1 | -1 = state.turn?.direction === -1 ? -1 : 1;
+    const pendingInfo = this.setupFlow.createSequentialChoicePending({
+      players,
+      startPlayerId: players[0]?.id ?? null,
+      isAssigned: (playerId) => {
+        const player = players.find((p) => p?.id === playerId);
+        return !!player && !this.isBotLike(player) && String(player.pawn ?? '').trim().length > 0;
+      },
+      pendingType: 'pick_pawn',
+      choices: entries.map((entry) => ({ id: entry.title, label: entry.label })),
+      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion, puis Entrée.`,
+      dataBuilder: (availableChoices) => {
+        const availableChoiceMap = Object.fromEntries(
+          availableChoices.map((choice) => [choice.label, choice.id]),
+        );
+        return {
+          choices: availableChoices.map((choice) => choice.label),
+          choiceMap: availableChoiceMap,
+        };
+      },
+    });
+    if (!pendingInfo) return state;
+    const chooserLabel = this.playerName(state, pendingInfo.playerId);
     const withPending: GameStateEntity = {
       ...state,
-      pending: {
-        type: 'pick_pawn',
-        playerId: chooser.id,
-        blocking: true,
-        label: `C'est à ${chooserLabel} de choisir son pion, puis Entrée.`,
-        choices,
-        data: { choices, choiceMap },
-      } as PendingState,
+      pending: pendingInfo.pending,
+      turnIndex: pendingInfo.turnIndex,
       turn: {
-        ...(state.turn ?? { currentPlayerId: chooser.id, direction: currentDirection }),
-        currentPlayerId: chooser.id,
-        direction: currentDirection,
+        ...(state.turn ?? { currentPlayerId: pendingInfo.playerId, direction: 1 }),
+        currentPlayerId: pendingInfo.playerId,
+        direction: state.turn?.direction === -1 ? -1 : 1,
       },
     };
     return this.appendLogOnce(
@@ -439,13 +450,19 @@ export class MinuitActionService {
     if (!pending || pending.type !== 'pick_pawn') return state;
     const playerId = Number(pending.playerId);
     if (!Number.isFinite(playerId)) return state;
-    const requestedPawn = String((action.payload as any)?.pawn ?? '').trim();
-    if (!requestedPawn) return state;
-    const choiceMap =
-      pending && typeof pending?.data?.choiceMap === 'object'
-        ? (pending.data.choiceMap as Record<string, string>)
-        : {};
-    const resolvedPawn = String(choiceMap[requestedPawn] ?? requestedPawn).trim();
+    const payload = (action?.payload ?? {}) as any;
+    const requestedPawn = payload.pawn ?? payload.value ?? null;
+    const options = Array.isArray(pending?.data?.choices)
+      ? pending.data.choices.map((choice: string) => ({
+          id: String(
+            (pending?.data?.choiceMap as Record<string, string> | undefined)?.[choice] ??
+              choice,
+          ).trim(),
+          label: String(choice ?? '').trim(),
+        }))
+      : [];
+    const chosen = this.setupFlow.resolveChoice(requestedPawn, options);
+    const resolvedPawn = String(chosen?.id ?? '').trim();
     if (!resolvedPawn) return state;
     const players = Array.isArray(state.players) ? state.players : [];
     const takenByOthers = new Set<string>(
@@ -936,24 +953,19 @@ export class MinuitActionService {
     card: MinuitCard | null;
     meta: MinuitMetadata;
   } {
-    const deck = Array.isArray(meta.decks?.cards) ? meta.decks.cards : [];
-    const discard = Array.isArray(meta.decks?.discard)
-      ? meta.decks.discard
-      : [];
-    if (!deck.length && discard.length) {
-      const shuffled = this.random.shuffle(meta as any, discard);
-      const reshuffled: MinuitMetadata = {
-        ...meta,
-        ...shuffled.meta,
-        decks: { cards: shuffled.values as any, discard: [] },
-      };
-      return this.drawCard(reshuffled);
-    }
-    if (!deck.length) return { card: null, meta };
-    const [card, ...rest] = deck;
+    const draw = this.deckPolicies.drawFromPile<MinuitCard, MinuitMetadata>({
+      meta,
+      pile: Array.isArray(meta.decks?.cards) ? meta.decks.cards : [],
+      discard: Array.isArray(meta.decks?.discard) ? meta.decks.discard : [],
+      useWholeMetaRng: true,
+      discardDrawnCard: true,
+    });
     return {
-      card,
-      meta: { ...meta, decks: { cards: rest, discard: [...discard, card] } },
+      card: draw.card,
+      meta: {
+        ...draw.meta,
+        decks: { cards: draw.pile as any, discard: draw.discard as any },
+      },
     };
   }
 

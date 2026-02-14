@@ -7,6 +7,7 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import type {
   VoyageCard,
   VoyageDeck,
@@ -22,6 +23,7 @@ export class VoyageActionService {
     private readonly random: RandomService,
     private readonly turns: TurnFlowService,
     private readonly core: GameCoreService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
@@ -576,29 +578,21 @@ export class VoyageActionService {
             : 'landscape';
 
     const deck: VoyageDeck = (meta.decks as any)?.[deckId] ?? { cards: [], discard: [] };
-    const cards = Array.isArray(deck.cards) ? deck.cards : [];
-    const discard = Array.isArray(deck.discard) ? deck.discard : [];
-
-    if (!cards.length && discard.length) {
-      const shuffled = this.random.shuffle(meta as any, discard);
-      const reshuffled: VoyageMetadata = {
-        ...meta,
-        ...shuffled.meta,
-        decks: { ...meta.decks, [deckId]: { cards: shuffled.values as any, discard: [] } } as any,
-      };
-      return this.drawCard(reshuffled, deckType);
-    }
-    if (!cards.length) return { card: null, meta };
-    const [card, ...rest] = cards;
-    // IMPORTANT: on ne met pas automatiquement en défausse. Le sort de la carte dépend du type (conservée ou non).
+    const draw = this.deckPolicies.drawFromPile<VoyageCard, VoyageMetadata>({
+      meta,
+      pile: Array.isArray(deck.cards) ? deck.cards : [],
+      discard: Array.isArray(deck.discard) ? deck.discard : [],
+      useWholeMetaRng: true,
+      discardDrawnCard: false,
+    });
     const nextMeta: VoyageMetadata = {
-      ...meta,
+      ...draw.meta,
       decks: {
-        ...meta.decks,
-        [deckId]: { cards: rest, discard },
+        ...draw.meta.decks,
+        [deckId]: { cards: draw.pile as VoyageCard[], discard: draw.discard as VoyageCard[] },
       } as any,
     };
-    return { card, meta: nextMeta };
+    return { card: draw.card, meta: nextMeta };
   }
 
   private discardDrawnCard(

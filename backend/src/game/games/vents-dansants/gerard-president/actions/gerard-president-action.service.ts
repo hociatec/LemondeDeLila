@@ -5,6 +5,7 @@ import type {
 } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { GERARD_PRESIDENT_SPECIAL_CARDS } from '../model/gerard-president-cards';
 import type { GerardPresidentMetadata } from '../model/gerard-president-state.entity';
 import { type GerardPresidentActionType } from '../definitions/game.definition';
@@ -20,7 +21,10 @@ type GerardPresidentActionPayload = {
 
 @Injectable()
 export class GerardPresidentActionService {
-  constructor(private readonly random: RandomService) {}
+  constructor(
+    private readonly random: RandomService,
+    private readonly deckPolicies: DeckPoliciesService,
+  ) {}
 
   applyActions(
     state: GameStateEntity,
@@ -651,21 +655,26 @@ export class GerardPresidentActionService {
     discardKey: 'nameDiscard' | 'themeDiscard' | 'specialDiscard',
     count: number,
   ): string[] {
-    const deck = [...(metadata[deckKey] ?? [])];
+    let deck = [...(metadata[deckKey] ?? [])];
     let discard = [...(metadata[discardKey] ?? [])];
     let rng = metadata.rng ?? {};
     const drawn: string[] = [];
+
     while (drawn.length < count) {
-      if (!deck.length) {
-        if (!discard.length) break;
-        const shuffled = this.random.shuffle(rng, discard);
-        deck.splice(0, deck.length, ...shuffled.values);
-        rng = shuffled.meta;
-        discard = [];
-      }
-      if (!deck.length) break;
-      drawn.push(deck.shift()!);
+      const out = this.deckPolicies.drawFromPile<string, { deck: string[]; discard: string[]; rng: any }>({
+        meta: { deck, discard, rng },
+        pile: deck,
+        discard,
+        rngKey: 'rng',
+        discardDrawnCard: false,
+      });
+      rng = out.meta.rng;
+      deck = [...out.pile];
+      discard = [...out.discard];
+      if (!out.card) break;
+      drawn.push(out.card);
     }
+
     metadata[deckKey] = deck;
     metadata[discardKey] = discard;
     metadata.rng = rng;

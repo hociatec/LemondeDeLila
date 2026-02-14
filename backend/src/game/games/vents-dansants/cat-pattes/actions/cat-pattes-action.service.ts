@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
-import { RandomService } from '../../../../modules/random/services/random.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import {
   CAT_PATTES_CARD_BY_ID,
   CatPattesCardDefinition,
@@ -28,8 +29,9 @@ type CatPattesActionPayload = {
 export class CatPattesActionService {
   constructor(
     private readonly core: GameCoreService,
-    private readonly random: RandomService,
     private readonly turns: TurnFlowService,
+    private readonly setupFlow: SetupFlowService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -441,28 +443,15 @@ export class CatPattesActionService {
     meta: CatPattesMetadata;
     cardId: string | null;
   } {
-    let { deck, discard, rng } = meta;
-    const safeDeck = Array.isArray(deck) ? [...deck] : [];
-    const safeDiscard = Array.isArray(discard) ? [...discard] : [];
-    let currentMeta = { ...meta, deck: safeDeck, discard: safeDiscard };
-    if (safeDeck.length === 0 && safeDiscard.length > 0) {
-      const { values, meta: shuffledMeta } = this.random.shuffle(rng ?? {}, safeDiscard);
-      currentMeta = {
-        ...currentMeta,
-        deck: values,
-        discard: [],
-        rng: shuffledMeta,
-      };
-      rng = shuffledMeta;
-    }
-    const nextDeck = currentMeta.deck ?? [];
-    if (!nextDeck.length) {
-      return { meta: currentMeta, cardId: null };
-    }
-    const [cardId, ...rest] = nextDeck;
+    const out = this.deckPolicies.drawOne<string, CatPattesMetadata>({
+      meta,
+      deckKey: 'deck',
+      discardKey: 'discard',
+      rngKey: 'rng',
+    });
     return {
-      cardId,
-      meta: { ...currentMeta, deck: rest },
+      cardId: out.card,
+      meta: out.meta,
     };
   }
 
@@ -515,51 +504,35 @@ export class CatPattesActionService {
 
     const meta = this.getMeta(state);
     const pawnByPlayerId = (meta.pawnByPlayerId ?? {}) as Record<number, string>;
-    const startIndex =
-      startId != null ? players.findIndex((p) => p?.id === startId) : -1;
-    const baseIndex = startIndex >= 0 ? startIndex : 0;
-    let nextIndex = -1;
-    for (let i = 0; i < players.length; i += 1) {
-      const idx = (baseIndex + i) % players.length;
-      const pid = players[idx]?.id;
-      if (pid == null) continue;
-      if (!pawnByPlayerId[pid] && !this.isBotLike(players[idx])) {
-        nextIndex = idx;
-        break;
-      }
-    }
-    if (nextIndex < 0) return null;
-
     const used = new Set(
       Object.values(pawnByPlayerId).filter((v) => typeof v === 'string'),
     );
     const choices = (meta.pawns ?? []).filter((p) => !used.has(p));
-    if (!choices.length) return null;
 
-    const chooserId = players[nextIndex].id;
-    const chooserLabel = this.playerName(state, chooserId);
-    return {
-      playerId: chooserId,
-      turnIndex: nextIndex,
-      pending: {
-        type: 'choose_pawn',
-        playerId: chooserId,
-        blocking: true,
-        label: `C'est à ${chooserLabel} de choisir son pion.`,
-        choices,
-        data: {
-          pawns: choices.map((name) => ({ id: name, label: name })),
-        },
+    return this.setupFlow.createSequentialChoicePending({
+      players,
+      startPlayerId: startId,
+      isAssigned: (playerId) => {
+        const player = players.find((p) => p?.id === playerId);
+        return Boolean(pawnByPlayerId[playerId]) || this.isBotLike(player);
       },
-    };
+      pendingType: 'choose_pawn',
+      choices: choices.map((name) => ({ id: name, label: name })),
+      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
+      dataBuilder: (availableChoices) => ({
+        pawns: availableChoices.map((choice) => ({
+          id: String(choice.id ?? '').trim(),
+          label: String(choice.label ?? '').trim(),
+        })),
+      }),
+    });
   }
 
   private resolvePendingPawn(
     raw: unknown,
     options: Array<{ id?: string; label?: string }>,
   ): { id: string; label: string } | null {
-    if (!Array.isArray(options) || options.length === 0) return null;
-    const normalized = options
+    const normalized = (Array.isArray(options) ? options : [])
       .map((p: any) => ({
         id: String(p?.id ?? '').trim(),
         label: String(p?.label ?? '').trim(),
@@ -567,28 +540,9 @@ export class CatPattesActionService {
       .filter((p) => p.id.length > 0 && p.label.length > 0);
     if (!normalized.length) return null;
 
-    const value =
-      typeof raw === 'object'
-        ? (raw as any)?.id ?? (raw as any)?.pawnId ?? (raw as any)?.value ?? raw
-        : raw;
-    const key = this.normalizePawnKey(value);
-    if (!key) return null;
-
-    const byId = normalized.find((p) => this.normalizePawnKey(p.id) === key);
-    if (byId) return byId;
-    const byLabel = normalized.find(
-      (p) => this.normalizePawnKey(p.label) === key,
-    );
-    return byLabel ?? null;
-  }
-
-  private normalizePawnKey(value: unknown): string {
-    return String(value ?? '')
-      .trim()
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '');
+    return this.setupFlow.resolveChoice(raw, normalized) as
+      | { id: string; label: string }
+      | null;
   }
 
   private appendTurnAnnouncement(
@@ -664,3 +618,7 @@ export class CatPattesActionService {
     return username.includes('bot');
   }
 }
+
+
+
+

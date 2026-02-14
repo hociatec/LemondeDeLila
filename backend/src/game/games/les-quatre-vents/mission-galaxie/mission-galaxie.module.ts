@@ -6,6 +6,7 @@ import { RandomModule } from '../../../modules/random/random.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
 import { BoardModule } from '../../../modules/board/board.module';
 import { BotModule } from '../../../modules/bot/bot.module';
+import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
 import { MissionGalaxieService } from './mission-galaxie.service';
 import { MissionGalaxieSetupService } from './setup/mission-galaxie-setup.service';
 import { MissionGalaxieActionService } from './actions/mission-galaxie-action.service';
@@ -18,6 +19,7 @@ import { MissionGalaxieBotService } from './bots/mission-galaxie-bot.service';
     GameRegistryModule,
     EngineServicesModule,
     RandomModule,
+    DeckPoliciesModule,
     TurnModule,
     BoardModule,
     BotModule,

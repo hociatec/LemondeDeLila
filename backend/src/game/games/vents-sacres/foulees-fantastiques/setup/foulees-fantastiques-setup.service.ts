@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import type {
   FouleesFantastiquesColor,
   FouleesFantastiquesMetadata,
@@ -15,6 +16,7 @@ export class FouleesFantastiquesSetupService {
   constructor(
     private readonly core: GameCoreService,
     private readonly contentLoader: GameContentLoaderService,
+    private readonly setupFlow: SetupFlowService,
   ) {}
 
   private loadBoard(): FouleesFantastiquesBoardJsonV1 {
@@ -140,14 +142,18 @@ export class FouleesFantastiquesSetupService {
 
     const withPending = {
       ...withBoard,
-      pending: {
-        type: 'choose_family',
-        playerId: currentId,
-        blocking: true,
-        label: "Choisissez la famille d'animaux que vous souhaitez jouer, puis Entrée.",
-        choices: families.map((f) => f.label),
-        data: { familyIds: families.map((f) => f.id) },
-      } as any,
+      pending: this.setupFlow.createSequentialChoicePending({
+        players,
+        startPlayerId: currentId,
+        isAssigned: () => false,
+        pendingType: 'choose_family',
+        choices: families.map((f) => ({ id: f.id, label: f.label })),
+        labelForPlayer: () =>
+          "Choisissez la famille d'animaux que vous souhaitez jouer, puis Entrée.",
+        dataBuilder: (choices) => ({
+          familyIds: choices.map((c) => c.id),
+        }),
+      })?.pending,
     };
     const currentName =
       players.find((p) => p?.id === currentId)?.username?.trim() ||
@@ -187,3 +193,4 @@ export class FouleesFantastiquesSetupService {
     return { ...state, metadata: { ...(state.metadata ?? {}), ...updated } };
   }
 }
+

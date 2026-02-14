@@ -3,7 +3,7 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
-import { RandomService } from '../../../../modules/random/services/random.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import type {
   RiteCardDefinition,
   RiteFamilyId,
@@ -26,7 +26,7 @@ export class EntreRitesActionService {
   constructor(
     private readonly core: GameCoreService,
     private readonly turns: TurnFlowService,
-    private readonly random: RandomService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -633,20 +633,13 @@ export class EntreRitesActionService {
   private drawOneCard(
     meta: EntreRitesMetadata,
   ): { cardId: string | null; meta: EntreRitesMetadata } {
-    let deck = Array.isArray(meta.deck) ? [...meta.deck] : [];
-    let discard = Array.isArray(meta.discard) ? [...meta.discard] : [];
-    let rng = meta.rng ?? {};
-    if (!deck.length && discard.length) {
-      const { values, meta: updatedRng } = this.random.shuffle(rng, discard);
-      deck = values;
-      discard = [];
-      rng = updatedRng;
-    }
-    if (!deck.length) {
-      return { cardId: null, meta: { ...meta, deck, discard, rng } };
-    }
-    const [cardId, ...rest] = deck;
-    return { cardId, meta: { ...meta, deck: rest, discard, rng } };
+    const draw = this.deckPolicies.drawOne<string, EntreRitesMetadata>({
+      meta,
+      deckKey: 'deck',
+      discardKey: 'discard',
+      rngKey: 'rng',
+    });
+    return { cardId: draw.card, meta: draw.meta };
   }
 
   private addCardToHand(

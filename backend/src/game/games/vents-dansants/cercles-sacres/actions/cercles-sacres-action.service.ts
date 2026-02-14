@@ -3,7 +3,7 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
-import { RandomService } from '../../../../modules/random/services/random.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import type { CerclesSacresTheme } from '../model/cercles-sacres-cards';
 import { CERCLES_SACRES_CARD_BY_ID } from '../model/cercles-sacres-cards';
 import type {
@@ -25,7 +25,7 @@ export class CerclesSacresActionService {
   constructor(
     private readonly core: GameCoreService,
     private readonly turns: TurnFlowService,
-    private readonly random: RandomService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -250,38 +250,15 @@ export class CerclesSacresActionService {
   private drawOneCard(
     meta: CerclesSacresMetadata,
   ): { cardId: string | null; meta: CerclesSacresMetadata } {
-    let { deck, discard, rng } = meta;
-    const safeDeck = Array.isArray(deck) ? [...deck] : [];
-    const safeDiscard = Array.isArray(discard) ? [...discard] : [];
-    let currentMeta: CerclesSacresMetadata = {
-      ...meta,
-      deck: safeDeck,
-      discard: safeDiscard,
-    };
-
-    if (!safeDeck.length && safeDiscard.length) {
-      const { values, meta: updatedRng } = this.random.shuffle(
-        rng ?? {},
-        safeDiscard,
-      );
-      currentMeta = {
-        ...currentMeta,
-        deck: values,
-        discard: [],
-        rng: updatedRng,
-      };
-      rng = updatedRng;
-    }
-
-    const nextDeck = currentMeta.deck ?? [];
-    if (!nextDeck.length) {
-      return { cardId: null, meta: currentMeta };
-    }
-
-    const [cardId, ...rest] = nextDeck;
+    const draw = this.deckPolicies.drawOne<string, CerclesSacresMetadata>({
+      meta,
+      deckKey: 'deck',
+      discardKey: 'discard',
+      rngKey: 'rng',
+    });
     return {
-      cardId,
-      meta: { ...currentMeta, deck: rest },
+      cardId: draw.card,
+      meta: draw.meta,
     };
   }
 

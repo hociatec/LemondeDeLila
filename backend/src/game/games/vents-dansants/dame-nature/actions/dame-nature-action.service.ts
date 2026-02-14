@@ -3,7 +3,7 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
-import { RandomService } from '../../../../modules/random/services/random.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { DAME_NATURE_CARD_BY_ID } from '../model/dame-nature-cards';
 import type { DameNatureMetadata } from '../model/dame-nature-state.entity';
 import type { DameNatureActionPayload } from '../rulebook/rulebook';
@@ -13,7 +13,7 @@ export class DameNatureActionService {
   constructor(
     private readonly core: GameCoreService,
     private readonly turns: TurnFlowService,
-    private readonly random: RandomService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -210,23 +210,13 @@ export class DameNatureActionService {
     cardId: string | null;
     meta: DameNatureMetadata;
   } {
-    let deck = Array.isArray(meta.deck) ? [...meta.deck] : [];
-    let discard = Array.isArray(meta.discard) ? [...meta.discard] : [];
-    let nextMeta: DameNatureMetadata = { ...meta, deck, discard };
-    let rngMeta = nextMeta.rng ?? {};
-    if (!deck.length && discard.length) {
-      const { values, meta: shuffled } = this.random.shuffle(rngMeta, discard);
-      nextMeta = { ...nextMeta, deck: values, discard: [], rng: shuffled };
-      rngMeta = shuffled;
-      deck = [...values];
-      discard = [];
-    }
-    if (!deck.length) {
-      return { cardId: null, meta: nextMeta };
-    }
-    const [cardId, ...rest] = deck;
-    nextMeta = { ...nextMeta, deck: rest, rng: rngMeta };
-    return { cardId, meta: nextMeta };
+    const draw = this.deckPolicies.drawOne<string, DameNatureMetadata>({
+      meta,
+      deckKey: 'deck',
+      discardKey: 'discard',
+      rngKey: 'rng',
+    });
+    return { cardId: draw.card, meta: draw.meta };
   }
 
   private addCardToHand(

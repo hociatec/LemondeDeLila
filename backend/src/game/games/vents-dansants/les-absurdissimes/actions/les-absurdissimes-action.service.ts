@@ -2,7 +2,7 @@
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { GameCoreService } from '../../../../core/services/game-core.service';
-import { RandomService } from '../../../../modules/random/services/random.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import type { AbsurdissimesMetadata } from '../model/les-absurdissimes-state.entity';
 
 type AbsurdissimesActionPayload = {
@@ -14,7 +14,7 @@ type AbsurdissimesActionPayload = {
 export class AbsurdissimesActionService {
   constructor(
     private readonly core: GameCoreService,
-    private readonly random: RandomService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -164,20 +164,14 @@ export class AbsurdissimesActionService {
     meta: AbsurdissimesMetadata,
     playerId: number,
   ): { cardId: string | null; meta: AbsurdissimesMetadata } {
-    let deck = Array.isArray(meta.blackDeck) ? [...meta.blackDeck] : [];
-    let discard = Array.isArray(meta.discardBlack) ? [...meta.discardBlack] : [];
-    let rng = meta.rng ?? {};
-    if (!deck.length && discard.length) {
-      const shuffled = this.random.shuffle(rng, discard);
-      deck = shuffled.values;
-      discard = [];
-      rng = shuffled.meta;
-    }
-    let cardId: string | null = null;
-    if (deck.length) {
-      cardId = deck.shift() ?? null;
-    }
-    const hands = { ...meta.blackHands };
+    const draw = this.deckPolicies.drawOne<string, AbsurdissimesMetadata>({
+      meta,
+      deckKey: 'blackDeck',
+      discardKey: 'discardBlack',
+      rngKey: 'rng',
+    });
+    const cardId = draw.card;
+    const hands = { ...draw.meta.blackHands };
     if (cardId) {
       const hand = Array.isArray(hands[playerId]) ? [...hands[playerId]] : [];
       hand.push(cardId);
@@ -186,33 +180,23 @@ export class AbsurdissimesActionService {
     return {
       cardId,
       meta: {
-        ...meta,
-        blackDeck: deck,
-        discardBlack: discard,
+        ...draw.meta,
         blackHands: hands,
-        rng,
       },
     };
   }
 
   private drawWhiteCard(meta: AbsurdissimesMetadata): { card: string | null; meta: AbsurdissimesMetadata } {
-    let deck = Array.isArray(meta.whiteDeck) ? [...meta.whiteDeck] : [];
-    let discard = Array.isArray(meta.discardWhite) ? [...meta.discardWhite] : [];
-    let rng = meta.rng ?? {};
-    if (!deck.length && discard.length) {
-      const shuffled = this.random.shuffle(rng, discard);
-      deck = shuffled.values;
-      discard = [];
-      rng = shuffled.meta;
-    }
-    const card = deck.shift() ?? null;
+    const draw = this.deckPolicies.drawOne<string, AbsurdissimesMetadata>({
+      meta,
+      deckKey: 'whiteDeck',
+      discardKey: 'discardWhite',
+      rngKey: 'rng',
+    });
     return {
-      card,
+      card: draw.card,
       meta: {
-        ...meta,
-        whiteDeck: deck,
-        discardWhite: discard,
-        rng,
+        ...draw.meta,
       },
     };
   }

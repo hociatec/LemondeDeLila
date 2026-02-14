@@ -181,12 +181,10 @@ public partial class GameZoneHostView : UserControl
             return;
         }
 
-        if (e.Key != Key.Tab)
+        if (e.Key == Key.Tab)
         {
+            // Ne pas piéger Tab/Maj+Tab sur l'ancre: laisser la navigation sortir vers chat/historique.
             return;
         }
-
-        e.Handled = true;
-        FocusGameZone();
     }
 }

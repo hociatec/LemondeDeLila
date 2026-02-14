@@ -5,6 +5,7 @@ import { RandomModule } from '../../../modules/random/random.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
 import { BotModule } from '../../../modules/bot/bot.module';
 import { BoardModule } from '../../../modules/board/board.module';
+import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
 import { PimpMyRideActionService } from './actions/pimp-my-ride-action.service';
 import { PimpMyRideSetupService } from './setup/pimp-my-ride-setup.service';
 import { PimpMyRidePresenterService } from './presenter/pimp-my-ride-presenter.service';
@@ -17,6 +18,7 @@ import { PimpMyRideService } from './pimp-my-ride.service';
     GameCoreModule,
     GameRegistryModule,
     RandomModule,
+    DeckPoliciesModule,
     BoardModule,
     TurnModule,
     BotModule,

@@ -1,4 +1,7 @@
-import type { GameStateEntity } from '../../../../../core/entities/game-state.entity';
+﻿import type { GameStateEntity } from '../../../../../core/entities/game-state.entity';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { BoardEffectsPoliciesService } from '../../../../modules/board-effects-policies/services/board-effects-policies.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { FrousseActionService } from '../actions/frousse-action.service';
 
 describe('FrousseActionService movement effects', () => {
@@ -19,7 +22,7 @@ describe('FrousseActionService movement effects', () => {
       })),
     };
 
-    const service = new FrousseActionService(random, turns, core);
+    const service = new FrousseActionService(random, turns, core, new SetupFlowService(), new BoardEffectsPoliciesService(), new DeckPoliciesService(random));
 
     const state: GameStateEntity = {
       status: 'started',
@@ -46,9 +49,9 @@ describe('FrousseActionService movement effects', () => {
         decks: {
           cards: [
             {
-              category: 'Fantôme',
+              category: 'FantÃ´me',
               localNumber: 999,
-              text: 'Le fantôme surgit en hurlant.\nAvancez de 5 cases puis reculez de 3.',
+              text: 'Le fantÃ´me surgit en hurlant.\nAvancez de 5 cases puis reculez de 3.',
             },
           ],
           discard: [],
@@ -82,7 +85,7 @@ describe('FrousseActionService movement effects', () => {
       })),
     };
 
-    const service = new FrousseActionService(random, turns, core);
+    const service = new FrousseActionService(random, turns, core, new SetupFlowService(), new BoardEffectsPoliciesService(), new DeckPoliciesService(random));
 
     const state: GameStateEntity = {
       status: 'started',
@@ -117,7 +120,7 @@ describe('FrousseActionService movement effects', () => {
     const messages = (next.log ?? []).map((l: any) => l.message);
 
     expect(messages).toContain('Reculez de 2 cases.');
-    expect(messages).not.toContain('3 au dé, recul de 2 cases.');
+    expect(messages).not.toContain('3 au dÃ©, recul de 2 cases.');
   });
 
   it('formats doubled roll log with "=" (not "->")', () => {
@@ -137,7 +140,7 @@ describe('FrousseActionService movement effects', () => {
       })),
     };
 
-    const service = new FrousseActionService(random, turns, core);
+    const service = new FrousseActionService(random, turns, core, new SetupFlowService(), new BoardEffectsPoliciesService(), new DeckPoliciesService(random));
 
     const state: GameStateEntity = {
       status: 'started',
@@ -172,8 +175,8 @@ describe('FrousseActionService movement effects', () => {
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
     const rollMessage = messages.find((m) => m.includes('lance le')) ?? '';
 
-    expect(rollMessage).toContain('(doublé = 2)');
-    expect(rollMessage).not.toContain('doublé ->');
+    expect(rollMessage).toMatch(/\(doubl.+ = 2\)/i);
+    expect(rollMessage).not.toMatch(/doubl.+ ->/i);
   });
 
   it('formats malus roll log with explicit calculation', () => {
@@ -193,7 +196,7 @@ describe('FrousseActionService movement effects', () => {
       })),
     };
 
-    const service = new FrousseActionService(random, turns, core);
+    const service = new FrousseActionService(random, turns, core, new SetupFlowService(), new BoardEffectsPoliciesService(), new DeckPoliciesService(random));
 
     const state: GameStateEntity = {
       status: 'started',
@@ -248,7 +251,7 @@ describe('FrousseActionService movement effects', () => {
       })),
     };
 
-    const service = new FrousseActionService(random, turns, core);
+    const service = new FrousseActionService(random, turns, core, new SetupFlowService(), new BoardEffectsPoliciesService(), new DeckPoliciesService(random));
 
     const state: GameStateEntity = {
       status: 'started',
@@ -293,7 +296,7 @@ describe('FrousseActionService movement effects', () => {
       })),
     };
 
-    const service = new FrousseActionService(random, turns, core);
+    const service = new FrousseActionService(random, turns, core, new SetupFlowService(), new BoardEffectsPoliciesService(), new DeckPoliciesService(random));
 
     const state: GameStateEntity = {
       status: 'started',
@@ -320,7 +323,7 @@ describe('FrousseActionService movement effects', () => {
           ignoreNextTrap: {},
         },
         tiles: [
-          { n: 1, type: 'normal', title: 'Départ', label: 'case 1. Départ (case neutre)', description: '' },
+          { n: 1, type: 'normal', title: 'DÃ©part', label: 'case 1. DÃ©part (case neutre)', description: '' },
           { n: 2, type: 'normal', title: 'Hall', label: 'case 2. Hall (case neutre)', description: '' },
           {
             n: 3,
@@ -361,7 +364,7 @@ describe('FrousseActionService movement effects', () => {
       })),
     };
 
-    const service = new FrousseActionService(random, turns, core);
+    const service = new FrousseActionService(random, turns, core, new SetupFlowService(), new BoardEffectsPoliciesService(), new DeckPoliciesService(random));
 
     const state: GameStateEntity = {
       status: 'started',
@@ -388,9 +391,9 @@ describe('FrousseActionService movement effects', () => {
         decks: {
           cards: [
             {
-              category: 'Piège',
+              category: 'PiÃ¨ge',
               localNumber: 1,
-              text: 'Une bougie clignote et vous joue un tour. Lancez le dé deux fois et gardez le plus petit résultat.',
+              text: 'Une bougie clignote et vous joue un tour. Lancez le dÃ© deux fois et gardez le plus petit rÃ©sultat.',
             },
           ],
           discard: [],
@@ -407,7 +410,10 @@ describe('FrousseActionService movement effects', () => {
       messages.some((m) => /^Lilas rejoue/i.test(m) || /rejoue\s*\(/i.test(m)),
     ).toBe(false);
     expect(
-      messages.some((m) => /gardez le plus petit résultat/i.test(m)),
+      messages.some((m) => /gardez le plus petit rÃ©sultat/i.test(m)),
     ).toBe(true);
   });
 });
+
+
+

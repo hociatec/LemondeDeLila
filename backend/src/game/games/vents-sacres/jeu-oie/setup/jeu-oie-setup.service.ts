@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { ensureSeededRng } from '../../../../../common/utils/seeded-rng';
+import { seededShuffle } from '../../../../../common/utils/seeded-shuffle';
 import type { JeuOieCaseTextsJsonV1 } from '../model/jeu-oie-content.entity';
 import type {
   JeuOieMetadata,
@@ -23,6 +26,7 @@ export class JeuOieSetupService {
   constructor(
     private readonly core: GameCoreService,
     private readonly contentLoader: GameContentLoaderService,
+    private readonly setupFlow: SetupFlowService,
   ) {}
 
   private loadTexts(): JeuOieCaseTextsJsonV1 {
@@ -47,16 +51,32 @@ export class JeuOieSetupService {
     }
     const pawnByPlayerId: Record<number, string> = {};
 
-    const starterId =
+    const starterId = resolveSeededStarterId(
+      players,
+      baseState.metadata ?? {},
       typeof baseState.turn?.currentPlayerId === 'number'
         ? baseState.turn.currentPlayerId
-        : players[0]?.id ?? null;
-    const pendingInfo = buildPawnPending(
-      players,
-      pawnByPlayerId,
-      starterId,
-      JEU_OIE_PAWNS,
+        : null,
     );
+    const pendingInfo = this.setupFlow.createSequentialChoicePending({
+      players,
+      startPlayerId: starterId,
+      isAssigned: (playerId) => Boolean(pawnByPlayerId[playerId]),
+      pendingType: 'choose_pawn',
+      choices: JEU_OIE_PAWNS.map((pawn) => ({
+        id: pawn.id,
+        label: pawn.label,
+        feminine: pawn.feminine,
+      })),
+      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
+      dataBuilder: (choices) => ({
+        pawns: choices.map((choice) => ({
+          id: choice.id,
+          label: choice.label,
+          feminine: Boolean((choice as any)?.feminine),
+        })),
+      }),
+    });
 
     const meta: JeuOieMetadata = {
       tiles: buildTiles(this.loadTexts()),
@@ -93,56 +113,15 @@ export class JeuOieSetupService {
   }
 }
 
-function buildPawnPending(
-  players: Array<{ id: number; username?: string }>,
-  pawnByPlayerId: Record<number, string>,
-  startId: number | null,
-  pawns: JeuOiePawn[],
-): { pending: any; playerId: number; turnIndex: number } | null {
-  if (!players.length) return null;
-  const startIndex =
-    startId != null ? players.findIndex((p) => p?.id === startId) : -1;
-  const baseIndex = startIndex >= 0 ? startIndex : 0;
-  let nextIndex = -1;
-  for (let i = 0; i < players.length; i += 1) {
-    const idx = (baseIndex + i) % players.length;
-    const pid = players[idx]?.id;
-    if (pid == null) continue;
-    if (!pawnByPlayerId[pid]) {
-      nextIndex = idx;
-      break;
-    }
-  }
-  if (nextIndex < 0) return null;
-
-  const used = new Set(
-    Object.values(pawnByPlayerId).filter((v) => typeof v === 'string'),
-  );
-  const choices = pawns.filter((p) => !used.has(p.id));
-  if (!choices.length) return null;
-
-  const chooserId = players[nextIndex].id;
-  const chooserName = String((players[nextIndex] as any)?.username ?? '').trim();
-  const chooserLabel = chooserName.length > 0 ? chooserName : `Joueur ${chooserId}`;
-
-  return {
-    playerId: chooserId,
-    turnIndex: nextIndex,
-    pending: {
-      type: 'choose_pawn',
-      playerId: chooserId,
-      blocking: true,
-      label: `C'est à ${chooserLabel} de choisir son pion.`,
-      choices: choices.map((p) => p.label),
-      data: {
-        pawns: choices.map((p) => ({
-          id: p.id,
-          label: p.label,
-          feminine: p.feminine,
-        })),
-      },
-    },
-  };
+function resolveSeededStarterId(
+  players: Array<{ id: number }>,
+  meta: unknown,
+  fallbackId: number | null,
+): number | null {
+  if (!players.length) return fallbackId;
+  const seed = ensureSeededRng((meta ?? {}) as Record<string, unknown>).seed;
+  const shuffled = seededShuffle(players, seed, 'jeu-oie:setup-starter');
+  return shuffled[0]?.id ?? players[0]?.id ?? fallbackId;
 }
 
 function buildTiles(texts: JeuOieCaseTextsJsonV1): JeuOieTile[] {
@@ -284,3 +263,4 @@ function buildTiles(texts: JeuOieCaseTextsJsonV1): JeuOieTile[] {
   }
   return tiles;
 }
+

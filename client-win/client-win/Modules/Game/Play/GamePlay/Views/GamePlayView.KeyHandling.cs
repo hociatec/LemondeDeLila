@@ -318,26 +318,10 @@ public partial class GamePlayView
             return;
         }
 
-        if (e.Key == Key.Tab && DataContext is GamePlayViewModel tabVm)
+        if (e.Key == Key.Tab)
         {
-            // Si le focus est déjà sur un élément de jeu interactif, laisser WPF gérer Tab/Maj+Tab.
-            // Cela évite l'effet "le focus revient toujours à la zone de jeu".
-            if (IsFocusWithinHandList() || IsFocusWithinChoices() || IsFocusWithinGrid())
-            {
-                return;
-            }
-
-            e.Handled = true;
-
-            // Keep keyboard focus inside the game area when tabbing.
-            // - Non-grid games: prefer hand/choices list.
-            // - Grid games or fallback: re-anchor to game zone.
-            if (!tabVm.Grid.IsVisible && TryFocusHandOrChoicesList())
-            {
-                return;
-            }
-
-            ForceFocusGameZone();
+            // Laisser WPF gérer Tab/Maj+Tab pour permettre l'accès à l'historique et au chat.
+            // La capture de focus reste active uniquement pendant un prompt inline (bloc plus haut).
             return;
         }
 

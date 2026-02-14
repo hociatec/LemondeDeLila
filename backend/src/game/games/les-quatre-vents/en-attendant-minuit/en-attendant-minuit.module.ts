@@ -6,6 +6,8 @@ import { RandomModule } from '../../../modules/random/random.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
 import { BoardModule } from '../../../modules/board/board.module';
 import { BotModule } from '../../../modules/bot/bot.module';
+import { SetupFlowModule } from '../../../modules/setup-flow/setup-flow.module';
+import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
 import { EnAttendantMinuitService } from './en-attendant-minuit.service';
 import { MinuitSetupService } from './setup/minuit-setup.service';
 import { MinuitActionService } from './actions/minuit-action.service';
@@ -21,6 +23,8 @@ import { MinuitBotService } from './bots/minuit-bot.service';
     TurnModule,
     BoardModule,
     BotModule,
+    SetupFlowModule,
+    DeckPoliciesModule,
   ],
   providers: [
     EnAttendantMinuitService,

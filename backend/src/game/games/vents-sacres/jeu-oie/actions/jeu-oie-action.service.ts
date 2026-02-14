@@ -4,6 +4,7 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { GameCoreService } from '../../../../core/services/game-core.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import type { JeuOieMetadata, JeuOieTile } from '../model/jeu-oie-state.entity';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class JeuOieActionService {
     private readonly random: RandomService,
     private readonly turns: TurnFlowService,
     private readonly core: GameCoreService,
+    private readonly setupFlow: SetupFlowService,
   ) {}
 
   applyActions(
@@ -337,60 +339,40 @@ export class JeuOieActionService {
     startId: number | null,
   ): { pending: any; playerId: number; turnIndex: number } | null {
     const players = Array.isArray(state.players) ? state.players : [];
-    if (!players.length) return null;
-
     const meta = this.getMeta(state);
     const pawnByPlayerId = (meta.pawnByPlayerId ?? {}) as Record<number, string>;
-    const startIndex =
-      startId != null ? players.findIndex((p) => p?.id === startId) : -1;
-    const baseIndex = startIndex >= 0 ? startIndex : 0;
-    let nextIndex = -1;
-    for (let i = 0; i < players.length; i += 1) {
-      const idx = (baseIndex + i) % players.length;
-      const pid = players[idx]?.id;
-      if (pid == null) continue;
-      if (!pawnByPlayerId[pid]) {
-        nextIndex = idx;
-        break;
-      }
-    }
-    if (nextIndex < 0) return null;
-
-    const used = new Set(
-      Object.values(pawnByPlayerId).filter((v) => typeof v === 'string'),
-    );
     const allPawns = Array.isArray(meta.pawns) ? meta.pawns : [];
-    const choices = allPawns.filter((p: any) => !used.has(String(p?.id ?? '')));
-    if (!choices.length) return null;
+    const used = new Set(Object.values(pawnByPlayerId).filter((v) => typeof v === 'string'));
+    const choices = allPawns
+      .map((p: any) => ({
+        id: String(p?.id ?? '').trim(),
+        label: String(p?.label ?? '').trim(),
+        feminine: Boolean(p?.feminine),
+      }))
+      .filter((p) => p.id.length > 0 && !used.has(p.id));
 
-    const chooserId = players[nextIndex].id;
-    const chooserLabel = this.playerName(state, chooserId);
-    return {
-      playerId: chooserId,
-      turnIndex: nextIndex,
-      pending: {
-        type: 'choose_pawn',
-        playerId: chooserId,
-        blocking: true,
-        label: `C'est à ${chooserLabel} de choisir son pion.`,
-        choices: choices.map((p: any) => String(p?.label ?? '').trim()),
-        data: {
-          pawns: choices.map((p: any) => ({
-            id: String(p?.id ?? '').trim(),
-            label: String(p?.label ?? '').trim(),
-            feminine: Boolean(p?.feminine),
-          })),
-        },
-      },
-    };
+    return this.setupFlow.createSequentialChoicePending({
+      players,
+      startPlayerId: startId,
+      isAssigned: (playerId) => Boolean(pawnByPlayerId[playerId]),
+      pendingType: 'choose_pawn',
+      choices,
+      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
+      dataBuilder: (availableChoices) => ({
+        pawns: availableChoices.map((p: any) => ({
+          id: String(p?.id ?? '').trim(),
+          label: String(p?.label ?? '').trim(),
+          feminine: Boolean(p?.feminine),
+        })),
+      }),
+    });
   }
 
   private resolvePendingPawn(
     raw: unknown,
     options: Array<{ id?: string; label?: string; feminine?: boolean }>,
   ): { id: string; label: string; feminine: boolean } | null {
-    if (!Array.isArray(options) || options.length === 0) return null;
-    const normalized = options
+    const normalized = (Array.isArray(options) ? options : [])
       .map((p: any) => ({
         id: String(p?.id ?? '').trim(),
         label: String(p?.label ?? '').trim(),
@@ -398,29 +380,12 @@ export class JeuOieActionService {
       }))
       .filter((p) => p.id.length > 0 && p.label.length > 0);
     if (!normalized.length) return null;
-
-    const value =
+    return this.setupFlow.resolveChoice(
       typeof raw === 'object'
         ? (raw as any)?.id ?? (raw as any)?.pawnId ?? (raw as any)?.value ?? raw
-        : raw;
-    const key = this.normalizePawnKey(value);
-    if (!key) return null;
-
-    const byId = normalized.find((p) => this.normalizePawnKey(p.id) === key);
-    if (byId) return byId;
-    const byLabel = normalized.find(
-      (p) => this.normalizePawnKey(p.label) === key,
-    );
-    return byLabel ?? null;
-  }
-
-  private normalizePawnKey(value: unknown): string {
-    return String(value ?? '')
-      .trim()
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '');
+        : raw,
+      normalized,
+    ) as { id: string; label: string; feminine: boolean } | null;
   }
 
   private playerName(state: GameStateEntity, id: number): string {

@@ -5,6 +5,7 @@ import { RandomModule } from '../../../modules/random/random.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
 import { BoardModule } from '../../../modules/board/board.module';
 import { BotModule } from '../../../modules/bot/bot.module';
+import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
 import { CaDerapeService } from './ca-derape.service';
 import { CaSetupService } from './setup/ca.setup';
 import { CaActionService } from './actions/ca-actions.service';
@@ -19,6 +20,7 @@ import { CaBotService } from './bots/ca-bot.service';
     TurnModule,
     BoardModule,
     BotModule,
+    DeckPoliciesModule,
   ],
   providers: [
     CaDerapeService,

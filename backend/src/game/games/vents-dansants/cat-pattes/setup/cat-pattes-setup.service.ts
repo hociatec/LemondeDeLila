@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { CAT_PATTES_DECK, CAT_PATTES_PAWNS } from '../model/cat-pattes-cards';
 import type {
   CatPattesBotType,
@@ -14,6 +15,7 @@ export class CatPattesSetupService {
   constructor(
     private readonly core: GameCoreService,
     private readonly random: RandomService,
+    private readonly setupFlow: SetupFlowService,
   ) {}
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
@@ -104,45 +106,27 @@ export class CatPattesSetupService {
     startId: number | null,
   ): { pending: any; playerId: number; turnIndex: number } | null {
     if (!players.length) return null;
-    const startIndex =
-      startId != null ? players.findIndex((p) => p?.id === startId) : -1;
-    const baseIndex = startIndex >= 0 ? startIndex : 0;
-    let nextIndex = -1;
-    for (let i = 0; i < players.length; i += 1) {
-      const idx = (baseIndex + i) % players.length;
-      const pid = players[idx]?.id;
-      if (pid == null) continue;
-      if (!meta.pawnByPlayerId?.[pid] && !this.isBotLike(players[idx])) {
-        nextIndex = idx;
-        break;
-      }
-    }
-    if (nextIndex < 0) return null;
-
     const used = new Set(
       Object.values(meta.pawnByPlayerId ?? {}).filter((v) => typeof v === 'string'),
     );
     const choices = (meta.pawns ?? []).filter((p) => !used.has(p));
-    if (!choices.length) return null;
-
-    const chooserId = players[nextIndex].id;
-    const chooserName = String((players[nextIndex] as any)?.username ?? '').trim();
-    const chooserLabel = chooserName.length > 0 ? chooserName : `Joueur ${chooserId}`;
-
-    return {
-      playerId: chooserId,
-      turnIndex: nextIndex,
-      pending: {
-        type: 'choose_pawn',
-        playerId: chooserId,
-        blocking: true,
-        label: `C'est à ${chooserLabel} de choisir son pion.`,
-        choices,
-        data: {
-          pawns: choices.map((name) => ({ id: name, label: name })),
-        },
+    return this.setupFlow.createSequentialChoicePending({
+      players,
+      startPlayerId: startId,
+      isAssigned: (playerId) => {
+        const player = players.find((p) => p?.id === playerId);
+        return Boolean(meta.pawnByPlayerId?.[playerId]) || this.isBotLike(player);
       },
-    };
+      pendingType: 'choose_pawn',
+      choices: choices.map((name) => ({ id: name, label: name })),
+      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
+      dataBuilder: (availableChoices) => ({
+        pawns: availableChoices.map((choice) => ({
+          id: String(choice.id ?? '').trim(),
+          label: String(choice.label ?? '').trim(),
+        })),
+      }),
+    });
   }
 
   private assignMissingBotPawns(
@@ -174,3 +158,7 @@ export class CatPattesSetupService {
     return username.includes('bot');
   }
 }
+
+
+
+

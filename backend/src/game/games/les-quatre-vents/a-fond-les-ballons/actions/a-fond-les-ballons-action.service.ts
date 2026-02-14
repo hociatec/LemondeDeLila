@@ -4,6 +4,7 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import type {
   AFondLesBallonsCard,
   AFondLesBallonsMetadata,
@@ -17,6 +18,7 @@ export class AFondLesBallonsActionService {
     private readonly core: GameCoreService,
     private readonly random: RandomService,
     private readonly turns: TurnFlowService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -921,29 +923,23 @@ export class AFondLesBallonsActionService {
     const decks = meta.decks ?? ({} as any);
     const pile: AFondLesBallonsCard[] = [...(decks.loufoque ?? [])];
     const discard: AFondLesBallonsCard[] = [...(decks.discardLoufoque ?? [])];
-
-    let updatedMeta = meta;
-    let drawPile = pile;
-
-    if (drawPile.length === 0) {
-      const defaults = defaultLoufoqueDeck();
-      const shuffled = this.random.shuffle(updatedMeta as any, defaults);
-      updatedMeta = { ...updatedMeta, ...shuffled.meta };
-      drawPile = shuffled.values;
-      discard.length = 0;
-    }
-
-    const card = drawPile.shift() ?? null;
-    if (card) discard.push(card);
+    const defaults = defaultLoufoqueDeck();
+    const draw = this.deckPolicies.drawFromPile<AFondLesBallonsCard, AFondLesBallonsMetadata>({
+      meta,
+      pile,
+      discard: pile.length ? discard : defaults,
+      useWholeMetaRng: true,
+      discardDrawnCard: true,
+    });
 
     return {
-      card,
+      card: draw.card,
       meta: {
-        ...updatedMeta,
+        ...draw.meta,
         decks: {
           ...decks,
-          loufoque: drawPile,
-          discardLoufoque: discard,
+          loufoque: draw.pile,
+          discardLoufoque: draw.discard,
         },
       },
     };

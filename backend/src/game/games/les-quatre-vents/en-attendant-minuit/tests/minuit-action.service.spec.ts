@@ -1,4 +1,6 @@
 import type { GameStateEntity } from '../../../../../core/entities/game-state.entity';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { MinuitActionService } from '../actions/minuit-action.service';
 import * as Rulebook from '../rulebook/rulebook';
 
@@ -32,7 +34,13 @@ describe('MinuitActionService', () => {
 
   it('logs explicit pawn selection prompt', () => {
     const { random, turns, core } = createDeps();
-    const service = new MinuitActionService(random, turns, core);
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
 
     const state: GameStateEntity = {
       status: 'started',
@@ -64,7 +72,13 @@ describe('MinuitActionService', () => {
   it('uses possessive pawn wording in placement log', () => {
     const { random, turns, core } = createDeps();
     random.rollDice.mockReturnValue({ roll: 5, meta: {} });
-    const service = new MinuitActionService(random, turns, core);
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
 
     const state: GameStateEntity = {
       status: 'started',
@@ -103,7 +117,13 @@ describe('MinuitActionService', () => {
   it('announces next player after turn advance', () => {
     const { random, turns, core } = createDeps();
     random.rollDice.mockReturnValue({ roll: 1, meta: {} });
-    const service = new MinuitActionService(random, turns, core);
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
 
     const state: GameStateEntity = {
       status: 'started',

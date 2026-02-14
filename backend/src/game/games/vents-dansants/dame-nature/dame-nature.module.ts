@@ -5,6 +5,7 @@ import { RandomModule } from '../../../modules/random/random.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
 import { BotModule } from '../../../modules/bot/bot.module';
 import { BoardModule } from '../../../modules/board/board.module';
+import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
 import { DameNatureService } from './dame-nature.service';
 import { DameNatureSetupService } from './setup/dame-nature-setup.service';
 import { DameNatureActionService } from './actions/dame-nature-action.service';
@@ -16,6 +17,7 @@ import { DameNatureBotService } from './bots/dame-nature-bot.service';
     GameCoreModule,
     GameRegistryModule,
     RandomModule,
+    DeckPoliciesModule,
     BoardModule,
     TurnModule,
     BotModule,

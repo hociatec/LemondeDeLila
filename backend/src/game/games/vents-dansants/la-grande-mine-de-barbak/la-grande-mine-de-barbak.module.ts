@@ -14,6 +14,7 @@ import { ExchangeModule } from '../../../modules/exchange/exchange.module';
 import { VictoryModule } from '../../../modules/victory/victory.module';
 import { BotModule } from '../../../modules/bot/bot.module';
 import { RandomModule } from '../../../modules/random/random.module';
+import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
 import { LaGrandeMineDeBarbakService } from './la-grande-mine-de-barbak.service';
 import { LaGrandeMineSetupService } from './setup/la-grande-mine-de-barbak-setup.service';
 import { LaGrandeMineDeBarbakActionService } from './actions/la-grande-mine-de-barbak-action.service';
@@ -38,6 +39,7 @@ import { LaGrandeMineDeBarbakPhaseService } from './phases/la-grande-mine-de-bar
     VictoryModule,
     BotModule,
     RandomModule,
+    DeckPoliciesModule,
   ],
   providers: [
     LaGrandeMineDeBarbakService,

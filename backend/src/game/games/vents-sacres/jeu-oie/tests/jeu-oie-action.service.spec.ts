@@ -3,6 +3,7 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { JeuOieActionService } from '../actions/jeu-oie-action.service';
 import { JeuOieSetupService } from '../setup/jeu-oie-setup.service';
 
@@ -36,6 +37,7 @@ describe('JeuOieActionService', () => {
         GameCoreService,
         GameContentLoaderService,
         RandomService,
+        SetupFlowService,
         { provide: 'TurnFlowService', useValue: { advanceTurn: (s: any) => s } },
         JeuOieSetupService,
         {
@@ -44,8 +46,9 @@ describe('JeuOieActionService', () => {
             random: RandomService,
             core: GameCoreService,
             turns: { advanceTurn: (s: any) => any },
-          ) => new JeuOieActionService(random, turns as any, core),
-          inject: [RandomService, GameCoreService, 'TurnFlowService'],
+            setupFlow: SetupFlowService,
+          ) => new JeuOieActionService(random, turns as any, core, setupFlow),
+          inject: [RandomService, GameCoreService, 'TurnFlowService', SetupFlowService],
         },
       ],
     }).compile();
@@ -60,6 +63,17 @@ describe('JeuOieActionService', () => {
       { type: 'choose_pawn', payload: { pawnId: 'vache-artistique' } } as any,
       { type: 'choose_pawn', payload: { pawnId: 'cochon-gourmand' } } as any,
     ]);
+    state = {
+      ...state,
+      metadata: {
+        ...(state.metadata ?? {}),
+        pawnByPlayerId: {
+          1: 'coq-rockeur',
+          2: 'vache-artistique',
+          3: 'cochon-gourmand',
+        },
+      } as any,
+    };
     state = {
       ...state,
       pending: null,
@@ -83,7 +97,12 @@ describe('JeuOieActionService', () => {
 
   it('demande de choisir un pion au demarrage', async () => {
     const moduleRef = await Test.createTestingModule({
-      providers: [GameCoreService, GameContentLoaderService, JeuOieSetupService],
+      providers: [
+        GameCoreService,
+        GameContentLoaderService,
+        SetupFlowService,
+        JeuOieSetupService,
+      ],
     }).compile();
 
     const setup = moduleRef.get(JeuOieSetupService);
@@ -94,9 +113,12 @@ describe('JeuOieActionService', () => {
     expect(meta.pawnByPlayerId?.[2]).toBeUndefined();
     expect(meta.pawnByPlayerId?.[3]).toBeUndefined();
     expect(state.pending?.type).toBe('choose_pawn');
-    expect((state.pending as any)?.playerId).toBe(1);
+    const starterId = Number(meta.setupStarterId);
+    expect((state.pending as any)?.playerId).toBe(starterId);
+    const starterName =
+      state.players?.find((p: any) => p?.id === starterId)?.username ?? `Joueur ${starterId}`;
     const messages = (state.log ?? []).map((e: any) => String(e?.message ?? ''));
-    expect(messages.some((m) => /Otis doit choisir un pion\./.test(m))).toBe(true);
+    expect(messages.some((m) => m === `${starterName} doit choisir un pion.`)).toBe(true);
   });
 
   it('demarre la partie apres le choix de pion de tous les joueurs', async () => {
@@ -105,6 +127,7 @@ describe('JeuOieActionService', () => {
         GameCoreService,
         GameContentLoaderService,
         RandomService,
+        SetupFlowService,
         { provide: 'TurnFlowService', useValue: { advanceTurn: (s: any) => s } },
         JeuOieSetupService,
         {
@@ -113,8 +136,9 @@ describe('JeuOieActionService', () => {
             random: RandomService,
             core: GameCoreService,
             turns: { advanceTurn: (s: any) => any },
-          ) => new JeuOieActionService(random, turns as any, core),
-          inject: [RandomService, GameCoreService, 'TurnFlowService'],
+            setupFlow: SetupFlowService,
+          ) => new JeuOieActionService(random, turns as any, core, setupFlow),
+          inject: [RandomService, GameCoreService, 'TurnFlowService', SetupFlowService],
         },
       ],
     }).compile();
@@ -131,10 +155,13 @@ describe('JeuOieActionService', () => {
 
     const meta: any = next.metadata ?? {};
     expect(next.pending).toBeNull();
-    expect(meta.pawnByPlayerId?.[1]).toBe('coq-rockeur');
-    expect(meta.pawnByPlayerId?.[2]).toBe('vache-artistique');
-    expect(meta.pawnByPlayerId?.[3]).toBe('cochon-gourmand');
+    const assigned = Object.values(meta.pawnByPlayerId ?? {});
+    expect(assigned).toHaveLength(3);
+    expect(new Set(assigned).size).toBe(3);
     const messages = (next.log ?? []).map((e: any) => String(e?.message ?? ''));
-    expect(messages.some((m) => /Debut de partie : Otis commence\./.test(m))).toBe(true);
+    const starterId = Number(meta.setupStarterId);
+    const starterName =
+      next.players?.find((p: any) => p?.id === starterId)?.username ?? `Joueur ${starterId}`;
+    expect(messages.some((m) => m === `Debut de partie : ${starterName} commence.`)).toBe(true);
   });
 });

@@ -6,13 +6,15 @@ import type {
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { BoardEffectsPoliciesService } from '../../../../modules/board-effects-policies/services/board-effects-policies.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import type {
   FrousseCard,
   FrousseMetadata,
   FrousseTile,
 } from '../model/frousse.types';
-import { buildPawnSelectionPending } from '../pawn-selection';
 import { resolvePawnId } from '../pawns.utils';
 
 @Injectable()
@@ -21,6 +23,9 @@ export class FrousseActionService {
     private readonly random: RandomService,
     private readonly turns: TurnFlowService,
     private readonly core: GameCoreService,
+    private readonly setupFlow: SetupFlowService,
+    private readonly boardEffects: BoardEffectsPoliciesService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   private advanceTurnWithAnnouncement(state: GameStateEntity): GameStateEntity {
@@ -88,15 +93,13 @@ export class FrousseActionService {
     if (playerId == null) return state;
 
     const payload = (action.payload ?? {}) as any;
-    const pawnId = resolvePawnId(
-      payload.pawnId ?? payload.pawn ?? payload.value ?? null,
-    );
-    if (!pawnId) return state;
-
     const options = Array.isArray(pending?.data?.pawns)
       ? pending.data.pawns
       : [];
-    const chosen = options.find((p: any) => resolvePawnId(p?.id) === pawnId);
+    const chosen = this.resolvePendingPawn(
+      payload.pawnId ?? payload.pawn ?? payload.value ?? null,
+      options,
+    );
     if (!chosen) return state;
 
     const players = (state.players ?? []).map((p) => {
@@ -125,11 +128,20 @@ export class FrousseActionService {
   private ensurePawnSelection(state: GameStateEntity): GameStateEntity {
     if (state.pending) return state;
     const players = Array.isArray(state.players) ? state.players : [];
-    const pending = buildPawnSelectionPending(players, this.getMeta(state));
-    if (!pending) return state;
-    const withPending = { ...state, pending };
+    const pendingInfo = this.buildPawnPending(state, players[0]?.id ?? null);
+    if (!pendingInfo) return state;
+    const withPending: GameStateEntity = {
+      ...state,
+      pending: pendingInfo.pending,
+      turnIndex: pendingInfo.turnIndex,
+      turn: {
+        ...(state.turn ?? { currentPlayerId: pendingInfo.playerId, direction: 1 }),
+        currentPlayerId: pendingInfo.playerId,
+        direction: state.turn?.direction === -1 ? -1 : 1,
+      },
+    };
     const chooserId =
-      typeof pending.playerId === 'number' ? pending.playerId : null;
+      typeof pendingInfo.playerId === 'number' ? pendingInfo.playerId : null;
     if (chooserId == null) {
       return withPending;
     }
@@ -368,20 +380,38 @@ export class FrousseActionService {
 
     if (tile) {
       const labelRaw = String((tile as any)?.label ?? '').trim();
-      const descRaw = String((tile as any)?.description ?? '').trim();
       const typeLabel = tile.type === 'card' ? 'case symbole' : 'case neutre';
       const fallbackLabel = `case ${tile.n}. ${tile.title} (${typeLabel})`;
       const label = labelRaw || fallbackLabel;
       const casePrefix = new RegExp(`^case\\s+${tile.n}\\b[\\s.:,;-]*`, 'i');
       const normalizedLabel = label.replace(casePrefix, '').trim();
       const labelForParenthesis = normalizedLabel || label;
-      const placement = `${this.playerName(next, playerId)} place ${this.pawnPossessiveLabel(next, playerId)} en case ${tile.n} (${labelForParenthesis}).`;
-      const arrival = descRaw
-        ? `${placement}\n${descRaw}`
-        : placement;
-      next = this.core.appendLog(next, arrival);
-      if (tile.type === 'card') {
-        next = this.core.appendLog(next, `Piochez une carte.`);
+      const placement = this.boardEffects.createPlacementLog({
+        playerLabel: this.playerName(next, playerId),
+        pawnLabel: this.pawnPossessiveLabel(next, playerId),
+        position: Math.max(0, Number(tile.n ?? pos + 1) - 1),
+        tileLabel: labelForParenthesis,
+      });
+      next = this.core.appendLog(next, placement);
+
+      const landing = this.boardEffects.resolveLanding({
+        position: pos,
+        playerId,
+        tile: {
+          type: tile.type,
+          description: (tile as any).description,
+        },
+        drawPolicies: {
+          card: {
+            log: 'Piochez une carte.',
+            pendingLabel: 'Piocher une carte (Espace).',
+          },
+        },
+      });
+      for (const line of landing.logs) {
+        if (line.trim().length > 0) {
+          next = this.core.appendLog(next, line);
+        }
       }
     }
 
@@ -396,15 +426,22 @@ export class FrousseActionService {
 
     if (!tile) return next;
     if (tile.type !== 'card') return next;
-    return {
-      ...next,
-      pending: {
-        type: 'draw',
-        playerId,
-        blocking: true,
-        label: 'Piocher une carte (Espace).',
+    const pending = this.boardEffects.resolveLanding({
+      position: pos,
+      playerId,
+      tile: {
+        type: tile.type,
+        description: null,
       },
-    };
+      drawPolicies: {
+        card: {
+          log: 'Piochez une carte.',
+          pendingLabel: 'Piocher une carte (Espace).',
+        },
+      },
+    }).pending;
+    if (!pending) return next;
+    return { ...next, pending };
   }
 
   private applyDrawCard(
@@ -1048,24 +1085,19 @@ export class FrousseActionService {
     card: FrousseCard | null;
     meta: FrousseMetadata;
   } {
-    const deck = Array.isArray(meta.decks?.cards) ? meta.decks.cards : [];
-    const discard = Array.isArray(meta.decks?.discard)
-      ? meta.decks.discard
-      : [];
-    if (!deck.length && discard.length) {
-      const shuffled = this.random.shuffle(meta as any, discard);
-      const reshuffled: FrousseMetadata = {
-        ...meta,
-        ...shuffled.meta,
-        decks: { cards: shuffled.values as any, discard: [] },
-      };
-      return this.drawCard(reshuffled);
-    }
-    if (!deck.length) return { card: null, meta };
-    const [card, ...rest] = deck;
+    const draw = this.deckPolicies.drawFromPile<FrousseCard, FrousseMetadata>({
+      meta,
+      pile: Array.isArray(meta.decks?.cards) ? meta.decks.cards : [],
+      discard: Array.isArray(meta.decks?.discard) ? meta.decks.discard : [],
+      useWholeMetaRng: true,
+      discardDrawnCard: true,
+    });
     return {
-      card,
-      meta: { ...meta, decks: { cards: rest, discard: [...discard, card] } },
+      card: draw.card,
+      meta: {
+        ...draw.meta,
+        decks: { cards: draw.pile as any, discard: draw.discard as any },
+      },
     };
   }
 
@@ -1087,6 +1119,66 @@ export class FrousseActionService {
 
   private getMeta(state: GameStateEntity): FrousseMetadata {
     return (state.metadata ?? {}) as any as FrousseMetadata;
+  }
+
+  private buildPawnPending(
+    state: GameStateEntity,
+    startId: number | null,
+  ): { pending: PendingState; playerId: number; turnIndex: number } | null {
+    const players = Array.isArray(state.players) ? state.players : [];
+    const meta = this.getMeta(state);
+    const used = new Set(
+      players
+        .map((p) => resolvePawnId((p as any)?.pawn))
+        .filter((id): id is string => Boolean(id)),
+    );
+    const choices = (Array.isArray(meta.pawns) ? meta.pawns : [])
+      .map((p) => ({
+        id: String(p?.id ?? '').trim(),
+        label: String(p?.title ?? p?.id ?? '').trim(),
+        title: String(p?.title ?? p?.id ?? '').trim(),
+        description: String((p as any)?.description ?? '').trim(),
+      }))
+      .filter((p) => p.id.length > 0 && !used.has(p.id));
+
+    return this.setupFlow.createSequentialChoicePending({
+      players,
+      startPlayerId: startId,
+      isAssigned: (playerId) => {
+        const player = players.find((p: any) => p?.id === playerId);
+        return Boolean(resolvePawnId(player?.pawn));
+      },
+      pendingType: 'choose_pawn',
+      choices,
+      labelForPlayer: (playerLabel) =>
+        `C'est à ${playerLabel} de choisir un pion (flèches puis Entrée).`,
+      dataBuilder: (availableChoices) => ({
+        kind: 'choose_pawn',
+        pawns: availableChoices.map((choice: any) => ({
+          id: String(choice?.id ?? '').trim(),
+          title: String(choice?.title ?? choice?.label ?? '').trim(),
+          description: String(choice?.description ?? '').trim(),
+        })),
+      }),
+    });
+  }
+
+  private resolvePendingPawn(
+    raw: unknown,
+    options: Array<{ id?: unknown; title?: unknown; description?: unknown }>,
+  ): { id: string; title: string; description: string } | null {
+    const normalized = (Array.isArray(options) ? options : [])
+      .map((p) => ({
+        id: String(p?.id ?? '').trim(),
+        title: String(p?.title ?? p?.id ?? '').trim(),
+        description: String(p?.description ?? '').trim(),
+      }))
+      .filter((p) => p.id.length > 0);
+    if (!normalized.length) return null;
+    return this.setupFlow.resolveChoice(
+      raw,
+      normalized.map((p) => ({ ...p, label: p.title })),
+    ) as { id: string; title: string; description: string } | null;
   }
 
   private playerName(state: GameStateEntity, id: number): string {

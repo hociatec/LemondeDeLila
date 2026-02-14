@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { ensureSeededRng } from '../../../../../common/utils/seeded-rng';
 import { seededShuffle } from '../../../../../common/utils/seeded-shuffle';
@@ -18,6 +19,7 @@ export class AventureSauvageSetupService {
     private readonly core: GameCoreService,
     private readonly random: RandomService,
     private readonly contentLoader: GameContentLoaderService,
+    private readonly setupFlow: SetupFlowService,
   ) {}
 
   private loadPawns() {
@@ -50,7 +52,7 @@ export class AventureSauvageSetupService {
     const tiles = buildTiles();
     const baseMeta = (baseState.metadata ?? {}) as any;
     const pawns = this.loadPawns();
-    const pawnByPlayerId = normalizePawnAssignments(
+    const pawnByPlayerId = this.normalizePawnAssignments(
       players,
       baseMeta?.pawnByPlayerId,
       pawns,
@@ -89,7 +91,7 @@ export class AventureSauvageSetupService {
       patte: shuffledPatte.values,
     };
 
-    const pendingInfo = buildPawnPending(
+    const pendingInfo = this.buildPawnPending(
       players,
       pawnByPlayerId,
       setupStarterId,
@@ -106,10 +108,10 @@ export class AventureSauvageSetupService {
       phase: 'playing',
       pending: pendingInfo?.pending ?? null,
       turn: {
-      ...(baseState.turn ?? { direction: 1 }),
-      currentPlayerId: turnPlayerId,
-      direction: 1,
-    },
+        ...(baseState.turn ?? { direction: 1 }),
+        currentPlayerId: turnPlayerId,
+        direction: 1,
+      },
       turnIndex,
       metadata: { ...(baseState.metadata ?? {}), ...metaBase, rng: rngMeta?.rng ?? (baseState.metadata as any)?.rng },
     };
@@ -120,6 +122,58 @@ export class AventureSauvageSetupService {
     const chooserLabel =
       chooserName.length > 0 ? chooserName : `Joueur ${pendingInfo.playerId}`;
     return this.core.appendLog(next, `${chooserLabel} doit choisir un pion.`);
+  }
+
+  private normalizePawnAssignments(
+    players: Array<{ id: number }>,
+    raw: unknown,
+    pawns: Array<{ id: string; label: string }>,
+  ): Record<number, string> {
+    const byId: Record<number, string> = {};
+    if (!raw || typeof raw !== 'object') return byId;
+    const used = new Set<string>();
+    for (const p of players) {
+      const value = (raw as any)[p.id];
+      const resolved = this.setupFlow.resolveChoice(value, pawns);
+      const pawnId = String((resolved as any)?.id ?? '').trim();
+      if (!pawnId || used.has(pawnId)) continue;
+      used.add(pawnId);
+      byId[p.id] = pawnId;
+    }
+    return byId;
+  }
+
+  private buildPawnPending(
+    players: Array<{ id: number }>,
+    pawnByPlayerId: Record<number, string>,
+    startId: number | null,
+    pawns: Array<{ id: string; label: string; description: string }>,
+  ): { pending: any; playerId: number; turnIndex: number } | null {
+    return this.setupFlow.createSequentialChoicePending({
+      players,
+      startPlayerId: startId,
+      isAssigned: (playerId) => Boolean(pawnByPlayerId[playerId]),
+      pendingType: 'choose_pawn',
+      choices: pawns
+        .filter((p) => !Object.values(pawnByPlayerId).includes(p.id))
+        .map((p) => ({
+          id: p.id,
+          label:
+            p.description && String(p.description).trim().length > 0
+              ? `${p.label}: ${p.description}`
+              : p.label,
+          title: p.label,
+          description: p.description,
+        })),
+      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
+      dataBuilder: (availableChoices) => ({
+        pawns: availableChoices.map((choice: any) => ({
+          id: String(choice?.id ?? '').trim(),
+          label: String(choice?.title ?? choice?.label ?? '').trim(),
+          description: String(choice?.description ?? '').trim(),
+        })),
+      }),
+    });
   }
 }
 
@@ -639,6 +693,7 @@ function normalizePawnKey(value: string): string {
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '');
 }
+
 
 
 

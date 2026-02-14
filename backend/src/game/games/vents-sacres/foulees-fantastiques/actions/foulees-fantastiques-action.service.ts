@@ -7,6 +7,7 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { GameCoreService } from '../../../../core/services/game-core.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import type {
   FouleesFantastiquesMetadata,
   FouleesFantastiquesPawnState,
@@ -53,6 +54,7 @@ export class FouleesFantastiquesActionService {
     private readonly turns: TurnFlowService,
     private readonly core: GameCoreService,
     private readonly setup: FouleesFantastiquesSetupService,
+    private readonly setupFlow: SetupFlowService,
   ) {}
 
   applyActions(
@@ -137,15 +139,25 @@ export class FouleesFantastiquesActionService {
     const available = this.families.filter((f) => !taken.has(f.id));
     const usable = available.length > 0 ? available : this.families;
 
-    const pending: PendingState = {
-      type: 'choose_family',
-      playerId: currentId,
-      blocking: true,
-      label: "Choisissez la famille d'animaux que vous souhaitez jouer, puis Entrée.",
-      choices: usable.map((f) => `Famille des ${f.family} (${f.habitat})`),
-      data: { familyIds: usable.map((f) => f.id) },
-    };
-    const withPending = { ...state, pending };
+    const pending = this.setupFlow.createSequentialChoicePending({
+      players,
+      startPlayerId: currentId,
+      isAssigned: (playerId) => {
+        const fid = familyIdByPlayer[playerId];
+        return typeof fid === 'string' && fid.trim().length > 0;
+      },
+      pendingType: 'choose_family',
+      choices: usable.map((f) => ({
+        id: f.id,
+        label: `Famille des ${f.family} (${f.habitat})`,
+      })),
+      labelForPlayer: () =>
+        "Choisissez la famille d'animaux que vous souhaitez jouer, puis Entrée.",
+      dataBuilder: (choices) => ({
+        familyIds: choices.map((choice) => choice.id),
+      }),
+    })?.pending as PendingState | null;
+    const withPending = { ...state, pending: pending ?? null };
     const prompt = `${this.playerName(withPending, currentId)} doit choisir une famille d'animaux.`;
     return this.appendLogOnce(withPending, prompt);
   }
@@ -162,7 +174,18 @@ export class FouleesFantastiquesActionService {
       return state;
     }
 
-    const familyId = String((action.payload as any)?.familyId ?? '')
+    const rawFamily = (action.payload as any)?.familyId ?? (action.payload as any)?.value;
+    const selected = this.setupFlow.resolveChoice(
+      rawFamily,
+      this.families.map((f) => ({
+        id: f.id,
+        label: `Famille des ${f.family} (${f.habitat})`,
+      })),
+    );
+    if (!selected) {
+      return this.core.appendLog(state, 'Famille invalide.');
+    }
+    const familyId = String((selected as any).id ?? '')
       .trim()
       .toLowerCase();
     const pack = this.families.find((f) => f.id === familyId);
@@ -188,7 +211,7 @@ export class FouleesFantastiquesActionService {
       ...meta,
       familyIdByPlayer: {
         ...(meta.familyIdByPlayer ?? {}),
-        [currentId]: pack.id,
+        [currentId]: familyId,
       },
       familyByPlayer: {
         ...(meta.familyByPlayer ?? {}),
@@ -832,3 +855,4 @@ export class FouleesFantastiquesActionService {
     return `du ${raw}`;
   }
 }
+

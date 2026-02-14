@@ -4,6 +4,7 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import type {
   TaxiExpressClientCard,
   TaxiExpressEventCard,
@@ -18,6 +19,7 @@ export class TaxiExpressActionService {
     private readonly core: GameCoreService,
     private readonly random: RandomService,
     private readonly turns: TurnFlowService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -239,56 +241,40 @@ export class TaxiExpressActionService {
     cardId: number | null;
     meta: TaxiExpressMetadata;
   } {
-    let nextMeta = { ...meta };
-    let deck = Array.isArray(meta.deckClients) ? [...meta.deckClients] : [];
-    let discard = Array.isArray(meta.discardClients) ? [...meta.discardClients] : [];
-
-    if (!deck.length && discard.length) {
-      const shuffle = this.random.shuffle(nextMeta as any, discard);
-      deck = shuffle.values;
-      nextMeta = { ...nextMeta, ...shuffle.meta, deckClients: deck, discardClients: [] };
-      discard = [];
-    }
-
-    if (!deck.length) {
-      return { cardId: null, meta: nextMeta };
-    }
-
-    const [cardId, ...rest] = deck;
-    nextMeta = {
-      ...nextMeta,
-      deckClients: rest,
-      discardClients: [...discard, cardId],
+    const draw = this.deckPolicies.drawFromPile<number, TaxiExpressMetadata>({
+      meta,
+      pile: Array.isArray(meta.deckClients) ? meta.deckClients : [],
+      discard: Array.isArray(meta.discardClients) ? meta.discardClients : [],
+      useWholeMetaRng: true,
+      discardDrawnCard: true,
+    });
+    return {
+      cardId: draw.card,
+      meta: {
+        ...draw.meta,
+        deckClients: draw.pile as number[],
+        discardClients: draw.discard as number[],
+      },
     };
-    return { cardId, meta: nextMeta };
   }
 
   private drawEventCard(meta: TaxiExpressMetadata): {
     card: TaxiExpressEventCard | null;
     meta: TaxiExpressMetadata;
   } {
-    let nextMeta = { ...meta };
-    let deck = Array.isArray(meta.deckEvents) ? [...meta.deckEvents] : [];
-    let discard = Array.isArray(meta.discardEvents) ? [...meta.discardEvents] : [];
-
-    if (!deck.length && discard.length) {
-      const shuffle = this.random.shuffle(nextMeta as any, discard);
-      deck = shuffle.values;
-      nextMeta = { ...nextMeta, ...shuffle.meta, deckEvents: deck, discardEvents: [] };
-      discard = [];
-    }
-
-    if (!deck.length) {
-      return { card: null, meta: nextMeta };
-    }
-
-    const [cardId, ...rest] = deck;
-    nextMeta = {
-      ...nextMeta,
-      deckEvents: rest,
-      discardEvents: [...discard, cardId],
+    const draw = this.deckPolicies.drawFromPile<number, TaxiExpressMetadata>({
+      meta,
+      pile: Array.isArray(meta.deckEvents) ? meta.deckEvents : [],
+      discard: Array.isArray(meta.discardEvents) ? meta.discardEvents : [],
+      useWholeMetaRng: true,
+      discardDrawnCard: true,
+    });
+    const nextMeta = {
+      ...draw.meta,
+      deckEvents: draw.pile as number[],
+      discardEvents: draw.discard as number[],
     };
-    const card = this.findEvent(meta, cardId);
+    const card = draw.card == null ? null : this.findEvent(nextMeta, draw.card);
     return { card, meta: nextMeta };
   }
 

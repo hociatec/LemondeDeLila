@@ -1,7 +1,9 @@
-import { Test } from '@nestjs/testing';
+﻿import { Test } from '@nestjs/testing';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { ContesCacahuetesSetupService } from '../setup/contes-et-cacahuetes-setup.service';
 import { ContesActionService } from '../actions/contes-action.service';
 import * as Rulebook from '../rulebook/rulebook';
@@ -34,6 +36,8 @@ describe('Contes pawn selection', () => {
       providers: [
         GameCoreService,
         RandomService,
+        SetupFlowService,
+        DeckPoliciesService,
         ContesCacahuetesSetupService,
         {
           provide: 'TurnFlowService',
@@ -43,9 +47,9 @@ describe('Contes pawn selection', () => {
         },
         {
           provide: ContesActionService,
-          useFactory: (core: GameCoreService, random: RandomService, turns: any) =>
-            new ContesActionService(core, random, turns),
-          inject: [GameCoreService, RandomService, 'TurnFlowService'],
+          useFactory: (core: GameCoreService, random: RandomService, turns: any, setupFlow: SetupFlowService, deckPolicies: DeckPoliciesService) =>
+            new ContesActionService(core, random, turns, setupFlow, deckPolicies),
+          inject: [GameCoreService, RandomService, 'TurnFlowService', SetupFlowService, DeckPoliciesService],
         },
       ],
     }).compile();
@@ -74,3 +78,6 @@ describe('Contes pawn selection', () => {
     expect(Number(state.turn?.currentPlayerId ?? 0)).toBe(starterId);
   });
 });
+
+
+

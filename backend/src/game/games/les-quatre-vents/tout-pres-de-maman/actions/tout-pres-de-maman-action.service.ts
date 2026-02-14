@@ -4,6 +4,7 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import type {
   ToutPresDeMamanCard,
   ToutPresDeMamanMetadata,
@@ -19,6 +20,7 @@ export class ToutPresDeMamanActionService {
     private readonly core: GameCoreService,
     private readonly random: RandomService,
     private readonly turns: TurnFlowService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -596,37 +598,21 @@ export class ToutPresDeMamanActionService {
     card: ToutPresDeMamanCard | null;
   } {
     const meta = this.getMeta(state);
-    let deck = Array.isArray(meta.deckCards) ? [...meta.deckCards] : [];
-    let discard = Array.isArray(meta.discardCards)
-      ? [...meta.discardCards]
-      : [];
-    let nextMeta: ToutPresDeMamanMetadata = { ...meta };
-
-    if (!deck.length && discard.length) {
-      const shuffle = this.random.shuffle(nextMeta as any, discard);
-      deck = shuffle.values;
-      nextMeta = {
-        ...nextMeta,
-        ...shuffle.meta,
-        deckCards: deck,
-        discardCards: [],
-      };
-      discard = [];
-    }
-
-    if (!deck.length) {
-      return { state: this.replaceMeta(state, nextMeta), card: null };
-    }
-
-    const [cardId, ...rest] = deck;
-    nextMeta = {
-      ...nextMeta,
-      deckCards: rest,
-      discardCards: [...discard, cardId],
+    const draw = this.deckPolicies.drawFromPile<number, ToutPresDeMamanMetadata>({
+      meta,
+      pile: Array.isArray(meta.deckCards) ? meta.deckCards : [],
+      discard: Array.isArray(meta.discardCards) ? meta.discardCards : [],
+      useWholeMetaRng: true,
+      discardDrawnCard: true,
+    });
+    const nextMeta: ToutPresDeMamanMetadata = {
+      ...draw.meta,
+      deckCards: draw.pile as number[],
+      discardCards: draw.discard as number[],
     };
     const next = this.replaceMeta(state, nextMeta);
-    const card =
-      nextMeta.cards.find((entry) => entry.id === cardId) ?? null;
+    const cardId = draw.card;
+    const card = nextMeta.cards.find((entry) => entry.id === cardId) ?? null;
     return { state: next, card };
   }
 

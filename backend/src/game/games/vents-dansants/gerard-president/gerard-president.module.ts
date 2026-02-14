@@ -5,6 +5,7 @@ import { GameCoreModule } from '../../../core/core.module';
 import { GameRegistryModule } from '../../../engine/game-registry.module';
 import { RandomModule } from '../../../modules/random/random.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
+import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
 import { GerardPresidentActionService } from './actions/gerard-president-action.service';
 import { GerardPresidentBotService } from './bots/gerard-president-bot.service';
 import { GerardPresidentPresenterService } from './presenter/gerard-president-presenter.service';
@@ -16,6 +17,7 @@ import { GerardPresidentService } from './gerard-president.service';
     GameCoreModule,
     GameRegistryModule,
     RandomModule,
+    DeckPoliciesModule,
     BoardModule,
     TurnModule,
     BotModule,

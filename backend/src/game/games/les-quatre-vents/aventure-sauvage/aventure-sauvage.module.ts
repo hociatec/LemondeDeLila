@@ -6,6 +6,9 @@ import { RandomModule } from '../../../modules/random/random.module';
 import { BoardModule } from '../../../modules/board/board.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
 import { BotModule } from '../../../modules/bot/bot.module';
+import { SetupFlowModule } from '../../../modules/setup-flow/setup-flow.module';
+import { BoardEffectsPoliciesModule } from '../../../modules/board-effects-policies/board-effects-policies.module';
+import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
 import { AventureSauvageService } from './aventure-sauvage.service';
 import { AventureSauvageSetupService } from './setup/aventure-sauvage-setup.service';
 import { AventureSauvageActionService } from './actions/aventure-sauvage-action.service';
@@ -21,6 +24,9 @@ import { AventureSauvageBotService } from './bots/aventure-sauvage-bot.service';
     BoardModule,
     TurnModule,
     BotModule,
+    SetupFlowModule,
+    BoardEffectsPoliciesModule,
+    DeckPoliciesModule,
   ],
   providers: [
     AventureSauvageService,

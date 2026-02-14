@@ -7,6 +7,7 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { GameCoreService } from '../../../../core/services/game-core.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import type { CaCard, CaMetadata } from '../model/ca.types';
 
 type PendingContext =
@@ -22,6 +23,7 @@ export class CaActionService {
     private readonly random: RandomService,
     private readonly turns: TurnFlowService,
     private readonly core: GameCoreService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -1147,26 +1149,37 @@ export class CaActionService {
     card: CaCard | null;
     meta: CaMetadata;
   } {
-    const deck = Array.isArray(meta.decks?.cards) ? meta.decks.cards : [];
-    const discard = Array.isArray(meta.decks?.discard)
-      ? meta.decks.discard
-      : [];
-    if (!deck.length && discard.length) {
-      const shuffled = this.random.shuffle(meta as any, discard);
-      const nextMeta = {
-        ...meta,
-        ...shuffled.meta,
-        decks: { cards: shuffled.values, discard: [] },
-      };
-      return this.drawCard(nextMeta);
-    }
-    if (!deck.length) return { card: null, meta };
-    const [card, ...rest] = deck;
-    const next: CaMetadata = {
-      ...meta,
-      decks: { cards: rest, discard: [...discard, card] },
+    const flow = this.deckPolicies.drawOne<CaCard, any>({
+      meta: {
+        cards: Array.isArray(meta.decks?.cards) ? meta.decks.cards : [],
+        discard: Array.isArray(meta.decks?.discard) ? meta.decks.discard : [],
+        rng: meta,
+      },
+      deckKey: 'cards',
+      discardKey: 'discard',
+      rngKey: 'rng',
+    });
+
+    const baseMeta: CaMetadata = {
+      ...(flow.meta.rng as CaMetadata),
+      decks: {
+        cards: Array.isArray(flow.meta.cards) ? flow.meta.cards : [],
+        discard: Array.isArray(flow.meta.discard) ? flow.meta.discard : [],
+      },
     };
-    return { card, meta: next };
+    if (!flow.card) {
+      return { card: null, meta: baseMeta };
+    }
+    return {
+      card: flow.card,
+      meta: {
+        ...baseMeta,
+        decks: {
+          cards: baseMeta.decks.cards,
+          discard: [...baseMeta.decks.discard, flow.card],
+        },
+      },
+    };
   }
 
   private getMeta(state: GameStateEntity): CaMetadata {

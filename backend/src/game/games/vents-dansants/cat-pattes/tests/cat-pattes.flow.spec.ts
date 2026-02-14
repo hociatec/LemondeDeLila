@@ -1,7 +1,9 @@
-import { Test } from '@nestjs/testing';
+﻿import { Test } from '@nestjs/testing';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { CatPattesActionService } from '../actions/cat-pattes-action.service';
 import { CatPattesSetupService } from '../setup/cat-pattes-setup.service';
 import * as Rulebook from '../rulebook/rulebook';
@@ -35,6 +37,8 @@ describe('CatPattes flow', () => {
       providers: [
         GameCoreService,
         RandomService,
+        SetupFlowService,
+        DeckPoliciesService,
         CatPattesSetupService,
         {
           provide: 'TurnFlowService',
@@ -44,9 +48,13 @@ describe('CatPattes flow', () => {
         },
         {
           provide: CatPattesActionService,
-          useFactory: (core: GameCoreService, random: RandomService, turns: any) =>
-            new CatPattesActionService(core, random, turns),
-          inject: [GameCoreService, RandomService, 'TurnFlowService'],
+          useFactory: (
+            core: GameCoreService,
+            turns: any,
+            setupFlow: SetupFlowService,
+            deckPolicies: DeckPoliciesService,
+          ) => new CatPattesActionService(core, turns, setupFlow, deckPolicies),
+          inject: [GameCoreService, 'TurnFlowService', SetupFlowService, DeckPoliciesService],
         },
       ],
     }).compile();
@@ -78,6 +86,8 @@ describe('CatPattes flow', () => {
       providers: [
         GameCoreService,
         RandomService,
+        SetupFlowService,
+        DeckPoliciesService,
         CatPattesSetupService,
         {
           provide: 'TurnFlowService',
@@ -101,9 +111,13 @@ describe('CatPattes flow', () => {
         },
         {
           provide: CatPattesActionService,
-          useFactory: (core: GameCoreService, random: RandomService, turns: any) =>
-            new CatPattesActionService(core, random, turns),
-          inject: [GameCoreService, RandomService, 'TurnFlowService'],
+          useFactory: (
+            core: GameCoreService,
+            turns: any,
+            setupFlow: SetupFlowService,
+            deckPolicies: DeckPoliciesService,
+          ) => new CatPattesActionService(core, turns, setupFlow, deckPolicies),
+          inject: [GameCoreService, 'TurnFlowService', SetupFlowService, DeckPoliciesService],
         },
       ],
     }).compile();
@@ -124,7 +138,7 @@ describe('CatPattes flow', () => {
 
     expect(state.pending).toBeNull();
     const messages = (state.log ?? []).map((e: any) => String(e?.message ?? ''));
-    expect(messages.some((m) => /Début de partie : Hacene commence\./.test(m))).toBe(true);
+    expect(messages.some((m) => /D.+but de partie : Hacene commence\./i.test(m))).toBe(true);
     expect(messages.some((m) => /C'est au tour de Hacene\./.test(m))).toBe(true);
 
     const afterSelectionActions = Rulebook.getAvailableActions(state as any, 1);
@@ -136,6 +150,8 @@ describe('CatPattes flow', () => {
       providers: [
         GameCoreService,
         RandomService,
+        SetupFlowService,
+        DeckPoliciesService,
         CatPattesSetupService,
         {
           provide: 'TurnFlowService',
@@ -159,9 +175,13 @@ describe('CatPattes flow', () => {
         },
         {
           provide: CatPattesActionService,
-          useFactory: (core: GameCoreService, random: RandomService, turns: any) =>
-            new CatPattesActionService(core, random, turns),
-          inject: [GameCoreService, RandomService, 'TurnFlowService'],
+          useFactory: (
+            core: GameCoreService,
+            turns: any,
+            setupFlow: SetupFlowService,
+            deckPolicies: DeckPoliciesService,
+          ) => new CatPattesActionService(core, turns, setupFlow, deckPolicies),
+          inject: [GameCoreService, 'TurnFlowService', SetupFlowService, DeckPoliciesService],
         },
       ],
     }).compile();
@@ -195,3 +215,4 @@ describe('CatPattes flow', () => {
     expect(state.turn?.currentPlayerId).toBe(2);
   });
 });
+

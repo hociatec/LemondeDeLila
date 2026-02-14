@@ -6,6 +6,7 @@ import { RandomModule } from '../../../modules/random/random.module';
 import { BoardModule } from '../../../modules/board/board.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
 import { BotModule } from '../../../modules/bot/bot.module';
+import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
 import { MonVillageService } from './mon-village-mon-histoire.service';
 import { MonVillageSetupService } from './setup/mon-village-setup.service';
 import { MonVillageActionService } from './actions/mon-village-action.service';
@@ -18,6 +19,7 @@ import { MonVillageBotService } from './bots/mon-village-bot.service';
     GameRegistryModule,
     EngineServicesModule,
     RandomModule,
+    DeckPoliciesModule,
     BoardModule,
     TurnModule,
     BotModule,

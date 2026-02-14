@@ -6,6 +6,7 @@ import { RandomModule } from '../../../modules/random/random.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
 import { BoardModule } from '../../../modules/board/board.module';
 import { BotModule } from '../../../modules/bot/bot.module';
+import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
 import { VoyageService } from './voyage.service';
 import { VoyageSetupService } from './setup/voyage-setup.service';
 import { VoyageActionService } from './actions/voyage-action.service';
@@ -18,6 +19,7 @@ import { VoyageBotService } from './bots/voyage-bot.service';
     GameRegistryModule,
     EngineServicesModule,
     RandomModule,
+    DeckPoliciesModule,
     TurnModule,
     BoardModule,
     BotModule,
@@ -32,4 +34,3 @@ import { VoyageBotService } from './bots/voyage-bot.service';
   exports: [VoyageService],
 })
 export class VoyageModule {}
-

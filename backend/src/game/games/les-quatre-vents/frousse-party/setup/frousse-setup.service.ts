@@ -2,19 +2,20 @@
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import type {
   FrousseBoardJsonV1,
   FrousseCardsJsonV1,
   FrousseMetadata,
   FroussePawnsJsonV1,
 } from '../model/frousse.types';
-import { buildPawnSelectionPending } from '../pawn-selection';
 
 @Injectable()
 export class FrousseSetupService {
   constructor(
     private readonly contentLoader: GameContentLoaderService,
     private readonly random: RandomService,
+    private readonly setupFlow: SetupFlowService,
   ) {}
 
   hydrateInitialState(base: GameStateEntity): GameStateEntity {
@@ -63,8 +64,44 @@ export class FrousseSetupService {
       },
     };
 
-    const pending = buildPawnSelectionPending(players, meta);
-    return pending ? { ...initial, pending } : initial;
+    const pendingInfo = this.setupFlow.createSequentialChoicePending({
+      players,
+      startPlayerId: players[0]?.id ?? null,
+      isAssigned: (playerId) => {
+        const player = players.find((p: any) => p?.id === playerId);
+        return String(player?.pawn ?? '').trim().length > 0;
+      },
+      pendingType: 'choose_pawn',
+      choices: (Array.isArray(meta.pawns) ? meta.pawns : [])
+        .map((p) => ({
+          id: String(p?.id ?? '').trim(),
+          label: String(p?.title ?? p?.id ?? '').trim(),
+          title: String(p?.title ?? p?.id ?? '').trim(),
+          description: String((p as any)?.description ?? '').trim(),
+        }))
+        .filter((p) => p.id.length > 0),
+      labelForPlayer: (playerLabel) =>
+        `C'est à ${playerLabel} de choisir un pion (flèches puis Entrée).`,
+      dataBuilder: (availableChoices) => ({
+        kind: 'choose_pawn',
+        pawns: availableChoices.map((choice: any) => ({
+          id: String(choice?.id ?? '').trim(),
+          title: String(choice?.title ?? choice?.label ?? '').trim(),
+          description: String(choice?.description ?? '').trim(),
+        })),
+      }),
+    });
+    if (!pendingInfo) return initial;
+    return {
+      ...initial,
+      pending: pendingInfo.pending,
+      turnIndex: pendingInfo.turnIndex,
+      turn: {
+        ...(base.turn ?? { currentPlayerId: pendingInfo.playerId, direction: 1 }),
+        currentPlayerId: pendingInfo.playerId,
+        direction: base.turn?.direction === -1 ? -1 : 1,
+      },
+    };
   }
 
   private loadBoard(): FrousseBoardJsonV1 {

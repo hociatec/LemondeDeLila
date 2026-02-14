@@ -1,7 +1,10 @@
-import { Test } from '@nestjs/testing';
+﻿import { Test } from '@nestjs/testing';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { BoardEffectsPoliciesService } from '../../../../modules/board-effects-policies/services/board-effects-policies.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { AventureSauvageActionService } from '../actions/aventure-sauvage-action.service';
 import { AventureSauvageSetupService } from '../setup/aventure-sauvage-setup.service';
@@ -37,6 +40,9 @@ describe('AventureSauvageActionService', () => {
       providers: [
         GameCoreService,
         RandomService,
+        SetupFlowService,
+        BoardEffectsPoliciesService,
+        DeckPoliciesService,
         GameContentLoaderService,
         AventureSauvageSetupService,
         AventureSauvageActionService,
@@ -58,6 +64,9 @@ describe('AventureSauvageActionService', () => {
       providers: [
         GameCoreService,
         RandomService,
+        SetupFlowService,
+        BoardEffectsPoliciesService,
+        DeckPoliciesService,
         GameContentLoaderService,
         AventureSauvageSetupService,
         AventureSauvageActionService,
@@ -100,6 +109,9 @@ describe('AventureSauvageActionService', () => {
       providers: [
         GameCoreService,
         RandomService,
+        SetupFlowService,
+        BoardEffectsPoliciesService,
+        DeckPoliciesService,
         GameContentLoaderService,
         AventureSauvageSetupService,
         AventureSauvageActionService,
@@ -137,6 +149,9 @@ describe('AventureSauvageActionService', () => {
       providers: [
         GameCoreService,
         RandomService,
+        SetupFlowService,
+        BoardEffectsPoliciesService,
+        DeckPoliciesService,
         GameContentLoaderService,
         AventureSauvageSetupService,
         AventureSauvageActionService,
@@ -171,6 +186,9 @@ describe('AventureSauvageActionService', () => {
       providers: [
         GameCoreService,
         RandomService,
+        SetupFlowService,
+        BoardEffectsPoliciesService,
+        DeckPoliciesService,
         GameContentLoaderService,
         AventureSauvageSetupService,
         AventureSauvageActionService,
@@ -188,3 +206,5 @@ describe('AventureSauvageActionService', () => {
     expect(animalIds).not.toEqual(sorted);
   });
 });
+
+

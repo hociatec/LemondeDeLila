@@ -6,6 +6,7 @@ import { RandomModule } from '../../../modules/random/random.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
 import { BoardModule } from '../../../modules/board/board.module';
 import { BotModule } from '../../../modules/bot/bot.module';
+import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
 import { GaloponsEnsembleService } from './galopons-ensemble.service';
 import { GaloponsSetupService } from './setup/galopons-setup.service';
 import { GaloponsActionService } from './actions/galopons-action.service';
@@ -18,6 +19,7 @@ import { GaloponsBotService } from './bots/galopons-bot.service';
     GameRegistryModule,
     EngineServicesModule,
     RandomModule,
+    DeckPoliciesModule,
     TurnModule,
     BoardModule,
     BotModule,

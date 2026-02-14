@@ -4,6 +4,7 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import {
   BANDE_A_BANANE_CARD_BY_ID,
   BandeABananeCardDefinition,
@@ -22,6 +23,7 @@ export class BandeABananeActionService {
     private readonly core: GameCoreService,
     private readonly turns: TurnFlowService,
     private readonly random: RandomService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -382,26 +384,13 @@ export class BandeABananeActionService {
     meta: BandeABananeMetadata;
     cardId: string | null;
   } {
-    const deck = Array.isArray(meta.deck) ? [...meta.deck] : [];
-    const discard = Array.isArray(meta.discard) ? [...meta.discard] : [];
-    let nextMeta: BandeABananeMetadata = { ...meta, deck, discard };
-    let rng = meta.rng;
-    if (!nextMeta.deck.length && nextMeta.discard.length) {
-      const { values, meta: shuffledMeta } = this.random.shuffle(rng ?? {}, nextMeta.discard);
-      nextMeta = {
-        ...nextMeta,
-        deck: values,
-        discard: [],
-        rng: shuffledMeta,
-      };
-      rng = shuffledMeta;
-    }
-    if (!nextMeta.deck.length) {
-      return { meta: nextMeta, cardId: null };
-    }
-    const [cardId, ...rest] = nextMeta.deck;
-    nextMeta = { ...nextMeta, deck: rest, rng: rng ?? nextMeta.rng };
-    return { meta: nextMeta, cardId };
+    const draw = this.deckPolicies.drawOne<string, BandeABananeMetadata>({
+      meta,
+      deckKey: 'deck',
+      discardKey: 'discard',
+      rngKey: 'rng',
+    });
+    return { meta: draw.meta, cardId: draw.card };
   }
 
   private ensurePlayerDrawn(

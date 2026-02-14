@@ -1,8 +1,11 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { BoardEffectsPoliciesService } from '../../../../modules/board-effects-policies/services/board-effects-policies.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import type {
   AventureSauvageCard,
   AventureSauvageMetadata,
@@ -14,6 +17,9 @@ export class AventureSauvageActionService {
   constructor(
     private readonly core: GameCoreService,
     private readonly random: RandomService,
+    private readonly setupFlow: SetupFlowService,
+    private readonly boardEffects: BoardEffectsPoliciesService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -228,60 +234,50 @@ export class AventureSauvageActionService {
     };
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
 
-    const labelRaw = String(tile?.label ?? '').trim();
-    const label = labelRaw
-      ? /^(case|depart|arrivee)\b/i.test(labelRaw)
-        ? labelRaw
-        : `Case ${position + 1} - ${labelRaw}`
-      : `Case ${position + 1}`;
+    const label = this.boardEffects.formatTileLabel(position, tile?.label ?? '');
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} place ${this.pawnPossessiveLabel(next, playerId)} en case ${position + 1} (${label}).`,
+      this.boardEffects.createPlacementLog({
+        playerLabel: this.playerName(next, playerId),
+        pawnLabel: this.pawnPossessiveLabel(next, playerId),
+        position,
+        tileLabel: label,
+      }),
     );
-    const desc = typeof tile?.description === 'string' ? tile.description.trim() : '';
-    if (desc) {
-      next = this.core.appendLog(next, desc);
-    }
 
     if (!tile) return next;
 
-    if (tile.type === 'finish') {
+    const landing = this.boardEffects.resolveLanding({
+      position,
+      playerId,
+      tile: { type: tile.type, description: tile.description },
+      drawPolicies: {
+        animal: {
+          log: 'Piochez une carte Animal rigolo.',
+          pendingLabel: 'Piocher une carte Animal rigolo (Espace).',
+          data: { deck: 'animal' },
+        },
+        patte: {
+          log: 'Piochez une carte Coup de patte.',
+          pendingLabel: 'Piocher une carte Coup de patte (Espace).',
+          data: { deck: 'patte' },
+        },
+      },
+      finishTypes: ['finish'],
+    });
+    for (const line of landing.logs) {
+      if (line.trim().length > 0) {
+        next = this.core.appendLog(next, line);
+      }
+    }
+
+    if (landing.isFinish) {
       meta = this.getMeta(next);
       meta = { ...meta, winnerId: playerId };
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
-    if (tile.type === 'animal') {
-      next = this.core.appendLog(next, `Piochez une carte Animal rigolo.`);
-    } else if (tile.type === 'patte') {
-      next = this.core.appendLog(next, `Piochez une carte Coup de patte.`);
-    }
-
-    if (tile.type === 'animal') {
-      return {
-        ...next,
-        pending: {
-          type: 'draw',
-          playerId,
-          blocking: true,
-          label: 'Piocher une carte Animal rigolo (Espace).',
-          data: { deck: 'animal' },
-        },
-      };
-    }
-
-    if (tile.type === 'patte') {
-      return {
-        ...next,
-        pending: {
-          type: 'draw',
-          playerId,
-          blocking: true,
-          label: 'Piocher une carte Coup de patte (Espace).',
-          data: { deck: 'patte' },
-        },
-      };
-    }
+    if (landing.pending) return { ...next, pending: landing.pending };
 
     return next;
   }
@@ -344,50 +340,30 @@ export class AventureSauvageActionService {
 
     const meta = this.getMeta(state);
     const pawnByPlayerId = (meta.pawnByPlayerId ?? {}) as Record<number, string>;
-    const startIndex =
-      startId != null ? players.findIndex((p) => p?.id === startId) : -1;
-    const count = players.length;
-    const baseIndex = startIndex >= 0 ? startIndex : 0;
-    let nextIndex = -1;
-    for (let i = 0; i < count; i += 1) {
-      const idx = (baseIndex + i) % count;
-      const pid = players[idx]?.id;
-      if (pid == null) continue;
-      if (!pawnByPlayerId[pid]) {
-        nextIndex = idx;
-        break;
-      }
-    }
-    if (nextIndex < 0) return null;
-
     const choices = this.availablePawns(meta, pawnByPlayerId);
-    if (choices.length === 0) return null;
-
-    const chooserId = players[nextIndex].id;
-    const chooserLabel = this.playerName(state, chooserId);
-
-    return {
-      playerId: chooserId,
-      turnIndex: nextIndex,
-      pending: {
-        type: 'choose_pawn',
-        playerId: chooserId,
-        blocking: true,
-        label: `C'est à ${chooserLabel} de choisir son pion.`,
-        choices: choices.map((p) =>
+    return this.setupFlow.createSequentialChoicePending({
+      players,
+      startPlayerId: startId,
+      isAssigned: (playerId) => Boolean(pawnByPlayerId[playerId]),
+      pendingType: 'choose_pawn',
+      choices: choices.map((p) => ({
+        id: p.id,
+        label:
           p.description && String(p.description).trim().length > 0
             ? `${p.label}: ${p.description}`
             : p.label,
-        ),
-        data: {
-          pawns: choices.map((p) => ({
-            id: p.id,
-            label: p.label,
-            description: p.description,
-          })),
-        },
-      },
-    };
+        title: p.label,
+        description: p.description,
+      })),
+      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
+      dataBuilder: (availableChoices) => ({
+        pawns: availableChoices.map((p: any) => ({
+          id: String(p?.id ?? '').trim(),
+          label: String(p?.title ?? p?.label ?? '').trim(),
+          description: String(p?.description ?? '').trim(),
+        })),
+      }),
+    });
   }
 
   private availablePawns(
@@ -404,8 +380,7 @@ export class AventureSauvageActionService {
     raw: unknown,
     options: Array<{ id?: string; label?: string; title?: string }>,
   ): { id: string; label: string; description: string } | null {
-    if (!Array.isArray(options) || options.length === 0) return null;
-    const normalized = options
+    const normalized = (Array.isArray(options) ? options : [])
       .map((p: any) => ({
         id: String(p?.id ?? '').trim(),
         label: String(p?.label ?? p?.title ?? '').trim(),
@@ -413,29 +388,9 @@ export class AventureSauvageActionService {
       }))
       .filter((p) => p.id.length > 0 && p.label.length > 0);
     if (!normalized.length) return null;
-
-    const value =
-      typeof raw === 'object'
-        ? (raw as any)?.id ?? (raw as any)?.pawnId ?? (raw as any)?.value ?? raw
-        : raw;
-    const key = this.normalizePawnKey(value);
-    if (!key) return null;
-
-    const byId = normalized.find((p) => this.normalizePawnKey(p.id) === key);
-    if (byId) return byId;
-    const byLabel = normalized.find(
-      (p) => this.normalizePawnKey(p.label) === key,
-    );
-    return byLabel ?? null;
-  }
-
-  private normalizePawnKey(value: unknown): string {
-    return String(value ?? '')
-      .trim()
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '');
+    return this.setupFlow.resolveChoice(raw, normalized) as
+      | { id: string; label: string; description: string }
+      | null;
   }
 
   private moveBy(
@@ -482,31 +437,24 @@ export class AventureSauvageActionService {
     const drawPile: AventureSauvageCard[] = [...(decks[deck] ?? [])];
     const discardKey = deck === 'animal' ? 'discardAnimal' : 'discardPatte';
     const discardPile: AventureSauvageCard[] = [...(decks[discardKey] ?? [])];
-
-    let pile = drawPile;
-    let updatedMeta = meta;
-
-    if (pile.length === 0) {
-      // Réinitialiser le deck (simple).
-      const defaults =
-        deck === 'animal' ? defaultAnimalDeck() : defaultPatteDeck();
-      const shuffled = this.random.shuffle(updatedMeta as any, defaults);
-      updatedMeta = { ...updatedMeta, ...shuffled.meta };
-      pile = shuffled.values;
-      discardPile.length = 0;
-    }
-
-    const card = pile.shift() ?? null;
-    if (card) {
-      discardPile.push(card);
-    }
+    const defaults = deck === 'animal' ? defaultAnimalDeck() : defaultPatteDeck();
+    const draw = this.deckPolicies.drawFromPile<
+      AventureSauvageCard,
+      AventureSauvageMetadata
+    >({
+      meta,
+      pile: drawPile,
+      discard: discardPile.length ? discardPile : defaults,
+      useWholeMetaRng: true,
+      discardDrawnCard: true,
+    });
 
     const nextDecks = {
       ...decks,
-      [deck]: pile,
-      [discardKey]: discardPile,
+      [deck]: draw.pile,
+      [discardKey]: draw.discard,
     };
-    return { card, meta: { ...updatedMeta, decks: nextDecks } };
+    return { card: draw.card, meta: { ...draw.meta, decks: nextDecks } };
   }
 
   private clampMove(value: number, tilesLen: number): number {
@@ -546,7 +494,7 @@ export class AventureSauvageActionService {
     if (!inner) return '"son pion"';
     const stripped = inner
       .replace(/^(le|la|les|un|une)\s+/i, '')
-      .replace(/^l['’]\s*/i, '')
+      .replace(/^l['â€™]\s*/i, '')
       .trim();
     const base = this.lowercaseFirst(stripped || inner);
     const feminine = /^(la|une)\s+/i.test(inner);
@@ -635,7 +583,7 @@ export class AventureSauvageActionService {
       },
     };
 
-    // Important UX: si un joueur est sauté, on l'annonce, sinon on a l'impression que "rien ne se passe".
+    // Important UX: si un joueur est sautÃ©, on l'annonce, sinon on a l'impression que "rien ne se passe".
     for (const pid of skipped) {
       next = this.core.appendLog(next, `${this.playerName(next, pid)} passe son tour.`);
     }
@@ -676,43 +624,43 @@ function defaultAnimalDeck(): AventureSauvageCard[] {
     {
       id: 1,
       deck: 'animal',
-      text: "Vous entendez soudain le rire strident d'une hyène tout près de vous. Surpris, vous trébuchez, tombez au sol et effectuez un roulé-boulé incontrôlé qui vous propulse plus loin sur le chemin. Avancez de deux cases.",
+      text: "Vous entendez soudain le rire strident d'une hyÃ¨ne tout prÃ¨s de vous. Surpris, vous trÃ©buchez, tombez au sol et effectuez un roulÃ©-boulÃ© incontrÃ´lÃ© qui vous propulse plus loin sur le chemin. Avancez de deux cases.",
       moveDelta: 2,
     },
     {
       id: 2,
       deck: 'animal',
-      text: "Vous surprenez un hippopotame en train de bâiller largement dans l'eau. Effrayé par sa gueule immense, vous reculez d'une case avant de retrouver votre équilibre en riant.",
+      text: "Vous surprenez un hippopotame en train de bÃ¢iller largement dans l'eau. EffrayÃ© par sa gueule immense, vous reculez d'une case avant de retrouver votre Ã©quilibre en riant.",
       moveDelta: -1,
     },
     {
       id: 3,
       deck: 'animal',
-      text: "Vous voyez un impala sauter agilement devant vous. Vous décidez de le suivre et avancez de 3 cases.",
+      text: "Vous voyez un impala sauter agilement devant vous. Vous dÃ©cidez de le suivre et avancez de 3 cases.",
       moveDelta: 3,
     },
     {
       id: 4,
       deck: 'animal',
-      text: 'Vous apercevez un suricate se redresser curieusement. Relancez le dé.',
+      text: 'Vous apercevez un suricate se redresser curieusement. Relancez le dÃ©.',
       reroll: true,
     },
     {
       id: 5,
       deck: 'animal',
-      text: "Vous observez un flamant rose glisser avec grâce à la surface de l'eau. Fasciné par sa démarche élégante, vous restez un instant figé à le contempler. Passez votre tour.",
+      text: "Vous observez un flamant rose glisser avec grÃ¢ce Ã  la surface de l'eau. FascinÃ© par sa dÃ©marche Ã©lÃ©gante, vous restez un instant figÃ© Ã  le contempler. Passez votre tour.",
       skipTurns: 1,
     },
     {
       id: 6,
       deck: 'animal',
-      text: "Vous entendez le cri joyeux d'un guépard. Avancez de 1 case.",
+      text: "Vous entendez le cri joyeux d'un guÃ©pard. Avancez de 1 case.",
       moveDelta: 1,
     },
     {
       id: 7,
       deck: 'animal',
-      text: "Vous surprenez un buffle en train de se secouer après s'être roulé dans la boue. Ce spectacle vous amuse et vous fait avancer d'une case.",
+      text: "Vous surprenez un buffle en train de se secouer aprÃ¨s s'Ãªtre roulÃ© dans la boue. Ce spectacle vous amuse et vous fait avancer d'une case.",
       moveDelta: 1,
     },
     {
@@ -724,37 +672,37 @@ function defaultAnimalDeck(): AventureSauvageCard[] {
     {
       id: 9,
       deck: 'animal',
-      text: "Vous apercevez un calao majestueux battre des ailes au-dessus de vous. Le souffle de son vol vous pousse légèrement : avancez d'une case.",
+      text: "Vous apercevez un calao majestueux battre des ailes au-dessus de vous. Le souffle de son vol vous pousse lÃ©gÃ¨rement : avancez d'une case.",
       moveDelta: 1,
     },
     {
       id: 10,
       deck: 'animal',
-      text: "Vous êtes surpris par un babouin facétieux faisant tomber un régime de bananes sur votre tête. Étourdi, vous passez votre tour.",
+      text: "Vous Ãªtes surpris par un babouin facÃ©tieux faisant tomber un rÃ©gime de bananes sur votre tÃªte. Ã‰tourdi, vous passez votre tour.",
       skipTurns: 1,
     },
     {
       id: 11,
       deck: 'animal',
-      text: "Vous entendez le chant joyeux d'un tisserin aux couleurs vives perché dans un arbre. Son rythme farfelu vous fait battre des mains et taper des pieds : avancez de 2 cases.",
+      text: "Vous entendez le chant joyeux d'un tisserin aux couleurs vives perchÃ© dans un arbre. Son rythme farfelu vous fait battre des mains et taper des pieds : avancez de 2 cases.",
       moveDelta: 2,
     },
     {
       id: 12,
       deck: 'animal',
-      text: 'Vous improvisez une mélodie avec des branches, des feuilles et des fruits tombés autour de vous. La musique de la jungle vous emporte, et sans vous en rendre compte, vous avancez de 3 cases.',
+      text: 'Vous improvisez une mÃ©lodie avec des branches, des feuilles et des fruits tombÃ©s autour de vous. La musique de la jungle vous emporte, et sans vous en rendre compte, vous avancez de 3 cases.',
       moveDelta: 3,
     },
     {
       id: 13,
       deck: 'animal',
-      text: "Vous voyez un phacochère tournoyer sur lui-même dans un élan de folie. Vous rigolez tellement que vous avancez d'une case en suivant son rythme.",
+      text: "Vous voyez un phacochÃ¨re tournoyer sur lui-mÃªme dans un Ã©lan de folie. Vous rigolez tellement que vous avancez d'une case en suivant son rythme.",
       moveDelta: 1,
     },
     {
       id: 14,
       deck: 'animal',
-      text: "Vous surprenez un gecko en train de taper du pied sur une feuille. L'effet est si drôle que vous avancez d'une case.",
+      text: "Vous surprenez un gecko en train de taper du pied sur une feuille. L'effet est si drÃ´le que vous avancez d'une case.",
       moveDelta: 1,
     },
     {
@@ -772,24 +720,24 @@ function defaultAnimalDeck(): AventureSauvageCard[] {
     {
       id: 17,
       deck: 'animal',
-      text: "Vous poursuivez une grenouille géante de nénuphar en nénuphar. À chaque saut, vous glissez, tournez en rond et finissez par reculer d'une case avant de rebondir aussitôt en avant d'une case, en éclatant de rire.",
+      text: "Vous poursuivez une grenouille gÃ©ante de nÃ©nuphar en nÃ©nuphar. Ã€ chaque saut, vous glissez, tournez en rond et finissez par reculer d'une case avant de rebondir aussitÃ´t en avant d'une case, en Ã©clatant de rire.",
     },
     {
       id: 18,
       deck: 'animal',
-      text: "Vous apercevez une petite mangouste curieuse sur votre chemin. En essayant de l'éviter, vous bondissez maladroitement et atterrissez avec un petit plouf sur une racine. Avancez de 1 case en riant de vous-même.",
+      text: "Vous apercevez une petite mangouste curieuse sur votre chemin. En essayant de l'Ã©viter, vous bondissez maladroitement et atterrissez avec un petit plouf sur une racine. Avancez de 1 case en riant de vous-mÃªme.",
       moveDelta: 1,
     },
     {
       id: 19,
       deck: 'animal',
-      text: 'Un rhinocéros passe juste à côté de vous. Vous grimpez sur son dos et, émerveillé, vous avancez de trois cases.',
+      text: 'Un rhinocÃ©ros passe juste Ã  cÃ´tÃ© de vous. Vous grimpez sur son dos et, Ã©merveillÃ©, vous avancez de trois cases.',
       moveDelta: 3,
     },
     {
       id: 20,
       deck: 'animal',
-      text: "Vous tentez de grimper à un arbre pour observer la savane, mais vous vous retrouvez coincé dans les branches, les pieds dans le vide ! Vous passez votre tour bêtement.",
+      text: "Vous tentez de grimper Ã  un arbre pour observer la savane, mais vous vous retrouvez coincÃ© dans les branches, les pieds dans le vide ! Vous passez votre tour bÃªtement.",
       skipTurns: 1,
     },
   ];
@@ -801,31 +749,31 @@ function defaultPatteDeck(): AventureSauvageCard[] {
     {
       id: 1,
       deck: 'patte',
-      text: 'Vous croisez une civette endormie en travers du chemin. Surpris, vous restez immobile pour ne pas la réveiller. Passez votre tour.',
+      text: 'Vous croisez une civette endormie en travers du chemin. Surpris, vous restez immobile pour ne pas la rÃ©veiller. Passez votre tour.',
       skipTurns: 1,
     },
     {
       id: 2,
       deck: 'patte',
-      text: "Une pluie tropicale tombe soudainement. Vous vous faites éclabousser et glissez un peu. Reculez d'une case.",
+      text: "Une pluie tropicale tombe soudainement. Vous vous faites Ã©clabousser et glissez un peu. Reculez d'une case.",
       moveDelta: -1,
     },
     {
       id: 3,
       deck: 'patte',
-      text: "Le vent fait tomber un nid d'aigles serpentier juste devant vous. Vous restez bouche bée à observer les petits oisillons s'agiter dans le nid. Passez votre tour.",
+      text: "Le vent fait tomber un nid d'aigles serpentier juste devant vous. Vous restez bouche bÃ©e Ã  observer les petits oisillons s'agiter dans le nid. Passez votre tour.",
       skipTurns: 1,
     },
     {
       id: 4,
       deck: 'patte',
-      text: "Un jeune scorpion forestier bloque votre chemin et s'amuse à faire des pirouettes, sa queue tourbillonnant dans les airs. Vous sursautez en riant et reculez d'une case.",
+      text: "Un jeune scorpion forestier bloque votre chemin et s'amuse Ã  faire des pirouettes, sa queue tourbillonnant dans les airs. Vous sursautez en riant et reculez d'une case.",
       moveDelta: -1,
     },
     {
       id: 5,
       deck: 'patte',
-      text: "Un très jeune fourmilier curieux s'approche de vous et renifle vos bottes comme un petit enfant intrigué. Amusé, il se jette au sol et se roule à vos pieds. Éclatant de rire, vous restez bloqué un instant et ne bougez pas de votre case. Passez votre tour.",
+      text: "Un trÃ¨s jeune fourmilier curieux s'approche de vous et renifle vos bottes comme un petit enfant intriguÃ©. AmusÃ©, il se jette au sol et se roule Ã  vos pieds. Ã‰clatant de rire, vous restez bloquÃ© un instant et ne bougez pas de votre case. Passez votre tour.",
       skipTurns: 1,
     },
     {
@@ -837,27 +785,30 @@ function defaultPatteDeck(): AventureSauvageCard[] {
     {
       id: 7,
       deck: 'patte',
-      text: 'Vous vous arrêtez sous un manguier où un loriquet farceur vous pique votre casquette. Passez votre tour pour la récupérer.',
+      text: 'Vous vous arrÃªtez sous un manguier oÃ¹ un loriquet farceur vous pique votre casquette. Passez votre tour pour la rÃ©cupÃ©rer.',
       skipTurns: 1,
     },
     {
       id: 8,
       deck: 'patte',
-      text: 'Vous glissez sur des feuilles de bananier humides tombées au sol. Passez votre tour.',
+      text: 'Vous glissez sur des feuilles de bananier humides tombÃ©es au sol. Passez votre tour.',
       skipTurns: 1,
     },
     {
       id: 9,
       deck: 'patte',
-      text: 'Votre parcours est interrompu par un caméléon changeant de couleur juste devant vous. Vous restez ébahi. Passez votre tour.',
+      text: 'Votre parcours est interrompu par un camÃ©lÃ©on changeant de couleur juste devant vous. Vous restez Ã©bahi. Passez votre tour.',
       skipTurns: 1,
     },
     {
       id: 10,
       deck: 'patte',
-      text: "Un perroquet gris du Gabon se met à grimper le long d'un tronc et tombe juste à côté de vous. Vous sursautez et reculez d'une case.",
+      text: "Un perroquet gris du Gabon se met Ã  grimper le long d'un tronc et tombe juste Ã  cÃ´tÃ© de vous. Vous sursautez et reculez d'une case.",
       moveDelta: -1,
     },
   ];
   return deck;
 }
+
+
+

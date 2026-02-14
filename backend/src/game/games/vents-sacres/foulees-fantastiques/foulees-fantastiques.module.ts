@@ -6,6 +6,7 @@ import { BotModule } from '../../../modules/bot/bot.module';
 import { BoardModule } from '../../../modules/board/board.module';
 import { RandomModule } from '../../../modules/random/random.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
+import { SetupFlowModule } from '../../../modules/setup-flow/setup-flow.module';
 import { FouleesFantastiquesService } from './foulees-fantastiques.service';
 import { FouleesFantastiquesSetupService } from './setup/foulees-fantastiques-setup.service';
 import { FouleesFantastiquesActionService } from './actions/foulees-fantastiques-action.service';
@@ -22,6 +23,7 @@ import { FouleesFantastiquesBotService } from './bots/foulees-fantastiques-bot.s
     BoardModule,
     RandomModule,
     TurnModule,
+    SetupFlowModule,
   ],
   providers: [
     FouleesFantastiquesService,

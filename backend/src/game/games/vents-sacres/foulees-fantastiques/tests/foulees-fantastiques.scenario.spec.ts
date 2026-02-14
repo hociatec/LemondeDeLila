@@ -3,6 +3,7 @@ import { FouleesFantastiquesActionService } from '../actions/foulees-fantastique
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { TurnService } from '../../../../modules/turn/services/turn.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 
 describe('FouleesFantastiques scenario', () => {
   it('offers roll when nothing pending', () => {
@@ -37,6 +38,7 @@ describe('FouleesFantastiques scenario', () => {
       new TurnFlowService(new TurnService()),
       new GameCoreService(),
       { recomputeBoardView: (s: any) => s } as any,
+      new SetupFlowService(),
     );
 
     const state: any = {
@@ -66,6 +68,7 @@ describe('FouleesFantastiques scenario', () => {
       new TurnFlowService(new TurnService()),
       new GameCoreService(),
       { recomputeBoardView: (s: any) => s } as any,
+      new SetupFlowService(),
     );
 
     const state: any = {

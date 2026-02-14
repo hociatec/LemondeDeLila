@@ -6,6 +6,7 @@ import type {
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { SacAMalicesSetupService } from '../setup/sac-a-malices-setup.service';
 import type {
   SacCard,
@@ -21,6 +22,7 @@ export class SacAMalicesActionService {
     private readonly random: RandomService,
     private readonly core: GameCoreService,
     private readonly setup: SacAMalicesSetupService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
@@ -737,27 +739,29 @@ export class SacAMalicesActionService {
     deckId: 'chance' | 'community',
   ): { card: SacCard | null; meta: SacMetadata } {
     const deck: SacDeck = meta.decks?.[deckId] ?? { cards: [], discard: [] };
-    const cards = Array.isArray(deck.cards) ? deck.cards : [];
-    const discard = Array.isArray(deck.discard) ? deck.discard : [];
-
-    if (!cards.length && discard.length) {
-      const shuffled = this.random.shuffle(meta as any, discard);
-      const reshuffled: SacMetadata = {
-        ...meta,
-        ...shuffled.meta,
-        decks: { ...meta.decks, [deckId]: { cards: shuffled.values as any, discard: [] } },
+    const cards = Array.isArray(deck.cards) ? [...deck.cards] : [];
+    const discard = Array.isArray(deck.discard) ? [...deck.discard] : [];
+    const draw = this.deckPolicies.drawFromPile<SacCard, SacMetadata>({
+      meta,
+      pile: cards,
+      discard,
+      useWholeMetaRng: true,
+      discardDrawnCard: false,
+    });
+    if (!draw.card) {
+      const nextMeta: SacMetadata = {
+        ...draw.meta,
+        decks: { ...meta.decks, [deckId]: { cards: draw.pile as any, discard: draw.discard as any } },
       };
-      return this.drawCard(reshuffled, deckId);
+      return { card: null, meta: nextMeta };
     }
-
-    if (!cards.length) return { card: null, meta };
-    const [card, ...rest] = cards;
+    const card = draw.card;
     const keep = isGetOutOfJailCard(String(card.text ?? ''));
     const nextDeck = keep
-      ? { cards: rest, discard }
-      : { cards: rest, discard: [...discard, card] };
+      ? { cards: draw.pile, discard: draw.discard }
+      : { cards: draw.pile, discard: [...draw.discard, card] };
     const nextMeta: SacMetadata = {
-      ...meta,
+      ...draw.meta,
       decks: { ...meta.decks, [deckId]: nextDeck },
     };
     return { card, meta: nextMeta };

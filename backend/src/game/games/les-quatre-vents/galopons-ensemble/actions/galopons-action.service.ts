@@ -7,6 +7,7 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import type {
   GaloponsCard,
   GaloponsMetadata,
@@ -19,6 +20,7 @@ export class GaloponsActionService {
     private readonly random: RandomService,
     private readonly turns: TurnFlowService,
     private readonly core: GameCoreService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -645,24 +647,19 @@ export class GaloponsActionService {
     card: GaloponsCard | null;
     meta: GaloponsMetadata;
   } {
-    const deck = Array.isArray(meta.decks?.cards) ? meta.decks.cards : [];
-    const discard = Array.isArray(meta.decks?.discard)
-      ? meta.decks.discard
-      : [];
-    if (!deck.length && discard.length) {
-      const shuffled = this.random.shuffle(meta as any, discard);
-      const reshuffled: GaloponsMetadata = {
-        ...meta,
-        ...shuffled.meta,
-        decks: { cards: shuffled.values as any, discard: [] },
-      };
-      return this.drawCard(reshuffled);
-    }
-    if (!deck.length) return { card: null, meta };
-    const [card, ...rest] = deck;
+    const draw = this.deckPolicies.drawFromPile<GaloponsCard, GaloponsMetadata>({
+      meta,
+      pile: Array.isArray(meta.decks?.cards) ? meta.decks.cards : [],
+      discard: Array.isArray(meta.decks?.discard) ? meta.decks.discard : [],
+      useWholeMetaRng: true,
+      discardDrawnCard: true,
+    });
     return {
-      card,
-      meta: { ...meta, decks: { cards: rest, discard: [...discard, card] } },
+      card: draw.card,
+      meta: {
+        ...draw.meta,
+        decks: { cards: draw.pile as GaloponsCard[], discard: draw.discard as GaloponsCard[] },
+      },
     };
   }
 

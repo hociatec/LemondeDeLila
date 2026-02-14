@@ -4,6 +4,7 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import {
   LES_MAINS_CARD_BY_ID,
   LES_MAINS_FAMILY_SIZE,
@@ -23,6 +24,7 @@ export class LesMainsActionService {
     private readonly core: GameCoreService,
     private readonly turns: TurnFlowService,
     private readonly random: RandomService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -501,22 +503,13 @@ export class LesMainsActionService {
   }
 
   private drawOneCard(meta: LesMainsMetadata): { cardId: string | null; meta: LesMainsMetadata } {
-    let nextMeta = meta;
-    let deck = Array.isArray(nextMeta.deck) ? [...nextMeta.deck] : [];
-    let discard = Array.isArray(nextMeta.discard) ? [...nextMeta.discard] : [];
-    let rng = nextMeta.rng ?? {};
-    if (!deck.length && discard.length) {
-      const shuffled = this.random.shuffle(rng, discard);
-      deck = shuffled.values;
-      rng = shuffled.meta;
-      discard = [];
-    }
-    if (!deck.length) {
-      return { cardId: null, meta: { ...nextMeta, deck, discard, rng } };
-    }
-    const [cardId, ...rest] = deck;
-    nextMeta = { ...nextMeta, deck: rest, discard, rng };
-    return { cardId, meta: nextMeta };
+    const draw = this.deckPolicies.drawOne<string, LesMainsMetadata>({
+      meta,
+      deckKey: 'deck',
+      discardKey: 'discard',
+      rngKey: 'rng',
+    });
+    return { cardId: draw.card, meta: draw.meta };
   }
 
   private pickIndex(meta: LesMainsMetadata, length: number): { index: number; meta: LesMainsMetadata } {

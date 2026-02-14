@@ -240,7 +240,27 @@ export abstract class BasePresenterService {
     userId: number,
     currentPlayerId: number | null,
   ): any {
-    return this.buildPendingState(state, metadata, currentPlayerId);
+    const pending = this.buildPendingState(state, metadata, currentPlayerId);
+    return this.filterPendingForUser(pending, userId);
+  }
+
+  protected shouldExposePendingToUser(
+    pending: any,
+    userId: number,
+  ): boolean {
+    if (!pending) return false;
+    const ownerId =
+      typeof pending?.playerId === 'number' ? pending.playerId : null;
+    if (ownerId == null) return true;
+    return ownerId === userId;
+  }
+
+  protected filterPendingForUser(
+    pending: any,
+    userId: number,
+    fallback: any = null,
+  ): any {
+    return this.shouldExposePendingToUser(pending, userId) ? pending : fallback;
   }
 
   /**

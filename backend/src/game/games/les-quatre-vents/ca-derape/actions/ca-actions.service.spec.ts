@@ -2,6 +2,7 @@ import { CaActionService } from './ca-actions.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { TurnService } from '../../../../modules/turn/services/turn.service';
 import { GameCoreService } from '../../../../core/services/game-core.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { CaSetupService } from '../setup/ca.setup';
 
 describe('Ça Dérape ! - action flow', () => {
@@ -16,7 +17,8 @@ describe('Ça Dérape ! - action flow', () => {
 
     const turns = new TurnFlowService(new TurnService());
     const core = new GameCoreService();
-    return new CaActionService(random, turns, core);
+    const deckPolicies = new DeckPoliciesService(random);
+    return new CaActionService(random, turns, core, deckPolicies);
   }
 
   function makeStartedState() {
@@ -76,4 +78,3 @@ describe('Ça Dérape ! - action flow', () => {
     expect(afterDraw.turn?.currentPlayerId).toBe(2);
   });
 });
-

@@ -7,6 +7,7 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import type {
   MonVillageCard,
   MonVillageMetadata,
@@ -35,6 +36,7 @@ export class MonVillageActionService {
     private readonly random: RandomService,
     private readonly turns: TurnFlowService,
     private readonly core: GameCoreService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -260,27 +262,19 @@ export class MonVillageActionService {
     meta: MonVillageMetadata,
     zoneId: number,
   ): { card: MonVillageCard | null; meta: MonVillageMetadata } {
-    const deck = Array.isArray(meta.decks?.[zoneId]) ? meta.decks[zoneId] : [];
-    const discard = Array.isArray(meta.discards?.[zoneId])
-      ? meta.discards[zoneId]
-      : [];
-    if (!deck.length && discard.length) {
-      const shuffled = this.random.shuffle(meta as any, discard);
-      const reshuffled: MonVillageMetadata = {
-        ...meta,
-        decks: { ...meta.decks, [zoneId]: shuffled.values as any },
-        discards: { ...meta.discards, [zoneId]: [] },
-      };
-      return this.drawCard(reshuffled, zoneId);
-    }
-    if (!deck.length) return { card: null, meta };
-    const [card, ...rest] = deck;
+    const draw = this.deckPolicies.drawFromPile<MonVillageCard, MonVillageMetadata>({
+      meta,
+      pile: Array.isArray(meta.decks?.[zoneId]) ? meta.decks[zoneId] : [],
+      discard: Array.isArray(meta.discards?.[zoneId]) ? meta.discards[zoneId] : [],
+      useWholeMetaRng: true,
+      discardDrawnCard: true,
+    });
     const nextMeta: MonVillageMetadata = {
-      ...meta,
-      decks: { ...meta.decks, [zoneId]: rest },
-      discards: { ...meta.discards, [zoneId]: [...discard, card] },
+      ...draw.meta,
+      decks: { ...draw.meta.decks, [zoneId]: draw.pile as MonVillageCard[] },
+      discards: { ...draw.meta.discards, [zoneId]: draw.discard as MonVillageCard[] },
     };
-    return { card, meta: nextMeta };
+    return { card: draw.card, meta: nextMeta };
   }
 
   private playerName(state: GameStateEntity, id: number): string {

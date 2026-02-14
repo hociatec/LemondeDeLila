@@ -3,7 +3,7 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
-import { RandomService } from '../../../../modules/random/services/random.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import {
   PIMP_MY_RIDE_CARD_BY_ID,
   PIMP_MY_RIDE_CAR_NAMES,
@@ -34,7 +34,7 @@ export class PimpMyRideActionService {
   constructor(
     private readonly core: GameCoreService,
     private readonly turns: TurnFlowService,
-    private readonly random: RandomService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -222,28 +222,13 @@ export class PimpMyRideActionService {
     cardId: string | null;
     meta: PimpMyRideMetadata;
   } {
-    let deck = Array.isArray(meta.deck) ? [...meta.deck] : [];
-    let discard = Array.isArray(meta.discard) ? [...meta.discard] : [];
-    let nextMeta: PimpMyRideMetadata = { ...meta, deck, discard };
-    let rng = nextMeta.rng ?? {};
-    if (!deck.length && discard.length) {
-      const { values, meta: shuffled } = this.random.shuffle(rng, discard);
-      nextMeta = {
-        ...nextMeta,
-        deck: values,
-        discard: [],
-        rng: shuffled,
-      };
-      rng = shuffled;
-      deck = [...values];
-      discard = [];
-    }
-    if (!deck.length) {
-      return { cardId: null, meta: nextMeta };
-    }
-    const [cardId, ...rest] = deck;
-    nextMeta = { ...nextMeta, deck: rest, rng };
-    return { cardId, meta: nextMeta };
+    const draw = this.deckPolicies.drawOne<string, PimpMyRideMetadata>({
+      meta,
+      deckKey: 'deck',
+      discardKey: 'discard',
+      rngKey: 'rng',
+    });
+    return { cardId: draw.card, meta: draw.meta };
   }
 
   private addCardToHand(state: GameStateEntity, playerId: number, cardId: string): GameStateEntity {

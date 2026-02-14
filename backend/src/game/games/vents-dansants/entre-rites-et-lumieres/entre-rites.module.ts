@@ -5,6 +5,7 @@ import { GameCoreModule } from '../../../core/core.module';
 import { GameRegistryModule } from '../../../engine/game-registry.module';
 import { RandomModule } from '../../../modules/random/random.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
+import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
 import { EntreRitesActionService } from './actions/entre-rites-action.service';
 import { EntreRitesPresenterService } from './presenter/entre-rites-presenter.service';
 import { EntreRitesSetupService } from './setup/entre-rites-setup.service';
@@ -16,6 +17,7 @@ import { EntreRitesBotService } from './bots/entre-rites-bot.service';
     GameCoreModule,
     GameRegistryModule,
     RandomModule,
+    DeckPoliciesModule,
     BoardModule,
     TurnModule,
     BotModule,

@@ -4,6 +4,7 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import type {
   PiratesEnVadrouilleBonusCard,
   PiratesEnVadrouilleCollection,
@@ -21,6 +22,7 @@ export class PiratesEnVadrouilleActionService {
     private readonly random: RandomService,
     private readonly turns: TurnFlowService,
     private readonly core: GameCoreService,
+    private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
   applyActions(
@@ -537,27 +539,19 @@ export class PiratesEnVadrouilleActionService {
   }
 
   private drawFromDeck(meta: PiratesEnVadrouilleMetadata, deck: DeckName) {
-    const deckList = Array.isArray(meta.decks?.[deck]) ? meta.decks[deck] : [];
-    const discardList = Array.isArray(meta.discards?.[deck])
-      ? meta.discards[deck]
-      : [];
-    if (!deckList.length && discardList.length) {
-      const shuffled = this.random.shuffle(meta as any, discardList);
-      const refreshed: PiratesEnVadrouilleMetadata = {
-        ...meta,
-        decks: { ...meta.decks, [deck]: shuffled.values as any },
-        discards: { ...meta.discards, [deck]: [] },
-      };
-      return this.drawFromDeck(refreshed, deck);
-    }
-    if (!deckList.length) return { card: null, meta };
-    const [card, ...rest] = deckList;
+    const draw = this.deckPolicies.drawFromPile<any, PiratesEnVadrouilleMetadata>({
+      meta,
+      pile: Array.isArray(meta.decks?.[deck]) ? meta.decks[deck] : [],
+      discard: Array.isArray(meta.discards?.[deck]) ? meta.discards[deck] : [],
+      useWholeMetaRng: true,
+      discardDrawnCard: true,
+    });
     const nextMeta: PiratesEnVadrouilleMetadata = {
-      ...meta,
-      decks: { ...meta.decks, [deck]: rest },
-      discards: { ...meta.discards, [deck]: [...discardList, card as any] },
+      ...draw.meta,
+      decks: { ...draw.meta.decks, [deck]: draw.pile as any[] },
+      discards: { ...draw.meta.discards, [deck]: draw.discard as any[] },
     };
-    return { card, meta: nextMeta };
+    return { card: draw.card, meta: nextMeta };
   }
 
   private formatActionMessage(
