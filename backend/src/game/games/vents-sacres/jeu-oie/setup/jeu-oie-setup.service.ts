@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
 import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
@@ -8,6 +8,7 @@ import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-
 import { ensureSeededRng } from '../../../../../common/utils/seeded-rng';
 import { seededShuffle } from '../../../../../common/utils/seeded-shuffle';
 import type { JeuOieCaseTextsJsonV1 } from '../model/jeu-oie-content.entity';
+import { loadV1Content } from '../../../../setup/content-loader.helper';
 import type {
   JeuOieMetadata,
   JeuOiePawn,
@@ -32,15 +33,7 @@ export class JeuOieSetupService {
   ) {}
 
   private loadTexts(): JeuOieCaseTextsJsonV1 {
-    return this.contentLoader.loadContent<JeuOieCaseTextsJsonV1>({
-      gameType: 'jeu-oie',
-      baseDir: __dirname,
-      filename: 'descriptions.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('cases', 1),
-      ],
-    });
+    return loadV1Content<JeuOieCaseTextsJsonV1>(this.contentLoader, { gameType: 'jeu-oie', baseDir: __dirname, filename: 'descriptions.json', arrayField: 'cases', minItems: 1 });
   }
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
@@ -70,7 +63,7 @@ export class JeuOieSetupService {
         label: pawn.label,
         feminine: pawn.feminine,
       })),
-      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
+      labelForPlayer: (playerLabel) => `C'est Ã  ${playerLabel} de choisir son pion.`,
       dataBuilder: (choices) => ({
         pawns: choices.map((choice) => ({
           id: choice.id,
@@ -265,4 +258,5 @@ function buildTiles(texts: JeuOieCaseTextsJsonV1): JeuOieTile[] {
   }
   return tiles;
 }
+
 

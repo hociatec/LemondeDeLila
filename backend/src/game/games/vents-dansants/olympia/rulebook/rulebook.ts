@@ -1,6 +1,8 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { OlympiaDeckType } from '../model/olympia-cards';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import type {
   OlympiaMetadata,
   OlympiaStatus,
@@ -10,7 +12,7 @@ export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  if (String(state.status ?? '').toLowerCase() !== 'started') return [];
+  if (!isStartedState(state)) return [];
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== playerId) return [];
   const meta = getMeta(state);
@@ -47,11 +49,11 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const type = String(action?.type ?? '').trim();
+  const type = normalizeActionType(action);
   if (!actorId) {
     throw new Error('Acteur requis.');
   }
-  if (String(state.status ?? '').toLowerCase() !== 'started') {
+  if (!isStartedState(state)) {
     throw new Error('La partie n\'est pas ouverte.');
   }
   if (state.turn?.currentPlayerId !== actorId) {
@@ -81,7 +83,7 @@ export function validateAction(
   if (type === 'play_card') {
     const cardId = String(payload.cardId ?? '').trim();
     if (!cardId) {
-      throw new Error('Carte à jouer manquante.');
+      throw new Error('Carte Ã  jouer manquante.');
     }
     const meta = getMeta(state);
     const hand = Array.isArray(meta.hands?.[actorId]) ? meta.hands[actorId] : [];
@@ -111,3 +113,6 @@ function hasBlockingStatus(
 function getMeta(state: GameStateEntity): OlympiaMetadata {
   return (state.metadata ?? {}) as OlympiaMetadata;
 }
+
+
+

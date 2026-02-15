@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import {
   FOULEES_FANTASTIQUES_GAME,
@@ -9,6 +9,7 @@ import {
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
 import type { FouleesFantastiquesMetadata } from '../model/foulees-fantastiques-state.entity';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
 
 function normalizeNumber(value: unknown): number | null {
   const n = typeof value === 'number' ? value : Number(value);
@@ -64,7 +65,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const rawType = String(action?.type ?? '').trim();
+  const rawType = normalizeActionType(action);
   const normalizedType = rawType.toLowerCase();
   const type = rawType as FouleesFantastiquesActionType;
   if (
@@ -137,7 +138,7 @@ export function validateAction(
         String(fid ?? '').trim() === familyId,
     );
     if (taken) {
-      throw new GameValidationError('Famille déjà choisie.', {
+      throw new GameValidationError('Famille dÃ©jÃ  choisie.', {
         gameType: 'foulees-fantastiques',
         playerId: actorId ?? undefined,
         payload,
@@ -195,3 +196,4 @@ export function validateAction(
 
   return { ...action, type: 'roll', payload: {} };
 }
+

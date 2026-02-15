@@ -3,6 +3,7 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { loadV1Content } from '../../../../setup/content-loader.helper';
 import type {
   FrousseBoardJsonV1,
   FrousseCardsJsonV1,
@@ -105,38 +106,15 @@ export class FrousseSetupService {
   }
 
   private loadBoard(): FrousseBoardJsonV1 {
-    return this.contentLoader.loadContent<FrousseBoardJsonV1>({
-      gameType: 'frousse-party',
-      baseDir: __dirname,
-      filename: 'board.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('tiles', 1),
-      ],
-    });
+    return loadV1Content<FrousseBoardJsonV1>(this.contentLoader, { gameType: 'frousse-party', baseDir: __dirname, filename: 'board.json', arrayField: 'tiles', minItems: 1 });
   }
 
   private loadCards(): FrousseCardsJsonV1 {
-    return this.contentLoader.loadContent<FrousseCardsJsonV1>({
-      gameType: 'frousse-party',
-      baseDir: __dirname,
-      filename: 'cards.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('cards', 1),
-      ],
-    });
+    return loadV1Content<FrousseCardsJsonV1>(this.contentLoader, { gameType: 'frousse-party', baseDir: __dirname, filename: 'cards.json', arrayField: 'cards', minItems: 1 });
   }
 
   private loadPawns(): FroussePawnsJsonV1 {
-    return this.contentLoader.loadContent<FroussePawnsJsonV1>({
-      gameType: 'frousse-party',
-      baseDir: __dirname,
-      filename: 'pawns.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('pawns', 1),
-      ],
-    });
+    return loadV1Content<FroussePawnsJsonV1>(this.contentLoader, { gameType: 'frousse-party', baseDir: __dirname, filename: 'pawns.json', arrayField: 'pawns', minItems: 1 });
   }
 }
+

@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import {
   GameValidationError,
@@ -6,13 +6,14 @@ import {
 } from '../../../../../common/errors/game-errors';
 import type { MonVillageActionType } from '../definitions/mon-village.definition';
 import { MON_VILLAGE_GAME } from '../definitions/mon-village.definition';
+import { normalizeActionType as normalizeRawActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
+  if (!isStartedState(state)) return [];
 
   if (state.pending) return [];
 
@@ -29,7 +30,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const rawType = String(action?.type ?? '').trim();
+  const rawType = normalizeRawActionType(action);
   const type = normalizeActionType(rawType);
   if (!MON_VILLAGE_GAME.actions.includes(type)) {
     throw new GameValidationError(`Action inconnue: ${rawType || '(vide)'}`, {
@@ -46,7 +47,7 @@ export function validateAction(
 
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new PlayerActionError("La partie n'est pas démarrée.", {
+    throw new PlayerActionError("La partie n'est pas dÃ©marrÃ©e.", {
       gameType: 'mon-village-mon-histoire',
     });
   }
@@ -74,3 +75,6 @@ function normalizeActionType(rawType: string): MonVillageActionType {
   const normalized = rawType === 'ROLL_DICE' || rawType === 'roll_dice' ? 'roll' : rawType;
   return normalized as MonVillageActionType;
 }
+
+
+

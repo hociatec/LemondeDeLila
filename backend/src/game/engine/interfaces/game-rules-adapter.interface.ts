@@ -76,6 +76,12 @@ export interface GameRulesAdapter {
   readonly maxPlayers?: number;
 
   /**
+   * Demande au moteur de journaliser automatiquement les arrivées sur le plateau.
+   * Retourne `false` par défaut si la logique reste déportée dans le jeu lui-même.
+   */
+  shouldAnnounceBoardArrivals?(): boolean;
+
+  /**
    * Hydrate l'état initial du jeu avec les métadonnées et structures spécifiques.
    *
    * Cette méthode est appelée lors de la création d'une nouvelle partie.

@@ -3,6 +3,7 @@ import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../dto/game-action.dto';
+import { formatPresenterActions } from '../../presenters/actions-presenter.helper';
 
 /**
  * Classe de base abstraite pour les services de présentation de jeux.
@@ -97,11 +98,7 @@ export abstract class BasePresenterService {
     label: string;
     payload: Record<string, any>;
   }> {
-    return actions.map((a) => ({
-      type: a.type,
-      label: this.getActionLabel(a.type),
-      payload: a.payload ?? {},
-    }));
+    return formatPresenterActions(actions, (a) => this.getActionLabel(a.type));
   }
 
   /**

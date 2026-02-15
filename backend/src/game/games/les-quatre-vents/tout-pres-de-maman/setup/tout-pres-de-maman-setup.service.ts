@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
 import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
@@ -9,6 +9,7 @@ import type {
   ToutPresDeMamanCardsJsonV1,
 } from '../model/tout-pres-de-maman-content.entity';
 import type { ToutPresDeMamanMetadata } from '../model/tout-pres-de-maman-state.entity';
+import { loadV1Content } from '../../../../setup/content-loader.helper';
 
 @Injectable()
 export class ToutPresDeMamanSetupService {
@@ -65,26 +66,11 @@ export class ToutPresDeMamanSetupService {
   }
 
   private loadBoard(): ToutPresDeMamanBoardJsonV1 {
-    return this.contentLoader.loadContent<ToutPresDeMamanBoardJsonV1>({
-      gameType: 'tout-pres-de-maman',
-      baseDir: __dirname,
-      filename: 'board.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('tiles', 1),
-      ],
-    });
+    return loadV1Content<ToutPresDeMamanBoardJsonV1>(this.contentLoader, { gameType: 'tout-pres-de-maman', baseDir: __dirname, filename: 'board.json', arrayField: 'tiles', minItems: 1 });
   }
 
   private loadCards(): ToutPresDeMamanCardsJsonV1 {
-    return this.contentLoader.loadContent<ToutPresDeMamanCardsJsonV1>({
-      gameType: 'tout-pres-de-maman',
-      baseDir: __dirname,
-      filename: 'cards.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('cards', 1),
-      ],
-    });
+    return loadV1Content<ToutPresDeMamanCardsJsonV1>(this.contentLoader, { gameType: 'tout-pres-de-maman', baseDir: __dirname, filename: 'cards.json', arrayField: 'cards', minItems: 1 });
   }
 }
+

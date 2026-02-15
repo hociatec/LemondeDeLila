@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { loadV1Content } from '../../../../setup/content-loader.helper';
 import type {
   VoyageBoardJsonV1,
   VoyageCardsJsonV1,
@@ -65,26 +66,17 @@ export class VoyageSetupService {
   }
 
   private loadBoard(): VoyageBoardJsonV1 {
-    return this.contentLoader.loadContent<VoyageBoardJsonV1>({
-      gameType: 'voyage-en-terre-de-brumes',
-      baseDir: __dirname,
-      filename: 'board.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('tiles', 1),
-      ],
-    });
+    return loadV1Content<VoyageBoardJsonV1>(this.contentLoader, { gameType: 'voyage-en-terre-de-brumes', baseDir: __dirname, filename: 'board.json', arrayField: 'tiles', minItems: 1 });
   }
 
   private loadCards(filename: string): VoyageCardsJsonV1 {
-    return this.contentLoader.loadContent<VoyageCardsJsonV1>({
+    return loadV1Content<VoyageCardsJsonV1>(this.contentLoader, {
       gameType: 'voyage-en-terre-de-brumes',
       baseDir: __dirname,
       filename,
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('cards', 1),
-      ],
+      arrayField: 'cards',
+      minItems: 1,
     });
   }
 }
+

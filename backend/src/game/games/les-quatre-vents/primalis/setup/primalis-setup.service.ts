@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
 import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import type { PrimalisBoardJsonV1 } from '../model/primalis-content.entity';
+import { loadV1Content } from '../../../../setup/content-loader.helper';
 import type {
   PrimalisMetadata,
   PrimalisResources,
@@ -57,14 +58,7 @@ export class PrimalisSetupService {
   }
 
   private loadBoard(): PrimalisBoardJsonV1 {
-    return this.contentLoader.loadContent<PrimalisBoardJsonV1>({
-      gameType: 'primalis',
-      baseDir: __dirname,
-      filename: '../model/content/board.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('tiles', 1),
-      ],
-    });
+    return loadV1Content<PrimalisBoardJsonV1>(this.contentLoader, { gameType: 'primalis', baseDir: __dirname, filename: '../model/content/board.json', arrayField: 'tiles', minItems: 1 });
   }
 }
+

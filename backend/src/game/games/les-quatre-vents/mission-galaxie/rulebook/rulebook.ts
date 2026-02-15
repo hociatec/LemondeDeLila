@@ -1,5 +1,7 @@
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+﻿import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
   GameValidationError,
   PlayerActionError,
@@ -13,8 +15,7 @@ export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
+  if (!isStartedState(state)) return [];
 
   const pending = state.pending as any;
   if (pending) {
@@ -52,7 +53,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const rawType = String(action?.type ?? '').trim();
+  const rawType = normalizeActionType(action);
   const type = (
     rawType === 'roll_dice' ? 'ROLL_DICE' : rawType
   ) as MissionGalaxieActionType;
@@ -69,8 +70,8 @@ export function validateAction(
     });
   }
 
-  if (String(state.status ?? '').toLowerCase() !== 'started') {
-    throw new PlayerActionError("La partie n'est pas démarrée.", {
+  if (!isStartedState(state)) {
+    throw new PlayerActionError("La partie n'est pas dÃ©marrÃ©e.", {
       gameType: 'mission-galaxie',
     });
   }
@@ -157,3 +158,7 @@ export function validateAction(
   if (type === 'ROLL_DICE') return { type: 'roll', payload: {} };
   return { type, payload: action.payload ?? {} };
 }
+
+
+
+

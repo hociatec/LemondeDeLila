@@ -1,12 +1,13 @@
 ﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
+  if (!isStartedState(state)) return [];
 
   const pending = state.pending as any;
   if (pending) {
@@ -46,7 +47,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const type = String(action?.type ?? '').trim();
+  const type = normalizeActionType(action);
   if (
     type !== 'roll' &&
     type !== 'ROLL_DICE' &&
@@ -126,4 +127,7 @@ export function validateAction(
   }
   return { type: 'roll', payload: {} };
 }
+
+
+
 

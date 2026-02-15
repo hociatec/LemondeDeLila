@@ -2,6 +2,7 @@
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
 import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import { loadV1Content } from '../../../../setup/content-loader.helper';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
@@ -26,14 +27,12 @@ export class AFondLesBallonsSetupService {
   ) {}
 
   private loadPawns() {
-    const raw = this.contentLoader.loadContent<AFondLesBallonsPawnsJsonV1>({
+    const raw = loadV1Content<AFondLesBallonsPawnsJsonV1>(this.contentLoader, {
       gameType: 'a-fond-les-ballons',
       baseDir: __dirname,
       filename: 'pawns.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('pawns', 1),
-      ],
+      arrayField: 'pawns',
+      minItems: 1,
     });
 
     return raw.pawns

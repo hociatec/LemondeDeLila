@@ -6,6 +6,8 @@ import {
 } from '../model/les-mains-de-la-terre-cards';
 import type { LesMainsFamily } from '../model/les-mains-de-la-terre-cards';
 import type { LesMainsMetadata } from '../model/les-mains-de-la-terre-state.entity';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 type LesMainsActionPayload = {
   cardId?: string | null;
@@ -28,8 +30,7 @@ export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
+  if (!isStartedState(state)) return [];
   if (state.turn?.currentPlayerId !== playerId) return [];
   const meta = getMeta(state);
   if (meta.winnerId != null) return [];
@@ -63,7 +64,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const type = String(action?.type ?? '').trim();
+  const type = normalizeActionType(action);
   if (type !== 'request_card') {
     throw new Error(`Action inconnue: ${type}`);
   }
@@ -104,3 +105,6 @@ export function validateAction(
   }
   return { type: 'request_card', payload: { cardId, targetPlayerId: target } };
 }
+
+
+

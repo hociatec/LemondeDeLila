@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { loadV1Content } from '../../../../setup/content-loader.helper';
 import type {
   MonVillageBoardJsonV1,
   MonVillageCardsJsonV1,
@@ -72,26 +73,11 @@ export class MonVillageSetupService {
   }
 
   private loadBoard(): MonVillageBoardJsonV1 {
-    return this.contentLoader.loadContent<MonVillageBoardJsonV1>({
-      gameType: 'mon-village-mon-histoire',
-      baseDir: __dirname,
-      filename: 'board.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('tiles', 1),
-      ],
-    });
+    return loadV1Content<MonVillageBoardJsonV1>(this.contentLoader, { gameType: 'mon-village-mon-histoire', baseDir: __dirname, filename: 'board.json', arrayField: 'tiles', minItems: 1 });
   }
 
   private loadCards(): MonVillageCardsJsonV1 {
-    return this.contentLoader.loadContent<MonVillageCardsJsonV1>({
-      gameType: 'mon-village-mon-histoire',
-      baseDir: __dirname,
-      filename: 'cards.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('zones', 1),
-      ],
-    });
+    return loadV1Content<MonVillageCardsJsonV1>(this.contentLoader, { gameType: 'mon-village-mon-histoire', baseDir: __dirname, filename: 'cards.json', arrayField: 'zones', minItems: 1 });
   }
 }
+

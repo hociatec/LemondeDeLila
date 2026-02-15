@@ -1,10 +1,12 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import {
   GameValidationError,
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
 import { SAC_VARIANTS } from '../sac-a-malices-variants';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 const ALLOWED = new Set([
   'roll',
@@ -26,8 +28,7 @@ export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
+  if (!isStartedState(state)) return [];
 
   const meta: any = state.metadata ?? {};
   const setupStep = String(meta?.setupStep ?? '').trim();
@@ -95,7 +96,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const rawType = String(action?.type ?? '').trim();
+  const rawType = normalizeActionType(action);
   const normalized = rawType.toLowerCase();
   if (!ALLOWED.has(rawType) && !ALLOWED.has(normalized)) {
     throw new GameValidationError(
@@ -181,3 +182,6 @@ export function validateAction(
   }
   return { ...action, type: normalized, payload: {} };
 }
+
+
+

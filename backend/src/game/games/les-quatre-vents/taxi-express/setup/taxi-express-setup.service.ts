@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
 import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
@@ -10,6 +10,7 @@ import type {
   TaxiExpressEventsJsonV1,
 } from '../model/taxi-content.entity';
 import type { TaxiExpressMetadata } from '../model/taxi-state.entity';
+import { loadV1Content } from '../../../../setup/content-loader.helper';
 
 @Injectable()
 export class TaxiExpressSetupService {
@@ -79,38 +80,15 @@ export class TaxiExpressSetupService {
   }
 
   private loadBoard(): TaxiExpressBoardJsonV1 {
-    return this.contentLoader.loadContent<TaxiExpressBoardJsonV1>({
-      gameType: 'taxi-express',
-      baseDir: __dirname,
-      filename: 'board.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('tiles', 1),
-      ],
-    });
+    return loadV1Content<TaxiExpressBoardJsonV1>(this.contentLoader, { gameType: 'taxi-express', baseDir: __dirname, filename: 'board.json', arrayField: 'tiles', minItems: 1 });
   }
 
   private loadClients(): TaxiExpressClientsJsonV1 {
-    return this.contentLoader.loadContent<TaxiExpressClientsJsonV1>({
-      gameType: 'taxi-express',
-      baseDir: __dirname,
-      filename: 'clients.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('cards', 1),
-      ],
-    });
+    return loadV1Content<TaxiExpressClientsJsonV1>(this.contentLoader, { gameType: 'taxi-express', baseDir: __dirname, filename: 'clients.json', arrayField: 'cards', minItems: 1 });
   }
 
   private loadEvents(): TaxiExpressEventsJsonV1 {
-    return this.contentLoader.loadContent<TaxiExpressEventsJsonV1>({
-      gameType: 'taxi-express',
-      baseDir: __dirname,
-      filename: 'events.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('cards', 1),
-      ],
-    });
+    return loadV1Content<TaxiExpressEventsJsonV1>(this.contentLoader, { gameType: 'taxi-express', baseDir: __dirname, filename: 'events.json', arrayField: 'cards', minItems: 1 });
   }
 }
+

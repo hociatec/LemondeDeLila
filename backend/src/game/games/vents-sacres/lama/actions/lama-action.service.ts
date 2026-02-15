@@ -14,7 +14,11 @@ import { LamaInfoService } from './lama-info.service';
 import { LamaSetupService } from '../setup/lama-setup.service';
 import { LamaLogService } from '../logging/lama-log.service';
 
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  normalizeActionType,
+  normalizeLowerActionType,
+} from '../../../../actions/action-service.helper';
 @Injectable()
 export class LamaActionService {
   constructor(
@@ -30,13 +34,10 @@ export class LamaActionService {
   ) {}
 
   applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      const before = next;
-      const applied = this.applyOne(before, action);
-      next = this.appendTurnAnnouncementIfNeeded(before, applied);
-    }
-    return next;
+    return applyActionsSequentially(state, actions, (next, action) => {
+      const applied = this.applyOne(next, action);
+      return this.appendTurnAnnouncementIfNeeded(next, applied);
+    });
   }
 
   private appendTurnAnnouncementIfNeeded(

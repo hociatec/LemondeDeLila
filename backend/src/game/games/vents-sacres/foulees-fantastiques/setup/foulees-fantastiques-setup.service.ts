@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
 import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import { loadV1Content } from '../../../../setup/content-loader.helper';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
@@ -22,13 +23,13 @@ export class FouleesFantastiquesSetupService {
   ) {}
 
   private loadBoard(): FouleesFantastiquesBoardJsonV1 {
-    return this.contentLoader.loadContent<FouleesFantastiquesBoardJsonV1>({
+    return loadV1Content<FouleesFantastiquesBoardJsonV1>(this.contentLoader, {
       gameType: 'foulees-fantastiques',
       baseDir: __dirname,
       filename: 'board.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('tiles', 1),
+      arrayField: 'tiles',
+      minItems: 1,
+      extraValidators: [
         this.contentLoader.validators.positiveNumber('trackLength'),
         this.contentLoader.validators.positiveNumber('homeLength'),
       ],

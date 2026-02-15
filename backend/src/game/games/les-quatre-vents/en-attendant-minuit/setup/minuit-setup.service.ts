@@ -4,6 +4,7 @@ import { GameCoreService } from '../../../../core/services/game-core.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { loadV1Content } from '../../../../setup/content-loader.helper';
 import type {
   MinuitBoardJsonV1,
   MinuitCardsJsonV1,
@@ -164,39 +165,15 @@ export class MinuitSetupService {
   }
 
   private loadBoard(): MinuitBoardJsonV1 {
-    return this.contentLoader.loadContent<MinuitBoardJsonV1>({
-      gameType: 'en-attendant-minuit',
-      baseDir: __dirname,
-      filename: 'board.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('tiles', 1),
-      ],
-    });
+    return loadV1Content<MinuitBoardJsonV1>(this.contentLoader, { gameType: 'en-attendant-minuit', baseDir: __dirname, filename: 'board.json', arrayField: 'tiles', minItems: 1 });
   }
 
   private loadCards(): MinuitCardsJsonV1 {
-    return this.contentLoader.loadContent<MinuitCardsJsonV1>({
-      gameType: 'en-attendant-minuit',
-      baseDir: __dirname,
-      filename: 'cards.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('cards', 1),
-      ],
-    });
+    return loadV1Content<MinuitCardsJsonV1>(this.contentLoader, { gameType: 'en-attendant-minuit', baseDir: __dirname, filename: 'cards.json', arrayField: 'cards', minItems: 1 });
   }
 
   private loadPawns(): MinuitPawnsJsonV1 {
-    return this.contentLoader.loadContent<MinuitPawnsJsonV1>({
-      gameType: 'en-attendant-minuit',
-      baseDir: __dirname,
-      filename: 'pawns.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('pawns', 1),
-      ],
-    });
+    return loadV1Content<MinuitPawnsJsonV1>(this.contentLoader, { gameType: 'en-attendant-minuit', baseDir: __dirname, filename: 'pawns.json', arrayField: 'pawns', minItems: 1 });
   }
 
   private playerName(state: GameStateEntity, id: number): string {
@@ -209,5 +186,6 @@ export class MinuitSetupService {
     return username ?? `Joueur ${id}`;
   }
 }
+
 
 

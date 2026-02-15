@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import {
   GameValidationError,
@@ -6,18 +6,14 @@ import {
 } from '../../../../../common/errors/game-errors';
 import type { TaxiExpressActionType } from '../definitions/taxi-express.definition';
 import { TAXI_EXPRESS_GAME } from '../definitions/taxi-express.definition';
+import { normalizeActionType as normalizeRawActionType } from '../../../../actions/action-service.helper';
+import { canPlayerActOnTurn } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
-
-  if (state.pending) return [];
-
-  const current = state.turn?.currentPlayerId ?? null;
-  if (current !== playerId) return [];
+  if (!canPlayerActOnTurn(state, playerId)) return [];
 
   return [{ type: 'roll', payload: {} }];
 }
@@ -27,7 +23,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const rawType = String(action?.type ?? '').trim();
+  const rawType = normalizeRawActionType(action);
   const type = normalizeActionType(rawType);
   if (!TAXI_EXPRESS_GAME.actions.includes(type)) {
     throw new GameValidationError(`Action inconnue: ${rawType || '(vide)'}`, {
@@ -44,7 +40,7 @@ export function validateAction(
 
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new PlayerActionError("La partie n'est pas démarrée.", {
+    throw new PlayerActionError("La partie n'est pas dÃ©marrÃ©e.", {
       gameType: TAXI_EXPRESS_GAME.id,
     });
   }
@@ -73,3 +69,6 @@ function normalizeActionType(rawType: string): TaxiExpressActionType {
     rawType === 'ROLL_DICE' || rawType === 'roll_dice' ? 'roll' : rawType;
   return normalized as TaxiExpressActionType;
 }
+
+
+

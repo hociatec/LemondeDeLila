@@ -1,16 +1,18 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import {
   LA_PARADE_CARD_BY_ID,
   LA_PARADE_SEQUENCE,
 } from '../model/la-parade-sucree-cards';
 import type { LaParadeSucreeMetadata } from '../model/la-parade-sucree-state.entity';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  if (String(state.status ?? '').toLowerCase() !== 'started') {
+  if (!isStartedState(state)) {
     return [];
   }
   const current = state.turn?.currentPlayerId ?? null;
@@ -36,11 +38,11 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const type = String(action?.type ?? '').trim();
+  const type = normalizeActionType(action);
   if (!actorId) {
     throw new Error('Acteur requis.');
   }
-  if (String(state.status ?? '').toLowerCase() !== 'started') {
+  if (!isStartedState(state)) {
     throw new Error('La partie n\'est pas active.');
   }
   if (state.turn?.currentPlayerId !== actorId) {
@@ -72,3 +74,6 @@ export function validateAction(
 function getMeta(state: GameStateEntity): LaParadeSucreeMetadata {
   return (state.metadata ?? {}) as LaParadeSucreeMetadata;
 }
+
+
+

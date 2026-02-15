@@ -1,5 +1,7 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import type {
   ZigEtZagMetadata,
   ZigEtZagRoundState,
@@ -13,8 +15,7 @@ export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
+  if (!isStartedState(state)) return [];
   if (getMeta(state).winnerId != null) return [];
   const round = getMeta(state).roundState;
   if (!round) return [];
@@ -32,7 +33,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const type = String(action?.type ?? '').trim().toLowerCase();
+  const type = normalizeLowerActionType(action);
   if (type !== 'draw_card') {
     throw new Error(`Action inconnue: ${action?.type}`);
   }
@@ -41,11 +42,11 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error('La partie n\'est pas démarrée.');
+    throw new Error('La partie n\'est pas dÃ©marrÃ©e.');
   }
   const meta = getMeta(state);
   if (meta.winnerId != null) {
-    throw new Error('La partie est terminée.');
+    throw new Error('La partie est terminÃ©e.');
   }
   const round = meta.roundState;
   if (!round) {
@@ -73,3 +74,6 @@ function waitingPlayerIds(round: ZigEtZagRoundState): number[] {
     })
     .filter((v: any): v is number => typeof v === 'number');
 }
+
+
+

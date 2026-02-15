@@ -121,4 +121,8 @@ export abstract class AbstractGameService
   protected isFinished(state: GameStateEntity): boolean {
     return (state.status || '').toLowerCase() === 'finished';
   }
+
+  shouldAnnounceBoardArrivals(): boolean {
+    return false;
+  }
 }

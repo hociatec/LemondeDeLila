@@ -6,6 +6,8 @@ import {
   BandeABananeMonkeySpecies,
 } from '../model/la-bande-a-banane-cards';
 import type { BandeABananeMetadata } from '../model/la-bande-a-banane-state.entity';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export type BandeABananeActionPayload = {
   cardId?: string | null;
@@ -74,8 +76,7 @@ export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
+  if (!isStartedState(state)) return [];
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== playerId) return [];
   const meta = getMeta(state);
@@ -165,7 +166,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const type = String(action?.type ?? '').trim();
+  const type = normalizeActionType(action);
   const payload = (action?.payload ?? {}) as BandeABananeActionPayload;
   if (type !== 'play_card' && type !== 'pass') {
     throw new Error(`Action inconnue : ${type}`);
@@ -297,3 +298,6 @@ function validateActionCard(
 
   return { type: 'play_card', payload };
 }
+
+
+

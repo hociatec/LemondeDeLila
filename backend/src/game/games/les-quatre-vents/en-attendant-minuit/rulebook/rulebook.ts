@@ -9,6 +9,8 @@ import {
   type MinuitActionType,
 } from '../definitions/minuit.definition';
 import type { MinuitMetadata } from '../model/minuit.types';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -91,7 +93,7 @@ export function validateAction(
     return null;
   };
 
-  const rawType = String(action?.type ?? '').trim();
+  const rawType = normalizeActionType(action);
   const type = (
     rawType === 'roll_dice' ? 'ROLL_DICE' : rawType
   ) as MinuitActionType;
@@ -138,7 +140,7 @@ export function validateAction(
     return { type: 'pick_pawn', payload: { pawn: requestedPawn } };
   }
 
-  if (String(state.status ?? '').toLowerCase() !== 'started') {
+  if (!isStartedState(state)) {
     throw new PlayerActionError("La partie n'est pas démarrée.", {
       gameType: 'en-attendant-minuit',
     });
@@ -224,3 +226,6 @@ export function validateAction(
   if (type === 'ROLL_DICE') return { type: 'roll', payload: {} };
   return { type, payload: action.payload ?? {} };
 }
+
+
+

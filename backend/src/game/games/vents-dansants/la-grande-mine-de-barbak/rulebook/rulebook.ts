@@ -1,13 +1,15 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { LA_GRANDE_MINE_CARD_BY_ID } from '../model/la-grande-mine-cards';
 import type { LaGrandeMineMetadata } from '../model/la-grande-mine-state.entity';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  if (String(state.status ?? '').toLowerCase() !== 'started') return [];
+  if (!isStartedState(state)) return [];
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== playerId) return [];
   const meta = getMeta(state);
@@ -32,11 +34,11 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const type = String(action?.type ?? '').trim();
+  const type = normalizeActionType(action);
   if (!actorId) {
     throw new Error('Acteur requis.');
   }
-  if (String(state.status ?? '').toLowerCase() !== 'started') {
+  if (!isStartedState(state)) {
     throw new Error('La partie n\'est pas active.');
   }
   if (state.turn?.currentPlayerId !== actorId) {
@@ -67,3 +69,6 @@ export function validateAction(
 function getMeta(state: GameStateEntity): LaGrandeMineMetadata {
   return (state.metadata ?? {}) as LaGrandeMineMetadata;
 }
+
+
+

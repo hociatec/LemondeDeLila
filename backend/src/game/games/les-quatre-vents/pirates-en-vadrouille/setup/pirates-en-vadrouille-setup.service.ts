@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
 import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { loadV1Content } from '../../../../setup/content-loader.helper';
 import type {
   PiratesEnVadrouilleBoardJsonV1,
   PiratesEnVadrouilleCardsJsonV1,
@@ -88,24 +89,15 @@ export class PiratesEnVadrouilleSetupService {
   }
 
   private loadBoard(): PiratesEnVadrouilleBoardJsonV1 {
-    return this.contentLoader.loadContent<PiratesEnVadrouilleBoardJsonV1>({
-      gameType: 'pirates-en-vadrouille',
-      baseDir: __dirname,
-      filename: '../model/content/board.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('tiles', 1),
-      ],
-    });
+    return loadV1Content<PiratesEnVadrouilleBoardJsonV1>(this.contentLoader, { gameType: 'pirates-en-vadrouille', baseDir: __dirname, filename: '../model/content/board.json', arrayField: 'tiles', minItems: 1 });
   }
 
   private loadCards(): PiratesEnVadrouilleCardsJsonV1 {
-    return this.contentLoader.loadContent<PiratesEnVadrouilleCardsJsonV1>({
+    return loadV1Content<PiratesEnVadrouilleCardsJsonV1>(this.contentLoader, {
       gameType: 'pirates-en-vadrouille',
       baseDir: __dirname,
       filename: '../model/content/cards.json',
-      validators: [
-        this.contentLoader.validators.version(1),
+      extraValidators: [
         this.contentLoader.validators.arrayField('treasure', 1),
         this.contentLoader.validators.arrayField('obstacle', 1),
         this.contentLoader.validators.arrayField('bonus', 1),
@@ -113,3 +105,4 @@ export class PiratesEnVadrouilleSetupService {
     });
   }
 }
+

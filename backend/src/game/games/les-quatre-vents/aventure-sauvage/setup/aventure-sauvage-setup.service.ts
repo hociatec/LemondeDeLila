@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
 import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import { loadV1Content } from '../../../../setup/content-loader.helper';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
@@ -25,14 +26,12 @@ export class AventureSauvageSetupService {
   ) {}
 
   private loadPawns() {
-    const raw = this.contentLoader.loadContent<AventureSauvagePawnsJsonV1>({
+    const raw = loadV1Content<AventureSauvagePawnsJsonV1>(this.contentLoader, {
       gameType: 'aventure-sauvage',
       baseDir: __dirname,
       filename: 'pawns.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('pawns', 1),
-      ],
+      arrayField: 'pawns',
+      minItems: 1,
     });
 
     return raw.pawns

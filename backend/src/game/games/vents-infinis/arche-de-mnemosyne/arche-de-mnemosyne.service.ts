@@ -11,6 +11,11 @@ import { TurnFlowService } from '../../../modules/turn/services/turn-flow.servic
 import { RandomService } from '../../../modules/random/services/random.service';
 import { actionShortcut, interfaceShortcut } from '../../../engine/shortcuts/shortcut-utils';
 import { MnemoQuizStoreService } from './store/mnemo-quiz-store.service';
+import {
+  applyActionsSequentially,
+  normalizeActionType,
+} from '../../../actions/action-service.helper';
+import { formatPresenterActions } from '../../../presenters/actions-presenter.helper';
 import type {
   MnemoAdminPage,
   MnemoPrompt,
@@ -139,7 +144,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     action: GameSingleActionDto,
     actorId: number | null,
   ): GameSingleActionDto {
-    const type = String(action?.type ?? '').trim() as ActionType;
+    const type = normalizeActionType(action) as ActionType;
     if (!type) {
       throw new Error('Action invalide');
     }
@@ -265,10 +270,9 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
   }
 
   applyActions(state: GameStateEntity, actions: GameSingleActionDto[]) {
-    let next = state;
-    for (const action of actions ?? []) {
-      next = this.applyOne(next, action);
-    }
+    const next = applyActionsSequentially(state, actions, (current, action) =>
+      this.applyOne(current, action),
+    );
     return this.syncBotPending(this.resolveQuizIfReady(next));
   }
 
@@ -328,11 +332,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     return {
       ...(state as any),
       metadata: safeMeta,
-      actions: actions.map((a) => ({
-        type: a.type,
-        label: a.type,
-        payload: a.payload ?? {},
-      })),
+      actions: formatPresenterActions(actions),
       pending: built,
       extras: {
         ...(((state as any).extras ?? {}) as any),
@@ -348,7 +348,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
   }
 
   private applyOne(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
-    const type = String(action?.type ?? '').trim() as ActionType;
+    const type = normalizeActionType(action) as ActionType;
     const payload: any = action.payload ?? {};
     const meta = this.getMeta(state);
 

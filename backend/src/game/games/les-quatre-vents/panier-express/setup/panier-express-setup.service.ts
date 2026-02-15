@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import * as path from 'node:path';
 import { DeckManagerService } from '../../../../modules/cards/services/deck-manager.service';
 import {
@@ -24,6 +24,7 @@ import {
   PanierExpressStandsJsonV1,
 } from '../model/panier-express-content.entity';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
+import { loadV1Content } from '../../../../setup/content-loader.helper';
 
 @Injectable()
 export class PanierExpressSetupService {
@@ -36,99 +37,35 @@ export class PanierExpressSetupService {
   ) {}
 
   private loadBoard(): PanierExpressBoardJsonV1 {
-    return this.contentLoader.loadContent<PanierExpressBoardJsonV1>({
-      gameType: 'panier-express',
-      baseDir: __dirname,
-      filename: 'board.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('tiles', 1),
-      ],
-    });
+    return loadV1Content<PanierExpressBoardJsonV1>(this.contentLoader, { gameType: 'panier-express', baseDir: __dirname, filename: 'board.json', arrayField: 'tiles', minItems: 1 });
   }
 
   private loadCourses(): PanierExpressCoursesJsonV1 {
-    return this.contentLoader.loadContent<PanierExpressCoursesJsonV1>({
-      gameType: 'panier-express',
-      baseDir: __dirname,
-      filename: 'courses.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('items', 1),
-      ],
-    });
+    return loadV1Content<PanierExpressCoursesJsonV1>(this.contentLoader, { gameType: 'panier-express', baseDir: __dirname, filename: 'courses.json', arrayField: 'items', minItems: 1 });
   }
 
   private loadStands(): PanierExpressStandsJsonV1 {
-    return this.contentLoader.loadContent<PanierExpressStandsJsonV1>({
-      gameType: 'panier-express',
-      baseDir: __dirname,
-      filename: 'stands.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('stands', 1),
-      ],
-    });
+    return loadV1Content<PanierExpressStandsJsonV1>(this.contentLoader, { gameType: 'panier-express', baseDir: __dirname, filename: 'stands.json', arrayField: 'stands', minItems: 1 });
   }
 
   private loadEvents(): PanierExpressEventsJsonV1 {
-    return this.contentLoader.loadContent<PanierExpressEventsJsonV1>({
-      gameType: 'panier-express',
-      baseDir: __dirname,
-      filename: 'events.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('events', 1),
-      ],
-    });
+    return loadV1Content<PanierExpressEventsJsonV1>(this.contentLoader, { gameType: 'panier-express', baseDir: __dirname, filename: 'events.json', arrayField: 'events', minItems: 1 });
   }
 
   private loadExchanges(): PanierExpressExchangesJsonV1 {
-    return this.contentLoader.loadContent<PanierExpressExchangesJsonV1>({
-      gameType: 'panier-express',
-      baseDir: __dirname,
-      filename: 'exchanges.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('exchanges', 1),
-      ],
-    });
+    return loadV1Content<PanierExpressExchangesJsonV1>(this.contentLoader, { gameType: 'panier-express', baseDir: __dirname, filename: 'exchanges.json', arrayField: 'exchanges', minItems: 1 });
   }
 
   private loadQuizzes(): PanierExpressQuizzesJsonV1 {
-    return this.contentLoader.loadContent<PanierExpressQuizzesJsonV1>({
-      gameType: 'panier-express',
-      baseDir: __dirname,
-      filename: 'quizzes.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('quizzes'),
-      ],
-    });
+    return loadV1Content<PanierExpressQuizzesJsonV1>(this.contentLoader, { gameType: 'panier-express', baseDir: __dirname, filename: 'quizzes.json', arrayField: 'quizzes' });
   }
 
   private loadShoppingLists(): PanierExpressShoppingListsJsonV1 {
-    return this.contentLoader.loadContent<PanierExpressShoppingListsJsonV1>({
-      gameType: 'panier-express',
-      baseDir: __dirname,
-      filename: 'shopping-lists.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('lists', 1),
-      ],
-    });
+    return loadV1Content<PanierExpressShoppingListsJsonV1>(this.contentLoader, { gameType: 'panier-express', baseDir: __dirname, filename: 'shopping-lists.json', arrayField: 'lists', minItems: 1 });
   }
 
   private loadPawns(): PanierExpressPawnsJsonV1 {
-    return this.contentLoader.loadContent<PanierExpressPawnsJsonV1>({
-      gameType: 'panier-express',
-      baseDir: __dirname,
-      filename: 'pawns.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('pawns', 1),
-      ],
-    });
+    return loadV1Content<PanierExpressPawnsJsonV1>(this.contentLoader, { gameType: 'panier-express', baseDir: __dirname, filename: 'pawns.json', arrayField: 'pawns', minItems: 1 });
   }
 
   courseItems(): string[] {
@@ -276,8 +213,8 @@ export class PanierExpressSetupService {
   }
 
   /**
-   * Les stands doivent pouvoir être revisités plusieurs fois au cours d'une même partie.
-   * On duplique volontairement les cartes disponibles pour simuler le réassort permanent.
+   * Les stands doivent pouvoir Ãªtre revisitÃ©s plusieurs fois au cours d'une mÃªme partie.
+   * On duplique volontairement les cartes disponibles pour simuler le rÃ©assort permanent.
    */
   buildReplenishableDeck(items?: string[]): string[] {
     const source = items && items.length ? [...items] : [...this.courseItems()];
@@ -293,3 +230,4 @@ export class PanierExpressSetupService {
     return updated as PanierExpressDeckPool;
   }
 }
+

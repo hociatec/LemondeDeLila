@@ -1,5 +1,7 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
   GameValidationError,
   PlayerActionError,
@@ -17,8 +19,7 @@ export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
+  if (!isStartedState(state)) return [];
 
   const pending = state.pending as any;
   if (pending) {
@@ -46,7 +47,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const rawType = String(action?.type ?? '').trim();
+  const rawType = normalizeActionType(action);
   const normalized = rawType.toLowerCase();
   if (!ALLOWED.has(rawType) && !ALLOWED.has(normalized)) {
     throw new GameValidationError(
@@ -118,3 +119,6 @@ export function validateAction(
   }
   return { ...action, type: 'roll', payload: {} };
 }
+
+
+

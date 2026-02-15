@@ -9,6 +9,8 @@ import {
   type FrousseActionType,
 } from '../definitions/frousse.definition';
 import { resolvePawnId } from '../pawns.utils';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -19,9 +21,7 @@ export function getAvailableActions(
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
   };
-
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
+  if (!isStartedState(state)) return [];
 
   const pending = state.pending as any;
   if (pending) {
@@ -72,7 +72,7 @@ export function validateAction(
     return Number.isFinite(parsed) ? parsed : null;
   };
 
-  const rawType = String(action?.type ?? '').trim();
+  const rawType = normalizeActionType(action);
   const type = (
     rawType === 'roll_dice' ? 'ROLL_DICE' : rawType
   ) as FrousseActionType;
@@ -87,7 +87,7 @@ export function validateAction(
     throw new PlayerActionError('Acteur requis.', {
       gameType: 'frousse-party',
     });
-  if (String(state.status ?? '').toLowerCase() !== 'started') {
+  if (!isStartedState(state)) {
     throw new PlayerActionError("La partie n'est pas démarrée.", {
       gameType: 'frousse-party',
     });
@@ -174,3 +174,7 @@ export function validateAction(
   if (type === 'ROLL_DICE') return { type: 'roll', payload: {} };
   return { type, payload: action.payload ?? {} };
 }
+
+
+
+

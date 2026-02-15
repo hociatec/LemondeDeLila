@@ -1,17 +1,18 @@
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+﻿import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import {
   GameValidationError,
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
 import { PIRATES_GAME } from '../definitions/pirates-en-vadrouille.definition';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
+  if (!isStartedState(state)) return [];
 
   const pending = state.pending as any;
   if (pending) {
@@ -40,7 +41,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const rawType = String(action?.type ?? '').trim();
+  const rawType = normalizeActionType(action);
   const type =
     rawType === 'ROLL_DICE'
       ? 'roll'
@@ -62,7 +63,7 @@ export function validateAction(
 
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new PlayerActionError("La partie n'est pas démarrée.", {
+    throw new PlayerActionError("La partie n'est pas dÃ©marrÃ©e.", {
       gameType: 'pirates-en-vadrouille',
     });
   }
@@ -114,3 +115,6 @@ export function validateAction(
   if (type === 'roll') return { type: 'roll', payload: action.payload ?? {} };
   return action;
 }
+
+
+

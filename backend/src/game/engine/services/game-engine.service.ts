@@ -907,7 +907,12 @@ export class GameEngineService {
     }
     marked = this.normalizeWinnerMetadata(marked);
     marked = this.forceFinishedIfWinnerDetected(marked);
-    marked = this.appendBoardArrivalAnnouncements(gameType, current, marked);
+    marked = this.appendBoardArrivalAnnouncements(
+      gameType,
+      handler,
+      current,
+      marked,
+    );
     marked = this.appendSkipTurnAnnouncements(marked);
     if ((marked.status || '').toLowerCase() === 'finished') {
       const meta = (marked as any)?.metadata;
@@ -1578,7 +1583,12 @@ export class GameEngineService {
       let marked = await this.markBotThinking(roomId, gameType, next, botTurn);
       marked = this.normalizeWinnerMetadata(marked);
       marked = this.forceFinishedIfWinnerDetected(marked);
-      marked = this.appendBoardArrivalAnnouncements(gameType, current, marked);
+      marked = this.appendBoardArrivalAnnouncements(
+        gameType,
+        handler,
+        current,
+        marked,
+      );
       marked = this.appendSkipTurnAnnouncements(marked);
       await this.store.set(roomId, gameType, marked, { asyncPersist: true });
 
@@ -2403,24 +2413,14 @@ export class GameEngineService {
     };
   }
 
-  private static readonly BOARD_ANNOUNCE_GAMES = new Set<string>([
-    // Les Quatre Vents (plateaux) : annoncer l'arrivée sur une case (titre + description si dispo).
-    // Panier Express gère déjà ses annonces de case dans son service, on évite le doublon.
-    'en-attendant-minuit',
-    'galopons-ensemble',
-  ]);
-
   private appendBoardArrivalAnnouncements(
     gameType: string,
+    handler: GameRulesAdapter | undefined,
     previous: GameStateEntity,
     next: GameStateEntity,
   ): GameStateEntity {
     try {
-      if (
-        !GameEngineService.BOARD_ANNOUNCE_GAMES.has(
-          String(gameType ?? '').trim(),
-        )
-      ) {
+      if (!handler?.shouldAnnounceBoardArrivals?.()) {
         return next;
       }
       if (
@@ -2673,7 +2673,7 @@ export class GameEngineService {
     }
 
     (uiNow as any).panels = panelsNow;
-    return {
+    const stateWithTurnPanel: GameStateWithActions = {
       ...state,
       extras: {
         ...extrasNow,
@@ -2682,7 +2682,10 @@ export class GameEngineService {
     };
 
     const extras =
-      state.extras && typeof state.extras === 'object' ? state.extras : {};
+      stateWithTurnPanel.extras &&
+      typeof stateWithTurnPanel.extras === 'object'
+        ? stateWithTurnPanel.extras
+        : {};
 
     const uiExisting = (extras as any).ui;
     const ui =
@@ -2699,8 +2702,7 @@ export class GameEngineService {
         : {};
 
     const currentPlayerView = (extras as any).currentPlayerView;
-    const metadata = state.metadata ?? {};
-
+    const metadata = stateWithTurnPanel.metadata ?? {};
     const upsertPanel = (id: string, title: string, message: string) => {
       if (!id || !title || !message) return;
 
@@ -2815,7 +2817,7 @@ export class GameEngineService {
 
     (ui as any).panels = panels;
     return {
-      ...state,
+      ...stateWithTurnPanel,
       extras: {
         ...extras,
         ui,

@@ -64,6 +64,10 @@ export class EnAttendantMinuitService extends AbstractGameService
     return Rulebook.validateAction(state, action, actorId);
   }
 
+  shouldAnnounceBoardArrivals(): boolean {
+    return true;
+  }
+
   getBotActions(
     state: GameStateEntity,
     botPlayerId: number,

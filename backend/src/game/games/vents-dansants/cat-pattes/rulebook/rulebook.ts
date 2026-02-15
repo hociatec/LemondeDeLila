@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import {
   CAT_PATTES_CARD_BY_ID,
@@ -8,6 +8,8 @@ import {
 } from '../model/cat-pattes-cards';
 import type { CatPattesMetadata } from '../model/cat-pattes-state.entity';
 import { CAT_PATTES_GOAL } from '../model/cat-pattes-state.entity';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 type CatPattesActionPayload = {
   cardId?: string | null;
@@ -94,8 +96,7 @@ export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
+  if (!isStartedState(state)) return [];
 
   const pending = state.pending as any;
   if (pending) {
@@ -164,7 +165,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const type = String(action?.type ?? '').trim();
+  const type = normalizeActionType(action);
   const payload = (action?.payload ?? {}) as CatPattesActionPayload;
   if (
     type !== 'play_card' &&
@@ -180,7 +181,7 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error("La partie n'est pas démarrée.");
+    throw new Error("La partie n'est pas dÃ©marrÃ©e.");
   }
 
   const pending = state.pending as any;
@@ -220,7 +221,7 @@ export function validateAction(
   }
 
   if (type === 'draw') {
-    throw new Error('Carte déjà piochée ce tour.');
+    throw new Error('Carte dÃ©jÃ  piochÃ©e ce tour.');
   }
 
   if (type === 'pass') {
@@ -268,3 +269,6 @@ export function validateAction(
 
   return { type: 'play_card', payload: { ...payload, cardId } };
 }
+
+
+

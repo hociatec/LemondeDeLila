@@ -5,6 +5,8 @@ import {
   DameNatureFamilyCardDefinition,
 } from '../model/dame-nature-cards';
 import type { DameNatureMetadata } from '../model/dame-nature-state.entity';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export type DameNatureActionType = 'ask_card' | 'pass';
 
@@ -31,8 +33,7 @@ export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
+  if (!isStartedState(state)) return [];
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== playerId) return [];
   const meta = getMeta(state);
@@ -59,7 +60,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const type = String(action?.type ?? '').trim();
+  const type = normalizeActionType(action);
   const payload = (action?.payload ?? {}) as DameNatureActionPayload;
   if (type !== 'ask_card' && type !== 'pass') {
     throw new Error(`Action inconnue : ${type}`);
@@ -105,3 +106,6 @@ export function validateAction(
 
   return { type: 'ask_card', payload: { cardId, targetPlayerId: target } };
 }
+
+
+

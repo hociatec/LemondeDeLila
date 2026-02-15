@@ -1,12 +1,13 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
+  if (!isStartedState(state)) return [];
 
   const pending = state.pending as any;
   if (pending) {
@@ -92,7 +93,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const type = String(action?.type ?? '').trim();
+  const type = normalizeActionType(action);
   if (
     type !== 'roll' &&
     type !== 'ROLL_DICE' &&
@@ -111,12 +112,12 @@ export function validateAction(
   if (actorId == null) throw new Error('Acteur requis');
 
   const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') throw new Error("La partie n'est pas démarrée.");
+  if (status !== 'started') throw new Error("La partie n'est pas dÃ©marrÃ©e.");
 
   const pending = state.pending as any;
   if (pending) {
     if (pending.playerId !== actorId)
-      throw new Error('Action réservée à un autre joueur.');
+      throw new Error('Action rÃ©servÃ©e Ã  un autre joueur.');
 
     const pType = String(pending.type ?? '').toLowerCase();
     if (pType === 'draw') {
@@ -203,7 +204,7 @@ export function validateAction(
     meta?.statuses?.blockedUntilPassed ?? {};
   if (typeof blockedUntilPassed[actorId] === 'number') {
     throw new Error(
-      'Vous êtes bloqué(e) : attendez qu’un autre joueur vous dépasse.',
+      'Vous Ãªtes bloquÃ©(e) : attendez quâ€™un autre joueur vous dÃ©passe.',
     );
   }
 
@@ -211,3 +212,6 @@ export function validateAction(
   if (current !== actorId) throw new Error("Ce n'est pas votre tour.");
   return { type: 'roll', payload: {} };
 }
+
+
+

@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import type {
+  GameStateEntity,
+  PendingState,
+} from '../../../../core/entities/game-state.entity';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { loadV1Content } from '../../../../setup/content-loader.helper';
 import { ensureSeededRng } from '../../../../../common/utils/seeded-rng';
 import { seededShuffle } from '../../../../../common/utils/seeded-shuffle';
 import type {
@@ -25,6 +30,7 @@ export class SacAMalicesSetupService {
   constructor(
     private readonly contentLoader: GameContentLoaderService,
     private readonly random: RandomService,
+    private readonly setupFlow: SetupFlowService,
   ) {}
 
   hydrateInitialState(base: GameStateEntity): GameStateEntity {
@@ -62,13 +68,27 @@ export class SacAMalicesSetupService {
             base.turn?.currentPlayerId ?? null,
           );
 
+    const pendingInfo = this.buildVariantChoicePending(
+      players,
+      ownerId,
+      meta,
+    );
+    const pending = pendingInfo?.pending ?? null;
+    const currentPlayerId =
+      pendingInfo?.playerId ??
+      ownerId ??
+      base.turn?.currentPlayerId ??
+      null;
+    const turnIndex = pendingInfo?.turnIndex ?? base.turnIndex;
+
     return {
       ...base,
       phase: 'setup',
-      pending: null,
+      pending,
+      turnIndex,
       turn: {
         ...(base.turn ?? { direction: 1 }),
-        currentPlayerId: ownerId ?? base.turn?.currentPlayerId ?? null,
+        currentPlayerId,
         direction: 1,
       },
       metadata: {
@@ -78,6 +98,44 @@ export class SacAMalicesSetupService {
         variantId: meta.variantId ?? undefined,
       } as SacMetadata,
     };
+  }
+
+  private buildVariantChoicePending(
+    players: Array<{ id: number; username?: string | null }>,
+    ownerId: number | null,
+    meta: SacMetadata,
+  ): { pending: PendingState; playerId: number; turnIndex: number } | null {
+    if (!players.length) return null;
+    const alreadyChosen =
+      typeof meta.variantId === 'string' && meta.variantId.trim().length > 0;
+    if (alreadyChosen) return null;
+    const startPlayerId =
+      ownerId ?? players.find((p) => typeof p?.id === 'number')?.id ?? null;
+    if (startPlayerId == null) return null;
+
+    const candidateVariants = SAC_VARIANTS.map((variant) => ({
+      id: variant.id,
+      label: variant.label,
+      summary: variant.summary,
+    })).filter(
+      (variant) =>
+        typeof variant.id === 'string' &&
+        variant.id.trim() &&
+        typeof variant.label === 'string' &&
+        variant.label.trim(),
+    );
+    if (!candidateVariants.length) return null;
+
+    return this.setupFlow.createSequentialChoicePending({
+      players,
+      startPlayerId,
+      isAssigned: () => alreadyChosen,
+      pendingType: 'sac_variant_choice',
+      choices: candidateVariants,
+      labelForPlayer: (playerLabel) =>
+        `C'est à ${playerLabel} de choisir la variante de Sac à Malices.`,
+      dataBuilder: () => ({ variants: candidateVariants }),
+    });
   }
 
   private buildConfiguredState(base: GameStateEntity, variantId: SacVariantId): GameStateEntity {
@@ -176,41 +234,36 @@ export class SacAMalicesSetupService {
 
   private loadBoard(variant: SacVariantConfig): SacBoardJsonV1 {
     const contentDir = variant.contentDir;
-    return this.contentLoader.loadContent<SacBoardJsonV1>({
+    return loadV1Content<SacBoardJsonV1>(this.contentLoader, {
       gameType: variant.gameType,
       baseDir: __dirname,
       ...(contentDir ? { contentDir } : {}),
       filename: 'board.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('tiles', 1),
-      ],
+      arrayField: 'tiles',
+      minItems: 1,
     });
   }
 
   private loadGroups(variant: SacVariantConfig): SacGroupsJsonV1 {
     const contentDir = variant.contentDir;
-    return this.contentLoader.loadContent<SacGroupsJsonV1>({
+    return loadV1Content<SacGroupsJsonV1>(this.contentLoader, {
       gameType: variant.gameType,
       baseDir: __dirname,
       ...(contentDir ? { contentDir } : {}),
       filename: 'groups.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('groups', 1),
-      ],
+      arrayField: 'groups',
+      minItems: 1,
     });
   }
 
   private loadStations(variant: SacVariantConfig): SacStationsJsonV1 {
     const contentDir = variant.contentDir;
-    return this.contentLoader.loadContent<SacStationsJsonV1>({
+    return loadV1Content<SacStationsJsonV1>(this.contentLoader, {
       gameType: variant.gameType,
       baseDir: __dirname,
       ...(contentDir ? { contentDir } : {}),
       filename: 'stations.json',
-      validators: [
-        this.contentLoader.validators.version(1),
+      extraValidators: [
         this.contentLoader.validators.requiredFields('stations'),
       ],
     });
@@ -218,29 +271,25 @@ export class SacAMalicesSetupService {
 
   private loadUtilities(variant: SacVariantConfig): SacUtilitiesJsonV1 {
     const contentDir = variant.contentDir;
-    return this.contentLoader.loadContent<SacUtilitiesJsonV1>({
+    return loadV1Content<SacUtilitiesJsonV1>(this.contentLoader, {
       gameType: variant.gameType,
       baseDir: __dirname,
       ...(contentDir ? { contentDir } : {}),
       filename: 'utilities.json',
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('utilities', variant.utilitiesMin),
-      ],
+      arrayField: 'utilities',
+      minItems: variant.utilitiesMin,
     });
   }
 
   private loadCards(variant: SacVariantConfig, filename: string): SacCardsJsonV1 {
     const contentDir = variant.contentDir;
-    return this.contentLoader.loadContent<SacCardsJsonV1>({
+    return loadV1Content<SacCardsJsonV1>(this.contentLoader, {
       gameType: variant.gameType,
       baseDir: __dirname,
       ...(contentDir ? { contentDir } : {}),
       filename,
-      validators: [
-        this.contentLoader.validators.version(1),
-        this.contentLoader.validators.arrayField('cards', 1),
-      ],
+      arrayField: 'cards',
+      minItems: 1,
     });
   }
 }

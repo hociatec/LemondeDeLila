@@ -6,6 +6,7 @@ import { RandomModule } from '../../../modules/random/random.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
 import { BoardModule } from '../../../modules/board/board.module';
 import { BotModule } from '../../../modules/bot/bot.module';
+import { SetupFlowModule } from '../../../modules/setup-flow/setup-flow.module';
 import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
 import { SacAMalicesService } from './sac-a-malices.service';
 import { SacAMalicesSetupService } from './setup/sac-a-malices-setup.service';
@@ -22,6 +23,7 @@ import { SacAMalicesBotService } from './bots/sac-a-malices-bot.service';
     TurnModule,
     BoardModule,
     BotModule,
+    SetupFlowModule,
     DeckPoliciesModule,
   ],
   providers: [

@@ -1,9 +1,11 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import {
   ENTRE_RITES_CARD_BY_ID,
 } from '../model/entre-rites-cards';
 import type { EntreRitesMetadata } from '../model/entre-rites-state.entity';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 type EntreRitesActionType = 'ask_card' | 'pass';
 
@@ -34,8 +36,7 @@ export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
+  if (!isStartedState(state)) return [];
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== playerId) return [];
   const meta = getMeta(state);
@@ -75,7 +76,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const type = String(action?.type ?? '').trim() as EntreRitesActionType;
+  const type = normalizeActionType(action) as EntreRitesActionType;
   const payload = (action?.payload ?? {}) as EntreRitesActionPayload;
   if (type !== 'ask_card' && type !== 'pass') {
     throw new Error(`Action inconnue : ${type}`);
@@ -85,7 +86,7 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error('La partie n’est pas démarrée.');
+    throw new Error('La partie nâ€™est pas dÃ©marrÃ©e.');
   }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== actorId) {
@@ -113,11 +114,14 @@ export function validateAction(
     ? meta.hands[targetId]
     : [];
   if (!targetHand.includes(cardId)) {
-    throw new Error('La cible ne possède pas cette carte.');
+    throw new Error('La cible ne possÃ¨de pas cette carte.');
   }
   if (!hasFamilyExposure(meta, actorId, cardId)) {
-    throw new Error('Vous devez déjà détenir une carte de cette famille.');
+    throw new Error('Vous devez dÃ©jÃ  dÃ©tenir une carte de cette famille.');
   }
 
   return { type: 'ask_card', payload: { cardId, targetPlayerId: targetId } };
 }
+
+
+

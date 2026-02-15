@@ -5,6 +5,8 @@ import {
   PIMP_MY_RIDE_CATEGORY_ORDER,
 } from '../model/pimp-my-ride-cards';
 import type { PimpMyRideMetadata, PimpMyRidePlayerProgress } from '../model/pimp-my-ride-state.entity';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 interface PimpMyRideActionPayload {
   cardId?: string | null;
@@ -38,8 +40,7 @@ export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
+  if (!isStartedState(state)) return [];
   const meta = getMeta(state);
   if (meta.winnerId != null) return [];
   const current = state.turn?.currentPlayerId ?? null;
@@ -72,7 +73,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const type = String(action?.type ?? '').trim();
+  const type = normalizeActionType(action);
   const payload = (action?.payload ?? {}) as PimpMyRideActionPayload;
   if (type !== 'play_card' && type !== 'discard_card' && type !== 'pass') {
     throw new Error(`Action inconnue : ${type}`);
@@ -132,3 +133,6 @@ export function validateAction(
 
   return { type: 'pass', payload: {} };
 }
+
+
+

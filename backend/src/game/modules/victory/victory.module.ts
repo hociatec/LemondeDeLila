@@ -1,8 +1,14 @@
 import { Module } from '@nestjs/common';
 import { VictoryService } from './services/victory.service';
+import { GAME_MODULE_OVERVIEW } from '../game-module-overview.constants';
+
+const victoryOverviewProvider = {
+  provide: GAME_MODULE_OVERVIEW,
+  useExisting: VictoryService,
+};
 
 @Module({
-  providers: [VictoryService],
-  exports: [VictoryService],
+  providers: [VictoryService, victoryOverviewProvider],
+  exports: [VictoryService, victoryOverviewProvider],
 })
 export class VictoryModule {}

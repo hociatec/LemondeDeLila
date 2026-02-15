@@ -80,4 +80,8 @@ export class GaloponsEnsembleService extends AbstractGameService {
   getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
     return buildGaloponsShortcuts(ctx);
   }
+
+  shouldAnnounceBoardArrivals(): boolean {
+    return true;
+  }
 }

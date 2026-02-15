@@ -1,21 +1,17 @@
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+﻿import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import {
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
 import { PRIMALIS_GAME } from '../definitions/primalis.definition';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { canPlayerActOnTurn } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
-
-  if (state.pending) return [];
-
-  const current = state.turn?.currentPlayerId ?? null;
-  if (current !== playerId) return [];
+  if (!canPlayerActOnTurn(state, playerId)) return [];
   return [{ type: 'roll', payload: {} }];
 }
 
@@ -24,7 +20,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const rawType = String(action?.type ?? '').trim();
+  const rawType = normalizeActionType(action);
   const type =
     rawType === 'ROLL_DICE'
       ? 'roll'
@@ -43,7 +39,7 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new PlayerActionError("La partie n'est pas démarrée.", {
+    throw new PlayerActionError("La partie n'est pas dÃ©marrÃ©e.", {
       gameType: 'primalis',
     });
   }
@@ -57,3 +53,6 @@ export function validateAction(
   }
   return { type: 'roll', payload: {} };
 }
+
+
+

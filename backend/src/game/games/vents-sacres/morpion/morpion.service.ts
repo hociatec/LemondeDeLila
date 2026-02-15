@@ -10,6 +10,7 @@ import type { MorpionMetadata } from './model/morpion.model';
 import { MorpionPresenter } from './morpion.presenter';
 import type { GameShortcutHint, GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
 import { interfaceShortcut } from '../../../engine/shortcuts/shortcut-utils';
+import { applyActionsSequentially, normalizeActionType } from '../../../actions/action-service.helper';
 
 @Injectable()
 export class MorpionService extends AbstractGameService {
@@ -59,11 +60,9 @@ export class MorpionService extends AbstractGameService {
   }
 
   applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
-    let next = state;
-    for (const action of actions ?? []) {
-      next = this.applyOne(next, action);
-    }
-    return next;
+    return applyActionsSequentially(state, actions, (next, action) =>
+      this.applyOne(next, action),
+    );
   }
 
   getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
@@ -133,7 +132,7 @@ export class MorpionService extends AbstractGameService {
       return state;
     }
 
-    const type = String(action?.type ?? '').trim();
+    const type = normalizeActionType(action);
     if (type !== 'morpion_play') {
       return state;
     }

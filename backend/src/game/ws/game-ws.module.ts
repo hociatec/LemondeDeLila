@@ -10,6 +10,7 @@ import { EffectsModule } from '../modules/effects/effects.module';
 import { QuizModule } from '../modules/quiz/quiz.module';
 import { VictoryModule } from '../modules/victory/victory.module';
 import { GameContentService } from '../engine/services/game-content.service';
+import { GameModuleOverviewRegistryService } from '../modules/game-module-overview.service';
 import { GameWsHandler } from './service/game-ws.handler';
 import { GameWsRegistrar } from './service/game-ws.registrar';
 
@@ -26,6 +27,11 @@ import { GameWsRegistrar } from './service/game-ws.registrar';
     QuizModule,
     VictoryModule,
   ],
-  providers: [GameContentService, GameWsHandler, GameWsRegistrar],
+  providers: [
+    GameContentService,
+    GameModuleOverviewRegistryService,
+    GameWsHandler,
+    GameWsRegistrar,
+  ],
 })
 export class GameWsModule {}

@@ -1,5 +1,7 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
   GameValidationError,
   PlayerActionError,
@@ -15,8 +17,7 @@ export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const status = String(state.status ?? '').toLowerCase();
-  if (status !== 'started') return [];
+  if (!isStartedState(state)) return [];
 
   const pending = state.pending as any;
   if (pending) {
@@ -69,7 +70,7 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const rawType = String(action?.type ?? '').trim();
+  const rawType = normalizeActionType(action);
   const normalized: CaDerapeActionType =
     rawType === 'roll_dice' ? 'ROLL_DICE' : (rawType as CaDerapeActionType);
 
@@ -86,7 +87,7 @@ export function validateAction(
 
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new PlayerActionError("La partie n'est pas démarrée.", {
+    throw new PlayerActionError("La partie n'est pas dÃ©marrÃ©e.", {
       gameType: 'ca-derape',
     });
   }
@@ -94,7 +95,7 @@ export function validateAction(
   const pending: any = state.pending;
   if (pending) {
     if (pending.playerId !== actorId) {
-      throw new PlayerActionError('Action réservée à un autre joueur.', {
+      throw new PlayerActionError('Action rÃ©servÃ©e Ã  un autre joueur.', {
         gameType: 'ca-derape',
       });
     }
@@ -182,3 +183,6 @@ export function validateAction(
   }
   return { type: normalized, payload: action.payload ?? {} };
 }
+
+
+
