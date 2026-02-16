@@ -339,6 +339,8 @@
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                                 <Setter Property="FocusVisualStyle" Value="{x:Null}" />
                                 <Setter Property="AutomationProperties.Name" Value="{Binding Label}" />
+                                <Setter Property="AutomationProperties.PositionInSet" Value="-1" />
+                                <Setter Property="AutomationProperties.SizeOfSet" Value="-1" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Disabled}" Value="True">
                                         <Setter Property="Opacity" Value="0.35" />
@@ -414,6 +416,8 @@
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
                             <Setter Property="AutomationProperties.Name" Value="{Binding Text}" />
+                            <Setter Property="AutomationProperties.PositionInSet" Value="-1" />
+                            <Setter Property="AutomationProperties.SizeOfSet" Value="-1" />
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListBoxItem">

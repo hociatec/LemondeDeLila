@@ -14,6 +14,8 @@ public sealed class GameHistorySink : IGameHistorySink
     private readonly IAnnouncementService? _announcements;
     private string? _lastMessage;
     private DateTime _lastMessageAtUtc;
+    private string? _lastTurnMessageKey;
+    private DateTime _lastTurnMessageAtUtc;
     private readonly List<(string Key, DateTime AtUtc)> _recentDedupe = new();
     private static readonly TimeSpan RecentDedupeWindow = TimeSpan.FromSeconds(10);
 
@@ -225,6 +227,19 @@ public sealed class GameHistorySink : IGameHistorySink
         }
 
         var now = DateTime.UtcNow;
+        if (TryBuildTurnDedupeKey(cleaned, out var turnKey))
+        {
+            if (_lastTurnMessageKey != null &&
+                string.Equals(_lastTurnMessageKey, turnKey, StringComparison.Ordinal) &&
+                now - _lastTurnMessageAtUtc < TimeSpan.FromSeconds(3))
+            {
+                return true;
+            }
+
+            _lastTurnMessageKey = turnKey;
+            _lastTurnMessageAtUtc = now;
+        }
+
         var key = BuildDedupeKey(cleaned);
         if (!string.IsNullOrWhiteSpace(key))
         {
@@ -266,13 +281,76 @@ public sealed class GameHistorySink : IGameHistorySink
             return NormalizeDedupeText(normalized);
         }
 
-        if (lower.StartsWith("c'est à ", StringComparison.Ordinal) &&
-            lower.Contains(" de jouer", StringComparison.Ordinal))
+        return null;
+    }
+
+    private static bool TryBuildTurnDedupeKey(string message, out string key)
+    {
+        key = string.Empty;
+        if (string.IsNullOrWhiteSpace(message))
         {
-            return NormalizeDedupeText(normalized);
+            return false;
         }
 
-        return null;
+        var text = message.Trim();
+        string? actor = null;
+
+        const string turnPrefix = "C'est au tour de ";
+        if (text.StartsWith(turnPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            actor = text.Substring(turnPrefix.Length).Trim();
+        }
+        else if (text.StartsWith("C'est à ", StringComparison.OrdinalIgnoreCase))
+        {
+            var suffixIndex = text.IndexOf(" de jouer", StringComparison.OrdinalIgnoreCase);
+            if (suffixIndex > 7)
+            {
+                actor = text.Substring("C'est à ".Length, suffixIndex - "C'est à ".Length).Trim();
+            }
+        }
+        else if (text.StartsWith("Tour de ", StringComparison.OrdinalIgnoreCase))
+        {
+            actor = text.Substring("Tour de ".Length).Trim();
+        }
+
+        if (string.IsNullOrWhiteSpace(actor))
+        {
+            return false;
+        }
+
+        actor = actor.Trim().TrimEnd('.', '!', '?', ';', ':');
+        actor = StripGameZoneSuffix(actor);
+        var canonicalActor = NormalizeDedupeText(actor);
+        if (string.IsNullOrWhiteSpace(canonicalActor))
+        {
+            return false;
+        }
+
+        key = $"turn|{canonicalActor}";
+        return true;
+    }
+
+    private static string StripGameZoneSuffix(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return string.Empty;
+        }
+
+        var cleaned = name.Trim();
+        var lowered = cleaned.ToLowerInvariant();
+        if (lowered.EndsWith("(zone de jeu)", StringComparison.Ordinal) ||
+            lowered.EndsWith("(zone de jeux)", StringComparison.Ordinal) ||
+            lowered.EndsWith("(game zone)", StringComparison.Ordinal))
+        {
+            var openParen = cleaned.LastIndexOf('(');
+            if (openParen > 0)
+            {
+                cleaned = cleaned.Substring(0, openParen).TrimEnd();
+            }
+        }
+
+        return cleaned;
     }
 
     private static string NormalizeDedupeText(string message)
