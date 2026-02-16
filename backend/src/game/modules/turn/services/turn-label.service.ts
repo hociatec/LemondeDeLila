@@ -3,6 +3,31 @@ import { GameStateEntity } from '../../../core/entities/game-state.entity';
 
 @Injectable()
 export class TurnLabelService {
+  private sanitizePlayerName(raw: unknown): string {
+    let name = String(raw ?? '').trim();
+    name = name
+      .replace(/[\r\n\t]+/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+    if (name.startsWith('"') && name.endsWith('"')) {
+      name = name.slice(1, -1).trim();
+    }
+
+    const lowered = name.toLowerCase();
+    if (
+      lowered.endsWith('(zone de jeu)') ||
+      lowered.endsWith('(zone de jeux)') ||
+      lowered.endsWith('(game zone)')
+    ) {
+      const openParen = name.lastIndexOf('(');
+      if (openParen > 0) {
+        name = name.slice(0, openParen).trimEnd();
+      }
+    }
+
+    return name;
+  }
+
   compute(state: GameStateEntity, gameType: string): string | null {
     const status = (state?.status ?? '').toLowerCase().trim();
     if (!status) return null;
@@ -25,21 +50,15 @@ export class TurnLabelService {
     const players = Array.isArray(state.players) ? state.players : [];
     if (currentPlayerId != null) {
       const found = players.find((p) => p?.id === currentPlayerId);
-      const name =
-        found?.username && String(found.username).trim()
-          ? String(found.username).trim()
-          : `Joueur ${currentPlayerId}`;
+      const username = this.sanitizePlayerName(found?.username);
+      const name = username.length > 0 ? username : `Joueur ${currentPlayerId}`;
       return `C'est à ${name} de jouer.`;
     }
 
     const idx = typeof state.turnIndex === 'number' ? state.turnIndex : -1;
     const byIndex = idx >= 0 && idx < players.length ? players[idx] : null;
-    const name =
-      byIndex?.username && String(byIndex.username).trim()
-        ? String(byIndex.username).trim()
-        : byIndex?.id != null
-          ? `Joueur ${byIndex.id}`
-          : null;
+    const username = this.sanitizePlayerName(byIndex?.username);
+    const name = username.length > 0 ? username : byIndex?.id != null ? `Joueur ${byIndex.id}` : null;
     if (name) return `C'est à ${name} de jouer.`;
 
     return 'Tour en cours.';

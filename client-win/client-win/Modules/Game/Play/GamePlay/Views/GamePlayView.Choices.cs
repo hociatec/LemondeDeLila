@@ -160,9 +160,10 @@ public partial class GamePlayView
             if (_vm.PendingChoices.Count <= 0)
             {
                 // When choices disappear (e.g. after quiz answer), virtualization can remove
-                // the focused element and push focus out of the game zone.
-                // Re-anchor focus best-effort unless user is typing.
-                if (!IsTextInputFocused() && (!IsKeyboardFocusWithin || ChoicesList.IsKeyboardFocusWithin))
+                // the focused element and leave keyboard on a stale list item.
+                // Re-anchor only when focus is currently inside the choices list:
+                // do not steal focus from history/chat or other zones.
+                if (!IsTextInputFocused() && ChoicesList.IsKeyboardFocusWithin)
                 {
                     Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
                     {
@@ -178,7 +179,9 @@ public partial class GamePlayView
                 return;
             }
 
-            // Keep focus on root; do not auto-focus choices list items.`r`n            // This prevents screen readers from announcing "liste" on state refreshes.`r`n            return;
+            // Keep focus on root; do not auto-focus choices list items.
+            // This prevents screen readers from announcing "liste" on state refreshes.
+            return;
         };
 
         notify.CollectionChanged += _choicesChanged;
@@ -525,5 +528,4 @@ public partial class GamePlayView
         }
     }
 }
-
 
