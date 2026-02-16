@@ -74,6 +74,30 @@ public partial class GamePlayView
             {
                 Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
                 {
+                    // Strict behavior: when interactive lists are available, keep focus on them
+                    // instead of bouncing back to the root "zone de jeu".
+                    if (HandList.Visibility == Visibility.Visible && HandList.Items.Count > 0)
+                    {
+                        var idx = HandList.SelectedIndex;
+                        if (idx < 0) idx = 0;
+                        if (idx >= HandList.Items.Count) idx = HandList.Items.Count - 1;
+                        HandList.SelectedIndex = idx;
+                        HandList.ScrollIntoView(HandList.SelectedItem);
+                        TryFocusChoiceIndex(HandList, idx);
+                        return;
+                    }
+
+                    if (ChoicesList.Visibility == Visibility.Visible && ChoicesList.Items.Count > 0)
+                    {
+                        var idx = ChoicesList.SelectedIndex;
+                        if (idx < 0) idx = 0;
+                        if (idx >= ChoicesList.Items.Count) idx = ChoicesList.Items.Count - 1;
+                        ChoicesList.SelectedIndex = idx;
+                        ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+                        TryFocusChoiceIndex(ChoicesList, idx);
+                        return;
+                    }
+
                     ForceFocusGameZone();
                 }));
             };
@@ -125,12 +149,6 @@ public partial class GamePlayView
                 {
                     try
                     {
-                        if (!IsFocusInsideThisGameView())
-                        {
-                            _restoreHandFocusAfterSubmit = false;
-                            return;
-                        }
-
                         if (HandList.Visibility != Visibility.Visible || HandList.Items.Count <= 0)
                         {
                             // Keep pending restore until hand list is available again.
@@ -164,13 +182,6 @@ public partial class GamePlayView
                 {
                     try
                     {
-                        if (!IsFocusInsideThisGameView())
-                        {
-                            // User left the game area intentionally: cancel pending restore.
-                            _restoreChoiceFocusAfterSubmit = false;
-                            return;
-                        }
-
                         if (ChoicesList.Visibility != Visibility.Visible || ChoicesList.Items.Count <= 0)
                         {
                             // Keep pending restore until the choices list is available again.
@@ -514,13 +525,6 @@ public partial class GamePlayView
         {
             if (IsTextInputFocused())
             {
-                return;
-            }
-
-            if (!IsFocusInsideThisGameView())
-            {
-                // User left the game area intentionally: cancel pending restore.
-                _restoreHandFocusAfterSubmit = false;
                 return;
             }
 
