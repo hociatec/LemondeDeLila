@@ -14,13 +14,8 @@ namespace client_win.Modules.Game.Play.GamePlay.Views;
 
 public partial class GamePlayView
 {
-    private static readonly TimeSpan ChoiceAutoFocusSuppressDuration = TimeSpan.FromSeconds(2);
-    private static readonly TimeSpan HandAutoFocusSuppressDuration = TimeSpan.FromSeconds(2);
-
-    private DateTime _suppressChoiceAutoFocusUntilUtc;
     private bool _restoreChoiceFocusAfterSubmit;
     private int _restoreChoiceFocusIndex;
-    private DateTime _suppressHandAutoFocusUntilUtc;
     private bool _restoreHandFocusAfterSubmit;
     private int _restoreHandFocusIndex;
 
@@ -40,14 +35,12 @@ public partial class GamePlayView
 
     private void NoteChoiceSubmittedForFocusRestore()
     {
-        _suppressChoiceAutoFocusUntilUtc = DateTime.UtcNow + ChoiceAutoFocusSuppressDuration;
         _restoreChoiceFocusAfterSubmit = true;
         _restoreChoiceFocusIndex = ChoicesList?.SelectedIndex ?? -1;
     }
 
     private void NoteHandSubmittedForFocusRestore()
     {
-        _suppressHandAutoFocusUntilUtc = DateTime.UtcNow + HandAutoFocusSuppressDuration;
         _restoreHandFocusAfterSubmit = true;
         _restoreHandFocusIndex = HandList?.SelectedIndex ?? -1;
     }
@@ -124,62 +117,88 @@ public partial class GamePlayView
 
             UpdateChoicesAccessibility();
 
-            // After validating a choice, the list refreshes (card played/removed).
-            // Avoid stealing focus or announcing the new first row.
-            // Let server history announce the action instead.
-            if (DateTime.UtcNow < _suppressChoiceAutoFocusUntilUtc)
+            // Hand-driven flows (LAMA, etc.): keep focus anchored on hand list after submit,
+            // even if HandCards collection does not raise immediately.
+            if (_restoreHandFocusAfterSubmit)
             {
-                if (_restoreChoiceFocusAfterSubmit)
+                Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
                 {
-                    _restoreChoiceFocusAfterSubmit = false;
-                    Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+                    try
                     {
-                        try
+                        if (!IsFocusInsideThisGameView())
                         {
-                            if (!IsFocusInsideThisGameView())
-                            {
-                                return;
-                            }
-
-                            if (ChoicesList.Visibility != Visibility.Visible || ChoicesList.Items.Count <= 0)
-                            {
-                                return;
-                            }
-
-                            var count = ChoicesList.Items.Count;
-                            var idx = _restoreChoiceFocusIndex;
-                            if (idx < 0) idx = 0;
-                            if (idx >= count) idx = count - 1;
-
-                            ChoicesList.SelectedIndex = idx;
-                            ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
-                            TryFocusChoiceIndex(ChoicesList, idx);
+                            _restoreHandFocusAfterSubmit = false;
+                            return;
                         }
-                        catch
+
+                        if (HandList.Visibility != Visibility.Visible || HandList.Items.Count <= 0)
                         {
-                            // ignore
+                            // Keep pending restore until hand list is available again.
+                            return;
                         }
-                    }));
-                }
+
+                        var count = HandList.Items.Count;
+                        var idx = _restoreHandFocusIndex;
+                        _restoreHandFocusAfterSubmit = false;
+
+                        if (idx < 0) idx = 0;
+                        if (idx >= count) idx = count - 1;
+
+                        HandList.SelectedIndex = idx;
+                        HandList.ScrollIntoView(HandList.SelectedItem);
+                        TryFocusChoiceIndex(HandList, idx);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }));
+                return;
+            }
+
+            // After a player submit, keep a pending restore until choices are available again.
+            // This avoids ending up stuck on "zone de jeu" between player/bot turns (e.g. LAMA).
+            if (_restoreChoiceFocusAfterSubmit)
+            {
+                Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+                {
+                    try
+                    {
+                        if (!IsFocusInsideThisGameView())
+                        {
+                            // User left the game area intentionally: cancel pending restore.
+                            _restoreChoiceFocusAfterSubmit = false;
+                            return;
+                        }
+
+                        if (ChoicesList.Visibility != Visibility.Visible || ChoicesList.Items.Count <= 0)
+                        {
+                            // Keep pending restore until the choices list is available again.
+                            return;
+                        }
+
+                        _restoreChoiceFocusAfterSubmit = false;
+
+                        var count = ChoicesList.Items.Count;
+                        var idx = _restoreChoiceFocusIndex;
+                        if (idx < 0) idx = 0;
+                        if (idx >= count) idx = count - 1;
+
+                        ChoicesList.SelectedIndex = idx;
+                        ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+                        TryFocusChoiceIndex(ChoicesList, idx);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }));
                 return;
             }
 
             if (_vm.PendingChoices.Count <= 0)
             {
-                // When choices disappear (e.g. after quiz answer), virtualization can remove
-                // the focused element and leave keyboard on a stale list item.
-                // Re-anchor only when focus is currently inside the choices list:
-                // do not steal focus from history/chat or other zones.
-                if (!IsTextInputFocused() && ChoicesList.IsKeyboardFocusWithin)
-                {
-                    Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-                    {
-                        if (ShouldReanchorAfterChoicesCollapse())
-                        {
-                            ForceFocusGameZone();
-                        }
-                    }));
-                }
+                // Strict mode: never force root/game-zone focus when player choices collapse.
                 return;
             }
 
@@ -475,55 +494,6 @@ public partial class GamePlayView
         return LogicalTreeHelper.GetParent(current);
     }
 
-    private bool ShouldReanchorAfterChoicesCollapse()
-    {
-        var focused = Keyboard.FocusedElement as DependencyObject;
-        if (focused == null)
-        {
-            return true;
-        }
-
-        // If focus already moved away from choices (user navigation), never override it.
-        if (!IsDescendantOf(focused, ChoicesList))
-        {
-            return false;
-        }
-
-        if (focused is UIElement ui && (!ui.IsVisible || !ui.IsEnabled))
-        {
-            return true;
-        }
-
-        // Stale element no longer connected to a presentation source.
-        if (focused is System.Windows.Media.Visual v && PresentationSource.FromVisual(v) == null)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    private static bool IsDescendantOf(DependencyObject node, DependencyObject? ancestor)
-    {
-        if (ancestor == null)
-        {
-            return false;
-        }
-
-        var current = node;
-        while (current != null)
-        {
-            if (ReferenceEquals(current, ancestor))
-            {
-                return true;
-            }
-
-            current = GetVisualOrLogicalParent(current);
-        }
-
-        return false;
-    }
-
     private void HookHandAutoFocus(GamePlayViewModel? vm)
     {
         if (_handCardsCollection != null && _handCardsChanged != null)
@@ -549,6 +519,8 @@ public partial class GamePlayView
 
             if (!IsFocusInsideThisGameView())
             {
+                // User left the game area intentionally: cancel pending restore.
+                _restoreHandFocusAfterSubmit = false;
                 return;
             }
 
@@ -559,33 +531,18 @@ public partial class GamePlayView
                 return;
             }
 
-            // If the hand list is visible, keep keyboard focus anchored there to avoid NVDA re-announcing
-            // the root "Partie en cours" on every state refresh (bot turns, played cards, etc.).
-            var shouldRestore = DateTime.UtcNow < _suppressHandAutoFocusUntilUtc || IsFocusWithinHandList();
-            if (!shouldRestore)
-            {
-                return;
-            }
-            // Avoid re-focusing the same hand item on every state refresh: this can make NVDA
-            // announce "liste" repeatedly ("liste, liste") during turn changes.
-            if (IsFocusWithinHandList() &&
-                !_restoreHandFocusAfterSubmit &&
-                DateTime.UtcNow >= _suppressHandAutoFocusUntilUtc)
-            {
-                return;
-            }
-
             Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
             {
                 try
                 {
                     if (HandList.Visibility != Visibility.Visible || HandList.Items.Count <= 0)
                     {
+                        // Keep pending restore until hand list becomes available again.
                         return;
                     }
 
                     var count = HandList.Items.Count;
-                    var idx = _restoreHandFocusAfterSubmit ? _restoreHandFocusIndex : HandList.SelectedIndex;
+                    var idx = _restoreHandFocusIndex;
                     _restoreHandFocusAfterSubmit = false;
 
                     if (idx < 0) idx = 0;

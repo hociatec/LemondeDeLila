@@ -76,7 +76,8 @@ public partial class GamePlayView
                     var sentChoice = await vm.SubmitSelectedChoiceAsync(CancellationToken.None).ConfigureAwait(true);
                     if (sentChoice)
                     {
-                        NoteChoiceSubmittedForFocusRestore();
+                        // Hand-driven flow (LAMA, etc.): keep focus anchored on hand list.
+                        NoteHandSubmittedForFocusRestore();
                     }
                 }
             }
@@ -382,7 +383,8 @@ public partial class GamePlayView
                     var sentChoice = await vm.SubmitSelectedChoiceAsync(CancellationToken.None).ConfigureAwait(true);
                     if (sentChoice)
                     {
-                        NoteChoiceSubmittedForFocusRestore();
+                        // Hand-driven flow (LAMA, etc.): keep focus anchored on hand list.
+                        NoteHandSubmittedForFocusRestore();
                     }
                 }
             }
@@ -506,4 +508,3 @@ public partial class GamePlayView
         return !string.IsNullOrWhiteSpace(normalized);
     }
 }
-
