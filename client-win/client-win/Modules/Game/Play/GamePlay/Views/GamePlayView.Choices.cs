@@ -428,9 +428,14 @@ public partial class GamePlayView
             return;
         }
 
-        // Strict mode: never fallback to root focus ("zone de jeu") from here.
-        // Keep current focus if no interactive list/grid target is available yet.
-        return;
+        // Lors d'une demande explicite de retour au jeu (ex: Tab depuis chat/historique),
+        // garder un ancrage clavier sur la zone de jeu même s'il n'y a pas encore
+        // d'élément interactif prêt (tour bot, état transitoire, etc.).
+        if (forceFromOutsideTextInput)
+        {
+            Focus();
+            Keyboard.Focus(this);
+        }
     }
 
     private bool IsFocusWithinHandList()
