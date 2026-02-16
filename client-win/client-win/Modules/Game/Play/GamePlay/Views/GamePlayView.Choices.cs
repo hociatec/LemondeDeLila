@@ -404,19 +404,12 @@ public partial class GamePlayView
             {
                 HandList.SelectedIndex = 0;
             }
-            if (forceFromOutsideTextInput)
-            {
-                var idx = HandList.SelectedIndex;
-                if (idx < 0) idx = 0;
-                if (idx >= HandList.Items.Count) idx = HandList.Items.Count - 1;
-                HandList.SelectedIndex = idx;
-                HandList.ScrollIntoView(HandList.SelectedItem);
-                TryFocusChoiceIndex(HandList, idx);
-                return;
-            }
-
-            Focus();
-            Keyboard.Focus(this);
+            var idx = HandList.SelectedIndex;
+            if (idx < 0) idx = 0;
+            if (idx >= HandList.Items.Count) idx = HandList.Items.Count - 1;
+            HandList.SelectedIndex = idx;
+            HandList.ScrollIntoView(HandList.SelectedItem);
+            TryFocusChoiceIndex(HandList, idx);
             return;
         }
 
@@ -426,24 +419,18 @@ public partial class GamePlayView
             {
                 ChoicesList.SelectedIndex = 0;
             }
-            if (forceFromOutsideTextInput)
-            {
-                var idx = ChoicesList.SelectedIndex;
-                if (idx < 0) idx = 0;
-                if (idx >= ChoicesList.Items.Count) idx = ChoicesList.Items.Count - 1;
-                ChoicesList.SelectedIndex = idx;
-                ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
-                TryFocusChoiceIndex(ChoicesList, idx);
-                return;
-            }
-
-            Focus();
-            Keyboard.Focus(this);
+            var idx = ChoicesList.SelectedIndex;
+            if (idx < 0) idx = 0;
+            if (idx >= ChoicesList.Items.Count) idx = ChoicesList.Items.Count - 1;
+            ChoicesList.SelectedIndex = idx;
+            ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+            TryFocusChoiceIndex(ChoicesList, idx);
             return;
         }
 
-        Focus();
-        Keyboard.Focus(this);
+        // Strict mode: never fallback to root focus ("zone de jeu") from here.
+        // Keep current focus if no interactive list/grid target is available yet.
+        return;
     }
 
     private bool IsFocusWithinHandList()
