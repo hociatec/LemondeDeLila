@@ -14,6 +14,9 @@ namespace client_win.Modules.Game.Play.GamePlay.Views;
 
 public partial class GamePlayView
 {
+    private static readonly TimeSpan ChoiceAutoFocusSuppressDuration = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan HandAutoFocusSuppressDuration = TimeSpan.FromSeconds(2);
+
     private DateTime _suppressChoiceAutoFocusUntilUtc;
     private bool _restoreChoiceFocusAfterSubmit;
     private int _restoreChoiceFocusIndex;
@@ -37,14 +40,14 @@ public partial class GamePlayView
 
     private void NoteChoiceSubmittedForFocusRestore()
     {
-        _suppressChoiceAutoFocusUntilUtc = DateTime.UtcNow;
+        _suppressChoiceAutoFocusUntilUtc = DateTime.UtcNow + ChoiceAutoFocusSuppressDuration;
         _restoreChoiceFocusAfterSubmit = false;
         _restoreChoiceFocusIndex = -1;
     }
 
     private void NoteHandSubmittedForFocusRestore()
     {
-        _suppressHandAutoFocusUntilUtc = DateTime.UtcNow;
+        _suppressHandAutoFocusUntilUtc = DateTime.UtcNow + HandAutoFocusSuppressDuration;
         _restoreHandFocusAfterSubmit = false;
         _restoreHandFocusIndex = -1;
     }
@@ -283,10 +286,23 @@ public partial class GamePlayView
 
     private bool IsTextInputFocused()
     {
-        var focused = Keyboard.FocusedElement;
-        return focused is TextBoxBase ||
-               focused is PasswordBox ||
-               focused is RichTextBox;
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        while (focused != null)
+        {
+            if (focused is TextBoxBase or PasswordBox or RichTextBox)
+            {
+                return true;
+            }
+
+            if (focused is ComboBox combo && combo.IsEditable)
+            {
+                return true;
+            }
+
+            focused = GetVisualOrLogicalParent(focused);
+        }
+
+        return false;
     }
 
     private void TryFocusFirstChoice()
@@ -323,6 +339,12 @@ public partial class GamePlayView
         // Table reset can break focus (focused element destroyed/collapsed),
         // then Tab/Shift+Tab becomes painful. Keep a stable focus anchor in game zone.
         if (!forceFromOutsideTextInput && IsTextInputFocused())
+        {
+            return;
+        }
+
+        // Never steal focus from chat/history or other areas on background state refreshes.
+        if (!forceFromOutsideTextInput && !IsFocusInsideThisGameView())
         {
             return;
         }
@@ -402,10 +424,48 @@ public partial class GamePlayView
                 return true;
             }
 
-            focused = System.Windows.Media.VisualTreeHelper.GetParent(focused);
+            focused = GetVisualOrLogicalParent(focused);
         }
 
         return false;
+    }
+
+    private bool IsFocusInsideThisGameView()
+    {
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        while (focused != null)
+        {
+            if (ReferenceEquals(focused, this))
+            {
+                return true;
+            }
+
+            focused = GetVisualOrLogicalParent(focused);
+        }
+
+        return false;
+    }
+
+    private static DependencyObject? GetVisualOrLogicalParent(DependencyObject current)
+    {
+        try
+        {
+            if (current is System.Windows.Media.Visual || current is System.Windows.Media.Media3D.Visual3D)
+            {
+                return System.Windows.Media.VisualTreeHelper.GetParent(current);
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        if (current is FrameworkElement fe)
+        {
+            return fe.Parent ?? fe.TemplatedParent;
+        }
+
+        return LogicalTreeHelper.GetParent(current);
     }
 
     private void HookHandAutoFocus(GamePlayViewModel? vm)
@@ -528,4 +588,3 @@ public partial class GamePlayView
         }
     }
 }
-
