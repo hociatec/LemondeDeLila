@@ -41,15 +41,15 @@ public partial class GamePlayView
     private void NoteChoiceSubmittedForFocusRestore()
     {
         _suppressChoiceAutoFocusUntilUtc = DateTime.UtcNow + ChoiceAutoFocusSuppressDuration;
-        _restoreChoiceFocusAfterSubmit = false;
-        _restoreChoiceFocusIndex = -1;
+        _restoreChoiceFocusAfterSubmit = true;
+        _restoreChoiceFocusIndex = ChoicesList?.SelectedIndex ?? -1;
     }
 
     private void NoteHandSubmittedForFocusRestore()
     {
         _suppressHandAutoFocusUntilUtc = DateTime.UtcNow + HandAutoFocusSuppressDuration;
-        _restoreHandFocusAfterSubmit = false;
-        _restoreHandFocusIndex = -1;
+        _restoreHandFocusAfterSubmit = true;
+        _restoreHandFocusIndex = HandList?.SelectedIndex ?? -1;
     }
 
     private void HookChoiceAutoFocus(GamePlayViewModel? vm)
@@ -136,9 +136,13 @@ public partial class GamePlayView
                     {
                         try
                         {
+                            if (!IsFocusInsideThisGameView())
+                            {
+                                return;
+                            }
+
                             if (ChoicesList.Visibility != Visibility.Visible || ChoicesList.Items.Count <= 0)
                             {
-                                ForceFocusGameZone();
                                 return;
                             }
 
@@ -170,7 +174,10 @@ public partial class GamePlayView
                 {
                     Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
                     {
-                        ForceFocusGameZone();
+                        if (ShouldReanchorAfterChoicesCollapse())
+                        {
+                            ForceFocusGameZone();
+                        }
                     }));
                 }
                 return;
@@ -468,6 +475,55 @@ public partial class GamePlayView
         return LogicalTreeHelper.GetParent(current);
     }
 
+    private bool ShouldReanchorAfterChoicesCollapse()
+    {
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        if (focused == null)
+        {
+            return true;
+        }
+
+        // If focus already moved away from choices (user navigation), never override it.
+        if (!IsDescendantOf(focused, ChoicesList))
+        {
+            return false;
+        }
+
+        if (focused is UIElement ui && (!ui.IsVisible || !ui.IsEnabled))
+        {
+            return true;
+        }
+
+        // Stale element no longer connected to a presentation source.
+        if (focused is System.Windows.Media.Visual v && PresentationSource.FromVisual(v) == null)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsDescendantOf(DependencyObject node, DependencyObject? ancestor)
+    {
+        if (ancestor == null)
+        {
+            return false;
+        }
+
+        var current = node;
+        while (current != null)
+        {
+            if (ReferenceEquals(current, ancestor))
+            {
+                return true;
+            }
+
+            current = GetVisualOrLogicalParent(current);
+        }
+
+        return false;
+    }
+
     private void HookHandAutoFocus(GamePlayViewModel? vm)
     {
         if (_handCardsCollection != null && _handCardsChanged != null)
@@ -487,6 +543,11 @@ public partial class GamePlayView
         _handCardsChanged = (_, __) =>
         {
             if (IsTextInputFocused())
+            {
+                return;
+            }
+
+            if (!IsFocusInsideThisGameView())
             {
                 return;
             }
