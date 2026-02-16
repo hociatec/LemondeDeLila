@@ -162,6 +162,6 @@ describe('JeuOieActionService', () => {
     const starterId = Number(meta.setupStarterId);
     const starterName =
       next.players?.find((p: any) => p?.id === starterId)?.username ?? `Joueur ${starterId}`;
-    expect(messages.some((m) => m === `Debut de partie : ${starterName} commence.`)).toBe(true);
+    expect(messages.some((m) => m === `Début de partie : ${starterName} commence.`)).toBe(true);
   });
 });

@@ -19,7 +19,7 @@ export class LamaQuitService {
     droppedOutByPlayerId[String(actorId)] = true;
 
     const players = Array.isArray(state.players) ? state.players : [];
-    const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
+    const name = this.shared.playerLabel(players as any[], actorId);
     let log = this.logger.append(state.log, `${name} se retire de la manche.`);
     log = this.logger.append(log, `${name} ne jouera plus ; ses jetons seront comptés à la fin de la manche.`);
 
@@ -53,7 +53,7 @@ export class LamaQuitService {
         currentPlayerId: nextPlayerId,
         direction: 1,
         label: nextPlayerId
-          ? `Tour de ${players.find((p) => p?.id === nextPlayerId)?.username ?? `#${nextPlayerId}`}`
+          ? `Tour de ${this.shared.playerLabel(players as any[], nextPlayerId)}`
           : undefined,
       },
     };

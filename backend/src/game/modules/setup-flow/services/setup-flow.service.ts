@@ -43,7 +43,7 @@ export class SetupFlowService {
     const label =
       typeof params.labelForPlayer === 'function'
         ? params.labelForPlayer(playerLabel)
-        : `C'est Ã  ${playerLabel} de faire un choix.`;
+        : `C'est à ${playerLabel} de faire un choix.`;
     const pending: PendingState = {
       type: String(params.pendingType ?? '').trim() || 'setup_choice',
       playerId,
@@ -114,4 +114,3 @@ export class SetupFlowService {
     return Number.isFinite(id) && id > 0 ? `Joueur ${id}` : 'Joueur';
   }
 }
-

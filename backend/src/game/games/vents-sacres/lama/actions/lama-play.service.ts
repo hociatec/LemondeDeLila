@@ -61,7 +61,7 @@ export class LamaPlayService {
     }
 
     const players = Array.isArray(state.players) ? state.players : [];
-    const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
+    const name = this.shared.playerLabel(players as any[], actorId);
     const label = lamaCardLabel(value);
     const log = this.logger.append(state.log, `${name} joue un ${label}.`);
 
@@ -99,7 +99,7 @@ export class LamaPlayService {
         currentPlayerId: nextPlayerId,
         direction: 1,
         label: nextPlayerId
-          ? `Tour de ${players.find((p) => p?.id === nextPlayerId)?.username ?? `#${nextPlayerId}`}`
+          ? `Tour de ${this.shared.playerLabel(players as any[], nextPlayerId)}`
           : undefined,
       },
     };

@@ -28,6 +28,13 @@ internal sealed class GameLogCursor
                 return;
             }
 
+            var replayIndex = ResolveReplayPromptIndex(state, log);
+            if (replayIndex >= 0)
+            {
+                PrimeBeforeIndex(log, replayIndex);
+                return;
+            }
+
             _lastSeenLogCount = log.Count;
             var lastEntry = log[log.Count - 1];
             var tsLast = lastEntry?.Timestamp;
@@ -38,6 +45,23 @@ internal sealed class GameLogCursor
         {
             Reset();
         }
+    }
+
+    private void PrimeBeforeIndex(IReadOnlyList<GameLogEntryDto> log, int replayIndex)
+    {
+        if (replayIndex <= 0)
+        {
+            _lastSeenLogCount = 0;
+            _lastSeenLogTimestamp = null;
+            _lastSeenLogKey = null;
+            return;
+        }
+
+        _lastSeenLogCount = replayIndex;
+        var previousEntry = log[replayIndex - 1];
+        var tsPrev = previousEntry?.Timestamp;
+        _lastSeenLogTimestamp = string.IsNullOrWhiteSpace(tsPrev) ? null : tsPrev;
+        _lastSeenLogKey = BuildLogKey(previousEntry);
     }
 
     internal IEnumerable<GameLogEntryDto> ExtractNewMessages(GameStateDto state)
@@ -175,5 +199,69 @@ internal sealed class GameLogCursor
         var ts = entry.Timestamp ?? string.Empty;
         var msg = NormalizeGameLogMessage(entry.Message);
         return $"{ts}|{msg}";
+    }
+
+    private static bool ShouldReplayLastPromptMessage(GameLogEntryDto? entry)
+    {
+        var msg = NormalizeGameLogMessage(entry?.Message);
+        if (string.IsNullOrWhiteSpace(msg))
+        {
+            return false;
+        }
+
+        var lowered = msg.ToLowerInvariant();
+        return lowered.Contains("doit choisir ");
+    }
+
+    private static int ResolveReplayPromptIndex(GameStateDto? state, IReadOnlyList<GameLogEntryDto> log)
+    {
+        if (log.Count <= 0)
+        {
+            return -1;
+        }
+
+        if (ShouldReplayLastPromptMessage(log[log.Count - 1]))
+        {
+            return log.Count - 1;
+        }
+
+        if (!ShouldReplayPendingChoicePrompt(state))
+        {
+            return -1;
+        }
+
+        var minIndex = Math.Max(0, log.Count - 12);
+        for (var i = log.Count - 1; i >= minIndex; i--)
+        {
+            if (ShouldReplayLastPromptMessage(log[i]))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private static bool ShouldReplayPendingChoicePrompt(GameStateDto? state)
+    {
+        var pending = state?.Pending;
+        if (pending == null)
+        {
+            return false;
+        }
+
+        var type = (pending.Type ?? string.Empty).Trim().ToLowerInvariant();
+        if (type.Contains("choose", StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        var label = (pending.Label ?? pending.Question ?? string.Empty).Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(label))
+        {
+            return false;
+        }
+
+        return label.Contains("choisir ", StringComparison.Ordinal);
     }
 }

@@ -46,7 +46,7 @@ export class LamaPassService {
         currentPlayerId: nextPlayerId,
         direction: 1,
         label: nextPlayerId
-          ? `Tour de ${players.find((p) => p?.id === nextPlayerId)?.username ?? `#${nextPlayerId}`}`
+          ? `Tour de ${this.shared.playerLabel(players as any[], nextPlayerId)}`
           : undefined,
       },
     };

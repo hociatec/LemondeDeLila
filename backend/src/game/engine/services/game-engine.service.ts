@@ -1061,6 +1061,17 @@ export class GameEngineService {
     if (name.startsWith('"') && name.endsWith('"')) {
       name = name.slice(1, -1).trim();
     }
+    const lowered = name.toLowerCase();
+    if (
+      lowered.endsWith('(zone de jeu)') ||
+      lowered.endsWith('(zone de jeux)') ||
+      lowered.endsWith('(game zone)')
+    ) {
+      const openParen = name.lastIndexOf('(');
+      if (openParen > 0) {
+        name = name.slice(0, openParen).trimEnd();
+      }
+    }
     return name;
   }
 
@@ -1279,13 +1290,13 @@ export class GameEngineService {
       for (const p of roomPlayers) {
         const id = Number((p as any)?.id ?? 0);
         if (!Number.isFinite(id) || id <= 0) continue;
-        const username = String((p as any)?.username ?? '').trim();
+        const username = this.normalizeUsernameForLog((p as any)?.username);
         if (!username) continue;
         humanById.set(id, username);
       }
 
       const roomBotNames = roomBots
-        .map((b: any) => String(b?.name ?? '').trim())
+        .map((b: any) => this.normalizeUsernameForLog((b as any)?.name))
         .filter((n: string) => n.length > 0);
       const allowedBotNames = new Set(roomBotNames);
 
@@ -1303,7 +1314,7 @@ export class GameEngineService {
       const assignedBotNames = new Set(
         players
           .filter((p) => (p as any)?.isBot === true)
-          .map((p) => String((p as any)?.username ?? '').trim())
+          .map((p) => this.normalizeUsernameForLog((p as any)?.username))
           .filter((n) => n.length > 0),
       );
 
@@ -1326,7 +1337,7 @@ export class GameEngineService {
         if (roomUsername) {
           if (
             isBot ||
-            String((p as any)?.username ?? '').trim() !== roomUsername
+            this.normalizeUsernameForLog((p as any)?.username) !== roomUsername
           ) {
             changed = true;
             return { ...(p as any), isBot: false, username: roomUsername };
@@ -1349,7 +1360,7 @@ export class GameEngineService {
         const id = Number((p as any)?.id ?? 0);
         if (!Number.isFinite(id) || id === 0) return true;
         const isBot = (p as any)?.isBot === true;
-        const name = String((p as any)?.username ?? '').trim();
+        const name = this.normalizeUsernameForLog((p as any)?.username);
         if (isBot && (!name || !allowedBotNames.has(name))) {
           return false;
         }
@@ -2065,7 +2076,9 @@ export class GameEngineService {
 
     const players = Array.isArray(state.players) ? state.players : [];
     const name =
-      players.find((p) => p?.id === currentPlayerId)?.username?.trim() ??
+      this.normalizeUsernameForLog(
+        players.find((p) => p?.id === currentPlayerId)?.username,
+      ) ||
       `Joueur ${currentPlayerId}`;
     return this.core.appendLog(state, `C'est au tour de ${name}.`);
   }
@@ -2845,6 +2858,5 @@ export class GameEngineService {
     this.mutationQueue.delete(key);
   }
 }
-
 
 

@@ -66,7 +66,7 @@ export class LamaReturnService {
         currentPlayerId: nextPending ?? state.turn?.currentPlayerId ?? null,
         direction: 1,
         label: nextPending
-          ? `Rendre des jetons : ${players.find((p) => p?.id === nextPending)?.username ?? `#${nextPending}`}`
+          ? `Rendre des jetons : ${this.shared.playerLabel(players as any[], nextPending)}`
           : undefined,
       },
     };

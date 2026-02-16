@@ -4,12 +4,14 @@ import type { LamaCardValue, LamaMetadata } from '../model/lama.model';
 import { lamaCardLabel, lamaCardScore, LAMA_VALUE } from '../model/lama.model';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { LamaLogService } from '../logging/lama-log.service';
+import { LamaSharedService } from '../shared/lama-shared.service';
 
 @Injectable()
 export class LamaRoundService {
   constructor(
     private readonly random: RandomService,
     private readonly logger: LamaLogService,
+    private readonly shared: LamaSharedService,
   ) {}
 
   startNewRound(state: GameStateEntity, starterIndex: number): GameStateEntity {
@@ -45,8 +47,7 @@ export class LamaRoundService {
     const starterPlayerId = players[starterIndex]?.id ?? players[0]?.id ?? null;
     const starterName =
       starterPlayerId != null
-        ? players.find((p) => p?.id === starterPlayerId)?.username ??
-          `#${starterPlayerId}`
+        ? this.shared.playerLabel(players as any[], starterPlayerId)
         : null;
     let log = this.logger.append(
       state.log,
@@ -85,7 +86,7 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
         currentPlayerId: starterPlayerId,
         direction: 1,
         label: starterPlayerId
-          ? `Tour de ${players.find((p) => p?.id === starterPlayerId)?.username ?? `#${starterPlayerId}`}`
+          ? `Tour de ${this.shared.playerLabel(players as any[], starterPlayerId)}`
           : undefined,
       },
     };
@@ -108,7 +109,7 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
     if (alreadyLoggedEnd) {
       const winnerName =
         winnerPlayerId != null
-          ? players.find((p) => p?.id === winnerPlayerId)?.username ?? `#${winnerPlayerId}`
+          ? this.shared.playerLabel(players as any[], winnerPlayerId)
           : null;
 
       const winnerScore =
@@ -136,9 +137,9 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
           ...(state.turn ?? { direction: 1 }),
           currentPlayerId: eligible.length ? eligible[0] : state.turn?.currentPlayerId ?? null,
           direction: 1,
-          label: eligible.length
-            ? `Rendre des jetons : ${players.find((p) => p?.id === eligible[0])?.username ?? `#${eligible[0]}`}`
-            : winnerName
+        label: eligible.length
+          ? `Rendre des jetons : ${this.shared.playerLabel(players as any[], eligible[0])}`
+          : winnerName
               ? `Fin de manche : ${winnerName}`
               : state.turn?.label,
         },
@@ -163,14 +164,14 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       if (gained > 0) {
         log = this.logger.append(
           log,
-          `${p.username ?? `#${pid}`} prend ${gained} jeton${gained > 1 ? 's' : ''} (pénalité).`,
+          `${this.shared.playerLabel(players as any[], pid)} prend ${gained} jeton${gained > 1 ? 's' : ''} (pénalité).`,
         );
       }
     }
 
     const winnerName =
       winnerPlayerId != null
-        ? players.find((p) => p?.id === winnerPlayerId)?.username ?? `#${winnerPlayerId}`
+        ? this.shared.playerLabel(players as any[], winnerPlayerId)
         : null;
     if (winnerName) {
       log = this.logger.append(log, `${winnerName} gagne la manche.`);
@@ -205,7 +206,7 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
         currentPlayerId: eligible.length ? eligible[0] : state.turn?.currentPlayerId ?? null,
         direction: 1,
         label: eligible.length
-          ? `Rendre des jetons : ${players.find((p) => p?.id === eligible[0])?.username ?? `#${eligible[0]}`}`
+          ? `Rendre des jetons : ${this.shared.playerLabel(players as any[], eligible[0])}`
           : undefined,
       },
     };
@@ -241,7 +242,7 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       if (winnerId) {
         log = this.logger.append(
           log,
-          `Gagnant : ${players.find((p) => p?.id === winnerId)?.username ?? `#${winnerId}`}.`,
+          `Gagnant : ${this.shared.playerLabel(players as any[], winnerId)}.`,
         );
       }
       return {
@@ -360,5 +361,4 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
     return roundNumber >= 2;
   }
 }
-
 

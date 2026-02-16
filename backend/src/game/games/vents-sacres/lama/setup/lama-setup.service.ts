@@ -107,7 +107,7 @@ export class LamaSetupService {
         currentPlayerId: ownerPlayerId,
         direction: 1,
         label: ownerPlayerId
-          ? `Réglages LAMA : ${players.find((p) => p?.id === ownerPlayerId)?.username ?? `#${ownerPlayerId}`}`
+          ? `Réglages LAMA : ${this.shared.playerLabel(players as any[], ownerPlayerId)}`
           : 'Réglages LAMA',
       },
     };
@@ -147,7 +147,8 @@ export class LamaSetupService {
     };
 
     let log = state.log;
-    const name = (state.players ?? []).find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
+    const players = Array.isArray(state.players) ? state.players : [];
+    const name = this.shared.playerLabel(players as any[], actorId);
     log = this.logger.append(log, `${name} fixe la défaite à ${loseAtScore} jetons.`);
     log = this.logger.append(log, `${name} règle la pause entre manches à ${roundPauseSeconds}s.`);
     log = this.logger.append(
@@ -197,4 +198,3 @@ export class LamaSetupService {
     );
   }
 }
-

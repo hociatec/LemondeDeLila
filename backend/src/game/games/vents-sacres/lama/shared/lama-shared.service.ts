@@ -3,6 +3,29 @@ import type { LamaMetadata } from '../model/lama.model';
 
 @Injectable()
 export class LamaSharedService {
+  sanitizePlayerName(raw: unknown): string {
+    let name = String(raw ?? '').trim();
+    name = name
+      .replace(/[\r\n\t]+/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+    if (name.startsWith('"') && name.endsWith('"')) {
+      name = name.slice(1, -1).trim();
+    }
+    const lowered = name.toLowerCase();
+    if (
+      lowered.endsWith('(zone de jeu)') ||
+      lowered.endsWith('(zone de jeux)') ||
+      lowered.endsWith('(game zone)')
+    ) {
+      const openParen = name.lastIndexOf('(');
+      if (openParen > 0) {
+        name = name.slice(0, openParen).trimEnd();
+      }
+    }
+    return name;
+  }
+
   asNumberOrNull(value: unknown): number | null {
     if (typeof value === 'number' && Number.isFinite(value)) return value;
     if (typeof value === 'string') {
@@ -26,14 +49,7 @@ export class LamaSharedService {
 
   playerLabel(players: any[], playerId: number): string {
     const raw = players.find((p) => p?.id === playerId)?.username;
-    let name = String(raw ?? '').trim();
-    name = name
-      .replace(/[\r\n\t]+/g, ' ')
-      .replace(/\s{2,}/g, ' ')
-      .trim();
-    if (name.startsWith('"') && name.endsWith('"')) {
-      name = name.slice(1, -1).trim();
-    }
+    const name = this.sanitizePlayerName(raw);
     return name.length ? name : `joueur ${playerId}`;
   }
 

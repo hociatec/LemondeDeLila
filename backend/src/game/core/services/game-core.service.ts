@@ -10,6 +10,29 @@ import { seededShuffle } from '../../../common/utils/seeded-shuffle';
 
 @Injectable()
 export class GameCoreService {
+  private sanitizePlayerName(raw: unknown): string {
+    let name = String(raw ?? '').trim();
+    name = name
+      .replace(/[\r\n\t]+/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+    if (name.startsWith('"') && name.endsWith('"')) {
+      name = name.slice(1, -1).trim();
+    }
+    const lowered = name.toLowerCase();
+    if (
+      lowered.endsWith('(zone de jeu)') ||
+      lowered.endsWith('(zone de jeux)') ||
+      lowered.endsWith('(game zone)')
+    ) {
+      const openParen = name.lastIndexOf('(');
+      if (openParen > 0) {
+        name = name.slice(0, openParen).trimEnd();
+      }
+    }
+    return name;
+  }
+
   buildBaseState(payload: RoomPayload, gameType: string): GameStateEntity {
     const status = payload.room.status || 'setup';
     const roomOwnerId =
@@ -84,7 +107,7 @@ export class GameCoreService {
     payload.room.players.forEach((p) =>
       players.push({
         id: p.id,
-        username: p.username,
+        username: this.sanitizePlayerName(p.username),
         isBot: false,
         basket: [],
         inventory: [],
@@ -96,7 +119,7 @@ export class GameCoreService {
         // Stable id: avoid shifting bot ids when the room bot list order changes.
         // This prevents games from "remembering" a different bot after add/remove/reorder.
         id: -Math.abs(b.id),
-        username: b.name,
+        username: this.sanitizePlayerName(b.name),
         isBot: true,
         basket: [],
         inventory: [],

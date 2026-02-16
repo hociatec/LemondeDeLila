@@ -407,6 +407,29 @@ export class GameGateway
         const players = Array.isArray(state?.players) ? state.players : [];
         const current =
           players.find((p: any) => p?.id === currentPlayerId) ?? null;
+        const currentUsername = (() => {
+          let name =
+            typeof current?.username === 'string' ? current.username : '';
+          name = name
+            .replace(/[\r\n\t]+/g, ' ')
+            .replace(/\s{2,}/g, ' ')
+            .trim();
+          if (name.startsWith('"') && name.endsWith('"')) {
+            name = name.slice(1, -1).trim();
+          }
+          const lowered = name.toLowerCase();
+          if (
+            lowered.endsWith('(zone de jeu)') ||
+            lowered.endsWith('(zone de jeux)') ||
+            lowered.endsWith('(game zone)')
+          ) {
+            const openParen = name.lastIndexOf('(');
+            if (openParen > 0) {
+              name = name.slice(0, openParen).trimEnd();
+            }
+          }
+          return name.length > 0 ? name : null;
+        })();
 
         const payloadOut: TurnInfoPayload = {
           roomId,
@@ -415,8 +438,7 @@ export class GameGateway
             typeof state?.turnIndex === 'number' ? state.turnIndex : null,
           currentPlayerId:
             typeof currentPlayerId === 'number' ? currentPlayerId : null,
-          currentPlayerUsername:
-            typeof current?.username === 'string' ? current.username : null,
+          currentPlayerUsername: currentUsername,
           status: typeof state?.status === 'string' ? state.status : null,
           phase: typeof state?.phase === 'string' ? state.phase : null,
         };
@@ -1018,4 +1040,3 @@ export class GameGateway
     return `${gameType}:${roomId}`;
   }
 }
-

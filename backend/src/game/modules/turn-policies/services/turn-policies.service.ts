@@ -5,14 +5,34 @@ import { GameCoreService } from '../../../core/services/game-core.service';
 export class TurnPoliciesService {
   constructor(private readonly core: GameCoreService) {}
 
+  private sanitizePlayerName(raw: unknown): string {
+    let name = String(raw ?? '').trim();
+    name = name
+      .replace(/[\r\n\t]+/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+    if (name.startsWith('"') && name.endsWith('"')) {
+      name = name.slice(1, -1).trim();
+    }
+    const lowered = name.toLowerCase();
+    if (
+      lowered.endsWith('(zone de jeu)') ||
+      lowered.endsWith('(zone de jeux)') ||
+      lowered.endsWith('(game zone)')
+    ) {
+      const openParen = name.lastIndexOf('(');
+      if (openParen > 0) {
+        name = name.slice(0, openParen).trimEnd();
+      }
+    }
+    return name;
+  }
+
   playerName(state: GameStateEntity, playerId: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
     const player = players.find((p) => p?.id === playerId);
-    const username =
-      player?.username && String(player.username).trim()
-        ? String(player.username).trim()
-        : null;
-    return username ?? `Joueur ${playerId}`;
+    const username = this.sanitizePlayerName(player?.username);
+    return username.length > 0 ? username : `Joueur ${playerId}`;
   }
 
   appendTurnAnnouncement(

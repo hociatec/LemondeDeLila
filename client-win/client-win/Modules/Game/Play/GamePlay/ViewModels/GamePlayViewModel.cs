@@ -91,6 +91,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private string _pendingType = string.Empty;
     private string _quizQuestionText = string.Empty;
     private string _lastQuizQuestionForSelectionReset = string.Empty;
+    private string _lastAnnouncedServerPendingLabel = string.Empty;
     private int _selectedDisplayIndex = -1;
     private readonly object _postStateUiLock = new();
     private GameStateDto? _postStateUiPendingState;
@@ -124,6 +125,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             if (string.Equals(e.PropertyName, nameof(GamePlayChoicesViewModel.ChoicesLabel), StringComparison.Ordinal))
             {
                 OnPropertyChanged(nameof(ChoicesLabel));
+                MaybeAnnounceServerPendingChoicesLabel();
             }
         };
         _choices.PropertyChanged += _choicesPropertyChangedHandler;
@@ -259,6 +261,32 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public bool IsQuizPending =>
         string.Equals((_pendingType ?? string.Empty).Trim(), "quiz", StringComparison.OrdinalIgnoreCase);
+
+    private void MaybeAnnounceServerPendingChoicesLabel()
+    {
+        var state = _session?.LastState;
+        var hasServerPendingChoices = (state?.Pending?.Choices?.Count ?? 0) > 0;
+        if (!hasServerPendingChoices)
+        {
+            _lastAnnouncedServerPendingLabel = string.Empty;
+            return;
+        }
+
+        var label = (ChoicesLabel ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(label))
+        {
+            _lastAnnouncedServerPendingLabel = string.Empty;
+            return;
+        }
+
+        if (string.Equals(_lastAnnouncedServerPendingLabel, label, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _lastAnnouncedServerPendingLabel = label;
+        MessageReceived?.Invoke(new GamePlayHistoryMessage(label));
+    }
 
     public string QuizQuestionText
     {

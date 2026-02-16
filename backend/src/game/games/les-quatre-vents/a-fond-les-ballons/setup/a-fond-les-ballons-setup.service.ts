@@ -124,7 +124,7 @@ export class AFondLesBallonsSetupService {
     next = this.core.appendLog(next, '=== A fond les ballons ! ===');
     next = this.core.appendLog(
       next,
-      "Objectif : atteindre exactement la case 40 (la Grosse Noix Dor�e). Si vous d�passez, vous reculez du surplus.",
+      "Objectif : atteindre exactement la case 40 (la Grosse Noix Dorée). Si vous dépassez, vous reculez du surplus.",
     );
     next = this.core.appendLog(next, 'Pions disponibles :');
     for (const pawn of pawns) {
@@ -503,4 +503,3 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
   ];
 }
-

@@ -20,8 +20,8 @@ const JEU_OIE_PAWNS: JeuOiePawn[] = [
   { id: 'vache-artistique', label: 'Vache artistique', feminine: true },
   { id: 'cochon-gourmand', label: 'Cochon gourmand', feminine: false },
   { id: 'poule-scientifique', label: 'Poule scientifique', feminine: true },
-  { id: 'chevre-acrobate', label: 'Chevre acrobate', feminine: true },
-  { id: 'marmotte-reveuse', label: 'Marmotte reveuse', feminine: true },
+  { id: 'chevre-acrobate', label: 'Chèvre acrobate', feminine: true },
+  { id: 'marmotte-reveuse', label: 'Marmotte rêveuse', feminine: true },
 ];
 
 @Injectable()
@@ -63,7 +63,7 @@ export class JeuOieSetupService {
         label: pawn.label,
         feminine: pawn.feminine,
       })),
-      labelForPlayer: (playerLabel) => `C'est Ã  ${playerLabel} de choisir son pion.`,
+      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
       dataBuilder: (choices) => ({
         pawns: choices.map((choice) => ({
           id: choice.id,
@@ -149,7 +149,7 @@ function buildTiles(texts: JeuOieCaseTextsJsonV1): JeuOieTile[] {
       tiles.push({
         id: 'start',
         type: 'start',
-        label: t?.title ? `Case ${i} - ${t.title}` : `Case ${i} - Depart`,
+        label: t?.title ? `Case ${i} - ${t.title}` : `Case ${i} - Départ`,
         description: t?.description || undefined,
       });
       continue;
@@ -159,7 +159,7 @@ function buildTiles(texts: JeuOieCaseTextsJsonV1): JeuOieTile[] {
       tiles.push({
         id: 'finish',
         type: 'finish',
-        label: t?.title ? `Case ${i} - ${t.title}` : `Case ${i} - Arrivee`,
+        label: t?.title ? `Case ${i} - ${t.title}` : `Case ${i} - Arrivée`,
         description: t?.description || undefined,
       });
       continue;
@@ -190,7 +190,7 @@ function buildTiles(texts: JeuOieCaseTextsJsonV1): JeuOieTile[] {
       tiles.push({
         id: 'magic-die',
         type: 'magic_die',
-        label: t?.title ? `Case ${i} - ${t.title}` : `Case ${i} - De magique`,
+        label: t?.title ? `Case ${i} - ${t.title}` : `Case ${i} - Dé magique`,
         description: t?.description || undefined,
       });
       continue;
@@ -258,5 +258,4 @@ function buildTiles(texts: JeuOieCaseTextsJsonV1): JeuOieTile[] {
   }
   return tiles;
 }
-
 

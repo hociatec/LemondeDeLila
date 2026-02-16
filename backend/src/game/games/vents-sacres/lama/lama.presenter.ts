@@ -10,6 +10,29 @@ import { lamaCardLabel, lamaCardScore, nextLamaValue, LAMA_VALUE } from './model
 
 @Injectable()
 export class LamaPresenter extends BasePresenterService {
+  private sanitizePlayerName(raw: unknown): string {
+    let name = String(raw ?? '').trim();
+    name = name
+      .replace(/[\r\n\t]+/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+    if (name.startsWith('"') && name.endsWith('"')) {
+      name = name.slice(1, -1).trim();
+    }
+    const lowered = name.toLowerCase();
+    if (
+      lowered.endsWith('(zone de jeu)') ||
+      lowered.endsWith('(zone de jeux)') ||
+      lowered.endsWith('(game zone)')
+    ) {
+      const openParen = name.lastIndexOf('(');
+      if (openParen > 0) {
+        name = name.slice(0, openParen).trimEnd();
+      }
+    }
+    return name;
+  }
+
   exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
     const exposed = this.buildExposedStateForUser(state, userId);
     // The internal game log contains the drawn card label. We redact it for opponents,
@@ -296,7 +319,7 @@ export class LamaPresenter extends BasePresenterService {
       .map((p) => {
         const pid = p.id;
         const s = Number(scoreBy[String(pid)] ?? 0);
-        const name = p.username ?? `#${pid}`;
+        const name = this.sanitizePlayerName(p.username) || `#${pid}`;
         return `${name}: ${s}`;
       });
 
@@ -352,7 +375,7 @@ export class LamaPresenter extends BasePresenterService {
                 .filter((p) => p?.id)
                 .map((p) => {
                   const pid = p.id;
-                  const name = p.username ?? `#${pid}`;
+                  const name = this.sanitizePlayerName(p.username) || `#${pid}`;
                   const count = Array.isArray(by[String(pid)]) ? (by[String(pid)] as any[]).length : 0;
                   return `${name}: ${count}`;
                 });
@@ -407,17 +430,7 @@ export class LamaPresenter extends BasePresenterService {
   ): Array<{ message: string; timestamp?: string }> {
     if (!Array.isArray(log) || log.length === 0) return Array.isArray(log) ? [...log] : [];
 
-    const normalize = (raw: unknown): string => {
-      let name = String(raw ?? '').trim();
-      name = name
-        .replace(/[\r\n\t]+/g, ' ')
-        .replace(/\s{2,}/g, ' ')
-        .trim();
-      if (name.startsWith('"') && name.endsWith('"')) {
-        name = name.slice(1, -1).trim();
-      }
-      return name;
-    };
+    const normalize = (raw: unknown): string => this.sanitizePlayerName(raw);
     const keyOf = (raw: unknown): string => normalize(raw).toLowerCase();
 
     // Build the same label mapping as the game uses when logging actions.
@@ -449,8 +462,6 @@ export class LamaPresenter extends BasePresenterService {
     });
   }
 }
-
-
 
 
 

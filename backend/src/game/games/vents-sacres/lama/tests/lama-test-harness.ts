@@ -19,7 +19,7 @@ export const createLamaServiceForTest = (): { service: LamaService } => {
   const shared = new LamaSharedService();
   const random = new RandomService();
   const logger = new LamaLogService();
-  const round = new LamaRoundService(random, logger);
+  const round = new LamaRoundService(random, logger, shared);
   const setup = new LamaSetupService(shared, round, logger);
   const draw = new LamaDrawService(shared, round, logger);
   const pass = new LamaPassService(shared, round, logger);
