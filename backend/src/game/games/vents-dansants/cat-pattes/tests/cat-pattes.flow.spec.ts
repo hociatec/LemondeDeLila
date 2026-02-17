@@ -6,6 +6,7 @@ import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { CatPattesActionService } from '../actions/cat-pattes-action.service';
 import { CatPattesSetupService } from '../setup/cat-pattes-setup.service';
+import { CatPattesPresenterService } from '../presenter/cat-pattes-presenter.service';
 import * as Rulebook from '../rulebook/rulebook';
 
 function baseState(): GameStateEntity {
@@ -216,6 +217,32 @@ describe('CatPattes flow', () => {
     const afterPlayCount = Array.isArray(meta2.hands?.[1]) ? meta2.hands[1].length : 0;
     expect(afterPlayCount).toBe(6);
     expect(state.turn?.currentPlayerId).toBe(2);
+  });
+
+  it('exposes choose_pawn pending choices to the current user', async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        GameCoreService,
+        RandomService,
+        SetupFlowService,
+        DeckPoliciesService,
+        CatPattesSetupService,
+      ],
+    }).compile();
+
+    const setup = moduleRef.get(CatPattesSetupService);
+    const presenter = new CatPattesPresenterService();
+
+    const state = setup.hydrateInitialState(baseState());
+    const exposed: any = presenter.exposeStateForUser(state, 1);
+
+    expect(exposed.pending?.type).toBe('choose_pawn');
+    expect(Array.isArray(exposed.pending?.choices)).toBe(true);
+    expect((exposed.pending?.choices ?? []).length).toBeGreaterThan(0);
+
+    const actions = Array.isArray(exposed.actions) ? exposed.actions : [];
+    expect(actions.length).toBeGreaterThan(0);
+    expect(actions.every((a: any) => String(a?.type ?? '') === 'choose_pawn')).toBe(true);
   });
 });
 

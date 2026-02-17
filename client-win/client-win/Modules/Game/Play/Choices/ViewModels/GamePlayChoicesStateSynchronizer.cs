@@ -180,6 +180,40 @@ internal sealed class GamePlayChoicesStateSynchronizer
             return false;
         }
 
+        if (state.Pending?.Data.ValueKind == JsonValueKind.Object &&
+            state.Pending.Data.TryGetProperty("pawns", out var pawnsNode) &&
+            pawnsNode.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var pawn in pawnsNode.EnumerateArray())
+            {
+                if (pawn.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                var pawnId = TryReadPayloadString(pawn, "id")
+                             ?? TryReadPayloadString(pawn, "pawnId")
+                             ?? TryReadPayloadString(pawn, "value");
+                var pawnLabel = TryReadPayloadString(pawn, "label");
+                if (string.IsNullOrWhiteSpace(pawnId))
+                {
+                    continue;
+                }
+
+                pawnId = pawnId.Trim();
+                var label = !string.IsNullOrWhiteSpace(pawnLabel)
+                    ? pawnLabel.Trim()
+                    : pawnId;
+                var key = ChoiceLabelUniquifier.MakeUniqueChoiceLabel(choices, label);
+                choices[key] = new GameClientAction("choose_pawn", new { pawnId });
+            }
+        }
+
+        if (choices.Count > 0)
+        {
+            return true;
+        }
+
         var actions = state.Actions ?? new List<GameAvailableActionDto>();
         if (actions.Count == 0)
         {
