@@ -7,6 +7,7 @@ import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
+import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
 import { PromptPoliciesService } from '../../../../modules/prompt-policies/services/prompt-policies.service';
 import {
@@ -37,6 +38,7 @@ export class CatPattesActionService {
     private readonly turns: TurnFlowService,
     private readonly setupFlow: SetupFlowService,
     private readonly deckPolicies: DeckPoliciesService,
+    private readonly random: RandomService,
     private readonly turnPolicies?: TurnPoliciesService,
     private readonly promptPolicies?: PromptPoliciesService,
   ) {}
@@ -560,7 +562,16 @@ export class CatPattesActionService {
       .filter((p) => p.id.length > 0 && p.label.length > 0);
     if (!normalized.length) return null;
 
-    return this.setupFlow.resolveChoice(raw, normalized) as
+    const candidate =
+      typeof raw === 'object' && raw != null
+        ? (raw as any)?.id ??
+          (raw as any)?.pawnId ??
+          (raw as any)?.pawn ??
+          (raw as any)?.value ??
+          (raw as any)?.label ??
+          raw
+        : raw;
+    return this.setupFlow.resolveChoice(candidate, normalized) as
       | { id: string; label: string }
       | null;
   }
@@ -588,17 +599,24 @@ export class CatPattesActionService {
     const used = new Set(
       Object.values(assigned).filter((v) => typeof v === 'string' && v.trim().length > 0),
     );
-    const pawns = Array.isArray(meta.pawns) ? [...meta.pawns] : [];
+    const pool = Array.isArray(meta.pawns)
+      ? meta.pawns.filter((pawn) => !used.has(pawn))
+      : [];
+    const out = this.random.shuffle(meta as any, pool);
+    const pawns = Array.isArray(out.values) ? out.values : [];
+    const shuffledRng = (out.meta as any)?.rng ?? meta.rng;
 
     let next = state;
     let changed = false;
+    let pawnIndex = 0;
     for (const player of players) {
       if (!player?.id || !this.isBotLike(player)) continue;
       if (assigned[player.id]) continue;
-      const nextPawn = pawns.find((pawn) => !used.has(pawn));
+      const nextPawn = pawns[pawnIndex];
       if (!nextPawn) break;
       assigned[player.id] = nextPawn;
       used.add(nextPawn);
+      pawnIndex += 1;
       changed = true;
       next = this.core.appendLog(
         next,
@@ -607,14 +625,19 @@ export class CatPattesActionService {
     }
 
     if (!changed) return state;
-    return this.setMeta(next, { ...this.getMeta(next), pawnByPlayerId: assigned });
+    return this.setMeta(next, {
+      ...this.getMeta(next),
+      rng: shuffledRng,
+      pawnByPlayerId: assigned,
+    });
   }
 
   private isBotLike(player: any): boolean {
     if (!player) return false;
     if (player.isBot === true) return true;
-    const username = String(player?.username ?? '').toLowerCase();
-    return username.includes('bot');
+    if (typeof player.isBot === 'boolean') return false;
+    const kind = String(player?.kind ?? player?.type ?? '').trim().toLowerCase();
+    return kind === 'bot';
   }
 }
 

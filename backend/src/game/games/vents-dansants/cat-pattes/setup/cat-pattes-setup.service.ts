@@ -139,25 +139,36 @@ export class CatPattesSetupService {
     const used = new Set(
       Object.values(assigned).filter((v) => typeof v === 'string' && v.trim().length > 0),
     );
-    const pool = Array.isArray(meta.pawns) ? [...meta.pawns] : [];
+    const pool = Array.isArray(meta.pawns)
+      ? meta.pawns.filter((pawn) => !used.has(pawn))
+      : [];
+    const shuffled = this.random.shuffle(meta as any, pool);
+    const shuffledPool = Array.isArray(shuffled.values) ? shuffled.values : [];
 
+    let pawnIndex = 0;
     for (const player of players) {
       if (!player?.id || !this.isBotLike(player)) continue;
       if (assigned[player.id]) continue;
-      const nextPawn = pool.find((pawn) => !used.has(pawn));
+      const nextPawn = shuffledPool[pawnIndex];
       if (!nextPawn) break;
       assigned[player.id] = nextPawn;
       used.add(nextPawn);
+      pawnIndex += 1;
     }
 
-    return { ...meta, pawnByPlayerId: assigned };
+    return {
+      ...meta,
+      rng: (shuffled.meta as any)?.rng ?? meta.rng,
+      pawnByPlayerId: assigned,
+    };
   }
 
   private isBotLike(player: any): boolean {
     if (!player) return false;
     if (player.isBot === true) return true;
-    const username = String(player?.username ?? '').toLowerCase();
-    return username.includes('bot');
+    if (typeof player.isBot === 'boolean') return false;
+    const kind = String(player?.kind ?? player?.type ?? '').trim().toLowerCase();
+    return kind === 'bot';
   }
 }
 
