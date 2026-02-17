@@ -359,16 +359,35 @@ export class ContesActionService {
     const ctx = String(pending.data.context ?? '');
     if (ctx !== 'laughter_dust') return next;
 
-    const picks: Record<number, number> = {};
     const players = Array.isArray(next.players) ? next.players : [];
-    for (const p of players) {
-      if (p.id === playerId) {
-        picks[p.id] = value;
-        continue;
-      }
-      const out = this.random.nextInt(this.getMeta(next) as any, 3);
-      next = { ...next, metadata: { ...(next.metadata ?? {}), ...out.meta } };
-      picks[p.id] = out.value + 1;
+    const defaultOrder = players
+      .map((p: any) => Number(p?.id))
+      .filter((id) => Number.isFinite(id));
+    const orderRaw = Array.isArray((pending.data as any)?.order)
+      ? ((pending.data as any).order as number[])
+      : defaultOrder;
+    const order = orderRaw.filter((id) => Number.isFinite(id));
+    const picks: Record<number, number> = {
+      ...((pending.data as any)?.picks ?? {}),
+      [playerId]: value,
+    };
+
+    const nextPlayerId = order.find((id) => picks[id] == null);
+    if (nextPlayerId != null) {
+      return this.setPending(next, {
+        type: 'choose_number',
+        label: `PoussiÃ¨re de rire : ${this.playerName(next, nextPlayerId)}, choisissez un nombre entre 1 et 3 puis EntrÃ©e.`,
+        playerId: nextPlayerId,
+        blocking: true,
+        choices: ['1', '2', '3'],
+        data: {
+          context: 'laughter_dust',
+          min: 1,
+          max: 3,
+          order,
+          picks,
+        },
+      });
     }
 
     const max = Math.max(...Object.values(picks));
@@ -1020,7 +1039,10 @@ export class ContesActionService {
         return this.drawAndApply(next, playerId, 'bonus', depth);
       case 4:
         return this.applyCoffreMerveilles(next, playerId, depth);
-      case 5:
+      case 5: {
+        const order = (Array.isArray(next.players) ? next.players : [])
+          .map((p: any) => Number(p?.id))
+          .filter((id) => Number.isFinite(id));
         return this.setPending(next, {
           type: 'choose_number',
           label:
@@ -1028,8 +1050,15 @@ export class ContesActionService {
           playerId,
           blocking: true,
           choices: ['1', '2', '3'],
-          data: { context: 'laughter_dust', min: 1, max: 3 },
+          data: {
+            context: 'laughter_dust',
+            min: 1,
+            max: 3,
+            order,
+            picks: {},
+          },
         });
+      }
       case 6:
         return this.startChooseTarget(
           next,

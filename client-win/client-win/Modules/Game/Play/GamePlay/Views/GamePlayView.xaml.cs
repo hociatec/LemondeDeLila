@@ -18,7 +18,7 @@ public partial class GamePlayView : UserControl, IInitialFocusTarget
     {
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
-            ForceFocusGameZone();
+            FocusPreferredInteractiveElement();
         }));
     }
 }

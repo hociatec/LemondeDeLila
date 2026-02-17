@@ -61,6 +61,7 @@ export class InteractiveExchangeService {
       playerId,
       card,
       step: 'choose_target',
+      blocking: true,
       label: "Choisissez un joueur pour l'échange dans la liste, puis Entrée.",
       targets,
     };
@@ -97,6 +98,7 @@ export class InteractiveExchangeService {
     const nextPending: InteractiveExchangePending = {
       ...pending,
       step: 'choose_give',
+      blocking: true,
       targetPlayerId: chosen.targetPlayerId,
       targetUsername: chosen.targetUsername,
       giveChoices,
@@ -154,6 +156,7 @@ export class InteractiveExchangeService {
     const offer: Extract<InteractiveExchangePending, { step: 'confirm' }> = {
       type: 'exchange',
       step: 'confirm',
+      blocking: true,
       label: 'Échange proposé : A = accepter, R = refuser.',
       playerId: targetPlayerId,
       initiatorPlayerId: playerId,

@@ -59,6 +59,10 @@ describe('Contes pawn selection', () => {
 
     let state = setup.hydrateInitialState(baseState());
     expect((state.pending as any)?.type).toBe('choose_pawn');
+    const firstPawns = (state.pending as any)?.data?.pawns ?? [];
+    expect(firstPawns.length).toBeGreaterThan(0);
+    expect(typeof firstPawns[0]?.description).toBe('string');
+    expect(String(firstPawns[0]?.description ?? '').trim().length).toBeGreaterThan(0);
     const starterId = Number((state.metadata as any)?.setupStarterId ?? 0);
     expect([1, 2, 3]).toContain(starterId);
     expect(Number((state.pending as any)?.playerId)).toBe(starterId);

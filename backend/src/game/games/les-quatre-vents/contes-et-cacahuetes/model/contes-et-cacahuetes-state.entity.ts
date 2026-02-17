@@ -61,7 +61,7 @@ export type ContesPending =
       blocking: true;
       choices: string[];
       data: {
-        pawns: Array<{ id: string; label: string }>;
+        pawns: Array<{ id: string; label: string; description?: string }>;
       };
     }
   | {
@@ -89,7 +89,13 @@ export type ContesPending =
       playerId: number;
       blocking: true;
       choices: string[];
-      data: { context: string; min: number; max: number };
+      data: {
+        context: string;
+        min: number;
+        max: number;
+        order?: number[];
+        picks?: Record<number, number>;
+      };
     }
   | {
       type: 'choose_option';
