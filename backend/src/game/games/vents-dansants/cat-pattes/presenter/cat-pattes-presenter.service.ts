@@ -17,6 +17,7 @@ export class CatPattesPresenterService {
   ): GameStateWithActions {
     const meta = (state.metadata ?? {}) as CatPattesMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
+    const pending = this.normalizePending(state.pending as any, actions);
     const handIds = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
     const hand = handIds.map((id) => CAT_PATTES_CARD_BY_ID[id]?.name ?? id);
 
@@ -93,7 +94,54 @@ export class CatPattesPresenterService {
       },
       actions: formatPresenterActions(actions),
       extras,
-      pending: state.pending ?? null,
+      pending,
     } as any;
+  }
+
+  private normalizePending(
+    pending: any,
+    actions: Array<{ type?: string; payload?: Record<string, unknown> }>,
+  ): any {
+    if (!pending || typeof pending !== 'object') return pending ?? null;
+    const type = String(pending?.type ?? '').trim().toLowerCase();
+    if (type !== 'choose_pawn') return pending;
+
+    const rawChoices = Array.isArray(pending?.choices) ? pending.choices : [];
+    const normalizedChoices = rawChoices
+      .map((choice: unknown) => String(choice ?? '').trim())
+      .filter((choice: string) => choice.length > 0);
+    if (normalizedChoices.length > 0) {
+      return {
+        ...pending,
+        choices: normalizedChoices,
+      };
+    }
+
+    const pendingPawns = Array.isArray(pending?.data?.pawns) ? pending.data.pawns : [];
+    const pawnsFromPendingData = pendingPawns
+      .map((pawn: any) => String(pawn?.label ?? pawn?.id ?? '').trim())
+      .filter((choice: string) => choice.length > 0);
+    if (pawnsFromPendingData.length > 0) {
+      return {
+        ...pending,
+        choices: pawnsFromPendingData,
+      };
+    }
+
+    const pawnsFromActions = (Array.isArray(actions) ? actions : [])
+      .filter((action) => String(action?.type ?? '').trim().toLowerCase() === 'choose_pawn')
+      .map((action) => {
+        const payload = (action?.payload ?? {}) as Record<string, unknown>;
+        return String(payload.pawnId ?? payload.pawn ?? payload.value ?? '').trim();
+      })
+      .filter((choice) => choice.length > 0);
+    if (pawnsFromActions.length > 0) {
+      return {
+        ...pending,
+        choices: pawnsFromActions,
+      };
+    }
+
+    return pending;
   }
 }

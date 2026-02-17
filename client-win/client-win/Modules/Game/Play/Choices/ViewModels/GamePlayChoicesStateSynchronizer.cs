@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using client_win.Modules.Game.Play.Actions.Dtos;
 using client_win.Modules.Game.Play.Choices.Services;
 using client_win.Modules.Game.Play.State.Dtos;
@@ -44,6 +45,14 @@ internal sealed class GamePlayChoicesStateSynchronizer
             var type = (state.Pending?.Type ?? string.Empty).Trim();
             var isQuiz = string.Equals(type, "quiz", StringComparison.OrdinalIgnoreCase);
             _list.Apply(serverChoices, autoSelectFirst: !isQuiz);
+            return;
+        }
+
+        if (TryBuildChoosePawnFallbackChoices(state, out var pawnChoices))
+        {
+            ApplyLocalChoices("choose_pawn_fallback", pawnChoices, setLabel);
+            var pendingLabel = PendingChoicesReader.BuildServerChoicesLabel(state.Pending);
+            setLabel(string.IsNullOrWhiteSpace(pendingLabel) ? "Choisissez votre pion." : pendingLabel);
             return;
         }
 
@@ -152,5 +161,78 @@ internal sealed class GamePlayChoicesStateSynchronizer
         }
 
         return actions.Any(a => string.Equals(a.Type, actionType, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool TryBuildChoosePawnFallbackChoices(
+        GameStateDto state,
+        out Dictionary<string, GameClientAction> choices)
+    {
+        choices = new Dictionary<string, GameClientAction>(StringComparer.Ordinal);
+
+        var pendingType = (state.Pending?.Type ?? string.Empty).Trim();
+        if (!string.Equals(pendingType, "choose_pawn", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if ((state.Pending?.Choices?.Count ?? 0) > 0)
+        {
+            return false;
+        }
+
+        var actions = state.Actions ?? new List<GameAvailableActionDto>();
+        if (actions.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (var action in actions.Where(a => string.Equals(a.Type, "choose_pawn", StringComparison.OrdinalIgnoreCase)))
+        {
+            if (action.Payload.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            var pawnId = TryReadPayloadString(action.Payload, "pawnId")
+                         ?? TryReadPayloadString(action.Payload, "pawn")
+                         ?? TryReadPayloadString(action.Payload, "value");
+            if (string.IsNullOrWhiteSpace(pawnId))
+            {
+                continue;
+            }
+            pawnId = pawnId.Trim();
+
+            var key = ChoiceLabelUniquifier.MakeUniqueChoiceLabel(choices, pawnId);
+            choices[key] = new GameClientAction(action.Type, new { pawnId });
+        }
+
+        return choices.Count > 0;
+    }
+
+    private static string? TryReadPayloadString(JsonElement payload, string propertyName)
+    {
+        if (!payload.TryGetProperty(propertyName, out var node))
+        {
+            return null;
+        }
+
+        if (node.ValueKind == JsonValueKind.String)
+        {
+            return node.GetString();
+        }
+
+        if (node.ValueKind == JsonValueKind.Number)
+        {
+            if (node.TryGetInt32(out var asInt))
+            {
+                return asInt.ToString();
+            }
+            if (node.TryGetDouble(out var asDouble) && double.IsFinite(asDouble))
+            {
+                return asDouble.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            }
+        }
+
+        return null;
     }
 }

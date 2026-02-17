@@ -166,9 +166,10 @@ export class CatPattesSetupService {
   private isBotLike(player: any): boolean {
     if (!player) return false;
     if (player.isBot === true) return true;
-    if (typeof player.isBot === 'boolean') return false;
+    const username = String(player?.username ?? '').trim().toLowerCase();
+    if (username.includes('bot')) return true;
     const kind = String(player?.kind ?? player?.type ?? '').trim().toLowerCase();
-    return kind === 'bot';
+    return kind === 'bot' || kind === 'ai';
   }
 }
 
