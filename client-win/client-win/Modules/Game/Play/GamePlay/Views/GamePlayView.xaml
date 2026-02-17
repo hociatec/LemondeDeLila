@@ -236,7 +236,21 @@
                     </TextBlock.Style>
                 </TextBlock>
                 <StackPanel Margin="0 8 0 0"
-                            Visibility="{Binding HasHand, Converter={StaticResource BoolToVis}}">
+                            x:Name="HandPanel">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasHand}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                                <!-- During pawn selection, keep the UI focused on pending pawn choices. -->
+                                <DataTrigger Binding="{Binding IsChoosePawnPending}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
                     <TextBlock x:Name="HandLabelText"
                                Text="Main"
                                Foreground="#F2C14E"

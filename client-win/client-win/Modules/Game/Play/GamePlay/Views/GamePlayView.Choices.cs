@@ -67,6 +67,9 @@ public partial class GamePlayView
         _choicesChanged = null;
         _focusRequestedHandler = null;
         _vmPropertyChangedHandler = null;
+        _lastChoicesA11yWasQuiz = false;
+        _lastChoicesA11yUsedLabeledBy = false;
+        _lastChoicesA11yLabel = string.Empty;
 
         if (_vm != null)
         {
@@ -74,9 +77,22 @@ public partial class GamePlayView
             {
                 Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
                 {
+                    if (_vm?.IsChoosePawnPending == true &&
+                        ChoicesList.IsVisible &&
+                        ChoicesList.Items.Count > 0)
+                    {
+                        var idx = ChoicesList.SelectedIndex;
+                        if (idx < 0) idx = 0;
+                        if (idx >= ChoicesList.Items.Count) idx = ChoicesList.Items.Count - 1;
+                        ChoicesList.SelectedIndex = idx;
+                        ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+                        TryFocusChoiceIndex(ChoicesList, idx);
+                        return;
+                    }
+
                     // Strict behavior: when interactive lists are available, keep focus on them
                     // instead of bouncing back to the root "zone de jeu".
-                    if (HandList.Visibility == Visibility.Visible && HandList.Items.Count > 0)
+                    if (HandList.IsVisible && HandList.Items.Count > 0)
                     {
                         var idx = HandList.SelectedIndex;
                         if (idx < 0) idx = 0;
@@ -87,7 +103,7 @@ public partial class GamePlayView
                         return;
                     }
 
-                    if (ChoicesList.Visibility == Visibility.Visible && ChoicesList.Items.Count > 0)
+                    if (ChoicesList.IsVisible && ChoicesList.Items.Count > 0)
                     {
                         var idx = ChoicesList.SelectedIndex;
                         if (idx < 0) idx = 0;
@@ -149,7 +165,7 @@ public partial class GamePlayView
                 {
                     try
                     {
-                        if (HandList.Visibility != Visibility.Visible || HandList.Items.Count <= 0)
+                        if (!HandList.IsVisible || HandList.Items.Count <= 0)
                         {
                             // Keep pending restore until hand list is available again.
                             return;
@@ -182,7 +198,7 @@ public partial class GamePlayView
                 {
                     try
                     {
-                        if (ChoicesList.Visibility != Visibility.Visible || ChoicesList.Items.Count <= 0)
+                        if (!ChoicesList.IsVisible || ChoicesList.Items.Count <= 0)
                         {
                             // Keep pending restore until the choices list is available again.
                             return;
@@ -249,7 +265,7 @@ public partial class GamePlayView
         _lastAutoFocusedQuizQuestionText = question;
 
         // Quiz: the question is shown as first row in the list (index 0).
-        if (ChoicesList.Visibility != Visibility.Visible || ChoicesList.Items.Count <= 0)
+        if (!ChoicesList.IsVisible || ChoicesList.Items.Count <= 0)
         {
             return false;
         }
@@ -275,13 +291,29 @@ public partial class GamePlayView
         }
 
         var label = string.IsNullOrWhiteSpace(_vm.ChoicesLabel) ? string.Empty : _vm.ChoicesLabel.Trim();
+        var isQuiz = _vm.IsQuizPending;
+        var shouldUseLabeledBy =
+            !isQuiz &&
+            !string.IsNullOrWhiteSpace(label) &&
+            FindName("ChoicesLabelText") is FrameworkElement labelElementProbe &&
+            labelElementProbe.Visibility == Visibility.Visible;
+
+        if (_lastChoicesA11yWasQuiz == isQuiz &&
+            _lastChoicesA11yUsedLabeledBy == shouldUseLabeledBy &&
+            string.Equals(_lastChoicesA11yLabel, label, StringComparison.Ordinal))
+        {
+            return;
+        }
 
         // Quiz: the list already contains question + answers. Do not duplicate it in list name.
-        if (_vm.IsQuizPending)
+        if (isQuiz)
         {
             ChoicesList.ClearValue(AutomationProperties.HelpTextProperty);
             AutomationProperties.SetName(ChoicesList, "Question et réponses");
             ChoicesList.ClearValue(AutomationProperties.LabeledByProperty);
+            _lastChoicesA11yWasQuiz = true;
+            _lastChoicesA11yUsedLabeledBy = false;
+            _lastChoicesA11yLabel = label;
             return;
         }
 
@@ -293,7 +325,7 @@ public partial class GamePlayView
         {
             // Fallback: give the list an explicit name even if server did not provide one.
             // This keeps list announcements stable for screen readers.
-            if (_vm.IsQuizPending)
+            if (isQuiz)
             {
                 AutomationProperties.SetName(ChoicesList, "Réponses");
             }
@@ -315,10 +347,16 @@ public partial class GamePlayView
         {
             AutomationProperties.SetName(labelElement, label);
             AutomationProperties.SetLabeledBy(ChoicesList, labelElement);
+            _lastChoicesA11yWasQuiz = false;
+            _lastChoicesA11yUsedLabeledBy = true;
+            _lastChoicesA11yLabel = label;
             return;
         }
 
         ChoicesList.ClearValue(AutomationProperties.LabeledByProperty);
+        _lastChoicesA11yWasQuiz = false;
+        _lastChoicesA11yUsedLabeledBy = false;
+        _lastChoicesA11yLabel = label;
     }
 
     private bool IsTextInputFocused()
@@ -349,7 +387,7 @@ public partial class GamePlayView
             return;
         }
 
-        if (ChoicesList.Visibility != Visibility.Visible || ChoicesList.Items.Count == 0)
+        if (!ChoicesList.IsVisible || ChoicesList.Items.Count == 0)
         {
             return;
         }
@@ -398,7 +436,25 @@ public partial class GamePlayView
             return;
         }
 
-        if (HandList.Visibility == Visibility.Visible && HandList.Items.Count > 0)
+        if (DataContext is GamePlayViewModel vmChoosePawn &&
+            vmChoosePawn.IsChoosePawnPending &&
+            ChoicesList.IsVisible &&
+            ChoicesList.Items.Count > 0)
+        {
+            if (ChoicesList.SelectedIndex < 0)
+            {
+                ChoicesList.SelectedIndex = 0;
+            }
+            var idx = ChoicesList.SelectedIndex;
+            if (idx < 0) idx = 0;
+            if (idx >= ChoicesList.Items.Count) idx = ChoicesList.Items.Count - 1;
+            ChoicesList.SelectedIndex = idx;
+            ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+            TryFocusChoiceIndex(ChoicesList, idx);
+            return;
+        }
+
+        if (HandList.IsVisible && HandList.Items.Count > 0)
         {
             if (HandList.SelectedIndex < 0)
             {
@@ -413,7 +469,7 @@ public partial class GamePlayView
             return;
         }
 
-        if (ChoicesList.Visibility == Visibility.Visible && ChoicesList.Items.Count > 0)
+        if (ChoicesList.IsVisible && ChoicesList.Items.Count > 0)
         {
             if (ChoicesList.SelectedIndex < 0)
             {
@@ -531,7 +587,7 @@ public partial class GamePlayView
             {
                 try
                 {
-                    if (HandList.Visibility != Visibility.Visible || HandList.Items.Count <= 0)
+                    if (!HandList.IsVisible || HandList.Items.Count <= 0)
                     {
                         // Keep pending restore until hand list becomes available again.
                         return;

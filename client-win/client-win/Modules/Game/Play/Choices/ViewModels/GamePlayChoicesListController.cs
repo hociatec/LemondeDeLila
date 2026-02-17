@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace client_win.Modules.Game.Play.Choices.ViewModels;
@@ -21,19 +22,15 @@ internal sealed class GamePlayChoicesListController
 
     internal void Apply(IReadOnlyList<string> next, bool autoSelectFirst = true)
     {
-        if (AreSame(_choices, next))
-        {
-            EnsureSelection(autoSelectFirst);
-            return;
-        }
+        next ??= Array.Empty<string>();
+        var previousSelection = _getSelectedIndex();
+        var previousSelectedValue =
+            previousSelection >= 0 && previousSelection < _choices.Count
+                ? _choices[previousSelection]
+                : null;
 
-        _choices.Clear();
-        foreach (var choice in next)
-        {
-            _choices.Add(choice);
-        }
-
-        EnsureSelection(autoSelectFirst);
+        ApplyDiff(next);
+        EnsureSelection(autoSelectFirst, previousSelection, previousSelectedValue);
     }
 
     internal void Clear()
@@ -45,7 +42,10 @@ internal sealed class GamePlayChoicesListController
         _setSelectedIndex(-1);
     }
 
-    private void EnsureSelection(bool autoSelectFirst)
+    private void EnsureSelection(
+        bool autoSelectFirst,
+        int previousSelection,
+        string? previousSelectedValue)
     {
         if (_choices.Count <= 0)
         {
@@ -53,7 +53,17 @@ internal sealed class GamePlayChoicesListController
             return;
         }
 
-        var idx = _getSelectedIndex();
+        var idx = -1;
+        if (!string.IsNullOrWhiteSpace(previousSelectedValue))
+        {
+            idx = IndexOf(_choices, previousSelectedValue!);
+        }
+
+        if (idx < 0 && previousSelection >= 0 && previousSelection < _choices.Count)
+        {
+            idx = previousSelection;
+        }
+
         if (idx < 0 || idx >= _choices.Count)
         {
             if (!autoSelectFirst)
@@ -68,21 +78,41 @@ internal sealed class GamePlayChoicesListController
         _setSelectedIndex(idx);
     }
 
-    private static bool AreSame(ObservableCollection<string> existing, IReadOnlyList<string> next)
+    private void ApplyDiff(IReadOnlyList<string> next)
     {
-        if (existing.Count != next.Count)
+        var shared = Math.Min(_choices.Count, next.Count);
+        for (var i = 0; i < shared; i++)
         {
-            return false;
-        }
-
-        for (var i = 0; i < existing.Count; i++)
-        {
-            if (!string.Equals(existing[i], next[i], StringComparison.Ordinal))
+            if (!string.Equals(_choices[i], next[i], StringComparison.Ordinal))
             {
-                return false;
+                _choices[i] = next[i];
             }
         }
 
-        return true;
+        for (var i = _choices.Count - 1; i >= next.Count; i--)
+        {
+            _choices.RemoveAt(i);
+        }
+
+        for (var i = _choices.Count; i < next.Count; i++)
+        {
+            _choices.Add(next[i]);
+        }
+    }
+
+    private static int IndexOf(IEnumerable<string> items, string value)
+    {
+        var index = 0;
+        foreach (var item in items)
+        {
+            if (string.Equals(item, value, StringComparison.Ordinal))
+            {
+                return index;
+            }
+
+            index++;
+        }
+
+        return -1;
     }
 }

@@ -37,6 +37,16 @@ internal sealed class GamePlayChoicesStateSynchronizer
 
         var serverChoices = PendingChoicesReader.ExtractServerPendingChoices(state);
         var hasServerPendingChoices = serverChoices.Count > 0;
+        var pawnChoicesFromPendingData = ExtractChoosePawnChoicesFromPendingData(state);
+        var hasPawnChoicesFromPendingData = pawnChoicesFromPendingData.Count > 0;
+
+        if (hasPawnChoicesFromPendingData)
+        {
+            _localChoices.Clear();
+            setLabel(PendingChoicesReader.BuildServerChoicesLabel(state.Pending));
+            _list.Apply(pawnChoicesFromPendingData, autoSelectFirst: true);
+            return;
+        }
 
         if (hasServerPendingChoices)
         {
@@ -241,6 +251,48 @@ internal sealed class GamePlayChoicesStateSynchronizer
         }
 
         return choices.Count > 0;
+    }
+
+    private static List<string> ExtractChoosePawnChoicesFromPendingData(GameStateDto state)
+    {
+        var pendingType = (state.Pending?.Type ?? string.Empty).Trim();
+        if (!string.Equals(pendingType, "choose_pawn", StringComparison.OrdinalIgnoreCase))
+        {
+            return new List<string>();
+        }
+
+        if (state.Pending?.Data.ValueKind != JsonValueKind.Object)
+        {
+            return new List<string>();
+        }
+
+        if (!state.Pending.Data.TryGetProperty("pawns", out var pawnsNode) ||
+            pawnsNode.ValueKind != JsonValueKind.Array)
+        {
+            return new List<string>();
+        }
+
+        var choices = new List<string>();
+        foreach (var pawn in pawnsNode.EnumerateArray())
+        {
+            if (pawn.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            var label = TryReadPayloadString(pawn, "label")
+                        ?? TryReadPayloadString(pawn, "id")
+                        ?? TryReadPayloadString(pawn, "pawnId")
+                        ?? TryReadPayloadString(pawn, "value");
+            if (string.IsNullOrWhiteSpace(label))
+            {
+                continue;
+            }
+
+            choices.Add(label.Trim());
+        }
+
+        return choices.Count > 0 ? choices : new List<string>();
     }
 
     private static string? TryReadPayloadString(JsonElement payload, string propertyName)

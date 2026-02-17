@@ -49,7 +49,7 @@ public partial class GamePlayView
             return;
         }
 
-        if (sender is ListBox list && ReferenceEquals(list, HandList) && HandList.Items.Count > 0)
+        if (sender is ListBox list && ReferenceEquals(list, HandList) && HandList.IsVisible && HandList.Items.Count > 0)
         {
             e.Handled = true;
             try
@@ -119,11 +119,18 @@ public partial class GamePlayView
         }
 
         ListBox? targetList = null;
-        if (HandList.Visibility == Visibility.Visible && HandList.Items.Count > 0)
+        if (DataContext is GamePlayViewModel vmChoosePawn &&
+            vmChoosePawn.IsChoosePawnPending &&
+            ChoicesList.IsVisible &&
+            ChoicesList.Items.Count > 0)
+        {
+            targetList = ChoicesList;
+        }
+        else if (HandList.IsVisible && HandList.Items.Count > 0)
         {
             targetList = HandList;
         }
-        else if (ChoicesList.Visibility == Visibility.Visible && ChoicesList.Items.Count > 0)
+        else if (ChoicesList.IsVisible && ChoicesList.Items.Count > 0)
         {
             targetList = ChoicesList;
         }
@@ -170,7 +177,7 @@ public partial class GamePlayView
 
     private void TryFocusChoiceIndex(ListBox list, int index)
     {
-        if (list == null || list.Visibility != Visibility.Visible || list.Items.Count <= 0)
+        if (list == null || !list.IsVisible || list.Items.Count <= 0)
         {
             return;
         }
@@ -251,7 +258,21 @@ public partial class GamePlayView
 
     private bool TryFocusHandOrChoicesList()
     {
-        if (HandList.Visibility == Visibility.Visible && HandList.Items.Count > 0)
+        if (DataContext is GamePlayViewModel vmChoosePawn &&
+            vmChoosePawn.IsChoosePawnPending &&
+            ChoicesList.IsVisible &&
+            ChoicesList.Items.Count > 0)
+        {
+            var idx = ChoicesList.SelectedIndex;
+            if (idx < 0) idx = 0;
+            if (idx >= ChoicesList.Items.Count) idx = ChoicesList.Items.Count - 1;
+            ChoicesList.SelectedIndex = idx;
+            ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+            TryFocusChoiceIndex(ChoicesList, idx);
+            return true;
+        }
+
+        if (HandList.IsVisible && HandList.Items.Count > 0)
         {
             var idx = HandList.SelectedIndex;
             if (idx < 0) idx = 0;
@@ -262,7 +283,7 @@ public partial class GamePlayView
             return true;
         }
 
-        if (ChoicesList.Visibility == Visibility.Visible && ChoicesList.Items.Count > 0)
+        if (ChoicesList.IsVisible && ChoicesList.Items.Count > 0)
         {
             var idx = ChoicesList.SelectedIndex;
             if (idx < 0) idx = 0;
@@ -355,7 +376,8 @@ public partial class GamePlayView
 
         // UX clavier (ex: LAMA) : la main extra (pas les choix de pending) prend la priorité.
         if ((e.Key == Key.Enter || e.Key == Key.Return) &&
-            HandList.Visibility == Visibility.Visible &&
+            !vm.IsChoosePawnPending &&
+            HandList.IsVisible &&
             HandList.Items.Count > 0 &&
             !vm.Grid.IsVisible)
         {
@@ -398,7 +420,7 @@ public partial class GamePlayView
         // UX clavier (ex: LAMA) : si la liste de main/choix est affichée, Entrée valide le choix sélectionné
         // même si le focus n'est pas déjà dans la ListBox (on navigue souvent via ↑/↓ depuis la zone de jeu).
         if ((e.Key == Key.Enter || e.Key == Key.Return) &&
-            ChoicesList.Visibility == Visibility.Visible &&
+            ChoicesList.IsVisible &&
             ChoicesList.Items.Count > 0 &&
             !vm.Grid.IsVisible)
         {
@@ -429,7 +451,7 @@ public partial class GamePlayView
         // après un Tab/Maj+Tab : on garde/ramène le focus sur une ancre stable dans la zone de jeu.
         if (e.Key is Key.Left or Key.Right or Key.Up or Key.Down)
         {
-            if (ChoicesList.Visibility == Visibility.Visible && IsFocusWithinChoices())
+            if (ChoicesList.IsVisible && IsFocusWithinChoices())
             {
                 return;
             }

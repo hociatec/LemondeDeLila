@@ -255,12 +255,16 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             _pendingType = value ?? string.Empty;
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsQuizPending));
+            OnPropertyChanged(nameof(IsChoosePawnPending));
             RebuildDisplayChoices();
         }
     }
 
     public bool IsQuizPending =>
         string.Equals((_pendingType ?? string.Empty).Trim(), "quiz", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsChoosePawnPending =>
+        string.Equals((_pendingType ?? string.Empty).Trim(), "choose_pawn", StringComparison.OrdinalIgnoreCase);
 
     private void MaybeAnnounceServerPendingChoicesLabel()
     {
@@ -610,23 +614,49 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     private void RebuildDisplayChoices()
     {
-        DisplayChoices.Clear();
+        var target = new List<ChoiceLine>();
 
         if (IsQuizPending)
         {
             var q = (QuizQuestionText ?? string.Empty).Trim();
             if (!string.IsNullOrWhiteSpace(q))
             {
-                DisplayChoices.Add(new ChoiceLine(q, choiceIndex: null));
+                target.Add(new ChoiceLine(q, choiceIndex: null));
             }
         }
 
         for (var i = 0; i < PendingChoices.Count; i++)
         {
-            DisplayChoices.Add(new ChoiceLine(PendingChoices[i], i));
+            target.Add(new ChoiceLine(PendingChoices[i], i));
         }
 
+        ApplyDisplayChoicesDiff(target);
         SyncSelectedDisplayFromChoice();
+    }
+
+    private void ApplyDisplayChoicesDiff(IReadOnlyList<ChoiceLine> target)
+    {
+        var shared = Math.Min(DisplayChoices.Count, target.Count);
+        for (var i = 0; i < shared; i++)
+        {
+            var existing = DisplayChoices[i];
+            var next = target[i];
+            if (!string.Equals(existing.Text, next.Text, StringComparison.Ordinal) ||
+                existing.ChoiceIndex != next.ChoiceIndex)
+            {
+                DisplayChoices[i] = next;
+            }
+        }
+
+        for (var i = DisplayChoices.Count - 1; i >= target.Count; i--)
+        {
+            DisplayChoices.RemoveAt(i);
+        }
+
+        for (var i = DisplayChoices.Count; i < target.Count; i++)
+        {
+            DisplayChoices.Add(target[i]);
+        }
     }
 
     private void SyncSelectedDisplayFromChoice()
