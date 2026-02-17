@@ -54,6 +54,12 @@ internal sealed class GamePlayActionDispatcher
         // On construit l'action depuis `pending.data.moves`, aligné sur `pending.choices`.
         if (string.Equals(pendingType, "choose_pawn", StringComparison.OrdinalIgnoreCase))
         {
+            if (TryBuildChoosePawnFromPendingData(state.Pending, index, available, out var choosePawnAction))
+            {
+                action = choosePawnAction;
+                return true;
+            }
+
             if (TryBuildMovePawnFromPendingData(state.Pending, index, available, out var movePawnAction))
             {
                 action = movePawnAction;
@@ -231,6 +237,111 @@ internal sealed class GamePlayActionDispatcher
 
         action = new GameClientAction(type: type, payload: new { pawnIndex, targetProgress });
         return true;
+    }
+
+    private static bool TryBuildChoosePawnFromPendingData(
+        GamePendingDto pending,
+        int choiceIndex,
+        List<GameAvailableActionDto> available,
+        out GameClientAction? action)
+    {
+        action = null;
+
+        if (choiceIndex < 0)
+        {
+            return false;
+        }
+
+        if (pending.Data.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        if (!pending.Data.TryGetProperty("pawns", out var pawns) || pawns.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        if (choiceIndex >= pawns.GetArrayLength())
+        {
+            return false;
+        }
+
+        var pawn = pawns[choiceIndex];
+        if (pawn.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        var pawnId = TryGetString(pawn, "id")
+                     ?? TryGetString(pawn, "pawnId")
+                     ?? TryGetString(pawn, "value");
+        if (string.IsNullOrWhiteSpace(pawnId))
+        {
+            return false;
+        }
+        pawnId = pawnId.Trim();
+
+        var matched = available.FirstOrDefault(a =>
+        {
+            if (!string.Equals(a.Type, "choose_pawn", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (a.Payload.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            var payloadPawnId = TryGetString(a.Payload, "pawnId")
+                                ?? TryGetString(a.Payload, "pawn")
+                                ?? TryGetString(a.Payload, "value");
+            return !string.IsNullOrWhiteSpace(payloadPawnId) &&
+                   string.Equals(payloadPawnId.Trim(), pawnId, StringComparison.OrdinalIgnoreCase);
+        });
+
+        if (!string.IsNullOrWhiteSpace(matched?.Type))
+        {
+            action = new GameClientAction(type: matched!.Type, payload: matched.Payload);
+            return true;
+        }
+
+        var type = available
+                       .FirstOrDefault(a => string.Equals(a.Type, "choose_pawn", StringComparison.OrdinalIgnoreCase))
+                       ?.Type
+                   ?? "choose_pawn";
+
+        action = new GameClientAction(type: type, payload: new { pawnId });
+        return true;
+    }
+
+    private static string? TryGetString(JsonElement obj, string prop)
+    {
+        if (!obj.TryGetProperty(prop, out var el))
+        {
+            return null;
+        }
+
+        if (el.ValueKind == JsonValueKind.String)
+        {
+            return el.GetString();
+        }
+
+        if (el.ValueKind == JsonValueKind.Number)
+        {
+            if (el.TryGetInt32(out var asInt))
+            {
+                return asInt.ToString();
+            }
+
+            if (el.TryGetDouble(out var asDouble) && double.IsFinite(asDouble))
+            {
+                return asDouble.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            }
+        }
+
+        return null;
     }
 
     private static bool TryGetInt(JsonElement obj, string prop, out int value)
