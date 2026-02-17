@@ -22,6 +22,7 @@ public partial class GamePlayView
     private int _handFocusRequestId;
     private int _gridFocusRequestId;
     private int _inlinePromptFocusRequestId;
+    private int _preferredInteractiveFocusRequestId;
     private bool _lastChoicesA11yWasQuiz;
     private bool _lastChoicesA11yUsedLabeledBy;
     private string _lastChoicesA11yLabel = string.Empty;

@@ -87,7 +87,7 @@ public sealed class JwtTokenValidator
             if (_environment != EnvironmentDetector.AppEnvironment.Development)
             {
                 Log.Error("JWT signature verification is required but public key/JWKS is missing. Path={Path}", publicKeyPath ?? "(null)");
-                throw new Microsoft.IdentityModel.Tokens.SecurityTokenException("Clé publique JWT manquante (signature non vérifiable)");
+                throw new Microsoft.IdentityModel.Tokens.SecurityTokenException("Cle publique JWT manquante (signature non verifiable)");
             }
 
             Log.Warning("JWT signature not verified (missing public key + JWKS). Development mode only. Path={Path}", publicKeyPath ?? "(null)");
@@ -116,7 +116,7 @@ public sealed class JwtTokenValidator
             if (_environment != EnvironmentDetector.AppEnvironment.Development)
             {
                 Log.Error("JWT signature verification is required but public key/JWKS is missing. Path={Path}", publicKeyPath ?? "(null)");
-                throw new Microsoft.IdentityModel.Tokens.SecurityTokenException("ClÃ© publique JWT manquante (signature non vÃ©rifiable)");
+                throw new Microsoft.IdentityModel.Tokens.SecurityTokenException("Cle publique JWT manquante (signature non verifiable)");
             }
 
             Log.Warning("JWT signature not verified (missing public key + JWKS). Development mode only. Path={Path}", publicKeyPath ?? "(null)");
@@ -316,3 +316,4 @@ public sealed class JwtTokenValidator
         return decoded;
     }
 }
+

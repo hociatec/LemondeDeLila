@@ -62,7 +62,7 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
 
     private void OnFocusFirstItemRequested()
     {
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        RunOnUi(() =>
         {
             if (ItemsList != null && ItemsList.Items.Count > 0)
             {
@@ -73,12 +73,12 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
                 ItemsList.ScrollIntoView(ItemsList.Items[0]);
             }
             RequestFocusSelectedOrFirstItem();
-        }));
+        });
     }
 
     private void OnFocusSelectedItemRequested()
     {
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(RequestFocusSelectedOrFirstItem));
+        RunOnUi(RequestFocusSelectedOrFirstItem);
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)
@@ -186,7 +186,6 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
         var id = ++_focusRequestId;
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => FocusSelectedOrFirstItemWithRetry(requestId: id, attemptsRemaining: 12)));
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => FocusSelectedOrFirstItemWithRetry(requestId: id, attemptsRemaining: 12)));
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => FocusSelectedOrFirstItemWithRetry(requestId: id, attemptsRemaining: 12)));
 
         // Si la virtualisation retarde la génération des containers, on retente au moment opportun.
         if (ItemsList?.ItemContainerGenerator != null &&
@@ -306,5 +305,21 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
     public void RequestInitialFocus()
     {
         FocusCurrentPage();
+    }
+
+    private void RunOnUi(Action action)
+    {
+        if (action == null)
+        {
+            return;
+        }
+
+        if (Dispatcher.CheckAccess())
+        {
+            action();
+            return;
+        }
+
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, action);
     }
 }

@@ -18,17 +18,7 @@ public partial class GamePlayView
         TryStartInitialization(vm);
 
         // Assure le focus clavier dès l'entrée dans une table (sinon Enter/B/Space ne partent pas sans clic souris).
-        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-        {
-            if (DataContext is GamePlayViewModel vmNow && vmNow.HasInlinePrompt)
-            {
-                FocusFirstInlinePromptField();
-            }
-            else
-            {
-                FocusPreferredInteractiveElement();
-            }
-        }));
+        FocusPreferredInteractiveElement();
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -39,17 +29,7 @@ public partial class GamePlayView
         HookInlinePromptAutoFocus(vm);
         TryStartInitialization(vm);
 
-        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-        {
-            if (DataContext is GamePlayViewModel vmNow && vmNow.HasInlinePrompt)
-            {
-                FocusFirstInlinePromptField();
-            }
-            else
-            {
-                FocusPreferredInteractiveElement();
-            }
-        }));
+        FocusPreferredInteractiveElement();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)

@@ -15,6 +15,7 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
 {
     private bool _didInitialFocus;
     private bool _didHookFocusRetention;
+    private int _tabHeaderFocusRequestId;
 
     public OptionsView()
     {
@@ -31,11 +32,7 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
         }
         _didInitialFocus = true;
 
-        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-        {
-            EnsureDefaultTabSelected();
-            FocusSelectedTabHeader();
-        }));
+        RequestTabHeaderFocus();
     }
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
@@ -151,7 +148,6 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
             return;
         }
 
-        CategoryTabs.UpdateLayout();
         CategoryTabs.Focus();
         Keyboard.Focus(CategoryTabs);
     }
@@ -182,8 +178,7 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
         if (next < 0 || next >= CategoryTabs.Items.Count)
         {
             // Bloqué aux extrémités (pas de boucle).
-            FocusSelectedTabHeader();
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusSelectedTabHeader));
+            RequestTabHeaderFocus();
             return true;
         }
 
@@ -191,8 +186,7 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
 
         // Keep focus on the current tab header so left/right remains consistent and
         // screen readers announce the selected tab label.
-        FocusSelectedTabHeader();
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusSelectedTabHeader));
+        RequestTabHeaderFocus();
         return true;
     }
 
@@ -216,7 +210,6 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
             return;
         }
 
-        CategoryTabs.UpdateLayout();
         var index = CategoryTabs.SelectedIndex >= 0 ? CategoryTabs.SelectedIndex : 0;
         if (CategoryTabs.ItemContainerGenerator.ContainerFromIndex(index) is TabItem tab)
         {
@@ -228,12 +221,27 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
         FocusTabs();
     }
 
+    private void RequestTabHeaderFocus()
+    {
+        var requestId = unchecked(++_tabHeaderFocusRequestId);
+        RunTabHeaderFocusPass(requestId);
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => RunTabHeaderFocusPass(requestId)));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => RunTabHeaderFocusPass(requestId)));
+    }
+
+    private void RunTabHeaderFocusPass(int requestId)
+    {
+        if (requestId != _tabHeaderFocusRequestId)
+        {
+            return;
+        }
+
+        EnsureDefaultTabSelected();
+        FocusSelectedTabHeader();
+    }
+
     public void RequestInitialFocus()
     {
-        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-        {
-            EnsureDefaultTabSelected();
-            FocusSelectedTabHeader();
-        }));
+        RequestTabHeaderFocus();
     }
 }

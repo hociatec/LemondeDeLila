@@ -96,6 +96,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private readonly object _postStateUiLock = new();
     private GameStateDto? _postStateUiPendingState;
     private bool _postStateUiScheduled;
+    private bool _displayChoicesRefreshScheduled;
 
     public string GameId { get; }
 
@@ -132,7 +133,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         _pendingChoicesChangedHandler = (_, __) =>
         {
             OnPropertyChanged(nameof(ShowLegacyActionsPanel));
-            RebuildDisplayChoices();
+            RequestDisplayChoicesRefresh();
         };
         _choices.PendingChoices.CollectionChanged += _pendingChoicesChangedHandler;
 
@@ -256,7 +257,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsQuizPending));
             OnPropertyChanged(nameof(IsChoosePawnPending));
-            RebuildDisplayChoices();
+            RequestDisplayChoicesRefresh();
         }
     }
 
@@ -300,7 +301,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             if (SetProperty(ref _quizQuestionText, value))
             {
                 OnPropertyChanged(nameof(ChoicesA11yName));
-                RebuildDisplayChoices();
+                RequestDisplayChoicesRefresh();
             }
         }
     }
@@ -610,6 +611,27 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
         _lastQuizQuestionForSelectionReset = q;
         SelectedChoiceIndex = -1;
+    }
+
+    private void RequestDisplayChoicesRefresh()
+    {
+        if (!_dispatcher.CheckAccess())
+        {
+            _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(RequestDisplayChoicesRefresh));
+            return;
+        }
+
+        if (_displayChoicesRefreshScheduled)
+        {
+            return;
+        }
+
+        _displayChoicesRefreshScheduled = true;
+        _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            _displayChoicesRefreshScheduled = false;
+            RebuildDisplayChoices();
+        }));
     }
 
     private void RebuildDisplayChoices()

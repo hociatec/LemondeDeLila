@@ -21,16 +21,32 @@ public partial class GamePlayView
 
     public void FocusPreferredInteractiveElement()
     {
+        if (DataContext is GamePlayViewModel vmNow && vmNow.HasInlinePrompt)
+        {
+            FocusFirstInlinePromptField();
+            return;
+        }
+
+        var requestId = Interlocked.Increment(ref _preferredInteractiveFocusRequestId);
+        RunPreferredInteractiveFocusPass(requestId);
+        QueuePreferredInteractiveFocusPass(requestId, DispatcherPriority.Input);
+        QueuePreferredInteractiveFocusPass(requestId, DispatcherPriority.Loaded);
+        QueuePreferredInteractiveFocusPass(requestId, DispatcherPriority.ApplicationIdle);
+    }
+
+    private void QueuePreferredInteractiveFocusPass(int requestId, DispatcherPriority priority)
+    {
+        _ = Dispatcher.BeginInvoke(priority, new Action(() => RunPreferredInteractiveFocusPass(requestId)));
+    }
+
+    private void RunPreferredInteractiveFocusPass(int requestId)
+    {
+        if (requestId != _preferredInteractiveFocusRequestId)
+        {
+            return;
+        }
+
         ForceFocusGameZoneCore(forceFromOutsideTextInput: true);
-        _ = Dispatcher.BeginInvoke(
-            DispatcherPriority.Input,
-            new Action(() => ForceFocusGameZoneCore(forceFromOutsideTextInput: true)));
-        _ = Dispatcher.BeginInvoke(
-            DispatcherPriority.Loaded,
-            new Action(() => ForceFocusGameZoneCore(forceFromOutsideTextInput: true)));
-        _ = Dispatcher.BeginInvoke(
-            DispatcherPriority.ApplicationIdle,
-            new Action(() => ForceFocusGameZoneCore(forceFromOutsideTextInput: true)));
     }
 
     private void NoteChoiceSubmittedForFocusRestore()

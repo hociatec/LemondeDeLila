@@ -1,6 +1,5 @@
 using System;
 using System.Windows.Controls;
-using System.Windows.Threading;
 using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Game.Play.GamePlay.Views;
@@ -16,9 +15,6 @@ public partial class GamePlayView : UserControl, IInitialFocusTarget
 
     public void RequestInitialFocus()
     {
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-        {
-            FocusPreferredInteractiveElement();
-        }));
+        FocusPreferredInteractiveElement();
     }
 }

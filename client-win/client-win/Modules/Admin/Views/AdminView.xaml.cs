@@ -16,6 +16,7 @@ public partial class AdminView : UserControl, IInitialFocusTarget
     private bool _inputsFocusTrackingAttached;
     private InputFocusSlot _lastInputFocus = InputFocusSlot.None;
     private int _focusRequestId;
+    private int _scheduledUiFocusRequestId;
 
     private enum InputFocusSlot
     {
@@ -334,9 +335,7 @@ public partial class AdminView : UserControl, IInitialFocusTarget
 
         if (vm.ShowClientUpdatesPanel)
         {
-            _ = Dispatcher.BeginInvoke(
-                DispatcherPriority.Input,
-                new Action(() => ClientUpdatesPanel?.FocusPrimaryInput()));
+            ScheduleUiFocus(() => ClientUpdatesPanel?.FocusPrimaryInput());
             return;
         }
 
@@ -347,41 +346,31 @@ public partial class AdminView : UserControl, IInitialFocusTarget
 
         if (vm.IsTextInputVisible)
         {
-            _ = Dispatcher.BeginInvoke(
-                DispatcherPriority.Input,
-                new Action(() => InputsView?.PrimaryInputBox?.Focus()));
+            ScheduleUiFocus(() => InputsView?.PrimaryInputBox?.Focus());
             return;
         }
 
         if (vm.IsSecondaryInputVisible)
         {
-            _ = Dispatcher.BeginInvoke(
-                DispatcherPriority.Input,
-                new Action(() => InputsView?.SecondaryInputTextBox?.Focus()));
+            ScheduleUiFocus(() => InputsView?.SecondaryInputTextBox?.Focus());
             return;
         }
 
         if (vm.IsThirdInputVisible)
         {
-            _ = Dispatcher.BeginInvoke(
-                DispatcherPriority.Input,
-                new Action(() => InputsView?.ThirdInputTextBox?.Focus()));
+            ScheduleUiFocus(() => InputsView?.ThirdInputTextBox?.Focus());
             return;
         }
 
         if (vm.IsFourthInputVisible)
         {
-            _ = Dispatcher.BeginInvoke(
-                DispatcherPriority.Input,
-                new Action(() => InputsView?.FourthInputTextBox?.Focus()));
+            ScheduleUiFocus(() => InputsView?.FourthInputTextBox?.Focus());
             return;
         }
 
         if (vm.IsFifthInputVisible)
         {
-            _ = Dispatcher.BeginInvoke(
-                DispatcherPriority.Input,
-                new Action(() => InputsView?.FifthInputTextBox?.Focus()));
+            ScheduleUiFocus(() => InputsView?.FifthInputTextBox?.Focus());
         }
     }
 
@@ -392,45 +381,35 @@ public partial class AdminView : UserControl, IInitialFocusTarget
             case InputFocusSlot.Primary:
                 if (vm.IsTextInputVisible)
                 {
-                    _ = Dispatcher.BeginInvoke(
-                        DispatcherPriority.Input,
-                        new Action(() => InputsView?.PrimaryInputBox?.Focus()));
+                    ScheduleUiFocus(() => InputsView?.PrimaryInputBox?.Focus());
                     return true;
                 }
                 break;
             case InputFocusSlot.Secondary:
                 if (vm.IsSecondaryInputVisible)
                 {
-                    _ = Dispatcher.BeginInvoke(
-                        DispatcherPriority.Input,
-                        new Action(() => InputsView?.SecondaryInputTextBox?.Focus()));
+                    ScheduleUiFocus(() => InputsView?.SecondaryInputTextBox?.Focus());
                     return true;
                 }
                 break;
             case InputFocusSlot.Third:
                 if (vm.IsThirdInputVisible)
                 {
-                    _ = Dispatcher.BeginInvoke(
-                        DispatcherPriority.Input,
-                        new Action(() => InputsView?.ThirdInputTextBox?.Focus()));
+                    ScheduleUiFocus(() => InputsView?.ThirdInputTextBox?.Focus());
                     return true;
                 }
                 break;
             case InputFocusSlot.Fourth:
                 if (vm.IsFourthInputVisible)
                 {
-                    _ = Dispatcher.BeginInvoke(
-                        DispatcherPriority.Input,
-                        new Action(() => InputsView?.FourthInputTextBox?.Focus()));
+                    ScheduleUiFocus(() => InputsView?.FourthInputTextBox?.Focus());
                     return true;
                 }
                 break;
             case InputFocusSlot.Fifth:
                 if (vm.IsFifthInputVisible)
                 {
-                    _ = Dispatcher.BeginInvoke(
-                        DispatcherPriority.Input,
-                        new Action(() => InputsView?.FifthInputTextBox?.Focus()));
+                    ScheduleUiFocus(() => InputsView?.FifthInputTextBox?.Focus());
                     return true;
                 }
                 break;
@@ -446,9 +425,7 @@ public partial class AdminView : UserControl, IInitialFocusTarget
             return;
         }
 
-        _ = Dispatcher.BeginInvoke(
-            DispatcherPriority.Input,
-            new Action(() => FocusDetails(resetCaret: true)));
+        ScheduleUiFocus(() => FocusDetails(resetCaret: true));
     }
 
     private void FocusWhenContainersGenerated()
@@ -460,9 +437,7 @@ public partial class AdminView : UserControl, IInitialFocusTarget
 
         if (DataContext is AdminViewModel vm && vm.PreferDetailsFocus)
         {
-            _ = Dispatcher.BeginInvoke(
-                DispatcherPriority.Input,
-                new Action(() => FocusDetails(resetCaret: true)));
+            ScheduleUiFocus(() => FocusDetails(resetCaret: true));
             return;
         }
 
@@ -562,6 +537,25 @@ public partial class AdminView : UserControl, IInitialFocusTarget
 
         ItemsList.Focus();
         Keyboard.Focus(ItemsList);
+    }
+
+    private void ScheduleUiFocus(Action action)
+    {
+        if (action == null)
+        {
+            return;
+        }
+
+        var requestId = unchecked(++_scheduledUiFocusRequestId);
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            if (requestId != _scheduledUiFocusRequestId)
+            {
+                return;
+            }
+
+            action();
+        }));
     }
 
     public void RequestInitialFocus()

@@ -17,8 +17,8 @@ namespace client_win.Modules.Shell.Services;
 /// </summary>
 public sealed class NavigationFocusManager : INavigationFocusManager
 {
-    private const int FocusRetryMaxAttempts = 40;
-    private static readonly TimeSpan FocusRetryInterval = TimeSpan.FromMilliseconds(100);
+    private const int FocusRetryMaxAttempts = 16;
+    private static readonly TimeSpan FocusRetryInterval = TimeSpan.FromMilliseconds(80);
 
     private readonly Dispatcher _dispatcher;
     private DispatcherTimer? _retryTimer;

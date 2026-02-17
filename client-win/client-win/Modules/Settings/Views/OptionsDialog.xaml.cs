@@ -14,6 +14,7 @@ public partial class OptionsDialog : Window
 {
     private bool _didInitialFocus;
     private bool _didHookFocusRetention;
+    private int _tabHeaderFocusRequestId;
 
     public OptionsDialog()
     {
@@ -30,11 +31,7 @@ public partial class OptionsDialog : Window
         }
         _didInitialFocus = true;
 
-        Dispatcher.BeginInvoke((Action)(() =>
-        {
-            EnsureDefaultTabSelected();
-            FocusSelectedTabHeader();
-        }), DispatcherPriority.Input);
+        RequestTabHeaderFocus();
     }
 
     private void OnSaveClicked(object sender, RoutedEventArgs e)
@@ -164,7 +161,6 @@ public partial class OptionsDialog : Window
             return;
         }
 
-        CategoryTabs.UpdateLayout();
         CategoryTabs.Focus();
         Keyboard.Focus(CategoryTabs);
     }
@@ -194,14 +190,12 @@ public partial class OptionsDialog : Window
         if (next < 0 || next >= CategoryTabs.Items.Count)
         {
             // Bloqué aux extrémités (pas de boucle).
-            FocusSelectedTabHeader();
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusSelectedTabHeader));
+            RequestTabHeaderFocus();
             return true;
         }
 
         CategoryTabs.SelectedIndex = next;
-        FocusSelectedTabHeader();
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusSelectedTabHeader));
+        RequestTabHeaderFocus();
         return true;
     }
 
@@ -225,7 +219,6 @@ public partial class OptionsDialog : Window
             return;
         }
 
-        CategoryTabs.UpdateLayout();
         var index = CategoryTabs.SelectedIndex >= 0 ? CategoryTabs.SelectedIndex : 0;
         if (CategoryTabs.ItemContainerGenerator.ContainerFromIndex(index) is TabItem tab)
         {
@@ -235,5 +228,24 @@ public partial class OptionsDialog : Window
         }
 
         FocusTabs();
+    }
+
+    private void RequestTabHeaderFocus()
+    {
+        var requestId = unchecked(++_tabHeaderFocusRequestId);
+        RunTabHeaderFocusPass(requestId);
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => RunTabHeaderFocusPass(requestId)));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => RunTabHeaderFocusPass(requestId)));
+    }
+
+    private void RunTabHeaderFocusPass(int requestId)
+    {
+        if (requestId != _tabHeaderFocusRequestId)
+        {
+            return;
+        }
+
+        EnsureDefaultTabSelected();
+        FocusSelectedTabHeader();
     }
 }

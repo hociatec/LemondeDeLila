@@ -323,7 +323,7 @@ public sealed partial class AdminViewModel
                 {
                     PushReturnFocus();
                     var current = _roomSettings?.AutoCleanupOlderThanMinutes ?? 60;
-                    BuildRoomsSettingEdit("Auto-cleanup", "Âge max (minutes)", current.ToString(), mode: "rooms.settings.olderThan");
+                    BuildRoomsSettingEdit("Auto-cleanup", "Age max (minutes)", current.ToString(), mode: "rooms.settings.olderThan");
                     return;
                 }
                 if (roomsAction == "rooms.settings.interval")
@@ -1312,3 +1312,4 @@ public sealed partial class AdminViewModel
         }
     }
 }
+

@@ -253,12 +253,12 @@ public sealed class PersistentWsClient : IAsyncDisposable
         await _connectGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-        // Vérifier circuit breaker
+        // Verifier circuit breaker
         CheckCircuitBreaker();
 
         if (_updateRequired)
         {
-            throw new InvalidOperationException("Mise Ã  jour requise pour continuer.");
+            throw new InvalidOperationException("Mise a jour requise pour continuer.");
         }
 
         lock (_sync)
@@ -601,7 +601,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
 
             // Keep message stable so ShellErrorHandler can consistently show the update dialog.
             _errorBus?.Publish(new Modules.Error.AppError(
-                "Mise à jour requise pour continuer.",
+                "Mise a jour requise pour continuer.",
                 Modules.Error.ErrorSeverity.Error,
                 context: "client.update.required",
                 detail: $"ws.close {code} {reason}".Trim()));
@@ -728,3 +728,4 @@ public sealed class PersistentWsClient : IAsyncDisposable
         await ResetSocketAsync().ConfigureAwait(false);
     }
 }
+
