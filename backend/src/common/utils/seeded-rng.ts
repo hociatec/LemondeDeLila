@@ -22,8 +22,13 @@ function deriveSeedFromContext(meta: Record<string, any>): number | null {
   const roomId = meta?.roomId;
   const startedAt = meta?.roomStartedAt;
   const gameType = meta?.gameType;
+  const runIdRaw = meta?.roomRunId;
+  const runId =
+    typeof runIdRaw === 'number' ? runIdRaw : Number(runIdRaw ?? NaN);
   if (roomId == null || startedAt == null) return null;
-  const input = `${String(gameType ?? '')}|${String(roomId)}|${String(startedAt)}`;
+  const input = `${String(gameType ?? '')}|${String(roomId)}|${String(startedAt)}|${
+    Number.isFinite(runId) ? String(runId) : ''
+  }`;
   return fnv1a32(input);
 }
 

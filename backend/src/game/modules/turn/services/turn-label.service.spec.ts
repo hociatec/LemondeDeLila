@@ -49,4 +49,20 @@ describe('TurnLabelService', () => {
 
     expect(service.compute(state, 'lama')).toBe("C'est à Joueur 2 de jouer.");
   });
+
+  it('prefers pending pawn label during pawn selection', () => {
+    const state = createState({
+      turn: { currentPlayerId: 2, direction: 1 },
+      players: [{ id: 2, username: 'Olaf' }],
+      pending: {
+        type: 'pick_pawn',
+        playerId: 2,
+        label: "C'est à Olaf de choisir son pion, puis Entrée.",
+      } as any,
+    });
+
+    expect(service.compute(state, 'en-attendant-minuit')).toBe(
+      "C'est à Olaf de choisir son pion, puis Entrée.",
+    );
+  });
 });

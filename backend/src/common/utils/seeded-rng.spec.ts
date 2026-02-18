@@ -22,6 +22,17 @@ describe('seeded-rng', () => {
     expect(a).not.toBe(b);
   });
 
+  it('changes derived seed when roomRunId changes', () => {
+    const base: any = {
+      roomId: 42,
+      roomStartedAt: '2026-01-04T15:00:00.000Z',
+      gameType: 'panier-express',
+    };
+    const a = ensureSeededRng({ ...base, roomRunId: 1 }).seed;
+    const b = ensureSeededRng({ ...base, roomRunId: 2 }).seed;
+    expect(a).not.toBe(b);
+  });
+
   it('falls back to Math.random when context missing', () => {
     const spy = jest.spyOn(Math, 'random').mockReturnValue(0.5);
     try {

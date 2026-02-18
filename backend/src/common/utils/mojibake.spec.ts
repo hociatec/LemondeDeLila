@@ -124,6 +124,25 @@ describe('Mojibake utilities', () => {
       expect(fixMojibakeDeep(true)).toBe(true);
       expect(fixMojibakeDeep(false)).toBe(false);
     });
+
+    it('should handle circular references without crashing', () => {
+      const input: any = { label: 'ÃƒÂ©cole' };
+      input.self = input;
+
+      const result: any = fixMojibakeDeep(input);
+      expect(result).toBeDefined();
+      expect(result.self).toBe(result);
+      expect(result.label).not.toBe('ÃƒÂ©cole');
+    });
+
+    it('should preserve shared references', () => {
+      const shared: any = { value: 'forÃƒÂªt' };
+      const input: any = { a: shared, b: shared };
+
+      const result: any = fixMojibakeDeep(input);
+      expect(result.a).toBe(result.b);
+      expect(result.a.value).not.toBe('forÃƒÂªt');
+    });
   });
 
   describe('readTextFileWithFallback', () => {

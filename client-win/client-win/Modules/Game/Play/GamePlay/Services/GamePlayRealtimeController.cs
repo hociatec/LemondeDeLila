@@ -261,23 +261,28 @@ internal sealed class GamePlayRealtimeController
         if (!string.Equals(previousStatus, "started", StringComparison.OrdinalIgnoreCase) &&
             string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase))
         {
-            var currentPlayerId = state.Turn?.CurrentPlayerId;
-            var currentPlayerUsername = currentPlayerId != null
-                ? state.Players?
-                    .FirstOrDefault(p => p != null && p.Id == currentPlayerId.Value)?
-                    .Username?
-                    .Trim()
-                : null;
-            _announcementRouter.TryHandleTurnUpdate(
-                new TurnInfoDto
-                {
-                    CurrentPlayerId = currentPlayerId,
-                    CurrentPlayerUsername = string.IsNullOrWhiteSpace(currentPlayerUsername)
-                        ? null
-                        : currentPlayerUsername
-                },
-                msg => _emitMessage(new GamePlayHistoryMessage(msg)),
-                force: true);
+            // During pawn selection setup, the pending label is the authoritative prompt.
+            // Avoid adding a redundant "C'est au tour de ...".
+            if (!IsPawnPendingType(state.Pending?.Type))
+            {
+                var currentPlayerId = state.Turn?.CurrentPlayerId;
+                var currentPlayerUsername = currentPlayerId != null
+                    ? state.Players?
+                        .FirstOrDefault(p => p != null && p.Id == currentPlayerId.Value)?
+                        .Username?
+                        .Trim()
+                    : null;
+                _announcementRouter.TryHandleTurnUpdate(
+                    new TurnInfoDto
+                    {
+                        CurrentPlayerId = currentPlayerId,
+                        CurrentPlayerUsername = string.IsNullOrWhiteSpace(currentPlayerUsername)
+                            ? null
+                            : currentPlayerUsername
+                    },
+                    msg => _emitMessage(new GamePlayHistoryMessage(msg)),
+                    force: true);
+            }
         }
 
         _viewerPlayerId = viewerId;

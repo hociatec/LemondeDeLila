@@ -56,7 +56,8 @@ public sealed class GameHistorySink : IGameHistorySink
                     continue;
                 }
 
-                if (!isUiShortcutTagged && ShouldSkipDuplicate(cleaned))
+                var isTurnLikeMessage = TryBuildTurnDedupeKey(cleaned, out _);
+                if ((!isUiShortcutTagged || isTurnLikeMessage) && ShouldSkipDuplicate(cleaned))
                 {
                     continue;
                 }

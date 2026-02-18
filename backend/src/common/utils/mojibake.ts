@@ -85,22 +85,41 @@ export function fixMojibakeString(value: string): string {
   return best;
 }
 
-export function fixMojibakeDeep<T>(value: T): T {
+function fixMojibakeDeepInternal(
+  value: unknown,
+  seen: WeakMap<object, unknown>,
+): unknown {
   if (typeof value === 'string') {
-    return fixMojibakeString(value) as unknown as T;
+    return fixMojibakeString(value);
   }
   if (Array.isArray(value)) {
-    return value.map((v) => fixMojibakeDeep(v)) as unknown as T;
+    if (seen.has(value)) {
+      return seen.get(value);
+    }
+    const out: unknown[] = [];
+    seen.set(value, out);
+    for (const item of value) {
+      out.push(fixMojibakeDeepInternal(item, seen));
+    }
+    return out;
   }
   if (value && typeof value === 'object') {
+    if (seen.has(value as object)) {
+      return seen.get(value as object);
+    }
     const obj = value as Record<string, unknown>;
     const out: Record<string, unknown> = {};
+    seen.set(value as object, out);
     Object.keys(obj).forEach((k) => {
-      out[k] = fixMojibakeDeep(obj[k]);
+      out[k] = fixMojibakeDeepInternal(obj[k], seen);
     });
-    return out as T;
+    return out;
   }
   return value;
+}
+
+export function fixMojibakeDeep<T>(value: T): T {
+  return fixMojibakeDeepInternal(value, new WeakMap()) as T;
 }
 
 export function readJsonFileWithFallback<T>(filePath: string): T {

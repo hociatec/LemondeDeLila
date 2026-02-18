@@ -46,8 +46,25 @@ export class TurnLabelService {
       return `Bienvenue sur ${label}. B pour ajouter un bot, Maj+B pour retirer un bot, Entrée pour démarrer la partie.`;
     }
 
-    const currentPlayerId = state.turn?.currentPlayerId ?? null;
     const players = Array.isArray(state.players) ? state.players : [];
+    const currentPlayerId = state.turn?.currentPlayerId ?? null;
+    const pendingType = String((state as any)?.pending?.type ?? '')
+      .trim()
+      .toLowerCase();
+    if (pendingType === 'choose_pawn' || pendingType === 'pick_pawn') {
+      const pendingLabel = String((state as any)?.pending?.label ?? '').trim();
+      if (pendingLabel.length > 0) {
+        return pendingLabel;
+      }
+
+      if (currentPlayerId != null) {
+        const found = players.find((p) => p?.id === currentPlayerId);
+        const username = this.sanitizePlayerName(found?.username);
+        const name = username.length > 0 ? username : `Joueur ${currentPlayerId}`;
+        return `C'est Ã  ${name} de choisir son pion.`;
+      }
+    }
+
     if (currentPlayerId != null) {
       const found = players.find((p) => p?.id === currentPlayerId);
       const username = this.sanitizePlayerName(found?.username);
