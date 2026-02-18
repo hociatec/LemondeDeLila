@@ -82,12 +82,6 @@ export class ContesCacahuetesSetupService {
       },
       metadata: { ...(baseState.metadata ?? {}), ...starterPick.meta, ...metaBase },
     };
-    if (pendingInfo?.playerId != null) {
-      next = this.core.appendLog(
-        next,
-        `${this.playerName(next, pendingInfo.playerId)} doit choisir un pion.`,
-      );
-    }
     return next;
   }
 

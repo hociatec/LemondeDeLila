@@ -577,11 +577,7 @@ export class CatPattesActionService {
   }
 
   private ensurePawnSelectionPrompt(state: GameStateEntity): GameStateEntity {
-    return this.getPromptPolicies().ensurePendingPlayerPrompt(
-      state,
-      'choose_pawn',
-      (playerId) => `${this.playerName(state, playerId)} doit choisir un pion.`,
-    );
+    return state;
   }
 
   private getTurnPolicies(): TurnPoliciesService {

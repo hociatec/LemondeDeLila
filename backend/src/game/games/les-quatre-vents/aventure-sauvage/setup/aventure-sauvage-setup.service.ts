@@ -117,12 +117,7 @@ export class AventureSauvageSetupService {
       metadata: { ...(baseState.metadata ?? {}), ...metaBase, rng: rngMeta?.rng ?? (baseState.metadata as any)?.rng },
     };
 
-    if (!pendingInfo) return next;
-    const chooser = players.find((p) => p?.id === pendingInfo.playerId);
-    const chooserName = String((chooser as any)?.username ?? '').trim();
-    const chooserLabel =
-      chooserName.length > 0 ? chooserName : `Joueur ${pendingInfo.playerId}`;
-    return this.core.appendLog(next, `${chooserLabel} doit choisir un pion.`);
+    return next;
   }
 
   private normalizePawnAssignments(

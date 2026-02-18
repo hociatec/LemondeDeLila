@@ -545,10 +545,7 @@ export class AventureSauvageActionService {
         ? pending.playerId
         : state.turn?.currentPlayerId ?? null;
     if (chooserId == null) return state;
-    return this.appendLogOnce(
-      state,
-      `${this.playerName(state, chooserId)} doit choisir un pion.`,
-    );
+    return state;
   }
 
   private appendLogOnce(state: GameStateEntity, message: string): GameStateEntity {

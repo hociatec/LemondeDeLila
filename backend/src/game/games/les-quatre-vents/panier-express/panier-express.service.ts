@@ -737,10 +737,7 @@ export class PanierExpressService extends AbstractGameService {
         direction: state.turn?.direction === -1 ? -1 : 1,
       },
     };
-    return this.core.appendLog(
-      withPending,
-      `[Panier Express] ${this.utils.playerName(withPending, chooser.id)} doit choisir un pion.`,
-    );
+    return withPending;
   }
 
   private ensureStarted(state: GameStateEntity): GameStateEntity {

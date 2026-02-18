@@ -35,7 +35,7 @@ function makeBaseState(): GameStateEntity {
 }
 
 describe('AventureSauvageActionService', () => {
-  it('annonce qu un joueur doit choisir un pion', async () => {
+  it('demande au joueur de choisir son pion via le pending label', async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         GameCoreService,
@@ -55,8 +55,9 @@ describe('AventureSauvageActionService', () => {
     const state = setup.hydrateInitialState(makeBaseState());
     const next = actions.applyActions(state, []);
 
-    const messages = (next.log ?? []).map((e: any) => String(e?.message ?? ''));
-    expect(messages.some((m) => /doit choisir un pion\./.test(m))).toBe(true);
+    expect(String(next.pending?.label ?? '')).toContain(
+      "C'est à Lilas de choisir son pion.",
+    );
   });
 
   it('avance le tour apres une pioche avec Passez un tour', async () => {

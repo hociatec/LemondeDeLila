@@ -429,7 +429,6 @@ export class MinuitActionService {
       },
     });
     if (!pendingInfo) return state;
-    const chooserLabel = this.playerName(state, pendingInfo.playerId);
     const fallbackTurn: TurnStateEntity = {
       currentPlayerId: pendingInfo.playerId,
       direction: 1,
@@ -445,10 +444,7 @@ export class MinuitActionService {
         direction: existingTurn.direction === -1 ? -1 : 1,
       },
     };
-    return this.appendLogOnce(
-      withPending,
-      `${chooserLabel} doit choisir un pion.`,
-    );
+    return withPending;
   }
 
   private assignBotPawns(state: GameStateEntity): GameStateEntity {

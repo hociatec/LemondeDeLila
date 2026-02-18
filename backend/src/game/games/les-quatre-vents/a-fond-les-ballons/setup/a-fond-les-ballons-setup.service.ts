@@ -130,11 +130,6 @@ export class AFondLesBallonsSetupService {
     for (const pawn of pawns) {
       next = this.core.appendLog(next, `- ${pawn.label}`);
     }
-    if (pendingInfo?.playerId != null) {
-      const chooserLabel = this.playerName(next, pendingInfo.playerId);
-      next = this.core.appendLog(next, `${chooserLabel} doit choisir un pion.`);
-    }
-
     return next;
   }
 

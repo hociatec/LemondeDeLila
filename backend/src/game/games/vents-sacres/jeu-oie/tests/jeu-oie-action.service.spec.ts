@@ -95,7 +95,7 @@ describe('JeuOieActionService', () => {
     expect(messages.some((m) => m.includes('case 4 (Case 4 - Case neutre)'))).toBe(false);
   });
 
-  it('demande de choisir un pion au demarrage', async () => {
+  it('demande de choisir son pion via le pending label au demarrage', async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         GameCoreService,
@@ -117,8 +117,9 @@ describe('JeuOieActionService', () => {
     expect((state.pending as any)?.playerId).toBe(starterId);
     const starterName =
       state.players?.find((p: any) => p?.id === starterId)?.username ?? `Joueur ${starterId}`;
-    const messages = (state.log ?? []).map((e: any) => String(e?.message ?? ''));
-    expect(messages.some((m) => m === `${starterName} doit choisir un pion.`)).toBe(true);
+    expect(String((state.pending as any)?.label ?? '')).toContain(
+      `C'est à ${starterName} de choisir son pion.`,
+    );
   });
 
   it('demarre la partie apres le choix de pion de tous les joueurs', async () => {

@@ -273,10 +273,10 @@ describe('FrousseActionService movement effects', () => {
     } as any;
 
     const next = service.applyActions(state, [{ type: 'roll', payload: {} } as any]);
-    const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
-
     expect(next.pending?.type).toBe('choose_pawn');
-    expect(messages).toContain('Lilas doit choisir un pion.');
+    expect(String(next.pending?.label ?? '')).toContain(
+      "C'est à Lilas de choisir",
+    );
   });
 
   it('uses possessive pawn wording in placement logs', () => {

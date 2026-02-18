@@ -323,10 +323,7 @@ export class AFondLesBallonsActionService {
           direction: 1,
         },
       };
-      return this.core.appendLog(
-        withPending,
-        `${this.playerName(withPending, pendingInfo.playerId)} doit choisir un pion.`,
-      );
+      return withPending;
     }
 
     const players = Array.isArray(next.players) ? next.players : [];

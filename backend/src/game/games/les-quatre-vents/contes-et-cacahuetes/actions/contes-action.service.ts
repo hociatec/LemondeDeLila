@@ -148,10 +148,7 @@ export class ContesActionService {
           direction: 1,
         },
       };
-      return this.appendLogOnce(
-        withPending,
-        `${this.playerName(withPending, pendingInfo.playerId)} doit choisir un pion.`,
-      );
+      return withPending;
     }
 
     const starterIndex =

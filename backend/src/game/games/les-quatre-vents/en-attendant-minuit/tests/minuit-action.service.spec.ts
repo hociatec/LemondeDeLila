@@ -32,7 +32,7 @@ describe('MinuitActionService', () => {
     return { random, turns, core };
   };
 
-  it('logs explicit pawn selection prompt', () => {
+  it('sets explicit pawn selection prompt on pending label', () => {
     const { random, turns, core } = createDeps();
     const service = new MinuitActionService(
       random,
@@ -63,10 +63,10 @@ describe('MinuitActionService', () => {
     } as any;
 
     const next = service.applyActions(state, [{ type: 'roll', payload: {} } as any]);
-    const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
-
     expect(next.pending?.type).toBe('pick_pawn');
-    expect(messages).toContain('Lilas doit choisir un pion.');
+    expect(String(next.pending?.label ?? '')).toContain(
+      "C'est à Lilas de choisir son pion",
+    );
   });
 
   it('uses possessive pawn wording in placement log', () => {

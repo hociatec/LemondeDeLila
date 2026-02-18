@@ -115,13 +115,6 @@ export class MinuitSetupService {
       },
     };
 
-    if (pending && typeof pending.playerId === 'number') {
-      next = this.core.appendLog(
-        next,
-        `${this.playerName(next, pending.playerId)} doit choisir un pion.`,
-      );
-    }
-
     return next;
   }
 

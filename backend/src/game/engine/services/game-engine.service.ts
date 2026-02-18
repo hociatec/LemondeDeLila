@@ -2068,6 +2068,12 @@ export class GameEngineService {
     if (typeof currentPlayerId !== 'number' || !Number.isFinite(currentPlayerId)) {
       return state;
     }
+    const pendingType = String((state.pending as any)?.type ?? '')
+      .trim()
+      .toLowerCase();
+    if (pendingType === 'pick_pawn') {
+      return state;
+    }
 
     const log = Array.isArray(state.log) ? state.log : [];
     const recentMessages = log

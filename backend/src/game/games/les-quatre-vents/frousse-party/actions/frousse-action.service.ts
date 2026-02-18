@@ -144,10 +144,7 @@ export class FrousseActionService {
     if (chooserId == null) {
       return withPending;
     }
-    return this.appendLogOnce(
-      withPending,
-      `${this.playerName(withPending, chooserId)} doit choisir un pion.`,
-    );
+    return withPending;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
