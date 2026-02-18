@@ -254,6 +254,57 @@ describe('MinuitActionService', () => {
     expect(next.pending?.type).toBe('pick_pawn');
     expect(next.pending?.playerId).toBe(7);
   });
+
+  it('restores randomized starter after pawn selection', () => {
+    const { random, turns, core } = createDeps();
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [
+        { id: 1, username: 'hacene', isBot: false } as any,
+        { id: -9, username: 'Noodle', isBot: true } as any,
+      ],
+      metadata: {
+        botPlayerIds: [-9],
+        starterPlayerId: -9,
+        starterTurnIndex: 1,
+        starterRestoredAfterPawnSelection: false,
+        pawns: { [-9]: 'Le Lutin' },
+      } as any,
+      pending: {
+        type: 'pick_pawn',
+        playerId: 1,
+        blocking: true,
+        choices: ['La Fée des Flocons', 'Le Bonhomme de Neige'],
+        data: {
+          choices: ['La Fée des Flocons', 'Le Bonhomme de Neige'],
+          choiceMap: {
+            'La Fée des Flocons': 'La Fée des Flocons',
+            'Le Bonhomme de Neige': 'Le Bonhomme de Neige',
+          },
+        },
+      } as any,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = service.applyActions(state, [
+      { type: 'pick_pawn', payload: { pawn: 'La Fée des Flocons' } } as any,
+    ]);
+
+    expect(next.pending).toBeNull();
+    expect(next.turn?.currentPlayerId).toBe(-9);
+    expect(next.turnIndex).toBe(1);
+  });
 });
 
 describe('Minuit Rulebook compat', () => {

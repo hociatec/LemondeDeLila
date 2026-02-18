@@ -43,6 +43,9 @@ export type MinuitMetadata = {
   tiles: MinuitTile[];
   positions: Record<number, number>;
   botPlayerIds?: number[];
+  starterPlayerId?: number | null;
+  starterTurnIndex?: number | null;
+  starterRestoredAfterPawnSelection?: boolean;
   pawns?: Record<number, string>;
   pawnChoices?: MinuitPawn[];
   statuses: {

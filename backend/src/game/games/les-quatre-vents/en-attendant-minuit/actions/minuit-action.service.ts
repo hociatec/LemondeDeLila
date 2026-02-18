@@ -348,7 +348,9 @@ export class MinuitActionService {
       (p) => !!p && this.isBotLike(p, meta) && !this.hasPawnAssigned(p, meta),
     );
     if (status === 'started') {
-      if (!needsPawnSelection && !needsBotPawns && !hasPendingPick) return state;
+      if (!needsPawnSelection && !needsBotPawns && !hasPendingPick) {
+        return this.restoreStarterAfterPawnSelection(state);
+      }
       const withBots = this.assignBotPawns(state);
       if (needsPawnSelection || hasPendingPick) {
         return this.queuePawnSelection(withBots);
@@ -1149,6 +1151,52 @@ export class MinuitActionService {
     const last = String(log[log.length - 1]?.message ?? '').trim();
     if (last === message) return state;
     return this.core.appendLog(state, message);
+  }
+
+  private restoreStarterAfterPawnSelection(state: GameStateEntity): GameStateEntity {
+    const meta = this.getMeta(state);
+    if (meta.starterRestoredAfterPawnSelection === true) {
+      return state;
+    }
+
+    const players = Array.isArray(state.players) ? state.players : [];
+    const starterIdRaw =
+      typeof meta.starterPlayerId === 'number'
+        ? meta.starterPlayerId
+        : Number(meta.starterPlayerId);
+    const starterId = Number.isFinite(starterIdRaw) ? Number(starterIdRaw) : null;
+    if (starterId == null || !players.some((p) => Number(p?.id) === starterId)) {
+      return {
+        ...state,
+        metadata: {
+          ...(state.metadata ?? {}),
+          ...{ ...meta, starterRestoredAfterPawnSelection: true },
+        },
+      };
+    }
+
+    const starterIndex = Math.max(
+      0,
+      players.findIndex((p) => Number(p?.id) === starterId),
+    );
+    const currentId = state.turn?.currentPlayerId ?? null;
+    const nextMeta: MinuitMetadata = {
+      ...meta,
+      starterRestoredAfterPawnSelection: true,
+    };
+    let next: GameStateEntity = {
+      ...state,
+      turnIndex: starterIndex,
+      turn: {
+        ...(state.turn ?? { direction: 1 }),
+        currentPlayerId: starterId,
+      },
+      metadata: { ...(state.metadata ?? {}), ...nextMeta },
+    };
+    if (currentId !== starterId) {
+      next = this.appendTurnAnnouncement(next);
+    }
+    return next;
   }
 
   private advanceTurnOrKeep(state: GameStateEntity, playerId: number): GameStateEntity {

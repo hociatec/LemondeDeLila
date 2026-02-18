@@ -74,6 +74,13 @@ export class MinuitSetupService {
       tiles: board.tiles ?? [],
       positions,
       botPlayerIds,
+      starterPlayerId:
+        typeof base.turn?.currentPlayerId === 'number'
+          ? base.turn.currentPlayerId
+          : null,
+      starterTurnIndex:
+        typeof base.turnIndex === 'number' ? base.turnIndex : null,
+      starterRestoredAfterPawnSelection: false,
       pawnChoices: Array.isArray(pawns.pawns) ? pawns.pawns : [],
       statuses: {
         skipTurn: {},
