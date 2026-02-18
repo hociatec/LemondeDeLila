@@ -9,6 +9,11 @@ import {
   requiredString,
 } from '../../../../core/helpers/payload-validators.helper';
 import {
+  isPendingPawnForPlayer,
+  listPendingPawnActions,
+  resolvePendingPawnId,
+} from '../../../../core/helpers/pawn-selection.helper';
+import {
   GameValidationError,
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
@@ -31,13 +36,7 @@ export function getAvailableActions(
       return [{ type: 'draw', payload: {} }];
     }
     if (type === 'choose_pawn') {
-      const pawns: Array<{ id?: string }> = Array.isArray(pending?.data?.pawns)
-        ? pending.data.pawns
-        : [];
-      return pawns
-        .map((p) => String(p?.id ?? '').trim())
-        .filter((id) => id.length > 0)
-        .map((id) => ({ type: 'choose_pawn', payload: { pawnId: id } }));
+      return listPendingPawnActions(pending, 'choose_pawn');
     }
     if (type === 'reroll') {
       return [
@@ -153,27 +152,8 @@ export function validateAction(
         throw new PlayerActionError('Action non disponible.', {
           gameType: GAME_TYPE,
         });
-      const pawns: Array<{ id?: string }> = Array.isArray(pending?.data?.pawns)
-        ? pending.data.pawns
-        : [];
-      const payload = (action.payload ?? {}) as any;
-      const pawnId = (() => {
-        try {
-          return requiredString(
-            {
-              pawnId: payload?.pawnId ?? payload?.pawn ?? payload?.value,
-            },
-            'pawnId',
-            'Pion invalide.',
-          );
-        } catch {
-          throw new GameValidationError('Pion invalide.', {
-            gameType: GAME_TYPE,
-            action: { type, payload: action.payload ?? null },
-          });
-        }
-      })();
-      if (!pawns.some((p) => String(p?.id ?? '').trim() === pawnId))
+      const pawnId = resolvePendingPawnId(pending, action.payload ?? {});
+      if (!pawnId)
         throw new GameValidationError('Pion invalide.', {
           gameType: GAME_TYPE,
           action: { type, payload: action.payload ?? null },

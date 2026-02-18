@@ -14,6 +14,11 @@ import {
   normalizeLegacyRollAliasToUpper,
   normalizeLowerActionType,
 } from '../../../../actions/action-service.helper';
+import {
+  isPendingPawnForPlayer,
+  listPendingPawnActions,
+  resolvePendingPawnId,
+} from '../../../../core/helpers/pawn-selection.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
@@ -35,16 +40,7 @@ export function getAvailableActions(
       return [{ type: 'draw', payload: {} }];
     }
     if (pending.type === 'choose_pawn') {
-      const options = Array.isArray(pending?.data?.pawns)
-        ? pending.data.pawns
-        : [];
-      return options
-        .map((p) => resolvePawnId(p?.id))
-        .filter((id): id is string => Boolean(id))
-        .map((pawnId) => ({
-          type: 'choose_pawn',
-          payload: { pawnId },
-        }));
+      return listPendingPawnActions(pending, 'choose_pawn');
     }
     if (pending.type === 'choose_target') {
       const targets: Array<{ targetPlayerId: number }> = Array.isArray(
@@ -117,24 +113,22 @@ export function validateAction(
           gameType: 'frousse-party',
         });
       }
-      const payload = (action.payload ?? {}) as any;
-      const rawPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
-      const resolvedId = resolvePawnId(rawPawn);
-      const options = Array.isArray(pending?.data?.pawns)
-        ? pending.data.pawns
-        : [];
-      const chosen =
-        resolvedId != null
-          ? options.find((p: any) => resolvePawnId(p?.id) === resolvedId)
-          : null;
-      if (!chosen) {
+      const pawnId = resolvePendingPawnId(
+        pending,
+        action.payload ?? {},
+        (value) => String(resolvePawnId(value) ?? '').trim(),
+      );
+      if (!pawnId) {
         throw new GameValidationError('Pion invalide.', {
           gameType: 'frousse-party',
-          pawnId: rawPawn,
+          pawnId:
+            (action.payload as any)?.pawnId ??
+            (action.payload as any)?.pawn ??
+            (action.payload as any)?.value ??
+            null,
         });
       }
-      const targetPawnId = resolvePawnId(chosen.id);
-      return { type: 'choose_pawn', payload: { pawnId: targetPawnId } };
+      return { type: 'choose_pawn', payload: { pawnId } };
     }
     if (pending.type === 'choose_target') {
       if (type !== 'choose_target') {

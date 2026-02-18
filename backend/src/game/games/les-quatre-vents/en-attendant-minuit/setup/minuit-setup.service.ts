@@ -5,6 +5,7 @@ import { GameContentLoaderService } from '../../../../engine/services/game-conte
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { loadV1Content } from '../../../../setup/content-loader.helper';
+import { loadCanonicalPawns } from '../../../../core/helpers/pawn-catalog.helper';
 import type {
   MinuitBoardJsonV1,
   MinuitCardsJsonV1,
@@ -82,7 +83,13 @@ export class MinuitSetupService {
       starterTurnIndex:
         typeof base.turnIndex === 'number' ? base.turnIndex : null,
       starterRestoredAfterPawnSelection: false,
-      pawnChoices: Array.isArray(pawns.pawns) ? pawns.pawns : [],
+      pawnChoices: loadCanonicalPawns(Array.isArray(pawns.pawns) ? pawns.pawns : []).map(
+        (pawn) => ({
+          id: pawn.id,
+          name: pawn.name,
+          description: pawn.description,
+        }),
+      ),
       statuses: {
         skipTurn: {},
         ignoreNextMalus: {},
@@ -117,15 +124,15 @@ export class MinuitSetupService {
                 .filter((pawn) => pawn.length > 0),
             );
             const entries = this.listPawnChoiceEntries(meta, pawns.pawns ?? []);
-            const available = entries.filter((entry) => !taken.has(entry.title));
+            const available = entries.filter((entry) => !taken.has(entry.id));
             const chosenEntries = available.length ? available : [...entries];
-            return chosenEntries.map((entry) => ({ id: entry.title, label: entry.label, title: entry.title }));
+            return chosenEntries.map((entry) => ({ id: entry.id, label: entry.label, description: entry.description }));
           })(),
           includeChoiceMapData: true,
           pawnDataMapper: (choice: any) => ({
             id: String(choice?.id ?? '').trim(),
             label: String(choice?.label ?? '').trim(),
-            title: String(choice?.title ?? choice?.id ?? '').trim(),
+            description: String(choice?.description ?? '').trim(),
           }),
         })?.pending as any);
 
@@ -153,7 +160,7 @@ export class MinuitSetupService {
   private listPawnChoiceEntries(
     meta: MinuitMetadata,
     pawns: MinuitPawn[],
-  ): Array<{ title: string; label: string }> {
+  ): Array<{ id: string; label: string; description: string }> {
     const fromContent = Array.isArray(meta.pawnChoices)
       ? meta.pawnChoices
       : Array.isArray(pawns)
@@ -163,16 +170,17 @@ export class MinuitSetupService {
     if (fromContent.length) {
       return fromContent
         .map((pawn) => {
-          const title = String(pawn?.title ?? '').trim();
-          if (!title) return null;
+          const id = String((pawn as any)?.id ?? '').trim();
+          const name = String((pawn as any)?.name ?? '').trim();
+          if (!id || !name) return null;
           const description = String(pawn?.description ?? '').trim();
-          const label = description ? `${title}: ${description}` : title;
-          return { title, label };
+          const label = description ? `${name}: ${description}` : name;
+          return { id, label, description };
         })
-        .filter(Boolean) as Array<{ title: string; label: string }>;
+        .filter(Boolean) as Array<{ id: string; label: string; description: string }>;
     }
 
-    return DEFAULT_PAWNS.map((title) => ({ title, label: title }));
+    return DEFAULT_PAWNS.map((name) => ({ id: name, label: name, description: '' }));
   }
 
   private loadBoard(): MinuitBoardJsonV1 {

@@ -11,7 +11,7 @@ export type FrousseCard = {
 
 export type FroussePawn = {
   id: string;
-  title: string;
+  name: string;
   description?: string;
 };
 

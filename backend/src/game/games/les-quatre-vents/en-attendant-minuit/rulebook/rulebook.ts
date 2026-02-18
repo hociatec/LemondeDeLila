@@ -14,6 +14,11 @@ import {
   normalizeLegacyRollAliasToUpper,
   normalizeLowerActionType,
 } from '../../../../actions/action-service.helper';
+import {
+  isPendingPawnForPlayer,
+  listPendingPawnActions,
+  resolvePendingPawnId,
+} from '../../../../core/helpers/pawn-selection.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
@@ -31,20 +36,8 @@ export function getAvailableActions(
 
   const status = String(state.status ?? '').toLowerCase();
   const pawnPending = state.pending as any;
-  if (pawnPending && pawnPending.type === 'pick_pawn') {
-    if (toPlayerId(pawnPending.playerId) !== playerId) return [];
-    const providedChoices = Array.isArray(pawnPending.choices)
-      ? pawnPending.choices
-      : Array.isArray(pawnPending?.data?.choices)
-        ? pawnPending.data.choices
-        : [];
-    return providedChoices
-      .map((choice) => String(choice ?? '').trim())
-      .filter((choice) => choice.length > 0)
-      .map((choice) => ({
-        type: 'pick_pawn',
-        payload: { pawn: choice },
-      }));
+  if (isPendingPawnForPlayer(pawnPending, playerId, 'pick_pawn')) {
+    return listPendingPawnActions(pawnPending, 'pick_pawn');
   }
   if (status !== 'started') return [];
 
@@ -114,7 +107,7 @@ export function validateAction(
 
   const pickPawnPending = state.pending as any;
   if (pickPawnPending && pickPawnPending.type === 'pick_pawn') {
-    if (toPlayerId(pickPawnPending.playerId) !== actorId) {
+    if (!isPendingPawnForPlayer(pickPawnPending, actorId, 'pick_pawn')) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
         gameType: 'en-attendant-minuit',
       });
@@ -124,22 +117,18 @@ export function validateAction(
         gameType: 'en-attendant-minuit',
       });
     }
-    const providedChoices = Array.isArray(pickPawnPending.choices)
-      ? pickPawnPending.choices
-      : Array.isArray(pickPawnPending?.data?.choices)
-        ? pickPawnPending.data.choices
-        : [];
-    const normalizedChoices = new Set(
-      providedChoices.map((choice) => String(choice ?? '').trim()),
-    );
-    const requestedPawn = String((action.payload as any)?.pawn ?? '').trim();
-    if (!requestedPawn || !normalizedChoices.has(requestedPawn)) {
+    const resolvedPawn = resolvePendingPawnId(pickPawnPending, action.payload ?? {});
+    if (!resolvedPawn) {
       throw new GameValidationError('Choix de pion invalide.', {
         gameType: 'en-attendant-minuit',
-        pawn: requestedPawn,
+        pawn:
+          (action.payload as any)?.pawn ??
+          (action.payload as any)?.pawnId ??
+          (action.payload as any)?.value ??
+          null,
       });
     }
-    return { type: 'pick_pawn', payload: { pawn: requestedPawn } };
+    return { type: 'pick_pawn', payload: { pawnId: resolvedPawn } };
   }
 
   if (!isStartedState(state)) {

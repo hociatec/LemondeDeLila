@@ -7,6 +7,11 @@ import {
 } from '../../../../actions/action-service.helper';
 import { requiredString } from '../../../../core/helpers/payload-validators.helper';
 import {
+  isPendingPawnForPlayer,
+  listPendingPawnActions,
+  resolvePendingPawnId,
+} from '../../../../core/helpers/pawn-selection.helper';
+import {
   GameValidationError,
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
@@ -31,16 +36,9 @@ export function getAvailableActions(
       return [{ type: 'draw', payload: {} }];
     }
     if (
-      pending.type === 'choose_pawn' &&
-      samePlayerId(pending.playerId, playerId)
+      isPendingPawnForPlayer(pending, playerId, 'choose_pawn')
     ) {
-      const pawns: Array<{ id?: string }> = Array.isArray(pending?.data?.pawns)
-        ? pending.data.pawns
-        : [];
-      return pawns
-        .map((p) => String(p?.id ?? '').trim())
-        .filter((id) => id.length > 0)
-        .map((id) => ({ type: 'choose_pawn', payload: { pawnId: id } }));
+      return listPendingPawnActions(pending, 'choose_pawn');
     }
     return [];
   }
@@ -86,46 +84,25 @@ export function validateAction(
       return { type: 'draw', payload: {} };
     }
     if (
-      pending.type === 'choose_pawn' &&
-      samePlayerId(pending.playerId, actorId)
+      isPendingPawnForPlayer(pending, actorId, 'choose_pawn')
     ) {
       if (type !== 'choose_pawn') {
         throw new PlayerActionError('Action non disponible.', {
           gameType: GAME_TYPE,
         });
       }
-      const payload = (action.payload ?? {}) as any;
-      const rawPawn = (() => {
-        try {
-          return requiredString(
-            {
-              pawnId: payload.pawnId ?? payload.pawn ?? payload.value,
-            },
-            'pawnId',
-            'Pion invalide.',
-          );
-        } catch {
-          throw new GameValidationError('Pion invalide.', {
-            gameType: GAME_TYPE,
-            action: { type, payload: action.payload ?? null },
-          });
-        }
-      })();
-      const resolved = resolvePawnId(rawPawn);
-      const pawns: Array<{ id?: string }> = Array.isArray(pending?.data?.pawns)
-        ? pending.data.pawns
-        : [];
-      const chosen =
-        resolved != null
-          ? pawns.find((p) => resolvePawnId(p?.id) === resolved)
-          : null;
-      if (!chosen) {
+      const pawnId = resolvePendingPawnId(
+        pending,
+        action.payload ?? {},
+        (value) => String(resolvePawnId(value) ?? '').trim(),
+      );
+      if (!pawnId) {
         throw new GameValidationError('Pion invalide.', {
           gameType: GAME_TYPE,
           action: { type, payload: action.payload ?? null },
         });
       }
-      return { type: 'choose_pawn', payload: { pawnId: chosen.id } };
+      return { type: 'choose_pawn', payload: { pawnId } };
     }
     throw new PlayerActionError('Action non disponible.', {
       gameType: GAME_TYPE,

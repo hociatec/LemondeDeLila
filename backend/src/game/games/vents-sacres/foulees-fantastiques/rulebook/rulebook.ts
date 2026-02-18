@@ -10,12 +10,11 @@ import {
 } from '../../../../../common/errors/game-errors';
 import type { FouleesFantastiquesMetadata } from '../model/foulees-fantastiques-state.entity';
 import { isRollAlias, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
-
-function normalizeNumber(value: unknown): number | null {
-  const n = typeof value === 'number' ? value : Number(value);
-  if (!Number.isFinite(n)) return null;
-  return n;
-}
+import {
+  isPendingPawnMoveForPlayer,
+  listPendingPawnMoveActions,
+  resolvePendingPawnMove,
+} from '../../../../core/helpers/pawn-move-selection.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -39,20 +38,8 @@ export function getAvailableActions(
           payload: { familyId: String(id).trim() },
         }));
     }
-    if (pending.type === 'choose_pawn' && pending.playerId === playerId) {
-      const moves: Array<{ pawnIndex: number; targetProgress: number }> =
-        Array.isArray(pending?.data?.moves) ? pending.data.moves : [];
-      return moves
-        .filter(
-          (m) =>
-            m &&
-            typeof m.pawnIndex === 'number' &&
-            typeof m.targetProgress === 'number',
-        )
-        .map((m) => ({
-          type: 'move_pawn',
-          payload: { pawnIndex: m.pawnIndex, targetProgress: m.targetProgress },
-        }));
+    if (isPendingPawnMoveForPlayer(pending, playerId, 'choose_pawn')) {
+      return listPendingPawnMoveActions(pending, 'move_pawn');
     }
     return [];
   }
@@ -150,9 +137,7 @@ export function validateAction(
   if (type === 'move_pawn') {
     const pending: any = state.pending ?? null;
     if (
-      !pending ||
-      pending.type !== 'choose_pawn' ||
-      pending.playerId !== actorId
+      !isPendingPawnMoveForPlayer(pending, actorId, 'choose_pawn')
     ) {
       throw new PlayerActionError('Aucun choix de pion en attente.', {
         gameType: 'foulees-fantastiques',
@@ -160,37 +145,22 @@ export function validateAction(
       });
     }
 
-    const payload = action.payload ?? {};
-    const pawnIndex = normalizeNumber((payload as any).pawnIndex);
-    const targetProgress = normalizeNumber((payload as any).targetProgress);
-    if (pawnIndex == null || targetProgress == null) {
+    const move = resolvePendingPawnMove(pending, action.payload ?? {});
+    if (!move) {
       throw new GameValidationError(
         'Payload invalide: pawnIndex/targetProgress',
         {
           gameType: 'foulees-fantastiques',
           playerId: actorId ?? undefined,
-          payload,
+          payload: action.payload,
         },
       );
-    }
-
-    const moves: Array<{ pawnIndex: number; targetProgress: number }> =
-      Array.isArray(pending?.data?.moves) ? pending.data.moves : [];
-    const ok = moves.some(
-      (m) => m?.pawnIndex === pawnIndex && m?.targetProgress === targetProgress,
-    );
-    if (!ok) {
-      throw new GameValidationError('Choix de pion invalide.', {
-        gameType: 'foulees-fantastiques',
-        playerId: actorId ?? undefined,
-        payload,
-      });
     }
 
     return {
       ...action,
       type: 'move_pawn',
-      payload: { pawnIndex, targetProgress },
+      payload: move,
     };
   }
 

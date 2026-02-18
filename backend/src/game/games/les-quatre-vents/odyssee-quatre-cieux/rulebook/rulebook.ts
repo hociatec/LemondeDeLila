@@ -14,6 +14,11 @@ import {
   ODYSSEE_GAME,
   type OdysseeActionType,
 } from '../definitions/odyssee.definition';
+import {
+  isPendingPawnMoveForPlayer,
+  listPendingPawnMoveActions,
+  resolvePendingPawnMove,
+} from '../../../../core/helpers/pawn-move-selection.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -23,15 +28,10 @@ export function getAvailableActions(
 
   const pending = state.pending as any;
   if (pending) {
-    if (pending.playerId !== playerId) return [];
-    if (pending.type === 'choose_pawn') {
-      const moves: Array<{ pawnIndex: number; targetProgress: number }> =
-        Array.isArray(pending?.data?.moves) ? pending.data.moves : [];
-      return moves.map((m) => ({
-        type: 'move_pawn',
-        payload: { pawnIndex: m.pawnIndex, targetProgress: m.targetProgress },
-      }));
+    if (isPendingPawnMoveForPlayer(pending, playerId, 'choose_pawn')) {
+      return listPendingPawnMoveActions(pending, 'move_pawn');
     }
+    if (pending.playerId !== playerId) return [];
     return [];
   }
 
@@ -66,37 +66,23 @@ export function validateAction(
 
   const pending = state.pending as any;
   if (pending) {
-    if (pending.playerId !== actorId)
+    if (!isPendingPawnMoveForPlayer(pending, actorId, 'choose_pawn'))
       throw new PlayerActionError("Ce n'est pas votre action.", {
         gameType: 'odyssee-quatre-cieux',
       });
-    if (pending.type !== 'choose_pawn' || type !== 'move_pawn') {
+    if (type !== 'move_pawn') {
       throw new PlayerActionError('Action non disponible.', {
         gameType: 'odyssee-quatre-cieux',
       });
     }
-    const pawnIndex = Number((action.payload as any)?.pawnIndex);
-    const targetProgress = Number((action.payload as any)?.targetProgress);
-    if (!Number.isFinite(pawnIndex) || !Number.isFinite(targetProgress)) {
+    const move = resolvePendingPawnMove(pending, action.payload ?? {});
+    if (!move) {
       throw new GameValidationError('Payload invalide.', {
         gameType: 'odyssee-quatre-cieux',
         payload: action.payload,
       });
     }
-    const moves: Array<{ pawnIndex: number; targetProgress: number }> =
-      Array.isArray(pending?.data?.moves) ? pending.data.moves : [];
-    if (
-      !moves.some(
-        (m) => m.pawnIndex === pawnIndex && m.targetProgress === targetProgress,
-      )
-    ) {
-      throw new GameValidationError('Coup invalide.', {
-        gameType: 'odyssee-quatre-cieux',
-        pawnIndex,
-        targetProgress,
-      });
-    }
-    return { type: 'move_pawn', payload: { pawnIndex, targetProgress } };
+    return { type: 'move_pawn', payload: move };
   }
 
   const current = state.turn?.currentPlayerId ?? null;

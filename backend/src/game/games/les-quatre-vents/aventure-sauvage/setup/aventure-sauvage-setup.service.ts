@@ -7,6 +7,7 @@ import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
+import { loadCanonicalPawns } from '../../../../core/helpers/pawn-catalog.helper';
 import { ensureSeededRng } from '../../../../../common/utils/seeded-rng';
 import { seededShuffle } from '../../../../../common/utils/seeded-shuffle';
 import type {
@@ -34,13 +35,11 @@ export class AventureSauvageSetupService {
       minItems: 1,
     });
 
-    return raw.pawns
-      .map((p) => ({
-        id: String((p as any)?.id ?? '').trim(),
-        label: String((p as any)?.title ?? '').trim(),
-        description: String((p as any)?.description ?? '').trim(),
-      }))
-      .filter((p) => p.id.length > 0 && p.label.length > 0);
+    return loadCanonicalPawns(raw.pawns).map((pawn) => ({
+      id: pawn.id,
+      label: pawn.name,
+      description: pawn.description,
+    }));
   }
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {

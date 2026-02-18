@@ -16,7 +16,8 @@ export type AventureSauvagePawn = {
 
 export type AventureSauvagePawnJson = {
   id: string;
-  title: string;
+  name?: string;
+  title?: string;
   description?: string;
 };
 

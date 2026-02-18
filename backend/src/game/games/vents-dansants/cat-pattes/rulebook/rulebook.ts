@@ -10,6 +10,11 @@ import type { CatPattesMetadata } from '../model/cat-pattes-state.entity';
 import { CAT_PATTES_GOAL } from '../model/cat-pattes-state.entity';
 import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+import {
+  isPendingPawnForPlayer,
+  listPendingPawnActions,
+  resolvePendingPawnId,
+} from '../../../../core/helpers/pawn-selection.helper';
 
 type CatPattesActionPayload = {
   cardId?: string | null;
@@ -100,17 +105,8 @@ export function getAvailableActions(
 
   const pending = state.pending as any;
   if (pending) {
-    if (
-      pending.type === 'choose_pawn' &&
-      samePlayerId(pending.playerId, playerId)
-    ) {
-      const pawns: Array<{ id?: string }> = Array.isArray(pending?.data?.pawns)
-        ? pending.data.pawns
-        : [];
-      return pawns
-        .map((p) => String(p?.id ?? '').trim())
-        .filter((id) => id.length > 0)
-        .map((id) => ({ type: 'choose_pawn', payload: { pawnId: id } }));
+    if (isPendingPawnForPlayer(pending, playerId, 'choose_pawn')) {
+      return listPendingPawnActions(pending, 'choose_pawn');
     }
     return [];
   }
@@ -186,23 +182,19 @@ export function validateAction(
 
   const pending = state.pending as any;
   if (pending) {
-    if (
-      pending.type === 'choose_pawn' &&
-      samePlayerId(pending.playerId, actorId)
-    ) {
+    if (isPendingPawnForPlayer(pending, actorId, 'choose_pawn')) {
       if (type !== 'choose_pawn') {
         throw new Error('Action indisponible (choix de pion requis).');
       }
-      const pawns: Array<{ id?: string }> = Array.isArray(pending?.data?.pawns)
-        ? pending.data.pawns
-        : [];
-      const rawPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
-      const key = normalizePawnKey(rawPawn);
-      const chosen = pawns.find((p) => normalizePawnKey(p?.id) === key);
-      if (!chosen) {
+      const pawnId = resolvePendingPawnId(
+        pending,
+        payload,
+        (value) => normalizePawnKey(value),
+      );
+      if (!pawnId) {
         throw new Error('Pion invalide.');
       }
-      return { type: 'choose_pawn', payload: { pawnId: chosen.id } };
+      return { type: 'choose_pawn', payload: { pawnId } };
     }
     throw new Error('Action indisponible (choix en attente).');
   }

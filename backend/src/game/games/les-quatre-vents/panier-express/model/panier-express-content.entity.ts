@@ -44,7 +44,7 @@ export type PanierExpressShoppingListsJsonV1 = {
 
 export type PanierExpressPawn = {
   id: string;
-  title: string;
+  name: string;
   description?: string;
 };
 

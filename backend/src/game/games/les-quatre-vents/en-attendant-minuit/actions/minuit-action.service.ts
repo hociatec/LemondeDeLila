@@ -407,7 +407,7 @@ export class MinuitActionService {
         .filter((pawn) => pawn.length > 0),
     );
     const choiceEntries = this.listPawnChoiceEntries(this.getMeta(state));
-    const available = choiceEntries.filter((entry) => !taken.has(entry.title));
+    const available = choiceEntries.filter((entry) => !taken.has(entry.id));
     const entries = available.length ? available : [...choiceEntries];
     const pendingInfo = this.setupFlow.createSequentialPawnPending({
       players,
@@ -417,12 +417,16 @@ export class MinuitActionService {
         return !player || this.isBotLike(player, meta) || this.hasPawnAssigned(player, meta);
       },
       pendingType: 'pick_pawn',
-      pawns: entries.map((entry) => ({ id: entry.title, label: entry.label, title: entry.title })),
+      pawns: entries.map((entry) => ({
+        id: entry.id,
+        label: entry.label,
+        description: entry.description,
+      })),
       includeChoiceMapData: true,
       pawnDataMapper: (choice: any) => ({
         id: String(choice?.id ?? '').trim(),
         label: String(choice?.label ?? '').trim(),
-        title: String(choice?.title ?? choice?.id ?? '').trim(),
+        description: String(choice?.description ?? '').trim(),
       }),
     });
     if (!pendingInfo) return state;
@@ -509,18 +513,10 @@ export class MinuitActionService {
     const playerId = Number(pending.playerId);
     if (!Number.isFinite(playerId)) return state;
     const payload = (action?.payload ?? {}) as any;
-    const requestedPawn = payload.pawn ?? payload.value ?? null;
+    const requestedPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
     const options = Array.isArray(pending?.data?.pawns)
       ? pending.data.pawns
-      : Array.isArray(pending?.data?.choices)
-        ? pending.data.choices.map((choice: string) => ({
-            id: String(
-              (pending?.data?.choiceMap as Record<string, string> | undefined)?.[choice] ??
-                choice,
-            ).trim(),
-            label: String(choice ?? '').trim(),
-          }))
-        : [];
+      : [];
     const chosen = this.setupFlow.resolvePawnChoice(requestedPawn, options);
     const resolvedPawn = String(chosen?.id ?? '').trim();
     if (!resolvedPawn) return state;
@@ -557,26 +553,28 @@ export class MinuitActionService {
   }
 
   private listPawnChoices(meta: MinuitMetadata): string[] {
-    return this.listPawnChoiceEntries(meta).map((entry) => entry.title);
+    return this.listPawnChoiceEntries(meta).map((entry) => entry.id);
   }
 
   private listPawnChoiceEntries(
     meta: MinuitMetadata,
-  ): Array<{ title: string; label: string }> {
+  ): Array<{ id: string; label: string; description: string }> {
     const fromContent = Array.isArray(meta.pawnChoices)
       ? meta.pawnChoices
           .map((p) => ({
-            title: String(p?.title ?? '').trim(),
+            id: String((p as any)?.id ?? '').trim(),
+            name: String((p as any)?.name ?? '').trim(),
             description: String((p as any)?.description ?? '').trim(),
           }))
-          .filter((p) => p.title.length > 0)
+          .filter((p) => p.id.length > 0 && p.name.length > 0)
           .map((p) => ({
-            title: p.title,
-            label: p.description ? `${p.title}: ${p.description}` : p.title,
+            id: p.id,
+            label: p.description ? `${p.name}: ${p.description}` : p.name,
+            description: p.description,
           }))
       : [];
     if (fromContent.length) return fromContent;
-    return MINUIT_PAWNS.map((title) => ({ title, label: title }));
+    return MINUIT_PAWNS.map((name) => ({ id: name, label: name, description: '' }));
   }
 
   private arePawnsEqual(

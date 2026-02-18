@@ -9,6 +9,11 @@ import {
   requiredString,
 } from '../../../../core/helpers/payload-validators.helper';
 import {
+  isPendingPawnForPlayer,
+  listPendingPawnActions,
+  resolvePendingPawnId,
+} from '../../../../core/helpers/pawn-selection.helper';
+import {
   GameValidationError,
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
@@ -28,13 +33,7 @@ export function getAvailableActions(
       return [{ type: 'draw', payload: {} }];
     }
     if (pending.type === 'choose_pawn' && pending.playerId === playerId) {
-      const pawns: Array<{ id?: string }> = Array.isArray(pending?.data?.pawns)
-        ? pending.data.pawns
-        : [];
-      return pawns
-        .map((p) => String(p?.id ?? '').trim())
-        .filter((id) => id.length > 0)
-        .map((id) => ({ type: 'choose_pawn', payload: { pawnId: id } }));
+      return listPendingPawnActions(pending, 'choose_pawn');
     }
     if (pending.type === 'swap' && pending.playerId === playerId) {
       const targets: Array<{ targetPlayerId: number }> = Array.isArray(
@@ -96,42 +95,19 @@ export function validateAction(
   }
   if (type === 'choose_pawn') {
     const pending = state.pending as any;
-    if (!pending || pending.type !== 'choose_pawn' || pending.playerId !== actorId) {
+    if (!isPendingPawnForPlayer(pending, actorId, 'choose_pawn')) {
       throw new PlayerActionError('Action non disponible.', {
         gameType: GAME_TYPE,
       });
     }
-    const payload = (action.payload ?? {}) as any;
-    const rawPawnId = (() => {
-      try {
-        return requiredString(
-          {
-            pawnId: payload.pawnId ?? payload.pawn ?? payload.value,
-          },
-          'pawnId',
-          'Pion invalide.',
-        );
-      } catch {
-        throw new GameValidationError('Pion invalide.', {
-          gameType: GAME_TYPE,
-          action: { type, payload: action.payload ?? null },
-        });
-      }
-    })();
-    const pawns: Array<{ id?: string }> = Array.isArray(pending?.data?.pawns)
-      ? pending.data.pawns
-      : [];
-    const chosen =
-      rawPawnId != null
-        ? pawns.find((p) => String(p?.id ?? '').trim() === rawPawnId)
-        : null;
-    if (!chosen) {
+    const pawnId = resolvePendingPawnId(pending, action.payload ?? {});
+    if (!pawnId) {
       throw new GameValidationError('Pion invalide.', {
         gameType: GAME_TYPE,
         action: { type, payload: action.payload ?? null },
       });
     }
-    return { type: 'choose_pawn', payload: { pawnId: chosen.id } };
+    return { type: 'choose_pawn', payload: { pawnId } };
   }
 
   if (type === 'swap_choose_target') {

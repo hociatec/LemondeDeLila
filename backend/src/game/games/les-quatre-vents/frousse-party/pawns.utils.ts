@@ -7,13 +7,13 @@ export function resolvePawnId(raw: unknown): string | null {
 }
 
 export function formatPawnChoiceLabel(pawn: FroussePawn): string {
-  const title = String(pawn?.title ?? '').trim();
+  const name = String(pawn?.name ?? '').trim();
   const description = String(pawn?.description ?? '').trim();
-  if (title && description) {
-    return `${title}: ${description}`;
+  if (name && description) {
+    return `${name}: ${description}`;
   }
-  if (title) {
-    return title;
+  if (name) {
+    return name;
   }
   if (description) {
     return description;

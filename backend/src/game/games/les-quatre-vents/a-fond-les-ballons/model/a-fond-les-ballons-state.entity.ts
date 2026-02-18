@@ -34,7 +34,8 @@ export type AFondLesBallonsPawn = {
 
 export type AFondLesBallonsPawnJson = {
   id: string;
-  title: string;
+  name?: string;
+  title?: string;
   description?: string;
 };
 

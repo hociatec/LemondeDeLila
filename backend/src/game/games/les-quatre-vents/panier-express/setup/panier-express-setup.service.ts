@@ -25,6 +25,7 @@ import {
 } from '../model/panier-express-content.entity';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { loadV1Content } from '../../../../setup/content-loader.helper';
+import { loadCanonicalPawns } from '../../../../core/helpers/pawn-catalog.helper';
 
 @Injectable()
 export class PanierExpressSetupService {
@@ -199,17 +200,17 @@ export class PanierExpressSetupService {
   }
 
   pawns(): string[] {
-    return this.pawnChoices().map((p) => p.title);
+    return this.pawnChoices().map((p) => p.name);
   }
 
   pawnChoices(): PanierExpressPawn[] {
-    return this.loadPawns()
-      .pawns.map((p) => ({
-        id: String((p as any)?.id ?? '').trim(),
-        title: String((p as any)?.title ?? '').trim(),
-        description: String((p as any)?.description ?? '').trim(),
+    return loadCanonicalPawns(this.loadPawns().pawns)
+      .map((pawn) => ({
+        id: pawn.id,
+        name: pawn.name,
+        description: pawn.description,
       }))
-      .filter((p) => p.id.length > 0 && p.title.length > 0);
+      .filter((p) => p.id.length > 0 && p.name.length > 0);
   }
 
   /**

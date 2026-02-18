@@ -96,7 +96,7 @@ export class FrousseActionService {
       return {
         ...p,
         pawn: chosen.id,
-        pawnLabel: String(chosen.title ?? chosen.id ?? ''),
+        pawnLabel: String(chosen.label ?? chosen.id ?? ''),
       };
     });
 
@@ -106,7 +106,7 @@ export class FrousseActionService {
       pending: null,
     };
 
-    const label = chosen.title ?? chosen.id ?? 'pion';
+    const label = chosen.label ?? chosen.id ?? 'pion';
     const withLog = this.core.appendLog(
       next,
       `[Frousse Party] ${resolvePlayerNameFromState(next, playerId)} choisit le pion: ${label}.`,
@@ -126,8 +126,7 @@ export class FrousseActionService {
     const choicesForPending = (Array.isArray(metaForPending.pawns) ? metaForPending.pawns : [])
       .map((p) => ({
         id: String(p?.id ?? '').trim(),
-        label: String(p?.title ?? p?.id ?? '').trim(),
-        title: String(p?.title ?? p?.id ?? '').trim(),
+        label: String(p?.name ?? p?.id ?? '').trim(),
         description: String((p as any)?.description ?? '').trim(),
       }))
       .filter((p) => p.id.length > 0 && !usedForPending.has(p.id));
@@ -141,7 +140,7 @@ export class FrousseActionService {
       pawns: choicesForPending,
       pawnDataMapper: (choice: any) => ({
         id: String(choice?.id ?? '').trim(),
-        title: String(choice?.title ?? choice?.label ?? '').trim(),
+        label: String(choice?.label ?? '').trim(),
         description: String(choice?.description ?? '').trim(),
       }),
       extraPendingData: { kind: 'choose_pawn' },
@@ -1145,8 +1144,8 @@ export class FrousseActionService {
     const fromMeta = Array.isArray(meta?.pawns)
       ? meta.pawns.find((p: any) => String(p?.id ?? '').trim() === pawnId)
       : null;
-    const title = String((fromMeta as any)?.title ?? pawnId).trim();
-    if (title) return `"${title}"`;
+    const name = String((fromMeta as any)?.name ?? pawnId).trim();
+    if (name) return `"${name}"`;
     return 'un pion';
   }
 

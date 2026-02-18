@@ -3,6 +3,11 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import { isRollAlias, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
+  isPendingPawnForPlayer,
+  listPendingPawnActions,
+  resolvePendingPawnId,
+} from '../../../../core/helpers/pawn-selection.helper';
+import {
   GameValidationError,
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
@@ -23,17 +28,8 @@ export function getAvailableActions(
 
   const pending = state.pending as any;
   if (pending) {
-    if (
-      pending.type === 'choose_pawn' &&
-      samePlayerId(pending.playerId, playerId)
-    ) {
-      const pawns: Array<{ id?: string }> = Array.isArray(pending?.data?.pawns)
-        ? pending.data.pawns
-        : [];
-      return pawns
-        .map((p) => String(p?.id ?? '').trim())
-        .filter((id) => id.length > 0)
-        .map((id) => ({ type: 'choose_pawn', payload: { pawnId: id } }));
+    if (isPendingPawnForPlayer(pending, playerId, 'choose_pawn')) {
+      return listPendingPawnActions(pending, 'choose_pawn');
     }
     return [];
   }
@@ -74,30 +70,21 @@ export function validateAction(
 
   const pending = state.pending as any;
   if (pending) {
-    if (
-      pending.type === 'choose_pawn' &&
-      samePlayerId(pending.playerId, actorId)
-    ) {
+    if (isPendingPawnForPlayer(pending, actorId, 'choose_pawn')) {
       if (normalized !== 'choose_pawn') {
         throw new PlayerActionError(
           'Action indisponible (choix de pion requis).',
           { gameType: 'jeu-oie', playerId: actorId },
         );
       }
-      const payload = (action.payload ?? {}) as any;
-      const rawPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
-      const value = String(rawPawn ?? '').trim();
-      const pawns: Array<{ id?: string }> = Array.isArray(pending?.data?.pawns)
-        ? pending.data.pawns
-        : [];
-      const chosen = pawns.find((p) => String(p?.id ?? '').trim() === value);
-      if (!chosen) {
+      const pawnId = resolvePendingPawnId(pending, action.payload ?? {});
+      if (!pawnId) {
         throw new PlayerActionError('Pion invalide.', {
           gameType: 'jeu-oie',
           playerId: actorId,
         });
       }
-      return { type: 'choose_pawn', payload: { pawnId: value } };
+      return { type: 'choose_pawn', payload: { pawnId } };
     }
     throw new PlayerActionError('Action indisponible (choix en attente).', {
       gameType: 'jeu-oie',

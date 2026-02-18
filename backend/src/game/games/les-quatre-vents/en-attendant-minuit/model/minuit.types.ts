@@ -16,8 +16,8 @@ export type MinuitTile = {
 };
 
 export type MinuitPawn = {
-  id?: string;
-  title: string;
+  id: string;
+  name: string;
   description?: string;
 };
 

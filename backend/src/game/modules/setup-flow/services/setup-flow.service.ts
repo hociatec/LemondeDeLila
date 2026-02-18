@@ -6,7 +6,6 @@ type SetupChoice = { id: string; label: string; [key: string]: unknown };
 type PawnChoice = {
   id?: unknown;
   label?: unknown;
-  title?: unknown;
   description?: unknown;
   [key: string]: unknown;
 };
@@ -104,12 +103,6 @@ export class SetupFlowService {
         ...(params.includeChoiceMapData === true
           ? {
               choices: availableChoices.map((choice) => String((choice as any)?.label ?? '').trim()),
-              choiceMap: Object.fromEntries(
-                availableChoices.map((choice) => [
-                  String((choice as any)?.label ?? '').trim(),
-                  String((choice as any)?.id ?? '').trim(),
-                ]),
-              ),
             }
           : {}),
         pawns: availableChoices.map((choice) =>
@@ -168,7 +161,6 @@ export class SetupFlowService {
           (raw as any)?.pawn ??
           (raw as any)?.value ??
           (raw as any)?.label ??
-          (raw as any)?.title ??
           raw
         : raw;
 
@@ -198,7 +190,7 @@ export class SetupFlowService {
     return (Array.isArray(choices) ? choices : [])
       .map((choice) => {
         const id = String((choice as any)?.id ?? '').trim();
-        const label = String((choice as any)?.label ?? (choice as any)?.title ?? id).trim();
+        const label = String((choice as any)?.label ?? id).trim();
         return { ...(choice as any), id, label } as TChoice & SetupChoice;
       })
       .filter((choice) => choice.id.length > 0 && choice.label.length > 0);
@@ -207,8 +199,7 @@ export class SetupFlowService {
   private defaultPawnData(choice: PawnChoice): Record<string, unknown> {
     return {
       id: String((choice as any)?.id ?? '').trim(),
-      label: String((choice as any)?.label ?? (choice as any)?.title ?? '').trim(),
-      title: String((choice as any)?.title ?? (choice as any)?.label ?? '').trim(),
+      label: String((choice as any)?.label ?? '').trim(),
       description: String((choice as any)?.description ?? '').trim(),
     };
   }

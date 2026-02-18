@@ -626,7 +626,7 @@ export class PanierExpressService extends AbstractGameService {
   private assignBotPawns(state: GameStateEntity): GameStateEntity {
     const pawnChoices = this.setup.pawnChoices();
     if (!pawnChoices.length) return state;
-    const pawns = pawnChoices.map((pawn) => pawn.title);
+    const pawns = pawnChoices.map((pawn) => pawn.name);
     const players = state.players ?? [];
     let meta = this.getMetadata(state) as any;
     const used = new Set(
@@ -714,9 +714,18 @@ export class PanierExpressService extends AbstractGameService {
         )
         .filter((p: string) => p.length > 0),
     );
-    const available = pawnChoices.filter((pawn) => !taken.has(pawn.title));
-    const choices = available.length ? available : pawnChoices;
+    const available = pawnChoices.filter((pawn) => !taken.has(pawn.name));
+    const choices = available.length > 0 ? available : pawnChoices;
     const chooser = missing[0];
+    if (!chooser) return withClearedBots;
+    const pawns = choices.map((pawn) => ({
+      id: pawn.name,
+      label:
+        pawn.description && pawn.description.length > 0
+          ? `${pawn.name}: ${pawn.description}`
+          : pawn.name,
+      description: pawn.description ?? '',
+    }));
     const withPending: GameStateEntity = {
       ...withClearedBots,
       pending: {
@@ -724,12 +733,8 @@ export class PanierExpressService extends AbstractGameService {
         playerId: chooser.id,
         blocking: true,
         label: `${this.utils.playerName(withClearedBots, chooser.id)} choisit son pion (puis Entrée).`,
-        choices: choices.map((pawn) =>
-          pawn.description && pawn.description.length > 0
-            ? `${pawn.title}: ${pawn.description}`
-            : pawn.title,
-        ),
-        data: { kind: 'setup.choose_pawn', pawns: choices },
+        choices: pawns.map((pawn) => pawn.label),
+        data: { kind: 'setup.choose_pawn', pawns },
       } as any,
       turn: {
         ...(state.turn ?? { currentPlayerId: chooser.id, direction: 1 }),
@@ -3124,7 +3129,7 @@ export class PanierExpressService extends AbstractGameService {
         : [];
       const picked = options[index] as any;
       const chosen = String(
-        picked?.title ?? pending?.choices?.[index] ?? '',
+        picked?.id ?? pending?.choices?.[index] ?? '',
       ).trim();
       if (!chosen) {
         return clearPending(state);

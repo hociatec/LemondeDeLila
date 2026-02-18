@@ -3,6 +3,7 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { loadCanonicalPawns } from '../../../../core/helpers/pawn-catalog.helper';
 import { loadV1Content } from '../../../../setup/content-loader.helper';
 import type {
   FrousseBoardJsonV1,
@@ -48,7 +49,11 @@ export class FrousseSetupService {
         blocked: {},
       },
       decks: { cards: shuffled.values as any, discard: [] },
-      pawns: Array.isArray(pawns.pawns) ? pawns.pawns : [],
+      pawns: loadCanonicalPawns(Array.isArray(pawns.pawns) ? pawns.pawns : []).map((pawn) => ({
+        id: pawn.id,
+        name: pawn.name,
+        description: pawn.description,
+      })),
       pendingContext: null,
       winnerId: null,
     };
@@ -75,14 +80,13 @@ export class FrousseSetupService {
       pawns: (Array.isArray(meta.pawns) ? meta.pawns : [])
         .map((p) => ({
           id: String(p?.id ?? '').trim(),
-          label: String(p?.title ?? p?.id ?? '').trim(),
-          title: String(p?.title ?? p?.id ?? '').trim(),
+          label: String(p?.name ?? p?.id ?? '').trim(),
           description: String((p as any)?.description ?? '').trim(),
         }))
         .filter((p) => p.id.length > 0),
       pawnDataMapper: (choice: any) => ({
           id: String(choice?.id ?? '').trim(),
-          title: String(choice?.title ?? choice?.label ?? '').trim(),
+          label: String(choice?.label ?? '').trim(),
           description: String(choice?.description ?? '').trim(),
       }),
       extraPendingData: { kind: 'choose_pawn' },

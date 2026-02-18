@@ -52,8 +52,8 @@ describe('MinuitActionService', () => {
       ],
       metadata: {
         pawnChoices: [
-          { title: 'Le Lutin', description: '' },
-          { title: 'Le Bonhomme de Neige', description: '' },
+          { id: 'Le Lutin', name: 'Le Lutin', description: '' },
+          { id: 'Le Bonhomme de Neige', name: 'Le Bonhomme de Neige', description: '' },
         ],
         pawns: {},
       } as any,
@@ -173,9 +173,9 @@ describe('MinuitActionService', () => {
       ],
       metadata: {
         pawnChoices: [
-          { title: 'Le Lutin', description: '' },
-          { title: 'Le Renne', description: '' },
-          { title: 'Le Père Noël', description: '' },
+          { id: 'Le Lutin', name: 'Le Lutin', description: '' },
+          { id: 'Le Renne', name: 'Le Renne', description: '' },
+          { id: 'Le P?re No?l', name: 'Le P?re No?l', description: '' },
         ],
         pawns: {},
       } as any,
@@ -185,12 +185,11 @@ describe('MinuitActionService', () => {
         blocking: true,
         choices: ['Le Lutin', 'Le Renne', 'Le Père Noël'],
         data: {
-          choices: ['Le Lutin', 'Le Renne', 'Le Père Noël'],
-          choiceMap: {
-            'Le Lutin': 'Le Lutin',
-            'Le Renne': 'Le Renne',
-            'Le Père Noël': 'Le Père Noël',
-          },
+          pawns: [
+            { id: 'Le Lutin', label: 'Le Lutin' },
+            { id: 'Le Renne', label: 'Le Renne' },
+            { id: 'Le P?re No?l', label: 'Le P?re No?l' },
+          ],
         },
       } as any,
       log: [],
@@ -198,7 +197,7 @@ describe('MinuitActionService', () => {
     } as any;
 
     const next = service.applyActions(state, [
-      { type: 'pick_pawn', payload: { pawn: 'Le Lutin' } } as any,
+      { type: 'pick_pawn', payload: { pawnId: 'Le Lutin' } } as any,
     ]);
 
     expect(next.pending).toBeNull();
@@ -228,9 +227,9 @@ describe('MinuitActionService', () => {
         botPlayerIds: [-101],
         pawns: { '-101': 'Le Lutin' },
         pawnChoices: [
-          { title: 'Le Lutin', description: '' },
-          { title: 'Le Bonhomme de Neige', description: '' },
-          { title: 'La Fée des Flocons', description: '' },
+          { id: 'Le Lutin', name: 'Le Lutin', description: '' },
+          { id: 'Le Renne', name: 'Le Renne', description: '' },
+          { id: 'Le P?re No?l', name: 'Le P?re No?l', description: '' },
         ],
       } as any,
       pending: {
@@ -239,11 +238,10 @@ describe('MinuitActionService', () => {
         blocking: true,
         choices: ['Le Bonhomme de Neige', 'La Fée des Flocons'],
         data: {
-          choices: ['Le Bonhomme de Neige', 'La Fée des Flocons'],
-          choiceMap: {
-            'Le Bonhomme de Neige': 'Le Bonhomme de Neige',
-            'La Fée des Flocons': 'La Fée des Flocons',
-          },
+          pawns: [
+            { id: 'Le Bonhomme de Neige', label: 'Le Bonhomme de Neige' },
+            { id: 'La Fée des Flocons', label: 'La Fée des Flocons' },
+          ],
         },
       } as any,
       log: [],
@@ -286,11 +284,10 @@ describe('MinuitActionService', () => {
         blocking: true,
         choices: ['La Fée des Flocons', 'Le Bonhomme de Neige'],
         data: {
-          choices: ['La Fée des Flocons', 'Le Bonhomme de Neige'],
-          choiceMap: {
-            'La Fée des Flocons': 'La Fée des Flocons',
-            'Le Bonhomme de Neige': 'Le Bonhomme de Neige',
-          },
+          pawns: [
+            { id: 'La Fée des Flocons', label: 'La Fée des Flocons' },
+            { id: 'Le Bonhomme de Neige', label: 'Le Bonhomme de Neige' },
+          ],
         },
       } as any,
       log: [],
@@ -298,7 +295,7 @@ describe('MinuitActionService', () => {
     } as any;
 
     const next = service.applyActions(state, [
-      { type: 'pick_pawn', payload: { pawn: 'La Fée des Flocons' } } as any,
+      { type: 'pick_pawn', payload: { pawnId: 'La Fée des Flocons' } } as any,
     ]);
 
     expect(next.pending).toBeNull();
@@ -323,4 +320,34 @@ describe('Minuit Rulebook compat', () => {
     const actions = Rulebook.getAvailableActions(state, 2);
     expect(actions).toEqual([{ type: 'draw', payload: {} }]);
   });
+
+  it('accepts pick_pawn payload sent as pawnId', () => {
+    const state: any = {
+      status: 'started',
+      turn: { currentPlayerId: 3, direction: 1 },
+      players: [{ id: 3, username: 'Lilas' }],
+      pending: {
+        type: 'pick_pawn',
+        playerId: 3,
+        blocking: true,
+        choices: ['Le Lutin: Agile'],
+        data: {
+          choices: ['Le Lutin: Agile'],
+          pawns: [{ id: 'Le Lutin', label: 'Le Lutin: Agile' }],
+        },
+      },
+      metadata: {},
+    };
+
+    const normalized = Rulebook.validateAction(
+      state,
+      { type: 'pick_pawn', payload: { pawnId: 'Le Lutin' } } as any,
+      3,
+    );
+    expect(normalized).toEqual({ type: 'pick_pawn', payload: { pawnId: 'Le Lutin' } });
+  });
 });
+
+
+
+

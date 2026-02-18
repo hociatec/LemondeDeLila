@@ -1,35 +1,36 @@
-{
+﻿{
   "version": 1,
   "pawns": [
     {
       "id": "lion",
-      "title": "Le Lion",
+      "name": "Le Lion",
       "description": "Majestueux et fier, il avance avec assurance dans la jungle."
     },
     {
       "id": "elephant",
-      "title": "L'Elephant",
+      "name": "L'Elephant",
       "description": "Imposant et calme, il progresse a grands pas reguliers."
     },
     {
       "id": "girafe",
-      "title": "La Girafe",
+      "name": "La Girafe",
       "description": "Elegante et curieuse, elle observe tout du haut de son long cou."
     },
     {
       "id": "zebre",
-      "title": "Le Zebre",
+      "name": "Le Zebre",
       "description": "Rapide et vif, il zigzague avec une energie imprevisible."
     },
     {
       "id": "crocodile",
-      "title": "Le Crocodile",
+      "name": "Le Crocodile",
       "description": "Silencieux et malin, il surprend ses adversaires au bon moment."
     },
     {
       "id": "autruche",
-      "title": "L'Autruche",
+      "name": "L'Autruche",
       "description": "Dynamique et drole, elle alterne acceleration et pauses soudaines."
     }
   ]
 }
+
