@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Threading;
+using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Game.Play.GamePlay.ViewModels;
 
 namespace client_win.Modules.Game.Play.GamePlay.Views;
@@ -89,50 +90,7 @@ public partial class GamePlayView
 
         if (_vm != null)
         {
-            _focusRequestedHandler = () =>
-            {
-                Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-                {
-                    if (_vm?.IsChoosePawnPending == true &&
-                        ChoicesList.IsVisible &&
-                        ChoicesList.Items.Count > 0)
-                    {
-                        var idx = ChoicesList.SelectedIndex;
-                        if (idx < 0) idx = 0;
-                        if (idx >= ChoicesList.Items.Count) idx = ChoicesList.Items.Count - 1;
-                        ChoicesList.SelectedIndex = idx;
-                        ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
-                        TryFocusChoiceIndex(ChoicesList, idx);
-                        return;
-                    }
-
-                    // Strict behavior: when interactive lists are available, keep focus on them
-                    // instead of bouncing back to the root "zone de jeu".
-                    if (HandList.IsVisible && HandList.Items.Count > 0)
-                    {
-                        var idx = HandList.SelectedIndex;
-                        if (idx < 0) idx = 0;
-                        if (idx >= HandList.Items.Count) idx = HandList.Items.Count - 1;
-                        HandList.SelectedIndex = idx;
-                        HandList.ScrollIntoView(HandList.SelectedItem);
-                        TryFocusChoiceIndex(HandList, idx);
-                        return;
-                    }
-
-                    if (ChoicesList.IsVisible && ChoicesList.Items.Count > 0)
-                    {
-                        var idx = ChoicesList.SelectedIndex;
-                        if (idx < 0) idx = 0;
-                        if (idx >= ChoicesList.Items.Count) idx = ChoicesList.Items.Count - 1;
-                        ChoicesList.SelectedIndex = idx;
-                        ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
-                        TryFocusChoiceIndex(ChoicesList, idx);
-                        return;
-                    }
-
-                    ForceFocusGameZone();
-                }));
-            };
+            _focusRequestedHandler = RequestGameZoneFocusFromVm;
             _vm.GameZoneFocusRequested += _focusRequestedHandler;
 
             _vmPropertyChangedHandler = (_, e) =>
@@ -419,6 +377,29 @@ public partial class GamePlayView
 
     private void ForceFocusGameZone() => ForceFocusGameZoneCore(forceFromOutsideTextInput: false);
 
+    private void RequestGameZoneFocusFromVm(GameFocusReason reason)
+    {
+        var requestId = Interlocked.Increment(ref _gameZoneFocusRequestId);
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => RunGameZoneFocusRequest(requestId, reason)));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => RunGameZoneFocusRequest(requestId, reason)));
+    }
+
+    private void RunGameZoneFocusRequest(int requestId, GameFocusReason reason)
+    {
+        if (requestId != _gameZoneFocusRequestId)
+        {
+            return;
+        }
+
+        if (reason == GameFocusReason.ChoosePawn)
+        {
+            ForceFocusGameZoneCore(forceFromOutsideTextInput: true);
+            return;
+        }
+
+        FocusPreferredInteractiveElement();
+    }
+
     private void ForceFocusGameZoneCore(bool forceFromOutsideTextInput)
     {
         if (DataContext is GamePlayViewModel vmPrompt && vmPrompt.HasInlinePrompt)
@@ -440,18 +421,6 @@ public partial class GamePlayView
             return;
         }
 
-        // UX priority:
-        // - si une grille est visible: ancrer sur la grille (jeux type Corridor)
-        // - sinon, si une liste de choix est visible: ancrer sur cette liste (ex: LAMA = main)
-        // - sinon: ancrer sur la vue racine
-        if (DataContext is GamePlayViewModel vm && vm.Grid.IsVisible)
-        {
-            Focus();
-            Keyboard.Focus(this);
-            TryFocusPreferredGridCell();
-            return;
-        }
-
         if (DataContext is GamePlayViewModel vmChoosePawn &&
             vmChoosePawn.IsChoosePawnPending &&
             ChoicesList.IsVisible &&
@@ -467,6 +436,19 @@ public partial class GamePlayView
             ChoicesList.SelectedIndex = idx;
             ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
             TryFocusChoiceIndex(ChoicesList, idx);
+            return;
+        }
+
+        // UX priority:
+        // - choose_pawn: garder le focus sur la liste de pions
+        // - sinon, si une grille est visible: ancrer sur la grille (jeux type Corridor)
+        // - sinon, si une liste de choix est visible: ancrer sur cette liste (ex: LAMA = main)
+        // - sinon: ancrer sur la vue racine
+        if (DataContext is GamePlayViewModel vm && vm.Grid.IsVisible)
+        {
+            Focus();
+            Keyboard.Focus(this);
+            TryFocusPreferredGridCell();
             return;
         }
 

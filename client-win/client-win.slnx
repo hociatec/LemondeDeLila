@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="client-win/client-win.csproj" />
+  <Project Path="client-win.Tests/client-win.Tests.csproj" />
 </Solution>

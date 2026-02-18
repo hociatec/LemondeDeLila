@@ -12,6 +12,7 @@ using client_win.Modules.Presence.Services;
 using client_win.Modules.Presence.Views;
 using client_win.Modules.Presence.ViewModels;
 using client_win.Modules.Game.Shell.Views;
+using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Shell.Services;
@@ -272,7 +273,9 @@ public sealed class ShellInputController
         {
             if (_navigation.CurrentContent is GameRoomView room)
             {
-                Application.Current?.Dispatcher?.BeginInvoke(DispatcherPriority.Input, new Action(room.RequestFocusGameZone));
+                Application.Current?.Dispatcher?.BeginInvoke(
+                    DispatcherPriority.Input,
+                    new Action(() => room.RequestFocusGameZone(GameFocusReason.GamePlayReady)));
                 return;
             }
 

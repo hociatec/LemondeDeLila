@@ -5,20 +5,20 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Threading;
 using System.Windows.Media;
 using client_win.Modules.Game.History.Views;
 using client_win.Modules.Game.Room.Input;
+using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Game.Shell.ViewModels;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Game.Shell.Views;
 
-public partial class GameRoomView : UserControl, IInitialFocusTarget
+public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocusHost
 {
     private ViewModels.GameRoomViewModel? _vm;
-    private Action? _focusRequestedHandler;
+    private IDisposable? _focusHostLease;
     private bool _didHookTabCapture;
     private KeyEventHandler? _tabCaptureHandler;
     private IScreenReaderAnnouncer? _screenReader;
@@ -32,7 +32,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
         HookGameZoneTabDelegation();
     }
 
-    public void RequestFocusGameZone() => RequestFocusGameZoneDeferred();
+    public void RequestFocusGameZone(GameFocusReason reason = GameFocusReason.Default) => RequestFocusGameZoneInternal(reason);
 
     private void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
     {
@@ -40,10 +40,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
         HookGameZoneTabDelegation();
         HookFocusRequests(DataContext as ViewModels.GameRoomViewModel);
 
-        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-        {
-            FocusGameZone();
-        }));
+        RequestFocusGameZoneInternal(GameFocusReason.InitialLoad);
     }
 
     private void OnDataContextChanged(object sender, System.Windows.DependencyPropertyChangedEventArgs e)
@@ -83,13 +80,10 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
 
     private void HookFocusRequests(ViewModels.GameRoomViewModel? vm)
     {
-        if (_vm != null && _focusRequestedHandler != null)
-        {
-            _vm.GameZone.FocusRequested -= _focusRequestedHandler;
-        }
+        _focusHostLease?.Dispose();
+        _focusHostLease = null;
 
         _vm = vm;
-        _focusRequestedHandler = null;
 
         if (_vm == null)
         {
@@ -102,13 +96,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
         _screenReader = _vm.ScreenReader;
         _announcements = _vm.Announcements;
         HistoryHost?.SetScreenReader(_screenReader);
-
-        _focusRequestedHandler = () =>
-        {
-            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusGameZone));
-        };
-
-        _vm.GameZone.FocusRequested += _focusRequestedHandler;
+        _focusHostLease = _vm.GameZone.FocusCoordinator.AttachHost(this);
     }
 
     private void HookGameZoneTabDelegation()
@@ -193,7 +181,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
                 title: $"Menu — {vm.GameZone.Title}",
                 shortcuts: shortcuts);
 
-            RequestFocusGameZoneDeferred();
+            RequestFocusGameZoneInternal(GameFocusReason.AfterDialog);
 	            return;
 	        }
 
@@ -207,7 +195,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
         {
             e.Handled = true;
             rulesVm.GameZone.RulesCommand.Execute(null);
-            RequestFocusGameZoneDeferred();
+            RequestFocusGameZoneInternal(GameFocusReason.AfterDialog);
             return;
         }
 
@@ -221,7 +209,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
 	        {
 	            e.Handled = true;
 	            startVm.GameZone.StartCommand.Execute(null);
-	            RequestFocusGameZoneDeferred();
+	            RequestFocusGameZoneInternal(GameFocusReason.TableStarted);
 	            return;
 	        }
 
@@ -234,15 +222,19 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
         }
     }
 
-    private void FocusGameZone()
+    private void RequestFocusGameZoneInternal(GameFocusReason reason)
     {
-        if (GameZoneHost is GameZoneHostView zone)
+        if (_vm != null)
         {
-            zone.FocusGameZone();
+            _vm.GameZone.FocusCoordinator.RequestGameZone(reason);
+            return;
         }
+
+        // Fallback: view loaded before DataContext binding.
+        FocusGameZone(reason);
     }
 
-    private void RequestFocusGameZoneDeferred()
+    public void ActivateWindow()
     {
         try
         {
@@ -252,11 +244,16 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
         {
             // ignore
         }
+    }
 
-        // Le retour de focus après un ShowDialog / une navigation peut être "en retard" :
-        // on demande un focus immédiat puis un second passage à l'idle pour fiabiliser.
-        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusGameZone));
-        Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(FocusGameZone));
+    public GameFocusAttemptResult FocusGameZone(GameFocusReason reason)
+    {
+        if (GameZoneHost is GameZoneHostView zone)
+        {
+            return zone.FocusGameZone(reason);
+        }
+
+        return GameFocusAttemptResult.None;
     }
 
     private void FocusHistory()
@@ -393,7 +390,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
                 FocusHistory();
                 break;
             case FocusRegionKind.GameZone:
-                FocusGameZone();
+                RequestFocusGameZoneInternal(GameFocusReason.TabCycle);
                 break;
         }
     }
@@ -453,6 +450,6 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
 
     public void RequestInitialFocus()
     {
-        RequestFocusGameZoneDeferred();
+        RequestFocusGameZoneInternal(GameFocusReason.InitialLoad);
     }
 }

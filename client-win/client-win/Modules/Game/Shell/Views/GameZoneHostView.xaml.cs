@@ -1,15 +1,20 @@
 using System;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using client_win.Modules.Game.Play.GamePlay.Views;
+using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Game.Shell.Views;
 
 public partial class GameZoneHostView : UserControl
 {
+    private int _focusRequestId;
+
     public GameZoneHostView()
     {
         InitializeComponent();
@@ -19,60 +24,113 @@ public partial class GameZoneHostView : UserControl
 
     public void FocusGameZone()
     {
+        FocusGameZone(GameFocusReason.Default);
+    }
+
+    public GameFocusAttemptResult FocusGameZone(GameFocusReason reason)
+    {
         if (GameZoneHost?.Content == null)
         {
             if (GameZoneEmptyAnchor?.Focus() == true)
             {
                 Keyboard.Focus(GameZoneEmptyAnchor);
-                return;
+                return GameFocusAttemptResult.Anchor;
             }
+
+            GameZoneEmptyAnchor?.Focus();
+            Keyboard.Focus(GameZoneEmptyAnchor);
+            return GameFocusAttemptResult.Anchor;
         }
 
-        var content = GameZoneHost?.Content;
-        if (content != null && GameZoneHost != null)
+        var requestId = Interlocked.Increment(ref _focusRequestId);
+        if (TryFocusInteractiveGameContent())
         {
-            try
+            return GameFocusAttemptResult.Interactive;
+        }
+
+        // Content is set but the visual tree may still be materializing via DataTemplate.
+        // Keep a stable anchor immediately, then retry on upcoming dispatcher passes.
+        FocusGameZoneAnchor();
+        QueueDeferredFocusAttempt(requestId, DispatcherPriority.Input);
+        QueueDeferredFocusAttempt(requestId, DispatcherPriority.Loaded);
+        QueueDeferredFocusAttempt(requestId, DispatcherPriority.ApplicationIdle);
+        return GameFocusAttemptResult.Anchor;
+    }
+
+    private void QueueDeferredFocusAttempt(int requestId, DispatcherPriority priority)
+    {
+        _ = Dispatcher.BeginInvoke(priority, new Action(() =>
+        {
+            if (requestId != _focusRequestId)
             {
-                GameZoneHost.UpdateLayout();
+                return;
+            }
 
-                // Le ContentControl contient un ViewModel (pas la vue). La vue réelle est créée via DataTemplate.
-                // On cherche donc un élément de la vue (dans l'arbre visuel) dont le DataContext = ce ViewModel,
-                // puis on le focus pour que les handlers clavier du jeu (GamePlayView) prennent le relais.
-                if (FindFocusablePresentedRoot(GameZoneHost, content) is FrameworkElement viewRoot)
+            if (GameZoneHost?.Content == null)
+            {
+                return;
+            }
+
+            if (TryFocusInteractiveGameContent())
+            {
+                return;
+            }
+
+            FocusGameZoneAnchor();
+        }));
+    }
+
+    private bool TryFocusInteractiveGameContent()
+    {
+        var content = GameZoneHost?.Content;
+        if (content == null || GameZoneHost == null)
+        {
+            return false;
+        }
+
+        try
+        {
+            GameZoneHost.UpdateLayout();
+
+            // Le ContentControl contient un ViewModel (pas la vue). La vue reelle est creee via DataTemplate.
+            // On cherche donc un element de la vue (dans l'arbre visuel) dont le DataContext = ce ViewModel,
+            // puis on le focus pour que les handlers clavier du jeu (GamePlayView) prennent le relais.
+            if (FindFocusablePresentedRoot(GameZoneHost, content) is FrameworkElement viewRoot)
+            {
+                if (viewRoot is IInitialFocusTarget initialFocusTarget)
                 {
-                    if (viewRoot is IInitialFocusTarget initialFocusTarget)
-                    {
-                        initialFocusTarget.RequestInitialFocus();
-                        return;
-                    }
-
-                    if (viewRoot is GamePlayView gamePlayView)
-                    {
-                        gamePlayView.FocusPreferredInteractiveElement();
-                        return;
-                    }
-
-                    if (FindDescendant<GamePlayView>(viewRoot) is GamePlayView nestedGamePlayView)
-                    {
-                        nestedGamePlayView.FocusPreferredInteractiveElement();
-                        return;
-                    }
-
-                    if (viewRoot.Focus())
-                    {
-                        Keyboard.Focus(viewRoot);
-                        return;
-                    }
-
-                    // Fallback: si le root n'est pas focusable, tenter un enfant focusable.
-                    if (FindFirstFocusableDescendant(viewRoot) is IInputElement focusableChild)
-                    {
-                        Keyboard.Focus(focusableChild);
-                        (focusableChild as UIElement)?.Focus();
-                        return;
-                    }
-                    return;
+                    initialFocusTarget.RequestInitialFocus();
+                    return true;
                 }
+
+                if (viewRoot is GamePlayView gamePlayView)
+                {
+                    gamePlayView.FocusPreferredInteractiveElement();
+                    return true;
+                }
+
+                if (FindDescendant<GamePlayView>(viewRoot) is GamePlayView nestedGamePlayView)
+                {
+                    nestedGamePlayView.FocusPreferredInteractiveElement();
+                    return true;
+                }
+
+                if (viewRoot.Focus())
+                {
+                    Keyboard.Focus(viewRoot);
+                    return true;
+                }
+
+                // Fallback: si le root n'est pas focusable, tenter un enfant focusable.
+                if (FindFirstFocusableDescendant(viewRoot) is IInputElement focusableChild)
+                {
+                    Keyboard.Focus(focusableChild);
+                    (focusableChild as UIElement)?.Focus();
+                    return true;
+                }
+
+                return false;
+            }
         }
         catch
         {
@@ -82,18 +140,27 @@ public partial class GameZoneHostView : UserControl
         if (FindDescendant<GamePlayView>(GameZoneHost) is GamePlayView fallbackPlayView)
         {
             fallbackPlayView.FocusPreferredInteractiveElement();
-            return;
-        }
+            return true;
         }
 
+        return false;
+    }
+
+    private void FocusGameZoneAnchor()
+    {
         if (GameZoneFocusAnchor?.Focus() == true)
         {
             Keyboard.Focus(GameZoneFocusAnchor);
             return;
         }
 
-        GameZoneEmptyAnchor?.Focus();
-        Keyboard.Focus(GameZoneEmptyAnchor);
+        if (GameZoneEmptyAnchor?.Focus() == true)
+        {
+            Keyboard.Focus(GameZoneEmptyAnchor);
+            return;
+        }
+
+        Keyboard.Focus(GameZoneHost);
     }
 
     private static FrameworkElement? FindFocusablePresentedRoot(DependencyObject root, object viewModel)
@@ -180,7 +247,7 @@ public partial class GameZoneHostView : UserControl
             return;
         }
 
-        // Les flèches ne doivent pas déplacer le focus depuis l'ancre : la navigation est gérée ailleurs.
+        // Les fleches ne doivent pas deplacer le focus depuis l'ancre: la navigation est geree ailleurs.
         if (e.Key is Key.Left or Key.Right or Key.Up or Key.Down)
         {
             e.Handled = true;
@@ -189,7 +256,7 @@ public partial class GameZoneHostView : UserControl
 
         if (e.Key == Key.Tab)
         {
-            // Ne pas piéger Tab/Maj+Tab sur l'ancre: laisser la navigation sortir vers chat/historique.
+            // Ne pas pieger Tab/Maj+Tab sur l'ancre: laisser la navigation sortir vers chat/historique.
             return;
         }
     }

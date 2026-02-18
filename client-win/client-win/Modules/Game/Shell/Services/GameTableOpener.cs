@@ -58,6 +58,7 @@ public sealed class GameTableOpener : IGameTableOpener
     private readonly ITextPromptService _textPrompts;
     private readonly IVaultClient _vault;
     private readonly ICatalogService _catalog;
+    private readonly IGameFocusCoordinator _focus;
     private static int _globalSoundsPreloaded;
 
     public GameTableOpener(
@@ -80,7 +81,8 @@ public sealed class GameTableOpener : IGameTableOpener
         ISocialService social,
         ITextPromptService textPrompts,
         IVaultClient vault,
-        ICatalogService catalog)
+        ICatalogService catalog,
+        IGameFocusCoordinator focus)
     {
         _logger = logger;
         _config = config ?? throw new ArgumentNullException(nameof(config));
@@ -102,6 +104,7 @@ public sealed class GameTableOpener : IGameTableOpener
         _textPrompts = textPrompts ?? throw new ArgumentNullException(nameof(textPrompts));
         _vault = vault ?? throw new ArgumentNullException(nameof(vault));
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
+        _focus = focus ?? throw new ArgumentNullException(nameof(focus));
     }
 
     private IAnnouncementService AnnouncementService => _announcementService ?? throw new InvalidOperationException("Le service d'annonces n'est pas disponible.");
@@ -1268,6 +1271,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 onBan: Ban,
                 onTransferOwner: TransferOwner,
                 dialogs: _dialogs,
+                focusCoordinator: _focus,
                 screenReader: _screenReader,
                 announcements: _announcementService);
             vm.Status = "Connexion à la tableâ€¦";
@@ -1362,6 +1366,7 @@ public sealed class GameTableOpener : IGameTableOpener
                             onBan: () => KickPlayerAsync(session, ban: true),
 	                            onTransferOwner: () => TransferOwnerAsync(session),
 	                            dialogs: _dialogs,
+	                            focusCoordinator: _focus,
 	                            screenReader: _screenReader,
 	                            announcements: _announcementService);
 	                        newVm.Status = "Connexion à la tableâ€¦";

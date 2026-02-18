@@ -24,6 +24,7 @@ using client_win.Modules.Game.Play.Shortcuts.ViewModels;
 using client_win.Modules.Game.Play.State.Dtos;
 using client_win.Modules.Game.Play.State.Services;
 using client_win.Modules.Shell.Services;
+using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Game.Play.GamePlay.Dtos;
 using client_win.Modules.TextPrompts.Services;
 using Serilog;
@@ -181,7 +182,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 	            syncShortcuts: SyncShortcuts,
 	            canStartAskCardSelection: CanStartAskCardSelection,
 	            emitMessage: msg => MessageReceived?.Invoke(msg),
-	            requestFocus: () => GameZoneFocusRequested?.Invoke(),
+	            requestFocus: RequestGameZoneFocusForCurrentState,
 	            refreshCanExecute: RefreshCanExecute,
 	            onGameStatusChanged: OnGameStatusChanged,
 	            setIsBotThinking: v => IsBotThinking = v,
@@ -227,9 +228,19 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public ObservableCollection<ShortcutDefinition> Shortcuts => _shortcuts.Shortcuts;
 
-        public event Action<GamePlayHistoryMessage>? MessageReceived;
-    public event Action? GameZoneFocusRequested;
+    public event Action<GamePlayHistoryMessage>? MessageReceived;
+    public event Action<GameFocusReason>? GameZoneFocusRequested;
     public event Action<string, string>? GameStatusChanged;
+
+    private void RequestGameZoneFocusForCurrentState()
+    {
+        RequestGameZoneFocus(IsChoosePawnPending ? GameFocusReason.ChoosePawn : GameFocusReason.GamePlayReady);
+    }
+
+    private void RequestGameZoneFocus(GameFocusReason reason)
+    {
+        GameZoneFocusRequested?.Invoke(reason);
+    }
 
     public bool HasPendingTextPrompt => _pendingTextPrompt != null;
     public bool HasPendingConfigPrompt => _pendingConfigPrompt != null;
@@ -249,6 +260,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         get => _pendingType;
         private set
         {
+            var wasChoosePawnPending = IsChoosePawnPending;
             if (string.Equals(_pendingType, value, StringComparison.Ordinal))
             {
                 return;
@@ -258,6 +270,10 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             OnPropertyChanged(nameof(IsQuizPending));
             OnPropertyChanged(nameof(IsChoosePawnPending));
             RequestDisplayChoicesRefresh();
+            if (!wasChoosePawnPending && IsChoosePawnPending)
+            {
+                RequestGameZoneFocus(GameFocusReason.ChoosePawn);
+            }
         }
     }
 
@@ -400,7 +416,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                                 new[] { new GameClientAction(prompt.CancelActionType.Trim(), new Dictionary<string, object>()) },
                                 cancellationToken)
                             .ConfigureAwait(false);
-                        GameZoneFocusRequested?.Invoke();
+                        RequestGameZoneFocus(GameFocusReason.AfterDialog);
                         return true;
                     }
 
@@ -468,7 +484,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                 await session
                     .SendActionsAsync(new[] { new GameClientAction(actionType, payload) }, cancellationToken)
                     .ConfigureAwait(false);
-                GameZoneFocusRequested?.Invoke();
+                RequestGameZoneFocus(GameFocusReason.AfterDialog);
                 return true;
             }
         }

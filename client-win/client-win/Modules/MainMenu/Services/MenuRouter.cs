@@ -395,7 +395,7 @@ public sealed class MenuRouter : IMenuRouter
         // Sinon le focus peut tomber sur un conteneur "volet" et obliger à renaviguer au clavier.
         if (target is client_win.Modules.Game.Shell.Views.GameRoomView room)
         {
-            room.RequestFocusGameZone();
+            room.RequestFocusGameZone(GameFocusReason.AfterDialog);
             return;
         }
         // Accessibilité: quand on revient au menu précédent via Échap,

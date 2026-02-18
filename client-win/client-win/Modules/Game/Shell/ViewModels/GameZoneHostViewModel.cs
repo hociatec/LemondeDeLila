@@ -5,6 +5,7 @@ using System.Windows.Input;
 using client_win.Core;
 using client_win.Core.Input;
 using client_win.Modules.Game.Room.Input;
+using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Game.Shell.ViewModels;
@@ -29,6 +30,7 @@ public sealed class GameZoneHostViewModel : ObservableObject
     private readonly Func<Task> _onConfigureTableAmbience;
     private readonly Func<Task> _onConfigureTableAmbienceVolume;
     private readonly IDialogService _dialogs;
+    private readonly IGameFocusCoordinator _focus;
     private object? _content;
     private string _title = "Zone de jeu";
     private bool _isStarted;
@@ -53,7 +55,8 @@ public sealed class GameZoneHostViewModel : ObservableObject
         Func<Task> onKick,
         Func<Task> onBan,
         Func<Task> onTransferOwner,
-        IDialogService dialogs)
+        IDialogService dialogs,
+        IGameFocusCoordinator focus)
     {
         Title = string.IsNullOrWhiteSpace(title) ? "Zone de jeu" : title;
         _onShowRules = onShowRules ?? throw new ArgumentNullException(nameof(onShowRules));
@@ -74,6 +77,7 @@ public sealed class GameZoneHostViewModel : ObservableObject
         _onBan = onBan ?? throw new ArgumentNullException(nameof(onBan));
         _onTransferOwner = onTransferOwner ?? throw new ArgumentNullException(nameof(onTransferOwner));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
+        _focus = focus ?? throw new ArgumentNullException(nameof(focus));
 
         StartCommand = new AsyncRelayCommand(StartAsync, () => IsConnected && !_isStarted);
         SaveSnapshotCommand = new AsyncRelayCommand(SaveSnapshotAsync, () => IsConnected && _isStarted);
@@ -172,9 +176,10 @@ public sealed class GameZoneHostViewModel : ObservableObject
     }
 
     public event Action<string>? StatusRequested;
-    public event Action? FocusRequested;
 
-    public void RequestFocus() => FocusRequested?.Invoke();
+    public IGameFocusCoordinator FocusCoordinator => _focus;
+
+    public void RequestFocus(GameFocusReason reason = GameFocusReason.Default) => _focus.RequestGameZone(reason);
 
     private void RaiseCommandsCanExecuteChanged()
     {
@@ -231,7 +236,7 @@ public sealed class GameZoneHostViewModel : ObservableObject
         if (confirm != true)
         {
             StatusRequested?.Invoke("Réinitialisation annulée.");
-            FocusRequested?.Invoke();
+            RequestFocus(GameFocusReason.AfterDialog);
             return;
         }
 

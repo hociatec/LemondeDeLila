@@ -2,6 +2,7 @@ using System;
 using System.Collections.Specialized;
 using System.Threading;
 using System.ComponentModel;
+using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Game.Play.GamePlay.ViewModels;
 
 namespace client_win.Modules.Game.Play.GamePlay.Views;
@@ -11,7 +12,7 @@ public partial class GamePlayView
     private GamePlayViewModel? _vm;
     private INotifyCollectionChanged? _choicesCollection;
     private NotifyCollectionChangedEventHandler? _choicesChanged;
-    private Action? _focusRequestedHandler;
+    private Action<GameFocusReason>? _focusRequestedHandler;
     private CancellationTokenSource? _initCts;
     private GamePlayViewModel? _initVm;
     private int _gridFocusIndex;
@@ -23,6 +24,7 @@ public partial class GamePlayView
     private int _gridFocusRequestId;
     private int _inlinePromptFocusRequestId;
     private int _preferredInteractiveFocusRequestId;
+    private int _gameZoneFocusRequestId;
     private bool _lastChoicesA11yWasQuiz;
     private bool _lastChoicesA11yUsedLabeledBy;
     private string _lastChoicesA11yLabel = string.Empty;

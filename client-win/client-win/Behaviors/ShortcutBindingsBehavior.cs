@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using client_win.Core.Diagnostics;
 using client_win.Core.Input;
+using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Game.Shell.Views;
 
 namespace client_win.Behaviors;
@@ -377,14 +378,14 @@ public static class ShortcutBindingsBehavior
             // Priorité: remonter sur la vue de salle et demander explicitement le focus zone de jeu.
             if (FindAncestor<GameRoomView>(target as DependencyObject) is GameRoomView room)
             {
-                room.RequestFocusGameZone();
+                room.RequestFocusGameZone(GameFocusReason.AfterDialog);
                 return;
             }
 
             // Fallback: chercher une zone de jeu sous l'élément.
             if (FindDescendant<GameZoneHostView>(target as DependencyObject) is GameZoneHostView zone)
             {
-                zone.FocusGameZone();
+                zone.FocusGameZone(GameFocusReason.AfterDialog);
             }
         }));
     }

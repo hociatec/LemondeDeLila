@@ -298,7 +298,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                         // Forcer le focus sur la zone de jeu.
                         _ = _dispatcher.BeginInvoke(
                             DispatcherPriority.ApplicationIdle,
-                            new Action(_tableVm.GameZone.RequestFocus));
+                            new Action(() => _tableVm.GameZone.RequestFocus(GameFocusReason.TableStarted)));
                         return;
                     }
 
@@ -324,7 +324,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                         // Forcer le focus sur la zone de jeu (le contenu a été déchargé).
                         _ = _dispatcher.BeginInvoke(
                             DispatcherPriority.ApplicationIdle,
-                            new Action(_tableVm.GameZone.RequestFocus));
+                            new Action(() => _tableVm.GameZone.RequestFocus(GameFocusReason.AfterDialog)));
                     }
                 }
                 catch (Exception ex)
@@ -830,7 +830,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	        // Le contenu a été déchargé, refocus sur l'ancre pour permettre Entrée (room.start).
 	        _ = _dispatcher.BeginInvoke(
 	            DispatcherPriority.ApplicationIdle,
-	            new Action(_tableVm.GameZone.RequestFocus));
+	            new Action(() => _tableVm.GameZone.RequestFocus(GameFocusReason.AfterDialog)));
 	    }
 
 		    private async System.Threading.Tasks.Task UnloadGamePlayVmAsync()

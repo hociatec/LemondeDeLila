@@ -71,3 +71,27 @@ Notes :
 - Pour que ClickOnce propose une mise à jour, la version doit changer : le champ **Version** est utilisé pour fixer `ApplicationVersion` lors du publish.
 - Si tu exécutes le client en `dotnet run`, tu ne verras pas la mise à jour s'appliquer : installe et lance la version ClickOnce pour tester la chaîne de MAJ.
 - La publication peut être faite sans `setup.exe` (si Visual Studio Build Tools n'est pas installé) : dans ce cas l'installation se fait via `*.application` (ex: `https://api.lilas.hociatec.fr/updates/client-win/client-win.application`).
+
+## Validation manuelle focus (table)
+
+Objectif: verifier que le focus ne reste plus sur une zone vide apres demarrage/transition.
+
+1. Lancer le client en mode validation focus:
+   - depuis la racine du repo: `powershell -ExecutionPolicy Bypass -File .\tools\run-focus-validation.ps1 -Configuration Debug -BackendPort 3001`
+   - depuis le dossier `client-win`: `powershell -ExecutionPolicy Bypass -File ..\tools\run-focus-validation.ps1 -Configuration Debug -BackendPort 3001`
+2. Ouvrir une table de jeu de plateau (ex: Etagere des Quatre Vents).
+3. Verifier les cas suivants:
+   - `Choose pawn` humain: apres selection du pion, le focus reste sur la zone de jeu interactive.
+   - `Choose pawn` bot: apres selection bot, pas de tabulation manuelle necessaire.
+   - Demarrage de table (`Enter`): le focus revient dans la zone de jeu.
+   - Retour de dialogue (regles/menu): le focus revient dans la zone de jeu.
+   - `Tab` / `Shift+Tab`: cycle propre Chat <-> Historique <-> Zone de jeu.
+4. Avec NVDA actif, verifier qu'il n'annonce pas "indisponible" lors des transitions ci-dessus.
+
+Logs utiles:
+- Activer via `LILA_FOCUS_LOGS=1` (deja fait par `run-focus-validation.ps1`).
+- Rechercher dans les logs applicatifs les entr�es:
+  - `focus.request`
+  - `focus.attempt`
+  - `focus.done`
+  - `focus.skip`

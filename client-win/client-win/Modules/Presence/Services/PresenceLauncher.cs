@@ -136,7 +136,7 @@ public sealed class PresenceLauncher : IPresenceLauncher
                     {
                         if (previous is GameRoomView room)
                         {
-                            room.RequestFocusGameZone();
+                            room.RequestFocusGameZone(GameFocusReason.AfterDialog);
                             return;
                         }
 

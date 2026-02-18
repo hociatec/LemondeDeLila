@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using client_win.Core;
 using client_win.Modules.Catalog.Models;
 using client_win.Modules.Game.History.ViewModels;
+using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Game.Shell.ViewModels;
@@ -36,6 +37,7 @@ public sealed class GameRoomViewModel : ObservableObject
         Func<Task> onBan,
         Func<Task> onTransferOwner,
         IDialogService dialogs,
+        IGameFocusCoordinator focusCoordinator,
         IScreenReaderAnnouncer screenReader,
         IAnnouncementService announcements)
     {
@@ -64,7 +66,8 @@ public sealed class GameRoomViewModel : ObservableObject
             onKick,
             onBan,
             onTransferOwner,
-            dialogs);
+            dialogs,
+            focusCoordinator);
         GameZone.StatusRequested += s => Status = s;
 
         Chat = new GameRoomChatViewModel(game.ChatEnabled, onSendChat);
