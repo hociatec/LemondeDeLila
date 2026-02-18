@@ -87,11 +87,26 @@ export class MinuitActionService {
         return next;
   }
 
-  private isBotLike(player: any): boolean {
+  private isBotLike(player: any, meta?: MinuitMetadata): boolean {
     if (!player) return false;
     if (player.isBot === true) return true;
+    const id = Number(player.id);
+    if (Number.isFinite(id) && id < 0) return true;
+    if (Number.isFinite(id) && Array.isArray(meta?.botPlayerIds) && meta.botPlayerIds.includes(id)) {
+      return true;
+    }
     const username = String(player?.username ?? '').toLowerCase();
     return username.includes('bot');
+  }
+
+  private hasPawnAssigned(player: any, meta: MinuitMetadata): boolean {
+    if (!player) return false;
+    const playerId = Number(player.id);
+    if (!Number.isFinite(playerId)) return false;
+    const playerPawn = String(player.pawn ?? '').trim();
+    if (playerPawn.length > 0) return true;
+    const metaPawn = String((meta.pawns ?? {})[playerId] ?? '').trim();
+    return metaPawn.length > 0;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -323,13 +338,14 @@ export class MinuitActionService {
   private ensurePawnSelection(state: GameStateEntity): GameStateEntity {
     const status = (state.status ?? '').toLowerCase();
     const players = Array.isArray(state.players) ? state.players : [];
+    const meta = this.getMeta(state);
     if (players.length < MINUIT_GAME.minPlayers) return state;
     const hasPendingPick = (state.pending as any)?.type === 'pick_pawn';
     const needsPawnSelection = players.some(
-      (p) => !!p && !this.isBotLike(p) && !String(p.pawn ?? '').trim(),
+      (p) => !!p && !this.isBotLike(p, meta) && !this.hasPawnAssigned(p, meta),
     );
     const needsBotPawns = players.some(
-      (p) => !!p && this.isBotLike(p) && !String(p.pawn ?? '').trim(),
+      (p) => !!p && this.isBotLike(p, meta) && !this.hasPawnAssigned(p, meta),
     );
     if (status === 'started') {
       if (!needsPawnSelection && !needsBotPawns && !hasPendingPick) return state;
@@ -361,8 +377,27 @@ export class MinuitActionService {
 
   private queuePawnSelection(state: GameStateEntity): GameStateEntity {
     const pending = state.pending as any;
-    if (pending && pending.type === 'pick_pawn') return state;
     const players = Array.isArray(state.players) ? state.players : [];
+    const meta = this.getMeta(state);
+    if (pending && pending.type === 'pick_pawn') {
+      const pendingPlayerId = Number(pending.playerId);
+      const pendingPlayer = players.find((p) => Number(p?.id) === pendingPlayerId);
+      if (
+        pendingPlayer &&
+        !this.isBotLike(pendingPlayer, meta) &&
+        !this.hasPawnAssigned(pendingPlayer, meta)
+      ) {
+        return state;
+      }
+    }
+    const missingHumans = players.filter(
+      (p) => !!p && !this.isBotLike(p, meta) && !this.hasPawnAssigned(p, meta),
+    );
+    if (!missingHumans.length) {
+      return pending && pending.type === 'pick_pawn'
+        ? { ...state, pending: null }
+        : state;
+    }
     const taken = new Set<string>(
       players
         .map((p) => (typeof p?.pawn === 'string' ? String(p.pawn).trim() : ''))
@@ -375,8 +410,8 @@ export class MinuitActionService {
       players,
       startPlayerId: players[0]?.id ?? null,
       isAssigned: (playerId) => {
-        const player = players.find((p) => p?.id === playerId);
-        return !!player && !this.isBotLike(player) && String(player.pawn ?? '').trim().length > 0;
+        const player = players.find((p) => Number(p?.id) === playerId);
+        return !player || this.isBotLike(player, meta) || this.hasPawnAssigned(player, meta);
       },
       pendingType: 'pick_pawn',
       choices: entries.map((entry) => ({ id: entry.title, label: entry.label })),
@@ -427,8 +462,11 @@ export class MinuitActionService {
     const assignedBots: Array<{ id: number; pawn: string }> = [];
     const updatedPlayers = players.map((p) => {
       if (!p) return p;
-      const pawn = typeof p.pawn === 'string' ? String(p.pawn).trim() : '';
-      if (!this.isBotLike(p)) {
+      const pawn =
+        typeof p.pawn === 'string' && String(p.pawn).trim().length > 0
+          ? String(p.pawn).trim()
+          : String(assigned[p.id] ?? '').trim();
+      if (!this.isBotLike(p, meta)) {
         if (pawn.length > 0) {
           assigned[p.id] = pawn;
           taken.add(pawn);
@@ -492,13 +530,13 @@ export class MinuitActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     const takenByOthers = new Set<string>(
       players
-        .filter((p) => p?.id !== playerId)
+        .filter((p) => Number(p?.id) !== playerId)
         .map((p) => (typeof p?.pawn === 'string' ? p.pawn.trim() : ''))
         .filter((pawn) => pawn.length > 0),
     );
     if (takenByOthers.has(resolvedPawn)) return state;
     const updatedPlayers = players.map((p) =>
-      p?.id === playerId ? { ...p, pawn: resolvedPawn } : p,
+      Number(p?.id) === playerId ? { ...p, pawn: resolvedPawn } : p,
     );
     const meta = this.getMeta(state);
     const nextPawns: Record<number, string> = {
@@ -1060,7 +1098,7 @@ export class MinuitActionService {
 
   private playerName(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
-    const p = players.find((x) => x?.id === id);
+    const p = players.find((x) => Number(x?.id) === id);
     const u =
       p?.username && String(p.username).trim()
         ? String(p.username).trim()
@@ -1070,7 +1108,7 @@ export class MinuitActionService {
 
   private pawnLabel(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
-    const player = players.find((p) => p?.id === id);
+    const player = players.find((p) => Number(p?.id) === id);
     const pawn = String(player?.pawn ?? '').trim();
     if (pawn) return `"${pawn}"`;
     return 'un pion';

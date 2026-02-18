@@ -52,7 +52,7 @@ internal sealed class GamePlayActionDispatcher
 
         // Cas spécial: "choose_pawn" (ex: petits chevaux).
         // On construit l'action depuis `pending.data.moves`, aligné sur `pending.choices`.
-        if (string.Equals(pendingType, "choose_pawn", StringComparison.OrdinalIgnoreCase))
+        if (IsPawnPendingType(pendingType))
         {
             if (TryBuildChoosePawnFromPendingData(state.Pending, index, available, out var choosePawnAction))
             {
@@ -284,7 +284,7 @@ internal sealed class GamePlayActionDispatcher
 
         var matched = available.FirstOrDefault(a =>
         {
-            if (!string.Equals(a.Type, "choose_pawn", StringComparison.OrdinalIgnoreCase))
+            if (!IsPawnPendingType(a.Type))
             {
                 return false;
             }
@@ -308,7 +308,7 @@ internal sealed class GamePlayActionDispatcher
         }
 
         var type = available
-                       .FirstOrDefault(a => string.Equals(a.Type, "choose_pawn", StringComparison.OrdinalIgnoreCase))
+                       .FirstOrDefault(a => IsPawnPendingType(a.Type))
                        ?.Type
                    ?? "choose_pawn";
 
@@ -531,5 +531,12 @@ internal sealed class GamePlayActionDispatcher
                 new[] { new GameClientAction(type: "answer_quiz", payload: new { answer }) },
                 cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    private static bool IsPawnPendingType(string? pendingType)
+    {
+        var normalized = (pendingType ?? string.Empty).Trim();
+        return string.Equals(normalized, "choose_pawn", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(normalized, "pick_pawn", StringComparison.OrdinalIgnoreCase);
     }
 }

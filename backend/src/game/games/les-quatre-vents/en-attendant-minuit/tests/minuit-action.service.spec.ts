@@ -152,6 +152,108 @@ describe('MinuitActionService', () => {
 
     expect(messages).toContain("C'est au tour de Alf.");
   });
+
+  it('does not re-queue pick_pawn for bots without explicit isBot flag', () => {
+    const { random, turns, core } = createDeps();
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: -1, direction: 1 },
+      players: [
+        { id: -1, username: 'Donatello' } as any,
+        { id: -2, username: 'Raphael' } as any,
+      ],
+      metadata: {
+        pawnChoices: [
+          { title: 'Le Lutin', description: '' },
+          { title: 'Le Renne', description: '' },
+          { title: 'Le Père Noël', description: '' },
+        ],
+        pawns: {},
+      } as any,
+      pending: {
+        type: 'pick_pawn',
+        playerId: -1,
+        blocking: true,
+        choices: ['Le Lutin', 'Le Renne', 'Le Père Noël'],
+        data: {
+          choices: ['Le Lutin', 'Le Renne', 'Le Père Noël'],
+          choiceMap: {
+            'Le Lutin': 'Le Lutin',
+            'Le Renne': 'Le Renne',
+            'Le Père Noël': 'Le Père Noël',
+          },
+        },
+      } as any,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = service.applyActions(state, [
+      { type: 'pick_pawn', payload: { pawn: 'Le Lutin' } } as any,
+    ]);
+
+    expect(next.pending).toBeNull();
+    expect((next.players ?? []).find((p: any) => p?.id === -1)?.pawn).toBe('Le Lutin');
+    expect((next.players ?? []).find((p: any) => p?.id === -2)?.pawn).toBeTruthy();
+  });
+
+  it('does not loop pick_pawn when player ids are serialized as strings', () => {
+    const { random, turns, core } = createDeps();
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: -101, direction: 1 },
+      players: [
+        { id: '-101', username: 'Noodle', isBot: true } as any,
+        { id: '7', username: 'hacene', isBot: false } as any,
+      ],
+      metadata: {
+        botPlayerIds: [-101],
+        pawns: { '-101': 'Le Lutin' },
+        pawnChoices: [
+          { title: 'Le Lutin', description: '' },
+          { title: 'Le Bonhomme de Neige', description: '' },
+          { title: 'La Fée des Flocons', description: '' },
+        ],
+      } as any,
+      pending: {
+        type: 'pick_pawn',
+        playerId: '-101',
+        blocking: true,
+        choices: ['Le Bonhomme de Neige', 'La Fée des Flocons'],
+        data: {
+          choices: ['Le Bonhomme de Neige', 'La Fée des Flocons'],
+          choiceMap: {
+            'Le Bonhomme de Neige': 'Le Bonhomme de Neige',
+            'La Fée des Flocons': 'La Fée des Flocons',
+          },
+        },
+      } as any,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = service.applyActions(state, []);
+    expect(next.pending?.type).toBe('pick_pawn');
+    expect(next.pending?.playerId).toBe(7);
+  });
 });
 
 describe('Minuit Rulebook compat', () => {

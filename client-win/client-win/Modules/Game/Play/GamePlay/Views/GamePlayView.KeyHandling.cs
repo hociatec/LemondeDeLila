@@ -96,7 +96,7 @@ public partial class GamePlayView
                 var sent = await vm.SubmitSelectedChoiceAsync(CancellationToken.None).ConfigureAwait(true);
                 if (sent)
                 {
-                    NoteChoiceSubmittedForFocusRestore();
+                    NoteChoiceSubmittedForFocusRestore(vm);
                 }
             }
             catch
@@ -430,7 +430,7 @@ public partial class GamePlayView
                 var sent = await vm.SubmitSelectedChoiceAsync(CancellationToken.None).ConfigureAwait(true);
                 if (sent)
                 {
-                    NoteChoiceSubmittedForFocusRestore();
+                    NoteChoiceSubmittedForFocusRestore(vm);
                 }
             }
             catch

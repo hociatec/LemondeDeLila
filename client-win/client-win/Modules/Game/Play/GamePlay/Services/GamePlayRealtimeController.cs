@@ -43,6 +43,8 @@ internal sealed class GamePlayRealtimeController
     private string? _lastGameStatus;
     private int? _viewerPlayerId;
     private int? _lastStateTurnPlayerId;
+    private string _lastPendingType = string.Empty;
+    private bool _lastBotThinking;
     private int _pendingForcedTurnAnnouncements;
     private Dictionary<string, int>? _lastViewerHandCounts;
     private string? _lastDrawActionToken;
@@ -103,6 +105,8 @@ internal sealed class GamePlayRealtimeController
         _lastGameStatus = null;
         _viewerPlayerId = null;
         _pendingForcedTurnAnnouncements = 0;
+        _lastPendingType = string.Empty;
+        _lastBotThinking = false;
         _lastViewerHandCounts = null;
         lock (_statePumpLock)
         {
@@ -229,6 +233,9 @@ internal sealed class GamePlayRealtimeController
         var presented = _presenter.Present(state);
         var viewerId = GamePlayExtrasParser.ExtractViewerPlayerId(state);
         var viewerUsername = GetUsername(state, viewerId);
+        var previousTurnPlayerId = _lastStateTurnPlayerId;
+        var previousPendingType = _lastPendingType;
+        var previousBotThinking = _lastBotThinking;
         var currentHandCounts = BuildHandCounts(GamePlayExtrasParser.ExtractViewerHandLabels(state));
 
         foreach (var entry in presented.newLogMessages)
@@ -295,9 +302,66 @@ internal sealed class GamePlayRealtimeController
         _syncShortcuts(state);
         _grid.SyncFromState(state, _viewerPlayerId);
 
+        TryRefocusWhenViewerTurnBecomesActionable(
+            state,
+            viewerId,
+            previousTurnPlayerId,
+            previousPendingType,
+            previousBotThinking);
+
+        _lastPendingType = NormalizePendingType(state.Pending?.Type);
+        _lastBotThinking = state.BotThinking;
         _lastViewerHandCounts = currentHandCounts;
         _refreshCanExecute();
         TryAnnounceTurnFromState(state);
+    }
+
+    private void TryRefocusWhenViewerTurnBecomesActionable(
+        GameStateDto state,
+        int? viewerId,
+        int? previousTurnPlayerId,
+        string previousPendingType,
+        bool previousBotThinking)
+    {
+        if (state == null)
+        {
+            return;
+        }
+
+        if (!string.Equals(state.Status, "started", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        if (viewerId == null)
+        {
+            return;
+        }
+
+        var currentPlayerId = state.Turn?.CurrentPlayerId;
+        if (currentPlayerId == null || currentPlayerId.Value != viewerId.Value)
+        {
+            return;
+        }
+
+        var hasActions = (state.Actions?.Count ?? 0) > 0;
+        if (!hasActions)
+        {
+            return;
+        }
+
+        var viewerTurnGained = previousTurnPlayerId != currentPlayerId.Value;
+        var wasPawnPending = IsPawnPendingType(previousPendingType);
+        var isPawnPending = IsPawnPendingType(state.Pending?.Type);
+        var pawnSelectionJustResolved = wasPawnPending && !isPawnPending;
+        var botThinkingJustStopped = previousBotThinking && !state.BotThinking;
+
+        if (!viewerTurnGained && !pawnSelectionJustResolved && !botThinkingJustStopped)
+        {
+            return;
+        }
+
+        _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
     }
 
     private void TryPlayDrawSoundFromState(GameStateDto state)
@@ -360,6 +424,18 @@ internal sealed class GamePlayRealtimeController
         }
 
         return status;
+    }
+
+    private static string NormalizePendingType(string? pendingType)
+    {
+        return (pendingType ?? string.Empty).Trim();
+    }
+
+    private static bool IsPawnPendingType(string? pendingType)
+    {
+        var normalized = NormalizePendingType(pendingType);
+        return string.Equals(normalized, "choose_pawn", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(normalized, "pick_pawn", StringComparison.OrdinalIgnoreCase);
     }
 
     private void TryAnnounceTurnFromState(GameStateDto state)

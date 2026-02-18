@@ -281,7 +281,14 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         string.Equals((_pendingType ?? string.Empty).Trim(), "quiz", StringComparison.OrdinalIgnoreCase);
 
     public bool IsChoosePawnPending =>
-        string.Equals((_pendingType ?? string.Empty).Trim(), "choose_pawn", StringComparison.OrdinalIgnoreCase);
+        IsPawnSelectionPendingType(_pendingType);
+
+    private static bool IsPawnSelectionPendingType(string? pendingType)
+    {
+        var normalized = (pendingType ?? string.Empty).Trim();
+        return string.Equals(normalized, "choose_pawn", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(normalized, "pick_pawn", StringComparison.OrdinalIgnoreCase);
+    }
 
     private void MaybeAnnounceServerPendingChoicesLabel()
     {

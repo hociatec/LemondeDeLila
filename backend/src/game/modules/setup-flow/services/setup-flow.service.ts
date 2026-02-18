@@ -18,16 +18,14 @@ export class SetupFlowService {
     const players = Array.isArray(params.players) ? params.players : [];
     if (!players.length) return null;
 
-    const startId = Number.isFinite(params.startPlayerId)
-      ? Number(params.startPlayerId)
-      : null;
-    const startIndex = startId != null ? players.findIndex((p) => p?.id === startId) : -1;
+    const startId = this.toPlayerId(params.startPlayerId);
+    const startIndex = startId != null ? players.findIndex((p) => this.toPlayerId(p?.id) === startId) : -1;
     const baseIndex = startIndex >= 0 ? startIndex : 0;
     let nextIndex = -1;
     for (let i = 0; i < players.length; i += 1) {
       const idx = (baseIndex + i) % players.length;
-      const pid = players[idx]?.id;
-      if (!Number.isFinite(pid)) continue;
+      const pid = this.toPlayerId(players[idx]?.id);
+      if (pid == null) continue;
       if (!params.isAssigned(pid)) {
         nextIndex = idx;
         break;
@@ -38,7 +36,8 @@ export class SetupFlowService {
     const normalizedChoices = this.normalizeChoices(params.choices);
     if (!normalizedChoices.length) return null;
 
-    const playerId = players[nextIndex].id;
+    const playerId = this.toPlayerId(players[nextIndex].id);
+    if (playerId == null) return null;
     const playerLabel = this.playerLabel(players[nextIndex]);
     const label =
       typeof params.labelForPlayer === 'function'
@@ -61,6 +60,11 @@ export class SetupFlowService {
       playerId,
       turnIndex: nextIndex,
     };
+  }
+
+  private toPlayerId(value: unknown): number | null {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
   }
 
   resolveChoice<TChoice extends { id?: unknown; label?: unknown }>(

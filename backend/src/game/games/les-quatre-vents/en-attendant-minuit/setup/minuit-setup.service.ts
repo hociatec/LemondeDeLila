@@ -34,8 +34,20 @@ export class MinuitSetupService {
   private isBotLike(player: any): boolean {
     if (!player) return false;
     if (player.isBot === true) return true;
+    const id = Number(player.id);
+    if (Number.isFinite(id) && id < 0) return true;
     const username = String(player?.username ?? '').toLowerCase();
     return username.includes('bot');
+  }
+
+  private hasPawnAssigned(player: any, meta: MinuitMetadata): boolean {
+    if (!player) return false;
+    const playerId = Number(player.id);
+    if (!Number.isFinite(playerId)) return false;
+    const playerPawn = String(player.pawn ?? '').trim();
+    if (playerPawn.length > 0) return true;
+    const metaPawn = String((meta.pawns ?? {})[playerId] ?? '').trim();
+    return metaPawn.length > 0;
   }
 
   hydrateInitialState(base: GameStateEntity): GameStateEntity {
@@ -46,6 +58,14 @@ export class MinuitSetupService {
     const players = Array.isArray(base.players) ? base.players : [];
     const positions: Record<number, number> = {};
     for (const p of players) positions[p.id] = 0;
+    const botPlayerIds = Array.from(
+      new Set(
+        players
+          .filter((p) => this.isBotLike(p))
+          .map((p) => Number((p as any)?.id))
+          .filter((id) => Number.isFinite(id)),
+      ),
+    );
 
     const seedMeta = (base.metadata ?? {}) as any;
     const shuffled = this.random.shuffle(seedMeta, cards.cards ?? []);
@@ -53,6 +73,7 @@ export class MinuitSetupService {
     const meta: MinuitMetadata = {
       tiles: board.tiles ?? [],
       positions,
+      botPlayerIds,
       pawnChoices: Array.isArray(pawns.pawns) ? pawns.pawns : [],
       statuses: {
         skipTurn: {},
@@ -104,7 +125,7 @@ export class MinuitSetupService {
   ): GameStateEntity['pending'] {
     const players = Array.isArray(base.players) ? base.players : [];
     const missing = players.filter(
-      (p) => !!p && !this.isBotLike(p) && !String(p.pawn ?? '').trim(),
+      (p) => !!p && !this.isBotLike(p) && !this.hasPawnAssigned(p, meta),
     );
     if (!missing.length) return null;
 
@@ -122,7 +143,7 @@ export class MinuitSetupService {
       startPlayerId: players[0]?.id ?? null,
       isAssigned: (playerId) => {
         const player = players.find((p) => p?.id === playerId);
-        return !!player && !this.isBotLike(player) && String(player.pawn ?? '').trim().length > 0;
+        return !player || this.isBotLike(player) || this.hasPawnAssigned(player, meta);
       },
       pendingType: 'pick_pawn',
       choices: entries.map((entry) => ({ id: entry.title, label: entry.label })),

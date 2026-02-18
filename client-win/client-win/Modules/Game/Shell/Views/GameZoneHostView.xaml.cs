@@ -100,25 +100,25 @@ public partial class GameZoneHostView : UserControl
                 if (viewRoot is IInitialFocusTarget initialFocusTarget)
                 {
                     initialFocusTarget.RequestInitialFocus();
-                    return true;
+                    return IsFocusInside(viewRoot);
                 }
 
                 if (viewRoot is GamePlayView gamePlayView)
                 {
                     gamePlayView.FocusPreferredInteractiveElement();
-                    return true;
+                    return IsFocusInside(gamePlayView);
                 }
 
                 if (FindDescendant<GamePlayView>(viewRoot) is GamePlayView nestedGamePlayView)
                 {
                     nestedGamePlayView.FocusPreferredInteractiveElement();
-                    return true;
+                    return IsFocusInside(nestedGamePlayView);
                 }
 
                 if (viewRoot.Focus())
                 {
                     Keyboard.Focus(viewRoot);
-                    return true;
+                    return IsFocusInside(viewRoot);
                 }
 
                 // Fallback: si le root n'est pas focusable, tenter un enfant focusable.
@@ -126,7 +126,7 @@ public partial class GameZoneHostView : UserControl
                 {
                     Keyboard.Focus(focusableChild);
                     (focusableChild as UIElement)?.Focus();
-                    return true;
+                    return IsFocusInside(viewRoot);
                 }
 
                 return false;
@@ -140,10 +140,48 @@ public partial class GameZoneHostView : UserControl
         if (FindDescendant<GamePlayView>(GameZoneHost) is GamePlayView fallbackPlayView)
         {
             fallbackPlayView.FocusPreferredInteractiveElement();
-            return true;
+            return IsFocusInside(fallbackPlayView);
         }
 
         return false;
+    }
+
+    private static bool IsFocusInside(DependencyObject root)
+    {
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        while (focused != null)
+        {
+            if (ReferenceEquals(focused, root))
+            {
+                return true;
+            }
+
+            focused = GetVisualOrLogicalParent(focused);
+        }
+
+        return false;
+    }
+
+    private static DependencyObject? GetVisualOrLogicalParent(DependencyObject current)
+    {
+        try
+        {
+            if (current is Visual || current is System.Windows.Media.Media3D.Visual3D)
+            {
+                return VisualTreeHelper.GetParent(current);
+            }
+        }
+        catch
+        {
+            // Ignore visual tree issues and fallback to logical parent.
+        }
+
+        if (current is FrameworkElement fe)
+        {
+            return fe.Parent ?? fe.TemplatedParent;
+        }
+
+        return LogicalTreeHelper.GetParent(current);
     }
 
     private void FocusGameZoneAnchor()

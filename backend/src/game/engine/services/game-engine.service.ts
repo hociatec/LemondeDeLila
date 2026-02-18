@@ -1497,8 +1497,11 @@ export class GameEngineService {
     // déclencher ce bot d'abord. Certains jeux utilisent `pending` pour des choix bloquants
     // (pick/exchange/quiz) et peuvent laisser `turn.currentPlayerId` inchangé.
     const pending = state.pending as any;
+    const pendingPlayerIdRaw = pending?.playerId;
     const pendingPlayerId =
-      pending && typeof pending.playerId === 'number' ? pending.playerId : null;
+      pendingPlayerIdRaw != null && Number.isFinite(Number(pendingPlayerIdRaw))
+        ? Number(pendingPlayerIdRaw)
+        : null;
     if (typeof pendingPlayerId === 'number') {
       const pendingPlayer =
         state.players?.find((p) => p.id === pendingPlayerId) ?? null;
@@ -1792,7 +1795,7 @@ export class GameEngineService {
       Number.isFinite(pendingPlayerId) &&
       pendingPlayerId === botActorId &&
       (pendingType === 'draw' ||
-        pendingType === 'choose_pawn' ||
+        pendingType === 'pick_pawn' ||
         pendingType === 'choose_target');
     const isQuizPending =
       gameType === 'arche-de-mnemosyne' && pending?.type === 'quiz';

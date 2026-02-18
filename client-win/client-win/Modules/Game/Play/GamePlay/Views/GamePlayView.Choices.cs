@@ -56,6 +56,44 @@ public partial class GamePlayView
         _restoreChoiceFocusIndex = ChoicesList?.SelectedIndex ?? -1;
     }
 
+    private void NoteChoiceSubmittedForFocusRestore(GamePlayViewModel vm)
+    {
+        NoteChoiceSubmittedForFocusRestore();
+
+        if (!vm.IsChoosePawnPending)
+        {
+            return;
+        }
+
+        var requestId = Interlocked.Increment(ref _postPawnSubmitFocusRequestId);
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => RunPostPawnSubmitFocusRecovery(requestId)));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => RunPostPawnSubmitFocusRecovery(requestId)));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => RunPostPawnSubmitFocusRecovery(requestId)));
+    }
+
+    private void RunPostPawnSubmitFocusRecovery(int requestId)
+    {
+        if (requestId != _postPawnSubmitFocusRequestId)
+        {
+            return;
+        }
+
+        if (DataContext is not GamePlayViewModel vm)
+        {
+            return;
+        }
+
+        // During pawn selection, keep the list focused. Once selection is done, re-anchor
+        // focus to the next interactive game element to avoid focus landing on an unnamed gap.
+        if (vm.IsChoosePawnPending)
+        {
+            ForceFocusGameZoneCore(forceFromOutsideTextInput: true);
+            return;
+        }
+
+        FocusPreferredInteractiveElement();
+    }
+
     private void NoteHandSubmittedForFocusRestore()
     {
         _restoreHandFocusAfterSubmit = true;
@@ -636,11 +674,11 @@ public partial class GamePlayView
         try
         {
             bool sent = await vm.SubmitSelectedChoiceAsync(CancellationToken.None).ConfigureAwait(true);
-            if (sent)
-            {
-                NoteChoiceSubmittedForFocusRestore();
-                return;
-            }
+                if (sent)
+                {
+                    NoteChoiceSubmittedForFocusRestore(vm);
+                    return;
+                }
 
             // Quiz: when cursor is on question line, Enter jumps to first answer.
             if (vm.IsQuizPending && ChoicesList.Items.Count > 1 && ChoicesList.SelectedIndex == 0)

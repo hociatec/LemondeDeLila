@@ -180,7 +180,7 @@ internal sealed class GamePlayChoicesStateSynchronizer
         choices = new Dictionary<string, GameClientAction>(StringComparer.Ordinal);
 
         var pendingType = (state.Pending?.Type ?? string.Empty).Trim();
-        if (!string.Equals(pendingType, "choose_pawn", StringComparison.OrdinalIgnoreCase))
+        if (!IsPawnPendingType(pendingType))
         {
             return false;
         }
@@ -256,7 +256,7 @@ internal sealed class GamePlayChoicesStateSynchronizer
     private static List<string> ExtractChoosePawnChoicesFromPendingData(GameStateDto state)
     {
         var pendingType = (state.Pending?.Type ?? string.Empty).Trim();
-        if (!string.Equals(pendingType, "choose_pawn", StringComparison.OrdinalIgnoreCase))
+        if (!IsPawnPendingType(pendingType))
         {
             return new List<string>();
         }
@@ -320,5 +320,12 @@ internal sealed class GamePlayChoicesStateSynchronizer
         }
 
         return null;
+    }
+
+    private static bool IsPawnPendingType(string? pendingType)
+    {
+        var normalized = (pendingType ?? string.Empty).Trim();
+        return string.Equals(normalized, "choose_pawn", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(normalized, "pick_pawn", StringComparison.OrdinalIgnoreCase);
     }
 }
