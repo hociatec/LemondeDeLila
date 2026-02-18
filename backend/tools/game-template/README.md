@@ -41,3 +41,5 @@ Voir :
 
 Applique `backend/src/game/games/GAME_DOD.md`.
 
+Checklist onboarding stricte:
+- `backend/tools/game-template/ONBOARDING_CHECKLIST.md`

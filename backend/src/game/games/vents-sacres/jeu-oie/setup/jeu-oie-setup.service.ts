@@ -53,23 +53,19 @@ export class JeuOieSetupService {
         ? baseState.turn.currentPlayerId
         : null,
     );
-    const pendingInfo = this.setupFlow.createSequentialChoicePending({
+    const pendingInfo = this.setupFlow.createSequentialPawnPending({
       players,
       startPlayerId: starterId,
       isAssigned: (playerId) => Boolean(pawnByPlayerId[playerId]),
-      pendingType: 'choose_pawn',
-      choices: JEU_OIE_PAWNS.map((pawn) => ({
+      pawns: JEU_OIE_PAWNS.map((pawn) => ({
         id: pawn.id,
         label: pawn.label,
         feminine: pawn.feminine,
       })),
-      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
-      dataBuilder: (choices) => ({
-        pawns: choices.map((choice) => ({
+      pawnDataMapper: (choice: any) => ({
           id: choice.id,
           label: choice.label,
           feminine: Boolean((choice as any)?.feminine),
-        })),
       }),
     });
 
@@ -253,4 +249,5 @@ function buildTiles(texts: JeuOieCaseTextsJsonV1): JeuOieTile[] {
   }
   return tiles;
 }
+
 

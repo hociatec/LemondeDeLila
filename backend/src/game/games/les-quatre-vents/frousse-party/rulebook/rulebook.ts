@@ -9,7 +9,11 @@ import {
   type FrousseActionType,
 } from '../definitions/frousse.definition';
 import { resolvePawnId } from '../pawns.utils';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  normalizeActionType,
+  normalizeLegacyRollAliasToUpper,
+  normalizeLowerActionType,
+} from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
@@ -73,9 +77,7 @@ export function validateAction(
   };
 
   const rawType = normalizeActionType(action);
-  const type = (
-    rawType === 'roll_dice' ? 'ROLL_DICE' : rawType
-  ) as FrousseActionType;
+  const type = normalizeLegacyRollAliasToUpper(rawType) as FrousseActionType;
   if (!FROUSSE_GAME.actions.includes(type)) {
     throw new GameValidationError(`Action inconnue: ${rawType || '(vide)'}`, {
       gameType: 'frousse-party',

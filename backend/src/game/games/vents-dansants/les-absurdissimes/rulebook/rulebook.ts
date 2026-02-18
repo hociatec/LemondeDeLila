@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import type { AbsurdissimesMetadata } from '../model/les-absurdissimes-state.entity';
 import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
@@ -79,7 +79,7 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error('La partie n\'est pas dÃ©marrÃ©e.');
+    throw new Error('La partie n\'est pas démarrée.');
   }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== actorId) {
@@ -87,7 +87,7 @@ export function validateAction(
   }
   const meta = getMeta(state);
   if (meta.winnerId != null) {
-    throw new Error('La partie est terminÃ©e.');
+    throw new Error('La partie est terminée.');
   }
   const payload = (action.payload ?? {}) as AbsurdissimesActionPayload;
 
@@ -97,7 +97,7 @@ export function validateAction(
     }
     const remaining = meta.remainingPlayers ?? getPlayerIds(state.players);
     if (!remaining.includes(actorId)) {
-      throw new Error('Vous avez dÃ©jÃ  jouÃ© cette manche.');
+      throw new Error('Vous avez déjà joué cette manche.');
     }
     const cardId = String(payload.cardId ?? '').trim();
     if (!cardId) {
@@ -105,7 +105,7 @@ export function validateAction(
     }
     const hand = meta.blackHands?.[actorId] ?? [];
     if (!hand.includes(cardId)) {
-      throw new Error('Vous ne possÃ©dez pas cette carte.');
+      throw new Error('Vous ne possédez pas cette carte.');
     }
     return { type: 'play_card', payload: { cardId } };
   }
@@ -120,7 +120,7 @@ export function validateAction(
   const winnerId =
     typeof payload.winnerId === 'number' ? payload.winnerId : null;
   if (winnerId == null) {
-    throw new Error('SÃ©lection de gagnant invalide.');
+    throw new Error('Sélection de gagnant invalide.');
   }
   const submissions = meta.submissions ?? {};
   if (!(winnerId in submissions)) {

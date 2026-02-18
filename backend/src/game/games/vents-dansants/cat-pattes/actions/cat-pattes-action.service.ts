@@ -1,6 +1,7 @@
-﻿import { Injectable } from '@nestjs/common';
+﻿import { Injectable, Optional } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -39,8 +40,8 @@ export class CatPattesActionService {
     private readonly setupFlow: SetupFlowService,
     private readonly deckPolicies: DeckPoliciesService,
     private readonly random: RandomService,
-    private readonly turnPolicies?: TurnPoliciesService,
-    private readonly promptPolicies?: PromptPoliciesService,
+    @Optional() private readonly turnPolicies?: TurnPoliciesService,
+    @Optional() private readonly promptPolicies?: PromptPoliciesService,
   ) {}
 
   applyActions(
@@ -99,7 +100,9 @@ export class CatPattesActionService {
     const payload = (action?.payload ?? {}) as CatPattesActionPayload;
     const rawPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
     const options = Array.isArray(pending?.data?.pawns) ? pending.data.pawns : [];
-    const chosen = this.resolvePendingPawn(rawPawn, options);
+    const chosen = this.setupFlow.resolvePawnChoice(rawPawn, options) as
+      | { id: string; label: string }
+      | null;
     if (!chosen) return state;
 
     const meta = this.getMeta(state);
@@ -124,10 +127,30 @@ export class CatPattesActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} choisit le pion : ${chosen.label}.`,
+      `${resolvePlayerNameFromState(next, playerId)} choisit le pion : ${chosen.label}.`,
     );
 
-    const pendingInfo = this.buildPawnPending(next, playerId);
+    const playersForPending = Array.isArray(next.players) ? next.players : [];
+    const metaForPending = this.getMeta(next);
+    const pawnByPlayerIdForPending = (metaForPending.pawnByPlayerId ?? {}) as Record<
+      number,
+      string
+    >;
+    const usedForPending = new Set(
+      Object.values(pawnByPlayerIdForPending).filter((v) => typeof v === 'string'),
+    );
+    const choicesForPending = (metaForPending.pawns ?? []).filter(
+      (p) => !usedForPending.has(p),
+    );
+    const pendingInfo = this.setupFlow.createSequentialPawnPending({
+      players: playersForPending,
+      startPlayerId: playerId,
+      isAssigned: (candidateId) => {
+        const player = playersForPending.find((p) => p?.id === candidateId);
+        return Boolean(pawnByPlayerIdForPending[candidateId]) || this.isBotLike(player);
+      },
+      pawns: choicesForPending.map((name) => ({ id: name, label: name })),
+    });
     if (pendingInfo) {
       const withPending: GameStateEntity = {
         ...next,
@@ -166,12 +189,12 @@ export class CatPattesActionService {
     };
     started = this.core.appendLog(
       started,
-      `Début de partie : ${this.playerName(started, resolvedStarterId ?? 0)} commence.`,
+      `DÃ©but de partie : ${resolvePlayerNameFromState(started, resolvedStarterId ?? 0)} commence.`,
     );
     return this.getTurnPolicies().appendTurnAnnouncement(
       started,
       resolvedStarterId,
-      (s, id) => this.playerName(s, id),
+      (s, id) => resolvePlayerNameFromState(s, id),
     );
   }
 
@@ -188,11 +211,11 @@ export class CatPattesActionService {
 
     const { meta: updatedMeta, cardId } = this.drawForPlayer(meta, currentId);
     let next = this.setMeta(state, { ...updatedMeta, drawnPlayerId: currentId });
-    next = this.core.appendLog(next, `${this.playerName(next, currentId)} pioche.`);
+    next = this.core.appendLog(next, `${resolvePlayerNameFromState(next, currentId)} pioche.`);
     if (cardId) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} pioche ${CAT_PATTES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
+        `${resolvePlayerNameFromState(next, currentId)} pioche ${CAT_PATTES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
       );
     }
     return next;
@@ -218,7 +241,7 @@ export class CatPattesActionService {
     let next = this.setMeta(state, updatedMeta);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} défausse ${CAT_PATTES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
+      `${resolvePlayerNameFromState(next, currentId)} dÃ©fausse ${CAT_PATTES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
     );
     next = this.clearDrawn(next);
     return this.turns.advanceTurn(next);
@@ -308,7 +331,7 @@ export class CatPattesActionService {
 
     next = this.core.appendLog(
       next,
-        `${this.playerName(next, playerId)} joue ${card.name} et avance de ${delta} pattes (total ${nextPosition}/${CAT_PATTES_GOAL}).`,
+        `${resolvePlayerNameFromState(next, playerId)} joue ${card.name} et avance de ${delta} pattes (total ${nextPosition}/${CAT_PATTES_GOAL}).`,
       );
 
     if (nextPosition === CAT_PATTES_GOAL) {
@@ -323,7 +346,7 @@ export class CatPattesActionService {
       });
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} atteint ${CAT_PATTES_GOAL} pattes et remporte la manche (${roundPoints} points).`,
+        `${resolvePlayerNameFromState(next, playerId)} atteint ${CAT_PATTES_GOAL} pattes et remporte la manche (${roundPoints} points).`,
       );
       return { ...next, status: 'finished' };
     }
@@ -374,7 +397,7 @@ export class CatPattesActionService {
     let next = this.setMeta(state, { ...meta, obstacles });
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} inflige ${card.name} à ${this.playerName(next, targetId)}.`,
+      `${resolvePlayerNameFromState(next, playerId)} inflige ${card.name} Ã  ${resolvePlayerNameFromState(next, targetId)}.`,
     );
     return next;
   }
@@ -398,7 +421,7 @@ export class CatPattesActionService {
       next = this.setMeta(next, meta);
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} neutralise ${currentObstacle} avec ${card.name}.`,
+        `${resolvePlayerNameFromState(next, playerId)} neutralise ${currentObstacle} avec ${card.name}.`,
       );
       meta = this.getMeta(next);
     }
@@ -430,7 +453,7 @@ export class CatPattesActionService {
     let next = this.setMeta(state, { ...meta, bots });
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} active ${card.name}.`,
+      `${resolvePlayerNameFromState(next, playerId)} active ${card.name}.`,
     );
     return next;
   }
@@ -511,71 +534,6 @@ export class CatPattesActionService {
     return { ...state, metadata };
   }
 
-  private playerName(state: GameStateEntity, playerId: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const p = players.find((player) => player?.id === playerId);
-    return p?.username?.trim() || `Joueur ${playerId}`;
-  }
-
-  private buildPawnPending(
-    state: GameStateEntity,
-    startId: number | null,
-  ): { pending: any; playerId: number; turnIndex: number } | null {
-    const players = Array.isArray(state.players) ? state.players : [];
-    if (!players.length) return null;
-
-    const meta = this.getMeta(state);
-    const pawnByPlayerId = (meta.pawnByPlayerId ?? {}) as Record<number, string>;
-    const used = new Set(
-      Object.values(pawnByPlayerId).filter((v) => typeof v === 'string'),
-    );
-    const choices = (meta.pawns ?? []).filter((p) => !used.has(p));
-
-    return this.setupFlow.createSequentialChoicePending({
-      players,
-      startPlayerId: startId,
-      isAssigned: (playerId) => {
-        const player = players.find((p) => p?.id === playerId);
-        return Boolean(pawnByPlayerId[playerId]) || this.isBotLike(player);
-      },
-      pendingType: 'choose_pawn',
-      choices: choices.map((name) => ({ id: name, label: name })),
-      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
-      dataBuilder: (availableChoices) => ({
-        pawns: availableChoices.map((choice) => ({
-          id: String(choice.id ?? '').trim(),
-          label: String(choice.label ?? '').trim(),
-        })),
-      }),
-    });
-  }
-
-  private resolvePendingPawn(
-    raw: unknown,
-    options: Array<{ id?: string; label?: string }>,
-  ): { id: string; label: string } | null {
-    const normalized = (Array.isArray(options) ? options : [])
-      .map((p: any) => ({
-        id: String(p?.id ?? '').trim(),
-        label: String(p?.label ?? '').trim(),
-      }))
-      .filter((p) => p.id.length > 0 && p.label.length > 0);
-    if (!normalized.length) return null;
-
-    const candidate =
-      typeof raw === 'object' && raw != null
-        ? (raw as any)?.id ??
-          (raw as any)?.pawnId ??
-          (raw as any)?.pawn ??
-          (raw as any)?.value ??
-          (raw as any)?.label ??
-          raw
-        : raw;
-    return this.setupFlow.resolveChoice(candidate, normalized) as
-      | { id: string; label: string }
-      | null;
-  }
-
   private ensurePawnSelectionPrompt(state: GameStateEntity): GameStateEntity {
     return state;
   }
@@ -616,7 +574,7 @@ export class CatPattesActionService {
       changed = true;
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, player.id)} choisit le pion : ${nextPawn}.`,
+        `${resolvePlayerNameFromState(next, player.id)} choisit le pion : ${nextPawn}.`,
       );
     }
 
@@ -637,6 +595,11 @@ export class CatPattesActionService {
     return kind === 'bot' || kind === 'ai';
   }
 }
+
+
+
+
+
 
 
 

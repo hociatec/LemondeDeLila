@@ -3,6 +3,7 @@ import { FouleesFantastiquesActionService } from '../actions/foulees-fantastique
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { TurnService } from '../../../../modules/turn/services/turn.service';
+import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 
 describe('FouleesFantastiques scenario', () => {
@@ -35,7 +36,10 @@ describe('FouleesFantastiques scenario', () => {
   it('logs family-choice prompt during setup when selection is pending', () => {
     const service = new FouleesFantastiquesActionService(
       { rollDice: () => ({ roll: 1, meta: {} }) } as any,
-      new TurnFlowService(new TurnService()),
+      new TurnFlowService(
+        new TurnService(),
+        new TurnPoliciesService(new GameCoreService()),
+      ),
       new GameCoreService(),
       { recomputeBoardView: (s: any) => s } as any,
       new SetupFlowService(),
@@ -65,7 +69,10 @@ describe('FouleesFantastiques scenario', () => {
   it('announces next player after ending a turn without moves', () => {
     const service = new FouleesFantastiquesActionService(
       { rollDice: () => ({ roll: 1, meta: {} }) } as any,
-      new TurnFlowService(new TurnService()),
+      new TurnFlowService(
+        new TurnService(),
+        new TurnPoliciesService(new GameCoreService()),
+      ),
       new GameCoreService(),
       { recomputeBoardView: (s: any) => s } as any,
       new SetupFlowService(),

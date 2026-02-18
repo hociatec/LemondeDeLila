@@ -78,7 +78,19 @@ export class CatPattesSetupService {
       winnerId: null,
     };
 
-    const pendingInfo = this.buildPawnPending(players, metadata, setupStarterId);
+    const usedForPending = new Set(
+      Object.values(metadata.pawnByPlayerId ?? {}).filter((v) => typeof v === 'string'),
+    );
+    const choicesForPending = (metadata.pawns ?? []).filter((p) => !usedForPending.has(p));
+    const pendingInfo = this.setupFlow.createSequentialPawnPending({
+      players,
+      startPlayerId: setupStarterId,
+      isAssigned: (playerId) => {
+        const player = players.find((p) => p?.id === playerId);
+        return Boolean(metadata.pawnByPlayerId?.[playerId]) || this.isBotLike(player);
+      },
+      pawns: choicesForPending.map((name) => ({ id: name, label: name })),
+    });
     const metadataWithBots =
       pendingInfo == null ? this.assignMissingBotPawns(players, metadata) : metadata;
     const next: GameStateEntity = {
@@ -95,35 +107,6 @@ export class CatPattesSetupService {
     };
 
     return next;
-  }
-
-  private buildPawnPending(
-    players: Array<{ id: number; username?: string }>,
-    meta: CatPattesMetadata,
-    startId: number | null,
-  ): { pending: any; playerId: number; turnIndex: number } | null {
-    if (!players.length) return null;
-    const used = new Set(
-      Object.values(meta.pawnByPlayerId ?? {}).filter((v) => typeof v === 'string'),
-    );
-    const choices = (meta.pawns ?? []).filter((p) => !used.has(p));
-    return this.setupFlow.createSequentialChoicePending({
-      players,
-      startPlayerId: startId,
-      isAssigned: (playerId) => {
-        const player = players.find((p) => p?.id === playerId);
-        return Boolean(meta.pawnByPlayerId?.[playerId]) || this.isBotLike(player);
-      },
-      pendingType: 'choose_pawn',
-      choices: choices.map((name) => ({ id: name, label: name })),
-      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
-      dataBuilder: (availableChoices) => ({
-        pawns: availableChoices.map((choice) => ({
-          id: String(choice.id ?? '').trim(),
-          label: String(choice.label ?? '').trim(),
-        })),
-      }),
-    });
   }
 
   private assignMissingBotPawns(
@@ -167,6 +150,8 @@ export class CatPattesSetupService {
     return kind === 'bot' || kind === 'ai';
   }
 }
+
+
 
 
 

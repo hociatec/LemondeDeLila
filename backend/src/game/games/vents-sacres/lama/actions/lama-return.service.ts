@@ -5,6 +5,8 @@ import type { LamaMetadata } from '../model/lama.model';
 import { LamaSharedService } from '../shared/lama-shared.service';
 import { LamaRoundService } from '../round/lama-round.service';
 import { LamaLogService } from '../logging/lama-log.service';
+import { createPendingState } from '../../../../modules/pending-action/services/pending-action.service';
+import { optionalInt } from '../../../../core/helpers/payload-validators.helper';
 
 @Injectable()
 export class LamaReturnService {
@@ -26,7 +28,13 @@ export class LamaReturnService {
     if (String(action.type ?? '') !== 'lama_return') {
       return state;
     }
-    const value = Number((action.payload as any)?.value ?? 0);
+    const value = (() => {
+      try {
+        return optionalInt(action.payload ?? {}, 'value') ?? 0;
+      } catch {
+        return 0;
+      }
+    })();
     const currentScore = Number((meta.scoresByPlayerId ?? {})[String(actorId)] ?? 0);
     const delta = value === 10 ? 10 : value === 1 ? 1 : 0;
     const nextScore = Math.max(0, currentScore - delta);
@@ -52,15 +60,11 @@ export class LamaReturnService {
       suppressTurnAnnouncement: false,
     };
 
-    const nextState: GameStateEntity = {
+    const nextState = createPendingState({
       ...state,
       metadata: nextMeta as any,
       log,
       turnIndex: (state.turnIndex ?? 0) + 1,
-      pending: {
-        step: nextMeta.step,
-        playerId: nextMeta.pendingReturnPlayerId ?? null,
-      } as any,
       turn: {
         ...(state.turn ?? { direction: 1 }),
         currentPlayerId: nextPending ?? state.turn?.currentPlayerId ?? null,
@@ -69,7 +73,10 @@ export class LamaReturnService {
           ? `Rendre des jetons : ${this.shared.playerLabel(players as any[], nextPending)}`
           : undefined,
       },
-    };
+    } as GameStateEntity, {
+      step: nextMeta.step,
+      playerId: nextMeta.pendingReturnPlayerId ?? null,
+    } as any);
 
     if (nextPending) {
       return nextState;

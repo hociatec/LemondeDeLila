@@ -1,9 +1,10 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type {
   GameStateEntity,
   PendingState,
 } from '../../../../core/entities/game-state.entity';
 import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
@@ -57,14 +58,6 @@ export class MonVillageActionService {
                 next = this.handleRoll(next);
                 return next;
               },
-              'ROLL_DICE': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'roll_dice': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
             },
             () => next,
           );
@@ -95,7 +88,7 @@ export class MonVillageActionService {
             ...state,
             metadata: { ...(state.metadata ?? {}), ...meta, statuses: nextStatuses },
           },
-          `${this.playerName(state, playerId)} saute son tour (${skip} restant).`,
+          `${resolvePlayerNameFromState(state, playerId)} saute son tour (${skip} restant).`,
         ),
       );
     }
@@ -109,7 +102,7 @@ export class MonVillageActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} lance le dÃ© : "${rng.roll}".`,
+      `${resolvePlayerNameFromState(next, playerId)} lance le dé : "${rng.roll}".`,
     );
 
     next = this.move(next, playerId, rng.roll);
@@ -134,7 +127,7 @@ export class MonVillageActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${tile.n} (${tile.title}).`,
+      `${resolvePlayerNameFromState(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${tile.n} (${tile.title}).`,
     );
 
     if (tile.type === 'finish') {
@@ -162,13 +155,13 @@ export class MonVillageActionService {
     if (!card) {
       return this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} nâ€™a plus de cartes dans la zone ${zoneId}.`,
+        `${resolvePlayerNameFromState(next, playerId)} n’a plus de cartes dans la zone ${zoneId}.`,
       );
     }
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} collecte "${card.title}".`,
+      `${resolvePlayerNameFromState(next, playerId)} collecte "${card.title}".`,
     );
     next = this.updateCollections(next, playerId, card);
     return next;
@@ -242,7 +235,7 @@ export class MonVillageActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, best.id)} remporte la partie avec ${best.total} cartes !`,
+      `${resolvePlayerNameFromState(next, best.id)} remporte la partie avec ${best.total} cartes !`,
     );
     return next;
   }
@@ -296,16 +289,6 @@ export class MonVillageActionService {
     return { card: draw.card, meta: nextMeta };
   }
 
-  private playerName(state: GameStateEntity, id: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const player = players.find((p) => p?.id === id);
-    const username =
-      player?.username && String(player.username).trim()
-        ? String(player.username).trim()
-        : null;
-    return username ?? `Joueur ${id}`;
-  }
-
   private getMeta(state: GameStateEntity): MonVillageMetadata {
     return (state.metadata ?? {}) as MonVillageMetadata;
   }
@@ -319,7 +302,7 @@ export class MonVillageActionService {
     const lower = pawn.toLowerCase();
     const feminine = lower.startsWith('la ') || lower.startsWith('une ');
     const inner = pawn
-      .replace(/^l['â€™]\s*/i, '')
+      .replace(/^l['’]\s*/i, '')
       .replace(/^(le|la|les|un|une)\s+/i, '')
       .trim();
     const core = inner || pawn;
@@ -328,5 +311,8 @@ export class MonVillageActionService {
     return `"${feminine ? 'sa' : 'son'} ${lowered}"`;
   }
 }
+
+
+
 
 

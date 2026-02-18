@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerName } from '../../../../modules/turn-policies/player-name.helper';
 
 import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import * as Rulebook from '../rulebook/rulebook';
@@ -65,14 +66,9 @@ export class AbsurdissimesPresenterService {
     }
     if (action.type === 'judge_pick') {
       const winnerId = Number(action.payload?.winnerId ?? 0);
-      return `Choisir ${this.playerName(state.players, winnerId)}`;
+      return `Choisir ${resolvePlayerName(state.players, winnerId)}`;
     }
     return action.type;
   }
-
-  private playerName(players: GameStateEntity['players'], playerId: number): string {
-    const list = Array.isArray(players) ? players : [];
-    const player = list.find((p) => p?.id === playerId);
-    return player?.username?.trim() || `Joueur ${playerId}`;
-  }
 }
+

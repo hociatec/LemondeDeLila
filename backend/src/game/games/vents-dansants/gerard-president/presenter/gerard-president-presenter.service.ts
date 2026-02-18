@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerName } from '../../../../modules/turn-policies/player-name.helper';
 
 import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import * as Rulebook from '../rulebook/rulebook';
@@ -49,7 +50,7 @@ export class GerardPresidentPresenterService {
       handCounts,
       discardLabel: 'Soumissions',
       scoreLines: scoreLines.map((entry) => {
-        const playerName = this.playerName(state.players, entry.pid);
+        const playerName = resolvePlayerName(state.players, entry.pid);
         return `${playerName}: ${entry.value ?? 0}`;
       }),
       tableMessage: `Phase : ${metadata.roundPhase ?? 'en attente'}`,
@@ -175,10 +176,5 @@ export class GerardPresidentPresenterService {
           player?.username?.trim() || `Joueur ${player!.id}`,
       }));
   }
-
-  private playerName(players: GameStateEntity['players'], playerId: number): string {
-    const list = Array.isArray(players) ? players : [];
-    const player = list.find((p) => p?.id === playerId);
-    return player?.username?.trim() || `Joueur ${playerId}`;
-  }
 }
+

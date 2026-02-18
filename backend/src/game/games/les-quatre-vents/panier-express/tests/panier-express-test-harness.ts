@@ -10,6 +10,7 @@ import { TurnActionsService } from '../../../../modules/turn/services/turn-actio
 import { TurnService } from '../../../../modules/turn/services/turn.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { TurnStatusService } from '../../../../modules/turn/services/turn-status.service';
+import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
 import { ActionResolverService } from '../../../../modules/action-resolver/services/action-resolver.service';
 import { QuizRunnerService } from '../../../../modules/quiz/services/quiz-runner.service';
 import { VictoryService } from '../../../../modules/victory/services/victory.service';
@@ -42,6 +43,7 @@ export async function createPanierExpressTestingModule() {
       StandEffectRegistryService,
       TurnActionsService,
       TurnService,
+      TurnPoliciesService,
       TurnFlowService,
       TurnStatusService,
       ActionResolverService,

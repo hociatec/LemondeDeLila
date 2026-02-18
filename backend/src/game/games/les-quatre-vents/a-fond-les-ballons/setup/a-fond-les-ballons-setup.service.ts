@@ -1,5 +1,6 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import { loadV1Content } from '../../../../setup/content-loader.helper';
@@ -86,19 +87,15 @@ export class AFondLesBallonsSetupService {
       winnerId: null,
     };
 
-    const pendingInfo = this.setupFlow.createSequentialChoicePending({
+    const pendingInfo = this.setupFlow.createSequentialPawnPending({
       players: players.map((p) => ({ id: p.id, username: p.username ?? null })),
       startPlayerId: setupStarterId,
       isAssigned: (playerId) => Boolean(pawnByPlayerId[playerId]),
-      pendingType: 'choose_pawn',
-      choices: pawns,
-      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
-      dataBuilder: (choices) => ({
-        pawns: choices.map((p: any) => ({
+      pawns,
+      pawnDataMapper: (p: any) => ({
           id: p.id,
           label: p.label,
           description: p.description ?? '',
-        })),
       }),
     });
     const turnIndex =
@@ -131,16 +128,6 @@ export class AFondLesBallonsSetupService {
       next = this.core.appendLog(next, `- ${pawn.label}`);
     }
     return next;
-  }
-
-  private playerName(state: GameStateEntity, id: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const player = players.find((p) => p?.id === id);
-    const username =
-      player?.username && String(player.username).trim()
-        ? String(player.username).trim()
-        : null;
-    return username ?? `Joueur ${id}`;
   }
 }
 
@@ -498,3 +485,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
   ];
 }
+
+
+
+

@@ -1,11 +1,7 @@
 import { Module } from '@nestjs/common';
 import { GameCoreModule } from '../../../core/core.module';
 import { GameRegistryModule } from '../../../engine/game-registry.module';
-import { RandomModule } from '../../../modules/random/random.module';
-import { TurnModule } from '../../../modules/turn/turn.module';
-import { BotModule } from '../../../modules/bot/bot.module';
-import { BoardModule } from '../../../modules/board/board.module';
-import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
+import { BoardGameDeckKitModule } from '../../../modules/game-kits/board-game-kits.module';
 import { CerclesSacresService } from './cercles-sacres.service';
 import { CerclesSacresSetupService } from './setup/cercles-sacres-setup.service';
 import { CerclesSacresActionService } from './actions/cercles-sacres-action.service';
@@ -14,14 +10,10 @@ import { CerclesSacresBotService } from './bots/cercles-sacres-bot.service';
 
 @Module({
   imports: [
+    BoardGameDeckKitModule,
     GameCoreModule,
     GameRegistryModule,
-    RandomModule,
-    DeckPoliciesModule,
-    BoardModule,
-    TurnModule,
-    BotModule,
-  ],
+    ],
   providers: [
     CerclesSacresService,
     CerclesSacresSetupService,

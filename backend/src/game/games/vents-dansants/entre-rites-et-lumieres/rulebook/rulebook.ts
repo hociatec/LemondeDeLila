@@ -86,7 +86,7 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error('La partie nâ€™est pas dÃ©marrÃ©e.');
+    throw new Error('La partie n’est pas démarrée.');
   }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== actorId) {
@@ -114,10 +114,10 @@ export function validateAction(
     ? meta.hands[targetId]
     : [];
   if (!targetHand.includes(cardId)) {
-    throw new Error('La cible ne possÃ¨de pas cette carte.');
+    throw new Error('La cible ne possède pas cette carte.');
   }
   if (!hasFamilyExposure(meta, actorId, cardId)) {
-    throw new Error('Vous devez dÃ©jÃ  dÃ©tenir une carte de cette famille.');
+    throw new Error('Vous devez déjà détenir une carte de cette famille.');
   }
 
   return { type: 'ask_card', payload: { cardId, targetPlayerId: targetId } };

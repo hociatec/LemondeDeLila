@@ -1,6 +1,7 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -37,10 +38,6 @@ export class TaxiExpressActionService {
             type,
             {
               'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'roll_dice': () => {
                 next = this.handleRoll(next);
                 return next;
               },
@@ -92,7 +89,7 @@ export class TaxiExpressActionService {
     const arrivedTile = this.getTileByIndex(this.getMeta(next), finalIndex);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} avance de ${rollResult.roll} case(s) et place son taxi en case ${finalIndex + 1} (${arrivedTile?.title ?? `case ${finalIndex + 1}`}).`,
+      `${resolvePlayerNameFromState(next, playerId)} avance de ${rollResult.roll} case(s) et place son taxi en case ${finalIndex + 1} (${arrivedTile?.title ?? `case ${finalIndex + 1}`}).`,
     );
 
     meta = this.getMeta(next);
@@ -102,10 +99,10 @@ export class TaxiExpressActionService {
       const blockedTile = this.getTileByIndex(meta, blockedIndex);
       next = this.core.appendLog(
         next,
-        `${this.playerName(
+        `${resolvePlayerNameFromState(
           next,
           playerId,
-        )} croise lâ€™Ã©vÃ©nement ${blockedTile?.title ?? `case ${meta.blockedTileId}`}, le client descend et le taxi retourne Ã  la station.`,
+        )} croise l’événement ${blockedTile?.title ?? `case ${meta.blockedTileId}`}, le client descend et le taxi retourne à la station.`,
       );
       next = this.setPlayerPosition(next, playerId, 0);
       next = this.dropActiveClient(next, playerId);
@@ -116,10 +113,10 @@ export class TaxiExpressActionService {
     if (destinationIndex === finalIndex) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(
+        `${resolvePlayerNameFromState(
           next,
           playerId,
-        )} dÃ©pose ${client.clientName} Ã  destination (${arrivedTile?.title ?? ''}).`,
+        )} dépose ${client.clientName} à destination (${arrivedTile?.title ?? ''}).`,
       );
       next = this.incrementTrip(next, playerId);
       const completed = this.getMeta(next).completedTrips?.[playerId] ?? 0;
@@ -192,12 +189,12 @@ export class TaxiExpressActionService {
       const tile = this.tileTitleById(nextMeta, draw.card.blockedTileId);
       next = this.core.appendLog(
         next,
-        `Ã‰vÃ©nement : ${draw.card.title} (${tile}) â€“ ${draw.card.description}`,
+        `Événement : ${draw.card.title} (${tile}) – ${draw.card.description}`,
       );
     } else {
       next = this.core.appendLog(
         next,
-        'Ã‰vÃ©nement : la ville est calme, aucun obstacle identifiÃ©.',
+        'Événement : la ville est calme, aucun obstacle identifié.',
       );
     }
     return next;
@@ -236,7 +233,7 @@ export class TaxiExpressActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} remporte la course avec ${completed} trajets validÃ©s !`,
+      `${resolvePlayerNameFromState(next, playerId)} remporte la course avec ${completed} trajets validés !`,
     );
     return next;
   }
@@ -374,16 +371,9 @@ export class TaxiExpressActionService {
     const tile = index != null ? this.getTileByIndex(meta, index) : null;
     return tile?.title ?? `case ${tileId ?? '?'}`;
   }
-
-  private playerName(state: GameStateEntity, playerId: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const player = players.find((p) => p?.id === playerId);
-    const username =
-      player?.username && String(player.username).trim()
-        ? String(player.username).trim()
-        : null;
-    return username ?? `Joueur ${playerId}`;
-  }
 }
+
+
+
 
 

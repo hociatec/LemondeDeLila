@@ -462,7 +462,7 @@ export class RoomService {
     }
     const status = String((known as any)?.status ?? 'finished').toLowerCase();
     if (status === 'construction' && !RoomService.isAdminRoles(owner.roles)) {
-      throw new ForbiddenException('Jeu en construction: rÃ©servÃ© aux admins');
+      throw new ForbiddenException('Jeu en construction: réservé aux admins');
     }
     const resolvedMaxPlayers =
       maxPlayers && maxPlayers > 0
@@ -532,7 +532,7 @@ export class RoomService {
     const manifest = await this.catalog.getGame(room.gameType);
     const status = String((manifest as any)?.status ?? 'finished').toLowerCase();
     if (status === 'construction' && !RoomService.isAdminRoles(user.roles)) {
-      throw new ForbiddenException('Jeu en construction: rÃ©servÃ© aux admins');
+      throw new ForbiddenException('Jeu en construction: réservé aux admins');
     }
 
     const existing = await this.participants.findOne({

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { PendingState } from '../../../core/entities/game-state.entity';
+import { pawnPlacement } from '../../../core/helpers/game-log-text.helper';
 
 type LandingTile = {
   type?: string | null;
@@ -28,7 +29,7 @@ export class BoardEffectsPoliciesService {
     position: number;
     tileLabel: string;
   }): string {
-    return `${params.playerLabel} place ${params.pawnLabel} en case ${params.position + 1} (${params.tileLabel}).`;
+    return pawnPlacement(params);
   }
 
   resolveLanding(params: {
@@ -77,4 +78,3 @@ export class BoardEffectsPoliciesService {
     return { logs, pending, isFinish: false };
   }
 }
-

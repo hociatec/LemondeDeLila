@@ -1,6 +1,11 @@
 ﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  isRollActionType,
+  normalizeActionType,
+  normalizeLegacyRollAliasToUpper,
+  normalizeLowerActionType,
+} from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
   GameValidationError,
@@ -10,8 +15,6 @@ import {
   CA_DERAPE_GAME,
   type CaDerapeActionType,
 } from '../definitions/ca.definition';
-
-const ROLL_ALIASES = new Set(['roll', 'ROLL_DICE', 'roll_dice']);
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -71,8 +74,8 @@ export function validateAction(
   actorId: number | null,
 ): GameSingleActionDto {
   const rawType = normalizeActionType(action);
-  const normalized: CaDerapeActionType =
-    rawType === 'roll_dice' ? 'ROLL_DICE' : (rawType as CaDerapeActionType);
+  const normalized =
+    normalizeLegacyRollAliasToUpper(rawType) as CaDerapeActionType;
 
   if (!CA_DERAPE_GAME.actions.includes(normalized)) {
     throw new GameValidationError(`Action inconnue: ${rawType || '(vide)'}`, {
@@ -87,7 +90,7 @@ export function validateAction(
 
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new PlayerActionError("La partie n'est pas dÃ©marrÃ©e.", {
+    throw new PlayerActionError("La partie n'est pas démarrée.", {
       gameType: 'ca-derape',
     });
   }
@@ -95,7 +98,7 @@ export function validateAction(
   const pending: any = state.pending;
   if (pending) {
     if (pending.playerId !== actorId) {
-      throw new PlayerActionError('Action rÃ©servÃ©e Ã  un autre joueur.', {
+      throw new PlayerActionError('Action réservée à un autre joueur.', {
         gameType: 'ca-derape',
       });
     }
@@ -178,7 +181,7 @@ export function validateAction(
     });
   }
 
-  if (ROLL_ALIASES.has(rawType) || ROLL_ALIASES.has(rawType.toLowerCase())) {
+  if (isRollActionType(rawType)) {
     return { type: 'roll', payload: {} };
   }
   return { type: normalized, payload: action.payload ?? {} };

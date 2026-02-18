@@ -1,12 +1,8 @@
 import { Module } from '@nestjs/common';
 import { GameCoreModule } from '../../../core/core.module';
 import { GameRegistryModule } from '../../../engine/game-registry.module';
+import { BoardGameDeckKitModule } from '../../../modules/game-kits/board-game-kits.module';
 import { EngineServicesModule } from '../../../engine/services/engine-services.module';
-import { RandomModule } from '../../../modules/random/random.module';
-import { TurnModule } from '../../../modules/turn/turn.module';
-import { BoardModule } from '../../../modules/board/board.module';
-import { BotModule } from '../../../modules/bot/bot.module';
-import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
 import { PiratesEnVadrouilleService } from './pirates-en-vadrouille.service';
 import { PiratesEnVadrouilleSetupService } from './setup/pirates-en-vadrouille-setup.service';
 import { PiratesEnVadrouilleActionService } from './actions/pirates-en-vadrouille-action.service';
@@ -15,15 +11,11 @@ import { PiratesEnVadrouilleBotService } from './bots/pirates-en-vadrouille-bot.
 
 @Module({
   imports: [
+    BoardGameDeckKitModule,
     GameCoreModule,
     GameRegistryModule,
     EngineServicesModule,
-    RandomModule,
-    DeckPoliciesModule,
-    BoardModule,
-    TurnModule,
-    BotModule,
-  ],
+    ],
   providers: [
     PiratesEnVadrouilleService,
     PiratesEnVadrouilleSetupService,

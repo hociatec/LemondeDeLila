@@ -7,6 +7,7 @@ import {
 } from '../entities/game-state.entity';
 import { ensureSeededRng } from '../../../common/utils/seeded-rng';
 import { seededShuffle } from '../../../common/utils/seeded-shuffle';
+import { normalizeGameLogMessage } from '../helpers/log-style.helper';
 
 @Injectable()
 export class GameCoreService {
@@ -93,8 +94,10 @@ export class GameCoreService {
   }
 
   appendLog(state: GameStateEntity, message: string): GameStateEntity {
+    const normalizedMessage = normalizeGameLogMessage(message);
+    if (!normalizedMessage) return state;
     const entry: GameLogEntry = {
-      message,
+      message: normalizedMessage,
       timestamp: new Date().toISOString(),
     };
     const next = this.cloneState(state);

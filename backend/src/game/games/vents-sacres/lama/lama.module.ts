@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GameCoreModule } from '../../../core/core.module';
 import { GameRegistryModule } from '../../../engine/game-registry.module';
-import { RandomModule } from '../../../modules/random/random.module';
+import { RandomGameCoreKitModule } from '../../../modules/game-kits/board-game-kits.module';
 import { LamaPresenter } from './lama.presenter';
 import { LamaService } from './lama.service';
 import { LamaSharedService } from './shared/lama-shared.service';
@@ -20,7 +20,7 @@ import { LamaShortcutsService } from './shortcuts/lama-shortcuts.service';
 import { LamaLogService } from './logging/lama-log.service';
 
 @Module({
-  imports: [ConfigModule, GameCoreModule, GameRegistryModule, RandomModule],
+  imports: [ConfigModule, GameCoreModule, GameRegistryModule, RandomGameCoreKitModule],
   providers: [
     LamaService,
     LamaPresenter,

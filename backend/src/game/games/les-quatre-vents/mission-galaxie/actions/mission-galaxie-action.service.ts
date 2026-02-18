@@ -1,9 +1,15 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type {
   GameStateEntity,
   PendingState,
 } from '../../../../core/entities/game-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  harmonizeActionStateReturn,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
@@ -13,6 +19,10 @@ import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
+import {
+  createPendingState,
+  isPendingType,
+} from '../../../../modules/pending-action/services/pending-action.service';
 import type {
   MissionGalaxieChoiceCard,
   MissionGalaxieDeckName,
@@ -39,18 +49,18 @@ export class MissionGalaxieActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    return applyActionsSequentially(state, actions, (next, action) => {
+    return applyActionsSequentially(harmonizeActionStateReturn(state), actions, (next, action) => {
+      const current = harmonizeActionStateReturn(next);
       const type = normalizeActionType(action);
       return dispatchByActionType(
         type,
         {
-          roll: () => this.handleRoll(next),
-          ROLL_DICE: () => this.handleRoll(next),
-          draw: () => this.handleDraw(next),
-          choose_option: () => this.handleChooseOption(next, action),
-          choose_event_move: () => this.handleChooseEventMove(next, action),
+          roll: () => this.handleRoll(current),
+          draw: () => this.handleDraw(current),
+          choose_option: () => this.handleChooseOption(current, action),
+          choose_event_move: () => this.handleChooseEventMove(current, action),
         },
-        () => next,
+        () => current,
       );
     });
   }
@@ -75,7 +85,7 @@ export class MissionGalaxieActionService {
       meta = { ...meta, statuses: nextStatuses };
       const skipped = this.core.appendLog(
         { ...state, metadata: { ...(state.metadata ?? {}), ...meta } },
-        `${this.playerName(state, currentId)} passe son tour (${skipTurns} restant).`,
+        `${resolvePlayerNameFromState(state, currentId)} passe son tour (${skipTurns} restant).`,
       );
       return this.turns.advanceTurn(skipped);
     }
@@ -91,7 +101,7 @@ export class MissionGalaxieActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} lance le dÃ© : "${roll}".`,
+      `${resolvePlayerNameFromState(next, currentId)} lance le dé : "${roll}".`,
     );
 
     next = this.move(next, currentId, roll);
@@ -112,7 +122,7 @@ export class MissionGalaxieActionService {
       };
       return this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} rejoue.`,
+        `${resolvePlayerNameFromState(next, currentId)} rejoue.`,
       );
     }
 
@@ -122,7 +132,7 @@ export class MissionGalaxieActionService {
   private handleDraw(state: GameStateEntity): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
     const pending = state.pending as any;
-    if (!pending || pending.type !== 'draw') return state;
+    if (!isPendingType(state, 'draw')) return state;
 
     const playerId =
       typeof pending.playerId === 'number'
@@ -144,7 +154,7 @@ export class MissionGalaxieActionService {
     if (!card) {
       return this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} n'a plus de cartes ${deckName}.`,
+        `${resolvePlayerNameFromState(next, playerId)} n'a plus de cartes ${deckName}.`,
       );
     }
 
@@ -169,8 +179,8 @@ export class MissionGalaxieActionService {
       blocking: true,
       label:
         cardKind === 'question'
-          ? 'RÃ©pondez Ã  la question galactique.'
-          : 'RÃ©solvez le dÃ©fi cosmique.',
+          ? 'Répondez à la question galactique.'
+          : 'Résolvez le défi cosmique.',
       choices: (card as MissionGalaxieChoiceCard).choices,
       data: { choices: (card as MissionGalaxieChoiceCard).choices },
     };
@@ -180,14 +190,14 @@ export class MissionGalaxieActionService {
       ...withContext,
       pendingContext: ctx,
     };
+    next = createPendingState(next, pendingState);
     next = {
       ...next,
-      pending: pendingState,
       metadata: { ...(next.metadata ?? {}), ...updatedMeta },
     };
     return this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} pioche la carte "${card.title}".`,
+      `${resolvePlayerNameFromState(next, playerId)} pioche la carte "${card.title}".`,
     );
   }
 
@@ -199,7 +209,7 @@ export class MissionGalaxieActionService {
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
     const pending = state.pending as any;
-    if (!pending || pending.type !== 'choose_option') return state;
+    if (!isPendingType(state, 'choose_option')) return state;
 
     const choiceIndex = Number((action.payload as any)?.choiceIndex);
     if (!Number.isFinite(choiceIndex)) return state;
@@ -228,7 +238,7 @@ export class MissionGalaxieActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} rÃ©pond Ã  "${card.title}" : ${
+      `${resolvePlayerNameFromState(next, currentId)} répond à "${card.title}" : ${
         isCorrect ? 'Correct' : 'Erreur'
       } (${delta >= 0 ? 'avance' : 'recule'} ${Math.abs(delta)}).`,
     );
@@ -246,7 +256,7 @@ export class MissionGalaxieActionService {
     if (currentId == null) return state;
 
     const pending = state.pending as any;
-    if (!pending || pending.type !== 'choose_event_move') return state;
+    if (!isPendingType(state, 'choose_event_move')) return state;
 
     const targetPlayerId = Number((action.payload as any)?.targetPlayerId);
     const delta = Number((action.payload as any)?.delta);
@@ -273,9 +283,9 @@ export class MissionGalaxieActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} applique ${
+      `${resolvePlayerNameFromState(next, currentId)} applique ${
         delta >= 0 ? 'un boost' : 'une perturbation'
-      } Ã  ${this.playerName(next, targetPlayerId)} (${delta >= 0 ? '+' : ''}${delta}).`,
+      } à ${resolvePlayerNameFromState(next, targetPlayerId)} (${delta >= 0 ? '+' : ''}${delta}).`,
     );
     next = this.move(next, targetPlayerId, delta);
     next = this.applyLanding(next, targetPlayerId);
@@ -294,7 +304,7 @@ export class MissionGalaxieActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${tile.n} (${tile.title}).`,
+      `${resolvePlayerNameFromState(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${tile.n} (${tile.title}).`,
     );
 
     switch (tile.type) {
@@ -302,7 +312,7 @@ export class MissionGalaxieActionService {
         if (typeof tile.delta === 'number' && tile.delta !== 0) {
           next = this.core.appendLog(
             next,
-            `${this.playerName(next, playerId)} suit l'effet du plateau (${tile.delta >= 0 ? 'avance' : 'recule'} ${Math.abs(
+            `${resolvePlayerNameFromState(next, playerId)} suit l'effet du plateau (${tile.delta >= 0 ? 'avance' : 'recule'} ${Math.abs(
               tile.delta,
             )}).`,
           );
@@ -331,7 +341,7 @@ export class MissionGalaxieActionService {
         };
         return this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} doit sauter ${addition} tour(s).`,
+          `${resolvePlayerNameFromState(next, playerId)} doit sauter ${addition} tour(s).`,
         );
       }
       case 'question':
@@ -341,12 +351,12 @@ export class MissionGalaxieActionService {
         );
         return this.promptDraw(next, playerId, 'questions');
       case 'challenge':
-        next = this.core.appendLog(next, 'Piochez un dÃ©fi cosmique.');
+        next = this.core.appendLog(next, 'Piochez un défi cosmique.');
         return this.promptDraw(next, playerId, 'challenges');
       case 'event':
         next = this.core.appendLog(
           next,
-          'Piochez un Ã©vÃ©nement spatial.',
+          'Piochez un événement spatial.',
         );
         return this.promptDraw(next, playerId, 'events');
       case 'swapNearest':
@@ -380,7 +390,7 @@ export class MissionGalaxieActionService {
       };
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} reÃ§oit un tour bonus.`,
+        `${resolvePlayerNameFromState(next, playerId)} reçoit un tour bonus.`,
       );
     }
 
@@ -398,13 +408,13 @@ export class MissionGalaxieActionService {
       blocking: true,
       label:
         deck === 'events'
-          ? 'Piochez un Ã©vÃ©nement spatial.'
+          ? 'Piochez un événement spatial.'
           : deck === 'questions'
             ? 'Piochez une question galactique.'
-            : 'Piochez un dÃ©fi cosmique.',
+            : 'Piochez un défi cosmique.',
       data: { deck },
     };
-    return { ...state, pending };
+    return createPendingState(state, pending);
   }
 
   private applySwapNearest(
@@ -441,7 +451,7 @@ export class MissionGalaxieActionService {
     };
     return this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} Ã©changÃ©e sa position avec ${this.playerName(next, closest.id)}.`,
+      `${resolvePlayerNameFromState(next, playerId)} échangée sa position avec ${resolvePlayerNameFromState(next, closest.id)}.`,
     );
   }
 
@@ -452,14 +462,14 @@ export class MissionGalaxieActionService {
   ): GameStateEntity {
     let next = this.core.appendLog(
       state,
-      `${this.playerName(state, playerId)} dÃ©clenche l'Ã©vÃ©nement "${card.title}".`,
+      `${resolvePlayerNameFromState(state, playerId)} déclenche l'événement "${card.title}".`,
     );
     const effect = card.effect;
     switch (effect.kind) {
       case 'move':
         next = this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} avance de ${effect.delta} cases.`,
+          `${resolvePlayerNameFromState(next, playerId)} avance de ${effect.delta} cases.`,
         );
         next = this.move(next, playerId, effect.delta);
         return this.applyLanding(next, playerId);
@@ -467,7 +477,7 @@ export class MissionGalaxieActionService {
         next = this.addSkip(next, playerId, effect.turns);
         return this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} doit sauter ${effect.turns} tour(s).`,
+          `${resolvePlayerNameFromState(next, playerId)} doit sauter ${effect.turns} tour(s).`,
         );
       case 'none':
         return next;
@@ -475,13 +485,13 @@ export class MissionGalaxieActionService {
         next = this.setKeepTurn(next, playerId);
         return this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} relance immÃ©diatement le dÃ©.`,
+          `${resolvePlayerNameFromState(next, playerId)} relance immédiatement le dé.`,
         );
       case 'keepTurn':
         next = this.setKeepTurn(next, playerId);
         return this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} rejoue immÃ©diatement.`,
+          `${resolvePlayerNameFromState(next, playerId)} rejoue immédiatement.`,
         );
       case 'goto':
         next = this.setPos(
@@ -494,14 +504,14 @@ export class MissionGalaxieActionService {
         );
         next = this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} avance jusqu'Ã  la case ${effect.target}.`,
+          `${resolvePlayerNameFromState(next, playerId)} avance jusqu'à la case ${effect.target}.`,
         );
         return this.applyLanding(next, playerId);
       case 'skipOthers':
         next = this.skipOthers(next, playerId, effect.turns);
         return this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} force les autres Ã  sauter ${effect.turns} tour(s).`,
+          `${resolvePlayerNameFromState(next, playerId)} force les autres à sauter ${effect.turns} tour(s).`,
         );
       case 'choosePlayerMove':
         return this.promptPlayerMove(next, playerId, effect.deltas);
@@ -531,7 +541,7 @@ export class MissionGalaxieActionService {
         options.push({
           targetPlayerId: targetId,
           delta,
-          label: `${this.playerName(next, targetId)} ${delta >= 0 ? `avance de ${delta}` : `recule de ${Math.abs(delta)}`}`,
+          label: `${resolvePlayerNameFromState(next, targetId)} ${delta >= 0 ? `avance de ${delta}` : `recule de ${Math.abs(delta)}`}`,
         });
       }
     }
@@ -551,9 +561,9 @@ export class MissionGalaxieActionService {
         deltas,
       },
     };
+    next = createPendingState(next, pending);
     next = {
       ...next,
-      pending,
       metadata: { ...(next.metadata ?? {}), ...nextMeta },
     };
     return next;
@@ -628,7 +638,7 @@ export class MissionGalaxieActionService {
     };
     return this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} atteint la planÃ¨te lÃ©gendaire !`,
+      `${resolvePlayerNameFromState(next, playerId)} atteint la planète légendaire !`,
     );
   }
 
@@ -684,16 +694,6 @@ export class MissionGalaxieActionService {
     return { card: draw.card, meta: nextMeta };
   }
 
-  private playerName(state: GameStateEntity, id: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const player = players.find((p) => p?.id === id);
-    const username =
-      player?.username && String(player.username).trim()
-        ? String(player.username).trim()
-        : null;
-    return username ?? `Joueur ${id}`;
-  }
-
   private pawnLabel(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
     const player = players.find((p: any) => p?.id === id) as any;
@@ -703,7 +703,7 @@ export class MissionGalaxieActionService {
     const lower = pawn.toLowerCase();
     const feminine = lower.startsWith('la ') || lower.startsWith('une ');
     const inner = pawn
-      .replace(/^l['â€™]\s*/i, '')
+      .replace(/^l['’]\s*/i, '')
       .replace(/^(le|la|les|un|une)\s+/i, '')
       .trim();
     const core = inner || pawn;
@@ -716,5 +716,8 @@ export class MissionGalaxieActionService {
     return (state.metadata ?? {}) as MissionGalaxieMetadata;
   }
 }
+
+
+
 
 

@@ -49,9 +49,9 @@ describe('FrousseActionService movement effects', () => {
         decks: {
           cards: [
             {
-              category: 'FantÃ´me',
+              category: 'Fantôme',
               localNumber: 999,
-              text: 'Le fantÃ´me surgit en hurlant.\nAvancez de 5 cases puis reculez de 3.',
+              text: 'Le fantôme surgit en hurlant.\nAvancez de 5 cases puis reculez de 3.',
             },
           ],
           discard: [],
@@ -120,7 +120,7 @@ describe('FrousseActionService movement effects', () => {
     const messages = (next.log ?? []).map((l: any) => l.message);
 
     expect(messages).toContain('Reculez de 2 cases.');
-    expect(messages).not.toContain('3 au dÃ©, recul de 2 cases.');
+    expect(messages).not.toContain('3 au dé, recul de 2 cases.');
   });
 
   it('formats doubled roll log with "=" (not "->")', () => {
@@ -323,7 +323,7 @@ describe('FrousseActionService movement effects', () => {
           ignoreNextTrap: {},
         },
         tiles: [
-          { n: 1, type: 'normal', title: 'DÃ©part', label: 'case 1. DÃ©part (case neutre)', description: '' },
+          { n: 1, type: 'normal', title: 'Départ', label: 'case 1. Départ (case neutre)', description: '' },
           { n: 2, type: 'normal', title: 'Hall', label: 'case 2. Hall (case neutre)', description: '' },
           {
             n: 3,
@@ -391,9 +391,9 @@ describe('FrousseActionService movement effects', () => {
         decks: {
           cards: [
             {
-              category: 'PiÃ¨ge',
+              category: 'Piège',
               localNumber: 1,
-              text: 'Une bougie clignote et vous joue un tour. Lancez le dÃ© deux fois et gardez le plus petit rÃ©sultat.',
+              text: 'Une bougie clignote et vous joue un tour. Lancez le dé deux fois et gardez le plus petit résultat.',
             },
           ],
           discard: [],
@@ -410,7 +410,7 @@ describe('FrousseActionService movement effects', () => {
       messages.some((m) => /^Lilas rejoue/i.test(m) || /rejoue\s*\(/i.test(m)),
     ).toBe(false);
     expect(
-      messages.some((m) => /gardez le plus petit rÃ©sultat/i.test(m)),
+      messages.some((m) => /gardez le plus petit résultat/i.test(m)),
     ).toBe(true);
   });
 });

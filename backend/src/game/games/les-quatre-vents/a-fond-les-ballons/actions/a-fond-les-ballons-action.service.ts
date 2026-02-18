@@ -1,12 +1,14 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import type {
   AFondLesBallonsCard,
   AFondLesBallonsMetadata,
@@ -24,6 +26,7 @@ export class AFondLesBallonsActionService {
     private readonly random: RandomService,
     private readonly turns: TurnFlowService,
     private readonly deckPolicies: DeckPoliciesService,
+    private readonly setupFlow: SetupFlowService,
   ) {}
 
   applyActions(
@@ -40,14 +43,6 @@ export class AFondLesBallonsActionService {
                 return next;
               },
               'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'ROLL_DICE': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'roll_dice': () => {
                 next = this.handleRoll(next);
                 return next;
               },
@@ -86,7 +81,7 @@ export class AFondLesBallonsActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} lance le dé : "${roll}".`,
+      `${resolvePlayerNameFromState(next, currentId)} lance le dÃ© : "${roll}".`,
     );
     next = this.moveBy(next, currentId, roll, 0);
 
@@ -94,7 +89,7 @@ export class AFondLesBallonsActionService {
     if (afterMeta.winnerId != null) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, afterMeta.winnerId)} remporte la partie !`,
+        `${resolvePlayerNameFromState(next, afterMeta.winnerId)} remporte la partie !`,
       );
       return { ...next, status: 'finished' };
     }
@@ -152,7 +147,7 @@ export class AFondLesBallonsActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} échange sa place avec ${this.playerName(next, targetPlayerId)}.`,
+      `${resolvePlayerNameFromState(next, currentId)} Ã©change sa place avec ${resolvePlayerNameFromState(next, targetPlayerId)}.`,
     );
 
     next = this.decrementTrapImmunity(next, currentId);
@@ -224,7 +219,7 @@ export class AFondLesBallonsActionService {
       if (!chosen) return next;
       next = this.core.appendLog(
         next,
-        'Boutique : application de la carte la plus défavorable.',
+        'Boutique : application de la carte la plus dÃ©favorable.',
       );
       next = this.applyCardEffect(next, playerId, chosen, depth);
     } else {
@@ -264,7 +259,7 @@ export class AFondLesBallonsActionService {
     const rawPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
 
     const options = Array.isArray(pending?.data?.pawns) ? pending.data.pawns : [];
-    const chosen = this.resolvePendingPawn(rawPawn, options);
+    const chosen = this.setupFlow.resolvePawnChoice(rawPawn, options) as any;
     if (!chosen) return state;
 
     const meta = this.getMeta(state);
@@ -306,12 +301,34 @@ export class AFondLesBallonsActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} choisit le pion : ${String(
+      `${resolvePlayerNameFromState(next, playerId)} choisit le pion : ${String(
         pawn.label ?? 'pion',
       ).trim()}.`,
     );
 
-    const pendingInfo = this.buildPawnPending(next, playerId);
+    const playersForPending = Array.isArray(next.players) ? next.players : [];
+    const metaForPending = this.getMeta(next);
+    const pawnByPlayerIdForPending = (metaForPending.pawnByPlayerId ?? {}) as Record<number, string>;
+    const choicesForPending = this.availablePawns(metaForPending, pawnByPlayerIdForPending);
+    const pendingInfo = this.setupFlow.createSequentialPawnPending({
+      players: playersForPending,
+      startPlayerId: playerId,
+      isAssigned: (candidateId) => Boolean(pawnByPlayerIdForPending[candidateId]),
+      pawns: choicesForPending.map((p) => ({
+        id: p.id,
+        label: p.label,
+        description: p.description,
+      })),
+      choiceLabelBuilder: (pawn) =>
+        pawn.description && String(pawn.description).trim().length > 0
+          ? `${String(pawn.label ?? '').trim()}: ${String(pawn.description).trim()}`
+          : String(pawn.label ?? '').trim(),
+      pawnDataMapper: (pawn) => ({
+        id: String(pawn.id ?? '').trim(),
+        label: String(pawn.label ?? pawn.title ?? '').trim(),
+        description: String(pawn.description ?? '').trim(),
+      }),
+    });
     if (pendingInfo) {
       const withPending: GameStateEntity = {
         ...next,
@@ -381,7 +398,7 @@ export class AFondLesBallonsActionService {
         updatedSkip[pid] = remaining - 1;
         next = this.core.appendLog(
           next,
-          `${this.playerName(next, pid)} passe son tour.`,
+          `${resolvePlayerNameFromState(next, pid)} passe son tour.`,
         );
         attempts += 1;
       } else {
@@ -403,60 +420,6 @@ export class AFondLesBallonsActionService {
     };
   }
 
-  private buildPawnPending(
-    state: GameStateEntity,
-    startId: number | null,
-  ): { pending: any; playerId: number; turnIndex: number } | null {
-    const players = Array.isArray(state.players) ? state.players : [];
-    if (!players.length) return null;
-
-    const meta = this.getMeta(state);
-    const pawnByPlayerId = (meta.pawnByPlayerId ?? {}) as Record<number, string>;
-    const startIndex =
-      startId != null ? players.findIndex((p) => p?.id === startId) : -1;
-    const count = players.length;
-    const baseIndex = startIndex >= 0 ? startIndex : 0;
-    let nextIndex = -1;
-    for (let i = 0; i < count; i += 1) {
-      const idx = (baseIndex + i) % count;
-      const pid = players[idx]?.id;
-      if (pid == null) continue;
-      if (!pawnByPlayerId[pid]) {
-        nextIndex = idx;
-        break;
-      }
-    }
-    if (nextIndex < 0) return null;
-
-    const choices = this.availablePawns(meta, pawnByPlayerId);
-    if (choices.length === 0) return null;
-    const chooserId = players[nextIndex].id;
-    const chooserLabel = this.playerName(state, chooserId);
-
-    return {
-      playerId: chooserId,
-      turnIndex: nextIndex,
-      pending: {
-        type: 'choose_pawn',
-        playerId: chooserId,
-        blocking: true,
-        label: `C'est à ${chooserLabel} de choisir son pion.`,
-        choices: choices.map((p) =>
-          p.description && String(p.description).trim().length > 0
-            ? `${p.label}: ${p.description}`
-            : p.label,
-        ),
-        data: {
-          pawns: choices.map((p) => ({
-            id: p.id,
-            label: p.label,
-            description: p.description,
-          })),
-        },
-      },
-    };
-  }
-
   private availablePawns(
     meta: AFondLesBallonsMetadata,
     pawnByPlayerId: Record<number, string>,
@@ -468,44 +431,6 @@ export class AFondLesBallonsActionService {
     return pawns.filter((p) => !used.has(p.id));
   }
 
-  private resolvePendingPawn(
-    raw: unknown,
-    options: Array<{ id?: string; label?: string; title?: string }>,
-  ): { id: string; label: string; description: string } | null {
-    if (!Array.isArray(options) || options.length === 0) return null;
-    const normalized = options
-      .map((p: any) => ({
-        id: String(p?.id ?? '').trim(),
-        label: String(p?.label ?? p?.title ?? '').trim(),
-        description: String(p?.description ?? '').trim(),
-      }))
-      .filter((p) => p.id.length > 0 && p.label.length > 0);
-    if (!normalized.length) return null;
-
-    const value =
-      typeof raw === 'object'
-        ? (raw as any)?.id ?? (raw as any)?.pawnId ?? (raw as any)?.value ?? raw
-        : raw;
-    const key = this.normalizePawnKey(value);
-    if (!key) return null;
-
-    const byId = normalized.find((p) => this.normalizePawnKey(p.id) === key);
-    if (byId) return byId;
-    const byLabel = normalized.find(
-      (p) => this.normalizePawnKey(p.label) === key,
-    );
-    return byLabel ?? null;
-  }
-
-  private normalizePawnKey(value: unknown): string {
-    return String(value ?? '')
-      .trim()
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '');
-  }
-
   private moveBy(
     state: GameStateEntity,
     playerId: number,
@@ -514,7 +439,7 @@ export class AFondLesBallonsActionService {
   ): GameStateEntity {
     if (!delta) return state;
     if (depth > 10)
-      return this.core.appendLog(state, 'Effet en chaîne interrompu.');
+      return this.core.appendLog(state, 'Effet en chaÃ®ne interrompu.');
 
     const meta = this.getMeta(state);
     const current = meta.positions?.[playerId] ?? 0;
@@ -542,7 +467,7 @@ export class AFondLesBallonsActionService {
     const label = this.compactTileLabel(tile?.label, position);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${position + 1}. (${label}).`,
+      `${resolvePlayerNameFromState(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${position + 1}. (${label}).`,
     );
 
     if (!tile) return next;
@@ -564,9 +489,9 @@ export class AFondLesBallonsActionService {
 
     if (tile.type === 'piege') {
       if (this.hasTrapImmunity(next, playerId)) {
-        return this.core.appendLog(next, 'Piège ignoré.');
+        return this.core.appendLog(next, 'PiÃ¨ge ignorÃ©.');
       }
-      next = this.core.appendLog(next, 'Piège : reculez de 2 cases.');
+      next = this.core.appendLog(next, 'PiÃ¨ge : reculez de 2 cases.');
       return this.moveBy(next, playerId, -2, depth);
     }
 
@@ -592,12 +517,12 @@ export class AFondLesBallonsActionService {
       return this.startSwapPending(
         next,
         playerId,
-        'Tornade : choisissez un joueur à échanger dans la liste, puis Entrée.',
+        'Tornade : choisissez un joueur Ã  Ã©changer dans la liste, puis EntrÃ©e.',
       );
     }
 
     if (tile.type === 'chaton') {
-      next = this.core.appendLog(next, 'Chaton : retour à la case départ.');
+      next = this.core.appendLog(next, 'Chaton : retour Ã  la case dÃ©part.');
       return this.applyLanding(next, playerId, 0, depth + 1);
     }
 
@@ -655,12 +580,12 @@ export class AFondLesBallonsActionService {
       case 4:
         next = this.core.appendLog(
           next,
-          'La partie est figée : tous les joueurs passent un tour.',
+          'La partie est figÃ©e : tous les joueurs passent un tour.',
         );
         for (const p of next.players ?? []) {
           next = this.core.appendLog(
             next,
-            `${this.playerName(next, p.id)} passera son prochain tour.`,
+            `${resolvePlayerNameFromState(next, p.id)} passera son prochain tour.`,
           );
           next = this.skipTurns(next, p.id, 1);
         }
@@ -730,7 +655,7 @@ export class AFondLesBallonsActionService {
         return this.startSwapPending(
           next,
           playerId,
-          'Échange : choisissez un joueur à échanger dans la liste, puis Entrée.',
+          'Ã‰change : choisissez un joueur Ã  Ã©changer dans la liste, puis EntrÃ©e.',
         );
       case 29:
         return this.applyLanding(next, playerId, 12, depth + 1);
@@ -820,7 +745,7 @@ export class AFondLesBallonsActionService {
     if (!targets.length) {
       return this.core.appendLog(
         state,
-        'Aucun joueur disponible pour un échange de place.',
+        'Aucun joueur disponible pour un Ã©change de place.',
       );
     }
     const pending: AFondLesBallonsPendingSwap = {
@@ -847,7 +772,7 @@ export class AFondLesBallonsActionService {
     if (idx < 0) {
       return this.core.appendLog(
         state,
-        `Aucune case de type ${type} n'a été trouvée devant vous.`,
+        `Aucune case de type ${type} n'a Ã©tÃ© trouvÃ©e devant vous.`,
       );
     }
     return this.applyLanding(state, playerId, idx, depth + 1);
@@ -980,16 +905,6 @@ export class AFondLesBallonsActionService {
     return (state.metadata ?? {}) as any as AFondLesBallonsMetadata;
   }
 
-  private playerName(state: GameStateEntity, id: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const p = players.find((x) => x?.id === id);
-    const u =
-      p?.username && String(p.username).trim()
-        ? String(p.username).trim()
-        : null;
-    return u ?? `Joueur ${id}`;
-  }
-
   private pawnLabel(state: GameStateEntity, id: number): string {
     const meta = this.getMeta(state);
     const pawnId = String(meta?.pawnByPlayerId?.[id] ?? '').trim();
@@ -1036,11 +951,11 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
   return [
     {
       id: 1,
-      text: 'Vous glissez sur une peau de banane séchée. Reculez de 2 cases.',
+      text: 'Vous glissez sur une peau de banane sÃ©chÃ©e. Reculez de 2 cases.',
     },
     {
       id: 2,
-      text: 'Un muscardin vous livre un cookie géant, beaucoup trop lourd. Passez votre tour.',
+      text: 'Un muscardin vous livre un cookie gÃ©ant, beaucoup trop lourd. Passez votre tour.',
     },
     {
       id: 3,
@@ -1048,11 +963,11 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 4,
-      text: "Une noix étrange chante et perturbe la tanière. La partie est figée : aucun joueur n'agit pendant ce tour.",
+      text: "Une noix Ã©trange chante et perturbe la taniÃ¨re. La partie est figÃ©e : aucun joueur n'agit pendant ce tour.",
     },
     {
       id: 5,
-      text: 'Un écureuil volant vous prend pour un ami et vous emporte dans les airs. Avancez de 4 cases.',
+      text: 'Un Ã©cureuil volant vous prend pour un ami et vous emporte dans les airs. Avancez de 4 cases.',
     },
     {
       id: 6,
@@ -1060,16 +975,16 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 7,
-      text: 'Vous trouvez une corde à sauter en réglisse enchantée. Avancez de 2 cases.',
+      text: 'Vous trouvez une corde Ã  sauter en rÃ©glisse enchantÃ©e. Avancez de 2 cases.',
     },
-    { id: 8, text: "Le Grand Chaton éternue violemment. Reculez d'une case." },
+    { id: 8, text: "Le Grand Chaton Ã©ternue violemment. Reculez d'une case." },
     {
       id: 9,
       text: 'Vous vous prenez les pattes dans du chewing-gum collant. Passez votre tour.',
     },
     {
       id: 10,
-      text: "Un lérot ninja surgit et vous tend une noisette turbo. Avancez jusqu'à la prochaine case Bonus.",
+      text: "Un lÃ©rot ninja surgit et vous tend une noisette turbo. Avancez jusqu'Ã  la prochaine case Bonus.",
     },
     {
       id: 11,
@@ -1077,7 +992,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 12,
-      text: "Votre museau vous démange sans raison. Reculez d'une case.",
+      text: "Votre museau vous dÃ©mange sans raison. Reculez d'une case.",
     },
     {
       id: 13,
@@ -1089,19 +1004,19 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 15,
-      text: "Vous faites tomber une montagne de cacahuètes. Distrait, vous reculez d'une case.",
+      text: "Vous faites tomber une montagne de cacahuÃ¨tes. Distrait, vous reculez d'une case.",
     },
     {
       id: 16,
-      text: "Une bulle de savon géante vous emporte. Avancez jusqu'à la prochaine case Folie.",
+      text: "Une bulle de savon gÃ©ante vous emporte. Avancez jusqu'Ã  la prochaine case Folie.",
     },
     {
       id: 17,
-      text: 'Un capybara vous invite à une sieste improvisée. Passez votre tour et ronflez à ses côtés.',
+      text: 'Un capybara vous invite Ã  une sieste improvisÃ©e. Passez votre tour et ronflez Ã  ses cÃ´tÃ©s.',
     },
     {
       id: 18,
-      text: 'Une souris malicieuse vous pique une noisette et file à toute vitesse. Vous la poursuivez et avancez de 2 cases.',
+      text: 'Une souris malicieuse vous pique une noisette et file Ã  toute vitesse. Vous la poursuivez et avancez de 2 cases.',
     },
     {
       id: 19,
@@ -1119,7 +1034,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
       id: 22,
       text: 'Une baguette magique vous transforme temporairement en fromage. Passez deux tours.',
     },
-    { id: 23, text: 'Vous trouvez un trampoline géant. Avancez de 4 cases.' },
+    { id: 23, text: 'Vous trouvez un trampoline gÃ©ant. Avancez de 4 cases.' },
     {
       id: 24,
       text: 'Un agouti philosophe vous parle longuement. Passez votre tour.',
@@ -1130,7 +1045,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 26,
-      text: 'Vous éternuez des confettis multicolores. Tous les joueurs avancent du même nombre de cases obtenu précédemment.',
+      text: 'Vous Ã©ternuez des confettis multicolores. Tous les joueurs avancent du mÃªme nombre de cases obtenu prÃ©cÃ©demment.',
     },
     {
       id: 27,
@@ -1138,7 +1053,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 28,
-      text: 'Vous lisez un vieux grimoire ronronique. Échangez votre position avec le joueur de votre choix.',
+      text: 'Vous lisez un vieux grimoire ronronique. Ã‰changez votre position avec le joueur de votre choix.',
     },
     {
       id: 29,
@@ -1146,19 +1061,19 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 30,
-      text: "Vous tombez dans une mare d'épaisse mousse. Passez votre tour.",
+      text: "Vous tombez dans une mare d'Ã©paisse mousse. Passez votre tour.",
     },
     {
       id: 31,
-      text: "Un hutia curieux bondit sur votre chemin et vous bouscule gentiment. Avancez d'une case un peu étourdi.",
+      text: "Un hutia curieux bondit sur votre chemin et vous bouscule gentiment. Avancez d'une case un peu Ã©tourdi.",
     },
     {
       id: 32,
-      text: 'Un fromage qui parle vous raconte une irrésistible blague. Avancez de 2 cases.',
+      text: 'Un fromage qui parle vous raconte une irrÃ©sistible blague. Avancez de 2 cases.',
     },
     {
       id: 33,
-      text: 'Vous jouez à saute-rongeur avec un paca. Avancez de 3 cases.',
+      text: 'Vous jouez Ã  saute-rongeur avec un paca. Avancez de 3 cases.',
     },
     {
       id: 34,
@@ -1166,11 +1081,11 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 35,
-      text: 'Un tunnel défectueux vous mène droit chez le Chaton gourmand. Retournez à la case départ.',
+      text: 'Un tunnel dÃ©fectueux vous mÃ¨ne droit chez le Chaton gourmand. Retournez Ã  la case dÃ©part.',
     },
     {
       id: 36,
-      text: 'Vous devenez temporairement invisible. Durant deux tours, vous ignorez les effets des cases Piège.',
+      text: 'Vous devenez temporairement invisible. Durant deux tours, vous ignorez les effets des cases PiÃ¨ge.',
     },
     {
       id: 37,
@@ -1178,7 +1093,7 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 38,
-      text: "Un biscuit géant explose. Tous les joueurs se déplacent d'une case aléatoire.",
+      text: "Un biscuit gÃ©ant explose. Tous les joueurs se dÃ©placent d'une case alÃ©atoire.",
     },
     {
       id: 39,
@@ -1186,8 +1101,13 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 40,
-      text: "La Reine des Rongeurs vous envoie un message. Si vous êtes sur une case Glissade, avancez jusqu'à la case 40.",
+      text: "La Reine des Rongeurs vous envoie un message. Si vous Ãªtes sur une case Glissade, avancez jusqu'Ã  la case 40.",
     },
   ];
 }
+
+
+
+
+
 

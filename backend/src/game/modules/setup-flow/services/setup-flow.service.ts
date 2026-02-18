@@ -3,6 +3,13 @@ import type { PendingState } from '../../../core/entities/game-state.entity';
 
 type SetupPlayer = { id: number; username?: string | null };
 type SetupChoice = { id: string; label: string; [key: string]: unknown };
+type PawnChoice = {
+  id?: unknown;
+  label?: unknown;
+  title?: unknown;
+  description?: unknown;
+  [key: string]: unknown;
+};
 
 @Injectable()
 export class SetupFlowService {
@@ -62,6 +69,58 @@ export class SetupFlowService {
     };
   }
 
+  createSequentialPawnPending(params: {
+    players: SetupPlayer[];
+    startPlayerId?: number | null;
+    isAssigned: (playerId: number) => boolean;
+    pawns: PawnChoice[];
+    pendingType?: string;
+    labelForPlayer?: (playerLabel: string) => string;
+    choiceLabelBuilder?: (pawn: PawnChoice) => string;
+    pawnDataMapper?: (pawn: PawnChoice) => Record<string, unknown>;
+    includeChoiceMapData?: boolean;
+    extraPendingData?: Record<string, unknown>;
+  }): { pending: PendingState; playerId: number; turnIndex: number } | null {
+    const pawns = this.normalizePawnChoices(params.pawns);
+    if (!pawns.length) return null;
+
+    return this.createSequentialChoicePending({
+      players: params.players,
+      startPlayerId: params.startPlayerId,
+      isAssigned: params.isAssigned,
+      pendingType: String(params.pendingType ?? '').trim() || 'choose_pawn',
+      choices: pawns.map((pawn) => ({
+        ...pawn,
+        label:
+          typeof params.choiceLabelBuilder === 'function'
+            ? String(params.choiceLabelBuilder(pawn as PawnChoice) ?? pawn.label).trim()
+            : pawn.label,
+      })),
+      labelForPlayer:
+        params.labelForPlayer ??
+        ((playerLabel) => `C'est à ${playerLabel} de choisir son pion.`),
+      dataBuilder: (availableChoices) => ({
+        ...(params.extraPendingData ?? {}),
+        ...(params.includeChoiceMapData === true
+          ? {
+              choices: availableChoices.map((choice) => String((choice as any)?.label ?? '').trim()),
+              choiceMap: Object.fromEntries(
+                availableChoices.map((choice) => [
+                  String((choice as any)?.label ?? '').trim(),
+                  String((choice as any)?.id ?? '').trim(),
+                ]),
+              ),
+            }
+          : {}),
+        pawns: availableChoices.map((choice) =>
+          typeof params.pawnDataMapper === 'function'
+            ? params.pawnDataMapper(choice as PawnChoice)
+            : this.defaultPawnData(choice as PawnChoice),
+        ),
+      }),
+    });
+  }
+
   private toPlayerId(value: unknown): number | null {
     const n = Number(value);
     return Number.isFinite(n) ? n : null;
@@ -92,6 +151,30 @@ export class SetupFlowService {
     return null;
   }
 
+  resolvePawnChoice<TChoice extends PawnChoice>(
+    raw: unknown,
+    options: TChoice[],
+  ): TChoice | null {
+    const normalized = this.normalizePawnChoices(options).map((pawn) => ({
+      ...(pawn as TChoice),
+      label: pawn.label,
+    }));
+    if (!normalized.length) return null;
+
+    const candidate =
+      typeof raw === 'object' && raw != null
+        ? (raw as any)?.id ??
+          (raw as any)?.pawnId ??
+          (raw as any)?.pawn ??
+          (raw as any)?.value ??
+          (raw as any)?.label ??
+          (raw as any)?.title ??
+          raw
+        : raw;
+
+    return this.resolveChoice(candidate, normalized) as TChoice | null;
+  }
+
   normalizeKey(value: unknown): string {
     return String(value ?? '')
       .trim()
@@ -109,6 +192,25 @@ export class SetupFlowService {
         label: String((choice as any)?.label ?? '').trim(),
       }))
       .filter((choice) => choice.id.length > 0 && choice.label.length > 0);
+  }
+
+  private normalizePawnChoices<TChoice extends PawnChoice>(choices: TChoice[]): Array<TChoice & SetupChoice> {
+    return (Array.isArray(choices) ? choices : [])
+      .map((choice) => {
+        const id = String((choice as any)?.id ?? '').trim();
+        const label = String((choice as any)?.label ?? (choice as any)?.title ?? id).trim();
+        return { ...(choice as any), id, label } as TChoice & SetupChoice;
+      })
+      .filter((choice) => choice.id.length > 0 && choice.label.length > 0);
+  }
+
+  private defaultPawnData(choice: PawnChoice): Record<string, unknown> {
+    return {
+      id: String((choice as any)?.id ?? '').trim(),
+      label: String((choice as any)?.label ?? (choice as any)?.title ?? '').trim(),
+      title: String((choice as any)?.title ?? (choice as any)?.label ?? '').trim(),
+      description: String((choice as any)?.description ?? '').trim(),
+    };
   }
 
   private playerLabel(player: SetupPlayer | null | undefined): string {

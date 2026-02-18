@@ -1,9 +1,10 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type {
   GameStateEntity,
   PendingState,
 } from '../../../../core/entities/game-state.entity';
 import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
@@ -41,14 +42,6 @@ export class SacAMalicesActionService {
                 return next;
               },
               'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'ROLL_DICE': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'roll_dice': () => {
                 next = this.handleRoll(next);
                 return next;
               },
@@ -112,9 +105,9 @@ export class SacAMalicesActionService {
         : null;
     const label = variant?.label ?? chosenId;
     if (rawVariant == null || parseVariantInput(rawVariant) == null) {
-      next = this.core.appendLog(next, `Variante inconnue, dÃ©faut "${label}".`);
+      next = this.core.appendLog(next, `Variante inconnue, défaut "${label}".`);
     } else if (actorId != null) {
-      next = this.core.appendLog(next, `${this.playerName(next, actorId)} choisit la variante : ${label}.`);
+      next = this.core.appendLog(next, `${resolvePlayerNameFromState(next, actorId)} choisit la variante : ${label}.`);
     } else {
       next = this.core.appendLog(next, `Variante choisie : ${label}.`);
     }
@@ -138,7 +131,7 @@ export class SacAMalicesActionService {
     const jailTurns = meta.statuses?.inJail?.[currentId] ?? 0;
     if (jailTurns > 0) {
       if (rules.jail.allowDoubleEscape) {
-        // 2d6 : si double => sortie immÃ©diate et dÃ©placement ; sinon on attend.
+        // 2d6 : si double => sortie immédiate et déplacement ; sinon on attend.
         const r1 = this.random.rollDice(meta as any, 6);
         const r2 = this.random.rollDice(r1.meta as any, 6);
         meta = { ...meta, ...r2.meta };
@@ -154,7 +147,7 @@ export class SacAMalicesActionService {
         };
         next = this.core.appendLog(
           next,
-          `${this.playerName(next, currentId)} lance les dÃ©s : "${d1}" + "${d2}" = "${sum}".`,
+          `${resolvePlayerNameFromState(next, currentId)} lance les dés : "${d1}" + "${d2}" = "${sum}".`,
         );
 
         if (!isDouble) {
@@ -162,7 +155,7 @@ export class SacAMalicesActionService {
           next = this.setJailTurns(next, currentId, remainingTurns);
           if (remainingTurns <= 0) {
             if (rules.jail.autoFine > 0) {
-              next = this.core.appendLog(next, `Sortie automatique : amende ${rules.jail.autoFine} â‚¬.`);
+              next = this.core.appendLog(next, `Sortie automatique : amende ${rules.jail.autoFine} €.`);
               next = this.addMoney(next, currentId, -rules.jail.autoFine, { toPot: true });
             } else {
               next = this.core.appendLog(next, 'Sortie automatique.');
@@ -180,7 +173,7 @@ export class SacAMalicesActionService {
         next = this.setJailTurns(next, currentId, 0);
         next = this.setConsecutiveDoubles(next, currentId, 0);
 
-        // On rejoue / on se dÃ©place normalement aprÃ¨s la sortie.
+        // On rejoue / on se déplace normalement après la sortie.
         next = this.moveForward(next, currentId, sum);
         next = this.applyLanding(next, currentId);
         next = this.checkWinner(next);
@@ -194,12 +187,12 @@ export class SacAMalicesActionService {
         return next;
       }
 
-      // Version "attente" : on attend N tours, puis amende auto (si configurÃ©e).
+      // Version "attente" : on attend N tours, puis amende auto (si configurée).
       let next = this.setJailTurns(state, currentId, Math.max(0, jailTurns - 1));
       const remaining = this.getMeta(next).statuses?.inJail?.[currentId] ?? 0;
       if (remaining <= 0) {
         if (rules.jail.autoFine > 0) {
-          next = this.core.appendLog(next, `Sortie automatique : amende ${rules.jail.autoFine} â‚¬.`);
+          next = this.core.appendLog(next, `Sortie automatique : amende ${rules.jail.autoFine} €.`);
           next = this.addMoney(next, currentId, -rules.jail.autoFine, { toPot: true });
         } else {
           next = this.core.appendLog(next, 'Sortie automatique.');
@@ -212,7 +205,7 @@ export class SacAMalicesActionService {
       return this.advanceTurn(next);
     }
 
-    // On consomme l'Ã©ventuel bonus "rejouer" Ã  l'entrÃ©e du lancer.
+    // On consomme l'éventuel bonus "rejouer" à l'entrée du lancer.
     state = this.setExtraRoll(state, currentId, false);
     meta = this.getMeta(state);
 
@@ -233,10 +226,10 @@ export class SacAMalicesActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} lance les dÃ©s : "${d1}" + "${d2}" = "${sum}".`,
+      `${resolvePlayerNameFromState(next, currentId)} lance les dés : "${d1}" + "${d2}" = "${sum}".`,
     );
 
-    // Doubles : rejouer, 3 doubles consÃ©cutifs => prison.
+    // Doubles : rejouer, 3 doubles consécutifs => prison.
     const prevDoubles =
       this.getMeta(next).statuses?.consecutiveDoubles?.[currentId] ?? 0;
     const doubles = isDouble ? prevDoubles + 1 : 0;
@@ -258,9 +251,9 @@ export class SacAMalicesActionService {
       return this.advanceTurn(next);
     }
 
-    // (prison gÃ©rÃ©e avant le lancer)
+    // (prison gérée avant le lancer)
 
-    // DÃ©placement
+    // Déplacement
     next = this.moveForward(next, currentId, sum);
     next = this.applyLanding(next, currentId);
     next = this.checkWinner(next);
@@ -296,7 +289,7 @@ export class SacAMalicesActionService {
 
     let next: GameStateEntity = { ...state, pending: null };
     if (!accept) {
-      next = this.core.appendLog(next, `${this.playerName(next, playerId)} n'achÃ¨te pas.`);
+      next = this.core.appendLog(next, `${resolvePlayerNameFromState(next, playerId)} n'achète pas.`);
       next = this.checkWinner(next);
       if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
       return this.advanceTurnOrExtraRoll(next, playerId);
@@ -307,7 +300,7 @@ export class SacAMalicesActionService {
     if (!tile) return this.advanceTurnOrExtraRoll(next, playerId);
 
     if (meta.ownership?.[tileIndex] != null) {
-      next = this.core.appendLog(next, 'DÃ©jÃ  achetÃ©.');
+      next = this.core.appendLog(next, 'Déjà acheté.');
       return this.advanceTurnOrExtraRoll(next, playerId);
     }
 
@@ -326,7 +319,7 @@ export class SacAMalicesActionService {
     next = this.setOwner(next, tileIndex, playerId);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} achÃ¨te "${tile.title}" pour ${price} â‚¬.`,
+      `${resolvePlayerNameFromState(next, playerId)} achète "${tile.title}" pour ${price} €.`,
     );
 
     next = this.checkWinner(next);
@@ -349,7 +342,7 @@ export class SacAMalicesActionService {
     if (jailTurns <= 0) return state;
 
     let next = state;
-    next = this.core.appendLog(next, `Prison : vous payez ${rules.jail.autoFine} â‚¬ pour sortir.`);
+    next = this.core.appendLog(next, `Prison : vous payez ${rules.jail.autoFine} € pour sortir.`);
     next = this.addMoney(next, playerId, -rules.jail.autoFine, { toPot: true });
     next = this.setJailTurns(next, playerId, 0);
     next = this.checkWinner(next);
@@ -369,11 +362,11 @@ export class SacAMalicesActionService {
 
     const count = meta.statuses?.getOutOfJail?.[playerId] ?? 0;
     if (count <= 0) {
-      return this.core.appendLog(state, 'Vous nâ€™avez pas de carte "Sortie de prison".');
+      return this.core.appendLog(state, 'Vous n’avez pas de carte "Sortie de prison".');
     }
 
     let next = state;
-    next = this.core.appendLog(next, 'Carte "Sortie de prison" utilisÃ©e.');
+    next = this.core.appendLog(next, 'Carte "Sortie de prison" utilisée.');
     next = this.setGetOutOfJail(next, playerId, count - 1);
     next = this.setJailTurns(next, playerId, 0);
     return next;
@@ -414,7 +407,7 @@ export class SacAMalicesActionService {
           Number(group?.housePrices?.[String(nextLevel) as any] ?? group?.housePrice ?? 0) || 0;
         const cost = supportsHotel && b.houses >= 4 ? Number(group.hotelPrice ?? 0) || 0 : houseCost;
         if (!Number.isFinite(cost) || cost <= 0 || myCash < cost) continue;
-        options.push({ tileIndex, label: `${tile.title} (coÃ»t ${cost} â‚¬)` });
+        options.push({ tileIndex, label: `${tile.title} (coût ${cost} €)` });
         continue;
       }
 
@@ -432,7 +425,7 @@ export class SacAMalicesActionService {
             Number(group?.housePrices?.[String(level) as any] ?? group?.housePrice ?? 0) || 0;
           return Math.floor(cost / 2);
         })();
-        options.push({ tileIndex, label: `${tile.title} (remb. ${refund} â‚¬)` });
+        options.push({ tileIndex, label: `${tile.title} (remb. ${refund} €)` });
         continue;
       }
 
@@ -441,7 +434,7 @@ export class SacAMalicesActionService {
         if (tile.type === 'property' && (b.hotel || b.houses > 0)) continue;
         const amount = this.getMortgageValue(meta, tile);
         if (!Number.isFinite(amount) || amount <= 0) continue;
-        options.push({ tileIndex, label: `${tile.title} (+${amount} â‚¬)` });
+        options.push({ tileIndex, label: `${tile.title} (+${amount} €)` });
         continue;
       }
 
@@ -449,12 +442,12 @@ export class SacAMalicesActionService {
         if (!b.mortgaged) continue;
         const cost = this.getUnmortgageCost(meta, tile);
         if (!Number.isFinite(cost) || cost <= 0 || myCash < cost) continue;
-        options.push({ tileIndex, label: `${tile.title} (-${cost} â‚¬)` });
+        options.push({ tileIndex, label: `${tile.title} (-${cost} €)` });
       }
     }
 
     if (!options.length) {
-      return this.core.appendLog(state, 'Aucune propriÃ©tÃ© disponible pour cette action.');
+      return this.core.appendLog(state, 'Aucune propriété disponible pour cette action.');
     }
 
     const pending: PendingState = {
@@ -463,12 +456,12 @@ export class SacAMalicesActionService {
       blocking: true,
       label:
         kind === 'build'
-          ? 'Construire oÃ¹ ?'
+          ? 'Construire où ?'
           : kind === 'sell_building'
-            ? 'Vendre une habitation oÃ¹ ?'
+            ? 'Vendre une habitation où ?'
             : kind === 'mortgage'
-              ? 'HypothÃ©quer quoi ?'
-              : 'Lever lâ€™hypothÃ¨que de quoi ?',
+              ? 'Hypothéquer quoi ?'
+              : 'Lever l’hypothèque de quoi ?',
       choices: options.map((o) => o.label),
       data: { kind, options: options.map((o) => ({ tileIndex: o.tileIndex })) },
     };
@@ -530,7 +523,7 @@ export class SacAMalicesActionService {
     // Carte sortie de prison
     const outCards = meta.statuses?.getOutOfJail?.[playerId] ?? 0;
     if (outCards > 0) {
-      next = this.core.appendLog(next, 'Carte "Sortie de prison" utilisÃ©e.');
+      next = this.core.appendLog(next, 'Carte "Sortie de prison" utilisée.');
       next = this.setGetOutOfJail(next, playerId, outCards - 1);
       next = this.setJailTurns(next, playerId, 0);
       return next;
@@ -546,15 +539,15 @@ export class SacAMalicesActionService {
     next = this.setJailTurns(next, playerId, remaining);
 
     if (remaining <= 0) {
-      // Sortie automatique : amende 100â‚¬
-      next = this.core.appendLog(next, 'Sortie automatique : amende 100 â‚¬.');
+      // Sortie automatique : amende 100€
+      next = this.core.appendLog(next, 'Sortie automatique : amende 100 €.');
       next = this.addMoney(next, playerId, -100, { toPot: true });
       return next;
     }
 
     next = this.core.appendLog(
       next,
-      `Prison : vous restez bloquÃ© (${remaining} tour(s)).`,
+      `Prison : vous restez bloqué (${remaining} tour(s)).`,
     );
     return next;
   }
@@ -569,7 +562,7 @@ export class SacAMalicesActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${pos + 1} (${tile.title}).`,
+      `${resolvePlayerNameFromState(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${pos + 1} (${tile.title}).`,
     );
     if (tile.description && String(tile.description).trim()) {
       next = this.core.appendLog(next, String(tile.description).trim());
@@ -587,7 +580,7 @@ export class SacAMalicesActionService {
       }
       const pot = this.getMeta(next).pot ?? 0;
       if (pot > 0) {
-        next = this.core.appendLog(next, `Parc Gratuit : vous rÃ©cupÃ©rez ${pot} â‚¬.`);
+        next = this.core.appendLog(next, `Parc Gratuit : vous récupérez ${pot} €.`);
         next = this.setPot(next, 0);
         next = this.addMoney(next, playerId, pot, { toPot: false });
       } else {
@@ -599,7 +592,7 @@ export class SacAMalicesActionService {
     if (tile.type === 'tax') {
       const amount = extractEuroAmount(`${tile.title} ${tile.description ?? ''}`);
       if (amount > 0) {
-        next = this.core.appendLog(next, `Taxe : ${amount} â‚¬.`);
+        next = this.core.appendLog(next, `Taxe : ${amount} €.`);
         next = this.addMoney(next, playerId, -amount, { toPot: true });
       }
       return next;
@@ -611,7 +604,7 @@ export class SacAMalicesActionService {
     }
 
     if (tile.type === 'community') {
-      next = this.core.appendLog(next, 'Caisse de CommunautÃ© : pioche.');
+      next = this.core.appendLog(next, 'Caisse de Communauté : pioche.');
       return this.drawAndApply(next, playerId, 'community');
     }
 
@@ -623,7 +616,7 @@ export class SacAMalicesActionService {
           type: 'buy',
           playerId,
           blocking: true,
-          label: `Acheter "${tile.title}" (${price > 0 ? price + ' â‚¬' : 'prix inconnu'}) ?`,
+          label: `Acheter "${tile.title}" (${price > 0 ? price + ' €' : 'prix inconnu'}) ?`,
           choices: ['Acheter', 'Passer'],
           data: { tileIndex: pos },
         };
@@ -632,17 +625,17 @@ export class SacAMalicesActionService {
       if (owner === playerId) return next;
       const rules = this.getRules(meta);
       if (rules.rentBlockedInJail && (meta.statuses?.inJail?.[owner] ?? 0) > 0) {
-        return this.core.appendLog(next, 'Le propriÃ©taire est en prison : pas de loyer.');
+        return this.core.appendLog(next, 'Le propriétaire est en prison : pas de loyer.');
       }
       const b = this.getBuilding(meta, pos);
       if (b.mortgaged) {
-        return this.core.appendLog(next, 'PropriÃ©tÃ© hypothÃ©quÃ©e : pas de loyer.');
+        return this.core.appendLog(next, 'Propriété hypothéquée : pas de loyer.');
       }
       const rent = this.getRent(meta, tile, pos, owner, state.lastRoll ?? 0);
       if (rent > 0) {
         next = this.core.appendLog(
           next,
-          `Loyer : ${rent} â‚¬ Ã  ${this.playerName(next, owner)}.`,
+          `Loyer : ${rent} € à ${resolvePlayerNameFromState(next, owner)}.`,
         );
         next = this.addMoney(next, playerId, -rent, { toPot: false });
         next = this.addMoney(next, owner, rent, { toPot: false });
@@ -694,13 +687,13 @@ export class SacAMalicesActionService {
         .filter((id) => !meta0.statuses?.eliminated?.[id]);
 
       if (everyone.kind === 'pay') {
-        next = this.core.appendLog(next, `Tous les joueurs paient ${everyone.amount} â‚¬.`);
+        next = this.core.appendLog(next, `Tous les joueurs paient ${everyone.amount} €.`);
         for (const id of alive) {
           next = this.addMoney(next, id, -everyone.amount, { toPot: rules.potEnabled && !everyone.toBank });
         }
         return next;
       }
-      next = this.core.appendLog(next, `Tous les joueurs reÃ§oivent ${everyone.amount} â‚¬.`);
+      next = this.core.appendLog(next, `Tous les joueurs reçoivent ${everyone.amount} €.`);
       for (const id of alive) {
         next = this.addMoney(next, id, everyone.amount, { toPot: false });
       }
@@ -714,13 +707,13 @@ export class SacAMalicesActionService {
 
     const delta = extractMoveDelta(text);
     if (delta !== 0) {
-      next = this.core.appendLog(next, `DÃ©placement : ${delta > 0 ? '+' : ''}${delta}.`);
+      next = this.core.appendLog(next, `Déplacement : ${delta > 0 ? '+' : ''}${delta}.`);
       next = this.moveForward(next, playerId, delta);
       return this.applyLanding(next, playerId);
     }
 
-    if (/retournez\s+Ã \s+la\s+case\s+dÃ©part/i.test(text)) {
-      next = this.core.appendLog(next, 'Retour Ã  DÃ©part.');
+    if (/retournez\s+à\s+la\s+case\s+départ/i.test(text)) {
+      next = this.core.appendLog(next, 'Retour à Départ.');
       return this.moveTo(next, playerId, 0, { collectStart: false });
     }
 
@@ -728,7 +721,7 @@ export class SacAMalicesActionService {
     if (targetName) {
       const target = this.findTileByName(this.getMeta(next).tiles, targetName);
       if (target != null) {
-        next = this.core.appendLog(next, `DÃ©placement : vers "${targetName}".`);
+        next = this.core.appendLog(next, `Déplacement : vers "${targetName}".`);
         next = this.moveTo(next, playerId, target, { collectStart: true });
         return this.applyLanding(next, playerId);
       }
@@ -743,12 +736,12 @@ export class SacAMalicesActionService {
 
     const money = extractMoneyDelta(text);
     if (money !== 0) {
-      next = this.core.appendLog(next, `Caisse : ${money > 0 ? '+' : ''}${money} â‚¬.`);
+      next = this.core.appendLog(next, `Caisse : ${money > 0 ? '+' : ''}${money} €.`);
       next = this.addMoney(next, playerId, money, { toPot: money < 0 });
       return next;
     }
 
-    // Autres effets non implÃ©mentÃ©s : on log seulement.
+    // Autres effets non implémentés : on log seulement.
     return next;
   }
 
@@ -794,7 +787,7 @@ export class SacAMalicesActionService {
     const nextPos = ((pos + delta) % len + len) % len;
     let next = this.setPos(state, playerId, nextPos);
     if (delta > 0 && nextPos < pos) {
-      next = this.core.appendLog(next, `Passage sur DÃ©part : +${rules.passStartBonus} â‚¬.`);
+      next = this.core.appendLog(next, `Passage sur Départ : +${rules.passStartBonus} €.`);
       next = this.addMoney(next, playerId, rules.passStartBonus, { toPot: false });
     }
     return next;
@@ -814,7 +807,7 @@ export class SacAMalicesActionService {
     const target = clamp(pos, 0, len - 1);
     let next = this.setPos(state, playerId, target);
     if (options.collectStart && target < current) {
-      next = this.core.appendLog(next, `Passage sur DÃ©part : +${rules.passStartBonus} â‚¬.`);
+      next = this.core.appendLog(next, `Passage sur Départ : +${rules.passStartBonus} €.`);
       next = this.addMoney(next, playerId, rules.passStartBonus, { toPot: false });
     }
     return next;
@@ -1054,7 +1047,7 @@ export class SacAMalicesActionService {
     if (this.getMeta(next).statuses?.eliminated?.[playerId]) return next;
 
     if (supportsHotel && b.houses >= 4) {
-      next = this.core.appendLog(next, `HÃ´tel construit sur "${tile.title}".`);
+      next = this.core.appendLog(next, `Hôtel construit sur "${tile.title}".`);
       return this.setBuilding(next, tileIndex, { hotel: true, houses: 0 });
     }
     next = this.core.appendLog(next, `Maison construite sur "${tile.title}".`);
@@ -1075,7 +1068,7 @@ export class SacAMalicesActionService {
 
     if (supportsHotel && b.hotel) {
       const refund = Math.floor((group.hotelPrice ?? 0) / 2);
-      let next = this.core.appendLog(state, `HÃ´tel vendu sur "${tile.title}" (+${refund} â‚¬).`);
+      let next = this.core.appendLog(state, `Hôtel vendu sur "${tile.title}" (+${refund} €).`);
       next = this.setBuilding(next, tileIndex, { hotel: false, houses: 4 });
       return this.addMoney(next, playerId, refund, { toPot: false });
     }
@@ -1084,7 +1077,7 @@ export class SacAMalicesActionService {
     const cost =
       Number(group?.housePrices?.[String(level) as any] ?? group?.housePrice ?? 0) || 0;
     const refund = Math.floor(cost / 2);
-    let next = this.core.appendLog(state, `Maison vendue sur "${tile.title}" (+${refund} â‚¬).`);
+    let next = this.core.appendLog(state, `Maison vendue sur "${tile.title}" (+${refund} €).`);
     next = this.setBuilding(next, tileIndex, { houses: Math.max(0, b.houses - 1) });
     return this.addMoney(next, playerId, refund, { toPot: false });
   }
@@ -1102,7 +1095,7 @@ export class SacAMalicesActionService {
     const amount = this.getMortgageValue(meta, tile);
     if (!Number.isFinite(amount) || amount <= 0) return state;
 
-    let next = this.core.appendLog(state, `HypothÃ¨que : "${tile.title}" (+${amount} â‚¬).`);
+    let next = this.core.appendLog(state, `Hypothèque : "${tile.title}" (+${amount} €).`);
     next = this.setBuilding(next, tileIndex, { mortgaged: true });
     return this.addMoney(next, playerId, amount, { toPot: false });
   }
@@ -1120,7 +1113,7 @@ export class SacAMalicesActionService {
     const cash = meta.money?.[playerId] ?? 0;
     if (!Number.isFinite(cost) || cost <= 0 || cash < cost) return state;
 
-    let next = this.core.appendLog(state, `LevÃ©e dâ€™hypothÃ¨que : "${tile.title}" (-${cost} â‚¬).`);
+    let next = this.core.appendLog(state, `Levée d’hypothèque : "${tile.title}" (-${cost} €).`);
     next = this.addMoney(next, playerId, -cost, { toPot: false });
     if (this.getMeta(next).statuses?.eliminated?.[playerId]) return next;
     return this.setBuilding(next, tileIndex, { mortgaged: false });
@@ -1141,7 +1134,7 @@ export class SacAMalicesActionService {
     }
 
     if (!ownedWithInfra.length) {
-      return this.core.appendLog(state, 'Aucune infrastructure Ã  perdre.');
+      return this.core.appendLog(state, 'Aucune infrastructure à perdre.');
     }
 
     const picked = this.random.pickOne(meta0 as any, ownedWithInfra);
@@ -1159,11 +1152,11 @@ export class SacAMalicesActionService {
 
     const b = this.getBuilding(this.getMeta(next), tileIndex);
     if (supportsHotel && b.hotel) {
-      next = this.core.appendLog(next, `Infrastructure perdue : hÃ´tel sur "${tile?.title ?? 'propriÃ©tÃ©'}".`);
+      next = this.core.appendLog(next, `Infrastructure perdue : hôtel sur "${tile?.title ?? 'propriété'}".`);
       return this.setBuilding(next, tileIndex, { hotel: false, houses: 4 });
     }
     if (b.houses > 0) {
-      next = this.core.appendLog(next, `Infrastructure perdue : -1 sur "${tile?.title ?? 'propriÃ©tÃ©'}".`);
+      next = this.core.appendLog(next, `Infrastructure perdue : -1 sur "${tile?.title ?? 'propriété'}".`);
       return this.setBuilding(next, tileIndex, { houses: Math.max(0, b.houses - 1) });
     }
     return next;
@@ -1189,7 +1182,7 @@ export class SacAMalicesActionService {
     };
     let next: GameStateEntity = { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
     if (nextMoney < 0) {
-      next = this.core.appendLog(next, `${this.playerName(next, playerId)} est en faillite !`);
+      next = this.core.appendLog(next, `${resolvePlayerNameFromState(next, playerId)} est en faillite !`);
       next = this.setEliminated(next, playerId, true);
       next = this.releaseAssets(next, playerId);
     }
@@ -1355,7 +1348,7 @@ export class SacAMalicesActionService {
       const winnerId = alive[0];
       const nextMeta: SacMetadata = { ...meta, winnerId };
       const next = { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
-      return this.core.appendLog(next, `${this.playerName(next, winnerId)} remporte la partie !`);
+      return this.core.appendLog(next, `${resolvePlayerNameFromState(next, winnerId)} remporte la partie !`);
     }
     return state;
   }
@@ -1385,16 +1378,6 @@ export class SacAMalicesActionService {
     };
   }
 
-  private playerName(state: GameStateEntity, id: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const p = players.find((x) => x?.id === id);
-    const u =
-      p?.username && String(p.username).trim()
-        ? String(p.username).trim()
-        : null;
-    return u ?? `Joueur ${id}`;
-  }
-
   private pawnLabel(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
     const player: any = players.find((p) => p?.id === id);
@@ -1405,7 +1388,7 @@ export class SacAMalicesActionService {
     const pawnId = String(player?.pawn ?? '').trim();
     if (pawnId) return `"${pawnId}"`;
 
-    const fallback = this.playerName(state, id);
+    const fallback = resolvePlayerNameFromState(state, id);
     return `"${fallback}"`;
   }
 }
@@ -1424,18 +1407,18 @@ function normalize(value: string): string {
   return String(value ?? '')
     .trim()
     .toLowerCase()
-    .replace(/[â€™'`]/g, "'")
+    .replace(/[’'`]/g, "'")
     .replace(/\s+/g, ' ');
 }
 
 function extractEuroAmount(text: string): number {
-  const m = text.match(/(\d+)\s*(â‚¬|eur)/i);
+  const m = text.match(/(\d+)\s*(€|eur)/i);
   const n = m ? Number(m[1]) : 0;
   return Number.isFinite(n) ? Math.trunc(n) : 0;
 }
 
 function extractMoneyDelta(text: string): number {
-  const gain = text.match(/(?:recevez|reÃ§ois|recois|gagnez|gagne)\s+(\d+)/i);
+  const gain = text.match(/(?:recevez|reçois|recois|gagnez|gagne)\s+(\d+)/i);
   if (gain) {
     const n = Number(gain[1]);
     if (Number.isFinite(n)) return Math.trunc(n);
@@ -1479,15 +1462,15 @@ function extractSkipTurns(text: string): number {
 }
 
 function extractTargetPlace(text: string): string | null {
-  const m1 = text.match(/avancez\s+jusqu[â€™']?Ã \s+la\s+gare\s+de\s+([^.,]+)/i);
+  const m1 = text.match(/avancez\s+jusqu[’']?à\s+la\s+gare\s+de\s+([^.,]+)/i);
   if (m1?.[1]) return `Gare de ${m1[1].trim()}`;
-  const m2 = text.match(/avancez\s+(?:directement\s+)?Ã \s+([^.,]+)/i);
+  const m2 = text.match(/avancez\s+(?:directement\s+)?à\s+([^.,]+)/i);
   if (m2?.[1]) return m2[1].trim();
   return null;
 }
 
 function isGetOutOfJailCard(text: string): boolean {
-  return /Sortie de prison/i.test(text) || /Lib[Ã©e]ration/i.test(text);
+  return /Sortie de prison/i.test(text) || /Lib[ée]ration/i.test(text);
 }
 
 function extractAllPlayersMoney(
@@ -1502,7 +1485,7 @@ function extractAllPlayersMoney(
     if (Number.isFinite(n) && n > 0) return { kind: 'pay', amount: Math.trunc(n), toBank };
   }
 
-  const receive = text.match(/Tous\s+les\s+joueurs\s+re[Ã§c]oivent\s+(\d+)/i);
+  const receive = text.match(/Tous\s+les\s+joueurs\s+re[çc]oivent\s+(\d+)/i);
   if (receive?.[1]) {
     const n = Number(receive[1]);
     if (Number.isFinite(n) && n > 0) return { kind: 'receive', amount: Math.trunc(n), toBank };
@@ -1514,5 +1497,8 @@ function extractAllPlayersMoney(
 function mentionsInfrastructureLoss(text: string): boolean {
   return /perd(?:ez|s)?\s+une\s+infrastructure/i.test(text) || /perds\s+une\s+infrastructure/i.test(text);
 }
+
+
+
 
 

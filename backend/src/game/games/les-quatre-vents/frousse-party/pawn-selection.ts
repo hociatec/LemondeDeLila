@@ -1,4 +1,4 @@
-import type { PendingState } from '../../../core/entities/game-state.entity';
+﻿import type { PendingState } from '../../../core/entities/game-state.entity';
 import type { FrousseMetadata } from './model/frousse.types';
 import { formatPawnChoiceLabel, resolvePawnId } from './pawns.utils';
 
@@ -23,14 +23,11 @@ export function buildPawnSelectionPending(
 
   const nextPlayer = cleaned.find((p) => !resolvePawnId(p.pawn));
   if (!nextPlayer) return null;
-  const chooserName = String((nextPlayer as any)?.username ?? '').trim();
-  const chooserLabel = chooserName.length > 0 ? chooserName : `Joueur ${nextPlayer.id}`;
 
   return {
     type: 'choose_pawn',
     playerId: nextPlayer.id,
     blocking: true,
-    label: `C'est à ${chooserLabel} de choisir un pion (flèches puis Entrée).`,
     choices: candidates.map((pawn) => formatPawnChoiceLabel(pawn)),
     data: {
       kind: 'choose_pawn',
@@ -46,3 +43,4 @@ function availablePawns(meta: FrousseMetadata, assigned: Set<string>) {
     return id != null && !assigned.has(id);
   });
 }
+

@@ -1,12 +1,18 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity, PendingState } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
+import {
+  clearPendingState,
+  createPendingState,
+  isPendingType,
+} from '../../../../modules/pending-action/services/pending-action.service';
 import type {
   PiratesEnVadrouilleBonusCard,
   PiratesEnVadrouilleCollection,
@@ -40,10 +46,6 @@ export class PiratesEnVadrouilleActionService {
             type,
             {
               'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'ROLL_DICE': () => {
                 next = this.handleRoll(next);
                 return next;
               },
@@ -81,7 +83,7 @@ export class PiratesEnVadrouilleActionService {
             ...state,
             metadata: { ...(state.metadata ?? {}), ...meta, statuses: nextStatuses },
           },
-          `${this.playerName(state, playerId)} saute son tour (${skip} restant).`,
+          `${resolvePlayerNameFromState(state, playerId)} saute son tour (${skip} restant).`,
         ),
       );
     }
@@ -95,7 +97,7 @@ export class PiratesEnVadrouilleActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} lance le dÃ© : "${rng.roll}".`,
+      `${resolvePlayerNameFromState(next, playerId)} lance le dé : "${rng.roll}".`,
     );
 
     next = this.move(next, playerId, rng.roll);
@@ -116,7 +118,7 @@ export class PiratesEnVadrouilleActionService {
       };
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} rejoue.`,
+        `${resolvePlayerNameFromState(next, playerId)} rejoue.`,
       );
       return next;
     }
@@ -130,7 +132,7 @@ export class PiratesEnVadrouilleActionService {
   ): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
     const pending = state.pending as any;
-    if (!pending || pending.type !== 'choose_target') return state;
+    if (!pending || !isPendingType(state, 'choose_target')) return state;
     const playerId = state.turn?.currentPlayerId ?? null;
     if (playerId == null) return state;
 
@@ -151,14 +153,13 @@ export class PiratesEnVadrouilleActionService {
     const meta = this.getMeta(state);
     const ctx = meta.pendingContext;
     if (!ctx || ctx.actorId !== playerId) {
-      return { ...state, pending: null };
+      return clearPendingState(state);
     }
 
     let next = this.applyTargetEffect(state, targetId, ctx);
     const updatedMeta = this.getMeta(next);
     next = {
-      ...next,
-      pending: null,
+      ...clearPendingState(next),
       metadata: {
         ...(next.metadata ?? {}),
         ...updatedMeta,
@@ -182,7 +183,7 @@ export class PiratesEnVadrouilleActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${tile.n} (${tile.title}).`,
+      `${resolvePlayerNameFromState(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${tile.n} (${tile.title}).`,
     );
 
     switch (tile.type) {
@@ -221,13 +222,13 @@ export class PiratesEnVadrouilleActionService {
     if (!card) {
       return this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} nâ€™a plus de cartes ${deckName}.`,
+        `${resolvePlayerNameFromState(next, playerId)} n’a plus de cartes ${deckName}.`,
       );
     }
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} pioche la carte "${card.title}".`,
+      `${resolvePlayerNameFromState(next, playerId)} pioche la carte "${card.title}".`,
     );
     next = this.addCardToCollection(next, playerId, deckName, card);
 
@@ -301,7 +302,7 @@ export class PiratesEnVadrouilleActionService {
       };
       return this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} est protÃ©gÃ© et ignore l'obstacle "${card.title}".`,
+        `${resolvePlayerNameFromState(next, playerId)} est protégé et ignore l'obstacle "${card.title}".`,
       );
     }
 
@@ -334,9 +335,9 @@ export class PiratesEnVadrouilleActionService {
     if (ctx.kind === 'target_move' && ctx.actorId != null) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, ctx.actorId)} applique ${
+        `${resolvePlayerNameFromState(next, ctx.actorId)} applique ${
           ctx.delta >= 0 ? 'un boost' : 'un ralentissement'
-        } Ã  ${this.playerName(next, targetPlayerId)} (${ctx.delta}).`,
+        } à ${resolvePlayerNameFromState(next, targetPlayerId)} (${ctx.delta}).`,
       );
       next = this.move(next, targetPlayerId, ctx.delta);
       return next;
@@ -347,10 +348,10 @@ export class PiratesEnVadrouilleActionService {
       if (!stolen) {
         return this.core.appendLog(
           next,
-          `${this.playerName(next, ctx.actorId)} tente de voler un trÃ©sor mais ${this.playerName(
+          `${resolvePlayerNameFromState(next, ctx.actorId)} tente de voler un trésor mais ${resolvePlayerNameFromState(
             next,
             targetPlayerId,
-          )} n'en possÃ¨de pas.`,
+          )} n'en possède pas.`,
         );
       }
       const trimmed = targetCollection.treasures.slice(0, -1);
@@ -366,7 +367,7 @@ export class PiratesEnVadrouilleActionService {
       );
       return this.core.appendLog(
         next,
-        `${this.playerName(next, ctx.actorId)} dÃ©robe "${stolen.title}" Ã  ${this.playerName(
+        `${resolvePlayerNameFromState(next, ctx.actorId)} dérobe "${stolen.title}" à ${resolvePlayerNameFromState(
           next,
           targetPlayerId,
         )}.`,
@@ -401,8 +402,7 @@ export class PiratesEnVadrouilleActionService {
           ? { kind: 'steal_treasure', actorId: playerId, count: effect.count }
           : null;
     return {
-      ...state,
-      pending,
+      ...createPendingState(state, pending),
       metadata: {
         ...(state.metadata ?? {}),
         ...meta,
@@ -432,12 +432,12 @@ export class PiratesEnVadrouilleActionService {
       };
       return this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} ouvre le coffre lÃ©gendaire et gagne la partie !`,
+        `${resolvePlayerNameFromState(next, playerId)} ouvre le coffre légendaire et gagne la partie !`,
       );
     }
     const next = this.core.appendLog(
       state,
-      `${this.playerName(state, playerId)} n'a pas assez de trÃ©sors ou piÃ¨ces d'or et recule de deux cases.`,
+      `${resolvePlayerNameFromState(state, playerId)} n'a pas assez de trésors ou pièces d'or et recule de deux cases.`,
     );
     return this.move(next, playerId, -2);
   }
@@ -457,7 +457,7 @@ export class PiratesEnVadrouilleActionService {
     if (!force && total >= 5) {
       return this.core.appendLog(
         state,
-        `${this.playerName(state, playerId)} a dÃ©jÃ  cinq cartes et ne peut pas en ajouter.`,
+        `${resolvePlayerNameFromState(state, playerId)} a déjà cinq cartes et ne peut pas en ajouter.`,
       );
     }
     const updated = { ...collection };
@@ -583,22 +583,22 @@ export class PiratesEnVadrouilleActionService {
         case 'skip':
           return `saute ${effect.turns} tour(s)`;
         case 'immunity':
-          return `est protÃ©gÃ© contre ${effect.turns} obstacle(s)`;
+          return `est protégé contre ${effect.turns} obstacle(s)`;
         case 'gainGold':
-          return `gagne ${effect.amount} piÃ¨ce(s) d'or`;
+          return `gagne ${effect.amount} pièce(s) d'or`;
         case 'loseGold':
-          return `perd ${effect.amount} piÃ¨ce(s) d'or`;
+          return `perd ${effect.amount} pièce(s) d'or`;
         case 'reroll':
-          return 'relance immÃ©diatement le dÃ©';
+          return 'relance immédiatement le dé';
         case 'targetMove':
-          return `rÃ©trograde un adversaire de ${Math.abs(effect.delta)} case(s)`;
+          return `rétrograde un adversaire de ${Math.abs(effect.delta)} case(s)`;
         case 'stealTreasure':
-          return `tente de voler ${effect.count} trÃ©sor(s)`;
+          return `tente de voler ${effect.count} trésor(s)`;
         default:
           return 'applique un effet';
       }
     })();
-    return `${this.playerName(state, playerId)} ${description}.`;
+    return `${resolvePlayerNameFromState(state, playerId)} ${description}.`;
   }
 
   private getCollection(
@@ -651,16 +651,6 @@ export class PiratesEnVadrouilleActionService {
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
 
-  private playerName(state: GameStateEntity, id: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const player = players.find((p) => p?.id === id);
-    const name =
-      player?.username && String(player.username).trim()
-        ? String(player.username).trim()
-        : null;
-    return name ?? `Joueur ${id}`;
-  }
-
   private pawnLabel(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
     const player = players.find((p: any) => p?.id === id) as any;
@@ -670,7 +660,7 @@ export class PiratesEnVadrouilleActionService {
     const lower = pawn.toLowerCase();
     const feminine = lower.startsWith('la ') || lower.startsWith('une ');
     const inner = pawn
-      .replace(/^l['â€™]\s*/i, '')
+      .replace(/^l['’]\s*/i, '')
       .replace(/^(le|la|les|un|une)\s+/i, '')
       .trim();
     const core = inner || pawn;
@@ -683,5 +673,8 @@ export class PiratesEnVadrouilleActionService {
     return (state.metadata ?? {}) as PiratesEnVadrouilleMetadata;
   }
 }
+
+
+
 
 

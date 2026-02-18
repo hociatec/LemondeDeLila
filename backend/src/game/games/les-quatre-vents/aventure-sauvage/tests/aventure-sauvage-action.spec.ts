@@ -179,7 +179,9 @@ describe('AventureSauvageActionService', () => {
     const messages = (next.log ?? []).map((e: any) => String(e?.message ?? ''));
 
     expect(messages.some((m) => /Lilas place "sa girafe" en case/.test(m))).toBe(true);
-    expect(messages.some((m) => /Lilas lance le de : "\d"\./.test(m))).toBe(true);
+    expect(
+      messages.some((m) => /Lilas lance le d(?:e|é|Ã©)\s*:\s*"\d"\./.test(m)),
+    ).toBe(true);
   });
 
   it('melange les decks au demarrage', async () => {

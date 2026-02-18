@@ -5,6 +5,7 @@ import { lamaCardLabel, lamaCardScore, LAMA_VALUE } from '../model/lama.model';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { LamaLogService } from '../logging/lama-log.service';
 import { LamaSharedService } from '../shared/lama-shared.service';
+import { createPendingState } from '../../../../modules/pending-action/services/pending-action.service';
 
 @Injectable()
 export class LamaRoundService {
@@ -76,11 +77,10 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       suppressTurnAnnouncement: false,
     };
 
-    return {
+    return createPendingState({
       ...state,
       metadata: nextMeta as any,
       log,
-      pending: { step: 'turn_choice', playerId: starterPlayerId } as any,
       turn: {
         ...(state.turn ?? { direction: 1 }),
         currentPlayerId: starterPlayerId,
@@ -89,7 +89,7 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
           ? `Tour de ${this.shared.playerLabel(players as any[], starterPlayerId)}`
           : undefined,
       },
-    };
+    } as GameStateEntity, { step: 'turn_choice', playerId: starterPlayerId } as any);
   }
 
   endRound(state: GameStateEntity, winnerPlayerId: number | null): GameStateEntity {
@@ -129,10 +129,9 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
         suppressTurnAnnouncement: false,
       };
 
-      const nextState: GameStateEntity = {
+      const nextState = createPendingState({
         ...state,
         metadata: nextMeta as any,
-        pending: { step: nextMeta.step, playerId: nextMeta.pendingReturnPlayerId ?? null } as any,
         turn: {
           ...(state.turn ?? { direction: 1 }),
           currentPlayerId: eligible.length ? eligible[0] : state.turn?.currentPlayerId ?? null,
@@ -143,7 +142,7 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
               ? `Fin de manche : ${winnerName}`
               : state.turn?.label,
         },
-      };
+      } as GameStateEntity, { step: nextMeta.step, playerId: nextMeta.pendingReturnPlayerId ?? null } as any);
 
       if (eligible.length) {
         return nextState;
@@ -196,11 +195,10 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       suppressTurnAnnouncement: false,
     };
 
-    const nextState: GameStateEntity = {
+    const nextState = createPendingState({
       ...state,
       metadata: nextMeta as any,
       log,
-      pending: { step: nextMeta.step, playerId: nextMeta.pendingReturnPlayerId ?? null } as any,
       turn: {
         ...(state.turn ?? { direction: 1 }),
         currentPlayerId: eligible.length ? eligible[0] : state.turn?.currentPlayerId ?? null,
@@ -209,7 +207,7 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
           ? `Rendre des jetons : ${this.shared.playerLabel(players as any[], eligible[0])}`
           : undefined,
       },
-    };
+    } as GameStateEntity, { step: nextMeta.step, playerId: nextMeta.pendingReturnPlayerId ?? null } as any);
 
     if (eligible.length) {
       return nextState;
@@ -280,20 +278,19 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
         state.log,
         `Pause ${Math.floor(pauseMs / 1000)}s avant la manche ${nextRound}.`,
       );
-      return {
+      return createPendingState({
         ...state,
         phase: 'round',
         round: nextRound,
         log,
         metadata: updatedMeta as any,
-        pending: { step: 'round_pause', playerId: meta.ownerPlayerId ?? null } as any,
         turn: {
           ...(state.turn ?? { direction: 1 }),
           currentPlayerId: meta.ownerPlayerId ?? state.turn?.currentPlayerId ?? null,
           direction: 1,
           label: `Pause avant la manche ${nextRound}`,
         },
-      };
+      } as GameStateEntity, { step: 'round_pause', playerId: meta.ownerPlayerId ?? null } as any);
     }
 
     return this.startNewRound({ ...state, metadata: updatedMeta as any, round: nextRound }, starter);

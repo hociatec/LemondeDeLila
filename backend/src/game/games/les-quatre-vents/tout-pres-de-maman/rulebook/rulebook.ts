@@ -5,7 +5,10 @@ import {
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
 import { TOUT_PRES_DE_MAMAN_GAME } from '../definitions/tout-pres-de-maman.definition';
-import { normalizeActionType as normalizeRawActionType } from '../../../../actions/action-service.helper';
+import {
+  normalizeActionType as normalizeRawActionType,
+  normalizeRollActionType,
+} from '../../../../actions/action-service.helper';
 import { canPlayerActOnTurn } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
@@ -23,7 +26,7 @@ export function validateAction(
   actorId: number | null,
 ): GameSingleActionDto {
   const rawType = normalizeRawActionType(action);
-  const type = normalizeActionType(rawType);
+  const type = normalizeRollActionType(rawType) as typeof TOUT_PRES_DE_MAMAN_GAME.actions[number];
   if (!TOUT_PRES_DE_MAMAN_GAME.actions.includes(type)) {
     throw new GameValidationError(`Action inconnue: ${rawType || '(vide)'}`, {
       gameType: TOUT_PRES_DE_MAMAN_GAME.id,
@@ -39,7 +42,7 @@ export function validateAction(
 
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new PlayerActionError("La partie n'est pas dÃ©marrÃ©e.", {
+    throw new PlayerActionError("La partie n'est pas démarrée.", {
       gameType: TOUT_PRES_DE_MAMAN_GAME.id,
     });
   }
@@ -60,13 +63,6 @@ export function validateAction(
   }
 
   return { type: 'roll', payload: {} };
-}
-
-function normalizeActionType(rawType: string) {
-  if (!rawType) return 'roll';
-  const normalized =
-    rawType === 'ROLL_DICE' || rawType === 'roll_dice' ? 'roll' : rawType;
-  return normalized as typeof TOUT_PRES_DE_MAMAN_GAME.actions[number];
 }
 
 

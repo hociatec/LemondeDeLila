@@ -1,11 +1,7 @@
-﻿import { Module } from '@nestjs/common';
-import { BotModule } from '../../../modules/bot/bot.module';
-import { BoardModule } from '../../../modules/board/board.module';
+import { Module } from '@nestjs/common';
 import { GameCoreModule } from '../../../core/core.module';
 import { GameRegistryModule } from '../../../engine/game-registry.module';
-import { RandomModule } from '../../../modules/random/random.module';
-import { TurnModule } from '../../../modules/turn/turn.module';
-import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
+import { BoardGameDeckKitModule } from '../../../modules/game-kits/board-game-kits.module';
 import { GerardPresidentActionService } from './actions/gerard-president-action.service';
 import { GerardPresidentBotService } from './bots/gerard-president-bot.service';
 import { GerardPresidentPresenterService } from './presenter/gerard-president-presenter.service';
@@ -14,14 +10,10 @@ import { GerardPresidentService } from './gerard-president.service';
 
 @Module({
   imports: [
+    BoardGameDeckKitModule,
     GameCoreModule,
     GameRegistryModule,
-    RandomModule,
-    DeckPoliciesModule,
-    BoardModule,
-    TurnModule,
-    BotModule,
-  ],
+    ],
   providers: [
     GerardPresidentService,
     GerardPresidentSetupService,

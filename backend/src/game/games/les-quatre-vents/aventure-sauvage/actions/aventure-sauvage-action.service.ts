@@ -1,6 +1,7 @@
-﻿import { Injectable } from '@nestjs/common';
+﻿import { Injectable, Optional } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -8,6 +9,7 @@ import { RandomService } from '../../../../modules/random/services/random.servic
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { BoardEffectsPoliciesService } from '../../../../modules/board-effects-policies/services/board-effects-policies.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
+import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
 import type {
   AventureSauvageCard,
   AventureSauvageMetadata,
@@ -25,6 +27,7 @@ export class AventureSauvageActionService {
     private readonly setupFlow: SetupFlowService,
     private readonly boardEffects: BoardEffectsPoliciesService,
     private readonly deckPolicies: DeckPoliciesService,
+    @Optional() private readonly turnPolicies?: TurnPoliciesService,
   ) {}
 
   applyActions(
@@ -42,14 +45,6 @@ export class AventureSauvageActionService {
                 return next;
               },
               'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'ROLL_DICE': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'roll_dice': () => {
                 next = this.handleRoll(next);
                 return next;
               },
@@ -86,7 +81,7 @@ export class AventureSauvageActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} lance le de : "${roll}".`,
+      `${resolvePlayerNameFromState(next, currentId)} lance le de : "${roll}".`,
     );
 
     const currentPos = meta.positions?.[currentId] ?? 0;
@@ -98,7 +93,7 @@ export class AventureSauvageActionService {
     if (afterMeta.winnerId != null) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, afterMeta.winnerId)} remporte la partie !`,
+        `${resolvePlayerNameFromState(next, afterMeta.winnerId)} remporte la partie !`,
       );
       return { ...next, status: 'finished' };
     }
@@ -138,7 +133,7 @@ export class AventureSauvageActionService {
     if (afterMeta.winnerId != null) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, afterMeta.winnerId)} remporte la partie !`,
+        `${resolvePlayerNameFromState(next, afterMeta.winnerId)} remporte la partie !`,
       );
       return { ...next, status: 'finished' };
     }
@@ -169,7 +164,7 @@ export class AventureSauvageActionService {
     const payload = (action?.payload ?? {}) as any;
     const rawPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
     const options = Array.isArray(pending?.data?.pawns) ? pending.data.pawns : [];
-    const chosen = this.resolvePendingPawn(rawPawn, options);
+    const chosen = this.setupFlow.resolvePawnChoice(rawPawn, options) as any;
     if (!chosen) return state;
 
     const meta = this.getMeta(state);
@@ -198,10 +193,33 @@ export class AventureSauvageActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} choisit le pion : ${String(chosen.label ?? 'pion').trim()}.`,
+      `${resolvePlayerNameFromState(next, playerId)} choisit le pion : ${String(chosen.label ?? 'pion').trim()}.`,
     );
 
-    const pendingInfo = this.buildPawnPending(next, playerId);
+    const playersForPending = Array.isArray(next.players) ? next.players : [];
+    const metaForPending = this.getMeta(next);
+    const pawnByPlayerIdForPending = (metaForPending.pawnByPlayerId ?? {}) as Record<number, string>;
+    const choicesForPending = this.availablePawns(metaForPending, pawnByPlayerIdForPending);
+    const pendingInfo = this.setupFlow.createSequentialPawnPending({
+      players: playersForPending,
+      startPlayerId: playerId,
+      isAssigned: (candidateId) => Boolean(pawnByPlayerIdForPending[candidateId]),
+      pawns: choicesForPending.map((p) => ({
+        id: p.id,
+        label: p.label,
+        title: p.label,
+        description: p.description,
+      })),
+      choiceLabelBuilder: (pawn) =>
+        pawn.description && String(pawn.description).trim().length > 0
+          ? `${String(pawn.label ?? '').trim()}: ${String(pawn.description).trim()}`
+          : String(pawn.label ?? '').trim(),
+      pawnDataMapper: (p: any) => ({
+        id: String(p?.id ?? '').trim(),
+        label: String(p?.title ?? p?.label ?? '').trim(),
+        description: String(p?.description ?? '').trim(),
+      }),
+    });
     if (pendingInfo) {
       const withPending: GameStateEntity = {
         ...next,
@@ -230,7 +248,7 @@ export class AventureSauvageActionService {
       turnIndex: starterIndex >= 0 ? starterIndex : next.turnIndex,
       turn: { ...(next.turn ?? { direction: 1 }), currentPlayerId: resolvedStarterId, direction: 1 },
     };
-    const starterName = this.playerName(started, resolvedStarterId ?? players[0]?.id ?? 0);
+    const starterName = resolvePlayerNameFromState(started, resolvedStarterId ?? players[0]?.id ?? 0);
     let withLogs = this.core.appendLog(started, `Debut de partie : ${starterName} commence.`);
     withLogs = this.appendTurnAnnouncement(withLogs, resolvedStarterId);
     return withLogs;
@@ -256,7 +274,7 @@ export class AventureSauvageActionService {
     next = this.core.appendLog(
       next,
       this.boardEffects.createPlacementLog({
-        playerLabel: this.playerName(next, playerId),
+        playerLabel: resolvePlayerNameFromState(next, playerId),
         pawnLabel: this.pawnPossessiveLabel(next, playerId),
         position,
         tileLabel: label,
@@ -342,46 +360,11 @@ export class AventureSauvageActionService {
       };
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} rejoue.`,
+        `${resolvePlayerNameFromState(next, playerId)} rejoue.`,
       );
     }
 
     return next;
-  }
-
-  private buildPawnPending(
-    state: GameStateEntity,
-    startId: number | null,
-  ): { pending: any; playerId: number; turnIndex: number } | null {
-    const players = Array.isArray(state.players) ? state.players : [];
-    if (!players.length) return null;
-
-    const meta = this.getMeta(state);
-    const pawnByPlayerId = (meta.pawnByPlayerId ?? {}) as Record<number, string>;
-    const choices = this.availablePawns(meta, pawnByPlayerId);
-    return this.setupFlow.createSequentialChoicePending({
-      players,
-      startPlayerId: startId,
-      isAssigned: (playerId) => Boolean(pawnByPlayerId[playerId]),
-      pendingType: 'choose_pawn',
-      choices: choices.map((p) => ({
-        id: p.id,
-        label:
-          p.description && String(p.description).trim().length > 0
-            ? `${p.label}: ${p.description}`
-            : p.label,
-        title: p.label,
-        description: p.description,
-      })),
-      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
-      dataBuilder: (availableChoices) => ({
-        pawns: availableChoices.map((p: any) => ({
-          id: String(p?.id ?? '').trim(),
-          label: String(p?.title ?? p?.label ?? '').trim(),
-          description: String(p?.description ?? '').trim(),
-        })),
-      }),
-    });
   }
 
   private availablePawns(
@@ -393,22 +376,6 @@ export class AventureSauvageActionService {
       Object.values(pawnByPlayerId).filter((v) => typeof v === 'string'),
     );
     return pawns.filter((p) => !used.has(p.id));
-  }
-  private resolvePendingPawn(
-    raw: unknown,
-    options: Array<{ id?: string; label?: string; title?: string }>,
-  ): { id: string; label: string; description: string } | null {
-    const normalized = (Array.isArray(options) ? options : [])
-      .map((p: any) => ({
-        id: String(p?.id ?? '').trim(),
-        label: String(p?.label ?? p?.title ?? '').trim(),
-        description: String(p?.description ?? '').trim(),
-      }))
-      .filter((p) => p.id.length > 0 && p.label.length > 0);
-    if (!normalized.length) return null;
-    return this.setupFlow.resolveChoice(raw, normalized) as
-      | { id: string; label: string; description: string }
-      | null;
   }
 
   private moveBy(
@@ -485,16 +452,6 @@ export class AventureSauvageActionService {
   private getMeta(state: GameStateEntity): AventureSauvageMetadata {
     return (state.metadata ?? {}) as any as AventureSauvageMetadata;
   }
-
-  private playerName(state: GameStateEntity, id: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const p = players.find((x) => x?.id === id);
-    const u =
-      p?.username && String(p.username).trim()
-        ? String(p.username).trim()
-        : null;
-    return u ?? `Joueur ${id}`;
-  }
   private pawnLabel(state: GameStateEntity, id: number): string {
     const meta = this.getMeta(state);
     const pawnId = String(meta?.pawnByPlayerId?.[id] ?? '').trim();
@@ -512,7 +469,7 @@ export class AventureSauvageActionService {
     if (!inner) return '"son pion"';
     const stripped = inner
       .replace(/^(le|la|les|un|une)\s+/i, '')
-      .replace(/^l['â€™]\s*/i, '')
+      .replace(/^l[']\\s*/i, '')
       .trim();
     const base = this.lowercaseFirst(stripped || inner);
     const feminine = /^(la|une)\s+/i.test(inner);
@@ -531,10 +488,11 @@ export class AventureSauvageActionService {
     state: GameStateEntity,
     playerId: number | null | undefined,
   ): GameStateEntity {
-    if (typeof playerId !== 'number' || !Number.isFinite(playerId)) {
-      return state;
-    }
-    return this.core.appendLog(state, `C'est au tour de ${this.playerName(state, playerId)}.`);
+    return this.getTurnPolicies().appendTurnAnnouncement(
+      state,
+      playerId,
+      (s, id) => resolvePlayerNameFromState(s, id),
+    );
   }
 
   private ensurePawnSelectionPrompt(state: GameStateEntity): GameStateEntity {
@@ -548,11 +506,8 @@ export class AventureSauvageActionService {
     return state;
   }
 
-  private appendLogOnce(state: GameStateEntity, message: string): GameStateEntity {
-    const log = Array.isArray(state.log) ? state.log : [];
-    const last = String(log[log.length - 1]?.message ?? '').trim();
-    if (last === message) return state;
-    return this.core.appendLog(state, message);
+  private getTurnPolicies(): TurnPoliciesService {
+    return this.turnPolicies ?? new TurnPoliciesService(this.core);
   }
 
   private advanceTurn(state: GameStateEntity): GameStateEntity {
@@ -600,7 +555,7 @@ export class AventureSauvageActionService {
 
     // Important UX: si un joueur est sautÃ©, on l'annonce, sinon on a l'impression que "rien ne se passe".
     for (const pid of skipped) {
-      next = this.core.appendLog(next, `${this.playerName(next, pid)} passe son tour.`);
+      next = this.core.appendLog(next, `${resolvePlayerNameFromState(next, pid)} passe son tour.`);
     }
 
     return this.appendTurnAnnouncement(next, players[nextIndex].id);
@@ -629,7 +584,7 @@ export class AventureSauvageActionService {
       },
     };
 
-    next = this.core.appendLog(next, `${this.playerName(next, currentId)} passe son tour.`);
+    next = this.core.appendLog(next, `${resolvePlayerNameFromState(next, currentId)} passe son tour.`);
     return this.advanceTurn(next);
   }
 }
@@ -735,7 +690,7 @@ function defaultAnimalDeck(): AventureSauvageCard[] {
     {
       id: 17,
       deck: 'animal',
-      text: "Vous poursuivez une grenouille gÃ©ante de nÃ©nuphar en nÃ©nuphar. Ã€ chaque saut, vous glissez, tournez en rond et finissez par reculer d'une case avant de rebondir aussitÃ´t en avant d'une case, en Ã©clatant de rire.",
+      text: "Vous poursuivez une grenouille gÃ©ante de nÃ©nuphar en nÃ©nuphar. Ã¬ chaque saut, vous glissez, tournez en rond et finissez par reculer d'une case avant de rebondir aussitÃ´t en avant d'une case, en Ã©clatant de rire.",
     },
     {
       id: 18,
@@ -824,6 +779,12 @@ function defaultPatteDeck(): AventureSauvageCard[] {
   ];
   return deck;
 }
+
+
+
+
+
+
 
 
 

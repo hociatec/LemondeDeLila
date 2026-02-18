@@ -1,4 +1,4 @@
-import { TurnLabelService } from './turn-label.service';
+﻿import { TurnLabelService } from './turn-label.service';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 
 describe('TurnLabelService', () => {
@@ -50,7 +50,15 @@ describe('TurnLabelService', () => {
     expect(service.compute(state, 'lama')).toBe("C'est à Joueur 2 de jouer.");
   });
 
-  it('prefers pending pawn label during pawn selection', () => {
+  it('resolves username when player ids are serialized as strings', () => {
+    const state = createState({
+      turn: { currentPlayerId: 2, direction: 1 },
+      players: [{ id: '2' as any, username: 'Nina' as any }],
+    });
+    expect(service.compute(state, 'lama')).toBe("C'est à Nina de jouer.");
+  });
+
+  it('forces generic pawn prompt during pawn selection', () => {
     const state = createState({
       turn: { currentPlayerId: 2, direction: 1 },
       players: [{ id: 2, username: 'Olaf' }],
@@ -62,7 +70,24 @@ describe('TurnLabelService', () => {
     });
 
     expect(service.compute(state, 'en-attendant-minuit')).toBe(
-      "C'est à Olaf de choisir son pion, puis Entrée.",
+      "C'est à Olaf de choisir son pion.",
     );
+  });
+
+  it('uses pending.playerId for generic pawn prompt when turn points elsewhere', () => {
+    const state = createState({
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [
+        { id: 1, username: 'Lila' },
+        { id: 2, username: 'Olaf' },
+      ],
+      pending: {
+        type: 'choose_pawn',
+        playerId: 2,
+        label: 'Texte spécifique jeu',
+      } as any,
+    });
+
+    expect(service.compute(state, 'jeu-oie')).toBe("C'est à Olaf de choisir son pion.");
   });
 });

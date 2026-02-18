@@ -1,6 +1,7 @@
-ï»¿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -59,13 +60,13 @@ export class DameNatureActionService {
 
     const meta = this.getMeta(state);
     if (!this.playerHasCard(meta, targetId, cardId)) {
-      return this.drawAndAdvance(state, currentId, `La carte ${this.getCardName(cardId)} n'est pas chez le joueur demandÃ©.`);
+      return this.drawAndAdvance(state, currentId, `La carte ${this.getCardName(cardId)} n'est pas chez le joueur demandé.`);
     }
 
     let next = this.transferCardBetweenPlayers(state, targetId, currentId, cardId);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} rÃ©cupÃ¨re ${this.getCardName(cardId)} de ${this.playerName(next, targetId)}.`,
+      `${resolvePlayerNameFromState(next, currentId)} récupère ${this.getCardName(cardId)} de ${resolvePlayerNameFromState(next, targetId)}.`,
     );
 
     next = this.registerFamilyCard(next, currentId, cardId);
@@ -92,13 +93,13 @@ export class DameNatureActionService {
     if (!cardId) {
       return this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} ne trouve plus aucune carte Ã  piocher.`,
+        `${resolvePlayerNameFromState(next, playerId)} ne trouve plus aucune carte à piocher.`,
       );
     }
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} pioche ${this.getCardName(cardId)}.`,
+      `${resolvePlayerNameFromState(next, playerId)} pioche ${this.getCardName(cardId)}.`,
     );
 
     const definition = DAME_NATURE_CARD_BY_ID[cardId];
@@ -115,7 +116,7 @@ export class DameNatureActionService {
       next = this.addCardToDiscard(next, cardId);
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} lit le quiz : ${definition.question}`,
+        `${resolvePlayerNameFromState(next, playerId)} lit le quiz : ${definition.question}`,
       );
       next = this.setLastQuiz(next, cardId);
       return next;
@@ -180,7 +181,7 @@ export class DameNatureActionService {
     next = this.setMeta(next, meta);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} subit : ${description} (${delta >= 0 ? '+' : ''}${delta} jetons pollution).`,
+      `${resolvePlayerNameFromState(next, playerId)} subit : ${description} (${delta >= 0 ? '+' : ''}${delta} jetons pollution).`,
     );
     if (pollution >= 12) {
       next = {
@@ -307,13 +308,8 @@ export class DameNatureActionService {
     return cardId;
   }
 
-  private playerName(state: GameStateEntity, playerId: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const player = players.find((p) => p?.id === playerId);
-    return player?.username?.trim() || `Joueur ${playerId}`;
-  }
-
   private isGameFinished(state: GameStateEntity): boolean {
     return String(state.status ?? '').toLowerCase() === 'finished';
   }
 }
+

@@ -1,6 +1,6 @@
 ﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isRollAlias, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
   GameValidationError,
@@ -86,7 +86,7 @@ export function validateAction(
     });
   }
 
-  if (rawType === 'ROLL_DICE' || normalized === 'roll_dice') {
+  if (isRollAlias(rawType, normalized)) {
     return { ...action, type: 'roll', payload: {} };
   }
   if (normalized === 'draw') return { ...action, type: 'draw', payload: {} };

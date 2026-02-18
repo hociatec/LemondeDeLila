@@ -1,6 +1,11 @@
-﻿import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  isRollActionType,
+  isRollAlias,
+  normalizeActionType,
+  normalizeLowerActionType,
+} from '../../../../actions/action-service.helper';
 import type {
   PanierExpressMetadata,
   PanierExpressTile,
@@ -105,8 +110,8 @@ export function getAvailableActions(
     (pending as any).step !== 'confirm',
   );
 
-  // IMPORTANT: un quiz "pending" peut provenir d'autres mÃ©caniques (ex: Ã©change refusÃ©),
-  // pas uniquement d'une case quiz. Tant que le quiz n'est pas rÃ©solu, aucune autre action n'est autorisÃ©e.
+  // IMPORTANT: un quiz "pending" peut provenir d'autres mécaniques (ex: échange refusé),
+  // pas uniquement d'une case quiz. Tant que le quiz n'est pas résolu, aucune autre action n'est autorisée.
   if (hasPendingQuiz) {
     const rawChoices = Array.isArray((pendingQuiz as any)?.choices)
       ? (pendingQuiz as any).choices
@@ -123,8 +128,8 @@ export function getAvailableActions(
     }));
   }
 
-  // IMPORTANT: un Ã©change "pending" peut aussi provenir d'une action/carte (pas uniquement d'une case Ã©change).
-  // Tant que l'Ã©change n'est pas terminÃ©, aucune autre action n'est autorisÃ©e.
+  // IMPORTANT: un échange "pending" peut aussi provenir d'une action/carte (pas uniquement d'une case échange).
+  // Tant que l'échange n'est pas terminé, aucune autre action n'est autorisée.
   if (hasPendingExchange) {
     const exchangePending = pending as any;
 
@@ -154,7 +159,7 @@ export function getAvailableActions(
         }));
     }
 
-    // Ã‰tape inconnue => ne pas proposer 'roll' (sinon boucle d'erreur "terminer l'Ã©change").
+    // Étape inconnue => ne pas proposer 'roll' (sinon boucle d'erreur "terminer l'échange").
     return [];
   }
 
@@ -203,16 +208,16 @@ export function validateAction(
         pendingPlayerId != null &&
         actorId !== pendingPlayerId
       ) {
-        throw new PlayerActionError('Une action est dÃ©jÃ  en attente.', {
+        throw new PlayerActionError('Une action est déjà en attente.', {
           gameType: 'panier-express',
           playerId: actorId,
           currentPlayerId: state.turn?.currentPlayerId ?? null,
         });
       }
-      if (normalizedType === 'roll' || normalizedType === 'roll_dice') {
+      if (isRollActionType(rawType, normalizedType)) {
         if (actorId != null) {
           throw new PlayerActionError(
-            "Vous devez d'abord rÃ©soudre l'action en attente.",
+            "Vous devez d'abord résoudre l'action en attente.",
             {
               gameType: 'panier-express',
               playerId: actorId,
@@ -258,7 +263,7 @@ export function validateAction(
 
   const payload = action.payload ?? {};
 
-  if (type === 'ROLL_DICE' || normalizedType === 'roll_dice') {
+  if (isRollAlias(type, normalizedType)) {
     return { ...action, type: 'roll', payload: {} };
   }
 
@@ -330,7 +335,7 @@ export function validateAction(
       pid == null ||
       pid !== actorId
     ) {
-      throw new PlayerActionError('Aucun Ã©change Ã  confirmer.', {
+      throw new PlayerActionError('Aucun échange à confirmer.', {
         gameType: 'panier-express',
         playerId: actorId ?? undefined,
       });
@@ -382,19 +387,19 @@ export function validateAction(
   }
 
   if (type === 'roll') {
-    // Anti-triche: ignorer tout payload cÃ´tÃ© client (ex: roll forcÃ©).
+    // Anti-triche: ignorer tout payload côté client (ex: roll forcé).
     if (actorId != null) {
       const meta = getMeta(state);
       const pendingQuiz = meta.quiz?.pending?.[actorId];
       if (pendingQuiz) {
-        throw new PlayerActionError('Vous devez rÃ©pondre au quiz.', {
+        throw new PlayerActionError('Vous devez répondre au quiz.', {
           gameType: 'panier-express',
           playerId: actorId,
         });
       }
       const pending = state.pending as any;
       if (pending && pending.type === 'exchange') {
-        throw new PlayerActionError("Vous devez terminer l'Ã©change en cours.", {
+        throw new PlayerActionError("Vous devez terminer l'échange en cours.", {
           gameType: 'panier-express',
           playerId: actorId,
         });
@@ -403,7 +408,7 @@ export function validateAction(
     if (hasBlockingPending) {
       if (actorId != null) {
         throw new PlayerActionError(
-          "Vous devez d'abord rÃ©soudre l'action en attente.",
+          "Vous devez d'abord résoudre l'action en attente.",
           {
             gameType: 'panier-express',
             playerId: actorId,

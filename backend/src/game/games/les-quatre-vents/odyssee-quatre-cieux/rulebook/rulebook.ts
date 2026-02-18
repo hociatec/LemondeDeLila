@@ -1,6 +1,10 @@
 ﻿import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  normalizeActionType,
+  normalizeLegacyRollAliasToUpper,
+  normalizeLowerActionType,
+} from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
   GameValidationError,
@@ -42,9 +46,7 @@ export function validateAction(
   actorId: number | null,
 ): GameSingleActionDto {
   const rawType = normalizeActionType(action);
-  const type = (
-    rawType === 'roll_dice' ? 'ROLL_DICE' : rawType
-  ) as OdysseeActionType;
+  const type = normalizeLegacyRollAliasToUpper(rawType) as OdysseeActionType;
   if (!ODYSSEE_GAME.actions.includes(type)) {
     throw new GameValidationError(`Action inconnue: ${rawType || '(vide)'}`, {
       gameType: 'odyssee-quatre-cieux',

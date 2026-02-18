@@ -1,6 +1,7 @@
 import { CaActionService } from './ca-actions.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { TurnService } from '../../../../modules/turn/services/turn.service';
+import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { CaSetupService } from '../setup/ca.setup';
@@ -15,8 +16,11 @@ describe('Ça Dérape ! - action flow', () => {
       shuffle: jest.fn((meta: any, values: any[]) => ({ values, meta })),
     } as any;
 
-    const turns = new TurnFlowService(new TurnService());
     const core = new GameCoreService();
+    const turns = new TurnFlowService(
+      new TurnService(),
+      new TurnPoliciesService(core),
+    );
     const deckPolicies = new DeckPoliciesService(random);
     return new CaActionService(random, turns, core, deckPolicies);
   }

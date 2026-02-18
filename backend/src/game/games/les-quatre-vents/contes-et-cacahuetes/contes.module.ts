@@ -1,12 +1,9 @@
 ﻿import { Module } from '@nestjs/common';
 import { GameCoreModule } from '../../../core/core.module';
 import { GameRegistryModule } from '../../../engine/game-registry.module';
-import { RandomModule } from '../../../modules/random/random.module';
-import { BoardModule } from '../../../modules/board/board.module';
-import { TurnModule } from '../../../modules/turn/turn.module';
-import { BotModule } from '../../../modules/bot/bot.module';
 import { SetupFlowModule } from '../../../modules/setup-flow/setup-flow.module';
-import { DeckPoliciesModule } from '../../../modules/deck-policies/deck-policies.module';
+import { BoardGameDeckKitModule } from '../../../modules/game-kits/board-game-kits.module';
+import { TurnPoliciesModule } from '../../../modules/turn-policies/turn-policies.module';
 import { ContesService } from './contes.service';
 import { ContesCacahuetesSetupService } from './setup/contes-et-cacahuetes-setup.service';
 import { ContesActionService } from './actions/contes-action.service';
@@ -17,12 +14,9 @@ import { ContesBotService } from './bots/contes-bot.service';
   imports: [
     GameCoreModule,
     GameRegistryModule,
-    RandomModule,
-    BoardModule,
-    TurnModule,
-    BotModule,
+    BoardGameDeckKitModule,
     SetupFlowModule,
-    DeckPoliciesModule,
+    TurnPoliciesModule,
   ],
   providers: [
     ContesService,

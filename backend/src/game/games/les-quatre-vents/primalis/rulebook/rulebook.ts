@@ -4,7 +4,7 @@ import {
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
 import { PRIMALIS_GAME } from '../definitions/primalis.definition';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isRollAlias, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
 import { canPlayerActOnTurn } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
@@ -21,12 +21,9 @@ export function validateAction(
   actorId: number | null,
 ): GameSingleActionDto {
   const rawType = normalizeActionType(action);
-  const type =
-    rawType === 'ROLL_DICE'
-      ? 'roll'
-      : rawType === 'roll_dice'
-        ? 'roll'
-        : (rawType as typeof PRIMALIS_GAME.actions[number]);
+  const type = isRollAlias(rawType)
+    ? 'roll'
+    : (rawType as typeof PRIMALIS_GAME.actions[number]);
   if (!PRIMALIS_GAME.actions.includes(type as any)) {
     throw new PlayerActionError(`Action inconnue: ${rawType || '(vide)'}`, {
       gameType: 'primalis',
@@ -39,7 +36,7 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new PlayerActionError("La partie n'est pas dÃ©marrÃ©e.", {
+    throw new PlayerActionError("La partie n'est pas démarrée.", {
       gameType: 'primalis',
     });
   }

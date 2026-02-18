@@ -1,9 +1,10 @@
-ï»¿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type {
   GameStateEntity,
   PendingState,
 } from '../../../../core/entities/game-state.entity';
 import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
@@ -38,14 +39,6 @@ export class GaloponsActionService {
             type,
             {
               'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'ROLL_DICE': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'roll_dice': () => {
                 next = this.handleRoll(next);
                 return next;
               },
@@ -105,7 +98,7 @@ export class GaloponsActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} lance le dÃ© : "${roll}".`,
+      `${resolvePlayerNameFromState(next, currentId)} lance le dé : "${roll}".`,
     );
 
     next = this.move(next, currentId, roll);
@@ -115,12 +108,12 @@ export class GaloponsActionService {
     if (meta.winnerId != null) return { ...next, status: 'finished' };
     if (next.pending) return next;
 
-    // Fin de manche : si dÃ©clenchÃ©e et que tous ont jouÃ©.
+    // Fin de manche : si déclenchée et que tous ont joué.
     if (meta.finish?.triggered && meta.finish.pendingIds.length === 0) {
       return this.finishGame(next);
     }
 
-    // Rejouer immÃ©diat ? (dÃ©clenchÃ© par carte)
+    // Rejouer immédiat ? (déclenché par carte)
     const keepTurn = (meta as any).keepTurn === true;
     if (keepTurn) {
       meta = { ...meta };
@@ -128,11 +121,11 @@ export class GaloponsActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       return this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} rejoue.`,
+        `${resolvePlayerNameFromState(next, currentId)} rejoue.`,
       );
     }
 
-    // Si fin de manche dÃ©clenchÃ©e, retirer le joueur courant des pendingIds.
+    // Si fin de manche déclenchée, retirer le joueur courant des pendingIds.
     if (meta.finish?.triggered) {
       const pendingIds = meta.finish.pendingIds.filter(
         (id) => id !== currentId,
@@ -175,7 +168,7 @@ export class GaloponsActionService {
     if (ctx.kind === 'pair_advance') {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} et ${this.playerName(next, targetPlayerId)} avancent d'une case.`,
+        `${resolvePlayerNameFromState(next, currentId)} et ${resolvePlayerNameFromState(next, targetPlayerId)} avancent d'une case.`,
       );
       next = this.move(next, currentId, 1);
       next = this.move(next, targetPlayerId, 1);
@@ -183,7 +176,7 @@ export class GaloponsActionService {
       if (ctx.replayAfter)
         return this.core.appendLog(
           next,
-          `${this.playerName(next, currentId)} rejoue.`,
+          `${resolvePlayerNameFromState(next, currentId)} rejoue.`,
         );
       return this.turns.advanceTurn(next);
     }
@@ -193,12 +186,12 @@ export class GaloponsActionService {
       if (a <= 0) {
         next = this.core.appendLog(
           next,
-          `${this.playerName(next, currentId)} n'a pas de pomme Ã  donner.`,
+          `${resolvePlayerNameFromState(next, currentId)} n'a pas de pomme à donner.`,
         );
         if (ctx.replayAfter)
           return this.core.appendLog(
             next,
-            `${this.playerName(next, currentId)} rejoue.`,
+            `${resolvePlayerNameFromState(next, currentId)} rejoue.`,
           );
         return this.turns.advanceTurn(next);
       }
@@ -216,16 +209,16 @@ export class GaloponsActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} donne une pomme Ã  ${this.playerName(next, targetPlayerId)}.`,
+        `${resolvePlayerNameFromState(next, currentId)} donne une pomme à ${resolvePlayerNameFromState(next, targetPlayerId)}.`,
       );
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, targetPlayerId)} devra rendre une pomme plus tard.`,
+        `${resolvePlayerNameFromState(next, targetPlayerId)} devra rendre une pomme plus tard.`,
       );
       if (ctx.replayAfter)
         return this.core.appendLog(
           next,
-          `${this.playerName(next, currentId)} rejoue.`,
+          `${resolvePlayerNameFromState(next, currentId)} rejoue.`,
         );
       return this.turns.advanceTurn(next);
     }
@@ -233,7 +226,7 @@ export class GaloponsActionService {
     if (ctx.kind === 'help_advance') {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} aide ${this.playerName(next, targetPlayerId)} : +2 cases.`,
+        `${resolvePlayerNameFromState(next, currentId)} aide ${resolvePlayerNameFromState(next, targetPlayerId)} : +2 cases.`,
       );
       next = this.move(next, targetPlayerId, 2);
       meta = this.getMeta(next);
@@ -247,12 +240,12 @@ export class GaloponsActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} reÃ§oit une pomme en remerciement.`,
+        `${resolvePlayerNameFromState(next, currentId)} reçoit une pomme en remerciement.`,
       );
       if (ctx.replayAfter)
         return this.core.appendLog(
           next,
-          `${this.playerName(next, currentId)} rejoue.`,
+          `${resolvePlayerNameFromState(next, currentId)} rejoue.`,
         );
       return this.turns.advanceTurn(next);
     }
@@ -287,7 +280,7 @@ export class GaloponsActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${tile.n} (${tile.title}).`,
+      `${resolvePlayerNameFromState(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${tile.n} (${tile.title}).`,
     );
     if (tile.type === 'card') {
       next = this.core.appendLog(next, `Piochez une carte Aventure.`);
@@ -296,10 +289,10 @@ export class GaloponsActionService {
     } else if (tile.type === 'skip') {
       next = this.core.appendLog(next, `Passez des tours.`);
     } else if (tile.type === 'finish') {
-      next = this.core.appendLog(next, `Ã‰curie finale.`);
+      next = this.core.appendLog(next, `Écurie finale.`);
     }
 
-    // Si arrivÃ©e : dÃ©clenche fin de manche.
+    // Si arrivée : déclenche fin de manche.
     if (tile.type === 'finish') {
       if (!meta.finish?.triggered) {
         const others = Object.keys(meta.positions ?? {})
@@ -321,18 +314,18 @@ export class GaloponsActionService {
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
         next = this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} atteint l'Ã©curie finale (+1 pomme).`,
+          `${resolvePlayerNameFromState(next, playerId)} atteint l'écurie finale (+1 pomme).`,
         );
       }
       return next;
     }
 
-    // Si case occupÃ©e : l'autre recule de 5.
+    // Si case occupée : l'autre recule de 5.
     const occupant = this.findOccupant(meta, playerId, pos);
     if (occupant != null) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} rattrape ${this.playerName(next, occupant)} : ${this.playerName(next, occupant)} recule de 5 cases.`,
+        `${resolvePlayerNameFromState(next, playerId)} rattrape ${resolvePlayerNameFromState(next, occupant)} : ${resolvePlayerNameFromState(next, occupant)} recule de 5 cases.`,
       );
       next = this.move(next, occupant, -5);
       meta = this.getMeta(next);
@@ -350,7 +343,7 @@ export class GaloponsActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       return this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} gagne ${gain} pomme(s).`,
+        `${resolvePlayerNameFromState(next, playerId)} gagne ${gain} pomme(s).`,
       );
     }
 
@@ -370,7 +363,7 @@ export class GaloponsActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       return this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} passe ${turns} tour(s).`,
+        `${resolvePlayerNameFromState(next, playerId)} passe ${turns} tour(s).`,
       );
     }
 
@@ -410,12 +403,12 @@ export class GaloponsActionService {
     const text = card.text;
     const replayAfter = /Rejouez/i.test(text);
 
-    // Donner une pomme (peut Ãªtre combinÃ© avec "Rejouez immÃ©diatement").
+    // Donner une pomme (peut être combiné avec "Rejouez immédiatement").
     if (/Donnez-lui une pomme/i.test(text)) {
       const targets = this.otherPlayers(next, playerId);
       const pending: PendingState = {
         type: 'choose_target',
-        label: 'Choisissez un joueur dans la liste, puis EntrÃ©e.',
+        label: 'Choisissez un joueur dans la liste, puis Entrée.',
         playerId,
         blocking: true,
         choices: targets.map((t) => t.username),
@@ -457,7 +450,7 @@ export class GaloponsActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       return this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} gagne ${gain} pomme(s).`,
+        `${resolvePlayerNameFromState(next, playerId)} gagne ${gain} pomme(s).`,
       );
     }
     if (
@@ -474,7 +467,7 @@ export class GaloponsActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       return this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} gagne 1 pomme.`,
+        `${resolvePlayerNameFromState(next, playerId)} gagne 1 pomme.`,
       );
     }
 
@@ -510,7 +503,7 @@ export class GaloponsActionService {
       const targets = this.otherPlayers(next, playerId);
       const pending: PendingState = {
         type: 'choose_target',
-        label: 'Choisissez un joueur dans la liste, puis EntrÃ©e.',
+        label: 'Choisissez un joueur dans la liste, puis Entrée.',
         playerId,
         blocking: true,
         choices: targets.map((t) => t.username),
@@ -541,7 +534,7 @@ export class GaloponsActionService {
       const targets = this.otherPlayers(next, playerId);
       const pending: PendingState = {
         type: 'choose_target',
-        label: 'Choisissez un joueur dans la liste, puis EntrÃ©e.',
+        label: 'Choisissez un joueur dans la liste, puis Entrée.',
         playerId,
         blocking: true,
         choices: targets.map((t) => t.username),
@@ -567,10 +560,10 @@ export class GaloponsActionService {
       };
     }
 
-    // DÃ©fausser une pomme.
+    // Défausser une pomme.
     if (
-      /DÃ©faussez-vous d''une pomme/i.test(text) ||
-      /DÃ©faussez-vous d'une pomme/i.test(text)
+      /Défaussez-vous d''une pomme/i.test(text) ||
+      /Défaussez-vous d'une pomme/i.test(text)
     ) {
       const a = meta.apples?.[playerId] ?? 0;
       if (a > 0) {
@@ -579,12 +572,12 @@ export class GaloponsActionService {
       }
       return this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} n'a pas de pomme Ã  dÃ©fausser.`,
+        `${resolvePlayerNameFromState(next, playerId)} n'a pas de pomme à défausser.`,
       );
     }
 
-    // Avance jusqu'Ã  prochaine rÃ©gion.
-    if (/jusqu['â€™]Ã  la prochaine case forÃªt/i.test(text)) {
+    // Avance jusqu'à prochaine région.
+    if (/jusqu['’]à la prochaine case forêt/i.test(text)) {
       const nextPos = findNext(
         meta.tiles,
         meta.positions[playerId] ?? 0,
@@ -595,7 +588,7 @@ export class GaloponsActionService {
         return this.applyLanding(next, playerId);
       }
     }
-    if (/jusqu['â€™]Ã  la prochaine case montagne/i.test(text)) {
+    if (/jusqu['’]à la prochaine case montagne/i.test(text)) {
       const nextPos = findNext(
         meta.tiles,
         meta.positions[playerId] ?? 0,
@@ -634,7 +627,7 @@ export class GaloponsActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, best.id)} remporte la partie avec ${best.apples} pomme(s) !`,
+      `${resolvePlayerNameFromState(next, best.id)} remporte la partie avec ${best.apples} pomme(s) !`,
     );
     return next;
   }
@@ -702,21 +695,11 @@ export class GaloponsActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     return players
       .filter((p) => p?.id != null && p.id !== me)
-      .map((p) => ({ id: p.id, username: this.playerName(state, p.id) }));
+      .map((p) => ({ id: p.id, username: resolvePlayerNameFromState(state, p.id) }));
   }
 
   private getMeta(state: GameStateEntity): GaloponsMetadata {
     return (state.metadata ?? {}) as any as GaloponsMetadata;
-  }
-
-  private playerName(state: GameStateEntity, id: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const p = players.find((x) => x?.id === id);
-    const u =
-      p?.username && String(p.username).trim()
-        ? String(p.username).trim()
-        : null;
-    return u ?? `Joueur ${id}`;
   }
 
   private pawnLabel(state: GameStateEntity, id: number): string {
@@ -728,7 +711,7 @@ export class GaloponsActionService {
     const lower = pawn.toLowerCase();
     const feminine = lower.startsWith('la ') || lower.startsWith('une ');
     const inner = pawn
-      .replace(/^l['â€™]\s*/i, '')
+      .replace(/^l['’]\s*/i, '')
       .replace(/^(le|la|les|un|une)\s+/i, '')
       .trim();
     const core = inner || pawn;
@@ -762,9 +745,9 @@ function extractMoveDelta(text: string): number {
     return numWords[key] ?? 0;
   };
 
-  const forwardApos = text.match(/Avancez\s+d['â€™]\s*(\d+)\s+case/i);
+  const forwardApos = text.match(/Avancez\s+d['’]\s*(\d+)\s+case/i);
   if (forwardApos) return Number(forwardApos[1]) || 0;
-  const forwardOneApos = text.match(/Avancez\s+d['â€™]\s*(un|une)\s+case/i);
+  const forwardOneApos = text.match(/Avancez\s+d['’]\s*(un|une)\s+case/i);
   if (forwardOneApos) return 1;
 
   const forward = text.match(/Avancez\s+de\s+(\d+)\s+case/i);
@@ -774,9 +757,9 @@ function extractMoveDelta(text: string): number {
   );
   if (forwardWords) return parseNumberish(forwardWords[1]);
 
-  const backApos = text.match(/Reculez\s+d['â€™]\s*(\d+)\s+case/i);
+  const backApos = text.match(/Reculez\s+d['’]\s*(\d+)\s+case/i);
   if (backApos) return -(Number(backApos[1]) || 0);
-  const backOneApos = text.match(/Reculez\s+d['â€™]\s*(un|une)\s+case/i);
+  const backOneApos = text.match(/Reculez\s+d['’]\s*(un|une)\s+case/i);
   if (backOneApos) return -1;
 
   const back = text.match(/Reculez\s+de\s+(\d+)\s+case/i);
@@ -799,5 +782,8 @@ function findNext(
   }
   return null;
 }
+
+
+
 
 

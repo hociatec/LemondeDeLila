@@ -23,6 +23,7 @@ import type {
   MnemoQuizConfig,
   MnemoQuizMetadata,
 } from './model/mnemo-quiz.model';
+import { resolvePlayerNameFromState } from '../../../modules/turn-policies/player-name.helper';
 
 type ActionType =
   | 'draw'
@@ -48,6 +49,11 @@ type ActionType =
   | 'mnemo_prompt_cancel'
   | 'mnemo_timeout'
   | 'answer_quiz';
+
+const ARCHE_PLAYER_NAME_OPTIONS = {
+  collapseWhitespace: true,
+  unwrapDoubleQuotes: true,
+} as const;
 
 @Injectable()
 export class ArcheDeMnemosyneService extends AbstractGameService {
@@ -472,7 +478,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
           : 'Mélange (toutes catégories)';
         started = this.core.appendLog(
           started,
-          `${this.playerName(started, actorId)} choisit la catégorie : ${label}.`,
+          `${resolvePlayerNameFromState(started, actorId, ARCHE_PLAYER_NAME_OPTIONS)} choisit la catégorie : ${label}.`,
         );
       }
 
@@ -762,7 +768,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 
       const choice = q.choices[idx] ?? '';
       const correct = choice === q.correctChoice;
-      const who = this.playerName(state, currentId);
+      const who = resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS);
 
       let next = state;
       if (correct) {
@@ -865,16 +871,16 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 	      nextScores[id] = (nextScores[id] ?? 0) + correctSoloPoints;
 	      const msg =
 	        correctSoloPoints === 0
-	          ? `${this.playerName(next, id)} ne marque aucun point.`
+	          ? `${resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS)} ne marque aucun point.`
 	          : correctSoloPoints > 0
-	            ? `${this.playerName(next, id)} gagne +${correctSoloPoints} points.`
-	            : `${this.playerName(next, id)} perd ${Math.abs(correctSoloPoints)} points.`;
+	            ? `${resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS)} gagne +${correctSoloPoints} points.`
+	            : `${resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS)} perd ${Math.abs(correctSoloPoints)} points.`;
 	      next = this.core.appendLog(next, msg);
 	    } else {
 	      for (const id of correctIds) {
 	        nextScores[id] = (nextScores[id] ?? 0) + correctMultiPoints;
 	      }
-	      const labels = correctIds.map((id) => this.playerName(next, id)).join(', ');
+	      const labels = correctIds.map((id) => resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS)).join(', ');
 	      const msg =
 	        correctMultiPoints === 0
 	          ? `Plusieurs bonnes réponses (${labels}) : aucun point.`
@@ -901,7 +907,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 	        for (const id of unique) {
 	          nextScores[id] = (nextScores[id] ?? 0) + timeoutPoints;
 	        }
-	        const labels = unique.map((id) => this.playerName(next, id)).join(', ');
+	        const labels = unique.map((id) => resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS)).join(', ');
 	        const msg =
 	          timeoutPoints === 0
 	            ? `Temps écoulé: ${labels} ne marque aucun point.`
@@ -918,7 +924,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       if (force || endedBecauseAllAnswered) {
         for (const id of playerIds) {
           const idx = answers[id];
-          const who = this.playerName(next, id);
+          const who = resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS);
         if (idx == null) {
           next = this.core.appendLog(next, `${who} répond : Temps écoulé.`);
           continue;
@@ -963,7 +969,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     if (reached.length) {
       reached.sort((a, b) => (b.score - a.score) || (a.id - b.id));
       const winnerId = reached[0]!.id;
-      const finished = this.core.appendLog(next, `${this.playerName(next, winnerId)} a gagné !`);
+      const finished = this.core.appendLog(next, `${resolvePlayerNameFromState(next, winnerId, ARCHE_PLAYER_NAME_OPTIONS)} a gagné !`);
       return {
         ...finished,
         status: 'finished',
@@ -1718,19 +1724,6 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     return currentId === actorId;
   }
 
-  private playerName(state: GameStateEntity, playerId: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const p = players.find((x: any) => x?.id === playerId) as any;
-    const raw = String(p?.username ?? '').trim();
-    const cleaned = raw
-      .replace(/[\r\n\t]+/g, ' ')
-      .replace(/\s{2,}/g, ' ')
-      .trim()
-      .replace(/^"(.*)"$/u, '$1')
-      .trim();
-    return cleaned || `Joueur ${playerId}`;
-  }
-
   private getMeta(state: GameStateEntity): MnemoQuizMetadata {
     const raw = (state.metadata ?? {}) as any;
 
@@ -1762,3 +1755,6 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     return { ...(raw as any), adminView, config } as any;
   }
 }
+
+
+

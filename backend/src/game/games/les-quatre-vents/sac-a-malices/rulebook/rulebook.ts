@@ -5,7 +5,7 @@ import {
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
 import { SAC_VARIANTS } from '../sac-a-malices-variants';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isRollAlias, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 const ALLOWED = new Set([
@@ -177,7 +177,7 @@ export function validateAction(
     });
   }
 
-  if (rawType === 'ROLL_DICE' || normalized === 'roll_dice') {
+  if (isRollAlias(rawType, normalized)) {
     return { ...action, type: 'roll', payload: {} };
   }
   return { ...action, type: normalized, payload: {} };

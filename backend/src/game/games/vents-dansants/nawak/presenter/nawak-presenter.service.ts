@@ -1,6 +1,7 @@
-ï»¿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerName } from '../../../../modules/turn-policies/player-name.helper';
 
 import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import * as Rulebook from '../rulebook/rulebook';
@@ -20,7 +21,7 @@ export class NawakPresenterService {
       Array.isArray(meta.currentChallenge?.answers) ? meta.currentChallenge.answers : [];
     const panels = buildLamaLikePanels({
       hand,
-      discardLabel: 'DÃ©fis disponibles',
+      discardLabel: 'Défis disponibles',
       scoreLines: Object.entries(meta.scores ?? {}).map(
         ([playerId, value]) => `Joueur ${playerId}: ${value ?? 0}`,
       ),
@@ -57,19 +58,14 @@ export class NawakPresenterService {
     if (action.type === 'choose_answer') {
       const index = Number(action.payload?.answerIndex ?? 0);
       const answer =
-        meta.currentChallenge.answers?.[index] ?? `rÃ©ponse ${index + 1}`;
-      return `Choisir â€œ${answer}â€`;
+        meta.currentChallenge.answers?.[index] ?? `réponse ${index + 1}`;
+      return `Choisir “${answer}”`;
     }
     if (action.type === 'vote_answer') {
       const target = Number(action.payload?.targetPlayerId ?? 0);
-      return `Voter pour ${this.playerName(state.players, target)}`;
+      return `Voter pour ${resolvePlayerName(state.players, target)}`;
     }
     return action.type;
   }
-
-  private playerName(players: GameStateEntity['players'], playerId: number): string {
-    const list = Array.isArray(players) ? players : [];
-    const player = list.find((p) => p?.id === playerId);
-    return player?.username?.trim() || `Joueur ${playerId}`;
-  }
 }
+

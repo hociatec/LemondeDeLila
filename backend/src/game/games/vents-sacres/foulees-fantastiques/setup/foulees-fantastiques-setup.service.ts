@@ -6,6 +6,11 @@ import { loadV1Content } from '../../../../setup/content-loader.helper';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import {
+  FOULEES_FAMILY_PACKS,
+  FOULEES_FAMILY_PENDING_LABEL,
+  toFouleesFamilyChoice,
+} from '../definitions/family.definition';
 import type {
   FouleesFantastiquesColor,
   FouleesFantastiquesMetadata,
@@ -136,12 +141,7 @@ export class FouleesFantastiquesSetupService {
     }
 
     // Première étape: choix de la famille d'animaux.
-    const families = [
-      { id: 'equides', label: "Famille des Equidés (écurie)" },
-      { id: 'primates', label: 'Famille des Primates (primaterie)' },
-      { id: 'oiseaux', label: 'Famille des Oiseaux (volière)' },
-      { id: 'poissons', label: 'Famille des Poissons (aquarium)' },
-    ];
+    const familyChoices = FOULEES_FAMILY_PACKS.map(toFouleesFamilyChoice);
 
     const withPending = {
       ...withBoard,
@@ -150,9 +150,8 @@ export class FouleesFantastiquesSetupService {
         startPlayerId: currentId,
         isAssigned: () => false,
         pendingType: 'choose_family',
-        choices: families.map((f) => ({ id: f.id, label: f.label })),
-        labelForPlayer: () =>
-          "Choisissez la famille d'animaux que vous souhaitez jouer, puis Entrée.",
+        choices: familyChoices,
+        labelForPlayer: () => FOULEES_FAMILY_PENDING_LABEL,
         dataBuilder: (choices) => ({
           familyIds: choices.map((c) => c.id),
         }),

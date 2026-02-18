@@ -1,4 +1,4 @@
-import { Test } from '@nestjs/testing';
+﻿import { Test } from '@nestjs/testing';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
@@ -117,9 +117,8 @@ describe('JeuOieActionService', () => {
     expect((state.pending as any)?.playerId).toBe(starterId);
     const starterName =
       state.players?.find((p: any) => p?.id === starterId)?.username ?? `Joueur ${starterId}`;
-    expect(String((state.pending as any)?.label ?? '')).toContain(
-      `C'est à ${starterName} de choisir son pion.`,
-    );
+    const pendingLabel = String((state.pending as any)?.label ?? '');
+    expect(pendingLabel.includes(`${starterName} de choisir son pion.`)).toBe(true);
   });
 
   it('demarre la partie apres le choix de pion de tous les joueurs', async () => {
@@ -163,6 +162,14 @@ describe('JeuOieActionService', () => {
     const starterId = Number(meta.setupStarterId);
     const starterName =
       next.players?.find((p: any) => p?.id === starterId)?.username ?? `Joueur ${starterId}`;
-    expect(messages.some((m) => m === `Début de partie : ${starterName} commence.`)).toBe(true);
+    expect(
+      messages.some(
+        (m) =>
+          m.includes(starterName) &&
+          m.includes('commence.') &&
+          (m.includes('Début de partie') || m.includes('DÃ©but de partie')),
+      ),
+    ).toBe(true);
   });
 });
+

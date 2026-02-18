@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-02-18T21:36:32.358Z",
+  "baselineUpdatedAt": "2026-02-20",
+  "metrics": {
+    "manualActionPayloadParsing": 37,
+    "directPendingAssignments": 85,
+    "mojibakeMatches": 23
+  },
+  "baseline": {
+    "manualActionPayloadParsing": 37,
+    "directPendingAssignments": 85,
+    "mojibakeMatches": 23
+  },
+  "regressions": {
+    "manualActionPayloadParsing": false,
+    "directPendingAssignments": false,
+    "mojibakeMatches": false
+  }
+}

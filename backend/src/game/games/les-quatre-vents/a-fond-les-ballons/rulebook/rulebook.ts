@@ -1,7 +1,20 @@
 ﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  isRollActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
+import {
+  requiredInt,
+  requiredString,
+} from '../../../../core/helpers/payload-validators.helper';
+import {
+  GameValidationError,
+  PlayerActionError,
+} from '../../../../../common/errors/game-errors';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+
+const GAME_TYPE = 'a-fond-les-ballons';
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -48,22 +61,26 @@ export function validateAction(
   actorId: number | null,
 ): GameSingleActionDto {
   const type = normalizeActionType(action);
+  const isRoll = isRollActionType(type);
   if (
-    type !== 'roll' &&
-    type !== 'ROLL_DICE' &&
-    type !== 'roll_dice' &&
+    !isRoll &&
     type !== 'choose_pawn' &&
     type !== 'swap_choose_target' &&
     type !== 'draw'
   ) {
-    throw new Error(`Action inconnue: ${type}`);
+    throw new GameValidationError(`Action inconnue: ${type}`, {
+      gameType: GAME_TYPE,
+      action: { type },
+    });
   }
   if (actorId == null) {
-    throw new Error('Acteur requis');
+    throw new PlayerActionError('Acteur requis.', { gameType: GAME_TYPE });
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error("La partie n'est pas démarrée.");
+    throw new PlayerActionError("La partie n'est pas démarrée.", {
+      gameType: GAME_TYPE,
+    });
   }
 
   const current = state.turn?.currentPlayerId ?? null;
@@ -71,26 +88,48 @@ export function validateAction(
   if (type === 'draw') {
     const pending = state.pending as any;
     if (!pending || pending.type !== 'draw' || pending.playerId !== actorId) {
-      throw new Error('Aucune pioche en attente.');
+      throw new PlayerActionError('Action non disponible.', {
+        gameType: GAME_TYPE,
+      });
     }
     return { type: 'draw', payload: {} };
   }
   if (type === 'choose_pawn') {
     const pending = state.pending as any;
     if (!pending || pending.type !== 'choose_pawn' || pending.playerId !== actorId) {
-      throw new Error('Aucun choix de pion en attente.');
+      throw new PlayerActionError('Action non disponible.', {
+        gameType: GAME_TYPE,
+      });
     }
     const payload = (action.payload ?? {}) as any;
-    const rawPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
+    const rawPawnId = (() => {
+      try {
+        return requiredString(
+          {
+            pawnId: payload.pawnId ?? payload.pawn ?? payload.value,
+          },
+          'pawnId',
+          'Pion invalide.',
+        );
+      } catch {
+        throw new GameValidationError('Pion invalide.', {
+          gameType: GAME_TYPE,
+          action: { type, payload: action.payload ?? null },
+        });
+      }
+    })();
     const pawns: Array<{ id?: string }> = Array.isArray(pending?.data?.pawns)
       ? pending.data.pawns
       : [];
     const chosen =
-      rawPawn != null
-        ? pawns.find((p) => String(p?.id ?? '').trim() === String(rawPawn).trim())
+      rawPawnId != null
+        ? pawns.find((p) => String(p?.id ?? '').trim() === rawPawnId)
         : null;
     if (!chosen) {
-      throw new Error('Pion invalide.');
+      throw new GameValidationError('Pion invalide.', {
+        gameType: GAME_TYPE,
+        action: { type, payload: action.payload ?? null },
+      });
     }
     return { type: 'choose_pawn', payload: { pawnId: chosen.id } };
   }
@@ -98,32 +137,47 @@ export function validateAction(
   if (type === 'swap_choose_target') {
     const pending = state.pending as any;
     if (!pending || pending.type !== 'swap' || pending.playerId !== actorId) {
-      throw new Error('Aucun échange de position en attente.');
+      throw new PlayerActionError('Action non disponible.', {
+        gameType: GAME_TYPE,
+      });
     }
     const targets: Array<{ targetPlayerId: number }> = Array.isArray(
       pending?.data?.targets,
     )
       ? pending.data.targets
       : [];
-    const payload = (action?.payload ?? {}) as any;
-    const targetPlayerId =
-      typeof payload.targetPlayerId === 'number'
-        ? payload.targetPlayerId
-        : Number(payload.targetPlayerId);
-    if (!Number.isFinite(targetPlayerId)) {
-      throw new Error('Cible invalide.');
-    }
+    const targetPlayerId = (() => {
+      try {
+        return requiredInt(
+          action.payload ?? {},
+          'targetPlayerId',
+          'Cible invalide.',
+        );
+      } catch {
+        throw new GameValidationError('Cible invalide.', {
+          gameType: GAME_TYPE,
+          action: { type, payload: action.payload ?? null },
+        });
+      }
+    })();
     if (!targets.some((t) => t.targetPlayerId === targetPlayerId)) {
-      throw new Error('Cible invalide.');
+      throw new GameValidationError('Cible invalide.', {
+        gameType: GAME_TYPE,
+        action: { type, payload: action.payload ?? null },
+      });
     }
     return { type: 'swap_choose_target', payload: { targetPlayerId } };
   }
 
   if (state.pending) {
-    throw new Error('Action indisponible (choix en attente).');
+    throw new PlayerActionError('Action non disponible.', {
+      gameType: GAME_TYPE,
+    });
   }
   if (current !== actorId) {
-    throw new Error("Ce n'est pas votre tour.");
+    throw new PlayerActionError("Ce n'est pas votre tour.", {
+      gameType: GAME_TYPE,
+    });
   }
   return { type: 'roll', payload: {} };
 }

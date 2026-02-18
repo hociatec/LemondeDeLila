@@ -1,6 +1,7 @@
-ï»¿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerName } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -69,10 +70,10 @@ export class NawakActionService {
     meta = { ...meta, submissions };
 
     let next = this.setMeta(state, meta);
-    const answerLabel = meta.currentChallenge.answers?.[answerIndex] ?? 'rÃ©ponse inconnue';
+    const answerLabel = meta.currentChallenge.answers?.[answerIndex] ?? 'réponse inconnue';
     next = this.core.appendLog(
       next,
-      `${this.playerName(state.players, currentId)} choisit "${answerLabel}".`,
+      `${resolvePlayerName(state.players, currentId)} choisit "${answerLabel}".`,
     );
 
     const playerIds = this.getPlayerIds(state.players);
@@ -85,7 +86,7 @@ export class NawakActionService {
         votes: {},
       };
       next = this.setMeta(next, updatedMeta);
-      next = this.core.appendLog(next, 'Tous les choix sont faits : votez maintenant pour une rÃ©ponse Ã©trangÃ¨re !');
+      next = this.core.appendLog(next, 'Tous les choix sont faits : votez maintenant pour une réponse étrangère !');
     }
 
     return this.turns.advanceTurn(next);
@@ -125,7 +126,7 @@ export class NawakActionService {
     let next = this.setMeta(state, meta);
     next = this.core.appendLog(
       next,
-      `${this.playerName(state.players, currentId)} vote pour ${this.playerName(
+      `${resolvePlayerName(state.players, currentId)} vote pour ${resolvePlayerName(
         state.players,
         targetPlayerId,
       )}.`,
@@ -196,7 +197,7 @@ export class NawakActionService {
     const scoreboard = playerIds
       .map(
         (pid) =>
-          `${this.playerName(state.players, pid)} ${(scores[pid] ?? 0)} pts`,
+          `${resolvePlayerName(state.players, pid)} ${(scores[pid] ?? 0)} pts`,
       )
       .join(' / ');
     next = this.core.appendLog(next, `Scores : ${scoreboard}`);
@@ -204,7 +205,7 @@ export class NawakActionService {
     if (winnerId != null && !tie) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(state.players, winnerId)} atteint ${
+        `${resolvePlayerName(state.players, winnerId)} atteint ${
           scores[winnerId] ?? 0
         } points !`,
       );
@@ -215,7 +216,7 @@ export class NawakActionService {
     }
 
     if (tie) {
-      next = this.core.appendLog(next, 'Ã‰galitÃ© dÃ©tectÃ©e : un nouveau dÃ©fi va dÃ©partager les joueurs.');
+      next = this.core.appendLog(next, 'Égalité détectée : un nouveau défi va départager les joueurs.');
     }
 
     return this.turns.advanceTurn(next);
@@ -234,12 +235,7 @@ export class NawakActionService {
       .filter((player) => typeof player?.id === 'number')
       .map((player) => player!.id);
   }
-
-  private playerName(players: GameStateEntity['players'], playerId: number): string {
-    const list = Array.isArray(players) ? players : [];
-    const player = list.find((p) => p?.id === playerId);
-    return player?.username?.trim() || `Joueur ${playerId}`;
-  }
 }
+
 
 

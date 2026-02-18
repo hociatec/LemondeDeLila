@@ -24,7 +24,10 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "quality:report": "node tools/quality-report.cjs",
+    "quality:check": "npm run quality:report && node tools/quality-check.cjs",
+    "test:transverse": "jest game/actions/action-service.helper.spec.ts game/modules/pending-action/services/pending-action.service.spec.ts game/core/helpers/payload-validators.helper.spec.ts game/engine/tests/critical-cases.matrix.spec.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

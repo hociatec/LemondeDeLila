@@ -94,14 +94,8 @@ export class OdysseeActionService {
       return this.endTurn(next, roll === 6);
     }
 
-    const label =
-      roll === 6
-        ? `C'est à ${this.playerName(next, currentId)} de choisir un pion à sortir ou à jouer dans la liste, puis Entrée.`
-        : `C'est à ${this.playerName(next, currentId)} de choisir un pion à jouer dans la liste, puis Entrée.`;
-
     const pending: PendingState = {
       type: 'choose_pawn',
-      label,
       playerId: currentId,
       blocking: true,
       choices: moves.map((m) => m.label),

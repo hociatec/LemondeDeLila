@@ -1,6 +1,7 @@
-﻿import { Injectable } from '@nestjs/common';
+﻿import { Injectable, Optional } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -8,6 +9,7 @@ import { RandomService } from '../../../../modules/random/services/random.servic
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
 import type {
   ContesCard,
   ContesCacahuetesMetadata,
@@ -26,6 +28,7 @@ export class ContesActionService {
     private readonly turns: TurnFlowService,
     private readonly setupFlow: SetupFlowService,
     private readonly deckPolicies: DeckPoliciesService,
+    @Optional() private readonly turnPolicies?: TurnPoliciesService,
   ) {}
 
   applyActions(
@@ -42,14 +45,6 @@ export class ContesActionService {
                 return next;
               },
               'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'ROLL_DICE': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'roll_dice': () => {
                 next = this.handleRoll(next);
                 return next;
               },
@@ -101,13 +96,7 @@ export class ContesActionService {
     if (playerId == null) return state;
 
     const options = Array.isArray(pending?.data?.pawns) ? pending.data.pawns : [];
-    const chosen = this.resolvePendingPawn(
-      (action.payload as any)?.pawnId ??
-        (action.payload as any)?.pawn ??
-        (action.payload as any)?.value ??
-        null,
-      options,
-    );
+    const chosen = this.setupFlow.resolvePawnChoice((action.payload as any)?.pawnId ?? (action.payload as any)?.pawn ?? (action.payload as any)?.value ?? null, options) as any;
     if (!chosen) return state;
 
     const players = Array.isArray(state.players) ? state.players : [];
@@ -129,14 +118,39 @@ export class ContesActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} choisit le pion : ${chosen.label}.`,
+      `${resolvePlayerNameFromState(next, playerId)} choisit le pion : ${chosen.label}.`,
     );
 
     const starterId =
       typeof this.getMeta(next).setupStarterId === 'number'
         ? this.getMeta(next).setupStarterId!
         : (state.turn?.currentPlayerId ?? null);
-    const pendingInfo = this.buildPawnPending(next, playerId);
+    const playersForPending = Array.isArray(next.players) ? next.players : [];
+    const allPawnsForPending = [
+      'Aika - Mongolie',
+      'Freja - Su\u00e8de',
+      'Lani - \u00celes Marshall',
+      'Niko - G\u00e9orgie',
+      'Tavi - Fidji',
+      'Arman - Arm\u00e9nie',
+    ];
+    const usedForPending = new Set(
+      playersForPending
+        .map((p: any) => String((p as any)?.pawn ?? '').trim())
+        .filter((p: string) => p.length > 0),
+    );
+    const choicesForPending = allPawnsForPending
+      .filter((name) => !usedForPending.has(name))
+      .map((name) => ({ id: name, label: name }));
+    const pendingInfo = this.setupFlow.createSequentialPawnPending({
+      players: playersForPending,
+      startPlayerId: playerId,
+      isAssigned: (candidateId) => {
+        const player = playersForPending.find((p: any) => p?.id === candidateId);
+        return String((player as any)?.pawn ?? '').trim().length > 0;
+      },
+      pawns: choicesForPending,
+    });
     if (pendingInfo) {
       const withPending: GameStateEntity = {
         ...next,
@@ -206,7 +220,7 @@ export class ContesActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} lance le dÃ© : \"${rollOut.roll}\".`,
+      `${resolvePlayerNameFromState(next, currentId)} lance le dÃ© : \"${rollOut.roll}\".`,
     );
 
     const rerollToken = Number(
@@ -253,7 +267,7 @@ export class ContesActionService {
       };
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} relance le dÃ© : \"${out.roll}\".`,
+        `${resolvePlayerNameFromState(next, playerId)} relance le dÃ© : \"${out.roll}\".`,
       );
       next = this.applyMoveFromRoll(next, playerId, out.roll, 0);
     } else {
@@ -261,7 +275,7 @@ export class ContesActionService {
       next = { ...next, lastRoll: roll };
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} garde le rÃ©sultat \"${roll}\".`,
+        `${resolvePlayerNameFromState(next, playerId)} garde le rÃ©sultat \"${roll}\".`,
       );
       next = this.applyMoveFromRoll(next, playerId, roll, 0);
     }
@@ -290,7 +304,7 @@ export class ContesActionService {
     if (ctx === 'move_other_2') {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} fait avancer ${this.playerName(next, targetPlayerId)} de 2 cases.`,
+        `${resolvePlayerNameFromState(next, playerId)} fait avancer ${resolvePlayerNameFromState(next, targetPlayerId)} de 2 cases.`,
       );
       return this.moveBy(next, targetPlayerId, 2, 0);
     }
@@ -319,7 +333,7 @@ export class ContesActionService {
       next = this.swapPositions(next, playerId, targetPlayerId);
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, targetPlayerId)} avance dâ€™1 case.`,
+        `${resolvePlayerNameFromState(next, targetPlayerId)} avance dâ€™1 case.`,
       );
       return this.moveBy(next, targetPlayerId, 1, 0);
     }
@@ -327,7 +341,7 @@ export class ContesActionService {
     if (ctx === 'key_gold_choose_target') {
       return this.setPending(next, {
         type: 'choose_option',
-        label: `ClÃ© dâ€™or : choisissez lâ€™effet Ã  appliquer Ã  ${this.playerName(next, targetPlayerId)} (Bonus/Malus).`,
+        label: `ClÃ© dâ€™or : choisissez lâ€™effet Ã  appliquer Ã  ${resolvePlayerNameFromState(next, targetPlayerId)} (Bonus/Malus).`,
         playerId,
         blocking: true,
         choices: ['Bonus', 'Malus'],
@@ -373,7 +387,7 @@ export class ContesActionService {
     if (nextPlayerId != null) {
       return this.setPending(next, {
         type: 'choose_number',
-        label: `PoussiÃ¨re de rire : ${this.playerName(next, nextPlayerId)}, choisissez un nombre entre 1 et 3 puis EntrÃ©e.`,
+        label: `PoussiÃ¨re de rire : ${resolvePlayerNameFromState(next, nextPlayerId)}, choisissez un nombre entre 1 et 3 puis EntrÃ©e.`,
         playerId: nextPlayerId,
         blocking: true,
         choices: ['1', '2', '3'],
@@ -395,7 +409,7 @@ export class ContesActionService {
 
     next = this.core.appendLog(
       next,
-      `PoussiÃ¨re de rire : plus grand choix = ${max}. ${winners.map((id) => this.playerName(next, id)).join(', ')} avance(nt) dâ€™1 case.`,
+      `PoussiÃ¨re de rire : plus grand choix = ${max}. ${winners.map((id) => resolvePlayerNameFromState(next, id)).join(', ')} avance(nt) dâ€™1 case.`,
     );
     for (const id of winners) {
       next = this.moveBy(next, id, 1, 0);
@@ -475,7 +489,7 @@ export class ContesActionService {
     if (ctx.startsWith('abondance_keep_one:')) {
       next = this.core.appendLog(
         next,
-        `Corne dâ€™abondance : ${this.playerName(next, playerId)} garde \"${pick.title}\".`,
+        `Corne dâ€™abondance : ${resolvePlayerNameFromState(next, playerId)} garde \"${pick.title}\".`,
       );
       return this.applyBonusEffectById(next, playerId, cardId, 0);
     }
@@ -522,7 +536,7 @@ export class ContesActionService {
       next = this.setStatusBool(next, 'replaceOneOn1By4', playerId, false);
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} utilise Feuille magique : 1 devient 4.`,
+        `${resolvePlayerNameFromState(next, playerId)} utilise Feuille magique : 1 devient 4.`,
       );
     }
 
@@ -569,13 +583,13 @@ export class ContesActionService {
       : `Case ${nextPos + 1}`;
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${nextPos + 1} (${label}).`,
+      `${resolvePlayerNameFromState(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${nextPos + 1} (${label}).`,
     );
     if (raw >= finishIndex) {
       next = this.setWinner(next, playerId);
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} remporte la partie !`,
+        `${resolvePlayerNameFromState(next, playerId)} remporte la partie !`,
       );
       return { ...next, status: 'finished' };
     }
@@ -628,7 +642,7 @@ export class ContesActionService {
       );
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} ignore lâ€™effet Conte (Cape dâ€™invisibilitÃ©) et avance dâ€™1 case.`,
+        `${resolvePlayerNameFromState(next, playerId)} ignore lâ€™effet Conte (Cape dâ€™invisibilitÃ©) et avance dâ€™1 case.`,
       );
       return this.moveBy(next, playerId, 1, depth);
     }
@@ -647,7 +661,7 @@ export class ContesActionService {
       if (protectedOut.protected) {
         return this.core.appendLog(
           protectedOut.state,
-          `${this.playerName(state, playerId)} est protÒ©gÒ© du Malus.`,
+          `${resolvePlayerNameFromState(state, playerId)} est protÒ©gÒ© du Malus.`,
         );
       }
     }
@@ -853,13 +867,13 @@ export class ContesActionService {
         next = this.addStatusCount(next, 'rerollToken', playerId, 1);
         return this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} gagne un parchemin enchantÃ© (1 relance).`,
+          `${resolvePlayerNameFromState(next, playerId)} gagne un parchemin enchantÃ© (1 relance).`,
         );
       case 3:
         next = this.addStatusCount(next, 'shieldMalus', playerId, 1);
         return this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} obtient une Amulette protectrice (1 protection).`,
+          `${resolvePlayerNameFromState(next, playerId)} obtient une Amulette protectrice (1 protection).`,
         );
       case 4:
         next = this.setStatusBool(
@@ -870,7 +884,7 @@ export class ContesActionService {
         );
         return this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} obtient une Cape dâ€™invisibilitÃ© (prochaine case Conte ignorÃ©e).`,
+          `${resolvePlayerNameFromState(next, playerId)} obtient une Cape dâ€™invisibilitÃ© (prochaine case Conte ignorÃ©e).`,
         );
       case 5:
         return this.startChooseTarget(
@@ -892,7 +906,7 @@ export class ContesActionService {
         next = this.setStatusBool(next, 'keyOfGold', playerId, true);
         return this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} obtient la ClÃ© dâ€™or (sur Conte : Bonus/Malus pour un autre joueur).`,
+          `${resolvePlayerNameFromState(next, playerId)} obtient la ClÃ© dâ€™or (sur Conte : Bonus/Malus pour un autre joueur).`,
         );
       case 8:
         return this.moveBy(next, playerId, 3, depth);
@@ -921,7 +935,7 @@ export class ContesActionService {
       case 13:
         next = this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} avance de 5 cases mais passera son prochain tour.`,
+          `${resolvePlayerNameFromState(next, playerId)} avance de 5 cases mais passera son prochain tour.`,
         );
         next = this.moveBy(next, playerId, 5, depth);
         return this.addStatusCount(next, 'skipTurn', playerId, 1);
@@ -929,7 +943,7 @@ export class ContesActionService {
         next = this.setStatusBool(next, 'replaceOneOn1By4', playerId, true);
         return this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} pose Feuille magique (1 devient 4 une fois).`,
+          `${resolvePlayerNameFromState(next, playerId)} pose Feuille magique (1 devient 4 une fois).`,
         );
       case 15:
         next = this.moveBy(next, playerId, -2, depth);
@@ -1012,7 +1026,7 @@ export class ContesActionService {
         next = this.addStatusCount(next, 'noBonusCardsTurns', playerId, 2);
         return this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} ne peut plus utiliser de cartes Bonus pendant 2 tours.`,
+          `${resolvePlayerNameFromState(next, playerId)} ne peut plus utiliser de cartes Bonus pendant 2 tours.`,
         );
       default:
         return next;
@@ -1069,7 +1083,7 @@ export class ContesActionService {
         next = this.setStatusBool(next, 'reverseNextTurn', playerId, true);
         return this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} lira Ã  lâ€™envers : prochain tour en reculant.`,
+          `${resolvePlayerNameFromState(next, playerId)} lira Ã  lâ€™envers : prochain tour en reculant.`,
         );
       case 9:
         return this.setPending(next, {
@@ -1084,7 +1098,7 @@ export class ContesActionService {
         next = this.setStatusBool(next, 'protectNextMalus', playerId, true);
         return this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} est protÃ©gÃ©(e) de la prochaine carte Malus.`,
+          `${resolvePlayerNameFromState(next, playerId)} est protÃ©gÃ©(e) de la prochaine carte Malus.`,
         );
       case 11:
         return this.drawAndApply(next, playerId, 'conte', depth);
@@ -1289,12 +1303,12 @@ export class ContesActionService {
     if (!tokens.length) {
       return this.core.appendLog(
         state,
-        `${this.playerName(state, giverId)} n'a aucune carte Bonus Ã  donner.`,
+        `${resolvePlayerNameFromState(state, giverId)} n'a aucune carte Bonus Ã  donner.`,
       );
     }
     return this.setPending(state, {
       type: 'choose_card',
-      label: `Choisissez la carte Bonus Ã  donner Ã  ${this.playerName(state, targetId)}, puis EntrÃ©e.`,
+      label: `Choisissez la carte Bonus Ã  donner Ã  ${resolvePlayerNameFromState(state, targetId)}, puis EntrÃ©e.`,
       playerId: giverId,
       blocking: true,
       choices: tokens.map((t) => t.title),
@@ -1362,7 +1376,7 @@ export class ContesActionService {
     if (!cards.length) {
       return this.core.appendLog(
         state,
-        `${this.playerName(state, fromId)} nâ€™a aucune carte Bonus ou Surprise Ã  voler.`,
+        `${resolvePlayerNameFromState(state, fromId)} nâ€™a aucune carte Bonus ou Surprise Ã  voler.`,
       );
     }
 
@@ -1370,7 +1384,7 @@ export class ContesActionService {
       const only = cards[0];
       const next = this.core.appendLog(
         state,
-        `Vol : ${this.playerName(state, thiefId)} prend "${only.title}" Ã  ${this.playerName(state, fromId)}.`,
+        `Vol : ${resolvePlayerNameFromState(state, thiefId)} prend "${only.title}" Ã  ${resolvePlayerNameFromState(state, fromId)}.`,
       );
       return only.cardType === 'bonus'
         ? this.transferBonusToken(next, fromId, thiefId, only.cardId)
@@ -1379,7 +1393,7 @@ export class ContesActionService {
 
     return this.setPending(state, {
       type: 'choose_card',
-      label: `Filet magique : choisissez la carte Ã  voler Ã  ${this.playerName(state, fromId)}, puis EntrÃ©e.`,
+      label: `Filet magique : choisissez la carte Ã  voler Ã  ${resolvePlayerNameFromState(state, fromId)}, puis EntrÃ©e.`,
       playerId: thiefId,
       blocking: true,
       choices: cards.map((c) => c.title),
@@ -1409,7 +1423,7 @@ export class ContesActionService {
       next = this.addStatusCount(next, 'shieldMalus', toId, 1);
       return this.core.appendLog(
         next,
-        `${this.playerName(next, fromId)} donne une Amulette protectrice Ã  ${this.playerName(next, toId)}.`,
+        `${resolvePlayerNameFromState(next, fromId)} donne une Amulette protectrice Ã  ${resolvePlayerNameFromState(next, toId)}.`,
       );
     }
     if (bonusId === 4) {
@@ -1423,7 +1437,7 @@ export class ContesActionService {
       next = this.setStatusBool(next, 'ignoreNextConteAndAdvance', toId, true);
       return this.core.appendLog(
         next,
-        `${this.playerName(next, fromId)} donne une Cape dâ€™invisibilitÃ© Ã  ${this.playerName(next, toId)}.`,
+        `${resolvePlayerNameFromState(next, fromId)} donne une Cape dâ€™invisibilitÃ© Ã  ${resolvePlayerNameFromState(next, toId)}.`,
       );
     }
     if (bonusId === 7) {
@@ -1432,7 +1446,7 @@ export class ContesActionService {
       next = this.setStatusBool(next, 'keyOfGold', toId, true);
       return this.core.appendLog(
         next,
-        `${this.playerName(next, fromId)} donne la ClÃ© dâ€™or Ã  ${this.playerName(next, toId)}.`,
+        `${resolvePlayerNameFromState(next, fromId)} donne la ClÃ© dâ€™or Ã  ${resolvePlayerNameFromState(next, toId)}.`,
       );
     }
     if (bonusId === 14) {
@@ -1441,7 +1455,7 @@ export class ContesActionService {
       next = this.setStatusBool(next, 'replaceOneOn1By4', toId, true);
       return this.core.appendLog(
         next,
-        `${this.playerName(next, fromId)} donne Feuille magique Ã  ${this.playerName(next, toId)}.`,
+        `${resolvePlayerNameFromState(next, fromId)} donne Feuille magique Ã  ${resolvePlayerNameFromState(next, toId)}.`,
       );
     }
     if (bonusId === 2) {
@@ -1451,7 +1465,7 @@ export class ContesActionService {
       next = this.addStatusCount(next, 'rerollToken', toId, 1);
       return this.core.appendLog(
         next,
-        `${this.playerName(next, fromId)} donne un Parchemin enchantÃ© Ã  ${this.playerName(next, toId)}.`,
+        `${resolvePlayerNameFromState(next, fromId)} donne un Parchemin enchantÃ© Ã  ${resolvePlayerNameFromState(next, toId)}.`,
       );
     }
     return next;
@@ -1472,7 +1486,7 @@ export class ContesActionService {
       next = this.setStatusBool(next, 'reverseNextTurn', toId, true);
       return this.core.appendLog(
         next,
-        `${this.playerName(next, fromId)} donne Livre Ã  lâ€™envers Ã  ${this.playerName(next, toId)}.`,
+        `${resolvePlayerNameFromState(next, fromId)} donne Livre Ã  lâ€™envers Ã  ${resolvePlayerNameFromState(next, toId)}.`,
       );
     }
 
@@ -1482,7 +1496,7 @@ export class ContesActionService {
       next = this.setStatusBool(next, 'protectNextMalus', toId, true);
       return this.core.appendLog(
         next,
-        `${this.playerName(next, fromId)} donne Dragon de papier Ã  ${this.playerName(next, toId)}.`,
+        `${resolvePlayerNameFromState(next, fromId)} donne Dragon de papier Ã  ${resolvePlayerNameFromState(next, toId)}.`,
       );
     }
 
@@ -1499,7 +1513,7 @@ export class ContesActionService {
     if (!tokens.length) {
       return this.core.appendLog(
         state,
-        `${this.playerName(state, fromId)} n'a aucune carte Bonus Ã  donner.`,
+        `${resolvePlayerNameFromState(state, fromId)} n'a aucune carte Bonus Ã  donner.`,
       );
     }
     return this.transferBonusToken(state, fromId, toId, tokens[0].cardId);
@@ -1522,7 +1536,7 @@ export class ContesActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, aId)} Ã©change sa position avec ${this.playerName(next, bId)}.`,
+      `${resolvePlayerNameFromState(next, aId)} Ã©change sa position avec ${resolvePlayerNameFromState(next, bId)}.`,
     );
     return next;
   }
@@ -1539,7 +1553,7 @@ export class ContesActionService {
     next = this.setStatusCount(next, 'turnSwapRemaining', bId, 1);
     return this.core.appendLog(
       next,
-      `Formule magique : prochains tours Ò©changÒ©s entre ${this.playerName(next, aId)} et ${this.playerName(next, bId)}.`,
+      `Formule magique : prochains tours Ò©changÒ©s entre ${resolvePlayerNameFromState(next, aId)} et ${resolvePlayerNameFromState(next, bId)}.`,
     );
   }
 
@@ -1565,7 +1579,7 @@ export class ContesActionService {
       next = this.setStatusCount(next, 'skipTurn', pid, 0);
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, pid)} nâ€™est plus bloquÃ©(e).`,
+        `${resolvePlayerNameFromState(next, pid)} nâ€™est plus bloquÃ©(e).`,
       );
     }
     return {
@@ -1654,7 +1668,7 @@ export class ContesActionService {
     next = this.setStatusCount(next, 'skipTurn', playerId, 999);
     return this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} est bloquÃ©(e) jusquâ€™Ã  ce quâ€™un autre joueur atteigne ou dÃ©passe sa case.`,
+      `${resolvePlayerNameFromState(next, playerId)} est bloquÃ©(e) jusquâ€™Ã  ce quâ€™un autre joueur atteigne ou dÃ©passe sa case.`,
     );
   }
 
@@ -1706,7 +1720,7 @@ export class ContesActionService {
     const meta = this.getMeta(state);
     const blocked = meta.statuses.blockedUntilPassed?.[currentId];
     if (typeof blocked !== 'number') return state;
-    const msg = `${this.playerName(state, currentId)} est bloquÃ©(e) (Loup dans la forÃªt) : tour passÃ©.`;
+    const msg = `${resolvePlayerNameFromState(state, currentId)} est bloquÃ©(e) (Loup dans la forÃªt) : tour passÃ©.`;
     const logged = this.core.appendLog(state, msg);
     const advanced = this.turns.advanceTurn(logged);
     const swapped = this.applyTurnSwapIfNeeded(advanced);
@@ -1800,16 +1814,6 @@ export class ContesActionService {
     };
   }
 
-  private playerName(state: GameStateEntity, id: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const p = players.find((x) => x?.id === id);
-    const u =
-      p?.username && String(p.username).trim()
-        ? String(p.username).trim()
-        : null;
-    return u ?? `Joueur ${id}`;
-  }
-
   private pawnLabel(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
     const player = players.find((p) => p?.id === id);
@@ -1818,83 +1822,30 @@ export class ContesActionService {
     return 'un pion';
   }
 
-  private buildPawnPending(
-    state: GameStateEntity,
-    startId: number | null,
-  ): { pending: any; playerId: number; turnIndex: number } | null {
-    const players = Array.isArray(state.players) ? state.players : [];
-    if (!players.length) return null;
-    const allPawns = [
-      'Aika - Mongolie',
-      'Freja - Su\u00e8de',
-      'Lani - \u00celes Marshall',
-      'Niko - G\u00e9orgie',
-      'Tavi - Fidji',
-      'Arman - Arm\u00e9nie',
-    ];
-    const used = new Set(
-      players
-        .map((p: any) => String((p as any)?.pawn ?? '').trim())
-        .filter((p: string) => p.length > 0),
-    );
-    const choices = allPawns.filter((name) => !used.has(name));
-    return this.setupFlow.createSequentialChoicePending({
-      players,
-      startPlayerId: startId,
-      isAssigned: (playerId) => {
-        const player = players.find((p: any) => p?.id === playerId);
-        return String((player as any)?.pawn ?? '').trim().length > 0;
-      },
-      pendingType: 'choose_pawn',
-      choices: choices.map((name) => ({ id: name, label: name })),
-      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
-      dataBuilder: (availableChoices) => ({
-        pawns: availableChoices.map((choice) => ({
-          id: String(choice.id ?? '').trim(),
-          label: String(choice.label ?? '').trim(),
-        })),
-      }),
-    });
-  }
-
-  private resolvePendingPawn(
-    raw: unknown,
-    options: Array<{ id?: string; label?: string }>,
-  ): { id: string; label: string } | null {
-    const normalized = (Array.isArray(options) ? options : [])
-      .map((p: any) => ({
-        id: String(p?.id ?? '').trim(),
-        label: String(p?.label ?? '').trim(),
-      }))
-      .filter((p) => p.id.length > 0 && p.label.length > 0);
-    if (!normalized.length) return null;
-    return this.setupFlow.resolveChoice(raw, normalized) as
-      | { id: string; label: string }
-      | null;
-  }
-
   private appendTurnAnnouncement(
     state: GameStateEntity,
     playerId: number | null | undefined,
   ): GameStateEntity {
-    if (typeof playerId !== 'number' || !Number.isFinite(playerId)) return state;
-    return this.core.appendLog(
+    return this.getTurnPolicies().appendTurnAnnouncement(
       state,
-      `C'est au tour de ${this.playerName(state, playerId)}.`,
+      playerId,
+      (s, id) => resolvePlayerNameFromState(s, id),
     );
   }
 
-  private appendLogOnce(state: GameStateEntity, message: string): GameStateEntity {
-    const log = Array.isArray(state.log) ? state.log : [];
-    const last = String(log[log.length - 1]?.message ?? '').trim();
-    if (last === message) return state;
-    return this.core.appendLog(state, message);
+  private getTurnPolicies(): TurnPoliciesService {
+    return this.turnPolicies ?? new TurnPoliciesService(this.core);
   }
 
   private getMeta(state: GameStateEntity): ContesCacahuetesMetadata {
     return (state.metadata ?? {}) as any as ContesCacahuetesMetadata;
   }
 }
+
+
+
+
+
 
 
 

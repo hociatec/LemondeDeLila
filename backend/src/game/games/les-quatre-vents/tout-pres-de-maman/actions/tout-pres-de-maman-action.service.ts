@@ -1,6 +1,7 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -41,10 +42,6 @@ export class ToutPresDeMamanActionService {
                 next = this.handleRoll(next);
                 return next;
               },
-              'roll_dice': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
               'roll dice': () => {
                 next = this.handleRoll(next);
                 return next;
@@ -81,7 +78,7 @@ export class ToutPresDeMamanActionService {
       return this.turns.advanceTurn(
         this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} reste sur place (tour sautÃ©).`,
+          `${resolvePlayerNameFromState(next, playerId)} reste sur place (tour sauté).`,
         ),
       );
     }
@@ -124,7 +121,7 @@ export class ToutPresDeMamanActionService {
     const tile = this.getTileByIndex(this.getMeta(next), target);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} avance de ${total} case(s) et place ${this.pawnLabel(next, playerId)} en case ${target + 1} (${tile?.title ?? `case ${target + 1}`}).`,
+      `${resolvePlayerNameFromState(next, playerId)} avance de ${total} case(s) et place ${this.pawnLabel(next, playerId)} en case ${target + 1} (${tile?.title ?? `case ${target + 1}`}).`,
     );
 
     next = this.applyTileEffects(next, playerId, target, 0);
@@ -288,7 +285,7 @@ export class ToutPresDeMamanActionService {
     if (others.length) {
       next = this.core.appendLog(
         next,
-        `Rencontre : ${this.playerName(next, playerId)} avance avec ses amis.`,
+        `Rencontre : ${resolvePlayerNameFromState(next, playerId)} avance avec ses amis.`,
       );
       for (const other of others) {
         next = this.moveAndApply(next, other.id, 1, depth + 1);
@@ -309,7 +306,7 @@ export class ToutPresDeMamanActionService {
       let next = this.setWinner(state, playerId, tokens);
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} retrouve maman avec ${tokens} jetons eucalyptus !`,
+        `${resolvePlayerNameFromState(next, playerId)} retrouve maman avec ${tokens} jetons eucalyptus !`,
       );
       return next;
     }
@@ -320,7 +317,7 @@ export class ToutPresDeMamanActionService {
     const newIndex = Math.max(0, index - rewind);
     const next = this.core.appendLog(
       state,
-      `${this.playerName(
+      `${resolvePlayerNameFromState(
         state,
         playerId,
       )} manque de jetons et recule de ${rewind} case(s) pour en retrouver.`,
@@ -405,7 +402,7 @@ export class ToutPresDeMamanActionService {
     const next = this.replaceMeta(state, updatedMeta);
     return this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} gagne ${amount} jeton(s) eucalyptus.`,
+      `${resolvePlayerNameFromState(next, playerId)} gagne ${amount} jeton(s) eucalyptus.`,
     );
   }
 
@@ -415,7 +412,7 @@ export class ToutPresDeMamanActionService {
     if (current <= 0) {
       return this.core.appendLog(
         state,
-        `${this.playerName(state, playerId)} nâ€™a pas de jeton Ã  perdre.`,
+        `${resolvePlayerNameFromState(state, playerId)} n’a pas de jeton à perdre.`,
       );
     }
     const updatedMeta: ToutPresDeMamanMetadata = {
@@ -428,7 +425,7 @@ export class ToutPresDeMamanActionService {
     const next = this.replaceMeta(state, updatedMeta);
     return this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} perd un jeton eucalyptus.`,
+      `${resolvePlayerNameFromState(next, playerId)} perd un jeton eucalyptus.`,
     );
   }
 
@@ -454,10 +451,10 @@ export class ToutPresDeMamanActionService {
     const label =
       'text' in tileOrCard
         ? `carte ${tileOrCard.id}`
-        : tileOrCard?.title ?? 'effet spÃ©cial';
+        : tileOrCard?.title ?? 'effet spécial';
     return this.core.appendLog(
       next,
-      `${this.playerName(
+      `${resolvePlayerNameFromState(
         next,
         playerId,
       )} perd ${amount} tour(s) (${label}).`,
@@ -482,7 +479,7 @@ export class ToutPresDeMamanActionService {
     const next = this.replaceMeta(state, updatedMeta);
     return this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} pourra relancer le dÃ© au prochain tour.`,
+      `${resolvePlayerNameFromState(next, playerId)} pourra relancer le dé au prochain tour.`,
     );
   }
 
@@ -554,7 +551,7 @@ export class ToutPresDeMamanActionService {
     const next = this.replaceMeta(state, updatedMeta);
     return this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} partage un jeton avec ${this.playerName(
+      `${resolvePlayerNameFromState(next, playerId)} partage un jeton avec ${resolvePlayerNameFromState(
         next,
         targetId,
       )}.`,
@@ -585,7 +582,7 @@ export class ToutPresDeMamanActionService {
     let next = this.replaceMeta(state, nextMeta);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} relance le dÃ© et avance de ${roll.roll}.`,
+      `${resolvePlayerNameFromState(next, playerId)} relance le dé et avance de ${roll.roll}.`,
     );
     return this.moveAndApply(next, playerId, roll.roll, depth);
   }
@@ -600,12 +597,12 @@ export class ToutPresDeMamanActionService {
     let next = this.replaceMeta(state, { ...meta, ...roll.meta });
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} fait ${roll.roll} au dÃ©.`,
+      `${resolvePlayerNameFromState(next, playerId)} fait ${roll.roll} au dé.`,
     );
     if (roll.roll >= 4) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} avance dâ€™une case grÃ¢ce Ã  la rÃ©ussite.`,
+        `${resolvePlayerNameFromState(next, playerId)} avance d’une case grâce à la réussite.`,
       );
       return this.moveAndApply(next, playerId, 1, depth);
     }
@@ -676,17 +673,6 @@ export class ToutPresDeMamanActionService {
     return candidates.length ? candidates[0].id ?? null : null;
   }
 
-  private playerName(state: GameStateEntity, playerId: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const player = players.find((p) => p?.id === playerId);
-    if (!player) return `Joueur ${playerId}`;
-    const username =
-      typeof player.username === 'string' && player.username.trim()
-        ? player.username.trim()
-        : null;
-    return username ?? `Joueur ${playerId}`;
-  }
-
   private pawnLabel(state: GameStateEntity, playerId: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
     const player: any = players.find((p) => p?.id === playerId);
@@ -697,9 +683,12 @@ export class ToutPresDeMamanActionService {
     const pawnId = String(player?.pawn ?? '').trim();
     if (pawnId) return `"${pawnId}"`;
 
-    const fallback = this.playerName(state, playerId);
+    const fallback = resolvePlayerNameFromState(state, playerId);
     return `"${fallback}"`;
   }
 }
+
+
+
 
 

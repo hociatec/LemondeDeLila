@@ -6,6 +6,8 @@ import { lamaCardLabel, nextLamaValue } from '../model/lama.model';
 import { LamaRoundService } from '../round/lama-round.service';
 import { LamaSharedService } from '../shared/lama-shared.service';
 import { LamaLogService } from '../logging/lama-log.service';
+import { createPendingState } from '../../../../modules/pending-action/services/pending-action.service';
+import { requiredInt } from '../../../../core/helpers/payload-validators.helper';
 
 @Injectable()
 export class LamaPlayService {
@@ -29,7 +31,13 @@ export class LamaPlayService {
       return state;
     }
 
-    const rawValue = Number((action.payload as any)?.value);
+    const rawValue = (() => {
+      try {
+        return requiredInt(action.payload ?? {}, 'value');
+      } catch {
+        return 0;
+      }
+    })();
     const value = (rawValue >= 1 && rawValue <= 7 ? rawValue : 0) as LamaCardValue;
     const count = 1;
 
@@ -84,7 +92,7 @@ export class LamaPlayService {
     }
 
     const nextPlayerId = this.round.findNextActivePlayerId(players, nextMeta, actorId);
-    const nextState: GameStateEntity = {
+    const nextState = createPendingState({
       ...state,
       metadata: {
         ...nextMeta,
@@ -92,7 +100,6 @@ export class LamaPlayService {
         suppressTurnAnnouncement: false,
       } as any,
       log,
-      pending: { step: 'turn_choice', playerId: nextPlayerId } as any,
       turnIndex: (state.turnIndex ?? 0) + 1,
       turn: {
         ...(state.turn ?? { direction: 1 }),
@@ -102,7 +109,7 @@ export class LamaPlayService {
           ? `Tour de ${this.shared.playerLabel(players as any[], nextPlayerId)}`
           : undefined,
       },
-    };
+    } as GameStateEntity, { step: 'turn_choice', playerId: nextPlayerId } as any);
 
     if (this.round.isRoundEnded(nextMeta, players)) {
       const winnerId = this.round.findRoundWinnerId(nextMeta, players);

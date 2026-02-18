@@ -4,6 +4,7 @@ import type {
   PendingState,
 } from '../../../../core/entities/game-state.entity';
 import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
@@ -55,14 +56,6 @@ export class FrousseActionService {
                 next = this.handleRoll(next);
                 return next;
               },
-              'ROLL_DICE': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'roll_dice': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
               'draw': () => {
                 next = this.handleDraw(next);
                 return next;
@@ -95,10 +88,7 @@ export class FrousseActionService {
     const options = Array.isArray(pending?.data?.pawns)
       ? pending.data.pawns
       : [];
-    const chosen = this.resolvePendingPawn(
-      payload.pawnId ?? payload.pawn ?? payload.value ?? null,
-      options,
-    );
+    const chosen = this.setupFlow.resolvePawnChoice(payload.pawnId ?? payload.pawn ?? payload.value ?? null, options) as any;
     if (!chosen) return state;
 
     const players = (state.players ?? []).map((p) => {
@@ -119,7 +109,7 @@ export class FrousseActionService {
     const label = chosen.title ?? chosen.id ?? 'pion';
     const withLog = this.core.appendLog(
       next,
-      `[Frousse Party] ${this.playerName(next, playerId)} choisit le pion: ${label}.`,
+      `[Frousse Party] ${resolvePlayerNameFromState(next, playerId)} choisit le pion: ${label}.`,
     );
     return this.finalizeStarterAfterPawnSelection(withLog);
   }
@@ -127,7 +117,35 @@ export class FrousseActionService {
   private ensurePawnSelection(state: GameStateEntity): GameStateEntity {
     if (state.pending) return state;
     const players = Array.isArray(state.players) ? state.players : [];
-    const pendingInfo = this.buildPawnPending(state, players[0]?.id ?? null);
+    const metaForPending = this.getMeta(state);
+    const usedForPending = new Set(
+      players
+        .map((p) => resolvePawnId((p as any)?.pawn))
+        .filter((id): id is string => Boolean(id)),
+    );
+    const choicesForPending = (Array.isArray(metaForPending.pawns) ? metaForPending.pawns : [])
+      .map((p) => ({
+        id: String(p?.id ?? '').trim(),
+        label: String(p?.title ?? p?.id ?? '').trim(),
+        title: String(p?.title ?? p?.id ?? '').trim(),
+        description: String((p as any)?.description ?? '').trim(),
+      }))
+      .filter((p) => p.id.length > 0 && !usedForPending.has(p.id));
+    const pendingInfo = this.setupFlow.createSequentialPawnPending({
+      players,
+      startPlayerId: players[0]?.id ?? null,
+      isAssigned: (candidateId) => {
+        const player = players.find((p: any) => p?.id === candidateId);
+        return Boolean(resolvePawnId(player?.pawn));
+      },
+      pawns: choicesForPending,
+      pawnDataMapper: (choice: any) => ({
+        id: String(choice?.id ?? '').trim(),
+        title: String(choice?.title ?? choice?.label ?? '').trim(),
+        description: String(choice?.description ?? '').trim(),
+      }),
+      extraPendingData: { kind: 'choose_pawn' },
+    });
     if (!pendingInfo) return state;
     const withPending: GameStateEntity = {
       ...state,
@@ -156,7 +174,7 @@ export class FrousseActionService {
 
     let meta = this.getMeta(state);
 
-    // Saut de tour: si l'état courant indique un tour à passer, on consomme et on avance.
+    // Saut de tour: si l'Ã©tat courant indique un tour Ã  passer, on consomme et on avance.
     const skipNow = meta.statuses?.skipTurn?.[currentId] ?? 0;
     if (skipNow > 0) {
       meta = {
@@ -177,7 +195,7 @@ export class FrousseActionService {
       const suffix = remaining > 0 ? ` (${remaining} restant)` : '';
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} passe son tour${suffix}.`,
+        `${resolvePlayerNameFromState(next, currentId)} passe son tour${suffix}.`,
       );
       return this.advanceTurnWithAnnouncement(next);
     }
@@ -195,7 +213,7 @@ export class FrousseActionService {
       const rollLabel = this.formatRollLabel(roll);
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} tente de se libérer : dé = "${rollLabel}".`,
+        `${resolvePlayerNameFromState(next, currentId)} tente de se libÃ©rer : dÃ© = "${rollLabel}".`,
       );
       const ok =
         blocked.kind === 'need_roll_one_of'
@@ -208,7 +226,7 @@ export class FrousseActionService {
       if (!ok) {
         next = this.core.appendLog(
           next,
-          `${this.playerName(next, currentId)} reste bloqué.`,
+          `${resolvePlayerNameFromState(next, currentId)} reste bloquÃ©.`,
         );
         return this.advanceTurnWithAnnouncement(next);
       }
@@ -223,7 +241,7 @@ export class FrousseActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} se libère !`,
+        `${resolvePlayerNameFromState(next, currentId)} se libÃ¨re !`,
       );
       return this.advanceTurnWithAnnouncement(next);
     }
@@ -252,13 +270,13 @@ export class FrousseActionService {
     if (roll.rolls && roll.rolls.length >= 2) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} lance deux dés : "${roll.rolls[0]}" et "${roll.rolls[1]}" (garde "${roll.value}").`,
+        `${resolvePlayerNameFromState(next, currentId)} lance deux dÃ©s : "${roll.rolls[0]}" et "${roll.rolls[1]}" (garde "${roll.value}").`,
       );
     } else {
       const rollLabel = this.formatRollLabel(roll);
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} lance le dé : "${rollLabel}".`,
+        `${resolvePlayerNameFromState(next, currentId)} lance le dÃ© : "${rollLabel}".`,
       );
     }
 
@@ -289,13 +307,13 @@ export class FrousseActionService {
     if (meta.winnerId != null) return { ...next, status: 'finished' };
     if (next.pending) return next;
 
-    // Relance immédiate (cartes bonus/farces).
+    // Relance immÃ©diate (cartes bonus/farces).
     if ((meta as any).keepTurnNow === true) {
       delete (meta as any).keepTurnNow;
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       return this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} rejoue.`,
+        `${resolvePlayerNameFromState(next, currentId)} rejoue.`,
       );
     }
 
@@ -345,7 +363,7 @@ export class FrousseActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} échange sa position avec ${this.playerName(next, targetPlayerId)}.`,
+      `${resolvePlayerNameFromState(next, currentId)} Ã©change sa position avec ${resolvePlayerNameFromState(next, targetPlayerId)}.`,
     );
     return this.advanceTurnWithAnnouncement(next);
   }
@@ -383,7 +401,7 @@ export class FrousseActionService {
       const normalizedLabel = label.replace(casePrefix, '').trim();
       const labelForParenthesis = normalizedLabel || label;
       const placement = this.boardEffects.createPlacementLog({
-        playerLabel: this.playerName(next, playerId),
+        playerLabel: resolvePlayerNameFromState(next, playerId),
         pawnLabel: this.pawnPossessiveLabel(next, playerId),
         position: Math.max(0, Number(tile.n ?? pos + 1) - 1),
         tileLabel: labelForParenthesis,
@@ -415,7 +433,7 @@ export class FrousseActionService {
       meta = { ...meta, winnerId: playerId };
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} s'échappe du manoir !`,
+        `${resolvePlayerNameFromState(next, playerId)} s'Ã©chappe du manoir !`,
       );
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
@@ -467,14 +485,14 @@ export class FrousseActionService {
         },
       };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      if (/Piège/i.test(draw.card.category)) {
+      if (/PiÃ¨ge/i.test(draw.card.category)) {
         ignored = true;
       }
     }
 
     // Ignore ghost/trap/prank.
     if (
-      /Fantôme/i.test(draw.card.category) &&
+      /FantÃ´me/i.test(draw.card.category) &&
       meta.statuses.ignoreNextGhost?.[playerId]
     ) {
       meta = {
@@ -508,7 +526,7 @@ export class FrousseActionService {
       ignored = true;
     }
     if (
-      /Piège/i.test(draw.card.category) &&
+      /PiÃ¨ge/i.test(draw.card.category) &&
       meta.statuses.ignoreNextTrap?.[playerId]
     ) {
       meta = {
@@ -526,11 +544,11 @@ export class FrousseActionService {
     }
 
     const effectLabel = ignored
-      ? 'Effet ignoré.'
+      ? 'Effet ignorÃ©.'
       : describeCardEffect(draw.card);
     const cardText = normalizeCardText(draw.card.text);
     const withEffect = formatCardDrawLog(
-      this.playerName(next, playerId),
+      resolvePlayerNameFromState(next, playerId),
       cardText,
       effectLabel,
     );
@@ -569,7 +587,7 @@ export class FrousseActionService {
     if (/Bonus/i.test(card.category) && card.localNumber === 13) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} saute 6 cases.`,
+        `${resolvePlayerNameFromState(next, playerId)} saute 6 cases.`,
       );
       next = this.move(next, playerId, 6);
       return this.applyLanding(next, playerId);
@@ -577,9 +595,9 @@ export class FrousseActionService {
 
     // Ghost random swap (admin: random target).
     if (
-      /Fantôme/i.test(card.category) &&
-      /fantôme farceur/i.test(text) &&
-      /échang|échange/i.test(text)
+      /FantÃ´me/i.test(card.category) &&
+      /fantÃ´me farceur/i.test(text) &&
+      /Ã©chang|Ã©change/i.test(text)
     ) {
       const targets = this.otherPlayers(next, playerId);
       if (!targets.length) return next;
@@ -600,21 +618,21 @@ export class FrousseActionService {
       };
       next = this.core.appendLog(
         { ...next, metadata: { ...(next.metadata ?? {}), ...meta } },
-        `${this.playerName(next, playerId)} échange sa position avec ${this.playerName(next, target.id)}.`,
+        `${resolvePlayerNameFromState(next, playerId)} Ã©change sa position avec ${resolvePlayerNameFromState(next, target.id)}.`,
       );
       return next;
     }
 
     // Swap with another player (choice).
     if (
-      /échang|echange/i.test(text) &&
+      /Ã©chang|echange/i.test(text) &&
       (/votre place/i.test(text) || /vos places/i.test(text))
     ) {
       const targets = this.otherPlayers(next, playerId);
       if (!targets.length) return next;
       const pending: PendingState = {
         type: 'choose_target',
-        label: 'Choisissez un joueur dans la liste, puis Entrée.',
+        label: 'Choisissez un joueur dans la liste, puis EntrÃ©e.',
         playerId,
         blocking: true,
         choices: targets.map((t) => t.username),
@@ -634,7 +652,7 @@ export class FrousseActionService {
     }
 
     // Ignore traps until next symbol (one draw).
-    if (/Ignorez les pièges jusqu['’]au prochain symbole/i.test(text)) {
+    if (/Ignorez les piÃ¨ges jusqu['â€™]au prochain symbole/i.test(text)) {
       meta = {
         ...meta,
         statuses: {
@@ -650,8 +668,8 @@ export class FrousseActionService {
 
     // Ignore next trap / ghost.
     if (
-      /Ignorez le prochain piège/i.test(text) ||
-      /Ignorez les pièges/i.test(text)
+      /Ignorez le prochain piÃ¨ge/i.test(text) ||
+      /Ignorez les piÃ¨ges/i.test(text)
     ) {
       meta = {
         ...meta,
@@ -665,7 +683,7 @@ export class FrousseActionService {
       };
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
-    if (/Ignorez la prochaine carte Fantôme/i.test(text)) {
+    if (/Ignorez la prochaine carte FantÃ´me/i.test(text)) {
       meta = {
         ...meta,
         statuses: {
@@ -691,13 +709,13 @@ export class FrousseActionService {
         },
       };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      return this.core.appendLog(next, 'Protection farce activée.');
+      return this.core.appendLog(next, 'Protection farce activÃ©e.');
     }
 
     if (/Sautez\s+6\s+cases/i.test(text)) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} saute 6 cases.`,
+        `${resolvePlayerNameFromState(next, playerId)} saute 6 cases.`,
       );
       next = this.move(next, playerId, 6);
       return this.applyLanding(next, playerId);
@@ -763,7 +781,7 @@ export class FrousseActionService {
     }
 
     // Next move limited to 1.
-    if (/n['’]avancerez que d['’](une|un)e seule case/i.test(text)) {
+    if (/n['â€™]avancerez que d['â€™](une|un)e seule case/i.test(text)) {
       meta = {
         ...meta,
         statuses: {
@@ -824,7 +842,7 @@ export class FrousseActionService {
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
-    // Si vous faites un trois, reculez de 2 cases (prochain dé).
+    // Si vous faites un trois, reculez de 2 cases (prochain dÃ©).
     if (/Si vous faites un trois, reculez de 2 cases/i.test(text)) {
       meta = {
         ...meta,
@@ -840,16 +858,16 @@ export class FrousseActionService {
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
-    // Téléport jusqu'à la case 40.
-    if (/jusqu'à la case 40/i.test(text) || /jusqu’à la case 40/i.test(text)) {
+    // TÃ©lÃ©port jusqu'Ã  la case 40.
+    if (/jusqu'Ã  la case 40/i.test(text) || /jusquâ€™Ã  la case 40/i.test(text)) {
       next = this.setPos(next, playerId, 39);
       return this.applyLanding(next, playerId);
     }
 
-    // Relance immédiate.
+    // Relance immÃ©diate.
     if (
-      /Relancez le dé/i.test(text) ||
-      (/Relancez/i.test(text) && /dé/i.test(text))
+      /Relancez le dÃ©/i.test(text) ||
+      (/Relancez/i.test(text) && /dÃ©/i.test(text))
     ) {
       (meta as any).keepTurnNow = true;
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
@@ -874,12 +892,12 @@ export class FrousseActionService {
 
     // Immediate roll: if odd then skip.
     if (
-      /si le résultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(text)
+      /si le rÃ©sultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(text)
     ) {
       const out = this.random.rollDice(meta as any, 6);
       meta = { ...meta, ...out.meta };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      next = this.core.appendLog(next, `Test : dé = "${out.roll}".`);
+      next = this.core.appendLog(next, `Test : dÃ© = "${out.roll}".`);
       if (out.roll % 2 === 1) {
         const curr = meta.statuses.skipTurn?.[playerId] ?? 0;
         meta = {
@@ -916,8 +934,8 @@ export class FrousseActionService {
 
     // Go to case 1.
     if (
-      /case départ/i.test(text) ||
-      /Retour à la case une/i.test(text) ||
+      /case dÃ©part/i.test(text) ||
+      /Retour Ã  la case une/i.test(text) ||
       (/Retournez/i.test(text) && /case une/i.test(text))
     ) {
       next = this.setPos(next, playerId, 0);
@@ -1047,7 +1065,7 @@ export class FrousseActionService {
     }
 
     if (roll.doubledFrom != null) {
-      label = `${label} (doublé = ${roll.value})`;
+      label = `${label} (doublÃ© = ${roll.value})`;
     }
 
     return label;
@@ -1104,7 +1122,7 @@ export class FrousseActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     return players
       .filter((p) => p?.id != null && p.id !== me)
-      .map((p) => ({ id: p.id, username: this.playerName(state, p.id) }));
+      .map((p) => ({ id: p.id, username: resolvePlayerNameFromState(state, p.id) }));
   }
 
   private otherPlayerIds(meta: FrousseMetadata, me: number): number[] {
@@ -1115,76 +1133,6 @@ export class FrousseActionService {
 
   private getMeta(state: GameStateEntity): FrousseMetadata {
     return (state.metadata ?? {}) as any as FrousseMetadata;
-  }
-
-  private buildPawnPending(
-    state: GameStateEntity,
-    startId: number | null,
-  ): { pending: PendingState; playerId: number; turnIndex: number } | null {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const meta = this.getMeta(state);
-    const used = new Set(
-      players
-        .map((p) => resolvePawnId((p as any)?.pawn))
-        .filter((id): id is string => Boolean(id)),
-    );
-    const choices = (Array.isArray(meta.pawns) ? meta.pawns : [])
-      .map((p) => ({
-        id: String(p?.id ?? '').trim(),
-        label: String(p?.title ?? p?.id ?? '').trim(),
-        title: String(p?.title ?? p?.id ?? '').trim(),
-        description: String((p as any)?.description ?? '').trim(),
-      }))
-      .filter((p) => p.id.length > 0 && !used.has(p.id));
-
-    return this.setupFlow.createSequentialChoicePending({
-      players,
-      startPlayerId: startId,
-      isAssigned: (playerId) => {
-        const player = players.find((p: any) => p?.id === playerId);
-        return Boolean(resolvePawnId(player?.pawn));
-      },
-      pendingType: 'choose_pawn',
-      choices,
-      labelForPlayer: (playerLabel) =>
-        `C'est à ${playerLabel} de choisir un pion (flèches puis Entrée).`,
-      dataBuilder: (availableChoices) => ({
-        kind: 'choose_pawn',
-        pawns: availableChoices.map((choice: any) => ({
-          id: String(choice?.id ?? '').trim(),
-          title: String(choice?.title ?? choice?.label ?? '').trim(),
-          description: String(choice?.description ?? '').trim(),
-        })),
-      }),
-    });
-  }
-
-  private resolvePendingPawn(
-    raw: unknown,
-    options: Array<{ id?: unknown; title?: unknown; description?: unknown }>,
-  ): { id: string; title: string; description: string } | null {
-    const normalized = (Array.isArray(options) ? options : [])
-      .map((p) => ({
-        id: String(p?.id ?? '').trim(),
-        title: String(p?.title ?? p?.id ?? '').trim(),
-        description: String(p?.description ?? '').trim(),
-      }))
-      .filter((p) => p.id.length > 0);
-    if (!normalized.length) return null;
-    return this.setupFlow.resolveChoice(
-      raw,
-      normalized.map((p) => ({ ...p, label: p.title })),
-    ) as { id: string; title: string; description: string } | null;
-  }
-
-  private playerName(state: GameStateEntity, id: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const p = players.find((x) => x?.id === id);
-    const u =
-      p?.username && String(p.username).trim()
-        ? String(p.username).trim()
-        : null;
-    return u ?? `Joueur ${id}`;
   }
 
   private pawnLabel(state: GameStateEntity, id: number): string {
@@ -1210,7 +1158,7 @@ export class FrousseActionService {
     }
     const stripped = inner
       .replace(/^(un|une|le|la|les)\s+/i, '')
-      .replace(/^l['’]\s*/i, '')
+      .replace(/^l['â€™]\s*/i, '')
       .trim();
     const base = this.lowercaseFirst(stripped || inner);
     const feminine = /^(une|la)\s+/i.test(inner);
@@ -1270,11 +1218,11 @@ export class FrousseActionService {
     if (typeof starter?.id === 'number') {
       next = this.core.appendLog(
         next,
-        `[Frousse Party] Début de partie : ${this.playerName(next, starter.id)} commence.`,
+        `[Frousse Party] DÃ©but de partie : ${resolvePlayerNameFromState(next, starter.id)} commence.`,
       );
       next = this.core.appendLog(
         next,
-        `C'est au tour de ${this.playerName(next, starter.id)}.`,
+        `C'est au tour de ${resolvePlayerNameFromState(next, starter.id)}.`,
       );
     }
     return next;
@@ -1305,11 +1253,11 @@ function extractMoveDelta(text: string): number {
     return numWords[key] ?? 0;
   };
 
-  // Gère les effets composés (ex: "Avancez de 5 cases, puis reculez de 3")
-  // en cumulant toutes les consignes de mouvement présentes dans le texte.
+  // GÃ¨re les effets composÃ©s (ex: "Avancez de 5 cases, puis reculez de 3")
+  // en cumulant toutes les consignes de mouvement prÃ©sentes dans le texte.
   let total = 0;
   const forwardOrBackPattern =
-    /(avancez|reculez)\s+(?:de|d['’])\s*(\d+|un|une|deux|trois|quatre|cinq|six)(?:\s+cases?)?/gi;
+    /(avancez|reculez)\s+(?:de|d['â€™])\s*(\d+|un|une|deux|trois|quatre|cinq|six)(?:\s+cases?)?/gi;
   let fbMatch: RegExpExecArray | null;
   while ((fbMatch = forwardOrBackPattern.exec(text)) !== null) {
     const amount = parseNumberish(fbMatch[2]);
@@ -1326,19 +1274,19 @@ function extractMoveDelta(text: string): number {
   if (total !== 0) return total;
 
   const narrativeForward = text.match(
-    /avancez[\s\S]*?d['’]\s*(\d+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
+    /avancez[\s\S]*?d['â€™]\s*(\d+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
   );
   if (narrativeForward) return parseNumberish(narrativeForward[1]);
 
   const narrativeBack = text.match(
-    /recul(?:ez|ant|e|es)?[\s\S]*?d['’]\s*(\d+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
+    /recul(?:ez|ant|e|es)?[\s\S]*?d['â€™]\s*(\d+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
   );
   if (narrativeBack) return -parseNumberish(narrativeBack[1]);
 
-  const forwardApos = text.match(/Avancez\s+d['’]\s*(\d+)\s+case/i);
+  const forwardApos = text.match(/Avancez\s+d['â€™]\s*(\d+)\s+case/i);
   if (forwardApos) return Number(forwardApos[1]) || 0;
   const forwardAposWords = text.match(
-    /Avancez\s+d['’]\s*(un|une|deux|trois|quatre|cinq|six)\s+case/i,
+    /Avancez\s+d['â€™]\s*(un|une|deux|trois|quatre|cinq|six)\s+case/i,
   );
   if (forwardAposWords) return parseNumberish(forwardAposWords[1]);
 
@@ -1349,10 +1297,10 @@ function extractMoveDelta(text: string): number {
   );
   if (forwardWords) return parseNumberish(forwardWords[1]);
 
-  const backApos = text.match(/Reculez\s+d['’]\s*(\d+)\s+case/i);
+  const backApos = text.match(/Reculez\s+d['â€™]\s*(\d+)\s+case/i);
   if (backApos) return -(Number(backApos[1]) || 0);
   const backAposWords = text.match(
-    /Reculez\s+d['’]\s*(un|une|deux|trois|quatre|cinq|six)\s+case/i,
+    /Reculez\s+d['â€™]\s*(un|une|deux|trois|quatre|cinq|six)\s+case/i,
   );
   if (backAposWords) return -parseNumberish(backAposWords[1]);
 
@@ -1385,24 +1333,24 @@ function describeCardEffect(card: FrousseCard): string {
   const text = card.text ?? '';
 
   if (
-    /Fantôme/i.test(card.category) &&
-    /fantôme farceur/i.test(text) &&
-    /échang|echange/i.test(text)
+    /FantÃ´me/i.test(card.category) &&
+    /fantÃ´me farceur/i.test(text) &&
+    /Ã©chang|echange/i.test(text)
   ) {
-    return 'Échange aléatoire de place.';
+    return 'Ã‰change alÃ©atoire de place.';
   }
   if (
-    /échang|echange/i.test(text) &&
+    /Ã©chang|echange/i.test(text) &&
     (/votre place/i.test(text) || /vos places/i.test(text))
   ) {
-    return 'Échangez votre place avec un autre joueur.';
+    return 'Ã‰changez votre place avec un autre joueur.';
   }
-  if (/Ignorez le prochain piège/i.test(text))
-    return 'Ignorez le prochain piège.';
-  if (/Ignorez les pièges jusqu['’]au prochain symbole/i.test(text))
-    return 'Ignorez les pièges jusqu’au prochain symbole.';
-  if (/Ignorez la prochaine carte Fantôme/i.test(text))
-    return 'Ignorez la prochaine carte Fantôme.';
+  if (/Ignorez le prochain piÃ¨ge/i.test(text))
+    return 'Ignorez le prochain piÃ¨ge.';
+  if (/Ignorez les piÃ¨ges jusqu['â€™]au prochain symbole/i.test(text))
+    return 'Ignorez les piÃ¨ges jusquâ€™au prochain symbole.';
+  if (/Ignorez la prochaine carte FantÃ´me/i.test(text))
+    return 'Ignorez la prochaine carte FantÃ´me.';
   if (/annule une farce/i.test(text) || /rien ne vous arrive/i.test(text))
     return 'Ignorez la prochaine farce.';
   if (
@@ -1411,34 +1359,34 @@ function describeCardEffect(card: FrousseCard): string {
   )
     return 'Sautez 6 cases.';
   if (/Doublez votre prochain lancer/i.test(text))
-    return 'Doublez le prochain lancer de dé.';
+    return 'Doublez le prochain lancer de dÃ©.';
   if (
     /gardez le plus petit/i.test(text) ||
     /gardez le chiffre le plus bas/i.test(text)
   )
-    return 'Rejouez en gardant le plus petit résultat.';
+    return 'Rejouez en gardant le plus petit rÃ©sultat.';
   if (/malus de moins 2/i.test(text) || /malus de -2/i.test(text))
     return 'Rejouez avec un malus de -2 au lancer.';
   if (/Si vous faites un trois, reculez de 2 cases/i.test(text))
     return 'Si vous faites un trois, reculez de 2 cases.';
-  if (/jusqu['’]à la case 40/i.test(text))
-    return 'Allez directement à la case 40.';
+  if (/jusqu['â€™]Ã  la case 40/i.test(text))
+    return 'Allez directement Ã  la case 40.';
   if (
-    /Relancez le dé/i.test(text) ||
-    (/Relancez/i.test(text) && /dé/i.test(text))
+    /Relancez le dÃ©/i.test(text) ||
+    (/Relancez/i.test(text) && /dÃ©/i.test(text))
   )
-    return 'Rejouez immédiatement.';
+    return 'Rejouez immÃ©diatement.';
   if (/laissant les autres joueurs (filer|avancer) de 3 cases/i.test(text))
     return 'Les autres avancent de 3 cases, vous passez 1 tour.';
   if (
-    /si le résultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(text)
+    /si le rÃ©sultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(text)
   ) {
-    return 'Lancez le dé : si le résultat est impair, passez 1 tour.';
+    return 'Lancez le dÃ© : si le rÃ©sultat est impair, passez 1 tour.';
   }
   const skip = extractSkipTurns(text);
   if (skip > 0) return `Passez ${skip} tour${skip > 1 ? 's' : ''}.`;
-  if (/case départ/i.test(text) || /Retour à la case une/i.test(text))
-    return 'Retournez à la case départ.';
+  if (/case dÃ©part/i.test(text) || /Retour Ã  la case une/i.test(text))
+    return 'Retournez Ã  la case dÃ©part.';
   if (/Allez en cuisine/i.test(text)) return 'Allez en cuisine.';
 
   const combo = text.match(
@@ -1453,20 +1401,20 @@ function describeCardEffect(card: FrousseCard): string {
 
   const need56 = text.match(/lancer un (\d) ou un (\d)/i);
   if (need56)
-    return `Bloqué : lancez un ${need56[1]} ou un ${need56[2]} pour vous libérer.`;
+    return `BloquÃ© : lancez un ${need56[1]} ou un ${need56[2]} pour vous libÃ©rer.`;
   const need6 = text.match(/obtenir un 6/i);
   if (need6 && /jusqu/i.test(text))
-    return 'Bloqué : obtenez un 6 pour vous libérer.';
+    return 'BloquÃ© : obtenez un 6 pour vous libÃ©rer.';
   const needMin = text.match(/obtenez pas un (\d) ou plus/i);
   if (needMin)
-    return `Bloqué : obtenez ${needMin[1]} ou plus pour vous libérer.`;
+    return `BloquÃ© : obtenez ${needMin[1]} ou plus pour vous libÃ©rer.`;
   if (/nombre pair/i.test(text))
-    return 'Bloqué : obtenez un nombre pair pour vous libérer.';
+    return 'BloquÃ© : obtenez un nombre pair pour vous libÃ©rer.';
 
-  if (/n['’]avancerez que d['’](une|un)e seule case/i.test(text))
-    return 'Au prochain tour, avancez d’une seule case.';
+  if (/n['â€™]avancerez que d['â€™](une|un)e seule case/i.test(text))
+    return 'Au prochain tour, avancez dâ€™une seule case.';
 
-  return 'Effet immédiat.';
+  return 'Effet immÃ©diat.';
 }
 
 function normalizeCardText(text: string): string {
@@ -1506,5 +1454,10 @@ function normalizeForContains(value: string): string {
     .replace(/\s+/g, ' ')
     .trim();
 }
+
+
+
+
+
 
 

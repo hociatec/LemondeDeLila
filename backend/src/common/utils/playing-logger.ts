@@ -26,7 +26,7 @@ export function playingLog(
 
 function resolveLogPath(): string {
   const cwd = process.cwd();
-  // Priorité au dossier racine "log" (à côté de backend), sinon fallback sur backend/log.
+  // Priorite au dossier racine "log" (a cote de backend), sinon fallback sur backend/log.
   const rootLog = path.resolve(cwd, '..', 'log');
   const backendLog = path.resolve(cwd, 'log');
   const targetDir =
@@ -48,3 +48,4 @@ function ensureDir(dir: string): boolean {
     return false;
   }
 }
+

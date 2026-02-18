@@ -1,6 +1,7 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -74,7 +75,7 @@ export class LaParadeSucreeActionService {
     let next = this.setMeta(state, nextMeta);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} pose ${definition.name} (${definition.value}).`,
+      `${resolvePlayerNameFromState(next, currentId)} pose ${definition.name} (${definition.value}).`,
     );
 
     if (definition.special) {
@@ -94,7 +95,7 @@ export class LaParadeSucreeActionService {
     if (currentId == null) return state;
     let next = this.core.appendLog(
       state,
-      `${this.playerName(state, currentId)} passe son tour.`,
+      `${resolvePlayerNameFromState(state, currentId)} passe son tour.`,
     );
     next = this.turns.advanceTurn(next);
     return next;
@@ -121,7 +122,7 @@ export class LaParadeSucreeActionService {
     const gainValue = this.computeCandyValue(reward);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} rafle les friandises de la case ${value} (+${gainValue}).`,
+      `${resolvePlayerNameFromState(next, playerId)} rafle les friandises de la case ${value} (+${gainValue}).`,
     );
     return next;
   }
@@ -177,7 +178,7 @@ export class LaParadeSucreeActionService {
     return this.core.appendLog(
       next,
       winnerId
-        ? `${this.playerName(next, winnerId)} rafle la Parade SucrÃ©e !`
+        ? `${resolvePlayerNameFromState(next, winnerId)} rafle la Parade Sucrée !`
         : 'Match nul gourmand !',
     );
   }
@@ -222,10 +223,5 @@ export class LaParadeSucreeActionService {
   ): GameStateEntity {
     return { ...state, metadata };
   }
-
-  private playerName(state: GameStateEntity, playerId: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const player = players.find((p) => p?.id === playerId);
-    return player?.username?.trim() || `Joueur ${playerId}`;
-  }
 }
+

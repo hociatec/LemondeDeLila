@@ -6,7 +6,13 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import type { CorridorMetadata } from '../model/corridor.model';
 import * as CorridorRulebook from '../rulebook/rulebook';
 
-import { applyActionsSequentially, dispatchByActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionPipeline,
+  applyActionsSequentially,
+  dispatchByActionType,
+  harmonizeActionStateReturn,
+  normalizeLowerActionType,
+} from '../../../../actions/action-service.helper';
 @Injectable()
 export class CorridorActionService {
   private toCellRef(pos: { x: number; y: number }, size: number): string {
@@ -30,8 +36,10 @@ export class CorridorActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    return applyActionsSequentially(state, actions, (next, action) =>
-      this.applyOne(next, action),
+    return applyActionsSequentially(
+      harmonizeActionStateReturn(state),
+      actions,
+      (next, action) => this.applyOne(harmonizeActionStateReturn(next), action),
     );
   }
 
@@ -60,27 +68,36 @@ export class CorridorActionService {
     action: GameSingleActionDto,
     actorId: number | null,
   ): GameStateEntity {
-    const { to, actorId: validatedActor } = CorridorRulebook.validateMoveAction(
-      state,
-      action,
-      actorId,
-    );
+    return applyActionPipeline(state, action, {
+      guard: () => actorId != null,
+      validate: (current, currentAction) =>
+        CorridorRulebook.validateMoveAction(current, currentAction, actorId),
+      transition: (current, _currentAction, validatedMove) => {
+        const { to, actorId: validatedActor } = validatedMove;
+        const meta = (current.metadata ?? {}) as CorridorMetadata;
+        const from = CorridorRulebook.getPawnPos(meta, validatedActor);
+        const size = Number(meta?.size ?? 0) || 9;
 
-    const meta = (state.metadata ?? {}) as CorridorMetadata;
-    const from = CorridorRulebook.getPawnPos(meta, validatedActor);
-    const size = Number(meta?.size ?? 0) || 9;
+        const nextMeta: CorridorMetadata = {
+          ...meta,
+          pawnsByPlayerId: {
+            ...(meta.pawnsByPlayerId ?? {}),
+            [String(validatedActor)]: { x: to.x, y: to.y },
+          },
+        };
 
-    const nextMeta: CorridorMetadata = {
-      ...meta,
-      pawnsByPlayerId: {
-        ...(meta.pawnsByPlayerId ?? {}),
-        [String(validatedActor)]: { x: to.x, y: to.y },
+        return {
+          actorId: validatedActor,
+          metadata: nextMeta,
+          moveMessage: `se déplace de ${this.toCellRef(from, size)} à ${this.toCellRef(to, size)}`,
+          maybeWinnerPos: to,
+        };
       },
-    };
-
-    return this.advanceTurnAndMaybeFinish(state, validatedActor, nextMeta, {
-      moveMessage: `se dÃ©place de ${this.toCellRef(from, size)} Ã  ${this.toCellRef(to, size)}`,
-      maybeWinnerPos: to,
+      effects: (current, _currentAction, _validatedMove, transitioned) =>
+        this.advanceTurnAndMaybeFinish(current, transitioned.actorId, transitioned.metadata, {
+          moveMessage: transitioned.moveMessage,
+          maybeWinnerPos: transitioned.maybeWinnerPos,
+        }),
     });
   }
 
@@ -89,28 +106,40 @@ export class CorridorActionService {
     action: GameSingleActionDto,
     actorId: number | null,
   ): GameStateEntity {
-    const { wall, actorId: validatedActor } =
-      CorridorRulebook.validatePlaceWallAction(state, action, actorId);
+    return applyActionPipeline(state, action, {
+      guard: () => actorId != null,
+      validate: (current, currentAction) =>
+        CorridorRulebook.validatePlaceWallAction(current, currentAction, actorId),
+      transition: (current, _currentAction, validatedWall) => {
+        const { wall, actorId: validatedActor } = validatedWall;
+        const meta = (current.metadata ?? {}) as CorridorMetadata;
+        const size = Number(meta?.size ?? 0) || 9;
+        const remaining =
+          (meta?.wallsRemainingByPlayerId ?? {})[String(validatedActor)] ?? 0;
 
-    const meta = (state.metadata ?? {}) as CorridorMetadata;
-    const size = Number(meta?.size ?? 0) || 9;
-    const remaining =
-      (meta?.wallsRemainingByPlayerId ?? {})[String(validatedActor)] ?? 0;
+        const nextMeta: CorridorMetadata = {
+          ...CorridorRulebook.applyWall(meta, wall),
+          wallsRemainingByPlayerId: {
+            ...(meta?.wallsRemainingByPlayerId ?? {}),
+            [String(validatedActor)]: Math.max(0, remaining - 1),
+          },
+        };
 
-    const nextMeta: CorridorMetadata = {
-      ...CorridorRulebook.applyWall(meta, wall),
-      wallsRemainingByPlayerId: {
-        ...(meta?.wallsRemainingByPlayerId ?? {}),
-        [String(validatedActor)]: Math.max(0, remaining - 1),
+        const at = this.toCellRef({ x: wall.x, y: wall.y }, size);
+        const orientation = wall.o === 'h' ? 'horizontal' : 'vertical';
+
+        return {
+          actorId: validatedActor,
+          metadata: nextMeta,
+          moveMessage: `place un mur ${orientation} en ${at}`,
+          maybeWinnerPos: null,
+        };
       },
-    };
-
-    const at = this.toCellRef({ x: wall.x, y: wall.y }, size);
-    const orientation = wall.o === 'h' ? 'horizontal' : 'vertical';
-
-    return this.advanceTurnAndMaybeFinish(state, validatedActor, nextMeta, {
-      moveMessage: `place un mur ${orientation} en ${at}`,
-      maybeWinnerPos: null,
+      effects: (current, _currentAction, _validatedWall, transitioned) =>
+        this.advanceTurnAndMaybeFinish(current, transitioned.actorId, transitioned.metadata, {
+          moveMessage: transitioned.moveMessage,
+          maybeWinnerPos: transitioned.maybeWinnerPos,
+        }),
     });
   }
 

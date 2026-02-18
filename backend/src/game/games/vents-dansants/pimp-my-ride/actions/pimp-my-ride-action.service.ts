@@ -1,6 +1,7 @@
-ï»¿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -27,7 +28,7 @@ const CATEGORY_LABELS: Record<typeof PIMP_MY_RIDE_CATEGORY_ORDER[number], string
   roues: 'les roues',
   moteur: 'le moteur',
   volant: 'le volant',
-  sieges: 'les siÃ¨ges',
+  sieges: 'les sièges',
   phares: 'les phares',
   accessoires: 'les accessoires',
 };
@@ -75,7 +76,7 @@ export class PimpMyRideActionService {
     let next = this.ensurePlayerDrawn(state, playerId);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} garde sa carte et passe son tour.`,
+      `${resolvePlayerNameFromState(next, playerId)} garde sa carte et passe son tour.`,
     );
     next = this.turns.advanceTurn(next);
     return this.clearDrawn(next);
@@ -114,7 +115,7 @@ export class PimpMyRideActionService {
     const label = CATEGORY_LABELS[category] ?? category;
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} pose ${definition.name} pour ${label}.`,
+      `${resolvePlayerNameFromState(next, playerId)} pose ${definition.name} pour ${label}.`,
     );
 
     if (progress.stageIndex >= PIMP_MY_RIDE_CATEGORY_ORDER.length) {
@@ -150,7 +151,7 @@ export class PimpMyRideActionService {
     next = this.setMeta(next, updatedMeta);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} jette ${this.getCardName(cardId)} Ã  la dÃ©fausse.`,
+      `${resolvePlayerNameFromState(next, playerId)} jette ${this.getCardName(cardId)} à la défausse.`,
     );
 
     next = this.turns.advanceTurn(next);
@@ -185,7 +186,7 @@ export class PimpMyRideActionService {
     next = this.setMeta(next, nextMeta);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} termine la voiture ${carNameEntry.name} (${carNameEntry.description}).`,
+      `${resolvePlayerNameFromState(next, playerId)} termine la voiture ${carNameEntry.name} (${carNameEntry.description}).`,
     );
 
     if (updatedProgress.completedCars.length >= 3) {
@@ -196,7 +197,7 @@ export class PimpMyRideActionService {
       };
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} remporte la partie en terminant trois voitures !`,
+        `${resolvePlayerNameFromState(next, playerId)} remporte la partie en terminant trois voitures !`,
       );
     }
 
@@ -214,13 +215,13 @@ export class PimpMyRideActionService {
     if (cardId) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} pioche ${this.getCardName(cardId)}.`,
+        `${resolvePlayerNameFromState(next, playerId)} pioche ${this.getCardName(cardId)}.`,
       );
       next = this.addCardToHand(next, playerId, cardId);
     } else {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} ne trouve plus de cartes Ã  piocher.`,
+        `${resolvePlayerNameFromState(next, playerId)} ne trouve plus de cartes à piocher.`,
       );
     }
     return next;
@@ -313,10 +314,5 @@ export class PimpMyRideActionService {
     const meta = this.getMeta(state);
     return this.setMeta(state, { ...meta, drawnPlayerId: null, drawnCardId: null });
   }
-
-  private playerName(state: GameStateEntity, playerId: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const player = players.find((p) => p?.id === playerId);
-    return player?.username?.trim() || `Joueur ${playerId}`;
-  }
 }
+

@@ -34,6 +34,7 @@ import { GameStatsService } from '../../../stats/services/game-stats.service';
 import { GridRenderService } from '../../modules/grid/services/grid-render.service';
 import type { GameShortcutHint } from '../shortcuts/game-shortcuts';
 import { actionShortcut, interfaceShortcut } from '../shortcuts/shortcut-utils';
+import { isRollActionType } from '../../actions/action-service.helper';
 import {
   fixMojibakeDeep,
   fixMojibakeString,
@@ -375,12 +376,11 @@ export class GameEngineService {
         .filter((t) => t),
     );
 
-    const hasRoll = types.has('roll');
-    const hasRollDice = types.has('roll_dice');
-    if (hasRoll || hasRollDice) {
-      // Compat: certains jeux exposent "ROLL_DICE"/"roll_dice" au lieu de "roll".
-      const action = hasRoll ? 'roll' : 'roll_dice';
-      common.push(actionShortcut('ENTER', action));
+    const hasRoll = Array.isArray(actions)
+      ? actions.some((a) => isRollActionType((a as any)?.type))
+      : false;
+    if (hasRoll) {
+      common.push(actionShortcut('ENTER', 'roll'));
     }
     if (types.has('draw')) {
       common.push(actionShortcut('SPACE', 'draw'));

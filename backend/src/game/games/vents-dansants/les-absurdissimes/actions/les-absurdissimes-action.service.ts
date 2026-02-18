@@ -1,6 +1,7 @@
-ï»¿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerName } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -78,7 +79,7 @@ export class AbsurdissimesActionService {
     let next = this.setMeta(state, meta);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next.players, currentPlayerId)} propose ${cardId}.`,
+      `${resolvePlayerName(next.players, currentPlayerId)} propose ${cardId}.`,
     );
 
     if (!remainingPlayers.length) {
@@ -86,7 +87,7 @@ export class AbsurdissimesActionService {
       next = this.setMeta(next, meta);
       const judgeTurn = this.getJudgeId(next, meta);
       next = { ...next, turn: { currentPlayerId: judgeTurn, direction: 1 } };
-      next = this.core.appendLog(next, 'Les cartes sont prÃªtes : le juge choisit la proposition gagnante.');
+      next = this.core.appendLog(next, 'Les cartes sont prêtes : le juge choisit la proposition gagnante.');
       return next;
     }
 
@@ -114,7 +115,7 @@ export class AbsurdissimesActionService {
     meta = { ...meta, scores };
     let next = this.core.appendLog(
       state,
-      `${this.playerName(state.players, winnerId)} remporte la manche avec la rÃ©ponse ${meta.submissions[winnerId] ?? ''}.`,
+      `${resolvePlayerName(state.players, winnerId)} remporte la manche avec la réponse ${meta.submissions[winnerId] ?? ''}.`,
     );
 
     const target = meta.targetScore;
@@ -128,7 +129,7 @@ export class AbsurdissimesActionService {
 
     if (hasWinner) {
       next = this.setMeta({ ...next, status: 'finished' }, meta);
-      next = this.core.appendLog(next, `${this.playerName(next.players, winnerId)} atteint ${target} points !`);
+      next = this.core.appendLog(next, `${resolvePlayerName(next.players, winnerId)} atteint ${target} points !`);
       return next;
     }
 
@@ -158,7 +159,7 @@ export class AbsurdissimesActionService {
     nextState.log = [...nextState.log];
     return this.core.appendLog(
       nextState,
-      `Nouvelle manche : ${this.playerName(nextState.players, judgeId)} est juge.`,
+      `Nouvelle manche : ${resolvePlayerName(nextState.players, judgeId)} est juge.`,
     );
   }
 
@@ -223,10 +224,5 @@ export class AbsurdissimesActionService {
       .filter((player) => typeof player?.id === 'number')
       .map((player) => player!.id);
   }
-
-  private playerName(players: GameStateEntity['players'], playerId: number): string {
-    const list = Array.isArray(players) ? players : [];
-    const player = list.find((p) => p?.id === playerId);
-    return player?.username?.trim() || `Joueur ${playerId}`;
-  }
 }
+

@@ -12,6 +12,7 @@ import type {
   MinuitPawn,
   MinuitPawnsJsonV1,
 } from '../model/minuit.types';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 const DEFAULT_PAWNS = [
   'Le Lutin',
@@ -95,7 +96,38 @@ export class MinuitSetupService {
       winnerId: null,
     };
 
-    const pending = this.buildPawnPending(base, meta, pawns.pawns ?? []);
+    const playersForPending = Array.isArray(base.players) ? base.players : [];
+    const missingForPending = playersForPending.filter(
+      (p) => !!p && !this.isBotLike(p) && !this.hasPawnAssigned(p, meta),
+    );
+    const pending = !missingForPending.length
+      ? null
+      : (this.setupFlow.createSequentialPawnPending({
+          players: playersForPending,
+          startPlayerId: playersForPending[0]?.id ?? null,
+          isAssigned: (playerId) => {
+            const player = playersForPending.find((p) => p?.id === playerId);
+            return !player || this.isBotLike(player) || this.hasPawnAssigned(player, meta);
+          },
+          pendingType: 'pick_pawn',
+          pawns: (() => {
+            const taken = new Set<string>(
+              playersForPending
+                .map((p) => (typeof p?.pawn === 'string' ? String(p.pawn).trim() : ''))
+                .filter((pawn) => pawn.length > 0),
+            );
+            const entries = this.listPawnChoiceEntries(meta, pawns.pawns ?? []);
+            const available = entries.filter((entry) => !taken.has(entry.title));
+            const chosenEntries = available.length ? available : [...entries];
+            return chosenEntries.map((entry) => ({ id: entry.title, label: entry.label, title: entry.title }));
+          })(),
+          includeChoiceMapData: true,
+          pawnDataMapper: (choice: any) => ({
+            id: String(choice?.id ?? '').trim(),
+            label: String(choice?.label ?? '').trim(),
+            title: String(choice?.title ?? choice?.id ?? '').trim(),
+          }),
+        })?.pending as any);
 
     let next: GameStateEntity = {
       ...base,
@@ -116,48 +148,6 @@ export class MinuitSetupService {
     };
 
     return next;
-  }
-
-  private buildPawnPending(
-    base: GameStateEntity,
-    meta: MinuitMetadata,
-    pawns: MinuitPawn[],
-  ): GameStateEntity['pending'] {
-    const players = Array.isArray(base.players) ? base.players : [];
-    const missing = players.filter(
-      (p) => !!p && !this.isBotLike(p) && !this.hasPawnAssigned(p, meta),
-    );
-    if (!missing.length) return null;
-
-    const taken = new Set<string>(
-      players
-        .map((p) => (typeof p?.pawn === 'string' ? String(p.pawn).trim() : ''))
-        .filter((pawn) => pawn.length > 0),
-    );
-
-    const choiceEntries = this.listPawnChoiceEntries(meta, pawns);
-    const available = choiceEntries.filter((entry) => !taken.has(entry.title));
-    const entries = available.length ? available : [...choiceEntries];
-    return this.setupFlow.createSequentialChoicePending({
-      players,
-      startPlayerId: players[0]?.id ?? null,
-      isAssigned: (playerId) => {
-        const player = players.find((p) => p?.id === playerId);
-        return !player || this.isBotLike(player) || this.hasPawnAssigned(player, meta);
-      },
-      pendingType: 'pick_pawn',
-      choices: entries.map((entry) => ({ id: entry.title, label: entry.label })),
-      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion, puis Entrée.`,
-      dataBuilder: (availableChoices) => {
-        const availableChoiceMap = Object.fromEntries(
-          availableChoices.map((choice) => [choice.label, choice.id]),
-        );
-        return {
-          choices: availableChoices.map((choice) => choice.label),
-          choiceMap: availableChoiceMap,
-        };
-      },
-    })?.pending as any;
   }
 
   private listPawnChoiceEntries(
@@ -196,17 +186,12 @@ export class MinuitSetupService {
   private loadPawns(): MinuitPawnsJsonV1 {
     return loadV1Content<MinuitPawnsJsonV1>(this.contentLoader, { gameType: 'en-attendant-minuit', baseDir: __dirname, filename: 'pawns.json', arrayField: 'pawns', minItems: 1 });
   }
-
-  private playerName(state: GameStateEntity, id: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const player = players.find((p) => p?.id === id);
-    const username =
-      player?.username && String(player.username).trim()
-        ? String(player.username).trim()
-        : null;
-    return username ?? `Joueur ${id}`;
-  }
 }
+
+
+
+
+
 
 
 

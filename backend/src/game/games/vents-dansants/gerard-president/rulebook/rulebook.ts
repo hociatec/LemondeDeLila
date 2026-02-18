@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import {
   GameValidationError,
@@ -76,18 +76,18 @@ export function validateAction(
   const rawType = normalizeActionType(action);
   const type = rawType as GerardPresidentActionType;
   if (!GERARD_PRESIDENT_GAME.actions.includes(type)) {
-    throw new GameValidationError(`Action inconnueÂ : ${rawType}`, {
+    throw new GameValidationError(`Action inconnue : ${rawType}`, {
       gameType: 'gerard-president',
     });
   }
   if (actorId == null) {
-    throw new PlayerActionError('Un joueur doit Ãªtre indiquÃ©.', {
+    throw new PlayerActionError('Un joueur doit être indiqué.', {
       gameType: 'gerard-president',
     });
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new GameValidationError('La partie nâ€™a pas dÃ©marrÃ©.', {
+    throw new GameValidationError("La partie n'a pas démarré.", {
       gameType: 'gerard-president',
     });
   }
@@ -95,7 +95,7 @@ export function validateAction(
   const current = state.turn?.currentPlayerId ?? null;
   const payload = (action.payload ?? {}) as GerardPresidentRulePayload;
   if (current !== actorId) {
-    throw new PlayerActionError('Ce nâ€™est pas votre tour.', {
+    throw new PlayerActionError("Ce n'est pas votre tour.", {
       gameType: 'gerard-president',
       playerId: actorId,
     });
@@ -103,7 +103,7 @@ export function validateAction(
 
   if (type === 'set_theme') {
     if (meta.roundPhase !== 'waiting_theme') {
-      throw new GameValidationError('Un thÃ¨me est dÃ©jÃ  en cours.', {
+      throw new GameValidationError('Un thème est déjà en cours.', {
         gameType: 'gerard-president',
       });
     }
@@ -112,7 +112,7 @@ export function validateAction(
       meta.masterId !== actorId &&
       meta.juryOverrideId !== actorId
     ) {
-      throw new PlayerActionError('Vous nâ€™Ãªtes pas le MaÃ®tre du ThÃ¨me.', {
+      throw new PlayerActionError("Vous n'êtes pas le Maître du Thème.", {
         gameType: 'gerard-president',
         playerId: actorId,
       });
@@ -122,18 +122,18 @@ export function validateAction(
 
   if (type === 'play_name') {
     if (meta.roundPhase !== 'collecting_names') {
-      throw new GameValidationError('Il faut attendre un thÃ¨me.', {
+      throw new GameValidationError('Il faut attendre un thème.', {
         gameType: 'gerard-president',
       });
     }
     if (!meta.pendingPlayers.includes(actorId)) {
-      throw new PlayerActionError('Vous avez dÃ©jÃ  jouÃ©.', {
+      throw new PlayerActionError('Vous avez déjà joué.', {
         gameType: 'gerard-president',
       });
     }
     const names = Array.isArray(payload.names) ? payload.names : [];
     if (!names.length) {
-      throw new GameValidationError('Aucun prÃ©nom sÃ©lectionnÃ©.', {
+      throw new GameValidationError('Aucun prénom sélectionné.', {
         gameType: 'gerard-president',
       });
     }
@@ -148,13 +148,13 @@ export function validateAction(
     }
     const cardId = String(payload.cardId ?? '').trim();
     if (!cardId) {
-      throw new GameValidationError('Aucune carte spÃ©cifiÃ©e.', {
+      throw new GameValidationError('Aucune carte spécifiée.', {
         gameType: 'gerard-president',
       });
     }
     const hand = meta.specialHands?.[actorId] ?? [];
     if (!hand.includes(cardId)) {
-      throw new GameValidationError('Vous ne possÃ©dez pas cette carte.', {
+      throw new GameValidationError('Vous ne possédez pas cette carte.', {
         gameType: 'gerard-president',
       });
     }
@@ -168,7 +168,7 @@ export function validateAction(
       });
     }
     if (!meta.pendingPlayers.includes(actorId)) {
-      throw new PlayerActionError('Vous avez dÃ©jÃ  jouÃ©.', {
+      throw new PlayerActionError('Vous avez déjà joué.', {
         gameType: 'gerard-president',
       });
     }
@@ -177,12 +177,12 @@ export function validateAction(
 
   if (type === 'choose_winner') {
     if (meta.roundPhase !== 'choosing_winner') {
-      throw new GameValidationError('Il faut dâ€™abord collecter les prÃ©noms.', {
+      throw new GameValidationError("Il faut d'abord collecter les prénoms.", {
         gameType: 'gerard-president',
       });
     }
     if (meta.masterId != null && meta.masterId !== actorId) {
-      throw new PlayerActionError('Vous nâ€™Ãªtes pas le MaÃ®tre du ThÃ¨me.', {
+      throw new PlayerActionError("Vous n'êtes pas le Maître du Thème.", {
         gameType: 'gerard-president',
       });
     }

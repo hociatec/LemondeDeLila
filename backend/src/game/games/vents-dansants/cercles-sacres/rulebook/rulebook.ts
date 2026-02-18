@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import type { CerclesSacresTheme } from '../model/cercles-sacres-cards';
 import { CERCLES_SACRES_CARD_BY_ID } from '../model/cercles-sacres-cards';
@@ -86,7 +86,7 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error('La partie nâ€™est pas dÃ©marrÃ©e.');
+    throw new Error("La partie n'est pas démarrée.");
   }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== actorId) {
@@ -98,7 +98,7 @@ export function validateAction(
 
   if (type === 'pass') {
     if (isHandOverLimit(meta, actorId)) {
-      throw new Error('Vous devez dÃ©fausser jusquâ€™Ã  revenir Ã  8 cartes.');
+      throw new Error("Vous devez défausser jusqu'à revenir à 8 cartes.");
     }
     return { type: 'pass', payload: {} };
   }
@@ -116,31 +116,31 @@ export function validateAction(
 
   if (type === 'form_circle') {
     if (isHandOverLimit(meta, actorId)) {
-      throw new Error('RÃ©duisez votre main avant de former un cercle.');
+      throw new Error('Réduisez votre main avant de former un cercle.');
     }
     const cardIds = Array.isArray(payload.cardIds) ? payload.cardIds : [];
     if (cardIds.length !== 6) {
-      throw new Error('Un cercle nÃ©cessite six cartes.');
+      throw new Error('Un cercle nécessite six cartes.');
     }
     const unique = new Set(cardIds);
     if (unique.size !== 6) {
-      throw new Error('Chaque carte du cercle doit Ãªtre unique.');
+      throw new Error('Chaque carte du cercle doit être unique.');
     }
     for (const cardId of cardIds) {
       if (!hand.includes(cardId)) {
-        throw new Error('Vous ne possÃ©dez pas toutes les cartes demandÃ©es.');
+        throw new Error('Vous ne possédez pas toutes les cartes demandées.');
       }
       if (!CERCLES_SACRES_CARD_BY_ID[cardId]) {
         throw new Error(`Carte invalide : ${cardId}`);
       }
     }
     if (!hasCompleteCircle(cardIds)) {
-      throw new Error('Chaque thÃ¨me doit Ãªtre reprÃ©sentÃ© une fois.');
+      throw new Error('Chaque thème doit être représenté une fois.');
     }
     return { type: 'form_circle', payload: { cardIds } };
   }
 
-  throw new Error('Action non supportÃ©e.');
+  throw new Error('Action non supportée.');
 }
 
 

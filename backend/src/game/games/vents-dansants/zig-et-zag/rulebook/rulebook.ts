@@ -42,11 +42,11 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error('La partie n\'est pas dÃ©marrÃ©e.');
+    throw new Error('La partie n\'est pas démarrée.');
   }
   const meta = getMeta(state);
   if (meta.winnerId != null) {
-    throw new Error('La partie est terminÃ©e.');
+    throw new Error('La partie est terminée.');
   }
   const round = meta.roundState;
   if (!round) {

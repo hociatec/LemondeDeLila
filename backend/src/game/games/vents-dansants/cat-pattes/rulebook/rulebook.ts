@@ -181,7 +181,7 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error("La partie n'est pas dÃ©marrÃ©e.");
+    throw new Error("La partie n'est pas démarrée.");
   }
 
   const pending = state.pending as any;
@@ -221,7 +221,7 @@ export function validateAction(
   }
 
   if (type === 'draw') {
-    throw new Error('Carte dÃ©jÃ  piochÃ©e ce tour.');
+    throw new Error('Carte déjà piochée ce tour.');
   }
 
   if (type === 'pass') {

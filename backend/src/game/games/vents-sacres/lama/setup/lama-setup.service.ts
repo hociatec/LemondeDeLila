@@ -3,6 +3,8 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 
 import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { createPendingState } from '../../../../modules/pending-action/services/pending-action.service';
+import { optionalInt } from '../../../../core/helpers/payload-validators.helper';
 import type { LamaMetadata } from '../model/lama.model';
 import { LamaRoundService } from '../round/lama-round.service';
 import { LamaSharedService } from '../shared/lama-shared.service';
@@ -91,15 +93,13 @@ export class LamaSetupService {
       suppressTurnAnnouncement: true,
     };
 
-    return {
+    return createPendingState({
       ...baseState,
       status: 'started',
       phase: 'setup',
       round: baseState.round ?? 0,
       turnIndex: baseState.turnIndex ?? 0,
       lastRoll: null,
-      // Setup bloquant : l'acteur "pending" ne doit pas être écrasé par la randomisation du starter au démarrage.
-      pending: { step: 'setup_config', playerId: ownerPlayerId, blocking: true } as any,
       log: Array.isArray(baseState.log) ? baseState.log : [],
       metadata: meta as any,
       turn: {
@@ -110,7 +110,11 @@ export class LamaSetupService {
           ? `Réglages LAMA : ${this.shared.playerLabel(players as any[], ownerPlayerId)}`
           : 'Réglages LAMA',
       },
-    };
+    } as GameStateEntity, {
+      step: 'setup_config',
+      playerId: ownerPlayerId,
+      blocking: true,
+    } as any);
   }
 
   applySetupConfig(
@@ -121,13 +125,37 @@ export class LamaSetupService {
   ): GameStateEntity {
     if (meta.ownerPlayerId == null || actorId !== meta.ownerPlayerId) return state;
 
-    const rawLose = Number((action.payload as any)?.loseAtScore);
-    const loseAtScore = Number.isFinite(rawLose) ? Math.floor(rawLose) : NaN;
-    if (!Number.isFinite(loseAtScore) || loseAtScore < 5 || loseAtScore > 200) return state;
+    const loseAtScore = (() => {
+      try {
+        return optionalInt(action.payload ?? {}, 'loseAtScore');
+      } catch {
+        return undefined;
+      }
+    })();
+    if (
+      !Number.isFinite(loseAtScore) ||
+      loseAtScore == null ||
+      loseAtScore < 5 ||
+      loseAtScore > 200
+    ) {
+      return state;
+    }
 
-    const rawPause = Number((action.payload as any)?.roundPauseSeconds);
-    const roundPauseSeconds = Number.isFinite(rawPause) ? Math.floor(rawPause) : NaN;
-    if (!Number.isFinite(roundPauseSeconds) || roundPauseSeconds < 0 || roundPauseSeconds > 120) return state;
+    const roundPauseSeconds = (() => {
+      try {
+        return optionalInt(action.payload ?? {}, 'roundPauseSeconds');
+      } catch {
+        return undefined;
+      }
+    })();
+    if (
+      !Number.isFinite(roundPauseSeconds) ||
+      roundPauseSeconds == null ||
+      roundPauseSeconds < 0 ||
+      roundPauseSeconds > 120
+    ) {
+      return state;
+    }
 
     const allowPlayAfterDraw = this.shared.asBoolean((action.payload as any)?.allowPlayAfterDraw);
 

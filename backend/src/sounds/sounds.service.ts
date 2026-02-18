@@ -430,7 +430,7 @@ export class SoundsService {
 
     const ext = path.extname(originalName || tempFilePath).toLowerCase();
     if (ext !== '.mp3' && ext !== '.wav') {
-      throw new BadRequestException('Seuls les fichiers .mp3 ou .wav sont acceptÃ©s.');
+      throw new BadRequestException('Seuls les fichiers .mp3 ou .wav sont acceptés.');
     }
 
     const stat = await fs.promises.stat(tempFilePath);
@@ -539,7 +539,7 @@ export class SoundsService {
     delete next.sounds[soundId];
     await this.writeManifest(next);
 
-    // Nettoyage best-effort: si le son est supprimÃ© du manifest, supprimer aussi les fichiers associÃ©s.
+    // Nettoyage best-effort: si le son est supprimé du manifest, supprimer aussi les fichiers associés.
     try {
       await fs.promises.rm(path.join(this.dataRoot(), soundId), {
         recursive: true,
@@ -943,7 +943,7 @@ export class SoundsService {
 
       const keepSha = usedById[soundKey];
       if (!keepSha) {
-        // Aucun son configurÃ© pour ce soundId => supprimer le dossier.
+        // Aucun son configuré pour ce soundId => supprimer le dossier.
         try {
           await fs.promises.rm(path.join(root, soundKey), {
             recursive: true,
@@ -958,7 +958,7 @@ export class SoundsService {
 
       deletedFiles += await this.removeUnusedFilesForSoundId(soundKey, keepSha);
 
-      // Si le dossier est vide aprÃ¨s cleanup, supprimer.
+      // Si le dossier est vide après cleanup, supprimer.
       try {
         const remaining = await fs.promises.readdir(path.join(root, soundKey));
         if (remaining.length === 0) {
@@ -981,11 +981,11 @@ export class SoundsService {
     const manifest = await this.readManifest();
     const entry = manifest.sounds?.[soundId];
     if (!entry) {
-      throw new NotFoundException('Son non configurÃ©.');
+      throw new NotFoundException('Son non configuré.');
     }
     if (shaFromUrl && shaFromUrl !== entry.sha256) {
       // The client asked an old url; 404 encourages them to refresh manifest.
-      throw new NotFoundException('Version du son obsolÃ¨te.');
+      throw new NotFoundException('Version du son obsolète.');
     }
     const wav = path.join(this.dataRoot(), soundId, `${entry.sha256}.wav`);
     const mp3 = path.join(this.dataRoot(), soundId, `${entry.sha256}.mp3`);

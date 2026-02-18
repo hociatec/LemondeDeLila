@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { GameStateEntity } from '../../../core/entities/game-state.entity';
 
 @Injectable()
@@ -51,22 +51,24 @@ export class TurnLabelService {
     const pendingType = String((state as any)?.pending?.type ?? '')
       .trim()
       .toLowerCase();
-    if (pendingType === 'choose_pawn' || pendingType === 'pick_pawn') {
-      const pendingLabel = String((state as any)?.pending?.label ?? '').trim();
-      if (pendingLabel.length > 0) {
-        return pendingLabel;
-      }
 
-      if (currentPlayerId != null) {
-        const found = players.find((p) => p?.id === currentPlayerId);
+    if (pendingType === 'choose_pawn' || pendingType === 'pick_pawn') {
+      const pendingPlayerId = Number((state as any)?.pending?.playerId);
+      const targetPlayerId =
+        Number.isFinite(pendingPlayerId) && pendingPlayerId > 0
+          ? pendingPlayerId
+          : currentPlayerId;
+
+      if (targetPlayerId != null) {
+        const found = players.find((p) => Number((p as any)?.id) === targetPlayerId);
         const username = this.sanitizePlayerName(found?.username);
-        const name = username.length > 0 ? username : `Joueur ${currentPlayerId}`;
-        return `C'est Ã  ${name} de choisir son pion.`;
+        const name = username.length > 0 ? username : `Joueur ${targetPlayerId}`;
+        return `C'est à ${name} de choisir son pion.`;
       }
     }
 
     if (currentPlayerId != null) {
-      const found = players.find((p) => p?.id === currentPlayerId);
+      const found = players.find((p) => Number((p as any)?.id) === currentPlayerId);
       const username = this.sanitizePlayerName(found?.username);
       const name = username.length > 0 ? username : `Joueur ${currentPlayerId}`;
       return `C'est à ${name} de jouer.`;

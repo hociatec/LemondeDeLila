@@ -1,6 +1,7 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -44,10 +45,6 @@ export class PrimalisActionService {
                 next = this.handleRoll(next);
                 return next;
               },
-              'ROLL_DICE': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
             },
             () => next,
           );
@@ -74,7 +71,7 @@ export class PrimalisActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} lance le dÃ© : "${rng.roll}".`,
+      `${resolvePlayerNameFromState(next, playerId)} lance le dé : "${rng.roll}".`,
     );
 
     if (face === 'relance') {
@@ -88,7 +85,7 @@ export class PrimalisActionService {
       };
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} utilise la relance et obtient "${reroll.roll}".`,
+        `${resolvePlayerNameFromState(next, playerId)} utilise la relance et obtient "${reroll.roll}".`,
       );
     }
 
@@ -159,7 +156,7 @@ export class PrimalisActionService {
           next = this.addResources(next, playerId, addition);
           next = this.core.appendLog(
             next,
-            `${this.playerName(next, playerId)} double sa rÃ©colte sur la case 1.`,
+            `${resolvePlayerNameFromState(next, playerId)} double sa récolte sur la case 1.`,
           );
         }
         break;
@@ -168,7 +165,7 @@ export class PrimalisActionService {
           next = this.addResources(next, playerId, { herbivores: -1 });
           next = this.core.appendLog(
             next,
-            `${this.playerName(next, playerId)} perd un herbivore (case 2).`,
+            `${resolvePlayerNameFromState(next, playerId)} perd un herbivore (case 2).`,
           );
         }
         break;
@@ -177,7 +174,7 @@ export class PrimalisActionService {
           next = this.addResources(next, playerId, { leaves: 1 });
           next = this.core.appendLog(
             next,
-            `${this.playerName(next, playerId)} gagne une feuille supplÃ©mentaire (case 3).`,
+            `${resolvePlayerNameFromState(next, playerId)} gagne une feuille supplémentaire (case 3).`,
           );
         }
         break;
@@ -186,7 +183,7 @@ export class PrimalisActionService {
           next = this.addResources(next, playerId, { eggs: 1 });
           next = this.core.appendLog(
             next,
-            `${this.playerName(next, playerId)} rÃ©cupÃ¨re un Å“uf bonus (case 4).`,
+            `${resolvePlayerNameFromState(next, playerId)} récupère un œuf bonus (case 4).`,
           );
         }
         break;
@@ -197,7 +194,7 @@ export class PrimalisActionService {
         next = this.addResources(next, playerId, { leaves: 1 });
         next = this.core.appendLog(
           next,
-          `${this.playerName(next, playerId)} collecte une feuille magique (case 7).`,
+          `${resolvePlayerNameFromState(next, playerId)} collecte une feuille magique (case 7).`,
         );
         break;
       case 8:
@@ -205,7 +202,7 @@ export class PrimalisActionService {
           next = this.addResources(next, playerId, { leaves: 1 });
           next = this.core.appendLog(
             next,
-            `${this.playerName(next, playerId)} transforme sa relance en feuilles (case 8).`,
+            `${resolvePlayerNameFromState(next, playerId)} transforme sa relance en feuilles (case 8).`,
           );
         }
         break;
@@ -224,7 +221,7 @@ export class PrimalisActionService {
     let next = state;
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} dÃ©clenche un Danger : la comÃ¨te avance.`,
+      `${resolvePlayerNameFromState(next, playerId)} déclenche un Danger : la comète avance.`,
     );
     next = this.advanceAllPlayers(next, 1);
     if (this.getMeta(next).statuses.dangerAmplified) {
@@ -238,7 +235,7 @@ export class PrimalisActionService {
     if (tile?.n === 9) {
       next = this.core.appendLog(
         next,
-        'Case 9 : le Danger est amplifiÃ©, tout le monde avance de deux cases supplÃ©mentaires.',
+        'Case 9 : le Danger est amplifié, tout le monde avance de deux cases supplémentaires.',
       );
       next = this.advanceAllPlayers(next, 1);
     }
@@ -345,7 +342,7 @@ export class PrimalisActionService {
     };
     return this.core.appendLog(
       next,
-      `${this.playerName(next, best.id)} survit Ã  la comÃ¨te avec ${
+      `${resolvePlayerNameFromState(next, best.id)} survit à la comète avec ${
         best.resources.herbivores + best.resources.carnivores
       } dinosaures et ${best.resources.leaves} feuilles.`,
     );
@@ -422,16 +419,6 @@ export class PrimalisActionService {
     return resources.herbivores + resources.carnivores + resources.leaves;
   }
 
-  private playerName(state: GameStateEntity, id: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const player = players.find((p) => p?.id === id);
-    const username =
-      player?.username && String(player.username).trim()
-        ? String(player.username).trim()
-        : null;
-    return username ?? `Joueur ${id}`;
-  }
-
   private getMeta(state: GameStateEntity): PrimalisMetadata {
     return (state.metadata ?? {}) as PrimalisMetadata;
   }
@@ -451,5 +438,8 @@ export class PrimalisActionService {
     return state;
   }
 }
+
+
+
 
 

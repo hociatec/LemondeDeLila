@@ -20,7 +20,7 @@ describe('SetupFlowService', () => {
       isAssigned: (playerId) => assigned.has(playerId),
       pendingType: 'choose_pawn',
       choices: [{ id: 'coq', label: 'Coq' }],
-      labelForPlayer: (name) => `C'est Ã  ${name} de choisir.`,
+      labelForPlayer: (name) => `C'est à ${name} de choisir.`,
     });
 
     expect(pending).not.toBeNull();
@@ -31,15 +31,16 @@ describe('SetupFlowService', () => {
 
   it('resolves a choice by id or label (accent/spacing insensitive)', () => {
     const options = [
-      { id: 'chevre-acrobate', label: 'ChÃ¨vre acrobate', feminine: true },
+      { id: 'chevre-acrobate', label: 'Chèvre acrobate', feminine: true },
       { id: 'coq-rockeur', label: 'Coq rockeur', feminine: false },
     ];
 
     const byId = service.resolveChoice('chevre acrobate', options);
-    const byLabel = service.resolveChoice('ChÃ¨vre  acrobate', options);
+    const byLabel = service.resolveChoice('Chèvre  acrobate', options);
 
     expect(byId?.id).toBe('chevre-acrobate');
     expect(byLabel?.id).toBe('chevre-acrobate');
   });
 });
+
 

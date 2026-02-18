@@ -1,6 +1,7 @@
-ï»¿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerName } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -73,7 +74,7 @@ export class LesMainsActionService {
       meta = this.transferCard(meta, targetId, currentId, cardId);
       next = this.core.appendLog(
         next,
-        `${this.playerName(next.players, currentId)} rÃ©cupÃ¨re ${LES_MAINS_CARD_BY_ID[cardId]?.name ?? 'une carte'} de ${this.playerName(
+        `${resolvePlayerName(next.players, currentId)} récupère ${LES_MAINS_CARD_BY_ID[cardId]?.name ?? 'une carte'} de ${resolvePlayerName(
           next.players,
           targetId,
         )}.`,
@@ -83,7 +84,7 @@ export class LesMainsActionService {
       if (completion.completedFamily) {
         next = this.core.appendLog(
           next,
-          `${this.playerName(next.players, currentId)} complÃ¨te la famille ${completion.completedFamily} !`,
+          `${resolvePlayerName(next.players, currentId)} complète la famille ${completion.completedFamily} !`,
         );
       }
       next = this.setMeta(next, meta);
@@ -110,7 +111,7 @@ export class LesMainsActionService {
       if (!result.cardId) {
         next = this.core.appendLog(
           next,
-          `${this.playerName(next.players, playerId)} ne peut plus piocher de carte.`,
+          `${resolvePlayerName(next.players, playerId)} ne peut plus piocher de carte.`,
         );
         continue;
       }
@@ -123,14 +124,14 @@ export class LesMainsActionService {
       meta = this.addCardToHand(meta, playerId, result.cardId);
       next = this.core.appendLog(
         next,
-        `${this.playerName(next.players, playerId)} pioche ${LES_MAINS_CARD_BY_ID[result.cardId]?.name ?? 'une carte'}.`,
+        `${resolvePlayerName(next.players, playerId)} pioche ${LES_MAINS_CARD_BY_ID[result.cardId]?.name ?? 'une carte'}.`,
       );
       const completion = this.completeFamilyIfNeeded(meta, playerId, result.cardId);
       meta = completion.meta;
       if (completion.completedFamily) {
         next = this.core.appendLog(
           next,
-          `${this.playerName(next.players, playerId)} complÃ¨te la famille ${completion.completedFamily} !`,
+          `${resolvePlayerName(next.players, playerId)} complète la famille ${completion.completedFamily} !`,
         );
       }
     }
@@ -185,7 +186,7 @@ export class LesMainsActionService {
     if (!playerHand.length || !candidates.length) {
       nextState = this.core.appendLog(
         nextState,
-        `${this.playerName(nextState.players, playerId)} ne peut pas voyager autour du monde.`,
+        `${resolvePlayerName(nextState.players, playerId)} ne peut pas voyager autour du monde.`,
       );
       return { state: nextState, meta: nextMeta };
     }
@@ -198,7 +199,7 @@ export class LesMainsActionService {
     if (!targetHand.length) {
       nextState = this.core.appendLog(
         nextState,
-        `${this.playerName(nextState.players, playerId)} ne trouve pas de carte Ã  Ã©changer.`,
+        `${resolvePlayerName(nextState.players, playerId)} ne trouve pas de carte à échanger.`,
       );
       return { state: nextState, meta: nextMeta };
     }
@@ -212,10 +213,10 @@ export class LesMainsActionService {
     nextMeta = this.transferCard(nextMeta, targetId, playerId, targetCard);
     nextState = this.core.appendLog(
       nextState,
-      `${this.playerName(nextState.players, playerId)} Ã©change une carte avec ${this.playerName(
+      `${resolvePlayerName(nextState.players, playerId)} échange une carte avec ${resolvePlayerName(
         nextState.players,
         targetId,
-      )} grÃ¢ce au Voyage autour du monde.`,
+      )} grâce au Voyage autour du monde.`,
     );
     return { state: nextState, meta: nextMeta };
   }
@@ -231,7 +232,7 @@ export class LesMainsActionService {
     if (used[playerId]) {
       nextState = this.core.appendLog(
         nextState,
-        `${this.playerName(nextState.players, playerId)} a dÃ©jÃ  utilisÃ© MÃ©tier disparu.`,
+        `${resolvePlayerName(nextState.players, playerId)} a déjà utilisé Métier disparu.`,
       );
       return { state: nextState, meta: nextMeta };
     }
@@ -251,7 +252,7 @@ export class LesMainsActionService {
     if (!candidate) {
       nextState = this.core.appendLog(
         nextState,
-        `${this.playerName(nextState.players, playerId)} n'a pas de famille Ã  complÃ©ter avec MÃ©tier disparu.`,
+        `${resolvePlayerName(nextState.players, playerId)} n'a pas de famille à compléter avec Métier disparu.`,
       );
       return { state: nextState, meta: nextMeta };
     }
@@ -270,7 +271,7 @@ export class LesMainsActionService {
     };
     nextState = this.core.appendLog(
       nextState,
-      `${this.playerName(nextState.players, playerId)} complÃ¨te la famille ${candidate} grÃ¢ce au MÃ©tier disparu.`,
+      `${resolvePlayerName(nextState.players, playerId)} complète la famille ${candidate} grâce au Métier disparu.`,
     );
     return { state: nextState, meta: nextMeta };
   }
@@ -289,7 +290,7 @@ export class LesMainsActionService {
     };
     const nextState = this.core.appendLog(
       state,
-      `${this.playerName(state.players, playerId)} bÃ©nÃ©ficiera d'une formation express (deux cartes au prochain tirage).`,
+      `${resolvePlayerName(state.players, playerId)} bénéficiera d'une formation express (deux cartes au prochain tirage).`,
     );
     return { state: nextState, meta: nextMeta };
   }
@@ -313,7 +314,7 @@ export class LesMainsActionService {
       });
     const nextState = this.core.appendLog(
       state,
-      `${this.playerName(state.players, playerId)} dÃ©clenche une GrÃ¨ve mondiale : les autres joueurs sautent leur prochain tour.`,
+      `${resolvePlayerName(state.players, playerId)} déclenche une Grève mondiale : les autres joueurs sautent leur prochain tour.`,
     );
     return { state: nextState, meta: nextMeta };
   }
@@ -334,7 +335,7 @@ export class LesMainsActionService {
     if (!candidates.length) {
       nextState = this.core.appendLog(
         nextState,
-        `${this.playerName(nextState.players, playerId)} ne trouve personne pour mÃ©langer la boussole.`,
+        `${resolvePlayerName(nextState.players, playerId)} ne trouve personne pour mélanger la boussole.`,
       );
       return { state: nextState, meta: nextMeta };
     }
@@ -360,10 +361,10 @@ export class LesMainsActionService {
     };
     nextState = this.core.appendLog(
       nextState,
-      `${this.playerName(nextState.players, playerId)} mÃ©lange sa main avec celle de ${this.playerName(
+      `${resolvePlayerName(nextState.players, playerId)} mélange sa main avec celle de ${resolvePlayerName(
         nextState.players,
         targetId,
-      )} grÃ¢ce Ã  la Boussole perdue.`,
+      )} grâce à la Boussole perdue.`,
     );
     return { state: nextState, meta: nextMeta };
   }
@@ -381,7 +382,7 @@ export class LesMainsActionService {
     if (!candidates.length) {
       nextState = this.core.appendLog(
         nextState,
-        `${this.playerName(nextState.players, playerId)} n'a personne pour la Passation de savoir.`,
+        `${resolvePlayerName(nextState.players, playerId)} n'a personne pour la Passation de savoir.`,
       );
       return { state: nextState, meta: nextMeta };
     }
@@ -405,21 +406,21 @@ export class LesMainsActionService {
     if (!chosenCard) {
       nextState = this.core.appendLog(
         nextState,
-        `${this.playerName(nextState.players, playerId)} ne trouve pas de carte Ã  transmettre.`,
+        `${resolvePlayerName(nextState.players, playerId)} ne trouve pas de carte à transmettre.`,
       );
       return { state: nextState, meta: nextMeta };
     }
     nextMeta = this.transferCard(nextMeta, targetId, playerId, chosenCard);
     nextState = this.core.appendLog(
       nextState,
-      `${this.playerName(nextState.players, playerId)} rÃ©cupÃ¨re ${LES_MAINS_CARD_BY_ID[chosenCard]?.name ?? 'une carte'} grÃ¢ce Ã  la Passation de savoir.`,
+      `${resolvePlayerName(nextState.players, playerId)} récupère ${LES_MAINS_CARD_BY_ID[chosenCard]?.name ?? 'une carte'} grâce à la Passation de savoir.`,
     );
     const completion = this.completeFamilyIfNeeded(nextMeta, playerId, chosenCard);
     nextMeta = completion.meta;
     if (completion.completedFamily) {
       nextState = this.core.appendLog(
         nextState,
-        `${this.playerName(nextState.players, playerId)} complÃ¨te la famille ${completion.completedFamily} !`,
+        `${resolvePlayerName(nextState.players, playerId)} complète la famille ${completion.completedFamily} !`,
       );
     }
     return { state: nextState, meta: nextMeta };
@@ -438,12 +439,12 @@ export class LesMainsActionService {
     const reveals = this.getPlayerIds(state.players)
       .map((pid) => {
         const hand = nextMeta.hands?.[pid] ?? [];
-        return hand.length ? `${this.playerName(state.players, pid)} montre ${LES_MAINS_CARD_BY_ID[hand[0]]?.name ?? 'une carte'}` : null;
+        return hand.length ? `${resolvePlayerName(state.players, pid)} montre ${LES_MAINS_CARD_BY_ID[hand[0]]?.name ?? 'une carte'}` : null;
       })
       .filter(Boolean);
     nextState = this.core.appendLog(
       nextState,
-      `${this.playerName(state.players, playerId)} organise une FÃªte du mÃ©tier. ${reveals.join(' / ')}`,
+      `${resolvePlayerName(state.players, playerId)} organise une Fête du métier. ${reveals.join(' / ')}`,
     );
     return { state: nextState, meta: nextMeta };
   }
@@ -572,12 +573,12 @@ export class LesMainsActionService {
     if (winnerId != null) {
       nextState = this.core.appendLog(
         nextState,
-        `${this.playerName(players, winnerId)} remporte Les Mains de la Terre !`,
+        `${resolvePlayerName(players, winnerId)} remporte Les Mains de la Terre !`,
       );
     } else {
       nextState = this.core.appendLog(
         nextState,
-        'La partie se termine sur une Ã©galitÃ© des familles complÃ¨tes.',
+        'La partie se termine sur une égalité des familles complètes.',
       );
     }
     nextState = { ...nextState, status: 'finished', metadata: nextMeta };
@@ -608,10 +609,5 @@ export class LesMainsActionService {
       .filter((player) => typeof player?.id === 'number')
       .map((player) => player!.id);
   }
-
-  private playerName(players: GameStateEntity['players'], playerId: number): string {
-    const list = Array.isArray(players) ? players : [];
-    const player = list.find((p) => p?.id === playerId);
-    return player?.username?.trim() || `Joueur ${playerId}`;
-  }
 }
+

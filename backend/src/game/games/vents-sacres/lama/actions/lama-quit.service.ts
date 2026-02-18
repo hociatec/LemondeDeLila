@@ -4,6 +4,7 @@ import type { LamaMetadata } from '../model/lama.model';
 import { LamaRoundService } from '../round/lama-round.service';
 import { LamaSharedService } from '../shared/lama-shared.service';
 import { LamaLogService } from '../logging/lama-log.service';
+import { createPendingState } from '../../../../modules/pending-action/services/pending-action.service';
 
 @Injectable()
 export class LamaQuitService {
@@ -43,10 +44,9 @@ export class LamaQuitService {
     }
 
     const nextPlayerId = this.round.findNextActivePlayerId(players, nextMeta, actorId);
-    return {
+    return createPendingState({
       ...nextStateBase,
       turnIndex: (state.turnIndex ?? 0) + 1,
-      pending: { step: 'turn_choice', playerId: nextPlayerId } as any,
       metadata: { ...nextMeta, turnTracker: { playerId: nextPlayerId, drawn: false, played: false } } as any,
       turn: {
         ...(state.turn ?? { direction: 1 }),
@@ -56,6 +56,6 @@ export class LamaQuitService {
           ? `Tour de ${this.shared.playerLabel(players as any[], nextPlayerId)}`
           : undefined,
       },
-    };
+    } as GameStateEntity, { step: 'turn_choice', playerId: nextPlayerId } as any);
   }
 }

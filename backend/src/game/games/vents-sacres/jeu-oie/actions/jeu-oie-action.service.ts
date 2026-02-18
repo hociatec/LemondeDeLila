@@ -1,6 +1,7 @@
-﻿import { Injectable } from '@nestjs/common';
+﻿import { Injectable, Optional } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -19,8 +20,8 @@ export class JeuOieActionService {
     private readonly turns: TurnFlowService,
     private readonly core: GameCoreService,
     private readonly setupFlow: SetupFlowService,
-    private readonly turnPolicies?: TurnPoliciesService,
-    private readonly promptPolicies?: PromptPoliciesService,
+    @Optional() private readonly turnPolicies?: TurnPoliciesService,
+    @Optional() private readonly promptPolicies?: PromptPoliciesService,
   ) {}
 
   applyActions(
@@ -40,8 +41,6 @@ export class JeuOieActionService {
                 this.handleChoosePawn(current, action),
               ),
             roll: () => this.handleRoll(current),
-            ROLL_DICE: () => this.handleRoll(current),
-            roll_dice: () => this.handleRoll(current),
           },
           () => current,
         );
@@ -67,7 +66,9 @@ export class JeuOieActionService {
     const payload = (action?.payload ?? {}) as any;
     const rawPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
     const options = Array.isArray(pending?.data?.pawns) ? pending.data.pawns : [];
-    const chosen = this.resolvePendingPawn(rawPawn, options);
+    const chosen = this.setupFlow.resolvePawnChoice(rawPawn, options) as
+      | { id: string; label: string; feminine: boolean }
+      | null;
     if (!chosen) return state;
 
     const meta = this.getMeta(state);
@@ -95,10 +96,32 @@ export class JeuOieActionService {
     };
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} choisit le pion : ${String(chosen.label ?? 'pion').trim()}.`,
+      `${resolvePlayerNameFromState(next, playerId)} choisit le pion : ${String(chosen.label ?? 'pion').trim()}.`,
     );
 
-    const pendingInfo = this.buildPawnPending(next, playerId);
+    const playersForPending = Array.isArray(next.players) ? next.players : [];
+    const metaForPending = this.getMeta(next);
+    const pawnByPlayerIdForPending = (metaForPending.pawnByPlayerId ?? {}) as Record<number, string>;
+    const allPawnsForPending = Array.isArray(metaForPending.pawns) ? metaForPending.pawns : [];
+    const usedForPending = new Set(Object.values(pawnByPlayerIdForPending).filter((v) => typeof v === 'string'));
+    const choicesForPending = allPawnsForPending
+      .map((p: any) => ({
+        id: String(p?.id ?? '').trim(),
+        label: String(p?.label ?? '').trim(),
+        feminine: Boolean(p?.feminine),
+      }))
+      .filter((p) => p.id.length > 0 && !usedForPending.has(p.id));
+    const pendingInfo = this.setupFlow.createSequentialPawnPending({
+      players: playersForPending,
+      startPlayerId: playerId,
+      isAssigned: (candidateId) => Boolean(pawnByPlayerIdForPending[candidateId]),
+      pawns: choicesForPending,
+      pawnDataMapper: (p: any) => ({
+        id: String(p?.id ?? '').trim(),
+        label: String(p?.label ?? '').trim(),
+        feminine: Boolean(p?.feminine),
+      }),
+    });
     if (pendingInfo) {
       const withPending: GameStateEntity = {
         ...next,
@@ -132,15 +155,15 @@ export class JeuOieActionService {
         direction: 1,
       },
     };
-    const starterName = this.playerName(started, resolvedStarterId ?? 0);
+    const starterName = resolvePlayerNameFromState(started, resolvedStarterId ?? 0);
     started = this.core.appendLog(
       started,
-      `Début de partie : ${starterName} commence.`,
+      `D\u00e9but de partie : ${starterName} commence.`,
     );
     return this.getTurnPolicies().appendTurnAnnouncement(
       started,
       resolvedStarterId,
-      (s, id) => this.playerName(s, id),
+      (s, id) => resolvePlayerNameFromState(s, id),
     );
   }
 
@@ -164,17 +187,17 @@ export class JeuOieActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(state, currentId)} lance le dé : "${roll}".`,
+      `${resolvePlayerNameFromState(state, currentId)} lance le dÃ© : "${roll}".`,
     );
 
     if (inWell) {
       if (roll !== 1) {
         const logged = this.core.appendLog(
           next,
-          `${this.playerName(next, currentId)} reste bloqué dans le puits.`,
+          `${resolvePlayerNameFromState(next, currentId)} reste bloquÃ© dans le puits.`,
         );
         return this.turns.advanceTurn(logged, {
-          playerNameResolver: (s, id) => this.playerName(s, id),
+          playerNameResolver: (s, id) => resolvePlayerNameFromState(s, id),
         });
       }
       const metaAfter = this.getMeta(next);
@@ -190,7 +213,7 @@ export class JeuOieActionService {
       };
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} sort du puits.`,
+        `${resolvePlayerNameFromState(next, currentId)} sort du puits.`,
       );
     }
 
@@ -204,7 +227,7 @@ export class JeuOieActionService {
     }
 
     return this.turns.advanceTurn(next, {
-      playerNameResolver: (s, id) => this.playerName(s, id),
+      playerNameResolver: (s, id) => resolvePlayerNameFromState(s, id),
     });
   }
 
@@ -229,7 +252,7 @@ export class JeuOieActionService {
     const compactLabel = this.compactTileLabel(label, position);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} place ${this.pawnPossessiveLabel(next, playerId)} en case ${position} (${compactLabel}).`,
+      `${resolvePlayerNameFromState(next, playerId)} place ${this.pawnPossessiveLabel(next, playerId)} en case ${position} (${compactLabel}).`,
     );
 
     if (!tile) return next;
@@ -241,7 +264,7 @@ export class JeuOieActionService {
     if (tile.type === 'finish') {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} a gagné !`,
+        `${resolvePlayerNameFromState(next, playerId)} a gagnÃ© !`,
       );
       meta = this.getMeta(next);
       meta = { ...meta, winnerId: playerId };
@@ -252,20 +275,20 @@ export class JeuOieActionService {
       const jumpTo = 12;
       next = this.core.appendLog(
         next,
-        `Pont : avance directement à la case ${jumpTo}.`,
+        `Pont : avance directement Ã  la case ${jumpTo}.`,
       );
       return this.applyLanding(next, playerId, jumpTo, roll);
     }
 
     if (tile.type === 'death') {
-      next = this.core.appendLog(next, 'Mort : retour au départ.');
+      next = this.core.appendLog(next, 'Mort : retour au dÃ©part.');
       return this.applyLanding(next, playerId, tile.backTo, roll);
     }
 
     if (tile.type === 'labyrinth') {
       next = this.core.appendLog(
         next,
-        `Labyrinthe : retour à la case ${tile.backTo}.`,
+        `Labyrinthe : retour Ã  la case ${tile.backTo}.`,
       );
       return this.applyLanding(next, playerId, tile.backTo, roll);
     }
@@ -278,7 +301,7 @@ export class JeuOieActionService {
           : ` (passera ses ${turns} prochains tours).`;
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} perd ${turns} tour(s).${suffix}`,
+        `${resolvePlayerNameFromState(next, playerId)} perd ${turns} tour(s).${suffix}`,
       );
       meta = this.getMeta(next);
       const currentSkip = meta.statuses?.skipTurn?.[playerId] ?? 0;
@@ -301,15 +324,15 @@ export class JeuOieActionService {
       };
       next = this.core.appendLog(
         next,
-        `Dé magique : ${this.playerName(next, playerId)} lance "${magicRoll}".`,
+        `DÃ© magique : ${resolvePlayerNameFromState(next, playerId)} lance "${magicRoll}".`,
       );
       const delta = magicRoll <= 3 ? magicRoll : -magicRoll;
       const moved = this.move(position, delta);
       next = this.core.appendLog(
         next,
         magicRoll <= 3
-          ? `Dé magique : avance de ${magicRoll} case(s).`
-          : `Dé magique : recule de ${magicRoll} case(s).`,
+          ? `DÃ© magique : avance de ${magicRoll} case(s).`
+          : `DÃ© magique : recule de ${magicRoll} case(s).`,
       );
       return this.applyLanding(next, playerId, moved, magicRoll);
     }
@@ -320,7 +343,7 @@ export class JeuOieActionService {
       well[playerId] = true;
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} est bloqué dans le puits (il faut faire 1 pour sortir).`,
+        `${resolvePlayerNameFromState(next, playerId)} est bloquÃ© dans le puits (il faut faire 1 pour sortir).`,
       );
       return {
         ...next,
@@ -335,7 +358,7 @@ export class JeuOieActionService {
     if (tile.type === 'goose') {
       next = this.core.appendLog(
         next,
-        `Oie : avance à nouveau de ${roll} case(s).`,
+        `Oie : avance Ã  nouveau de ${roll} case(s).`,
       );
       const moved = this.move(position, roll);
       return this.applyLanding(next, playerId, moved, roll);
@@ -355,70 +378,6 @@ export class JeuOieActionService {
 
   private getMeta(state: GameStateEntity): JeuOieMetadata {
     return (state.metadata ?? {}) as any as JeuOieMetadata;
-  }
-
-  private buildPawnPending(
-    state: GameStateEntity,
-    startId: number | null,
-  ): { pending: any; playerId: number; turnIndex: number } | null {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const meta = this.getMeta(state);
-    const pawnByPlayerId = (meta.pawnByPlayerId ?? {}) as Record<number, string>;
-    const allPawns = Array.isArray(meta.pawns) ? meta.pawns : [];
-    const used = new Set(Object.values(pawnByPlayerId).filter((v) => typeof v === 'string'));
-    const choices = allPawns
-      .map((p: any) => ({
-        id: String(p?.id ?? '').trim(),
-        label: String(p?.label ?? '').trim(),
-        feminine: Boolean(p?.feminine),
-      }))
-      .filter((p) => p.id.length > 0 && !used.has(p.id));
-
-    return this.setupFlow.createSequentialChoicePending({
-      players,
-      startPlayerId: startId,
-      isAssigned: (playerId) => Boolean(pawnByPlayerId[playerId]),
-      pendingType: 'choose_pawn',
-      choices,
-      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
-      dataBuilder: (availableChoices) => ({
-        pawns: availableChoices.map((p: any) => ({
-          id: String(p?.id ?? '').trim(),
-          label: String(p?.label ?? '').trim(),
-          feminine: Boolean(p?.feminine),
-        })),
-      }),
-    });
-  }
-
-  private resolvePendingPawn(
-    raw: unknown,
-    options: Array<{ id?: string; label?: string; feminine?: boolean }>,
-  ): { id: string; label: string; feminine: boolean } | null {
-    const normalized = (Array.isArray(options) ? options : [])
-      .map((p: any) => ({
-        id: String(p?.id ?? '').trim(),
-        label: String(p?.label ?? '').trim(),
-        feminine: Boolean(p?.feminine),
-      }))
-      .filter((p) => p.id.length > 0 && p.label.length > 0);
-    if (!normalized.length) return null;
-    return this.setupFlow.resolveChoice(
-      typeof raw === 'object'
-        ? (raw as any)?.id ?? (raw as any)?.pawnId ?? (raw as any)?.value ?? raw
-        : raw,
-      normalized,
-    ) as { id: string; label: string; feminine: boolean } | null;
-  }
-
-  private playerName(state: GameStateEntity, id: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const p = players.find((x) => x?.id === id);
-    const u =
-      p?.username && String(p.username).trim()
-        ? String(p.username).trim()
-        : null;
-    return u ?? `Joueur ${id}`;
   }
 
   private pawnLabel(state: GameStateEntity, id: number): string {
@@ -470,4 +429,9 @@ export class JeuOieActionService {
     return this.promptPolicies ?? new PromptPoliciesService(this.core);
   }
 }
+
+
+
+
+
 

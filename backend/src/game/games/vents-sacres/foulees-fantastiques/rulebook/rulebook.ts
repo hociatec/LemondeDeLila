@@ -9,7 +9,7 @@ import {
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
 import type { FouleesFantastiquesMetadata } from '../model/foulees-fantastiques-state.entity';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isRollAlias, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
 
 function normalizeNumber(value: unknown): number | null {
   const n = typeof value === 'number' ? value : Number(value);
@@ -88,7 +88,7 @@ export function validateAction(
     });
   }
 
-  if (type === 'ROLL_DICE' || normalizedType === 'roll_dice') {
+  if (isRollAlias(type, normalizedType)) {
     return { ...action, type: 'roll', payload: {} };
   }
 
@@ -138,7 +138,7 @@ export function validateAction(
         String(fid ?? '').trim() === familyId,
     );
     if (taken) {
-      throw new GameValidationError('Famille dÃ©jÃ  choisie.', {
+      throw new GameValidationError('Famille déjà choisie.', {
         gameType: 'foulees-fantastiques',
         playerId: actorId ?? undefined,
         payload,

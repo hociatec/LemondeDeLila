@@ -11,6 +11,11 @@ import { MorpionPresenter } from './morpion.presenter';
 import type { GameShortcutHint, GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
 import { interfaceShortcut } from '../../../engine/shortcuts/shortcut-utils';
 import { applyActionsSequentially, normalizeActionType } from '../../../actions/action-service.helper';
+import {
+  pawnPlacement,
+  victoryAnnouncement,
+} from '../../../core/helpers/game-log-text.helper';
+import { normalizeGameLogMessage } from '../../../core/helpers/log-style.helper';
 
 @Injectable()
 export class MorpionService extends AbstractGameService {
@@ -186,12 +191,20 @@ export class MorpionService extends AbstractGameService {
     const opponentName = opponent?.username ?? (opponentId != null ? `#${opponentId}` : null);
     const glyph = this.glyphForOwner(actorId, players);
     const cellRef = this.toCellRef({ x, y }, size);
-    let log = this.appendLog(state.log, `${actorName} place ${glyph} en ${cellRef}.`);
+    let log = this.appendLog(
+      state.log,
+      pawnPlacement({
+        playerLabel: actorName,
+        pawnLabel: glyph,
+        position: idx,
+        tileLabel: cellRef,
+      }),
+    );
     if (winnerId) {
       log = this.appendLog(log, 'Fin de la manche.');
-      log = this.appendLog(log, `Victoire de ${actorName}.`);
+      log = this.appendLog(log, victoryAnnouncement(actorName));
       if (opponentName) {
-        log = this.appendLog(log, `D\u00e9faite de ${opponentName}.`);
+        log = this.appendLog(log, `Défaite de ${opponentName}.`);
       }
       (nextMeta as any).winnerPlayerId = winnerId;
       (nextMeta as any).winnerId = winnerId;
@@ -278,7 +291,7 @@ export class MorpionService extends AbstractGameService {
   }
 
   private appendLog(log: Array<{ message: string; timestamp?: string }> | undefined, message: string) {
-    const trimmed = (message ?? '').trim();
+    const trimmed = normalizeGameLogMessage(message);
     const next = Array.isArray(log) ? [...log] : [];
     if (!trimmed) {
       return next;
@@ -303,3 +316,4 @@ export class MorpionService extends AbstractGameService {
     return '@';
   }
 }
+

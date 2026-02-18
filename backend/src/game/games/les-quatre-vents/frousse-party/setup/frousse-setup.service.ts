@@ -65,15 +65,14 @@ export class FrousseSetupService {
       },
     };
 
-    const pendingInfo = this.setupFlow.createSequentialChoicePending({
+    const pendingInfo = this.setupFlow.createSequentialPawnPending({
       players,
       startPlayerId: players[0]?.id ?? null,
       isAssigned: (playerId) => {
         const player = players.find((p: any) => p?.id === playerId);
         return String(player?.pawn ?? '').trim().length > 0;
       },
-      pendingType: 'choose_pawn',
-      choices: (Array.isArray(meta.pawns) ? meta.pawns : [])
+      pawns: (Array.isArray(meta.pawns) ? meta.pawns : [])
         .map((p) => ({
           id: String(p?.id ?? '').trim(),
           label: String(p?.title ?? p?.id ?? '').trim(),
@@ -81,16 +80,12 @@ export class FrousseSetupService {
           description: String((p as any)?.description ?? '').trim(),
         }))
         .filter((p) => p.id.length > 0),
-      labelForPlayer: (playerLabel) =>
-        `C'est à ${playerLabel} de choisir un pion (flèches puis Entrée).`,
-      dataBuilder: (availableChoices) => ({
-        kind: 'choose_pawn',
-        pawns: availableChoices.map((choice: any) => ({
+      pawnDataMapper: (choice: any) => ({
           id: String(choice?.id ?? '').trim(),
           title: String(choice?.title ?? choice?.label ?? '').trim(),
           description: String(choice?.description ?? '').trim(),
-        })),
       }),
+      extraPendingData: { kind: 'choose_pawn' },
     });
     if (!pendingInfo) return initial;
     return {
@@ -117,4 +112,5 @@ export class FrousseSetupService {
     return loadV1Content<FroussePawnsJsonV1>(this.contentLoader, { gameType: 'frousse-party', baseDir: __dirname, filename: 'pawns.json', arrayField: 'pawns', minItems: 1 });
   }
 }
+
 

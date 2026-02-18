@@ -1,6 +1,7 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
@@ -60,7 +61,7 @@ export class CerclesSacresActionService {
     let next = this.ensurePlayerDrawn(state, currentId);
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} passe son tour.`,
+      `${resolvePlayerNameFromState(next, currentId)} passe son tour.`,
     );
     next = this.turns.advanceTurn(next);
     return this.clearDrawn(next);
@@ -89,7 +90,7 @@ export class CerclesSacresActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} dÃ©fausse ${CERCLES_SACRES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
+      `${resolvePlayerNameFromState(next, currentId)} défausse ${CERCLES_SACRES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
     );
 
     return next;
@@ -144,7 +145,7 @@ export class CerclesSacresActionService {
       .join(', ');
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} pose son cercle sacrÃ© nÂ°${playerCircles.length} (${cardNames}).`,
+      `${resolvePlayerNameFromState(next, currentId)} pose son cercle sacré n°${playerCircles.length} (${cardNames}).`,
     );
 
     next = this.fillHandToMinimum(next, currentId);
@@ -152,7 +153,7 @@ export class CerclesSacresActionService {
     if (playerCircles.length >= CERCLES_SACRES_GOAL) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, currentId)} devient Gardien des Cercles avec ${CERCLES_SACRES_GOAL} cercles !`,
+        `${resolvePlayerNameFromState(next, currentId)} devient Gardien des Cercles avec ${CERCLES_SACRES_GOAL} cercles !`,
       );
       const metaAfter = this.getMeta(next);
       return {
@@ -200,7 +201,7 @@ export class CerclesSacresActionService {
         .join(', ');
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} complÃ¨te sa main (${drawnCards.length} carte(s)) : ${names}.`,
+        `${resolvePlayerNameFromState(next, playerId)} complète sa main (${drawnCards.length} carte(s)) : ${names}.`,
       );
     }
     return next;
@@ -220,7 +221,7 @@ export class CerclesSacresActionService {
     if (cardId) {
       return this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} pioche ${CERCLES_SACRES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
+        `${resolvePlayerNameFromState(next, playerId)} pioche ${CERCLES_SACRES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
       );
     }
     return next;
@@ -321,12 +322,7 @@ export class CerclesSacresActionService {
   ): GameStateEntity {
     return { ...state, metadata };
   }
-
-  private playerName(state: GameStateEntity, playerId: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const player = players.find((p) => p?.id === playerId);
-    return player?.username?.trim() || `Joueur ${playerId}`;
-  }
 }
+
 
 

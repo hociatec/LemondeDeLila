@@ -63,11 +63,38 @@ export class ContesCacahuetesSetupService {
       },
       winnerId: null,
     };
-    const pendingInfo = this.buildPawnPending(
-      updatedPlayers as Array<{ id: number; username?: string; pawn?: string }>,
-      pawns,
-      setupStarterId,
-    );
+    const pendingInfo = this.setupFlow.createSequentialPawnPending({
+      players: updatedPlayers as Array<{ id: number; username?: string; pawn?: string }>,
+      startPlayerId: setupStarterId,
+      isAssigned: (playerId) => {
+        const player = (updatedPlayers as Array<{ id: number; pawn?: string }>).find((p) => p?.id === playerId);
+        return String(player?.pawn ?? '').trim().length > 0;
+      },
+      pawns: pawns
+        .filter((pawn) => {
+          const used = new Set(
+            (updatedPlayers as Array<{ pawn?: string }>)
+              .map((p) => String(p?.pawn ?? '').trim())
+              .filter((v) => v.length > 0),
+          );
+          return !used.has(pawn.id);
+        })
+        .map((pawn) => ({
+          id: pawn.id,
+          label: pawn.label,
+          title: pawn.label,
+          description: pawn.description,
+        })),
+      choiceLabelBuilder: (pawn) =>
+        pawn.description && String(pawn.description).trim().length > 0
+          ? `${String(pawn.label ?? '').trim()}: ${String(pawn.description).trim()}`
+          : String(pawn.label ?? '').trim(),
+      pawnDataMapper: (choice: any) => ({
+        id: String(choice?.id ?? '').trim(),
+        label: String(choice?.title ?? choice?.label ?? '').trim(),
+        description: String(choice?.description ?? '').trim(),
+      }),
+    });
     let next: GameStateEntity = {
       ...baseState,
       players: updatedPlayers,
@@ -85,55 +112,6 @@ export class ContesCacahuetesSetupService {
     return next;
   }
 
-  private buildPawnPending(
-    players: Array<{ id: number; username?: string; pawn?: string }>,
-    pawns: Array<{ id: string; label: string; description: string }>,
-    startId: number | null,
-  ): { pending: any; playerId: number; turnIndex: number } | null {
-    if (!players.length) return null;
-    const used = new Set(
-      players
-        .map((p) => String(p?.pawn ?? '').trim())
-        .filter((p) => p.length > 0),
-    );
-    const choices = pawns.filter((pawn) => !used.has(pawn.id));
-    return this.setupFlow.createSequentialChoicePending({
-      players,
-      startPlayerId: startId,
-      isAssigned: (playerId) => {
-        const player = players.find((p) => p?.id === playerId);
-        return String(player?.pawn ?? '').trim().length > 0;
-      },
-      pendingType: 'choose_pawn',
-      choices: choices.map((pawn) => ({
-        id: pawn.id,
-        label: pawn.label,
-        description: pawn.description,
-      })),
-      labelForPlayer: (playerLabel) => `C'est à ${playerLabel} de choisir son pion.`,
-      dataBuilder: (availableChoices) => ({
-        pawns: availableChoices.map((choice) => ({
-          id: String(choice.id ?? '').trim(),
-          label: String(choice.label ?? '').trim(),
-          description: String((choice as any).description ?? '').trim(),
-        })),
-      }),
-    });
-  }
-
-  private playerName(state: GameStateEntity, id: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const p = players.find((x: any) => x?.id === id);
-    return this.playerNameFromEntry(p as any, id);
-  }
-
-  private playerNameFromEntry(
-    player: { username?: string } | undefined,
-    id: number,
-  ): string {
-    const name = String(player?.username ?? '').trim();
-    return name || `Joueur ${id}`;
-  }
 }
 
 function buildPawns(): Array<{ id: string; label: string; description: string }> {
@@ -142,37 +120,37 @@ function buildPawns(): Array<{ id: string; label: string; description: string }>
       id: 'Aika - Mongolie',
       label: 'Aika - Mongolie',
       description:
-        "Aika est une petite fille aux yeux en amande pétillants et aux cheveux noirs tressés avec des rubans colorés qui dansent dans le vent des vastes steppes mongoles. Son visage légèrement hâlé reflète ses journées passées à galoper avec les chevaux de sa famille nomade. Curieuse et audacieuse, elle raconte avec malice les histoires de ses ancêtres tout en observant le monde autour d’elle. Sa tunique ornée de motifs dorés et ses bottines souples font d’elle une héroïne sortie d’un conte ancien, prête à vous entraîner dans des aventures fantastiques à travers les plaines infinies.",
+        "Aika est une petite fille aux yeux en amande petillants et aux cheveux noirs tresses avec des rubans colores qui dansent dans le vent des vastes steppes mongoles. Son visage legerement hele reflete ses journees passees e galoper avec les chevaux de sa famille nomade. Curieuse et audacieuse, elle raconte avec malice les histoires de ses ancetres tout en observant le monde autour d'elle. Sa tunique ornee de motifs dores et ses bottines souples font d'elle une heroene sortie d'un conte ancien, prete e vous entraener dans des aventures fantastiques e travers les plaines infinies.",
     },
     {
       id: 'Freja - SuÃ¨de',
       label: 'Freja - SuÃ¨de',
       description:
-        "Freja est une petite fille aux longs cheveux blonds tressés en couronne et aux yeux bleus clairs comme un lac gelé, illuminés d’une lueur espiègle. Sa peau claire, légèrement rosée par l’air nordique, contraste avec le rouge profond de son pull en laine aux motifs traditionnels. Malicieuse et inventive, elle chante des chansons folkloriques et invente des petits défis pour vous. À ses côtés, chaque pas dans les forêts suédoises devient une aventure enchantée, où les légendes des anciens Vikings et les aurores boréales semblent danser autour de vous.",
+        "Freja est une petite fille aux longs cheveux blonds tresses en couronne et aux yeux bleus clairs comme un lac gele, illumines d'une lueur espiegle. Sa peau claire, legerement rosee par l'air nordique, contraste avec le rouge profond de son pull en laine aux motifs traditionnels. Malicieuse et inventive, elle chante des chansons folkloriques et invente des petits defis pour vous. e ses cetes, chaque pas dans les forets suedoises devient une aventure enchantee, oe les legendes des anciens Vikings et les aurores boreales semblent danser autour de vous.",
     },
     {
       id: 'Lani - ÃŽles Marshall',
       label: 'Lani - ÃŽles Marshall',
       description:
-        "Lani est une petite fille aux grands yeux marron lumineux et aux cheveux bruns bouclés attachés en une queue de cheval espiègle. Sa peau dorée par le soleil tropical et sa robe légère aux couleurs de l’océan reflètent la chaleur et la douceur de son île. Enjouée et rêveuse, elle adore explorer les plages et inventer des histoires de créatures marines fantastiques. À ses côtés, vous sentez le parfum des fleurs exotiques et le chant des vagues, et chaque lagon semble scintiller d’une magie invisible, prêt à vous emporter dans une aventure colorée et vivante.",
+        "Lani est une petite fille aux grands yeux marron lumineux et aux cheveux bruns boucles attaches en une queue de cheval espiegle. Sa peau doree par le soleil tropical et sa robe legere aux couleurs de l'ocean refletent la chaleur et la douceur de son ele. Enjouee et reveuse, elle adore explorer les plages et inventer des histoires de creatures marines fantastiques. e ses cetes, vous sentez le parfum des fleurs exotiques et le chant des vagues, et chaque lagon semble scintiller d'une magie invisible, pret e vous emporter dans une aventure coloree et vivante.",
     },
     {
       id: 'Niko - GÃ©orgie',
       label: 'Niko - GÃ©orgie',
       description:
-        "Niko est un petit garçon aux cheveux bruns ébouriffés et aux yeux noisette pétillants, avec un teint clair qui tranche avec les rouges et ors de sa chemise traditionnelle. Curieux et courageux, il grimpe sur les collines et écoute le vent souffler à travers les montagnes du Caucase, racontant les légendes de son pays. À ses côtés, vous sentez la beauté des vallées géorgiennes et entendez l’écho des chants anciens, comme si chaque pierre sur laquelle il pose le pied contenait un secret millénaire.",
+        "Niko est un petit gareon aux cheveux bruns ebouriffes et aux yeux noisette petillants, avec un teint clair qui tranche avec les rouges et ors de sa chemise traditionnelle. Curieux et courageux, il grimpe sur les collines et ecoute le vent souffler e travers les montagnes du Caucase, racontant les legendes de son pays. e ses cetes, vous sentez la beaute des vallees georgiennes et entendez l'echo des chants anciens, comme si chaque pierre sur laquelle il pose le pied contenait un secret millenaire.",
     },
     {
       id: 'Tavi - Fidji',
       label: 'Tavi - Fidji',
       description:
-        "Tavi est un petit garçon à la peau dorée par le soleil des îles, aux cheveux noirs et lisses et aux yeux bruns profonds qui brillent de malice. Sa chemise colorée à motifs tropicaux reflète sa nature joyeuse et sociable. Toujours espiègle, il danse, chante et invente des histoires autour des récifs et des vagues magiques. À ses côtés, vous sentez la chaleur du sable sous vos pieds, le froissement des feuilles de cocotiers et voyez les lagons scintiller comme si chaque goutte d’eau contenait une histoire prête à être racontée.",
+        "Tavi est un petit gareon e la peau doree par le soleil des eles, aux cheveux noirs et lisses et aux yeux bruns profonds qui brillent de malice. Sa chemise coloree e motifs tropicaux reflete sa nature joyeuse et sociable. Toujours espiegle, il danse, chante et invente des histoires autour des recifs et des vagues magiques. e ses cetes, vous sentez la chaleur du sable sous vos pieds, le froissement des feuilles de cocotiers et voyez les lagons scintiller comme si chaque goutte d'eau contenait une histoire prete e etre racontee.",
     },
     {
       id: 'Arman - ArmÃ©nie',
       label: 'Arman - ArmÃ©nie',
       description:
-        "Arman est un petit garçon aux cheveux bruns foncés et aux yeux verts profonds qui observent chaque détail du monde avec intelligence et douceur. Sa peau légèrement olive et sa tenue traditionnelle aux broderies anciennes reflètent son attachement aux traditions et au patrimoine de son pays. Passionné et attentif, il raconte les légendes des montagnes volcaniques et des monastères d’Arménie, vous faisant voyager dans un univers où chaque pierre murmure un secret et où les paysages scintillent de mystère. À ses côtés, vous êtes immédiatement plongé dans un monde riche, fascinant et vivant.",
+        "Arman est un petit gareon aux cheveux bruns fonces et aux yeux verts profonds qui observent chaque detail du monde avec intelligence et douceur. Sa peau legerement olive et sa tenue traditionnelle aux broderies anciennes refletent son attachement aux traditions et au patrimoine de son pays. Passionne et attentif, il raconte les legendes des montagnes volcaniques et des monasteres d'Armenie, vous faisant voyager dans un univers oe chaque pierre murmure un secret et oe les paysages scintillent de mystere. e ses cetes, vous etes immediatement plonge dans un monde riche, fascinant et vivant.",
     },
   ];
 }
@@ -182,7 +160,7 @@ function buildTiles(): ContesCacahuetesTile[] {
     {
       type: 'start',
       label:
-        `Case DÃ©part - Vous ouvrez le grand livre des contes, et un vent de magie emporte vos feuilles volantesâ€¦ Chaque pas vous rapproche d'histoires fantastiques, de surprises et de rires Ã  profusion. L'aventure commence maintenant !`,
+        `Case DÃ©part - Vous ouvrez le grand livre des contes, et un vent de magie emporte vos feuilles volantes... Chaque pas vous rapproche d'histoires fantastiques, de surprises et de rires Ã  profusion. L'aventure commence maintenant !`,
     },
     {
       type: 'bonus',
@@ -191,16 +169,16 @@ function buildTiles(): ContesCacahuetesTile[] {
     { type: 'conte', label: `Case Conte - Japon : MomotarÅ` },
     { type: 'surprise', label: `Case Surprise - Le conte rÃ©serve toujours des rebondissements.` },
     { type: 'conte', label: `Case Conte - SÃ©nÃ©gal : Le liÃ¨vre et la hyÃ¨ne` },
-    { type: 'malus', label: `Case Malus - Oupsâ€¦ le conte vous joue un vilain tour.` },
+    { type: 'malus', label: `Case Malus - Oups... le conte vous joue un vilain tour.` },
     { type: 'conte', label: `Case Conte - Russie : Vassilissa la trÃ¨s belle` },
     {
       type: 'bonus',
-      label: `Case Bonus - Une bonne fÃ©e passait par lÃ â€¦ et elle Ã©tait de bonne humeur !`,
+      label: `Case Bonus - Une bonne fÃ©e passait par lÃ ... et elle Ã©tait de bonne humeur !`,
     },
     { type: 'conte', label: `Case Conte - Canada : L'ours gÃ©ant et l'enfant` },
-    { type: 'surprise', label: `Case Surprise - Personne ne s'y attendaitâ€¦ pas mÃªme vous !` },
+    { type: 'surprise', label: `Case Surprise - Personne ne s'y attendait... pas mÃªme vous !` },
     { type: 'conte', label: `Case Conte - Maroc : Le figuier magique` },
-    { type: 'malus', label: `Case Malus - Tout ne se passe pas comme prÃ©vu dans les histoiresâ€¦` },
+    { type: 'malus', label: `Case Malus - Tout ne se passe pas comme prÃ©vu dans les histoires...` },
     { type: 'conte', label: `Case Conte - Chine : La princesse Ã©ventail` },
     { type: 'bonus', label: `Case Bonus - Le vent tourne en votre faveur, avancez avec le sourire.` },
     { type: 'conte', label: `Case Conte - Irlande : Le gÃ©ant Fionn et Benandonner` },
@@ -214,13 +192,13 @@ function buildTiles(): ContesCacahuetesTile[] {
     { type: 'conte', label: `Case Conte - Allemagne : Le joueur de flÃ»te d'Hamelin` },
     { type: 'malus', label: `Case Malus - MÃªme les hÃ©ros trÃ©buchent parfois.` },
     { type: 'conte', label: `Case Conte - Inde : Le prince au cobra` },
-    { type: 'bonus', label: `Case Bonus - Vous trouvez un trÃ¨fleâ€¦ Ã  quatre feuilles, Ã©videmment !` },
+    { type: 'bonus', label: `Case Bonus - Vous trouvez un trÃ¨fle... Ã  quatre feuilles, Ã©videmment !` },
     { type: 'conte', label: `Case Conte - Groenland : L'ourse et la chasseuse` },
     { type: 'surprise', label: `Case Surprise - Le hasard adore se mÃªler aux histoires.` },
     { type: 'conte', label: `Case Conte - Italie : GiufÃ  et l'Ã¢ne` },
-    { type: 'malus', label: `Case Malus - Le sort s'emmÃªleâ€¦ et vous avec.` },
+    { type: 'malus', label: `Case Malus - Le sort s'emmÃªle... et vous avec.` },
     { type: 'conte', label: `Case Conte - Kenya : Le feu volant` },
-    { type: 'bonus', label: `Case Bonus - Le conte vous applaudit. Ã€ vous la rÃ©compense !` },
+    { type: 'bonus', label: `Case Bonus - Le conte vous applaudit. Ã¬ vous la rÃ©compense !` },
     { type: 'conte', label: `Case Conte - Chili : La lune et le renard` },
     { type: 'surprise', label: `Case Surprise - Une surprise se cache entre les lignes.` },
     { type: 'conte', label: `Case Conte - France : Le Petit Poucet` },
@@ -228,7 +206,7 @@ function buildTiles(): ContesCacahuetesTile[] {
     { type: 'conte', label: `Case Conte - CorÃ©e du Sud : La grue reconnaissante` },
     { type: 'bonus', label: `Case Bonus - Les esprits du rÃ©cit vous encouragent chaleureusement.` },
     { type: 'conte', label: `Case Conte - BrÃ©sil : La tortue et le jaguar` },
-    { type: 'surprise', label: `Case Surprise - Le conte vous observeâ€¦ et agit !` },
+    { type: 'surprise', label: `Case Surprise - Le conte vous observe... et agit !` },
     { type: 'conte', label: `Case Conte - Iran : Le tapis volant` },
     { type: 'malus', label: `Case Malus - Une mauvaise surprise surgit entre deux pages.` },
     { type: 'conte', label: `Case Conte - ThaÃ¯lande : La mangue du roi` },
@@ -242,9 +220,9 @@ function buildTiles(): ContesCacahuetesTile[] {
     { type: 'conte', label: `Case Conte - HaÃ¯ti : Ti-Jean et le diable` },
     { type: 'surprise', label: `Case Surprise - Une surprise tombe pile au bon, ou, mauvais moment.` },
     { type: 'conte', label: `Case Conte - Turquie : Nasreddine et l'Ã¢ne` },
-    { type: 'malus', label: `Case Malus - Le destin vous testeâ€¦ courage !` },
+    { type: 'malus', label: `Case Malus - Le destin vous teste... courage !` },
     { type: 'conte', label: `Case Conte - Nouvelle-ZÃ©lande : Maui ralentit le soleil` },
-    { type: 'bonus', label: `Case Bonus - Un moment de gloireâ€¦ savourez-le !` },
+    { type: 'bonus', label: `Case Bonus - Un moment de gloire... savourez-le !` },
     { type: 'conte', label: `Case Conte - Mali : L'hippopotame et les Ã©toiles` },
     { type: 'malus', label: `Case Malus - MÃªme Ã  la fin, le conte aime faire durer le suspense.` },
     { type: 'conte', label: `Case Conte - Pologne : Le roi grenouille` },
@@ -269,25 +247,25 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 2,
       type: 'bonus',
       title: `Parchemin EnchantÃ©`,
-      text: `Si le rÃ©sultat ne vous plaÃ®t pas, vous pouvez relancer quâ€™une seule fois le dÃ©. Le vieux grimoire vous montre une autre possibilitÃ©.`,
+      text: `Si le rÃ©sultat ne vous plaÃ®t pas, vous pouvez relancer qu'une seule fois le dÃ©. Le vieux grimoire vous montre une autre possibilitÃ©.`,
     },
     {
       id: 3,
       type: 'bonus',
       title: `Amulette Protectrice`,
-      text: `Gardez cette carte dans votre main. Elle vous protÃ¨ge dâ€™un malus (valable une fois). Elle se dÃ©fausse aprÃ¨s usage.`,
+      text: `Gardez cette carte dans votre main. Elle vous protÃ¨ge d'un malus (valable une fois). Elle se dÃ©fausse aprÃ¨s usage.`,
     },
     {
       id: 4,
       type: 'bonus',
-      title: `Cape dâ€™InvisibilitÃ©`,
-      text: `Si vous arrivez sur une case Conte, son effet est automatiquement ignorÃ© et vous avancez dâ€™une case supplÃ©mentaire.`,
+      title: `Cape d'InvisibilitÃ©`,
+      text: `Si vous arrivez sur une case Conte, son effet est automatiquement ignorÃ© et vous avancez d'une case supplÃ©mentaire.`,
     },
     {
       id: 5,
       type: 'bonus',
       title: `PoussiÃ¨re de FÃ©e`,
-      text: `Vous pouvez faire avancer un autre joueur de votre choix de 2 cases. Un geste dâ€™amitiÃ© qui crÃ©e la magie.`,
+      text: `Vous pouvez faire avancer un autre joueur de votre choix de 2 cases. Un geste d'amitiÃ© qui crÃ©e la magie.`,
     },
     {
       id: 6,
@@ -298,8 +276,8 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
     {
       id: 7,
       type: 'bonus',
-      title: `ClÃ© dâ€™Or Universelle`,
-      text: `Si vous tombez sur une case Conte, choisissez lâ€™effet (bonus ou malus) pour un autre joueur de votre choix. La clÃ© vous donne le pouvoir de dÃ©cider.`,
+      title: `ClÃ© d'Or Universelle`,
+      text: `Si vous tombez sur une case Conte, choisissez l'effet (bonus ou malus) pour un autre joueur de votre choix. La clÃ© vous donne le pouvoir de dÃ©cider.`,
     },
     {
       id: 8,
@@ -328,8 +306,8 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
     {
       id: 12,
       type: 'bonus',
-      title: `Corne dâ€™Abondance`,
-      text: `Piocher deux cartes Bonus mais gardez-en quâ€™une, la plus avantageuse. Un coup de chance rare !`,
+      title: `Corne d'Abondance`,
+      text: `Piocher deux cartes Bonus mais gardez-en qu'une, la plus avantageuse. Un coup de chance rare !`,
     },
     {
       id: 13,
@@ -362,13 +340,13 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 2,
       type: 'malus',
       title: `Ronce EnchevÃªtrÃ©e`,
-      text: `Vous Ãªtes coincÃ© dans une forÃªt de roncesâ€¦ Reculez de 2 cases.`,
+      text: `Vous Ãªtes coincÃ© dans une forÃªt de ronces... Reculez de 2 cases.`,
     },
     {
       id: 3,
       type: 'malus',
       title: `Grimoire Capricieux`,
-      text: `Vous lisez une formule Ã  lâ€™envers : Ã©changez votre place avec le joueur le plus proche derriÃ¨re vous !`,
+      text: `Vous lisez une formule Ã  l'envers : Ã©changez votre place avec le joueur le plus proche derriÃ¨re vous !`,
     },
     {
       id: 4,
@@ -380,7 +358,7 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 5,
       type: 'malus',
       title: `Loup dans la ForÃªt`,
-      text: `Un grand mÃ©chant loup surgit ! Vous devez attendre quâ€™un autre joueur atteigne ou dÃ©passe votre case pour pouvoir rejouer.`,
+      text: `Un grand mÃ©chant loup surgit ! Vous devez attendre qu'un autre joueur atteigne ou dÃ©passe votre case pour pouvoir rejouer.`,
     },
     {
       id: 6,
@@ -398,7 +376,7 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 8,
       type: 'malus',
       title: `Confusion de Contes`,
-      text: `Les histoires sâ€™emmÃªlent ! Avancez de 3 casesâ€¦ puis reculez de 4. Zut, ce nâ€™Ã©tait pas dans cet ordre-lÃ  !`,
+      text: `Les histoires s'emmÃªlent ! Avancez de 3 cases... puis reculez de 4. Zut, ce n'Ã©tait pas dans cet ordre-lÃ  !`,
     },
     {
       id: 9,
@@ -410,7 +388,7 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 10,
       type: 'malus',
       title: `Ombre Farceuse`,
-      text: `Une crÃ©ature invisible vous embÃªteâ€¦ Relancez votre dÃ©, mais cette fois, reculez au lieu dâ€™avancer.`,
+      text: `Une crÃ©ature invisible vous embÃªte... Relancez votre dÃ©, mais cette fois, reculez au lieu d'avancer.`,
     },
     {
       id: 11,
@@ -427,7 +405,7 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
     {
       id: 13,
       type: 'malus',
-      title: `Chaussures EnchantÃ©esâ€¦ mais trop petites`,
+      title: `Chaussures EnchantÃ©es... mais trop petites`,
       text: `Reculez de deux cases pour changer de chaussures. AÃ¯e !`,
     },
     {
@@ -449,7 +427,7 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 1,
       type: 'surprise',
       title: `Baguette Malicieuse`,
-      text: `Une baguette magique sâ€™agite toute seule ! Avancez dâ€™une caseâ€¦ puis reculez de deux.`,
+      text: `Une baguette magique s'agite toute seule ! Avancez d'une case... puis reculez de deux.`,
     },
     {
       id: 2,
@@ -461,7 +439,7 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 3,
       type: 'surprise',
       title: `Rencontre Inattendue`,
-      text: `Un personnage cÃ©lÃ¨bre dâ€™un autre conte apparaÃ®t ! Piochez une carte Bonus.`,
+      text: `Un personnage cÃ©lÃ¨bre d'un autre conte apparaÃ®t ! Piochez une carte Bonus.`,
     },
     {
       id: 4,
@@ -473,7 +451,7 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 5,
       type: 'surprise',
       title: `PoussiÃ¨re de Rire`,
-      text: `Un nuage de poussiÃ¨re de rire se rÃ©pand ! Chaque joueur lance un petit dÃ© de 1 Ã  3. Celui qui a le plus grand avance dâ€™une case. Remarque : sâ€™il y a execo, au chiffre trois, ils avancent ensemble.`,
+      text: `Un nuage de poussiÃ¨re de rire se rÃ©pand ! Chaque joueur lance un petit dÃ© de 1 Ã  3. Celui qui a le plus grand avance d'une case. Remarque : s'il y a execo, au chiffre trois, ils avancent ensemble.`,
     },
     {
       id: 6,
@@ -490,8 +468,8 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
     {
       id: 8,
       type: 'surprise',
-      title: `Livre Ã  lâ€™Envers`,
-      text: `Vous lisez une histoire Ã  lâ€™envers. Votre prochain tour se fait en reculant.`,
+      title: `Livre Ã  l'Envers`,
+      text: `Vous lisez une histoire Ã  l'envers. Votre prochain tour se fait en reculant.`,
     },
     {
       id: 9,
@@ -527,13 +505,13 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 14,
       type: 'surprise',
       title: `Filet Magique`,
-      text: `Vous attrapez une carte Bonus ou Surprise dâ€™un autre joueur de votre choix.`,
+      text: `Vous attrapez une carte Bonus ou Surprise d'un autre joueur de votre choix.`,
     },
     {
       id: 15,
       type: 'surprise',
       title: `Grimoire Voyageur`,
-      text: `Vous lisez un conte venu dâ€™ailleurs. Ã‰changez votre place avec un autre joueur : vous restez sur place, et lui prend votre position puis avance dâ€™une case.`,
+      text: `Vous lisez un conte venu d'ailleurs. Ã‰changez votre place avec un autre joueur : vous restez sur place, et lui prend votre position puis avance d'une case.`,
     },
   ];
 
@@ -543,7 +521,7 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       type: 'conte',
       title: `Conte - Japon : MomotarÅ`,
       text: `Il Ã©tait une fois, dans un petit village japonais bordÃ© de collines verdoyantes et de riviÃ¨res Ã©tincelantes, un couple Ã¢gÃ© qui vivait paisiblement.
-Un jour, alors que la vieille dame lavait des vÃªtements dans la riviÃ¨re, elle dÃ©couvrit une Ã©norme pÃªche flottant sur l'eau. Curieuse, elle la ramena chez elle. Ã€ leur grande surprise, en l'ouvrant, ils trouvÃ¨rent un petit garÃ§on robuste et joyeux Ã  l'intÃ©rieur. Ils l'appelÃ¨rent MomotarÅ, le garÃ§on-pÃªche.
+Un jour, alors que la vieille dame lavait des vÃªtements dans la riviÃ¨re, elle dÃ©couvrit une Ã©norme pÃªche flottant sur l'eau. Curieuse, elle la ramena chez elle. Ã¬ leur grande surprise, en l'ouvrant, ils trouvÃ¨rent un petit garÃ§on robuste et joyeux Ã  l'intÃ©rieur. Ils l'appelÃ¨rent MomotarÅ, le garÃ§on-pÃªche.
 Grandissant avec force et courage, MomotarÅ apprit qu'au loin, sur une Ã®le mystÃ©rieuse, des oni (dÃ©mons malicieux) semaient la terreur parmi les habitants. DÃ©terminÃ© Ã  protÃ©ger son village, il partit Ã  l'aventure, emportant avec lui des kibi dango (des petites boules de millet sucrÃ©es) pour convaincre des compagnons de le suivre.
 Sur son chemin, il rencontra un chien fidÃ¨le, un singe polyvalent et un faisan majestueux. Chacun, sÃ©duit par les kibi dango et la dÃ©termination de l'enfant, devint son alliÃ© loyal. Ensemble, ils traversÃ¨rent les eaux tumultueuses et atteignirent l'Ã®le des oni.
 GrÃ¢ce Ã  leur courage, leur ruse et la force de l'amitiÃ©, ils vainquirent les dÃ©mons, rÃ©cupÃ©rÃ¨rent les trÃ©sors volÃ©s et ramenÃ¨rent la paix dans le village. MomotarÅ, hÃ©ros humble et courageux, reÃ§ut la gratitude Ã©ternelle de son peuple, et son histoire continua de se raconter au fil des gÃ©nÃ©rations.`,
@@ -551,7 +529,7 @@ GrÃ¢ce Ã  leur courage, leur ruse et la force de l'amitiÃ©, ils vainquiren
     {
       id: 2,
       type: 'conte',
-      title: `Conte - SÃ©nÃ©gal : Le liÃ¨vre et lâ€™hyÃ¨ne`,
+      title: `Conte - SÃ©nÃ©gal : Le liÃ¨vre et l'hyÃ¨ne`,
       text: `Dans les vastes savanes du SÃ©nÃ©gal, oÃ¹ les baobabs se dressent comme des gÃ©ants silencieux et oÃ¹ le soleil Ã©claire la terre d'un Ã©clat dorÃ©, vivait un liÃ¨vre malin et rusÃ©, connu pour ses tours et ses farces. Non loin de lÃ , la hyÃ¨ne, grande et gourmande, rÃªvait toujours de le piÃ©ger pour le manger.
 Un jour, cette derniÃ¨re dÃ©cida de tendre un piÃ¨ge ingÃ©nieux au liÃ¨vre. Mais le petit animal, vif comme le vent sur la savane, devina la ruse. Avec son esprit rapide et ses pattes lÃ©gÃ¨res, il imagina un plan astucieux.
 Il laissa derriÃ¨re lui des empreintes trompeuses, fit semblant de tomber dans un piÃ¨ge et conduisit la hyÃ¨ne Ã  se coincer elle-mÃªme dans un buisson Ã©pineux. Chaque farce Ã©tait plus drÃ´le et surprenante que la prÃ©cÃ©dente, et bientÃ´t, mÃªme les autres animaux de la savane venaient applaudir les tours de ce dernier.
@@ -571,7 +549,7 @@ Depuis ce jour, les contes russes parlent encore de Vassilissa, la jeune fille q
     {
       id: 4,
       type: 'conte',
-      title: `Conte - Canada : Lâ€™ours gÃ©ant et lâ€™enfant`,
+      title: `Conte - Canada : L'ours gÃ©ant et l'enfant`,
       text: `Dans les forÃªts profondes du Canada, lÃ  oÃ¹ les riviÃ¨res scintillaient comme des rubans d'argent et oÃ¹ les montagnes se dressaient majestueusement, vivait un petit enfant curieux et courageux.
 Un jour, alors qu'il explorait les bois en suivant le chant des oiseaux, il rencontra un ours gÃ©ant au pelage brun dorÃ©, imposant mais aux yeux d'une douceur surprenante.
 L'animal, protecteur de la forÃªt, Ã©tait sage et puissant, et il connaissait tous les secrets de la faune et de la flore. Il mit l'enfant Ã  l'Ã©preuve : il dÃ» traverser une riviÃ¨re tumultueuse, escalader une colline escarpÃ©e et comprendre le langage des oiseaux et des arbres. Mais chaque Ã©preuve Ã©tait en rÃ©alitÃ© un enseignement sur le courage, la patience et le respect de la nature.
@@ -584,7 +562,7 @@ Depuis ce jour, on raconte au Canada l'histoire de l'enfant qui marcha aux cÃ´
       title: `Conte - Maroc : Le figuier magique`,
       text: `Au coeur des ruelles animÃ©es du Maroc, sous un ciel azur oÃ¹ le soleil Ã©clairait les mosaÃ¯ques colorÃ©es, se trouvait un figuier ancien, immense et mystÃ©rieux, dont les branches semblaient toucher les nuages. On racontait que cet arbre n'Ã©tait pas ordinaire : ses figues dorÃ©es Ã©taient enchantÃ©es, capables d'exaucer les souhaits les plus sincÃ¨res.
 Un enfant curieux et intrÃ©pide s'approcha un matin, attirÃ© par l'odeur sucrÃ©e des fruits et le bruissement des feuilles. Alors qu'il tendait la main pour cueillir une figue, l'arbre se mit Ã  parler dans un murmure doux et rassurant, rÃ©vÃ©lant que seul celui qui possÃ©dait un coeur pur pouvait goÃ»ter Ã  sa magie.
-Pour prouver sa valeur, il devait faire preuve de courage, de gÃ©nÃ©rositÃ© et d'ingÃ©niositÃ© : partager ses trouvailles avec les habitants du village, aider les animaux de la place et rÃ©soudre des Ã©nigmes laissÃ©es par les anciens du royaume. Ã€ chaque acte de bontÃ©, les figues du figuier brillaient plus fort, et l'enfant sentait une Ã©nergie chaude et bienveillante parcourir ses doigts.
+Pour prouver sa valeur, il devait faire preuve de courage, de gÃ©nÃ©rositÃ© et d'ingÃ©niositÃ© : partager ses trouvailles avec les habitants du village, aider les animaux de la place et rÃ©soudre des Ã©nigmes laissÃ©es par les anciens du royaume. Ã¬ chaque acte de bontÃ©, les figues du figuier brillaient plus fort, et l'enfant sentait une Ã©nergie chaude et bienveillante parcourir ses doigts.
 Finalement, ayant dÃ©montrÃ© sa sagesse et son coeur gÃ©nÃ©reux, il put cueillir une figue magique. Cette derniÃ¨re ne donnait pas seulement la chance ou la richesse, mais rÃ©vÃ©lait les secrets pour comprendre et respecter les gens, la nature et la magie qui se cache dans chaque geste quotidien.`,
     },
     {
@@ -648,23 +626,23 @@ Mais, hÃ©las, une fois sa mission accomplie, les habitants refusÃ¨rent de le
       title: `Conte - Inde : Le prince au cobra`,
       text: `Dans un royaume lointain d'Inde, aux palais aux dÃ´mes dorÃ©s et aux jardins luxuriants, vivait un jeune prince courageux. Sa curiositÃ© et son courage le poussaient souvent Ã  explorer les forÃªts et les riviÃ¨res qui entouraient son palais.
 Un jour, alors qu'il se promenait prÃ¨s d'un Ã©tang sacrÃ©, il rencontra un cobra majestueux, aux Ã©cailles scintillantes et aux yeux perÃ§ants. Mais ce n'Ã©tait pas un serpent ordinaire : il pouvait parler et possÃ©dait des pouvoirs magiques anciens. Ce dernier expliqua au prince qu'un grand danger menaÃ§ait le royaume, et que seul un coeur pur et courageux pourrait dÃ©jouer ce sort.
-Le prince accepta la mission. GrÃ¢ce aux conseils du reptile et Ã  son intelligence, il traversa des Ã©preuves mystÃ©rieuses : rÃ©soudre des Ã©nigmes, franchir des ponts invisibles et affronter des illusions trompeuses. Ã€ chaque dÃ©fi, le cobra l'accompagnait, enseignant la patience, la prudence et le respect de la nature.
+Le prince accepta la mission. GrÃ¢ce aux conseils du reptile et Ã  son intelligence, il traversa des Ã©preuves mystÃ©rieuses : rÃ©soudre des Ã©nigmes, franchir des ponts invisibles et affronter des illusions trompeuses. Ã¬ chaque dÃ©fi, le cobra l'accompagnait, enseignant la patience, la prudence et le respect de la nature.
 Finalement, grÃ¢ce Ã  leur alliance, le prince rÃ©ussit Ã  sauver le royaume et Ã  ramener la paix et la prospÃ©ritÃ©. En signe de gratitude, le cobra se transforma en joyau magique, symbole de sagesse et de courage, que le prince porta toujours avec lui.`,
     },
     {
       id: 13,
       type: 'conte',
-      title: `Conte - Groenland : Lâ€™ourse et la chasseuse`,
+      title: `Conte - Groenland : L'ourse et la chasseuse`,
       text: `Au coeur des vastes glaces du Groenland, lÃ  oÃ¹ le vent hurlait et oÃ¹ la neige recouvrait tout, vivait une jeune chasseuse courageuse. Sa peau rosÃ©e par le froid et ses yeux perÃ§ants lui permettaient de repÃ©rer les moindres traces dans la neige immaculÃ©e.
 Un matin, alors qu'elle suivait des empreintes mystÃ©rieuses, elle rencontra une grande ourse blanche, majestueuse et imposante, mais Ã©tonnamment douce dans son regard. La crÃ©ature parlait un langage secret que seuls les habitants du Groenland pouvaient comprendre. Elle confia Ã  la chasseuse une mission : protÃ©ger les animaux et les esprits de la glace d'un danger imminent.
 La chasseuse accepta. Ensemble, elles traversÃ¨rent des fjords gelÃ©s, escaladÃ¨rent des montagnes couvertes de neige et affrontÃ¨rent les tempÃªtes polaires. Chaque pas Ã©tait un dÃ©fi, mais la prÃ©sence de l'ourse la guidait et la protÃ©geait. La chasseuse apprit Ã  Ã©couter la nature, Ã  comprendre les murmures des vents et le chant des aurores borÃ©ales.
-Ã€ la fin de leur pÃ©riple, la chasseuse avait non seulement sauvÃ© les crÃ©atures du Groenland, mais elle avait aussi tissÃ© un lien indestructible avec l'ourse, qui devint sa protectrice Ã©ternelle.
+Ã¬ la fin de leur pÃ©riple, la chasseuse avait non seulement sauvÃ© les crÃ©atures du Groenland, mais elle avait aussi tissÃ© un lien indestructible avec l'ourse, qui devint sa protectrice Ã©ternelle.
 Les habitants du village racontent encore que, lorsque la neige tombe doucement, on peut voir l'ourse et la chasseuse parcourir les Ã©tendues glacÃ©es, unies par un courage et une amitiÃ© hors du commun.`,
     },
     {
       id: 14,
       type: 'conte',
-      title: `Conte - Italie : GiufÃ  et lâ€™Ã¢ne`,
+      title: `Conte - Italie : GiufÃ  et l'Ã¢ne`,
       text: `Dans un petit village ensoleillÃ© d'Italie, au pied des collines et entre les oliveraies, vivait GiufÃ , un garÃ§on malin et plein de malice. Il possÃ©dait un Ã¢ne tÃªtu mais attachant, qui semblait parfois comprendre mieux que GiufÃ  lui-mÃªme.
 Un jour, le village organisa une fÃªte et le jeune homme fut chargÃ© de conduire son animal au marchÃ© pour y vendre des produits. Mais l'Ã¢ne, espiÃ¨gle et obstinÃ©, refusait d'avancer droit et se mit Ã  zigzaguer entre les rues pavÃ©es. GiufÃ  dut user de toute son ingÃ©niositÃ© pour le guider : il chanta de drÃ´les de chansons, fit des tours de magie et mÃªme des petites farces pour le distraire.
 Finalement, grÃ¢ce Ã  son esprit vif et Ã  sa patience, il rÃ©ussit Ã  le mener au marchÃ©. Les villageois, Ã©merveillÃ©s par son habiletÃ© et amusÃ©s par les facÃ©ties de l'Ã¢ne, le fÃ©licitÃ¨rent et racontÃ¨rent cette aventure longtemps aprÃ¨s.
@@ -689,7 +667,7 @@ Un jour, alors que la lune brillait plus intensÃ©ment que jamais, Chai, la reg
 Renard, si tu veux comprendre les secrets de la nuit, suis mes rayons et observe avec attention.
 FascinÃ© et prudent, l'animal suivit la lueur argentÃ©e Ã  travers les rochers, les riviÃ¨res scintillantes et les forÃªts clairsemÃ©es.
 Au fil de son voyage nocturne, le renard comprit que la lune n'Ã©clairait pas seulement la terre, mais rÃ©vÃ©lait Ã©galement la vÃ©ritÃ© dans le coeur de ceux qui l'observaient. Chaque rayon lui enseignait la patience, l'humilitÃ© et la valeur de la curiositÃ© : apprendre Ã  Ã©couter le monde avant d'agir.
-Ã€ la fin de son pÃ©riple, il rÃ©alisa que l'astre lui avait offert un cadeau invisible mais puissant : la sagesse de voir ce que les yeux seuls ne peuvent percevoir.
+Ã¬ la fin de son pÃ©riple, il rÃ©alisa que l'astre lui avait offert un cadeau invisible mais puissant : la sagesse de voir ce que les yeux seuls ne peuvent percevoir.
 Depuis ce soir-lÃ , il partageait sa ruse et sa connaissance avec les autres animaux, devenant un guide respectÃ© dans les montagnes chiliennes.`,
     },
     {
@@ -748,7 +726,7 @@ L'enfant, rusÃ© et audacieux, utilisa son intelligence et son courage afin de 
     {
       id: 23,
       type: 'conte',
-      title: `Conte - Vietnam : Lâ€™enfant des riziÃ¨res`,
+      title: `Conte - Vietnam : L'enfant des riziÃ¨res`,
       text: `Dans un petit village nichÃ© au coeur des riziÃ¨res verdoyantes du Vietnam, vivait un enfant nommÃ© Minh, curieux et dÃ©bordant d'Ã©nergie. Chaque matin, il parcourait les sentiers Ã©troits entre les champs inondÃ©s, observant les reflets du soleil sur l'eau et Ã©coutant le doux murmure du vent dans les palmiers.
 Un jour, alors qu'il jouait prÃ¨s d'un petit ruisseau, il dÃ©couvrit un canard blessÃ©. Avec douceur et patience, il le soigna, s'occupant de ses ailes et de ses plumes trempÃ©es. L'animal, reconnaissant, devint son compagnon fidÃ¨le, l'accompagnant dans toutes ses aventures Ã  travers les riziÃ¨res.
 Mais ces terres regorgeaient de mystÃ¨res. Entre les brumes matinales, Minh aperÃ§ut des crÃ©atures Ã©tranges et bienveillantes, qui semblaient garder les secrets des champs et des cours d'eau. Il apprit Ã  comprendre le langage des animaux, Ã  Ã©couter les lÃ©gendes transmises par les anciens, et Ã  respecter la magie qui imprÃ©gnait chaque Ã©lÃ©ment de la nature.
@@ -770,12 +748,12 @@ GrÃ¢ce Ã  son tambour enchantÃ©, Diego devint le gardien de la joie et des
       text: `Dans un village colorÃ© d'HaÃ¯ti, bordÃ© par des champs de canne Ã  sucre et des collines verdoyantes, vivait un petit garÃ§on nommÃ© Ti-Jean, vif et malin, connu pour son esprit rusÃ© et son sourire espiÃ¨gle.
 Un jour, alors qu'il cueillait des fruits prÃ¨s de la riviÃ¨re, le diable apparut, dÃ©cidÃ© Ã  tester l'ingÃ©niositÃ© des humains et Ã  attirer les Ã¢mes naÃ¯ves dans ses tours diaboliques.
 Mais Ti-Jean n'Ã©tait pas un enfant ordinaire. Avec son intelligence, son courage et une bonne dose d'audace, il rÃ©ussit Ã  tromper le diable Ã  chaque Ã©preuve. Que ce soit en Ã©changeant des objets, en crÃ©ant des illusions ou en racontant des histoires confuses, ce dernier dÃ©joua les piÃ¨ges avec humour et ingÃ©niositÃ©.
-Ã€ chaque dÃ©fi relevÃ©, il montrait que la ruse et la crÃ©ativitÃ© pouvaient vaincre mÃªme les plus grandes forces. Les villageois, Ã©merveillÃ©s par ses exploits, racontaient ses aventures autour des feux de camp, et Ti-Jean devint un symbole de courage et de vivacitÃ©.`,
+Ã¬ chaque dÃ©fi relevÃ©, il montrait que la ruse et la crÃ©ativitÃ© pouvaient vaincre mÃªme les plus grandes forces. Les villageois, Ã©merveillÃ©s par ses exploits, racontaient ses aventures autour des feux de camp, et Ti-Jean devint un symbole de courage et de vivacitÃ©.`,
     },
     {
       id: 26,
       type: 'conte',
-      title: `Conte - Turquie : Nasreddine et lâ€™Ã¢ne`,
+      title: `Conte - Turquie : Nasreddine et l'Ã¢ne`,
       text: `Dans un petit village turc baignÃ© de soleil, aux ruelles Ã©troites et aux marchÃ©s animÃ©s, vivait Nasreddine, un homme sage et espiÃ¨gle, connu pour son humour et ses rÃ©ponses pleines de bon sens. Un jour, alors qu'il chevauchait son fidÃ¨le Ã¢ne, il croisa des villageois qui se moquaient de lui, le jugeant toujours un peu bizarre.
 Mais Nasreddine ne se laissa jamais dÃ©stabiliser. Avec un sourire malicieux et une logique inattendue, il transforma chaque situation ridicule en une leÃ§on pleine d'esprit. Que ce soit en discutant avec les marchands, en rÃ©solvant des querelles ou en improvisant de drÃ´les d'histoires, il montrait que l'intelligence et l'humour Ã©taient des armes plus puissantes que la force.
 L'Ã¢ne, fidÃ¨le compagnon de ses aventures, participait souvent involontairement aux tours et aux situations comiques, ajoutant encore plus de charme et de rires Ã  chaque anecdote. Les villageois racontaient ensuite ses exploits dans les cafÃ©s et sous les arbres, riant des situations absurdes et admirant la sagacitÃ© de l'homme.`,
@@ -792,7 +770,7 @@ Les habitants racontÃ¨rent encore et encore cette aventure, admirant le demi-d
     {
       id: 28,
       type: 'conte',
-      title: `Conte - Mali : Lâ€™hippopotame et les Ã©toiles`,
+      title: `Conte - Mali : L'hippopotame et les Ã©toiles`,
       text: `Au bord du grand fleuve Niger, sous le ciel Ã©toilÃ© du Mali, vivait un hippopotame curieux et rÃªveur. Chaque nuit, il regardait les Ã©toiles briller et se demandait pourquoi elles semblaient si loin et inaccessibles. Les autres animaux riaient de ses rÃªveries, mais lui savait qu'un jour, il trouverait un moyen de toucher ces points lumineux qui scintillaient au-dessus de sa tÃªte.
 Une nuit, guidÃ© par la lueur des astres, il entreprit un voyage extraordinaire, traversant riviÃ¨res et marÃ©cages, parlant aux lucioles et aux hiboux qui l'accompagnaient. Avec patience et courage, il construisit un bÃ¢ton magique, gravÃ© de symboles anciens et lumineux, qui lui permit de capturer un fragment d'Ã©toile.
 GrÃ¢ce Ã  sa persÃ©vÃ©rance, l'hippopotame rÃ©alisa que mÃªme les rÃªves les plus grands pouvaient Ãªtre atteints si l'on osait avancer avec le coeur ouvert et l'esprit attentif.
@@ -819,6 +797,9 @@ En Ã©change de sa gentillesse et de sa patience, le roi grenouille offrit une 
     discardContes: [],
   };
 }
+
+
+
 
 
 

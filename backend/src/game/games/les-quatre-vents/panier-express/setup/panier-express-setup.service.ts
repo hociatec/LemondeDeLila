@@ -213,8 +213,8 @@ export class PanierExpressSetupService {
   }
 
   /**
-   * Les stands doivent pouvoir Ãªtre revisitÃ©s plusieurs fois au cours d'une mÃªme partie.
-   * On duplique volontairement les cartes disponibles pour simuler le rÃ©assort permanent.
+   * Les stands doivent pouvoir être revisités plusieurs fois au cours d'une même partie.
+   * On duplique volontairement les cartes disponibles pour simuler le réassort permanent.
    */
   buildReplenishableDeck(items?: string[]): string[] {
     const source = items && items.length ? [...items] : [...this.courseItems()];

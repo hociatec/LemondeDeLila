@@ -241,6 +241,40 @@ describe('GameEngineService', () => {
     expect(out).toEqual([]);
   });
 
+  it('rejects unavailable action when actor is in turn (pending blocker scenario)', async () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      { set: jest.fn() } as any,
+      { logValidationFailure: jest.fn(), error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() } as any,
+      {} as any,
+    );
+
+    const state: any = {
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: { type: 'draw', playerId: 1, blocking: true },
+      metadata: { gameType: 'frousse-party', roomId: 1 },
+    };
+    const handler: any = {
+      getAvailableActions: jest.fn(() => [{ type: 'draw', payload: {} }]),
+    };
+
+    await expect(
+      (engine as any).validateActions(
+        state,
+        handler,
+        [{ type: 'play_card', payload: { cardId: 'x' } }],
+        1,
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
   it('silently ignores game validation errors for out-of-turn messages', async () => {
     const engine = new GameEngineService(
       {} as any,

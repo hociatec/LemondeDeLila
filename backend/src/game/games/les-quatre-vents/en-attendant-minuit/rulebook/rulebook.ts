@@ -9,7 +9,11 @@ import {
   type MinuitActionType,
 } from '../definitions/minuit.definition';
 import type { MinuitMetadata } from '../model/minuit.types';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  normalizeActionType,
+  normalizeLegacyRollAliasToUpper,
+  normalizeLowerActionType,
+} from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
@@ -94,9 +98,7 @@ export function validateAction(
   };
 
   const rawType = normalizeActionType(action);
-  const type = (
-    rawType === 'roll_dice' ? 'ROLL_DICE' : rawType
-  ) as MinuitActionType;
+  const type = normalizeLegacyRollAliasToUpper(rawType) as MinuitActionType;
   if (!MINUIT_GAME.actions.includes(type)) {
     throw new GameValidationError(`Action inconnue: ${rawType || '(vide)'}`, {
       gameType: 'en-attendant-minuit',

@@ -5,6 +5,7 @@ import { lamaCardLabel, nextLamaValue } from '../model/lama.model';
 import { LamaRoundService } from '../round/lama-round.service';
 import { LamaSharedService } from '../shared/lama-shared.service';
 import { LamaLogService } from '../logging/lama-log.service';
+import { createPendingState } from '../../../../modules/pending-action/services/pending-action.service';
 
 @Injectable()
 export class LamaDrawService {
@@ -85,11 +86,10 @@ export class LamaDrawService {
           suppressTurnAnnouncement: false,
         };
 
-    const nextState: GameStateEntity = {
+    const nextState = createPendingState({
       ...state,
       metadata: advancedMeta as any,
       log,
-      pending: { step: 'turn_choice', playerId: nextPlayerId } as any,
       turnIndex: turnIndex + 1,
       turn: {
         ...(state.turn ?? { direction: 1 }),
@@ -97,7 +97,7 @@ export class LamaDrawService {
         direction: 1,
         label: nextPlayerId ? `Tour de ${this.shared.playerLabel(players, nextPlayerId)}` : undefined,
       },
-    };
+    } as GameStateEntity, { step: 'turn_choice', playerId: nextPlayerId } as any);
 
     if (this.round.isRoundEnded(advancedMeta, players)) {
       const winnerId = this.round.findRoundWinnerId(advancedMeta, players);

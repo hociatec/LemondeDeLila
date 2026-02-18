@@ -1,9 +1,10 @@
-ï»¿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type {
   GameStateEntity,
   PendingState,
 } from '../../../../core/entities/game-state.entity';
 import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
 
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
@@ -38,14 +39,6 @@ export class VoyageActionService {
             type,
             {
               'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'ROLL_DICE': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'roll_dice': () => {
                 next = this.handleRoll(next);
                 return next;
               },
@@ -87,10 +80,10 @@ export class VoyageActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, currentId)} lance le dÃ© : "${roll}".`,
+      `${resolvePlayerNameFromState(next, currentId)} lance le dé : "${roll}".`,
     );
 
-    // DÃ©placement (rebond sur la case finale)
+    // Déplacement (rebond sur la case finale)
     next = this.move(next, currentId, roll);
     next = this.applyLanding(next, currentId, { kind: 'none' });
 
@@ -173,19 +166,19 @@ export class VoyageActionService {
 
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
 
-    next = this.core.appendLog(next, ok ? 'Bonne rÃ©ponse !' : 'Mauvaise rÃ©ponse.');
+    next = this.core.appendLog(next, ok ? 'Bonne réponse !' : 'Mauvaise réponse.');
 
-    // LÃ©gende : si bonne rÃ©ponse, on conserve la carte et on applique Ã©ventuellement un bonus.
+    // Légende : si bonne réponse, on conserve la carte et on applique éventuellement un bonus.
     if (ok) {
       next = this.incrementCollection(next, playerId, 'legend');
       if (typeof (quiz as any).successDelta === 'number' && (quiz as any).successDelta !== 0) {
         const delta = Math.trunc((quiz as any).successDelta);
-        next = this.core.appendLog(next, `Bonus : dÃ©placement ${delta}.`);
+        next = this.core.appendLog(next, `Bonus : déplacement ${delta}.`);
         next = this.move(next, playerId, delta);
         next = this.applyLanding(next, playerId, { kind: 'none' });
       }
     } else {
-      // Mauvaise rÃ©ponse : la carte est dÃ©faussÃ©e.
+      // Mauvaise réponse : la carte est défaussée.
       next = this.discardDrawnCard(next, 'legend', quiz.card, { keep: false });
     }
 
@@ -216,14 +209,14 @@ export class VoyageActionService {
     const kind = String(pending?.data?.kind ?? '').trim();
     const last = meta0.statuses?.lastTargetByActor?.[playerId] ?? null;
     if (last != null && last === targetId) {
-      // RÃ¨gle : aucun joueur ne peut Ãªtre ciblÃ© deux fois de suite par une mÃªme personne.
-      next = this.core.appendLog(next, "Cible invalide : vous ne pouvez pas viser le mÃªme joueur deux fois de suite.");
+      // Règle : aucun joueur ne peut être ciblé deux fois de suite par une même personne.
+      next = this.core.appendLog(next, "Cible invalide : vous ne pouvez pas viser le même joueur deux fois de suite.");
       return { ...next, pending }; // on laisse le pending ouvert
     }
     if (kind === 'swap') {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} Ã©change sa place avec ${this.playerName(next, targetId)}.`,
+        `${resolvePlayerNameFromState(next, playerId)} échange sa place avec ${resolvePlayerNameFromState(next, targetId)}.`,
       );
       next = this.swapPositions(next, playerId, targetId);
       next = this.setLastTarget(next, playerId, targetId);
@@ -231,7 +224,7 @@ export class VoyageActionService {
     if (kind === 'skip1') {
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, targetId)} perd son prochain tour.`,
+        `${resolvePlayerNameFromState(next, targetId)} perd son prochain tour.`,
       );
       next = this.addSkip(next, targetId, 1);
       next = this.setLastTarget(next, playerId, targetId);
@@ -240,7 +233,7 @@ export class VoyageActionService {
       const count = Math.max(1, Math.trunc(Number(pending?.data?.count ?? 1)));
       next = this.core.appendLog(
         next,
-        `${this.playerName(next, playerId)} Ã©change ${count} carte(s) avec ${this.playerName(next, targetId)}.`,
+        `${resolvePlayerNameFromState(next, playerId)} échange ${count} carte(s) avec ${resolvePlayerNameFromState(next, targetId)}.`,
       );
       next = this.exchangeRandomCards(next, playerId, targetId, count);
       next = this.setLastTarget(next, playerId, targetId);
@@ -271,7 +264,7 @@ export class VoyageActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${pos + 1} (${label}).`,
+      `${resolvePlayerNameFromState(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${pos + 1} (${label}).`,
     );
     if (tile.description && String(tile.description).trim()) {
       next = this.core.appendLog(next, String(tile.description).trim());
@@ -289,7 +282,7 @@ export class VoyageActionService {
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...updated } };
         next = this.core.appendLog(
           next,
-          `ArrivÃ©e atteinte ! Les autres joueurs jouent encore ${remainingTurns} tour(s).`,
+          `Arrivée atteinte ! Les autres joueurs jouent encore ${remainingTurns} tour(s).`,
         );
       }
       return next;
@@ -303,12 +296,12 @@ export class VoyageActionService {
     if (tile.type === 'passage') {
       if (context.kind === 'from_passage') return next;
       const otherPlayers = this.otherPlayers(next, playerId);
-      if (/\bÃ©change\b/i.test(tile.description ?? '') && otherPlayers.length) {
+      if (/\béchange\b/i.test(tile.description ?? '') && otherPlayers.length) {
         const pending: PendingState = {
           type: 'choose_target',
           playerId,
           blocking: true,
-          label: 'Choisir un joueur (Ã©changer de place).',
+          label: 'Choisir un joueur (échanger de place).',
           data: { kind: 'swap' },
           choices: otherPlayers.map((p) => p.username),
         };
@@ -317,7 +310,7 @@ export class VoyageActionService {
 
       const delta = extractMoveDelta(tile.description ?? '');
       if (delta !== 0) {
-        next = this.core.appendLog(next, `Passage : dÃ©placement ${delta}.`);
+        next = this.core.appendLog(next, `Passage : déplacement ${delta}.`);
         next = this.move(next, playerId, delta);
         return this.applyLanding(next, playerId, { kind: 'from_passage' });
       }
@@ -353,7 +346,7 @@ export class VoyageActionService {
           type: 'quiz',
           playerId,
           blocking: true,
-          label: 'RÃ©pondre au quiz.',
+          label: 'Répondre au quiz.',
           question: quiz.question,
           choices: quiz.choices,
           data: { cardId: card.id },
@@ -366,7 +359,7 @@ export class VoyageActionService {
           pending,
         };
       }
-      // Pas un quiz : on conserve par dÃ©faut
+      // Pas un quiz : on conserve par défaut
       next = this.incrementCollection(next, playerId, 'legend');
       next = this.discardDrawnCard(next, 'legend', card, { keep: true });
       return this.applyGenericEffect(next, playerId, card.effect);
@@ -379,7 +372,7 @@ export class VoyageActionService {
     }
 
     if (deckType === 'landscape') {
-      const keep = !/dÃ©fauss/i.test(card.effect ?? '');
+      const keep = !/défauss/i.test(card.effect ?? '');
       if (keep) next = this.incrementCollection(next, playerId, 'landscape');
       next = this.discardDrawnCard(next, 'landscape', card, { keep });
       return this.applyGenericEffect(next, playerId, card.effect);
@@ -427,9 +420,9 @@ export class VoyageActionService {
       /tirez\s+au\s+hasard\s+une\s+carte/i.test(text) &&
       /vous\s+la\s+perdez/i.test(text)
     ) {
-      const wantLegend = /l[Ã©e]gende/i.test(text);
+      const wantLegend = /l[ée]gende/i.test(text);
       const wantLandscape = /paysage/i.test(text);
-      const wantTreasure = /tr[Ã©e]sor/i.test(text);
+      const wantTreasure = /tr[ée]sor/i.test(text);
       const wantFarce = /farce/i.test(text);
       next = this.loseRandomCard(next, playerId, {
         legend: wantLegend,
@@ -441,7 +434,7 @@ export class VoyageActionService {
     }
     const delta = extractMoveDelta(text);
     if (delta !== 0) {
-      next = this.core.appendLog(next, `DÃ©placement ${delta}.`);
+      next = this.core.appendLog(next, `Déplacement ${delta}.`);
       next = this.move(next, playerId, delta);
       return this.applyLanding(next, playerId, { kind: 'none' });
     }
@@ -451,17 +444,17 @@ export class VoyageActionService {
       return this.addSkip(next, playerId, skip);
     }
 
-    // Ã‰changes de cartes
-    if (/Ã©change/i.test(text) && /carte/i.test(text)) {
+    // Échanges de cartes
+    if (/échange/i.test(text) && /carte/i.test(text)) {
       const count = extractCardCount(text);
 
-      // Cas "second joueur installÃ© Ã  la table" : on cible automatiquement.
+      // Cas "second joueur installé à la table" : on cible automatiquement.
       if (/second\s+joueur/i.test(text)) {
         const players = Array.isArray(next.players) ? next.players : [];
         const ids = players.map((p) => p?.id).filter((id): id is number => Number.isFinite(id as any));
         const targetId = ids.length >= 2 ? (ids[1] === playerId ? ids[0] : ids[1]) : null;
         if (targetId != null) {
-          next = this.core.appendLog(next, `Ã‰change automatique avec ${this.playerName(next, targetId)}.`);
+          next = this.core.appendLog(next, `Échange automatique avec ${resolvePlayerNameFromState(next, targetId)}.`);
           next = this.exchangeRandomCards(next, playerId, targetId, count);
           return this.setLastTarget(next, playerId, targetId);
         }
@@ -473,7 +466,7 @@ export class VoyageActionService {
           type: 'choose_target',
           playerId,
           blocking: true,
-          label: `Choisir un joueur (Ã©changer ${count} carte(s)).`,
+          label: `Choisir un joueur (échanger ${count} carte(s)).`,
           data: { kind: 'swap_card', count },
           choices: otherPlayers.map((p) => p.username),
         };
@@ -481,8 +474,8 @@ export class VoyageActionService {
       }
     }
 
-    // Ã‰changes de position
-    if (/Ã©change/i.test(text) && /position/i.test(text)) {
+    // Échanges de position
+    if (/échange/i.test(text) && /position/i.test(text)) {
       if (/dernier\s+joueur/i.test(text)) {
         const other = this.otherPlayers(next, playerId);
         if (other.length) {
@@ -492,7 +485,7 @@ export class VoyageActionService {
             .sort((a, b) => (meta.positions?.[a] ?? 0) - (meta.positions?.[b] ?? 0))[0];
           next = this.core.appendLog(
             next,
-            `${this.playerName(next, playerId)} Ã©change sa place avec ${this.playerName(next, last)}.`,
+            `${resolvePlayerNameFromState(next, playerId)} échange sa place avec ${resolvePlayerNameFromState(next, last)}.`,
           );
           next = this.swapPositions(next, playerId, last);
           return this.setLastTarget(next, playerId, last);
@@ -505,7 +498,7 @@ export class VoyageActionService {
           type: 'choose_target',
           playerId,
           blocking: true,
-          label: 'Choisir un joueur (Ã©changer de place).',
+          label: 'Choisir un joueur (échanger de place).',
           data: { kind: 'swap' },
           choices: otherPlayers.map((p) => p.username),
         };
@@ -621,7 +614,7 @@ export class VoyageActionService {
     options: { keep: boolean },
   ): GameStateEntity {
     if (options.keep) {
-      // Carte conservÃ©e : elle sort du circuit (pas remise en dÃ©fausse).
+      // Carte conservée : elle sort du circuit (pas remise en défausse).
       return state;
     }
     const meta = this.getMeta(state);
@@ -744,7 +737,7 @@ export class VoyageActionService {
     if (allow('farce') && (c.farce ?? 0) > 0) candidates.push('farce');
 
     if (!candidates.length) {
-      return this.core.appendLog(state, 'Aucune carte Ã  perdre.');
+      return this.core.appendLog(state, 'Aucune carte à perdre.');
     }
 
     const picked = this.random.pickOne(meta as any, candidates);
@@ -792,7 +785,7 @@ export class VoyageActionService {
       metadata: { ...(state.metadata ?? {}), ...nextMeta },
     };
     if (winnerId != null) {
-      next = this.core.appendLog(next, `${this.playerName(next, winnerId)} remporte la partie !`);
+      next = this.core.appendLog(next, `${resolvePlayerNameFromState(next, winnerId)} remporte la partie !`);
     }
     return next;
   }
@@ -804,7 +797,7 @@ export class VoyageActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     return players
       .filter((p) => p?.id != null && p.id !== me)
-      .map((p) => ({ id: p.id, username: this.playerName(state, p.id) }));
+      .map((p) => ({ id: p.id, username: resolvePlayerNameFromState(state, p.id) }));
   }
 
   private getMeta(state: GameStateEntity): VoyageMetadata {
@@ -824,16 +817,6 @@ export class VoyageActionService {
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
 
-  private playerName(state: GameStateEntity, id: number): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const p = players.find((x) => x?.id === id);
-    const u =
-      p?.username && String(p.username).trim()
-        ? String(p.username).trim()
-        : null;
-    return u ?? `Joueur ${id}`;
-  }
-
   private pawnLabel(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
     const player: any = players.find((p) => p?.id === id);
@@ -844,7 +827,7 @@ export class VoyageActionService {
     const pawnId = String(player?.pawn ?? '').trim();
     if (pawnId) return `"${pawnId}"`;
 
-    const fallback = this.playerName(state, id);
+    const fallback = resolvePlayerNameFromState(state, id);
     return `"${fallback}"`;
   }
 }
@@ -901,6 +884,7 @@ function extractCardCount(text: string): number {
   if (/\b3\b/.test(text) || /\btrois\b/i.test(text)) return 3;
   return 1;
 }
+
 
 
 

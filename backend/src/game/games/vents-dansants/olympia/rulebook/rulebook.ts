@@ -83,7 +83,7 @@ export function validateAction(
   if (type === 'play_card') {
     const cardId = String(payload.cardId ?? '').trim();
     if (!cardId) {
-      throw new Error('Carte Ã  jouer manquante.');
+      throw new Error('Carte à jouer manquante.');
     }
     const meta = getMeta(state);
     const hand = Array.isArray(meta.hands?.[actorId]) ? meta.hands[actorId] : [];

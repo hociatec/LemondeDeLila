@@ -5,7 +5,7 @@ import {
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
 import { PIRATES_GAME } from '../definitions/pirates-en-vadrouille.definition';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { isRollAlias, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
@@ -42,12 +42,9 @@ export function validateAction(
   actorId: number | null,
 ): GameSingleActionDto {
   const rawType = normalizeActionType(action);
-  const type =
-    rawType === 'ROLL_DICE'
-      ? 'roll'
-      : rawType === 'roll_dice'
-        ? 'roll'
-        : (rawType as typeof PIRATES_GAME.actions[number]);
+  const type = isRollAlias(rawType)
+    ? 'roll'
+    : (rawType as typeof PIRATES_GAME.actions[number]);
   if (!PIRATES_GAME.actions.includes(type as any)) {
     throw new GameValidationError(`Action inconnue: ${rawType || '(vide)'}`, {
       gameType: 'pirates-en-vadrouille',
@@ -63,7 +60,7 @@ export function validateAction(
 
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new PlayerActionError("La partie n'est pas dÃ©marrÃ©e.", {
+    throw new PlayerActionError("La partie n'est pas démarrée.", {
       gameType: 'pirates-en-vadrouille',
     });
   }
