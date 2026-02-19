@@ -111,14 +111,14 @@ export class AdminClientUpdateScheduleWsDto {
 
   @IsOptional()
   @IsInt()
-  @Min(5)
+  @Min(1)
   @Max(1440)
   delayMinutes?: number;
 
-  // Exigence: avertir au moins 5 minutes avant la mise à jour.
+  // Exigence: avertir au moins 1 minute avant la mise à jour.
   @IsOptional()
   @IsInt()
-  @Min(300)
+  @Min(60)
   @Max(86400)
   delaySeconds?: number;
 }

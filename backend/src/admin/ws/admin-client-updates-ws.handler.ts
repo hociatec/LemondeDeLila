@@ -152,8 +152,8 @@ export class AdminClientUpdatesWsHandler {
         : null;
     const effectiveDelaySeconds =
       minutesFromDto != null
-        ? Math.max(300, Math.round(minutesFromDto * 60))
-        : Math.max(300, Math.round(secondsFromDto ?? 300));
+        ? Math.max(60, Math.round(minutesFromDto * 60))
+        : Math.max(60, Math.round(secondsFromDto ?? 60));
     const delayMs = effectiveDelaySeconds * 1000;
 
     if (this.scheduledTimer) {
