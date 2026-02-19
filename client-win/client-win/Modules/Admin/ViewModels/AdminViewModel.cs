@@ -86,6 +86,7 @@ public sealed partial class AdminViewModel : ObservableObject
     private string _fifthInputLabel = string.Empty;
     private string _fifthInput = string.Empty;
     private string _clientUpdateMessage = string.Empty;
+    private string _clientUpdateDelayMinutes = "5";
     private bool _primaryInputAcceptsReturn = true;
     private bool _secondaryInputAcceptsReturn;
     private bool _isPrimaryInputVisible;
@@ -181,6 +182,7 @@ public sealed partial class AdminViewModel : ObservableObject
         ClientUpdatesBuildCommand = new AsyncRelayCommand(BuildAndUploadClientUpdateAsync, () => !IsBusy);
         ClientUpdatesAnnounceCommand = new AsyncRelayCommand(AnnounceClientUpdateAsync, () => !IsBusy);
         ClientUpdatesForceCommand = new AsyncRelayCommand(ForceClientUpdateLatestAsync, () => !IsBusy);
+        ClientUpdatesScheduleCommand = new AsyncRelayCommand(ScheduleClientUpdateAsync, () => !IsBusy);
         EscapeCommand = new RelayCommand(() =>
         {
             var result = HandleEscape();
@@ -322,6 +324,7 @@ public sealed partial class AdminViewModel : ObservableObject
                 ClientUpdatesBuildCommand.RaiseCanExecuteChanged();
                 ClientUpdatesAnnounceCommand.RaiseCanExecuteChanged();
                 ClientUpdatesForceCommand.RaiseCanExecuteChanged();
+                ClientUpdatesScheduleCommand.RaiseCanExecuteChanged();
             }
         }
     }
@@ -390,6 +393,12 @@ public sealed partial class AdminViewModel : ObservableObject
     {
         get => _clientUpdateMessage;
         set => SetProperty(ref _clientUpdateMessage, value);
+    }
+
+    public string ClientUpdateDelayMinutes
+    {
+        get => _clientUpdateDelayMinutes;
+        set => SetProperty(ref _clientUpdateDelayMinutes, value);
     }
 
     public bool PrimaryInputAcceptsReturn
@@ -523,6 +532,7 @@ public sealed partial class AdminViewModel : ObservableObject
     public AsyncRelayCommand ClientUpdatesBuildCommand { get; }
     public AsyncRelayCommand ClientUpdatesAnnounceCommand { get; }
     public AsyncRelayCommand ClientUpdatesForceCommand { get; }
+    public AsyncRelayCommand ClientUpdatesScheduleCommand { get; }
     public RelayCommand EscapeCommand { get; }
     public AsyncRelayCommand<AdminMenuItem> SelectAndActivateCommand { get; }
 }

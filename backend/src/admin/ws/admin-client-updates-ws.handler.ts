@@ -77,8 +77,10 @@ export class AdminClientUpdatesWsHandler {
     );
 
     const latest = await this.clientUpdates.getLatest();
-    const publishedClickOnce = await this.clientUpdates.getPublishedClickOnceVersionFromDisk();
-    const latestVersion = (publishedClickOnce || latest?.version || '').trim() || null;
+    const publishedClickOnce =
+      await this.clientUpdates.getPublishedClickOnceVersionFromDisk();
+    const latestVersion =
+      (publishedClickOnce || latest?.version || '').trim() || null;
     if (!latestVersion) {
       throw new BadRequestException(
         'Impossible de forcer la mise à jour : aucune version publiée (latest.json manquant).',
@@ -140,11 +142,19 @@ export class AdminClientUpdatesWsHandler {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(AdminClientUpdateScheduleWsDto, payload);
 
-    const delaySeconds =
+    const minutesFromDto =
+      typeof dto.delayMinutes === 'number' && Number.isFinite(dto.delayMinutes)
+        ? dto.delayMinutes
+        : null;
+    const secondsFromDto =
       typeof dto.delaySeconds === 'number' && Number.isFinite(dto.delaySeconds)
         ? dto.delaySeconds
-        : 300;
-    const delayMs = Math.max(300, delaySeconds) * 1000;
+        : null;
+    const effectiveDelaySeconds =
+      minutesFromDto != null
+        ? Math.max(300, Math.round(minutesFromDto * 60))
+        : Math.max(300, Math.round(secondsFromDto ?? 300));
+    const delayMs = effectiveDelaySeconds * 1000;
 
     if (this.scheduledTimer) {
       clearTimeout(this.scheduledTimer);
@@ -157,36 +167,50 @@ export class AdminClientUpdatesWsHandler {
     const imminentMessage =
       typeof dto.message === 'string' && dto.message.trim().length > 0
         ? dto.message.trim()
-        : 'Mise à jour imminante dans cinq minutes.';
+        : `Mise à jour du client planifiée dans ${Math.max(1, Math.round(effectiveDelaySeconds / 60))} minute(s).`;
 
-    await this.notifications.notifyAll('client.update.imminent', {
-      message: imminentMessage,
-      etaSeconds: Math.round(delayMs / 1000),
-      scheduledAt: new Date(scheduledAtMs).toISOString(),
-      fromUserId: admin.id,
-      fromUsername: admin.username,
-      timestamp: new Date().toISOString(),
-    });
+    const ids = await this.userRepo
+      .createQueryBuilder('u')
+      .select(['u.id'])
+      .getMany();
+    const recipients = ids.filter((u) => u.id !== admin.id);
+
+    await Promise.all(
+      recipients.map((u) =>
+        this.notifications.notifyUser(u.id, 'client.update.imminent', {
+          message: imminentMessage,
+          etaSeconds: effectiveDelaySeconds,
+          scheduledAt: new Date(scheduledAtMs).toISOString(),
+          requiresAckDialog: true,
+          fromUserId: admin.id,
+          fromUsername: admin.username,
+          timestamp: new Date().toISOString(),
+        }),
+      ),
+    );
 
     this.scheduledTimer = setTimeout(async () => {
       try {
-        // Si une autre planification est arrivée entre-temps, ne rien faire.
         if (this.scheduledAtMs !== scheduledAtMs) return;
 
         const latest = await this.clientUpdates.getLatest();
         const url = this.clientUpdates.resolveClientPublicUrl(latest);
         const version = latest?.version?.trim() || null;
 
-        await this.notifications.notifyAll('client.update.available', {
-          message:
-            latest?.message ??
-            'Une mise à jour du client est disponible et va être installée automatiquement.',
-          version,
-          url,
-          fromUserId: admin.id,
-          fromUsername: admin.username,
-          timestamp: new Date().toISOString(),
-        });
+        await Promise.all(
+          recipients.map((u) =>
+            this.notifications.notifyUser(u.id, 'client.update.available', {
+              message:
+                latest?.message ??
+                'Une mise à jour du client est disponible et va être installée automatiquement.',
+              version,
+              url,
+              fromUserId: admin.id,
+              fromUsername: admin.username,
+              timestamp: new Date().toISOString(),
+            }),
+          ),
+        );
       } catch {
         // ignore
       }
@@ -194,7 +218,11 @@ export class AdminClientUpdatesWsHandler {
 
     return {
       type: 'admin.client.update.schedule',
-      payload: { scheduledAt: new Date(scheduledAtMs).toISOString(), delaySeconds: Math.round(delayMs / 1000) },
+      payload: {
+        delivered: recipients.length,
+        scheduledAt: new Date(scheduledAtMs).toISOString(),
+        delaySeconds: effectiveDelaySeconds,
+      },
     };
   }
 }

@@ -1244,6 +1244,11 @@ public sealed partial class AdminViewModel
                 await BuildAndUploadClientUpdateAsync().ConfigureAwait(true);
                 return;
             }
+            if (_page == AdminPage.ClientUpdates && tag is string scheduleTag && scheduleTag == "clientUpdate.schedule")
+            {
+                await ScheduleClientUpdateAsync().ConfigureAwait(true);
+                return;
+            }
             if (_page == AdminPage.ClientUpdates && tag is string updateTag && updateTag == "clientUpdate.announce")
             {
                 await AnnounceClientUpdateAsync().ConfigureAwait(true);

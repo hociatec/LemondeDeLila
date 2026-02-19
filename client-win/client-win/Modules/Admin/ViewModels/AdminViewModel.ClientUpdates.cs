@@ -19,6 +19,7 @@ public sealed partial class AdminViewModel
         Details = string.Empty;
         Items.Clear();
         Items.Add(new AdminMenuItem("Compiler + uploader la mise à jour (admin)", tag: "clientUpdate.buildUpload"));
+        Items.Add(new AdminMenuItem("Planifier une mise à jour (minutes)", tag: "clientUpdate.schedule"));
         Items.Add(new AdminMenuItem("Proposer la mise à jour à tous", tag: "clientUpdate.announce"));
         Items.Add(new AdminMenuItem("Forcer la mise à jour (bloquer les anciens clients)", tag: "clientUpdate.forceLatest"));
         SelectedItem = Items.FirstOrDefault();
@@ -30,6 +31,7 @@ public sealed partial class AdminViewModel
         SecondaryInput = _publisher.SuggestNextVersion(AppInfo.GetShortVersion());
         SecondaryInputAcceptsReturn = false;
         ClientUpdateMessage = string.Empty;
+        ClientUpdateDelayMinutes = "5";
         PreferDetailsFocus = false;
         Status = "La version est calculée automatiquement. Publie puis diffuse la mise à jour.";
 
@@ -272,5 +274,39 @@ public sealed partial class AdminViewModel
     {
         var msg = (ClientUpdateMessage ?? string.Empty).Trim();
         return string.IsNullOrWhiteSpace(msg) ? null : msg;
+    }
+
+    private async Task ScheduleClientUpdateAsync()
+    {
+        var raw = (ClientUpdateDelayMinutes ?? string.Empty).Trim();
+        if (!int.TryParse(raw, out var minutes) || minutes < 5 || minutes > 1440)
+        {
+            await _dialogs.ShowError("Mise a jour", "Delai invalide. Entrez une valeur entre 5 et 1440 minutes.").ConfigureAwait(true);
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            var (delivered, delaySeconds, scheduledAt) = await _admin
+                .ScheduleClientUpdateAsync(minutes, NormalizeClientUpdateMessage())
+                .ConfigureAwait(true);
+
+            var delayShown = Math.Max(1, (int)Math.Round(delaySeconds / 60.0));
+            var when = scheduledAt;
+            if (DateTimeOffset.TryParse(scheduledAt, out var dt))
+            {
+                when = dt.LocalDateTime.ToString("yyyy-MM-dd HH:mm:ss");
+            }
+
+            await _dialogs.ShowInfo(
+                    "Mise a jour",
+                    $"Alerte envoyee a {delivered} utilisateur(s). Mise a jour dans {delayShown} minute(s), vers {when}.")
+                .ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 }

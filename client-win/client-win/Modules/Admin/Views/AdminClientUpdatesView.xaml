@@ -146,10 +146,22 @@
             <Border Grid.Column="1" Background="#0E2034" CornerRadius="10" Padding="16" Margin="8,0,0,0">
                 <StackPanel>
                     <TextBlock Text="Diffusion" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Text="Délai avant mise à jour (minutes, min 5)"
+                               Foreground="#BFD0E6"
+                               FontSize="12"
+                               Margin="0,10,0,6" />
+                    <TextBox Text="{Binding ClientUpdateDelayMinutes, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{DynamicResource InputTextBox}"
+                             MinHeight="40" />
+                    <Button Content="Planifier et prévenir en temps réel"
+                            Style="{StaticResource PrimaryActionButton}"
+                            Command="{Binding ClientUpdatesScheduleCommand}"
+                            Margin="0,10,0,0" />
+
                     <TextBlock Text="Annonce la mise à jour à tous les clients connectés."
                                Foreground="#90A6C4"
                                FontSize="12"
-                               Margin="0,10,0,6"
+                               Margin="0,16,0,6"
                                TextWrapping="Wrap" />
                     <Button Content="Proposer la mise à jour"
                             Style="{StaticResource ActionButton}"

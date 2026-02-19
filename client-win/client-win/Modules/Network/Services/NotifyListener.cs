@@ -56,6 +56,8 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
     private readonly Dictionary<int, bool> _friendPresenceById = new();
     private readonly object _restoreReadyGate = new();
     private readonly HashSet<int> _handledRestoreReadyRoomIds = new();
+    private readonly SemaphoreSlim _updateImminentDialogLock = new(1, 1);
+    private string? _lastUpdateImminentDialogKey;
     private const double StartupQuietSeconds = 1.5;
 
 	    private IWebSocketConnection? _ws;
@@ -498,12 +500,20 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 var message = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("message", out var m)
                     ? (m.GetString() ?? string.Empty)
                     : string.Empty;
+                var etaSeconds = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("etaSeconds", out var eta) && eta.ValueKind == JsonValueKind.Number
+                    ? eta.GetInt32()
+                    : 0;
+                var scheduledAt = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("scheduledAt", out var sch)
+                    ? (sch.GetString() ?? string.Empty)
+                    : string.Empty;
+                var requiresAckDialog = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("requiresAckDialog", out var req) && req.ValueKind == JsonValueKind.True;
 
                 _sounds.Play(SoundId.ClientUpdateWarning);
                 if (!string.IsNullOrWhiteSpace(message))
                 {
                     _announcements.Enqueue(message.Trim(), AnnouncementPriority.Polite);
                 }
+                _ = HandleClientUpdateImminentAsync(message, etaSeconds, scheduledAt, requiresAckDialog);
                 return;
             }
 
@@ -1130,6 +1140,61 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 // ignore
             }
             Environment.Exit(0);
+        }
+    }
+
+    private async Task HandleClientUpdateImminentAsync(
+        string message,
+        int etaSeconds,
+        string scheduledAt,
+        bool requiresAckDialog)
+    {
+        if (!requiresAckDialog)
+        {
+            return;
+        }
+
+        var key = $"{scheduledAt}|{etaSeconds}|{message}".Trim();
+        if (key.Length > 0 && string.Equals(_lastUpdateImminentDialogKey, key, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        await _updateImminentDialogLock.WaitAsync().ConfigureAwait(true);
+        try
+        {
+            if (key.Length > 0 && string.Equals(_lastUpdateImminentDialogKey, key, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _lastUpdateImminentDialogKey = key.Length == 0 ? Guid.NewGuid().ToString("N") : key;
+
+            var finalMessage = string.IsNullOrWhiteSpace(message)
+                ? "Une mise a jour du client est planifiee."
+                : message.Trim();
+
+            if (etaSeconds > 0)
+            {
+                finalMessage += $"\n\nDelai estime : {Math.Max(1, (int)Math.Round(etaSeconds / 60.0))} minute(s).";
+            }
+
+            if (DateTimeOffset.TryParse(scheduledAt, out var at))
+            {
+                finalMessage += $"\nHeure prevue : {at.LocalDateTime:yyyy-MM-dd HH:mm:ss}";
+            }
+
+            finalMessage += "\n\nFermez cette boite (Echap ou bouton Fermer) pour continuer.";
+
+            await _dialogs.ShowInfo("Mise a jour planifiee", finalMessage).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Erreur lors de l'affichage de l'alerte de mise a jour imminente.");
+        }
+        finally
+        {
+            _updateImminentDialogLock.Release();
         }
     }
 

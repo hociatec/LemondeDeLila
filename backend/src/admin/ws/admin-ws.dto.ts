@@ -109,6 +109,12 @@ export class AdminClientUpdateScheduleWsDto {
   @MaxLength(2000)
   message?: string;
 
+  @IsOptional()
+  @IsInt()
+  @Min(5)
+  @Max(1440)
+  delayMinutes?: number;
+
   // Exigence: avertir au moins 5 minutes avant la mise à jour.
   @IsOptional()
   @IsInt()
@@ -449,3 +455,4 @@ export class AdminBotSettingsUpdateWsDto {
   @Min(0)
   botDrawDelayMs?: number;
 }
+
