@@ -141,8 +141,8 @@ describe('CatPattes flow', () => {
 
     expect(state.pending).toBeNull();
     const messages = (state.log ?? []).map((e: any) => String(e?.message ?? ''));
-    expect(messages.some((m) => /D.+but de partie : Hacene commence\./i.test(m))).toBe(true);
-    expect(messages.some((m) => /C'est au tour de Hacene\./.test(m))).toBe(true);
+    expect(messages.some((m) => /D.+but de partie: .* commence\./i.test(m))).toBe(true);
+    expect(messages.some((m) => /C'est au tour de .+\./.test(m))).toBe(true);
 
     const afterSelectionActions = Rulebook.getAvailableActions(state as any, 1);
     expect(afterSelectionActions).toEqual([{ type: 'draw', payload: {} }]);

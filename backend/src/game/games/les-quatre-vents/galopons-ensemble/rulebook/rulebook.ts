@@ -14,6 +14,12 @@ import {
   GALOPONS_GAME,
   type GaloponsActionType,
 } from '../definitions/galopons.definition';
+import {
+  getPendingChooseTargetActionsForPlayer,
+  getPendingDrawActionsForPlayer,
+  validatePendingChooseTargetActionForActor,
+  validatePendingDrawActionForActor,
+} from '../../../../core/helpers/pending-actions-rulebook.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -23,21 +29,13 @@ export function getAvailableActions(
 
   const pending = state.pending as any;
   if (pending) {
-    if (pending.playerId !== playerId) return [];
-    if (pending.type === 'draw') {
-      return [{ type: 'draw', payload: {} }];
-    }
-    if (pending.type === 'choose_target') {
-      const targets: Array<{ targetPlayerId: number }> = Array.isArray(
-        pending?.data?.targets,
-      )
-        ? pending.data.targets
-        : [];
-      return targets.map((t) => ({
-        type: 'choose_target',
-        payload: { targetPlayerId: t.targetPlayerId },
-      }));
-    }
+    const drawActions = getPendingDrawActionsForPlayer(pending, playerId);
+    if (drawActions.length > 0) return drawActions;
+    const targetActions = getPendingChooseTargetActionsForPlayer(
+      pending,
+      playerId,
+    );
+    if (targetActions.length > 0) return targetActions;
     return [];
   }
 
@@ -73,18 +71,51 @@ export function validateAction(
 
   const pending = state.pending as any;
   if (pending) {
+    const drawValidation = validatePendingDrawActionForActor({
+      pending,
+      actorId,
+      actionType: type,
+    });
+    if (drawValidation.ok) {
+      return drawValidation.action;
+    }
+    if (pending.type === 'draw' && drawValidation.reason === 'wrong_action_type') {
+      throw new PlayerActionError('Action non disponible.', {
+        gameType: 'galopons-ensemble',
+      });
+    }
+
+    const targetValidation = validatePendingChooseTargetActionForActor({
+      pending,
+      actorId,
+      actionType: type,
+      payload: action.payload ?? {},
+    });
+    if (targetValidation.ok) {
+      return targetValidation.action;
+    }
+    if (
+      pending.type === 'choose_target' &&
+      targetValidation.reason === 'wrong_action_type'
+    ) {
+      throw new PlayerActionError('Choix invalide.', {
+        gameType: 'galopons-ensemble',
+      });
+    }
+    if (
+      pending.type === 'choose_target' &&
+      targetValidation.reason === 'invalid_target'
+    ) {
+      throw new GameValidationError('Cible invalide.', {
+        gameType: 'galopons-ensemble',
+        targetPlayerId: targetValidation.targetPlayerId,
+      });
+    }
+
     if (pending.playerId !== actorId) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
         gameType: 'galopons-ensemble',
       });
-    }
-    if (pending.type === 'draw') {
-      if (type !== 'draw') {
-        throw new PlayerActionError('Action non disponible.', {
-          gameType: 'galopons-ensemble',
-        });
-      }
-      return { type: 'draw', payload: {} };
     }
     if (pending.type === 'choose_target') {
       if (type !== 'choose_target') {
@@ -92,22 +123,9 @@ export function validateAction(
           gameType: 'galopons-ensemble',
         });
       }
-      const targets: Array<{ targetPlayerId: number }> = Array.isArray(
-        pending?.data?.targets,
-      )
-        ? pending.data.targets
-        : [];
-      const targetPlayerId = Number((action.payload as any)?.targetPlayerId);
-      if (
-        !Number.isFinite(targetPlayerId) ||
-        !targets.some((t) => t.targetPlayerId === targetPlayerId)
-      ) {
-        throw new GameValidationError('Cible invalide.', {
-          gameType: 'galopons-ensemble',
-          targetPlayerId,
-        });
-      }
-      return { type: 'choose_target', payload: { targetPlayerId } };
+      throw new GameValidationError('Cible invalide.', {
+        gameType: 'galopons-ensemble',
+      });
     }
     throw new PlayerActionError('Action non disponible.', {
       gameType: 'galopons-ensemble',

@@ -10,6 +10,7 @@ import { GameCoreService } from '../../../../core/services/game-core.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
 import { PromptPoliciesService } from '../../../../modules/prompt-policies/services/prompt-policies.service';
+import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
 import type { JeuOieMetadata, JeuOieTile } from '../model/jeu-oie-state.entity';
 
 import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
@@ -54,22 +55,21 @@ export class JeuOieActionService {
     action: GameSingleActionDto,
   ): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
-    const pending = state.pending as any;
-    if (!pending || pending.type !== 'choose_pawn') return state;
-
-    const playerId =
-      typeof pending.playerId === 'number'
-        ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
-    if (playerId == null) return state;
-
-    const payload = (action?.payload ?? {}) as any;
-    const rawPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
-    const options = Array.isArray(pending?.data?.pawns) ? pending.data.pawns : [];
-    const chosen = this.setupFlow.resolvePawnChoice(rawPawn, options) as
-      | { id: string; label: string; feminine: boolean }
+    const resolved = resolvePendingPawnChoiceAction({
+      state,
+      action,
+      pendingType: 'choose_pawn',
+      resolveChoice: (rawPawn, options) =>
+        this.setupFlow.resolvePawnChoice(rawPawn, options),
+    }) as
+      | {
+          playerId: number;
+          options: any[];
+          chosen: { id: string; label: string; feminine: boolean };
+        }
       | null;
-    if (!chosen) return state;
+    if (!resolved) return state;
+    const { playerId, options, chosen } = resolved;
 
     const meta = this.getMeta(state);
     const assigned = { ...(meta.pawnByPlayerId ?? {}) } as Record<number, string>;

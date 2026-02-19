@@ -15,6 +15,12 @@ import {
   CA_DERAPE_GAME,
   type CaDerapeActionType,
 } from '../definitions/ca.definition';
+import {
+  getPendingChooseTargetActionsForPlayer,
+  getPendingDrawActionsForPlayer,
+  validatePendingChooseTargetActionForActor,
+  validatePendingDrawActionForActor,
+} from '../../../../core/helpers/pending-actions-rulebook.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -24,21 +30,13 @@ export function getAvailableActions(
 
   const pending = state.pending as any;
   if (pending) {
-    if (pending.playerId !== playerId) return [];
-    if (pending.type === 'draw') {
-      return [{ type: 'draw', payload: {} }];
-    }
-    if (pending.type === 'choose_target') {
-      const targets: Array<{ targetPlayerId: number }> = Array.isArray(
-        pending?.data?.targets,
-      )
-        ? pending.data.targets
-        : [];
-      return targets.map((t) => ({
-        type: 'choose_target',
-        payload: { targetPlayerId: t.targetPlayerId },
-      }));
-    }
+    const drawActions = getPendingDrawActionsForPlayer(pending, playerId);
+    if (drawActions.length > 0) return drawActions;
+    const targetActions = getPendingChooseTargetActionsForPlayer(
+      pending,
+      playerId,
+    );
+    if (targetActions.length > 0) return targetActions;
     if (pending.type === 'choose_next_player') {
       const ids: number[] = Array.isArray(pending?.data?.playerIds)
         ? pending.data.playerIds
@@ -97,18 +95,51 @@ export function validateAction(
 
   const pending: any = state.pending;
   if (pending) {
+    const drawValidation = validatePendingDrawActionForActor({
+      pending,
+      actorId,
+      actionType: normalized,
+    });
+    if (drawValidation.ok) {
+      return drawValidation.action;
+    }
+    if (pending.type === 'draw' && drawValidation.reason === 'wrong_action_type') {
+      throw new PlayerActionError('Action non disponible.', {
+        gameType: 'ca-derape',
+      });
+    }
+
+    const targetValidation = validatePendingChooseTargetActionForActor({
+      pending,
+      actorId,
+      actionType: normalized,
+      payload: action.payload ?? {},
+    });
+    if (targetValidation.ok) {
+      return targetValidation.action;
+    }
+    if (
+      pending.type === 'choose_target' &&
+      targetValidation.reason === 'wrong_action_type'
+    ) {
+      throw new PlayerActionError('Choix invalide.', {
+        gameType: 'ca-derape',
+      });
+    }
+    if (
+      pending.type === 'choose_target' &&
+      targetValidation.reason === 'invalid_target'
+    ) {
+      throw new GameValidationError('Cible invalide.', {
+        gameType: 'ca-derape',
+        targetPlayerId: targetValidation.targetPlayerId,
+      });
+    }
+
     if (pending.playerId !== actorId) {
       throw new PlayerActionError('Action réservée à un autre joueur.', {
         gameType: 'ca-derape',
       });
-    }
-    if (pending.type === 'draw') {
-      if (normalized !== 'draw') {
-        throw new PlayerActionError('Action non disponible.', {
-          gameType: 'ca-derape',
-        });
-      }
-      return { type: 'draw', payload: {} };
     }
     if (pending.type === 'choose_target') {
       if (normalized !== 'choose_target') {
@@ -116,22 +147,9 @@ export function validateAction(
           gameType: 'ca-derape',
         });
       }
-      const targets: Array<{ targetPlayerId: number }> = Array.isArray(
-        pending?.data?.targets,
-      )
-        ? pending.data.targets
-        : [];
-      const targetPlayerId = Number((action.payload as any)?.targetPlayerId);
-      if (
-        !Number.isFinite(targetPlayerId) ||
-        !targets.some((t) => t.targetPlayerId === targetPlayerId)
-      ) {
-        throw new GameValidationError('Cible invalide.', {
-          gameType: 'ca-derape',
-          targetPlayerId,
-        });
-      }
-      return { type: 'choose_target', payload: { targetPlayerId } };
+      throw new GameValidationError('Cible invalide.', {
+        gameType: 'ca-derape',
+      });
     }
     if (pending.type === 'choose_next_player') {
       if (normalized !== 'choose_next_player') {

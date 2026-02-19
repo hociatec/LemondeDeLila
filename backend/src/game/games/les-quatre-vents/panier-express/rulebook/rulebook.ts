@@ -18,6 +18,7 @@ import {
   GameValidationError,
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
+import { validatePendingDrawActionForActor } from '../../../../core/helpers/pending-actions-rulebook.helper';
 
 function normalizeNumber(value: unknown): number | null {
   const n = typeof value === 'number' ? value : Number(value);
@@ -47,9 +48,12 @@ export function getAvailableActions(
   }
   if (
     rawPending &&
-    rawPending.type === 'draw' &&
-    pendingPlayerId != null &&
-    pendingPlayerId === playerId
+    validatePendingDrawActionForActor({
+      pending: rawPending,
+      actorId: playerId,
+      actionType: 'draw',
+      samePlayer: (left, right) => normalizeNumber(left) === normalizeNumber(right),
+    }).ok
   ) {
     return [{ type: 'draw' }];
   }
@@ -365,14 +369,19 @@ export function validateAction(
 
   if (type === 'draw') {
     const pending = state.pending as any;
-    const pid = normalizeNumber(pending?.playerId);
-    if (!pending || pending.type !== 'draw' || pid == null || pid !== actorId) {
+    const drawValidation = validatePendingDrawActionForActor({
+      pending,
+      actorId: Number(actorId ?? NaN),
+      actionType: 'draw',
+      samePlayer: (left, right) => normalizeNumber(left) === normalizeNumber(right),
+    });
+    if (!drawValidation.ok) {
       throw new PlayerActionError('Aucune pioche en attente.', {
         gameType: 'panier-express',
         playerId: actorId ?? undefined,
       });
     }
-    return { ...action, type, payload: {} };
+    return { ...action, type: 'draw', payload: {} };
   }
 
   if (type === 'skip_turn') {

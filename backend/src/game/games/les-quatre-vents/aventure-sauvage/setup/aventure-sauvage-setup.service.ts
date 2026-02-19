@@ -100,7 +100,6 @@ export class AventureSauvageSetupService {
         .map((p) => ({
           id: p.id,
           label: p.label,
-          title: p.label,
           description: p.description,
         })),
       choiceLabelBuilder: (pawn) =>
@@ -109,7 +108,7 @@ export class AventureSauvageSetupService {
           : String(pawn.label ?? '').trim(),
       pawnDataMapper: (choice: any) => ({
         id: String(choice?.id ?? '').trim(),
-        label: String(choice?.title ?? choice?.label ?? '').trim(),
+        label: String(choice?.label ?? '').trim(),
         description: String(choice?.description ?? '').trim(),
       }),
     });

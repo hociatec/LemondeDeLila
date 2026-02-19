@@ -9,10 +9,15 @@ import {
   requiredString,
 } from '../../../../core/helpers/payload-validators.helper';
 import {
-  isPendingPawnForPlayer,
-  listPendingPawnActions,
-  resolvePendingPawnId,
-} from '../../../../core/helpers/pawn-selection.helper';
+  getPendingPawnActionsForPlayer,
+  validatePendingPawnActionForActor,
+} from '../../../../core/helpers/pawn-pending-rulebook.helper';
+import {
+  getPendingChooseTargetActionsForPlayer,
+  getPendingDrawActionsForPlayer,
+  validatePendingChooseTargetActionForActor,
+  validatePendingDrawActionForActor,
+} from '../../../../core/helpers/pending-actions-rulebook.helper';
 import {
   GameValidationError,
   PlayerActionError,
@@ -31,12 +36,12 @@ export function getAvailableActions(
   if (pending) {
     if (pending.playerId !== playerId) return [];
 
+    const drawActions = getPendingDrawActionsForPlayer(pending, playerId);
+    if (drawActions.length > 0) return drawActions;
+
     const type = String(pending.type ?? '').toLowerCase();
-    if (type === 'draw') {
-      return [{ type: 'draw', payload: {} }];
-    }
     if (type === 'choose_pawn') {
-      return listPendingPawnActions(pending, 'choose_pawn');
+      return getPendingPawnActionsForPlayer(pending, playerId, 'choose_pawn');
     }
     if (type === 'reroll') {
       return [
@@ -44,17 +49,11 @@ export function getAvailableActions(
         { type: 'reroll_no', payload: {} },
       ];
     }
-    if (type === 'choose_target') {
-      const targets: Array<{ targetPlayerId: number }> = Array.isArray(
-        pending?.data?.targets,
-      )
-        ? pending.data.targets
-        : [];
-      return targets.map((t) => ({
-        type: 'choose_target',
-        payload: { targetPlayerId: t.targetPlayerId },
-      }));
-    }
+    const targetActions = getPendingChooseTargetActionsForPlayer(
+      pending,
+      playerId,
+    );
+    if (targetActions.length > 0) return targetActions;
     if (type === 'choose_number') {
       const min = Number(pending?.data?.min ?? 1);
       const max = Number(pending?.data?.max ?? 3);
@@ -140,6 +139,19 @@ export function validateAction(
       });
 
     const pType = String(pending.type ?? '').toLowerCase();
+    const drawValidation = validatePendingDrawActionForActor({
+      pending,
+      actorId,
+      actionType: type,
+    });
+    if (drawValidation.ok) {
+      return drawValidation.action;
+    }
+    if (pType === 'draw' && drawValidation.reason === 'wrong_action_type')
+      throw new PlayerActionError('Action non disponible.', {
+        gameType: GAME_TYPE,
+      });
+
     if (pType === 'draw') {
       if (type !== 'draw')
         throw new PlayerActionError('Action non disponible.', {
@@ -148,17 +160,27 @@ export function validateAction(
       return { type: 'draw', payload: {} };
     }
     if (pType === 'choose_pawn') {
-      if (type !== 'choose_pawn')
+      const pawnValidation = validatePendingPawnActionForActor({
+        pending,
+        actorId,
+        actionType: type,
+        payload: action.payload ?? {},
+        pendingType: 'choose_pawn',
+      });
+      if (!pawnValidation.ok && pawnValidation.reason === 'wrong_action_type')
         throw new PlayerActionError('Action non disponible.', {
           gameType: GAME_TYPE,
         });
-      const pawnId = resolvePendingPawnId(pending, action.payload ?? {});
-      if (!pawnId)
+      if (!pawnValidation.ok && pawnValidation.reason === 'invalid_pawn')
         throw new GameValidationError('Pion invalide.', {
           gameType: GAME_TYPE,
           action: { type, payload: action.payload ?? null },
         });
-      return { type: 'choose_pawn', payload: { pawnId } };
+      if (!pawnValidation.ok)
+        throw new PlayerActionError('Action non disponible.', {
+          gameType: GAME_TYPE,
+        });
+      return pawnValidation.action;
     }
     if (pType === 'reroll') {
       if (type !== 'reroll_yes' && type !== 'reroll_no')
@@ -167,36 +189,34 @@ export function validateAction(
         });
       return { type, payload: {} };
     }
+    const targetValidation = validatePendingChooseTargetActionForActor({
+      pending,
+      actorId,
+      actionType: type,
+      payload: action.payload ?? {},
+    });
+    if (targetValidation.ok) {
+      return targetValidation.action;
+    }
+    if (pType === 'choose_target' && targetValidation.reason === 'wrong_action_type')
+      throw new PlayerActionError('Action non disponible.', {
+        gameType: GAME_TYPE,
+      });
+    if (pType === 'choose_target' && targetValidation.reason === 'invalid_target')
+      throw new GameValidationError('Cible invalide.', {
+        gameType: GAME_TYPE,
+        action: { type, payload: action.payload ?? null },
+      });
+
     if (pType === 'choose_target') {
       if (type !== 'choose_target')
         throw new PlayerActionError('Action non disponible.', {
           gameType: GAME_TYPE,
         });
-      const targets: Array<{ targetPlayerId: number }> = Array.isArray(
-        pending?.data?.targets,
-      )
-        ? pending.data.targets
-        : [];
-      const targetPlayerId = (() => {
-        try {
-          return requiredInt(
-            action.payload ?? {},
-            'targetPlayerId',
-            'Cible invalide.',
-          );
-        } catch {
-          throw new GameValidationError('Cible invalide.', {
-            gameType: GAME_TYPE,
-            action: { type, payload: action.payload ?? null },
-          });
-        }
-      })();
-      if (!targets.some((t) => t.targetPlayerId === targetPlayerId))
-        throw new GameValidationError('Cible invalide.', {
-          gameType: GAME_TYPE,
-          action: { type, payload: action.payload ?? null },
-        });
-      return { type: 'choose_target', payload: { targetPlayerId } };
+      throw new GameValidationError('Cible invalide.', {
+        gameType: GAME_TYPE,
+        action: { type, payload: action.payload ?? null },
+      });
     }
     if (pType === 'choose_number') {
       if (type !== 'choose_number')

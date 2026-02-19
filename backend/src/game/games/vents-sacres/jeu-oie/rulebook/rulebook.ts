@@ -3,10 +3,9 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import { isRollAlias, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
-  isPendingPawnForPlayer,
-  listPendingPawnActions,
-  resolvePendingPawnId,
-} from '../../../../core/helpers/pawn-selection.helper';
+  getPendingPawnActionsForPlayer,
+  validatePendingPawnActionForActor,
+} from '../../../../core/helpers/pawn-pending-rulebook.helper';
 import {
   GameValidationError,
   PlayerActionError,
@@ -28,8 +27,13 @@ export function getAvailableActions(
 
   const pending = state.pending as any;
   if (pending) {
-    if (isPendingPawnForPlayer(pending, playerId, 'choose_pawn')) {
-      return listPendingPawnActions(pending, 'choose_pawn');
+    const pawnActions = getPendingPawnActionsForPlayer(
+      pending,
+      playerId,
+      'choose_pawn',
+    );
+    if (pawnActions.length > 0) {
+      return pawnActions;
     }
     return [];
   }
@@ -70,21 +74,27 @@ export function validateAction(
 
   const pending = state.pending as any;
   if (pending) {
-    if (isPendingPawnForPlayer(pending, actorId, 'choose_pawn')) {
-      if (normalized !== 'choose_pawn') {
-        throw new PlayerActionError(
-          'Action indisponible (choix de pion requis).',
-          { gameType: 'jeu-oie', playerId: actorId },
-        );
-      }
-      const pawnId = resolvePendingPawnId(pending, action.payload ?? {});
-      if (!pawnId) {
-        throw new PlayerActionError('Pion invalide.', {
-          gameType: 'jeu-oie',
-          playerId: actorId,
-        });
-      }
-      return { type: 'choose_pawn', payload: { pawnId } };
+    const pawnValidation = validatePendingPawnActionForActor({
+      pending,
+      actorId,
+      actionType: normalized,
+      payload: action.payload ?? {},
+      pendingType: 'choose_pawn',
+    });
+    if (pawnValidation.ok) {
+      return pawnValidation.action;
+    }
+    if (pawnValidation.reason === 'wrong_action_type') {
+      throw new PlayerActionError(
+        'Action indisponible (choix de pion requis).',
+        { gameType: 'jeu-oie', playerId: actorId },
+      );
+    }
+    if (pawnValidation.reason === 'invalid_pawn') {
+      throw new PlayerActionError('Pion invalide.', {
+        gameType: 'jeu-oie',
+        playerId: actorId,
+      });
     }
     throw new PlayerActionError('Action indisponible (choix en attente).', {
       gameType: 'jeu-oie',

@@ -6,6 +6,10 @@ import {
   GameValidationError,
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
+import {
+  getPendingDrawActionsForPlayer,
+  validatePendingDrawActionForActor,
+} from '../../../../core/helpers/pending-actions-rulebook.helper';
 
 const ALLOWED = new Set([
   'roll',
@@ -23,10 +27,8 @@ export function getAvailableActions(
   if (!isStartedState(state)) return [];
 
   const pending = state.pending as any;
-  if (pending?.type === 'draw') {
-    if ((pending.playerId ?? null) !== playerId) return [];
-    return [{ type: 'draw', payload: {} }];
-  }
+  const drawActions = getPendingDrawActionsForPlayer(pending, playerId);
+  if (drawActions.length > 0) return drawActions;
   if (pending?.type === 'quiz') {
     if ((pending.playerId ?? null) !== playerId) return [];
     return [{ type: 'answer_quiz', payload: {} }];
@@ -68,6 +70,14 @@ export function validateAction(
         currentPlayerId: pid,
       });
     }
+    const drawValidation = validatePendingDrawActionForActor({
+      pending,
+      actorId: Number(actorId ?? NaN),
+      actionType: normalized,
+      samePlayer: (left, right) =>
+        Number.isFinite(right) && Number(left) === Number(right),
+    });
+    if (drawValidation.ok) return drawValidation.action;
     if (pending.type === 'draw') return { ...action, type: 'draw', payload: {} };
     if (pending.type === 'quiz') return action.type === 'answer_quiz'
       ? action

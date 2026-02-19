@@ -14,6 +14,10 @@ import {
   MISSION_GALAXIE_GAME,
   type MissionGalaxieActionType,
 } from '../definitions/mission-galaxie.definition';
+import {
+  getPendingDrawActionsForPlayer,
+  validatePendingDrawActionForActor,
+} from '../../../../core/helpers/pending-actions-rulebook.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -24,9 +28,8 @@ export function getAvailableActions(
   const pending = state.pending as any;
   if (pending) {
     if (pending.playerId !== playerId) return [];
-    if (pending.type === 'draw') {
-      return [{ type: 'draw', payload: {} }];
-    }
+    const drawActions = getPendingDrawActionsForPlayer(pending, playerId);
+    if (drawActions.length > 0) return drawActions;
     if (pending.type === 'choose_option') {
       const choices: string[] = Array.isArray(pending?.data?.choices)
         ? pending.data.choices
@@ -85,13 +88,18 @@ export function validateAction(
         gameType: 'mission-galaxie',
       });
     }
-    if (pending.type === 'draw') {
-      if (type !== 'draw') {
-        throw new PlayerActionError('Action non disponible.', {
-          gameType: 'mission-galaxie',
-        });
-      }
-      return { type: 'draw', payload: {} };
+    const drawValidation = validatePendingDrawActionForActor({
+      pending,
+      actorId,
+      actionType: type,
+    });
+    if (drawValidation.ok) {
+      return drawValidation.action;
+    }
+    if (pending.type === 'draw' && drawValidation.reason === 'wrong_action_type') {
+      throw new PlayerActionError('Action non disponible.', {
+        gameType: 'mission-galaxie',
+      });
     }
     if (pending.type === 'choose_option') {
       if (type !== 'choose_option') {

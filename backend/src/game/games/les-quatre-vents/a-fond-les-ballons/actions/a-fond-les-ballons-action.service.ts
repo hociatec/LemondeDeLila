@@ -9,6 +9,7 @@ import { RandomService } from '../../../../modules/random/services/random.servic
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
 import type {
   AFondLesBallonsCard,
   AFondLesBallonsMetadata,
@@ -245,22 +246,15 @@ export class AFondLesBallonsActionService {
   ): GameStateEntity {
     const status = String(state.status ?? '').toLowerCase();
     if (status !== 'started') return state;
-
-    const pending = state.pending as any;
-    if (!pending || pending.type !== 'choose_pawn') return state;
-
-    const playerId =
-      typeof pending.playerId === 'number'
-        ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
-    if (playerId == null) return state;
-
-    const payload = (action?.payload ?? {}) as any;
-    const rawPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
-
-    const options = Array.isArray(pending?.data?.pawns) ? pending.data.pawns : [];
-    const chosen = this.setupFlow.resolvePawnChoice(rawPawn, options) as any;
-    if (!chosen) return state;
+    const resolved = resolvePendingPawnChoiceAction({
+      state,
+      action,
+      pendingType: 'choose_pawn',
+      resolveChoice: (rawPawn, options) =>
+        this.setupFlow.resolvePawnChoice(rawPawn, options),
+    });
+    if (!resolved) return state;
+    const { playerId, options, chosen } = resolved;
 
     const meta = this.getMeta(state);
     const assigned = { ...(meta.pawnByPlayerId ?? {}) } as Record<number, string>;
@@ -272,7 +266,7 @@ export class AFondLesBallonsActionService {
         ? meta.pawns
         : options.map((p: any) => ({
             id: String(p?.id ?? '').trim(),
-            label: String(p?.label ?? p?.title ?? '').trim(),
+            label: String(p?.label ?? '').trim(),
             description: String(p?.description ?? '').trim(),
           }));
     const pawn = pawns.find((p) => p.id === chosen.id) ?? chosen;
@@ -325,7 +319,7 @@ export class AFondLesBallonsActionService {
           : String(pawn.label ?? '').trim(),
       pawnDataMapper: (pawn) => ({
         id: String(pawn.id ?? '').trim(),
-        label: String(pawn.label ?? pawn.title ?? '').trim(),
+        label: String(pawn.label ?? '').trim(),
         description: String(pawn.description ?? '').trim(),
       }),
     });

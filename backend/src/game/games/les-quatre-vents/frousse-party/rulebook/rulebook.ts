@@ -15,10 +15,15 @@ import {
   normalizeLowerActionType,
 } from '../../../../actions/action-service.helper';
 import {
-  isPendingPawnForPlayer,
-  listPendingPawnActions,
-  resolvePendingPawnId,
-} from '../../../../core/helpers/pawn-selection.helper';
+  getPendingPawnActionsForPlayer,
+  validatePendingPawnActionForActor,
+} from '../../../../core/helpers/pawn-pending-rulebook.helper';
+import {
+  getPendingChooseTargetActionsForPlayer,
+  getPendingDrawActionsForPlayer,
+  validatePendingChooseTargetActionForActor,
+  validatePendingDrawActionForActor,
+} from '../../../../core/helpers/pending-actions-rulebook.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
@@ -34,25 +39,26 @@ export function getAvailableActions(
 
   const pending = state.pending as any;
   if (pending) {
-    const pendingPlayerId = toPlayerId(pending.playerId);
-    if (pendingPlayerId == null || pendingPlayerId !== playerId) return [];
-    if (pending.type === 'draw') {
-      return [{ type: 'draw', payload: {} }];
+    const drawActions = getPendingDrawActionsForPlayer(pending, playerId, {
+      samePlayer: (left, right) => toPlayerId(left) === toPlayerId(right),
+    });
+    if (drawActions.length > 0) return drawActions;
+    const pawnActions = getPendingPawnActionsForPlayer(
+      pending,
+      playerId,
+      'choose_pawn',
+    );
+    if (pawnActions.length > 0) {
+      return pawnActions;
     }
-    if (pending.type === 'choose_pawn') {
-      return listPendingPawnActions(pending, 'choose_pawn');
-    }
-    if (pending.type === 'choose_target') {
-      const targets: Array<{ targetPlayerId: number }> = Array.isArray(
-        pending?.data?.targets,
-      )
-        ? pending.data.targets
-        : [];
-      return targets.map((t) => ({
-        type: 'choose_target',
-        payload: { targetPlayerId: t.targetPlayerId },
-      }));
-    }
+    const targetActions = getPendingChooseTargetActionsForPlayer(
+      pending,
+      playerId,
+      {
+        samePlayer: (left, right) => toPlayerId(left) === toPlayerId(right),
+      },
+    );
+    if (targetActions.length > 0) return targetActions;
     return [];
   }
 
@@ -93,32 +99,36 @@ export function validateAction(
 
   const pending = state.pending as any;
   if (pending) {
-    const pendingPlayerId = toPlayerId(pending.playerId);
-    if (pendingPlayerId == null || pendingPlayerId !== actorId) {
-      throw new PlayerActionError("Ce n'est pas votre action.", {
+    const drawValidation = validatePendingDrawActionForActor({
+      pending,
+      actorId,
+      actionType: type,
+      samePlayer: (left, right) => toPlayerId(left) === toPlayerId(right),
+    });
+    if (drawValidation.ok) {
+      return drawValidation.action;
+    }
+    if (pending.type === 'draw' && drawValidation.reason === 'wrong_action_type') {
+      throw new PlayerActionError('Action non disponible.', {
         gameType: 'frousse-party',
       });
     }
-    if (pending.type === 'draw') {
-      if (type !== 'draw') {
-        throw new PlayerActionError('Action non disponible.', {
-          gameType: 'frousse-party',
-        });
-      }
-      return { type: 'draw', payload: {} };
-    }
+
     if (pending.type === 'choose_pawn') {
-      if (type !== 'choose_pawn') {
+      const pawnValidation = validatePendingPawnActionForActor({
+        pending,
+        actorId,
+        actionType: type,
+        payload: action.payload ?? {},
+        pendingType: 'choose_pawn',
+        idResolver: (value) => String(resolvePawnId(value) ?? '').trim(),
+      });
+      if (!pawnValidation.ok && pawnValidation.reason === 'wrong_action_type') {
         throw new PlayerActionError('Choix invalide.', {
           gameType: 'frousse-party',
         });
       }
-      const pawnId = resolvePendingPawnId(
-        pending,
-        action.payload ?? {},
-        (value) => String(resolvePawnId(value) ?? '').trim(),
-      );
-      if (!pawnId) {
+      if (!pawnValidation.ok && pawnValidation.reason === 'invalid_pawn') {
         throw new GameValidationError('Pion invalide.', {
           gameType: 'frousse-party',
           pawnId:
@@ -128,7 +138,46 @@ export function validateAction(
             null,
         });
       }
-      return { type: 'choose_pawn', payload: { pawnId } };
+      if (!pawnValidation.ok) {
+        throw new PlayerActionError('Choix invalide.', {
+          gameType: 'frousse-party',
+        });
+      }
+      return pawnValidation.action;
+    }
+    const targetValidation = validatePendingChooseTargetActionForActor({
+      pending,
+      actorId,
+      actionType: type,
+      payload: action.payload ?? {},
+      samePlayer: (left, right) => toPlayerId(left) === toPlayerId(right),
+    });
+    if (targetValidation.ok) {
+      return targetValidation.action;
+    }
+    if (
+      pending.type === 'choose_target' &&
+      targetValidation.reason === 'wrong_action_type'
+    ) {
+      throw new PlayerActionError('Choix invalide.', {
+        gameType: 'frousse-party',
+      });
+    }
+    if (
+      pending.type === 'choose_target' &&
+      targetValidation.reason === 'invalid_target'
+    ) {
+      throw new GameValidationError('Cible invalide.', {
+        gameType: 'frousse-party',
+        targetPlayerId: targetValidation.targetPlayerId,
+      });
+    }
+
+    const pendingPlayerId = toPlayerId(pending.playerId);
+    if (pendingPlayerId == null || pendingPlayerId !== actorId) {
+      throw new PlayerActionError("Ce n'est pas votre action.", {
+        gameType: 'frousse-party',
+      });
     }
     if (pending.type === 'choose_target') {
       if (type !== 'choose_target') {
@@ -136,22 +185,9 @@ export function validateAction(
           gameType: 'frousse-party',
         });
       }
-      const targets: Array<{ targetPlayerId: number }> = Array.isArray(
-        pending?.data?.targets,
-      )
-        ? pending.data.targets
-        : [];
-      const targetPlayerId = Number((action.payload as any)?.targetPlayerId);
-      if (
-        !Number.isFinite(targetPlayerId) ||
-        !targets.some((t) => t.targetPlayerId === targetPlayerId)
-      ) {
-        throw new GameValidationError('Cible invalide.', {
-          gameType: 'frousse-party',
-          targetPlayerId,
-        });
-      }
-      return { type: 'choose_target', payload: { targetPlayerId } };
+      throw new PlayerActionError('Choix invalide.', {
+        gameType: 'frousse-party',
+      });
     }
     throw new PlayerActionError('Action non disponible.', {
       gameType: 'frousse-party',

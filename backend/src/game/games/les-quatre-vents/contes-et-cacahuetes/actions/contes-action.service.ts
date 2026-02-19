@@ -10,6 +10,7 @@ import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
+import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
 import type {
   ContesCard,
   ContesCacahuetesMetadata,
@@ -87,17 +88,15 @@ export class ContesActionService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const pending = state.pending as any;
-    if (!pending || pending.type !== 'choose_pawn') return state;
-    const playerId =
-      typeof pending.playerId === 'number'
-        ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
-    if (playerId == null) return state;
-
-    const options = Array.isArray(pending?.data?.pawns) ? pending.data.pawns : [];
-    const chosen = this.setupFlow.resolvePawnChoice((action.payload as any)?.pawnId ?? (action.payload as any)?.pawn ?? (action.payload as any)?.value ?? null, options) as any;
-    if (!chosen) return state;
+    const resolved = resolvePendingPawnChoiceAction({
+      state,
+      action,
+      pendingType: 'choose_pawn',
+      resolveChoice: (rawPawn, options) =>
+        this.setupFlow.resolvePawnChoice(rawPawn, options),
+    });
+    if (!resolved) return state;
+    const { playerId, chosen } = resolved;
 
     const players = Array.isArray(state.players) ? state.players : [];
     const used = new Set(

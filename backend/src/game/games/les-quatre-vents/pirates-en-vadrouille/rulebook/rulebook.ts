@@ -7,6 +7,10 @@ import {
 import { PIRATES_GAME } from '../definitions/pirates-en-vadrouille.definition';
 import { isRollAlias, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+import {
+  getPendingChooseTargetActionsForPlayer,
+  validatePendingChooseTargetActionForActor,
+} from '../../../../core/helpers/pending-actions-rulebook.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -16,18 +20,12 @@ export function getAvailableActions(
 
   const pending = state.pending as any;
   if (pending) {
-    if (pending.playerId !== playerId) return [];
-    if (pending.type === 'choose_target') {
-      const targets: Array<{ targetPlayerId: number }> = Array.isArray(
-        pending?.data?.options,
-      )
-        ? pending.data.options
-        : [];
-      return targets.map((t) => ({
-        type: 'choose_target',
-        payload: { targetPlayerId: t.targetPlayerId },
-      }));
-    }
+    const targetActions = getPendingChooseTargetActionsForPlayer(
+      pending,
+      playerId,
+      { targetsKey: 'options' },
+    );
+    if (targetActions.length > 0) return targetActions;
     return [];
   }
 
@@ -67,6 +65,34 @@ export function validateAction(
 
   const pending = state.pending as any;
   if (pending) {
+    const targetValidation = validatePendingChooseTargetActionForActor({
+      pending,
+      actorId,
+      actionType: type,
+      payload: action.payload ?? {},
+      targetsKey: 'options',
+    });
+    if (targetValidation.ok) {
+      return targetValidation.action;
+    }
+    if (
+      pending.type === 'choose_target' &&
+      targetValidation.reason === 'wrong_action_type'
+    ) {
+      throw new PlayerActionError('Action non disponible.', {
+        gameType: 'pirates-en-vadrouille',
+      });
+    }
+    if (
+      pending.type === 'choose_target' &&
+      targetValidation.reason === 'invalid_target'
+    ) {
+      throw new GameValidationError('Cible invalide.', {
+        gameType: 'pirates-en-vadrouille',
+        targetPlayerId: targetValidation.targetPlayerId,
+      });
+    }
+
     if (pending.playerId !== actorId) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
         gameType: 'pirates-en-vadrouille',
@@ -78,22 +104,9 @@ export function validateAction(
           gameType: 'pirates-en-vadrouille',
         });
       }
-      const targetPlayerId = Number((action.payload as any)?.targetPlayerId);
-      const options: Array<{ targetPlayerId: number }> = Array.isArray(
-        pending?.data?.options,
-      )
-        ? pending.data.options
-        : [];
-      if (
-        !Number.isFinite(targetPlayerId) ||
-        !options.some((opt) => opt.targetPlayerId === targetPlayerId)
-      ) {
-        throw new GameValidationError('Cible invalide.', {
-          gameType: 'pirates-en-vadrouille',
-          targetPlayerId,
-        });
-      }
-      return { type: 'choose_target', payload: { targetPlayerId } };
+      throw new GameValidationError('Cible invalide.', {
+        gameType: 'pirates-en-vadrouille',
+      });
     }
     throw new PlayerActionError('Action non disponible.', {
       gameType: 'pirates-en-vadrouille',

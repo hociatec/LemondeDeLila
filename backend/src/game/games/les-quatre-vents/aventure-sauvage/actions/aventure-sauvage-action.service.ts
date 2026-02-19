@@ -10,6 +10,7 @@ import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-
 import { BoardEffectsPoliciesService } from '../../../../modules/board-effects-policies/services/board-effects-policies.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
+import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
 import type {
   AventureSauvageCard,
   AventureSauvageMetadata,
@@ -151,21 +152,15 @@ export class AventureSauvageActionService {
   ): GameStateEntity {
     const status = String(state.status ?? '').toLowerCase();
     if (status !== 'started') return state;
-
-    const pending = state.pending as any;
-    if (!pending || pending.type !== 'choose_pawn') return state;
-
-    const playerId =
-      typeof pending.playerId === 'number'
-        ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
-    if (playerId == null) return state;
-
-    const payload = (action?.payload ?? {}) as any;
-    const rawPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
-    const options = Array.isArray(pending?.data?.pawns) ? pending.data.pawns : [];
-    const chosen = this.setupFlow.resolvePawnChoice(rawPawn, options) as any;
-    if (!chosen) return state;
+    const resolved = resolvePendingPawnChoiceAction({
+      state,
+      action,
+      pendingType: 'choose_pawn',
+      resolveChoice: (rawPawn, options) =>
+        this.setupFlow.resolvePawnChoice(rawPawn, options),
+    });
+    if (!resolved) return state;
+    const { playerId, options, chosen } = resolved;
 
     const meta = this.getMeta(state);
     const assigned = { ...(meta.pawnByPlayerId ?? {}) } as Record<number, string>;
@@ -179,7 +174,7 @@ export class AventureSauvageActionService {
           ? meta.pawns
           : options.map((p: any) => ({
               id: String(p?.id ?? '').trim(),
-              label: String(p?.label ?? p?.title ?? '').trim(),
+              label: String(p?.label ?? '').trim(),
               description: String(p?.description ?? '').trim(),
             })),
       pawnByPlayerId: { ...assigned, [playerId]: chosen.id },
@@ -207,7 +202,6 @@ export class AventureSauvageActionService {
       pawns: choicesForPending.map((p) => ({
         id: p.id,
         label: p.label,
-        title: p.label,
         description: p.description,
       })),
       choiceLabelBuilder: (pawn) =>
@@ -216,7 +210,7 @@ export class AventureSauvageActionService {
           : String(pawn.label ?? '').trim(),
       pawnDataMapper: (p: any) => ({
         id: String(p?.id ?? '').trim(),
-        label: String(p?.title ?? p?.label ?? '').trim(),
+        label: String(p?.label ?? '').trim(),
         description: String(p?.description ?? '').trim(),
       }),
     });

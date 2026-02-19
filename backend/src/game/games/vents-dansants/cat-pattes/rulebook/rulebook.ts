@@ -11,10 +11,9 @@ import { CAT_PATTES_GOAL } from '../model/cat-pattes-state.entity';
 import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
-  isPendingPawnForPlayer,
-  listPendingPawnActions,
-  resolvePendingPawnId,
-} from '../../../../core/helpers/pawn-selection.helper';
+  getPendingPawnActionsForPlayer,
+  validatePendingPawnActionForActor,
+} from '../../../../core/helpers/pawn-pending-rulebook.helper';
 
 type CatPattesActionPayload = {
   cardId?: string | null;
@@ -105,8 +104,13 @@ export function getAvailableActions(
 
   const pending = state.pending as any;
   if (pending) {
-    if (isPendingPawnForPlayer(pending, playerId, 'choose_pawn')) {
-      return listPendingPawnActions(pending, 'choose_pawn');
+    const pawnActions = getPendingPawnActionsForPlayer(
+      pending,
+      playerId,
+      'choose_pawn',
+    );
+    if (pawnActions.length > 0) {
+      return pawnActions;
     }
     return [];
   }
@@ -182,19 +186,22 @@ export function validateAction(
 
   const pending = state.pending as any;
   if (pending) {
-    if (isPendingPawnForPlayer(pending, actorId, 'choose_pawn')) {
-      if (type !== 'choose_pawn') {
-        throw new Error('Action indisponible (choix de pion requis).');
-      }
-      const pawnId = resolvePendingPawnId(
-        pending,
-        payload,
-        (value) => normalizePawnKey(value),
-      );
-      if (!pawnId) {
-        throw new Error('Pion invalide.');
-      }
-      return { type: 'choose_pawn', payload: { pawnId } };
+    const pawnValidation = validatePendingPawnActionForActor({
+      pending,
+      actorId,
+      actionType: type,
+      payload,
+      pendingType: 'choose_pawn',
+      idResolver: (value) => normalizePawnKey(value),
+    });
+    if (pawnValidation.ok) {
+      return pawnValidation.action;
+    }
+    if (pawnValidation.reason === 'wrong_action_type') {
+      throw new Error('Action indisponible (choix de pion requis).');
+    }
+    if (pawnValidation.reason === 'invalid_pawn') {
+      throw new Error('Pion invalide.');
     }
     throw new Error('Action indisponible (choix en attente).');
   }

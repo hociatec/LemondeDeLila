@@ -82,7 +82,6 @@ export class ContesCacahuetesSetupService {
         .map((pawn) => ({
           id: pawn.id,
           label: pawn.label,
-          title: pawn.label,
           description: pawn.description,
         })),
       choiceLabelBuilder: (pawn) =>
@@ -91,7 +90,7 @@ export class ContesCacahuetesSetupService {
           : String(pawn.label ?? '').trim(),
       pawnDataMapper: (choice: any) => ({
         id: String(choice?.id ?? '').trim(),
-        label: String(choice?.title ?? choice?.label ?? '').trim(),
+        label: String(choice?.label ?? '').trim(),
         description: String(choice?.description ?? '').trim(),
       }),
     });

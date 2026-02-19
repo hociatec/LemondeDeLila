@@ -16,6 +16,7 @@ import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-
 import { BoardEffectsPoliciesService } from '../../../../modules/board-effects-policies/services/board-effects-policies.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
 import type {
   FrousseCard,
   FrousseMetadata,
@@ -75,21 +76,15 @@ export class FrousseActionService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const pending = state.pending as any;
-    if (!pending || pending.type !== 'choose_pawn') return state;
-
-    const playerId =
-      typeof pending.playerId === 'number'
-        ? pending.playerId
-        : (state.turn?.currentPlayerId ?? null);
-    if (playerId == null) return state;
-
-    const payload = (action.payload ?? {}) as any;
-    const options = Array.isArray(pending?.data?.pawns)
-      ? pending.data.pawns
-      : [];
-    const chosen = this.setupFlow.resolvePawnChoice(payload.pawnId ?? payload.pawn ?? payload.value ?? null, options) as any;
-    if (!chosen) return state;
+    const resolved = resolvePendingPawnChoiceAction({
+      state,
+      action,
+      pendingType: 'choose_pawn',
+      resolveChoice: (rawPawn, options) =>
+        this.setupFlow.resolvePawnChoice(rawPawn, options),
+    });
+    if (!resolved) return state;
+    const { playerId, chosen } = resolved;
 
     const players = (state.players ?? []).map((p) => {
       if (p?.id !== playerId) return p;

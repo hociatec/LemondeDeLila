@@ -15,10 +15,15 @@ import {
   normalizeLowerActionType,
 } from '../../../../actions/action-service.helper';
 import {
-  isPendingPawnForPlayer,
-  listPendingPawnActions,
-  resolvePendingPawnId,
-} from '../../../../core/helpers/pawn-selection.helper';
+  getPendingPawnActionsForPlayer,
+  validatePendingPawnActionForActor,
+} from '../../../../core/helpers/pawn-pending-rulebook.helper';
+import {
+  getPendingChooseTargetActionsForPlayer,
+  getPendingDrawActionsForPlayer,
+  validatePendingChooseTargetActionForActor,
+  validatePendingDrawActionForActor,
+} from '../../../../core/helpers/pending-actions-rulebook.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
@@ -36,8 +41,13 @@ export function getAvailableActions(
 
   const status = String(state.status ?? '').toLowerCase();
   const pawnPending = state.pending as any;
-  if (isPendingPawnForPlayer(pawnPending, playerId, 'pick_pawn')) {
-    return listPendingPawnActions(pawnPending, 'pick_pawn');
+  const pawnActions = getPendingPawnActionsForPlayer(
+    pawnPending,
+    playerId,
+    'pick_pawn',
+  );
+  if (pawnActions.length > 0) {
+    return pawnActions;
   }
   if (status !== 'started') return [];
 
@@ -53,21 +63,18 @@ export function getAvailableActions(
 
   const activePending = state.pending as any;
   if (activePending) {
-    if (toPlayerId(activePending.playerId) !== playerId) return [];
-    if (activePending.type === 'draw') {
-      return [{ type: 'draw', payload: {} }];
-    }
-    if (activePending.type === 'choose_target') {
-      const targets: Array<{ targetPlayerId: number }> = Array.isArray(
-        activePending?.data?.targets,
-      )
-        ? activePending.data.targets
-        : [];
-      return targets.map((t) => ({
-        type: 'choose_target',
-        payload: { targetPlayerId: t.targetPlayerId },
-      }));
-    }
+    const drawActions = getPendingDrawActionsForPlayer(activePending, playerId, {
+      samePlayer: (left, right) => toPlayerId(left) === toPlayerId(right),
+    });
+    if (drawActions.length > 0) return drawActions;
+    const targetActions = getPendingChooseTargetActionsForPlayer(
+      activePending,
+      playerId,
+      {
+        samePlayer: (left, right) => toPlayerId(left) === toPlayerId(right),
+      },
+    );
+    if (targetActions.length > 0) return targetActions;
     return [];
   }
 
@@ -107,18 +114,19 @@ export function validateAction(
 
   const pickPawnPending = state.pending as any;
   if (pickPawnPending && pickPawnPending.type === 'pick_pawn') {
-    if (!isPendingPawnForPlayer(pickPawnPending, actorId, 'pick_pawn')) {
-      throw new PlayerActionError("Ce n'est pas votre action.", {
-        gameType: 'en-attendant-minuit',
-      });
-    }
-    if (type !== 'pick_pawn') {
+    const pawnValidation = validatePendingPawnActionForActor({
+      pending: pickPawnPending,
+      actorId,
+      actionType: type,
+      payload: action.payload ?? {},
+      pendingType: 'pick_pawn',
+    });
+    if (!pawnValidation.ok && pawnValidation.reason === 'wrong_action_type') {
       throw new PlayerActionError('Action non disponible.', {
         gameType: 'en-attendant-minuit',
       });
     }
-    const resolvedPawn = resolvePendingPawnId(pickPawnPending, action.payload ?? {});
-    if (!resolvedPawn) {
+    if (!pawnValidation.ok && pawnValidation.reason === 'invalid_pawn') {
       throw new GameValidationError('Choix de pion invalide.', {
         gameType: 'en-attendant-minuit',
         pawn:
@@ -128,7 +136,12 @@ export function validateAction(
           null,
       });
     }
-    return { type: 'pick_pawn', payload: { pawnId: resolvedPawn } };
+    if (!pawnValidation.ok) {
+      throw new PlayerActionError("Ce n'est pas votre action.", {
+        gameType: 'en-attendant-minuit',
+      });
+    }
+    return pawnValidation.action as GameSingleActionDto;
   }
 
   if (!isStartedState(state)) {
@@ -163,6 +176,53 @@ export function validateAction(
 
   const actionPending = state.pending as any;
   if (actionPending) {
+    const drawValidation = validatePendingDrawActionForActor({
+      pending: actionPending,
+      actorId,
+      actionType: type,
+      samePlayer: (left, right) => toPlayerId(left) === toPlayerId(right),
+    });
+    if (drawValidation.ok) {
+      return drawValidation.action;
+    }
+    if (
+      actionPending.type === 'draw' &&
+      drawValidation.reason === 'wrong_action_type'
+    ) {
+      throw new PlayerActionError('Action non disponible.', {
+        gameType: 'en-attendant-minuit',
+        action: type,
+      });
+    }
+
+    const targetValidation = validatePendingChooseTargetActionForActor({
+      pending: actionPending,
+      actorId,
+      actionType: type,
+      payload: action.payload ?? {},
+      samePlayer: (left, right) => toPlayerId(left) === toPlayerId(right),
+    });
+    if (targetValidation.ok) {
+      return targetValidation.action;
+    }
+    if (
+      actionPending.type === 'choose_target' &&
+      targetValidation.reason === 'wrong_action_type'
+    ) {
+      throw new PlayerActionError('Choix invalide.', {
+        gameType: 'en-attendant-minuit',
+      });
+    }
+    if (
+      actionPending.type === 'choose_target' &&
+      targetValidation.reason === 'invalid_target'
+    ) {
+      throw new GameValidationError('Cible invalide.', {
+        gameType: 'en-attendant-minuit',
+        targetPlayerId: targetValidation.targetPlayerId,
+      });
+    }
+
     if (toPlayerId(actionPending.playerId) !== actorId) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
         gameType: 'en-attendant-minuit',
@@ -178,27 +238,9 @@ export function validateAction(
       return { type: 'draw', payload: {} };
     }
     if (actionPending.type === 'choose_target') {
-      if (type !== 'choose_target') {
-        throw new PlayerActionError('Choix invalide.', {
-          gameType: 'en-attendant-minuit',
-        });
-      }
-      const targets: Array<{ targetPlayerId: number }> = Array.isArray(
-        actionPending?.data?.targets,
-      )
-        ? actionPending.data.targets
-        : [];
-      const targetPlayerId = Number((action.payload as any)?.targetPlayerId);
-      if (
-        !Number.isFinite(targetPlayerId) ||
-        !targets.some((t) => t.targetPlayerId === targetPlayerId)
-      ) {
-        throw new GameValidationError('Cible invalide.', {
-          gameType: 'en-attendant-minuit',
-          targetPlayerId,
-        });
-      }
-      return { type: 'choose_target', payload: { targetPlayerId } };
+      throw new PlayerActionError('Choix invalide.', {
+        gameType: 'en-attendant-minuit',
+      });
     }
     throw new PlayerActionError('Action non disponible.', {
       gameType: 'en-attendant-minuit',
