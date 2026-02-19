@@ -1,3 +1,5 @@
+import { toPlayerId } from './player-id.helper';
+
 type PendingPawnOption = {
   id: string;
   label: string;
@@ -7,15 +9,6 @@ type NormalizeFn = (value: string) => string;
 
 function defaultNormalize(value: string): string {
   return String(value ?? '').trim();
-}
-
-function toPlayerId(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string') {
-    const n = Number(value.trim());
-    return Number.isFinite(n) ? n : null;
-  }
-  return null;
 }
 
 function normalizeOption(option: any): PendingPawnOption | null {

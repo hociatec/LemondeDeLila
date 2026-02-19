@@ -1,14 +1,9 @@
-ï»¿import { Test } from '@nestjs/testing';
-import { PimpMyRideModule } from '../pimp-my-ride.module';
 import { PimpMyRideService } from '../pimp-my-ride.service';
 
 describe('PimpMyRideService', () => {
-  it('devrait Ãªtre dÃ©fini', async () => {
-    const module = await Test.createTestingModule({
-      imports: [PimpMyRideModule],
-    }).compile();
-
-    const service = module.get(PimpMyRideService);
+  it('devrait être défini', () => {
+    const registry = { register: jest.fn() } as any;
+    const service = new PimpMyRideService(registry, {} as any, {} as any, {} as any, {} as any);
     expect(service).toBeDefined();
   });
 });

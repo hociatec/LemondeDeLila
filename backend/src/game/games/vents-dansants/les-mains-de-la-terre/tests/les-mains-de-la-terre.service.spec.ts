@@ -1,14 +1,9 @@
-ï»¿import { Test } from '@nestjs/testing';
-import { LesMainsDeLaTerreModule } from '../les-mains-de-la-terre.module';
 import { LesMainsDeLaTerreService } from '../les-mains-de-la-terre.service';
 
 describe('LesMainsDeLaTerreService', () => {
-  it('doit Ãªtre dÃ©fini', async () => {
-    const module = await Test.createTestingModule({
-      imports: [LesMainsDeLaTerreModule],
-    }).compile();
-
-    const service = module.get(LesMainsDeLaTerreService);
+  it('doit être défini', () => {
+    const registry = { register: jest.fn() } as any;
+    const service = new LesMainsDeLaTerreService(registry, {} as any, {} as any, {} as any, {} as any);
     expect(service).toBeDefined();
   });
 });

@@ -45,6 +45,7 @@ import { PanierExpressBotService } from './bots/panier-express-bot.service';
 import { PanierExpressPhaseService } from './phases/panier-express-phase.service';
 import { PanierExpressPresenterService } from './presenter/panier-express-presenter.service';
 import { RandomService } from '../../../modules/random/services/random.service';
+import { resolvePendingPawnChoiceAction } from '../../../core/helpers/pawn-choice-action.helper';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
@@ -352,6 +353,8 @@ export class PanierExpressService extends AbstractGameService {
         return this.handleAnswerQuiz(state, action);
       case 'pick_choice':
         return this.handlePickChoice(state, action);
+      case 'choose_pawn':
+        return this.handleChoosePawn(state, action);
       case 'exchange_choose_target':
         return this.handleExchangeChooseTarget(state, action);
       case 'exchange_choose_give':
@@ -675,11 +678,7 @@ export class PanierExpressService extends AbstractGameService {
 
   private queuePawnSelection(state: GameStateEntity): GameStateEntity {
     const pending = state.pending as any;
-    if (
-      pending &&
-      pending.type === 'pick' &&
-      pending?.data?.kind === 'setup.choose_pawn'
-    ) {
+    if (pending && pending.type === 'choose_pawn') {
       return state;
     }
     const pawnChoices = this.setup.pawnChoices();
@@ -729,12 +728,12 @@ export class PanierExpressService extends AbstractGameService {
     const withPending: GameStateEntity = {
       ...withClearedBots,
       pending: {
-        type: 'pick',
+        type: 'choose_pawn',
         playerId: chooser.id,
         blocking: true,
         label: `${this.utils.playerName(withClearedBots, chooser.id)} choisit son pion (puis Entrée).`,
         choices: pawns.map((pawn) => pawn.label),
-        data: { kind: 'setup.choose_pawn', pawns },
+        data: { pawns },
       } as any,
       turn: {
         ...(state.turn ?? { currentPlayerId: chooser.id, direction: 1 }),
@@ -2970,6 +2969,60 @@ export class PanierExpressService extends AbstractGameService {
     return this.phaseFlow.advanceTurn(logged);
   }
 
+  private handleChoosePawn(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    const resolved = resolvePendingPawnChoiceAction({
+      state,
+      action,
+      pendingType: 'choose_pawn',
+      resolveChoice: (rawValue, options) => {
+        const key = String(rawValue ?? '').trim().toLowerCase();
+        if (!key) return null;
+        return (
+          options.find((option: any) => {
+            const byId = String(option?.id ?? '').trim().toLowerCase();
+            const byLabel = String(option?.label ?? '').trim().toLowerCase();
+            return (byId.length > 0 && byId === key) || (byLabel.length > 0 && byLabel === key);
+          }) ?? null
+        );
+      },
+    });
+    if (!resolved) {
+      return this.core.appendLog(
+        state,
+        `[Panier Express] Choix de pion invalide.`,
+      );
+    }
+
+    const chosen = String(resolved.chosen?.id ?? '').trim();
+    if (!chosen) {
+      return { ...state, pending: null };
+    }
+
+    let next: GameStateEntity = {
+      ...state,
+      pending: null,
+      players: (state.players ?? []).map((player: any) =>
+        player.id === resolved.playerId ? { ...player, pawn: chosen } : player,
+      ),
+    };
+    next = this.core.appendLog(
+      next,
+      `[Panier Express] ${this.utils.playerName(state, resolved.playerId)} choisit le pion: ${chosen}.`,
+    );
+
+    const statusNow = String(state.status ?? '').toLowerCase();
+    if (statusNow === 'starting') {
+      return this.ensureStarted({ ...next, status: 'starting' });
+    }
+    return this.queuePawnSelection({
+      ...next,
+      status: state.status ?? 'open',
+    });
+  }
+
   private handlePickChoice(
     state: GameStateEntity,
     action: GameSingleActionDto,
@@ -3122,35 +3175,6 @@ export class PanierExpressService extends AbstractGameService {
       ...s,
       pending: null,
     });
-
-    if (kind === 'setup.choose_pawn') {
-      const options = Array.isArray(pending?.data?.pawns)
-        ? pending.data.pawns
-        : [];
-      const picked = options[index] as any;
-      const chosen = String(
-        picked?.id ?? pending?.choices?.[index] ?? '',
-      ).trim();
-      if (!chosen) {
-        return clearPending(state);
-      }
-      let next = clearPending(state);
-      next = updatePlayer(next, actorId, (p: any) => ({ ...p, pawn: chosen }));
-      next = this.core.appendLog(
-        next,
-        `[Panier Express] ${this.utils.playerName(state, actorId)} choisit le pion: ${chosen}.`,
-      );
-      // Continuer la sélection des pions ou démarrer la partie si tout est prêt.
-      const statusNow = String(state.status ?? '').toLowerCase();
-      if (statusNow === 'starting') {
-        return this.ensureStarted({ ...next, status: 'starting' });
-      }
-      return this.queuePawnSelection({
-        ...next,
-        status: state.status ?? 'open',
-      });
-    }
-
     if (kind === 'event.tirage_chanceux') {
       const offered: string[] = Array.isArray(pending?.data?.offered)
         ? pending.data.offered.map((v: any) => String(v))

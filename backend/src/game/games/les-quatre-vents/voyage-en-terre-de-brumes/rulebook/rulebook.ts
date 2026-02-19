@@ -8,6 +8,8 @@ import {
 } from '../../../../../common/errors/game-errors';
 import {
   getPendingDrawActionsForPlayer,
+  getPendingChooseTargetActionsForPlayer,
+  validatePendingChooseTargetActionForActor,
   validatePendingDrawActionForActor,
 } from '../../../../core/helpers/pending-actions-rulebook.helper';
 
@@ -34,8 +36,12 @@ export function getAvailableActions(
     return [{ type: 'answer_quiz', payload: {} }];
   }
   if (pending?.type === 'choose_target') {
-    if ((pending.playerId ?? null) !== playerId) return [];
-    return [{ type: 'choose_target', payload: {} }];
+    const chooseTargetActions = getPendingChooseTargetActionsForPlayer(
+      pending,
+      playerId,
+    );
+    if (chooseTargetActions.length > 0) return chooseTargetActions;
+    return [];
   }
 
   if ((state.turn?.currentPlayerId ?? null) !== playerId) return [];
@@ -78,13 +84,42 @@ export function validateAction(
         Number.isFinite(right) && Number(left) === Number(right),
     });
     if (drawValidation.ok) return drawValidation.action;
-    if (pending.type === 'draw') return { ...action, type: 'draw', payload: {} };
+    if (pending.type === 'draw' && drawValidation.reason === 'wrong_action_type') {
+      throw new PlayerActionError('Action non disponible.', {
+        gameType: 'voyage-en-terre-de-brumes',
+        action: rawType,
+      });
+    }
     if (pending.type === 'quiz') return action.type === 'answer_quiz'
       ? action
       : { ...action, type: 'answer_quiz' };
-    if (pending.type === 'choose_target') return action.type === 'choose_target'
-      ? action
-      : { ...action, type: 'choose_target' };
+    if (pending.type === 'choose_target') {
+      const targetValidation = validatePendingChooseTargetActionForActor({
+        pending,
+        actorId: Number(actorId ?? NaN),
+        actionType: normalized,
+        payload: action.payload ?? {},
+        samePlayer: (left, right) =>
+          Number.isFinite(right) && Number(left) === Number(right),
+      });
+      if (targetValidation.ok) return targetValidation.action;
+      if (targetValidation.reason === 'wrong_action_type') {
+        throw new PlayerActionError('Action non disponible.', {
+          gameType: 'voyage-en-terre-de-brumes',
+          action: rawType,
+        });
+      }
+      if (targetValidation.reason === 'invalid_target') {
+        throw new GameValidationError('Cible invalide.', {
+          gameType: 'voyage-en-terre-de-brumes',
+          payload: action.payload ?? null,
+        });
+      }
+    }
+    throw new PlayerActionError('Action non disponible.', {
+      gameType: 'voyage-en-terre-de-brumes',
+      action: rawType,
+    });
   }
 
   const current = state.turn?.currentPlayerId ?? null;

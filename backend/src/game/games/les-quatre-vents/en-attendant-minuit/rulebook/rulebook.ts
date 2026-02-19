@@ -24,21 +24,13 @@ import {
   validatePendingChooseTargetActionForActor,
   validatePendingDrawActionForActor,
 } from '../../../../core/helpers/pending-actions-rulebook.helper';
+import { toPlayerId } from '../../../../core/helpers/player-id.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const toPlayerId = (value: unknown): number | null => {
-    if (typeof value === 'number' && Number.isFinite(value)) return value;
-    if (typeof value === 'string') {
-      const n = Number(value.trim());
-      return Number.isFinite(n) ? n : null;
-    }
-    return null;
-  };
-
   const status = String(state.status ?? '').toLowerCase();
   const pawnPending = state.pending as any;
   const pawnActions = getPendingPawnActionsForPlayer(
@@ -88,15 +80,6 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const toPlayerId = (value: unknown): number | null => {
-    if (typeof value === 'number' && Number.isFinite(value)) return value;
-    if (typeof value === 'string') {
-      const n = Number(value.trim());
-      return Number.isFinite(n) ? n : null;
-    }
-    return null;
-  };
-
   const rawType = normalizeActionType(action);
   const type = normalizeLegacyRollAliasToUpper(rawType) as MinuitActionType;
   if (!MINUIT_GAME.actions.includes(type)) {
@@ -225,20 +208,6 @@ export function validateAction(
 
     if (toPlayerId(actionPending.playerId) !== actorId) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
-        gameType: 'en-attendant-minuit',
-      });
-    }
-    if (actionPending.type === 'draw') {
-      if (type !== 'draw') {
-        throw new PlayerActionError('Action non disponible.', {
-          gameType: 'en-attendant-minuit',
-          action: type,
-        });
-      }
-      return { type: 'draw', payload: {} };
-    }
-    if (actionPending.type === 'choose_target') {
-      throw new PlayerActionError('Choix invalide.', {
         gameType: 'en-attendant-minuit',
       });
     }

@@ -41,10 +41,10 @@ describe('PanierExpressService', () => {
     };
     const hydrated = service.hydrateInitialState(state);
     expect(hydrated.status?.toLowerCase()).toBe('started');
-    expect(hydrated.pending?.type).toBe('pick');
+    expect(hydrated.pending?.type).toBe('choose_pawn');
     expect((hydrated.pending as any)?.blocking).toBe(true);
     expect((hydrated.pending as any)?.playerId).toBe(1);
-    expect((hydrated.pending as any)?.data?.kind).toBe('setup.choose_pawn');
+    expect(Array.isArray((hydrated.pending as any)?.data?.pawns)).toBe(true);
     const p1: any = (hydrated.players ?? []).find((p: any) => p.id === 1);
     expect(Array.isArray(p1.shoppingList)).toBe(true);
     expect(p1.shoppingList.length).toBe(3);
@@ -65,8 +65,8 @@ describe('PanierExpressService', () => {
     } as any);
 
     const pending: any = base.pending as any;
-    expect(pending?.type).toBe('pick');
-    expect(pending?.data?.kind).toBe('setup.choose_pawn');
+    expect(pending?.type).toBe('choose_pawn');
+    expect(Array.isArray(pending?.data?.pawns)).toBe(true);
     const choices = Array.isArray(pending?.choices) ? pending.choices : [];
     // pawns.json currently contains 6 options; ensure bot pawn doesn't reduce the list for the first human.
     expect(choices.length).toBeGreaterThanOrEqual(6);

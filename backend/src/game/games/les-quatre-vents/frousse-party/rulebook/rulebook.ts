@@ -24,17 +24,13 @@ import {
   validatePendingChooseTargetActionForActor,
   validatePendingDrawActionForActor,
 } from '../../../../core/helpers/pending-actions-rulebook.helper';
+import { toPlayerId } from '../../../../core/helpers/player-id.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
-  const toPlayerId = (value: unknown): number | null => {
-    if (typeof value === 'number' && Number.isFinite(value)) return value;
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  };
   if (!isStartedState(state)) return [];
 
   const pending = state.pending as any;
@@ -72,12 +68,6 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const toPlayerId = (value: unknown): number | null => {
-    if (typeof value === 'number' && Number.isFinite(value)) return value;
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  };
-
   const rawType = normalizeActionType(action);
   const type = normalizeLegacyRollAliasToUpper(rawType) as FrousseActionType;
   if (!FROUSSE_GAME.actions.includes(type)) {
@@ -176,16 +166,6 @@ export function validateAction(
     const pendingPlayerId = toPlayerId(pending.playerId);
     if (pendingPlayerId == null || pendingPlayerId !== actorId) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
-        gameType: 'frousse-party',
-      });
-    }
-    if (pending.type === 'choose_target') {
-      if (type !== 'choose_target') {
-        throw new PlayerActionError('Choix invalide.', {
-          gameType: 'frousse-party',
-        });
-      }
-      throw new PlayerActionError('Choix invalide.', {
         gameType: 'frousse-party',
       });
     }

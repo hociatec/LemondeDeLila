@@ -1,7 +1,8 @@
-﻿import { buildLesMainsShortcuts } from '../les-mains-de-la-terre.shortcuts';
+import { buildLesMainsDeLaTerreShortcuts } from '../les-mains-de-la-terre.shortcuts';
 
 describe('LesMainsShortcuts', () => {
   it('retourne un tableau', () => {
-    expect(Array.isArray(buildLesMainsShortcuts())).toBe(true);
+    expect(Array.isArray(buildLesMainsDeLaTerreShortcuts())).toBe(true);
   });
 });
+

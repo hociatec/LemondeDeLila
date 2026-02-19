@@ -2,6 +2,7 @@ import * as Rulebook from '../rulebook/rulebook';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { TurnService } from '../../../../modules/turn/services/turn.service';
+import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
 import { ZigEtZagActionService } from '../actions/zig-et-zag-action.service';
 import { ZigEtZagSetupService } from '../setup/zig-et-zag-setup.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -10,7 +11,7 @@ describe('ZigEtZag compat', () => {
   it('exposes draw_card actions even if waitingPlayers ids are serialized as strings', async () => {
     const service = new ZigEtZagActionService(
       new GameCoreService(),
-      new TurnFlowService(new TurnService()),
+      new TurnFlowService(new TurnService(), new TurnPoliciesService(new GameCoreService())),
       new RandomService(),
     );
 
@@ -87,7 +88,7 @@ describe('ZigEtZag compat', () => {
   it('enforces strict draw order and logs draw/reveal flow', async () => {
     const service = new ZigEtZagActionService(
       new GameCoreService(),
-      new TurnFlowService(new TurnService()),
+      new TurnFlowService(new TurnService(), new TurnPoliciesService(new GameCoreService())),
       new RandomService(),
     );
 
@@ -149,7 +150,7 @@ describe('ZigEtZag compat', () => {
   it('applies full capture count on winner deck summary (+2/-2 on a basic trick)', async () => {
     const service = new ZigEtZagActionService(
       new GameCoreService(),
-      new TurnFlowService(new TurnService()),
+      new TurnFlowService(new TurnService(), new TurnPoliciesService(new GameCoreService())),
       new RandomService(),
     );
 
@@ -199,4 +200,5 @@ describe('ZigEtZag compat', () => {
     expect((afterP2.metadata?.playerDecks?.['2'] ?? []).length).toBe(0);
   });
 });
+
 

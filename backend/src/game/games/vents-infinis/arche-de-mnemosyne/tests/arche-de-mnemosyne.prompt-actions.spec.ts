@@ -69,8 +69,8 @@ describe('ArcheDeMnemosyneService prompt actions', () => {
       { ...config, meta: { actorId: 1 } } as any,
     ]);
 
-    const botAvailableAfter = service.getAvailableActions(afterConfig, -1).map((a: any) => a.type);
-    expect(botAvailableAfter).toContain('mnemo_start');
+    const ownerAvailableAfter = service.getAvailableActions(afterConfig, 1).map((a: any) => a.type);
+    expect(ownerAvailableAfter).toContain('mnemo_start');
 
     expect(() =>
       service.validateAction(
@@ -146,8 +146,14 @@ describe('ArcheDeMnemosyneService prompt actions', () => {
       } as any,
     };
 
-    const a = service.getBotActions(state, -1);
-    const b = service.getBotActions(state, -2);
+    const a = service.getBotActions(
+      { ...state, turn: { currentPlayerId: -1, direction: 1 } } as any,
+      -1,
+    );
+    const b = service.getBotActions(
+      { ...state, turn: { currentPlayerId: -2, direction: 1 } } as any,
+      -2,
+    );
     expect(Array.isArray(a)).toBe(true);
     expect(Array.isArray(b)).toBe(true);
     expect(a?.[0]?.type).toBe('answer_quiz');

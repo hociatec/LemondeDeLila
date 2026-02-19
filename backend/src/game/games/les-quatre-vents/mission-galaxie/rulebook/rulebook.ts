@@ -16,7 +16,9 @@ import {
 } from '../definitions/mission-galaxie.definition';
 import {
   getPendingDrawActionsForPlayer,
+  getPendingIndexedChoiceActionsForPlayer,
   validatePendingDrawActionForActor,
+  validatePendingIndexedChoiceActionForActor,
 } from '../../../../core/helpers/pending-actions-rulebook.helper';
 
 export function getAvailableActions(
@@ -31,13 +33,13 @@ export function getAvailableActions(
     const drawActions = getPendingDrawActionsForPlayer(pending, playerId);
     if (drawActions.length > 0) return drawActions;
     if (pending.type === 'choose_option') {
-      const choices: string[] = Array.isArray(pending?.data?.choices)
-        ? pending.data.choices
-        : [];
-      return choices.map((_, index) => ({
-        type: 'choose_option',
-        payload: { choiceIndex: index },
-      }));
+      return getPendingIndexedChoiceActionsForPlayer(pending, playerId, {
+        pendingType: 'choose_option',
+        actionType: 'choose_option',
+        payloadIndexKey: 'choiceIndex',
+        choicesContainer: 'data',
+        choicesKey: 'choices',
+      });
     }
     if (pending.type === 'choose_event_move') {
       const options: Array<{ targetPlayerId: number; delta: number }> =
@@ -102,26 +104,29 @@ export function validateAction(
       });
     }
     if (pending.type === 'choose_option') {
-      if (type !== 'choose_option') {
+      const choiceValidation = validatePendingIndexedChoiceActionForActor({
+        pending,
+        actorId,
+        actionType: type,
+        payload: action.payload ?? {},
+        pendingType: 'choose_option',
+        expectedActionType: 'choose_option',
+        payloadIndexKey: 'choiceIndex',
+        choicesContainer: 'data',
+        choicesKey: 'choices',
+      });
+      if (!choiceValidation.ok && choiceValidation.reason === 'wrong_action_type') {
         throw new PlayerActionError('Action non disponible.', {
           gameType: 'mission-galaxie',
         });
       }
-      const choices: string[] = Array.isArray(pending?.data?.choices)
-        ? pending.data.choices
-        : [];
-      const choiceIndex = Number((action.payload as any)?.choiceIndex);
-      if (
-        !Number.isFinite(choiceIndex) ||
-        choiceIndex < 0 ||
-        choiceIndex >= choices.length
-      ) {
+      if (!choiceValidation.ok) {
         throw new GameValidationError('Choix invalide.', {
           gameType: 'mission-galaxie',
-          choiceIndex,
+          choiceIndex: Number((action.payload as any)?.choiceIndex),
         });
       }
-      return { type: 'choose_option', payload: { choiceIndex } };
+      return choiceValidation.action;
     }
     if (pending.type === 'choose_event_move') {
       if (type !== 'choose_event_move') {

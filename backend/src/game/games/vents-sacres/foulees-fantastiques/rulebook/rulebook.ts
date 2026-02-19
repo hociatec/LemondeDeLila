@@ -11,10 +11,9 @@ import {
 import type { FouleesFantastiquesMetadata } from '../model/foulees-fantastiques-state.entity';
 import { isRollAlias, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
 import {
-  isPendingPawnMoveForPlayer,
-  listPendingPawnMoveActions,
-  resolvePendingPawnMove,
-} from '../../../../core/helpers/pawn-move-selection.helper';
+  getPendingPawnMoveActionsForPlayer,
+  validatePendingPawnMoveActionForActor,
+} from '../../../../core/helpers/pending-pawn-move-rulebook.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -38,8 +37,14 @@ export function getAvailableActions(
           payload: { familyId: String(id).trim() },
         }));
     }
-    if (isPendingPawnMoveForPlayer(pending, playerId, 'choose_pawn')) {
-      return listPendingPawnMoveActions(pending, 'move_pawn');
+    const pendingMoveActions = getPendingPawnMoveActionsForPlayer(
+      pending,
+      playerId,
+      'choose_pawn',
+      'move_pawn',
+    );
+    if (pendingMoveActions.length > 0) {
+      return pendingMoveActions;
     }
     return [];
   }
@@ -136,17 +141,23 @@ export function validateAction(
 
   if (type === 'move_pawn') {
     const pending: any = state.pending ?? null;
-    if (
-      !isPendingPawnMoveForPlayer(pending, actorId, 'choose_pawn')
-    ) {
+    const moveValidation = validatePendingPawnMoveActionForActor({
+      pending,
+      actorId,
+      actionType: type,
+      payload: action.payload ?? {},
+      pendingType: 'choose_pawn',
+      expectedActionType: 'move_pawn',
+    });
+
+    if (!moveValidation.ok && moveValidation.reason === 'not_pending_for_actor') {
       throw new PlayerActionError('Aucun choix de pion en attente.', {
         gameType: 'foulees-fantastiques',
         playerId: actorId ?? undefined,
       });
     }
 
-    const move = resolvePendingPawnMove(pending, action.payload ?? {});
-    if (!move) {
+    if (!moveValidation.ok) {
       throw new GameValidationError(
         'Payload invalide: pawnIndex/targetProgress',
         {
@@ -160,7 +171,7 @@ export function validateAction(
     return {
       ...action,
       type: 'move_pawn',
-      payload: move,
+      payload: moveValidation.move,
     };
   }
 

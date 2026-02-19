@@ -1,14 +1,9 @@
-import { Test } from '@nestjs/testing';
-import { CerclesSacresModule } from '../cercles-sacres.module';
 import { CerclesSacresService } from '../cercles-sacres.service';
 
 describe('CerclesSacresService', () => {
-  it('should be defined', async () => {
-    const module = await Test.createTestingModule({
-      imports: [CerclesSacresModule],
-    }).compile();
-
-    const service = module.get(CerclesSacresService);
+  it('should be defined', () => {
+    const registry = { register: jest.fn() } as any;
+    const service = new CerclesSacresService(registry, {} as any, {} as any, {} as any, {} as any);
     expect(service).toBeDefined();
   });
 });

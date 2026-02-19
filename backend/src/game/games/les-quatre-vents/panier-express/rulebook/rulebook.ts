@@ -18,7 +18,15 @@ import {
   GameValidationError,
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
-import { validatePendingDrawActionForActor } from '../../../../core/helpers/pending-actions-rulebook.helper';
+import {
+  getPendingPawnActionsForPlayer,
+  validatePendingPawnActionForActor,
+} from '../../../../core/helpers/pawn-pending-rulebook.helper';
+import {
+  getPendingIndexedChoiceActionsForPlayer,
+  validatePendingDrawActionForActor,
+  validatePendingIndexedChoiceActionForActor,
+} from '../../../../core/helpers/pending-actions-rulebook.helper';
 
 function normalizeNumber(value: unknown): number | null {
   const n = typeof value === 'number' ? value : Number(value);
@@ -59,15 +67,26 @@ export function getAvailableActions(
   }
   if (
     rawPending &&
+    rawPending.type === 'choose_pawn' &&
+    pendingPlayerId != null &&
+    pendingPlayerId === playerId
+  ) {
+    return getPendingPawnActionsForPlayer(rawPending, playerId, 'choose_pawn');
+  }
+  if (
+    rawPending &&
     rawPending.type === 'pick' &&
     pendingPlayerId != null &&
     pendingPlayerId === playerId
   ) {
-    const choices = Array.isArray(rawPending.choices) ? rawPending.choices : [];
-    return choices.map((_, index: number) => ({
-      type: 'pick_choice',
-      payload: { index },
-    }));
+    return getPendingIndexedChoiceActionsForPlayer(rawPending, playerId, {
+      pendingType: 'pick',
+      actionType: 'pick_choice',
+      payloadIndexKey: 'index',
+      choicesContainer: 'root',
+      choicesKey: 'choices',
+      samePlayer: (left, right) => normalizeNumber(left) === normalizeNumber(right),
+    });
   }
   if (
     rawPending &&
@@ -197,6 +216,7 @@ export function validateAction(
   if (hasBlockingPending) {
     const allowedWhileBlocking = new Set<string>([
       'draw',
+      'choose_pawn',
       'pick_choice',
       'exchange_choose_target',
       'exchange_choose_give',
@@ -253,6 +273,7 @@ export function validateAction(
   if (
     type !== 'exchange_accept' &&
     type !== 'exchange_refuse' &&
+    type !== 'choose_pawn' &&
     type !== 'pick_choice' &&
     type !== 'draw'
   ) {
@@ -271,25 +292,59 @@ export function validateAction(
     return { ...action, type: 'roll', payload: {} };
   }
 
-  if (type === 'pick_choice') {
+  if (type === 'choose_pawn') {
     const pending = state.pending as any;
-    const pid = normalizeNumber(pending?.playerId);
-    if (!pending || pending.type !== 'pick' || pid == null || pid !== actorId) {
+    const validation = validatePendingPawnActionForActor({
+      pending,
+      actorId: Number(actorId ?? NaN),
+      actionType: type,
+      payload,
+      pendingType: 'choose_pawn',
+    });
+    if (!validation.ok && validation.reason === 'not_pending_for_actor') {
       throw new PlayerActionError('Aucun choix en attente.', {
         gameType: 'panier-express',
         playerId: actorId ?? undefined,
       });
     }
-    const index = normalizeNumber((payload as any).index);
-    const choices = Array.isArray(pending.choices) ? pending.choices : [];
-    if (index == null || index < 0 || index >= choices.length) {
+    if (!validation.ok) {
+      throw new GameValidationError('Payload invalide: pawnId', {
+        gameType: 'panier-express',
+        playerId: actorId ?? undefined,
+        payload,
+      });
+    }
+    return validation.action;
+  }
+
+  if (type === 'pick_choice') {
+    const pending = state.pending as any;
+    const validation = validatePendingIndexedChoiceActionForActor({
+      pending,
+      actorId: Number(actorId ?? NaN),
+      actionType: type,
+      payload,
+      pendingType: 'pick',
+      expectedActionType: 'pick_choice',
+      payloadIndexKey: 'index',
+      choicesContainer: 'root',
+      choicesKey: 'choices',
+      samePlayer: (left, right) => normalizeNumber(left) === normalizeNumber(right),
+    });
+    if (!validation.ok && validation.reason === 'not_pending_for_actor') {
+      throw new PlayerActionError('Aucun choix en attente.', {
+        gameType: 'panier-express',
+        playerId: actorId ?? undefined,
+      });
+    }
+    if (!validation.ok) {
       throw new GameValidationError('Payload invalide: index', {
         gameType: 'panier-express',
         playerId: actorId ?? undefined,
         payload,
       });
     }
-    return { ...action, type, payload: { index } };
+    return validation.action;
   }
 
   if (type === 'answer_quiz') {

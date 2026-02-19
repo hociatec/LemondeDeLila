@@ -7,6 +7,7 @@ using System.Windows.Threading;
 using client_win.Modules.Game.Play.Announcements.Services;
 using client_win.Modules.Game.Play.Board.Services;
 using client_win.Modules.Game.Play.Choices.ViewModels;
+using client_win.Modules.Game.Play.Common;
 using client_win.Modules.Game.Play.Grid.ViewModels;
 using client_win.Modules.Game.Play.Panels.Services;
 using client_win.Modules.Game.Play.State.Dtos;
@@ -263,7 +264,7 @@ internal sealed class GamePlayRealtimeController
         {
             // During pawn selection setup, the pending label is the authoritative prompt.
             // Avoid adding a redundant "C'est au tour de ...".
-            if (!IsPawnPendingType(state.Pending?.Type))
+            if (!PawnPendingTypes.IsPawnPendingType(state.Pending?.Type))
             {
                 var currentPlayerId = state.Turn?.CurrentPlayerId;
                 var currentPlayerUsername = currentPlayerId != null
@@ -314,7 +315,7 @@ internal sealed class GamePlayRealtimeController
             previousPendingType,
             previousBotThinking);
 
-        _lastPendingType = NormalizePendingType(state.Pending?.Type);
+        _lastPendingType = PawnPendingTypes.Normalize(state.Pending?.Type);
         _lastBotThinking = state.BotThinking;
         _lastViewerHandCounts = currentHandCounts;
         _refreshCanExecute();
@@ -356,8 +357,8 @@ internal sealed class GamePlayRealtimeController
         }
 
         var viewerTurnGained = previousTurnPlayerId != currentPlayerId.Value;
-        var wasPawnPending = IsPawnPendingType(previousPendingType);
-        var isPawnPending = IsPawnPendingType(state.Pending?.Type);
+        var wasPawnPending = PawnPendingTypes.IsPawnPendingType(previousPendingType);
+        var isPawnPending = PawnPendingTypes.IsPawnPendingType(state.Pending?.Type);
         var pawnSelectionJustResolved = wasPawnPending && !isPawnPending;
         var botThinkingJustStopped = previousBotThinking && !state.BotThinking;
 
@@ -429,18 +430,6 @@ internal sealed class GamePlayRealtimeController
         }
 
         return status;
-    }
-
-    private static string NormalizePendingType(string? pendingType)
-    {
-        return (pendingType ?? string.Empty).Trim();
-    }
-
-    private static bool IsPawnPendingType(string? pendingType)
-    {
-        var normalized = NormalizePendingType(pendingType);
-        return string.Equals(normalized, "choose_pawn", StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(normalized, "pick_pawn", StringComparison.OrdinalIgnoreCase);
     }
 
     private void TryAnnounceTurnFromState(GameStateDto state)

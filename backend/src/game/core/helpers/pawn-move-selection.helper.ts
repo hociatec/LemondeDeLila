@@ -3,26 +3,6 @@ type PendingMoveOption = {
   targetProgress: number;
 };
 
-function toPlayerId(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string') {
-    const n = Number(value.trim());
-    return Number.isFinite(n) ? n : null;
-  }
-  return null;
-}
-
-export function isPendingPawnMoveForPlayer(
-  pending: any,
-  playerId: number | null,
-  pendingType: string = 'choose_pawn',
-): boolean {
-  if (!pending || String(pending.type ?? '').trim() !== pendingType) return false;
-  if (playerId == null) return false;
-  const pendingPlayerId = toPlayerId(pending.playerId);
-  return pendingPlayerId != null && pendingPlayerId === playerId;
-}
-
 export function getPendingPawnMoveOptions(pending: any): PendingMoveOption[] {
   const moves = Array.isArray(pending?.data?.moves) ? pending.data.moves : [];
   return moves
@@ -65,4 +45,3 @@ export function resolvePendingPawnMove(
   );
   return found ?? null;
 }
-

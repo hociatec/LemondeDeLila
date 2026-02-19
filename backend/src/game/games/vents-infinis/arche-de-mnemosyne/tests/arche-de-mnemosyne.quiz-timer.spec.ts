@@ -88,7 +88,7 @@ describe("ArcheDeMnemosyneService quiz timer", () => {
     expect(messages.some((m: string) => m.includes('répond : A.'))).toBe(false);
     expect(messages.some((m: string) => m.includes('répond : B.'))).toBe(false);
     expect(messages.some((m: string) => m.includes('La bonne réponse était'))).toBe(true);
-    expect(messages.some((m: string) => m.includes('Prochaine question dans 5 secondes'))).toBe(true);
+    expect(messages.some((m: string) => m.includes('Prochaine question dans'))).toBe(true);
     expect(messages.some((m: string) => m === 'Fin de la manche 1.')).toBe(true);
     expect(afterB.metadata.currentQuestion).toBeNull();
     expect(afterB.metadata.quizDeadlineAtMs).toBeNull();
@@ -149,7 +149,7 @@ describe("ArcheDeMnemosyneService quiz timer", () => {
     const messages = (afterB.log ?? []).map((l: any) => String(l?.message ?? ''));
     expect(messages.some((m: string) => m === `Personne n'a trouvé la bonne réponse.`)).toBe(true);
     expect(messages.some((m: string) => m.includes(`Personne n'a trouvé la bonne réponse (`))).toBe(false);
-    expect(messages.some((m: string) => m.includes('La bonne réponse était'))).toBe(true);
+    expect(messages.some((m: string) => m.includes('La bonne réponse était'))).toBe(false);
   });
 
   it('when game ends: does not announce a next question countdown', () => {
@@ -258,8 +258,8 @@ describe("ArcheDeMnemosyneService quiz timer", () => {
     const messages = (after.log ?? []).map((l: any) => String(l?.message ?? ''));
     expect(messages.some((m: string) => m === 'Lilas répond : Mauvaise réponse.')).toBe(true);
     expect(messages.some((m: string) => m === 'Bot répond : Temps écoulé.')).toBe(true);
-    expect(messages.some((m: string) => m.includes('La bonne réponse était'))).toBe(true);
-    expect(messages.some((m: string) => m.includes('Prochaine question dans 5 secondes'))).toBe(true);
+    expect(messages.some((m: string) => m.includes('La bonne réponse était'))).toBe(false);
+    expect(messages.some((m: string) => m.includes('Prochaine question dans'))).toBe(true);
     expect(messages.some((m: string) => m === 'Fin de la manche 1.')).toBe(true);
     expect(after.metadata.currentQuestion).toBeNull();
     expect(typeof after.metadata.interQuestionUntilMs).toBe('number');

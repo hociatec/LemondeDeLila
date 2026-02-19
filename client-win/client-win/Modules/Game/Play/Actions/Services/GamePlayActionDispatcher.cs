@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Game.Play.Actions.Dtos;
+using client_win.Modules.Game.Play.Common;
 using client_win.Modules.Game.Play.Session.Services;
 using client_win.Modules.Game.Play.State.Dtos;
 
@@ -52,7 +53,7 @@ internal sealed class GamePlayActionDispatcher
 
         // Cas spécial: "choose_pawn" (ex: petits chevaux).
         // On construit l'action depuis `pending.data.moves`, aligné sur `pending.choices`.
-        if (IsPawnPendingType(pendingType))
+        if (PawnPendingTypes.IsPawnPendingType(pendingType))
         {
             if (TryBuildChoosePawnFromPendingData(state.Pending, index, available, out var choosePawnAction))
             {
@@ -220,12 +221,12 @@ internal sealed class GamePlayActionDispatcher
             return false;
         }
 
-        if (!TryGetInt(move, "pawnIndex", out var pawnIndex))
+        if (!JsonPayloadReader.TryReadInt(move, "pawnIndex", out var pawnIndex))
         {
             return false;
         }
 
-        if (!TryGetInt(move, "targetProgress", out var targetProgress))
+        if (!JsonPayloadReader.TryReadInt(move, "targetProgress", out var targetProgress))
         {
             return false;
         }
@@ -273,9 +274,7 @@ internal sealed class GamePlayActionDispatcher
             return false;
         }
 
-        var pawnId = TryGetString(pawn, "id")
-                     ?? TryGetString(pawn, "pawnId")
-                     ?? TryGetString(pawn, "value");
+        var pawnId = PawnPayloadReader.TryReadPawnId(pawn);
         if (string.IsNullOrWhiteSpace(pawnId))
         {
             return false;
@@ -284,7 +283,7 @@ internal sealed class GamePlayActionDispatcher
 
         var matched = available.FirstOrDefault(a =>
         {
-            if (!IsPawnPendingType(a.Type))
+            if (!PawnPendingTypes.IsPawnPendingType(a.Type))
             {
                 return false;
             }
@@ -294,9 +293,7 @@ internal sealed class GamePlayActionDispatcher
                 return false;
             }
 
-            var payloadPawnId = TryGetString(a.Payload, "pawnId")
-                                ?? TryGetString(a.Payload, "pawn")
-                                ?? TryGetString(a.Payload, "value");
+            var payloadPawnId = PawnPayloadReader.TryReadPawnId(a.Payload);
             return !string.IsNullOrWhiteSpace(payloadPawnId) &&
                    string.Equals(payloadPawnId.Trim(), pawnId, StringComparison.OrdinalIgnoreCase);
         });
@@ -308,74 +305,12 @@ internal sealed class GamePlayActionDispatcher
         }
 
         var type = available
-                       .FirstOrDefault(a => IsPawnPendingType(a.Type))
+                       .FirstOrDefault(a => PawnPendingTypes.IsPawnPendingType(a.Type))
                        ?.Type
                    ?? "choose_pawn";
 
         action = new GameClientAction(type: type, payload: new { pawnId });
         return true;
-    }
-
-    private static string? TryGetString(JsonElement obj, string prop)
-    {
-        if (!obj.TryGetProperty(prop, out var el))
-        {
-            return null;
-        }
-
-        if (el.ValueKind == JsonValueKind.String)
-        {
-            return el.GetString();
-        }
-
-        if (el.ValueKind == JsonValueKind.Number)
-        {
-            if (el.TryGetInt32(out var asInt))
-            {
-                return asInt.ToString();
-            }
-
-            if (el.TryGetDouble(out var asDouble) && double.IsFinite(asDouble))
-            {
-                return asDouble.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            }
-        }
-
-        return null;
-    }
-
-    private static bool TryGetInt(JsonElement obj, string prop, out int value)
-    {
-        value = 0;
-        if (!obj.TryGetProperty(prop, out var el))
-        {
-            return false;
-        }
-
-        if (el.ValueKind == JsonValueKind.Number)
-        {
-            if (el.TryGetInt32(out value))
-            {
-                return true;
-            }
-
-            if (el.TryGetDouble(out var d) && double.IsFinite(d))
-            {
-                value = (int)Math.Round(d);
-                return true;
-            }
-        }
-
-        if (el.ValueKind == JsonValueKind.String)
-        {
-            var s = el.GetString();
-            if (int.TryParse(s, out value))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private static List<GameAvailableActionDto> FilterChoiceActions(
@@ -533,10 +468,4 @@ internal sealed class GamePlayActionDispatcher
             .ConfigureAwait(false);
     }
 
-    private static bool IsPawnPendingType(string? pendingType)
-    {
-        var normalized = (pendingType ?? string.Empty).Trim();
-        return string.Equals(normalized, "choose_pawn", StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(normalized, "pick_pawn", StringComparison.OrdinalIgnoreCase);
-    }
 }

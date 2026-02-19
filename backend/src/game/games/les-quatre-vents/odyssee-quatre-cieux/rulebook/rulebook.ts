@@ -15,10 +15,9 @@ import {
   type OdysseeActionType,
 } from '../definitions/odyssee.definition';
 import {
-  isPendingPawnMoveForPlayer,
-  listPendingPawnMoveActions,
-  resolvePendingPawnMove,
-} from '../../../../core/helpers/pawn-move-selection.helper';
+  getPendingPawnMoveActionsForPlayer,
+  validatePendingPawnMoveActionForActor,
+} from '../../../../core/helpers/pending-pawn-move-rulebook.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -28,8 +27,14 @@ export function getAvailableActions(
 
   const pending = state.pending as any;
   if (pending) {
-    if (isPendingPawnMoveForPlayer(pending, playerId, 'choose_pawn')) {
-      return listPendingPawnMoveActions(pending, 'move_pawn');
+    const pendingMoveActions = getPendingPawnMoveActionsForPlayer(
+      pending,
+      playerId,
+      'choose_pawn',
+      'move_pawn',
+    );
+    if (pendingMoveActions.length > 0) {
+      return pendingMoveActions;
     }
     if (pending.playerId !== playerId) return [];
     return [];
@@ -66,23 +71,31 @@ export function validateAction(
 
   const pending = state.pending as any;
   if (pending) {
-    if (!isPendingPawnMoveForPlayer(pending, actorId, 'choose_pawn'))
+    const moveValidation = validatePendingPawnMoveActionForActor({
+      pending,
+      actorId,
+      actionType: type,
+      payload: action.payload ?? {},
+      pendingType: 'choose_pawn',
+      expectedActionType: 'move_pawn',
+    });
+
+    if (!moveValidation.ok && moveValidation.reason === 'not_pending_for_actor')
       throw new PlayerActionError("Ce n'est pas votre action.", {
         gameType: 'odyssee-quatre-cieux',
       });
-    if (type !== 'move_pawn') {
+    if (!moveValidation.ok && moveValidation.reason === 'wrong_action_type') {
       throw new PlayerActionError('Action non disponible.', {
         gameType: 'odyssee-quatre-cieux',
       });
     }
-    const move = resolvePendingPawnMove(pending, action.payload ?? {});
-    if (!move) {
+    if (!moveValidation.ok) {
       throw new GameValidationError('Payload invalide.', {
         gameType: 'odyssee-quatre-cieux',
         payload: action.payload,
       });
     }
-    return { type: 'move_pawn', payload: move };
+    return moveValidation.action;
   }
 
   const current = state.turn?.currentPlayerId ?? null;

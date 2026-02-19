@@ -1,14 +1,9 @@
-ï»¿import { Test } from '@nestjs/testing';
-import { DameNatureModule } from '../dame-nature.module';
 import { DameNatureService } from '../dame-nature.service';
 
 describe('DameNatureService', () => {
-  it('devrait Ãªtre dÃ©fini', async () => {
-    const module = await Test.createTestingModule({
-      imports: [DameNatureModule],
-    }).compile();
-
-    const service = module.get(DameNatureService);
+  it('devrait être défini', () => {
+    const registry = { register: jest.fn() } as any;
+    const service = new DameNatureService(registry, {} as any, {} as any, {} as any, {} as any);
     expect(service).toBeDefined();
   });
 });

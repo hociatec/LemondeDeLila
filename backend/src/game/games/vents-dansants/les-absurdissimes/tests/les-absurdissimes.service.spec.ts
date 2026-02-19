@@ -1,14 +1,9 @@
-import { Test } from '@nestjs/testing';
-import { LesAbsurdissimesModule } from '../les-absurdissimes.module';
 import { LesAbsurdissimesService } from '../les-absurdissimes.service';
 
 describe('LesAbsurdissimesService', () => {
-  it('should be defined', async () => {
-    const module = await Test.createTestingModule({
-      imports: [LesAbsurdissimesModule],
-    }).compile();
-
-    const service = module.get(LesAbsurdissimesService);
+  it('should be defined', () => {
+    const registry = { register: jest.fn() } as any;
+    const service = new LesAbsurdissimesService(registry, {} as any, {} as any, {} as any, {} as any);
     expect(service).toBeDefined();
   });
 });

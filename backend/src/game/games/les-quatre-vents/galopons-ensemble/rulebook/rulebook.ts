@@ -117,16 +117,6 @@ export function validateAction(
         gameType: 'galopons-ensemble',
       });
     }
-    if (pending.type === 'choose_target') {
-      if (type !== 'choose_target') {
-        throw new PlayerActionError('Choix invalide.', {
-          gameType: 'galopons-ensemble',
-        });
-      }
-      throw new GameValidationError('Cible invalide.', {
-        gameType: 'galopons-ensemble',
-      });
-    }
     throw new PlayerActionError('Action non disponible.', {
       gameType: 'galopons-ensemble',
     });

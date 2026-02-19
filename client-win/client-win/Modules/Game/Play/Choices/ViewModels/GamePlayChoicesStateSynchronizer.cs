@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using client_win.Modules.Game.Play.Actions.Dtos;
 using client_win.Modules.Game.Play.Choices.Services;
+using client_win.Modules.Game.Play.Common;
 using client_win.Modules.Game.Play.State.Dtos;
 
 namespace client_win.Modules.Game.Play.Choices.ViewModels;
@@ -180,7 +181,7 @@ internal sealed class GamePlayChoicesStateSynchronizer
         choices = new Dictionary<string, GameClientAction>(StringComparer.Ordinal);
 
         var pendingType = (state.Pending?.Type ?? string.Empty).Trim();
-        if (!IsPawnPendingType(pendingType))
+        if (!PawnPendingTypes.IsPawnPendingType(pendingType))
         {
             return false;
         }
@@ -201,10 +202,8 @@ internal sealed class GamePlayChoicesStateSynchronizer
                     continue;
                 }
 
-                var pawnId = TryReadPayloadString(pawn, "id")
-                             ?? TryReadPayloadString(pawn, "pawnId")
-                             ?? TryReadPayloadString(pawn, "value");
-                var pawnLabel = TryReadPayloadString(pawn, "label");
+                var pawnId = PawnPayloadReader.TryReadPawnId(pawn);
+                var pawnLabel = JsonPayloadReader.TryReadString(pawn, "label");
                 if (string.IsNullOrWhiteSpace(pawnId))
                 {
                     continue;
@@ -237,9 +236,7 @@ internal sealed class GamePlayChoicesStateSynchronizer
                 continue;
             }
 
-            var pawnId = TryReadPayloadString(action.Payload, "pawnId")
-                         ?? TryReadPayloadString(action.Payload, "pawn")
-                         ?? TryReadPayloadString(action.Payload, "value");
+            var pawnId = PawnPayloadReader.TryReadPawnId(action.Payload);
             if (string.IsNullOrWhiteSpace(pawnId))
             {
                 continue;
@@ -256,7 +253,7 @@ internal sealed class GamePlayChoicesStateSynchronizer
     private static List<string> ExtractChoosePawnChoicesFromPendingData(GameStateDto state)
     {
         var pendingType = (state.Pending?.Type ?? string.Empty).Trim();
-        if (!IsPawnPendingType(pendingType))
+        if (!PawnPendingTypes.IsPawnPendingType(pendingType))
         {
             return new List<string>();
         }
@@ -280,10 +277,8 @@ internal sealed class GamePlayChoicesStateSynchronizer
                 continue;
             }
 
-            var label = TryReadPayloadString(pawn, "label")
-                        ?? TryReadPayloadString(pawn, "id")
-                        ?? TryReadPayloadString(pawn, "pawnId")
-                        ?? TryReadPayloadString(pawn, "value");
+            var label = JsonPayloadReader.TryReadString(pawn, "label")
+                        ?? PawnPayloadReader.TryReadPawnId(pawn);
             if (string.IsNullOrWhiteSpace(label))
             {
                 continue;
@@ -295,37 +290,4 @@ internal sealed class GamePlayChoicesStateSynchronizer
         return choices.Count > 0 ? choices : new List<string>();
     }
 
-    private static string? TryReadPayloadString(JsonElement payload, string propertyName)
-    {
-        if (!payload.TryGetProperty(propertyName, out var node))
-        {
-            return null;
-        }
-
-        if (node.ValueKind == JsonValueKind.String)
-        {
-            return node.GetString();
-        }
-
-        if (node.ValueKind == JsonValueKind.Number)
-        {
-            if (node.TryGetInt32(out var asInt))
-            {
-                return asInt.ToString();
-            }
-            if (node.TryGetDouble(out var asDouble) && double.IsFinite(asDouble))
-            {
-                return asDouble.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            }
-        }
-
-        return null;
-    }
-
-    private static bool IsPawnPendingType(string? pendingType)
-    {
-        var normalized = (pendingType ?? string.Empty).Trim();
-        return string.Equals(normalized, "choose_pawn", StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(normalized, "pick_pawn", StringComparison.OrdinalIgnoreCase);
-    }
 }

@@ -1,17 +1,10 @@
 import {
   getPendingPawnMoveOptions,
-  isPendingPawnMoveForPlayer,
   listPendingPawnMoveActions,
   resolvePendingPawnMove,
 } from './pawn-move-selection.helper';
 
 describe('pawn-move-selection.helper', () => {
-  it('checks pending player identity', () => {
-    const pending = { type: 'choose_pawn', playerId: '7' };
-    expect(isPendingPawnMoveForPlayer(pending, 7, 'choose_pawn')).toBe(true);
-    expect(isPendingPawnMoveForPlayer(pending, 8, 'choose_pawn')).toBe(false);
-  });
-
   it('returns normalized pending move options', () => {
     const pending = {
       data: {
@@ -47,4 +40,3 @@ describe('pawn-move-selection.helper', () => {
     expect(resolvePendingPawnMove(pending, { pawnIndex: 2, targetProgress: 8 })).toBeNull();
   });
 });
-

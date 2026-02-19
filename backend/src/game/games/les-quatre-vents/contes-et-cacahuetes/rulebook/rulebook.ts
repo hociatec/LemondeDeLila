@@ -5,18 +5,20 @@ import {
   normalizeActionType,
 } from '../../../../actions/action-service.helper';
 import {
-  requiredInt,
-  requiredString,
-} from '../../../../core/helpers/payload-validators.helper';
-import {
   getPendingPawnActionsForPlayer,
   validatePendingPawnActionForActor,
 } from '../../../../core/helpers/pawn-pending-rulebook.helper';
 import {
+  getPendingCardChoiceActionsForPlayer,
   getPendingChooseTargetActionsForPlayer,
   getPendingDrawActionsForPlayer,
+  getPendingNumberChoiceActionsForPlayer,
+  getPendingStringChoiceActionsForPlayer,
+  validatePendingCardChoiceActionForActor,
   validatePendingChooseTargetActionForActor,
   validatePendingDrawActionForActor,
+  validatePendingNumberChoiceActionForActor,
+  validatePendingStringChoiceActionForActor,
 } from '../../../../core/helpers/pending-actions-rulebook.helper';
 import {
   GameValidationError,
@@ -55,34 +57,33 @@ export function getAvailableActions(
     );
     if (targetActions.length > 0) return targetActions;
     if (type === 'choose_number') {
-      const min = Number(pending?.data?.min ?? 1);
-      const max = Number(pending?.data?.max ?? 3);
-      const values: number[] = [];
-      for (let v = min; v <= max; v += 1) values.push(v);
-      return values.map((v) => ({
-        type: 'choose_number',
-        payload: { value: v },
-      }));
+      return getPendingNumberChoiceActionsForPlayer(pending, playerId, {
+        pendingType: 'choose_number',
+        actionType: 'choose_number',
+        payloadValueKey: 'value',
+        minKey: 'min',
+        maxKey: 'max',
+        defaultMin: 1,
+        defaultMax: 3,
+      });
     }
     if (type === 'choose_option') {
-      const choices: string[] = Array.isArray(pending?.choices)
-        ? pending.choices
-        : [];
-      return choices.map((c) => ({
-        type: 'choose_option',
-        payload: { option: c },
-      }));
+      return getPendingStringChoiceActionsForPlayer(pending, playerId, {
+        pendingType: 'choose_option',
+        actionType: 'choose_option',
+        payloadOptionKey: 'option',
+        choicesContainer: 'root',
+        choicesKey: 'choices',
+      });
     }
     if (type === 'choose_card') {
-      const cards: Array<{ cardType: string; cardId: number }> = Array.isArray(
-        pending?.data?.cards,
-      )
-        ? pending.data.cards
-        : [];
-      return cards.map((c) => ({
-        type: 'choose_card',
-        payload: { cardType: c.cardType, cardId: c.cardId },
-      }));
+      return getPendingCardChoiceActionsForPlayer(pending, playerId, {
+        pendingType: 'choose_card',
+        actionType: 'choose_card',
+        cardsKey: 'cards',
+        payloadCardTypeKey: 'cardType',
+        payloadCardIdKey: 'cardId',
+      });
     }
     return [];
   }
@@ -152,13 +153,6 @@ export function validateAction(
         gameType: GAME_TYPE,
       });
 
-    if (pType === 'draw') {
-      if (type !== 'draw')
-        throw new PlayerActionError('Action non disponible.', {
-          gameType: GAME_TYPE,
-        });
-      return { type: 'draw', payload: {} };
-    }
     if (pType === 'choose_pawn') {
       const pawnValidation = validatePendingPawnActionForActor({
         pending,
@@ -208,114 +202,77 @@ export function validateAction(
         action: { type, payload: action.payload ?? null },
       });
 
-    if (pType === 'choose_target') {
-      if (type !== 'choose_target')
-        throw new PlayerActionError('Action non disponible.', {
-          gameType: GAME_TYPE,
-        });
-      throw new GameValidationError('Cible invalide.', {
-        gameType: GAME_TYPE,
-        action: { type, payload: action.payload ?? null },
-      });
-    }
     if (pType === 'choose_number') {
-      if (type !== 'choose_number')
+      const numberValidation = validatePendingNumberChoiceActionForActor({
+        pending,
+        actorId,
+        actionType: type,
+        payload: action.payload ?? {},
+        pendingType: 'choose_number',
+        expectedActionType: 'choose_number',
+        payloadValueKey: 'value',
+        minKey: 'min',
+        maxKey: 'max',
+        defaultMin: 1,
+        defaultMax: 3,
+      });
+      if (!numberValidation.ok && numberValidation.reason === 'wrong_action_type')
         throw new PlayerActionError('Action non disponible.', {
           gameType: GAME_TYPE,
         });
-      const min = Number(pending?.data?.min ?? 1);
-      const max = Number(pending?.data?.max ?? 3);
-      const value = (() => {
-        try {
-          return requiredInt(action.payload ?? {}, 'value', 'Valeur invalide.');
-        } catch {
-          throw new GameValidationError('Valeur invalide.', {
-            gameType: GAME_TYPE,
-            action: { type, payload: action.payload ?? null },
-          });
-        }
-      })();
-      if (value < min || value > max)
+      if (!numberValidation.ok)
         throw new GameValidationError('Valeur invalide.', {
           gameType: GAME_TYPE,
           action: { type, payload: action.payload ?? null },
         });
-      return { type: 'choose_number', payload: { value } };
+      return numberValidation.action;
     }
     if (pType === 'choose_option') {
-      if (type !== 'choose_option')
+      const optionValidation = validatePendingStringChoiceActionForActor({
+        pending,
+        actorId,
+        actionType: type,
+        payload: action.payload ?? {},
+        pendingType: 'choose_option',
+        expectedActionType: 'choose_option',
+        payloadOptionKey: 'option',
+        choicesContainer: 'root',
+        choicesKey: 'choices',
+      });
+      if (!optionValidation.ok && optionValidation.reason === 'wrong_action_type')
         throw new PlayerActionError('Action non disponible.', {
           gameType: GAME_TYPE,
         });
-      const choices: string[] = Array.isArray(pending?.choices)
-        ? pending.choices
-        : [];
-      const option = (() => {
-        try {
-          return requiredString(
-            action.payload ?? {},
-            'option',
-            'Option invalide.',
-          );
-        } catch {
-          throw new GameValidationError('Option invalide.', {
-            gameType: GAME_TYPE,
-            action: { type, payload: action.payload ?? null },
-          });
-        }
-      })();
-      if (!choices.some((c) => String(c) === option))
+      if (!optionValidation.ok)
         throw new GameValidationError('Option invalide.', {
           gameType: GAME_TYPE,
           action: { type, payload: action.payload ?? null },
         });
-      return { type: 'choose_option', payload: { option } };
+      return optionValidation.action;
     }
     if (pType === 'choose_card') {
-      if (type !== 'choose_card')
+      const cardValidation = validatePendingCardChoiceActionForActor({
+        pending,
+        actorId,
+        actionType: type,
+        payload: action.payload ?? {},
+        pendingType: 'choose_card',
+        expectedActionType: 'choose_card',
+        cardsKey: 'cards',
+        payloadCardTypeKey: 'cardType',
+        payloadCardIdKey: 'cardId',
+      });
+      if (!cardValidation.ok && cardValidation.reason === 'wrong_action_type')
         throw new PlayerActionError('Action non disponible.', {
           gameType: GAME_TYPE,
         });
-      const cards: Array<{ cardType: string; cardId: number }> = Array.isArray(
-        pending?.data?.cards,
-      )
-        ? pending.data.cards
-        : [];
-      const cardType = (() => {
-        try {
-          return requiredString(
-            action.payload ?? {},
-            'cardType',
-            'Carte invalide.',
-          );
-        } catch {
-          throw new GameValidationError('Carte invalide.', {
-            gameType: GAME_TYPE,
-            action: { type, payload: action.payload ?? null },
-          });
-        }
-      })();
-      const cardId = (() => {
-        try {
-          return requiredInt(action.payload ?? {}, 'cardId', 'Carte invalide.');
-        } catch {
-          throw new GameValidationError('Carte invalide.', {
-            gameType: GAME_TYPE,
-            action: { type, payload: action.payload ?? null },
-          });
-        }
-      })();
-      if (
-        !cards.some(
-          (c) => String(c.cardType) === cardType && Number(c.cardId) === cardId,
-        )
-      ) {
+      if (!cardValidation.ok) {
         throw new GameValidationError('Carte invalide.', {
           gameType: GAME_TYPE,
           action: { type, payload: action.payload ?? null },
         });
       }
-      return { type: 'choose_card', payload: { cardType, cardId } };
+      return cardValidation.action;
     }
     throw new PlayerActionError('Action non disponible.', {
       gameType: GAME_TYPE,

@@ -9,6 +9,7 @@ export type PanierExpressActionType =
   | 'roll'
   | 'ROLL_DICE'
   | 'roll_dice'
+  | 'choose_pawn'
   | 'draw'
   | 'answer_quiz'
   | 'pick_choice'
@@ -36,6 +37,7 @@ export const PANIER_EXPRESS_GAME: GameDefinition<
     'roll',
     'ROLL_DICE',
     'roll_dice',
+    'choose_pawn',
     'draw',
     'answer_quiz',
     'pick_choice',
@@ -55,6 +57,7 @@ export const PANIER_EXPRESS_GAME: GameDefinition<
     merchant_request_accept: { blocking: true },
     merchant_request_refuse: { blocking: true },
     answer_quiz: { blocking: true },
+    choose_pawn: { blocking: true },
     pick_choice: { blocking: true },
   },
   phaseOrder: [

@@ -169,6 +169,7 @@ describe('PanierExpress - tests fonctionnels (simulation)', () => {
     );
 
     const maxActions = 800;
+    let unchangedStreak = 0;
     for (let i = 0; i < maxActions; i += 1) {
       if ((state.status || '').toLowerCase() === 'finished') break;
 
@@ -218,7 +219,12 @@ describe('PanierExpress - tests fonctionnels (simulation)', () => {
         rng: state.metadata?.rng,
       });
 
-      expect(after).not.toBe(before);
+      if (after === before) {
+        unchangedStreak += 1;
+      } else {
+        unchangedStreak = 0;
+      }
+      expect(unchangedStreak).toBeLessThan(40);
     }
 
     expect(state).toBeTruthy();

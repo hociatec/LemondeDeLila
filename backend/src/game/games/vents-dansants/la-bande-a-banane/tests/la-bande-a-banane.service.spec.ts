@@ -1,14 +1,9 @@
-ï»¿import { Test } from '@nestjs/testing';
-import { BandeABananeModule } from '../la-bande-a-banane.module';
 import { BandeABananeService } from '../la-bande-a-banane.service';
 
 describe('BandeABananeService', () => {
-  it('devrait Ãªtre dÃ©fini', async () => {
-    const module = await Test.createTestingModule({
-      imports: [BandeABananeModule],
-    }).compile();
-
-    const service = module.get(BandeABananeService);
+  it('devrait être défini', () => {
+    const registry = { register: jest.fn() } as any;
+    const service = new BandeABananeService(registry, {} as any, {} as any, {} as any, {} as any);
     expect(service).toBeDefined();
   });
 });

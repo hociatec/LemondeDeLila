@@ -18,8 +18,10 @@ import {
 import {
   getPendingChooseTargetActionsForPlayer,
   getPendingDrawActionsForPlayer,
+  getPendingNumberSetChoiceActionsForPlayer,
   validatePendingChooseTargetActionForActor,
   validatePendingDrawActionForActor,
+  validatePendingNumberSetChoiceActionForActor,
 } from '../../../../core/helpers/pending-actions-rulebook.helper';
 
 export function getAvailableActions(
@@ -38,22 +40,20 @@ export function getAvailableActions(
     );
     if (targetActions.length > 0) return targetActions;
     if (pending.type === 'choose_next_player') {
-      const ids: number[] = Array.isArray(pending?.data?.playerIds)
-        ? pending.data.playerIds
-        : [];
-      return ids.map((id) => ({
-        type: 'choose_next_player',
-        payload: { playerId: id },
-      }));
+      return getPendingNumberSetChoiceActionsForPlayer(pending, playerId, {
+        pendingType: 'choose_next_player',
+        actionType: 'choose_next_player',
+        payloadValueKey: 'playerId',
+        valuesKey: 'playerIds',
+      });
     }
     if (pending.type === 'choose_next_delta') {
-      const deltas: number[] = Array.isArray(pending?.data?.deltas)
-        ? pending.data.deltas
-        : [];
-      return deltas.map((delta) => ({
-        type: 'choose_next_delta',
-        payload: { delta },
-      }));
+      return getPendingNumberSetChoiceActionsForPlayer(pending, playerId, {
+        pendingType: 'choose_next_delta',
+        actionType: 'choose_next_delta',
+        payloadValueKey: 'delta',
+        valuesKey: 'deltas',
+      });
     }
     return [];
   }
@@ -141,51 +141,53 @@ export function validateAction(
         gameType: 'ca-derape',
       });
     }
-    if (pending.type === 'choose_target') {
-      if (normalized !== 'choose_target') {
-        throw new PlayerActionError('Choix invalide.', {
-          gameType: 'ca-derape',
-        });
-      }
-      throw new GameValidationError('Cible invalide.', {
-        gameType: 'ca-derape',
-      });
-    }
     if (pending.type === 'choose_next_player') {
-      if (normalized !== 'choose_next_player') {
+      const playerValidation = validatePendingNumberSetChoiceActionForActor({
+        pending,
+        actorId,
+        actionType: normalized,
+        payload: action.payload ?? {},
+        pendingType: 'choose_next_player',
+        expectedActionType: 'choose_next_player',
+        payloadValueKey: 'playerId',
+        valuesKey: 'playerIds',
+      });
+      if (!playerValidation.ok && playerValidation.reason === 'wrong_action_type') {
         throw new PlayerActionError('Choix invalide.', {
           gameType: 'ca-derape',
         });
       }
-      const ids: number[] = Array.isArray(pending?.data?.playerIds)
-        ? pending.data.playerIds
-        : [];
-      const playerId = Number((action.payload as any)?.playerId);
-      if (!Number.isFinite(playerId) || !ids.includes(playerId)) {
+      if (!playerValidation.ok) {
         throw new GameValidationError('Joueur invalide.', {
           gameType: 'ca-derape',
-          playerId,
+          playerId: Number((action.payload as any)?.playerId),
         });
       }
-      return { type: 'choose_next_player', payload: { playerId } };
+      return playerValidation.action;
     }
     if (pending.type === 'choose_next_delta') {
-      if (normalized !== 'choose_next_delta') {
+      const deltaValidation = validatePendingNumberSetChoiceActionForActor({
+        pending,
+        actorId,
+        actionType: normalized,
+        payload: action.payload ?? {},
+        pendingType: 'choose_next_delta',
+        expectedActionType: 'choose_next_delta',
+        payloadValueKey: 'delta',
+        valuesKey: 'deltas',
+      });
+      if (!deltaValidation.ok && deltaValidation.reason === 'wrong_action_type') {
         throw new PlayerActionError('Choix invalide.', {
           gameType: 'ca-derape',
         });
       }
-      const deltas: number[] = Array.isArray(pending?.data?.deltas)
-        ? pending.data.deltas
-        : [];
-      const delta = Number((action.payload as any)?.delta);
-      if (!Number.isFinite(delta) || !deltas.includes(delta)) {
+      if (!deltaValidation.ok) {
         throw new GameValidationError('Choix invalide.', {
           gameType: 'ca-derape',
-          delta,
+          delta: Number((action.payload as any)?.delta),
         });
       }
-      return { type: 'choose_next_delta', payload: { delta } };
+      return deltaValidation.action;
     }
     throw new PlayerActionError('Choix invalide.', { gameType: 'ca-derape' });
   }

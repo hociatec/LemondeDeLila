@@ -92,19 +92,8 @@ export function validateAction(
         targetPlayerId: targetValidation.targetPlayerId,
       });
     }
-
     if (pending.playerId !== actorId) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
-        gameType: 'pirates-en-vadrouille',
-      });
-    }
-    if (pending.type === 'choose_target') {
-      if (type !== 'choose_target') {
-        throw new PlayerActionError('Action non disponible.', {
-          gameType: 'pirates-en-vadrouille',
-        });
-      }
-      throw new GameValidationError('Cible invalide.', {
         gameType: 'pirates-en-vadrouille',
       });
     }

@@ -83,7 +83,7 @@ describe('buildPublicRoomList', () => {
     expect(joinableItem?.started).toBe(false);
   });
 
-  it('filters out rooms that are already full (players + bots >= maxPlayers)', () => {
+  it('keeps open rooms listed even when they are full (spectator access)', () => {
     const full = makeRoom({
       id: 1,
       gameType: 'panier-express',
@@ -101,7 +101,7 @@ describe('buildPublicRoomList', () => {
     });
 
     const { items } = buildPublicRoomList([full, joinable]);
-    expect(items.map((i) => i.id)).toEqual([2]);
+    expect(items.map((i) => i.id)).toEqual([1, 2]);
   });
 
   it('does not count participants that already left', () => {
@@ -114,7 +114,9 @@ describe('buildPublicRoomList', () => {
       bots: [makeBot(1)],
     });
     const { items } = buildPublicRoomList([room]);
-    expect(items).toHaveLength(0);
+    expect(items).toHaveLength(1);
+    expect(items[0]?.playersCount).toBe(1);
+    expect(items[0]?.botsCount).toBe(1);
   });
 
   it('groups rooms by gameType and sorts groups case-insensitively', () => {
