@@ -12,7 +12,7 @@
     {
       "n": 2,
       "title": "Case neutre - Forêt de sapins",
-      "description": "Vous traversez une forêt silencieuse et parfumée. Rien ne se passe.",
+      "description": "Vous traversez une forêt silencieuse et parfumée.",
       "type": "neutral",
       "delta": 0,
       "skipTurns": 0
@@ -36,7 +36,7 @@
     {
       "n": 5,
       "title": "Case neutre - Boulangerie des lutins",
-      "description": "Une délicieuse odeur de biscuits flotte dans l'air. Rien ne se passe.",
+      "description": "Une délicieuse odeur de biscuits flotte dans l'air.",
       "type": "neutral",
       "delta": 0,
       "skipTurns": 0
@@ -68,7 +68,7 @@
     {
       "n": 9,
       "title": "Case neutre - Marché de Noël",
-      "description": "Vous flânez parmi les étals illuminés. Rien ne se passe.",
+      "description": "Vous flânez parmi les étals illuminés.",
       "type": "neutral",
       "delta": 0,
       "skipTurns": 0
@@ -92,7 +92,7 @@
     {
       "n": 12,
       "title": "Case neutre - Chalet décoré",
-      "description": "Vous admirez les guirlandes scintillantes. Rien ne se passe.",
+      "description": "Vous admirez les guirlandes scintillantes.",
       "type": "neutral",
       "delta": 0,
       "skipTurns": 0
@@ -124,7 +124,7 @@
     {
       "n": 16,
       "title": "Case neutre - Pont de givre",
-      "description": "Une aurore boréale illumine le ciel. Rien ne se passe.",
+      "description": "Une aurore boréale illumine le ciel.",
       "type": "neutral",
       "delta": 0,
       "skipTurns": 0
@@ -164,7 +164,7 @@
     {
       "n": 21,
       "title": "Case neutre - Hotte oubliée",
-      "description": "Vous vous grattez la tête, pensif. Rien ne se passe.",
+      "description": "Vous vous grattez la tête, pensif.",
       "type": "neutral",
       "delta": 0,
       "skipTurns": 0
@@ -348,7 +348,7 @@
     {
       "n": 44,
       "title": "Case neutre - Cadeau trop lourd",
-      "description": "Le cadeau tombe à vos pieds. Rien ne se passe.",
+      "description": "Le cadeau tombe à vos pieds.",
       "type": "neutral",
       "delta": 0,
       "skipTurns": 0

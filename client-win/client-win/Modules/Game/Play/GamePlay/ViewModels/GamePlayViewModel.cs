@@ -306,6 +306,11 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             _lastAnnouncedServerPendingLabel = string.Empty;
             return;
         }
+        if (string.Equals(label, "Réponses possibles", StringComparison.OrdinalIgnoreCase))
+        {
+            _lastAnnouncedServerPendingLabel = string.Empty;
+            return;
+        }
 
         if (string.Equals(_lastAnnouncedServerPendingLabel, label, StringComparison.Ordinal))
         {
@@ -1198,8 +1203,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         var session = _session;
         if (session == null) return false;
 
-        var pendingType = (session.LastState?.Pending?.Type ?? string.Empty).Trim();
-
         try
         {
             var sent = await _choices.SubmitSelectedChoiceAsync(
@@ -1211,10 +1214,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                     },
                     cancellationToken)
                 .ConfigureAwait(false);
-            if (sent && string.Equals(pendingType, "quiz", StringComparison.OrdinalIgnoreCase))
-            {
-                MessageReceived?.Invoke(new GamePlayHistoryMessage("Réponse envoyée."));
-            }
             return sent;
         }
         catch (Exception ex)

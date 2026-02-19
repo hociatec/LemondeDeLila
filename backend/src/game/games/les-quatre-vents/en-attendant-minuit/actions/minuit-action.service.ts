@@ -240,7 +240,7 @@ export class MinuitActionService {
         typeof pending.successDelta === 'number' ? pending.successDelta : 0;
       next = this.core.appendLog(
         next,
-        `${who} rÃ©pond. Bonne rÃ©ponse.`,
+        `${who} a choisi la bonne rÃ©ponse !`,
       );
       if (delta > 0) {
         next = this.move(next, currentId, delta);
@@ -248,7 +248,7 @@ export class MinuitActionService {
     } else {
       next = this.core.appendLog(
         next,
-        `${who} rÃ©pond. Mauvaise rÃ©ponse.`,
+        `${who} a validÃ© la mauvaise rÃ©ponse.`,
       );
       const failDelta =
         typeof pending.failureDelta === 'number' ? pending.failureDelta : 0;
@@ -417,6 +417,7 @@ export class MinuitActionService {
         return !player || this.isBotLike(player, meta) || this.hasPawnAssigned(player, meta);
       },
       pendingType: 'pick_pawn',
+      labelForPlayer: (playerLabel) => `C'est Ã  ${playerLabel} de choisir son pion.`,
       pawns: entries.map((entry) => ({
         id: entry.id,
         label: entry.label,
@@ -877,10 +878,6 @@ export class MinuitActionService {
         (t) => t.type === 'card',
       );
       if (nextPos != null) {
-        next = this.core.appendLog(
-          next,
-          "Avance jusqu'Ã  la prochaine Carte NoÃ«l.",
-        );
         next = this.setPos(next, playerId, nextPos);
         return this.applyLanding(next, playerId);
       }

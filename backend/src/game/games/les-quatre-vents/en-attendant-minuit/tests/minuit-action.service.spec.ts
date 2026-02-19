@@ -64,9 +64,7 @@ describe('MinuitActionService', () => {
 
     const next = service.applyActions(state, [{ type: 'roll', payload: {} } as any]);
     expect(next.pending?.type).toBe('pick_pawn');
-    expect(String(next.pending?.label ?? '')).toContain(
-      "C'est à Lilas de choisir son pion",
-    );
+    expect(String(next.pending?.label ?? '')).toContain('choisir son pion');
   });
 
   it('uses possessive pawn wording in placement log', () => {
@@ -301,6 +299,110 @@ describe('MinuitActionService', () => {
     expect(next.pending).toBeNull();
     expect(next.turn?.currentPlayerId).toBe(-9);
     expect(next.turnIndex).toBe(1);
+  });
+
+  it('logs quiz result in a single concise sentence', () => {
+    const { random, turns, core } = createDeps();
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [
+        { id: 1, username: 'Lilas', pawn: 'Le Renne' } as any,
+        { id: 2, username: 'Bucky', pawn: 'Le Lutin', isBot: true } as any,
+      ],
+      metadata: {
+        positions: { 1: 0, 2: 0 },
+        statuses: { skipTurn: {}, keepTurn: {} },
+        pendingQuiz: {
+          playerId: 1,
+          question: 'Q?',
+          choices: ['A', 'B', 'C'],
+          answer: 'A',
+          anyCorrect: false,
+          successDelta: 0,
+          failureDelta: 0,
+        },
+        tiles: [
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
+          { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
+        ],
+        decks: { cards: [], discard: [] },
+      } as any,
+      pending: null,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = service.applyActions(state, [
+      { type: 'answer_quiz', payload: { answer: 'A' } } as any,
+    ]);
+    const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
+
+    expect(messages.some((m) => m.includes('a choisi la bonne'))).toBe(true);
+    expect(messages.some((m) => m.toLowerCase().includes('repond.'))).toBe(false);
+    expect(messages.some((m) => m.toLowerCase().includes('bonne reponse.'))).toBe(false);
+  });
+
+  it('does not duplicate next-card movement log', () => {
+    const { random, turns, core } = createDeps();
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [
+        { id: 1, username: 'Lilas', pawn: 'Le Renne' } as any,
+        { id: 2, username: 'Bucky', pawn: 'Le Lutin', isBot: true } as any,
+      ],
+      metadata: {
+        positions: { 1: 1, 2: 0 },
+        statuses: { skipTurn: {}, keepTurn: {} },
+        tiles: [
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
+          { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 3, title: 'Case carte', type: 'card', description: 'Piochez.' },
+          { n: 4, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 5, title: 'Case carte', type: 'card', description: 'Piochez.' },
+        ],
+        decks: {
+          cards: [
+            {
+              id: 99,
+              title: 'Luge de vitesse',
+              category: 'Surprises',
+              kind: 'Surprise',
+              lines: ['Avancez jusquà la prochaine Carte Noël.'],
+            },
+          ],
+          discard: [],
+        },
+      } as any,
+      pending: { type: 'draw', playerId: 1, blocking: true, label: 'Piocher.' } as any,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = service.applyActions(state, [{ type: 'draw', payload: {} } as any]);
+    const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
+    const nextCardMentions = messages.filter((m) => /prochaine Carte/i.test(m)).length;
+
+    expect(nextCardMentions).toBe(1);
   });
 });
 

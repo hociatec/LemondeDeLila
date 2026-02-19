@@ -49,6 +49,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	    private Action<string>? _onSessionError;
     private Action<GamePlayHistoryMessage>? _onGameMessage;
 	    private Action<string, string>? _onGameStatusChanged;
+    private bool _roomStopConfirmationPending;
 
     private bool _lastRoomStarted;
     private Dictionary<int, (string Username, bool Spectator)> _participants = new();
@@ -115,6 +116,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     {
         var last = _session.LastRoomState;
         _lastRoomStarted = IsRoomStarted(last?.Room);
+        _roomStopConfirmationPending = false;
         SeedParticipants(last?.Room);
         _selfIsSpectator = ComputeSelfSpectator();
         SyncChatEnabled(last?.Manifest);
@@ -281,6 +283,10 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     var wasStarted = _lastRoomStarted;
                     var nowStarted = IsRoomStarted(payload.Room);
                     _lastRoomStarted = nowStarted;
+                    if (nowStarted)
+                    {
+                        _roomStopConfirmationPending = false;
+                    }
 
                     // Keep table ambience loop in sync with room settings (start/stop/change).
                     SyncTableAmbience(payload, started: nowStarted);
@@ -304,6 +310,11 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
                     if (wasStarted && !nowStarted)
                     {
+                        if (ShouldConfirmRoomStopTransition())
+                        {
+                            return;
+                        }
+
                         // Stop table ambience when leaving the game.
                         SyncTableAmbience(payload, started: false);
 
@@ -339,6 +350,33 @@ internal sealed class GameTableBindings : IAsyncDisposable
         {
             _options.Changed += OnOptionsChanged;
         }
+    }
+
+    private bool ShouldConfirmRoomStopTransition()
+    {
+        var gameUiWasActive = _tableVm.GameZone.IsStarted || _gamePlayVm != null || _tableVm.GameZone.Content != null;
+        if (!gameUiWasActive)
+        {
+            _roomStopConfirmationPending = false;
+            return false;
+        }
+
+        if (_roomStopConfirmationPending)
+        {
+            _roomStopConfirmationPending = false;
+            return false;
+        }
+
+        _roomStopConfirmationPending = true;
+        try
+        {
+            _ = _session.RequestStateRefreshAsync(force: true);
+        }
+        catch
+        {
+            // best-effort
+        }
+        return true;
     }
 
     private void OnOptionsChanged(object? sender, EventArgs e)
