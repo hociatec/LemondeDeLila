@@ -12,10 +12,13 @@ namespace client_win.Modules.Game.Play.Shortcuts.ViewModels;
 internal sealed class GamePlayShortcutsViewModel
 {
     private readonly ICommand _sendKey;
+    private readonly ICommand _turnInfo;
+    private const string TurnShortcutCode = "ui.turn";
 
-    public GamePlayShortcutsViewModel(ICommand sendKey)
+    public GamePlayShortcutsViewModel(ICommand sendKey, ICommand turnInfo)
     {
         _sendKey = sendKey ?? throw new ArgumentNullException(nameof(sendKey));
+        _turnInfo = turnInfo ?? throw new ArgumentNullException(nameof(turnInfo));
     }
 
     public ObservableCollection<ShortcutDefinition> Shortcuts { get; } = new();
@@ -99,6 +102,8 @@ internal sealed class GamePlayShortcutsViewModel
 
             Shortcuts.Add(kv.Value);
         }
+
+        SyncGenericTurnShortcut(hasServerTurnShortcut: desired.ContainsKey("server.key.t"));
     }
 
     private ShortcutDefinition? FindShortcutByCode(string code)
@@ -156,6 +161,31 @@ internal sealed class GamePlayShortcutsViewModel
         }
 
         return false;
+    }
+
+    private void SyncGenericTurnShortcut(bool hasServerTurnShortcut)
+    {
+        var existing = FindShortcutByCode(TurnShortcutCode);
+        if (hasServerTurnShortcut)
+        {
+            if (existing != null)
+            {
+                Shortcuts.Remove(existing);
+            }
+            return;
+        }
+
+        if (existing != null)
+        {
+            return;
+        }
+
+        Shortcuts.Add(new ShortcutDefinition(
+            key: 't',
+            command: _turnInfo,
+            description: "Annoncer à qui est le tour",
+            code: TurnShortcutCode,
+            availableInGame: true));
     }
 }
  

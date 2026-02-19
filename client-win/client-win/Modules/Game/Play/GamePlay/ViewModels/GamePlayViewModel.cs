@@ -166,7 +166,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             emitMessage: msg => MessageReceived?.Invoke(new GamePlayHistoryMessage(msg)),
             onDrawActionSent: () => _logSounds.TryPlayDrawSound());
 
-        _shortcuts = new GamePlayShortcutsViewModel(_commands.SendKey);
+        _shortcuts = new GamePlayShortcutsViewModel(_commands.SendKey, _commands.TurnInfo);
 
 	        _realtime = new GamePlayRealtimeController(
 	            dispatcher: _dispatcher,
@@ -1330,15 +1330,47 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             var message = GamePlayPanelHistoryMessageBuilder.BuildPanelHistoryMessage(state, panelId.Trim());
             if (!string.IsNullOrWhiteSpace(message))
             {
-                // Mark as UI/shortcut message so the history sink can announce it assertively
-                // without replaying queued older announcements.
-                var uiPrefix = "[ui.shortcut]";
-                MessageReceived?.Invoke(new GamePlayHistoryMessage($"{uiPrefix} {message.Trim()}"));
+                EmitUiShortcutMessage(message);
+                return true;
+            }
+        }
+
+        // Generic fallback for common UI panels across games.
+        // Only used when no explicit interface hint matched the pressed key.
+        if (pressed == "S")
+        {
+            var scoreMessage = GamePlayPanelHistoryMessageBuilder.BuildPanelHistoryMessage(state, "score");
+            if (!string.IsNullOrWhiteSpace(scoreMessage))
+            {
+                EmitUiShortcutMessage(scoreMessage);
+                return true;
+            }
+        }
+
+        if (pressed == "P")
+        {
+            var positionMessage = GamePlayPanelHistoryMessageBuilder.BuildPositionHistoryMessage(state);
+            if (!string.IsNullOrWhiteSpace(positionMessage))
+            {
+                EmitUiShortcutMessage(positionMessage);
                 return true;
             }
         }
 
         return false;
+    }
+
+    private void EmitUiShortcutMessage(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return;
+        }
+
+        // Mark as UI/shortcut message so the history sink can announce it assertively
+        // without replaying queued older announcements.
+        var uiPrefix = "[ui.shortcut]";
+        MessageReceived?.Invoke(new GamePlayHistoryMessage($"{uiPrefix} {message.Trim()}"));
     }
 
  	    public Task RequestTurnInfoAsync() => RequestTurnAsync();
