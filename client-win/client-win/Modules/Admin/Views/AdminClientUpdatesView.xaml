@@ -20,8 +20,8 @@
 
             <Style x:Key="ActionButton" TargetType="Button">
                 <Setter Property="Foreground" Value="White" />
-                <Setter Property="Background" Value="#214570" />
-                <Setter Property="BorderBrush" Value="#2D5A8C" />
+                <Setter Property="Background" Value="#1A3557" />
+                <Setter Property="BorderBrush" Value="{StaticResource HighlightBrush}" />
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="Padding" Value="14,10" />
                 <Setter Property="FontSize" Value="14" />
@@ -55,134 +55,52 @@
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
-
-            <Style x:Key="PrimaryActionButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
-                <Setter Property="Background" Value="#1A3557" />
-                <Setter Property="BorderBrush" Value="{StaticResource HighlightBrush}" />
-            </Style>
-
-            <Style x:Key="DangerActionButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
-                <Setter Property="Background" Value="#4B1D2A" />
-                <Setter Property="BorderBrush" Value="#E05A5A" />
-            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <StackPanel Orientation="Vertical"
-                KeyboardNavigation.TabNavigation="Local"
-                KeyboardNavigation.DirectionalNavigation="Contained">
-        <Border Background="#0E2034" CornerRadius="10" Padding="16" Margin="0,0,0,12">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+    <Grid KeyboardNavigation.TabNavigation="Cycle"
+          KeyboardNavigation.DirectionalNavigation="Contained">
+        <Border Background="#0E2034"
+                CornerRadius="10"
+                Padding="16">
+            <StackPanel>
+                <TextBlock Text="Mise à jour client"
+                           Style="{StaticResource SectionTitle}" />
 
-                <StackPanel>
-                    <TextBlock Text="Statut" Style="{StaticResource SectionTitle}" />
-                    <TextBlock Text="{Binding Details}"
-                               Foreground="White"
-                               FontSize="14"
-                               Margin="0,8,0,0"
-                               TextWrapping="Wrap" />
-                    <TextBlock Text="{Binding Status}"
-                               Foreground="#90A6C4"
-                               FontSize="12"
-                               Margin="0,6,0,0"
-                               TextWrapping="Wrap" />
-                </StackPanel>
+                <TextBlock x:Name="DelayLabel"
+                           Text="Délai avant la mise à jour (minutes, min 5)"
+                           Foreground="#BFD0E6"
+                           FontSize="12"
+                           Margin="0,12,0,6" />
+                <TextBox x:Name="DelayInput"
+                         Text="{Binding ClientUpdateDelayMinutes, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{DynamicResource InputTextBox}"
+                         MinHeight="40"
+                         TabIndex="0"
+                         AutomationProperties.LabeledBy="{Binding ElementName=DelayLabel}" />
 
-                <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
-                </StackPanel>
-            </Grid>
+                <TextBlock x:Name="MessageLabel"
+                           Text="Message à afficher aux utilisateurs"
+                           Foreground="#BFD0E6"
+                           FontSize="12"
+                           Margin="0,12,0,6" />
+                <TextBox x:Name="MessageInput"
+                         Text="{Binding ClientUpdateMessage, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{DynamicResource InputTextBox}"
+                         Height="110"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"
+                         TabIndex="1"
+                         AutomationProperties.LabeledBy="{Binding ElementName=MessageLabel}" />
+
+                <Button x:Name="ValidateButton"
+                        Content="Valider la mise à jour"
+                        Style="{StaticResource ActionButton}"
+                        Command="{Binding ClientUpdatesScheduleCommand}"
+                        Margin="0,14,0,0"
+                        TabIndex="2" />
+            </StackPanel>
         </Border>
-
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <Border Background="#0E2034" CornerRadius="10" Padding="16" Margin="0,0,8,0">
-                <StackPanel>
-                    <TextBlock Text="Publication" Style="{StaticResource SectionTitle}" />
-                    <TextBlock x:Name="VersionLabel" Text="Version ClickOnce (automatique)" Foreground="#BFD0E6" FontSize="12" Margin="0,12,0,6" />
-                    <TextBox x:Name="VersionInput"
-                              Text="{Binding SecondaryInput, UpdateSourceTrigger=PropertyChanged}"
-                              Style="{DynamicResource InputTextBox}"
-                              MinHeight="40"
-                              IsReadOnly="True"
-                              IsReadOnlyCaretVisible="False"
-                              IsTabStop="False"
-                              Focusable="False"
-                              AutomationProperties.LabeledBy="{Binding ElementName=VersionLabel}" />
-                    <TextBlock Text="Calculée automatiquement à partir de la dernière version publiée."
-                               Foreground="#90A6C4"
-                               FontSize="11"
-                               Margin="0,6,0,0" />
-
-                    <TextBlock x:Name="MessageLabel" Text="Message (optionnel)" Foreground="#BFD0E6" FontSize="12" Margin="0,12,0,6" />
-                    <TextBox x:Name="MessageInput"
-                             Text="{Binding ClientUpdateMessage, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{DynamicResource InputTextBox}"
-                             AcceptsReturn="True"
-                             TextWrapping="Wrap"
-                             Height="90"
-                             VerticalScrollBarVisibility="Auto"
-                             AutomationProperties.LabeledBy="{Binding ElementName=MessageLabel}" />
-                    <TextBlock Text="Laisser vide pour utiliser le message automatique."
-                               Foreground="#90A6C4"
-                               FontSize="11"
-                               Margin="0,6,0,0" />
-
-                    <Button x:Name="PublishButton"
-                            Content="Compiler + publier"
-                            Style="{StaticResource PrimaryActionButton}"
-                            Command="{Binding ClientUpdatesBuildCommand}"
-                            Margin="0,14,0,0" />
-                </StackPanel>
-            </Border>
-
-            <Border Grid.Column="1" Background="#0E2034" CornerRadius="10" Padding="16" Margin="8,0,0,0">
-                <StackPanel>
-                    <TextBlock Text="Diffusion" Style="{StaticResource SectionTitle}" />
-                    <TextBlock Text="Délai avant mise à jour (minutes, min 5)"
-                               Foreground="#BFD0E6"
-                               FontSize="12"
-                               Margin="0,10,0,6" />
-                    <TextBox Text="{Binding ClientUpdateDelayMinutes, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{DynamicResource InputTextBox}"
-                             MinHeight="40" />
-                    <Button Content="Planifier et prévenir en temps réel"
-                            Style="{StaticResource PrimaryActionButton}"
-                            Command="{Binding ClientUpdatesScheduleCommand}"
-                            Margin="0,10,0,0" />
-
-                    <TextBlock Text="Annonce la mise à jour à tous les clients connectés."
-                               Foreground="#90A6C4"
-                               FontSize="12"
-                               Margin="0,16,0,6"
-                               TextWrapping="Wrap" />
-                    <Button Content="Proposer la mise à jour"
-                            Style="{StaticResource ActionButton}"
-                            Command="{Binding ClientUpdatesAnnounceCommand}" />
-
-                    <TextBlock Text="Force la mise à jour et bloque les anciennes versions."
-                               Foreground="#90A6C4"
-                               FontSize="12"
-                               Margin="0,16,0,6"
-                               TextWrapping="Wrap" />
-                    <Button Content="Forcer la mise à jour"
-                            Style="{StaticResource DangerActionButton}"
-                            Command="{Binding ClientUpdatesForceCommand}" />
-
-                    <TextBlock Text="Astuce : en CI, la mise à jour est déjà annoncée et forcée automatiquement."
-                               Foreground="#90A6C4"
-                               FontSize="11"
-                               Margin="0,16,0,0"
-                               TextWrapping="Wrap" />
-                </StackPanel>
-            </Border>
-        </Grid>
-    </StackPanel>
+    </Grid>
 </UserControl>

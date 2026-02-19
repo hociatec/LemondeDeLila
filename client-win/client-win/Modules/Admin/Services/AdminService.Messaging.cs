@@ -23,36 +23,6 @@ public sealed partial class AdminService
         return response.Payload.Delivered;
     }
 
-    public async Task<int> AnnounceClientUpdateAsync(string? message = null, string? version = null, CancellationToken cancellationToken = default)
-    {
-        var token = EnsureAuth();
-        var response = await _ws.RequestAsync<AdminClientUpdateAnnounceResponseDto>(
-            WsMessageTypes.Admin.ClientUpdateAnnounce,
-            new { message, version },
-            token,
-            cancellationToken).ConfigureAwait(false);
-        if (!response.Success || response.Payload == null)
-        {
-            throw new InvalidOperationException(response.Error ?? "Annonce de mise à jour impossible.");
-        }
-        return response.Payload.Delivered;
-    }
-
-    public async Task<(int delivered, string minRequiredVersion)> ForceClientUpdateLatestAsync(string? message = null, CancellationToken cancellationToken = default)
-    {
-        var token = EnsureAuth();
-        var response = await _ws.RequestAsync<AdminClientUpdateForceLatestResponseDto>(
-            WsMessageTypes.Admin.ClientUpdateForceLatest,
-            new { message },
-            token,
-            cancellationToken).ConfigureAwait(false);
-        if (!response.Success || response.Payload == null)
-        {
-            throw new InvalidOperationException(response.Error ?? "Forçage de mise à jour impossible.");
-        }
-        return (response.Payload.Delivered, response.Payload.MinRequiredVersion ?? string.Empty);
-    }
-
     public async Task<(int delivered, int delaySeconds, string scheduledAt)> ScheduleClientUpdateAsync(
         int delayMinutes,
         string? message = null,
@@ -78,12 +48,6 @@ public sealed partial class AdminService
             response.Payload.DelaySeconds,
             response.Payload.ScheduledAt ?? string.Empty);
     }
-}
-
-internal sealed class AdminClientUpdateForceLatestResponseDto
-{
-    public int Delivered { get; set; }
-    public string? MinRequiredVersion { get; set; }
 }
 
 internal sealed class AdminClientUpdateScheduleResponseDto

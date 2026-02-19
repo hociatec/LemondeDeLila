@@ -29,8 +29,6 @@ public interface IAdminService
     Task<AdminLogsDownloadResponseDto> DownloadLogsAsync(int lines = 200, string? filter = null, CancellationToken cancellationToken = default);
 
     Task<int> BroadcastAsync(string message, CancellationToken cancellationToken = default);
-    Task<int> AnnounceClientUpdateAsync(string? message = null, string? version = null, CancellationToken cancellationToken = default);
-    Task<(int delivered, string minRequiredVersion)> ForceClientUpdateLatestAsync(string? message = null, CancellationToken cancellationToken = default);
     Task<(int delivered, int delaySeconds, string scheduledAt)> ScheduleClientUpdateAsync(int delayMinutes, string? message = null, CancellationToken cancellationToken = default);
 
     Task<AdminChatMessageDto[]> GetChatMessagesAsync(int limit = 200, bool includeDeleted = false, CancellationToken cancellationToken = default);

@@ -179,9 +179,6 @@ public sealed partial class AdminViewModel : ObservableObject
         ActivateCommand = new AsyncRelayCommand(ActivateSelectedAsync);
         ApplyFiltersCommand = new AsyncRelayCommand(ApplyFiltersAsync);
         DownloadLogsCommand = new AsyncRelayCommand(DownloadLogsAsync);
-        ClientUpdatesBuildCommand = new AsyncRelayCommand(BuildAndUploadClientUpdateAsync, () => !IsBusy);
-        ClientUpdatesAnnounceCommand = new AsyncRelayCommand(AnnounceClientUpdateAsync, () => !IsBusy);
-        ClientUpdatesForceCommand = new AsyncRelayCommand(ForceClientUpdateLatestAsync, () => !IsBusy);
         ClientUpdatesScheduleCommand = new AsyncRelayCommand(ScheduleClientUpdateAsync, () => !IsBusy);
         EscapeCommand = new RelayCommand(() =>
         {
@@ -321,9 +318,6 @@ public sealed partial class AdminViewModel : ObservableObject
         {
             if (SetProperty(ref _isBusy, value))
             {
-                ClientUpdatesBuildCommand.RaiseCanExecuteChanged();
-                ClientUpdatesAnnounceCommand.RaiseCanExecuteChanged();
-                ClientUpdatesForceCommand.RaiseCanExecuteChanged();
                 ClientUpdatesScheduleCommand.RaiseCanExecuteChanged();
             }
         }
@@ -529,9 +523,6 @@ public sealed partial class AdminViewModel : ObservableObject
     public AsyncRelayCommand ActivateCommand { get; }
     public AsyncRelayCommand ApplyFiltersCommand { get; }
     public AsyncRelayCommand DownloadLogsCommand { get; }
-    public AsyncRelayCommand ClientUpdatesBuildCommand { get; }
-    public AsyncRelayCommand ClientUpdatesAnnounceCommand { get; }
-    public AsyncRelayCommand ClientUpdatesForceCommand { get; }
     public AsyncRelayCommand ClientUpdatesScheduleCommand { get; }
     public RelayCommand EscapeCommand { get; }
     public AsyncRelayCommand<AdminMenuItem> SelectAndActivateCommand { get; }

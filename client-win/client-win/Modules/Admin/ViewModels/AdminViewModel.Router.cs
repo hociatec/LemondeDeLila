@@ -1239,24 +1239,9 @@ public sealed partial class AdminViewModel
                 }
             }
 
-            if (_page == AdminPage.ClientUpdates && tag is string buildTag && buildTag == "clientUpdate.buildUpload")
-            {
-                await BuildAndUploadClientUpdateAsync().ConfigureAwait(true);
-                return;
-            }
             if (_page == AdminPage.ClientUpdates && tag is string scheduleTag && scheduleTag == "clientUpdate.schedule")
             {
                 await ScheduleClientUpdateAsync().ConfigureAwait(true);
-                return;
-            }
-            if (_page == AdminPage.ClientUpdates && tag is string updateTag && updateTag == "clientUpdate.announce")
-            {
-                await AnnounceClientUpdateAsync().ConfigureAwait(true);
-                return;
-            }
-            if (_page == AdminPage.ClientUpdates && tag is string forceTag && forceTag == "clientUpdate.forceLatest")
-            {
-                await ForceClientUpdateLatestAsync().ConfigureAwait(true);
                 return;
             }
             if (_page == AdminPage.Logs && tag is string logTag && logTag == "logs.download")
