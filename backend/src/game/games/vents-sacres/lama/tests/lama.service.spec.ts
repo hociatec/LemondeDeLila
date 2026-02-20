@@ -96,7 +96,7 @@ describe('LamaService', () => {
     expect(String(started.phase)).toBe('round');
     expect(Number(started.metadata?.roundPauseSeconds ?? -1)).toBe(2);
     expect(Number(started.metadata?.loseAtScore ?? 0)).toBe(40);
-    expect(Boolean(started.metadata?.allowPlayAfterDraw)).toBe(true);
+    expect(Boolean(started.metadata?.allowPlayAfterDraw)).toBe(false);
     expect((started.metadata?.discard ?? []).length).toBeGreaterThan(0);
   });
 
@@ -189,10 +189,10 @@ describe('LamaService', () => {
       },
     };
 
-    // Le bot ne doit pas re-piocher indéfiniment : il doit passer après avoir déjà pioché.
+    // Le bot ne doit pas re-piocher indéfiniment : il doit se retirer de la manche après avoir déjà pioché.
     const actions = service.getBotActions(state, 2);
     expect(actions.length).toBe(1);
-    expect(actions[0].type).toBe('lama_pass');
+    expect(actions[0].type).toBe('lama_quit');
   });
 
   it('prevents multiple consecutive draws even if turnTracker becomes desynced', async () => {
@@ -231,7 +231,7 @@ describe('LamaService', () => {
     const afterFirst: any = service.applyActions(state, [
       { type: 'draw', payload: {}, meta: { actorId: 2 } } as any,
     ]);
-    expect(afterFirst.turn.currentPlayerId).toBe(2);
+    expect(afterFirst.turn.currentPlayerId).toBe(1);
     const deckAfterFirst = (afterFirst.metadata.deck ?? []).length;
     const handAfterFirst = (afterFirst.metadata.handsByPlayerId?.['2'] ?? []).length;
 
@@ -366,7 +366,7 @@ describe('LamaService', () => {
       .map((l: any) => String(l?.message ?? ''));
     expect(peekMessages.some((m: string) => m.includes('défausse'))).toBe(true);
 
-    // pass (requires allowPlayAfterDraw + drawn=true)
+    // pass alias (official rule = leave round)
     const passState: any = {
       ...base,
       metadata: {
@@ -382,7 +382,7 @@ describe('LamaService', () => {
     const passMessages = afterPass.log
       .slice(passState.log.length)
       .map((l: any) => String(l?.message ?? ''));
-    expect(passMessages.some((m: string) => m.includes('passe'))).toBe(true);
+    expect(passMessages.some((m: string) => m.includes('se retire'))).toBe(true);
 
     // return token (requires return_token step)
     const returnState: any = {
@@ -536,8 +536,8 @@ describe('LamaService', () => {
     const afterFirst: any = service.applyActions(state, [
       { type: 'draw', payload: {}, meta: { actorId: 2 } } as any,
     ]);
-    expect(afterFirst.turn.currentPlayerId).toBe(2);
-    expect(Boolean(afterFirst.metadata?.turnTracker?.drawn)).toBe(true);
+    expect(afterFirst.turn.currentPlayerId).toBe(1);
+    expect(Boolean(afterFirst.metadata?.turnTracker?.drawn)).toBe(false);
     const deckAfterFirst = (afterFirst.metadata.deck ?? []).length;
     const handAfterFirst = (afterFirst.metadata.handsByPlayerId?.['2'] ?? []).length;
 
@@ -723,7 +723,7 @@ describe('LamaService', () => {
     );
   });
 
-  it('can keep the turn after a draw when configured', async () => {
+  it('passes the turn after a draw even when allowPlayAfterDraw is configured', async () => {
     const { service } = createLamaServiceForTest();
 
     const state: any = {
@@ -760,19 +760,19 @@ describe('LamaService', () => {
       { type: 'draw', payload: {}, meta: { actorId: 1 } } as any,
     ]);
 
-    expect(after.turn.currentPlayerId).toBe(1);
+    expect(after.turn.currentPlayerId).toBe(2);
     expect((after.metadata.deck ?? []).length).toBe(1);
     expect((after.metadata.handsByPlayerId?.['1'] ?? []).length).toBe(2);
-    expect(Boolean(after.metadata?.turnTracker?.drawn)).toBe(true);
+    expect(Boolean(after.metadata?.turnTracker?.drawn)).toBe(false);
 
     const exposed: any = service.exposeStateForUser(after, 1);
     const actionTypes = (exposed?.actions ?? []).map((a: any) =>
       String(a?.type ?? '').toLowerCase(),
     );
-    // Still your turn, but you can't draw twice.
+    // Turn has passed to next player.
     expect(actionTypes).not.toContain('draw');
-    expect(actionTypes).toContain('lama_play');
-    expect(actionTypes).toContain('lama_pass');
+    expect(actionTypes).not.toContain('lama_play');
+    expect(actionTypes).toContain('lama_quit');
   });
 
   it('does not allow multiple draws in a single message from the same actor', async () => {

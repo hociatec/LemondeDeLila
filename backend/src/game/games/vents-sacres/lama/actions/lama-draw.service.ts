@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { LamaCardValue, LamaMetadata } from '../model/lama.model';
-import { lamaCardLabel, nextLamaValue } from '../model/lama.model';
+import { lamaCardLabel } from '../model/lama.model';
 import { LamaRoundService } from '../round/lama-round.service';
 import { LamaSharedService } from '../shared/lama-shared.service';
 import { LamaLogService } from '../logging/lama-log.service';
@@ -53,17 +53,6 @@ export class LamaDrawService {
     const label = lamaCardLabel(card);
     let log = this.logger.append(state.log, `${name} pioche un ${label}.`);
 
-    const allowPlayAfterDraw = Boolean(meta.allowPlayAfterDraw);
-
-    const topDiscard =
-      Array.isArray(meta.discard) && meta.discard.length
-        ? (meta.discard[meta.discard.length - 1] as LamaCardValue)
-        : null;
-    const canPlayAfterDraw =
-      allowPlayAfterDraw &&
-      topDiscard != null &&
-      hand.some((v) => v === topDiscard || v === nextLamaValue(topDiscard));
-
     const nextMeta: LamaMetadata = {
       ...meta,
       deck,
@@ -76,21 +65,13 @@ export class LamaDrawService {
       suppressTurnAnnouncement: false,
     };
 
-    if (allowPlayAfterDraw && !canPlayAfterDraw) {
-      log = this.logger.append(log, `${name} passe (aucune carte jouable).`);
-    }
+    const nextPlayerId = this.round.findNextActivePlayerId(players, nextMeta, actorId);
 
-    const nextPlayerId = canPlayAfterDraw
-      ? actorId
-      : this.round.findNextActivePlayerId(players, nextMeta, actorId);
-
-    const advancedMeta: LamaMetadata = canPlayAfterDraw
-      ? nextMeta
-      : {
-          ...nextMeta,
-          turnTracker: { playerId: nextPlayerId, drawn: false, played: false },
-          suppressTurnAnnouncement: false,
-        };
+    const advancedMeta: LamaMetadata = {
+      ...nextMeta,
+      turnTracker: { playerId: nextPlayerId, drawn: false, played: false },
+      suppressTurnAnnouncement: false,
+    };
 
     const nextState = createPendingState({
       ...state,

@@ -158,13 +158,11 @@ export class LamaSetupService {
       return state;
     }
 
-    const allowPlayAfterDraw = this.shared.asBoolean((action.payload as any)?.allowPlayAfterDraw);
-
     const updatedMeta: LamaMetadata = {
       ...meta,
       loseAtScore,
       roundPauseSeconds,
-      allowPlayAfterDraw,
+      allowPlayAfterDraw: false,
       roundPauseUntilMs: null,
       step: 'turn_choice',
       roundNumber: 1,
@@ -181,12 +179,6 @@ export class LamaSetupService {
     const name = this.shared.playerLabel(players as any[], actorId);
     log = this.logger.append(log, `${name} fixe la défaite à ${loseAtScore} jetons.`);
     log = this.logger.append(log, `${name} règle la pause entre manches à ${roundPauseSeconds}s.`);
-    log = this.logger.append(
-      log,
-      allowPlayAfterDraw
-        ? `${name} autorise à jouer après avoir pioché (même tour).`
-        : `${name} interdit de jouer après avoir pioché (tour suivant).`,
-    );
     log = this.logger.append(log, `Début de la partie.`);
 
     return this.round.startNewRound(

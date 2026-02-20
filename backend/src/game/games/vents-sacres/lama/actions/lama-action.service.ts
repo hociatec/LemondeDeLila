@@ -24,7 +24,7 @@ export class LamaActionService {
   constructor(
     private readonly shared: LamaSharedService,
     private readonly drawService: LamaDrawService,
-    private readonly passService: LamaPassService,
+    private readonly _passService: LamaPassService,
     private readonly playService: LamaPlayService,
     private readonly quitService: LamaQuitService,
     private readonly returnService: LamaReturnService,
@@ -155,8 +155,9 @@ export class LamaActionService {
     }
 
     if (type === 'lama_pass') {
-      if (metaForTurn.droppedOutByPlayerId[String(actorId)]) return state;
-      return this.passService.applyPass(state, metaForTurn, actorId);
+      // Official LAMA rule: "pass" means leaving the round.
+      // Keep backward compatibility for older clients still sending lama_pass.
+      return this.quitService.applyQuit(state, metaForTurn, actorId);
     }
 
     if (type === 'lama_play') {

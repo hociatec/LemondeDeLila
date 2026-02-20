@@ -155,9 +155,6 @@ export class LamaPresenter extends BasePresenterService {
     if (!drawLocked && (meta.deck ?? []).length > 0 && !alreadyDrew) {
       out.push({ type: 'draw', payload: {} });
     }
-    if (meta.allowPlayAfterDraw && alreadyDrew && !trackerPlayed) {
-      out.push({ type: 'lama_pass', payload: {} });
-    }
     out.push({ type: 'lama_quit', payload: {} });
     return out;
   }
@@ -203,12 +200,6 @@ export class LamaPresenter extends BasePresenterService {
               min: 0,
               max: 120,
               initialText: String(metadata.roundPauseSeconds ?? 2),
-            },
-            {
-              key: 'allowPlayAfterDraw',
-              label: 'Autoriser à jouer après avoir pioché (même tour)',
-              kind: 'boolean',
-              initialText: metadata.allowPlayAfterDraw ? 'true' : 'false',
             },
           ],
         },
@@ -272,7 +263,7 @@ export class LamaPresenter extends BasePresenterService {
         droppedOut
           ? `Défausse : ${discardTop}. Vous vous êtes retiré de la manche. Main : ${hand.length} cartes (${handScore} jetons). Total : ${meScore} jetons.`
           : currentPlayerId === userId
-            ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (${drawLocked ? '↑/↓ choisir, Entrée jouer, P passer, Q se retirer, C défausse, E mains, S jetons' : '↑/↓ choisir, Entrée jouer, Espace piocher, P passer, Q se retirer, C défausse, E mains, S jetons'})`
+            ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (${drawLocked ? '↑/↓ choisir, Entrée jouer, P/Q passer, C défausse, E mains, S jetons' : '↑/↓ choisir, Entrée jouer, Espace piocher, P/Q passer, C défausse, E mains, S jetons'})`
             : `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (En attente)`,
       playerId: userId,
       choices,
@@ -283,8 +274,8 @@ export class LamaPresenter extends BasePresenterService {
     if (actionType === 'lama_play') return 'Jouer';
     if (actionType === 'draw') return 'Piocher';
     if (actionType === 'lama_set_config') return 'Configuration';
-    if (actionType === 'lama_quit') return 'Passer la manche';
-    if (actionType === 'lama_pass') return 'Passer';
+    if (actionType === 'lama_quit') return 'Passer (se retirer de la manche)';
+    if (actionType === 'lama_pass') return 'Passer (se retirer de la manche)';
     if (actionType === 'lama_return') return 'Rendre jetons';
     if (actionType === 'lama_peek_discard') return 'Voir défausse';
     if (actionType === 'lama_preview') return 'Voir carte';
@@ -357,7 +348,7 @@ export class LamaPresenter extends BasePresenterService {
         parts.push(`${lamaCardLabel(value)}×${count}`);
       }
       const list = parts.length ? parts.join(', ') : '(aucune carte jouable)';
-      return `Défausse : ${discardTop}. (${drawLocked ? '↑/↓ choisir, Entrée jouer, P passer, Q se retirer, C défausse, E mains, S score' : '↑/↓ choisir, Entrée jouer, Espace piocher, P passer, Q se retirer, C défausse, E mains, S score'})`;
+      return `Défausse : ${discardTop}. (${drawLocked ? '↑/↓ choisir, Entrée jouer, P/Q passer, C défausse, E mains, S score' : '↑/↓ choisir, Entrée jouer, Espace piocher, P/Q passer, C défausse, E mains, S score'})`;
     })();
 
     return {
