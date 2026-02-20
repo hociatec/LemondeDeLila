@@ -77,6 +77,7 @@ export class GameEngineService {
   private static readonly MAX_ACTION_PAYLOAD_BYTES = 16 * 1024;
   private static readonly MAX_MESSAGE_PAYLOAD_BYTES = 64 * 1024;
   private static readonly BOT_THINKING_TTL_MS = 25_000;
+  private static readonly FINISHED_STATE_GRACE_MS = 5_000;
 
   private static nowMs(): number {
     return Date.now();
@@ -479,6 +480,15 @@ export class GameEngineService {
         maybeFinished?.status ?? '',
       ).toLowerCase();
       if (roomStatus === 'started' && maybeFinishedStatus === 'finished') {
+        if (this.isWithinFinishedGraceWindow(maybeFinished as any)) {
+          await this.scheduleFinishedRoomReset(
+            roomId,
+            gameType,
+            maybeFinished as any,
+          );
+          return maybeFinished as GameStateEntity;
+        }
+
         this.gameLogger.warn(
           'Stale finished game detected while room is started; auto-resetting room',
           {
@@ -996,39 +1006,10 @@ export class GameEngineService {
       }
 
       try {
-        await this.rooms.resetRoomSystem(roomId);
+        await this.scheduleFinishedRoomReset(roomId, gameType, marked);
       } catch (err) {
         this.gameLogger.error(
-          'Auto-reset room after game finished failed',
-          err instanceof Error ? err : undefined,
-          { roomId, gameType },
-        );
-      }
-
-      // Reset le state du moteur pour repartir d'un état "setup" propre (sans plateau figé).
-      try {
-        await this.store.delete(roomId, gameType);
-      } catch (err) {
-        this.gameLogger.error(
-          'Auto-reset game state after finish failed',
-          err instanceof Error ? err : undefined,
-          { roomId, gameType },
-        );
-      }
-
-      try {
-        await this.rooms.notifyRoomStateUpdated(roomId);
-      } catch {
-        // best effort
-      }
-
-      // Diffuser un état "setup" frais aux clients /ws/game pour rafraîchir l'UI immédiatement.
-      try {
-        const fresh = await this.getInternalState(roomId, gameType);
-        this.broadcaster?.(gameType, roomId, fresh);
-      } catch (err) {
-        this.gameLogger.error(
-          'Broadcast fresh state after finish failed',
+          'Schedule finished game reset failed',
           err instanceof Error ? err : undefined,
           { roomId, gameType },
         );
@@ -2274,6 +2255,123 @@ export class GameEngineService {
     return this.store.buildKey(roomId, gameType);
   }
 
+  private isWithinFinishedGraceWindow(
+    state: GameStateEntity | null | undefined,
+  ): boolean {
+    if (!state) return false;
+    if (String(state.status ?? '').toLowerCase() !== 'finished') {
+      return false;
+    }
+
+    const finishedAtRaw = (state.metadata as any)?.finishedAt;
+    const finishedAt =
+      typeof finishedAtRaw === 'string' ? finishedAtRaw.trim() : '';
+    if (!finishedAt) {
+      return false;
+    }
+
+    const finishedAtMs = Date.parse(finishedAt);
+    if (!Number.isFinite(finishedAtMs)) {
+      return false;
+    }
+
+    const ageMs = GameEngineService.nowMs() - finishedAtMs;
+    return ageMs >= 0 && ageMs < GameEngineService.FINISHED_STATE_GRACE_MS;
+  }
+
+  private async scheduleFinishedRoomReset(
+    roomId: number,
+    gameType: string,
+    state: GameStateEntity,
+  ): Promise<void> {
+    if (String(state?.status ?? '').toLowerCase() !== 'finished') {
+      return;
+    }
+
+    const systemKey = this.buildSystemTimerKey(
+      roomId,
+      gameType,
+      'finished-reset',
+    );
+    if (this.botScheduler.has(systemKey)) {
+      return;
+    }
+
+    const expectedFinishedAt = String(
+      (state?.metadata as any)?.finishedAt ?? '',
+    ).trim();
+
+    this.botScheduler.schedule({
+      key: systemKey,
+      delayMs: GameEngineService.FINISHED_STATE_GRACE_MS,
+      roomId,
+      gameType,
+      run: async () => {
+        await this.enqueueMutation(this.buildKey(roomId, gameType), async () => {
+          const latest = (await this.store.get(roomId, gameType)) ?? null;
+          if (!latest) return;
+          if (String(latest.status ?? '').toLowerCase() !== 'finished') {
+            return;
+          }
+
+          const latestFinishedAt = String(
+            (latest?.metadata as any)?.finishedAt ?? '',
+          ).trim();
+          if (
+            expectedFinishedAt &&
+            latestFinishedAt &&
+            latestFinishedAt !== expectedFinishedAt
+          ) {
+            return;
+          }
+
+          try {
+            await this.rooms.resetRoomSystem(roomId);
+          } catch (err) {
+            this.gameLogger.error(
+              'Auto-reset room after game finished failed',
+              err instanceof Error ? err : undefined,
+              { roomId, gameType },
+            );
+          }
+
+          // Reset le state du moteur pour repartir d'un état "setup" propre (sans plateau figé).
+          try {
+            await this.store.delete(roomId, gameType);
+          } catch (err) {
+            this.gameLogger.error(
+              'Auto-reset game state after finish failed',
+              err instanceof Error ? err : undefined,
+              { roomId, gameType },
+            );
+          }
+
+          try {
+            await this.rooms.notifyRoomStateUpdated(roomId);
+          } catch {
+            // best effort
+          }
+
+          // Diffuser un état "setup" frais aux clients /ws/game pour rafraîchir l'UI immédiatement.
+          try {
+            const fresh = await this.getInternalState(roomId, gameType);
+            this.broadcaster?.(gameType, roomId, fresh);
+          } catch (err) {
+            this.gameLogger.error(
+              'Broadcast fresh state after finish failed',
+              err instanceof Error ? err : undefined,
+              { roomId, gameType },
+            );
+          }
+
+          // Attente : pas de rebuild tant que la table n'est pas redémarrée.
+          this.botScheduler.clear(this.buildKey(roomId, gameType));
+        });
+      },
+      onStale: () => this.cleanupRoom(roomId, gameType),
+    });
+  }
+
   private async markBotThinking(
     roomId: number,
     gameType: string,
@@ -3045,5 +3143,4 @@ export class GameEngineService {
     this.mutationQueue.delete(key);
   }
 }
-
 

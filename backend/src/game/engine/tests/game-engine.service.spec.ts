@@ -535,4 +535,76 @@ describe('GameEngineService', () => {
     expect(rooms.notifyRoomStateUpdated).toHaveBeenCalledWith(1);
     expect(store.delete).toHaveBeenCalledWith(1, 'corridor');
   });
+
+  it('keeps a freshly finished game state during grace window before auto-reset', async () => {
+    const now = new Date().toISOString();
+    const rooms = {
+      getRoomPayload: jest.fn().mockResolvedValue({
+        room: { id: 1, gameType: 'corridor', status: 'started', startedAt: now },
+      }),
+      resetRoomSystem: jest.fn(),
+      notifyRoomStateUpdated: jest.fn(),
+    };
+
+    const store = {
+      buildKey: jest.fn(() => '1:corridor'),
+      delete: jest.fn().mockResolvedValue(undefined),
+      get: jest.fn().mockResolvedValue({
+        status: 'finished',
+        turnIndex: 1,
+        players: [],
+        turn: { currentPlayerId: null, direction: 1 },
+        metadata: {
+          roomStartedAt: now,
+          finishedAt: now,
+          winnerId: 1,
+        },
+      }),
+      set: jest.fn().mockResolvedValue(undefined),
+      markBotThinking: jest.fn((state: any) => state),
+      syncRoomStatus: jest.fn((state: any) => state),
+    };
+
+    const botScheduler = {
+      clear: jest.fn(),
+      has: jest.fn(() => false),
+      schedule: jest.fn(),
+    };
+    const gameLogger = {
+      info: jest.fn(),
+      debug: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      logPlayerAction: jest.fn(),
+      logValidationFailure: jest.fn(),
+    };
+
+    const engine = new GameEngineService(
+      rooms as any,
+      {} as any,
+      { getHandler: jest.fn(() => null) } as any,
+      { compute: jest.fn(() => null) } as any,
+      {} as any,
+      botScheduler as any,
+      { getBotTurnDelayMs: jest.fn(() => 0) } as any,
+      { attachGridRenderDescriptors: jest.fn((s: any) => s) } as any,
+      store as any,
+      gameLogger as any,
+      { finalizeFinished: jest.fn() } as any,
+    );
+
+    const state = await (engine as any).getInternalState(1, 'corridor');
+
+    expect(state.status).toBe('finished');
+    expect(rooms.resetRoomSystem).not.toHaveBeenCalled();
+    expect(store.delete).not.toHaveBeenCalled();
+    expect(botScheduler.schedule).toHaveBeenCalledWith(
+      expect.objectContaining({
+        key: '1:corridor:finished-reset',
+        delayMs: 5000,
+        roomId: 1,
+        gameType: 'corridor',
+      }),
+    );
+  });
 });
