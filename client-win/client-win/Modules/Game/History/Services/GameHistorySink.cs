@@ -56,8 +56,9 @@ public sealed class GameHistorySink : IGameHistorySink
                     continue;
                 }
 
-                var isTurnLikeMessage = TryBuildTurnDedupeKey(cleaned, out _);
-                if ((!isUiShortcutTagged || isTurnLikeMessage) && ShouldSkipDuplicate(cleaned))
+                // Les raccourcis utilisateur explicites ([ui.shortcut]) doivent toujours être rejoués
+                // même si le texte est identique (ex: spam volontaire de "T" pour réécouter le tour).
+                if (!isUiShortcutTagged && ShouldSkipDuplicate(cleaned))
                 {
                     continue;
                 }
