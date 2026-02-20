@@ -37,7 +37,7 @@ export class AdminClientUpdatesWsHandler {
       .createQueryBuilder('u')
       .select(['u.id'])
       .getMany();
-    const recipients = ids.filter((u) => u.id !== admin.id);
+    const recipients = ids;
 
     const message =
       typeof dto.message === 'string' && dto.message.trim().length > 0
@@ -105,7 +105,7 @@ export class AdminClientUpdatesWsHandler {
       .createQueryBuilder('u')
       .select(['u.id'])
       .getMany();
-    const recipients = ids.filter((u) => u.id !== admin.id);
+    const recipients = ids;
 
     const url = this.clientUpdates.resolveClientPublicUrl(latest);
     const payloadOut = {
@@ -173,7 +173,7 @@ export class AdminClientUpdatesWsHandler {
       .createQueryBuilder('u')
       .select(['u.id'])
       .getMany();
-    const recipients = ids.filter((u) => u.id !== admin.id);
+    const recipients = ids;
 
     await Promise.all(
       recipients.map((u) =>

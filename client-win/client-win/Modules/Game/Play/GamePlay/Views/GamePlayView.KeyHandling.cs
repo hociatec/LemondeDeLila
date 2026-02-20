@@ -146,26 +146,11 @@ public partial class GamePlayView
         var count = targetList.Items.Count;
         var current = targetList.SelectedIndex;
         var delta = e.Key == Key.Up ? -1 : 1;
-        var isChoices = ReferenceEquals(targetList, ChoicesList);
-
         int next;
-        if (isChoices && DataContext is GamePlayViewModel vm2 && vm2.IsQuizPending)
-        {
-            if (current < 0) current = 0;
-            next = current + delta;
-            if (next < 0) next = 0;
-            if (next >= count) next = count - 1;
-        }
-        else
-        {
-            if (current < 0)
-            {
-                current = 0;
-            }
-
-            next = (current + delta) % count;
-            if (next < 0) next += count;
-        }
+        if (current < 0) current = 0;
+        next = current + delta;
+        if (next < 0) next = 0;
+        if (next >= count) next = count - 1;
 
         targetList.SelectedIndex = next;
         targetList.ScrollIntoView(targetList.Items[next]);

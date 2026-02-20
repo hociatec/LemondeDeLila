@@ -50,7 +50,7 @@ internal sealed class GamePlayRealtimeController
     private Dictionary<string, int>? _lastViewerHandCounts;
     private string? _lastDrawActionToken;
     private readonly object _statePumpLock = new();
-    private GameStateDto? _latestPendingState;
+    private readonly List<GameStateDto> _pendingStates = new();
     private int _statePumpRunning;
 
     internal GamePlayRealtimeController(
@@ -111,7 +111,7 @@ internal sealed class GamePlayRealtimeController
         _lastViewerHandCounts = null;
         lock (_statePumpLock)
         {
-            _latestPendingState = null;
+            _pendingStates.Clear();
         }
         Interlocked.Exchange(ref _statePumpRunning, 0);
         _diceSounds.Reset();
@@ -142,7 +142,28 @@ internal sealed class GamePlayRealtimeController
         _panels.OnStateUpdated(state);
         lock (_statePumpLock)
         {
-            _latestPendingState = state;
+            if (_pendingStates.Count == 0)
+            {
+                _pendingStates.Add(state);
+            }
+            else
+            {
+                // Coalescer les rafales d'updates identiques (même statut) tout en conservant
+                // les transitions importantes (ex: started -> finished -> setup).
+                var lastIndex = _pendingStates.Count - 1;
+                var last = _pendingStates[lastIndex];
+                var lastStatus = NormalizeStatus(last);
+                var nextStatus = NormalizeStatus(state);
+
+                if (string.Equals(lastStatus, nextStatus, StringComparison.OrdinalIgnoreCase))
+                {
+                    _pendingStates[lastIndex] = state;
+                }
+                else
+                {
+                    _pendingStates.Add(state);
+                }
+            }
         }
 
         if (Interlocked.CompareExchange(ref _statePumpRunning, 1, 0) != 0)
@@ -159,8 +180,15 @@ internal sealed class GamePlayRealtimeController
                     GameStateDto? next;
                     lock (_statePumpLock)
                     {
-                        next = _latestPendingState;
-                        _latestPendingState = null;
+                        if (_pendingStates.Count == 0)
+                        {
+                            next = null;
+                        }
+                        else
+                        {
+                            next = _pendingStates[0];
+                            _pendingStates.RemoveAt(0);
+                        }
                     }
 
                     if (next == null)
@@ -177,7 +205,7 @@ internal sealed class GamePlayRealtimeController
 
                 lock (_statePumpLock)
                 {
-                    if (_latestPendingState != null &&
+                    if (_pendingStates.Count > 0 &&
                         Interlocked.CompareExchange(ref _statePumpRunning, 1, 0) == 0)
                     {
                         _dispatcher.InvokeAsync(DrainStateQueueOnUi, DispatcherPriority.Background);
@@ -196,8 +224,15 @@ internal sealed class GamePlayRealtimeController
                 GameStateDto? next;
                 lock (_statePumpLock)
                 {
-                    next = _latestPendingState;
-                    _latestPendingState = null;
+                    if (_pendingStates.Count == 0)
+                    {
+                        next = null;
+                    }
+                    else
+                    {
+                        next = _pendingStates[0];
+                        _pendingStates.RemoveAt(0);
+                    }
                 }
 
                 if (next == null)
@@ -214,7 +249,7 @@ internal sealed class GamePlayRealtimeController
 
             lock (_statePumpLock)
             {
-                if (_latestPendingState != null &&
+                if (_pendingStates.Count > 0 &&
                     Interlocked.CompareExchange(ref _statePumpRunning, 1, 0) == 0)
                 {
                     _dispatcher.InvokeAsync(DrainStateQueueOnUi, DispatcherPriority.Background);
@@ -295,6 +330,7 @@ internal sealed class GamePlayRealtimeController
             string.Equals(nextStatus, "finished", StringComparison.OrdinalIgnoreCase))
         {
             _endgameSounds.TryPlayEndgameSound(state, _viewerPlayerId);
+            TryEmitGenericEndgameSummary(state);
         }
 
         _setIsBotThinking(presented.isBotThinking);
@@ -463,6 +499,132 @@ internal sealed class GamePlayRealtimeController
                 CurrentPlayerUsername = string.IsNullOrWhiteSpace(username) ? null : username.Trim()
             },
             emitHistoryMessage: _ => { });
+    }
+
+    private void TryEmitGenericEndgameSummary(GameStateDto state)
+    {
+        if (state == null)
+        {
+            return;
+        }
+
+        var players = (state.Players ?? new List<GamePlayerDto>())
+            .Where(p => p != null && p.Id > 0)
+            .ToList();
+
+        var winnerId = GamePlayWinnerReader.TryExtractWinnerPlayerId(state);
+        if (winnerId != null && players.Count > 0)
+        {
+            var winnerName = GetPlayerName(players, winnerId.Value);
+            var loserNames = players
+                .Where(p => p.Id != winnerId.Value)
+                .Select(p => (p.Username ?? string.Empty).Trim())
+                .Where(n => n.Length > 0)
+                .ToList();
+
+            if (!string.IsNullOrWhiteSpace(winnerName))
+            {
+                if (loserNames.Count > 0)
+                {
+                    _emitMessage(
+                        new GamePlayHistoryMessage(
+                            $"Partie terminée. Gagnant: {winnerName}. Perdants: {string.Join(", ", loserNames)}."));
+                }
+                else
+                {
+                    _emitMessage(new GamePlayHistoryMessage($"Partie terminée. Gagnant: {winnerName}."));
+                }
+                return;
+            }
+        }
+
+        if (TryReadOutcomesByPlayerId(state, out var outcomes) && outcomes.Count > 0)
+        {
+            var winners = new List<string>();
+            var losers = new List<string>();
+            foreach (var p in players)
+            {
+                if (!outcomes.TryGetValue(p.Id, out var outcome))
+                {
+                    continue;
+                }
+
+                var name = (p.Username ?? string.Empty).Trim();
+                if (name.Length == 0)
+                {
+                    continue;
+                }
+
+                if (string.Equals(outcome, "won", StringComparison.OrdinalIgnoreCase))
+                {
+                    winners.Add(name);
+                }
+                else if (string.Equals(outcome, "lost", StringComparison.OrdinalIgnoreCase))
+                {
+                    losers.Add(name);
+                }
+            }
+
+            if (winners.Count > 0 || losers.Count > 0)
+            {
+                var winnerPart = winners.Count > 0 ? $"Gagnant(s): {string.Join(", ", winners)}." : string.Empty;
+                var loserPart = losers.Count > 0 ? $" Perdant(s): {string.Join(", ", losers)}." : string.Empty;
+                _emitMessage(new GamePlayHistoryMessage($"Partie terminée. {winnerPart}{loserPart}".Trim()));
+                return;
+            }
+        }
+
+        _emitMessage(new GamePlayHistoryMessage("Partie terminée."));
+    }
+
+    private static string GetPlayerName(IReadOnlyList<GamePlayerDto> players, int playerId)
+    {
+        return players
+            .FirstOrDefault(p => p.Id == playerId)?
+            .Username?
+            .Trim() ?? string.Empty;
+    }
+
+    private static bool TryReadOutcomesByPlayerId(GameStateDto state, out Dictionary<int, string> outcomes)
+    {
+        outcomes = new Dictionary<int, string>();
+        return TryReadOutcomesByPlayerId(state.Metadata, outcomes) || TryReadOutcomesByPlayerId(state.Extras, outcomes);
+    }
+
+    private static bool TryReadOutcomesByPlayerId(System.Text.Json.JsonElement source, Dictionary<int, string> target)
+    {
+        if (source.ValueKind != System.Text.Json.JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        if (!source.TryGetProperty("outcomesByPlayerId", out var outcomes) ||
+            outcomes.ValueKind != System.Text.Json.JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        foreach (var prop in outcomes.EnumerateObject())
+        {
+            if (!int.TryParse(prop.Name, out var playerId) || playerId <= 0)
+            {
+                continue;
+            }
+            if (prop.Value.ValueKind != System.Text.Json.JsonValueKind.String)
+            {
+                continue;
+            }
+
+            var value = (prop.Value.GetString() ?? string.Empty).Trim();
+            if (value.Length == 0)
+            {
+                continue;
+            }
+
+            target[playerId] = value;
+        }
+
+        return target.Count > 0;
     }
 
     private static string? GetUsername(GameStateDto state, int? playerId)

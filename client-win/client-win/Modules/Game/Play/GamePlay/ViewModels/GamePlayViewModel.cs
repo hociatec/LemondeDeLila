@@ -1302,6 +1302,36 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
         var pressed = normalizedKey.Trim().ToUpperInvariant();
         var hints = GamePlayExtrasParser.ExtractShortcutHints(state);
+
+        // Priorité aux actions serveur: si la touche correspond à une action actuellement jouable,
+        // ne pas la "manger" localement comme panneau d'interface (ex: P = pass, pas position).
+        var hasAvailableActionOnPressedKey = hints.Any(hint =>
+        {
+            if (!string.Equals(hint.Type, "action", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var actionType = (hint.ActionType ?? string.Empty).Trim();
+            if (!HasAction(state, actionType))
+            {
+                return false;
+            }
+
+            var raw = hint.Key ?? string.Empty;
+            const string prefix = "pressed ";
+            if (raw.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                raw = raw.Substring(prefix.Length);
+            }
+
+            return string.Equals(raw.Trim(), pressed, StringComparison.OrdinalIgnoreCase);
+        });
+        if (hasAvailableActionOnPressedKey)
+        {
+            return false;
+        }
+
         foreach (var hint in hints)
         {
             if (!string.Equals(hint.Type, "interface", StringComparison.OrdinalIgnoreCase))

@@ -917,25 +917,15 @@ export class GameEngineService {
     if ((marked.status || '').toLowerCase() === 'finished') {
       const meta = (marked as any)?.metadata;
       const obj = meta && typeof meta === 'object' ? meta : {};
-      const winnerRaw = (obj as any)?.winnerId ?? null;
-      const winnerId = typeof winnerRaw === 'number' ? winnerRaw : null;
-      const outcomesByPlayerId: Record<string, 'won' | 'lost'> | null =
-        winnerId != null
-          ? Object.fromEntries(
-              (marked.players ?? [])
-                .filter((p: any) => p && typeof p.id === 'number' && !p.isBot)
-                .map((p: any) => [
-                  String(p.id),
-                  p.id === winnerId ? 'won' : 'lost',
-                ]),
-            )
-          : null;
+      const { winnerId, outcomesByPlayerId } =
+        this.deriveFinishedOutcomes(marked);
 
       marked = {
         ...marked,
         metadata: {
           ...obj,
           finishedAt: new Date().toISOString(),
+          ...(winnerId != null ? { winnerId, winnerPlayerId: winnerId } : {}),
           ...(outcomesByPlayerId ? { outcomesByPlayerId } : {}),
         },
       };
@@ -1150,6 +1140,91 @@ export class GameEngineService {
     }
 
     return state;
+  }
+
+  private deriveFinishedOutcomes(state: GameStateWithActions): {
+    winnerId: number | null;
+    outcomesByPlayerId: Record<string, 'won' | 'lost'> | null;
+  } {
+    const players = Array.isArray((state as any)?.players)
+      ? (state as any).players
+      : [];
+    const humans = players.filter(
+      (p: any) => p && typeof p.id === 'number' && !p.isBot,
+    );
+
+    const meta = (state as any)?.metadata;
+    const metaObj = meta && typeof meta === 'object' ? meta : {};
+
+    const winnerFromMeta = this.tryReadWinnerId(metaObj);
+    const existingOutcomes = this.tryReadOutcomesByPlayerId(metaObj);
+
+    let winnerId = winnerFromMeta;
+    if (winnerId == null && existingOutcomes) {
+      const winners = Object.entries(existingOutcomes)
+        .filter(([, v]) => v === 'won')
+        .map(([k]) => Number(k))
+        .filter((n) => Number.isFinite(n));
+      if (winners.length === 1) {
+        winnerId = winners[0]!;
+      }
+    }
+
+    let outcomesByPlayerId: Record<string, 'won' | 'lost'> | null = null;
+    if (existingOutcomes && Object.keys(existingOutcomes).length > 0) {
+      outcomesByPlayerId = existingOutcomes;
+    } else if (winnerId != null) {
+      outcomesByPlayerId = Object.fromEntries(
+        humans.map((p: any) => [String(p.id), p.id === winnerId ? 'won' : 'lost']),
+      );
+    }
+
+    return { winnerId, outcomesByPlayerId };
+  }
+
+  private tryReadWinnerId(meta: any): number | null {
+    if (!meta || typeof meta !== 'object') {
+      return null;
+    }
+
+    for (const key of ['winnerId', 'winnerPlayerId', 'winner_id']) {
+      const raw = (meta as any)[key];
+      if (typeof raw === 'number' && Number.isFinite(raw)) {
+        return raw;
+      }
+      if (typeof raw === 'string' && raw.trim().length > 0) {
+        const n = Number(raw.trim());
+        if (Number.isFinite(n)) {
+          return n;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private tryReadOutcomesByPlayerId(
+    meta: any,
+  ): Record<string, 'won' | 'lost'> | null {
+    if (!meta || typeof meta !== 'object') {
+      return null;
+    }
+
+    const raw = (meta as any).outcomesByPlayerId;
+    if (!raw || typeof raw !== 'object') {
+      return null;
+    }
+
+    const out: Record<string, 'won' | 'lost'> = {};
+    for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+      const normalized = String(value ?? '').trim().toLowerCase();
+      if (normalized !== 'won' && normalized !== 'lost') {
+        continue;
+      }
+      out[String(key)] = normalized as 'won' | 'lost';
+    }
+
+    return Object.keys(out).length > 0 ? out : null;
   }
 
   async playBotTurn(

@@ -21,6 +21,7 @@ export type LamaMetadata = {
   handsByPlayerId: Record<string, LamaCardValue[]>;
   droppedOutByPlayerId: Record<string, boolean>;
   scoresByPlayerId: Record<string, number>;
+  eliminatedByPlayerId?: Record<string, boolean>;
   step: LamaRoundStep;
   turnTracker?: { playerId: number | null; drawn: boolean; played: boolean };
   /**

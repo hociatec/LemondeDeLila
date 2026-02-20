@@ -949,7 +949,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     {
                         GameRulesWindow.Show(
                             owner: Application.Current?.MainWindow,
-                            title: $"Règles â€” {gameName}",
+                            title: $"Règles - {gameName}",
                             rules: rules);
                     }, DispatcherPriority.Normal).Task.ConfigureAwait(false);
                 }
@@ -1213,7 +1213,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         {
                             GameRulesWindow.Show(
                                 owner: Application.Current?.MainWindow,
-                                title: $"Règles â€” {gameName}",
+                                title: $"Règles - {gameName}",
                                 rules: rules);
                         }, DispatcherPriority.Normal).Task.ConfigureAwait(false);
                     }

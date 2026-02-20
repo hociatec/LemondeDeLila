@@ -18,6 +18,20 @@ export class LamaRoundService {
   startNewRound(state: GameStateEntity, starterIndex: number): GameStateEntity {
     const players = Array.isArray(state.players) ? state.players : [];
     const meta = { ...(state.metadata ?? {}) } as LamaMetadata;
+    const scores = meta.scoresByPlayerId ?? {};
+    const loseAt = Number(meta.loseAtScore ?? 40);
+    const eliminatedByPlayerId = this.buildEliminatedByScore(
+      players,
+      scores,
+      loseAt,
+      meta.eliminatedByPlayerId ?? {},
+    );
+    const roundPlayers = players.filter(
+      (p) => p?.id && !eliminatedByPlayerId[String(p.id)],
+    );
+    if (roundPlayers.length === 0) {
+      return state;
+    }
 
     const baseDeck = this.buildDeck();
     const rngMeta = typeof meta.rng === 'object' && meta.rng ? { ...(meta.rng as any) } : {};
@@ -29,12 +43,14 @@ export class LamaRoundService {
     const droppedOutByPlayerId: Record<string, boolean> = {};
     for (const p of players) {
       if (!p?.id) continue;
-      handsByPlayerId[String(p.id)] = [];
-      droppedOutByPlayerId[String(p.id)] = false;
+      if (!eliminatedByPlayerId[String(p.id)]) {
+        handsByPlayerId[String(p.id)] = [];
+      }
+      droppedOutByPlayerId[String(p.id)] = Boolean(eliminatedByPlayerId[String(p.id)]);
     }
 
     for (let i = 0; i < 6; i += 1) {
-      for (const p of players) {
+      for (const p of roundPlayers) {
         if (!p?.id) continue;
         const card = deck.pop();
         if (!card) continue;
@@ -45,7 +61,15 @@ export class LamaRoundService {
     const firstDiscard = deck.pop() ?? 1;
     const discard: LamaCardValue[] = [firstDiscard as LamaCardValue];
 
-    const starterPlayerId = players[starterIndex]?.id ?? players[0]?.id ?? null;
+    const normalizedStarterIndex = this.findNextSurvivorStarterIndex(
+      players,
+      eliminatedByPlayerId,
+      Math.max(-1, starterIndex - 1),
+    );
+    const starterPlayerId =
+      players[normalizedStarterIndex]?.id ??
+      roundPlayers[0]?.id ??
+      null;
     const starterName =
       starterPlayerId != null
         ? this.shared.playerLabel(players as any[], starterPlayerId)
@@ -63,10 +87,12 @@ export class LamaRoundService {
     );
 const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       ...meta,
+      roundStarterIndex: normalizedStarterIndex,
       deck,
       discard,
       handsByPlayerId,
       droppedOutByPlayerId,
+      eliminatedByPlayerId,
       step: 'turn_choice',
       turnTracker: { playerId: starterPlayerId, drawn: false, played: false },
       endedRoundNumber: null,
@@ -221,21 +247,50 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
     const players = Array.isArray(state.players) ? state.players : [];
 
     const scores = meta.scoresByPlayerId ?? {};
-    const highest = Math.max(0, ...Object.values(scores).map((v) => Number(v ?? 0)));
     const loseAt = Number(meta.loseAtScore ?? 40);
-    if (highest >= loseAt) {
+    const previousEliminated = meta.eliminatedByPlayerId ?? {};
+    const eliminatedByPlayerId = this.buildEliminatedByScore(
+      players,
+      scores,
+      loseAt,
+      previousEliminated,
+    );
+    const newlyEliminated = players.filter(
+      (p) =>
+        p?.id &&
+        !previousEliminated[String(p.id)] &&
+        eliminatedByPlayerId[String(p.id)],
+    );
+    const survivors = players.filter(
+      (p) => p?.id && !eliminatedByPlayerId[String(p.id)],
+    );
+
+    let log = state.log;
+    for (const p of newlyEliminated) {
+      const pid = p.id;
+      const score = Number(scores[String(pid)] ?? 0);
+      log = this.logger.append(
+        log,
+        `${this.shared.playerLabel(players as any[], pid)} est éliminé${p?.isBot ? '' : '(e)'} (${score} jetons).`,
+      );
+    }
+
+    if (survivors.length <= 1) {
       let winnerId: number | null = null;
-      let best = Number.POSITIVE_INFINITY;
-      for (const p of players) {
-        const pid = p?.id;
-        if (!pid) continue;
-        const s = Number(scores[String(pid)] ?? 0);
-        if (s < best) {
-          best = s;
-          winnerId = pid;
+      if (survivors.length === 1) {
+        winnerId = survivors[0]?.id ?? null;
+      } else {
+        let best = Number.POSITIVE_INFINITY;
+        for (const p of players) {
+          const pid = p?.id;
+          if (!pid) continue;
+          const s = Number(scores[String(pid)] ?? 0);
+          if (s < best) {
+            best = s;
+            winnerId = pid;
+          }
         }
       }
-      let log = state.log;
       log = this.logger.append(log, `Partie terminée.`);
       if (winnerId) {
         log = this.logger.append(
@@ -249,6 +304,7 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
         log,
         metadata: {
           ...meta,
+          eliminatedByPlayerId,
           winnerId,
           winnerPlayerId: winnerId,
         } as any,
@@ -256,7 +312,11 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
     }
 
     const nextRound = Number(meta.roundNumber ?? 1) + 1;
-    const starter = (Number(meta.roundStarterIndex ?? 0) + 1) % Math.max(1, players.length);
+    const starter = this.findNextSurvivorStarterIndex(
+      players,
+      eliminatedByPlayerId,
+      Number(meta.roundStarterIndex ?? 0),
+    );
     const pauseSeconds = Number(meta.roundPauseSeconds ?? 0);
     const pauseMs = Number.isFinite(pauseSeconds) ? Math.max(0, Math.floor(pauseSeconds) * 1000) : 0;
     const updatedMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
@@ -268,21 +328,22 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       roundPauseUntilMs: pauseMs > 0 ? Date.now() + pauseMs : null,
       pendingReturnQueue: [],
       pendingReturnPlayerId: null,
+      eliminatedByPlayerId,
       winnerId: null,
       winnerPlayerId: null,
       suppressTurnAnnouncement: false,
     };
 
     if (pauseMs > 0) {
-      const log = this.logger.append(
-        state.log,
+      const pauseLog = this.logger.append(
+        log,
         `Pause ${Math.floor(pauseMs / 1000)}s avant la manche ${nextRound}.`,
       );
       return createPendingState({
         ...state,
         phase: 'round',
         round: nextRound,
-        log,
+        log: pauseLog,
         metadata: updatedMeta as any,
         turn: {
           ...(state.turn ?? { direction: 1 }),
@@ -293,7 +354,10 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       } as GameStateEntity, { step: 'round_pause', playerId: meta.ownerPlayerId ?? null } as any);
     }
 
-    return this.startNewRound({ ...state, metadata: updatedMeta as any, round: nextRound }, starter);
+    return this.startNewRound(
+      { ...state, metadata: updatedMeta as any, round: nextRound, log },
+      starter,
+    );
   }
 
   isRoundEnded(meta: LamaMetadata, players: any[]): boolean {
@@ -356,6 +420,45 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
   private shouldPromptReturn(roundNumber: number, winnerScore: number): boolean {
     if (winnerScore < 1) return false;
     return roundNumber >= 2;
+  }
+
+  private buildEliminatedByScore(
+    players: any[],
+    scoresByPlayerId: Record<string, number>,
+    loseAtScore: number,
+    previous: Record<string, boolean>,
+  ): Record<string, boolean> {
+    const out: Record<string, boolean> = { ...(previous ?? {}) };
+    for (const p of players) {
+      const pid = p?.id;
+      if (!pid) continue;
+      const score = Number(scoresByPlayerId[String(pid)] ?? 0);
+      out[String(pid)] = score >= loseAtScore;
+    }
+    return out;
+  }
+
+  private findNextSurvivorStarterIndex(
+    players: any[],
+    eliminatedByPlayerId: Record<string, boolean>,
+    afterIndex: number,
+  ): number {
+    if (!Array.isArray(players) || players.length === 0) {
+      return 0;
+    }
+
+    const length = players.length;
+    const start = Number.isFinite(afterIndex) ? afterIndex : -1;
+    for (let step = 1; step <= length; step += 1) {
+      const idx = (((start + step) % length) + length) % length;
+      const pid = players[idx]?.id;
+      if (!pid) continue;
+      if (!eliminatedByPlayerId[String(pid)]) {
+        return idx;
+      }
+    }
+
+    return 0;
   }
 }
 

@@ -85,6 +85,7 @@ export class LamaSetupService {
       handsByPlayerId: {},
       droppedOutByPlayerId: {},
       scoresByPlayerId,
+      eliminatedByPlayerId: {},
       step: 'setup_config',
       turnTracker: { playerId: ownerPlayerId, drawn: false, played: false },
       pendingReturnQueue: [],
@@ -171,6 +172,7 @@ export class LamaSetupService {
       turnTracker: { playerId: null, drawn: false, played: false },
       pendingReturnQueue: [],
       pendingReturnPlayerId: null,
+      eliminatedByPlayerId: {},
       suppressTurnAnnouncement: true,
     };
 
