@@ -43,7 +43,7 @@ public partial class GamePlayView
             }
             else
             {
-                _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(ForceFocusGameZone));
+                _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusPreferredInteractiveElement));
             }
         };
 
@@ -149,7 +149,7 @@ public partial class GamePlayView
         }
         finally
         {
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(ForceFocusGameZone));
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusPreferredInteractiveElement));
         }
     }
 
@@ -170,7 +170,7 @@ public partial class GamePlayView
         }
         finally
         {
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(ForceFocusGameZone));
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusPreferredInteractiveElement));
         }
     }
 

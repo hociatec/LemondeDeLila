@@ -98,7 +98,7 @@ public sealed class GameFocusCoordinator : IGameFocusCoordinator
             return false;
         }
 
-        if (reason is GameFocusReason.TableStarted or GameFocusReason.GamePlayReady or GameFocusReason.ChoosePawn)
+        if (reason is GameFocusReason.InitialLoad or GameFocusReason.TableStarted or GameFocusReason.GamePlayReady or GameFocusReason.ChoosePawn)
         {
             return result == GameFocusAttemptResult.Interactive;
         }

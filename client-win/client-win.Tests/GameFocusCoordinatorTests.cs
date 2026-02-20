@@ -28,6 +28,26 @@ public sealed class GameFocusCoordinatorTests
     }
 
     [Fact]
+    public void InitialLoad_RequiresInteractive()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            var coordinator = new GameFocusCoordinator(dispatcher);
+            var host = new FakeHost(GameFocusAttemptResult.Anchor, GameFocusAttemptResult.Interactive);
+            using var _ = coordinator.AttachHost(host);
+
+            coordinator.RequestGameZone(GameFocusReason.InitialLoad);
+
+            Assert.True(StaDispatcherHarness.WaitUntil(() => host.CallCount >= 2, dispatcher, 1000));
+            StaDispatcherHarness.Drain(dispatcher);
+
+            Assert.Equal(2, host.CallCount);
+            Assert.Equal(1, host.ActivateCount);
+            Assert.Equal(GameFocusReason.InitialLoad, host.LastReason);
+        });
+    }
+
+    [Fact]
     public void ChoosePawn_RequiresInteractive()
     {
         StaDispatcherHarness.Run(dispatcher =>

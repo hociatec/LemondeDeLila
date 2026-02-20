@@ -46,6 +46,7 @@ internal sealed class GamePlayRealtimeController
     private int? _lastStateTurnPlayerId;
     private string _lastPendingType = string.Empty;
     private bool _lastBotThinking;
+    private bool _endgameFeedbackEmitted;
     private int _pendingForcedTurnAnnouncements;
     private Dictionary<string, int>? _lastViewerHandCounts;
     private string? _lastDrawActionToken;
@@ -108,6 +109,7 @@ internal sealed class GamePlayRealtimeController
         _pendingForcedTurnAnnouncements = 0;
         _lastPendingType = string.Empty;
         _lastBotThinking = false;
+        _endgameFeedbackEmitted = false;
         _lastViewerHandCounts = null;
         lock (_statePumpLock)
         {
@@ -267,17 +269,23 @@ internal sealed class GamePlayRealtimeController
         }
 
         var presented = _presenter.Present(state);
-        var viewerId = GamePlayExtrasParser.ExtractViewerPlayerId(state);
+        var extractedViewerId = GamePlayExtrasParser.ExtractViewerPlayerId(state);
+        var viewerId = extractedViewerId ?? _viewerPlayerId;
         var viewerUsername = GetUsername(state, viewerId);
         var previousTurnPlayerId = _lastStateTurnPlayerId;
         var previousPendingType = _lastPendingType;
         var previousBotThinking = _lastBotThinking;
         var currentHandCounts = BuildHandCounts(GamePlayExtrasParser.ExtractViewerHandLabels(state));
+        var hasEndgameLogEntry = false;
 
         foreach (var entry in presented.newLogMessages)
         {
             var trimmed = entry?.Message ?? string.Empty;
             _logSounds.TryPlayForLogMessage(trimmed, viewerUsername);
+            if (IsEndgameLogMessage(trimmed))
+            {
+                hasEndgameLogEntry = true;
+            }
             var rewritten = RewriteLogForViewer(trimmed, viewerUsername, _lastViewerHandCounts, currentHandCounts);
             _emitMessage(new GamePlayHistoryMessage(rewritten, entry?.Timestamp));
         }
@@ -297,6 +305,7 @@ internal sealed class GamePlayRealtimeController
         if (!string.Equals(previousStatus, "started", StringComparison.OrdinalIgnoreCase) &&
             string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase))
         {
+            _endgameFeedbackEmitted = false;
             // During pawn selection setup, the pending label is the authoritative prompt.
             // Avoid adding a redundant "C'est au tour de ...".
             if (!PawnPendingTypes.IsPawnPendingType(state.Pending?.Type))
@@ -321,15 +330,26 @@ internal sealed class GamePlayRealtimeController
             }
         }
 
-        _viewerPlayerId = viewerId;
+        if (extractedViewerId != null && extractedViewerId.Value > 0)
+        {
+            _viewerPlayerId = extractedViewerId;
+        }
         _choices.UpdateFromState(state, _viewerPlayerId, _canStartAskCardSelection);
 
         _diceSounds.TryPlayDiceRollSound(state);
 
-        if (!string.Equals(previousStatus, "finished", StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(nextStatus, "finished", StringComparison.OrdinalIgnoreCase))
+        var becameFinished =
+            !string.Equals(previousStatus, "finished", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(nextStatus, "finished", StringComparison.OrdinalIgnoreCase);
+        var leftStarted =
+            string.Equals(previousStatus, "started", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase);
+        var endedWithOutcomeData = leftStarted && HasOutcomeData(state);
+        var endedFromLog = leftStarted && hasEndgameLogEntry;
+        if (!_endgameFeedbackEmitted && (becameFinished || endedWithOutcomeData || endedFromLog))
         {
-            _endgameSounds.TryPlayEndgameSound(state, _viewerPlayerId);
+            _endgameFeedbackEmitted = true;
+            _endgameSounds.TryPlayEndgameSound(state, viewerId);
             TryEmitGenericEndgameSummary(state);
         }
 
@@ -466,6 +486,25 @@ internal sealed class GamePlayRealtimeController
         }
 
         return status;
+    }
+
+    private static bool IsEndgameLogMessage(string message)
+    {
+        var msg = (message ?? string.Empty).Trim();
+        if (msg.Length == 0)
+        {
+            return false;
+        }
+
+        return msg.StartsWith("Partie terminée", StringComparison.OrdinalIgnoreCase) ||
+               msg.StartsWith("Gagnant :", StringComparison.OrdinalIgnoreCase) ||
+               msg.StartsWith("Gagnants :", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool HasOutcomeData(GameStateDto state)
+    {
+        return GamePlayWinnerReader.TryExtractWinnerPlayerId(state) != null ||
+               GamePlayWinnerReader.TryExtractOutcomeMap(state).Count > 0;
     }
 
     private void TryAnnounceTurnFromState(GameStateDto state)

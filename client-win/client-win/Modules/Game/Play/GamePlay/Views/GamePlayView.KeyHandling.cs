@@ -146,11 +146,19 @@ public partial class GamePlayView
         var count = targetList.Items.Count;
         var current = targetList.SelectedIndex;
         var delta = e.Key == Key.Up ? -1 : 1;
+        var wasFocusWithinTarget = targetList.IsKeyboardFocusWithin;
         int next;
         if (current < 0) current = 0;
         next = current + delta;
         if (next < 0) next = 0;
         if (next >= count) next = count - 1;
+
+        // Borne haute/basse: ne pas "reboucler" visuellement/sonorement.
+        // Si la liste est déjà focusée, on consomme la touche sans re-focaliser le même item.
+        if (next == current && wasFocusWithinTarget)
+        {
+            return true;
+        }
 
         targetList.SelectedIndex = next;
         targetList.ScrollIntoView(targetList.Items[next]);

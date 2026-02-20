@@ -19,6 +19,8 @@ public partial class GamePlayView
     private int _restoreChoiceFocusIndex;
     private bool _restoreHandFocusAfterSubmit;
     private int _restoreHandFocusIndex;
+    private int _restoreChoiceFocusMisses;
+    private int _restoreHandFocusMisses;
 
     public void FocusPreferredInteractiveElement()
     {
@@ -54,6 +56,7 @@ public partial class GamePlayView
     {
         _restoreChoiceFocusAfterSubmit = true;
         _restoreChoiceFocusIndex = ChoicesList?.SelectedIndex ?? -1;
+        _restoreChoiceFocusMisses = 0;
     }
 
     private void NoteChoiceSubmittedForFocusRestore(GamePlayViewModel vm)
@@ -98,6 +101,7 @@ public partial class GamePlayView
     {
         _restoreHandFocusAfterSubmit = true;
         _restoreHandFocusIndex = HandList?.SelectedIndex ?? -1;
+        _restoreHandFocusMisses = 0;
     }
 
     private void HookChoiceAutoFocus(GamePlayViewModel? vm)
@@ -179,13 +183,21 @@ public partial class GamePlayView
                     {
                         if (!HandList.IsVisible || HandList.Items.Count <= 0)
                         {
-                            // Keep pending restore until hand list is available again.
+                            // Keep pending restore for a few refresh ticks, then fallback to game zone.
+                            _restoreHandFocusMisses++;
+                            if (_restoreHandFocusMisses >= 6)
+                            {
+                                _restoreHandFocusAfterSubmit = false;
+                                _restoreHandFocusMisses = 0;
+                                FocusPreferredInteractiveElement();
+                            }
                             return;
                         }
 
                         var count = HandList.Items.Count;
                         var idx = _restoreHandFocusIndex;
                         _restoreHandFocusAfterSubmit = false;
+                        _restoreHandFocusMisses = 0;
 
                         if (idx < 0) idx = 0;
                         if (idx >= count) idx = count - 1;
@@ -212,11 +224,19 @@ public partial class GamePlayView
                     {
                         if (!ChoicesList.IsVisible || ChoicesList.Items.Count <= 0)
                         {
-                            // Keep pending restore until the choices list is available again.
+                            // Keep pending restore for a few refresh ticks, then fallback to game zone.
+                            _restoreChoiceFocusMisses++;
+                            if (_restoreChoiceFocusMisses >= 6)
+                            {
+                                _restoreChoiceFocusAfterSubmit = false;
+                                _restoreChoiceFocusMisses = 0;
+                                FocusPreferredInteractiveElement();
+                            }
                             return;
                         }
 
                         _restoreChoiceFocusAfterSubmit = false;
+                        _restoreChoiceFocusMisses = 0;
 
                         var count = ChoicesList.Items.Count;
                         var idx = _restoreChoiceFocusIndex;
@@ -625,13 +645,21 @@ public partial class GamePlayView
                 {
                     if (!HandList.IsVisible || HandList.Items.Count <= 0)
                     {
-                        // Keep pending restore until hand list becomes available again.
+                        // Keep pending restore for a few refresh ticks, then fallback to game zone.
+                        _restoreHandFocusMisses++;
+                        if (_restoreHandFocusMisses >= 6)
+                        {
+                            _restoreHandFocusAfterSubmit = false;
+                            _restoreHandFocusMisses = 0;
+                            FocusPreferredInteractiveElement();
+                        }
                         return;
                     }
 
                     var count = HandList.Items.Count;
                     var idx = _restoreHandFocusIndex;
                     _restoreHandFocusAfterSubmit = false;
+                    _restoreHandFocusMisses = 0;
 
                     if (idx < 0) idx = 0;
                     if (idx >= count) idx = count - 1;
