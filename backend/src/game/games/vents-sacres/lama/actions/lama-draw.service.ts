@@ -16,6 +16,12 @@ export class LamaDrawService {
   ) {}
 
   applyDraw(state: GameStateEntity, meta: LamaMetadata, actorId: number): GameStateEntity {
+    const dropped = meta.droppedOutByPlayerId ?? {};
+    const drawLocked = Object.values(dropped).some((isOut) => Boolean(isOut));
+    if (drawLocked) {
+      return state;
+    }
+
     const tracker = meta.turnTracker ?? { playerId: actorId, drawn: false, played: false };
     if (
       this.shared.asNumberOrNull((tracker as any).playerId) === actorId &&

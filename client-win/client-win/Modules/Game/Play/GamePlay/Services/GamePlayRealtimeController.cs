@@ -10,6 +10,7 @@ using client_win.Modules.Game.Play.Choices.ViewModels;
 using client_win.Modules.Game.Play.Common;
 using client_win.Modules.Game.Play.Grid.ViewModels;
 using client_win.Modules.Game.Play.Panels.Services;
+using client_win.Modules.Game.Play.Session.Dtos;
 using client_win.Modules.Game.Play.State.Dtos;
 using client_win.Modules.Game.Play.State.Services;
 using client_win.Modules.Game.Play.GamePlay.Dtos;
@@ -213,6 +214,29 @@ internal sealed class GamePlayRealtimeController
                         _dispatcher.InvokeAsync(DrainStateQueueOnUi, DispatcherPriority.Background);
                     }
                 }
+            }
+        }, DispatcherPriority.Background);
+    }
+
+    internal void HandleEnded(GameEndedDto ended)
+    {
+        if (ended == null)
+        {
+            return;
+        }
+
+        _dispatcher.InvokeAsync(() =>
+        {
+            if (!_endgameFeedbackEmitted)
+            {
+                if (ended.ViewerPlayerId != null && ended.ViewerPlayerId.Value > 0)
+                {
+                    _viewerPlayerId = ended.ViewerPlayerId.Value;
+                }
+
+                _endgameFeedbackEmitted = true;
+                _endgameSounds.TryPlayEndgameSound(ended, _viewerPlayerId);
+                TryEmitGenericEndgameSummary(ended);
             }
         }, DispatcherPriority.Background);
     }
@@ -622,6 +646,69 @@ internal sealed class GamePlayRealtimeController
             .FirstOrDefault(p => p.Id == playerId)?
             .Username?
             .Trim() ?? string.Empty;
+    }
+
+    private void TryEmitGenericEndgameSummary(GameEndedDto ended)
+    {
+        if (ended == null)
+        {
+            return;
+        }
+
+        var winners = new List<string>();
+        var losers = new List<string>();
+        var outcomes = ended.OutcomesByPlayerId ?? new Dictionary<string, string>();
+        var playersById = ended.PlayersById ?? new Dictionary<string, string>();
+
+        foreach (var (playerId, outcomeRaw) in outcomes)
+        {
+            var outcome = (outcomeRaw ?? string.Empty).Trim();
+            if (outcome.Length == 0)
+            {
+                continue;
+            }
+
+            var name = playersById.TryGetValue(playerId, out var n)
+                ? (n ?? string.Empty).Trim()
+                : string.Empty;
+            if (name.Length == 0)
+            {
+                name = $"Joueur {playerId}";
+            }
+
+            if (string.Equals(outcome, "won", StringComparison.OrdinalIgnoreCase))
+            {
+                winners.Add(name);
+            }
+            else if (string.Equals(outcome, "lost", StringComparison.OrdinalIgnoreCase))
+            {
+                losers.Add(name);
+            }
+        }
+
+        if (winners.Count > 0 || losers.Count > 0)
+        {
+            var winnerPart = winners.Count > 0 ? $"Gagnant(s): {string.Join(", ", winners)}." : string.Empty;
+            var loserPart = losers.Count > 0 ? $" Perdant(s): {string.Join(", ", losers)}." : string.Empty;
+            _emitMessage(new GamePlayHistoryMessage($"Partie terminée. {winnerPart}{loserPart}".Trim()));
+            return;
+        }
+
+        if (ended.WinnerPlayerId != null && ended.WinnerPlayerId.Value > 0)
+        {
+            var key = ended.WinnerPlayerId.Value.ToString();
+            var winnerName = playersById.TryGetValue(key, out var n)
+                ? (n ?? string.Empty).Trim()
+                : string.Empty;
+            if (winnerName.Length == 0)
+            {
+                winnerName = $"Joueur {ended.WinnerPlayerId.Value}";
+            }
+            _emitMessage(new GamePlayHistoryMessage($"Partie terminée. Gagnant: {winnerName}."));
+            return;
+        }
+
+        _emitMessage(new GamePlayHistoryMessage("Partie terminée."));
     }
 
     private static bool TryReadOutcomesByPlayerId(GameStateDto state, out Dictionary<int, string> outcomes)

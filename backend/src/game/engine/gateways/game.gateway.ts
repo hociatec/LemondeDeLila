@@ -76,6 +76,9 @@ export class GameGateway
     this.engine.setBroadcaster((gameType, roomId, state) =>
       this.broadcastState(gameType, roomId, state),
     );
+    this.engine.setEndedBroadcaster((gameType, roomId, state, payload) =>
+      this.broadcastEnded(gameType, roomId, state, payload),
+    );
     this.roomService.setRoomDeletedNotifier((roomId: number) => {
       this.forceDisconnectRoomClients(roomId);
     });
@@ -682,6 +685,72 @@ export class GameGateway
       status: state?.status ?? null,
       turnIndex: state?.turnIndex ?? null,
       currentPlayerId: state?.turn?.currentPlayerId ?? null,
+    });
+  }
+
+  private broadcastEnded(
+    gameType: string,
+    roomId: number,
+    state: any,
+    payload: any,
+  ): void {
+    const room = this.buildRoomKey(gameType, roomId);
+    const targets = this.rooms.get(room);
+    if (!targets) return;
+
+    for (const socket of Array.from(targets)) {
+      if (socket.readyState !== WebSocket.OPEN) {
+        targets.delete(socket);
+        continue;
+      }
+
+      const meta = this.clients.get(socket);
+      const userId = meta?.userId ?? null;
+      if (userId == null) {
+        continue;
+      }
+
+      let viewerPlayerId: number | null = null;
+      try {
+        const exposed = this.engine.exposeStateForUser(state, gameType, userId);
+        const extras = exposed?.extras && typeof exposed.extras === 'object'
+          ? exposed.extras
+          : {};
+        const rawViewerPlayerId = (extras as any)?.viewerPlayerId;
+        if (typeof rawViewerPlayerId === 'number' && Number.isFinite(rawViewerPlayerId)) {
+          viewerPlayerId = rawViewerPlayerId;
+        }
+      } catch {
+        // best-effort
+      }
+
+      const outcomesByPlayerId =
+        payload?.outcomesByPlayerId &&
+        typeof payload.outcomesByPlayerId === 'object'
+          ? payload.outcomesByPlayerId
+          : {};
+      const viewerOutcome =
+        viewerPlayerId != null
+          ? String(outcomesByPlayerId[String(viewerPlayerId)] ?? '').trim() || null
+          : null;
+
+      this.safeSend(socket, {
+        type: 'game.ended',
+        payload: {
+          ...payload,
+          viewerPlayerId,
+          viewerOutcome,
+        },
+      });
+    }
+
+    playingLog('ws.game.ended', {
+      roomId,
+      gameType,
+      subscribers: targets ? targets.size : 0,
+      winnerPlayerId: payload?.winnerPlayerId ?? null,
+      finishedAt: payload?.finishedAt ?? null,
+      turnIndex: payload?.turnIndex ?? null,
     });
   }
 

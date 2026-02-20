@@ -40,12 +40,31 @@ import {
   fixMojibakeString,
 } from '../../../common/utils/mojibake';
 
+type GameEndedOutcome = 'won' | 'lost' | 'draw' | 'unknown';
+
+type GameEndedPayload = {
+  roomId: number;
+  gameType: string;
+  status: 'finished';
+  finishedAt: string;
+  winnerPlayerId: number | null;
+  outcomesByPlayerId: Record<string, GameEndedOutcome>;
+  playersById: Record<string, string>;
+  turnIndex: number | null;
+};
+
 @Injectable()
 export class GameEngineService {
   private broadcaster?: (
     gameType: string,
     roomId: number,
     state: GameStateEntity,
+  ) => void;
+  private endedBroadcaster?: (
+    gameType: string,
+    roomId: number,
+    state: GameStateEntity,
+    payload: GameEndedPayload,
   ) => void;
   private readonly mutationQueue = new Map<string, Promise<unknown>>();
   private readonly exposedStateByUserCache = new WeakMap<
@@ -87,6 +106,17 @@ export class GameEngineService {
     fn: (gameType: string, roomId: number, state: GameStateEntity) => void,
   ): void {
     this.broadcaster = fn;
+  }
+
+  setEndedBroadcaster(
+    fn: (
+      gameType: string,
+      roomId: number,
+      state: GameStateEntity,
+      payload: GameEndedPayload,
+    ) => void,
+  ): void {
+    this.endedBroadcaster = fn;
   }
 
   /**
@@ -955,6 +985,17 @@ export class GameEngineService {
       }
 
       try {
+        const endedPayload = this.buildEndedPayload(roomId, gameType, marked);
+        this.endedBroadcaster?.(gameType, roomId, marked, endedPayload);
+      } catch (err) {
+        this.gameLogger.error(
+          'Broadcast game.ended failed',
+          err instanceof Error ? err : undefined,
+          { roomId, gameType },
+        );
+      }
+
+      try {
         await this.rooms.resetRoomSystem(roomId);
       } catch (err) {
         this.gameLogger.error(
@@ -1180,6 +1221,68 @@ export class GameEngineService {
     }
 
     return { winnerId, outcomesByPlayerId };
+  }
+
+  private buildEndedPayload(
+    roomId: number,
+    gameType: string,
+    state: GameStateWithActions,
+  ): GameEndedPayload {
+    const metadata =
+      state?.metadata && typeof state.metadata === 'object' ? state.metadata : {};
+    const { winnerId, outcomesByPlayerId } = this.deriveFinishedOutcomes(state);
+    const players = Array.isArray((state as any)?.players) ? (state as any).players : [];
+
+    const playersById: Record<string, string> = {};
+    for (const p of players) {
+      const id = typeof p?.id === 'number' && Number.isFinite(p.id) ? p.id : null;
+      if (id == null) {
+        continue;
+      }
+      const username = String(p?.username ?? '').trim();
+      if (!username) {
+        continue;
+      }
+      playersById[String(id)] = username;
+    }
+
+    const outcomes: Record<string, GameEndedOutcome> = {};
+    if (outcomesByPlayerId) {
+      for (const [playerId, raw] of Object.entries(outcomesByPlayerId)) {
+        const normalized = String(raw ?? '').trim().toLowerCase();
+        if (
+          normalized === 'won' ||
+          normalized === 'lost' ||
+          normalized === 'draw' ||
+          normalized === 'unknown'
+        ) {
+          outcomes[String(playerId)] = normalized as GameEndedOutcome;
+          continue;
+        }
+        outcomes[String(playerId)] = 'unknown';
+      }
+    }
+
+    const finishedAtRaw = (metadata as any)?.finishedAt;
+    const finishedAt =
+      typeof finishedAtRaw === 'string' && finishedAtRaw.trim().length > 0
+        ? finishedAtRaw.trim()
+        : new Date().toISOString();
+    const turnIndex =
+      typeof state?.turnIndex === 'number' && Number.isFinite(state.turnIndex)
+        ? state.turnIndex
+        : null;
+
+    return {
+      roomId,
+      gameType,
+      status: 'finished',
+      finishedAt,
+      winnerPlayerId: winnerId ?? null,
+      outcomesByPlayerId: outcomes,
+      playersById,
+      turnIndex,
+    };
   }
 
   private tryReadWinnerId(meta: any): number | null {

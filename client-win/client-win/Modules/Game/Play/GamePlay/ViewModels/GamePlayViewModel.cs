@@ -200,6 +200,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             {
                 s.StateUpdated += OnStateUpdated;
                 s.TurnUpdated += _realtime.HandleTurnUpdated;
+                s.EndedReceived += _realtime.HandleEnded;
                 s.ErrorReceived += OnServerError;
                 s.CommandAckReceived += OnCommandAckReceived;
                 s.UiMessageReceived += OnUiMessageReceived;
@@ -208,6 +209,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             {
                 s.StateUpdated -= OnStateUpdated;
                 s.TurnUpdated -= _realtime.HandleTurnUpdated;
+                s.EndedReceived -= _realtime.HandleEnded;
                 s.ErrorReceived -= OnServerError;
                 s.CommandAckReceived -= OnCommandAckReceived;
                 s.UiMessageReceived -= OnUiMessageReceived;

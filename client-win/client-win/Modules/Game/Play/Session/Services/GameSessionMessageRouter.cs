@@ -1,5 +1,6 @@
 using System;
 using System.Text.Json;
+using client_win.Modules.Game.Play.Session.Dtos;
 using client_win.Modules.Game.Play.State.Dtos;
 using client_win.Modules.Network.Services;
 using Serilog;
@@ -16,6 +17,7 @@ internal sealed class GameSessionMessageRouter
     private readonly Action<string> _emitCommandAck;
     private readonly Action<string> _emitUiMessage;
     private readonly Action<string> _emitStatePatch;
+    private readonly Action<GameEndedDto> _emitEnded;
     private readonly Action<string> _emitRaw;
     private readonly Action? _emitPong;
 
@@ -28,6 +30,7 @@ internal sealed class GameSessionMessageRouter
         Action<string> emitCommandAck,
         Action<string> emitUiMessage,
         Action<string> emitStatePatch,
+        Action<GameEndedDto> emitEnded,
         Action<string> emitRaw,
         Action? emitPong = null)
     {
@@ -39,6 +42,7 @@ internal sealed class GameSessionMessageRouter
         _emitCommandAck = emitCommandAck ?? throw new ArgumentNullException(nameof(emitCommandAck));
         _emitUiMessage = emitUiMessage ?? throw new ArgumentNullException(nameof(emitUiMessage));
         _emitStatePatch = emitStatePatch ?? throw new ArgumentNullException(nameof(emitStatePatch));
+        _emitEnded = emitEnded ?? throw new ArgumentNullException(nameof(emitEnded));
         _emitRaw = emitRaw ?? throw new ArgumentNullException(nameof(emitRaw));
         _emitPong = emitPong;
     }
@@ -92,6 +96,12 @@ internal sealed class GameSessionMessageRouter
             if (string.Equals(type, "game.patch", StringComparison.OrdinalIgnoreCase))
             {
                 HandleStatePatch(root);
+                return;
+            }
+
+            if (string.Equals(type, "game.ended", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleEnded(root);
                 return;
             }
 
@@ -339,6 +349,31 @@ internal sealed class GameSessionMessageRouter
         catch (Exception ex)
         {
             Log.Debug(ex, "GameSession: ignore turn parse error");
+        }
+    }
+
+    private void HandleEnded(JsonElement root)
+    {
+        try
+        {
+            if (!root.TryGetProperty("payload", out var payloadProp) ||
+                payloadProp.ValueKind == JsonValueKind.Undefined ||
+                payloadProp.ValueKind == JsonValueKind.Null)
+            {
+                return;
+            }
+
+            var payload = payloadProp.Deserialize<GameEndedDto>(_json);
+            if (payload == null)
+            {
+                return;
+            }
+
+            _emitEnded(payload);
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "GameSession: ignore game.ended parse error");
         }
     }
 }

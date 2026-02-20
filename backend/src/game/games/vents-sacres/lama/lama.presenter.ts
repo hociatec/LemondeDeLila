@@ -82,6 +82,7 @@ export class LamaPresenter extends BasePresenterService {
       (v) => typeof v === 'number' && v >= 1 && v <= LAMA_VALUE,
     );
     const dropped = Boolean((meta.droppedOutByPlayerId ?? {})[String(userId)]);
+    const drawLocked = Object.values(meta.droppedOutByPlayerId ?? {}).some((isOut) => Boolean(isOut));
     const sortedHandValues = [...handValues].sort((a, b) => a - b);
 
     const current = state.turn?.currentPlayerId ?? null;
@@ -151,7 +152,7 @@ export class LamaPresenter extends BasePresenterService {
       }
     }
 
-    if ((meta.deck ?? []).length > 0 && !alreadyDrew) {
+    if (!drawLocked && (meta.deck ?? []).length > 0 && !alreadyDrew) {
       out.push({ type: 'draw', payload: {} });
     }
     if (meta.allowPlayAfterDraw && alreadyDrew && !trackerPlayed) {
@@ -246,6 +247,7 @@ export class LamaPresenter extends BasePresenterService {
 
     const hand = (metadata.handsByPlayerId ?? {})[String(userId)] ?? [];
     const droppedOut = Boolean((metadata.droppedOutByPlayerId ?? {})[String(userId)]);
+    const drawLocked = Object.values(metadata.droppedOutByPlayerId ?? {}).some((isOut) => Boolean(isOut));
 
     const top = this.topDiscard(metadata);
     if (!top) return null;
@@ -270,7 +272,7 @@ export class LamaPresenter extends BasePresenterService {
         droppedOut
           ? `Défausse : ${discardTop}. Vous vous êtes retiré de la manche. Main : ${hand.length} cartes (${handScore} jetons). Total : ${meScore} jetons.`
           : currentPlayerId === userId
-            ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (↑/↓ choisir, Entrée jouer, Espace piocher, P passer, Q se retirer, C défausse, E mains, S jetons)`
+            ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (${drawLocked ? '↑/↓ choisir, Entrée jouer, P passer, Q se retirer, C défausse, E mains, S jetons' : '↑/↓ choisir, Entrée jouer, Espace piocher, P passer, Q se retirer, C défausse, E mains, S jetons'})`
             : `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (En attente)`,
       playerId: userId,
       choices,
@@ -330,6 +332,7 @@ export class LamaPresenter extends BasePresenterService {
       top != null ? lamaCardLabel(nextLamaValue(top as LamaCardValue)) : '(inconnu)';
 
     const deckCount = (metadata.deck ?? []).length;
+    const drawLocked = Object.values(metadata.droppedOutByPlayerId ?? {}).some((isOut) => Boolean(isOut));
 
     const playableText = (() => {
       if (this.isSetup(state)) {
@@ -354,7 +357,7 @@ export class LamaPresenter extends BasePresenterService {
         parts.push(`${lamaCardLabel(value)}×${count}`);
       }
       const list = parts.length ? parts.join(', ') : '(aucune carte jouable)';
-      return `Défausse : ${discardTop}. (↑/↓ choisir, Entrée jouer, Espace piocher, P passer, Q se retirer, C défausse, E mains, S score)`;
+      return `Défausse : ${discardTop}. (${drawLocked ? '↑/↓ choisir, Entrée jouer, P passer, Q se retirer, C défausse, E mains, S score' : '↑/↓ choisir, Entrée jouer, Espace piocher, P passer, Q se retirer, C défausse, E mains, S score'})`;
     })();
 
     return {

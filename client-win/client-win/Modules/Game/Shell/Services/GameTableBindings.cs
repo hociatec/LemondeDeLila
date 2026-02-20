@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Collections.Specialized;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using Serilog;
@@ -50,6 +51,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private Action<GamePlayHistoryMessage>? _onGameMessage;
 	    private Action<string, string>? _onGameStatusChanged;
     private bool _roomStopConfirmationPending;
+    private CancellationTokenSource? _roomStopGraceCts;
+    private static readonly TimeSpan RoomStopGraceDelay = TimeSpan.FromMilliseconds(650);
 
     private bool _lastRoomStarted;
     private Dictionary<int, (string Username, bool Spectator)> _participants = new();
@@ -293,6 +296,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
                     if (!wasStarted && nowStarted)
                     {
+                        CancelRoomStopGraceDelay();
                         SetRoomShortcutsForStarted(started: true);
                         EnsureGamePlayLoaded();
                         SyncGameplayShortcuts();
@@ -319,6 +323,40 @@ internal sealed class GameTableBindings : IAsyncDisposable
                         SyncTableAmbience(payload, started: false);
 
                         SetRoomShortcutsForStarted(started: false);
+                        CancelRoomStopGraceDelay();
+                        var stopCts = new CancellationTokenSource();
+                        _roomStopGraceCts = stopCts;
+
+                        // Best-effort: ask an explicit refresh, then keep a short grace period so
+                        // gameplay can consume late end-state events before unloading the zone.
+                        try
+                        {
+                            _ = _session.RequestStateRefreshAsync(force: true);
+                        }
+                        catch
+                        {
+                            // best-effort
+                        }
+
+                        try
+                        {
+                            await Task.Delay(RoomStopGraceDelay, stopCts.Token).ConfigureAwait(true);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            return;
+                        }
+
+                        if (!ReferenceEquals(_roomStopGraceCts, stopCts))
+                        {
+                            return;
+                        }
+
+                        if (IsRoomStarted(_session.LastRoomState?.Room))
+                        {
+                            return;
+                        }
+
                         _tableVm.GameZone.Content = null;
                         await UnloadGamePlayVmAsync().ConfigureAwait(true);
 
@@ -796,8 +834,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
             }
         }
 
-		    private async System.Threading.Tasks.Task HandleGameStatusChangedAsync(string previousStatus, string nextStatus)
-		    {
+	    private async System.Threading.Tasks.Task HandleGameStatusChangedAsync(string previousStatus, string nextStatus)
+	    {
 	        var wasStarted = string.Equals(previousStatus, "started", StringComparison.OrdinalIgnoreCase);
 	        var nowStarted = string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase);
 
@@ -807,6 +845,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
 	        if (nowStarted)
 	        {
+                CancelRoomStopGraceDelay();
 	            if (!_tableVm.GameZone.IsStarted)
 	            {
 	                SetRoomShortcutsForStarted(started: true);
@@ -856,6 +895,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
 	        if (hasGamePlayLoaded)
 	        {
+                CancelRoomStopGraceDelay();
 	            // IMPORTANT (NVDA):
 	            // Si le contrôle actuellement focusé (dans la zone de jeu) disparaît, NVDA annonce souvent "indisponible".
 	            // On park donc le focus sur un élément stable avant de décharger le contenu.
@@ -871,8 +911,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	            new Action(() => _tableVm.GameZone.RequestFocus(GameFocusReason.AfterDialog)));
 	    }
 
-		    private async System.Threading.Tasks.Task UnloadGamePlayVmAsync()
-		    {
+	    private async System.Threading.Tasks.Task UnloadGamePlayVmAsync()
+	    {
 		        if (_gamePlayVm == null)
 		        {
 		            return;
@@ -895,9 +935,26 @@ internal sealed class GameTableBindings : IAsyncDisposable
 		            _onGameplayShortcutsChanged = null;
 		        }
 
-		        await _gamePlayVm.DisposeAsync().ConfigureAwait(true);
-		        _gamePlayVm = null;
-		    }
+	        await _gamePlayVm.DisposeAsync().ConfigureAwait(true);
+	        _gamePlayVm = null;
+	    }
+
+    private void CancelRoomStopGraceDelay()
+    {
+        try
+        {
+            _roomStopGraceCts?.Cancel();
+        }
+        catch
+        {
+            // best-effort
+        }
+        finally
+        {
+            _roomStopGraceCts?.Dispose();
+            _roomStopGraceCts = null;
+        }
+    }
 
     private void ApplySpectatorState()
     {
@@ -1046,6 +1103,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	    {
 	        try
 	        {
+            CancelRoomStopGraceDelay();
             _tableVm.Chat.LocalEcho = null;
             if (_onAnnounced != null)
             {

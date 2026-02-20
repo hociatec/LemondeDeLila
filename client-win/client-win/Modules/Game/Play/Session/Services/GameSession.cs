@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Game.Play.Actions.Dtos;
+using client_win.Modules.Game.Play.Session.Dtos;
 using client_win.Modules.Game.Play.State.Dtos;
 using client_win.Modules.Network.Services;
 using client_win.Modules.Network.WebSockets;
@@ -76,6 +77,7 @@ public sealed class GameSession : IAsyncDisposable
                     try { await RequestStateAsync().ConfigureAwait(false); } catch { }
                 });
             },
+            emitEnded: ended => EndedReceived?.Invoke(ended),
             emitRaw: msg => RawMessageReceived?.Invoke(msg),
             emitPong: () => _lastPongUtc = DateTime.UtcNow);
         _socket.MessageReceived += _router.HandleRawMessage;
@@ -106,6 +108,7 @@ public sealed class GameSession : IAsyncDisposable
     public event Action<string>? ErrorReceived;
     public event Action<string>? CommandAckReceived;
     public event Action<string>? UiMessageReceived;
+    public event Action<GameEndedDto>? EndedReceived;
 
     public Task CloseAsync() => _socket.CloseAsync();
 

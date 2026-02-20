@@ -675,6 +675,54 @@ describe('LamaService', () => {
     expect((after.metadata.handsByPlayerId?.['1'] ?? []).length).toBe(2);
   });
 
+  it('blocks draw after at least one player has quit the round', async () => {
+    const { service } = createLamaServiceForTest();
+
+    const state: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 5,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: null,
+      metadata: {
+        roundNumber: 1,
+        roundStarterIndex: 0,
+        deck: [6, 5],
+        discard: [1],
+        handsByPlayerId: { '1': [2], '2': [3] },
+        droppedOutByPlayerId: { '1': false, '2': true },
+        scoresByPlayerId: { '1': 0, '2': 0 },
+        step: 'turn_choice',
+        pendingReturnQueue: [],
+        pendingReturnPlayerId: null,
+        winnerId: null,
+      },
+    };
+
+    const exposed: any = service.exposeStateForUser(state, 1);
+    const actionTypes = (exposed?.actions ?? []).map((a: any) =>
+      String(a?.type ?? '').toLowerCase(),
+    );
+    expect(actionTypes).not.toContain('draw');
+
+    const after: any = service.applyActions(state, [
+      { type: 'draw', payload: {}, meta: { actorId: 1 } } as any,
+    ]);
+
+    expect(after.turnIndex).toBe(state.turnIndex);
+    expect((after.metadata?.deck ?? []).length).toBe((state.metadata?.deck ?? []).length);
+    expect((after.metadata?.handsByPlayerId?.['1'] ?? []).length).toBe(
+      (state.metadata?.handsByPlayerId?.['1'] ?? []).length,
+    );
+  });
+
   it('can keep the turn after a draw when configured', async () => {
     const { service } = createLamaServiceForTest();
 

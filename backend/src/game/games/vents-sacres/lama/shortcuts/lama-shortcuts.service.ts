@@ -12,14 +12,28 @@ export class LamaShortcutsService {
     if (!ctx?.started) return [];
 
     const meta: any = ctx?.metadata ?? {};
+    const currentPlayerId = ctx?.currentPlayerId ?? null;
+    const droppedOutByPlayerId: Record<string, boolean> =
+      meta?.droppedOutByPlayerId && typeof meta.droppedOutByPlayerId === 'object'
+        ? meta.droppedOutByPlayerId
+        : {};
+    const drawLocked = Object.values(droppedOutByPlayerId).some((isOut) => Boolean(isOut));
+    const currentPlayerDropped = currentPlayerId != null && Boolean(droppedOutByPlayerId[String(currentPlayerId)]);
+    const deckCount = Array.isArray(meta?.deck) ? meta.deck.length : 0;
     const allowPlayAfterDraw = Boolean(meta?.allowPlayAfterDraw);
     const tracker = meta?.turnTracker ?? null;
-    const isSameTurn = this.shared.asNumberOrNull(tracker?.playerId) === (ctx?.currentPlayerId ?? null);
+    const isSameTurn = this.shared.asNumberOrNull(tracker?.playerId) === currentPlayerId;
     const canPass =
       allowPlayAfterDraw &&
       isSameTurn &&
       this.shared.asBoolean(tracker?.drawn) &&
       !this.shared.asBoolean(tracker?.played);
+    const canDraw =
+      isSameTurn &&
+      !currentPlayerDropped &&
+      !drawLocked &&
+      deckCount > 0 &&
+      !this.shared.asBoolean(tracker?.drawn);
 
     const topDiscard =
       Array.isArray(meta?.discard) && meta.discard.length
@@ -34,7 +48,7 @@ export class LamaShortcutsService {
       hand.some((v) => v === topDiscard || v === nextLamaValue(topDiscard));
 
     return [
-      actionShortcut('SPACE', 'draw'),
+      ...(canDraw ? [actionShortcut('SPACE', 'draw')] : []),
       interfaceShortcut('C', 'discard'),
       interfaceShortcut('E', 'hands'),
       interfaceShortcut('S', 'score'),
