@@ -174,7 +174,8 @@ export class ClientUpdatesUploadService {
 
     const partPath = path.join(dir, `${index}.part`);
     if (fs.existsSync(partPath)) {
-      throw new ConflictException(`Chunk ${index} déjà reçu.`);
+      // Idempotent behavior: allows client/workflow retries without failing the whole upload.
+      return { ok: true, duplicate: true };
     }
     await fs.promises.rename(params.filePath, partPath);
     return { ok: true };

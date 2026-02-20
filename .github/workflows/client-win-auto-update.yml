@@ -141,6 +141,25 @@ jobs:
           LILA_UPLOAD_TOKEN: ${{ secrets.LILA_UPLOAD_TOKEN }}
         run: |
           $ErrorActionPreference = "Stop"
+          function Invoke-WithRetry {
+            param(
+              [scriptblock]$Action,
+              [int]$MaxAttempts = 5,
+              [int]$BaseDelaySeconds = 2
+            )
+            $attempt = 1
+            while ($true) {
+              try {
+                return & $Action
+              } catch {
+                if ($attempt -ge $MaxAttempts) { throw }
+                $delay = [Math]::Min(30, $BaseDelaySeconds * [Math]::Pow(2, $attempt - 1))
+                Start-Sleep -Seconds ([int]$delay)
+                $attempt++
+              }
+            }
+          }
+
           $api = $env:LILA_API_BASE
           if ([string]::IsNullOrWhiteSpace($api)) { throw "Missing secret: LILA_API_BASE (example: https://api.lilas.hociatec.fr/api/)" }
           if (!$api.EndsWith("/")) { $api += "/" }
@@ -166,7 +185,7 @@ jobs:
             totalBytes = $size
           } | ConvertTo-Json
 
-          $init = Invoke-RestMethod -Method Post -Uri $initUrl -Headers $headers -ContentType "application/json" -Body $initBody
+          $init = Invoke-WithRetry { Invoke-RestMethod -Method Post -Uri $initUrl -Headers $headers -ContentType "application/json" -Body $initBody }
           $uploadId = $init.uploadId
           if ([string]::IsNullOrWhiteSpace($uploadId)) { throw "uploadId missing" }
 
@@ -181,11 +200,20 @@ jobs:
               $tmp = Join-Path $env:RUNNER_TEMP ("chunk-$index.part")
               [IO.File]::WriteAllBytes($tmp, $buffer[0..($read-1)])
 
-              Invoke-RestMethod -Method Post -Uri $chunkUrl -Headers $headers -Form @{
-                uploadId = $uploadId
-                index = "$index"
-                file = Get-Item $tmp
-              } | Out-Null
+              try {
+                Invoke-WithRetry {
+                  Invoke-RestMethod -Method Post -Uri $chunkUrl -Headers $headers -Form @{
+                    uploadId = $uploadId
+                    index = "$index"
+                    file = Get-Item $tmp
+                  } | Out-Null
+                } | Out-Null
+              } catch {
+                $resp = $_.Exception.Response
+                $status = if ($resp) { [int]$resp.StatusCode } else { 0 }
+                # Idempotence: chunk already present on server.
+                if ($status -ne 409) { throw }
+              }
 
               Remove-Item $tmp -Force
               $index++
@@ -195,4 +223,4 @@ jobs:
           }
 
           $completeBody = @{ uploadId = $uploadId } | ConvertTo-Json
-          Invoke-RestMethod -Method Post -Uri $completeUrl -Headers $headers -ContentType "application/json" -Body $completeBody | Out-Null
+          Invoke-WithRetry { Invoke-RestMethod -Method Post -Uri $completeUrl -Headers $headers -ContentType "application/json" -Body $completeBody | Out-Null } | Out-Null
