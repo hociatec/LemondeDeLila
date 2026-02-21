@@ -13,13 +13,18 @@ export type GameCatalogOverride = {
   name?: string;
   description?: string;
   rules?: string;
-  status?: GameCatalogStatus;
+  status?: string;
   chatEnabled?: boolean;
   chatSoundsEnabled?: boolean;
 };
 
 type OverridesRoot = {
   games: Record<string, GameCatalogOverride>;
+};
+
+type GameDefinitionWithOverrides = GameDefinition & {
+  enabled?: boolean;
+  status?: GameCatalogStatus;
 };
 
 @Injectable()
@@ -57,15 +62,25 @@ export class GameCatalogOverridesService implements OnModuleInit {
     return root.games[gameType] ?? null;
   }
 
-  apply(def: GameDefinition): GameDefinition & { enabled?: boolean } {
+  apply(def: GameDefinition): GameDefinitionWithOverrides {
     const ov = this.getGameOverride(def.id);
-    if (!ov) return { ...def, enabled: true };
+    const base: GameDefinitionWithOverrides = {
+      ...def,
+      enabled: true,
+    };
+    if (!ov) {
+      return base;
+    }
+    const normalizedStatus =
+      typeof ov.status === 'string'
+        ? GameCatalogOverridesService.normalizeStatus(ov.status)
+        : undefined;
     return {
-      ...(def as any),
+      ...base,
       enabled: ov.enabled !== false,
       name: ov.name ?? def.name,
       description: ov.description ?? def.description,
-      status: ov.status ?? 'finished',
+      status: normalizedStatus ?? 'finished',
       minPlayers:
         typeof ov.minPlayers === 'number' ? ov.minPlayers : def.minPlayers,
       maxPlayers:
@@ -122,17 +137,20 @@ export class GameCatalogOverridesService implements OnModuleInit {
     };
 
     if (typeof next.name === 'string' && !next.name.trim()) delete next.name;
-    if (typeof next.description === 'string' && !next.description.trim())
+    if (typeof next.description === 'string' && !next.description.trim()) {
       delete next.description;
-    if (typeof next.rules === 'string' && !next.rules.trim()) delete next.rules;
-    if (typeof (next as any).status === 'string') {
+    }
+    if (typeof next.rules === 'string' && !next.rules.trim()) {
+      delete next.rules;
+    }
+    if (typeof next.status === 'string') {
       const normalized = GameCatalogOverridesService.normalizeStatus(
-        (next as any).status,
+        next.status,
       );
       if (!normalized) {
-        delete (next as any).status;
+        delete next.status;
       } else {
-        (next as any).status = normalized;
+        next.status = normalized;
       }
     }
 

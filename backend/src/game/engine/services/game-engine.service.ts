@@ -206,11 +206,7 @@ export class GameEngineService {
         ),
       ),
     );
-    const withShortcuts = this.attachShortcuts(
-      withDescriptors,
-      handler,
-      userId,
-    );
+    const withShortcuts = this.attachShortcuts(withDescriptors, handler);
     const finalState = fixMojibakeDeep(
       this.stripBoardAndGridIfNotStarted(withShortcuts),
     );
@@ -318,13 +314,11 @@ export class GameEngineService {
             Number.isFinite(state.turn.currentPlayerId)
               ? state.turn.currentPlayerId
               : null;
-          const players = Array.isArray((state as any)?.players)
-            ? (state as any).players
-            : [];
+          const players = state.players ?? [];
           const name =
             currentPlayerId != null
               ? String(
-                  players.find((p: any) => Number(p?.id) === currentPlayerId)
+                  players.find((p) => Number(p.id) === currentPlayerId)
                     ?.username ?? '',
                 ).trim()
               : '';
@@ -360,7 +354,6 @@ export class GameEngineService {
   private attachShortcuts(
     state: GameStateWithActions,
     handler: GameRulesAdapter | undefined,
-    _userId: number,
   ): GameStateWithActions {
     const extras = GameEngineService.extractExtras(state);
 
@@ -423,12 +416,11 @@ export class GameEngineService {
     const out: GameShortcutHint[] = [];
     const seen = new Set<string>();
     for (const s of [...(Array.isArray(declared) ? declared : []), ...common]) {
-      const keyStr = typeof (s as any)?.key === 'string' ? (s as any).key : '';
-      const typeStr =
-        typeof (s as any)?.type === 'string' ? (s as any).type : '';
-      const idStr = typeStr === 'interface' ? String((s as any).id ?? '') : '';
+      const keyStr = s.key;
+      const typeStr = s.type;
+      const idStr = typeStr === 'interface' ? String(s.id ?? '') : '';
       const actionTypeStr =
-        typeStr === 'action' ? String((s as any).actionType ?? '') : '';
+        typeStr === 'action' ? String(s.actionType ?? '') : '';
       const sig = `${keyStr}|${typeStr}|${idStr}|${actionTypeStr}`;
       if (!keyStr || !typeStr) continue;
       if (seen.has(sig)) continue;
@@ -462,12 +454,15 @@ export class GameEngineService {
     }
     const existing = await this.store.get(roomId, gameType);
     if (existing) {
+      const metadata = this.toMetadata(existing);
       const previousStatus = String(existing.status ?? '').toLowerCase();
-      const roomStatus = String(payload?.room?.status ?? '').toLowerCase();
-      const storedStartedAt = String(
-        (existing.metadata as any)?.roomStartedAt ?? '',
-      ).trim();
-      const roomStartedAt = String(payload?.room?.startedAt ?? '').trim();
+      const roomStatus = String(payload.room.status ?? '').toLowerCase();
+      const storedStartedAt = this.normalizeMetadataString(
+        metadata['roomStartedAt'],
+      );
+      const roomStartedAt = this.normalizeMetadataString(
+        payload.room.startedAt,
+      );
 
       // Garde-fou : si un état "finished" est encore stocké alors que la room est restée en "started"
       // (crash/restart serveur ou événement WS manqué), forcer un reset pour retrouver une table
@@ -475,14 +470,14 @@ export class GameEngineService {
       const maybeFinished =
         previousStatus === 'finished'
           ? existing
-          : (this.forceFinishedIfWinnerDetected(existing as any) as any);
+          : this.forceFinishedIfWinnerDetected(existing);
       const maybeFinishedStatus = String(
         maybeFinished?.status ?? '',
       ).toLowerCase();
       if (roomStatus === 'started' && maybeFinishedStatus === 'finished') {
         if (this.isWithinFinishedGraceWindow(maybeFinished)) {
           await this.scheduleFinishedRoomReset(roomId, gameType, maybeFinished);
-          return maybeFinished as GameStateEntity;
+          return maybeFinished;
         }
 
         this.gameLogger.warn(
@@ -542,17 +537,11 @@ export class GameEngineService {
         return marked;
       }
 
-      const storedRunIdRaw = (existing.metadata as any)?.roomRunId;
-      const roomRunIdRaw = (payload?.room as any)?.runId;
-      const storedRunId =
-        typeof storedRunIdRaw === 'number'
-          ? storedRunIdRaw
-          : Number(storedRunIdRaw);
-      const roomRunId =
-        typeof roomRunIdRaw === 'number' ? roomRunIdRaw : Number(roomRunIdRaw);
+      const storedRunId = this.parseMetadataNumber(metadata['roomRunId']);
+      const roomRunId = this.parseMetadataNumber(payload.room.runId);
       const hasRunId =
-        Number.isFinite(storedRunId) &&
-        Number.isFinite(roomRunId) &&
+        storedRunId !== null &&
+        roomRunId !== null &&
         roomRunId >= 0 &&
         storedRunId >= 0;
       const hasRunIdChanged = hasRunId && storedRunId !== roomRunId;
@@ -617,7 +606,7 @@ export class GameEngineService {
         players:
           withRoster.players?.map((p) => ({
             id: p.id,
-            isBot: (p as any).isBot,
+            isBot: Boolean(p.isBot),
           })) ?? [],
         incomingPlayers,
         gameStarted,
@@ -650,8 +639,8 @@ export class GameEngineService {
           gameType,
           storedStartedAt,
           roomStartedAt,
-          storedRunId: Number.isFinite(storedRunId) ? storedRunId : null,
-          roomRunId: Number.isFinite(roomRunId) ? roomRunId : null,
+          storedRunId: storedRunId ?? null,
+          roomRunId: roomRunId ?? null,
         });
         this.cleanupRoom(roomId, gameType);
         const rebuilt = await this.buildInitialState(payload, gameType);
@@ -678,9 +667,7 @@ export class GameEngineService {
         gameType,
         withRoster,
       );
-      const forcedFinished = this.forceFinishedIfWinnerDetected(
-        normalized as any,
-      ) as any as GameStateEntity;
+      const forcedFinished = this.forceFinishedIfWinnerDetected(normalized);
       if (forcedFinished !== normalized) {
         try {
           await this.store.set(roomId, gameType, forcedFinished);
@@ -1030,6 +1017,39 @@ export class GameEngineService {
     return this.exposeState(marked, gameType);
   }
 
+  private toMetadata(target: { metadata?: unknown }): Record<string, unknown> {
+    const meta = target.metadata;
+    if (meta && typeof meta === 'object' && !Array.isArray(meta)) {
+      return meta as Record<string, unknown>;
+    }
+    return {};
+  }
+
+  private normalizeMetadataString(value: unknown): string {
+    if (typeof value === 'string') {
+      return value.trim();
+    }
+    if (typeof value === 'number' || typeof value === 'boolean') {
+      return String(value).trim();
+    }
+    return '';
+  }
+
+  private parseMetadataNumber(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+    if (typeof value === 'string') {
+      const normalized = value.trim();
+      if (!normalized) {
+        return null;
+      }
+      const parsed = Number(normalized);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    return null;
+  }
+
   private normalizeWinnerMetadata<TState extends { metadata?: unknown }>(
     state: TState,
   ): TState {
@@ -1105,28 +1125,28 @@ export class GameEngineService {
    * ```
    */
   private forceFinishedIfWinnerDetected(
-    state: GameStateWithActions,
-  ): GameStateWithActions {
+    state: GameStateEntity,
+  ): GameStateEntity {
     const status = String(state?.status ?? '').toLowerCase();
     if (status !== 'started') {
       return state;
     }
 
-    const meta = (state as any)?.metadata;
-    if (!meta || typeof meta !== 'object') {
+    const meta = this.toMetadata(state);
+    if (Object.keys(meta).length === 0) {
       return state;
     }
 
     // Certains jeux peuvent déjà marquer une fin logique via `finishedAt`/`outcomesByPlayerId`
     // sans avoir basculé `status` -> finished (legacy / bug). On force dans ce cas pour
     // déclencher le reset automatique de table côté moteur.
-    const finishedAt = meta?.finishedAt;
-    if (typeof finishedAt === 'string' && finishedAt.trim().length > 0) {
+    const finishedAt = this.normalizeMetadataString(meta['finishedAt']);
+    if (finishedAt.length > 0) {
       return state.status === 'finished'
         ? state
         : { ...state, status: 'finished' };
     }
-    const outcomes = meta?.outcomesByPlayerId;
+    const outcomes = meta['outcomesByPlayerId'];
     if (
       outcomes &&
       typeof outcomes === 'object' &&
@@ -1137,7 +1157,7 @@ export class GameEngineService {
         : { ...state, status: 'finished' };
     }
 
-    for (const key of ['winnerPlayerId', 'winnerId', 'winner_id']) {
+    for (const key of ['winnerPlayerId', 'winnerId', 'winner_id'] as const) {
       const value = meta[key];
       if (value === null || value === undefined) {
         continue;
@@ -1153,7 +1173,11 @@ export class GameEngineService {
               ...meta,
               winnerId: value,
             };
-      return { ...state, status: 'finished', metadata: normalizedMeta };
+      return {
+        ...state,
+        status: 'finished',
+        metadata: normalizedMeta,
+      };
     }
 
     return state;

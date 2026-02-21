@@ -1,8 +1,11 @@
 import { DynamicModule, Logger, Module } from '@nestjs/common';
+import { createRequire } from 'module';
 import * as fs from 'fs';
 import * as path from 'path';
 
 type ModuleClass = new (...args: any[]) => any;
+
+const requireModule = createRequire(__filename);
 
 @Module({})
 export class GamePluginsModule {
@@ -84,18 +87,23 @@ export class GamePluginsModule {
 
   private static loadModuleClasses(filePath: string): ModuleClass[] {
     try {
-      const mod = require(filePath);
-      const candidates = Object.values(mod).filter(
-        (value) => typeof value === 'function' && value.name.endsWith('Module'),
-      ) as ModuleClass[];
+      const moduleExports = requireModule(filePath) as Record<string, unknown>;
+      const candidates = Object.values(moduleExports).filter(
+        (value): value is ModuleClass =>
+          typeof value === 'function' && value.name.endsWith('Module'),
+      );
       if (!candidates.length) {
         this.logger.warn(`Aucun module exporté trouvé dans ${filePath}`);
       }
       return candidates;
-    } catch (error: any) {
-      this.logger.warn(
-        `Impossible de charger ${filePath} : ${error?.message ?? error}`,
-      );
+    } catch (error: unknown) {
+      const errorMessage =
+        typeof error === 'string'
+          ? error
+          : error instanceof Error
+            ? error.message
+            : 'Erreur inconnue';
+      this.logger.warn(`Impossible de charger ${filePath} : ${errorMessage}`);
       return [];
     }
   }

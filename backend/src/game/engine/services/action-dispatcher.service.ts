@@ -99,7 +99,7 @@ export class ActionDispatcherService {
       throw new GameValidationError(
         `No handler registered for action type: ${actionType}`,
         {
-          gameType: (state.metadata as any)?.gameType,
+          gameType: getGameType(state),
           action: actionType,
           registeredActions: Array.from(this.handlers.keys()),
         },
@@ -136,4 +136,15 @@ export class ActionDispatcherService {
   clear(): void {
     this.handlers.clear();
   }
+}
+
+function getMetadata(state: GameStateEntity): Record<string, unknown> {
+  const metadata = state.metadata;
+  return metadata && typeof metadata === 'object' ? metadata : {};
+}
+
+function getGameType(state: GameStateEntity): string | undefined {
+  const metadata = getMetadata(state);
+  const gameType = metadata.gameType;
+  return typeof gameType === 'string' ? gameType : undefined;
 }

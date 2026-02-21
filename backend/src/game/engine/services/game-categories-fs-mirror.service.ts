@@ -1,13 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
-import type { GameCategory } from './game-categories.service';
 
 type MirrorIndexEntry = {
   id: string;
   name: string;
   parentId: string | null;
   updatedAt: string;
+};
+
+type MirrorCategory = {
+  id: string;
+  name: string;
+  parentId: string | null;
 };
 
 @Injectable()
@@ -23,7 +28,7 @@ export class GameCategoriesFsMirrorService {
   }
 
   async syncAll(input: {
-    categories: GameCategory[];
+    categories: MirrorCategory[];
     assignments: Record<string, string | null>;
   }): Promise<void> {
     try {
@@ -64,8 +69,8 @@ export class GameCategoriesFsMirrorService {
   }
 
   private async upsertCategory(
-    category: GameCategory,
-    categories: GameCategory[],
+    category: MirrorCategory,
+    categories: MirrorCategory[],
     assignments: Record<string, string | null>,
   ): Promise<void> {
     const id = String(category?.id ?? '').trim();
@@ -175,7 +180,7 @@ export class GameCategoriesFsMirrorService {
 
   private async resolveDesiredFolder(
     category: { id: string; name: string; parentId: string | null },
-    categories: GameCategory[],
+    categories: MirrorCategory[],
   ): Promise<string | null> {
     const chain: Array<{ id: string; name: string }> = [];
     const visited = new Set<string>();
@@ -188,7 +193,7 @@ export class GameCategoriesFsMirrorService {
       chain.unshift({ id: current.id, name: current.name });
       const pid = current.parentId ? current.parentId.trim() : '';
       if (!pid) break;
-      const parent = categories.find((c) => c.id === pid);
+      const parent = categories.find((c): c is MirrorCategory => c.id === pid);
       if (!parent) break;
       current = {
         id: parent.id,
@@ -304,13 +309,23 @@ export class GameCategoriesFsMirrorService {
   private safeFolderName(value: string): string {
     const raw = String(value ?? '').trim();
     const noDiacritics = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const cleaned = noDiacritics
+    const sanitized = noDiacritics
       .replace(/[\\/]+/g, ' ')
-      .replace(/[<>:"|?*\u0000-\u001F]+/g, ' ')
+      .replace(/[<>:"|?*]+/g, ' ');
+    const cleaned = this.replaceControlCharacters(sanitized)
       .replace(/\s+/g, ' ')
       .trim();
     const noTrailing = cleaned.replace(/[. ]+$/g, '').trim();
     return noTrailing.length > 0 ? noTrailing.slice(0, 120) : 'Categorie';
+  }
+
+  private replaceControlCharacters(value: string): string {
+    let out = '';
+    for (const char of value) {
+      const code = char.charCodeAt(0);
+      out += code > 31 ? char : ' ';
+    }
+    return out;
   }
 
   private async safeWriteJson(filePath: string, data: unknown): Promise<void> {
@@ -343,7 +358,7 @@ export class GameCategoriesFsMirrorService {
 
   private static parseJson(value: string): Record<string, unknown> {
     try {
-      const parsed = JSON.parse(value);
+      const parsed: unknown = JSON.parse(value);
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
         return parsed as Record<string, unknown>;
       }

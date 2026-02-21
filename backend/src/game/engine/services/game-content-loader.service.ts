@@ -332,14 +332,13 @@ export class GameContentLoaderService {
       return error;
     }
 
-    const message =
-      error instanceof Error ? error.message : String(error ?? 'Unknown error');
+    const message = this.normalizeErrorMessage(error);
     return new GameContentError(
       `Failed to load ${config.gameType} content from ${config.filename}: ${message}`,
       {
         gameType: config.gameType,
         filename: config.filename,
-        originalError: error instanceof Error ? error.message : error,
+        originalError: this.normalizeErrorMessage(error),
       },
     );
   }
@@ -357,6 +356,20 @@ export class GameContentLoaderService {
       return String(value);
     if (Array.isArray(value)) return JSON.stringify(value);
     if (value && typeof value === 'object') return JSON.stringify(value);
-    return String(value ?? '');
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'symbol') return value.toString();
+    if (typeof value === 'function') return value.name || 'function';
+    return '';
+  }
+
+  private normalizeErrorMessage(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'string') return error;
+    if (error === null || error === undefined) return 'Unknown error';
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return 'Unknown error';
+    }
   }
 }
