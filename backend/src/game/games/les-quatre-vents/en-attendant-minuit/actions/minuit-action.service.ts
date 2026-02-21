@@ -29,10 +29,10 @@ import type {
 const MINUIT_PAWNS = [
   'Le Lutin',
   'Le Bonhomme de Neige',
-  'La FÃ©e des Flocons',
-  'Le PÃ¨re NoÃ«l',
+  'La Fée des Flocons',
+  'Le Père Noël',
   'Le Renne',
-  "Le Petit Bonhomme en Pain d'Ã‰pices",
+  "Le Petit Bonhomme en Pain d'Épices",
 ];
 
 const MINUIT_PLAYER_NAME_OPTIONS = {
@@ -349,12 +349,32 @@ export class MinuitActionService {
       (p) => !!p && this.isBotLike(p, meta) && !this.hasPawnAssigned(p, meta),
     );
     if (status === 'started') {
-      if (!needsPawnSelection && !needsBotPawns && !hasPendingPick) {
-        return this.restoreStarterAfterPawnSelection(state);
-      }
-      const withBots = this.assignBotPawns(state);
+      // Preserve human pawn-pick chronology in logs:
+      // resolve human pending picks first, then auto-assign bot pawns.
       if (needsPawnSelection || hasPendingPick) {
-        return this.queuePawnSelection(withBots);
+        const queued = this.queuePawnSelection(state);
+        if ((queued.pending as any)?.type === 'pick_pawn') {
+          return queued;
+        }
+        if (queued === state) {
+          return state;
+        }
+        return this.ensurePawnSelection(queued);
+      }
+
+      const withBots = needsBotPawns ? this.assignBotPawns(state) : state;
+      const withBotsPlayers = Array.isArray(withBots.players)
+        ? withBots.players
+        : [];
+      const withBotsMeta = this.getMeta(withBots);
+      const stillNeedsBotPawns = withBotsPlayers.some(
+        (p) =>
+          !!p &&
+          this.isBotLike(p, withBotsMeta) &&
+          !this.hasPawnAssigned(p, withBotsMeta),
+      );
+      if (!stillNeedsBotPawns) {
+        return this.restoreStarterAfterPawnSelection(withBots);
       }
       return withBots;
     }
@@ -402,9 +422,14 @@ export class MinuitActionService {
         : state;
     }
     const taken = new Set<string>(
-      players
+      [
+        ...players
         .map((p) => (typeof p?.pawn === 'string' ? String(p.pawn).trim() : ''))
-        .filter((pawn) => pawn.length > 0),
+          .filter((pawn) => pawn.length > 0),
+        ...Object.values(meta.pawns ?? {})
+          .map((pawn) => String(pawn ?? '').trim())
+          .filter((pawn) => pawn.length > 0),
+      ],
     );
     const choiceEntries = this.listPawnChoiceEntries(this.getMeta(state));
     const available = choiceEntries.filter((entry) => !taken.has(entry.id));
@@ -499,7 +524,7 @@ export class MinuitActionService {
     for (const bot of assignedBots) {
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, bot.id, MINUIT_PLAYER_NAME_OPTIONS)} choisit le pion: ${bot.pawn}.`,
+        `${resolvePlayerNameFromState(next, bot.id, MINUIT_PLAYER_NAME_OPTIONS)} choisit le pion: ${this.resolvePawnName(nextMeta, bot.pawn)}.`,
       );
     }
     return next;
@@ -537,6 +562,7 @@ export class MinuitActionService {
       ...(meta.pawns ?? {}),
       [playerId]: resolvedPawn,
     };
+    const resolvedPawnName = this.resolvePawnName(meta, resolvedPawn);
     let next: GameStateEntity = {
       ...state,
       players: updatedPlayers,
@@ -548,7 +574,7 @@ export class MinuitActionService {
     };
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} choisit le pion: ${resolvedPawn}.`,
+      `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} choisit le pion: ${resolvedPawnName}.`,
     );
     return this.ensurePawnSelection(next);
   }
@@ -1089,11 +1115,33 @@ export class MinuitActionService {
   }
 
   private pawnLabel(state: GameStateEntity, id: number): string {
+    const meta = this.getMeta(state);
     const players = Array.isArray(state.players) ? state.players : [];
     const player = players.find((p) => Number(p?.id) === id);
-    const pawn = String(player?.pawn ?? '').trim();
+    const pawnId = String(player?.pawn ?? meta.pawns?.[id] ?? '').trim();
+    const pawn = this.resolvePawnName(meta, pawnId);
     if (pawn) return `"${pawn}"`;
     return 'un pion';
+  }
+
+  private resolvePawnName(meta: MinuitMetadata, pawnIdOrLabel: unknown): string {
+    const value = String(pawnIdOrLabel ?? '').trim();
+    if (!value) return '';
+
+    const normalized = value.toLowerCase();
+    const choices = Array.isArray(meta.pawnChoices) ? meta.pawnChoices : [];
+    for (const pawn of choices) {
+      const id = String((pawn as any)?.id ?? '').trim();
+      const name = String((pawn as any)?.name ?? '').trim();
+      if (!id || !name) continue;
+      if (id === value || name === value) return name;
+      if (id.toLowerCase() === normalized || name.toLowerCase() === normalized) {
+        return name;
+      }
+    }
+
+    const labelName = value.split(':')[0]?.trim();
+    return labelName || value;
   }
 
   private pawnPossessiveLabel(state: GameStateEntity, id: number): string {
@@ -1317,8 +1365,4 @@ function findBehind(
   if (idx <= 0) return null;
   return ranked[idx - 1].id;
 }
-
-
-
-
 

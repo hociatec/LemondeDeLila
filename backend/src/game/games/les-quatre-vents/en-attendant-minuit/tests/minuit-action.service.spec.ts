@@ -301,6 +301,113 @@ describe('MinuitActionService', () => {
     expect(next.turnIndex).toBe(1);
   });
 
+  it('logs canonical pawn names (not pawn ids/slugs) when choosing a pawn', () => {
+    const { random, turns, core } = createDeps();
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [
+        { id: 1, username: 'Lilas', isBot: false } as any,
+        { id: -2, username: 'Wallace', isBot: true } as any,
+      ],
+      metadata: {
+        botPlayerIds: [-2],
+        starterPlayerId: 1,
+        starterTurnIndex: 0,
+        starterRestoredAfterPawnSelection: false,
+        pawns: {},
+        pawnChoices: [
+          { id: 'fee-des-flocons', name: 'La Fée des Flocons', description: 'Agile' },
+          { id: 'lutin', name: 'Le Lutin', description: 'Rapide' },
+        ],
+      } as any,
+      pending: {
+        type: 'pick_pawn',
+        playerId: 1,
+        blocking: true,
+        choices: ['La Fée des Flocons: Agile', 'Le Lutin: Rapide'],
+        data: {
+          pawns: [
+            { id: 'fee-des-flocons', label: 'La Fée des Flocons: Agile' },
+            { id: 'lutin', label: 'Le Lutin: Rapide' },
+          ],
+        },
+      } as any,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = service.applyActions(state, [
+      { type: 'pick_pawn', payload: { pawnId: 'fee-des-flocons' } } as any,
+    ]);
+    const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
+    expect(messages.some((m) => m.includes('Lilas choisit le pion: La Fée des Flocons.'))).toBe(true);
+    expect(messages.some((m) => m.includes('fee-des-flocons'))).toBe(false);
+  });
+
+  it('keeps human pawn-choice log before bot auto-assignment logs', () => {
+    const { random, turns, core } = createDeps();
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [
+        { id: 1, username: 'Lilas', isBot: false } as any,
+        { id: -2, username: 'Wallace', isBot: true } as any,
+      ],
+      metadata: {
+        botPlayerIds: [-2],
+        starterPlayerId: 1,
+        starterTurnIndex: 0,
+        starterRestoredAfterPawnSelection: false,
+        pawns: {},
+        pawnChoices: [
+          { id: 'bonhomme-pain-epices', name: "Le Petit Bonhomme en Pain d'Épices", description: '' },
+          { id: 'lutin', name: 'Le Lutin', description: '' },
+        ],
+      } as any,
+      pending: {
+        type: 'pick_pawn',
+        playerId: 1,
+        blocking: true,
+        choices: ["Le Petit Bonhomme en Pain d'Épices", 'Le Lutin'],
+        data: {
+          pawns: [
+            { id: 'bonhomme-pain-epices', label: "Le Petit Bonhomme en Pain d'Épices" },
+            { id: 'lutin', label: 'Le Lutin' },
+          ],
+        },
+      } as any,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = service.applyActions(state, [
+      { type: 'pick_pawn', payload: { pawnId: 'bonhomme-pain-epices' } } as any,
+    ]);
+    const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
+    const chooseLogs = messages.filter((m) => m.includes('choisit le pion:'));
+    expect(chooseLogs.length).toBeGreaterThan(0);
+    expect(chooseLogs[0]).toContain('Lilas choisit le pion:');
+  });
+
   it('logs quiz result in a single concise sentence', () => {
     const { random, turns, core } = createDeps();
     const service = new MinuitActionService(
@@ -449,7 +556,6 @@ describe('Minuit Rulebook compat', () => {
     expect(normalized).toEqual({ type: 'pick_pawn', payload: { pawnId: 'Le Lutin' } });
   });
 });
-
 
 
 

@@ -351,6 +351,18 @@ public sealed class GameHistorySink : IGameHistorySink
                 cleaned = cleaned.Substring(0, openParen).TrimEnd();
             }
         }
+        else if (lowered.EndsWith(" zone de jeu", StringComparison.Ordinal))
+        {
+            cleaned = cleaned.Substring(0, cleaned.Length - " zone de jeu".Length).TrimEnd();
+        }
+        else if (lowered.EndsWith(" zone de jeux", StringComparison.Ordinal))
+        {
+            cleaned = cleaned.Substring(0, cleaned.Length - " zone de jeux".Length).TrimEnd();
+        }
+        else if (lowered.EndsWith(" game zone", StringComparison.Ordinal))
+        {
+            cleaned = cleaned.Substring(0, cleaned.Length - " game zone".Length).TrimEnd();
+        }
 
         return cleaned;
     }

@@ -11,6 +11,72 @@ export function readTextFileWithFallback(filePath: string): string {
     .replace(/^\uFEFF/, '');
 }
 
+function applyTargetedMojibakeReplacements(value: string): string {
+  let out = String(value ?? '');
+  if (!out) return '';
+
+  // Double-encoded marker often seen in imported text blobs.
+  out = out.replace(/ÃƒÂ/g, 'Ã');
+
+  const replacements: Array<[RegExp, string]> = [
+    [/Ã€/g, 'À'],
+    [/Ã‚/g, 'Â'],
+    [/Ã„/g, 'Ä'],
+    [/Ã‡/g, 'Ç'],
+    [/Ãˆ/g, 'È'],
+    [/Ã‰/g, 'É'],
+    [/ÃŠ/g, 'Ê'],
+    [/Ã‹/g, 'Ë'],
+    [/ÃŽ/g, 'Î'],
+    [/ÃÏ/g, 'Ï'],
+    [/Ã”/g, 'Ô'],
+    [/Ã–/g, 'Ö'],
+    [/Ã™/g, 'Ù'],
+    [/Ã›/g, 'Û'],
+    [/Ãœ/g, 'Ü'],
+    [/ÃŸ/g, 'ß'],
+    [/Ã /g, 'à'],
+    [/Ã¡/g, 'á'],
+    [/Ã¢/g, 'â'],
+    [/Ã¤/g, 'ä'],
+    [/Ã§/g, 'ç'],
+    [/Ã¨/g, 'è'],
+    [/Ã©/g, 'é'],
+    [/Ãª/g, 'ê'],
+    [/Ã«/g, 'ë'],
+    [/Ã¬/g, 'ì'],
+    [/Ã­/g, 'í'],
+    [/Ã®/g, 'î'],
+    [/Ã¯/g, 'ï'],
+    [/Ã²/g, 'ò'],
+    [/Ã³/g, 'ó'],
+    [/Ã´/g, 'ô'],
+    [/Ã¶/g, 'ö'],
+    [/Ã¹/g, 'ù'],
+    [/Ãº/g, 'ú'],
+    [/Ã»/g, 'û'],
+    [/Ã¼/g, 'ü'],
+    [/Å“/g, 'œ'],
+    [/Å’/g, 'Œ'],
+    [/\u00E2\u20AC\u2122/g, '’'],
+    [/\u00E2\u20AC\u02DC/g, '‘'],
+    [/\u00E2\u20AC\u009C/g, '“'],
+    [/\u00E2\u20AC\u009D/g, '”'],
+    [/\u00E2\u20AC\u201C/g, '–'],
+    [/\u00E2\u20AC\u201D/g, '—'],
+    [/\u00E2\u20AC\u00A6/g, '…'],
+    [/\u00E2\u20AC\u00A2/g, '•'],
+    [/Â /g, ' '],
+    [/Â(?=[,;:.!?])/g, ''],
+  ];
+
+  for (const [pattern, replacement] of replacements) {
+    out = out.replace(pattern, replacement);
+  }
+
+  return out;
+}
+
 export function fixMojibakeString(value: string): string {
   const score = (s: string) => {
     const suspicious = (
@@ -22,7 +88,10 @@ export function fixMojibakeString(value: string): string {
     return suspicious * 2 + replacement * 10;
   };
   const currentScore = score(value);
-  if (currentScore === 0) return value;
+  const targetedOriginal = applyTargetedMojibakeReplacements(value);
+  const targetedOriginalScore = score(targetedOriginal);
+
+  if (currentScore === 0 && targetedOriginal === value) return value;
 
   const windows1252ToBytes = (input: string): Uint8Array => {
     const map: Record<number, number> = {
@@ -71,11 +140,20 @@ export function fixMojibakeString(value: string): string {
   const candidates = [
     Buffer.from(value, 'latin1').toString('utf8'),
     Buffer.from(windows1252ToBytes(value)).toString('utf8'),
+    Buffer.from(targetedOriginal, 'latin1').toString('utf8'),
+    Buffer.from(windows1252ToBytes(targetedOriginal)).toString('utf8'),
   ].filter((c) => typeof c === 'string' && c.length > 0);
 
-  let best = value;
-  let bestScore = currentScore;
+  let best = targetedOriginalScore < currentScore ? targetedOriginal : value;
+  let bestScore = Math.min(currentScore, targetedOriginalScore);
   for (const c of candidates) {
+    const normalized = applyTargetedMojibakeReplacements(c);
+    const normalizedScore = score(normalized);
+    if (normalizedScore < bestScore) {
+      best = normalized;
+      bestScore = normalizedScore;
+      continue;
+    }
     const s = score(c);
     if (s < bestScore) {
       best = c;

@@ -484,6 +484,10 @@ public partial class GamePlayView
             ChoicesList.IsVisible &&
             ChoicesList.Items.Count > 0)
         {
+            if (IsFocusWithinChoicesList())
+            {
+                return;
+            }
             if (ChoicesList.SelectedIndex < 0)
             {
                 ChoicesList.SelectedIndex = 0;
@@ -504,6 +508,10 @@ public partial class GamePlayView
         // - sinon: ancrer sur la vue racine
         if (DataContext is GamePlayViewModel vm && vm.Grid.IsVisible)
         {
+            if ((GridBoard?.IsKeyboardFocusWithin ?? false) || (GridItems?.IsKeyboardFocusWithin ?? false))
+            {
+                return;
+            }
             Focus();
             Keyboard.Focus(this);
             TryFocusPreferredGridCell();
@@ -512,6 +520,10 @@ public partial class GamePlayView
 
         if (HandList.IsVisible && HandList.Items.Count > 0)
         {
+            if (IsFocusWithinHandList())
+            {
+                return;
+            }
             if (HandList.SelectedIndex < 0)
             {
                 HandList.SelectedIndex = 0;
@@ -527,6 +539,10 @@ public partial class GamePlayView
 
         if (ChoicesList.IsVisible && ChoicesList.Items.Count > 0)
         {
+            if (IsFocusWithinChoicesList())
+            {
+                return;
+            }
             if (ChoicesList.SelectedIndex < 0)
             {
                 ChoicesList.SelectedIndex = 0;
@@ -545,6 +561,10 @@ public partial class GamePlayView
         // d'élément interactif prêt (tour bot, état transitoire, etc.).
         if (forceFromOutsideTextInput)
         {
+            if (IsKeyboardFocusWithin)
+            {
+                return;
+            }
             Focus();
             Keyboard.Focus(this);
         }
@@ -561,6 +581,27 @@ public partial class GamePlayView
         while (focused != null)
         {
             if (ReferenceEquals(focused, HandList))
+            {
+                return true;
+            }
+
+            focused = GetVisualOrLogicalParent(focused);
+        }
+
+        return false;
+    }
+
+    private bool IsFocusWithinChoicesList()
+    {
+        if (ChoicesList == null)
+        {
+            return false;
+        }
+
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        while (focused != null)
+        {
+            if (ReferenceEquals(focused, ChoicesList))
             {
                 return true;
             }

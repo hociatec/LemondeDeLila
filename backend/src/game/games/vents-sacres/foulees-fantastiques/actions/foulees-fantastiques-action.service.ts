@@ -153,13 +153,17 @@ export class FouleesFantastiquesActionService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
     const pending: any = state.pending ?? null;
     if (!pending || pending.type !== 'choose_family' || pending.playerId !== currentId) {
       return state;
     }
+    const withPrompt = this.appendLogOnce(
+      state,
+      `${resolvePlayerNameFromState(state, currentId)} doit choisir une famille d'animaux.`,
+    );
+    const meta = (withPrompt.metadata ?? {}) as any as FouleesFantastiquesMetadata;
 
     const rawFamily = (action.payload as any)?.familyId ?? (action.payload as any)?.value;
     const selected = this.setupFlow.resolveChoice(
@@ -210,7 +214,7 @@ export class FouleesFantastiquesActionService {
         [currentId]: [...pack.pawns],
       },
     };
-    let next: GameStateEntity = { ...state, metadata: nextMeta, pending: null };
+    let next: GameStateEntity = { ...withPrompt, metadata: nextMeta, pending: null };
     next = this.core.appendLog(
       next,
       `${resolvePlayerNameFromState(next, currentId)} choisit la famille des ${pack.family} (${pack.habitat}).`,
@@ -829,7 +833,6 @@ export class FouleesFantastiquesActionService {
     return `du ${raw}`;
   }
 }
-
 
 
 

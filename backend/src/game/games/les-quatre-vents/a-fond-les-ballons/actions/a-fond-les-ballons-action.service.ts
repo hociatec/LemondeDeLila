@@ -349,7 +349,7 @@ export class AFondLesBallonsActionService {
         ? starterId
         : players[0]?.id ?? null;
 
-    return {
+    const withTurn: GameStateEntity = {
       ...next,
       pending: null,
       turnIndex: starterIndex >= 0 ? starterIndex : next.turnIndex,
@@ -359,6 +359,7 @@ export class AFondLesBallonsActionService {
         direction: 1,
       },
     };
+    return this.appendTurnAnnouncement(withTurn);
   }
 
   private advanceTurnWithSkipLogs(state: GameStateEntity): GameStateEntity {
@@ -403,7 +404,7 @@ export class AFondLesBallonsActionService {
 
     const finalPlayerId = (players[nextIndex] as any).id;
 
-    return {
+    const advanced: GameStateEntity = {
       ...next,
       turnIndex: nextIndex,
       turn: { currentPlayerId: finalPlayerId, direction: 1 },
@@ -412,6 +413,16 @@ export class AFondLesBallonsActionService {
         statuses: { ...statuses, skipTurn: updatedSkip },
       },
     };
+    return this.appendTurnAnnouncement(advanced);
+  }
+
+  private appendTurnAnnouncement(state: GameStateEntity): GameStateEntity {
+    const currentId = state.turn?.currentPlayerId ?? null;
+    if (currentId == null) return state;
+    return this.core.appendLog(
+      state,
+      `C'est au tour de ${resolvePlayerNameFromState(state, currentId)}.`,
+    );
   }
 
   private availablePawns(
@@ -1099,7 +1110,6 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
   ];
 }
-
 
 
 

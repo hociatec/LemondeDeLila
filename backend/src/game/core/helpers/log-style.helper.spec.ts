@@ -13,6 +13,26 @@ describe('log-style.helper', () => {
     );
   });
 
+  it('removes duplicated final dot in composed labels', () => {
+    expect(
+      normalizeGameLogMessage(
+        'Lilas choisit le pion : Le Lion: Majestueux et fier..',
+      ),
+    ).toBe('Lilas choisit le pion: Le Lion: Majestueux et fier.');
+  });
+
+  it('normalizes common french accent typos in logs', () => {
+    expect(normalizeGameLogMessage('Debut de partie : Lila commence.')).toBe(
+      'Début de partie: Lila commence.',
+    );
+    expect(normalizeGameLogMessage('Lila lance le de : "4".')).toBe(
+      'Lila lance le dé: "4".',
+    );
+    expect(normalizeGameLogMessage('Lancez le de : "5".')).toBe(
+      'Lancez le dé: "5".',
+    );
+  });
+
   it('returns empty string for empty input', () => {
     expect(normalizeGameLogMessage('   \n\t')).toBe('');
   });

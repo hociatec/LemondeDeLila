@@ -48,6 +48,11 @@ function samePlayerId(a: unknown, b: unknown): boolean {
   return Number.isFinite(left) && Number.isFinite(right) && left === right;
 }
 
+function toPlayerId(value: unknown): number | null {
+  const id = Number(value);
+  return Number.isFinite(id) ? id : null;
+}
+
 export function canPlayPattes(
   meta: CatPattesMetadata,
   playerId: number,
@@ -119,15 +124,15 @@ export function getAvailableActions(
   if (!samePlayerId(current, playerId)) return [];
 
   const meta = getMeta(state);
-  if (meta.drawnPlayerId !== playerId) {
+  if (!samePlayerId(meta.drawnPlayerId, playerId)) {
     return [{ type: 'draw', payload: {} }];
   }
 
   const hand = Array.isArray(meta.hands?.[playerId]) ? [...meta.hands[playerId]] : [];
   const actions: GameSingleActionDto[] = [];
   const opponents = (Array.isArray(state.players) ? state.players : [])
-    .filter((p) => p?.id != null && p.id !== playerId)
-    .map((p) => p!.id);
+    .map((p) => toPlayerId(p?.id))
+    .filter((id): id is number => id != null && !samePlayerId(id, playerId));
 
   for (const cardId of hand) {
     const definition = CAT_PATTES_CARD_BY_ID[cardId];
@@ -155,6 +160,10 @@ export function getAvailableActions(
       type: 'discard_card',
       payload: { cardId },
     });
+  }
+
+  if (actions.length === 0) {
+    return [{ type: 'pass', payload: {} }];
   }
 
   return actions;
@@ -212,7 +221,7 @@ export function validateAction(
   }
 
   const meta = getMeta(state);
-  if (meta.drawnPlayerId !== actorId) {
+  if (!samePlayerId(meta.drawnPlayerId, actorId)) {
     if (type !== 'draw') {
       throw new Error("Vous devez d'abord piocher.");
     }
@@ -257,7 +266,7 @@ export function validateAction(
       throw new Error("Impossible de s'infliger son propre obstacle.");
     }
     const targetHand = Array.isArray(state.players) ? state.players : [];
-    const exists = targetHand.some((p) => p?.id === targetId);
+    const exists = targetHand.some((p) => samePlayerId(p?.id, targetId));
     if (!exists) {
       throw new Error('Joueur cible invalide.');
     }
@@ -268,6 +277,3 @@ export function validateAction(
 
   return { type: 'play_card', payload: { ...payload, cardId } };
 }
-
-
-

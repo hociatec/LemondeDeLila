@@ -56,12 +56,20 @@ describe('Mojibake utilities', () => {
     it('should handle mixed content', () => {
       const input = 'Normal text with Ã© mojibake';
       const result = fixMojibakeString(input);
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
+      expect(result).toContain('é');
+      expect(result.includes('Ã')).toBe(false);
     });
 
     it('should handle empty string', () => {
       expect(fixMojibakeString('')).toBe('');
+    });
+
+    it('repairs mixed clean + mojibake text without damaging clean accents', () => {
+      const input =
+        'Lancez le dé maintenant. BloquÃ©: lancez un 5 ou un 6 pour vous libÃ©rer.';
+      expect(fixMojibakeString(input)).toBe(
+        'Lancez le dé maintenant. Bloqué: lancez un 5 ou un 6 pour vous libérer.',
+      );
     });
   });
 

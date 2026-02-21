@@ -82,7 +82,7 @@ export class AventureSauvageActionService {
 
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} lance le de : "${roll}".`,
+      `${resolvePlayerNameFromState(next, currentId)} lance le dé : "${roll}".`,
     );
 
     const currentPos = meta.positions?.[currentId] ?? 0;
@@ -243,7 +243,7 @@ export class AventureSauvageActionService {
       turn: { ...(next.turn ?? { direction: 1 }), currentPlayerId: resolvedStarterId, direction: 1 },
     };
     const starterName = resolvePlayerNameFromState(started, resolvedStarterId ?? players[0]?.id ?? 0);
-    let withLogs = this.core.appendLog(started, `Debut de partie : ${starterName} commence.`);
+    let withLogs = this.core.appendLog(started, `Début de partie : ${starterName} commence.`);
     withLogs = this.appendTurnAnnouncement(withLogs, resolvedStarterId);
     return withLogs;
   }
@@ -773,7 +773,6 @@ function defaultPatteDeck(): AventureSauvageCard[] {
   ];
   return deck;
 }
-
 
 
 

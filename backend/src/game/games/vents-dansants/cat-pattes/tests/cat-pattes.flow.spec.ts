@@ -219,6 +219,86 @@ describe('CatPattes flow', () => {
     expect(state.turn?.currentPlayerId).toBe(2);
   });
 
+  it('does not block the game when a player draws with an empty deck and empty hand', async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        GameCoreService,
+        RandomService,
+        SetupFlowService,
+        DeckPoliciesService,
+        CatPattesSetupService,
+        {
+          provide: 'TurnFlowService',
+          useValue: {
+            advanceTurn: (state: any) => {
+              const players = Array.isArray(state.players) ? state.players : [];
+              const currentId = state.turn?.currentPlayerId ?? null;
+              const idx = players.findIndex((p: any) => p?.id === currentId);
+              const nextIdx = idx >= 0 ? (idx + 1) % players.length : 0;
+              return {
+                ...state,
+                turnIndex: nextIdx,
+                turn: {
+                  ...(state.turn ?? { direction: 1 }),
+                  currentPlayerId: players[nextIdx]?.id ?? currentId,
+                  direction: 1,
+                },
+              };
+            },
+          },
+        },
+        {
+          provide: CatPattesActionService,
+          useFactory: (
+            core: GameCoreService,
+            turns: any,
+            setupFlow: SetupFlowService,
+            deckPolicies: DeckPoliciesService,
+            random: RandomService,
+          ) => new CatPattesActionService(core, turns, setupFlow, deckPolicies, random),
+          inject: [GameCoreService, 'TurnFlowService', SetupFlowService, DeckPoliciesService, RandomService],
+        },
+      ],
+    }).compile();
+
+    const setup = moduleRef.get(CatPattesSetupService);
+    const actionsService = moduleRef.get(CatPattesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    state = actionsService.applyActions(state, [
+      { type: 'choose_pawn', payload: { pawnId: 'Maine Coon' } } as any,
+      { type: 'choose_pawn', payload: { pawnId: 'Siamois' } } as any,
+    ]);
+
+    const meta: any = { ...(state.metadata ?? {}) };
+    meta.deck = [];
+    meta.discard = [];
+    meta.hands = { ...(meta.hands ?? {}), 1: [] };
+    meta.drawnPlayerId = null;
+    state = {
+      ...state,
+      metadata: meta,
+      turn: { ...(state.turn ?? { direction: 1 }), currentPlayerId: 1, direction: 1 },
+      turnIndex: 0,
+    };
+
+    const actionsBefore = Rulebook.getAvailableActions(state as any, 1);
+    expect(actionsBefore).toEqual([{ type: 'draw', payload: {} }]);
+    const actionsWhenDrawn = Rulebook.getAvailableActions(
+      { ...state, metadata: { ...(state.metadata as any), drawnPlayerId: 1 } } as any,
+      1,
+    );
+    expect(actionsWhenDrawn).toEqual([{ type: 'pass', payload: {} }]);
+
+    state = actionsService.applyActions(state, [{ type: 'draw', payload: {} } as any]);
+    expect((state.metadata as any)?.drawnPlayerId ?? null).toBeNull();
+    expect(state.turn?.currentPlayerId).toBe(2);
+
+    const messages = (state.log ?? []).map((e: any) => String(e?.message ?? ''));
+    expect(messages.some((m) => /ne peut plus piocher/i.test(m))).toBe(true);
+    expect(messages.some((m) => /passe son tour/i.test(m))).toBe(true);
+  });
+
   it('exposes choose_pawn pending choices to the current user', async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -244,5 +324,63 @@ describe('CatPattes flow', () => {
     expect(actions.length).toBeGreaterThan(0);
     expect(actions.every((a: any) => String(a?.type ?? '') === 'choose_pawn')).toBe(true);
   });
-});
 
+  it('keeps the turn actionable after draw when player ids are serialized as strings', async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        GameCoreService,
+        RandomService,
+        SetupFlowService,
+        DeckPoliciesService,
+        CatPattesSetupService,
+        {
+          provide: 'TurnFlowService',
+          useValue: {
+            advanceTurn: (state: any) => state,
+          },
+        },
+        {
+          provide: CatPattesActionService,
+          useFactory: (
+            core: GameCoreService,
+            turns: any,
+            setupFlow: SetupFlowService,
+            deckPolicies: DeckPoliciesService,
+            random: RandomService,
+          ) => new CatPattesActionService(core, turns, setupFlow, deckPolicies, random),
+          inject: [GameCoreService, 'TurnFlowService', SetupFlowService, DeckPoliciesService, RandomService],
+        },
+      ],
+    }).compile();
+
+    const setup = moduleRef.get(CatPattesSetupService);
+    const actionsService = moduleRef.get(CatPattesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    state = actionsService.applyActions(state, [
+      { type: 'choose_pawn', payload: { pawnId: 'Maine Coon' } } as any,
+      { type: 'choose_pawn', payload: { pawnId: 'Siamois' } } as any,
+    ]);
+
+    state = {
+      ...state,
+      turn: {
+        ...(state.turn ?? { direction: 1 }),
+        currentPlayerId: '1' as any,
+        direction: 1,
+      },
+      metadata: {
+        ...(state.metadata as any),
+        drawnPlayerId: null,
+      },
+    };
+
+    state = actionsService.applyActions(state, [{ type: 'draw', payload: {} } as any]);
+    expect(Number((state.metadata as any)?.drawnPlayerId ?? 0)).toBe(1);
+
+    const available = Rulebook.getAvailableActions(state as any, 1);
+    const actionTypes = available.map((a: any) => String(a?.type ?? '').toLowerCase());
+    expect(actionTypes).not.toContain('draw');
+    expect(actionTypes.some((t: string) => t === 'play_card' || t === 'discard_card' || t === 'pass')).toBe(true);
+  });
+});

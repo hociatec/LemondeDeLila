@@ -17,6 +17,8 @@ import {
 export class AdminClientUpdatesWsHandler {
   private scheduledTimer: NodeJS.Timeout | null = null;
   private scheduledAtMs: number | null = null;
+  private warningTimer: NodeJS.Timeout | null = null;
+  private warningAtMs: number | null = null;
 
   constructor(
     private readonly validator: PayloadValidationService,
@@ -164,35 +166,80 @@ export class AdminClientUpdatesWsHandler {
     const scheduledAtMs = Date.now() + delayMs;
     this.scheduledAtMs = scheduledAtMs;
 
-    const imminentMessage =
-      typeof dto.message === 'string' && dto.message.trim().length > 0
-        ? dto.message.trim()
-        : `Mise à jour du client planifiée dans ${Math.max(1, Math.round(effectiveDelaySeconds / 60))} minute(s).`;
-
     const ids = await this.userRepo
       .createQueryBuilder('u')
       .select(['u.id'])
       .getMany();
     const recipients = ids;
 
-    await Promise.all(
-      recipients.map((u) =>
-        this.notifications.notifyUser(u.id, 'client.update.imminent', {
-          message: imminentMessage,
-          etaSeconds: effectiveDelaySeconds,
-          scheduledAt: new Date(scheduledAtMs).toISOString(),
-          requiresAckDialog: true,
-          fromUserId: admin.id,
-          fromUsername: admin.username,
-          timestamp: new Date().toISOString(),
-        }),
-      ),
-    );
+    if (this.warningTimer) {
+      clearTimeout(this.warningTimer);
+      this.warningTimer = null;
+      this.warningAtMs = null;
+    }
+    if (this.scheduledTimer) {
+      clearTimeout(this.scheduledTimer);
+      this.scheduledTimer = null;
+      this.scheduledAtMs = null;
+    }
 
-    this.scheduledTimer = setTimeout(async () => {
+    const warningLeadMs = 5 * 60 * 1000;
+    const warningDelayMs = Math.max(0, delayMs - warningLeadMs);
+    this.warningAtMs = scheduledAtMs;
+
+    const imminentMessageBase =
+      typeof dto.message === 'string' && dto.message.trim().length > 0
+        ? dto.message.trim()
+        : null;
+    const defaultImminentMessage =
+      delayMs >= warningLeadMs
+        ? 'Mise à jour imminante dans cinq minutes.'
+        : `Mise à jour imminante dans ${Math.max(
+            1,
+            Math.round(delayMs / 60_000),
+          )} minute(s).`;
+    const imminentMessage = imminentMessageBase ?? defaultImminentMessage;
+    const fromUserId = admin.id;
+    const fromUsername = admin.username;
+
+    const sendImminentNotification = async () => {
+      if (this.warningAtMs !== scheduledAtMs) return;
+      this.warningTimer = null;
+      this.warningAtMs = null;
       try {
-        if (this.scheduledAtMs !== scheduledAtMs) return;
+        const now = Date.now();
+        const etaSeconds = Math.max(0, Math.round((scheduledAtMs - now) / 1000));
+        await Promise.all(
+          recipients.map((u) =>
+            this.notifications.notifyUser(u.id, 'client.update.imminent', {
+              message: imminentMessage,
+              etaSeconds,
+              scheduledAt: new Date(scheduledAtMs).toISOString(),
+              requiresAckDialog: true,
+              fromUserId,
+              fromUsername,
+              timestamp: new Date().toISOString(),
+            }),
+          ),
+        );
+      } catch {
+        // ignore
+      }
+    };
 
+    if (warningDelayMs <= 0) {
+      void sendImminentNotification();
+    } else {
+      this.warningTimer = setTimeout(
+        () => void sendImminentNotification(),
+        warningDelayMs,
+      );
+    }
+
+    const sendUpdateAvailable = async () => {
+      if (this.scheduledAtMs !== scheduledAtMs) return;
+      this.scheduledTimer = null;
+      try {
         const latest = await this.clientUpdates.getLatest();
         const url = this.clientUpdates.resolveClientPublicUrl(latest);
         const version = latest?.version?.trim() || null;
@@ -205,8 +252,8 @@ export class AdminClientUpdatesWsHandler {
                 'Une mise à jour du client est disponible et va être installée automatiquement.',
               version,
               url,
-              fromUserId: admin.id,
-              fromUsername: admin.username,
+              fromUserId,
+              fromUsername,
               timestamp: new Date().toISOString(),
             }),
           ),
@@ -214,7 +261,14 @@ export class AdminClientUpdatesWsHandler {
       } catch {
         // ignore
       }
-    }, delayMs);
+      this.notifications.disconnectAll('Mise à jour en cours.');
+      this.scheduledAtMs = null;
+    };
+
+    this.scheduledTimer = setTimeout(
+      () => void sendUpdateAvailable(),
+      delayMs,
+    );
 
     return {
       type: 'admin.client.update.schedule',

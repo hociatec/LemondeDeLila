@@ -365,24 +365,52 @@ export class SocialService {
     if (!sanitized) {
       return [];
     }
-    const rows = await this.users
-      .createQueryBuilder('u')
-      .leftJoin(SocialProfile, 'p', 'p.userId = u.id')
-      .select('u.id', 'id')
-      .addSelect('u.username', 'username')
-      .addSelect('u.avatar', 'avatar')
-      .addSelect("COALESCE(p.visibility, 'public')", 'profileVisibility')
-      .where('LOWER(u.username) LIKE :query', {
+    const buildQuery = (accentInsensitive: boolean) => {
+      const qb = this.users
+        .createQueryBuilder('u')
+        .leftJoin(SocialProfile, 'p', 'p.userId = u.id')
+        .select('u.id', 'id')
+        .addSelect('u.username', 'username')
+        .addSelect('u.avatar', 'avatar')
+        .addSelect("COALESCE(p.visibility, 'public')", 'profileVisibility')
+        .limit(20);
+
+      if (accentInsensitive) {
+        qb.where(
+          'u.username COLLATE utf8mb4_0900_ai_ci LIKE :query COLLATE utf8mb4_0900_ai_ci',
+          {
+            query: `%${sanitized}%`,
+          },
+        )
+          .andWhere('u.id != :userId', { userId })
+          .orderBy('u.username COLLATE utf8mb4_0900_ai_ci', 'ASC')
+          .addOrderBy('u.username', 'ASC')
+          .addOrderBy('u.id', 'ASC');
+        return qb;
+      }
+
+      qb.where('LOWER(u.username) LIKE :query', {
         query: `%${sanitized.toLowerCase()}%`,
-      })
-      .andWhere('u.id != :userId', { userId })
-      .limit(20)
-      .getRawMany<{
-        id: number;
-        username: string;
-        avatar: string | null;
-        profileVisibility: SocialProfileVisibility;
-      }>();
+      }).andWhere('u.id != :userId', { userId });
+      return qb;
+    };
+
+    let rows: Array<{
+      id: number;
+      username: string;
+      avatar: string | null;
+      profileVisibility: SocialProfileVisibility;
+    }> = [];
+
+    try {
+      rows = await buildQuery(true).getRawMany();
+    } catch (error) {
+      const message = String((error as any)?.message ?? '');
+      if (!/collation/i.test(message)) {
+        throw error;
+      }
+      rows = await buildQuery(false).getRawMany();
+    }
 
     return rows.map((row) => ({
       id: row.id,

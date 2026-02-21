@@ -60,6 +60,25 @@ internal sealed class GamePlayAnnouncementRouter
         }
 
         name = name.TrimEnd('.', ',', ';', ':', '!', '?', ')', ']');
+        lowered = name.ToLowerInvariant();
+        if (lowered.EndsWith(" zone de jeu", StringComparison.Ordinal))
+        {
+            name = name.Substring(0, name.Length - " zone de jeu".Length).TrimEnd();
+        }
+        else if (lowered.EndsWith(" zone de jeux", StringComparison.Ordinal))
+        {
+            name = name.Substring(0, name.Length - " zone de jeux".Length).TrimEnd();
+        }
+        else if (lowered.EndsWith(" game zone", StringComparison.Ordinal))
+        {
+            name = name.Substring(0, name.Length - " game zone".Length).TrimEnd();
+        }
+
+        lowered = name.ToLowerInvariant();
+        if (lowered is "zone de jeu" or "zone de jeux" or "game zone")
+        {
+            return null;
+        }
 
         return string.IsNullOrWhiteSpace(name) ? null : name;
     }

@@ -184,7 +184,7 @@ export class CatPattesActionService {
     };
     started = this.core.appendLog(
       started,
-      `DÃ©but de partie : ${resolvePlayerNameFromState(started, resolvedStarterId ?? 0)} commence.`,
+      `Début de partie : ${resolvePlayerNameFromState(started, resolvedStarterId ?? 0)} commence.`,
     );
     return this.getTurnPolicies().appendTurnAnnouncement(
       started,
@@ -198,11 +198,11 @@ export class CatPattesActionService {
     if (status !== 'started') return state;
     if (state.pending) return state;
 
-    const currentId = state.turn?.currentPlayerId ?? null;
+    const currentId = this.toPlayerId(state.turn?.currentPlayerId ?? null);
     if (currentId == null) return state;
 
     const meta = this.getMeta(state);
-    if (meta.drawnPlayerId === currentId) return state;
+    if (this.samePlayerId(meta.drawnPlayerId, currentId)) return state;
 
     const { meta: updatedMeta, cardId } = this.drawForPlayer(meta, currentId);
     let next = this.setMeta(state, { ...updatedMeta, drawnPlayerId: currentId });
@@ -212,31 +212,57 @@ export class CatPattesActionService {
         next,
         `${resolvePlayerNameFromState(next, currentId)} pioche ${CAT_PATTES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
       );
+      return next;
     }
-    return next;
+
+    const remainingHand = Array.isArray(updatedMeta.hands?.[currentId])
+      ? updatedMeta.hands[currentId]
+      : [];
+    if (remainingHand.length > 0) return next;
+
+    next = this.core.appendLog(
+      next,
+      `${resolvePlayerNameFromState(next, currentId)} ne peut plus piocher.`,
+    );
+    next = this.core.appendLog(
+      next,
+      `${resolvePlayerNameFromState(next, currentId)} passe son tour.`,
+    );
+    next = this.clearDrawn(next);
+    return this.turns.advanceTurn(next);
   }
 
   private handleDiscard(
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const currentId = state.turn?.currentPlayerId ?? null;
+    const currentId = this.toPlayerId(state.turn?.currentPlayerId ?? null);
     if (currentId == null) return state;
     const meta = this.getMeta(state);
-    if (meta.drawnPlayerId !== currentId) return state;
+    if (!this.samePlayerId(meta.drawnPlayerId, currentId)) return state;
 
     const payload = (action.payload ?? {}) as CatPattesActionPayload;
     let cardId = String(payload.cardId ?? '').trim();
     const hand = Array.isArray(meta.hands?.[currentId]) ? [...meta.hands[currentId]] : [];
-    if (!cardId) cardId = String(hand[0] ?? '').trim();
-    if (!cardId || !hand.includes(cardId)) return state;
+    if (!cardId) {
+      cardId = String(hand[0] ?? '').trim();
+      if (!cardId) {
+        let next = this.core.appendLog(
+          state,
+          `${resolvePlayerNameFromState(state, currentId)} passe son tour.`,
+        );
+        next = this.clearDrawn(next);
+        return this.turns.advanceTurn(next);
+      }
+    }
+    if (!hand.includes(cardId)) return state;
 
     let updatedMeta = this.removeCardFromHand(meta, currentId, cardId);
     updatedMeta = this.addCardToDiscard(updatedMeta, cardId);
     let next = this.setMeta(state, updatedMeta);
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} dÃ©fausse ${CAT_PATTES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
+      `${resolvePlayerNameFromState(next, currentId)} défausse ${CAT_PATTES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
     );
     next = this.clearDrawn(next);
     return this.turns.advanceTurn(next);
@@ -246,7 +272,7 @@ export class CatPattesActionService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const currentId = state.turn?.currentPlayerId ?? null;
+    const currentId = this.toPlayerId(state.turn?.currentPlayerId ?? null);
     if (currentId == null) return state;
 
     const payload = (action.payload ?? {}) as CatPattesActionPayload;
@@ -257,7 +283,7 @@ export class CatPattesActionService {
     if (!definition) return state;
 
     let meta = this.getMeta(state);
-    if (meta.drawnPlayerId !== currentId) return state;
+    if (!this.samePlayerId(meta.drawnPlayerId, currentId)) return state;
     const hand = Array.isArray(meta.hands?.[currentId]) ? meta.hands[currentId] : [];
     if (!hand.includes(cardId)) return state;
 
@@ -269,8 +295,7 @@ export class CatPattesActionService {
     }
 
     if (definition.type === 'obstacle') {
-      const targetId =
-        typeof payload.targetPlayerId === 'number' ? payload.targetPlayerId : null;
+      const targetId = this.toPlayerId(payload.targetPlayerId ?? null);
       if (targetId == null || targetId === currentId) return state;
       if (!playerCanReceiveObstacle(meta, targetId, definition.obstacle!)) return state;
     }
@@ -282,8 +307,7 @@ export class CatPattesActionService {
     if (definition.type === 'pattes') {
       next = this.playPattes(next, currentId, definition);
     } else if (definition.type === 'obstacle') {
-      const targetId =
-        typeof payload.targetPlayerId === 'number' ? payload.targetPlayerId : null;
+      const targetId = this.toPlayerId(payload.targetPlayerId ?? null);
       if (targetId != null) {
         next = this.playObstacle(next, currentId, targetId, definition);
       }
@@ -392,7 +416,7 @@ export class CatPattesActionService {
     let next = this.setMeta(state, { ...meta, obstacles });
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} inflige ${card.name} Ã  ${resolvePlayerNameFromState(next, targetId)}.`,
+      `${resolvePlayerNameFromState(next, playerId)} inflige ${card.name} à ${resolvePlayerNameFromState(next, targetId)}.`,
     );
     return next;
   }
@@ -589,10 +613,22 @@ export class CatPattesActionService {
     const kind = String(player?.kind ?? player?.type ?? '').trim().toLowerCase();
     return kind === 'bot' || kind === 'ai';
   }
+
+  private toPlayerId(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string') {
+      const parsed = Number(value.trim());
+      if (Number.isFinite(parsed)) return parsed;
+    }
+    return null;
+  }
+
+  private samePlayerId(left: unknown, right: unknown): boolean {
+    const a = this.toPlayerId(left);
+    const b = this.toPlayerId(right);
+    return a != null && b != null && a === b;
+  }
 }
-
-
-
 
 
 

@@ -62,6 +62,34 @@ export class NotificationService implements OnModuleDestroy {
     this.dispatchToAllLocal(type, payload);
   }
 
+  disconnectAll(reason?: string) {
+    const payload =
+      typeof reason === 'string' && reason.trim().length > 0
+        ? { reason: reason.trim() }
+        : null;
+    const message =
+      payload != null ? JSON.stringify({ type: 'server.disconnect', payload }) : null;
+
+    for (const [userId, sockets] of Array.from(this.socketsByUserId.entries())) {
+      for (const socket of Array.from(sockets)) {
+        if (socket.readyState === WebSocket.OPEN && message) {
+          try {
+            socket.send(message);
+          } catch {
+            // ignore
+          }
+        }
+        try {
+          socket.close(1000, reason ?? 'maintenance');
+        } catch {
+          // ignore
+        }
+      }
+      sockets.clear();
+      this.socketsByUserId.delete(userId);
+    }
+  }
+
   private handleExternalEvent(event: NotificationEvent) {
     if (event.origin === this.instanceId) {
       return;

@@ -96,6 +96,8 @@ export class GameCoreService {
   appendLog(state: GameStateEntity, message: string): GameStateEntity {
     const normalizedMessage = normalizeGameLogMessage(message);
     if (!normalizedMessage) return state;
+    const lastMessage = state.log?.[state.log.length - 1]?.message ?? '';
+    if (String(lastMessage) === normalizedMessage) return state;
     const entry: GameLogEntry = {
       message: normalizedMessage,
       timestamp: new Date().toISOString(),
