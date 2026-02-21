@@ -60,7 +60,9 @@ describe('FouleesFantastiques scenario', () => {
       },
     };
 
-    const next: any = service.applyActions(state, [{ type: 'roll', payload: {} } as any]);
+    const next: any = service.applyActions(state, [
+      { type: 'roll', payload: {} } as any,
+    ]);
     expect(next.pending?.type).toBe('choose_family');
     const messages = (next.log ?? []).map((x: any) => String(x?.message ?? ''));
     expect(messages).toContain("Lilas doit choisir une famille d'animaux.");
@@ -92,7 +94,10 @@ describe('FouleesFantastiques scenario', () => {
         type: 'choose_family',
         playerId: 1,
         blocking: true,
-        choices: ['Famille des Equides (ecurie)', 'Famille des Primates (primaterie)'],
+        choices: [
+          'Famille des Equides (ecurie)',
+          'Famille des Primates (primaterie)',
+        ],
         data: { familyIds: ['equides', 'primates'] },
       },
       metadata: {
@@ -109,7 +114,9 @@ describe('FouleesFantastiques scenario', () => {
 
     const messages = (next.log ?? []).map((x: any) => String(x?.message ?? ''));
     expect(messages).toContain("Clover doit choisir une famille d'animaux.");
-    expect(messages).toContain('Clover choisit la famille des Equides (ecurie).');
+    expect(messages).toContain(
+      'Clover choisit la famille des Equides (ecurie).',
+    );
   });
 
   it('announces next player after ending a turn without moves', () => {
@@ -158,7 +165,9 @@ describe('FouleesFantastiques scenario', () => {
       },
     };
 
-    const next: any = service.applyActions(state, [{ type: 'roll', payload: {} } as any]);
+    const next: any = service.applyActions(state, [
+      { type: 'roll', payload: {} } as any,
+    ]);
     expect(next.turn?.currentPlayerId).toBe(2);
     const messages = (next.log ?? []).map((x: any) => String(x?.message ?? ''));
     expect(messages).toContain("C'est au tour de Bucky.");

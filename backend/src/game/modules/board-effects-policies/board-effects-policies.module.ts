@@ -6,4 +6,3 @@ import { BoardEffectsPoliciesService } from './services/board-effects-policies.s
   exports: [BoardEffectsPoliciesService],
 })
 export class BoardEffectsPoliciesModule {}
-

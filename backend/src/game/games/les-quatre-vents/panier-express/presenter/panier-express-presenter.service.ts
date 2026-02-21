@@ -9,10 +9,7 @@ import type {
 } from '../../../../engine/dto/game-action.dto';
 import type { QuizQuestion } from '../../../../modules/quiz/services/quiz-runner.service';
 import { sanitizeText } from '../../../../../common/utils/sanitize-text';
-import type {
-  PanierExpressMetadata,
-  PanierExpressTile,
-} from '../model/panier-express-state.entity';
+import type { PanierExpressMetadata } from '../model/panier-express-state.entity';
 import { PanierExpressUtils } from '../model/panier-express-utils.service';
 import { PANIER_EXPRESS_PHASES } from '../definitions/rules.definition';
 import { PANIER_EXPRESS_VICTORY } from '../definitions/victory.definition';
@@ -37,6 +34,16 @@ type PanierExpressPlayerSummary = Pick<
 type PendingQuizPayload = {
   question: string;
   choices: string[];
+};
+
+type PanierPlayerLike = {
+  id: number;
+  username?: string;
+  isBot?: boolean;
+  pawn?: string;
+  shoppingList?: unknown;
+  basket?: unknown;
+  inventory?: unknown;
 };
 
 @Injectable()
@@ -65,7 +72,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
     this.pendingQuizRef = pendingQuiz;
     this.rawPendingRef = rawPending;
 
-    const meta = this.getMetadata(state) as PanierExpressMetadata;
+    const meta = this.getPanierMeta(state);
     const currentId = params.currentId ?? null;
 
     // IMPORTANT:
@@ -84,7 +91,11 @@ export class PanierExpressPresenterService extends BasePresenterService {
       pending,
       extras,
       board: {
-        ...this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions, meta.laps),
+        ...this.boardPayload.buildTilesPositionsLaps(
+          meta.tiles,
+          meta.positions,
+          meta.laps,
+        ),
         turns: this.buildBoardTurns(state, meta),
       },
     } as GameStateWithActions;
@@ -94,7 +105,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
   // Méthodes de template (implémentation de BasePresenterService)
   // ============================================================================
 
-  protected buildCatalog(): { phases: string[]; victory: any } {
+  protected buildCatalog(): { phases: string[]; victory: unknown } {
     return {
       phases: PANIER_EXPRESS_PHASES.map((p) => p.id),
       victory: PANIER_EXPRESS_VICTORY,
@@ -102,10 +113,10 @@ export class PanierExpressPresenterService extends BasePresenterService {
   }
 
   protected buildPendingState(
-    state: GameStateEntity,
-    metadata: PanierExpressMetadata,
+    _state: GameStateEntity,
+    _metadata: PanierExpressMetadata,
     currentPlayerId: number | null,
-  ): any {
+  ): PendingState | null {
     return this.buildPendingView({
       rawPending: this.rawPendingRef,
       pendingQuiz: this.pendingQuizRef,
@@ -119,7 +130,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
     currentPlayerId: number | null,
   ): Record<string, unknown> {
     const playerViews = this.buildPlayerViews(state);
-    const reveal = metadata?.statuses?.revealInventory ?? {};
+    const reveal = toNumberMap(metadata?.statuses?.revealInventory);
 
     // Ne jamais exposer les listes/panier/inventaire des autres joueurs.
     const sanitizedViews: PanierExpressPlayerView[] =
@@ -131,14 +142,14 @@ export class PanierExpressPresenterService extends BasePresenterService {
                   ...v,
                   shoppingList: v.shoppingList,
                   basket: [],
-                  inventory: (reveal as any)?.[v.id] > 0 ? v.inventory : [],
+                  inventory: reveal[v.id] > 0 ? v.inventory : [],
                 },
           )
         : playerViews.map((v) => ({
             ...v,
             shoppingList: v.shoppingList,
             basket: [],
-            inventory: (reveal as any)?.[v.id] > 0 ? v.inventory : [],
+            inventory: reveal[v.id] > 0 ? v.inventory : [],
           }));
 
     const players = sanitizedViews.map(
@@ -196,46 +207,41 @@ export class PanierExpressPresenterService extends BasePresenterService {
       };
     }
     if (params.rawPending && params.rawPending.type === 'exchange') {
-      const exchangePending = params.rawPending as any;
+      const exchangePending = asRecord(params.rawPending);
+      const exchangePlayerId = toNumber(exchangePending.playerId);
       if (
         typeof params.currentId === 'number' &&
-        typeof exchangePending.playerId === 'number' &&
-        exchangePending.playerId !== params.currentId
+        exchangePlayerId != null &&
+        exchangePlayerId !== params.currentId
       ) {
         return null;
       }
-      if (exchangePending.step === 'choose_target') {
-        const targets = Array.isArray(exchangePending.targets)
-          ? exchangePending.targets
-          : [];
+      if (toText(exchangePending.step) === 'choose_target') {
+        const targets = toExchangeTargetArray(exchangePending.targets);
         const choices = targets
-          .map((t: any) => sanitizeText(String(t?.targetUsername ?? '')))
-          .filter((c: string) => c.length > 0);
+          .map((t) => sanitizeText(t.targetUsername))
+          .filter((c) => c.length > 0);
         return {
           type: 'exchange',
-          playerId: exchangePending.playerId,
+          playerId: exchangePlayerId,
           blocking: true,
           question: "Choisir un joueur pour l'échange.",
           choices,
           data: { step: 'choose_target', targets },
-        } as any;
+        };
       }
-      if (exchangePending.step === 'choose_give') {
-        const giveChoices = Array.isArray(exchangePending.giveChoices)
-          ? exchangePending.giveChoices
-          : [];
+      if (toText(exchangePending.step) === 'choose_give') {
+        const giveChoices = toUnknownArray(exchangePending.giveChoices);
         const choices = giveChoices
-          .map((c: any) =>
-            this.utils.formatCourseLabel(sanitizeText(String(c))),
-          )
-          .filter((c: string) => c.length > 0);
+          .map((c) => this.utils.formatCourseLabel(sanitizeText(toText(c))))
+          .filter((c) => c.length > 0);
         const targetUsername = sanitizeText(
-          String(exchangePending.targetUsername ?? ''),
+          toText(exchangePending.targetUsername),
         );
         return {
           type: 'exchange',
-          playerId: exchangePending.playerId,
-          targetPlayerId: exchangePending.targetPlayerId,
+          playerId: exchangePlayerId,
+          targetPlayerId: toNumber(exchangePending.targetPlayerId),
           blocking: true,
           question: targetUsername
             ? `Choisir une carte à donner à ${targetUsername}.`
@@ -243,22 +249,22 @@ export class PanierExpressPresenterService extends BasePresenterService {
           choices,
           data: {
             step: 'choose_give',
-            targetPlayerId: exchangePending.targetPlayerId ?? null,
-            targetUsername: exchangePending.targetUsername ?? null,
+            targetPlayerId: toNumber(exchangePending.targetPlayerId),
+            targetUsername: toText(exchangePending.targetUsername) || null,
           },
-        } as any;
+        };
       }
-      if (exchangePending.step === 'confirm') {
+      if (toText(exchangePending.step) === 'confirm') {
         const initiator = sanitizeText(
-          String(exchangePending.initiatorUsername ?? ''),
+          toText(exchangePending.initiatorUsername),
         );
         const give = this.utils.formatCourseLabel(
-          sanitizeText(String(exchangePending.give ?? '')),
+          sanitizeText(toText(exchangePending.give)),
         );
         const take =
           exchangePending.take != null
             ? this.utils.formatCourseLabel(
-                sanitizeText(String(exchangePending.take)),
+                sanitizeText(toText(exchangePending.take)),
               )
             : '';
         const question = take
@@ -266,12 +272,12 @@ export class PanierExpressPresenterService extends BasePresenterService {
           : `${initiator} vous propose un échange : il vous donne "${give}". (A = accepter, R = refuser)`;
         return {
           type: 'exchange',
-          playerId: exchangePending.playerId,
+          playerId: exchangePlayerId,
           blocking: true,
           question,
           choices: ['Accepter', 'Refuser'],
           data: { step: 'confirm' },
-        } as any;
+        };
       }
     }
     if (
@@ -279,20 +285,18 @@ export class PanierExpressPresenterService extends BasePresenterService {
       params.rawPending.type &&
       params.rawPending.type !== 'quiz'
     ) {
-      const anyPending = params.rawPending as any;
-      const rawChoices = Array.isArray(anyPending.choices)
-        ? anyPending.choices
+      const pendingRecord = asRecord(params.rawPending);
+      const rawChoices = Array.isArray(pendingRecord.choices)
+        ? pendingRecord.choices
         : null;
       if (!rawChoices) {
         return params.rawPending;
       }
       return {
-        ...anyPending,
+        ...params.rawPending,
         choices: rawChoices
-          .map((c: any) =>
-            this.utils.formatCourseLabel(sanitizeText(String(c))),
-          )
-          .filter((c: string) => c.length > 0),
+          .map((c) => this.utils.formatCourseLabel(sanitizeText(toText(c))))
+          .filter((c) => c.length > 0),
       };
     }
     return null;
@@ -324,19 +328,17 @@ export class PanierExpressPresenterService extends BasePresenterService {
 
   private buildPlayerViews(state: GameStateEntity): PanierExpressPlayerView[] {
     return (state.players ?? [])
-      .map((p) => this.buildPlayerView(p.id, p))
+      .map((p) => toPanierPlayerLike(p))
+      .filter((p): p is PanierPlayerLike => p != null)
+      .map((p) => this.buildPlayerView(p))
       .filter((view): view is PanierExpressPlayerView => Boolean(view));
   }
 
-  private buildPlayerView(
-    playerId: number,
-    player: any,
-  ): PanierExpressPlayerView | null {
-    if (!player || player.id !== playerId) return null;
+  private buildPlayerView(player: PanierPlayerLike): PanierExpressPlayerView {
     return {
       id: player.id,
       username: typeof player.username === 'string' ? player.username : null,
-      isBot: player?.isBot === true,
+      isBot: player.isBot === true,
       pawn: typeof player.pawn === 'string' ? player.pawn : null,
       shoppingList: this.utils.formatCourseLabels(
         this.toStringArray(player.shoppingList),
@@ -379,7 +381,10 @@ export class PanierExpressPresenterService extends BasePresenterService {
     };
 
     const shoppingAllMessage = () => {
-      if (!Array.isArray(params.playerViews) || params.playerViews.length === 0) {
+      if (
+        !Array.isArray(params.playerViews) ||
+        params.playerViews.length === 0
+      ) {
         return 'Listes de courses: (aucun joueur).';
       }
 
@@ -406,7 +411,10 @@ export class PanierExpressPresenterService extends BasePresenterService {
     const inventoryAllMessage = () => {
       const currentId =
         typeof params.currentId === 'number' ? params.currentId : null;
-      if (!Array.isArray(params.playerViews) || params.playerViews.length === 0) {
+      if (
+        !Array.isArray(params.playerViews) ||
+        params.playerViews.length === 0
+      ) {
         return 'Inventaires: (aucun joueur).';
       }
 
@@ -418,8 +426,8 @@ export class PanierExpressPresenterService extends BasePresenterService {
             : `Joueur ${p.id}`;
         const canSee =
           currentId != null
-            ? p.id === currentId || (params.revealInventory as any)?.[p.id] > 0
-            : (params.revealInventory as any)?.[p.id] > 0;
+            ? p.id === currentId || params.revealInventory[p.id] > 0
+            : params.revealInventory[p.id] > 0;
 
         if (!canSee) {
           return `${name} : inventaire (caché)`;
@@ -454,13 +462,14 @@ export class PanierExpressPresenterService extends BasePresenterService {
         const list = Array.isArray(p.shoppingList) ? p.shoppingList : [];
         const basket = Array.isArray(p.basket) ? p.basket : [];
         const total = list.length;
-        const done = total > 0 ? basket.filter((item) => list.includes(item)).length : 0;
+        const done =
+          total > 0 ? basket.filter((item) => list.includes(item)).length : 0;
         return `${name} : ${done}/${total}`;
       });
       return lines.join('\n');
     };
 
-    const meta = this.getMetadata(state) as PanierExpressMetadata;
+    const meta = this.getPanierMeta(state);
     const positionMessage = this.buildPositionPanelMessage(
       meta,
       params.playerViews,
@@ -563,17 +572,13 @@ export class PanierExpressPresenterService extends BasePresenterService {
 
   private toStringArray(value: unknown): string[] {
     if (Array.isArray(value)) {
-      return value
-        .map((v) => (v == null ? '' : String(v)))
-        .filter((v) => v.length > 0);
+      return value.map((v) => toText(v)).filter((v) => v.length > 0);
     }
     if (typeof value === 'string') {
       try {
-        const parsed = JSON.parse(value);
+        const parsed: unknown = JSON.parse(value);
         if (Array.isArray(parsed)) {
-          return parsed
-            .map((v) => (v == null ? '' : String(v)))
-            .filter((v) => v.length > 0);
+          return parsed.map((v) => toText(v)).filter((v) => v.length > 0);
         }
       } catch {
         /* ignore */
@@ -585,4 +590,72 @@ export class PanierExpressPresenterService extends BasePresenterService {
     }
     return [];
   }
+
+  private getPanierMeta(state: GameStateEntity): PanierExpressMetadata {
+    return (this.getMetadata(state) ?? {}) as PanierExpressMetadata;
+  }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  if (value == null || typeof value !== 'object') return {};
+  return value as Record<string, unknown>;
+}
+
+function toUnknownArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function toNumber(value: unknown): number | null {
+  const parsed = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean')
+    return String(value);
+  return '';
+}
+
+function toNumberMap(value: unknown): Record<number, number> {
+  const source = asRecord(value);
+  const out: Record<number, number> = {};
+  for (const [key, raw] of Object.entries(source)) {
+    const id = toNumber(key);
+    const amount = toNumber(raw);
+    if (id == null || amount == null) continue;
+    out[id] = amount;
+  }
+  return out;
+}
+
+function toExchangeTargetArray(
+  value: unknown,
+): Array<{ targetPlayerId: number; targetUsername: string }> {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => asRecord(item))
+    .map((record) => ({
+      targetPlayerId: toNumber(record.targetPlayerId),
+      targetUsername: sanitizeText(toText(record.targetUsername)),
+    }))
+    .filter(
+      (entry): entry is { targetPlayerId: number; targetUsername: string } =>
+        entry.targetPlayerId != null,
+    );
+}
+
+function toPanierPlayerLike(value: unknown): PanierPlayerLike | null {
+  const record = asRecord(value);
+  const id = toNumber(record.id);
+  if (id == null) return null;
+  return {
+    id,
+    username: typeof record.username === 'string' ? record.username : undefined,
+    isBot: record.isBot === true,
+    pawn: typeof record.pawn === 'string' ? record.pawn : undefined,
+    shoppingList: record.shoppingList,
+    basket: record.basket,
+    inventory: record.inventory,
+  };
 }

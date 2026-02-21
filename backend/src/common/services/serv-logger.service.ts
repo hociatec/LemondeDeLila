@@ -31,37 +31,39 @@ export class ServLoggerService implements LoggerService {
         winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
         winston.format.errors({ stack: true }),
         winston.format.printf(({ timestamp, level, message, ...meta }) => {
-          const ctx = meta?.context ? ` [${meta.context}]` : '';
+          const context =
+            typeof meta.context === 'string' ? meta.context.trim() : '';
+          const ctx = context ? ` [${context}]` : '';
           const rest = { ...meta };
-          delete (rest as any).context;
+          delete rest.context;
           const metaStr =
             rest && Object.keys(rest).length > 0
               ? ` ${JSON.stringify(rest)}`
               : '';
-          return `${timestamp} [${level}]${ctx} ${message}${metaStr}`;
+          return `${String(timestamp)} [${String(level)}]${ctx} ${String(message)}${metaStr}`;
         }),
       ),
       transports,
     });
   }
 
-  log(message: any, context?: string) {
+  log(message: unknown, context?: string) {
     this.logger.info(String(message), { context });
   }
 
-  error(message: any, trace?: string, context?: string) {
+  error(message: unknown, trace?: string, context?: string) {
     this.logger.error(String(message), { context, trace });
   }
 
-  warn(message: any, context?: string) {
+  warn(message: unknown, context?: string) {
     this.logger.warn(String(message), { context });
   }
 
-  debug(message: any, context?: string) {
+  debug(message: unknown, context?: string) {
     this.logger.debug(String(message), { context });
   }
 
-  verbose(message: any, context?: string) {
+  verbose(message: unknown, context?: string) {
     this.logger.verbose(String(message), { context });
   }
 
@@ -83,7 +85,7 @@ export class ServLoggerService implements LoggerService {
       4: 'verbose',
     };
     const level = mapped[max] ?? 'info';
-    (this.logger as any).level = level;
+    this.logger.level = level;
   }
 
   private resolveLevel(): string {

@@ -5,26 +5,20 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as jwt from 'jsonwebtoken';
+import type { Request } from 'express';
+import jsonwebtoken from 'jsonwebtoken';
 import {
   getJwtVerifyAlgorithms,
   requireJwtVerifyKey,
 } from '../auth/jwt-config';
-
-type StrictJwtPayload = jwt.JwtPayload & {
-  id?: number;
-  username?: string;
-  roles?: string[];
-  email?: string;
-};
 
 @Injectable()
 export class HttpJwtGuard implements CanActivate {
   constructor(private readonly config: ConfigService) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest();
-    const token = this.extractBearer(request?.headers);
+    const request = context.switchToHttp().getRequest<RequestWithUser>();
+    const token = this.extractBearer(request.headers);
     const payload = this.verify(token);
     request.user = payload;
     return true;
@@ -50,7 +44,7 @@ export class HttpJwtGuard implements CanActivate {
     return parts[1];
   }
 
-  private verify(token: string): unknown {
+  private verify(token: string): JwtPayloadBase {
     const key = requireJwtVerifyKey(this.config);
     const issuer = this.config.get<string>('JWT_ISSUER', 'le-monde-de-lila');
     const audienceRaw = this.config.get<string>('JWT_AUDIENCE');
@@ -63,7 +57,7 @@ export class HttpJwtGuard implements CanActivate {
       10,
     );
     try {
-      const verifyOptions: jwt.VerifyOptions = {
+      const verifyOptions: JwtVerifyOptions = {
         algorithms: getJwtVerifyAlgorithms(this.config),
         issuer,
         clockTolerance,
@@ -72,22 +66,46 @@ export class HttpJwtGuard implements CanActivate {
         verifyOptions.audience = audience;
       }
 
-      const payload = jwt.verify(token, key, verifyOptions);
+      const payload = jwtVerify(token, key, verifyOptions);
 
       if (!payload || typeof payload !== 'object') {
         throw new UnauthorizedException('Token invalide');
       }
+      const typedPayload = payload as Partial<JwtPayloadBase>;
       if (
-        typeof payload.sub !== 'string' ||
-        !payload.sub.trim() ||
-        typeof payload.exp !== 'number' ||
-        typeof payload.iat !== 'number'
+        typeof typedPayload.sub !== 'string' ||
+        !typedPayload.sub.trim() ||
+        typeof typedPayload.exp !== 'number' ||
+        typeof typedPayload.iat !== 'number'
       ) {
         throw new UnauthorizedException('Token invalide');
       }
-      return payload;
+      return typedPayload as JwtPayloadBase;
     } catch {
       throw new UnauthorizedException('Token invalide');
     }
   }
 }
+
+type JwtPayloadBase = {
+  sub: string;
+  exp: number;
+  iat: number;
+};
+
+type JwtVerifyOptions = {
+  algorithms?: string[];
+  issuer?: string;
+  audience?: string;
+  clockTolerance?: number;
+};
+
+type JwtVerifier = (
+  token: string,
+  key: string | Buffer,
+  options: JwtVerifyOptions,
+) => unknown;
+
+const jwtVerify = (jsonwebtoken as unknown as { verify: JwtVerifier }).verify;
+
+type RequestWithUser = Request & { user?: JwtPayloadBase };

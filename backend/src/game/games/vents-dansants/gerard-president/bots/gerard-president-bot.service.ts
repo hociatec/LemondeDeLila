@@ -45,7 +45,11 @@ export class GerardPresidentBotService {
       }
     }
 
-    return this.botRunner.choose(actions, { state, playerId: botPlayerId }, 'random');
+    return this.botRunner.choose(
+      actions,
+      { state, playerId: botPlayerId },
+      'random',
+    );
   }
 
   private tryPlaySpecial(

@@ -27,7 +27,17 @@ export const createLamaServiceForTest = (): { service: LamaService } => {
   const quit = new LamaQuitService(shared, round, logger);
   const ret = new LamaReturnService(shared, round, logger);
   const info = new LamaInfoService(shared, logger);
-  const actions = new LamaActionService(shared, draw, pass, play, quit, ret, info, setup, logger);
+  const actions = new LamaActionService(
+    shared,
+    draw,
+    pass,
+    play,
+    quit,
+    ret,
+    info,
+    setup,
+    logger,
+  );
   const bots = new LamaBotService(shared);
   const shortcuts = new LamaShortcutsService(shared);
   const presenter = new LamaPresenter();

@@ -19,8 +19,7 @@ import * as Rulebook from './rulebook/rulebook';
 import { buildPiratesEnVadrouilleShortcuts } from './shortcuts/pirates-en-vadrouille.shortcuts';
 
 @Injectable()
-export class PiratesEnVadrouilleService extends AbstractGameService
-{
+export class PiratesEnVadrouilleService extends AbstractGameService {
   readonly gameType = 'pirates-en-vadrouille';
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'LesQuatreVents';

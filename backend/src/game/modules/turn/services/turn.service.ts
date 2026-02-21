@@ -62,10 +62,10 @@ export class TurnService {
         const remainingAfter = remaining - 1;
         updatedSkip[pid] = remainingAfter;
         skipped.push({ id: pid, remainingBefore: remaining, remainingAfter });
-      attempts += 1;
-      continue;
-    }
-    break;
+        attempts += 1;
+        continue;
+      }
+      break;
     } while (attempts < maxAttempts);
 
     return {

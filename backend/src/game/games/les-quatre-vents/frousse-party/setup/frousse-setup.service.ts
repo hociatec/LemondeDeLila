@@ -29,7 +29,7 @@ export class FrousseSetupService {
     const positions: Record<number, number> = {};
     for (const p of players) positions[p.id] = 0;
 
-    const seedMeta = (base.metadata ?? {}) as any;
+    const seedMeta = asRecord(base.metadata);
     const shuffled = this.random.shuffle(seedMeta, cards.cards ?? []);
 
     const meta: FrousseMetadata = {
@@ -48,8 +48,10 @@ export class FrousseSetupService {
         nextRollIfThreeBackTwo: {},
         blocked: {},
       },
-      decks: { cards: shuffled.values as any, discard: [] },
-      pawns: loadCanonicalPawns(Array.isArray(pawns.pawns) ? pawns.pawns : []).map((pawn) => ({
+      decks: { cards: shuffled.values, discard: [] },
+      pawns: loadCanonicalPawns(
+        Array.isArray(pawns.pawns) ? pawns.pawns : [],
+      ).map((pawn) => ({
         id: pawn.id,
         name: pawn.name,
         description: pawn.description,
@@ -74,20 +76,20 @@ export class FrousseSetupService {
       players,
       startPlayerId: players[0]?.id ?? null,
       isAssigned: (playerId) => {
-        const player = players.find((p: any) => p?.id === playerId);
+        const player = players.find((p) => p?.id === playerId);
         return String(player?.pawn ?? '').trim().length > 0;
       },
       pawns: (Array.isArray(meta.pawns) ? meta.pawns : [])
         .map((p) => ({
-          id: String(p?.id ?? '').trim(),
-          label: String(p?.name ?? p?.id ?? '').trim(),
-          description: String((p as any)?.description ?? '').trim(),
+          id: toText(p?.id),
+          label: toText(p?.name) || toText(p?.id),
+          description: toText(p?.description),
         }))
         .filter((p) => p.id.length > 0),
-      pawnDataMapper: (choice: any) => ({
-          id: String(choice?.id ?? '').trim(),
-          label: String(choice?.label ?? '').trim(),
-          description: String(choice?.description ?? '').trim(),
+      pawnDataMapper: (choice) => ({
+        id: toText(choice.id),
+        label: toText(choice.label),
+        description: toText(choice.description),
       }),
       extraPendingData: { kind: 'choose_pawn' },
     });
@@ -97,7 +99,10 @@ export class FrousseSetupService {
       pending: pendingInfo.pending,
       turnIndex: pendingInfo.turnIndex,
       turn: {
-        ...(base.turn ?? { currentPlayerId: pendingInfo.playerId, direction: 1 }),
+        ...(base.turn ?? {
+          currentPlayerId: pendingInfo.playerId,
+          direction: 1,
+        }),
         currentPlayerId: pendingInfo.playerId,
         direction: base.turn?.direction === -1 ? -1 : 1,
       },
@@ -105,16 +110,45 @@ export class FrousseSetupService {
   }
 
   private loadBoard(): FrousseBoardJsonV1 {
-    return loadV1Content<FrousseBoardJsonV1>(this.contentLoader, { gameType: 'frousse-party', baseDir: __dirname, filename: 'board.json', arrayField: 'tiles', minItems: 1 });
+    return loadV1Content<FrousseBoardJsonV1>(this.contentLoader, {
+      gameType: 'frousse-party',
+      baseDir: __dirname,
+      filename: 'board.json',
+      arrayField: 'tiles',
+      minItems: 1,
+    });
   }
 
   private loadCards(): FrousseCardsJsonV1 {
-    return loadV1Content<FrousseCardsJsonV1>(this.contentLoader, { gameType: 'frousse-party', baseDir: __dirname, filename: 'cards.json', arrayField: 'cards', minItems: 1 });
+    return loadV1Content<FrousseCardsJsonV1>(this.contentLoader, {
+      gameType: 'frousse-party',
+      baseDir: __dirname,
+      filename: 'cards.json',
+      arrayField: 'cards',
+      minItems: 1,
+    });
   }
 
   private loadPawns(): FroussePawnsJsonV1 {
-    return loadV1Content<FroussePawnsJsonV1>(this.contentLoader, { gameType: 'frousse-party', baseDir: __dirname, filename: 'pawns.json', arrayField: 'pawns', minItems: 1 });
+    return loadV1Content<FroussePawnsJsonV1>(this.contentLoader, {
+      gameType: 'frousse-party',
+      baseDir: __dirname,
+      filename: 'pawns.json',
+      arrayField: 'pawns',
+      minItems: 1,
+    });
   }
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
 
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  return '';
+}

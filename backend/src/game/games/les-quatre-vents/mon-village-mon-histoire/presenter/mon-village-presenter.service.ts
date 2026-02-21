@@ -23,6 +23,12 @@ const ZONE_LABELS: Record<number, string> = {
   8: 'Très anciens & universels',
 };
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
 @Injectable()
 export class MonVillagePresenterService {
   constructor(private readonly boardPayload: BoardPayloadService) {}
@@ -42,7 +48,7 @@ export class MonVillagePresenterService {
     );
     const scoreMessage = this.buildScoresMessage(
       players,
-      (meta.collections ?? {}) as Record<number, MonVillageCollection>,
+      meta.collections ?? {},
     );
 
     return {
@@ -51,10 +57,12 @@ export class MonVillagePresenterService {
         phases: MON_VILLAGE_GAME.phaseOrder.map((p) => p.id),
         victory: null,
       },
-      actions: formatPresenterActions(actions, (action) => action.type === 'roll' ? 'Lancer le dé' : action.type),
+      actions: formatPresenterActions(actions, (action) =>
+        action.type === 'roll' ? 'Lancer le dé' : action.type,
+      ),
       pending: state.pending ?? null,
       extras: {
-        ...(state as any).extras,
+        ...asRecord(state.extras),
         currentPlayerView: {
           id: userId,
           username: me?.username ?? `Joueur ${userId}`,
@@ -88,7 +96,7 @@ export class MonVillagePresenterService {
         meta.tiles,
         meta.positions,
       ),
-    } as any;
+    };
   }
 
   private buildCollectionMessage(
@@ -112,7 +120,9 @@ export class MonVillagePresenterService {
     return lines.join('\n');
   }
 
-  private buildAvailableMessage(decks: Record<number, MonVillageCard[]>): string {
+  private buildAvailableMessage(
+    decks: Record<number, MonVillageCard[]>,
+  ): string {
     const entries = Object.entries(decks ?? {})
       .map(([zoneId, cards]) => ({
         zoneId: Number(zoneId),
@@ -125,7 +135,9 @@ export class MonVillagePresenterService {
       return 'Aucune carte disponible.';
     }
 
-    return entries.map((entry) => `${entry.label} (${entry.count})`).join(' | ');
+    return entries
+      .map((entry) => `${entry.label} (${entry.count})`)
+      .join(' | ');
   }
 
   private buildScoresMessage(

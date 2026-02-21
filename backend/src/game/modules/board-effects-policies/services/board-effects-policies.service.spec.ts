@@ -68,4 +68,3 @@ describe('BoardEffectsPoliciesService', () => {
     expect(landing.logs).toEqual(['Arrivee.']);
   });
 });
-

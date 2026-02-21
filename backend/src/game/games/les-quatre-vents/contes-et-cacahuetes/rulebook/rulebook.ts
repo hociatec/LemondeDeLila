@@ -34,14 +34,14 @@ export function getAvailableActions(
 ): GameSingleActionDto[] {
   if (!isStartedState(state)) return [];
 
-  const pending = state.pending as any;
+  const pending = asPendingRecord(state.pending);
   if (pending) {
-    if (pending.playerId !== playerId) return [];
+    if (Number(pending.playerId) !== playerId) return [];
 
     const drawActions = getPendingDrawActionsForPlayer(pending, playerId);
     if (drawActions.length > 0) return drawActions;
 
-    const type = String(pending.type ?? '').toLowerCase();
+    const type = toText(pending.type).toLowerCase();
     if (type === 'choose_pawn') {
       return getPendingPawnActionsForPlayer(pending, playerId, 'choose_pawn');
     }
@@ -88,9 +88,12 @@ export function getAvailableActions(
     return [];
   }
 
-  const meta: any = state.metadata ?? {};
+  const meta = asRecord(state.metadata);
   const blockedUntilPassed: Record<number, number> =
-    meta?.statuses?.blockedUntilPassed ?? {};
+    (asRecord(asRecord(meta.statuses).blockedUntilPassed) as Record<
+      number,
+      number
+    >) ?? {};
   if (typeof blockedUntilPassed[playerId] === 'number') {
     return [];
   }
@@ -132,14 +135,14 @@ export function validateAction(
       gameType: GAME_TYPE,
     });
 
-  const pending = state.pending as any;
+  const pending = asPendingRecord(state.pending);
   if (pending) {
-    if (pending.playerId !== actorId)
+    if (Number(pending.playerId) !== actorId)
       throw new PlayerActionError('Action réservée à un autre joueur.', {
         gameType: GAME_TYPE,
       });
 
-    const pType = String(pending.type ?? '').toLowerCase();
+    const pType = toText(pending.type).toLowerCase();
     const drawValidation = validatePendingDrawActionForActor({
       pending,
       actorId,
@@ -192,11 +195,17 @@ export function validateAction(
     if (targetValidation.ok) {
       return targetValidation.action;
     }
-    if (pType === 'choose_target' && targetValidation.reason === 'wrong_action_type')
+    if (
+      pType === 'choose_target' &&
+      targetValidation.reason === 'wrong_action_type'
+    )
       throw new PlayerActionError('Action non disponible.', {
         gameType: GAME_TYPE,
       });
-    if (pType === 'choose_target' && targetValidation.reason === 'invalid_target')
+    if (
+      pType === 'choose_target' &&
+      targetValidation.reason === 'invalid_target'
+    )
       throw new GameValidationError('Cible invalide.', {
         gameType: GAME_TYPE,
         action: { type, payload: action.payload ?? null },
@@ -216,7 +225,10 @@ export function validateAction(
         defaultMin: 1,
         defaultMax: 3,
       });
-      if (!numberValidation.ok && numberValidation.reason === 'wrong_action_type')
+      if (
+        !numberValidation.ok &&
+        numberValidation.reason === 'wrong_action_type'
+      )
         throw new PlayerActionError('Action non disponible.', {
           gameType: GAME_TYPE,
         });
@@ -239,7 +251,10 @@ export function validateAction(
         choicesContainer: 'root',
         choicesKey: 'choices',
       });
-      if (!optionValidation.ok && optionValidation.reason === 'wrong_action_type')
+      if (
+        !optionValidation.ok &&
+        optionValidation.reason === 'wrong_action_type'
+      )
         throw new PlayerActionError('Action non disponible.', {
           gameType: GAME_TYPE,
         });
@@ -279,9 +294,12 @@ export function validateAction(
     });
   }
 
-  const meta: any = state.metadata ?? {};
+  const meta = asRecord(state.metadata);
   const blockedUntilPassed: Record<number, number> =
-    meta?.statuses?.blockedUntilPassed ?? {};
+    (asRecord(asRecord(meta.statuses).blockedUntilPassed) as Record<
+      number,
+      number
+    >) ?? {};
   if (typeof blockedUntilPassed[actorId] === 'number') {
     throw new PlayerActionError(
       'Vous êtes bloqué(e) : attendez qu’un autre joueur vous dépasse.',
@@ -297,5 +315,23 @@ export function validateAction(
   return { type: 'roll', payload: {} };
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
 
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  return '';
+}
 
+function asPendingRecord(value: unknown): {
+  type?: unknown;
+  playerId?: unknown;
+} | null {
+  if (!value || typeof value !== 'object') return null;
+  return value as { type?: unknown; playerId?: unknown };
+}

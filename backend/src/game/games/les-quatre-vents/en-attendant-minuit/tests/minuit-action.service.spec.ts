@@ -1,4 +1,5 @@
-import type { GameStateEntity } from '../../../../../core/entities/game-state.entity';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call */
+import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { MinuitActionService } from '../actions/minuit-action.service';
@@ -19,7 +20,11 @@ describe('MinuitActionService', () => {
         return {
           ...state,
           turnIndex: nextIndex,
-          turn: { ...(state.turn ?? { direction: 1 }), currentPlayerId: players[nextIndex]?.id ?? null, direction: 1 },
+          turn: {
+            ...(state.turn ?? { direction: 1 }),
+            currentPlayerId: players[nextIndex]?.id ?? null,
+            direction: 1,
+          },
         } as GameStateEntity;
       }),
     };
@@ -53,7 +58,11 @@ describe('MinuitActionService', () => {
       metadata: {
         pawnChoices: [
           { id: 'Le Lutin', name: 'Le Lutin', description: '' },
-          { id: 'Le Bonhomme de Neige', name: 'Le Bonhomme de Neige', description: '' },
+          {
+            id: 'Le Bonhomme de Neige',
+            name: 'Le Bonhomme de Neige',
+            description: '',
+          },
         ],
         pawns: {},
       } as any,
@@ -62,7 +71,9 @@ describe('MinuitActionService', () => {
       extras: {},
     } as any;
 
-    const next = service.applyActions(state, [{ type: 'roll', payload: {} } as any]);
+    const next = service.applyActions(state, [
+      { type: 'roll', payload: {} } as any,
+    ]);
     expect(next.pending?.type).toBe('pick_pawn');
     expect(String(next.pending?.label ?? '')).toContain('choisir son pion');
   });
@@ -95,7 +106,13 @@ describe('MinuitActionService', () => {
           { n: 3, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 4, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 5, title: 'Case neutre', type: 'neutral', description: '' },
-          { n: 6, title: 'Case Recule - Neige fondue', type: 'move', delta: -1, description: '' },
+          {
+            n: 6,
+            title: 'Case Recule - Neige fondue',
+            type: 'move',
+            delta: -1,
+            description: '',
+          },
         ],
         decks: { cards: [], discard: [] },
       } as any,
@@ -104,7 +121,9 @@ describe('MinuitActionService', () => {
       extras: {},
     } as any;
 
-    const next = service.applyActions(state, [{ type: 'roll', payload: {} } as any]);
+    const next = service.applyActions(state, [
+      { type: 'roll', payload: {} } as any,
+    ]);
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
     const placement = messages.find((m) => m.includes('Lilas place')) ?? '';
 
@@ -145,7 +164,9 @@ describe('MinuitActionService', () => {
       extras: {},
     } as any;
 
-    const next = service.applyActions(state, [{ type: 'roll', payload: {} } as any]);
+    const next = service.applyActions(state, [
+      { type: 'roll', payload: {} } as any,
+    ]);
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
 
     expect(messages).toContain("C'est au tour de Alf.");
@@ -199,8 +220,12 @@ describe('MinuitActionService', () => {
     ]);
 
     expect(next.pending).toBeNull();
-    expect((next.players ?? []).find((p: any) => p?.id === -1)?.pawn).toBe('Le Lutin');
-    expect((next.players ?? []).find((p: any) => p?.id === -2)?.pawn).toBeTruthy();
+    expect((next.players ?? []).find((p: any) => p?.id === -1)?.pawn).toBe(
+      'Le Lutin',
+    );
+    expect(
+      (next.players ?? []).find((p: any) => p?.id === -2)?.pawn,
+    ).toBeTruthy();
   });
 
   it('does not loop pick_pawn when player ids are serialized as strings', () => {
@@ -326,7 +351,11 @@ describe('MinuitActionService', () => {
         starterRestoredAfterPawnSelection: false,
         pawns: {},
         pawnChoices: [
-          { id: 'fee-des-flocons', name: 'La Fée des Flocons', description: 'Agile' },
+          {
+            id: 'fee-des-flocons',
+            name: 'La Fée des Flocons',
+            description: 'Agile',
+          },
           { id: 'lutin', name: 'Le Lutin', description: 'Rapide' },
         ],
       } as any,
@@ -350,7 +379,11 @@ describe('MinuitActionService', () => {
       { type: 'pick_pawn', payload: { pawnId: 'fee-des-flocons' } } as any,
     ]);
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
-    expect(messages.some((m) => m.includes('Lilas choisit le pion: La Fée des Flocons.'))).toBe(true);
+    expect(
+      messages.some((m) =>
+        m.includes('Lilas choisit le pion: La Fée des Flocons.'),
+      ),
+    ).toBe(true);
     expect(messages.some((m) => m.includes('fee-des-flocons'))).toBe(false);
   });
 
@@ -379,7 +412,11 @@ describe('MinuitActionService', () => {
         starterRestoredAfterPawnSelection: false,
         pawns: {},
         pawnChoices: [
-          { id: 'bonhomme-pain-epices', name: "Le Petit Bonhomme en Pain d'Épices", description: '' },
+          {
+            id: 'bonhomme-pain-epices',
+            name: "Le Petit Bonhomme en Pain d'Épices",
+            description: '',
+          },
           { id: 'lutin', name: 'Le Lutin', description: '' },
         ],
       } as any,
@@ -390,7 +427,10 @@ describe('MinuitActionService', () => {
         choices: ["Le Petit Bonhomme en Pain d'Épices", 'Le Lutin'],
         data: {
           pawns: [
-            { id: 'bonhomme-pain-epices', label: "Le Petit Bonhomme en Pain d'Épices" },
+            {
+              id: 'bonhomme-pain-epices',
+              label: "Le Petit Bonhomme en Pain d'Épices",
+            },
             { id: 'lutin', label: 'Le Lutin' },
           ],
         },
@@ -455,8 +495,12 @@ describe('MinuitActionService', () => {
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
 
     expect(messages.some((m) => m.includes('a choisi la bonne'))).toBe(true);
-    expect(messages.some((m) => m.toLowerCase().includes('repond.'))).toBe(false);
-    expect(messages.some((m) => m.toLowerCase().includes('bonne reponse.'))).toBe(false);
+    expect(messages.some((m) => m.toLowerCase().includes('repond.'))).toBe(
+      false,
+    );
+    expect(
+      messages.some((m) => m.toLowerCase().includes('bonne reponse.')),
+    ).toBe(false);
   });
 
   it('does not duplicate next-card movement log', () => {
@@ -500,14 +544,23 @@ describe('MinuitActionService', () => {
           discard: [],
         },
       } as any,
-      pending: { type: 'draw', playerId: 1, blocking: true, label: 'Piocher.' } as any,
+      pending: {
+        type: 'draw',
+        playerId: 1,
+        blocking: true,
+        label: 'Piocher.',
+      } as any,
       log: [],
       extras: {},
     } as any;
 
-    const next = service.applyActions(state, [{ type: 'draw', payload: {} } as any]);
+    const next = service.applyActions(state, [
+      { type: 'draw', payload: {} } as any,
+    ]);
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
-    const nextCardMentions = messages.filter((m) => /prochaine Carte/i.test(m)).length;
+    const nextCardMentions = messages.filter((m) =>
+      /prochaine Carte/i.test(m),
+    ).length;
 
     expect(nextCardMentions).toBe(1);
   });
@@ -553,9 +606,9 @@ describe('Minuit Rulebook compat', () => {
       { type: 'pick_pawn', payload: { pawnId: 'Le Lutin' } } as any,
       3,
     );
-    expect(normalized).toEqual({ type: 'pick_pawn', payload: { pawnId: 'Le Lutin' } });
+    expect(normalized).toEqual({
+      type: 'pick_pawn',
+      payload: { pawnId: 'Le Lutin' },
+    });
   });
 });
-
-
-

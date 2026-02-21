@@ -42,5 +42,3 @@ describe('SetupFlowService', () => {
     expect(byLabel?.id).toBe('chevre-acrobate');
   });
 });
-
-

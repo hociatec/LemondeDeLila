@@ -15,7 +15,7 @@ import { GaloponsBotService } from './bots/galopons-bot.service';
     GameCoreModule,
     GameRegistryModule,
     EngineServicesModule,
-    ],
+  ],
   providers: [
     GaloponsEnsembleService,
     GaloponsSetupService,

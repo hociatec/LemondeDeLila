@@ -16,7 +16,7 @@ export class JwksController {
 
     const publicKeyPem = requireJwtVerifyKey(this.config);
     const keyObject = createPublicKey(publicKeyPem);
-    const jwk = keyObject.export({ format: 'jwk' }) as any;
+    const jwk = keyObject.export({ format: 'jwk' });
 
     const kid = createHash('sha256')
       .update(publicKeyPem)

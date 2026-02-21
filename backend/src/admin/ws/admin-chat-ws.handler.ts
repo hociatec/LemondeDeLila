@@ -56,7 +56,7 @@ export class AdminChatWsHandler {
     return { type: 'admin.chat.messages', payload: { messages } };
   }
 
-  async chatSettingsGet(session: WsSession, payload: any) {
+  chatSettingsGet(session: WsSession, payload: any) {
     requireAdmin(session);
     this.validator.validate(AdminChatSettingsGetWsDto, payload ?? {});
     return {

@@ -8,4 +8,3 @@ import { DeckPoliciesService } from './services/deck-policies.service';
   exports: [DeckPoliciesService],
 })
 export class DeckPoliciesModule {}
-

@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerName } from '../../../../modules/turn-policies/player-name.helper';
-
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
@@ -12,10 +11,16 @@ import type {
   ZigEtZagRoundState,
   ZigEtZagRoundSummary,
 } from '../model/zig-et-zag-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeLowerActionType,
+} from '../../../../actions/action-service.helper';
 
-
-import { ZIG_ET_ZAG_CARD_BY_ID, ZIG_ET_ZAG_TOTAL_CARDS } from '../model/zig-et-zag-cards';
+import {
+  ZIG_ET_ZAG_CARD_BY_ID,
+  ZIG_ET_ZAG_TOTAL_CARDS,
+} from '../model/zig-et-zag-cards';
 import {
   buildInitialRoundState,
   getPlayerHand,
@@ -119,7 +124,10 @@ export class ZigEtZagActionService {
     }
 
     const rngMeta = meta.rng ?? {};
-    const { index, meta: nextRng } = this.random.pickIndex(rngMeta, hand.length);
+    const { index, meta: nextRng } = this.random.pickIndex(
+      rngMeta,
+      hand.length,
+    );
     const cardId = hand[index];
     if (!cardId) {
       return state;
@@ -190,12 +198,15 @@ export class ZigEtZagActionService {
         );
       }
       nextState = this.setRoundState(nextState, meta, nextRound);
-    return this.setCurrentPlayerWithAnnouncement(
-      nextState,
-      players,
-      this.pickNextCurrentPlayerId(nextRound, nextState.turn?.currentPlayerId ?? 0),
-      true,
-    );
+      return this.setCurrentPlayerWithAnnouncement(
+        nextState,
+        players,
+        this.pickNextCurrentPlayerId(
+          nextRound,
+          nextState.turn?.currentPlayerId ?? 0,
+        ),
+        true,
+      );
     }
     return this.finishRound(nextState, players, round, evaluation.winnerId);
   }
@@ -234,10 +245,7 @@ export class ZigEtZagActionService {
       tiedPlayers: waitingPlayers,
       triggerColors,
       triggerFamilies,
-      battleLog: [
-        ...round.battleLog,
-        'Bataille déclenchée !',
-      ],
+      battleLog: [...round.battleLog, 'Bataille déclenchée !'],
     };
   }
 
@@ -292,7 +300,10 @@ export class ZigEtZagActionService {
     return this.setCurrentPlayerWithAnnouncement(
       nextState,
       players,
-      this.pickNextCurrentPlayerId(nextRound, nextState.turn?.currentPlayerId ?? 0),
+      this.pickNextCurrentPlayerId(
+        nextRound,
+        nextState.turn?.currentPlayerId ?? 0,
+      ),
       true,
     );
   }
@@ -308,7 +319,12 @@ export class ZigEtZagActionService {
       round,
       round.tiedPlayers,
     );
-    nextState = this.appendRevealLogs(nextState, players, round, round.tiedPlayers);
+    nextState = this.appendRevealLogs(
+      nextState,
+      players,
+      round,
+      round.tiedPlayers,
+    );
     const meta = this.getMeta(state);
     const faceUpPlays = round.plays.filter(
       (play) =>
@@ -321,7 +337,12 @@ export class ZigEtZagActionService {
       .map((play) => {
         const def = ZIG_ET_ZAG_CARD_BY_ID[play.faceUpCard!];
         return def
-          ? { playerId: play.playerId, value: def.value, color: def.color, family: def.family }
+          ? {
+              playerId: play.playerId,
+              value: def.value,
+              color: def.color,
+              family: def.family,
+            }
           : { playerId: play.playerId, value: -1 };
       })
       .filter((entry) => entry.value >= 0);
@@ -352,17 +373,12 @@ export class ZigEtZagActionService {
       }
     });
 
-    const waitingPlayers = winners.filter((playerId) =>
-      getPlayerHandSize(meta, playerId) > 0,
+    const waitingPlayers = winners.filter(
+      (playerId) => getPlayerHandSize(meta, playerId) > 0,
     );
 
     if (!waitingPlayers.length) {
-      return this.finishRound(
-        nextState,
-        players,
-        round,
-        winners[0] ?? null,
-      );
+      return this.finishRound(nextState, players, round, winners[0] ?? null);
     }
 
     const nextRound: ZigEtZagRoundState = {
@@ -386,7 +402,10 @@ export class ZigEtZagActionService {
     return this.setCurrentPlayerWithAnnouncement(
       nextState,
       players,
-      this.pickNextCurrentPlayerId(nextRound, nextState.turn?.currentPlayerId ?? 0),
+      this.pickNextCurrentPlayerId(
+        nextRound,
+        nextState.turn?.currentPlayerId ?? 0,
+      ),
       true,
     );
   }
@@ -476,9 +495,10 @@ export class ZigEtZagActionService {
     onlyPlayers?: number[],
   ): GameStateEntity {
     let next = state;
-    const filter = Array.isArray(onlyPlayers) && onlyPlayers.length
-      ? new Set(onlyPlayers)
-      : null;
+    const filter =
+      Array.isArray(onlyPlayers) && onlyPlayers.length
+        ? new Set(onlyPlayers)
+        : null;
 
     for (const play of round.plays ?? []) {
       if (filter && !filter.has(play.playerId)) continue;
@@ -506,9 +526,10 @@ export class ZigEtZagActionService {
     round: ZigEtZagRoundState,
     onlyPlayers?: number[],
   ): GameStateEntity {
-    const filter = Array.isArray(onlyPlayers) && onlyPlayers.length
-      ? new Set(onlyPlayers)
-      : null;
+    const filter =
+      Array.isArray(onlyPlayers) && onlyPlayers.length
+        ? new Set(onlyPlayers)
+        : null;
     const revealPlayers = (round.plays ?? [])
       .filter((play) => {
         if (filter && !filter.has(play.playerId)) return false;
@@ -631,7 +652,7 @@ export class ZigEtZagActionService {
           ...play,
           playerId: pid,
           playedCards: Array.isArray(play?.playedCards) ? play.playedCards : [],
-        } as any;
+        };
       })
       .filter((p): p is ZigEtZagRoundState['plays'][number] => Boolean(p));
 
@@ -647,7 +668,9 @@ export class ZigEtZagActionService {
     round: ZigEtZagRoundState,
     fallback: number,
   ): number {
-    const waiting = Array.isArray(round?.waitingPlayers) ? round.waitingPlayers : [];
+    const waiting = Array.isArray(round?.waitingPlayers)
+      ? round.waitingPlayers
+      : [];
     if (!waiting.length) return fallback;
     return waiting[0] ?? fallback;
   }
@@ -751,7 +774,9 @@ export class ZigEtZagActionService {
         const def = ZIG_ET_ZAG_CARD_BY_ID[play.faceUpCard!];
         return def ? { playerId: play.playerId, value: def.value } : null;
       })
-      .filter((entry): entry is { playerId: number; value: number } => Boolean(entry));
+      .filter((entry): entry is { playerId: number; value: number } =>
+        Boolean(entry),
+      );
 
     if (!faceUpResults.length) {
       return { winnerId: null, tiePlayers: [] };
@@ -808,19 +833,25 @@ export class ZigEtZagActionService {
     }
 
     const winnerPlayCount =
-      round.plays.find((play) => play.playerId === winnerId)?.playedCards?.length ?? 0;
+      round.plays.find((play) => play.playerId === winnerId)?.playedCards
+        ?.length ?? 0;
     if (winnerPlayCount <= 0) {
       return metadata;
     }
 
     const decks = { ...(metadata.playerDecks ?? {}) };
-    const winnerDeck = Array.isArray(decks[winnerId]) ? [...decks[winnerId]] : [];
+    const winnerDeck = Array.isArray(decks[winnerId])
+      ? [...decks[winnerId]]
+      : [];
     const loserDeck = Array.isArray(decks[loserId]) ? [...decks[loserId]] : [];
     if (!loserDeck.length) {
       return metadata;
     }
 
-    const moved = loserDeck.splice(0, Math.min(winnerPlayCount, loserDeck.length));
+    const moved = loserDeck.splice(
+      0,
+      Math.min(winnerPlayCount, loserDeck.length),
+    );
     if (!moved.length) {
       return metadata;
     }
@@ -848,7 +879,8 @@ export class ZigEtZagActionService {
     }
     const ownerOfAll = playerIds.find(
       (playerId) =>
-        (metadata.playerDecks[playerId]?.length ?? 0) === ZIG_ET_ZAG_TOTAL_CARDS,
+        (metadata.playerDecks[playerId]?.length ?? 0) ===
+        ZIG_ET_ZAG_TOTAL_CARDS,
     );
     return ownerOfAll ?? null;
   }
@@ -868,6 +900,3 @@ export class ZigEtZagActionService {
     return state.turn?.currentPlayerId ?? null;
   }
 }
-
-
-

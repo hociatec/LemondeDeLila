@@ -182,12 +182,12 @@ function fixMojibakeDeepInternal(
     return out;
   }
   if (value && typeof value === 'object') {
-    if (seen.has(value as object)) {
-      return seen.get(value as object);
+    if (seen.has(value)) {
+      return seen.get(value);
     }
     const obj = value as Record<string, unknown>;
     const out: Record<string, unknown> = {};
-    seen.set(value as object, out);
+    seen.set(value, out);
     Object.keys(obj).forEach((k) => {
       out[k] = fixMojibakeDeepInternal(obj[k], seen);
     });

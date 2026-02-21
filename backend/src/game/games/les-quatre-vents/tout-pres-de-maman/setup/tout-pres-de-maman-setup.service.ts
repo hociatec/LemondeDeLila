@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
-import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import { getSafePlayers } from '../../../../setup/setup-service.helper';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import type {
@@ -10,6 +10,9 @@ import type {
 } from '../model/tout-pres-de-maman-content.entity';
 import type { ToutPresDeMamanMetadata } from '../model/tout-pres-de-maman-state.entity';
 import { loadV1Content } from '../../../../setup/content-loader.helper';
+
+type ToutPresDeMamanRuntimeMetadata = ToutPresDeMamanMetadata &
+  Record<string, unknown>;
 
 @Injectable()
 export class ToutPresDeMamanSetupService {
@@ -36,9 +39,9 @@ export class ToutPresDeMamanSetupService {
       bonusReroll[player.id] = false;
     }
 
-    const seedMeta = (baseState.metadata ?? {}) as ToutPresDeMamanMetadata;
+    const seedMeta = this.getRuntimeMeta(baseState);
     const cardIds = (cards.cards ?? []).map((card) => card.id);
-    const shuffle = this.random.shuffle(seedMeta as any, cardIds);
+    const shuffle = this.random.shuffle(seedMeta, cardIds);
 
     const metadata: ToutPresDeMamanMetadata = {
       ...seedMeta,
@@ -66,11 +69,28 @@ export class ToutPresDeMamanSetupService {
   }
 
   private loadBoard(): ToutPresDeMamanBoardJsonV1 {
-    return loadV1Content<ToutPresDeMamanBoardJsonV1>(this.contentLoader, { gameType: 'tout-pres-de-maman', baseDir: __dirname, filename: 'board.json', arrayField: 'tiles', minItems: 1 });
+    return loadV1Content<ToutPresDeMamanBoardJsonV1>(this.contentLoader, {
+      gameType: 'tout-pres-de-maman',
+      baseDir: __dirname,
+      filename: 'board.json',
+      arrayField: 'tiles',
+      minItems: 1,
+    });
   }
 
   private loadCards(): ToutPresDeMamanCardsJsonV1 {
-    return loadV1Content<ToutPresDeMamanCardsJsonV1>(this.contentLoader, { gameType: 'tout-pres-de-maman', baseDir: __dirname, filename: 'cards.json', arrayField: 'cards', minItems: 1 });
+    return loadV1Content<ToutPresDeMamanCardsJsonV1>(this.contentLoader, {
+      gameType: 'tout-pres-de-maman',
+      baseDir: __dirname,
+      filename: 'cards.json',
+      arrayField: 'cards',
+      minItems: 1,
+    });
+  }
+
+  private getRuntimeMeta(
+    state: GameStateEntity,
+  ): ToutPresDeMamanRuntimeMetadata {
+    return (state.metadata ?? {}) as ToutPresDeMamanRuntimeMetadata;
   }
 }
-

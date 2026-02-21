@@ -1,5 +1,6 @@
 using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,12 +27,20 @@ public static class ClientUpdateApi
     private static DateTime _cacheAtUtc = DateTime.MinValue;
     private static readonly TimeSpan CacheTtl = TimeSpan.FromSeconds(20);
 
-    public static async Task<ClientUpdateInfo?> GetAsync(ClientConfiguration config, CancellationToken cancellationToken = default)
+    public static Task<ClientUpdateInfo?> GetAsync(
+        ClientConfiguration config,
+        CancellationToken cancellationToken = default)
+        => GetAsync(config, forceRefresh: false, cancellationToken);
+
+    public static async Task<ClientUpdateInfo?> GetAsync(
+        ClientConfiguration config,
+        bool forceRefresh = false,
+        CancellationToken cancellationToken = default)
     {
         try
         {
             var cached = _cache;
-            if (cached != null && DateTime.UtcNow - _cacheAtUtc < CacheTtl)
+            if (!forceRefresh && cached != null && DateTime.UtcNow - _cacheAtUtc < CacheTtl)
             {
                 return cached;
             }
@@ -40,21 +49,30 @@ public static class ClientUpdateApi
             try
             {
                 cached = _cache;
-                if (cached != null && DateTime.UtcNow - _cacheAtUtc < CacheTtl)
+                if (!forceRefresh && cached != null && DateTime.UtcNow - _cacheAtUtc < CacheTtl)
                 {
                     return cached;
                 }
 
                 var current = AppInfo.GetShortVersion()?.Trim();
-                var endpoint = new Uri(
-                    config.HttpBase,
-                    $"../client/version?current={Uri.EscapeDataString(current ?? string.Empty)}");
+                var baseEndpoint = config.UpdatesCheckUrl;
+                var endpoint = BuildEndpoint(baseEndpoint, current, forceRefresh);
 
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 cts.CancelAfter(TimeSpan.FromSeconds(4));
 
+                using var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
+                request.Headers.CacheControl = new CacheControlHeaderValue
+                {
+                    NoCache = true,
+                    NoStore = true,
+                    MaxAge = TimeSpan.Zero,
+                    MustRevalidate = true,
+                };
+                request.Headers.Pragma.Add(new NameValueHeaderValue("no-cache"));
+
                 using var response = await HttpClientProvider.Shared
-                    .GetAsync(endpoint, cts.Token)
+                    .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token)
                     .ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
                 {
@@ -70,8 +88,8 @@ public static class ClientUpdateApi
                 Message = root.TryGetProperty("message", out var m) ? m.GetString() : null,
                 Url = root.TryGetProperty("url", out var u) ? u.GetString() : null,
                 MinRequiredVersion = root.TryGetProperty("minRequiredVersion", out var min) ? min.GetString() : null,
-                UpdateAvailable = root.TryGetProperty("updateAvailable", out var a) && a.ValueKind != JsonValueKind.Null ? a.GetBoolean() : null,
-                UpdateRequired = root.TryGetProperty("updateRequired", out var r) && r.ValueKind != JsonValueKind.Null ? r.GetBoolean() : null,
+                UpdateAvailable = TryReadBoolean(root, "updateAvailable"),
+                UpdateRequired = TryReadBoolean(root, "updateRequired"),
             };
             _cache = info;
             _cacheAtUtc = DateTime.UtcNow;
@@ -86,5 +104,40 @@ public static class ClientUpdateApi
         {
             return null;
         }
+    }
+
+    private static Uri BuildEndpoint(Uri baseEndpoint, string? current, bool forceRefresh)
+    {
+        var builder = new UriBuilder(baseEndpoint);
+        var baseQuery = (builder.Query ?? string.Empty).TrimStart('?');
+        var query =
+            string.IsNullOrWhiteSpace(baseQuery)
+                ? string.Empty
+                : baseQuery + "&";
+        query += $"current={Uri.EscapeDataString(current ?? string.Empty)}";
+        if (forceRefresh)
+        {
+            query += $"&_cb={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+        }
+
+        builder.Query = query;
+        return builder.Uri;
+    }
+
+    private static bool? TryReadBoolean(JsonElement root, string propertyName)
+    {
+        if (!root.TryGetProperty(propertyName, out var node))
+        {
+            return null;
+        }
+
+        return node.ValueKind switch
+        {
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.Number => node.TryGetInt32(out var n) ? n != 0 : null,
+            JsonValueKind.String => bool.TryParse(node.GetString(), out var b) ? b : null,
+            _ => null,
+        };
     }
 }

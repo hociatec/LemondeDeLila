@@ -9,7 +9,10 @@ import {
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
 import type { FouleesFantastiquesMetadata } from '../model/foulees-fantastiques-state.entity';
-import { isRollAlias, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  isRollAlias,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import {
   getPendingPawnMoveActionsForPlayer,
   validatePendingPawnMoveActionForActor,
@@ -150,7 +153,10 @@ export function validateAction(
       expectedActionType: 'move_pawn',
     });
 
-    if (!moveValidation.ok && moveValidation.reason === 'not_pending_for_actor') {
+    if (
+      !moveValidation.ok &&
+      moveValidation.reason === 'not_pending_for_actor'
+    ) {
       throw new PlayerActionError('Aucun choix de pion en attente.', {
         gameType: 'foulees-fantastiques',
         playerId: actorId ?? undefined,
@@ -177,4 +183,3 @@ export function validateAction(
 
   return { ...action, type: 'roll', payload: {} };
 }
-

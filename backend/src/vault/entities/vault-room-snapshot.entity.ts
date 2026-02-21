@@ -7,7 +7,10 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'vault_room_snapshots' })
-@Index('idx_vault_room_snapshots_owner_created_at', ['ownerUserId', 'createdAt'])
+@Index('idx_vault_room_snapshots_owner_created_at', [
+  'ownerUserId',
+  'createdAt',
+])
 export class VaultRoomSnapshotEntity {
   @PrimaryColumn({ type: 'varchar', length: 36 })
   id!: string;

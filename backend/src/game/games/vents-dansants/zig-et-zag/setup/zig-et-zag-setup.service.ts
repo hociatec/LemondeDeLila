@@ -1,7 +1,10 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
-import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import {
+  getRngMeta,
+  getSafePlayers,
+} from '../../../../setup/setup-service.helper';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { ZIG_ET_ZAG_DECK } from '../model/zig-et-zag-cards';
 import type { ZigEtZagMetadata } from '../model/zig-et-zag-state.entity';
@@ -16,10 +19,15 @@ export class ZigEtZagSetupService {
     const metaSeed = (baseState.metadata ?? {}) as ZigEtZagMetadata;
     const rng = getRngMeta(metaSeed);
     const deck = ZIG_ET_ZAG_DECK.map((card) => card.id);
-    const { values: shuffledDeck, meta: updatedRng } = this.random.shuffle(rng, deck);
+    const { values: shuffledDeck, meta: updatedRng } = this.random.shuffle(
+      rng,
+      deck,
+    );
 
-    const activePlayers = players.filter((player) => typeof player?.id === 'number');
-    const playerIds = activePlayers.map((player) => player!.id);
+    const activePlayers = players.filter(
+      (player) => typeof player?.id === 'number',
+    );
+    const playerIds = activePlayers.map((player) => player.id);
     const playerDecks: Record<number, string[]> = {};
     for (const pid of playerIds) {
       playerDecks[pid] = [];
@@ -59,8 +67,8 @@ export class ZigEtZagSetupService {
         : (baseState.turn?.currentPlayerId ?? players[0]?.id ?? null);
     const starterName =
       typeof currentPlayerId === 'number'
-        ? players.find((p) => p?.id === currentPlayerId)?.username?.trim() ??
-          `Joueur ${currentPlayerId}`
+        ? (players.find((p) => p?.id === currentPlayerId)?.username?.trim() ??
+          `Joueur ${currentPlayerId}`)
         : null;
     const baseLog = Array.isArray(baseState.log) ? baseState.log : [];
     const log =
@@ -73,7 +81,8 @@ export class ZigEtZagSetupService {
       log,
       turn: {
         ...(baseState.turn ?? { direction: 1 }),
-        currentPlayerId: typeof currentPlayerId === 'number' ? currentPlayerId : null,
+        currentPlayerId:
+          typeof currentPlayerId === 'number' ? currentPlayerId : null,
         direction: 1,
       },
       metadata: {

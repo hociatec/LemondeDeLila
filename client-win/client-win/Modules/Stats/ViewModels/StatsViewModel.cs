@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -59,12 +59,12 @@ public sealed class StatsViewModel : ObservableObject, IShellContentCachePolicy
         Items = new ObservableCollection<StatsMenuItem>();
         ActivateCommand = new AsyncRelayCommand(ActivateSelectedAsync);
         Title = "Livre des contes";
-        Status = "Entrée : sélectionner. Échap : retour.";
+        Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
 
         if (HasTargetUser())
         {
-            // Si on consulte le livre d'un autre utilisateur (depuis Présence/Social),
-            // ouvrir directement le contenu sans repasser par l'écran "Consulter le livre...".
+            // Si on consulte le livre d'un autre utilisateur (depuis PrÃ©sence/Social),
+            // ouvrir directement le contenu sans repasser par l'Ã©cran "Consulter le livre...".
             BuildRoot();
         }
         else
@@ -87,8 +87,8 @@ public sealed class StatsViewModel : ObservableObject, IShellContentCachePolicy
 
         if (HasTargetUser())
         {
-            // Si on consulte le livre d'un autre utilisateur (depuis PrÃ©sence/Social),
-            // ouvrir directement le contenu sans repasser par l'Ã©cran "Consulter le livre...".
+            // Si on consulte le livre d'un autre utilisateur (depuis PrÃƒÂ©sence/Social),
+            // ouvrir directement le contenu sans repasser par l'ÃƒÂ©cran "Consulter le livre...".
             return LoadGamesAsync();
         }
 
@@ -180,7 +180,7 @@ public sealed class StatsViewModel : ObservableObject, IShellContentCachePolicy
             Items.Add(new StatsMenuItem(OpenLeaderboard, tag: OpenLeaderboard));
         }
         SelectedItem = Items.FirstOrDefault();
-        Status = "Entrée : consulter. Échap : retour.";
+        Status = "EntrÃ©e : consulter. Ã‰chap : retour.";
     }
 
     private static bool HasTargetUser(int? userId) => userId.HasValue && userId.Value > 0;
@@ -196,7 +196,7 @@ public sealed class StatsViewModel : ObservableObject, IShellContentCachePolicy
             : "Mon livre des contes";
         Details = string.Empty;
         var hasStats = Items.Any(i => i.Tag is MyGameStatsDto);
-        Status = hasStats ? "Choisissez un jeu. Échap : retour." : "Aucune information encore disponible. Échap : retour.";
+        Status = hasStats ? "Choisissez un jeu. Ã‰chap : retour." : "Aucune information encore disponible. Ã‰chap : retour.";
         SelectedItem = Items.FirstOrDefault();
     }
 
@@ -210,7 +210,7 @@ public sealed class StatsViewModel : ObservableObject, IShellContentCachePolicy
         Items.Add(new StatsMenuItem("Sans bots", tag: false));
         SelectedItem = Items.FirstOrDefault();
         Details = string.Empty;
-        Status = "Choisissez un mode (Entrée). Échap : retour.";
+        Status = "Choisissez un mode (EntrÃ©e). Ã‰chap : retour.";
     }
 
     private void BuildDetails(string title, StatsCountsDto counts)
@@ -219,12 +219,12 @@ public sealed class StatsViewModel : ObservableObject, IShellContentCachePolicy
         Title = title;
         Details = string.Empty;
         Items.Clear();
-        Items.Add(new StatsMenuItem($"Parties terminées : {counts.Finished}."));
-        Items.Add(new StatsMenuItem($"Parties quittées : {counts.Quit}."));
-        Items.Add(new StatsMenuItem($"Gagnées : {counts.Won}."));
+        Items.Add(new StatsMenuItem($"Parties terminÃ©es : {counts.Finished}."));
+        Items.Add(new StatsMenuItem($"Parties quittÃ©es : {counts.Quit}."));
+        Items.Add(new StatsMenuItem($"GagnÃ©es : {counts.Won}."));
         Items.Add(new StatsMenuItem($"Perdues : {counts.Lost}."));
         SelectedItem = Items.FirstOrDefault();
-        Status = "Échap : retour.";
+        Status = "Ã‰chap : retour.";
     }
 
     private async Task ActivateSelectedAsync()
@@ -329,9 +329,6 @@ public sealed class StatsViewModel : ObservableObject, IShellContentCachePolicy
         BuildGames();
     }
 
-    private static string FormatCounts(StatsCountsDto counts)
-        => $"Parties terminées : {counts.Finished}. Parties quittées : {counts.Quit}. Gagnées : {counts.Won}. Perdues : {counts.Lost}.";
-
     private enum StatsPage
     {
         Root,
@@ -340,3 +337,5 @@ public sealed class StatsViewModel : ObservableObject, IShellContentCachePolicy
         Details
     }
 }
+
+

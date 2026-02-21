@@ -14,7 +14,10 @@ export class MorpionPresenter extends BasePresenterService {
     super();
   }
 
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     const meta = (state.metadata ?? {}) as MorpionMetadata;
     const exposed = this.buildExposedStateForUser(state, userId);
 
@@ -130,7 +133,7 @@ export class MorpionPresenter extends BasePresenterService {
   protected buildExtrasForUser(
     state: GameStateEntity,
     _metadata: MorpionMetadata,
-    userId: number,
+    _userId: number,
     currentPlayerId: number | null,
   ): Record<string, unknown> {
     const base = this.getBaseExtras(state);
@@ -167,8 +170,8 @@ export class MorpionPresenter extends BasePresenterService {
     const emptyCount = board.filter((v) => Number(v ?? 0) === 0).length;
     const who =
       typeof currentPlayerId === 'number'
-        ? players.find((p) => p?.id === currentPlayerId)?.username ??
-          `#${currentPlayerId}`
+        ? (players.find((p) => p?.id === currentPlayerId)?.username ??
+          `#${currentPlayerId}`)
         : 'inconnu';
 
     const playInfo =

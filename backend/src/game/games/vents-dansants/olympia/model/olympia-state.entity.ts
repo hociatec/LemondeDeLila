@@ -1,8 +1,4 @@
-import type {
-  OlympiaDeckType,
-  OlympiaEffect,
-  OlympiaStatusKey,
-} from './olympia-cards';
+import type { OlympiaDeckType, OlympiaStatusKey } from './olympia-cards';
 
 export interface OlympiaStatus {
   key: OlympiaStatusKey;

@@ -47,6 +47,9 @@ describe('PendingActionService', () => {
     }));
 
     expect(out.pending).toBeNull();
-    expect(out.metadata).toMatchObject({ ok: true, resolvedType: 'choose_target' });
+    expect(out.metadata).toMatchObject({
+      ok: true,
+      resolvedType: 'choose_target',
+    });
   });
 });

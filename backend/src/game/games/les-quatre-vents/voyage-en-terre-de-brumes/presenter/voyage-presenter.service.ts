@@ -12,9 +12,12 @@ import type { VoyageMetadata } from '../model/voyage.types';
 export class VoyagePresenterService {
   constructor(private readonly boardPayload: BoardPayloadService) {}
 
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     const actions = Rulebook.getAvailableActions(state, userId);
-    const meta = (state.metadata ?? {}) as any as VoyageMetadata;
+    const meta = this.getMeta(state);
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
 
@@ -24,8 +27,11 @@ export class VoyagePresenterService {
       treasure: 0,
       landscape: 0,
     };
-    const total = (c.legend ?? 0) + (c.farce ?? 0) + (c.treasure ?? 0) + (c.landscape ?? 0);
+    const total =
+      (c.legend ?? 0) + (c.farce ?? 0) + (c.treasure ?? 0) + (c.landscape ?? 0);
 
+    const stateRecord = asRecord(state);
+    const baseExtras = asRecord(stateRecord.extras);
     return {
       ...state,
       catalog: {
@@ -35,7 +41,7 @@ export class VoyagePresenterService {
       actions: formatPresenterActions(actions),
       pending: state.pending ?? null,
       extras: {
-        ...(state as any).extras,
+        ...baseExtras,
         currentPlayerView: {
           id: userId,
           username: me?.username ?? `Joueur ${userId}`,
@@ -57,8 +63,19 @@ export class VoyagePresenterService {
           },
         },
       },
-      board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
-    } as any;
+      board: this.boardPayload.buildTilesPositionsLaps(
+        meta.tiles,
+        meta.positions,
+      ),
+    } as GameStateWithActions;
+  }
+
+  private getMeta(state: GameStateEntity): VoyageMetadata {
+    return (state.metadata ?? {}) as VoyageMetadata;
   }
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  if (value == null || typeof value !== 'object') return {};
+  return value as Record<string, unknown>;
+}

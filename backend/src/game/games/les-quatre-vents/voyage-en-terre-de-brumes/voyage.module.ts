@@ -15,7 +15,7 @@ import { VoyageBotService } from './bots/voyage-bot.service';
     GameCoreModule,
     GameRegistryModule,
     EngineServicesModule,
-    ],
+  ],
   providers: [
     VoyageService,
     VoyageSetupService,

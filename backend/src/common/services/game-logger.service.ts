@@ -17,6 +17,18 @@ export interface GameLogContext {
   [key: string]: unknown;
 }
 
+type GameErrorLogData = {
+  message: string;
+  context: GameLogContext;
+  error?: {
+    name?: string;
+    message?: string;
+    severity?: string;
+    context?: unknown;
+    stack?: string;
+  };
+};
+
 /**
  * Service for structured logging of game events and errors
  */
@@ -38,10 +50,11 @@ export class GameLoggerService {
           winston.format.colorize(),
           winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
           winston.format.printf(({ timestamp, level, message, ...meta }) => {
-            const metaStr = Object.keys(meta).length
-              ? `\n${JSON.stringify(meta, null, 2)}`
-              : '';
-            return `${timestamp} [${level}]: ${message}${metaStr}`;
+            const metaStr =
+              Object.keys(meta).length > 0
+                ? `\n${JSON.stringify(meta, null, 2)}`
+                : '';
+            return `${String(timestamp)} [${String(level)}]: ${String(message)}${metaStr}`;
           }),
         ),
       }),
@@ -80,8 +93,9 @@ export class GameLoggerService {
       fs.mkdirSync(dir, { recursive: true });
       return dir;
     } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
       console.warn(
-        `[GameLogger] Impossible de créer le dossier ${dir}: ${error}`,
+        `[GameLogger] Impossible de creer le dossier ${dir}: ${detail}`,
       );
       return null;
     }
@@ -95,7 +109,7 @@ export class GameLoggerService {
     error?: Error | GameError,
     context?: GameLogContext,
   ): void {
-    const logData: any = {
+    const logData: GameErrorLogData = {
       message,
       context: context || {},
     };
@@ -115,7 +129,9 @@ export class GameLoggerService {
         stack: error.stack,
       };
     } else if (error) {
-      logData.error = error;
+      logData.error = {
+        message: String(error),
+      };
     }
 
     this.logger.error(logData);
@@ -209,12 +225,15 @@ export class GameLoggerService {
     severity: 'low' | 'medium' | 'high' | 'critical',
     context: GameLogContext,
   ): void {
-    const logFn =
-      severity === 'critical' || severity === 'high'
-        ? this.error.bind(this)
-        : this.warn.bind(this);
-
-    logFn(`Security event: ${event}`, undefined, {
+    if (severity === 'critical' || severity === 'high') {
+      this.error(`Security event: ${event}`, undefined, {
+        ...context,
+        securityEvent: event,
+        severity,
+      });
+      return;
+    }
+    this.warn(`Security event: ${event}`, {
       ...context,
       securityEvent: event,
       severity,

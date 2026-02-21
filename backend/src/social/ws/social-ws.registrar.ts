@@ -10,13 +10,13 @@ export class SocialWsRegistrar implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    this.registry.register('social.friends.list', (session, payload) =>
+    this.registry.register('social.friends.list', (session, _payload) =>
       this.handler.listFriends(session),
     );
     this.registry.register('social.friends.requests', (session, payload) =>
       this.handler.listRequests(session, payload),
     );
-    this.registry.register('social.friends.blocked', (session, payload) =>
+    this.registry.register('social.friends.blocked', (session, _payload) =>
       this.handler.listBlocked(session),
     );
     this.registry.register('social.friends.request', (session, payload) =>

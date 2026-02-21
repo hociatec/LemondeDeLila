@@ -6,7 +6,16 @@ import { formatPresenterActions } from '../../../../presenters/actions-presenter
 import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import { PIRATES_GAME } from '../definitions/pirates-en-vadrouille.definition';
 import * as Rulebook from '../rulebook/rulebook';
-import type { PiratesEnVadrouilleCollection, PiratesEnVadrouilleMetadata } from '../model/pirates-en-vadrouille-state.entity';
+import type {
+  PiratesEnVadrouilleCollection,
+  PiratesEnVadrouilleMetadata,
+} from '../model/pirates-en-vadrouille-state.entity';
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
 
 @Injectable()
 export class PiratesEnVadrouillePresenterService {
@@ -38,10 +47,12 @@ export class PiratesEnVadrouillePresenterService {
         phases: PIRATES_GAME.phaseOrder.map((p) => p.id),
         victory: null,
       },
-      actions: formatPresenterActions(actions, (action) => action.type === 'roll' ? 'Lancer le dé' : action.type),
+      actions: formatPresenterActions(actions, (action) =>
+        action.type === 'roll' ? 'Lancer le dé' : action.type,
+      ),
       pending: state.pending ?? null,
       extras: {
-        ...(state as any).extras,
+        ...asRecord(state.extras),
         currentPlayerView: {
           id: userId,
           username: me?.username ?? `Joueur ${userId}`,
@@ -58,7 +69,9 @@ export class PiratesEnVadrouillePresenterService {
             },
             collection: {
               title: 'Cartes & pièces',
-              message: this.buildCollectionMessage(meta.collections?.[userId] ?? null),
+              message: this.buildCollectionMessage(
+                meta.collections?.[userId] ?? null,
+              ),
             },
             score: {
               title: 'Trésors',
@@ -69,11 +82,16 @@ export class PiratesEnVadrouillePresenterService {
           },
         },
       },
-      board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
-    } as any;
+      board: this.boardPayload.buildTilesPositionsLaps(
+        meta.tiles,
+        meta.positions,
+      ),
+    };
   }
 
-  private buildCollectionMessage(collection: PiratesEnVadrouilleCollection | null): string {
+  private buildCollectionMessage(
+    collection: PiratesEnVadrouilleCollection | null,
+  ): string {
     if (!collection) return 'Cartes : (aucune) | Pièces : 0';
     const cards = [
       `Trésors : ${collection.treasures.length}`,

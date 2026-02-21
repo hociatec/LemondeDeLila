@@ -18,8 +18,8 @@ export function buildInitialRoundState(
     playedCards: [],
   }));
 
-  const waitingPlayers = playerIds.filter((playerId) =>
-    getPlayerHandSize(metadata, playerId) > 0,
+  const waitingPlayers = playerIds.filter(
+    (playerId) => getPlayerHandSize(metadata, playerId) > 0,
   );
 
   playerIds

@@ -5,10 +5,14 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Server, WebSocket } from 'ws';
+import { Server } from 'ws';
 import { GameEngineService } from '../services/game-engine.service';
 import { WsAuthPayload } from '../../../common/interfaces/ws-auth-payload';
-import { GameSingleActionDto } from '../dto/game-action.dto';
+import {
+  GameSingleActionDto,
+  GameStateWithActions,
+} from '../dto/game-action.dto';
+import { PlayerStateEntity } from '../../core/entities/game-state.entity';
 import { playingLog } from '../../../common/utils/playing-logger';
 import { WsJwtAuthService } from '../../../common/ws/ws-jwt-auth.service';
 import { PerfMetricsService } from '../../../common/services/perf-metrics.service';
@@ -18,9 +22,28 @@ import { WsTicketAuthService } from '../../../common/ws/ws-ticket-auth.service';
 import { RoomService } from '../../../room/services/room.service';
 import { GameContentService } from '../services/game-content.service';
 
-type IncomingPayload = { type?: string; payload?: any };
+type Payload = Record<string, unknown>;
+type TraceInfo = { traceId: string | null; sentAtMs: number | null };
+const WS_READY_STATE_OPEN = 1;
+
+interface GameWebSocket {
+  readyState: number;
+  send(data: string, cb?: (err?: Error) => void): void;
+  close(code?: number, reason?: string): void;
+  terminate(): void;
+  ping(): void;
+  on(event: string, listener: (...args: unknown[]) => void): void;
+}
+
+interface GameWebSocketWithUrl extends GameWebSocket {
+  url?: string;
+  upgradeReq?: { url?: string };
+  req?: { url?: string };
+}
+type IncomingPayload = { type?: string; payload?: Payload };
+type GameStatePayload = GameStateWithActions & Record<string, unknown>;
 type GameClient = {
-  socket: WebSocket;
+  socket: GameWebSocket;
   userId: number;
   roomId: number | null;
   gameType: string | null;
@@ -44,21 +67,26 @@ type GameStatePatchPayload = {
 
 @WebSocketGateway({ path: '/ws/game' })
 export class GameGateway
-  implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket>
+  implements
+    OnGatewayConnection<GameWebSocket>,
+    OnGatewayDisconnect<GameWebSocket>
 {
   @WebSocketServer()
-  server!: Server<WebSocket>;
+  server!: Server<GameWebSocket>;
 
-  private readonly clients = new Map<WebSocket, GameClient>();
-  private readonly rooms = new Map<string, Set<WebSocket>>();
-  private readonly heartbeats = new Map<WebSocket, NodeJS.Timeout>();
-  private readonly lastPong = new WeakMap<WebSocket, number>();
+  private readonly clients = new Map<GameWebSocket, GameClient>();
+  private readonly rooms = new Map<string, Set<GameWebSocket>>();
+  private readonly heartbeats = new Map<GameWebSocket, NodeJS.Timeout>();
+  private readonly lastPong = new WeakMap<GameWebSocket, number>();
   private readonly encodedStateMessageCache = new WeakMap<object, string>();
   private readonly topLevelSnapshotCache = new WeakMap<
     object,
     Map<string, string>
   >();
-  private readonly lastPayloadBySocket = new WeakMap<WebSocket, any>();
+  private readonly lastPayloadBySocket = new WeakMap<
+    WebSocket,
+    GameStatePayload
+  >();
   private readonly pingIntervalMs = 25000;
   private readonly pongGraceMs = 4000;
   private readonly minPatchBytesSaved = 96;
@@ -89,7 +117,7 @@ export class GameGateway
     });
   }
 
-  async handleConnection(client: WebSocket, ...args: any[]) {
+  async handleConnection(client: GameWebSocket, ...args: unknown[]) {
     const clientVersion = this.auth.extractClientVersion(client, args);
     const minRequired = await this.clientUpdates.getMinRequiredVersion();
     if (minRequired) {
@@ -139,7 +167,7 @@ export class GameGateway
     // Heartbeat : ping régulier pour maintenir la connexion et détecter les resets silencieux.
     client.on('pong', () => this.lastPong.set(client, Date.now()));
     const interval = setInterval(() => {
-      if (client.readyState !== WebSocket.OPEN) return;
+      if (client.readyState !== WS_READY_STATE_OPEN) return;
       const last = this.lastPong.get(client) ?? Date.now();
       if (Date.now() - last > this.pingIntervalMs * 2) {
         const metaNow = this.clients.get(client) ?? null;
@@ -160,7 +188,7 @@ export class GameGateway
 
         setTimeout(() => {
           try {
-            if (client.readyState === WebSocket.OPEN) {
+            if (client.readyState === WS_READY_STATE_OPEN) {
               client.terminate();
             }
           } catch {
@@ -181,7 +209,7 @@ export class GameGateway
     await this.tryAutoJoinFromUrl(client, args);
   }
 
-  handleDisconnect(client: WebSocket) {
+  handleDisconnect(client: GameWebSocket) {
     const meta = this.clients.get(client);
     if (meta) {
       playingLog('ws.game.disconnect', {
@@ -209,7 +237,7 @@ export class GameGateway
     this.lastPayloadBySocket.delete(client);
   }
 
-  private async handleMessage(client: WebSocket, raw: any) {
+  private async handleMessage(client: GameWebSocket, raw: unknown) {
     const meta = this.clients.get(client);
     if (!meta) {
       client.close();
@@ -222,7 +250,8 @@ export class GameGateway
     }
     const parsed = this.decode(raw);
     if (!parsed?.type) return;
-    const { type, payload } = parsed;
+    const payload = parsed.payload ?? {};
+    const type = parsed.type;
     try {
       // Some clients historically send raw key types (ex: "r"). Avoid spamming errors.
       if (type === 'r' || type === 'R') {
@@ -290,20 +319,17 @@ export class GameGateway
     }
   }
 
-  private async handleJoin(client: WebSocket, meta: GameClient, payload: any) {
-    const roomId = Number(payload?.roomId ?? payload?.room ?? 0);
-    const gameType = String(payload?.gameType ?? '');
+  private async handleJoin(
+    client: GameWebSocket,
+    meta: GameClient,
+    payload: Payload,
+  ) {
+    const roomId =
+      Number(this.parseNumberFromPayload(payload, 'roomId', 'room')) || 0;
+    const gameType = this.parseStringFromPayload(payload, 'gameType') ?? '';
     const receivedAtMs = Date.now();
-    const traceId =
-      typeof payload?._trace?.id === 'string' ? payload._trace.id : null;
-    const sentAtMs =
-      typeof payload?._trace?.sentAtMs === 'number'
-        ? payload._trace.sentAtMs
-        : null;
-    const clientToServerMs =
-      typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
-        ? Math.max(0, receivedAtMs - sentAtMs)
-        : null;
+    const { traceId, sentAtMs } = this.extractTrace(payload);
+    const clientToServerMs = this.computeClientLatency(receivedAtMs, sentAtMs);
     await this.perf.measure(
       'ws.game.join.total',
       async () => {
@@ -321,8 +347,16 @@ export class GameGateway
     );
   }
 
-  private async handleRules(client: WebSocket, meta: GameClient, payload: any) {
-    const gameType = String(payload?.gameType ?? meta.gameType ?? '').trim();
+  private async handleRules(
+    client: GameWebSocket,
+    meta: GameClient,
+    payload: Payload,
+  ) {
+    const gameType = (
+      this.parseStringFromPayload(payload, 'gameType') ??
+      meta.gameType ??
+      ''
+    ).trim();
     if (!gameType) {
       this.sendError(client, 'gameType requis', 'game.rules');
       return;
@@ -337,7 +371,11 @@ export class GameGateway
     this.safeSend(client, { type: 'game.rules', payload: { rules, gameType } });
   }
 
-  private async handleState(client: WebSocket, meta: GameClient, payload: any) {
+  private async handleState(
+    client: GameWebSocket,
+    meta: GameClient,
+    payload: Payload,
+  ) {
     const ctx = await this.ensureRoomContext(client, meta, payload);
     if (!ctx) {
       this.sendError(client, 'Parametres jeu manquants', 'game.state');
@@ -345,16 +383,8 @@ export class GameGateway
     }
     const { roomId, gameType } = ctx;
     const receivedAtMs = Date.now();
-    const traceId =
-      typeof payload?._trace?.id === 'string' ? payload._trace.id : null;
-    const sentAtMs =
-      typeof payload?._trace?.sentAtMs === 'number'
-        ? payload._trace.sentAtMs
-        : null;
-    const clientToServerMs =
-      typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
-        ? Math.max(0, receivedAtMs - sentAtMs)
-        : null;
+    const { traceId, sentAtMs } = this.extractTrace(payload);
+    const clientToServerMs = this.computeClientLatency(receivedAtMs, sentAtMs);
     await this.perf.measure(
       'ws.game.state.total',
       async () => {
@@ -376,7 +406,11 @@ export class GameGateway
     );
   }
 
-  private async handleTurn(client: WebSocket, meta: GameClient, payload: any) {
+  private async handleTurn(
+    client: GameWebSocket,
+    meta: GameClient,
+    payload: Payload,
+  ) {
     const ctx = await this.ensureRoomContext(client, meta, payload);
     if (!ctx) {
       this.sendError(client, 'Parametres jeu manquants', 'game.turn');
@@ -385,16 +419,8 @@ export class GameGateway
     const { roomId, gameType } = ctx;
 
     const receivedAtMs = Date.now();
-    const traceId =
-      typeof payload?._trace?.id === 'string' ? payload._trace.id : null;
-    const sentAtMs =
-      typeof payload?._trace?.sentAtMs === 'number'
-        ? payload._trace.sentAtMs
-        : null;
-    const clientToServerMs =
-      typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
-        ? Math.max(0, receivedAtMs - sentAtMs)
-        : null;
+    const { traceId, sentAtMs } = this.extractTrace(payload);
+    const clientToServerMs = this.computeClientLatency(receivedAtMs, sentAtMs);
     await this.perf.measure(
       'ws.game.turn.total',
       async () => {
@@ -409,7 +435,9 @@ export class GameGateway
         const currentPlayerId = state?.turn?.currentPlayerId ?? null;
         const players = Array.isArray(state?.players) ? state.players : [];
         const current =
-          players.find((p: any) => p?.id === currentPlayerId) ?? null;
+          players.find(
+            (p: PlayerStateEntity | undefined) => p?.id === currentPlayerId,
+          ) ?? null;
         const currentUsername = (() => {
           let name =
             typeof current?.username === 'string' ? current.username : '';
@@ -462,24 +490,16 @@ export class GameGateway
   }
 
   private async handleActions(
-    client: WebSocket,
+    client: GameWebSocket,
     meta: GameClient,
-    payload: any,
+    payload: Payload,
   ) {
     const ctx = await this.ensureRoomContext(client, meta, payload);
     if (!ctx) return;
     const { roomId, gameType } = ctx;
     const receivedAtMs = Date.now();
-    const traceId =
-      typeof payload?._trace?.id === 'string' ? payload._trace.id : null;
-    const sentAtMs =
-      typeof payload?._trace?.sentAtMs === 'number'
-        ? payload._trace.sentAtMs
-        : null;
-    const clientToServerMs =
-      typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
-        ? Math.max(0, receivedAtMs - sentAtMs)
-        : null;
+    const { traceId, sentAtMs } = this.extractTrace(payload);
+    const clientToServerMs = this.computeClientLatency(receivedAtMs, sentAtMs);
 
     // ACK immédiat au client émetteur (utile quand la latence réseau est élevée).
     this.safeSend(client, {
@@ -511,7 +531,11 @@ export class GameGateway
     );
   }
 
-  private async handleKey(client: WebSocket, meta: GameClient, payload: any) {
+  private async handleKey(
+    client: GameWebSocket,
+    meta: GameClient,
+    payload: Payload,
+  ) {
     const ctx = await this.ensureRoomContext(client, meta, payload);
     const key = String(payload?.key ?? '');
     if (!ctx) {
@@ -521,16 +545,8 @@ export class GameGateway
     const { roomId, gameType } = ctx;
 
     const receivedAtMs = Date.now();
-    const traceId =
-      typeof payload?._trace?.id === 'string' ? payload._trace.id : null;
-    const sentAtMs =
-      typeof payload?._trace?.sentAtMs === 'number'
-        ? payload._trace.sentAtMs
-        : null;
-    const clientToServerMs =
-      typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
-        ? Math.max(0, receivedAtMs - sentAtMs)
-        : null;
+    const { traceId, sentAtMs } = this.extractTrace(payload);
+    const clientToServerMs = this.computeClientLatency(receivedAtMs, sentAtMs);
 
     await this.perf.measure(
       'ws.game.key.total',
@@ -618,9 +634,12 @@ export class GameGateway
     );
   }
 
-  private async handleBot(meta: GameClient, payload: any) {
-    const roomId = Number(payload?.roomId ?? meta.roomId ?? 0);
-    const gameType = String(payload?.gameType ?? meta.gameType ?? '');
+  private async handleBot(meta: GameClient, payload: Payload) {
+    const roomId = Number(
+      this.parseNumberFromPayload(payload, 'roomId') ?? meta.roomId ?? 0,
+    );
+    const gameType =
+      this.parseStringFromPayload(payload, 'gameType') ?? meta.gameType ?? '';
     if (!roomId || !gameType) {
       return;
     }
@@ -640,13 +659,17 @@ export class GameGateway
     );
   }
 
-  private broadcastState(gameType: string, roomId: number, state: any): void {
+  private broadcastState(
+    gameType: string,
+    roomId: number,
+    state: GameStateWithActions,
+  ): void {
     const room = this.buildRoomKey(gameType, roomId);
     const targets = this.rooms.get(room);
     if (!targets) return;
-    const payloadByUserId = new Map<number, any>();
+    const payloadByUserId = new Map<number, GameStatePayload>();
     for (const socket of Array.from(targets)) {
-      if (socket.readyState !== WebSocket.OPEN) {
+      if (socket.readyState !== WS_READY_STATE_OPEN) {
         targets.delete(socket);
         this.lastPayloadBySocket.delete(socket);
         continue;
@@ -658,7 +681,11 @@ export class GameGateway
       }
       let payload = payloadByUserId.get(userId) ?? null;
       if (!payload) {
-        payload = this.engine.exposeStateForUser(state, gameType, userId);
+        const exposed = this.engine.exposeStateForUser(state, gameType, userId);
+        if (!exposed) {
+          continue;
+        }
+        payload = exposed as GameStatePayload;
         payloadByUserId.set(userId, payload);
       }
       const previousPayload = this.lastPayloadBySocket.get(socket) ?? null;
@@ -691,15 +718,15 @@ export class GameGateway
   private broadcastEnded(
     gameType: string,
     roomId: number,
-    state: any,
-    payload: any,
+    state: GameStateWithActions,
+    payload: Payload,
   ): void {
     const room = this.buildRoomKey(gameType, roomId);
     const targets = this.rooms.get(room);
     if (!targets) return;
 
     for (const socket of Array.from(targets)) {
-      if (socket.readyState !== WebSocket.OPEN) {
+      if (socket.readyState !== WS_READY_STATE_OPEN) {
         targets.delete(socket);
         continue;
       }
@@ -713,25 +740,30 @@ export class GameGateway
       let viewerPlayerId: number | null = null;
       try {
         const exposed = this.engine.exposeStateForUser(state, gameType, userId);
-        const extras = exposed?.extras && typeof exposed.extras === 'object'
-          ? exposed.extras
-          : {};
-        const rawViewerPlayerId = (extras as any)?.viewerPlayerId;
-        if (typeof rawViewerPlayerId === 'number' && Number.isFinite(rawViewerPlayerId)) {
-          viewerPlayerId = rawViewerPlayerId;
+        const extras =
+          exposed?.extras && typeof exposed.extras === 'object'
+            ? exposed.extras
+            : {};
+        const viewerPayloadId = this.parseNumberFromPayload(
+          extras,
+          'viewerPlayerId',
+        );
+        if (viewerPayloadId !== null) {
+          viewerPlayerId = viewerPayloadId;
         }
       } catch {
         // best-effort
       }
 
       const outcomesByPlayerId =
-        payload?.outcomesByPlayerId &&
+        payload.outcomesByPlayerId &&
         typeof payload.outcomesByPlayerId === 'object'
-          ? payload.outcomesByPlayerId
+          ? (payload.outcomesByPlayerId as Record<string, unknown>)
           : {};
       const viewerOutcome =
         viewerPlayerId != null
-          ? String(outcomesByPlayerId[String(viewerPlayerId)] ?? '').trim() || null
+          ? String(outcomesByPlayerId[String(viewerPlayerId)] ?? '').trim() ||
+            null
           : null;
 
       this.safeSend(socket, {
@@ -758,7 +790,7 @@ export class GameGateway
     meta: GameClient,
     roomId: number,
     gameType: string,
-    client: WebSocket,
+    client: GameWebSocket,
   ) {
     if (meta.roomId && meta.gameType) {
       const oldKey = this.buildRoomKey(meta.gameType, meta.roomId);
@@ -805,7 +837,7 @@ export class GameGateway
       this.lastPayloadBySocket.delete(socket);
 
       try {
-        if (socket.readyState === WebSocket.OPEN) {
+        if (socket.readyState === WS_READY_STATE_OPEN) {
           socket.send(errorPayload, () => {
             try {
               socket.close();
@@ -822,15 +854,19 @@ export class GameGateway
     }
   }
 
-  private sendError(client: WebSocket, message: string, context?: string) {
-    if (client.readyState !== WebSocket.OPEN) return;
+  private sendError(client: GameWebSocket, message: string, context?: string) {
+    if (client.readyState !== WS_READY_STATE_OPEN) return;
     this.safeSend(client, { type: 'error', context, payload: { message } });
   }
 
-  private safeSend(client: WebSocket, payload: any) {
-    if (client.readyState !== WebSocket.OPEN) return;
+  private unsafeStringify(payload: unknown): string {
+    return JSON.stringify(payload);
+  }
+
+  private safeSend(client: GameWebSocket, payload: Payload) {
+    if (client.readyState !== WS_READY_STATE_OPEN) return;
     try {
-      client.send(JSON.stringify(payload));
+      client.send(this.unsafeStringify(payload));
     } catch (err) {
       this.logger.warn('Echec envoi WS game', err as Error);
       try {
@@ -841,8 +877,8 @@ export class GameGateway
     }
   }
 
-  private sendState(client: WebSocket, payload: any): void {
-    if (client.readyState !== WebSocket.OPEN) return;
+  private sendState(client: GameWebSocket, payload: GameStatePayload): void {
+    if (client.readyState !== WS_READY_STATE_OPEN) return;
     const encoded = this.getEncodedStateMessage(payload);
     try {
       client.send(encoded);
@@ -858,7 +894,7 @@ export class GameGateway
     }
   }
 
-  private getEncodedStateMessage(payload: any): string {
+  private getEncodedStateMessage(payload: GameStatePayload): string {
     if (!payload || typeof payload !== 'object') {
       return JSON.stringify({ type: 'game.state', payload });
     }
@@ -872,8 +908,8 @@ export class GameGateway
   }
 
   private buildEncodedPatch(
-    previousPayload: any,
-    nextPayload: any,
+    previousPayload: GameStatePayload,
+    nextPayload: GameStatePayload,
     fullStateEncoded: string,
   ): string | null {
     const patch = this.buildTopLevelPatch(previousPayload, nextPayload);
@@ -890,8 +926,8 @@ export class GameGateway
   }
 
   private buildTopLevelPatch(
-    previousPayload: any,
-    nextPayload: any,
+    previousPayload: GameStatePayload,
+    nextPayload: GameStatePayload,
   ): GameStatePatchPayload | null {
     if (
       !previousPayload ||
@@ -924,7 +960,7 @@ export class GameGateway
       return null;
     }
 
-    const rawBaseTurnIndex = (previousPayload as any)?.turnIndex;
+    const rawBaseTurnIndex = previousPayload?.turnIndex;
     const baseTurnIndex =
       typeof rawBaseTurnIndex === 'number' && Number.isFinite(rawBaseTurnIndex)
         ? rawBaseTurnIndex
@@ -937,7 +973,7 @@ export class GameGateway
     };
   }
 
-  private getTopLevelSnapshot(payload: any): Map<string, string> {
+  private getTopLevelSnapshot(payload: GameStatePayload): Map<string, string> {
     if (!payload || typeof payload !== 'object') {
       return new Map<string, string>();
     }
@@ -964,7 +1000,7 @@ export class GameGateway
     return snapshot;
   }
 
-  private decode(raw: any): IncomingPayload | null {
+  private decode(raw: unknown): IncomingPayload | null {
     let text = '';
     if (typeof raw === 'string') {
       text = raw;
@@ -985,14 +1021,17 @@ export class GameGateway
     }
   }
 
-  private resolveAuth(client: WebSocket, args: any[]): WsAuthPayload | null {
+  private resolveAuth(
+    client: GameWebSocket,
+    args: unknown[],
+  ): WsAuthPayload | null {
     const token = this.auth.extractToken(client, args);
     return this.auth.tryVerify(token);
   }
 
   private async tryAutoJoinFromUrl(
-    client: WebSocket,
-    args: any[],
+    client: GameWebSocket,
+    args: unknown[],
   ): Promise<void> {
     const meta = this.clients.get(client);
     if (!meta) return;
@@ -1024,14 +1063,14 @@ export class GameGateway
   }
 
   private async ensureRoomContext(
-    client: WebSocket,
+    client: GameWebSocket,
     meta: GameClient,
-    payload: any,
+    payload: Payload,
   ): Promise<{ roomId: number; gameType: string } | null> {
-    const payloadRoomId = Number(payload?.roomId ?? payload?.room ?? 0);
-    const payloadGameType = String(payload?.gameType ?? payload?.game ?? '')
-      .trim()
-      .toString();
+    const payloadRoomId =
+      this.parseNumberFromPayload(payload, 'roomId', 'room') ?? 0;
+    const payloadGameType =
+      this.parseStringFromPayload(payload, 'gameType', 'game') ?? '';
     if (payloadRoomId > 0 && payloadGameType) {
       return { roomId: payloadRoomId, gameType: payloadGameType };
     }
@@ -1056,16 +1095,21 @@ export class GameGateway
 
     // Last resort: attempt to read from the client url (if exposed by ws).
     try {
-      const urlCandidate = String((client as any).url || '').trim();
+      const urlCandidate = this.resolveUrlCandidate(client, []);
       if (urlCandidate) {
         const url = new URL(urlCandidate, 'ws://localhost');
         const roomId = Number(
           url.searchParams.get('roomId') || url.searchParams.get('room') || 0,
         );
-        const gameType = String(
-          url.searchParams.get('gameType') || url.searchParams.get('game') || '',
-        ).trim();
-        if (roomId > 0 && gameType) {
+        const gameType = (
+          url.searchParams.get('gameType') ||
+          url.searchParams.get('game') ||
+          ''
+        )
+          .trim()
+          .toString();
+        if (!Number.isFinite(roomId) || roomId <= 0) return null;
+        if (gameType) {
           return { roomId, gameType };
         }
       }
@@ -1077,24 +1121,27 @@ export class GameGateway
   }
 
   private extractJoinParams(
-    client: WebSocket,
-    args: any[],
+    client: GameWebSocket,
+    args: unknown[],
   ): { roomId: number; gameType: string } | null {
-    const request: any =
-      (args && args[0]) || (client as any).upgradeReq || (client as any).req;
-    const urlCandidate = (client as any).url || request?.url || '';
-    if (typeof urlCandidate !== 'string' || !urlCandidate.trim()) {
+    const urlCandidate = this.resolveUrlCandidate(client, args);
+    if (!urlCandidate) {
       return null;
     }
+    const trimmedCandidate = urlCandidate.trim();
+    if (!trimmedCandidate) return null;
     try {
-      const url = new URL(urlCandidate, 'ws://localhost');
+      const url = new URL(trimmedCandidate, 'ws://localhost');
       const roomId = Number(
         url.searchParams.get('roomId') || url.searchParams.get('room') || 0,
       );
-      const gameType =
-        (url.searchParams.get('gameType') || url.searchParams.get('game') || '')
-          .trim()
-          .toString();
+      const gameType = (
+        url.searchParams.get('gameType') ||
+        url.searchParams.get('game') ||
+        ''
+      )
+        .trim()
+        .toString();
 
       if (!Number.isFinite(roomId) || roomId <= 0) return null;
       if (!gameType) return null;
@@ -1103,6 +1150,100 @@ export class GameGateway
     } catch {
       return null;
     }
+  }
+
+  private extractTrace(payload?: Payload): TraceInfo {
+    if (!payload) {
+      return { traceId: null, sentAtMs: null };
+    }
+    const traceValue = payload['_trace'];
+    if (!traceValue || typeof traceValue !== 'object') {
+      return { traceId: null, sentAtMs: null };
+    }
+    const trace = traceValue as Record<string, unknown>;
+    const traceId =
+      typeof trace['id'] === 'string' && trace['id'].trim()
+        ? trace['id'].trim()
+        : null;
+    const sentAtMs =
+      typeof trace['sentAtMs'] === 'number' &&
+      Number.isFinite(trace['sentAtMs'])
+        ? trace['sentAtMs']
+        : null;
+    return { traceId, sentAtMs };
+  }
+
+  private computeClientLatency(
+    receivedAtMs: number,
+    sentAtMs: number | null,
+  ): number | null {
+    if (sentAtMs === null) {
+      return null;
+    }
+    return Math.max(0, receivedAtMs - sentAtMs);
+  }
+
+  private parseNumberFromPayload(
+    payload: Payload | undefined,
+    ...keys: string[]
+  ): number | null {
+    if (!payload) {
+      return null;
+    }
+    for (const key of keys) {
+      const value = payload[key];
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+      }
+      if (typeof value === 'string' && value.trim().length > 0) {
+        const parsed = Number(value.trim());
+        if (Number.isFinite(parsed)) {
+          return parsed;
+        }
+      }
+    }
+    return null;
+  }
+
+  private parseStringFromPayload(
+    payload: Payload | undefined,
+    ...keys: string[]
+  ): string | null {
+    if (!payload) {
+      return null;
+    }
+    for (const key of keys) {
+      const value = payload[key];
+      if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (trimmed.length > 0) {
+          return trimmed;
+        }
+      }
+    }
+    return null;
+  }
+
+  private resolveUrlCandidate(
+    client: GameWebSocket,
+    args: unknown[],
+  ): string | null {
+    const wsClient = client as GameWebSocketWithUrl;
+    const request = Array.isArray(args) ? args[0] : undefined;
+    const candidate =
+      (request &&
+        typeof request === 'object' &&
+        'url' in request &&
+        typeof (request as { url?: string }).url === 'string' &&
+        (request as { url?: string }).url) ??
+      wsClient.url ??
+      wsClient.upgradeReq?.url ??
+      wsClient.req?.url ??
+      null;
+    if (typeof candidate !== 'string') {
+      return null;
+    }
+    return candidate;
   }
 
   private buildRoomKey(gameType: string, roomId: number): string {

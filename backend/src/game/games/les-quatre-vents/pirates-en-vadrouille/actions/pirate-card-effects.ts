@@ -1,8 +1,3 @@
-import type {
-  PiratesEnVadrouilleBonusCard,
-  PiratesEnVadrouilleObstacleCard,
-} from '../model/pirates-en-vadrouille-state.entity';
-
 export type PiratesCardEffect =
   | { kind: 'move'; delta: number }
   | { kind: 'skip'; turns: number }
@@ -23,7 +18,7 @@ export const OBSTACLE_CARD_EFFECTS: Record<number, PiratesCardEffect> = {
   7: { kind: 'loseGold', amount: 1 }, // Singe
   8: { kind: 'skip', turns: 2 }, // Pieuvre
   9: { kind: 'move', delta: -1 }, // Piège
- 10: { kind: 'loseGold', amount: 1 }, // Toucan
+  10: { kind: 'loseGold', amount: 1 }, // Toucan
 };
 
 export const BONUS_CARD_EFFECTS: Record<number, PiratesCardEffect> = {
@@ -36,7 +31,7 @@ export const BONUS_CARD_EFFECTS: Record<number, PiratesCardEffect> = {
   7: { kind: 'targetMove', delta: -1 }, // Ancre en or
   8: { kind: 'gainGold', amount: 1 }, // Hamac
   9: { kind: 'stealTreasure', count: 1 }, // Sabre
- 10: { kind: 'immunity', turns: 2 }, // Lanterne
+  10: { kind: 'immunity', turns: 2 }, // Lanterne
 };
 
 export function describeEffect(effect: PiratesCardEffect): string {

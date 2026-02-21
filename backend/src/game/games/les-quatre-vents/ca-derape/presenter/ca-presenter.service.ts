@@ -19,7 +19,7 @@ export class CaPresenterService {
       return 'Position: inconnue.';
     }
 
-    const tile = tiles[Math.max(0, Math.min(tiles.length - 1, pos))] as any;
+    const tile = tiles[Math.max(0, Math.min(tiles.length - 1, pos))];
     const caseNumber = Math.max(1, Math.trunc(pos) + 1);
     const total = tiles.length;
     const label = String(tile?.label ?? '').trim();
@@ -41,7 +41,7 @@ export class CaPresenterService {
     userId: number,
   ): GameStateWithActions {
     const actions = Rulebook.getAvailableActions(state, userId);
-    const meta = (state.metadata ?? {}) as any as CaMetadata;
+    const meta = this.getMeta(state);
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
 
@@ -54,7 +54,7 @@ export class CaPresenterService {
       actions: formatPresenterActions(actions),
       pending: state.pending ?? null,
       extras: {
-        ...(state as any).extras,
+        ...asRecord(asRecord(state).extras),
         currentPlayerView: {
           id: userId,
           username: me?.username ?? `Joueur ${userId}`,
@@ -68,7 +68,19 @@ export class CaPresenterService {
           },
         },
       },
-      board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
-    } as any;
+      board: this.boardPayload.buildTilesPositionsLaps(
+        meta.tiles,
+        meta.positions,
+      ),
+    } as GameStateWithActions;
   }
+
+  private getMeta(state: GameStateEntity): CaMetadata {
+    return (state.metadata ?? {}) as CaMetadata;
+  }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  if (value == null || typeof value !== 'object') return {};
+  return value as Record<string, unknown>;
 }

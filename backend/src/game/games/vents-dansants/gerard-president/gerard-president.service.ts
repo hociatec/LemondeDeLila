@@ -24,7 +24,8 @@ export class GerardPresidentService extends AbstractGameService {
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'VentsDansants';
   readonly displayName = GERARD_PRESIDENT_GAME.displayName;
-  readonly description = 'Un jeu d’humour où le prénom le plus absurde remporte les manches.';
+  readonly description =
+    'Un jeu d’humour où le prénom le plus absurde remporte les manches.';
   readonly minPlayers = GERARD_PRESIDENT_GAME.minPlayers;
   readonly maxPlayers = GERARD_PRESIDENT_GAME.maxPlayers;
 
@@ -41,11 +42,17 @@ export class GerardPresidentService extends AbstractGameService {
     return this.setup.hydrateInitialState(baseState);
   }
 
-  applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
+  applyActions(
+    state: GameStateEntity,
+    actions: GameSingleActionDto[],
+  ): GameStateEntity {
     return this.actions.applyActions(state, actions);
   }
 
-  getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
+  getAvailableActions(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameSingleActionDto[] {
     return Rulebook.getAvailableActions(state, playerId);
   }
 
@@ -57,11 +64,17 @@ export class GerardPresidentService extends AbstractGameService {
     return Rulebook.validateAction(state, action, actorId);
   }
 
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
   }
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     return this.bots.getBotActions(state, botPlayerId);
   }
 

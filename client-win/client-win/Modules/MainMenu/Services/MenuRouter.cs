@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.Logging;
@@ -48,7 +48,7 @@ namespace client_win.Modules.MainMenu.Services;
 
 /// <summary>
 /// Router de navigation pour le menu principal.
-/// Se limite à la navigation entre modules UI.
+/// Se limite Ã  la navigation entre modules UI.
 /// </summary>
 public sealed class MenuRouter : IMenuRouter
 {
@@ -250,7 +250,7 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentContent;
         if (previous == null)
         {
-            return Task.FromResult("Impossible d'ouvrir Mon coffre fort (vue précédente indisponible).");
+            return Task.FromResult("Impossible d'ouvrir Mon coffre fort (vue prÃ©cÃ©dente indisponible).");
         }
 
         _vaultReturnContent = previous;
@@ -370,8 +370,8 @@ public sealed class MenuRouter : IMenuRouter
             rooms: _roomDirectory,
             tables: _tables,
             announcements: _announcements,
-            // Quitter une table via raccourci (Q) doit revenir à la taverne (menu précédent),
-            // pas nécessairement à la liste des tables.
+            // Quitter une table via raccourci (Q) doit revenir Ã  la taverne (menu prÃ©cÃ©dent),
+            // pas nÃ©cessairement Ã  la liste des tables.
             returnContent: () => previous ?? vm,
             onClose: () =>
             {
@@ -388,157 +388,6 @@ public sealed class MenuRouter : IMenuRouter
         return Task.FromResult("Liste des tables publiques ouverte.");
     }
 
-#if false
-    private static void RestoreFocusAfterBackNavigation(UserControl target)
-    {
-        // Cas particulier : retour vers une table de jeu => redonner le focus à la zone de jeu.
-        // Sinon le focus peut tomber sur un conteneur "volet" et obliger à renaviguer au clavier.
-        if (target is client_win.Modules.Game.Shell.Views.GameRoomView room)
-        {
-            room.RequestFocusGameZone(GameFocusReason.AfterDialog);
-            return;
-        }
-        // Accessibilité: quand on revient au menu précédent via Échap,
-        // remettre le focus sur l'élément sélectionné (NVDA annonce le libellé, comme lors de la navigation au clavier).
-        var dispatcher = target.Dispatcher;
-        dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() =>
-        {
-            try
-            {
-                target.UpdateLayout();
-                System.Windows.Input.Keyboard.ClearFocus();
-
-                static bool TryFocusList(System.Windows.Controls.ListBox list)
-                {
-                    if (!list.IsVisible || !list.IsEnabled)
-                    {
-                        return false;
-                    }
-
-                    if (list.Items.Count == 0)
-                    {
-                        list.Focus();
-                        System.Windows.Input.Keyboard.Focus(list);
-                        return true;
-                    }
-
-                    if (list.SelectedIndex < 0)
-                    {
-                        list.SelectedIndex = 0;
-                    }
-
-                    void FocusSelectedItem()
-                    {
-                        list.UpdateLayout();
-                        list.ScrollIntoView(list.SelectedItem ?? list.Items[list.SelectedIndex]);
-                        if (list.ItemContainerGenerator.ContainerFromIndex(list.SelectedIndex) is System.Windows.Controls.ListBoxItem item)
-                        {
-                            item.Focus();
-                            System.Windows.Input.Keyboard.Focus(item);
-                            return;
-                        }
-
-                        list.Focus();
-                        System.Windows.Input.Keyboard.Focus(list);
-                    }
-
-                    if (list.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
-                    {
-                        FocusSelectedItem();
-                        return true;
-                    }
-
-                    EventHandler? handler = null;
-                    handler = (_, __) =>
-                    {
-                        if (list.ItemContainerGenerator.Status != System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
-                        {
-                            return;
-                        }
-
-                        list.ItemContainerGenerator.StatusChanged -= handler;
-                        FocusSelectedItem();
-                    };
-                    list.ItemContainerGenerator.StatusChanged += handler;
-                    return true;
-                }
-
-                // Catalog (taverne): revenir sur la catégorie sélectionnée (les actions sont dans la liste).
-                if (target.FindName("CategoriesList") is System.Windows.Controls.ListBox categories && TryFocusList(categories))
-                {
-                    return;
-                }
-                if (target.FindName("SubCategoriesList") is System.Windows.Controls.ListBox subCategories && TryFocusList(subCategories))
-                {
-                    return;
-                }
-                if (target.FindName("GamesList") is System.Windows.Controls.ListBox games && TryFocusList(games))
-                {
-                    return;
-                }
-
-                // MainMenu / Stats / Leaderboard utilisent souvent "ItemsList".
-                if (target.FindName("ItemsList") is System.Windows.Controls.ListBox list)
-                {
-                    if (list.Items.Count == 0)
-                    {
-                        list.Focus();
-                        return;
-                    }
-
-                    if (list.SelectedIndex < 0)
-                    {
-                        list.SelectedIndex = 0;
-                    }
-
-                    void FocusSelectedItem()
-                    {
-                        list.UpdateLayout();
-                        list.ScrollIntoView(list.SelectedItem ?? list.Items[list.SelectedIndex]);
-                        if (list.ItemContainerGenerator.ContainerFromIndex(list.SelectedIndex) is System.Windows.Controls.ListBoxItem item)
-                        {
-                            item.Focus();
-                            System.Windows.Input.Keyboard.Focus(item);
-                            return;
-                        }
-
-                        list.Focus();
-                        System.Windows.Input.Keyboard.Focus(list);
-                    }
-
-                    if (list.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
-                    {
-                        FocusSelectedItem();
-                        return;
-                    }
-
-                    EventHandler? handler = null;
-                    handler = (_, __) =>
-                    {
-                        if (list.ItemContainerGenerator.Status != System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
-                        {
-                            return;
-                        }
-
-                        list.ItemContainerGenerator.StatusChanged -= handler;
-                        FocusSelectedItem();
-                    };
-                    list.ItemContainerGenerator.StatusChanged += handler;
-                    return;
-                }
-
-                // Fallback: focus sur la vue.
-                target.Focus();
-                System.Windows.Input.Keyboard.Focus(target);
-            }
-            catch
-            {
-                // ignore
-            }
-        }));
-    }
-
-#endif
 
     public async Task<string> OpenChat()
     {
@@ -547,8 +396,8 @@ public sealed class MenuRouter : IMenuRouter
         var owner = Application.Current?.MainWindow;
         if (owner == null)
         {
-            _logger.LogWarning("Fenêtre principale indisponible pour le tchat");
-            return "Fenêtre principale indisponible.";
+            _logger.LogWarning("FenÃªtre principale indisponible pour le tchat");
+            return "FenÃªtre principale indisponible.";
         }
 
         _audio.PauseBackground();
@@ -594,7 +443,7 @@ public sealed class MenuRouter : IMenuRouter
 
     public Task<string> OpenSocial()
     {
-        _logger.LogInformation("Ouverture du réseau social");
+        _logger.LogInformation("Ouverture du rÃ©seau social");
 
         var previous = _navigation.CurrentContent;
         _socialReturnContent = previous;
@@ -619,7 +468,7 @@ public sealed class MenuRouter : IMenuRouter
         SetPresenceContextForContent(_socialVm);
         _navigation.Show(_socialVm);
 
-        return Task.FromResult("Réseau social ouvert.");
+        return Task.FromResult("RÃ©seau social ouvert.");
     }
 
     public Task<string> OpenNotifications()
@@ -654,7 +503,7 @@ public sealed class MenuRouter : IMenuRouter
 
         if (_contactAdminOpen && _navigation.CurrentContent is AboutViewModel)
         {
-            return Task.FromResult("Contact admin déjà ouvert.");
+            return Task.FromResult("Contact admin dÃ©jÃ  ouvert.");
         }
 
         var previous = _navigation.CurrentContent;
@@ -680,7 +529,7 @@ public sealed class MenuRouter : IMenuRouter
 
         if (_navigation.CurrentContent is AdminViewModel)
         {
-            return Task.FromResult("Panneau d'administration déjà ouvert.");
+            return Task.FromResult("Panneau d'administration dÃ©jÃ  ouvert.");
         }
 
         _adminReturnContent = _navigation.CurrentContent;
@@ -728,7 +577,7 @@ public sealed class MenuRouter : IMenuRouter
 
     public Task<string> OpenAbout()
     {
-        _logger.LogInformation("Ouverture de la page À propos");
+        _logger.LogInformation("Ouverture de la page Ã€ propos");
 
         var previous = _navigation.CurrentContent;
         _aboutReturnContent = previous;
@@ -749,7 +598,7 @@ public sealed class MenuRouter : IMenuRouter
         SetPresenceContextForContent(_aboutVm);
         _navigation.Show(_aboutVm);
 
-        return Task.FromResult("À propos ouvert.");
+        return Task.FromResult("Ã€ propos ouvert.");
     }
 
     public Task<string> OpenOptions()
@@ -984,7 +833,7 @@ public sealed class MenuRouter : IMenuRouter
 
     public Task<string> Logout()
     {
-        _logger.LogInformation("Déconnexion demandée par l'utilisateur");
+        _logger.LogInformation("DÃ©connexion demandÃ©e par l'utilisateur");
         _adminVm = null;
         _adminReturnContent = null;
         _contactAdminOpen = false;
@@ -1014,8 +863,8 @@ public sealed class MenuRouter : IMenuRouter
 
         _aboutVm = null;
         _aboutReturnContent = null;
-        // La déconnexion est gérée par le MainMenuViewModel
-        return Task.FromResult("Déconnexion en cours...");
+        // La dÃ©connexion est gÃ©rÃ©e par le MainMenuViewModel
+        return Task.FromResult("DÃ©connexion en cours...");
     }
 
     private async Task<string> OpenOptionsAndRestoreAsync()
@@ -1031,3 +880,5 @@ public sealed class MenuRouter : IMenuRouter
     }
 
 }
+
+

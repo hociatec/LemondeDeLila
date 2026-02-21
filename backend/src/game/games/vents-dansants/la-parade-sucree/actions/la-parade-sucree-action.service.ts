@@ -3,7 +3,6 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import {
@@ -12,7 +11,11 @@ import {
   LA_PARADE_SEQUENCE,
   LA_PARADE_SPECIAL_REWARDS,
 } from '../model/la-parade-sucree-cards';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import type {
   CandyCounts,
   LaParadeSucreeMetadata,
@@ -61,7 +64,9 @@ export class LaParadeSucreeActionService {
     if (!definition) return state;
 
     const meta = this.getMeta(state);
-    const hand = Array.isArray(meta.hands?.[currentId]) ? meta.hands[currentId] : [];
+    const hand = Array.isArray(meta.hands?.[currentId])
+      ? meta.hands[currentId]
+      : [];
     if (!hand.includes(cardId)) return state;
 
     const sequenceValue = LA_PARADE_SEQUENCE[meta.sequenceIndex];
@@ -115,7 +120,8 @@ export class LaParadeSucreeActionService {
     };
     for (const [type, amount] of Object.entries(reward)) {
       const candyType = type as keyof CandyCounts;
-      playerCandies[candyType] = (playerCandies[candyType] ?? 0) + (amount ?? 0);
+      playerCandies[candyType] =
+        (playerCandies[candyType] ?? 0) + (amount ?? 0);
     }
     candies[playerId] = playerCandies;
     let next = this.setMeta(state, { ...meta, candies });
@@ -150,7 +156,9 @@ export class LaParadeSucreeActionService {
     cardId: string,
   ): LaParadeSucreeMetadata {
     const hands = { ...(meta.hands ?? {}) };
-    const playerHand = Array.isArray(hands[playerId]) ? [...hands[playerId]] : [];
+    const playerHand = Array.isArray(hands[playerId])
+      ? [...hands[playerId]]
+      : [];
     const index = playerHand.indexOf(cardId);
     if (index >= 0) {
       playerHand.splice(index, 1);
@@ -224,4 +232,3 @@ export class LaParadeSucreeActionService {
     return { ...state, metadata };
   }
 }
-

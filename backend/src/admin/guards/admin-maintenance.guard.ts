@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
+import type { Request } from 'express';
 
 @Injectable()
 export class AdminMaintenanceGuard implements CanActivate {
@@ -12,7 +13,7 @@ export class AdminMaintenanceGuard implements CanActivate {
       throw new ForbiddenException('Maintenance désactivée sur ce serveur');
     }
 
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<Request>();
     if (this.isTokenRequired()) {
       const token = String(
         request?.headers?.['x-admin-maintenance-token'] || '',
@@ -65,13 +66,11 @@ export class AdminMaintenanceGuard implements CanActivate {
       .filter(Boolean);
   }
 
-  private getRequestIp(request: any): string | null {
-    const forwarded = String(
-      request?.headers?.['x-forwarded-for'] || '',
-    ).trim();
+  private getRequestIp(request: Request): string | null {
+    const forwarded = String(request.headers['x-forwarded-for'] || '').trim();
     const ip = forwarded
       ? forwarded.split(',')[0]?.trim()
-      : String(request?.ip || '').trim();
+      : String(request.ip || '').trim();
     if (!ip) return null;
     // Normalize "::ffff:1.2.3.4" style addresses.
     return ip.startsWith('::ffff:') ? ip.slice('::ffff:'.length) : ip;

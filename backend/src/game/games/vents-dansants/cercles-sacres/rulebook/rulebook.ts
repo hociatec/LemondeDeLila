@@ -2,12 +2,13 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import type { CerclesSacresTheme } from '../model/cercles-sacres-cards';
 import { CERCLES_SACRES_CARD_BY_ID } from '../model/cercles-sacres-cards';
-import type {
-  CerclesSacresMetadata,
+import type { CerclesSacresMetadata } from '../model/cercles-sacres-state.entity';
+import {
+  CERCLES_SACRES_HAND_LIMIT,
+  CERCLES_SACRES_HAND_MIN,
 } from '../model/cercles-sacres-state.entity';
-import { CERCLES_SACRES_HAND_LIMIT, CERCLES_SACRES_HAND_MIN } from '../model/cercles-sacres-state.entity';
 import type { CerclesSacresActionType } from '../definitions/game.definition';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { normalizeActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 type CerclesSacresActionPayload = {
@@ -31,7 +32,10 @@ function hasCompleteCircle(cardIds: string[]): boolean {
   return themes.size === 6;
 }
 
-function isHandOverLimit(meta: CerclesSacresMetadata, playerId: number): boolean {
+function isHandOverLimit(
+  meta: CerclesSacresMetadata,
+  playerId: number,
+): boolean {
   const hand = meta.hands?.[playerId] ?? [];
   return hand.length > CERCLES_SACRES_HAND_LIMIT;
 }
@@ -45,7 +49,9 @@ export function getAvailableActions(
   if (current !== playerId) return [];
 
   const meta = getMeta(state);
-  const hand = Array.isArray(meta.hands?.[playerId]) ? [...meta.hands[playerId]] : [];
+  const hand = Array.isArray(meta.hands?.[playerId])
+    ? [...meta.hands[playerId]]
+    : [];
   const actions: GameSingleActionDto[] = [];
 
   if (!hand.length) {
@@ -142,6 +148,3 @@ export function validateAction(
 
   throw new Error('Action non supportée.');
 }
-
-
-

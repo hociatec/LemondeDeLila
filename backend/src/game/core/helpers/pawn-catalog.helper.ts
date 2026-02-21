@@ -5,16 +5,24 @@ export type CanonicalPawn = {
 };
 
 function normalizeText(value: unknown): string {
-  return String(value ?? '').trim();
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value).trim();
+  }
+  return '';
 }
 
 export function loadCanonicalPawns(rawPawns: unknown): CanonicalPawn[] {
   const source = Array.isArray(rawPawns) ? rawPawns : [];
   return source
-    .map((pawn: any) => {
-      const id = normalizeText(pawn?.id);
-      const name = normalizeText(pawn?.name);
-      const description = normalizeText(pawn?.description);
+    .map((pawn) => {
+      const entry =
+        pawn && typeof pawn === 'object'
+          ? (pawn as Record<string, unknown>)
+          : null;
+      const id = normalizeText(entry?.id);
+      const name = normalizeText(entry?.name);
+      const description = normalizeText(entry?.description);
       if (!id || !name) return null;
       return { id, name, description } as CanonicalPawn;
     })

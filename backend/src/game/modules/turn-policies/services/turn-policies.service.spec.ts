@@ -29,7 +29,10 @@ describe('TurnPoliciesService non-regression', () => {
       log: [],
     };
     const out = service.appendTurnAnnouncement(state, 3);
-    expect(core.appendLog).toHaveBeenCalledWith(state, "C'est au tour de Lila.");
+    expect(core.appendLog).toHaveBeenCalledWith(
+      state,
+      "C'est au tour de Lila.",
+    );
     expect(out.log.at(-1)?.message).toBe("C'est au tour de Lila.");
   });
 });

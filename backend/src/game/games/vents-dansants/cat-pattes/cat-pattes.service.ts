@@ -74,7 +74,7 @@ export class CatPattesService extends AbstractGameService {
     state: GameStateEntity,
     botPlayerId: number,
   ): GameSingleActionDto[] {
-  return this.bots.getBotActions(state, botPlayerId);
+    return this.bots.getBotActions(state, botPlayerId);
   }
 
   getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {

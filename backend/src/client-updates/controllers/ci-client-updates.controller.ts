@@ -9,7 +9,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
 import * as fs from 'fs';
 import * as os from 'os';
 import { ClientUpdatesUploadTokenGuard } from '../guards/client-updates-upload-token.guard';
@@ -20,6 +19,14 @@ import {
   ClientUpdatesUploadMetaDto,
 } from '../dto/client-updates-upload.dto';
 import { ClientUpdatesUploadService } from '../services/client-updates-upload.service';
+
+type UploadedFileLike = {
+  path?: unknown;
+};
+
+function getUploadPath(file: UploadedFileLike | undefined): string {
+  return typeof file?.path === 'string' ? file.path : '';
+}
 
 /**
  * CI-only endpoints secured by a shared token (no JWT).
@@ -38,23 +45,19 @@ export class CiClientUpdatesController {
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: (_req, _file, cb) => cb(null, os.tmpdir()),
-        filename: (_req, file, cb) =>
-          cb(null, `lila-client-update-${Date.now()}-${file.originalname}`),
-      }),
+      dest: os.tmpdir(),
       limits: { fileSize: 600 * 1024 * 1024 }, // 600MB
     }),
   )
   async upload(
-    @UploadedFile() file?: any,
+    @UploadedFile() file?: UploadedFileLike,
     @Body() body?: ClientUpdatesUploadMetaDto,
   ) {
-    if (!file?.path) {
+    const zipPath = getUploadPath(file);
+    if (!zipPath) {
       throw new BadRequestException('Fichier manquant (champ "file").');
     }
 
-    const zipPath = file.path;
     try {
       return await this.uploads.uploadSingleZip({
         zipPath,
@@ -77,29 +80,23 @@ export class CiClientUpdatesController {
   @Post('upload/chunk')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: (_req, _file, cb) => cb(null, os.tmpdir()),
-        filename: (_req, file, cb) =>
-          cb(
-            null,
-            `lila-client-update-chunk-${Date.now()}-${file.originalname}`,
-          ),
-      }),
+      dest: os.tmpdir(),
       limits: { fileSize: 15 * 1024 * 1024 }, // keep < 20m
     }),
   )
   async chunk(
-    @UploadedFile() file?: any,
+    @UploadedFile() file?: UploadedFileLike,
     @Body() body?: ClientUpdatesUploadChunkDto,
   ) {
-    if (!file?.path) {
+    const filePath = getUploadPath(file);
+    if (!filePath) {
       throw new BadRequestException('Chunk manquant (champ "file").');
     }
 
     return this.uploads.uploadChunk({
       uploadId: body?.uploadId ?? '',
       index: body?.index ?? -1,
-      filePath: file.path,
+      filePath,
     });
   }
 

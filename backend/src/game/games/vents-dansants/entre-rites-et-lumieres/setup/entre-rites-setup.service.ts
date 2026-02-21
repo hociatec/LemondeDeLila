@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
-import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import { getSafePlayers } from '../../../../setup/setup-service.helper';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import {
   ENTRE_RITES_CARD_BY_ID,
@@ -17,10 +17,11 @@ export class EntreRitesSetupService {
     const players = getSafePlayers(baseState);
     const playerIds = players
       .filter((player) => player?.id != null)
-      .map((player) => player!.id);
+      .map((player) => player.id);
 
     const deckIds = ENTRE_RITES_DECK.map((card) => card.id);
-    const rngSeed = ((baseState.metadata ?? {}) as EntreRitesMetadata).rng ?? {};
+    const rngSeed =
+      ((baseState.metadata ?? {}) as EntreRitesMetadata).rng ?? {};
     const { values: shuffledDeck, meta: rng } = this.random.shuffle(
       rngSeed,
       deckIds,

@@ -15,7 +15,7 @@ import { ToutPresDeMamanBotService } from './bots/tout-pres-de-maman-bot.service
     GameCoreModule,
     GameRegistryModule,
     EngineServicesModule,
-    ],
+  ],
   providers: [
     ToutPresDeMamanService,
     ToutPresDeMamanSetupService,

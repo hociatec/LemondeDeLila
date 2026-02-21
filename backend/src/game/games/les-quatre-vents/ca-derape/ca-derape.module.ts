@@ -9,11 +9,7 @@ import { CaPresenterService } from './presenter/ca-presenter.service';
 import { CaBotService } from './bots/ca-bot.service';
 
 @Module({
-  imports: [
-    BoardGameDeckKitModule,
-    GameCoreModule,
-    GameRegistryModule,
-    ],
+  imports: [BoardGameDeckKitModule, GameCoreModule, GameRegistryModule],
   providers: [
     CaDerapeService,
     CaSetupService,

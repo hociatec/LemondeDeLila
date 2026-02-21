@@ -25,7 +25,9 @@ export class DameNaturePresenterService {
     const actions = Rulebook.getAvailableActions(state, userId);
     const deckCount = Array.isArray(meta.deck) ? meta.deck.length : 0;
     const pollution = meta.pollutionTokens ?? 0;
-    const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
+    const hand = Array.isArray(meta.hands?.[userId])
+      ? [...meta.hands[userId]]
+      : [];
     const handCounts = summarizeHandCounts(meta.hands);
     const panels = buildLamaLikePanels({
       hand,
@@ -63,7 +65,10 @@ export class DameNaturePresenterService {
     for (const card of DAME_NATURE_FAMILY_CARD_DEFINITIONS) {
       const key = card.familyId;
       const list = catalog[key] ?? [];
-      list.push({ id: card.id, name: `${card.familyName} - ${card.memberName}` });
+      list.push({
+        id: card.id,
+        name: `${card.familyName} - ${card.memberName}`,
+      });
       catalog[key] = list;
     }
     return catalog;
@@ -72,7 +77,8 @@ export class DameNaturePresenterService {
   private buildHandCards(
     hand: string[],
   ): Array<{ familyId?: string; memberId: string; label: string }> {
-    const cards: Array<{ familyId?: string; memberId: string; label: string }> = [];
+    const cards: Array<{ familyId?: string; memberId: string; label: string }> =
+      [];
     for (const cardId of hand ?? []) {
       const definition = DAME_NATURE_CARD_BY_ID[cardId];
       if (!definition) {
@@ -87,7 +93,9 @@ export class DameNaturePresenterService {
         continue;
       }
       const label =
-        definition.type === 'quiz' ? definition.question : definition.description;
+        definition.type === 'quiz'
+          ? definition.question
+          : definition.description;
       cards.push({
         familyId: undefined,
         memberId: definition.id,
@@ -104,8 +112,8 @@ export class DameNaturePresenterService {
     return players
       .filter((player) => typeof player?.id === 'number')
       .map((player) => ({
-        id: player!.id,
-        username: player!.username?.trim() || `Joueur ${player!.id}`,
+        id: player.id,
+        username: player.username?.trim() || `Joueur ${player.id}`,
       }));
   }
 }

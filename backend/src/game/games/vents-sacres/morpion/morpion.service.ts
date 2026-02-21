@@ -8,9 +8,15 @@ import { GameRegistryService } from '../../../engine/services/game-registry.serv
 import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
 import type { MorpionMetadata } from './model/morpion.model';
 import { MorpionPresenter } from './morpion.presenter';
-import type { GameShortcutHint, GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import { interfaceShortcut } from '../../../engine/shortcuts/shortcut-utils';
-import { applyActionsSequentially, normalizeActionType } from '../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  normalizeActionType,
+} from '../../../actions/action-service.helper';
 import {
   pawnPlacement,
   victoryAnnouncement,
@@ -64,13 +70,19 @@ export class MorpionService extends AbstractGameService {
     };
   }
 
-  applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
+  applyActions(
+    state: GameStateEntity,
+    actions: GameSingleActionDto[],
+  ): GameStateEntity {
     return applyActionsSequentially(state, actions, (next, action) =>
       this.applyOne(next, action),
     );
   }
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     const current = state.turn?.currentPlayerId ?? null;
     if (current !== botPlayerId) return [];
     if (String(state.status ?? '').toLowerCase() !== 'started') return [];
@@ -88,7 +100,7 @@ export class MorpionService extends AbstractGameService {
     // 2) Block opponent immediate win if possible.
     const opponentId = (state.players ?? [])
       .map((p) => p?.id)
-      .find((id) => typeof id === 'number' && id !== botPlayerId) as number | undefined;
+      .find((id) => typeof id === 'number' && id !== botPlayerId);
     if (opponentId) {
       const block = this.findWinningMove(board, size, opponentId);
       if (block) {
@@ -124,7 +136,10 @@ export class MorpionService extends AbstractGameService {
     return [];
   }
 
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
   }
 
@@ -132,7 +147,10 @@ export class MorpionService extends AbstractGameService {
     return [interfaceShortcut('P', 'position'), interfaceShortcut('A', 'play')];
   }
 
-  private applyOne(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
+  private applyOne(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') {
       return state;
     }
@@ -145,7 +163,7 @@ export class MorpionService extends AbstractGameService {
     const actorId =
       typeof (action as any)?.meta?.actorId === 'number'
         ? (action as any).meta.actorId
-        : state.turn?.currentPlayerId ?? null;
+        : (state.turn?.currentPlayerId ?? null);
     if (!actorId) {
       return state;
     }
@@ -162,7 +180,9 @@ export class MorpionService extends AbstractGameService {
       return state;
     }
 
-    const board = Array.isArray(meta.board) ? [...meta.board] : Array.from({ length: size * size }, () => 0);
+    const board = Array.isArray(meta.board)
+      ? [...meta.board]
+      : Array.from({ length: size * size }, () => 0);
     const idx = y * size + x;
     if (board[idx] !== 0) {
       return state;
@@ -184,11 +204,13 @@ export class MorpionService extends AbstractGameService {
     };
 
     const nextStatus = winnerId || isDraw ? 'finished' : state.status;
-    const actorName = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
+    const actorName =
+      players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
     const opponent =
       players.find((p) => p?.id != null && p.id !== actorId) ?? null;
     const opponentId = opponent?.id ?? null;
-    const opponentName = opponent?.username ?? (opponentId != null ? `#${opponentId}` : null);
+    const opponentName =
+      opponent?.username ?? (opponentId != null ? `#${opponentId}` : null);
     const glyph = this.glyphForOwner(actorId, players);
     const cellRef = this.toCellRef({ x, y }, size);
     let log = this.appendLog(
@@ -228,27 +250,33 @@ export class MorpionService extends AbstractGameService {
       turnIndex: (state.turnIndex ?? 0) + 1,
       turn: {
         ...(state.turn ?? { direction: 1 }),
-        currentPlayerId: winnerId || isDraw ? state.turn?.currentPlayerId ?? null : nextPlayerId,
+        currentPlayerId:
+          winnerId || isDraw
+            ? (state.turn?.currentPlayerId ?? null)
+            : nextPlayerId,
         direction: 1,
-        label: winnerId || isDraw
-          ? undefined
-          : nextPlayerId
-            ? `Tour de ${players.find((p) => p?.id === nextPlayerId)?.username ?? `#${nextPlayerId}`}`
-            : undefined,
+        label:
+          winnerId || isDraw
+            ? undefined
+            : nextPlayerId
+              ? `Tour de ${players.find((p) => p?.id === nextPlayerId)?.username ?? `#${nextPlayerId}`}`
+              : undefined,
       },
     };
   }
 
   private nextPlayerId(players: any[], actorId: number): number | null {
     if (!Array.isArray(players) || players.length < 2) return actorId;
-    const ids = players.map((p) => p?.id).filter((id) => typeof id === 'number') as number[];
+    const ids = players
+      .map((p) => p?.id)
+      .filter((id) => typeof id === 'number');
     if (ids.length < 2) return actorId;
     const idx = ids.indexOf(actorId);
     if (idx < 0) return ids[0] ?? null;
     return ids[(idx + 1) % ids.length] ?? null;
   }
 
-  private detectWinner(board: number[], size: number): number | null {
+  private detectWinner(board: number[], _size: number): number | null {
     const lines = [
       [0, 1, 2],
       [3, 4, 5],
@@ -290,7 +318,10 @@ export class MorpionService extends AbstractGameService {
     return null;
   }
 
-  private appendLog(log: Array<{ message: string; timestamp?: string }> | undefined, message: string) {
+  private appendLog(
+    log: Array<{ message: string; timestamp?: string }> | undefined,
+    message: string,
+  ) {
     const trimmed = normalizeGameLogMessage(message);
     const next = Array.isArray(log) ? [...log] : [];
     if (!trimmed) {
@@ -316,4 +347,3 @@ export class MorpionService extends AbstractGameService {
     return '@';
   }
 }
-

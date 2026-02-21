@@ -8,14 +8,16 @@ export class GridCellActionsService {
     actionsRaw: unknown,
     resolveLabel?: (action: AnyAction) => string,
   ): Record<string, Array<{ type: string; label: string; payload: any }>> {
-    const result: Record<string, Array<{ type: string; label: string; payload: any }>> =
-      {};
+    const result: Record<
+      string,
+      Array<{ type: string; label: string; payload: any }>
+    > = {};
 
-    const actions: AnyAction[] = Array.isArray(actionsRaw) ? (actionsRaw as any[]) : [];
+    const actions: AnyAction[] = Array.isArray(actionsRaw) ? actionsRaw : [];
     for (const action of actions) {
       const payload = (action as any)?.payload ?? {};
-      const x = (payload as any)?.x;
-      const y = (payload as any)?.y;
+      const x = payload?.x;
+      const y = payload?.y;
       if (typeof x !== 'number' || typeof y !== 'number') {
         continue;
       }
@@ -27,7 +29,9 @@ export class GridCellActionsService {
       const label =
         typeof resolveLabel === 'function'
           ? String(resolveLabel(action) ?? '').trim()
-          : String((action as any)?.label ?? (action as any)?.type ?? '').trim();
+          : String(
+              (action as any)?.label ?? (action as any)?.type ?? '',
+            ).trim();
 
       (result[key] ??= []).push({
         type,
@@ -39,4 +43,3 @@ export class GridCellActionsService {
     return result;
   }
 }
-

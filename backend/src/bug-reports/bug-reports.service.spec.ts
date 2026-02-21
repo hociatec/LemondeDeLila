@@ -1,29 +1,38 @@
+import type { Repository } from 'typeorm';
 import { BugReportsService } from './bug-reports.service';
 import { BugReportEntity } from './entities/bug-report.entity';
 
-function createRepoStub() {
+type RepoStub = {
+  create(entity: Partial<BugReportEntity>): BugReportEntity;
+  save(entity: BugReportEntity): Promise<BugReportEntity>;
+  find(): Promise<BugReportEntity[]>;
+  findOne(args: { where: { id: string } }): Promise<BugReportEntity | null>;
+  delete(args: { id: string }): Promise<{ affected: number }>;
+};
+
+function createRepoStub(): RepoStub {
   const store = new Map<string, BugReportEntity>();
 
   return {
-    store,
-    create: (e: Partial<BugReportEntity>) => e as BugReportEntity,
-    save: async (e: BugReportEntity) => {
-      store.set(e.id, e);
-      return e;
+    create: (entity: Partial<BugReportEntity>) => entity as BugReportEntity,
+    save: (entity: BugReportEntity) => {
+      store.set(entity.id, entity);
+      return Promise.resolve(entity);
     },
-    find: async () => Array.from(store.values()),
-    findOne: async ({ where }: any) => store.get(where.id) ?? null,
-    delete: async ({ id }: any) => {
-      const existed = store.delete(id);
-      return { affected: existed ? 1 : 0 };
-    },
+    find: () => Promise.resolve(Array.from(store.values())),
+    findOne: ({ where }: { where: { id: string } }) =>
+      Promise.resolve(store.get(where.id) ?? null),
+    delete: ({ id }: { id: string }) =>
+      Promise.resolve({ affected: store.delete(id) ? 1 : 0 }),
   };
 }
 
 describe('BugReportsService', () => {
   it('creates and reads back', async () => {
     const repo = createRepoStub();
-    const svc = new BugReportsService(repo as any);
+    const svc = new BugReportsService(
+      repo as unknown as Repository<BugReportEntity>,
+    );
 
     const created = await svc.create({
       subject: ' Sujet ',
@@ -40,7 +49,9 @@ describe('BugReportsService', () => {
 
   it('updates and deletes', async () => {
     const repo = createRepoStub();
-    const svc = new BugReportsService(repo as any);
+    const svc = new BugReportsService(
+      repo as unknown as Repository<BugReportEntity>,
+    );
     const created = await svc.create({
       subject: 'Sujet',
       content: 'Contenu',

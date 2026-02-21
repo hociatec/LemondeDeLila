@@ -20,7 +20,9 @@ export class OlympiaPresenterService {
     const meta = (state.metadata ?? {}) as OlympiaMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
     const deckCounts = this.buildDeckCounts(meta);
-    const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
+    const hand = Array.isArray(meta.hands?.[userId])
+      ? [...meta.hands[userId]]
+      : [];
     const handCounts = summarizeHandCounts(meta.hands);
     const panels = buildLamaLikePanels({
       hand,

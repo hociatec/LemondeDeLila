@@ -1,6 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call */
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { PanierExpressService } from '../panier-express.service';
 import { PanierExpressExchangeService } from '../actions/panier-express-exchange.service';
 import { createPanierExpressTestingModule } from './panier-express-test-harness';
+
+function loadContentArray(filename: string, key: string): string[] {
+  const fullPath = join(__dirname, '..', 'model', 'content', filename);
+  const raw = readFileSync(fullPath, 'utf8');
+  const parsed = JSON.parse(raw) as Record<string, unknown>;
+  return Array.isArray(parsed[key]) ? (parsed[key] as string[]) : [];
+}
 
 function makeStartedState(
   game: PanierExpressService,
@@ -70,7 +80,7 @@ describe('PanierExpress - tests fonctionnels (simulation)', () => {
   });
 
   it('résout chaque carte événement (sans crash + pending bloquants résolubles)', () => {
-    const events: string[] = require('../model/content/events.json').events;
+    const events = loadContentArray('events.json', 'events');
     for (const card of events) {
       const base = makeStartedState(
         game,
@@ -106,8 +116,7 @@ describe('PanierExpress - tests fonctionnels (simulation)', () => {
   });
 
   it('résout chaque carte échange (sans crash + pending bloquants résolubles)', () => {
-    const exchanges: string[] =
-      require('../model/content/exchanges.json').exchanges;
+    const exchanges = loadContentArray('exchanges.json', 'exchanges');
     for (const card of exchanges) {
       const base = makeStartedState(
         game,

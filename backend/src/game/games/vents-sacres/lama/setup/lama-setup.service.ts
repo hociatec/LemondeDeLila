@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
-import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import { getSafePlayers } from '../../../../setup/setup-service.helper';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { createPendingState } from '../../../../modules/pending-action/services/pending-action.service';
 import { optionalInt } from '../../../../core/helpers/payload-validators.helper';
@@ -19,8 +19,12 @@ export class LamaSetupService {
   ) {}
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
-    const status = String(baseState.status ?? '').toLowerCase().trim();
-    const currentStep = String(((baseState.metadata ?? {}) as any)?.step ?? '').trim();
+    const status = String(baseState.status ?? '')
+      .toLowerCase()
+      .trim();
+    const currentStep = String(
+      ((baseState.metadata ?? {}) as any)?.step ?? '',
+    ).trim();
     if (status === 'started' && currentStep && currentStep !== 'setup_config') {
       return baseState;
     }
@@ -43,7 +47,9 @@ export class LamaSetupService {
 
     const pickOwnerId = (): number | null => {
       const metaOwner =
-        typeof metaAny.ownerPlayerId === 'number' ? metaAny.ownerPlayerId : null;
+        typeof metaAny.ownerPlayerId === 'number'
+          ? metaAny.ownerPlayerId
+          : null;
       if (metaOwner != null && players.some((p) => p?.id === metaOwner)) {
         return metaOwner;
       }
@@ -54,7 +60,7 @@ export class LamaSetupService {
         return roomOwner;
       }
 
-      return pickFirstHumanId() ?? (players[0]?.id ?? null);
+      return pickFirstHumanId() ?? players[0]?.id ?? null;
     };
 
     let ownerPlayerId = pickOwnerId();
@@ -71,7 +77,10 @@ export class LamaSetupService {
     }
 
     const meta: LamaMetadata = {
-      rng: typeof baseState.metadata === 'object' && baseState.metadata ? (baseState.metadata as any).rng : undefined,
+      rng:
+        typeof baseState.metadata === 'object' && baseState.metadata
+          ? (baseState.metadata as any).rng
+          : undefined,
       ownerPlayerId,
       loseAtScore: null,
       roundPauseSeconds: null,
@@ -94,28 +103,31 @@ export class LamaSetupService {
       suppressTurnAnnouncement: true,
     };
 
-    return createPendingState({
-      ...baseState,
-      status: 'started',
-      phase: 'setup',
-      round: baseState.round ?? 0,
-      turnIndex: baseState.turnIndex ?? 0,
-      lastRoll: null,
-      log: Array.isArray(baseState.log) ? baseState.log : [],
-      metadata: meta as any,
-      turn: {
-        ...(baseState.turn ?? { direction: 1 }),
-        currentPlayerId: ownerPlayerId,
-        direction: 1,
-        label: ownerPlayerId
-          ? `Réglages LAMA : ${this.shared.playerLabel(players as any[], ownerPlayerId)}`
-          : 'Réglages LAMA',
-      },
-    } as GameStateEntity, {
-      step: 'setup_config',
-      playerId: ownerPlayerId,
-      blocking: true,
-    } as any);
+    return createPendingState(
+      {
+        ...baseState,
+        status: 'started',
+        phase: 'setup',
+        round: baseState.round ?? 0,
+        turnIndex: baseState.turnIndex ?? 0,
+        lastRoll: null,
+        log: Array.isArray(baseState.log) ? baseState.log : [],
+        metadata: meta as any,
+        turn: {
+          ...(baseState.turn ?? { direction: 1 }),
+          currentPlayerId: ownerPlayerId,
+          direction: 1,
+          label: ownerPlayerId
+            ? `Réglages LAMA : ${this.shared.playerLabel(players as any[], ownerPlayerId)}`
+            : 'Réglages LAMA',
+        },
+      } as GameStateEntity,
+      {
+        step: 'setup_config',
+        playerId: ownerPlayerId,
+        blocking: true,
+      } as any,
+    );
   }
 
   applySetupConfig(
@@ -124,7 +136,8 @@ export class LamaSetupService {
     action: GameSingleActionDto,
     actorId: number,
   ): GameStateEntity {
-    if (meta.ownerPlayerId == null || actorId !== meta.ownerPlayerId) return state;
+    if (meta.ownerPlayerId == null || actorId !== meta.ownerPlayerId)
+      return state;
 
     const loseAtScore = (() => {
       try {
@@ -177,8 +190,14 @@ export class LamaSetupService {
     let log = state.log;
     const players = Array.isArray(state.players) ? state.players : [];
     const name = this.shared.playerLabel(players as any[], actorId);
-    log = this.logger.append(log, `${name} fixe la défaite à ${loseAtScore} jetons.`);
-    log = this.logger.append(log, `${name} règle la pause entre manches à ${roundPauseSeconds}s.`);
+    log = this.logger.append(
+      log,
+      `${name} fixe la défaite à ${loseAtScore} jetons.`,
+    );
+    log = this.logger.append(
+      log,
+      `${name} règle la pause entre manches à ${roundPauseSeconds}s.`,
+    );
     log = this.logger.append(log, `Début de la partie.`);
 
     return this.round.startNewRound(
@@ -197,8 +216,14 @@ export class LamaSetupService {
     );
   }
 
-  resumeRoundPause(state: GameStateEntity, meta: LamaMetadata): GameStateEntity {
-    const until = typeof meta.roundPauseUntilMs === 'number' ? meta.roundPauseUntilMs : null;
+  resumeRoundPause(
+    state: GameStateEntity,
+    meta: LamaMetadata,
+  ): GameStateEntity {
+    const until =
+      typeof meta.roundPauseUntilMs === 'number'
+        ? meta.roundPauseUntilMs
+        : null;
     if (until != null && Date.now() < until) {
       return state;
     }

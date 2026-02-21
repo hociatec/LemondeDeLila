@@ -1,6 +1,6 @@
 ﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { normalizeLowerActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import type {
   ZigEtZagMetadata,
@@ -22,7 +22,6 @@ export function getAvailableActions(
 
   const waiting = waitingPlayerIds(round);
   if (!waiting.length || waiting[0] !== playerId) return [];
-  const meta = getMeta(state);
   const actions: GameSingleActionDto[] = [];
   actions.push({ type: 'draw_card', payload: {} });
   return actions;
@@ -42,7 +41,7 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error('La partie n\'est pas démarrée.');
+    throw new Error("La partie n'est pas démarrée.");
   }
   const meta = getMeta(state);
   if (meta.winnerId != null) {
@@ -74,6 +73,3 @@ function waitingPlayerIds(round: ZigEtZagRoundState): number[] {
     })
     .filter((v: any): v is number => typeof v === 'number');
 }
-
-
-

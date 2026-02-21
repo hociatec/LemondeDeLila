@@ -486,7 +486,9 @@ export class NotificationGateway
         const inboxItemId =
           typeof parsed?.payload?.id === 'string' ? parsed.payload.id : '';
         const status =
-          typeof parsed?.payload?.status === 'string' ? parsed.payload.status : '';
+          typeof parsed?.payload?.status === 'string'
+            ? parsed.payload.status
+            : '';
         const from = {
           id: meta.userId,
           username: meta.username,
@@ -581,7 +583,12 @@ export class NotificationGateway
           'notify.admin_contact.threads',
           {
             sections: [
-              { id: 'open', title: 'Ouvert', collapsed: true, items: sections.open },
+              {
+                id: 'open',
+                title: 'Ouvert',
+                collapsed: true,
+                items: sections.open,
+              },
               {
                 id: 'in_progress',
                 title: 'En cours',

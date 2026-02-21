@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
-import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import { getSafePlayers } from '../../../../setup/setup-service.helper';
 import { loadV1Content } from '../../../../setup/content-loader.helper';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -20,7 +20,7 @@ import type {
 @Injectable()
 export class AventureSauvageSetupService {
   constructor(
-    private readonly core: GameCoreService,
+    _core: GameCoreService,
     private readonly random: RandomService,
     private readonly contentLoader: GameContentLoaderService,
     private readonly setupFlow: SetupFlowService,
@@ -50,17 +50,21 @@ export class AventureSauvageSetupService {
     }
 
     const tiles = buildTiles();
-    const baseMeta = (baseState.metadata ?? {}) as any;
+    const baseMeta = asRecord(baseState.metadata);
     const pawns = this.loadPawns();
     const pawnByPlayerId = this.normalizePawnAssignments(
       players,
-      baseMeta?.pawnByPlayerId,
+      baseMeta.pawnByPlayerId,
       pawns,
     );
     const setupStarterId =
-      typeof baseMeta?.setupStarterId === 'number'
+      typeof baseMeta.setupStarterId === 'number'
         ? baseMeta.setupStarterId
-        : resolveSeededStarterId(players, baseState.metadata ?? {}, baseState.turn?.currentPlayerId ?? null);
+        : resolveSeededStarterId(
+            players,
+            baseState.metadata ?? {},
+            baseState.turn?.currentPlayerId ?? null,
+          );
 
     const metaBase: AventureSauvageMetadata = {
       tiles,
@@ -80,11 +84,11 @@ export class AventureSauvageSetupService {
 
     // IMPORTANT: les cartes doivent etre melangees au debut, sinon on pioche toujours dans l'ordre du fichier.
     // On utilise le RNG seede cote serveur (metadata.rng) pour avoir un comportement stable par "session" (runId/startedAt).
-    let rngMeta: any = buildShuffleMeta(baseState.metadata ?? {});
+    let rngMeta = buildShuffleMeta(baseState.metadata);
     const shuffledAnimal = this.random.shuffle(rngMeta, defaultAnimalDeck());
-    rngMeta = shuffledAnimal.meta as any;
+    rngMeta = shuffledAnimal.meta;
     const shuffledPatte = this.random.shuffle(rngMeta, defaultPatteDeck());
-    rngMeta = shuffledPatte.meta as any;
+    rngMeta = shuffledPatte.meta;
     metaBase.decks = {
       ...metaBase.decks,
       animal: shuffledAnimal.values,
@@ -103,21 +107,23 @@ export class AventureSauvageSetupService {
           description: p.description,
         })),
       choiceLabelBuilder: (pawn) =>
-        pawn.description && String(pawn.description).trim().length > 0
-          ? `${String(pawn.label ?? '').trim()}: ${String(pawn.description).trim()}`
-          : String(pawn.label ?? '').trim(),
-      pawnDataMapper: (choice: any) => ({
-        id: String(choice?.id ?? '').trim(),
-        label: String(choice?.label ?? '').trim(),
-        description: String(choice?.description ?? '').trim(),
+        toText(pawn.description).length > 0
+          ? `${toText(pawn.label)}: ${toText(pawn.description)}`
+          : toText(pawn.label),
+      pawnDataMapper: (choice) => ({
+        id: toText(choice.id),
+        label: toText(choice.label),
+        description: toText(choice.description),
       }),
     });
     const turnIndex =
-      pendingInfo?.turnIndex != null ? pendingInfo.turnIndex : baseState.turnIndex;
+      pendingInfo?.turnIndex != null
+        ? pendingInfo.turnIndex
+        : baseState.turnIndex;
     const turnPlayerId =
       pendingInfo?.playerId != null
         ? pendingInfo.playerId
-        : setupStarterId ?? baseState.turn?.currentPlayerId ?? null;
+        : (setupStarterId ?? baseState.turn?.currentPlayerId ?? null);
     const next: GameStateEntity = {
       ...baseState,
       phase: 'playing',
@@ -128,7 +134,11 @@ export class AventureSauvageSetupService {
         direction: 1,
       },
       turnIndex,
-      metadata: { ...(baseState.metadata ?? {}), ...metaBase, rng: rngMeta?.rng ?? (baseState.metadata as any)?.rng },
+      metadata: {
+        ...(baseState.metadata ?? {}),
+        ...metaBase,
+        rng: rngMeta.rng,
+      },
     };
 
     return next;
@@ -141,11 +151,12 @@ export class AventureSauvageSetupService {
   ): Record<number, string> {
     const byId: Record<number, string> = {};
     if (!raw || typeof raw !== 'object') return byId;
+    const rawRecord = asRecord(raw);
     const used = new Set<string>();
     for (const p of players) {
-      const value = (raw as any)[p.id];
+      const value = rawRecord[String(p.id)];
       const resolved = this.setupFlow.resolveChoice(value, pawns);
-      const pawnId = String((resolved as any)?.id ?? '').trim();
+      const pawnId = toText(resolved?.id);
       if (!pawnId || used.has(pawnId)) continue;
       used.add(pawnId);
       byId[p.id] = pawnId;
@@ -160,11 +171,18 @@ function resolveSeededStarterId(
   fallbackId: number | null,
 ): number | null {
   if (!players.length) return fallbackId;
-  if (typeof fallbackId === 'number' && players.some((p) => p?.id === fallbackId)) {
+  if (
+    typeof fallbackId === 'number' &&
+    players.some((p) => p?.id === fallbackId)
+  ) {
     return fallbackId;
   }
   const seed = ensureSeededRng((meta ?? {}) as Record<string, unknown>).seed;
-  const shuffled = seededShuffle(players, seed, 'aventure-sauvage:setup-starter');
+  const shuffled = seededShuffle(
+    players,
+    seed,
+    'aventure-sauvage:setup-starter',
+  );
   return shuffled[0]?.id ?? fallbackId ?? players[0]?.id ?? null;
 }
 
@@ -180,25 +198,25 @@ function buildTiles(): AventureSauvageTile[] {
       type: 'neutral',
       label: 'Case Neutre (verte)',
       description:
-        "Vous avancez sous une canopÃ©e dense. Des gouttes tombent encore des branches, comme si la jungle respirait autour de vous.",
+        'Vous avancez sous une canopÃ©e dense. Des gouttes tombent encore des branches, comme si la jungle respirait autour de vous.',
     },
     {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        "Vous marchez sur un sol souple recouvert de mousse. Chaque pas devient une petite aventure imprÃ©visible.",
+        'Vous marchez sur un sol souple recouvert de mousse. Chaque pas devient une petite aventure imprÃ©visible.',
     },
     {
       type: 'neutral',
       label: 'Case Neutre (verte)',
       description:
-        "Vous traversez une clairiÃ¨re silencieuse. Le calme est Ã©trange, presque trop parfait.",
+        'Vous traversez une clairiÃ¨re silencieuse. Le calme est Ã©trange, presque trop parfait.',
     },
     {
       type: 'patte',
       label: 'Case Coup de patte (jaune)',
       description:
-        "Vous suivez un ancien chemin tracÃ© par les saisons, mais quelque chose ralentit soudain votre progression.",
+        'Vous suivez un ancien chemin tracÃ© par les saisons, mais quelque chose ralentit soudain votre progression.',
     },
     {
       type: 'animal',
@@ -222,13 +240,13 @@ function buildTiles(): AventureSauvageTile[] {
       type: 'patte',
       label: 'Case Coup de patte (jaune)',
       description:
-        "Vous progressez dans une zone plus sombre. La lumiÃ¨re filtre Ã  peine entre les feuilles Ã©paisses.",
+        'Vous progressez dans une zone plus sombre. La lumiÃ¨re filtre Ã  peine entre les feuilles Ã©paisses.',
     },
     {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        "Vous atteignez un passage Ã©troit envahi de lianes. Votre avancÃ©e devient maladroite et imprÃ©visible.",
+        'Vous atteignez un passage Ã©troit envahi de lianes. Votre avancÃ©e devient maladroite et imprÃ©visible.',
     },
     {
       type: 'neutral',
@@ -246,19 +264,19 @@ function buildTiles(): AventureSauvageTile[] {
       type: 'patte',
       label: 'Case Coup de patte (jaune)',
       description:
-        "Vous traversez une zone marÃ©cageuse. Chaque mouvement demande prudence et patience.",
+        'Vous traversez une zone marÃ©cageuse. Chaque mouvement demande prudence et patience.',
     },
     {
       type: 'neutral',
       label: 'Case Neutre (verte)',
       description:
-        "Vous suivez une lÃ©gÃ¨re montÃ©e. Vos muscles travaillent, mais la progression est satisfaisante.",
+        'Vous suivez une lÃ©gÃ¨re montÃ©e. Vos muscles travaillent, mais la progression est satisfaisante.',
     },
     {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        "Vous marquez une courte pause sur un terrain stable. Les sons de la jungle vous entourent.",
+        'Vous marquez une courte pause sur un terrain stable. Les sons de la jungle vous entourent.',
     },
     {
       type: 'patte',
@@ -270,19 +288,19 @@ function buildTiles(): AventureSauvageTile[] {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        "Vous avancez sur un chemin bordÃ© de grandes feuilles. Elles frÃ´lent vos bras Ã  chaque pas.",
+        'Vous avancez sur un chemin bordÃ© de grandes feuilles. Elles frÃ´lent vos bras Ã  chaque pas.',
     },
     {
       type: 'neutral',
       label: 'Case Neutre (verte)',
       description:
-        "Vous traversez une clairiÃ¨re balayÃ©e par une brise plus fraÃ®che. Le contraste est agrÃ©able.",
+        'Vous traversez une clairiÃ¨re balayÃ©e par une brise plus fraÃ®che. Le contraste est agrÃ©able.',
     },
     {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        "La vÃ©gÃ©tation devient trÃ¨s dense. Le sol disparaÃ®t presque sous les plantes.",
+        'La vÃ©gÃ©tation devient trÃ¨s dense. Le sol disparaÃ®t presque sous les plantes.',
     },
     {
       type: 'patte',
@@ -300,7 +318,7 @@ function buildTiles(): AventureSauvageTile[] {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        "Les sons semblent amplifiÃ©s, comme si la jungle rÃ©agissait Ã  chacun de vos mouvements.",
+        'Les sons semblent amplifiÃ©s, comme si la jungle rÃ©agissait Ã  chacun de vos mouvements.',
     },
     {
       type: 'patte',
@@ -312,13 +330,13 @@ function buildTiles(): AventureSauvageTile[] {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        "Le sol est tapissÃ© de feuilles mortes. Elles craquent sous vos pieds de faÃ§on imprÃ©visible.",
+        'Le sol est tapissÃ© de feuilles mortes. Elles craquent sous vos pieds de faÃ§on imprÃ©visible.',
     },
     {
       type: 'neutral',
       label: 'Case Neutre (verte)',
       description:
-        "Le passage se resserre. La vÃ©gÃ©tation se fait plus pressante, presque oppressante.",
+        'Le passage se resserre. La vÃ©gÃ©tation se fait plus pressante, presque oppressante.',
     },
     {
       type: 'animal',
@@ -336,13 +354,13 @@ function buildTiles(): AventureSauvageTile[] {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        "Le terrain devient stable et dÃ©gagÃ©. Votre progression est fluide et assurÃ©e.",
+        'Le terrain devient stable et dÃ©gagÃ©. Votre progression est fluide et assurÃ©e.',
     },
     {
       type: 'patte',
       label: 'Case Coup de patte (jaune)',
       description:
-        "Vous traversez une derniÃ¨re zone dense. La jungle semble tester votre dÃ©termination une ultime fois.",
+        'Vous traversez une derniÃ¨re zone dense. La jungle semble tester votre dÃ©termination une ultime fois.',
     },
     {
       type: 'finish',
@@ -370,7 +388,7 @@ function defaultAnimalDeck(): AventureSauvageCard[] {
     {
       id: 3,
       deck: 'animal',
-      text: "Vous voyez un impala sauter agilement devant vous. Vous dÃ©cidez de le suivre et avancez de 3 cases.",
+      text: 'Vous voyez un impala sauter agilement devant vous. Vous dÃ©cidez de le suivre et avancez de 3 cases.',
       moveDelta: 3,
     },
     {
@@ -412,7 +430,7 @@ function defaultAnimalDeck(): AventureSauvageCard[] {
     {
       id: 10,
       deck: 'animal',
-      text: "Vous Ãªtes surpris par un babouin facÃ©tieux faisant tomber un rÃ©gime de bananes sur votre tÃªte. Ã‰tourdi, vous passez votre tour.",
+      text: 'Vous Ãªtes surpris par un babouin facÃ©tieux faisant tomber un rÃ©gime de bananes sur votre tÃªte. Ã‰tourdi, vous passez votre tour.',
       skipTurns: 1,
     },
     {
@@ -471,7 +489,7 @@ function defaultAnimalDeck(): AventureSauvageCard[] {
     {
       id: 20,
       deck: 'animal',
-      text: "Vous tentez de grimper Ã  un arbre pour observer la savane, mais vous vous retrouvez coincÃ© dans les branches, les pieds dans le vide ! Vous passez votre tour bÃªtement.",
+      text: 'Vous tentez de grimper Ã  un arbre pour observer la savane, mais vous vous retrouvez coincÃ© dans les branches, les pieds dans le vide ! Vous passez votre tour bÃªtement.',
       skipTurns: 1,
     },
   ];
@@ -544,12 +562,13 @@ function defaultPatteDeck(): AventureSauvageCard[] {
   return deck;
 }
 
-function buildShuffleMeta(seedMeta: Record<string, any> | null | undefined): Record<string, any> {
-  const meta = seedMeta && typeof seedMeta === 'object' ? seedMeta : {};
-  const baseRng = ensureSeededRng(meta as any);
-  const runId = Number((meta as any)?.roomRunId ?? 0);
-  const generatedAt =
-    typeof (meta as any)?.generatedAt === 'string' ? String((meta as any).generatedAt) : '';
+function buildShuffleMeta(
+  seedMeta: unknown,
+): Record<string, unknown> & { rng: { seed: number; counter: number } } {
+  const meta = asRecord(seedMeta);
+  const baseRng = ensureSeededRng(meta);
+  const runId = Number(meta.roomRunId ?? 0);
+  const generatedAt = toText(meta.generatedAt);
   const salt =
     Number.isFinite(runId) && runId !== 0
       ? runId
@@ -557,7 +576,7 @@ function buildShuffleMeta(seedMeta: Record<string, any> | null | undefined): Rec
         ? hashSeed(generatedAt)
         : 0;
   const seed = (baseRng.seed + (salt >>> 0)) >>> 0;
-  return { ...(meta as any), rng: { seed, counter: baseRng.counter } };
+  return { ...meta, rng: { seed, counter: baseRng.counter } };
 }
 
 function hashSeed(value: string): number {
@@ -569,55 +588,15 @@ function hashSeed(value: string): number {
   return hash >>> 0;
 }
 
-function normalizePawnAssignments(
-  players: Array<{ id: number }>,
-  raw: unknown,
-  pawns: Array<{ id: string; label: string }>,
-): Record<number, string> {
-  const byId: Record<number, string> = {};
-  if (!raw || typeof raw !== 'object') return byId;
-  const used = new Set<string>();
-  for (const p of players) {
-    const value = (raw as any)[p.id];
-    const resolved = resolvePawnIdFromChoices(value, pawns);
-    if (!resolved || used.has(resolved)) continue;
-    used.add(resolved);
-    byId[p.id] = resolved;
-  }
-  return byId;
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
 }
 
-function resolvePawnIdFromChoices(
-  raw: unknown,
-  pawns: Array<{ id: string; label: string }>,
-): string | null {
-  if (raw == null) return null;
-  const value =
-    typeof raw === 'object'
-      ? (raw as any)?.id ?? (raw as any)?.pawnId ?? (raw as any)?.value ?? raw
-      : raw;
-  const text = String(value ?? '').trim();
-  if (!text) return null;
-  const key = normalizePawnKey(text);
-  const direct = pawns.find((p) => normalizePawnKey(p.id) === key);
-  if (direct) return direct.id;
-  const byLabel = pawns.find((p) => normalizePawnKey(p.label) === key);
-  return byLabel?.id ?? null;
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  return '';
 }
-
-function normalizePawnKey(value: string): string {
-  return String(value ?? '')
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '');
-}
-
-
-
-
-
-
-
-

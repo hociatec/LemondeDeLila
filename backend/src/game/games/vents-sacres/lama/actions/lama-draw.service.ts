@@ -15,14 +15,22 @@ export class LamaDrawService {
     private readonly logger: LamaLogService,
   ) {}
 
-  applyDraw(state: GameStateEntity, meta: LamaMetadata, actorId: number): GameStateEntity {
+  applyDraw(
+    state: GameStateEntity,
+    meta: LamaMetadata,
+    actorId: number,
+  ): GameStateEntity {
     const dropped = meta.droppedOutByPlayerId ?? {};
     const drawLocked = Object.values(dropped).some((isOut) => Boolean(isOut));
     if (drawLocked) {
       return state;
     }
 
-    const tracker = meta.turnTracker ?? { playerId: actorId, drawn: false, played: false };
+    const tracker = meta.turnTracker ?? {
+      playerId: actorId,
+      drawn: false,
+      played: false,
+    };
     if (
       this.shared.asNumberOrNull((tracker as any).playerId) === actorId &&
       this.shared.asBoolean((tracker as any).drawn)
@@ -44,28 +52,32 @@ export class LamaDrawService {
     if (deck.length <= 0) return state;
     const card = deck.pop() as LamaCardValue;
     const handsByPlayerId = { ...(meta.handsByPlayerId ?? {}) };
-    const hand = [...((handsByPlayerId[String(actorId)] as LamaCardValue[]) ?? [])];
+    const hand = [...(handsByPlayerId[String(actorId)] ?? [])];
     hand.push(card);
     handsByPlayerId[String(actorId)] = hand;
 
     const players = Array.isArray(state.players) ? state.players : [];
     const name = this.shared.playerLabel(players, actorId);
     const label = lamaCardLabel(card);
-    let log = this.logger.append(state.log, `${name} pioche un ${label}.`);
+    const log = this.logger.append(state.log, `${name} pioche un ${label}.`);
 
     const nextMeta: LamaMetadata = {
       ...meta,
       deck,
       handsByPlayerId,
       lastDrawTurnIndexByPlayerId: {
-        ...(((meta as any).lastDrawTurnIndexByPlayerId as any) ?? {}),
+        ...((meta as any).lastDrawTurnIndexByPlayerId ?? {}),
         [String(actorId)]: turnIndex + 1,
       },
       turnTracker: { playerId: actorId, drawn: true, played: false },
       suppressTurnAnnouncement: false,
     };
 
-    const nextPlayerId = this.round.findNextActivePlayerId(players, nextMeta, actorId);
+    const nextPlayerId = this.round.findNextActivePlayerId(
+      players,
+      nextMeta,
+      actorId,
+    );
 
     const advancedMeta: LamaMetadata = {
       ...nextMeta,
@@ -73,18 +85,23 @@ export class LamaDrawService {
       suppressTurnAnnouncement: false,
     };
 
-    const nextState = createPendingState({
-      ...state,
-      metadata: advancedMeta as any,
-      log,
-      turnIndex: turnIndex + 1,
-      turn: {
-        ...(state.turn ?? { direction: 1 }),
-        currentPlayerId: nextPlayerId,
-        direction: 1,
-        label: nextPlayerId ? `Tour de ${this.shared.playerLabel(players, nextPlayerId)}` : undefined,
-      },
-    } as GameStateEntity, { step: 'turn_choice', playerId: nextPlayerId } as any);
+    const nextState = createPendingState(
+      {
+        ...state,
+        metadata: advancedMeta as any,
+        log,
+        turnIndex: turnIndex + 1,
+        turn: {
+          ...(state.turn ?? { direction: 1 }),
+          currentPlayerId: nextPlayerId,
+          direction: 1,
+          label: nextPlayerId
+            ? `Tour de ${this.shared.playerLabel(players, nextPlayerId)}`
+            : undefined,
+        },
+      } as GameStateEntity,
+      { step: 'turn_choice', playerId: nextPlayerId } as any,
+    );
 
     if (this.round.isRoundEnded(advancedMeta, players)) {
       const winnerId = this.round.findRoundWinnerId(advancedMeta, players);

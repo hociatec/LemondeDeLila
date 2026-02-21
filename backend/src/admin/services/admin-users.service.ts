@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
+import bcryptImport from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { User } from '../../user/entities/user.entity';
 import { AdminListUsersDto } from '../dto/admin-list-users.dto';
@@ -14,6 +14,10 @@ import { AdminCreateUserDto } from '../dto/admin-create-user.dto';
 import { AdminUpdateUserDto } from '../dto/admin-update-user.dto';
 
 type SafeUser = Omit<User, 'password'>;
+type BcryptApi = {
+  hash(input: string, rounds: number): Promise<string>;
+};
+const bcrypt = bcryptImport as unknown as BcryptApi;
 
 @Injectable()
 export class AdminUsersService {
@@ -141,9 +145,8 @@ export class AdminUsersService {
       emailVerified: body.emailVerified ?? true,
     });
     const saved = await this.users.save(user);
-    const { password: _, ...safe } = saved;
     return {
-      user: safe,
+      user: this.omitPassword(saved),
       temporaryPassword: body.password ? undefined : password,
     };
   }
@@ -186,8 +189,7 @@ export class AdminUsersService {
       user.password = await bcrypt.hash(body.password, 10);
     }
     const saved = await this.users.save(user);
-    const { password: _, ...safe } = saved;
-    return safe;
+    return this.omitPassword(saved);
   }
 
   async resetPassword(id: number) {
@@ -198,8 +200,7 @@ export class AdminUsersService {
     const password = this.generatePassword();
     user.password = await bcrypt.hash(password, 10);
     await this.users.save(user);
-    const { password: _, ...safe } = user;
-    return { user: safe, temporaryPassword: password };
+    return { user: this.omitPassword(user), temporaryPassword: password };
   }
 
   async ban(
@@ -231,8 +232,7 @@ export class AdminUsersService {
     user.bannedUntil = until;
     user.banReason = sanitizeBanReason(reason);
     await this.users.save(user);
-    const { password: _, ...safe } = user;
-    return { user: safe };
+    return { user: this.omitPassword(user) };
   }
 
   async unban(id: number) {
@@ -243,8 +243,7 @@ export class AdminUsersService {
     user.bannedUntil = null;
     user.banReason = null;
     const saved = await this.users.save(user);
-    const { password: _, ...safe } = saved;
-    return { user: safe };
+    return { user: this.omitPassword(saved) };
   }
 
   async delete(id: number) {
@@ -275,6 +274,12 @@ export class AdminUsersService {
       .toString('base64')
       .replace(/[^a-zA-Z0-9]/g, '')
       .slice(0, 10);
+  }
+
+  private omitPassword(user: User): SafeUser {
+    const { password, ...safe } = user;
+    void password;
+    return safe;
   }
 }
 

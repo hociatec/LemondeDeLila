@@ -691,7 +691,9 @@ export class PresenceService implements OnModuleDestroy {
             ? (p as any).lastInteractionAt
             : 0,
         roomStarted:
-          typeof (p as any).roomStarted === 'boolean' ? (p as any).roomStarted : null,
+          typeof (p as any).roomStarted === 'boolean'
+            ? (p as any).roomStarted
+            : null,
       };
 
       const existing = byUser.get(id);
@@ -726,11 +728,19 @@ export class PresenceService implements OnModuleDestroy {
     return Array.from(byUser.values());
   }
 
-  private enrichMergedPlayers(players: PresencePublicPlayer[]): PresencePublicPlayer[] {
+  private enrichMergedPlayers(
+    players: PresencePublicPlayer[],
+  ): PresencePublicPlayer[] {
     const now = Date.now();
     return players.map((p) => {
-      const last = typeof p.lastInteractionAt === 'number' ? p.lastInteractionAt : 0;
-      const availability = this.computeAvailability(p.activity, p.roomStarted, now, last);
+      const last =
+        typeof p.lastInteractionAt === 'number' ? p.lastInteractionAt : 0;
+      const availability = this.computeAvailability(
+        p.activity,
+        p.roomStarted,
+        now,
+        last,
+      );
       const location = this.computeLocation(p.activity, p.currentRoom);
       return { ...p, availability, location };
     });
@@ -742,7 +752,10 @@ export class PresenceService implements OnModuleDestroy {
     now: number,
     lastInteractionAt: number,
   ): PresenceAvailability {
-    if (lastInteractionAt > 0 && now - lastInteractionAt >= this.absentAfterMs) {
+    if (
+      lastInteractionAt > 0 &&
+      now - lastInteractionAt >= this.absentAfterMs
+    ) {
       return 'absent';
     }
 
@@ -750,7 +763,12 @@ export class PresenceService implements OnModuleDestroy {
       return roomStarted ? 'occupied' : 'available';
     }
 
-    if (activity === 'chat' || activity === 'tavern' || activity === 'stats' || activity === 'home') {
+    if (
+      activity === 'chat' ||
+      activity === 'tavern' ||
+      activity === 'stats' ||
+      activity === 'home'
+    ) {
       return 'available';
     }
 
@@ -763,7 +781,10 @@ export class PresenceService implements OnModuleDestroy {
     currentRoom: { id: number; name: string } | null,
   ): string {
     if (activity === 'table') {
-      return currentRoom?.name || (currentRoom?.id ? `Table #${currentRoom.id}` : 'Table');
+      return (
+        currentRoom?.name ||
+        (currentRoom?.id ? `Table #${currentRoom.id}` : 'Table')
+      );
     }
     if (activity === 'chat') return 'tchat';
     if (activity === 'tavern') return 'taverne';

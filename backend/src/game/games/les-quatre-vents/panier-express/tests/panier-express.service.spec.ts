@@ -1,4 +1,4 @@
-import { Test } from '@nestjs/testing';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call */
 import { PanierExpressService } from '../panier-express.service';
 import { PanierExpressExchangeService } from '../actions/panier-express-exchange.service';
 import { PanierExpressPhaseService } from '../phases/panier-express-phase.service';
@@ -31,7 +31,7 @@ describe('PanierExpressService', () => {
     expect(Array.isArray(meta.tiles)).toBe(true);
     expect(meta.decks?.courses?.deck?.length).toBeGreaterThan(0);
   });
-  it("demande une selection de pion (obligatoire) au demarrage", () => {
+  it('demande une selection de pion (obligatoire) au demarrage', () => {
     const state: any = {
       players: [
         { id: 1, username: 'A' },
@@ -64,7 +64,7 @@ describe('PanierExpressService', () => {
       status: 'started',
     } as any);
 
-    const pending: any = base.pending as any;
+    const pending: any = base.pending;
     expect(pending?.type).toBe('choose_pawn');
     expect(Array.isArray(pending?.data?.pawns)).toBe(true);
     const choices = Array.isArray(pending?.choices) ? pending.choices : [];
@@ -638,7 +638,7 @@ describe('PanierExpressService', () => {
     state.metadata.statuses.noDrawCourses = { 1: 1 };
     state.metadata.statuses.revealInventory = { 1: 1 };
 
-    const after = phaseSvc.advanceTurn(state);
+    const after = phaseSvc.advanceTurn(state) as any;
     expect(after.metadata.statuses.noDrawCourses?.[1] ?? 0).toBe(0);
     expect(after.metadata.statuses.revealInventory?.[1] ?? 0).toBe(0);
   });
@@ -656,7 +656,7 @@ describe('PanierExpressService', () => {
     state.metadata.movementDirection = -1;
     state.metadata.movementDirectionOwnerId = 1;
 
-    const after = phaseSvc.advanceTurn(state);
-    expect(after.turn.direction).toBe(-1);
+    const after = phaseSvc.advanceTurn(state) as any;
+    expect(after.turn?.direction).toBe(-1);
   });
 });

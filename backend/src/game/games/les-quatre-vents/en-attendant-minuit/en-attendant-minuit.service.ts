@@ -19,8 +19,7 @@ import * as Rulebook from './rulebook/rulebook';
 import { buildMinuitShortcuts } from './minuit.shortcuts';
 
 @Injectable()
-export class EnAttendantMinuitService extends AbstractGameService
-{
+export class EnAttendantMinuitService extends AbstractGameService {
   readonly gameType = 'en-attendant-minuit';
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'LesQuatreVents';

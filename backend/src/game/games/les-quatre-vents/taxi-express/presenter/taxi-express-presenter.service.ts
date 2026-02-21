@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
 
@@ -37,6 +37,8 @@ export class TaxiExpressPresenterService {
       return `${name} : ${count} trajet${count > 1 ? 's' : ''}`;
     });
 
+    const stateRecord = asRecord(state);
+    const baseExtras = asRecord(stateRecord.extras);
     return {
       ...state,
       catalog: {
@@ -48,10 +50,10 @@ export class TaxiExpressPresenterService {
               }
             : null,
       },
-      actions: formatPresenterActions(actions, (action) => 'Lancer le dé'),
+      actions: formatPresenterActions(actions, () => 'Lancer le dé'),
       pending: state.pending ?? null,
       extras: {
-        ...(state as any).extras,
+        ...baseExtras,
         taxi: {
           currentClient: client
             ? `${client.clientName} vers ${this.tileTitle(
@@ -91,7 +93,7 @@ export class TaxiExpressPresenterService {
         meta.tiles,
         meta.positions,
       ),
-    } as any;
+    } as GameStateWithActions;
   }
 
   private getMeta(state: GameStateEntity): TaxiExpressMetadata {
@@ -120,4 +122,9 @@ export class TaxiExpressPresenterService {
     const tile = index >= 0 ? meta.tiles[index] : null;
     return tile?.title ?? `case ${tileId}`;
   }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  if (value == null || typeof value !== 'object') return {};
+  return value as Record<string, unknown>;
 }

@@ -9,11 +9,7 @@ import { CerclesSacresPresenterService } from './presenter/cercles-sacres-presen
 import { CerclesSacresBotService } from './bots/cercles-sacres-bot.service';
 
 @Module({
-  imports: [
-    BoardGameDeckKitModule,
-    GameCoreModule,
-    GameRegistryModule,
-    ],
+  imports: [BoardGameDeckKitModule, GameCoreModule, GameRegistryModule],
   providers: [
     CerclesSacresService,
     CerclesSacresSetupService,

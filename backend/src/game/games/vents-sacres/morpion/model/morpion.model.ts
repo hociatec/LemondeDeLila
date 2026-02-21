@@ -4,4 +4,3 @@ export type MorpionMetadata = {
   winnerId?: number | null;
   draw?: boolean;
 };
-

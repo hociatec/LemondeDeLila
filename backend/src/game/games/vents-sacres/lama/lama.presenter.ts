@@ -6,7 +6,12 @@ import type {
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import { BasePresenterService } from '../../../engine/abstract/base-presenter.service';
 import type { LamaCardValue, LamaMetadata } from './model/lama.model';
-import { lamaCardLabel, lamaCardScore, nextLamaValue, LAMA_VALUE } from './model/lama.model';
+import {
+  lamaCardLabel,
+  lamaCardScore,
+  nextLamaValue,
+  LAMA_VALUE,
+} from './model/lama.model';
 
 @Injectable()
 export class LamaPresenter extends BasePresenterService {
@@ -33,7 +38,10 @@ export class LamaPresenter extends BasePresenterService {
     return name;
   }
 
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     const exposed = this.buildExposedStateForUser(state, userId);
     // The internal game log contains the drawn card label. We redact it for opponents,
     // while still letting the drawing player see what they drew.
@@ -44,11 +52,6 @@ export class LamaPresenter extends BasePresenterService {
 
   private isSetup(state: GameStateEntity): boolean {
     return String(state?.status ?? '').toLowerCase() === 'setup';
-  }
-
-  private setupOptions(): number[] {
-    // Kept short for easier navigation; can be extended later if needed.
-    return [20, 30, 40, 50, 60, 70, 80];
   }
 
   protected buildCatalog(): { phases: string[]; victory: any } {
@@ -78,11 +81,13 @@ export class LamaPresenter extends BasePresenterService {
       { type: 'lama_quit', payload: {} },
     ];
 
-    const handValues = (((meta.handsByPlayerId ?? {})[String(userId)] ?? []) as LamaCardValue[]).filter(
-      (v) => typeof v === 'number' && v >= 1 && v <= LAMA_VALUE,
-    );
+    const handValues = (
+      (meta.handsByPlayerId ?? {})[String(userId)] ?? []
+    ).filter((v) => typeof v === 'number' && v >= 1 && v <= LAMA_VALUE);
     const dropped = Boolean((meta.droppedOutByPlayerId ?? {})[String(userId)]);
-    const drawLocked = Object.values(meta.droppedOutByPlayerId ?? {}).some((isOut) => Boolean(isOut));
+    const drawLocked = Object.values(meta.droppedOutByPlayerId ?? {}).some(
+      (isOut) => Boolean(isOut),
+    );
     const sortedHandValues = [...handValues].sort((a, b) => a - b);
 
     const current = state.turn?.currentPlayerId ?? null;
@@ -99,7 +104,8 @@ export class LamaPresenter extends BasePresenterService {
       if (meta.pendingReturnPlayerId !== userId) return [];
       const score = Number((meta.scoresByPlayerId ?? {})[String(userId)] ?? 0);
       if (score >= 1) out.push({ type: 'lama_return', payload: { value: 1 } });
-      if (score >= 10) out.push({ type: 'lama_return', payload: { value: 10 } });
+      if (score >= 10)
+        out.push({ type: 'lama_return', payload: { value: 10 } });
       out.push({ type: 'lama_return', payload: { value: 0 } });
       return out;
     }
@@ -109,7 +115,11 @@ export class LamaPresenter extends BasePresenterService {
     const top = this.topDiscard(meta);
     if (!top) return out;
 
-    const tracker = meta.turnTracker ?? { playerId: current, drawn: false, played: false };
+    const tracker = meta.turnTracker ?? {
+      playerId: current,
+      drawn: false,
+      played: false,
+    };
 
     const asNumberOrNull = (value: unknown): number | null => {
       if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -125,8 +135,22 @@ export class LamaPresenter extends BasePresenterService {
       if (typeof value === 'number') return value === 1;
       if (typeof value === 'string') {
         const t = value.trim().toLowerCase();
-        if (t === 'true' || t === '1' || t === 'yes' || t === 'oui' || t === 'on') return true;
-        if (t === 'false' || t === '0' || t === 'no' || t === 'non' || t === 'off') return false;
+        if (
+          t === 'true' ||
+          t === '1' ||
+          t === 'yes' ||
+          t === 'oui' ||
+          t === 'on'
+        )
+          return true;
+        if (
+          t === 'false' ||
+          t === '0' ||
+          t === 'no' ||
+          t === 'non' ||
+          t === 'off'
+        )
+          return false;
       }
       return false;
     };
@@ -207,8 +231,12 @@ export class LamaPresenter extends BasePresenterService {
     }
 
     if ((metadata.step ?? '') === 'round_pause') {
-      const until = typeof metadata.roundPauseUntilMs === 'number' ? metadata.roundPauseUntilMs : null;
-      const seconds = until != null ? Math.max(0, Math.ceil((until - Date.now()) / 1000)) : 0;
+      const until =
+        typeof metadata.roundPauseUntilMs === 'number'
+          ? metadata.roundPauseUntilMs
+          : null;
+      const seconds =
+        until != null ? Math.max(0, Math.ceil((until - Date.now()) / 1000)) : 0;
       return {
         type: 'lama_pause',
         label: `Pause entre manches : prochain round dans ~${seconds}s.`,
@@ -223,48 +251,54 @@ export class LamaPresenter extends BasePresenterService {
     const step = metadata.step ?? 'turn_choice';
     if (step === 'return_token') {
       if (metadata.pendingReturnPlayerId !== userId) return null;
-      const score = Number((metadata.scoresByPlayerId ?? {})[String(userId)] ?? 0);
+      const score = Number(
+        (metadata.scoresByPlayerId ?? {})[String(userId)] ?? 0,
+      );
       const choices: string[] = [];
       if (score >= 1) choices.push('Rendre 1 jeton');
       if (score >= 10) choices.push('Rendre 1 diamant (10 jetons)');
-      choices.push("Ne rien rendre");
+      choices.push('Ne rien rendre');
       return {
         type: 'lama_return',
-        label: 'Vous avez gagné la manche : rendez 1 jeton ou 1 diamant (10 jetons) si possible.',
+        label:
+          'Vous avez gagné la manche : rendez 1 jeton ou 1 diamant (10 jetons) si possible.',
         playerId: userId,
         choices,
       };
     }
 
     const hand = (metadata.handsByPlayerId ?? {})[String(userId)] ?? [];
-    const droppedOut = Boolean((metadata.droppedOutByPlayerId ?? {})[String(userId)]);
-    const drawLocked = Object.values(metadata.droppedOutByPlayerId ?? {}).some((isOut) => Boolean(isOut));
+    const droppedOut = Boolean(
+      (metadata.droppedOutByPlayerId ?? {})[String(userId)],
+    );
+    const drawLocked = Object.values(metadata.droppedOutByPlayerId ?? {}).some(
+      (isOut) => Boolean(isOut),
+    );
 
     const top = this.topDiscard(metadata);
     if (!top) return null;
 
-    const next = nextLamaValue(top);
-
-    const choices = (hand as LamaCardValue[])
+    const choices = hand
       .slice()
       .filter((v) => typeof v === 'number' && v >= 1 && v <= LAMA_VALUE)
       .sort((a, b) => a - b)
       .map(lamaCardLabel);
 
-    const meScore = Number((metadata.scoresByPlayerId ?? {})[String(userId)] ?? 0);
+    const meScore = Number(
+      (metadata.scoresByPlayerId ?? {})[String(userId)] ?? 0,
+    );
     const discardTop = lamaCardLabel(top);
-    const handScore = [...new Set(hand as LamaCardValue[])].reduce(
+    const handScore = [...new Set(hand)].reduce(
       (sum, v) => sum + lamaCardScore(v),
       0,
     );
     return {
       type: currentPlayerId === userId ? 'lama_turn' : 'lama_hand',
-      label:
-        droppedOut
-          ? `Défausse : ${discardTop}. Vous vous êtes retiré de la manche. Main : ${hand.length} cartes (${handScore} jetons). Total : ${meScore} jetons.`
-          : currentPlayerId === userId
-            ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (${drawLocked ? '↑/↓ choisir, Entrée jouer, P/Q passer, C défausse, E mains, S jetons' : '↑/↓ choisir, Entrée jouer, Espace piocher, P/Q passer, C défausse, E mains, S jetons'})`
-            : `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (En attente)`,
+      label: droppedOut
+        ? `Défausse : ${discardTop}. Vous vous êtes retiré de la manche. Main : ${hand.length} cartes (${handScore} jetons). Total : ${meScore} jetons.`
+        : currentPlayerId === userId
+          ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (${drawLocked ? '↑/↓ choisir, Entrée jouer, P/Q passer, C défausse, E mains, S jetons' : '↑/↓ choisir, Entrée jouer, Espace piocher, P/Q passer, C défausse, E mains, S jetons'})`
+          : `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (En attente)`,
       playerId: userId,
       choices,
     };
@@ -299,7 +333,7 @@ export class LamaPresenter extends BasePresenterService {
     const base = this.getBaseExtras(state);
     const players = Array.isArray(state.players) ? state.players : [];
 
-    const handValues = ((metadata.handsByPlayerId ?? {})[String(userId)] ?? []) as LamaCardValue[];
+    const handValues = (metadata.handsByPlayerId ?? {})[String(userId)] ?? [];
     const hand = handValues
       .filter((v) => typeof v === 'number' && v >= 1 && v <= LAMA_VALUE)
       .sort((a, b) => a - b)
@@ -318,12 +352,10 @@ export class LamaPresenter extends BasePresenterService {
 
     const discard = Array.isArray(metadata.discard) ? metadata.discard : [];
     const top = discard.length ? discard[discard.length - 1] : null;
-    const discardTop = top ? lamaCardLabel(top as LamaCardValue) : '(vide)';
-    const discardNext =
-      top != null ? lamaCardLabel(nextLamaValue(top as LamaCardValue)) : '(inconnu)';
-
-    const deckCount = (metadata.deck ?? []).length;
-    const drawLocked = Object.values(metadata.droppedOutByPlayerId ?? {}).some((isOut) => Boolean(isOut));
+    const discardTop = top ? lamaCardLabel(top) : '(vide)';
+    const drawLocked = Object.values(metadata.droppedOutByPlayerId ?? {}).some(
+      (isOut) => Boolean(isOut),
+    );
 
     const playableText = (() => {
       if (this.isSetup(state)) {
@@ -335,19 +367,21 @@ export class LamaPresenter extends BasePresenterService {
       if (!this.isStarted(state)) return 'Partie non démarrée.';
       if (currentPlayerId !== userId) return "Ce n'est pas votre tour.";
       const step = metadata.step ?? 'turn_choice';
-      if (step === 'return_token') return 'Rendez 1 jeton ou 1 diamant (10 jetons) si possible.';
+      if (step === 'return_token')
+        return 'Rendez 1 jeton ou 1 diamant (10 jetons) si possible.';
       if (!top) return 'Défausse vide.';
-      const allowed = new Set<LamaCardValue>([top as LamaCardValue, nextLamaValue(top as LamaCardValue)]);
+      const allowed = new Set<LamaCardValue>([top, nextLamaValue(top)]);
       const counts = new Map<LamaCardValue, number>();
       for (const v of handValues) {
         counts.set(v, (counts.get(v) ?? 0) + 1);
       }
       const parts: string[] = [];
-      for (const [value, count] of [...counts.entries()].sort((a, b) => a[0] - b[0])) {
+      for (const [value, count] of [...counts.entries()].sort(
+        (a, b) => a[0] - b[0],
+      )) {
         if (!allowed.has(value)) continue;
         parts.push(`${lamaCardLabel(value)}×${count}`);
       }
-      const list = parts.length ? parts.join(', ') : '(aucune carte jouable)';
       return `Défausse : ${discardTop}. (${drawLocked ? '↑/↓ choisir, Entrée jouer, P/Q passer, C défausse, E mains, S score' : '↑/↓ choisir, Entrée jouer, Espace piocher, P/Q passer, C défausse, E mains, S score'})`;
     })();
 
@@ -370,10 +404,14 @@ export class LamaPresenter extends BasePresenterService {
                 .map((p) => {
                   const pid = p.id;
                   const name = this.sanitizePlayerName(p.username) || `#${pid}`;
-                  const count = Array.isArray(by[String(pid)]) ? (by[String(pid)] as any[]).length : 0;
+                  const count = Array.isArray(by[String(pid)])
+                    ? (by[String(pid)] as any[]).length
+                    : 0;
                   return `${name}: ${count}`;
                 });
-              return parts.length ? `Cartes en main — ${parts.join(', ')}.` : 'Cartes en main : inconnues.';
+              return parts.length
+                ? `Cartes en main — ${parts.join(', ')}.`
+                : 'Cartes en main : inconnues.';
             })(),
           },
           discard: {
@@ -389,7 +427,9 @@ export class LamaPresenter extends BasePresenterService {
             message: (() => {
               if (scoreLines.length === 0) return 'Jetons: inconnus.';
               const loseAt =
-                metadata.loseAtScore != null ? Number(metadata.loseAtScore) : null;
+                metadata.loseAtScore != null
+                  ? Number(metadata.loseAtScore)
+                  : null;
               const loseText =
                 loseAt != null && Number.isFinite(loseAt)
                   ? ` Défaite à ${loseAt} jetons.`
@@ -414,7 +454,7 @@ export class LamaPresenter extends BasePresenterService {
     const top = discard.length ? discard[discard.length - 1] : null;
     if (!top) return null;
     if (top < 1 || top > LAMA_VALUE) return null;
-    return top as LamaCardValue;
+    return top;
   }
 
   private redactDrawLogForUser(
@@ -422,7 +462,8 @@ export class LamaPresenter extends BasePresenterService {
     players: Array<{ id: number; username?: string }>,
     userId: number,
   ): Array<{ message: string; timestamp?: string }> {
-    if (!Array.isArray(log) || log.length === 0) return Array.isArray(log) ? [...log] : [];
+    if (!Array.isArray(log) || log.length === 0)
+      return Array.isArray(log) ? [...log] : [];
 
     const normalize = (raw: unknown): string => this.sanitizePlayerName(raw);
     const keyOf = (raw: unknown): string => normalize(raw).toLowerCase();
@@ -436,7 +477,11 @@ export class LamaPresenter extends BasePresenterService {
     }
 
     const viewerName = players.find((p) => p?.id === userId)?.username ?? '';
-    const viewerKeys = new Set([keyOf(viewerName), keyOf(`joueur ${userId}`)].filter((k) => k.length > 0));
+    const viewerKeys = new Set(
+      [keyOf(viewerName), keyOf(`joueur ${userId}`)].filter(
+        (k) => k.length > 0,
+      ),
+    );
 
     const drawRe = /^(.+?) pioche un (.+)\.$/;
 
@@ -450,12 +495,10 @@ export class LamaPresenter extends BasePresenterService {
       const actorId = idByLabel.get(actorKey) ?? null;
 
       // Keep the full info for the drawing player (even if ids mismatch, use label as fallback).
-      if (actorId === userId || (actorKey && viewerKeys.has(actorKey))) return entry;
+      if (actorId === userId || (actorKey && viewerKeys.has(actorKey)))
+        return entry;
 
       return { ...entry, message: `${actorLabel} pioche une carte.` };
     });
   }
 }
-
-
-

@@ -8,4 +8,3 @@ export type JeuOieCaseTextsJsonV1 = {
   version: 1;
   cases: JeuOieCaseTextJsonV1[];
 };
-

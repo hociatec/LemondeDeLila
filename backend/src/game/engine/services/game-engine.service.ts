@@ -24,11 +24,7 @@ import {
   validateActions as validateActionDtos,
   sanitizeAction,
 } from '../dto/validated-action.dto';
-import {
-  PayloadValidationError,
-  GameValidationError,
-  GameError,
-} from '../../../common/errors/game-errors';
+import { PayloadValidationError } from '../../../common/errors/game-errors';
 import { GameLoggerService } from '../../../common/services/game-logger.service';
 import { GameStatsService } from '../../../stats/services/game-stats.service';
 import { GridRenderService } from '../../modules/grid/services/grid-render.service';
@@ -295,24 +291,26 @@ export class GameEngineService {
       const panelId = String(match.id ?? '').trim();
       if (!panelId) return null;
 
-      const extras =
-        state?.extras && typeof state.extras === 'object' ? state.extras : {};
-      const ui = (extras as any).ui;
-      const panels = ui && typeof ui === 'object' ? (ui as any).panels : null;
-      const panel =
-        panels && typeof panels === 'object' ? (panels as any)[panelId] : null;
-      let message =
-        panel && typeof panel === 'object' && typeof panel.message === 'string'
-          ? String(panel.message).trim()
-          : '';
+      const extras = GameEngineService.extractExtras(state);
+      const ui = GameEngineService.extractUi(extras);
+      const panels = GameEngineService.extractPanels(ui);
+      const panel = panels
+        ? (panels[panelId] as Record<string, unknown> | undefined)
+        : undefined;
+      let message = GameEngineService.extractPanelMessage(panel);
 
       if (!message && panelId === 'turn') {
-        const status = String(state?.status ?? '').toLowerCase().trim();
+        const status = String(state?.status ?? '')
+          .toLowerCase()
+          .trim();
         if (status === 'finished') {
           message = 'Partie terminée.';
         } else if (status !== 'started') {
           message = 'Partie non démarrée.';
-        } else if (typeof state?.turn?.label === 'string' && state.turn.label.trim()) {
+        } else if (
+          typeof state?.turn?.label === 'string' &&
+          state.turn.label.trim()
+        ) {
           message = state.turn.label.trim();
         } else {
           const currentPlayerId =
@@ -320,7 +318,9 @@ export class GameEngineService {
             Number.isFinite(state.turn.currentPlayerId)
               ? state.turn.currentPlayerId
               : null;
-          const players = Array.isArray((state as any)?.players) ? (state as any).players : [];
+          const players = Array.isArray((state as any)?.players)
+            ? (state as any).players
+            : [];
           const name =
             currentPlayerId != null
               ? String(
@@ -360,10 +360,9 @@ export class GameEngineService {
   private attachShortcuts(
     state: GameStateWithActions,
     handler: GameRulesAdapter | undefined,
-    userId: number,
+    _userId: number,
   ): GameStateWithActions {
-    const extras =
-      state.extras && typeof state.extras === 'object' ? state.extras : {};
+    const extras = GameEngineService.extractExtras(state);
 
     const declared: GameShortcutHint[] = handler?.getShortcuts
       ? handler.getShortcuts({
@@ -397,8 +396,9 @@ export class GameEngineService {
     common.push(interfaceShortcut('Ctrl+R', 'rules'));
 
     // Action shortcuts: emit only when action exists in the exposed state.
-    const actionsRaw = (state as any)?.actions;
-    const actions: Array<any> = Array.isArray(actionsRaw) ? actionsRaw : [];
+    const actions = Array.isArray(state?.actions)
+      ? (state.actions as GameSingleActionDto[])
+      : [];
     const types = new Set(
       actions
         .map((a) =>
@@ -408,7 +408,7 @@ export class GameEngineService {
     );
 
     const hasRoll = Array.isArray(actions)
-      ? actions.some((a) => isRollActionType((a as any)?.type))
+      ? actions.some((a) => isRollActionType(a?.type))
       : false;
     if (hasRoll) {
       common.push(actionShortcut('ENTER', 'roll'));
@@ -480,12 +480,8 @@ export class GameEngineService {
         maybeFinished?.status ?? '',
       ).toLowerCase();
       if (roomStatus === 'started' && maybeFinishedStatus === 'finished') {
-        if (this.isWithinFinishedGraceWindow(maybeFinished as any)) {
-          await this.scheduleFinishedRoomReset(
-            roomId,
-            gameType,
-            maybeFinished as any,
-          );
+        if (this.isWithinFinishedGraceWindow(maybeFinished)) {
+          await this.scheduleFinishedRoomReset(roomId, gameType, maybeFinished);
           return maybeFinished as GameStateEntity;
         }
 
@@ -928,13 +924,12 @@ export class GameEngineService {
     const next = await handler.applyActions(current, sanitizedActions);
     const botTurn = this.isBotTurn(next);
     let marked = await this.markBotThinking(roomId, gameType, next, botTurn);
-    const drawAction = sanitizedActions.find(
-      (a) =>
-        ['draw', 'draw_card'].includes(
-          String(a.type ?? '')
-            .trim()
-            .toLowerCase(),
-        ),
+    const drawAction = sanitizedActions.find((a) =>
+      ['draw', 'draw_card'].includes(
+        String(a.type ?? '')
+          .trim()
+          .toLowerCase(),
+      ),
     );
     if (drawAction) {
       const actionPlayerId = allowBotTurn
@@ -1041,7 +1036,7 @@ export class GameEngineService {
     const meta = (state as any)?.metadata;
     if (!meta || typeof meta !== 'object') return state;
 
-    const winnerId = (meta as any)?.winnerId;
+    const winnerId = meta?.winnerId;
     if (winnerId !== null && winnerId !== undefined) {
       if (typeof winnerId !== 'string' || winnerId.trim().length > 0) {
         return state;
@@ -1049,13 +1044,13 @@ export class GameEngineService {
     }
 
     for (const key of ['winnerPlayerId', 'winner_id'] as const) {
-      const value = (meta as any)?.[key];
+      const value = meta?.[key];
       if (value === null || value === undefined) continue;
       if (typeof value === 'string' && value.trim().length === 0) continue;
       return {
         ...(state as any),
         metadata: {
-          ...(meta as any),
+          ...meta,
           winnerId: value,
         },
       } as TState;
@@ -1125,13 +1120,13 @@ export class GameEngineService {
     // Certains jeux peuvent déjà marquer une fin logique via `finishedAt`/`outcomesByPlayerId`
     // sans avoir basculé `status` -> finished (legacy / bug). On force dans ce cas pour
     // déclencher le reset automatique de table côté moteur.
-    const finishedAt = (meta as any)?.finishedAt;
+    const finishedAt = meta?.finishedAt;
     if (typeof finishedAt === 'string' && finishedAt.trim().length > 0) {
       return state.status === 'finished'
         ? state
         : { ...state, status: 'finished' };
     }
-    const outcomes = (meta as any)?.outcomesByPlayerId;
+    const outcomes = meta?.outcomesByPlayerId;
     if (
       outcomes &&
       typeof outcomes === 'object' &&
@@ -1143,7 +1138,7 @@ export class GameEngineService {
     }
 
     for (const key of ['winnerPlayerId', 'winnerId', 'winner_id']) {
-      const value = (meta as any)[key];
+      const value = meta[key];
       if (value === null || value === undefined) {
         continue;
       }
@@ -1197,7 +1192,10 @@ export class GameEngineService {
       outcomesByPlayerId = existingOutcomes;
     } else if (winnerId != null) {
       outcomesByPlayerId = Object.fromEntries(
-        humans.map((p: any) => [String(p.id), p.id === winnerId ? 'won' : 'lost']),
+        humans.map((p: any) => [
+          String(p.id),
+          p.id === winnerId ? 'won' : 'lost',
+        ]),
       );
     }
 
@@ -1210,13 +1208,18 @@ export class GameEngineService {
     state: GameStateWithActions,
   ): GameEndedPayload {
     const metadata =
-      state?.metadata && typeof state.metadata === 'object' ? state.metadata : {};
+      state?.metadata && typeof state.metadata === 'object'
+        ? state.metadata
+        : {};
     const { winnerId, outcomesByPlayerId } = this.deriveFinishedOutcomes(state);
-    const players = Array.isArray((state as any)?.players) ? (state as any).players : [];
+    const players = Array.isArray((state as any)?.players)
+      ? (state as any).players
+      : [];
 
     const playersById: Record<string, string> = {};
     for (const p of players) {
-      const id = typeof p?.id === 'number' && Number.isFinite(p.id) ? p.id : null;
+      const id =
+        typeof p?.id === 'number' && Number.isFinite(p.id) ? p.id : null;
       if (id == null) {
         continue;
       }
@@ -1230,7 +1233,9 @@ export class GameEngineService {
     const outcomes: Record<string, GameEndedOutcome> = {};
     if (outcomesByPlayerId) {
       for (const [playerId, raw] of Object.entries(outcomesByPlayerId)) {
-        const normalized = String(raw ?? '').trim().toLowerCase();
+        const normalized = String(raw ?? '')
+          .trim()
+          .toLowerCase();
         if (
           normalized === 'won' ||
           normalized === 'lost' ||
@@ -1272,7 +1277,7 @@ export class GameEngineService {
     }
 
     for (const key of ['winnerId', 'winnerPlayerId', 'winner_id']) {
-      const raw = (meta as any)[key];
+      const raw = meta[key];
       if (typeof raw === 'number' && Number.isFinite(raw)) {
         return raw;
       }
@@ -1294,18 +1299,20 @@ export class GameEngineService {
       return null;
     }
 
-    const raw = (meta as any).outcomesByPlayerId;
+    const raw = meta.outcomesByPlayerId;
     if (!raw || typeof raw !== 'object') {
       return null;
     }
 
     const out: Record<string, 'won' | 'lost'> = {};
     for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
-      const normalized = String(value ?? '').trim().toLowerCase();
+      const normalized = String(value ?? '')
+        .trim()
+        .toLowerCase();
       if (normalized !== 'won' && normalized !== 'lost') {
         continue;
       }
-      out[String(key)] = normalized as 'won' | 'lost';
+      out[String(key)] = normalized;
     }
 
     return Object.keys(out).length > 0 ? out : null;
@@ -1455,7 +1462,7 @@ export class GameEngineService {
       }
 
       const roomBotNames = roomBots
-        .map((b: any) => this.normalizeUsernameForLog((b as any)?.name))
+        .map((b: any) => this.normalizeUsernameForLog(b?.name))
         .filter((n: string) => n.length > 0);
       const allowedBotNames = new Set(roomBotNames);
 
@@ -1464,7 +1471,7 @@ export class GameEngineService {
       // sinon l'exclusion est visuellement sans effet et le bot continue de jouer.
       const allowedBotIds = new Set<number>(
         roomBots
-          .map((b: any) => Number((b as any)?.id ?? 0))
+          .map((b: any) => Number(b?.id ?? 0))
           .filter((id: number) => Number.isFinite(id) && id > 0)
           .map((id: number) => -Math.abs(id)),
       );
@@ -1516,10 +1523,10 @@ export class GameEngineService {
 
       // Remove room bots that no longer exist (id < 0 and not in allowedBotIds).
       const filteredPlayers = mappedPlayers.filter((p) => {
-        const id = Number((p as any)?.id ?? 0);
+        const id = Number(p?.id ?? 0);
         if (!Number.isFinite(id) || id === 0) return true;
-        const isBot = (p as any)?.isBot === true;
-        const name = this.normalizeUsernameForLog((p as any)?.username);
+        const isBot = p?.isBot === true;
+        const name = this.normalizeUsernameForLog(p?.username);
         if (isBot && (!name || !allowedBotNames.has(name))) {
           return false;
         }
@@ -1900,7 +1907,7 @@ export class GameEngineService {
               latest?.metadata && typeof latest.metadata === 'object'
                 ? latest.metadata
                 : {};
-            if (!Boolean(latestMeta?.config?.useTimer)) return;
+            if (!latestMeta?.config?.useTimer) return;
             if (typeof latestMeta?.currentQuestion?.id !== 'string') return;
             if (latestMeta.currentQuestion.id !== questionId) return;
             if (
@@ -1980,7 +1987,7 @@ export class GameEngineService {
     const stateForSchedule = immediateStart
       ? {
           ...state,
-          metadata: { ...(meta as any), botImmediateStartPending: false },
+          metadata: { ...meta, botImmediateStartPending: false },
         }
       : state;
     const thinking = await this.markBotThinking(
@@ -2168,7 +2175,9 @@ export class GameEngineService {
     baseState: GameStateEntity,
     state: GameStateEntity,
   ): GameStateEntity {
-    const status = String(state.status ?? '').toLowerCase().trim();
+    const status = String(state.status ?? '')
+      .toLowerCase()
+      .trim();
     if (status !== 'started') return state;
 
     const players = Array.isArray(state.players) ? state.players : [];
@@ -2218,13 +2227,18 @@ export class GameEngineService {
   }
 
   private appendFirstTurnAnnouncement(state: GameStateEntity): GameStateEntity {
-    const status = String(state.status ?? '').toLowerCase().trim();
+    const status = String(state.status ?? '')
+      .toLowerCase()
+      .trim();
     if (status !== 'started') {
       return state;
     }
 
     const currentPlayerId = state.turn?.currentPlayerId ?? null;
-    if (typeof currentPlayerId !== 'number' || !Number.isFinite(currentPlayerId)) {
+    if (
+      typeof currentPlayerId !== 'number' ||
+      !Number.isFinite(currentPlayerId)
+    ) {
       return state;
     }
     const pendingType = String((state.pending as any)?.type ?? '')
@@ -2235,9 +2249,11 @@ export class GameEngineService {
     }
 
     const log = Array.isArray(state.log) ? state.log : [];
-    const recentMessages = log
-      .slice(-3)
-      .map((entry: any) => String(entry?.message ?? '').trim().toLowerCase());
+    const recentMessages = log.slice(-3).map((entry: any) =>
+      String(entry?.message ?? '')
+        .trim()
+        .toLowerCase(),
+    );
     if (recentMessages.some((m) => m.startsWith("c'est au tour de "))) {
       return state;
     }
@@ -2246,8 +2262,7 @@ export class GameEngineService {
     const name =
       this.normalizeUsernameForLog(
         players.find((p) => p?.id === currentPlayerId)?.username,
-      ) ||
-      `Joueur ${currentPlayerId}`;
+      ) || `Joueur ${currentPlayerId}`;
     return this.core.appendLog(state, `C'est au tour de ${name}.`);
   }
 
@@ -2307,66 +2322,69 @@ export class GameEngineService {
       roomId,
       gameType,
       run: async () => {
-        await this.enqueueMutation(this.buildKey(roomId, gameType), async () => {
-          const latest = (await this.store.get(roomId, gameType)) ?? null;
-          if (!latest) return;
-          if (String(latest.status ?? '').toLowerCase() !== 'finished') {
-            return;
-          }
+        await this.enqueueMutation(
+          this.buildKey(roomId, gameType),
+          async () => {
+            const latest = (await this.store.get(roomId, gameType)) ?? null;
+            if (!latest) return;
+            if (String(latest.status ?? '').toLowerCase() !== 'finished') {
+              return;
+            }
 
-          const latestFinishedAt = String(
-            (latest?.metadata as any)?.finishedAt ?? '',
-          ).trim();
-          if (
-            expectedFinishedAt &&
-            latestFinishedAt &&
-            latestFinishedAt !== expectedFinishedAt
-          ) {
-            return;
-          }
+            const latestFinishedAt = String(
+              (latest?.metadata as any)?.finishedAt ?? '',
+            ).trim();
+            if (
+              expectedFinishedAt &&
+              latestFinishedAt &&
+              latestFinishedAt !== expectedFinishedAt
+            ) {
+              return;
+            }
 
-          try {
-            await this.rooms.resetRoomSystem(roomId);
-          } catch (err) {
-            this.gameLogger.error(
-              'Auto-reset room after game finished failed',
-              err instanceof Error ? err : undefined,
-              { roomId, gameType },
-            );
-          }
+            try {
+              await this.rooms.resetRoomSystem(roomId);
+            } catch (err) {
+              this.gameLogger.error(
+                'Auto-reset room after game finished failed',
+                err instanceof Error ? err : undefined,
+                { roomId, gameType },
+              );
+            }
 
-          // Reset le state du moteur pour repartir d'un état "setup" propre (sans plateau figé).
-          try {
-            await this.store.delete(roomId, gameType);
-          } catch (err) {
-            this.gameLogger.error(
-              'Auto-reset game state after finish failed',
-              err instanceof Error ? err : undefined,
-              { roomId, gameType },
-            );
-          }
+            // Reset le state du moteur pour repartir d'un état "setup" propre (sans plateau figé).
+            try {
+              await this.store.delete(roomId, gameType);
+            } catch (err) {
+              this.gameLogger.error(
+                'Auto-reset game state after finish failed',
+                err instanceof Error ? err : undefined,
+                { roomId, gameType },
+              );
+            }
 
-          try {
-            await this.rooms.notifyRoomStateUpdated(roomId);
-          } catch {
-            // best effort
-          }
+            try {
+              await this.rooms.notifyRoomStateUpdated(roomId);
+            } catch {
+              // best effort
+            }
 
-          // Diffuser un état "setup" frais aux clients /ws/game pour rafraîchir l'UI immédiatement.
-          try {
-            const fresh = await this.getInternalState(roomId, gameType);
-            this.broadcaster?.(gameType, roomId, fresh);
-          } catch (err) {
-            this.gameLogger.error(
-              'Broadcast fresh state after finish failed',
-              err instanceof Error ? err : undefined,
-              { roomId, gameType },
-            );
-          }
+            // Diffuser un état "setup" frais aux clients /ws/game pour rafraîchir l'UI immédiatement.
+            try {
+              const fresh = await this.getInternalState(roomId, gameType);
+              this.broadcaster?.(gameType, roomId, fresh);
+            } catch (err) {
+              this.gameLogger.error(
+                'Broadcast fresh state after finish failed',
+                err instanceof Error ? err : undefined,
+                { roomId, gameType },
+              );
+            }
 
-          // Attente : pas de rebuild tant que la table n'est pas redémarrée.
-          this.botScheduler.clear(this.buildKey(roomId, gameType));
-        });
+            // Attente : pas de rebuild tant que la table n'est pas redémarrée.
+            this.botScheduler.clear(this.buildKey(roomId, gameType));
+          },
+        );
       },
       onStale: () => this.cleanupRoom(roomId, gameType),
     });
@@ -2603,17 +2621,22 @@ export class GameEngineService {
   private isOutOfTurn(state: GameStateEntity, actorId: number | null): boolean {
     if (actorId == null || !Number.isFinite(actorId)) return false;
     const currentPlayerId = state?.turn?.currentPlayerId;
-    if (typeof currentPlayerId !== 'number' || !Number.isFinite(currentPlayerId)) {
+    if (
+      typeof currentPlayerId !== 'number' ||
+      !Number.isFinite(currentPlayerId)
+    ) {
       return false;
     }
     return actorId !== currentPlayerId;
   }
 
   private isOutOfTurnMessage(message: string): boolean {
-    const normalized = String(message ?? '').trim().toLowerCase();
+    const normalized = String(message ?? '')
+      .trim()
+      .toLowerCase();
     if (!normalized) return false;
     return (
-      normalized.includes("pas votre tour") ||
+      normalized.includes('pas votre tour') ||
       normalized.includes("n'est pas votre tour") ||
       normalized.includes('attendez votre tour') ||
       normalized.includes('tour en cours')
@@ -2637,9 +2660,7 @@ export class GameEngineService {
         this.attachCurrentPlayerView(withLabel),
       ),
     );
-    return fixMojibakeDeep(
-      this.stripBoardAndGridIfNotStarted(withDescriptors),
-    );
+    return fixMojibakeDeep(this.stripBoardAndGridIfNotStarted(withDescriptors));
   }
 
   private stripBoardAndGridIfNotStarted(
@@ -2650,9 +2671,8 @@ export class GameEngineService {
       .trim();
     if (status === 'started') return state;
 
-    const extras =
-      state.extras && typeof state.extras === 'object' ? state.extras : {};
-    const nextExtras = { ...(extras as any) };
+    const extras = GameEngineService.extractExtras(state);
+    const nextExtras = { ...extras };
     if (nextExtras.grid !== undefined) {
       delete nextExtras.grid;
     }
@@ -2687,11 +2707,10 @@ export class GameEngineService {
     const currentPlayerId = state.turn?.currentPlayerId ?? null;
     if (currentPlayerId === null) return state;
 
-    const extras =
-      state.extras && typeof state.extras === 'object' ? state.extras : {};
+    const extras = GameEngineService.extractExtras(state);
 
     // Si le jeu a déjà défini currentPlayerView, on ne l'écrase pas
-    if (extras.currentPlayerView !== undefined) return state;
+    if (extras['currentPlayerView'] !== undefined) return state;
 
     const players = Array.isArray(state.players) ? state.players : [];
     const currentPlayer = players.find((p) => p?.id === currentPlayerId);
@@ -2712,7 +2731,7 @@ export class GameEngineService {
   }
 
   private appendBoardArrivalAnnouncements(
-    gameType: string,
+    _gameType: string,
     handler: GameRulesAdapter | undefined,
     previous: GameStateEntity,
     next: GameStateEntity,
@@ -2764,8 +2783,8 @@ export class GameEngineService {
         }))
         .filter((p: any) => typeof p.id === 'number' && Number.isFinite(p.id))
         .map((p: any) => {
-          const prevRaw = (prevPositions as any)[String(p.id)];
-          const nextRaw = (nextPositions as any)[String(p.id)];
+          const prevRaw = prevPositions[String(p.id)];
+          const nextRaw = nextPositions[String(p.id)];
           const prevPos =
             typeof prevRaw === 'number' ? prevRaw : Number(prevRaw);
           const nextPos =
@@ -2898,11 +2917,10 @@ export class GameEngineService {
     state: GameStateWithActions,
     userId: number,
   ): GameStateWithActions {
-    const extras =
-      state.extras && typeof state.extras === 'object' ? state.extras : {};
+    const extras = GameEngineService.extractExtras(state);
 
     // Ne pas écraser si un jeu a déjà défini ces champs.
-    if ((extras as any).viewerPlayerId !== undefined) return state;
+    if (extras['viewerPlayerId'] !== undefined) return state;
 
     const players = Array.isArray(state.players) ? state.players : [];
     const viewerPlayer = players.find((p) => p?.id === userId) ?? null;
@@ -2933,31 +2951,17 @@ export class GameEngineService {
     const turnLabel = String(state.turn?.label ?? '').trim();
     if (!turnLabel) return state;
 
-    const extrasNow =
-      state.extras && typeof state.extras === 'object' ? state.extras : {};
-
-    const uiExistingNow = (extrasNow as any).ui;
-    const uiNow =
-      uiExistingNow &&
-      typeof uiExistingNow === 'object' &&
-      !Array.isArray(uiExistingNow)
-        ? { ...(uiExistingNow as Record<string, unknown>) }
-        : {};
-
-    const panelsExistingNow = (uiNow as any).panels;
-    const panelsNow =
-      panelsExistingNow &&
-      typeof panelsExistingNow === 'object' &&
-      !Array.isArray(panelsExistingNow)
-        ? { ...(panelsExistingNow as Record<string, unknown>) }
-        : {};
-
-    const existingTurn = panelsNow['turn'];
+    const extrasNow = GameEngineService.extractExtras(state);
+    const uiExistingNow = GameEngineService.extractUi(extrasNow);
+    const uiNow = uiExistingNow ? { ...uiExistingNow } : {};
+    const panelsExistingNow = GameEngineService.extractPanels(uiExistingNow);
+    const panelsNow = panelsExistingNow ? { ...panelsExistingNow } : {};
+    const existingTurn = panelsNow['turn'] as
+      | Record<string, unknown>
+      | undefined;
     const existingTurnMessage =
-      existingTurn &&
-      typeof existingTurn === 'object' &&
-      !Array.isArray(existingTurn)
-        ? (existingTurn as any).message
+      existingTurn && typeof existingTurn['message'] === 'string'
+        ? existingTurn['message']
         : null;
     const hasTurnMessage =
       typeof existingTurnMessage === 'string' &&
@@ -2970,7 +2974,7 @@ export class GameEngineService {
       };
     }
 
-    (uiNow as any).panels = panelsNow;
+    uiNow['panels'] = panelsNow;
     const stateWithTurnPanel: GameStateWithActions = {
       ...state,
       extras: {
@@ -2979,35 +2983,24 @@ export class GameEngineService {
       },
     };
 
-    const extras =
-      stateWithTurnPanel.extras &&
-      typeof stateWithTurnPanel.extras === 'object'
-        ? stateWithTurnPanel.extras
+    const extrasAfter = GameEngineService.extractExtras(stateWithTurnPanel);
+    const uiExisting = GameEngineService.extractUi(extrasAfter);
+    const ui = uiExisting ? { ...uiExisting } : {};
+    const panelsExisting = GameEngineService.extractPanels(uiExisting);
+    const panels = panelsExisting ? { ...panelsExisting } : {};
+    const currentPlayerView = extrasAfter['currentPlayerView'];
+    const metadata =
+      stateWithTurnPanel.metadata &&
+      typeof stateWithTurnPanel.metadata === 'object'
+        ? (stateWithTurnPanel.metadata as Record<string, unknown>)
         : {};
-
-    const uiExisting = (extras as any).ui;
-    const ui =
-      uiExisting && typeof uiExisting === 'object' && !Array.isArray(uiExisting)
-        ? { ...(uiExisting as Record<string, unknown>) }
-        : {};
-
-    const panelsExisting = (ui as any).panels;
-    const panels =
-      panelsExisting &&
-      typeof panelsExisting === 'object' &&
-      !Array.isArray(panelsExisting)
-        ? { ...(panelsExisting as Record<string, unknown>) }
-        : {};
-
-    const currentPlayerView = (extras as any).currentPlayerView;
-    const metadata = stateWithTurnPanel.metadata ?? {};
     const upsertPanel = (id: string, title: string, message: string) => {
       if (!id || !title || !message) return;
 
-      const existing = panels[id];
+      const existing = panels[id] as Record<string, unknown> | undefined;
       const existingMessage =
-        existing && typeof existing === 'object' && !Array.isArray(existing)
-          ? (existing as any).message
+        existing && typeof existing['message'] === 'string'
+          ? existing['message']
           : null;
       const hasMessage =
         typeof existingMessage === 'string' &&
@@ -3050,74 +3043,65 @@ export class GameEngineService {
       upsertPanel(
         'shopping',
         'Shopping list',
-        buildListMessage(
-          'Shopping list',
-          (currentPlayerView as any).shoppingList,
-        ),
+        buildListMessage('Shopping list', currentPlayerView.shoppingList),
       );
       upsertPanel(
         'basket',
         'Panier',
-        buildListMessage('Panier', (currentPlayerView as any).basket),
+        buildListMessage('Panier', currentPlayerView.basket),
       );
       upsertPanel(
         'inventory',
         'Inventaire',
-        buildListMessage('Inventaire', (currentPlayerView as any).inventory),
+        buildListMessage('Inventaire', currentPlayerView.inventory),
       );
       upsertPanel(
         'stable',
         'Écurie',
-        buildJoinedLinesMessage('Écurie', (currentPlayerView as any).stable),
+        buildJoinedLinesMessage('Écurie', currentPlayerView.stable),
       );
       upsertPanel(
         'position',
         'Position',
-        buildJoinedLinesMessage(
-          'Position',
-          (currentPlayerView as any).position,
-        ),
+        buildJoinedLinesMessage('Position', currentPlayerView.position),
       );
     }
 
     upsertPanel(
       'score',
       'Score',
-      buildListMessage('Score', (extras as any).score),
+      buildListMessage('Score', extrasAfter['score']),
     );
-    upsertPanel('hand', 'Main', buildListMessage('Main', (extras as any).hand));
+    upsertPanel('hand', 'Main', buildListMessage('Main', extrasAfter['hand']));
     upsertPanel(
       'books',
       'Familles',
-      buildListMessage('Familles', (extras as any).books),
+      buildListMessage('Familles', extrasAfter['books']),
     );
 
-    if (
-      typeof (metadata as any).pollution === 'number' ||
-      typeof (metadata as any).maxPollution === 'number'
-    ) {
-      const p =
-        typeof (metadata as any).pollution === 'number'
-          ? (metadata as any).pollution
-          : null;
-      const max =
-        typeof (metadata as any).maxPollution === 'number'
-          ? (metadata as any).maxPollution
-          : null;
+    const pollution =
+      typeof metadata['pollution'] === 'number' ? metadata['pollution'] : null;
+    const maxPollution =
+      typeof metadata['maxPollution'] === 'number'
+        ? metadata['maxPollution']
+        : null;
 
+    if (pollution !== null || maxPollution !== null) {
       let message = 'Pollution: inconnue.';
-      if (p !== null && max !== null) message = `Pollution: ${p}/${max}.`;
-      else if (p !== null) message = `Pollution: ${p}.`;
-      else if (max !== null) message = `Pollution max: ${max}.`;
+      if (pollution !== null && maxPollution !== null)
+        message = `Pollution: ${pollution}/${maxPollution}.`;
+      else if (pollution !== null) message = `Pollution: ${pollution}.`;
+      else if (maxPollution !== null)
+        message = `Pollution max: ${maxPollution}.`;
 
       upsertPanel('pollution', 'Pollution', message);
     }
 
-    (ui as any).panels = panels;
+    ui['panels'] = panels;
     return {
       ...stateWithTurnPanel,
       extras: {
-        ...extras,
+        ...extrasAfter,
         ui,
       },
     };
@@ -3142,5 +3126,51 @@ export class GameEngineService {
     void this.store.delete(roomId, gameType);
     this.mutationQueue.delete(key);
   }
-}
 
+  private static extractExtras(
+    state: GameStateWithActions | GameStateEntity | null | undefined,
+  ): Record<string, unknown> {
+    const extras = state?.extras;
+    if (extras && typeof extras === 'object' && !Array.isArray(extras)) {
+      return extras as Record<string, unknown>;
+    }
+    return {};
+  }
+
+  private static extractUi(
+    extras: Record<string, unknown>,
+  ): Record<string, unknown> | null {
+    const uiRaw = extras['ui'];
+    if (uiRaw && typeof uiRaw === 'object' && !Array.isArray(uiRaw)) {
+      return uiRaw as Record<string, unknown>;
+    }
+    return null;
+  }
+
+  private static extractPanels(
+    ui: Record<string, unknown> | null,
+  ): Record<string, unknown> | null {
+    if (!ui) {
+      return null;
+    }
+    const panelsRaw = ui['panels'];
+    if (
+      panelsRaw &&
+      typeof panelsRaw === 'object' &&
+      !Array.isArray(panelsRaw)
+    ) {
+      return panelsRaw as Record<string, unknown>;
+    }
+    return null;
+  }
+
+  private static extractPanelMessage(
+    panel: Record<string, unknown> | undefined,
+  ): string {
+    if (!panel) {
+      return '';
+    }
+    const message = panel['message'];
+    return typeof message === 'string' ? message.trim() : '';
+  }
+}

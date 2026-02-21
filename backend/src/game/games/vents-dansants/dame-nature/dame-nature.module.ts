@@ -9,11 +9,7 @@ import { DameNaturePresenterService } from './presenter/dame-nature-presenter.se
 import { DameNatureBotService } from './bots/dame-nature-bot.service';
 
 @Module({
-  imports: [
-    BoardGameDeckKitModule,
-    GameCoreModule,
-    GameRegistryModule,
-    ],
+  imports: [BoardGameDeckKitModule, GameCoreModule, GameRegistryModule],
   providers: [
     DameNatureService,
     DameNatureSetupService,

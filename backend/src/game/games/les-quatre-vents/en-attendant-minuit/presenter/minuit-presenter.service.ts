@@ -17,7 +17,7 @@ export class MinuitPresenterService {
     userId: number,
   ): GameStateWithActions {
     const actions = Rulebook.getAvailableActions(state, userId);
-    const meta = (state.metadata ?? {}) as any as MinuitMetadata;
+    const meta = (state.metadata ?? {}) as MinuitMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
 
@@ -34,9 +34,14 @@ export class MinuitPresenterService {
         : null;
     const pending =
       pendingQuiz ??
-      (state.pending && (state.pending as any)?.playerId === userId
+      (state.pending && state.pending.playerId === userId
         ? state.pending
         : null);
+    const stateRecord = state as unknown as Record<string, unknown>;
+    const extrasBase =
+      stateRecord.extras && typeof stateRecord.extras === 'object'
+        ? (stateRecord.extras as Record<string, unknown>)
+        : {};
 
     return {
       ...state,
@@ -47,7 +52,7 @@ export class MinuitPresenterService {
       actions: formatPresenterActions(actions),
       pending,
       extras: {
-        ...(state as any).extras,
+        ...extrasBase,
         currentPlayerView: {
           id: userId,
           username: me?.username ?? `Joueur ${userId}`,
@@ -65,7 +70,10 @@ export class MinuitPresenterService {
           },
         },
       },
-      board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
-    } as any;
+      board: this.boardPayload.buildTilesPositionsLaps(
+        meta.tiles,
+        meta.positions,
+      ),
+    };
   }
 }

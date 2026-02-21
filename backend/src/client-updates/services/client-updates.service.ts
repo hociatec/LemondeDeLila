@@ -22,9 +22,8 @@ export class ClientUpdatesService {
   private readonly metaPath: string;
   private readonly legacyApplicationName = 'client-win.application';
   private readonly latestZipName = 'client-win.zip';
-  private latestCache: { at: number; value: ClientUpdateMeta | null } | null =
-    null;
-  private readonly latestCacheTtlMs = 10_000;
+  private latestMeta: ClientUpdateMeta | null | undefined = undefined;
+  private latestMetaMtimeMs: number | null = null;
 
   constructor() {
     const backendRoot = path.resolve(__dirname, '..', '..', '..');
@@ -34,8 +33,7 @@ export class ClientUpdatesService {
     // Folder served by your reverse-proxy (nginx) as:
     //   https://api.lilas.hociatec.fr/updates/client-win/
     // Configure this path on the Linux server via CLIENT_UPDATES_DIR.
-    this.updatesDir =
-      process.env.CLIENT_UPDATES_DIR || defaultUpdatesDir;
+    this.updatesDir = process.env.CLIENT_UPDATES_DIR || defaultUpdatesDir;
 
     // Metadata lives in a stable location (independent of process.cwd()).
     // Can be overridden for advanced deployments.
@@ -50,14 +48,6 @@ export class ClientUpdatesService {
 
   getPublicUrl() {
     return process.env.CLIENT_UPDATES_PUBLIC_URL || null;
-  }
-
-  private hasLatestZipOnDisk(): boolean {
-    try {
-      return fs.existsSync(path.join(this.getTargetDir(), this.latestZipName));
-    } catch {
-      return false;
-    }
   }
 
   /**
@@ -116,7 +106,7 @@ export class ClientUpdatesService {
         if (!fs.existsSync(file)) continue;
         const raw = await fs.promises.readFile(file, 'utf-8');
         const text = raw.replace(/^\uFEFF/, '');
-        const m = text.match(/assemblyIdentity[^>]*version=\"(?<v>[0-9.]+)\"/i);
+        const m = text.match(/assemblyIdentity[^>]*version="(?<v>[0-9.]+)"/i);
         const v = (m?.groups?.v || '').trim();
         if (!v) continue;
         // Validate format for our comparator.
@@ -205,17 +195,34 @@ export class ClientUpdatesService {
   }
 
   async getLatest(): Promise<ClientUpdateMeta | null> {
-    const cached = this.latestCache;
-    if (cached && Date.now() - cached.at < this.latestCacheTtlMs) {
-      return cached.value;
-    }
     try {
+      const stats = await fs.promises.stat(this.metaPath);
+      const mtimeMs = stats.mtimeMs;
+      if (
+        this.latestMeta &&
+        this.latestMetaMtimeMs != null &&
+        this.latestMetaMtimeMs === mtimeMs
+      ) {
+        return this.latestMeta;
+      }
+
       const raw = await fs.promises.readFile(this.metaPath, 'utf-8');
       const parsed = JSON.parse(raw.replace(/^\uFEFF/, '')) as ClientUpdateMeta;
-      this.latestCache = { at: Date.now(), value: parsed };
+      this.latestMeta = parsed;
+      this.latestMetaMtimeMs = mtimeMs;
       return parsed;
-    } catch {
-      this.latestCache = { at: Date.now(), value: null };
+    } catch (error) {
+      const errno = (error as NodeJS.ErrnoException | null)?.code ?? '';
+      if (errno === 'ENOENT') {
+        this.latestMeta = null;
+        this.latestMetaMtimeMs = null;
+        return null;
+      }
+      if (this.latestMeta !== undefined) {
+        return this.latestMeta;
+      }
+      this.latestMeta = null;
+      this.latestMetaMtimeMs = null;
       return null;
     }
   }
@@ -224,7 +231,13 @@ export class ClientUpdatesService {
     const dir = path.dirname(this.metaPath);
     await fs.promises.mkdir(dir, { recursive: true });
     await fs.promises.writeFile(this.metaPath, JSON.stringify(meta, null, 2));
-    this.latestCache = { at: Date.now(), value: meta };
+    this.latestMeta = meta;
+    try {
+      const stats = await fs.promises.stat(this.metaPath);
+      this.latestMetaMtimeMs = stats.mtimeMs;
+    } catch {
+      this.latestMetaMtimeMs = Date.now();
+    }
   }
 
   /**
@@ -246,8 +259,11 @@ export class ClientUpdatesService {
       forceLatestRaw === 'y';
 
     const metaMin = (latest?.minRequiredVersion || '').trim();
-    const publishedClickOnce = await this.getPublishedClickOnceVersionFromDisk();
-    const hasClickOnce = Boolean(publishedClickOnce && parseVersion(publishedClickOnce) != null);
+    const publishedClickOnce =
+      await this.getPublishedClickOnceVersionFromDisk();
+    const hasClickOnce = Boolean(
+      publishedClickOnce && parseVersion(publishedClickOnce) != null,
+    );
 
     // "Force latest" must never lock clients out if ClickOnce artifacts are missing.
     // If ClickOnce isn't published/served, forcing a min version is pointless (clients can't update).
@@ -308,8 +324,8 @@ export class ClientUpdatesService {
   private async assertUnzipAvailable() {
     try {
       await execFileAsync('unzip', ['-v'], { timeout: 10_000 });
-    } catch (err: any) {
-      const msg = typeof err?.message === 'string' ? err.message : '';
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
       if (msg.includes('ENOENT')) {
         throw new Error(
           'Dépendance manquante: commande "unzip" introuvable (installez le paquet unzip).',
@@ -339,7 +355,9 @@ export class ClientUpdatesService {
       const st = await fs.promises.stat(from);
       if (st.isDirectory()) {
         await fs.promises.mkdir(to, { recursive: true });
-        const entries = await fs.promises.readdir(from, { withFileTypes: true });
+        const entries = await fs.promises.readdir(from, {
+          withFileTypes: true,
+        });
         for (const e of entries) {
           await copyRecursive(path.join(from, e.name), path.join(to, e.name));
         }
@@ -377,7 +395,9 @@ export class ClientUpdatesService {
       .find((name) => name.toLowerCase().endsWith('.application'));
 
     if (!extractedApplication) {
-      throw new Error('Archive invalide : manifeste ClickOnce (.application) manquant.');
+      throw new Error(
+        'Archive invalide : manifeste ClickOnce (.application) manquant.',
+      );
     }
 
     const applicationFilesDir = stagingEntries
@@ -386,7 +406,9 @@ export class ClientUpdatesService {
       .find((name) => name === 'Application Files');
 
     if (!applicationFilesDir) {
-      throw new Error('Archive invalide : dossier "Application Files" introuvable.');
+      throw new Error(
+        'Archive invalide : dossier "Application Files" introuvable.',
+      );
     }
 
     const targetDir = this.getTargetDir();

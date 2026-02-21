@@ -18,7 +18,8 @@ export class CorridorService extends AbstractGameService {
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'Les Vents Sacrés';
   readonly displayName = CORRIDOR_GAME.displayName;
-  readonly description = 'Déplacez votre pion sur une grille (9×9) et atteignez le bord opposé.';
+  readonly description =
+    'Déplacez votre pion sur une grille (9×9) et atteignez le bord opposé.';
   readonly minPlayers = CORRIDOR_GAME.minPlayers;
   readonly maxPlayers = CORRIDOR_GAME.maxPlayers;
 
@@ -38,15 +39,24 @@ export class CorridorService extends AbstractGameService {
     return this.setup.hydrateInitialState(baseState);
   }
 
-  applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
+  applyActions(
+    state: GameStateEntity,
+    actions: GameSingleActionDto[],
+  ): GameStateEntity {
     return this.actions.applyActions(state, actions);
   }
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     return this.bots.getBotActions(state, botPlayerId);
   }
 
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
   }
 }

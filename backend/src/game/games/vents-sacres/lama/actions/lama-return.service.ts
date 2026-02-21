@@ -35,7 +35,9 @@ export class LamaReturnService {
         return 0;
       }
     })();
-    const currentScore = Number((meta.scoresByPlayerId ?? {})[String(actorId)] ?? 0);
+    const currentScore = Number(
+      (meta.scoresByPlayerId ?? {})[String(actorId)] ?? 0,
+    );
     const delta = value === 10 ? 10 : value === 1 ? 1 : 0;
     const nextScore = Math.max(0, currentScore - delta);
     const scoresByPlayerId = { ...(meta.scoresByPlayerId ?? {}) };
@@ -44,11 +46,15 @@ export class LamaReturnService {
     const players = Array.isArray(state.players) ? state.players : [];
     const name = this.shared.playerLabel(players, actorId);
     let log = state.log;
-    if (delta === 10) log = this.logger.append(log, `${name} rend 1 diamant (10 jetons).`);
-    else if (delta === 1) log = this.logger.append(log, `${name} rend 1 jeton.`);
+    if (delta === 10)
+      log = this.logger.append(log, `${name} rend 1 diamant (10 jetons).`);
+    else if (delta === 1)
+      log = this.logger.append(log, `${name} rend 1 jeton.`);
     else log = this.logger.append(log, `${name} ne rend rien.`);
 
-    const queue = Array.isArray(meta.pendingReturnQueue) ? [...meta.pendingReturnQueue] : [];
+    const queue = Array.isArray(meta.pendingReturnQueue)
+      ? [...meta.pendingReturnQueue]
+      : [];
     const remaining = queue.filter((id) => id !== actorId);
     const nextPending = remaining.length ? remaining[0] : null;
     const nextMeta: LamaMetadata = {
@@ -60,23 +66,26 @@ export class LamaReturnService {
       suppressTurnAnnouncement: false,
     };
 
-    const nextState = createPendingState({
-      ...state,
-      metadata: nextMeta as any,
-      log,
-      turnIndex: (state.turnIndex ?? 0) + 1,
-      turn: {
-        ...(state.turn ?? { direction: 1 }),
-        currentPlayerId: nextPending ?? state.turn?.currentPlayerId ?? null,
-        direction: 1,
-        label: nextPending
-          ? `Rendre des jetons : ${this.shared.playerLabel(players as any[], nextPending)}`
-          : undefined,
-      },
-    } as GameStateEntity, {
-      step: nextMeta.step,
-      playerId: nextMeta.pendingReturnPlayerId ?? null,
-    } as any);
+    const nextState = createPendingState(
+      {
+        ...state,
+        metadata: nextMeta as any,
+        log,
+        turnIndex: (state.turnIndex ?? 0) + 1,
+        turn: {
+          ...(state.turn ?? { direction: 1 }),
+          currentPlayerId: nextPending ?? state.turn?.currentPlayerId ?? null,
+          direction: 1,
+          label: nextPending
+            ? `Rendre des jetons : ${this.shared.playerLabel(players as any[], nextPending)}`
+            : undefined,
+        },
+      } as GameStateEntity,
+      {
+        step: nextMeta.step,
+        playerId: nextMeta.pendingReturnPlayerId ?? null,
+      } as any,
+    );
 
     if (nextPending) {
       return nextState;

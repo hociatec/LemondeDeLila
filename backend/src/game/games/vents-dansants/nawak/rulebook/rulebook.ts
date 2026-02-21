@@ -1,10 +1,8 @@
 ﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import type { NawakMetadata } from '../model/nawak-state.entity';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { normalizeActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
-
-type NawakActionType = 'choose_answer' | 'vote_answer';
 
 type NawakActionPayload = {
   answerIndex?: number | null;
@@ -18,7 +16,7 @@ function getMeta(state: GameStateEntity): NawakMetadata {
 function getPlayerIds(players?: GameStateEntity['players']): number[] {
   return (Array.isArray(players) ? players : [])
     .filter((player) => typeof player?.id === 'number')
-    .map((player) => player!.id);
+    .map((player) => player.id);
 }
 
 export function getAvailableActions(
@@ -34,7 +32,11 @@ export function getAvailableActions(
   if (meta.roundStage === 'choose') {
     const submissions = meta.submissions ?? {};
     if (submissions[playerId] == null && meta.currentChallenge?.answers) {
-      for (let index = 0; index < meta.currentChallenge.answers.length; index += 1) {
+      for (
+        let index = 0;
+        index < meta.currentChallenge.answers.length;
+        index += 1
+      ) {
         actions.push({
           type: 'choose_answer',
           payload: { answerIndex: index },
@@ -73,7 +75,7 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error('La partie n\'est pas démarrée.');
+    throw new Error("La partie n'est pas démarrée.");
   }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== actorId) {
@@ -89,7 +91,8 @@ export function validateAction(
     if (meta.roundStage !== 'choose') {
       throw new Error('Vous ne pouvez pas choisir maintenant.');
     }
-    const answerIndex = typeof payload.answerIndex === 'number' ? payload.answerIndex : null;
+    const answerIndex =
+      typeof payload.answerIndex === 'number' ? payload.answerIndex : null;
     if (answerIndex == null || answerIndex < 0 || answerIndex >= 3) {
       throw new Error('Réponse invalide.');
     }
@@ -103,13 +106,14 @@ export function validateAction(
   if (meta.roundStage !== 'vote') {
     throw new Error('Vous ne pouvez pas voter maintenant.');
   }
-  const targetPlayerId = typeof payload.targetPlayerId === 'number' ? payload.targetPlayerId : null;
+  const targetPlayerId =
+    typeof payload.targetPlayerId === 'number' ? payload.targetPlayerId : null;
   if (targetPlayerId == null || targetPlayerId === actorId) {
     throw new Error('Cible de vote invalide.');
   }
   const submissions = meta.submissions ?? {};
   if (submissions[targetPlayerId] == null) {
-    throw new Error('La cible n\'a pas soumis de réponse.');
+    throw new Error("La cible n'a pas soumis de réponse.");
   }
   const votes = meta.votes ?? {};
   if (votes[actorId] != null) {
@@ -118,6 +122,3 @@ export function validateAction(
 
   return { type: 'vote_answer', payload: { targetPlayerId } };
 }
-
-
-

@@ -8,7 +8,7 @@ import { GameValidationError } from '../../../common/errors/game-errors';
  *
  * Chaque handler traite un type d'action spécifique et retourne le nouvel état.
  */
-export interface ActionHandler<TMetadata = any, TPayload = any> {
+export interface ActionHandler {
   /**
    * Type d'action géré par ce handler.
    */

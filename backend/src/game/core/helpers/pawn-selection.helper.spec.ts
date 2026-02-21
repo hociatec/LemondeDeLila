@@ -14,7 +14,9 @@ describe('pawn-selection.helper', () => {
         pawns: [{ id: 'Le Lutin', label: 'Le Lutin: Agile' }],
       },
     };
-    expect(resolvePendingPawnId(pending, { pawnId: 'Le Lutin' })).toBe('Le Lutin');
+    expect(resolvePendingPawnId(pending, { pawnId: 'Le Lutin' })).toBe(
+      'Le Lutin',
+    );
   });
 
   it('builds generic pending pawn actions', () => {

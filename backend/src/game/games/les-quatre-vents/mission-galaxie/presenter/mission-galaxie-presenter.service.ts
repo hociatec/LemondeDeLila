@@ -8,6 +8,12 @@ import { MISSION_GALAXIE_GAME } from '../definitions/mission-galaxie.definition'
 import * as Rulebook from '../rulebook/rulebook';
 import type { MissionGalaxieMetadata } from '../model/mission-galaxie-state.entity';
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
 @Injectable()
 export class MissionGalaxiePresenterService {
   constructor(private readonly boardPayload: BoardPayloadService) {}
@@ -41,7 +47,7 @@ export class MissionGalaxiePresenterService {
       actions: formatPresenterActions(actions),
       pending: state.pending ?? null,
       extras: {
-        ...(state as any).extras,
+        ...asRecord(state.extras),
         currentPlayerView: {
           id: userId,
           username: me?.username ?? `Joueur ${userId}`,
@@ -64,6 +70,6 @@ export class MissionGalaxiePresenterService {
         meta.tiles,
         meta.positions,
       ),
-    } as any;
+    };
   }
 }

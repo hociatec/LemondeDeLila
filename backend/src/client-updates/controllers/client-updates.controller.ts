@@ -4,7 +4,7 @@ import {
   isVersionGreater,
   isVersionLower,
 } from '../../common/utils/version.utils';
-import type { Request, Response } from 'express';
+import type { Request } from 'express';
 
 @Controller()
 export class ClientUpdatesController {

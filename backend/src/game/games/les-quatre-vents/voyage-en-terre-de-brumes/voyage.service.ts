@@ -25,7 +25,7 @@ export class VoyageService extends AbstractGameService {
   readonly subcategory = 'LesQuatreVents';
   readonly displayName = VOYAGE_GAME.displayName;
   readonly description =
-    "Voyage en Irlande : quiz de légendes, farces et trésors.";
+    'Voyage en Irlande : quiz de légendes, farces et trésors.';
   readonly minPlayers = VOYAGE_GAME.minPlayers;
   readonly maxPlayers = VOYAGE_GAME.maxPlayers;
 
@@ -82,4 +82,3 @@ export class VoyageService extends AbstractGameService {
     return buildVoyageShortcuts(ctx);
   }
 }
-

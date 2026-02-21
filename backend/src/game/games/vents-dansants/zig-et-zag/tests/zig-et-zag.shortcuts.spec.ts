@@ -2,7 +2,11 @@ import { buildZigEtZagShortcuts } from '../zig-et-zag.shortcuts';
 
 describe('ZigEtZagShortcuts', () => {
   it('declares draw and deck info shortcuts', () => {
-    const shortcuts = buildZigEtZagShortcuts();
+    const shortcuts = buildZigEtZagShortcuts({
+      metadata: {},
+      currentPlayerId: 1,
+      started: true,
+    });
     expect(Array.isArray(shortcuts)).toBe(true);
     expect(
       shortcuts.some(

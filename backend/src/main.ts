@@ -118,7 +118,7 @@ async function bootstrap() {
     // This is the most common cause of "my ClickOnce client stopped working after a backend deploy":
     // deployments that run `git pull` in-place can overwrite backend/data/client-updates/*.
     // Keeping artifacts in a persistent directory outside the repo avoids that class of outage.
-    // eslint-disable-next-line no-console
+
     console.warn(
       `[updates] CLIENT_UPDATES_DIR is not set; using default inside repo: ${updatesDir}. ` +
         `In production, set CLIENT_UPDATES_DIR to a persistent directory outside the git checkout to avoid losing ClickOnce artifacts on deploy.`,
@@ -228,7 +228,7 @@ async function bootstrap() {
 }
 bootstrap().catch((err) => {
   // Fallback: ensure we see the failure even if the Nest logger is not flushed/displayed.
-  // eslint-disable-next-line no-console
+
   console.error(
     'bootstrap failed',
     err instanceof Error ? err.stack : String(err),

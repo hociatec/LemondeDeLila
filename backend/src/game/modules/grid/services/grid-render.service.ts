@@ -3,7 +3,9 @@ import { GameStateWithActions } from '../../../engine/dto/game-action.dto';
 
 @Injectable()
 export class GridRenderService {
-  attachGridRenderDescriptors(state: GameStateWithActions): GameStateWithActions {
+  attachGridRenderDescriptors(
+    state: GameStateWithActions,
+  ): GameStateWithActions {
     const extras =
       state.extras && typeof state.extras === 'object' ? state.extras : {};
 
@@ -50,13 +52,14 @@ export class GridRenderService {
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
         const key = `${x},${y}`;
-        const edges = (blockedEdges as any)[key];
-        const isObj = edges && typeof edges === 'object' && !Array.isArray(edges);
+        const edges = blockedEdges[key];
+        const isObj =
+          edges && typeof edges === 'object' && !Array.isArray(edges);
 
-        const nBlocked = isObj && (edges as any).n === true;
-        const eBlocked = isObj && (edges as any).e === true;
-        const sBlocked = isObj && (edges as any).s === true;
-        const wBlocked = isObj && (edges as any).w === true;
+        const nBlocked = isObj && edges.n === true;
+        const eBlocked = isObj && edges.e === true;
+        const sBlocked = isObj && edges.s === true;
+        const wBlocked = isObj && edges.w === true;
 
         // Ne pas annoncer les bords (seulement les murs internes).
         const n = nBlocked && y > 0;

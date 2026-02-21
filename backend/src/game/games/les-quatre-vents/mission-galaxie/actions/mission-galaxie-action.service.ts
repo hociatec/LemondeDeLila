@@ -11,9 +11,7 @@ import {
 } from '../../../../actions/action-service.helper';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -29,12 +27,45 @@ import type {
   MissionGalaxieEventCard,
   MissionGalaxieMetadata,
   MissionGalaxiePendingContext,
-  MissionGalaxieTile,
 } from '../model/mission-galaxie-state.entity';
 
 type MissionGalaxieMetadataWithFlags = MissionGalaxieMetadata & {
   keepTurn?: boolean;
 };
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function asPartialMeta(
+  value: unknown,
+): Partial<MissionGalaxieMetadataWithFlags> {
+  return value != null && typeof value === 'object'
+    ? (value as Partial<MissionGalaxieMetadataWithFlags>)
+    : {};
+}
+
+function readEventMoveOptions(
+  pending: unknown,
+): Array<{ targetPlayerId: number; delta: number }> {
+  const row = asRecord(pending);
+  const data = asRecord(row.data);
+  const options = Array.isArray(data.options) ? data.options : [];
+  return options
+    .map((entry) => {
+      const option = asRecord(entry);
+      return {
+        targetPlayerId: Number(option.targetPlayerId),
+        delta: Number(option.delta),
+      };
+    })
+    .filter(
+      (entry) =>
+        Number.isFinite(entry.targetPlayerId) && Number.isFinite(entry.delta),
+    );
+}
 
 @Injectable()
 export class MissionGalaxieActionService {
@@ -49,20 +80,25 @@ export class MissionGalaxieActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    return applyActionsSequentially(harmonizeActionStateReturn(state), actions, (next, action) => {
-      const current = harmonizeActionStateReturn(next);
-      const type = normalizeActionType(action);
-      return dispatchByActionType(
-        type,
-        {
-          roll: () => this.handleRoll(current),
-          draw: () => this.handleDraw(current),
-          choose_option: () => this.handleChooseOption(current, action),
-          choose_event_move: () => this.handleChooseEventMove(current, action),
-        },
-        () => current,
-      );
-    });
+    return applyActionsSequentially(
+      harmonizeActionStateReturn(state),
+      actions,
+      (next, action) => {
+        const current = harmonizeActionStateReturn(next);
+        const type = normalizeActionType(action);
+        return dispatchByActionType(
+          type,
+          {
+            roll: () => this.handleRoll(current),
+            draw: () => this.handleDraw(current),
+            choose_option: () => this.handleChooseOption(current, action),
+            choose_event_move: () =>
+              this.handleChooseEventMove(current, action),
+          },
+          () => current,
+        );
+      },
+    );
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -90,8 +126,8 @@ export class MissionGalaxieActionService {
       return this.turns.advanceTurn(skipped);
     }
 
-    const rng = this.random.rollDice(meta as any, 6);
-    meta = { ...meta, ...rng.meta };
+    const rng = this.random.rollDice(meta as Record<string, unknown>, 6);
+    meta = { ...meta, ...asPartialMeta(rng.meta) };
     const roll = rng.roll;
 
     let next: GameStateEntity = {
@@ -131,16 +167,21 @@ export class MissionGalaxieActionService {
 
   private handleDraw(state: GameStateEntity): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
-    const pending = state.pending as any;
+    const pending = state.pending;
     if (!isPendingType(state, 'draw')) return state;
+    const pendingRow = asRecord(pending);
 
     const playerId =
-      typeof pending.playerId === 'number'
-        ? pending.playerId
+      typeof pendingRow.playerId === 'number'
+        ? pendingRow.playerId
         : (state.turn?.currentPlayerId ?? null);
     if (playerId == null) return state;
 
-    const deckName = pending.data?.deck as MissionGalaxieDeckName | undefined;
+    const pendingData = asRecord(pendingRow.data);
+    const deckName =
+      typeof pendingData.deck === 'string'
+        ? (pendingData.deck as MissionGalaxieDeckName)
+        : undefined;
     if (!deckName) return state;
 
     const meta = this.getMeta(state);
@@ -208,10 +249,10 @@ export class MissionGalaxieActionService {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
-    const pending = state.pending as any;
     if (!isPendingType(state, 'choose_option')) return state;
 
-    const choiceIndex = Number((action.payload as any)?.choiceIndex);
+    const payload = asRecord(action.payload);
+    const choiceIndex = Number(payload.choiceIndex);
     if (!Number.isFinite(choiceIndex)) return state;
 
     const meta = this.getMeta(state);
@@ -255,11 +296,12 @@ export class MissionGalaxieActionService {
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
 
-    const pending = state.pending as any;
+    const pending = state.pending;
     if (!isPendingType(state, 'choose_event_move')) return state;
 
-    const targetPlayerId = Number((action.payload as any)?.targetPlayerId);
-    const delta = Number((action.payload as any)?.delta);
+    const payload = asRecord(action.payload);
+    const targetPlayerId = Number(payload.targetPlayerId);
+    const delta = Number(payload.delta);
     if (!Number.isFinite(targetPlayerId) || !Number.isFinite(delta))
       return state;
 
@@ -269,8 +311,7 @@ export class MissionGalaxieActionService {
       return { ...state, pending: null };
     }
 
-    const options: Array<{ targetPlayerId: number; delta: number }> =
-      Array.isArray(pending?.data?.options) ? pending.data.options : [];
+    const options = readEventMoveOptions(pending);
     const isValid = options.some(
       (opt) => opt.targetPlayerId === targetPlayerId && opt.delta === delta,
     );
@@ -345,19 +386,13 @@ export class MissionGalaxieActionService {
         );
       }
       case 'question':
-        next = this.core.appendLog(
-          next,
-          'Piochez une question galactique.',
-        );
+        next = this.core.appendLog(next, 'Piochez une question galactique.');
         return this.promptDraw(next, playerId, 'questions');
       case 'challenge':
         next = this.core.appendLog(next, 'Piochez un défi cosmique.');
         return this.promptDraw(next, playerId, 'challenges');
       case 'event':
-        next = this.core.appendLog(
-          next,
-          'Piochez un événement spatial.',
-        );
+        next = this.core.appendLog(next, 'Piochez un événement spatial.');
         return this.promptDraw(next, playerId, 'events');
       case 'swapNearest':
         return this.applySwapNearest(next, playerId);
@@ -482,13 +517,13 @@ export class MissionGalaxieActionService {
       case 'none':
         return next;
       case 'reroll':
-        next = this.setKeepTurn(next, playerId);
+        next = this.setKeepTurn(next);
         return this.core.appendLog(
           next,
           `${resolvePlayerNameFromState(next, playerId)} relance immédiatement le dé.`,
         );
       case 'keepTurn':
-        next = this.setKeepTurn(next, playerId);
+        next = this.setKeepTurn(next);
         return this.core.appendLog(
           next,
           `${resolvePlayerNameFromState(next, playerId)} rejoue immédiatement.`,
@@ -532,8 +567,6 @@ export class MissionGalaxieActionService {
       delta: number;
       label: string;
     }> = [];
-    const meta = this.getMeta(state);
-    const me = players.find((p) => p?.id === playerId);
     const targetPlayers = players.filter((p) => p?.id != null);
     for (const delta of deltas) {
       for (const player of targetPlayers) {
@@ -592,10 +625,7 @@ export class MissionGalaxieActionService {
     };
   }
 
-  private setKeepTurn(
-    state: GameStateEntity,
-    playerId: number,
-  ): GameStateEntity {
+  private setKeepTurn(state: GameStateEntity): GameStateEntity {
     const meta = this.getMeta(state);
     const nextMeta: MissionGalaxieMetadataWithFlags = {
       ...meta,
@@ -696,7 +726,7 @@ export class MissionGalaxieActionService {
 
   private pawnLabel(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
-    const player = players.find((p: any) => p?.id === id) as any;
+    const player = players.find((p) => p?.id === id) ?? null;
     const pawn =
       typeof player?.pawn === 'string' ? String(player.pawn).trim() : '';
     if (!pawn) return '"son pion"';
@@ -708,7 +738,9 @@ export class MissionGalaxieActionService {
       .trim();
     const core = inner || pawn;
     const lowered =
-      core.length <= 1 ? core.toLowerCase() : `${core.charAt(0).toLowerCase()}${core.slice(1)}`;
+      core.length <= 1
+        ? core.toLowerCase()
+        : `${core.charAt(0).toLowerCase()}${core.slice(1)}`;
     return `"${feminine ? 'sa' : 'son'} ${lowered}"`;
   }
 
@@ -716,8 +748,3 @@ export class MissionGalaxieActionService {
     return (state.metadata ?? {}) as MissionGalaxieMetadata;
   }
 }
-
-
-
-
-

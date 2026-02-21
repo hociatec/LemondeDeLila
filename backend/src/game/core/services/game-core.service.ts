@@ -9,10 +9,22 @@ import { ensureSeededRng } from '../../../common/utils/seeded-rng';
 import { seededShuffle } from '../../../common/utils/seeded-shuffle';
 import { normalizeGameLogMessage } from '../helpers/log-style.helper';
 
+type RoomWithOptionalRunId = {
+  runId?: unknown;
+};
+
+function toPlayerNameText(raw: unknown): string {
+  if (typeof raw === 'string') return raw;
+  if (typeof raw === 'number' || typeof raw === 'boolean') {
+    return String(raw);
+  }
+  return '';
+}
+
 @Injectable()
 export class GameCoreService {
   private sanitizePlayerName(raw: unknown): string {
-    let name = String(raw ?? '').trim();
+    let name = toPlayerNameText(raw).trim();
     name = name
       .replace(/[\r\n\t]+/g, ' ')
       .replace(/\s{2,}/g, ' ')
@@ -37,19 +49,21 @@ export class GameCoreService {
   buildBaseState(payload: RoomPayload, gameType: string): GameStateEntity {
     const status = payload.room.status || 'setup';
     const roomOwnerId =
-      typeof payload?.room?.owner?.id === 'number' ? payload.room.owner.id : null;
+      typeof payload?.room?.owner?.id === 'number'
+        ? payload.room.owner.id
+        : null;
+    const roomWithRunId = payload.room as unknown as RoomWithOptionalRunId;
+    const runId =
+      typeof roomWithRunId.runId === 'number' ? roomWithRunId.runId : null;
     const metadata: Record<string, unknown> = {
       roomId: payload?.room?.id ?? null,
       roomOwnerId,
       gameType,
       roomStartedAt: payload?.room?.startedAt ?? null,
-      roomRunId:
-        typeof (payload?.room as any)?.runId === 'number'
-          ? (payload.room as any).runId
-          : null,
+      roomRunId: runId,
       generatedAt: new Date().toISOString(),
     };
-    const rng = ensureSeededRng(metadata as any);
+    const rng = ensureSeededRng(metadata);
     metadata.rng = rng;
 
     const playersBase = this.buildPlayers(payload);
@@ -119,7 +133,7 @@ export class GameCoreService {
         shoppingList: [],
       }),
     );
-    payload.room.bots.forEach((b, idx) =>
+    payload.room.bots.forEach((b) =>
       players.push({
         // Stable id: avoid shifting bot ids when the room bot list order changes.
         // This prevents games from "remembering" a different bot after add/remove/reorder.
@@ -135,7 +149,7 @@ export class GameCoreService {
   }
 
   private shouldRandomizeStarter(status: string): boolean {
-    return String(status ?? '').toLowerCase() === 'started';
+    return status.toLowerCase() === 'started';
   }
 
   private shufflePlayers(

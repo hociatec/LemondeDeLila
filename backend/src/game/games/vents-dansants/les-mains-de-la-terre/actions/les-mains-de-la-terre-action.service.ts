@@ -3,7 +3,6 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerName } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -14,7 +13,11 @@ import {
   LES_MAINS_FAMILIES,
   isLesMainsSpecialCard,
 } from '../model/les-mains-de-la-terre-cards';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import type { LesMainsMetadata } from '../model/les-mains-de-la-terre-state.entity';
 
 type LesMainsActionPayload = {
@@ -36,19 +39,19 @@ export class LesMainsActionService {
     actions: GameSingleActionDto[],
   ): GameStateEntity {
     const next = applyActionsSequentially(state, actions, (next, action) => {
-          const type = normalizeActionType(action);
-          return dispatchByActionType(
-            type,
-            {
-              'request_card': () => {
-                next = this.handleRequestCard(next, action);
-                return next;
-              },
-            },
-            () => next,
-          );
-        });
-        return next;
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          request_card: () => {
+            next = this.handleRequestCard(next, action);
+            return next;
+          },
+        },
+        () => next,
+      );
+    });
+    return next;
   }
 
   private handleRequestCard(
@@ -61,20 +64,25 @@ export class LesMainsActionService {
     }
     const payload = (action.payload ?? {}) as LesMainsActionPayload;
     const cardId = String(payload.cardId ?? '').trim();
-    const targetId = typeof payload.targetPlayerId === 'number' ? payload.targetPlayerId : null;
+    const targetId =
+      typeof payload.targetPlayerId === 'number'
+        ? payload.targetPlayerId
+        : null;
     if (!cardId || targetId == null || targetId === currentId) {
       return state;
     }
     let next = state;
     let meta = this.getMeta(next);
     meta = this.clearFreeRequest(meta, currentId);
-    const targetHand = Array.isArray(meta.hands?.[targetId]) ? [...meta.hands[targetId]] : [];
+    const targetHand = Array.isArray(meta.hands?.[targetId])
+      ? [...meta.hands[targetId]]
+      : [];
     const hasCard = targetHand.includes(cardId);
     if (hasCard) {
       meta = this.transferCard(meta, targetId, currentId, cardId);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerName(next.players, currentId)} récupère ${LES_MAINS_CARD_BY_ID[cardId]?.name ?? 'une carte'} de ${resolvePlayerName(
+        `${resolvePlayerName(next.players, currentId)} rï¿½cupï¿½re ${LES_MAINS_CARD_BY_ID[cardId]?.name ?? 'une carte'} de ${resolvePlayerName(
           next.players,
           targetId,
         )}.`,
@@ -84,7 +92,7 @@ export class LesMainsActionService {
       if (completion.completedFamily) {
         next = this.core.appendLog(
           next,
-          `${resolvePlayerName(next.players, currentId)} complète la famille ${completion.completedFamily} !`,
+          `${resolvePlayerName(next.players, currentId)} complï¿½te la famille ${completion.completedFamily} !`,
         );
       }
       next = this.setMeta(next, meta);
@@ -116,7 +124,12 @@ export class LesMainsActionService {
         continue;
       }
       if (isLesMainsSpecialCard(result.cardId)) {
-        const special = this.applySpecialCard(next, meta, playerId, result.cardId);
+        const special = this.applySpecialCard(
+          next,
+          meta,
+          playerId,
+          result.cardId,
+        );
         next = special.state;
         meta = special.meta;
         continue;
@@ -126,12 +139,16 @@ export class LesMainsActionService {
         next,
         `${resolvePlayerName(next.players, playerId)} pioche ${LES_MAINS_CARD_BY_ID[result.cardId]?.name ?? 'une carte'}.`,
       );
-      const completion = this.completeFamilyIfNeeded(meta, playerId, result.cardId);
+      const completion = this.completeFamilyIfNeeded(
+        meta,
+        playerId,
+        result.cardId,
+      );
       meta = completion.meta;
       if (completion.completedFamily) {
         next = this.core.appendLog(
           next,
-          `${resolvePlayerName(next.players, playerId)} complète la famille ${completion.completedFamily} !`,
+          `${resolvePlayerName(next.players, playerId)} complï¿½te la famille ${completion.completedFamily} !`,
         );
       }
     }
@@ -145,8 +162,8 @@ export class LesMainsActionService {
     playerId: number,
     cardId: string,
   ): { state: GameStateEntity; meta: LesMainsMetadata } {
-    let nextState = state;
-    let nextMeta = {
+    const nextState = state;
+    const nextMeta = {
       ...meta,
       discard: [...(meta.discard ?? []), cardId],
     };
@@ -199,7 +216,7 @@ export class LesMainsActionService {
     if (!targetHand.length) {
       nextState = this.core.appendLog(
         nextState,
-        `${resolvePlayerName(nextState.players, playerId)} ne trouve pas de carte à échanger.`,
+        `${resolvePlayerName(nextState.players, playerId)} ne trouve pas de carte ï¿½ ï¿½changer.`,
       );
       return { state: nextState, meta: nextMeta };
     }
@@ -213,10 +230,10 @@ export class LesMainsActionService {
     nextMeta = this.transferCard(nextMeta, targetId, playerId, targetCard);
     nextState = this.core.appendLog(
       nextState,
-      `${resolvePlayerName(nextState.players, playerId)} échange une carte avec ${resolvePlayerName(
+      `${resolvePlayerName(nextState.players, playerId)} ï¿½change une carte avec ${resolvePlayerName(
         nextState.players,
         targetId,
-      )} grâce au Voyage autour du monde.`,
+      )} grï¿½ce au Voyage autour du monde.`,
     );
     return { state: nextState, meta: nextMeta };
   }
@@ -232,11 +249,13 @@ export class LesMainsActionService {
     if (used[playerId]) {
       nextState = this.core.appendLog(
         nextState,
-        `${resolvePlayerName(nextState.players, playerId)} a déjà utilisé Métier disparu.`,
+        `${resolvePlayerName(nextState.players, playerId)} a dï¿½jï¿½ utilisï¿½ Mï¿½tier disparu.`,
       );
       return { state: nextState, meta: nextMeta };
     }
-    const hand = Array.isArray(nextMeta.hands?.[playerId]) ? [...nextMeta.hands[playerId]] : [];
+    const hand = Array.isArray(nextMeta.hands?.[playerId])
+      ? [...nextMeta.hands[playerId]]
+      : [];
     const counts: Record<string, number> = {};
     hand.forEach((cardId) => {
       const family = LES_MAINS_CARD_BY_ID[cardId]?.family;
@@ -245,14 +264,17 @@ export class LesMainsActionService {
     });
     const completions = nextMeta.completedFamilies?.[playerId] ?? [];
     const candidate = Object.entries(counts)
-      .filter(([family]) => !completions.includes(family as typeof LES_MAINS_FAMILIES[number]))
+      .filter(
+        ([family]) =>
+          !completions.includes(family as (typeof LES_MAINS_FAMILIES)[number]),
+      )
       .sort(([, a], [, b]) => b - a)
-      .map(([family]) => family as typeof LES_MAINS_FAMILIES[number])
+      .map(([family]) => family as (typeof LES_MAINS_FAMILIES)[number])
       .shift();
     if (!candidate) {
       nextState = this.core.appendLog(
         nextState,
-        `${resolvePlayerName(nextState.players, playerId)} n'a pas de famille à compléter avec Métier disparu.`,
+        `${resolvePlayerName(nextState.players, playerId)} n'a pas de famille ï¿½ complï¿½ter avec Mï¿½tier disparu.`,
       );
       return { state: nextState, meta: nextMeta };
     }
@@ -262,16 +284,24 @@ export class LesMainsActionService {
     nextMeta = {
       ...nextMeta,
       hands: { ...nextMeta.hands, [playerId]: newHand },
-      discard: [...(nextMeta.discard ?? []), ...hand.filter((cardId) => LES_MAINS_CARD_BY_ID[cardId]?.family === candidate)],
+      discard: [
+        ...(nextMeta.discard ?? []),
+        ...hand.filter(
+          (cardId) => LES_MAINS_CARD_BY_ID[cardId]?.family === candidate,
+        ),
+      ],
       completedFamilies: {
         ...nextMeta.completedFamilies,
-        [playerId]: [...(nextMeta.completedFamilies?.[playerId] ?? []), candidate],
+        [playerId]: [
+          ...(nextMeta.completedFamilies?.[playerId] ?? []),
+          candidate,
+        ],
       },
       bonusMetierDisparuUsed: { ...used, [playerId]: true },
     };
     nextState = this.core.appendLog(
       nextState,
-      `${resolvePlayerName(nextState.players, playerId)} complète la famille ${candidate} grâce au Métier disparu.`,
+      `${resolvePlayerName(nextState.players, playerId)} complï¿½te la famille ${candidate} grï¿½ce au Mï¿½tier disparu.`,
     );
     return { state: nextState, meta: nextMeta };
   }
@@ -290,7 +320,7 @@ export class LesMainsActionService {
     };
     const nextState = this.core.appendLog(
       state,
-      `${resolvePlayerName(state.players, playerId)} bénéficiera d'une formation express (deux cartes au prochain tirage).`,
+      `${resolvePlayerName(state.players, playerId)} bï¿½nï¿½ficiera d'une formation express (deux cartes au prochain tirage).`,
     );
     return { state: nextState, meta: nextMeta };
   }
@@ -300,7 +330,13 @@ export class LesMainsActionService {
     meta: LesMainsMetadata,
     playerId: number,
   ): { state: GameStateEntity; meta: LesMainsMetadata } {
-    let nextMeta = { ...meta, statuses: { ...(meta.statuses ?? {}), skipTurn: { ...(meta.statuses?.skipTurn ?? {}) } } };
+    const nextMeta = {
+      ...meta,
+      statuses: {
+        ...(meta.statuses ?? {}),
+        skipTurn: { ...(meta.statuses?.skipTurn ?? {}) },
+      },
+    };
     this.getPlayerIds(state.players)
       .filter((pid) => pid !== playerId)
       .forEach((pid) => {
@@ -314,7 +350,7 @@ export class LesMainsActionService {
       });
     const nextState = this.core.appendLog(
       state,
-      `${resolvePlayerName(state.players, playerId)} déclenche une Grève mondiale : les autres joueurs sautent leur prochain tour.`,
+      `${resolvePlayerName(state.players, playerId)} dï¿½clenche une Grï¿½ve mondiale : les autres joueurs sautent leur prochain tour.`,
     );
     return { state: nextState, meta: nextMeta };
   }
@@ -335,7 +371,7 @@ export class LesMainsActionService {
     if (!candidates.length) {
       nextState = this.core.appendLog(
         nextState,
-        `${resolvePlayerName(nextState.players, playerId)} ne trouve personne pour mélanger la boussole.`,
+        `${resolvePlayerName(nextState.players, playerId)} ne trouve personne pour mï¿½langer la boussole.`,
       );
       return { state: nextState, meta: nextMeta };
     }
@@ -361,10 +397,10 @@ export class LesMainsActionService {
     };
     nextState = this.core.appendLog(
       nextState,
-      `${resolvePlayerName(nextState.players, playerId)} mélange sa main avec celle de ${resolvePlayerName(
+      `${resolvePlayerName(nextState.players, playerId)} mï¿½lange sa main avec celle de ${resolvePlayerName(
         nextState.players,
         targetId,
-      )} grâce à la Boussole perdue.`,
+      )} grï¿½ce ï¿½ la Boussole perdue.`,
     );
     return { state: nextState, meta: nextMeta };
   }
@@ -396,7 +432,9 @@ export class LesMainsActionService {
       ? [...nextMeta.hands[playerId]]
       : [];
     const familiesOwned = new Set(
-      playerHand.map((cardId) => LES_MAINS_CARD_BY_ID[cardId]?.family).filter(Boolean),
+      playerHand
+        .map((cardId) => LES_MAINS_CARD_BY_ID[cardId]?.family)
+        .filter(Boolean),
     );
     const desired = targetHand.find((cardId) => {
       const family = LES_MAINS_CARD_BY_ID[cardId]?.family;
@@ -406,21 +444,25 @@ export class LesMainsActionService {
     if (!chosenCard) {
       nextState = this.core.appendLog(
         nextState,
-        `${resolvePlayerName(nextState.players, playerId)} ne trouve pas de carte à transmettre.`,
+        `${resolvePlayerName(nextState.players, playerId)} ne trouve pas de carte ï¿½ transmettre.`,
       );
       return { state: nextState, meta: nextMeta };
     }
     nextMeta = this.transferCard(nextMeta, targetId, playerId, chosenCard);
     nextState = this.core.appendLog(
       nextState,
-      `${resolvePlayerName(nextState.players, playerId)} récupère ${LES_MAINS_CARD_BY_ID[chosenCard]?.name ?? 'une carte'} grâce à la Passation de savoir.`,
+      `${resolvePlayerName(nextState.players, playerId)} rï¿½cupï¿½re ${LES_MAINS_CARD_BY_ID[chosenCard]?.name ?? 'une carte'} grï¿½ce ï¿½ la Passation de savoir.`,
     );
-    const completion = this.completeFamilyIfNeeded(nextMeta, playerId, chosenCard);
+    const completion = this.completeFamilyIfNeeded(
+      nextMeta,
+      playerId,
+      chosenCard,
+    );
     nextMeta = completion.meta;
     if (completion.completedFamily) {
       nextState = this.core.appendLog(
         nextState,
-        `${resolvePlayerName(nextState.players, playerId)} complète la famille ${completion.completedFamily} !`,
+        `${resolvePlayerName(nextState.players, playerId)} complï¿½te la famille ${completion.completedFamily} !`,
       );
     }
     return { state: nextState, meta: nextMeta };
@@ -432,19 +474,24 @@ export class LesMainsActionService {
     playerId: number,
   ): { state: GameStateEntity; meta: LesMainsMetadata } {
     let nextState = state;
-    let nextMeta = {
+    const nextMeta = {
       ...meta,
-      freeFamilyRequest: { ...(meta.freeFamilyRequest ?? {}), [playerId]: true },
+      freeFamilyRequest: {
+        ...(meta.freeFamilyRequest ?? {}),
+        [playerId]: true,
+      },
     };
     const reveals = this.getPlayerIds(state.players)
       .map((pid) => {
         const hand = nextMeta.hands?.[pid] ?? [];
-        return hand.length ? `${resolvePlayerName(state.players, pid)} montre ${LES_MAINS_CARD_BY_ID[hand[0]]?.name ?? 'une carte'}` : null;
+        return hand.length
+          ? `${resolvePlayerName(state.players, pid)} montre ${LES_MAINS_CARD_BY_ID[hand[0]]?.name ?? 'une carte'}`
+          : null;
       })
       .filter(Boolean);
     nextState = this.core.appendLog(
       nextState,
-      `${resolvePlayerName(state.players, playerId)} organise une Fête du métier. ${reveals.join(' / ')}`,
+      `${resolvePlayerName(state.players, playerId)} organise une Fï¿½te du mï¿½tier. ${reveals.join(' / ')}`,
     );
     return { state: nextState, meta: nextMeta };
   }
@@ -458,8 +505,12 @@ export class LesMainsActionService {
     if (!def?.family) {
       return { meta };
     }
-    const hand = Array.isArray(meta.hands?.[playerId]) ? [...meta.hands[playerId]] : [];
-    const familyCards = hand.filter((id) => LES_MAINS_CARD_BY_ID[id]?.family === def.family);
+    const hand = Array.isArray(meta.hands?.[playerId])
+      ? [...meta.hands[playerId]]
+      : [];
+    const familyCards = hand.filter(
+      (id) => LES_MAINS_CARD_BY_ID[id]?.family === def.family,
+    );
     const alreadyCompleted = meta.completedFamilies?.[playerId] ?? [];
     if (familyCards.length < LES_MAINS_FAMILY_SIZE) {
       return { meta };
@@ -469,7 +520,12 @@ export class LesMainsActionService {
     }
     const nextMeta = {
       ...meta,
-      hands: { ...meta.hands, [playerId]: hand.filter((id) => LES_MAINS_CARD_BY_ID[id]?.family !== def.family) },
+      hands: {
+        ...meta.hands,
+        [playerId]: hand.filter(
+          (id) => LES_MAINS_CARD_BY_ID[id]?.family !== def.family,
+        ),
+      },
       discard: [...(meta.discard ?? []), ...familyCards],
       completedFamilies: {
         ...meta.completedFamilies,
@@ -485,8 +541,12 @@ export class LesMainsActionService {
     toId: number,
     cardId: string,
   ): LesMainsMetadata {
-    const fromHand = Array.isArray(meta.hands?.[fromId]) ? [...meta.hands[fromId]] : [];
-    const toHand = Array.isArray(meta.hands?.[toId]) ? [...meta.hands[toId]] : [];
+    const fromHand = Array.isArray(meta.hands?.[fromId])
+      ? [...meta.hands[fromId]]
+      : [];
+    const toHand = Array.isArray(meta.hands?.[toId])
+      ? [...meta.hands[toId]]
+      : [];
     const index = fromHand.indexOf(cardId);
     if (index >= 0) {
       fromHand.splice(index, 1);
@@ -501,8 +561,14 @@ export class LesMainsActionService {
     };
   }
 
-  private addCardToHand(meta: LesMainsMetadata, playerId: number, cardId: string): LesMainsMetadata {
-    const hand = Array.isArray(meta.hands?.[playerId]) ? [...meta.hands[playerId]] : [];
+  private addCardToHand(
+    meta: LesMainsMetadata,
+    playerId: number,
+    cardId: string,
+  ): LesMainsMetadata {
+    const hand = Array.isArray(meta.hands?.[playerId])
+      ? [...meta.hands[playerId]]
+      : [];
     return {
       ...meta,
       hands: {
@@ -512,7 +578,10 @@ export class LesMainsActionService {
     };
   }
 
-  private drawOneCard(meta: LesMainsMetadata): { cardId: string | null; meta: LesMainsMetadata } {
+  private drawOneCard(meta: LesMainsMetadata): {
+    cardId: string | null;
+    meta: LesMainsMetadata;
+  } {
     const draw = this.deckPolicies.drawOne<string, LesMainsMetadata>({
       meta,
       deckKey: 'deck',
@@ -522,7 +591,10 @@ export class LesMainsActionService {
     return { cardId: draw.card, meta: draw.meta };
   }
 
-  private pickIndex(meta: LesMainsMetadata, length: number): { index: number; meta: LesMainsMetadata } {
+  private pickIndex(
+    meta: LesMainsMetadata,
+    length: number,
+  ): { index: number; meta: LesMainsMetadata } {
     if (length <= 0) {
       return { index: 0, meta };
     }
@@ -531,12 +603,18 @@ export class LesMainsActionService {
     return { index: result.index, meta: { ...meta, rng: result.meta } };
   }
 
-  private shuffleWithMeta<T>(meta: LesMainsMetadata, values: T[]): { values: T[]; meta: LesMainsMetadata } {
+  private shuffleWithMeta<T>(
+    meta: LesMainsMetadata,
+    values: T[],
+  ): { values: T[]; meta: LesMainsMetadata } {
     const shuffled = this.random.shuffle(meta.rng ?? {}, values);
     return { values: shuffled.values, meta: { ...meta, rng: shuffled.meta } };
   }
 
-  private clearFreeRequest(meta: LesMainsMetadata, playerId: number): LesMainsMetadata {
+  private clearFreeRequest(
+    meta: LesMainsMetadata,
+    playerId: number,
+  ): LesMainsMetadata {
     if (!meta.freeFamilyRequest?.[playerId]) {
       return meta;
     }
@@ -569,7 +647,7 @@ export class LesMainsActionService {
     }
     const winnerId = this.determineLeader(meta, players);
     let nextState = state;
-    let nextMeta = { ...meta, winnerId: winnerId ?? null };
+    const nextMeta = { ...meta, winnerId: winnerId ?? null };
     if (winnerId != null) {
       nextState = this.core.appendLog(
         nextState,
@@ -578,16 +656,22 @@ export class LesMainsActionService {
     } else {
       nextState = this.core.appendLog(
         nextState,
-        'La partie se termine sur une égalité des familles complètes.',
+        'La partie se termine sur une ï¿½galitï¿½ des familles complï¿½tes.',
       );
     }
     nextState = { ...nextState, status: 'finished', metadata: nextMeta };
     return nextState;
   }
 
-  private determineLeader(meta: LesMainsMetadata, players?: GameStateEntity['players']): number | null {
+  private determineLeader(
+    meta: LesMainsMetadata,
+    players?: GameStateEntity['players'],
+  ): number | null {
     const ids = this.getPlayerIds(players);
-    const counts = ids.map((pid) => ({ pid, value: meta.completedFamilies?.[pid]?.length ?? 0 }));
+    const counts = ids.map((pid) => ({
+      pid,
+      value: meta.completedFamilies?.[pid]?.length ?? 0,
+    }));
     const max = Math.max(...counts.map((item) => item.value));
     const leaders = counts.filter((item) => item.value === max);
     if (leaders.length === 1) {
@@ -600,14 +684,16 @@ export class LesMainsActionService {
     return (state.metadata ?? {}) as LesMainsMetadata;
   }
 
-  private setMeta(state: GameStateEntity, metadata: LesMainsMetadata): GameStateEntity {
+  private setMeta(
+    state: GameStateEntity,
+    metadata: LesMainsMetadata,
+  ): GameStateEntity {
     return { ...state, metadata };
   }
 
   private getPlayerIds(players?: GameStateEntity['players']): number[] {
     return (Array.isArray(players) ? players : [])
       .filter((player) => typeof player?.id === 'number')
-      .map((player) => player!.id);
+      .map((player) => player.id);
   }
 }
-

@@ -26,4 +26,3 @@ export const VOYAGE_GAME: GameDefinition<
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,
 } as const;
-

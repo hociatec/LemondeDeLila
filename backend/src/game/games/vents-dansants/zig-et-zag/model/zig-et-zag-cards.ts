@@ -43,30 +43,33 @@ const FIGURE_CARDS: Array<{ suffix: string; name: string; value: number }> = [
 
 const deck: ZigEtZagCardDefinition[] = [];
 
-(Object.entries(FAMILY_DEFINITIONS) as [ZigEtZagFamily, { label: string; color: ZigEtZagColor }][]).forEach(
-  ([family, { label, color }]) => {
-    SIMPLE_CARDS.forEach((card) => {
-      deck.push({
-        id: `${family}-${card.suffix}`,
-        name: `${card.name} (${label})`,
-        type: 'simple',
-        color,
-        family,
-        value: card.value,
-      });
+(
+  Object.entries(FAMILY_DEFINITIONS) as [
+    ZigEtZagFamily,
+    { label: string; color: ZigEtZagColor },
+  ][]
+).forEach(([family, { label, color }]) => {
+  SIMPLE_CARDS.forEach((card) => {
+    deck.push({
+      id: `${family}-${card.suffix}`,
+      name: `${card.name} (${label})`,
+      type: 'simple',
+      color,
+      family,
+      value: card.value,
     });
-    FIGURE_CARDS.forEach((card) => {
-      deck.push({
-        id: `${family}-${card.suffix}`,
-        name: `${card.name} (${label})`,
-        type: 'figure',
-        color,
-        family,
-        value: card.value,
-      });
+  });
+  FIGURE_CARDS.forEach((card) => {
+    deck.push({
+      id: `${family}-${card.suffix}`,
+      name: `${card.name} (${label})`,
+      type: 'figure',
+      color,
+      family,
+      value: card.value,
     });
-  },
-);
+  });
+});
 
 deck.push(
   {

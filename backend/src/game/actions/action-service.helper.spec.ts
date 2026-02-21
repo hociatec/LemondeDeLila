@@ -31,28 +31,32 @@ describe('action-service.helper non-regression', () => {
 
   it('runs action pipeline in guard -> validation -> transition -> effects -> logs order', () => {
     const calls: string[] = [];
-    const out = applyActionPipeline({ value: 1 }, { type: 'x' }, {
-      guard: () => {
-        calls.push('guard');
-        return true;
+    const out = applyActionPipeline(
+      { value: 1 },
+      { type: 'x' },
+      {
+        guard: () => {
+          calls.push('guard');
+          return true;
+        },
+        validate: () => {
+          calls.push('validate');
+          return 2;
+        },
+        transition: (_state, _action, payload) => {
+          calls.push('transition');
+          return { value: payload + 1 };
+        },
+        effects: (_state, _action, _payload, transitioned) => {
+          calls.push('effects');
+          return { value: transitioned.value * 3 };
+        },
+        logs: (_state, _action, _payload, _transitioned, effected) => {
+          calls.push('logs');
+          return { value: effected.value + 1 };
+        },
       },
-      validate: () => {
-        calls.push('validate');
-        return 2;
-      },
-      transition: (_state, _action, payload) => {
-        calls.push('transition');
-        return { value: payload + 1 };
-      },
-      effects: (_state, _action, _payload, transitioned) => {
-        calls.push('effects');
-        return { value: transitioned.value * 3 };
-      },
-      logs: (_state, _action, _payload, _transitioned, effected) => {
-        calls.push('logs');
-        return { value: effected.value + 1 };
-      },
-    });
+    );
 
     expect(calls).toEqual([
       'guard',
@@ -66,10 +70,14 @@ describe('action-service.helper non-regression', () => {
 
   it('returns original state when pipeline guard rejects action', () => {
     const state = { value: 42 };
-    const out = applyActionPipeline(state, { type: 'x' }, {
-      guard: () => false,
-      transition: () => ({ value: 0 }),
-    });
+    const out = applyActionPipeline(
+      state,
+      { type: 'x' },
+      {
+        guard: () => false,
+        transition: () => ({ value: 0 }),
+      },
+    );
     expect(out).toBe(state);
   });
 

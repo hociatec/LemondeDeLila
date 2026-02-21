@@ -9,11 +9,7 @@ import { OdysseePresenterService } from './presenter/odyssee-presenter.service';
 import { OdysseeBotService } from './bots/odyssee-bot.service';
 
 @Module({
-  imports: [
-    GameCoreModule,
-    GameRegistryModule,
-    BoardGameCoreKitModule,
-  ],
+  imports: [GameCoreModule, GameRegistryModule, BoardGameCoreKitModule],
   providers: [
     OdysseeQuatreCieuxService,
     OdysseeSetupService,

@@ -15,6 +15,12 @@ import type {
   MonVillageMetadata,
 } from '../model/mon-village-state.entity';
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
 @Injectable()
 export class MonVillageSetupService {
   constructor(
@@ -38,19 +44,19 @@ export class MonVillageSetupService {
       }
     }
 
-    const seedMeta = (base.metadata ?? {}) as any;
+    const seedMeta = asRecord(base.metadata);
     const decks: MonVillageDecks = {};
     const discards: MonVillageDiscards = {};
-    let shuffleSeed = seedMeta;
+    let shuffleSeed: Record<string, unknown> = seedMeta;
     for (const zone of cards.zones ?? []) {
       const zoneCards: MonVillageCard[] = (zone.cards ?? []).map((card) => ({
         ...card,
         zoneId: zone.id,
       }));
       const shuffled = this.random.shuffle(shuffleSeed, zoneCards);
-      decks[zone.id] = shuffled.values as MonVillageCard[];
+      decks[zone.id] = shuffled.values;
       discards[zone.id] = [];
-      shuffleSeed = { ...shuffleSeed, ...(shuffled.meta ?? {}) };
+      shuffleSeed = { ...shuffleSeed, ...asRecord(shuffled.meta) };
     }
 
     const metadata: MonVillageMetadata = {
@@ -73,11 +79,22 @@ export class MonVillageSetupService {
   }
 
   private loadBoard(): MonVillageBoardJsonV1 {
-    return loadV1Content<MonVillageBoardJsonV1>(this.contentLoader, { gameType: 'mon-village-mon-histoire', baseDir: __dirname, filename: 'board.json', arrayField: 'tiles', minItems: 1 });
+    return loadV1Content<MonVillageBoardJsonV1>(this.contentLoader, {
+      gameType: 'mon-village-mon-histoire',
+      baseDir: __dirname,
+      filename: 'board.json',
+      arrayField: 'tiles',
+      minItems: 1,
+    });
   }
 
   private loadCards(): MonVillageCardsJsonV1 {
-    return loadV1Content<MonVillageCardsJsonV1>(this.contentLoader, { gameType: 'mon-village-mon-histoire', baseDir: __dirname, filename: 'cards.json', arrayField: 'zones', minItems: 1 });
+    return loadV1Content<MonVillageCardsJsonV1>(this.contentLoader, {
+      gameType: 'mon-village-mon-histoire',
+      baseDir: __dirname,
+      filename: 'cards.json',
+      arrayField: 'zones',
+      minItems: 1,
+    });
   }
 }
-

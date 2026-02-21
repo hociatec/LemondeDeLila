@@ -14,7 +14,11 @@ export class LamaQuitService {
     private readonly logger: LamaLogService,
   ) {}
 
-  applyQuit(state: GameStateEntity, meta: LamaMetadata, actorId: number): GameStateEntity {
+  applyQuit(
+    state: GameStateEntity,
+    meta: LamaMetadata,
+    actorId: number,
+  ): GameStateEntity {
     const droppedOutByPlayerId = { ...(meta.droppedOutByPlayerId ?? {}) };
     if (droppedOutByPlayerId[String(actorId)]) return state;
     droppedOutByPlayerId[String(actorId)] = true;
@@ -22,16 +26,30 @@ export class LamaQuitService {
     const players = Array.isArray(state.players) ? state.players : [];
     const name = this.shared.playerLabel(players as any[], actorId);
     let log = this.logger.append(state.log, `${name} se retire de la manche.`);
-    log = this.logger.append(log, `${name} ne jouera plus ; ses jetons seront comptés à la fin de la manche.`);
+    log = this.logger.append(
+      log,
+      `${name} ne jouera plus ; ses jetons seront comptés à la fin de la manche.`,
+    );
 
-    const nextMeta: LamaMetadata = { ...meta, droppedOutByPlayerId, suppressTurnAnnouncement: false };
-    const nextStateBase: GameStateEntity = { ...state, metadata: nextMeta as any, log };
+    const nextMeta: LamaMetadata = {
+      ...meta,
+      droppedOutByPlayerId,
+      suppressTurnAnnouncement: false,
+    };
+    const nextStateBase: GameStateEntity = {
+      ...state,
+      metadata: nextMeta as any,
+      log,
+    };
 
     const roundNumber = Number(meta.roundNumber ?? 0);
     const alreadyLoggedRoundEnd =
       roundNumber > 0 &&
       Array.isArray(state.log) &&
-      state.log.some((l: any) => String(l?.message ?? '') === `Fin de la manche ${roundNumber}.`);
+      state.log.some(
+        (l: any) =>
+          String(l?.message ?? '') === `Fin de la manche ${roundNumber}.`,
+      );
 
     if (alreadyLoggedRoundEnd) {
       const winnerId = this.round.findRoundWinnerId(nextMeta, players);
@@ -43,19 +61,29 @@ export class LamaQuitService {
       return this.round.endRound(nextStateBase, winnerId);
     }
 
-    const nextPlayerId = this.round.findNextActivePlayerId(players, nextMeta, actorId);
-    return createPendingState({
-      ...nextStateBase,
-      turnIndex: (state.turnIndex ?? 0) + 1,
-      metadata: { ...nextMeta, turnTracker: { playerId: nextPlayerId, drawn: false, played: false } } as any,
-      turn: {
-        ...(state.turn ?? { direction: 1 }),
-        currentPlayerId: nextPlayerId,
-        direction: 1,
-        label: nextPlayerId
-          ? `Tour de ${this.shared.playerLabel(players as any[], nextPlayerId)}`
-          : undefined,
-      },
-    } as GameStateEntity, { step: 'turn_choice', playerId: nextPlayerId } as any);
+    const nextPlayerId = this.round.findNextActivePlayerId(
+      players,
+      nextMeta,
+      actorId,
+    );
+    return createPendingState(
+      {
+        ...nextStateBase,
+        turnIndex: (state.turnIndex ?? 0) + 1,
+        metadata: {
+          ...nextMeta,
+          turnTracker: { playerId: nextPlayerId, drawn: false, played: false },
+        } as any,
+        turn: {
+          ...(state.turn ?? { direction: 1 }),
+          currentPlayerId: nextPlayerId,
+          direction: 1,
+          label: nextPlayerId
+            ? `Tour de ${this.shared.playerLabel(players as any[], nextPlayerId)}`
+            : undefined,
+        },
+      } as GameStateEntity,
+      { step: 'turn_choice', playerId: nextPlayerId } as any,
+    );
   }
 }

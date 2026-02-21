@@ -137,7 +137,16 @@ export class SoundsService {
     const ffmpegPath = this.getFfmpegPath();
     const res = await this.runProcess(
       ffmpegPath,
-      ['-hide_banner', '-i', filePath, '-af', 'volumedetect', '-f', 'null', '-'],
+      [
+        '-hide_banner',
+        '-i',
+        filePath,
+        '-af',
+        'volumedetect',
+        '-f',
+        'null',
+        '-',
+      ],
       20000,
     );
     const output = `${res.stderr}\n${res.stdout}`;
@@ -262,7 +271,7 @@ export class SoundsService {
     const file = this.tableAmbiencesPath();
     try {
       const raw = await fs.promises.readFile(file, 'utf-8');
-      const parsed = JSON.parse(raw.replace(/^\uFEFF/, '')) as any;
+      const parsed = JSON.parse(raw.replace(/^\uFEFF/, ''));
       const itemsRaw = Array.isArray(parsed?.items) ? parsed.items : [];
       const items: TableAmbienceDefinition[] = itemsRaw
         .map((it: any) => ({
@@ -314,9 +323,11 @@ export class SoundsService {
 
     const current = await this.readTableAmbiences();
     const used = new Set(current.items.map((i) => i.soundId.toLowerCase()));
-    const available = (SOUND_KEYS.filter((k) =>
-      /^TableAmbience\d+$/.test(k),
-    ) as TableAmbienceSoundKey[]).find((k) => !used.has(k.toLowerCase()));
+    const available = (
+      SOUND_KEYS.filter((k) =>
+        /^TableAmbience\d+$/.test(k),
+      ) as TableAmbienceSoundKey[]
+    ).find((k) => !used.has(k.toLowerCase()));
     if (!available) {
       throw new BadRequestException(
         'Nombre maximum atteint (20 ambiances de table).',
@@ -356,7 +367,7 @@ export class SoundsService {
     }
 
     const nextItems = [...current.items];
-    nextItems[idx] = { soundId: soundId as TableAmbienceSoundKey, name };
+    nextItems[idx] = { soundId: soundId, name };
     const next: TableAmbienceDefinitionsFile = {
       updatedAt: new Date().toISOString(),
       items: nextItems,
@@ -430,7 +441,9 @@ export class SoundsService {
 
     const ext = path.extname(originalName || tempFilePath).toLowerCase();
     if (ext !== '.mp3' && ext !== '.wav') {
-      throw new BadRequestException('Seuls les fichiers .mp3 ou .wav sont acceptés.');
+      throw new BadRequestException(
+        'Seuls les fichiers .mp3 ou .wav sont acceptés.',
+      );
     }
 
     const stat = await fs.promises.stat(tempFilePath);

@@ -59,7 +59,7 @@ export class AdminRoomsWsHandler {
     return { type: 'admin.rooms.destroy', payload: res };
   }
 
-  async roomsSettingsGet(session: WsSession, payload: any) {
+  roomsSettingsGet(session: WsSession, payload: any) {
     requireAdmin(session);
     this.validator.validate(AdminRoomsSettingsGetWsDto, payload ?? {});
     return {

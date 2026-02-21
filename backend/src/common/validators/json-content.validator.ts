@@ -156,14 +156,15 @@ export class ArrayItemsValidator implements ContentValidator {
       );
     }
 
-    const array = (content as Record<string, unknown>)[this.arrayFieldName];
+    const rawArray = (content as Record<string, unknown>)[this.arrayFieldName];
 
-    if (!Array.isArray(array)) {
+    if (!Array.isArray(rawArray)) {
       throw new GameContentError(
         `Field "${this.arrayFieldName}" must be an array${filePath ? ` in ${filePath}` : ''}`,
         { filePath, fieldName: this.arrayFieldName, timestamp: new Date() },
       );
     }
+    const array: unknown[] = rawArray;
 
     for (let i = 0; i < array.length; i++) {
       const item = array[i];

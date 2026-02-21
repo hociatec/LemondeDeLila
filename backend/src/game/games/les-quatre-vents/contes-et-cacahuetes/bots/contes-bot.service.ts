@@ -12,11 +12,11 @@ export class ContesBotService {
     state: GameStateEntity,
     botPlayerId: number,
   ): GameSingleActionDto[] {
-    const pending = state.pending as any;
+    const pendingPlayerId = state.pending?.playerId ?? null;
     const current = state.turn?.currentPlayerId ?? null;
     if (
       current !== botPlayerId &&
-      !(typeof pending?.playerId === 'number' && pending.playerId === botPlayerId)
+      !(typeof pendingPlayerId === 'number' && pendingPlayerId === botPlayerId)
     ) {
       return [];
     }

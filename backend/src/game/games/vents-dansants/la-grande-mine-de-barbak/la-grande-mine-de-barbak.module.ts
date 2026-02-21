@@ -32,7 +32,7 @@ import { LaGrandeMineDeBarbakPhaseService } from './phases/la-grande-mine-de-bar
     QuizModule,
     ExchangeModule,
     VictoryModule,
-    ],
+  ],
   providers: [
     LaGrandeMineDeBarbakService,
     LaGrandeMineSetupService,

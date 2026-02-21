@@ -38,13 +38,17 @@ export class GerardPresidentPresenterService {
       metadata.themeSecretActive && metadata.masterId != null && !isMaster;
     const currentTheme = themeHidden ? 'Thème secret' : metadata.currentTheme;
     const secondTheme =
-      themeHidden && metadata.secondTheme ? 'Thème secret' : metadata.secondTheme;
+      themeHidden && metadata.secondTheme
+        ? 'Thème secret'
+        : metadata.secondTheme;
     const actions = Rulebook.getAvailableActions(state, userId);
     const catalog = this.buildCatalog();
-    const scoreLines = Object.entries(metadata.scores ?? {}).map(([pid, value]) => ({
-      pid: Number(pid),
-      value,
-    }));
+    const scoreLines = Object.entries(metadata.scores ?? {}).map(
+      ([pid, value]) => ({
+        pid: Number(pid),
+        value,
+      }),
+    );
     const panels = buildLamaLikePanels({
       hand,
       handCounts,
@@ -82,7 +86,10 @@ export class GerardPresidentPresenterService {
         submissions: sanitizedSubmissions,
       },
       catalog,
-      actions: formatPresenterActions(actions, (action) => ACTION_LABELS[action.type] ?? action.type),
+      actions: formatPresenterActions(
+        actions,
+        (action) => ACTION_LABELS[action.type] ?? action.type,
+      ),
       extras,
       pending: state.pending ?? null,
     } as GameStateWithActions;
@@ -154,10 +161,18 @@ export class GerardPresidentPresenterService {
     specialHand: string[],
   ): Array<{ familyId?: string; memberId: string; label: string }> {
     const cards = [
-      ...hand.map((card) => ({ familyId: 'name', memberId: card, label: card })),
+      ...hand.map((card) => ({
+        familyId: 'name',
+        memberId: card,
+        label: card,
+      })),
       ...specialHand.map((cardId) => {
-        const special = GERARD_PRESIDENT_SPECIAL_CARDS.find((card) => card.id === cardId);
-        const label = special ? `${special.name} – ${special.description}` : cardId;
+        const special = GERARD_PRESIDENT_SPECIAL_CARDS.find(
+          (card) => card.id === cardId,
+        );
+        const label = special
+          ? `${special.name} – ${special.description}`
+          : cardId;
         return { familyId: 'special', memberId: cardId, label };
       }),
     ];
@@ -171,10 +186,8 @@ export class GerardPresidentPresenterService {
     return players
       .filter((player) => typeof player?.id === 'number')
       .map((player) => ({
-        id: player!.id,
-        username:
-          player?.username?.trim() || `Joueur ${player!.id}`,
+        id: player.id,
+        username: player?.username?.trim() || `Joueur ${player.id}`,
       }));
   }
 }
-

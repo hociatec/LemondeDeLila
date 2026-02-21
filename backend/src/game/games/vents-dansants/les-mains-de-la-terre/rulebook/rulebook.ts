@@ -6,15 +6,13 @@ import {
 } from '../model/les-mains-de-la-terre-cards';
 import type { LesMainsFamily } from '../model/les-mains-de-la-terre-cards';
 import type { LesMainsMetadata } from '../model/les-mains-de-la-terre-state.entity';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { normalizeActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 type LesMainsActionPayload = {
   cardId?: string | null;
   targetPlayerId?: number | null;
 };
-
-type LesMainsActionType = 'request_card';
 
 function getMeta(state: GameStateEntity): LesMainsMetadata {
   return (state.metadata ?? {}) as LesMainsMetadata;
@@ -23,7 +21,7 @@ function getMeta(state: GameStateEntity): LesMainsMetadata {
 function getPlayerIds(players?: GameStateEntity['players']): number[] {
   return (Array.isArray(players) ? players : [])
     .filter((player) => typeof player?.id === 'number')
-    .map((player) => player!.id);
+    .map((player) => player.id);
 }
 
 export function getAvailableActions(
@@ -35,7 +33,9 @@ export function getAvailableActions(
   const meta = getMeta(state);
   if (meta.winnerId != null) return [];
   const freeRequest = Boolean(meta.freeFamilyRequest?.[playerId]);
-  const hand = Array.isArray(meta.hands?.[playerId]) ? meta.hands[playerId] : [];
+  const hand = Array.isArray(meta.hands?.[playerId])
+    ? meta.hands[playerId]
+    : [];
   const ownedFamilies = freeRequest
     ? new Set<LesMainsFamily>(LES_MAINS_FAMILIES)
     : new Set<LesMainsFamily>(
@@ -44,7 +44,9 @@ export function getAvailableActions(
           .filter((family): family is LesMainsFamily => Boolean(family)),
       );
   const targets = getPlayerIds(state.players).filter((pid) => pid !== playerId);
-  const requestedCards = Object.values(LES_MAINS_CARD_BY_ID).filter((card) => card.family && card.type === 'metier');
+  const requestedCards = Object.values(LES_MAINS_CARD_BY_ID).filter(
+    (card) => card.family && card.type === 'metier',
+  );
   const actions: GameSingleActionDto[] = [];
   for (const targetId of targets) {
     for (const card of requestedCards) {
@@ -77,7 +79,7 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error('La partie n\'est pas démarrée.');
+    throw new Error("La partie n'est pas démarrée.");
   }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== actorId) {
@@ -85,19 +87,24 @@ export function validateAction(
   }
   const payload = (action.payload ?? {}) as LesMainsActionPayload;
   const cardId = String(payload.cardId ?? '').trim();
-  const target = typeof payload.targetPlayerId === 'number' ? payload.targetPlayerId : null;
+  const target =
+    typeof payload.targetPlayerId === 'number' ? payload.targetPlayerId : null;
   if (!cardId || target == null || target === actorId) {
     throw new Error('Cible ou carte invalide.');
   }
   const definition = LES_MAINS_CARD_BY_ID[cardId];
   if (!definition || definition.type !== 'metier' || !definition.family) {
-    throw new Error('La carte demandée n\'est pas une carte métier valide.');
+    throw new Error("La carte demandée n'est pas une carte métier valide.");
   }
   const hand = Array.isArray(meta.hands?.[actorId]) ? meta.hands[actorId] : [];
-  const hasFamily = hand.some((card) => LES_MAINS_CARD_BY_ID[card]?.family === definition.family);
+  const hasFamily = hand.some(
+    (card) => LES_MAINS_CARD_BY_ID[card]?.family === definition.family,
+  );
   const freeRequest = Boolean(meta.freeFamilyRequest?.[actorId]);
   if (!hasFamily && !freeRequest) {
-    throw new Error('Vous devez posséder au moins une carte de cette famille pour la demander.');
+    throw new Error(
+      'Vous devez posséder au moins une carte de cette famille pour la demander.',
+    );
   }
   const targetExists = getPlayerIds(state.players).includes(target);
   if (!targetExists) {
@@ -105,6 +112,3 @@ export function validateAction(
   }
   return { type: 'request_card', payload: { cardId, targetPlayerId: target } };
 }
-
-
-

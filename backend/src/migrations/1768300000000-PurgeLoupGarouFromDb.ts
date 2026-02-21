@@ -43,4 +43,3 @@ export class PurgeLoupGarouFromDb1768300000000 implements MigrationInterface {
     // no-op (suppression irréversible)
   }
 }
-

@@ -10,11 +10,7 @@ import { NawakSetupService } from './setup/nawak-setup.service';
 import { NawakService } from './nawak.service';
 
 @Module({
-  imports: [
-    BoardGameCoreKitModule,
-    GameCoreModule,
-    GameRegistryModule,
-    ],
+  imports: [BoardGameCoreKitModule, GameCoreModule, GameRegistryModule],
   providers: [
     NawakService,
     NawakChallengeService,

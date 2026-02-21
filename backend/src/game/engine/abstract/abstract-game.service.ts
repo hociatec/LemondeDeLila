@@ -1,9 +1,9 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { GameStateEntity } from '../../core/entities/game-state.entity';
 import {
-  GameSingleActionDto,
-  GameStateWithActions,
-} from '../dto/game-action.dto';
+  GameStateEntity,
+  PlayerStateEntity,
+} from '../../core/entities/game-state.entity';
+import { GameSingleActionDto } from '../dto/game-action.dto';
 import { GameRulesAdapter } from '../interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../services/game-registry.service';
 
@@ -64,8 +64,12 @@ export abstract class AbstractGameService
    * Returns null if not present or invalid.
    */
   protected extractActorId(action: GameSingleActionDto): number | null {
-    const candidate = (action.meta as any)?.actorId;
-    return typeof candidate === 'number' ? candidate : null;
+    const meta = action.meta;
+    if (!meta || typeof meta !== 'object') {
+      return null;
+    }
+    const actorValue = meta['actorId'];
+    return typeof actorValue === 'number' ? actorValue : null;
   }
 
   /**
@@ -93,7 +97,10 @@ export abstract class AbstractGameService
    * Finds a player by ID in the current state.
    * Returns null if not found.
    */
-  protected findPlayer(playerId: number, state: GameStateEntity): any | null {
+  protected findPlayer(
+    playerId: number,
+    state: GameStateEntity,
+  ): PlayerStateEntity | null {
     const players = state.players ?? [];
     return players.find((p) => p.id === playerId) ?? null;
   }
@@ -102,7 +109,7 @@ export abstract class AbstractGameService
    * Gets the current player from the state.
    * Returns null if no current player or player not found.
    */
-  protected getCurrentPlayer(state: GameStateEntity): any | null {
+  protected getCurrentPlayer(state: GameStateEntity): PlayerStateEntity | null {
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId === null) return null;
     return this.findPlayer(currentId, state);

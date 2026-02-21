@@ -9,7 +9,10 @@ import { LamaSharedService } from '../shared/lama-shared.service';
 export class LamaBotService {
   constructor(private readonly shared: LamaSharedService) {}
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     const current = state.turn?.currentPlayerId ?? null;
     if (current !== botPlayerId) return [];
     if (String(state.status ?? '').toLowerCase() !== 'started') return [];
@@ -23,7 +26,9 @@ export class LamaBotService {
     }
     if (step === 'return_token') {
       if (meta.pendingReturnPlayerId !== botPlayerId) return [];
-      const score = Number((meta.scoresByPlayerId ?? {})[String(botPlayerId)] ?? 0);
+      const score = Number(
+        (meta.scoresByPlayerId ?? {})[String(botPlayerId)] ?? 0,
+      );
       if (score >= 10) return [{ type: 'lama_return', payload: { value: 10 } }];
       if (score >= 1) return [{ type: 'lama_return', payload: { value: 1 } }];
       return [{ type: 'lama_return', payload: { value: 0 } }];
@@ -50,14 +55,16 @@ export class LamaBotService {
 
     const hand = (meta.handsByPlayerId ?? {})[String(botPlayerId)] ?? [];
     const discard = Array.isArray(meta.discard) ? meta.discard : [];
-    const top = discard.length ? (discard[discard.length - 1] as LamaCardValue) : null;
+    const top = discard.length ? discard[discard.length - 1] : null;
     if (!top) return [];
-    const drawLocked = Object.values(meta.droppedOutByPlayerId ?? {}).some((isOut) => Boolean(isOut));
+    const drawLocked = Object.values(meta.droppedOutByPlayerId ?? {}).some(
+      (isOut) => Boolean(isOut),
+    );
 
     const canPlayValues = new Set<LamaCardValue>([top, nextLamaValue(top)]);
 
     const counts = new Map<LamaCardValue, number>();
-    for (const v of hand as LamaCardValue[]) {
+    for (const v of hand) {
       counts.set(v, (counts.get(v) ?? 0) + 1);
     }
 

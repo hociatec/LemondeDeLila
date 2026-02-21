@@ -24,7 +24,8 @@ export class NawakService extends AbstractGameService {
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'VentsDansants';
   readonly displayName = NAWAK_GAME.displayName;
-  readonly description = 'Répondez aux défis absurdes, votez pour les réponses étrangères et cumulez les votes.';
+  readonly description =
+    'Répondez aux défis absurdes, votez pour les réponses étrangères et cumulez les votes.';
   readonly minPlayers = NAWAK_GAME.minPlayers;
   readonly maxPlayers = NAWAK_GAME.maxPlayers;
 

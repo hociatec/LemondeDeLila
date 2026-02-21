@@ -10,7 +10,12 @@ import { CorridorPresenterService } from './presenter/corridor-presenter.service
 import { CorridorBotService } from './bots/corridor-bot.service';
 
 @Module({
-  imports: [ConfigModule, GameCoreModule, GameRegistryModule, GridGameBotKitModule],
+  imports: [
+    ConfigModule,
+    GameCoreModule,
+    GameRegistryModule,
+    GridGameBotKitModule,
+  ],
   providers: [
     CorridorService,
     CorridorSetupService,

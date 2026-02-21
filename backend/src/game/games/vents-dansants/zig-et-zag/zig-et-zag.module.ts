@@ -9,11 +9,7 @@ import { ZigEtZagSetupService } from './setup/zig-et-zag-setup.service';
 import { ZigEtZagService } from './zig-et-zag.service';
 
 @Module({
-  imports: [
-    BoardGameCoreKitModule,
-    GameCoreModule,
-    GameRegistryModule,
-    ],
+  imports: [BoardGameCoreKitModule, GameCoreModule, GameRegistryModule],
   providers: [
     ZigEtZagService,
     ZigEtZagSetupService,

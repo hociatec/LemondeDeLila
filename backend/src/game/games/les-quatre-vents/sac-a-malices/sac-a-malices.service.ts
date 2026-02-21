@@ -81,4 +81,3 @@ export class SacAMalicesService extends AbstractGameService {
     return buildSacAMalicesShortcuts(ctx);
   }
 }
-

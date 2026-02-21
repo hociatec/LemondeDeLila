@@ -23,6 +23,16 @@ type UploadMetaFile = {
   completedAt?: string | null;
 };
 
+function getErrorMessage(value: unknown): string {
+  if (value instanceof Error && typeof value.message === 'string') {
+    const message = value.message.trim();
+    if (message) {
+      return message;
+    }
+  }
+  return 'erreur inconnue';
+}
+
 @Injectable()
 export class ClientUpdatesUploadService {
   constructor(private readonly updates: ClientUpdatesService) {}
@@ -70,7 +80,8 @@ export class ClientUpdatesUploadService {
       // Ensure /client/version reflects the actual ClickOnce version being served,
       // even if the uploader didn't pass a version (or passed a placeholder).
       try {
-        const published = await this.updates.getPublishedClickOnceVersionFromDisk();
+        const published =
+          await this.updates.getPublishedClickOnceVersionFromDisk();
         if (published) {
           meta = { ...meta, version: published };
         }
@@ -79,11 +90,8 @@ export class ClientUpdatesUploadService {
       }
 
       await this.updates.saveLatest(meta);
-    } catch (err: any) {
-      const msg =
-        typeof err?.message === 'string' && err.message.trim()
-          ? err.message.trim()
-          : 'erreur inconnue';
+    } catch (err) {
+      const msg = getErrorMessage(err);
       throw new BadRequestException(`Publication echouee: ${msg}`);
     }
   }

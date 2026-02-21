@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
@@ -267,19 +267,6 @@ public sealed class NavigationFocusManager : INavigationFocusManager
             return null;
         }
     }
-
-    private static UIElement? TryGetFocusSentinel(Window window)
-    {
-        try
-        {
-            return window.FindName("FocusSentinel") as UIElement;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
     private static DependencyObject? TryGetCurrentContentRoot(Window window)
     {
         try
@@ -506,3 +493,5 @@ public sealed class NavigationFocusManager : INavigationFocusManager
         return LogicalTreeHelper.GetParent(current);
     }
 }
+
+

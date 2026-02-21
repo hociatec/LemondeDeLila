@@ -41,8 +41,16 @@ export class LamaSharedService {
     if (typeof value === 'number') return value === 1;
     if (typeof value === 'string') {
       const t = value.trim().toLowerCase();
-      if (t === 'true' || t === '1' || t === 'yes' || t === 'oui' || t === 'on') return true;
-      if (t === 'false' || t === '0' || t === 'no' || t === 'non' || t === 'off') return false;
+      if (t === 'true' || t === '1' || t === 'yes' || t === 'oui' || t === 'on')
+        return true;
+      if (
+        t === 'false' ||
+        t === '0' ||
+        t === 'no' ||
+        t === 'non' ||
+        t === 'off'
+      )
+        return false;
     }
     return false;
   }
@@ -54,10 +62,17 @@ export class LamaSharedService {
   }
 
   ensureTurnTracker(meta: LamaMetadata, playerId: number): LamaMetadata {
-    const current = (meta as any).turnTracker ?? { playerId, drawn: false, played: false };
+    const current = (meta as any).turnTracker ?? {
+      playerId,
+      drawn: false,
+      played: false,
+    };
     const currentPid = this.asNumberOrNull(current?.playerId);
     if (currentPid !== playerId) {
-      return { ...meta, turnTracker: { playerId, drawn: false, played: false } };
+      return {
+        ...meta,
+        turnTracker: { playerId, drawn: false, played: false },
+      };
     }
 
     return {

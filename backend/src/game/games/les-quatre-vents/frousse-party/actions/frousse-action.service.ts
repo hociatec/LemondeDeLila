@@ -3,12 +3,14 @@ import type {
   GameStateEntity,
   PendingState,
 } from '../../../../core/entities/game-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -20,9 +22,14 @@ import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-ch
 import type {
   FrousseCard,
   FrousseMetadata,
+  FroussePawn,
   FrousseTile,
 } from '../model/frousse.types';
 import { resolvePawnId } from '../pawns.utils';
+
+type FrousseRuntimeMetadata = FrousseMetadata & {
+  keepTurnNow?: boolean;
+};
 
 @Injectable()
 export class FrousseActionService {
@@ -43,33 +50,37 @@ export class FrousseActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    const next = applyActionsSequentially(this.ensurePawnSelection(state), actions, (next, action) => {
-          const type = normalizeActionType(action);
-          return dispatchByActionType(
-            type,
-            {
-              'choose_pawn': () => {
-                next = this.handleChoosePawn(next, action);
-            next = this.ensurePawnSelection(next);
-                return next;
-              },
-              'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'draw': () => {
-                next = this.handleDraw(next);
-                return next;
-              },
-              'choose_target': () => {
-                next = this.handleChooseTarget(next, action);
-                return next;
-              },
+    const next = applyActionsSequentially(
+      this.ensurePawnSelection(state),
+      actions,
+      (next, action) => {
+        const type = normalizeActionType(action);
+        return dispatchByActionType(
+          type,
+          {
+            choose_pawn: () => {
+              next = this.handleChoosePawn(next, action);
+              next = this.ensurePawnSelection(next);
+              return next;
             },
-            () => next,
-          );
-        });
-        return next;
+            roll: () => {
+              next = this.handleRoll(next);
+              return next;
+            },
+            draw: () => {
+              next = this.handleDraw(next);
+              return next;
+            },
+            choose_target: () => {
+              next = this.handleChooseTarget(next, action);
+              return next;
+            },
+          },
+          () => next,
+        );
+      },
+    );
+    return next;
   }
 
   private handleChoosePawn(
@@ -115,28 +126,30 @@ export class FrousseActionService {
     const metaForPending = this.getMeta(state);
     const usedForPending = new Set(
       players
-        .map((p) => resolvePawnId((p as any)?.pawn))
+        .map((p) => resolvePawnId(p?.pawn))
         .filter((id): id is string => Boolean(id)),
     );
-    const choicesForPending = (Array.isArray(metaForPending.pawns) ? metaForPending.pawns : [])
+    const choicesForPending = (
+      Array.isArray(metaForPending.pawns) ? metaForPending.pawns : []
+    )
       .map((p) => ({
-        id: String(p?.id ?? '').trim(),
-        label: String(p?.name ?? p?.id ?? '').trim(),
-        description: String((p as any)?.description ?? '').trim(),
+        id: toText(p?.id),
+        label: toText(p?.name) || toText(p?.id),
+        description: toText(p?.description),
       }))
       .filter((p) => p.id.length > 0 && !usedForPending.has(p.id));
     const pendingInfo = this.setupFlow.createSequentialPawnPending({
       players,
       startPlayerId: players[0]?.id ?? null,
       isAssigned: (candidateId) => {
-        const player = players.find((p: any) => p?.id === candidateId);
+        const player = players.find((p) => p?.id === candidateId);
         return Boolean(resolvePawnId(player?.pawn));
       },
       pawns: choicesForPending,
-      pawnDataMapper: (choice: any) => ({
-        id: String(choice?.id ?? '').trim(),
-        label: String(choice?.label ?? '').trim(),
-        description: String(choice?.description ?? '').trim(),
+      pawnDataMapper: (choice) => ({
+        id: toText(choice.id),
+        label: toText(choice.label),
+        description: toText(choice.description),
       }),
       extraPendingData: { kind: 'choose_pawn' },
     });
@@ -146,7 +159,10 @@ export class FrousseActionService {
       pending: pendingInfo.pending,
       turnIndex: pendingInfo.turnIndex,
       turn: {
-        ...(state.turn ?? { currentPlayerId: pendingInfo.playerId, direction: 1 }),
+        ...(state.turn ?? {
+          currentPlayerId: pendingInfo.playerId,
+          direction: 1,
+        }),
         currentPlayerId: pendingInfo.playerId,
         direction: state.turn?.direction === -1 ? -1 : 1,
       },
@@ -168,7 +184,7 @@ export class FrousseActionService {
 
     let meta = this.getMeta(state);
 
-    // Saut de tour: si l'Ã©tat courant indique un tour Ã  passer, on consomme et on avance.
+    // Saut de tour: si l'Ã©tat courant indique un tour Ã  passer, on consomme et on avance.
     const skipNow = meta.statuses?.skipTurn?.[currentId] ?? 0;
     if (skipNow > 0) {
       meta = {
@@ -302,8 +318,8 @@ export class FrousseActionService {
     if (next.pending) return next;
 
     // Relance immÃ©diate (cartes bonus/farces).
-    if ((meta as any).keepTurnNow === true) {
-      delete (meta as any).keepTurnNow;
+    if (meta.keepTurnNow === true) {
+      delete meta.keepTurnNow;
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       return this.core.appendLog(
         next,
@@ -322,7 +338,7 @@ export class FrousseActionService {
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
 
-    const pending = state.pending as any;
+    const pending = asPendingRecord(state.pending);
     if (
       !pending ||
       pending.type !== 'choose_target' ||
@@ -330,7 +346,7 @@ export class FrousseActionService {
     )
       return state;
 
-    const targetPlayerId = Number((action.payload as any)?.targetPlayerId);
+    const targetPlayerId = Number(asRecord(action.payload).targetPlayerId);
     if (!Number.isFinite(targetPlayerId)) return state;
 
     let meta = this.getMeta(state);
@@ -364,7 +380,7 @@ export class FrousseActionService {
 
   private handleDraw(state: GameStateEntity): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
-    const pending = state.pending as any;
+    const pending = asPendingRecord(state.pending);
     if (!pending || pending.type !== 'draw') return state;
 
     const playerId =
@@ -387,7 +403,7 @@ export class FrousseActionService {
     const tile = meta.tiles[pos] as FrousseTile | undefined;
 
     if (tile) {
-      const labelRaw = String((tile as any)?.label ?? '').trim();
+      const labelRaw = toText(asRecord(tile).label);
       const typeLabel = tile.type === 'card' ? 'case symbole' : 'case neutre';
       const fallbackLabel = `case ${tile.n}. ${tile.title} (${typeLabel})`;
       const label = labelRaw || fallbackLabel;
@@ -407,7 +423,7 @@ export class FrousseActionService {
         playerId,
         tile: {
           type: tile.type,
-          description: (tile as any).description,
+          description: toText(asRecord(tile).description),
         },
         drawPolicies: {
           card: {
@@ -467,13 +483,13 @@ export class FrousseActionService {
     let ignored = false;
 
     // Ignore traps until next symbol (one draw).
-    if ((meta.statuses as any)?.ignoreTrapUntilNextDraw?.[playerId]) {
+    if (meta.statuses.ignoreTrapUntilNextDraw?.[playerId]) {
       meta = {
         ...meta,
         statuses: {
           ...meta.statuses,
           ignoreTrapUntilNextDraw: {
-            ...((meta.statuses as any).ignoreTrapUntilNextDraw ?? {}),
+            ...(meta.statuses.ignoreTrapUntilNextDraw ?? {}),
             [playerId]: false,
           },
         },
@@ -546,10 +562,7 @@ export class FrousseActionService {
       cardText,
       effectLabel,
     );
-    next = this.core.appendLog(
-      next,
-      withEffect,
-    );
+    next = this.core.appendLog(next, withEffect);
 
     if (ignored) {
       return this.advanceTurnWithAnnouncement(next);
@@ -558,8 +571,8 @@ export class FrousseActionService {
     const applied = this.applyCard(next, playerId, draw.card);
     const appliedMeta = this.getMeta(applied);
     if (applied.pending) return applied;
-    if ((appliedMeta as any).keepTurnNow === true) {
-      delete (appliedMeta as any).keepTurnNow;
+    if (appliedMeta.keepTurnNow === true) {
+      delete appliedMeta.keepTurnNow;
       return {
         ...applied,
         metadata: { ...(applied.metadata ?? {}), ...appliedMeta },
@@ -595,7 +608,7 @@ export class FrousseActionService {
     ) {
       const targets = this.otherPlayers(next, playerId);
       if (!targets.length) return next;
-      const pick = this.random.pickOne(meta as any, targets);
+      const pick = this.random.pickOne(meta, targets);
       meta = pick.meta;
       const target = pick.value;
       if (!target)
@@ -652,7 +665,7 @@ export class FrousseActionService {
         statuses: {
           ...meta.statuses,
           ignoreTrapUntilNextDraw: {
-            ...(meta.statuses as any).ignoreTrapUntilNextDraw,
+            ...(meta.statuses.ignoreTrapUntilNextDraw ?? {}),
             [playerId]: true,
           },
         },
@@ -798,7 +811,7 @@ export class FrousseActionService {
           },
         },
       };
-      (meta as any).keepTurnNow = true;
+      meta.keepTurnNow = true;
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
@@ -817,7 +830,7 @@ export class FrousseActionService {
           },
         },
       };
-      (meta as any).keepTurnNow = true;
+      meta.keepTurnNow = true;
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
@@ -848,12 +861,15 @@ export class FrousseActionService {
           },
         },
       };
-      (meta as any).keepTurnNow = true;
+      meta.keepTurnNow = true;
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
-    // TÃ©lÃ©port jusqu'Ã  la case 40.
-    if (/jusqu'Ã  la case 40/i.test(text) || /jusquâ€™Ã  la case 40/i.test(text)) {
+    // Teleport to case 40.
+    if (
+      /jusqu'a la case 40/i.test(text) ||
+      /jusqu['’]a la case 40/i.test(text)
+    ) {
       next = this.setPos(next, playerId, 39);
       return this.applyLanding(next, playerId);
     }
@@ -863,7 +879,7 @@ export class FrousseActionService {
       /Relancez le dÃ©/i.test(text) ||
       (/Relancez/i.test(text) && /dÃ©/i.test(text))
     ) {
-      (meta as any).keepTurnNow = true;
+      meta.keepTurnNow = true;
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
@@ -886,9 +902,11 @@ export class FrousseActionService {
 
     // Immediate roll: if odd then skip.
     if (
-      /si le rÃ©sultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(text)
+      /si le rÃ©sultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(
+        text,
+      )
     ) {
-      const out = this.random.rollDice(meta as any, 6);
+      const out = this.random.rollDice(meta, 6);
       meta = { ...meta, ...out.meta };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       next = this.core.appendLog(next, `Test : dÃ© = "${out.roll}".`);
@@ -929,7 +947,7 @@ export class FrousseActionService {
     // Go to case 1.
     if (
       /case dÃ©part/i.test(text) ||
-      /Retour Ã  la case une/i.test(text) ||
+      /Retour a la case une/i.test(text) ||
       (/Retournez/i.test(text) && /case une/i.test(text))
     ) {
       next = this.setPos(next, playerId, 0);
@@ -968,9 +986,9 @@ export class FrousseActionService {
 
     const keepLowest = outMeta.statuses.nextRollKeepLowest?.[playerId] === true;
     if (keepLowest) {
-      const a = this.random.rollDice(outMeta as any, 6);
+      const a = this.random.rollDice(outMeta, 6);
       outMeta = { ...outMeta, ...a.meta };
-      const b = this.random.rollDice(outMeta as any, 6);
+      const b = this.random.rollDice(outMeta, 6);
       outMeta = { ...outMeta, ...b.meta };
       const rolls = [a.roll, b.roll];
       outMeta = {
@@ -994,7 +1012,7 @@ export class FrousseActionService {
       };
     }
 
-    const single = this.random.rollDice(outMeta as any, 6);
+    const single = this.random.rollDice(outMeta, 6);
     outMeta = { ...outMeta, ...single.meta };
     const baseRoll = single.roll;
     let value = baseRoll;
@@ -1104,7 +1122,7 @@ export class FrousseActionService {
       card: draw.card,
       meta: {
         ...draw.meta,
-        decks: { cards: draw.pile as any, discard: draw.discard as any },
+        decks: { cards: draw.pile, discard: draw.discard },
       },
     };
   }
@@ -1116,7 +1134,10 @@ export class FrousseActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     return players
       .filter((p) => p?.id != null && p.id !== me)
-      .map((p) => ({ id: p.id, username: resolvePlayerNameFromState(state, p.id) }));
+      .map((p) => ({
+        id: p.id,
+        username: resolvePlayerNameFromState(state, p.id),
+      }));
   }
 
   private otherPlayerIds(meta: FrousseMetadata, me: number): number[] {
@@ -1125,28 +1146,32 @@ export class FrousseActionService {
       .filter((id) => Number.isFinite(id) && id !== me);
   }
 
-  private getMeta(state: GameStateEntity): FrousseMetadata {
-    return (state.metadata ?? {}) as any as FrousseMetadata;
+  private getMeta(state: GameStateEntity): FrousseRuntimeMetadata {
+    return normalizeFrousseMeta(state.metadata);
   }
 
   private pawnLabel(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
-    const player = players.find((p: any) => p?.id === id);
-    const explicitLabel = String((player as any)?.pawnLabel ?? '').trim();
+    const player = players.find((p) => p?.id === id);
+    const playerRecord = asRecord(player);
+    const explicitLabel = toText(playerRecord.pawnLabel);
     if (explicitLabel) return `"${explicitLabel}"`;
-    const pawnId = String((player as any)?.pawn ?? '').trim();
+    const pawnId = toText(playerRecord.pawn);
     const meta = this.getMeta(state);
     const fromMeta = Array.isArray(meta?.pawns)
-      ? meta.pawns.find((p: any) => String(p?.id ?? '').trim() === pawnId)
+      ? meta.pawns.find((p: FroussePawn) => toText(p?.id) === pawnId)
       : null;
-    const name = String((fromMeta as any)?.name ?? pawnId).trim();
+    const name = toText(fromMeta?.name) || pawnId;
     if (name) return `"${name}"`;
     return 'un pion';
   }
 
   private pawnPossessiveLabel(state: GameStateEntity, id: number): string {
     const raw = this.pawnLabel(state, id);
-    const inner = String(raw ?? '').trim().replace(/^"(.*)"$/, '$1').trim();
+    const inner = String(raw ?? '')
+      .trim()
+      .replace(/^"(.*)"$/, '$1')
+      .trim();
     if (!inner) {
       return '"son pion"';
     }
@@ -1167,15 +1192,6 @@ export class FrousseActionService {
     return `${text.charAt(0).toLowerCase()}${text.slice(1)}`;
   }
 
-  private appendLogOnce(state: GameStateEntity, message: string): GameStateEntity {
-    const log = Array.isArray(state.log) ? state.log : [];
-    const last = String(log[log.length - 1]?.message ?? '').trim();
-    if (last === message) {
-      return state;
-    }
-    return this.core.appendLog(state, message);
-  }
-
   private finalizeStarterAfterPawnSelection(
     state: GameStateEntity,
   ): GameStateEntity {
@@ -1183,20 +1199,20 @@ export class FrousseActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     if (!players.length) return state;
 
-    const everyoneHasPawn = players.every((p: any) => resolvePawnId(p?.pawn));
+    const everyoneHasPawn = players.every((p) => resolvePawnId(p?.pawn));
     if (!everyoneHasPawn) return state;
 
     const meta = this.getMeta(state);
-    if ((meta as any)?.starterChosenAfterPawnSelection === true) {
+    if (meta.starterChosenAfterPawnSelection === true) {
       return state;
     }
 
-    const pick = this.random.nextInt(meta as any, players.length);
+    const pick = this.random.nextInt(meta, players.length);
     const starterIndex = Math.max(0, Math.min(players.length - 1, pick.value));
     const starter = players[starterIndex] ?? players[0];
     const nextMeta = {
       ...meta,
-      ...(pick.meta as any),
+      ...pick.meta,
       starterChosenAfterPawnSelection: true,
     };
     let next: GameStateEntity = {
@@ -1221,6 +1237,89 @@ export class FrousseActionService {
     }
     return next;
   }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  return '';
+}
+
+function asPendingRecord(value: unknown): {
+  type?: string;
+  playerId?: unknown;
+} | null {
+  if (!value || typeof value !== 'object') return null;
+  const record = asRecord(value);
+  return {
+    type: toText(record.type),
+    playerId: record.playerId,
+  };
+}
+
+function normalizeFrousseMeta(input: unknown): FrousseRuntimeMetadata {
+  const raw = asRecord(input);
+  const statuses = asRecord(raw.statuses);
+  const decks = asRecord(raw.decks);
+  return {
+    tiles: (Array.isArray(raw.tiles) ? raw.tiles : []) as FrousseTile[],
+    positions: asRecord(raw.positions) as Record<number, number>,
+    statuses: {
+      skipTurn: asRecord(statuses.skipTurn) as Record<number, number>,
+      ignoreNextTrap: asRecord(statuses.ignoreNextTrap) as Record<
+        number,
+        boolean
+      >,
+      ignoreTrapUntilNextDraw: asRecord(
+        statuses.ignoreTrapUntilNextDraw,
+      ) as Record<number, boolean>,
+      ignoreNextPrank: asRecord(statuses.ignoreNextPrank) as Record<
+        number,
+        boolean
+      >,
+      ignoreNextGhost: asRecord(statuses.ignoreNextGhost) as Record<
+        number,
+        boolean
+      >,
+      nextMoveCap: asRecord(statuses.nextMoveCap) as Record<number, number>,
+      nextRollMalus: asRecord(statuses.nextRollMalus) as Record<number, number>,
+      nextRollKeepLowest: asRecord(statuses.nextRollKeepLowest) as Record<
+        number,
+        boolean
+      >,
+      nextRollDouble: asRecord(statuses.nextRollDouble) as Record<
+        number,
+        boolean
+      >,
+      nextRollIfThreeBackTwo: asRecord(
+        statuses.nextRollIfThreeBackTwo,
+      ) as Record<number, boolean>,
+      blocked: asRecord(
+        statuses.blocked,
+      ) as FrousseMetadata['statuses']['blocked'],
+    },
+    decks: {
+      cards: (Array.isArray(decks.cards) ? decks.cards : []) as FrousseCard[],
+      discard: (Array.isArray(decks.discard)
+        ? decks.discard
+        : []) as FrousseCard[],
+    },
+    pawns: (Array.isArray(raw.pawns) ? raw.pawns : []) as FroussePawn[],
+    pendingContext:
+      (asRecord(raw.pendingContext) as FrousseMetadata['pendingContext']) ??
+      null,
+    winnerId: typeof raw.winnerId === 'number' ? raw.winnerId : null,
+    starterChosenAfterPawnSelection:
+      raw.starterChosenAfterPawnSelection === true,
+    keepTurnNow: raw.keepTurnNow === true,
+  };
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -1259,7 +1358,8 @@ function extractMoveDelta(text: string): number {
     const verb = String(fbMatch[1] ?? '').toLowerCase();
     total += verb.startsWith('recul') ? -amount : amount;
   }
-  const jumpPattern = /sautez\s+(\d+|un|une|deux|trois|quatre|cinq|six)(?:\s+cases?)?/gi;
+  const jumpPattern =
+    /sautez\s+(\d+|un|une|deux|trois|quatre|cinq|six)(?:\s+cases?)?/gi;
   let jumpMatch: RegExpExecArray | null;
   while ((jumpMatch = jumpPattern.exec(text)) !== null) {
     const amount = parseNumberish(jumpMatch[1]);
@@ -1363,8 +1463,8 @@ function describeCardEffect(card: FrousseCard): string {
     return 'Rejouez avec un malus de -2 au lancer.';
   if (/Si vous faites un trois, reculez de 2 cases/i.test(text))
     return 'Si vous faites un trois, reculez de 2 cases.';
-  if (/jusqu['â€™]Ã  la case 40/i.test(text))
-    return 'Allez directement Ã  la case 40.';
+  if (/jusqu['’]a la case 40/i.test(text))
+    return 'Allez directement a la case 40.';
   if (
     /Relancez le dÃ©/i.test(text) ||
     (/Relancez/i.test(text) && /dÃ©/i.test(text))
@@ -1379,8 +1479,8 @@ function describeCardEffect(card: FrousseCard): string {
   }
   const skip = extractSkipTurns(text);
   if (skip > 0) return `Passez ${skip} tour${skip > 1 ? 's' : ''}.`;
-  if (/case dÃ©part/i.test(text) || /Retour Ã  la case une/i.test(text))
-    return 'Retournez Ã  la case dÃ©part.';
+  if (/case depart/i.test(text) || /Retour a la case une/i.test(text))
+    return 'Retournez a la case depart.';
   if (/Allez en cuisine/i.test(text)) return 'Allez en cuisine.';
 
   const combo = text.match(
@@ -1431,7 +1531,10 @@ function formatCardDrawLog(
   return `${base} : ${effectLabel}`;
 }
 
-function shouldSuppressRepeatedEffect(cardText: string, effectLabel: string): boolean {
+function shouldSuppressRepeatedEffect(
+  cardText: string,
+  effectLabel: string,
+): boolean {
   const effect = normalizeForContains(effectLabel);
   if (!effect) return false;
   const card = normalizeForContains(cardText);
@@ -1448,10 +1551,3 @@ function normalizeForContains(value: string): string {
     .replace(/\s+/g, ' ')
     .trim();
 }
-
-
-
-
-
-
-

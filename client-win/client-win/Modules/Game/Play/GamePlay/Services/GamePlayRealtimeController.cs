@@ -43,11 +43,13 @@ internal sealed class GamePlayRealtimeController
 
     private bool _skipLogReplayOnce = true;
     private string? _lastGameStatus;
+    private string? _lastGamePhase;
     private int? _viewerPlayerId;
     private int? _lastStateTurnPlayerId;
     private string _lastPendingType = string.Empty;
     private bool _lastBotThinking;
     private bool _endgameFeedbackEmitted;
+    private bool _finishedStatusEnforced;
     private int _pendingForcedTurnAnnouncements;
     private Dictionary<string, int>? _lastViewerHandCounts;
     private string? _lastDrawActionToken;
@@ -106,11 +108,13 @@ internal sealed class GamePlayRealtimeController
         _skipLogReplayOnce = true;
         _lastStateTurnPlayerId = null;
         _lastGameStatus = null;
+        _lastGamePhase = null;
         _viewerPlayerId = null;
         _pendingForcedTurnAnnouncements = 0;
         _lastPendingType = string.Empty;
         _lastBotThinking = false;
         _endgameFeedbackEmitted = false;
+        _finishedStatusEnforced = false;
         _lastViewerHandCounts = null;
         lock (_statePumpLock)
         {
@@ -238,7 +242,33 @@ internal sealed class GamePlayRealtimeController
                 _endgameSounds.TryPlayEndgameSound(ended, _viewerPlayerId);
                 TryEmitGenericEndgameSummary(ended);
             }
+            MaybeEnforceFinishedStatus();
         }, DispatcherPriority.Background);
+    }
+
+    private void MaybeEnforceFinishedStatus()
+    {
+        if (_finishedStatusEnforced)
+        {
+            return;
+        }
+
+        if (string.Equals(_lastGameStatus, "finished", StringComparison.OrdinalIgnoreCase))
+        {
+            _finishedStatusEnforced = true;
+            return;
+        }
+
+        _finishedStatusEnforced = true;
+        try
+        {
+            var previousStatus = _lastGameStatus ?? string.Empty;
+            _onGameStatusChanged(previousStatus, "finished");
+        }
+        catch
+        {
+            // best-effort
+        }
     }
 
     private void DrainStateQueueOnUi()
@@ -315,11 +345,18 @@ internal sealed class GamePlayRealtimeController
         }
 
         var nextStatus = NormalizeStatus(state);
+        var nextPhase = (state.Phase ?? string.Empty).Trim();
         var previousStatus = _lastGameStatus ?? string.Empty;
+        var previousPhase = _lastGamePhase ?? string.Empty;
         _lastGameStatus = nextStatus;
+        _lastGamePhase = nextPhase;
         if (!string.Equals(previousStatus, nextStatus, StringComparison.OrdinalIgnoreCase))
         {
             _onGameStatusChanged(previousStatus, nextStatus);
+        }
+        if (string.Equals(nextStatus, "finished", StringComparison.OrdinalIgnoreCase))
+        {
+            _finishedStatusEnforced = true;
         }
         if (string.Equals(previousStatus, "started", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase))
@@ -330,6 +367,7 @@ internal sealed class GamePlayRealtimeController
             string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase))
         {
             _endgameFeedbackEmitted = false;
+            _finishedStatusEnforced = false;
             // During pawn selection setup, the pending label is the authoritative prompt.
             // Avoid adding a redundant "C'est au tour de ...".
             if (!PawnPendingTypes.IsPawnPendingType(state.Pending?.Type))
@@ -352,6 +390,15 @@ internal sealed class GamePlayRealtimeController
                     msg => _emitMessage(new GamePlayHistoryMessage(msg)),
                     force: true);
             }
+        }
+
+        // Robustesse focus: après une config de démarrage (phase setup), certains flux UI
+        // peuvent laisser le focus hors zone de jeu. On recentre explicitement au passage setup->round.
+        if (string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(nextPhase, "round", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(previousPhase, "round", StringComparison.OrdinalIgnoreCase))
+        {
+            _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
         }
 
         if (extractedViewerId != null && extractedViewerId.Value > 0)

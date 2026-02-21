@@ -22,4 +22,3 @@ export type VaultRoomSnapshotV1 = {
 };
 
 export type VaultRoomSnapshot = VaultRoomSnapshotV1;
-

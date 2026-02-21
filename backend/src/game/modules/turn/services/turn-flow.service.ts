@@ -15,7 +15,10 @@ export class TurnFlowService {
     private readonly turnPolicies: TurnPoliciesService,
   ) {}
 
-  advanceTurn(state: GameStateEntity, options?: AdvanceTurnOptions): GameStateEntity {
+  advanceTurn(
+    state: GameStateEntity,
+    options?: AdvanceTurnOptions,
+  ): GameStateEntity {
     const players = Array.isArray(state.players) ? state.players : [];
     if (!players.length) return state;
 
@@ -33,13 +36,21 @@ export class TurnFlowService {
       currentIndex >= 0 ? currentIndex : state.turnIndex,
       skipTurn,
     );
-    const skipped = Array.isArray((next as any).skipped) ? (next as any).skipped : [];
+    const skipped = Array.isArray((next as any).skipped)
+      ? (next as any).skipped
+      : [];
     const turnFlow =
-      meta && typeof meta === 'object' && !Array.isArray(meta) ? (meta as any).turnFlow : null;
+      meta && typeof meta === 'object' && !Array.isArray(meta)
+        ? meta.turnFlow
+        : null;
     const nextTurnFlow =
       skipped.length > 0
         ? {
-            ...(turnFlow && typeof turnFlow === 'object' && !Array.isArray(turnFlow) ? turnFlow : {}),
+            ...(turnFlow &&
+            typeof turnFlow === 'object' &&
+            !Array.isArray(turnFlow)
+              ? turnFlow
+              : {}),
             skipped,
           }
         : turnFlow;

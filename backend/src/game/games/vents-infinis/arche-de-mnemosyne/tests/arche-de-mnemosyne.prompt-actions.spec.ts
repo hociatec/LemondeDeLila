@@ -23,7 +23,9 @@ describe('ArcheDeMnemosyneService prompt actions', () => {
     };
 
     const state = service.hydrateInitialState(base);
-    const available = service.getAvailableActions(state, 1).map((a: any) => a.type);
+    const available = service
+      .getAvailableActions(state, 1)
+      .map((a: any) => a.type);
 
     expect(available).toContain('mnemo_set_config');
     expect(available).toContain('mnemo_prompt_cancel');
@@ -34,7 +36,10 @@ describe('ArcheDeMnemosyneService prompt actions', () => {
       { register: jest.fn() } as any,
       { appendLog: (s: any) => s } as any,
       {} as any,
-      { listCategories: () => [{ id: 'c1', name: 'Cat 1' }], listQuestions: () => [] } as any,
+      {
+        listCategories: () => [{ id: 'c1', name: 'Cat 1' }],
+        listQuestions: () => [],
+      } as any,
       {} as any,
     );
 
@@ -66,10 +71,12 @@ describe('ArcheDeMnemosyneService prompt actions', () => {
       1,
     ) as any;
     const afterConfig = service.applyActions(state, [
-      { ...config, meta: { actorId: 1 } } as any,
+      { ...config, meta: { actorId: 1 } },
     ]);
 
-    const ownerAvailableAfter = service.getAvailableActions(afterConfig, 1).map((a: any) => a.type);
+    const ownerAvailableAfter = service
+      .getAvailableActions(afterConfig, 1)
+      .map((a: any) => a.type);
     expect(ownerAvailableAfter).toContain('mnemo_start');
 
     expect(() =>
@@ -107,7 +114,9 @@ describe('ArcheDeMnemosyneService prompt actions', () => {
     const state = service.hydrateInitialState(base);
     const exposed: any = service.exposeStateForUser(state, 1);
     expect(String(exposed?.pending?.type ?? '')).toBe('config_prompt');
-    expect(String(exposed?.pending?.data?.actionType ?? '')).toBe('mnemo_set_config');
+    expect(String(exposed?.pending?.data?.actionType ?? '')).toBe(
+      'mnemo_set_config',
+    );
   });
 
   it('makes bots answer randomly for each question', () => {
@@ -158,11 +167,19 @@ describe('ArcheDeMnemosyneService prompt actions', () => {
     expect(Array.isArray(b)).toBe(true);
     expect(a?.[0]?.type).toBe('answer_quiz');
     expect(b?.[0]?.type).toBe('answer_quiz');
-    expect(Number.isFinite(Number((a?.[0] as any)?.payload?.answerIndex))).toBe(true);
-    expect(Number.isFinite(Number((b?.[0] as any)?.payload?.answerIndex))).toBe(true);
-    expect(Number((a?.[0] as any).payload.answerIndex)).toBeGreaterThanOrEqual(0);
+    expect(Number.isFinite(Number((a?.[0] as any)?.payload?.answerIndex))).toBe(
+      true,
+    );
+    expect(Number.isFinite(Number((b?.[0] as any)?.payload?.answerIndex))).toBe(
+      true,
+    );
+    expect(Number((a?.[0] as any).payload.answerIndex)).toBeGreaterThanOrEqual(
+      0,
+    );
     expect(Number((a?.[0] as any).payload.answerIndex)).toBeLessThan(4);
-    expect(Number((b?.[0] as any).payload.answerIndex)).toBeGreaterThanOrEqual(0);
+    expect(Number((b?.[0] as any).payload.answerIndex)).toBeGreaterThanOrEqual(
+      0,
+    );
     expect(Number((b?.[0] as any).payload.answerIndex)).toBeLessThan(4);
   });
 

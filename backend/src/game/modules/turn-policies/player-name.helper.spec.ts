@@ -5,19 +5,14 @@ import {
 
 describe('player-name.helper', () => {
   it('returns the player username when id matches', () => {
-    const out = resolvePlayerName(
-      [{ id: 7, username: 'Lila' }],
-      7,
-    );
+    const out = resolvePlayerName([{ id: 7, username: 'Lila' }], 7);
     expect(out).toBe('Lila');
   });
 
   it('supports numeric-id coercion for serialized ids', () => {
-    const out = resolvePlayerName(
-      [{ id: '7', username: 'Lila' }],
-      7,
-      { coerceNumericIds: true },
-    );
+    const out = resolvePlayerName([{ id: '7', username: 'Lila' }], 7, {
+      coerceNumericIds: true,
+    });
     expect(out).toBe('Lila');
   });
 

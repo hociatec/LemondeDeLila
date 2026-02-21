@@ -128,4 +128,3 @@ export class AdminMnemoQuizQuestionDeleteWsDto {
   @MaxLength(64)
   id!: string;
 }
-

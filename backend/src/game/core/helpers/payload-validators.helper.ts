@@ -7,6 +7,14 @@ function asPayloadRecord(payload: unknown): PayloadRecord {
   return {};
 }
 
+function toPayloadText(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  return '';
+}
+
 export function requiredInt(
   payload: unknown,
   key: string,
@@ -19,10 +27,7 @@ export function requiredInt(
   return value;
 }
 
-export function optionalInt(
-  payload: unknown,
-  key: string,
-): number | undefined {
+export function optionalInt(payload: unknown, key: string): number | undefined {
   const raw = asPayloadRecord(payload)[key];
   if (raw == null || raw === '') return undefined;
   const value = Number(raw);
@@ -37,7 +42,7 @@ export function requiredString(
   key: string,
   message?: string,
 ): string {
-  const value = String(asPayloadRecord(payload)[key] ?? '').trim();
+  const value = toPayloadText(asPayloadRecord(payload)[key]).trim();
   if (!value) {
     throw new Error(message ?? `${key} est requis.`);
   }
@@ -50,7 +55,7 @@ export function optionalString(
 ): string | undefined {
   const raw = asPayloadRecord(payload)[key];
   if (raw == null) return undefined;
-  const value = String(raw).trim();
+  const value = toPayloadText(raw).trim();
   return value || undefined;
 }
 

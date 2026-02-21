@@ -11,7 +11,7 @@ export const AVENTURE_SAUVAGE_PAWNS: AventureSauvagePawn[] = [
     id: 'elephant',
     label: "L'Éléphant",
     description:
-      "Vous progressez avec votre masse imposante et vos oreilles qui se balancent doucement. Chaque pas résonne comme un petit tambour, et votre trompe semble parfois avoir sa propre idée. On ne peut pas vous louper, et votre présence inspire un sourire immédiat.",
+      'Vous progressez avec votre masse imposante et vos oreilles qui se balancent doucement. Chaque pas résonne comme un petit tambour, et votre trompe semble parfois avoir sa propre idée. On ne peut pas vous louper, et votre présence inspire un sourire immédiat.',
   },
   {
     id: 'girafe',
@@ -23,7 +23,7 @@ export const AVENTURE_SAUVAGE_PAWNS: AventureSauvagePawn[] = [
     id: 'zebre',
     label: 'Le Zèbre',
     description:
-      "Vous trottez avec vos rayures parfaitement dessinées, changeant parfois de direction sans prévenir. Votre allure énergique et imprévisible attire les regards et provoque toujours un petit rire discret chez ceux qui vous suivent.",
+      'Vous trottez avec vos rayures parfaitement dessinées, changeant parfois de direction sans prévenir. Votre allure énergique et imprévisible attire les regards et provoque toujours un petit rire discret chez ceux qui vous suivent.',
   },
   {
     id: 'crocodile',
@@ -35,7 +35,7 @@ export const AVENTURE_SAUVAGE_PAWNS: AventureSauvagePawn[] = [
     id: 'autruche',
     label: "L'Autruche",
     description:
-      "Vous avancez avec votre corps rond et vos longues pattes puissantes. Votre cou bouge dans tous les sens, et vos départs soudains pour courir ou vous arrêter font toujours sourire ceux qui observent votre trajectoire.",
+      'Vous avancez avec votre corps rond et vos longues pattes puissantes. Votre cou bouge dans tous les sens, et vos départs soudains pour courir ou vous arrêter font toujours sourire ceux qui observent votre trajectoire.',
   },
 ];
 
@@ -49,12 +49,27 @@ const normalizeText = (value: string): string =>
 
 export const resolvePawnId = (raw: unknown): string | null => {
   if (raw == null) return null;
-  const text = String(raw).trim();
+  if (typeof raw === 'object') {
+    const record = raw as Record<string, unknown>;
+    raw = record.id ?? record.pawnId ?? record.value ?? record.label ?? raw;
+  }
+  const text = toText(raw);
   if (!text) return null;
   const key = normalizeText(text);
   if (!key) return null;
-  const direct = AVENTURE_SAUVAGE_PAWNS.find((p) => normalizeText(p.id) === key);
+  const direct = AVENTURE_SAUVAGE_PAWNS.find(
+    (p) => normalizeText(p.id) === key,
+  );
   if (direct) return direct.id;
-  const byLabel = AVENTURE_SAUVAGE_PAWNS.find((p) => normalizeText(p.label) === key);
+  const byLabel = AVENTURE_SAUVAGE_PAWNS.find(
+    (p) => normalizeText(p.label) === key,
+  );
   return byLabel ? byLabel.id : null;
+};
+
+const toText = (value: unknown): string => {
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  return '';
 };

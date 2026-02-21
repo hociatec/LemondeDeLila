@@ -80,10 +80,15 @@ export class AdminContactService {
       .filter((id) => typeof id === 'number' && id > 0);
   }
 
-  private static normalizeContactStatus(value: unknown): 'open' | 'in_progress' | 'handled' {
-    const v = String(value ?? '').trim().toLowerCase();
+  private static normalizeContactStatus(
+    value: unknown,
+  ): 'open' | 'in_progress' | 'handled' {
+    const v = String(value ?? '')
+      .trim()
+      .toLowerCase();
     if (v === 'handled' || v === 'done' || v === 'resolved') return 'handled';
-    if (v === 'in_progress' || v === 'in progress' || v === 'progress') return 'in_progress';
+    if (v === 'in_progress' || v === 'in progress' || v === 'progress')
+      return 'in_progress';
     return 'open';
   }
 
@@ -98,17 +103,25 @@ export class AdminContactService {
     handledByUsername: string | null;
   } {
     const obj = payload && typeof payload === 'object' ? payload : {};
-    const normalizedStatus = AdminContactService.normalizeContactStatus(obj.status);
+    const normalizedStatus = AdminContactService.normalizeContactStatus(
+      obj.status,
+    );
     const handled = normalizedStatus === 'handled' || Boolean(obj.handled);
     return {
       status: handled ? 'handled' : normalizedStatus,
       handled,
       statusAt: typeof obj.statusAt === 'string' ? obj.statusAt : null,
-      statusByUserId: typeof obj.statusByUserId === 'number' ? obj.statusByUserId : null,
-      statusByUsername: typeof obj.statusByUsername === 'string' ? obj.statusByUsername : null,
+      statusByUserId:
+        typeof obj.statusByUserId === 'number' ? obj.statusByUserId : null,
+      statusByUsername:
+        typeof obj.statusByUsername === 'string' ? obj.statusByUsername : null,
       handledAt: typeof obj.handledAt === 'string' ? obj.handledAt : null,
-      handledByUserId: typeof obj.handledByUserId === 'number' ? obj.handledByUserId : null,
-      handledByUsername: typeof obj.handledByUsername === 'string' ? obj.handledByUsername : null,
+      handledByUserId:
+        typeof obj.handledByUserId === 'number' ? obj.handledByUserId : null,
+      handledByUsername:
+        typeof obj.handledByUsername === 'string'
+          ? obj.handledByUsername
+          : null,
     };
   }
 
@@ -130,7 +143,9 @@ export class AdminContactService {
 
       if (it.kind !== AdminContactService.ADMIN_CONTACT_KIND) return base;
 
-      const normalized = AdminContactService.normalizeContactPayload(it.payload);
+      const normalized = AdminContactService.normalizeContactPayload(
+        it.payload,
+      );
       return {
         ...base,
         status: normalized.status,
@@ -164,7 +179,9 @@ export class AdminContactService {
       const unreadInc = it.readAt ? 0 : 1;
 
       if (!existing) {
-        const normalized = AdminContactService.normalizeContactPayload(it.payload);
+        const normalized = AdminContactService.normalizeContactPayload(
+          it.payload,
+        );
         threads.set(contactId, {
           kind: 'admin_contact',
           contactId,
@@ -212,7 +229,9 @@ export class AdminContactService {
     );
     if (rows.length === 0) return { status: 'open' };
 
-    const current = AdminContactService.normalizeContactPayload(rows[0].payload);
+    const current = AdminContactService.normalizeContactPayload(
+      rows[0].payload,
+    );
     const next =
       current.status === 'open'
         ? 'in_progress'
@@ -324,7 +343,13 @@ export class AdminContactService {
           fromUsername: from.username,
           toUserId: null,
           message: clean,
-          payload: { status: 'open', handled: false, statusAt: null, statusByUserId: null, statusByUsername: null },
+          payload: {
+            status: 'open',
+            handled: false,
+            statusAt: null,
+            statusByUserId: null,
+            statusByUsername: null,
+          },
         });
         try {
           await this.notifications.notifyUser(uid, 'notify.inbox.item', item);
@@ -406,7 +431,13 @@ export class AdminContactService {
           fromUsername: from.username,
           toUserId,
           message: clean,
-          payload: { status: 'open', handled: false, statusAt: null, statusByUserId: null, statusByUsername: null },
+          payload: {
+            status: 'open',
+            handled: false,
+            statusAt: null,
+            statusByUserId: null,
+            statusByUsername: null,
+          },
         });
         try {
           await this.notifications.notifyUser(uid, 'notify.inbox.item', item);
@@ -433,7 +464,11 @@ export class AdminContactService {
     contactId: string,
     handled: boolean,
   ): Promise<void> {
-    await this.setStatusForContact(from, contactId, handled ? 'handled' : 'open');
+    await this.setStatusForContact(
+      from,
+      contactId,
+      handled ? 'handled' : 'open',
+    );
   }
 
   async setStatusForContact(
@@ -502,7 +537,11 @@ export class AdminContactService {
         };
 
         try {
-          await this.notifications.notifyUser(row.userId, 'notify.inbox.item', item);
+          await this.notifications.notifyUser(
+            row.userId,
+            'notify.inbox.item',
+            item,
+          );
         } catch (err) {
           this.logger.warn(
             `notify.inbox.item failed for user ${row.userId}: ${(err as Error).message}`,

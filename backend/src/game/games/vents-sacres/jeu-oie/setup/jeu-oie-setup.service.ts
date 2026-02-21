@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
-import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import { getSafePlayers } from '../../../../setup/setup-service.helper';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
@@ -27,13 +27,19 @@ const JEU_OIE_PAWNS: JeuOiePawn[] = [
 @Injectable()
 export class JeuOieSetupService {
   constructor(
-    private readonly core: GameCoreService,
+    _core: GameCoreService,
     private readonly contentLoader: GameContentLoaderService,
     private readonly setupFlow: SetupFlowService,
   ) {}
 
   private loadTexts(): JeuOieCaseTextsJsonV1 {
-    return loadV1Content<JeuOieCaseTextsJsonV1>(this.contentLoader, { gameType: 'jeu-oie', baseDir: __dirname, filename: 'descriptions.json', arrayField: 'cases', minItems: 1 });
+    return loadV1Content<JeuOieCaseTextsJsonV1>(this.contentLoader, {
+      gameType: 'jeu-oie',
+      baseDir: __dirname,
+      filename: 'descriptions.json',
+      arrayField: 'cases',
+      minItems: 1,
+    });
   }
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
@@ -63,9 +69,9 @@ export class JeuOieSetupService {
         feminine: pawn.feminine,
       })),
       pawnDataMapper: (choice: any) => ({
-          id: choice.id,
-          label: choice.label,
-          feminine: Boolean((choice as any)?.feminine),
+        id: choice.id,
+        label: choice.label,
+        feminine: Boolean(choice?.feminine),
       }),
     });
 
@@ -86,7 +92,9 @@ export class JeuOieSetupService {
       lastRoll: null,
       pending: pendingInfo?.pending ?? null,
       turnIndex:
-        pendingInfo?.turnIndex != null ? pendingInfo.turnIndex : baseState.turnIndex,
+        pendingInfo?.turnIndex != null
+          ? pendingInfo.turnIndex
+          : baseState.turnIndex,
       turn: {
         ...(baseState.turn ?? { direction: 1 }),
         currentPlayerId: pendingInfo?.playerId ?? starterId,
@@ -249,5 +257,3 @@ function buildTiles(texts: JeuOieCaseTextsJsonV1): JeuOieTile[] {
   }
   return tiles;
 }
-
-

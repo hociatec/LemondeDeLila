@@ -143,4 +143,3 @@ export const CERCLES_SACRES_DECK = deck;
 export const CERCLES_SACRES_CARD_BY_ID = Object.fromEntries(
   deck.map((card) => [card.id, card]),
 );
-

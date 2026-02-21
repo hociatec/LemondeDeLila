@@ -19,8 +19,7 @@ import * as Rulebook from './rulebook/rulebook';
 import { buildOdysseeShortcuts } from './odyssee.shortcuts';
 
 @Injectable()
-export class OdysseeQuatreCieuxService extends AbstractGameService
-{
+export class OdysseeQuatreCieuxService extends AbstractGameService {
   readonly gameType = 'odyssee-quatre-cieux';
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'LesQuatreVents';

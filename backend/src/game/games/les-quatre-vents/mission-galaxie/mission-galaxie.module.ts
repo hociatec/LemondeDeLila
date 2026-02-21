@@ -15,7 +15,7 @@ import { MissionGalaxieBotService } from './bots/mission-galaxie-bot.service';
     GameCoreModule,
     GameRegistryModule,
     EngineServicesModule,
-    ],
+  ],
   providers: [
     MissionGalaxieService,
     MissionGalaxieSetupService,

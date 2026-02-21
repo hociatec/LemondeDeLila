@@ -45,4 +45,3 @@ export class PurgePetitChevauxFromDb1768200000000 implements MigrationInterface 
     // no-op: suppression irréversible (données de rooms/stats).
   }
 }
-

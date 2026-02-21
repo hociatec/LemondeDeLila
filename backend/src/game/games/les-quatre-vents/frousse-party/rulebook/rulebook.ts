@@ -12,7 +12,6 @@ import { resolvePawnId } from '../pawns.utils';
 import {
   normalizeActionType,
   normalizeLegacyRollAliasToUpper,
-  normalizeLowerActionType,
 } from '../../../../actions/action-service.helper';
 import {
   getPendingPawnActionsForPlayer,
@@ -33,7 +32,7 @@ export function getAvailableActions(
 ): GameSingleActionDto[] {
   if (!isStartedState(state)) return [];
 
-  const pending = state.pending as any;
+  const pending = asPendingRecord(state.pending);
   if (pending) {
     const drawActions = getPendingDrawActionsForPlayer(pending, playerId, {
       samePlayer: (left, right) => toPlayerId(left) === toPlayerId(right),
@@ -87,7 +86,7 @@ export function validateAction(
     });
   }
 
-  const pending = state.pending as any;
+  const pending = asPendingRecord(state.pending);
   if (pending) {
     const drawValidation = validatePendingDrawActionForActor({
       pending,
@@ -98,13 +97,17 @@ export function validateAction(
     if (drawValidation.ok) {
       return drawValidation.action;
     }
-    if (pending.type === 'draw' && drawValidation.reason === 'wrong_action_type') {
+    if (
+      pending.type === 'draw' &&
+      drawValidation.reason === 'wrong_action_type'
+    ) {
       throw new PlayerActionError('Action non disponible.', {
         gameType: 'frousse-party',
       });
     }
 
-    if (pending.type === 'choose_pawn') {
+    const pendingType = toText(pending.type);
+    if (pendingType === 'choose_pawn') {
       const pawnValidation = validatePendingPawnActionForActor({
         pending,
         actorId,
@@ -122,9 +125,9 @@ export function validateAction(
         throw new GameValidationError('Pion invalide.', {
           gameType: 'frousse-party',
           pawnId:
-            (action.payload as any)?.pawnId ??
-            (action.payload as any)?.pawn ??
-            (action.payload as any)?.value ??
+            asRecord(action.payload).pawnId ??
+            asRecord(action.payload).pawn ??
+            asRecord(action.payload).value ??
             null,
         });
       }
@@ -146,7 +149,7 @@ export function validateAction(
       return targetValidation.action;
     }
     if (
-      pending.type === 'choose_target' &&
+      pendingType === 'choose_target' &&
       targetValidation.reason === 'wrong_action_type'
     ) {
       throw new PlayerActionError('Choix invalide.', {
@@ -154,7 +157,7 @@ export function validateAction(
       });
     }
     if (
-      pending.type === 'choose_target' &&
+      pendingType === 'choose_target' &&
       targetValidation.reason === 'invalid_target'
     ) {
       throw new GameValidationError('Cible invalide.', {
@@ -187,6 +190,23 @@ export function validateAction(
   return { type, payload: action.payload ?? {} };
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
 
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  return '';
+}
 
-
+function asPendingRecord(value: unknown): {
+  type?: unknown;
+  playerId?: unknown;
+} | null {
+  if (!value || typeof value !== 'object') return null;
+  return value as { type?: unknown; playerId?: unknown };
+}

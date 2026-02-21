@@ -23,7 +23,9 @@ export class EntreRitesPresenterService {
   ): GameStateWithActions {
     const meta = (state.metadata ?? {}) as EntreRitesMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
-    const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
+    const hand = Array.isArray(meta.hands?.[userId])
+      ? [...meta.hands[userId]]
+      : [];
     const handCounts = summarizeHandCounts(meta.hands);
     const panels = buildLamaLikePanels({
       hand,
@@ -71,7 +73,8 @@ export class EntreRitesPresenterService {
   private buildHandCards(
     hand: string[],
   ): Array<{ familyId?: string; memberId: string; label: string }> {
-    const cards: Array<{ familyId?: string; memberId: string; label: string }> = [];
+    const cards: Array<{ familyId?: string; memberId: string; label: string }> =
+      [];
     for (const cardId of hand ?? []) {
       const definition = ENTRE_RITES_CARD_BY_ID[cardId];
       if (!definition) continue;
@@ -99,8 +102,8 @@ export class EntreRitesPresenterService {
     return players
       .filter((player) => typeof player?.id === 'number')
       .map((player) => ({
-        id: player!.id,
-        username: player!.username?.trim() || `Joueur ${player!.id}`,
+        id: player.id,
+        username: player.username?.trim() || `Joueur ${player.id}`,
       }));
   }
 }

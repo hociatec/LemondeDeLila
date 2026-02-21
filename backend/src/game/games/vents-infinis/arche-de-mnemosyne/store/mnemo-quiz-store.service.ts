@@ -153,7 +153,8 @@ export class MnemoQuizStoreService implements OnModuleInit {
     const q = this.data.questions.find((x) => x.id === id);
     if (!q) throw new Error('Question introuvable');
 
-    if (patch.question !== undefined) q.question = String(patch.question).trim();
+    if (patch.question !== undefined)
+      q.question = String(patch.question).trim();
     if (patch.correct !== undefined) q.correct = String(patch.correct).trim();
     if (patch.wrong1 !== undefined) q.wrong1 = String(patch.wrong1).trim();
     if (patch.wrong2 !== undefined) q.wrong2 = String(patch.wrong2).trim();
@@ -194,9 +195,15 @@ export class MnemoQuizStoreService implements OnModuleInit {
         return;
       }
       const raw = fs.readFileSync(this.filePath, 'utf-8');
-      const parsed = JSON.parse(raw.replace(/^\uFEFF/, '')) as MnemoQuizStoreData;
-      const categories = Array.isArray(parsed?.categories) ? parsed.categories : [];
-      const questions = Array.isArray(parsed?.questions) ? parsed.questions : [];
+      const parsed = JSON.parse(
+        raw.replace(/^\uFEFF/, ''),
+      ) as MnemoQuizStoreData;
+      const categories = Array.isArray(parsed?.categories)
+        ? parsed.categories
+        : [];
+      const questions = Array.isArray(parsed?.questions)
+        ? parsed.questions
+        : [];
       this.data = { categories, questions };
     } catch (err) {
       this.logger.warn(

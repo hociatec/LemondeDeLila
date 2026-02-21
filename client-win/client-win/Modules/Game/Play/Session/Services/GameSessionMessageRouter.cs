@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text.Json;
 using client_win.Modules.Game.Play.Session.Dtos;
 using client_win.Modules.Game.Play.State.Dtos;
@@ -139,7 +139,7 @@ internal sealed class GameSessionMessageRouter
 
             if (string.Equals(action, "game.actions", StringComparison.OrdinalIgnoreCase))
             {
-                _emitCommandAck("Action reçue par le serveur.");
+                _emitCommandAck("Action reÃ§ue par le serveur.");
                 return;
             }
 
@@ -158,9 +158,9 @@ internal sealed class GameSessionMessageRouter
 
                 if (!string.IsNullOrWhiteSpace(message))
                 {
-                    // Robustesse lecteur d'écran: si l'utilisateur spamme 'T' pour ré-entendre "à qui le tour",
-                    // certains lecteurs/dédup peuvent ignorer les messages identiques. On rend le message unique
-                    // sans impact visuel/audible en alternant un caractère invisible.
+                    // Robustesse lecteur d'Ã©cran: si l'utilisateur spamme 'T' pour rÃ©-entendre "Ã  qui le tour",
+                    // certains lecteurs/dÃ©dup peuvent ignorer les messages identiques. On rend le message unique
+                    // sans impact visuel/audible en alternant un caractÃ¨re invisible.
                     _emitUiMessage($"[ui.shortcut] {message}");
                     return;
                 }
@@ -183,16 +183,6 @@ internal sealed class GameSessionMessageRouter
             // ignore
         }
     }
-
-    private string MakeShortcutAnnouncementUnique(string message)
-    {
-        return message;
-        // var n = unchecked(++_shortcutAnnouncementCounter);
-        // var vs = 0xE0100 + (n % 240); // Variation Selector Supplement (U+E0100..U+E01EF)
-        // U+2060 (WORD JOINER) + Variation Selector Supplement : invisibles, généralement ignorés par la synthèse.
-        // return string.Concat(message, "\u2060", char.ConvertFromUtf32(vs));
-    }
-
     private void HandlePong(JsonElement root)
     {
         var receivedAtMs = ServerClock.UtcNowMs();
@@ -377,3 +367,5 @@ internal sealed class GameSessionMessageRouter
         }
     }
 }
+
+

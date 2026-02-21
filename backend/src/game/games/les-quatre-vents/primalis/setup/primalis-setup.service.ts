@@ -1,9 +1,8 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
-import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import { getSafePlayers } from '../../../../setup/setup-service.helper';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
-import { RandomService } from '../../../../modules/random/services/random.service';
 import type { PrimalisBoardJsonV1 } from '../model/primalis-content.entity';
 import { loadV1Content } from '../../../../setup/content-loader.helper';
 import type {
@@ -13,10 +12,7 @@ import type {
 
 @Injectable()
 export class PrimalisSetupService {
-  constructor(
-    private readonly contentLoader: GameContentLoaderService,
-    private readonly random: RandomService,
-  ) {}
+  constructor(private readonly contentLoader: GameContentLoaderService) {}
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const board = this.loadBoard();
@@ -58,7 +54,12 @@ export class PrimalisSetupService {
   }
 
   private loadBoard(): PrimalisBoardJsonV1 {
-    return loadV1Content<PrimalisBoardJsonV1>(this.contentLoader, { gameType: 'primalis', baseDir: __dirname, filename: '../model/content/board.json', arrayField: 'tiles', minItems: 1 });
+    return loadV1Content<PrimalisBoardJsonV1>(this.contentLoader, {
+      gameType: 'primalis',
+      baseDir: __dirname,
+      filename: '../model/content/board.json',
+      arrayField: 'tiles',
+      minItems: 1,
+    });
   }
 }
-

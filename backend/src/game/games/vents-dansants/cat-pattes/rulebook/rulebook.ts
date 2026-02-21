@@ -8,7 +8,7 @@ import {
 } from '../model/cat-pattes-cards';
 import type { CatPattesMetadata } from '../model/cat-pattes-state.entity';
 import { CAT_PATTES_GOAL } from '../model/cat-pattes-state.entity';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { normalizeActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
   getPendingPawnActionsForPlayer,
@@ -38,7 +38,10 @@ export const CAT_PATTES_OBSTACLE_TO_PARADE: Record<
   sol: 'dodo',
 };
 
-function hasBot(bots: CatPattesMetadata['bots'][number], type: string): boolean {
+function hasBot(
+  bots: CatPattesMetadata['bots'][number],
+  type: string,
+): boolean {
   return Array.isArray(bots) && bots.includes(type as any);
 }
 
@@ -89,7 +92,7 @@ export function playerCanReceiveObstacle(
   if (obstacle === 'gamelle' && hasBot(bots, 'reserve')) {
     return false;
   }
-  return !(meta.obstacles?.[playerId]);
+  return !meta.obstacles?.[playerId];
 }
 
 function normalizePawnKey(value: unknown): string {
@@ -128,16 +131,21 @@ export function getAvailableActions(
     return [{ type: 'draw', payload: {} }];
   }
 
-  const hand = Array.isArray(meta.hands?.[playerId]) ? [...meta.hands[playerId]] : [];
+  const hand = Array.isArray(meta.hands?.[playerId])
+    ? [...meta.hands[playerId]]
+    : [];
   const actions: GameSingleActionDto[] = [];
   const opponents = (Array.isArray(state.players) ? state.players : [])
-    .map((p) => toPlayerId(p?.id))
-    .filter((id): id is number => id != null && !samePlayerId(id, playerId));
+    .filter((p) => p?.id != null && p.id !== playerId)
+    .map((p) => p.id);
 
   for (const cardId of hand) {
     const definition = CAT_PATTES_CARD_BY_ID[cardId];
     if (!definition) continue;
-    if (definition.type === 'pattes' && !canPlayPattes(meta, playerId, definition)) {
+    if (
+      definition.type === 'pattes' &&
+      !canPlayPattes(meta, playerId, definition)
+    ) {
       continue;
     }
     if (definition.type === 'obstacle') {
@@ -253,12 +261,18 @@ export function validateAction(
     return { type: 'discard_card', payload: { cardId } };
   }
 
-  if (definition.type === 'pattes' && !canPlayPattes(meta, actorId, definition)) {
+  if (
+    definition.type === 'pattes' &&
+    !canPlayPattes(meta, actorId, definition)
+  ) {
     throw new Error('Impossible de courir maintenant.');
   }
 
   if (definition.type === 'obstacle') {
-    const targetId = typeof payload.targetPlayerId === 'number' ? payload.targetPlayerId : null;
+    const targetId =
+      typeof payload.targetPlayerId === 'number'
+        ? payload.targetPlayerId
+        : null;
     if (targetId == null) {
       throw new Error('La cible est requise pour une carte Obstacle.');
     }

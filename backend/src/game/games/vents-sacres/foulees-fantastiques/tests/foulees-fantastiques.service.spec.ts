@@ -35,6 +35,6 @@ describe('FouleesFantastiquesService', () => {
       1,
     );
     expect(validated.type).toBe('choose_family');
-    expect(validated.payload.familyId).toBe('oiseaux');
+    expect(validated.payload?.familyId).toBe('oiseaux');
   });
 });

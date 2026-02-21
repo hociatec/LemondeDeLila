@@ -5,37 +5,72 @@ type PendingPawnOption = {
   label: string;
 };
 
+type PendingPawnPayload = {
+  type?: unknown;
+  playerId?: unknown;
+  data?: {
+    pawns?: unknown;
+  };
+};
+
+type PendingPawnChoicePayload = {
+  pawnId?: unknown;
+  pawn?: unknown;
+  value?: unknown;
+};
+
 type NormalizeFn = (value: string) => string;
 
-function defaultNormalize(value: string): string {
-  return String(value ?? '').trim();
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  return '';
 }
 
-function normalizeOption(option: any): PendingPawnOption | null {
-  const id = String(option?.id ?? '').trim();
+function defaultNormalize(value: string): string {
+  return value.trim();
+}
+
+function normalizeOption(
+  option: Record<string, unknown>,
+): PendingPawnOption | null {
+  const id = toText(option.id).trim();
   if (!id) return null;
-  const label = String(option?.label ?? option?.name ?? id).trim();
+  const labelRaw = option.label ?? option.name ?? id;
+  const label = toText(labelRaw).trim();
   return { id, label };
 }
 
 export function isPendingPawnForPlayer(
-  pending: any,
+  pending: PendingPawnPayload,
   playerId: number | null,
   pendingType: string = 'choose_pawn',
 ): boolean {
-  if (!pending || String(pending.type ?? '').trim() !== pendingType) return false;
+  if (!pending || toText(pending.type).trim() !== pendingType) return false;
   if (playerId == null) return false;
   const pendingPlayerId = toPlayerId(pending.playerId);
   return pendingPlayerId != null && pendingPlayerId === playerId;
 }
 
-export function getPendingPawnOptions(pending: any): PendingPawnOption[] {
-  const fromData = Array.isArray(pending?.data?.pawns) ? pending.data.pawns : [];
-  return fromData.map(normalizeOption).filter(Boolean) as PendingPawnOption[];
+export function getPendingPawnOptions(
+  pending: PendingPawnPayload,
+): PendingPawnOption[] {
+  const fromDataRaw = Array.isArray(pending?.data?.pawns)
+    ? pending.data.pawns
+    : [];
+  const fromData = fromDataRaw.filter(
+    (option): option is Record<string, unknown> =>
+      Boolean(option) && typeof option === 'object',
+  );
+  return fromData
+    .map(normalizeOption)
+    .filter((x): x is PendingPawnOption => x != null);
 }
 
 export function listPendingPawnActions(
-  pending: any,
+  pending: PendingPawnPayload,
   actionType: string,
 ): Array<{ type: string; payload: { pawnId: string } }> {
   return getPendingPawnOptions(pending)
@@ -45,11 +80,11 @@ export function listPendingPawnActions(
 }
 
 export function resolvePendingPawnId(
-  pending: any,
-  payload: any,
+  pending: PendingPawnPayload,
+  payload: PendingPawnChoicePayload,
   normalize: NormalizeFn = defaultNormalize,
 ): string | null {
-  const raw = String(payload?.pawnId ?? payload?.pawn ?? payload?.value ?? '').trim();
+  const raw = toText(payload?.pawnId ?? payload?.pawn ?? payload?.value).trim();
   if (!raw) return null;
 
   const options = getPendingPawnOptions(pending);

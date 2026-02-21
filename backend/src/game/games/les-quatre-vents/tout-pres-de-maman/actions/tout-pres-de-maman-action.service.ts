@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
-
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -13,9 +12,11 @@ import type {
   ToutPresDeMamanMetadata,
   ToutPresDeMamanTile,
 } from '../model/tout-pres-de-maman-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
-
-
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeLowerActionType,
+} from '../../../../actions/action-service.helper';
 
 @Injectable()
 export class ToutPresDeMamanActionService {
@@ -34,23 +35,23 @@ export class ToutPresDeMamanActionService {
     actions: GameSingleActionDto[],
   ): GameStateEntity {
     const next = applyActionsSequentially(state, actions, (next, action) => {
-          const type = normalizeLowerActionType(action);
-          return dispatchByActionType(
-            type,
-            {
-              'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'roll dice': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-            },
-            () => next,
-          );
-        });
-        return next;
+      const type = normalizeLowerActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          roll: () => {
+            next = this.handleRoll(next);
+            return next;
+          },
+          'roll dice': () => {
+            next = this.handleRoll(next);
+            return next;
+          },
+        },
+        () => next,
+      );
+    });
+    return next;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -84,11 +85,10 @@ export class ToutPresDeMamanActionService {
     }
 
     let nextMeta: ToutPresDeMamanMetadata = { ...meta };
-    const roll1 = this.random.rollDice(nextMeta as any, 6);
+    const roll1 = this.random.rollDice(nextMeta, 6);
     nextMeta = { ...nextMeta, ...roll1.meta };
     let total = roll1.roll;
-    const hasBonus =
-      Boolean(nextMeta.statuses?.bonusReroll?.[playerId]) ?? false;
+    const hasBonus = Boolean(nextMeta.statuses?.bonusReroll?.[playerId]);
     if (hasBonus) {
       nextMeta.statuses = {
         ...nextMeta.statuses,
@@ -97,7 +97,7 @@ export class ToutPresDeMamanActionService {
           [playerId]: false,
         },
       };
-      const reroll = this.random.rollDice(nextMeta as any, 6);
+      const reroll = this.random.rollDice(nextMeta, 6);
       nextMeta = { ...nextMeta, ...reroll.meta };
       total += reroll.roll;
     }
@@ -303,17 +303,15 @@ export class ToutPresDeMamanActionService {
     const meta = this.getMeta(state);
     const tokens = meta.tokens?.[playerId] ?? 0;
     if (tokens >= ToutPresDeMamanActionService.TOKENS_TO_WIN) {
-      let next = this.setWinner(state, playerId, tokens);
+      let next = this.setWinner(state, playerId);
       next = this.core.appendLog(
         next,
         `${resolvePlayerNameFromState(next, playerId)} retrouve maman avec ${tokens} jetons eucalyptus !`,
       );
       return next;
     }
-    const deficit =
-      ToutPresDeMamanActionService.TOKENS_TO_WIN - tokens;
-    const rewind =
-      Math.min(index, deficit);
+    const deficit = ToutPresDeMamanActionService.TOKENS_TO_WIN - tokens;
+    const rewind = Math.min(index, deficit);
     const newIndex = Math.max(0, index - rewind);
     const next = this.core.appendLog(
       state,
@@ -331,11 +329,7 @@ export class ToutPresDeMamanActionService {
     );
   }
 
-  private setWinner(
-    state: GameStateEntity,
-    playerId: number,
-    tokens: number,
-  ): GameStateEntity {
+  private setWinner(state: GameStateEntity, playerId: number): GameStateEntity {
     const meta = this.getMeta(state);
     const updatedMeta: ToutPresDeMamanMetadata = {
       ...meta,
@@ -359,10 +353,7 @@ export class ToutPresDeMamanActionService {
     const current = meta.positions?.[playerId] ?? 0;
     const target = Math.max(
       0,
-      Math.min(
-        (meta.tiles?.length ?? 1) - 1,
-        current + delta,
-      ),
+      Math.min((meta.tiles?.length ?? 1) - 1, current + delta),
     );
     const next = this.setPlayerPosition(state, playerId, target);
     return this.applyTileEffects(next, playerId, target, depth);
@@ -451,7 +442,7 @@ export class ToutPresDeMamanActionService {
     const label =
       'text' in tileOrCard
         ? `carte ${tileOrCard.id}`
-        : tileOrCard?.title ?? 'effet spécial';
+        : (tileOrCard?.title ?? 'effet spécial');
     return this.core.appendLog(
       next,
       `${resolvePlayerNameFromState(
@@ -532,7 +523,10 @@ export class ToutPresDeMamanActionService {
     return state;
   }
 
-  private transferToken(state: GameStateEntity, playerId: number): GameStateEntity {
+  private transferToken(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
     const targetId = this.pickOtherPlayer(state, playerId);
     const meta = this.getMeta(state);
     const current = meta.tokens?.[playerId] ?? 0;
@@ -577,8 +571,8 @@ export class ToutPresDeMamanActionService {
     depth: number,
   ): GameStateEntity {
     const meta = this.getMeta(state);
-    const roll = this.random.rollDice(meta as any, 6);
-    let nextMeta = { ...meta, ...roll.meta };
+    const roll = this.random.rollDice(meta, 6);
+    const nextMeta = { ...meta, ...roll.meta };
     let next = this.replaceMeta(state, nextMeta);
     next = this.core.appendLog(
       next,
@@ -593,7 +587,7 @@ export class ToutPresDeMamanActionService {
     depth: number,
   ): GameStateEntity {
     const meta = this.getMeta(state);
-    const roll = this.random.rollDice(meta as any, 6);
+    const roll = this.random.rollDice(meta, 6);
     let next = this.replaceMeta(state, { ...meta, ...roll.meta });
     next = this.core.appendLog(
       next,
@@ -614,7 +608,10 @@ export class ToutPresDeMamanActionService {
     card: ToutPresDeMamanCard | null;
   } {
     const meta = this.getMeta(state);
-    const draw = this.deckPolicies.drawFromPile<number, ToutPresDeMamanMetadata>({
+    const draw = this.deckPolicies.drawFromPile<
+      number,
+      ToutPresDeMamanMetadata
+    >({
       meta,
       pile: Array.isArray(meta.deckCards) ? meta.deckCards : [],
       discard: Array.isArray(meta.discardCards) ? meta.discardCards : [],
@@ -623,8 +620,8 @@ export class ToutPresDeMamanActionService {
     });
     const nextMeta: ToutPresDeMamanMetadata = {
       ...draw.meta,
-      deckCards: draw.pile as number[],
-      discardCards: draw.discard as number[],
+      deckCards: draw.pile,
+      discardCards: draw.discard,
     };
     const next = this.replaceMeta(state, nextMeta);
     const cardId = draw.card;
@@ -655,10 +652,7 @@ export class ToutPresDeMamanActionService {
     return tiles[index];
   }
 
-  private getPlayerPosition(
-    state: GameStateEntity,
-    playerId: number,
-  ): number {
+  private getPlayerPosition(state: GameStateEntity, playerId: number): number {
     const meta = this.getMeta(state);
     return meta.positions?.[playerId] ?? 0;
   }
@@ -670,25 +664,28 @@ export class ToutPresDeMamanActionService {
     const candidates = Array.isArray(state.players)
       ? state.players.filter((p) => p?.id && p.id !== playerId)
       : [];
-    return candidates.length ? candidates[0].id ?? null : null;
+    return candidates.length ? (candidates[0].id ?? null) : null;
   }
 
   private pawnLabel(state: GameStateEntity, playerId: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
-    const player: any = players.find((p) => p?.id === playerId);
+    const player = players.find((p) => p?.id === playerId);
+    const playerRecord =
+      player && typeof player === 'object'
+        ? (player as Record<string, unknown>)
+        : {};
 
-    const explicitLabel = String(player?.pawnLabel ?? '').trim();
+    const explicitLabel =
+      typeof playerRecord.pawnLabel === 'string'
+        ? playerRecord.pawnLabel.trim()
+        : '';
     if (explicitLabel) return `"${explicitLabel}"`;
 
-    const pawnId = String(player?.pawn ?? '').trim();
+    const pawnId =
+      typeof playerRecord.pawn === 'string' ? playerRecord.pawn.trim() : '';
     if (pawnId) return `"${pawnId}"`;
 
     const fallback = resolvePlayerNameFromState(state, playerId);
     return `"${fallback}"`;
   }
 }
-
-
-
-
-

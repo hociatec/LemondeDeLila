@@ -2,6 +2,10 @@ import { ConfigService } from '@nestjs/config';
 import { generateKeyPairSync } from 'crypto';
 import { JwksController } from './jwks.controller';
 
+type JwksResponse = {
+  keys: Array<Record<string, unknown>>;
+};
+
 describe('JwksController', () => {
   it('returns a JWKS when RS256 is configured', () => {
     const { publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
@@ -14,7 +18,7 @@ describe('JwksController', () => {
     });
 
     const controller = new JwksController(config);
-    const res: any = controller.jwks();
+    const res = controller.jwks() as JwksResponse;
 
     expect(res?.keys?.length).toBe(1);
     expect(res.keys[0]).toMatchObject({ kty: 'RSA', use: 'sig', alg: 'RS256' });

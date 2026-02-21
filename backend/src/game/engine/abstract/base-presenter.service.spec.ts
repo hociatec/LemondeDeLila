@@ -1,32 +1,42 @@
 import type { GameStateEntity } from '../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../dto/game-action.dto';
 import { BasePresenterService } from './base-presenter.service';
+import {
+  GameStateEntity,
+  PendingState,
+  PlayerStateEntity,
+} from '../../core/entities/game-state.entity';
 
 class TestPresenter extends BasePresenterService {
-  protected buildCatalog(): { phases: string[]; victory: any } {
+  protected buildCatalog(): { phases: string[]; victory: unknown } {
     return { phases: ['play'], victory: null };
   }
 
   protected getAvailableActionsForUser(
-    _state: GameStateEntity,
-    _userId: number,
+    state: GameStateEntity,
+    userId: number,
   ): GameSingleActionDto[] {
-    return [];
+    return state.turn?.currentPlayerId === userId ? [] : [];
   }
 
   protected buildPendingState(
     state: GameStateEntity,
-    _metadata: any,
+    _metadata: Record<string, unknown>,
     _currentPlayerId: number | null,
-  ): any {
+  ): PendingState | null {
+    void _metadata;
+    void _currentPlayerId;
     return state.pending ?? null;
   }
 
   protected buildExtras(
     _state: GameStateEntity,
-    _metadata: any,
+    _metadata: Record<string, unknown>,
     _currentPlayerId: number | null,
   ): Record<string, unknown> {
+    void _state;
+    void _metadata;
+    void _currentPlayerId;
     return {};
   }
 
@@ -36,16 +46,21 @@ class TestPresenter extends BasePresenterService {
 }
 
 describe('BasePresenterService', () => {
-  const makeState = (pending: any): GameStateEntity =>
-    ({
-      status: 'started',
-      turnIndex: 0,
-      turn: { currentPlayerId: 1, direction: 1 },
-      players: [{ id: 1, username: 'A' } as any, { id: 2, username: 'B' } as any],
-      metadata: {},
-      pending,
-      log: [],
-    }) as any;
+  const makeState = (pending: PendingState | null): GameStateEntity => ({
+    status: 'started',
+    phase: 'round',
+    round: 1,
+    turnIndex: 0,
+    turn: { currentPlayerId: 1, direction: 1 },
+    players: [
+      { id: 1, username: 'A' } as PlayerStateEntity,
+      { id: 2, username: 'B' } as PlayerStateEntity,
+    ],
+    metadata: {},
+    pending,
+    log: [],
+    lastRoll: null,
+  });
 
   it('hides targeted pending for other users by default', () => {
     const presenter = new TestPresenter();

@@ -1,4 +1,4 @@
-import { Test } from '@nestjs/testing';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call */
 import { PanierExpressService } from '../panier-express.service';
 import { createPanierExpressTestingModule } from './panier-express-test-harness';
 
@@ -61,7 +61,9 @@ describe('PanierExpress pending scenarios', () => {
     expect(after.pending?.data?.kind).toBe('event.tirage_chanceux');
     expect(after.pending?.choices).toEqual(['amande', 'noix', 'pomme']);
     expect(after.pending?.data?.offered).toEqual(['amande', 'noix', 'pomme']);
-    expect(after.metadata?.decks?.['courses-bonus']?.deck).toEqual(['banane']);
+    expect((after as any).metadata?.decks?.['courses-bonus']?.deck).toEqual([
+      'banane',
+    ]);
   });
 
   it('bot: résout un tirage chanceux en 1 pick_choice (anti-boucle)', () => {

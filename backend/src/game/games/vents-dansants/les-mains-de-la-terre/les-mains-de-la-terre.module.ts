@@ -9,11 +9,7 @@ import { LesMainsPresenterService } from './presenter/les-mains-de-la-terre-pres
 import { LesMainsSetupService } from './setup/les-mains-de-la-terre-setup.service';
 
 @Module({
-  imports: [
-    BoardGameDeckKitModule,
-    GameCoreModule,
-    GameRegistryModule,
-    ],
+  imports: [BoardGameDeckKitModule, GameCoreModule, GameRegistryModule],
   providers: [
     LesMainsDeLaTerreService,
     LesMainsSetupService,

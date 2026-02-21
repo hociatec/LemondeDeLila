@@ -3,11 +3,13 @@ import type {
   GameStateEntity,
   PlayerStateEntity,
 } from '../../../../core/entities/game-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
-
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-
 
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
@@ -64,7 +66,8 @@ export class GerardPresidentActionService {
     if (playerId == null) return state;
     const players = this.getPlayers(state);
     const metadata = this.cloneMetadata(state);
-    if (metadata.masterId != null && metadata.masterId !== playerId) return state;
+    if (metadata.masterId != null && metadata.masterId !== playerId)
+      return state;
     if (metadata.roundPhase !== 'waiting_theme') return state;
 
     const drawn = this.drawCards(metadata, 'themeDeck', 'themeDiscard', 1);
@@ -74,7 +77,7 @@ export class GerardPresidentActionService {
     metadata.themeSecretActive = false;
     metadata.pendingPlayers = players
       .map((player) => player.id)
-      .filter((id) => id != null && id !== playerId) as number[];
+      .filter((id) => id != null && id !== playerId);
     metadata.submissions = {};
     metadata.roundPhase = metadata.pendingPlayers.length
       ? 'collecting_names'
@@ -87,8 +90,8 @@ export class GerardPresidentActionService {
 
     const nextId =
       metadata.roundPhase === 'collecting_names'
-        ? metadata.pendingPlayers[0] ?? metadata.masterId ?? null
-        : metadata.masterId ?? null;
+        ? (metadata.pendingPlayers[0] ?? metadata.masterId ?? null)
+        : (metadata.masterId ?? null);
     let nextState = this.setCurrentPlayer(state, players, nextId);
     nextState = this.appendLog(
       nextState,
@@ -116,7 +119,8 @@ export class GerardPresidentActionService {
     const allowed = 1 + (metadata.extraNamesAllowed[playerId] ?? 0);
     const distinct = this.filterPlayableNames(requested);
     if (!distinct.length || distinct.length > allowed) return state;
-    if (metadata.lockedName && distinct.includes(metadata.lockedName)) return state;
+    if (metadata.lockedName && distinct.includes(metadata.lockedName))
+      return state;
     if (!distinct.every((name) => hand.includes(name))) return state;
 
     const removed: string[] = [];
@@ -128,13 +132,17 @@ export class GerardPresidentActionService {
     });
     this.addSubmission(metadata, playerId, removed);
     metadata.hands = { ...metadata.hands, [playerId]: hand };
-    metadata.pendingPlayers = metadata.pendingPlayers.filter((id) => id !== playerId);
+    metadata.pendingPlayers = metadata.pendingPlayers.filter(
+      (id) => id !== playerId,
+    );
     metadata.roundPhase =
-      metadata.pendingPlayers.length === 0 ? 'choosing_winner' : 'collecting_names';
+      metadata.pendingPlayers.length === 0
+        ? 'choosing_winner'
+        : 'collecting_names';
     const nextId =
       metadata.roundPhase === 'collecting_names'
         ? metadata.pendingPlayers[0]
-        : metadata.masterId ?? metadata.juryOverrideId ?? null;
+        : (metadata.masterId ?? metadata.juryOverrideId ?? null);
     metadata.extraNamesAllowed = {
       ...metadata.extraNamesAllowed,
       [playerId]: 0,
@@ -164,10 +172,16 @@ export class GerardPresidentActionService {
     if (index < 0) return state;
 
     specialHand.splice(index, 1);
-    metadata.specialHands = { ...metadata.specialHands, [playerId]: specialHand };
+    metadata.specialHands = {
+      ...metadata.specialHands,
+      [playerId]: specialHand,
+    };
     metadata.specialDiscard = [...metadata.specialDiscard, cardId];
     const played = [...(metadata.specialsPlayed[playerId] ?? []), cardId];
-    metadata.specialsPlayed = { ...metadata.specialsPlayed, [playerId]: played };
+    metadata.specialsPlayed = {
+      ...metadata.specialsPlayed,
+      [playerId]: played,
+    };
 
     const effectMessage = this.applySpecialEffect(
       metadata,
@@ -178,7 +192,8 @@ export class GerardPresidentActionService {
     );
     const nextState = this.appendLog(
       state,
-      effectMessage || `${this.formatPlayer(playerId)} a utilisé une carte spéciale.`,
+      effectMessage ||
+        `${this.formatPlayer(playerId)} a utilisé une carte spéciale.`,
     );
 
     return {
@@ -201,7 +216,8 @@ export class GerardPresidentActionService {
     const juryAllowed = metadata.juryOverrideId === playerId;
     if (!allowedMaster && !juryAllowed) return state;
     const winnerId = payload.winnerId ?? null;
-    if (winnerId == null || !players.some((p) => p.id === winnerId)) return state;
+    if (winnerId == null || !players.some((p) => p.id === winnerId))
+      return state;
 
     const winnerScore = (metadata.scores[winnerId] ?? 0) + 1;
     metadata.scores = { ...metadata.scores, [winnerId]: winnerScore };
@@ -259,13 +275,17 @@ export class GerardPresidentActionService {
     const metadata = this.cloneMetadata(state);
     if (metadata.roundPhase !== 'collecting_names') return state;
     if (!metadata.pendingPlayers.includes(playerId)) return state;
-    metadata.pendingPlayers = metadata.pendingPlayers.filter((id) => id !== playerId);
+    metadata.pendingPlayers = metadata.pendingPlayers.filter(
+      (id) => id !== playerId,
+    );
     metadata.roundPhase =
-      metadata.pendingPlayers.length === 0 ? 'choosing_winner' : 'collecting_names';
+      metadata.pendingPlayers.length === 0
+        ? 'choosing_winner'
+        : 'collecting_names';
     const nextId =
       metadata.roundPhase === 'collecting_names'
         ? metadata.pendingPlayers[0]
-        : metadata.masterId ?? metadata.juryOverrideId ?? null;
+        : (metadata.masterId ?? metadata.juryOverrideId ?? null);
 
     const nextState = this.appendLog(
       this.setCurrentPlayer(state, players, nextId),
@@ -288,7 +308,9 @@ export class GerardPresidentActionService {
       themeDeck: Array.isArray(base.themeDeck) ? [...base.themeDeck] : [],
       specialDeck: Array.isArray(base.specialDeck) ? [...base.specialDeck] : [],
       nameDiscard: Array.isArray(base.nameDiscard) ? [...base.nameDiscard] : [],
-      themeDiscard: Array.isArray(base.themeDiscard) ? [...base.themeDiscard] : [],
+      themeDiscard: Array.isArray(base.themeDiscard)
+        ? [...base.themeDiscard]
+        : [],
       specialDiscard: Array.isArray(base.specialDiscard)
         ? [...base.specialDiscard]
         : [],
@@ -304,7 +326,9 @@ export class GerardPresidentActionService {
       roundNumber: base.roundNumber ?? 0,
       targetScore: base.targetScore ?? 0,
       submissions: this.cloneRecordOfArrays(base.submissions),
-      pendingPlayers: Array.isArray(base.pendingPlayers) ? [...base.pendingPlayers] : [],
+      pendingPlayers: Array.isArray(base.pendingPlayers)
+        ? [...base.pendingPlayers]
+        : [],
       roundPhase: base.roundPhase ?? 'waiting_theme',
       specialsPlayed: this.cloneRecordOfArrays(base.specialsPlayed),
       extraNamesAllowed: { ...(base.extraNamesAllowed ?? {}) },
@@ -317,7 +341,9 @@ export class GerardPresidentActionService {
     };
   }
 
-  private cloneRecordOfArrays(source?: Record<number, string[]>): Record<number, string[]> {
+  private cloneRecordOfArrays(
+    source?: Record<number, string[]>,
+  ): Record<number, string[]> {
     const result: Record<number, string[]> = {};
     if (!source) return result;
     Object.entries(source).forEach(([key, value]) => {
@@ -329,7 +355,9 @@ export class GerardPresidentActionService {
     return result;
   }
 
-  private cloneNumberRecord(source?: Record<number, number[]>): Record<number, number[]> {
+  private cloneNumberRecord(
+    source?: Record<number, number[]>,
+  ): Record<number, number[]> {
     const result: Record<number, number[]> = {};
     if (!source) return result;
     Object.entries(source).forEach(([key, value]) => {
@@ -377,7 +405,9 @@ export class GerardPresidentActionService {
     payload: GerardPresidentActionPayload,
     players: PlayerStateEntity[],
   ): string {
-    const definition = GERARD_PRESIDENT_SPECIAL_CARDS.find((card) => card.id === cardId);
+    const definition = GERARD_PRESIDENT_SPECIAL_CARDS.find(
+      (card) => card.id === cardId,
+    );
     const actorLabel = this.formatPlayer(playerId);
     if (!definition) return `${actorLabel} a joué une carte spéciale.`;
 
@@ -418,9 +448,13 @@ export class GerardPresidentActionService {
         if (targetId == null) return `${actorLabel} devait choisir un joueur.`;
         const removed = this.removeRandomFromHand(metadata, targetId);
         this.addSubmission(metadata, targetId, removed);
-        metadata.pendingPlayers = metadata.pendingPlayers.filter((id) => id !== targetId);
+        metadata.pendingPlayers = metadata.pendingPlayers.filter(
+          (id) => id !== targetId,
+        );
         metadata.roundPhase =
-          metadata.pendingPlayers.length === 0 ? 'choosing_winner' : 'collecting_names';
+          metadata.pendingPlayers.length === 0
+            ? 'choosing_winner'
+            : 'collecting_names';
         return `${actorLabel} force ${this.formatPlayer(targetId)} à jouer ${removed.join(', ')}.`;
       }
       case 'defense-totale':
@@ -451,7 +485,12 @@ export class GerardPresidentActionService {
         players.forEach((player) => {
           const removed = this.removeRandomFromHand(metadata, player.id, 3);
           metadata.nameDiscard = [...metadata.nameDiscard, ...removed];
-          const drawn = this.drawCards(metadata, 'nameDeck', 'nameDiscard', removed.length);
+          const drawn = this.drawCards(
+            metadata,
+            'nameDeck',
+            'nameDiscard',
+            removed.length,
+          );
           metadata.hands = {
             ...metadata.hands,
             [player.id]: [...(metadata.hands[player.id] ?? []), ...drawn],
@@ -460,7 +499,8 @@ export class GerardPresidentActionService {
         return `${actorLabel} déclenche une panique générale : tout le monde refait sa main.`;
       }
       case 'sabotage': {
-        if (targetId == null) return `${actorLabel} devait viser un adversaire.`;
+        if (targetId == null)
+          return `${actorLabel} devait viser un adversaire.`;
         if (metadata.defenseActive[targetId]) {
           metadata.defenseActive = {
             ...metadata.defenseActive,
@@ -479,7 +519,8 @@ export class GerardPresidentActionService {
           ...metadata.specialAttackers,
           [playerId]: attackers,
         };
-        if (attacker == null) return `${actorLabel} n'avait aucun effet à renvoyer.`;
+        if (attacker == null)
+          return `${actorLabel} n'avait aucun effet à renvoyer.`;
         const removed = this.removeRandomFromHand(metadata, attacker);
         metadata.nameDiscard = [...metadata.nameDiscard, ...removed];
         return `${actorLabel} renvoie le sabotage vers ${this.formatPlayer(attacker)}.`;
@@ -539,14 +580,15 @@ export class GerardPresidentActionService {
         metadata.submissions = {};
         metadata.pendingPlayers = players
           .map((player) => player.id)
-          .filter((id) => id != null && id !== metadata.masterId) as number[];
+          .filter((id) => id != null && id !== metadata.masterId);
         metadata.roundPhase = 'collecting_names';
         return `${actorLabel} rembobine le temps : tout le monde rejoue les prénoms.`;
       case 'ultra-sabotage': {
         const targets = [targetId, secondaryId].filter(
           (id): id is number => id != null,
         );
-        if (!targets.length) return `${actorLabel} devait choisir une ou deux cibles.`;
+        if (!targets.length)
+          return `${actorLabel} devait choisir une ou deux cibles.`;
         targets.forEach((id) => {
           const removed = this.removeRandomFromHand(metadata, id);
           metadata.nameDiscard = [...metadata.nameDiscard, ...removed];
@@ -558,7 +600,7 @@ export class GerardPresidentActionService {
       case 'prenom-volant': {
         if (targetId == null) return `${actorLabel} n'a pas ciblé de joueur.`;
         if (!metadata.hands[playerId]) metadata.hands[playerId] = [];
-        if (!(metadata.hands[targetId]?.length)) {
+        if (!metadata.hands[targetId]?.length) {
           return `${actorLabel} voulait voler un prénom mais la main ciblée est vide.`;
         }
         const stolen = metadata.hands[targetId].shift()!;
@@ -580,7 +622,7 @@ export class GerardPresidentActionService {
   ): number | null {
     const candidates = players
       .map((player) => player.id)
-      .filter((id) => id != null && id !== exceptId) as number[];
+      .filter((id) => id != null && id !== exceptId);
     if (!candidates.length) return null;
     const { index } = this.random.pickIndex({}, candidates.length);
     return candidates[index] ?? null;
@@ -617,8 +659,8 @@ export class GerardPresidentActionService {
   }
 
   private getPlayers(state: GameStateEntity): PlayerStateEntity[] {
-    return (state.players ?? []).filter(
-      (player): player is PlayerStateEntity => Boolean(player?.id),
+    return (state.players ?? []).filter((player): player is PlayerStateEntity =>
+      Boolean(player?.id),
     );
   }
 
@@ -629,11 +671,11 @@ export class GerardPresidentActionService {
   ): GameStateEntity {
     const index =
       nextPlayerId == null
-        ? state.turnIndex ?? 0
+        ? (state.turnIndex ?? 0)
         : players.findIndex((player) => player.id === nextPlayerId);
     return {
       ...state,
-      turnIndex: index >= 0 ? index : state.turnIndex ?? 0,
+      turnIndex: index >= 0 ? index : (state.turnIndex ?? 0),
       turn: {
         ...(state.turn ?? { direction: 1 }),
         currentPlayerId: nextPlayerId,
@@ -665,7 +707,10 @@ export class GerardPresidentActionService {
     const drawn: string[] = [];
 
     while (drawn.length < count) {
-      const out = this.deckPolicies.drawFromPile<string, { deck: string[]; discard: string[]; rng: any }>({
+      const out = this.deckPolicies.drawFromPile<
+        string,
+        { deck: string[]; discard: string[]; rng: any }
+      >({
         meta: { deck, discard, rng },
         pile: deck,
         discard,
@@ -710,5 +755,3 @@ export class GerardPresidentActionService {
     return ordered[currentIndex + 1];
   }
 }
-
-

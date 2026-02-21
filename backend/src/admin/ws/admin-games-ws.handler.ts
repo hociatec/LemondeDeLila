@@ -4,6 +4,7 @@ import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { GameCategoriesService } from '../../game/engine/services/game-categories.service';
 import { GameCatalogOverridesService } from '../../game/engine/services/game-catalog-overrides.service';
+import type { GameCatalogOverride } from '../../game/engine/services/game-catalog-overrides.service';
 import { GameRegistryService } from '../../game/engine/services/game-registry.service';
 import { AdminCatalogInvalidationService } from '../services/admin-catalog-invalidation.service';
 import {
@@ -77,7 +78,7 @@ export class AdminGamesWsHandler {
     return { type: 'admin.games.list', payload: { games: payload } };
   }
 
-  async gamesCategoriesList(session: WsSession, payload: any) {
+  gamesCategoriesList(session: WsSession, payload: any) {
     requireAdmin(session);
     this.validator.validate(AdminGameCategoriesListWsDto, payload ?? {});
     return {
@@ -144,19 +145,21 @@ export class AdminGamesWsHandler {
   async gamesUpdate(session: WsSession, payload: any) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(AdminGameUpdateWsDto, payload);
-    const update: Record<string, unknown> = {};
+    const update: GameCatalogOverride = {};
     if (typeof dto.enabled === 'boolean') update.enabled = dto.enabled;
     if (typeof dto.minPlayers === 'number') update.minPlayers = dto.minPlayers;
     if (typeof dto.maxPlayers === 'number') update.maxPlayers = dto.maxPlayers;
     if (typeof dto.name === 'string') update.name = dto.name;
-    if (typeof dto.description === 'string') update.description = dto.description;
+    if (typeof dto.description === 'string')
+      update.description = dto.description;
     if (typeof dto.rules === 'string') update.rules = dto.rules;
     if (typeof dto.status === 'string') update.status = dto.status;
-    if (typeof dto.chatEnabled === 'boolean') update.chatEnabled = dto.chatEnabled;
+    if (typeof dto.chatEnabled === 'boolean')
+      update.chatEnabled = dto.chatEnabled;
     if (typeof dto.chatSoundsEnabled === 'boolean')
       update.chatSoundsEnabled = dto.chatSoundsEnabled;
 
-    await this.overrides.updateGameOverride(dto.gameType, update as any);
+    await this.overrides.updateGameOverride(dto.gameType, update);
     await this.catalogInvalidation.invalidateCatalogAndNotify(admin.id);
     return { type: 'admin.games.update', payload: { ok: true } };
   }

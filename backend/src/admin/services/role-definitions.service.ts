@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RoleDefinitionEntity } from '../entities/role-definition.entity';
@@ -11,7 +11,6 @@ export interface RoleDefinition {
 
 @Injectable()
 export class RoleDefinitionsService implements OnModuleInit {
-  private readonly logger = new Logger(RoleDefinitionsService.name);
   private cache: RoleDefinition[] | null = null;
 
   constructor(

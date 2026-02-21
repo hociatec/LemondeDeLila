@@ -6,9 +6,7 @@ function pickId(row: any, key: string): string {
   return typeof v === 'string' ? v : String(v ?? '');
 }
 
-export class RenameGalopantCategoryToVentsSacres1768100000000
-  implements MigrationInterface
-{
+export class RenameGalopantCategoryToVentsSacres1768100000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     if (!(await queryRunner.hasTable('game_categories'))) return;
 
@@ -30,7 +28,8 @@ export class RenameGalopantCategoryToVentsSacres1768100000000
     const row = existingLegacy[0];
     const name = pickId(row, 'name');
     const parentIdRaw = pickId(row, 'parent_id');
-    const parentId = parentIdRaw && parentIdRaw !== legacyId ? parentIdRaw : null;
+    const parentId =
+      parentIdRaw && parentIdRaw !== legacyId ? parentIdRaw : null;
     const enabled =
       typeof row?.enabled === 'boolean' ? row.enabled : row?.enabled !== 0;
 
@@ -104,4 +103,3 @@ export class RenameGalopantCategoryToVentsSacres1768100000000
     ]);
   }
 }
-

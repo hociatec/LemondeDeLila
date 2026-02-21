@@ -72,6 +72,3 @@ export function validateAction(
 
   return { type: 'roll', payload: {} };
 }
-
-
-

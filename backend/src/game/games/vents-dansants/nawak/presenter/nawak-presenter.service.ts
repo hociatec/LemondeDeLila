@@ -17,11 +17,12 @@ export class NawakPresenterService {
   ): GameStateWithActions {
     const meta = (state.metadata ?? {}) as NawakMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
-    const hand =
-      Array.isArray(meta.currentChallenge?.answers) ? meta.currentChallenge.answers : [];
+    const hand = Array.isArray(meta.currentChallenge?.answers)
+      ? meta.currentChallenge.answers
+      : [];
     const panels = buildLamaLikePanels({
       hand,
-      discardLabel: 'Défis disponibles',
+      discardLabel: 'Dï¿½fis disponibles',
       scoreLines: Object.entries(meta.scores ?? {}).map(
         ([playerId, value]) => `Joueur ${playerId}: ${value ?? 0}`,
       ),
@@ -34,7 +35,9 @@ export class NawakPresenterService {
         phases: NAWAK_GAME.phaseOrder.map((phase) => phase.id),
         victory: null,
       },
-      actions: formatPresenterActions(actions, (action) => this.buildLabel(action, meta, state)),
+      actions: formatPresenterActions(actions, (action) =>
+        this.buildLabel(action, meta, state),
+      ),
       extras: {
         hand,
         targetScore: meta.targetScore,
@@ -58,8 +61,8 @@ export class NawakPresenterService {
     if (action.type === 'choose_answer') {
       const index = Number(action.payload?.answerIndex ?? 0);
       const answer =
-        meta.currentChallenge.answers?.[index] ?? `réponse ${index + 1}`;
-      return `Choisir “${answer}”`;
+        meta.currentChallenge.answers?.[index] ?? `rï¿½ponse ${index + 1}`;
+      return `Choisir ï¿½${answer}ï¿½`;
     }
     if (action.type === 'vote_answer') {
       const target = Number(action.payload?.targetPlayerId ?? 0);
@@ -68,4 +71,3 @@ export class NawakPresenterService {
     return action.type;
   }
 }
-

@@ -3,29 +3,37 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
-import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
+import {
+  resolvePendingPawnChoiceAction,
+  type PawnChoiceOption,
+} from '../../../../core/helpers/pawn-choice-action.helper';
 import type {
   AFondLesBallonsCard,
   AFondLesBallonsMetadata,
   AFondLesBallonsPendingSwap,
   AFondLesBallonsTile,
 } from '../model/a-fond-les-ballons-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 
-
+type AFondRuntimeMetadata = AFondLesBallonsMetadata & {
+  aFondKeepTurn?: boolean;
+};
 
 @Injectable()
 export class AFondLesBallonsActionService {
   constructor(
     private readonly core: GameCoreService,
     private readonly random: RandomService,
-    private readonly turns: TurnFlowService,
+    _turns: TurnFlowService,
     private readonly deckPolicies: DeckPoliciesService,
     private readonly setupFlow: SetupFlowService,
   ) {}
@@ -35,31 +43,31 @@ export class AFondLesBallonsActionService {
     actions: GameSingleActionDto[],
   ): GameStateEntity {
     const next = applyActionsSequentially(state, actions, (next, action) => {
-          const type = normalizeActionType(action);
-          return dispatchByActionType(
-            type,
-            {
-              'choose_pawn': () => {
-                next = this.handleChoosePawn(next, action);
-                return next;
-              },
-              'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'draw': () => {
-                next = this.handleDraw(next);
-                return next;
-              },
-              'swap_choose_target': () => {
-                next = this.handleSwapChooseTarget(next, action);
-                return next;
-              },
-            },
-            () => next,
-          );
-        });
-        return next;
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          choose_pawn: () => {
+            next = this.handleChoosePawn(next, action);
+            return next;
+          },
+          roll: () => {
+            next = this.handleRoll(next);
+            return next;
+          },
+          draw: () => {
+            next = this.handleDraw(next);
+            return next;
+          },
+          swap_choose_target: () => {
+            next = this.handleSwapChooseTarget(next, action);
+            return next;
+          },
+        },
+        () => next,
+      );
+    });
+    return next;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -71,7 +79,7 @@ export class AFondLesBallonsActionService {
     if (currentId == null) return state;
 
     const meta = this.getMeta(state);
-    const rng = this.random.rollDice(meta as any, 6);
+    const rng = this.random.rollDice(meta, 6);
     const roll = rng.roll;
 
     let next: GameStateEntity = {
@@ -97,9 +105,9 @@ export class AFondLesBallonsActionService {
 
     if (next.pending) return next;
 
-    const keepTurn = Boolean((next.metadata as any)?.aFondKeepTurn);
+    const keepTurn = this.getMeta(next).aFondKeepTurn === true;
     if (keepTurn) {
-      const cleaned = { ...(next.metadata ?? {}) } as any;
+      const cleaned = { ...this.getMeta(next) };
       delete cleaned.aFondKeepTurn;
       return { ...next, metadata: cleaned };
     }
@@ -115,11 +123,11 @@ export class AFondLesBallonsActionService {
     const status = String(state.status ?? '').toLowerCase();
     if (status !== 'started') return state;
 
-    const pending = state.pending as any as AFondLesBallonsPendingSwap | null;
+    const pending = asPendingSwap(state.pending);
     if (!pending || pending.type !== 'swap') return state;
 
     const currentId = pending.playerId;
-    const payload = (action?.payload ?? {}) as any;
+    const payload = asRecord(action?.payload);
     const targetPlayerId =
       typeof payload.targetPlayerId === 'number'
         ? payload.targetPlayerId
@@ -159,17 +167,17 @@ export class AFondLesBallonsActionService {
     const status = String(state.status ?? '').toLowerCase();
     if (status !== 'started') return state;
 
-    const pending = state.pending as any;
+    const pending = asPendingRecord(state.pending);
     if (!pending || pending.type !== 'draw') return state;
 
     const playerId =
       typeof pending.playerId === 'number'
         ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
+        : (state.turn?.currentPlayerId ?? null);
     if (!playerId) return state;
 
-    const data = (pending?.data ?? {}) as any;
-    const kind = String(data.kind ?? '').trim();
+    const data = pending?.data ?? {};
+    const kind = toText(data.kind);
 
     let next: GameStateEntity;
 
@@ -177,7 +185,11 @@ export class AFondLesBallonsActionService {
       const remaining = Math.max(1, Math.abs(Number(data.remaining ?? 1)));
       const drawIndex = Math.max(1, Math.abs(Number(data.drawIndex ?? 1)));
       const depth = Math.max(0, Number(data.depth ?? 0));
-      const drawn = Array.isArray(data.drawn) ? [...data.drawn] : [];
+      const drawn = Array.isArray(data.drawn)
+        ? data.drawn
+            .map((entry) => asLoufoqueCard(entry))
+            .filter((entry): entry is AFondLesBallonsCard => entry !== null)
+        : [];
 
       next = { ...state, pending: null };
       let meta = this.getMeta(next);
@@ -186,7 +198,7 @@ export class AFondLesBallonsActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
 
       const card = draw.card ?? null;
-      drawn.push(card);
+      if (card) drawn.push(card);
       next = this.core.appendLog(
         next,
         card
@@ -230,9 +242,9 @@ export class AFondLesBallonsActionService {
 
     if (next.pending) return next;
 
-    const keepTurn = Boolean((next.metadata as any)?.aFondKeepTurn);
+    const keepTurn = this.getMeta(next).aFondKeepTurn === true;
     if (keepTurn) {
-      const cleaned = { ...(next.metadata ?? {}) } as any;
+      const cleaned = { ...this.getMeta(next) };
       delete cleaned.aFondKeepTurn;
       return { ...next, metadata: cleaned };
     }
@@ -257,17 +269,20 @@ export class AFondLesBallonsActionService {
     const { playerId, options, chosen } = resolved;
 
     const meta = this.getMeta(state);
-    const assigned = { ...(meta.pawnByPlayerId ?? {}) } as Record<number, string>;
+    const assigned = { ...(meta.pawnByPlayerId ?? {}) } as Record<
+      number,
+      string
+    >;
     if (assigned[playerId]) return state;
     if (Object.values(assigned).some((id) => id === chosen.id)) return state;
 
     const pawns =
       Array.isArray(meta.pawns) && meta.pawns.length > 0
         ? meta.pawns
-        : options.map((p: any) => ({
-            id: String(p?.id ?? '').trim(),
-            label: String(p?.label ?? '').trim(),
-            description: String(p?.description ?? '').trim(),
+        : options.map((p: PawnChoiceOption) => ({
+            id: toText(p.id),
+            label: toText(p.label),
+            description: toText(p.description),
           }));
     const pawn = pawns.find((p) => p.id === chosen.id) ?? chosen;
 
@@ -302,25 +317,29 @@ export class AFondLesBallonsActionService {
 
     const playersForPending = Array.isArray(next.players) ? next.players : [];
     const metaForPending = this.getMeta(next);
-    const pawnByPlayerIdForPending = (metaForPending.pawnByPlayerId ?? {}) as Record<number, string>;
-    const choicesForPending = this.availablePawns(metaForPending, pawnByPlayerIdForPending);
+    const pawnByPlayerIdForPending = metaForPending.pawnByPlayerId ?? {};
+    const choicesForPending = this.availablePawns(
+      metaForPending,
+      pawnByPlayerIdForPending,
+    );
     const pendingInfo = this.setupFlow.createSequentialPawnPending({
       players: playersForPending,
       startPlayerId: playerId,
-      isAssigned: (candidateId) => Boolean(pawnByPlayerIdForPending[candidateId]),
+      isAssigned: (candidateId) =>
+        Boolean(pawnByPlayerIdForPending[candidateId]),
       pawns: choicesForPending.map((p) => ({
         id: p.id,
         label: p.label,
         description: p.description,
       })),
       choiceLabelBuilder: (pawn) =>
-        pawn.description && String(pawn.description).trim().length > 0
-          ? `${String(pawn.label ?? '').trim()}: ${String(pawn.description).trim()}`
-          : String(pawn.label ?? '').trim(),
+        toText(pawn.description).length > 0
+          ? `${toText(pawn.label)}: ${toText(pawn.description)}`
+          : toText(pawn.label),
       pawnDataMapper: (pawn) => ({
-        id: String(pawn.id ?? '').trim(),
-        label: String(pawn.label ?? '').trim(),
-        description: String(pawn.description ?? '').trim(),
+        id: toText(pawn.id),
+        label: toText(pawn.label),
+        description: toText(pawn.description),
       }),
     });
     if (pendingInfo) {
@@ -347,7 +366,7 @@ export class AFondLesBallonsActionService {
     const resolvedStarterId =
       starterId != null && starterIndex >= 0
         ? starterId
-        : players[0]?.id ?? null;
+        : (players[0]?.id ?? null);
 
     const withTurn: GameStateEntity = {
       ...next,
@@ -366,27 +385,30 @@ export class AFondLesBallonsActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     if (!players.length) return state;
 
-    const meta: any = state.metadata ?? {};
-    const statuses: any = meta.statuses ?? {};
-    const skipTurn: Record<number, number> = statuses.skipTurn ?? {};
+    const meta = this.getMeta(state);
+    const statuses = meta.statuses;
+    const skipTurn = statuses.skipTurn;
     const updatedSkip = { ...skipTurn };
 
     const currentId = state.turn?.currentPlayerId ?? null;
     const currentIndex =
       currentId != null
-        ? players.findIndex((p: any) => p?.id === currentId)
+        ? players.findIndex((p) => p?.id === currentId)
         : state.turnIndex;
 
     let nextIndex = currentIndex >= 0 ? currentIndex : state.turnIndex;
     let attempts = 0;
     let next = state;
-    let found = false;
 
     // We allow up to 2 * players.length attempts to find the next player who can actually play.
     // This handles cases where everyone skips, and we need to come back to the first one whose skip just expired.
     while (attempts < players.length * 2) {
       nextIndex = (nextIndex + 1) % players.length;
-      const pid = (players[nextIndex] as any)?.id;
+      const pid = players[nextIndex]?.id;
+      if (typeof pid !== 'number') {
+        attempts += 1;
+        continue;
+      }
       const remaining = updatedSkip[pid] ?? 0;
 
       if (remaining > 0) {
@@ -397,12 +419,11 @@ export class AFondLesBallonsActionService {
         );
         attempts += 1;
       } else {
-        found = true;
         break;
       }
     }
 
-    const finalPlayerId = (players[nextIndex] as any).id;
+    const finalPlayerId = players[nextIndex]?.id ?? null;
 
     const advanced: GameStateEntity = {
       ...next,
@@ -502,7 +523,7 @@ export class AFondLesBallonsActionService {
 
     if (tile.type === 'glissade') {
       const metaNow = this.getMeta(next);
-      const magOut = this.random.nextInt(metaNow as any, 3);
+      const magOut = this.random.nextInt(metaNow, 3);
       const dirOut = this.random.nextInt(magOut.meta, 2);
       next = {
         ...next,
@@ -645,7 +666,7 @@ export class AFondLesBallonsActionService {
         return {
           ...next,
           metadata: { ...(next.metadata ?? {}), ...meta, aFondKeepTurn: true },
-        } as any;
+        };
       case 26:
         if (roll > 0) {
           for (const p of next.players ?? []) {
@@ -682,7 +703,7 @@ export class AFondLesBallonsActionService {
         return this.moveBy(next, playerId, -5, depth);
       case 38:
         for (const p of next.players ?? []) {
-          const m1 = this.random.nextInt(this.getMeta(next) as any, 2);
+          const m1 = this.random.nextInt(this.getMeta(next), 2);
           next = {
             ...next,
             metadata: { ...(next.metadata ?? {}), ...m1.meta },
@@ -743,7 +764,7 @@ export class AFondLesBallonsActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     const targets = players
       .filter((p) => p?.id !== playerId)
-      .map((p: any) => ({
+      .map((p) => ({
         targetPlayerId: p.id,
         targetUsername: p.username ?? `Joueur ${p.id}`,
       }));
@@ -788,8 +809,8 @@ export class AFondLesBallonsActionService {
     playerId: number,
     turns: number,
   ): GameStateEntity {
-    const meta = this.getMeta(state) as any;
-    const statuses = meta.statuses ?? { skipTurn: {}, trapImmunityTurns: {} };
+    const meta = this.getMeta(state);
+    const statuses = meta.statuses;
     const current = statuses.skipTurn?.[playerId] ?? 0;
     return {
       ...state,
@@ -812,8 +833,8 @@ export class AFondLesBallonsActionService {
     playerId: number,
     turns: number,
   ): GameStateEntity {
-    const meta = this.getMeta(state) as any;
-    const statuses = meta.statuses ?? { skipTurn: {}, trapImmunityTurns: {} };
+    const meta = this.getMeta(state);
+    const statuses = meta.statuses;
     const current = statuses.trapImmunityTurns?.[playerId] ?? 0;
     return {
       ...state,
@@ -832,7 +853,7 @@ export class AFondLesBallonsActionService {
   }
 
   private hasTrapImmunity(state: GameStateEntity, playerId: number): boolean {
-    const meta = this.getMeta(state) as any;
+    const meta = this.getMeta(state);
     const turns = meta?.statuses?.trapImmunityTurns?.[playerId] ?? 0;
     return Number(turns) > 0;
   }
@@ -841,8 +862,8 @@ export class AFondLesBallonsActionService {
     state: GameStateEntity,
     playerId: number,
   ): GameStateEntity {
-    const meta = this.getMeta(state) as any;
-    const statuses = meta.statuses ?? { skipTurn: {}, trapImmunityTurns: {} };
+    const meta = this.getMeta(state);
+    const statuses = meta.statuses;
     const current = Number(statuses.trapImmunityTurns?.[playerId] ?? 0);
     if (!Number.isFinite(current) || current <= 0) return state;
     const nextValue = current - 1;
@@ -866,11 +887,14 @@ export class AFondLesBallonsActionService {
     card: AFondLesBallonsCard | null;
     meta: AFondLesBallonsMetadata;
   } {
-    const decks = meta.decks ?? ({} as any);
+    const decks = meta.decks;
     const pile: AFondLesBallonsCard[] = [...(decks.loufoque ?? [])];
     const discard: AFondLesBallonsCard[] = [...(decks.discardLoufoque ?? [])];
     const defaults = defaultLoufoqueDeck();
-    const draw = this.deckPolicies.drawFromPile<AFondLesBallonsCard, AFondLesBallonsMetadata>({
+    const draw = this.deckPolicies.drawFromPile<
+      AFondLesBallonsCard,
+      AFondLesBallonsMetadata
+    >({
       meta,
       pile,
       discard: pile.length ? discard : defaults,
@@ -906,22 +930,25 @@ export class AFondLesBallonsActionService {
     return value;
   }
 
-  private getMeta(state: GameStateEntity): AFondLesBallonsMetadata {
-    return (state.metadata ?? {}) as any as AFondLesBallonsMetadata;
+  private getMeta(state: GameStateEntity): AFondRuntimeMetadata {
+    return normalizeAFondMeta(state.metadata);
   }
 
   private pawnLabel(state: GameStateEntity, id: number): string {
     const meta = this.getMeta(state);
-    const pawnId = String(meta?.pawnByPlayerId?.[id] ?? '').trim();
+    const pawnId = toText(meta.pawnByPlayerId?.[id]);
     const pawn = Array.isArray(meta?.pawns)
-      ? meta.pawns.find((p: any) => String(p?.id ?? '').trim() === pawnId)
+      ? meta.pawns.find((p) => toText(p?.id) === pawnId)
       : null;
-    const title = String(pawn?.label ?? '').trim();
+    const title = toText(pawn?.label);
     if (title) return `"${title}"`;
     return 'un pion';
   }
 
-  private compactTileLabel(rawLabel: string | undefined, position: number): string {
+  private compactTileLabel(
+    rawLabel: string | undefined,
+    position: number,
+  ): string {
     const fallback = `Case ${position + 1}`;
     const value = String(rawLabel ?? fallback).trim();
     if (!value) {
@@ -929,6 +956,117 @@ export class AFondLesBallonsActionService {
     }
     return value.replace(/^Case\s+\d+\s*-\s*/i, '').trim() || fallback;
   }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  return '';
+}
+
+function normalizeAFondMeta(input: unknown): AFondRuntimeMetadata {
+  const raw = asRecord(input);
+  return {
+    rng: asRecord(raw.rng),
+    tiles: (Array.isArray(raw.tiles) ? raw.tiles : []) as AFondLesBallonsTile[],
+    positions: asRecord(raw.positions) as Record<number, number>,
+    pawns: (Array.isArray(raw.pawns)
+      ? raw.pawns
+      : []) as AFondLesBallonsMetadata['pawns'],
+    pawnByPlayerId:
+      (asRecord(raw.pawnByPlayerId) as Record<number, string>) ?? {},
+    setupStarterId:
+      typeof raw.setupStarterId === 'number' ? raw.setupStarterId : null,
+    charactersByPlayerId:
+      (asRecord(
+        raw.charactersByPlayerId,
+      ) as AFondLesBallonsMetadata['charactersByPlayerId']) ?? {},
+    statuses: {
+      skipTurn:
+        (asRecord(asRecord(raw.statuses).skipTurn) as Record<number, number>) ??
+        {},
+      trapImmunityTurns:
+        (asRecord(asRecord(raw.statuses).trapImmunityTurns) as Record<
+          number,
+          number
+        >) ?? {},
+    },
+    decks: {
+      loufoque: (Array.isArray(asRecord(raw.decks).loufoque)
+        ? asRecord(raw.decks).loufoque
+        : []) as AFondLesBallonsCard[],
+      discardLoufoque: (Array.isArray(asRecord(raw.decks).discardLoufoque)
+        ? asRecord(raw.decks).discardLoufoque
+        : []) as AFondLesBallonsCard[],
+    },
+    winnerId: typeof raw.winnerId === 'number' ? raw.winnerId : null,
+    aFondKeepTurn: raw.aFondKeepTurn === true,
+  };
+}
+
+function asPendingRecord(value: unknown): {
+  type?: string;
+  playerId?: unknown;
+  data?: Record<string, unknown>;
+} | null {
+  if (!value || typeof value !== 'object') return null;
+  const record = asRecord(value);
+  return {
+    type: toText(record.type),
+    playerId: record.playerId,
+    data: asRecord(record.data),
+  };
+}
+
+function asPendingSwap(value: unknown): AFondLesBallonsPendingSwap | null {
+  if (!value || typeof value !== 'object') return null;
+  const record = asRecord(value);
+  if (toText(record.type) !== 'swap') return null;
+  const playerId = Number(record.playerId);
+  if (!Number.isFinite(playerId)) return null;
+  const data = asRecord(record.data);
+  const targets = Array.isArray(data.targets)
+    ? data.targets
+        .map((entry) => {
+          const out = asRecord(entry);
+          const targetPlayerId = Number(out.targetPlayerId);
+          const targetUsername = toText(out.targetUsername);
+          if (!Number.isFinite(targetPlayerId) || !targetUsername) return null;
+          return { targetPlayerId, targetUsername };
+        })
+        .filter(
+          (
+            entry,
+          ): entry is { targetPlayerId: number; targetUsername: string } =>
+            entry !== null,
+        )
+    : [];
+  return {
+    type: 'swap',
+    label: toText(record.label),
+    playerId,
+    blocking: true,
+    choices: (Array.isArray(record.choices) ? record.choices : [])
+      .map((entry) => toText(entry))
+      .filter((entry) => entry.length > 0),
+    data: { targets },
+  };
+}
+
+function asLoufoqueCard(value: unknown): AFondLesBallonsCard | null {
+  if (!value || typeof value !== 'object') return null;
+  const record = asRecord(value);
+  const id = Number(record.id);
+  const text = toText(record.text);
+  if (!Number.isFinite(id) || !text) return null;
+  return { id, text };
 }
 
 function pickMostReculer(
@@ -1110,8 +1248,3 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
   ];
 }
-
-
-
-
-

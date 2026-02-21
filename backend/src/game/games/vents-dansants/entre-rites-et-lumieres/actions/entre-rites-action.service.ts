@@ -3,7 +3,6 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
@@ -12,8 +11,11 @@ import type {
   RiteFamilyId,
   RiteSpecialCard,
 } from '../model/entre-rites-cards';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
-
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 
 import {
   ENTRE_RITES_CARD_BY_ID,
@@ -60,7 +62,9 @@ export class EntreRitesActionService {
     if (currentId == null) return state;
     const payload = (action.payload ?? {}) as EntreRitesActionPayload;
     const targetId =
-      typeof payload.targetPlayerId === 'number' ? payload.targetPlayerId : null;
+      typeof payload.targetPlayerId === 'number'
+        ? payload.targetPlayerId
+        : null;
     const cardId = String(payload.cardId ?? '').trim();
     if (!cardId || targetId == null || targetId === currentId) {
       return state;
@@ -110,13 +114,17 @@ export class EntreRitesActionService {
   private advanceTurn(state: GameStateEntity): GameStateEntity {
     let next = this.turns.advanceTurn(state);
     const meta = this.getMeta(next);
-    let peace = Math.max((meta.peaceTurnsRemaining ?? 0) - 1, 0);
+    const peace = Math.max((meta.peaceTurnsRemaining ?? 0) - 1, 0);
     let silence = meta.silenceUntilPlayerId ?? null;
     const nextPlayer = next.turn?.currentPlayerId ?? null;
     if (silence && nextPlayer === silence) {
       silence = null;
     }
-    next = this.setMeta(next, { ...meta, peaceTurnsRemaining: peace, silenceUntilPlayerId: silence });
+    next = this.setMeta(next, {
+      ...meta,
+      peaceTurnsRemaining: peace,
+      silenceUntilPlayerId: silence,
+    });
     return next;
   }
 
@@ -150,9 +158,7 @@ export class EntreRitesActionService {
     return this.handleDrawnCard(afterDraw, playerId, card);
   }
 
-  private drawSingleCard(
-    state: GameStateEntity,
-  ): {
+  private drawSingleCard(state: GameStateEntity): {
     state: GameStateEntity;
     cardId: string | null;
     card?: RiteCardDefinition;
@@ -183,7 +189,7 @@ export class EntreRitesActionService {
     if (!allowSpecial) {
       return state;
     }
-    return this.handleSpecialEffect(state, playerId, card as RiteSpecialCard);
+    return this.handleSpecialEffect(state, playerId, card);
   }
 
   private handleSpecialEffect(
@@ -273,7 +279,7 @@ export class EntreRitesActionService {
       (p) => p?.id != null && p.id !== playerId,
     );
     for (const player of players) {
-      const opponentId = player!.id;
+      const opponentId = player.id;
       const meta = this.getMeta(next);
       const hand = Array.isArray(meta.hands?.[opponentId])
         ? [...meta.hands[opponentId]]
@@ -346,11 +352,11 @@ export class EntreRitesActionService {
     playerId: number,
   ): GameStateEntity {
     const meta = this.getMeta(state);
-    const opponents = (Array.isArray(state.players) ? state.players : []).filter(
-      (player) => player?.id != null && player.id !== playerId,
-    );
+    const opponents = (
+      Array.isArray(state.players) ? state.players : []
+    ).filter((player) => player?.id != null && player.id !== playerId);
     const target = opponents.find(
-      (player) => (meta.hands?.[player!.id ?? 0]?.length ?? 0) > 0,
+      (player) => (meta.hands?.[player.id ?? 0]?.length ?? 0) > 0,
     );
     if (!target || target.id == null) {
       return this.core.appendLog(
@@ -387,7 +393,9 @@ export class EntreRitesActionService {
   ): GameStateEntity {
     const metadata = this.getMeta(state);
     const completed = new Set(metadata.completedFamilies?.[playerId] ?? []);
-    const familyKeys = Object.keys(ENTRE_RITES_CUSTOM_FAMILY_SIZE) as RiteFamilyId[];
+    const familyKeys = Object.keys(
+      ENTRE_RITES_CUSTOM_FAMILY_SIZE,
+    ) as RiteFamilyId[];
     const pending = familyKeys.find((familyId) => !completed.has(familyId));
     if (!pending) {
       return this.core.appendLog(
@@ -422,11 +430,11 @@ export class EntreRitesActionService {
       (p) => p?.id != null,
     );
     for (const player of players) {
-      const targetId = player!.id;
+      const targetId = player.id;
       next = this.discardOneCard(next, targetId);
     }
     for (const player of players) {
-      next = this.drawCardForPlayer(next, player!.id);
+      next = this.drawCardForPlayer(next, player.id);
     }
     return next;
   }
@@ -450,14 +458,14 @@ export class EntreRitesActionService {
     );
     const meta = this.getMeta(state);
     for (const player of players) {
-      const hand = meta.hands?.[player!.id ?? 0] ?? [];
+      const hand = meta.hands?.[player.id ?? 0] ?? [];
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, player!.id!)} révèle sa main : ${hand.join(', ') || 'vide'}.`,
+        `${resolvePlayerNameFromState(next, player.id)} révèle sa main : ${hand.join(', ') || 'vide'}.`,
       );
     }
     const theftTarget = players.find(
-      (player) => (meta.hands?.[player!.id ?? 0]?.length ?? 0) > 0,
+      (player) => (meta.hands?.[player.id ?? 0]?.length ?? 0) > 0,
     );
     if (!theftTarget || theftTarget.id == null) {
       return next;
@@ -466,7 +474,11 @@ export class EntreRitesActionService {
     const targetHand = [...(meta.hands?.[targetId] ?? [])];
     const cardId = targetHand.shift();
     if (!cardId) return next;
-    let updatedMeta = this.removeCardFromHand(this.getMeta(next), targetId, cardId);
+    let updatedMeta = this.removeCardFromHand(
+      this.getMeta(next),
+      targetId,
+      cardId,
+    );
     updatedMeta = this.addCardToHand(updatedMeta, playerId, cardId);
     next = this.setMeta(next, updatedMeta);
     next = this.rebuildCollections(next, targetId);
@@ -491,7 +503,7 @@ export class EntreRitesActionService {
     const cardId = hand.shift()!;
     let updatedMeta = this.removeCardFromHand(meta, playerId, cardId);
     updatedMeta = this.addCardToDiscard(updatedMeta, cardId);
-    let next = this.setMeta(state, updatedMeta);
+    const next = this.setMeta(state, updatedMeta);
     return this.core.appendLog(
       next,
       `${resolvePlayerNameFromState(next, playerId)} défausse ${cardId}.`,
@@ -540,7 +552,10 @@ export class EntreRitesActionService {
     });
     const completed = new Set(meta.completedFamilies?.[playerId] ?? []);
     for (const [familyId, values] of Object.entries(group)) {
-      const needed = ENTRE_RITES_CUSTOM_FAMILY_SIZE[familyId as keyof typeof ENTRE_RITES_CUSTOM_FAMILY_SIZE] ?? 7;
+      const needed =
+        ENTRE_RITES_CUSTOM_FAMILY_SIZE[
+          familyId as keyof typeof ENTRE_RITES_CUSTOM_FAMILY_SIZE
+        ] ?? 7;
       if (needed > 0 && values.length >= needed) {
         if (!completed.has(familyId)) {
           completed.add(familyId);
@@ -634,9 +649,10 @@ export class EntreRitesActionService {
     });
   }
 
-  private drawOneCard(
-    meta: EntreRitesMetadata,
-  ): { cardId: string | null; meta: EntreRitesMetadata } {
+  private drawOneCard(meta: EntreRitesMetadata): {
+    cardId: string | null;
+    meta: EntreRitesMetadata;
+  } {
     const draw = this.deckPolicies.drawOne<string, EntreRitesMetadata>({
       meta,
       deckKey: 'deck',
@@ -691,6 +707,3 @@ export class EntreRitesActionService {
     return (state.metadata ?? {}) as EntreRitesMetadata;
   }
 }
-
-
-

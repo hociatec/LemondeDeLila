@@ -8,6 +8,12 @@ import { GALOPONS_GAME } from '../definitions/galopons.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { GaloponsMetadata } from '../model/galopons.types';
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
 @Injectable()
 export class GaloponsPresenterService {
   constructor(private readonly boardPayload: BoardPayloadService) {}
@@ -17,7 +23,7 @@ export class GaloponsPresenterService {
     userId: number,
   ): GameStateWithActions {
     const actions = Rulebook.getAvailableActions(state, userId);
-    const meta = (state.metadata ?? {}) as any as GaloponsMetadata;
+    const meta = (state.metadata ?? {}) as GaloponsMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
     const applesLines = players.map((p) => {
@@ -38,7 +44,7 @@ export class GaloponsPresenterService {
       actions: formatPresenterActions(actions),
       pending: state.pending ?? null,
       extras: {
-        ...(state as any).extras,
+        ...asRecord(state.extras),
         currentPlayerView: {
           id: userId,
           username: me?.username ?? `Joueur ${userId}`,
@@ -63,7 +69,10 @@ export class GaloponsPresenterService {
         },
         apples: meta.apples ?? {},
       },
-      board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
-    } as any;
+      board: this.boardPayload.buildTilesPositionsLaps(
+        meta.tiles,
+        meta.positions,
+      ),
+    };
   }
 }

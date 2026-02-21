@@ -54,7 +54,10 @@ export class AdminSoundsController {
   }
 
   @Put('table-ambiences/:soundId')
-  async renameTableAmbience(@Param('soundId') soundId: string, @Body() body: any) {
+  async renameTableAmbience(
+    @Param('soundId') soundId: string,
+    @Body() body: any,
+  ) {
     return this.sounds.renameTableAmbience(soundId, body?.name);
   }
 

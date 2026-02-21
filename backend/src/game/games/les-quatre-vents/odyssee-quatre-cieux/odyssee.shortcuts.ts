@@ -2,9 +2,8 @@ import type { GameShortcutsBuilder } from '../../../engine/shortcuts/game-shortc
 import { positionOnlyShortcuts } from '../../../engine/shortcuts/shortcut-presets';
 import { interfaceShortcut } from '../../../engine/shortcuts/shortcut-utils';
 
-export const buildOdysseeShortcuts: GameShortcutsBuilder = () =>
-  [
-    ...positionOnlyShortcuts(),
-    interfaceShortcut('E', 'stable'),
-    interfaceShortcut('S', 'score'),
-  ];
+export const buildOdysseeShortcuts: GameShortcutsBuilder = () => [
+  ...positionOnlyShortcuts(),
+  interfaceShortcut('E', 'stable'),
+  interfaceShortcut('S', 'score'),
+];

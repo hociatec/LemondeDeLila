@@ -13,8 +13,16 @@ function normalizeCommonFrenchTypos(input: string): string {
     );
 }
 
+function toLogString(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  return '';
+}
+
 export function normalizeGameLogMessage(input: unknown): string {
-  const raw = String(input ?? '');
+  const raw = toLogString(input);
   if (!raw) return '';
 
   const fixed = fixMojibakeString(raw);

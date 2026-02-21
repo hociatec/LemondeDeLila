@@ -34,7 +34,10 @@ export function parseKey(k: string): { x: number; y: number } | null {
   return { x: Math.trunc(x), y: Math.trunc(y) };
 }
 
-export function getPawnPos(meta: CorridorMetadata, playerId: number): CorridorPos {
+export function getPawnPos(
+  meta: CorridorMetadata,
+  playerId: number,
+): CorridorPos {
   const raw = meta?.pawnsByPlayerId?.[String(playerId)];
   return raw && Number.isFinite(raw.x) && Number.isFinite(raw.y)
     ? { x: raw.x, y: raw.y }
@@ -56,12 +59,20 @@ export function wallSets(meta: CorridorMetadata): {
   };
 }
 
-function hasHorizontalWallAt(meta: CorridorMetadata, x: number, y: number): boolean {
+function hasHorizontalWallAt(
+  meta: CorridorMetadata,
+  x: number,
+  y: number,
+): boolean {
   // x,y in [0..size-2]
   return wallSets(meta).h.has(key(x, y));
 }
 
-function hasVerticalWallAt(meta: CorridorMetadata, x: number, y: number): boolean {
+function hasVerticalWallAt(
+  meta: CorridorMetadata,
+  x: number,
+  y: number,
+): boolean {
   // x,y in [0..size-2]
   return wallSets(meta).v.has(key(x, y));
 }
@@ -82,12 +93,16 @@ export function isEdgeBlocked(
     // vers le bas, frontière entre y=from.y et y=from.y+1 => wall y=from.y
     const y = from.y;
     const x = from.x;
-    return hasHorizontalWallAt(meta, x, y) || hasHorizontalWallAt(meta, x - 1, y);
+    return (
+      hasHorizontalWallAt(meta, x, y) || hasHorizontalWallAt(meta, x - 1, y)
+    );
   }
   if (dy === -1) {
     const y = to.y;
     const x = from.x;
-    return hasHorizontalWallAt(meta, x, y) || hasHorizontalWallAt(meta, x - 1, y);
+    return (
+      hasHorizontalWallAt(meta, x, y) || hasHorizontalWallAt(meta, x - 1, y)
+    );
   }
 
   // Mouvement horizontal : vérifier mur vertical entre les 2 colonnes.
@@ -132,7 +147,11 @@ export function listLegalPawnMoves(
     if (otherPos && step.x === otherPos.x && step.y === otherPos.y) {
       // Tentative de saut.
       const jump = { x: step.x + d.x, y: step.y + d.y };
-      if (isInside(size, jump) && !isEdgeBlocked(meta, step, jump) && !isOccupied(meta, jump)) {
+      if (
+        isInside(size, jump) &&
+        !isEdgeBlocked(meta, step, jump) &&
+        !isOccupied(meta, jump)
+      ) {
         results.push(jump);
         continue;
       }
@@ -190,7 +209,10 @@ export function isWinningPos(
   return pos.y === goalY;
 }
 
-export function isWallPlacementInBounds(meta: CorridorMetadata, wall: CorridorWall): boolean {
+export function isWallPlacementInBounds(
+  meta: CorridorMetadata,
+  wall: CorridorWall,
+): boolean {
   const size = meta?.size ?? 0;
   if (!size) return false;
   return (
@@ -202,7 +224,10 @@ export function isWallPlacementInBounds(meta: CorridorMetadata, wall: CorridorWa
   );
 }
 
-export function overlapsOrCrosses(meta: CorridorMetadata, wall: CorridorWall): boolean {
+export function overlapsOrCrosses(
+  meta: CorridorMetadata,
+  wall: CorridorWall,
+): boolean {
   const sets = wallSets(meta);
   const k = key(wall.x, wall.y);
   if (wall.o === 'h') {
@@ -302,7 +327,10 @@ export function wouldBlockAllPaths(
   return !(ok1 && ok2);
 }
 
-export function applyWall(meta: CorridorMetadata, wall: CorridorWall): CorridorMetadata {
+export function applyWall(
+  meta: CorridorMetadata,
+  wall: CorridorWall,
+): CorridorMetadata {
   const next: CorridorMetadata = {
     ...meta,
     walls: { h: [...(meta?.walls?.h ?? [])], v: [...(meta?.walls?.v ?? [])] },
@@ -321,7 +349,8 @@ export function listLegalWallPlacements(
   actorId: number,
 ): CorridorWall[] {
   const meta = getMetadata(state);
-  const remaining = (meta?.wallsRemainingByPlayerId ?? {})[String(actorId)] ?? 0;
+  const remaining =
+    (meta?.wallsRemainingByPlayerId ?? {})[String(actorId)] ?? 0;
   if (!remaining) return [];
 
   const size = meta?.size ?? 0;
@@ -360,7 +389,6 @@ export function validateMoveAction(
   const x = clampInt(payload?.x);
   const y = clampInt(payload?.y);
 
-  const meta = getMetadata(state);
   const legal = listLegalPawnMoves(state, actorId).some(
     (p) => p.x === x && p.y === y,
   );
@@ -388,7 +416,9 @@ export function validatePlaceWallAction(
   const payload = (action.payload ?? {}) as any;
   const x = clampInt(payload?.x);
   const y = clampInt(payload?.y);
-  const o = String(payload?.o ?? payload?.orientation ?? '').trim().toLowerCase();
+  const o = String(payload?.o ?? payload?.orientation ?? '')
+    .trim()
+    .toLowerCase();
   const orientation: CorridorWallOrientation =
     o === 'v' || o === 'vertical'
       ? 'v'
@@ -399,7 +429,8 @@ export function validatePlaceWallAction(
           })();
 
   const meta = getMetadata(state);
-  const remaining = (meta?.wallsRemainingByPlayerId ?? {})[String(actorId)] ?? 0;
+  const remaining =
+    (meta?.wallsRemainingByPlayerId ?? {})[String(actorId)] ?? 0;
   if (remaining <= 0) {
     throw new Error('Aucun mur restant.');
   }

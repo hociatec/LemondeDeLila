@@ -2,7 +2,6 @@
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 
-
 import type { CorridorMetadata } from '../model/corridor.model';
 import * as CorridorRulebook from '../rulebook/rulebook';
 
@@ -94,10 +93,15 @@ export class CorridorActionService {
         };
       },
       effects: (current, _currentAction, _validatedMove, transitioned) =>
-        this.advanceTurnAndMaybeFinish(current, transitioned.actorId, transitioned.metadata, {
-          moveMessage: transitioned.moveMessage,
-          maybeWinnerPos: transitioned.maybeWinnerPos,
-        }),
+        this.advanceTurnAndMaybeFinish(
+          current,
+          transitioned.actorId,
+          transitioned.metadata,
+          {
+            moveMessage: transitioned.moveMessage,
+            maybeWinnerPos: transitioned.maybeWinnerPos,
+          },
+        ),
     });
   }
 
@@ -109,7 +113,11 @@ export class CorridorActionService {
     return applyActionPipeline(state, action, {
       guard: () => actorId != null,
       validate: (current, currentAction) =>
-        CorridorRulebook.validatePlaceWallAction(current, currentAction, actorId),
+        CorridorRulebook.validatePlaceWallAction(
+          current,
+          currentAction,
+          actorId,
+        ),
       transition: (current, _currentAction, validatedWall) => {
         const { wall, actorId: validatedActor } = validatedWall;
         const meta = (current.metadata ?? {}) as CorridorMetadata;
@@ -136,10 +144,15 @@ export class CorridorActionService {
         };
       },
       effects: (current, _currentAction, _validatedWall, transitioned) =>
-        this.advanceTurnAndMaybeFinish(current, transitioned.actorId, transitioned.metadata, {
-          moveMessage: transitioned.moveMessage,
-          maybeWinnerPos: transitioned.maybeWinnerPos,
-        }),
+        this.advanceTurnAndMaybeFinish(
+          current,
+          transitioned.actorId,
+          transitioned.metadata,
+          {
+            moveMessage: transitioned.moveMessage,
+            maybeWinnerPos: transitioned.maybeWinnerPos,
+          },
+        ),
     });
   }
 

@@ -34,10 +34,11 @@ export class LamaRoundService {
     }
 
     const baseDeck = this.buildDeck();
-    const rngMeta = typeof meta.rng === 'object' && meta.rng ? { ...(meta.rng as any) } : {};
+    const rngMeta =
+      typeof meta.rng === 'object' && meta.rng ? { ...(meta.rng as any) } : {};
     const shuffled = this.random.shuffle(rngMeta, baseDeck);
     meta.rng = shuffled.meta;
-    const deck = shuffled.values as LamaCardValue[];
+    const deck = shuffled.values;
 
     const handsByPlayerId: Record<string, LamaCardValue[]> = {};
     const droppedOutByPlayerId: Record<string, boolean> = {};
@@ -46,7 +47,9 @@ export class LamaRoundService {
       if (!eliminatedByPlayerId[String(p.id)]) {
         handsByPlayerId[String(p.id)] = [];
       }
-      droppedOutByPlayerId[String(p.id)] = Boolean(eliminatedByPlayerId[String(p.id)]);
+      droppedOutByPlayerId[String(p.id)] = Boolean(
+        eliminatedByPlayerId[String(p.id)],
+      );
     }
 
     for (let i = 0; i < 6; i += 1) {
@@ -59,7 +62,7 @@ export class LamaRoundService {
     }
 
     const firstDiscard = deck.pop() ?? 1;
-    const discard: LamaCardValue[] = [firstDiscard as LamaCardValue];
+    const discard: LamaCardValue[] = [firstDiscard];
 
     const normalizedStarterIndex = this.findNextSurvivorStarterIndex(
       players,
@@ -67,9 +70,7 @@ export class LamaRoundService {
       Math.max(-1, starterIndex - 1),
     );
     const starterPlayerId =
-      players[normalizedStarterIndex]?.id ??
-      roundPlayers[0]?.id ??
-      null;
+      players[normalizedStarterIndex]?.id ?? roundPlayers[0]?.id ?? null;
     const starterName =
       starterPlayerId != null
         ? this.shared.playerLabel(players as any[], starterPlayerId)
@@ -81,11 +82,8 @@ export class LamaRoundService {
     if (starterName) {
       log = this.logger.append(log, `C'est au tour de ${starterName}.`);
     }
-    log = this.logger.append(
-      log,
-      `Défausse: ${lamaCardLabel(firstDiscard as LamaCardValue)}.`,
-    );
-const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
+    log = this.logger.append(log, `Défausse: ${lamaCardLabel(firstDiscard)}.`);
+    const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       ...meta,
       roundStarterIndex: normalizedStarterIndex,
       deck,
@@ -103,22 +101,28 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       suppressTurnAnnouncement: false,
     };
 
-    return createPendingState({
-      ...state,
-      metadata: nextMeta as any,
-      log,
-      turn: {
-        ...(state.turn ?? { direction: 1 }),
-        currentPlayerId: starterPlayerId,
-        direction: 1,
-        label: starterPlayerId
-          ? `Tour de ${this.shared.playerLabel(players as any[], starterPlayerId)}`
-          : undefined,
-      },
-    } as GameStateEntity, { step: 'turn_choice', playerId: starterPlayerId } as any);
+    return createPendingState(
+      {
+        ...state,
+        metadata: nextMeta as any,
+        log,
+        turn: {
+          ...(state.turn ?? { direction: 1 }),
+          currentPlayerId: starterPlayerId,
+          direction: 1,
+          label: starterPlayerId
+            ? `Tour de ${this.shared.playerLabel(players as any[], starterPlayerId)}`
+            : undefined,
+        },
+      } as GameStateEntity,
+      { step: 'turn_choice', playerId: starterPlayerId } as any,
+    );
   }
 
-  endRound(state: GameStateEntity, winnerPlayerId: number | null): GameStateEntity {
+  endRound(
+    state: GameStateEntity,
+    winnerPlayerId: number | null,
+  ): GameStateEntity {
     const meta = { ...(state.metadata ?? {}) } as LamaMetadata;
     const roundNumber = Number(meta.roundNumber ?? 1);
     if (Number(meta.endedRoundNumber ?? null) === roundNumber) {
@@ -130,8 +134,11 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
 
     let log = Array.isArray(state.log) ? [...state.log] : [];
 
-    const alreadyLoggedEnd =
-      log.some((l) => String((l as any)?.message ?? '') === `Fin de la manche ${roundNumber}.`);
+    const alreadyLoggedEnd = log.some(
+      (l) =>
+        String((l as any)?.message ?? '') ===
+        `Fin de la manche ${roundNumber}.`,
+    );
     if (alreadyLoggedEnd) {
       const winnerName =
         winnerPlayerId != null
@@ -139,9 +146,12 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
           : null;
 
       const winnerScore =
-        winnerPlayerId != null ? Number(scoresByPlayerId[String(winnerPlayerId)] ?? 0) : 0;
+        winnerPlayerId != null
+          ? Number(scoresByPlayerId[String(winnerPlayerId)] ?? 0)
+          : 0;
       const eligible =
-        this.shouldPromptReturn(roundNumber, winnerScore) && winnerPlayerId != null
+        this.shouldPromptReturn(roundNumber, winnerScore) &&
+        winnerPlayerId != null
           ? [winnerPlayerId]
           : [];
 
@@ -155,20 +165,28 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
         suppressTurnAnnouncement: false,
       };
 
-      const nextState = createPendingState({
-        ...state,
-        metadata: nextMeta as any,
-        turn: {
-          ...(state.turn ?? { direction: 1 }),
-          currentPlayerId: eligible.length ? eligible[0] : state.turn?.currentPlayerId ?? null,
-          direction: 1,
-        label: eligible.length
-          ? `Rendre des jetons : ${this.shared.playerLabel(players as any[], eligible[0])}`
-          : winnerName
-              ? `Fin de manche : ${winnerName}`
-              : state.turn?.label,
-        },
-      } as GameStateEntity, { step: nextMeta.step, playerId: nextMeta.pendingReturnPlayerId ?? null } as any);
+      const nextState = createPendingState(
+        {
+          ...state,
+          metadata: nextMeta as any,
+          turn: {
+            ...(state.turn ?? { direction: 1 }),
+            currentPlayerId: eligible.length
+              ? eligible[0]
+              : (state.turn?.currentPlayerId ?? null),
+            direction: 1,
+            label: eligible.length
+              ? `Rendre des jetons : ${this.shared.playerLabel(players as any[], eligible[0])}`
+              : winnerName
+                ? `Fin de manche : ${winnerName}`
+                : state.turn?.label,
+          },
+        } as GameStateEntity,
+        {
+          step: nextMeta.step,
+          playerId: nextMeta.pendingReturnPlayerId ?? null,
+        } as any,
+      );
 
       if (eligible.length) {
         return nextState;
@@ -182,10 +200,11 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
     for (const p of players) {
       if (!p?.id) continue;
       const pid = p.id;
-      const hand = (handsByPlayerId[String(pid)] ?? []) as LamaCardValue[];
+      const hand = handsByPlayerId[String(pid)] ?? [];
       const unique = [...new Set(hand)];
       const gained = unique.reduce((sum, v) => sum + lamaCardScore(v), 0);
-      scoresByPlayerId[String(pid)] = Number(scoresByPlayerId[String(pid)] ?? 0) + gained;
+      scoresByPlayerId[String(pid)] =
+        Number(scoresByPlayerId[String(pid)] ?? 0) + gained;
       if (gained > 0) {
         log = this.logger.append(
           log,
@@ -203,9 +222,12 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
     }
 
     const winnerScore =
-      winnerPlayerId != null ? Number(scoresByPlayerId[String(winnerPlayerId)] ?? 0) : 0;
+      winnerPlayerId != null
+        ? Number(scoresByPlayerId[String(winnerPlayerId)] ?? 0)
+        : 0;
     const eligible =
-      this.shouldPromptReturn(roundNumber, winnerScore) && winnerPlayerId != null
+      this.shouldPromptReturn(roundNumber, winnerScore) &&
+      winnerPlayerId != null
         ? [winnerPlayerId]
         : [];
     if (winnerName && eligible.length === 0) {
@@ -221,19 +243,27 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       suppressTurnAnnouncement: false,
     };
 
-    const nextState = createPendingState({
-      ...state,
-      metadata: nextMeta as any,
-      log,
-      turn: {
-        ...(state.turn ?? { direction: 1 }),
-        currentPlayerId: eligible.length ? eligible[0] : state.turn?.currentPlayerId ?? null,
-        direction: 1,
-        label: eligible.length
-          ? `Rendre des jetons : ${this.shared.playerLabel(players as any[], eligible[0])}`
-          : undefined,
-      },
-    } as GameStateEntity, { step: nextMeta.step, playerId: nextMeta.pendingReturnPlayerId ?? null } as any);
+    const nextState = createPendingState(
+      {
+        ...state,
+        metadata: nextMeta as any,
+        log,
+        turn: {
+          ...(state.turn ?? { direction: 1 }),
+          currentPlayerId: eligible.length
+            ? eligible[0]
+            : (state.turn?.currentPlayerId ?? null),
+          direction: 1,
+          label: eligible.length
+            ? `Rendre des jetons : ${this.shared.playerLabel(players as any[], eligible[0])}`
+            : undefined,
+        },
+      } as GameStateEntity,
+      {
+        step: nextMeta.step,
+        playerId: nextMeta.pendingReturnPlayerId ?? null,
+      } as any,
+    );
 
     if (eligible.length) {
       return nextState;
@@ -318,7 +348,9 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       Number(meta.roundStarterIndex ?? 0),
     );
     const pauseSeconds = Number(meta.roundPauseSeconds ?? 0);
-    const pauseMs = Number.isFinite(pauseSeconds) ? Math.max(0, Math.floor(pauseSeconds) * 1000) : 0;
+    const pauseMs = Number.isFinite(pauseSeconds)
+      ? Math.max(0, Math.floor(pauseSeconds) * 1000)
+      : 0;
     const updatedMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       ...meta,
       roundNumber: nextRound,
@@ -339,19 +371,23 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
         log,
         `Pause ${Math.floor(pauseMs / 1000)}s avant la manche ${nextRound}.`,
       );
-      return createPendingState({
-        ...state,
-        phase: 'round',
-        round: nextRound,
-        log: pauseLog,
-        metadata: updatedMeta as any,
-        turn: {
-          ...(state.turn ?? { direction: 1 }),
-          currentPlayerId: meta.ownerPlayerId ?? state.turn?.currentPlayerId ?? null,
-          direction: 1,
-          label: `Pause avant la manche ${nextRound}`,
-        },
-      } as GameStateEntity, { step: 'round_pause', playerId: meta.ownerPlayerId ?? null } as any);
+      return createPendingState(
+        {
+          ...state,
+          phase: 'round',
+          round: nextRound,
+          log: pauseLog,
+          metadata: updatedMeta as any,
+          turn: {
+            ...(state.turn ?? { direction: 1 }),
+            currentPlayerId:
+              meta.ownerPlayerId ?? state.turn?.currentPlayerId ?? null,
+            direction: 1,
+            label: `Pause avant la manche ${nextRound}`,
+          },
+        } as GameStateEntity,
+        { step: 'round_pause', playerId: meta.ownerPlayerId ?? null } as any,
+      );
     }
 
     return this.startNewRound(
@@ -360,7 +396,7 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
     );
   }
 
-  isRoundEnded(meta: LamaMetadata, players: any[]): boolean {
+  isRoundEnded(meta: LamaMetadata, _players: any[]): boolean {
     const hands = meta.handsByPlayerId ?? {};
     const dropped = meta.droppedOutByPlayerId ?? {};
     const ids = Object.keys(hands);
@@ -375,13 +411,19 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
     return false;
   }
 
-  findNextActivePlayerId(players: any[], meta: LamaMetadata, afterPlayerId: number): number | null {
-    const ids = players.map((p) => p?.id).filter((id) => typeof id === 'number') as number[];
+  findNextActivePlayerId(
+    players: any[],
+    meta: LamaMetadata,
+    afterPlayerId: number,
+  ): number | null {
+    const ids = players
+      .map((p) => p?.id)
+      .filter((id) => typeof id === 'number');
     if (!ids.length) return null;
     const start = Math.max(0, ids.indexOf(afterPlayerId));
     const dropped = meta.droppedOutByPlayerId ?? {};
     for (let step = 1; step <= ids.length; step += 1) {
-      const pid = ids[(start + step) % ids.length]!;
+      const pid = ids[(start + step) % ids.length];
       if (!dropped[String(pid)]) return pid;
     }
     return ids[start] ?? null;
@@ -407,17 +449,25 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
     return deck;
   }
 
-  private findEmptyHandWinnerId(meta: LamaMetadata, players: any[]): number | null {
+  private findEmptyHandWinnerId(
+    meta: LamaMetadata,
+    players: any[],
+  ): number | null {
     const hands = meta.handsByPlayerId ?? {};
-    const ids = players.map((p) => p?.id).filter((id) => typeof id === 'number') as number[];
+    const ids = players
+      .map((p) => p?.id)
+      .filter((id) => typeof id === 'number');
     for (const pid of ids) {
-      const hand = (hands[String(pid)] ?? []) as LamaCardValue[];
+      const hand = hands[String(pid)] ?? [];
       if (hand.length === 0) return pid;
     }
     return null;
   }
 
-  private shouldPromptReturn(roundNumber: number, winnerScore: number): boolean {
+  private shouldPromptReturn(
+    roundNumber: number,
+    winnerScore: number,
+  ): boolean {
     if (winnerScore < 1) return false;
     return roundNumber >= 2;
   }
@@ -461,4 +511,3 @@ const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
     return 0;
   }
 }
-

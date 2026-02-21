@@ -52,7 +52,11 @@ describe('GameEngineService', () => {
     });
 
     const out = await engine.handleKeyPress(1, 'any', 1, 'T');
-    expect(out).toEqual({ kind: 'panel', panelId: 'turn', message: 'À toi de jouer.' });
+    expect(out).toEqual({
+      kind: 'panel',
+      panelId: 'turn',
+      message: 'À toi de jouer.',
+    });
   });
 
   it('does not replay stale skip-turn announcements on subsequent actions', async () => {
@@ -168,12 +172,16 @@ describe('GameEngineService', () => {
       false,
     )) as any;
 
-    const firstMessages = (first.log ?? []).map((e: any) => String(e?.message ?? ''));
-    const secondMessages = (second.log ?? []).map((e: any) => String(e?.message ?? ''));
+    const firstMessages = (first.log ?? []).map((e: any) =>
+      String(e?.message ?? ''),
+    );
+    const secondMessages = (second.log ?? []).map((e: any) =>
+      String(e?.message ?? ''),
+    );
 
     expect(firstMessages.at(-1)).toBe('Polynesia passe son tour.');
     expect(secondMessages.at(-1)).toBe('action-2');
-    expect((stateRef.metadata as any)?.turnFlow?.skipped ?? []).toEqual([]);
+    expect(stateRef.metadata?.turnFlow?.skipped ?? []).toEqual([]);
   });
 
   it('silently ignores unavailable draw action (even with payload)', async () => {
@@ -252,7 +260,13 @@ describe('GameEngineService', () => {
       {} as any,
       {} as any,
       { set: jest.fn() } as any,
-      { logValidationFailure: jest.fn(), error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() } as any,
+      {
+        logValidationFailure: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        info: jest.fn(),
+        debug: jest.fn(),
+      } as any,
       {} as any,
     );
 
@@ -356,7 +370,10 @@ describe('GameEngineService', () => {
     );
 
     expect(out).toBe(current);
-    expect((engine as any).exposeState).toHaveBeenCalledWith(current, 'frousse-party');
+    expect((engine as any).exposeState).toHaveBeenCalledWith(
+      current,
+      'frousse-party',
+    );
   });
 
   it('does not mark botThinking when a blocking pending action targets a human', async () => {
@@ -468,12 +485,24 @@ describe('GameEngineService', () => {
       getRoomPayload: jest
         .fn()
         .mockResolvedValueOnce({
-          room: { id: 1, gameType: 'corridor', status: 'started', startedAt: new Date().toISOString() },
+          room: {
+            id: 1,
+            gameType: 'corridor',
+            status: 'started',
+            startedAt: new Date().toISOString(),
+          },
         })
         .mockResolvedValueOnce({
-          room: { id: 1, gameType: 'corridor', status: 'setup', startedAt: null },
+          room: {
+            id: 1,
+            gameType: 'corridor',
+            status: 'setup',
+            startedAt: null,
+          },
         }),
-      resetRoomSystem: jest.fn().mockResolvedValue({ id: 1, status: 'setup', startedAt: null }),
+      resetRoomSystem: jest
+        .fn()
+        .mockResolvedValue({ id: 1, status: 'setup', startedAt: null }),
       notifyRoomStateUpdated: jest.fn().mockResolvedValue(undefined),
     };
 
@@ -505,7 +534,11 @@ describe('GameEngineService', () => {
       appendLog: jest.fn((state: any) => state),
     };
 
-    const botScheduler = { clear: jest.fn(), has: jest.fn(() => false), schedule: jest.fn() };
+    const botScheduler = {
+      clear: jest.fn(),
+      has: jest.fn(() => false),
+      schedule: jest.fn(),
+    };
     const gameLogger = {
       info: jest.fn(),
       debug: jest.fn(),
@@ -540,7 +573,12 @@ describe('GameEngineService', () => {
     const now = new Date().toISOString();
     const rooms = {
       getRoomPayload: jest.fn().mockResolvedValue({
-        room: { id: 1, gameType: 'corridor', status: 'started', startedAt: now },
+        room: {
+          id: 1,
+          gameType: 'corridor',
+          status: 'started',
+          startedAt: now,
+        },
       }),
       resetRoomSystem: jest.fn(),
       notifyRoomStateUpdated: jest.fn(),

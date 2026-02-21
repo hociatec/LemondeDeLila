@@ -1,4 +1,4 @@
-import * as fs from 'node:fs';
+﻿import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import {
@@ -103,7 +103,8 @@ describe('Mojibake utilities', () => {
       const result = fixMojibakeDeep(input);
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBe(3);
-      expect(result[0].name).not.toBe('Ã©cole');
+      const first = result[0] as { name?: string };
+      expect(first.name).not.toBe('Ã©cole');
     });
 
     it('should preserve clean strings', () => {
@@ -134,20 +135,23 @@ describe('Mojibake utilities', () => {
     });
 
     it('should handle circular references without crashing', () => {
-      const input: any = { label: 'ÃƒÂ©cole' };
+      type Circular = { label: string; self?: Circular };
+      const input: Circular = { label: 'ÃƒÂ©cole' };
       input.self = input;
 
-      const result: any = fixMojibakeDeep(input);
+      const result = fixMojibakeDeep(input);
       expect(result).toBeDefined();
       expect(result.self).toBe(result);
       expect(result.label).not.toBe('ÃƒÂ©cole');
     });
 
     it('should preserve shared references', () => {
-      const shared: any = { value: 'forÃƒÂªt' };
-      const input: any = { a: shared, b: shared };
+      type SharedNode = { value: string };
+      type SharedRoot = { a: SharedNode; b: SharedNode };
+      const shared: SharedNode = { value: 'forÃƒÂªt' };
+      const input: SharedRoot = { a: shared, b: shared };
 
-      const result: any = fixMojibakeDeep(input);
+      const result = fixMojibakeDeep(input);
       expect(result.a).toBe(result.b);
       expect(result.a.value).not.toBe('forÃƒÂªt');
     });

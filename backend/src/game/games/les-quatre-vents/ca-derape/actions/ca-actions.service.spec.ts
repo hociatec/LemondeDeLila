@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 import { CaActionService } from './ca-actions.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { TurnService } from '../../../../modules/turn/services/turn.service';
@@ -9,7 +10,7 @@ import { CaSetupService } from '../setup/ca.setup';
 describe('Ça Dérape ! - action flow', () => {
   function makeService(rolls: number[]) {
     const random = {
-      rollDice: jest.fn((meta: any, _sides: number) => {
+      rollDice: jest.fn((meta: any) => {
         const roll = rolls.length ? rolls.shift()! : 1;
         return { roll, meta };
       }),
@@ -50,7 +51,9 @@ describe('Ça Dérape ! - action flow', () => {
     const svc = makeService([2]);
     const state = makeStartedState();
 
-    const next = svc.applyActions(state as any, [{ type: 'roll', payload: {} }]);
+    const next = svc.applyActions(state as any, [
+      { type: 'roll', payload: {} },
+    ]);
 
     expect(next.pending).toBeNull();
     expect(next.turn?.currentPlayerId).toBe(2);
@@ -61,7 +64,9 @@ describe('Ça Dérape ! - action flow', () => {
     const svc = makeService([1]);
     const state = makeStartedState();
 
-    const next = svc.applyActions(state as any, [{ type: 'roll', payload: {} }]);
+    const next = svc.applyActions(state as any, [
+      { type: 'roll', payload: {} },
+    ]);
 
     expect(next.pending?.type).toBe('draw');
     expect(next.pending?.playerId).toBe(1);
@@ -74,10 +79,14 @@ describe('Ça Dérape ! - action flow', () => {
     const svc = makeService([1]);
     const state = makeStartedState();
 
-    const rolled = svc.applyActions(state as any, [{ type: 'roll', payload: {} }]);
+    const rolled = svc.applyActions(state as any, [
+      { type: 'roll', payload: {} },
+    ]);
     expect(rolled.pending?.type).toBe('draw');
 
-    const afterDraw = svc.applyActions(rolled as any, [{ type: 'draw', payload: {} }]);
+    const afterDraw = svc.applyActions(rolled as any, [
+      { type: 'draw', payload: {} },
+    ]);
     expect(afterDraw.pending).toBeNull();
     expect(afterDraw.turn?.currentPlayerId).toBe(2);
   });

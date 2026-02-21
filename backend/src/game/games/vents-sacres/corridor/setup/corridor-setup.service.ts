@@ -6,7 +6,9 @@ import type { CorridorMetadata } from '../model/corridor.model';
 @Injectable()
 export class CorridorSetupService {
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
-    const status = String(baseState.status ?? '').toLowerCase().trim();
+    const status = String(baseState.status ?? '')
+      .toLowerCase()
+      .trim();
     if (status !== 'started') {
       // En "setup" (table non démarrée), ne pas auto-démarrer une partie :
       // le moteur reconstruira l'état quand la room passera en "started".
@@ -22,7 +24,9 @@ export class CorridorSetupService {
 
     const players = baseState.players ?? [];
     if (players.length < CORRIDOR_GAME.minPlayers) {
-      throw new Error('Nombre de joueurs insuffisant pour dǸmarrer Le Corridor.');
+      throw new Error(
+        'Nombre de joueurs insuffisant pour dǸmarrer Le Corridor.',
+      );
     }
 
     const size = CORRIDOR_GAME.boardSize;

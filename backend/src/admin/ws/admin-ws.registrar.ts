@@ -65,7 +65,7 @@ export class AdminWsRegistrar implements OnModuleInit {
       this.games.gamesReset(s, p),
     );
     this.registry.register('admin.games.categories', (s, p) =>
-      this.games.gamesCategoriesList(s, p),
+      Promise.resolve(this.games.gamesCategoriesList(s, p)),
     );
     this.registry.register('admin.games.category.create', (s, p) =>
       this.games.gamesCategoryCreate(s, p),
@@ -119,7 +119,7 @@ export class AdminWsRegistrar implements OnModuleInit {
       this.chat.chatMessages(s, p),
     );
     this.registry.register('admin.chat.settings.get', (s, p) =>
-      this.chat.chatSettingsGet(s, p),
+      Promise.resolve(this.chat.chatSettingsGet(s, p)),
     );
     this.registry.register('admin.chat.settings.update', (s, p) =>
       this.chat.chatSettingsUpdate(s, p),
@@ -127,28 +127,28 @@ export class AdminWsRegistrar implements OnModuleInit {
 
     // Quiz (Arche de Mnémosyne)
     this.registry.register('admin.quiz.mnemo.categories', (s, p) =>
-      this.mnemoQuiz.mnemoCategories(s, p),
+      Promise.resolve(this.mnemoQuiz.mnemoCategories(s, p)),
     );
     this.registry.register('admin.quiz.mnemo.category.create', (s, p) =>
-      this.mnemoQuiz.mnemoCategoryCreate(s, p),
+      Promise.resolve(this.mnemoQuiz.mnemoCategoryCreate(s, p)),
     );
     this.registry.register('admin.quiz.mnemo.category.update', (s, p) =>
-      this.mnemoQuiz.mnemoCategoryUpdate(s, p),
+      Promise.resolve(this.mnemoQuiz.mnemoCategoryUpdate(s, p)),
     );
     this.registry.register('admin.quiz.mnemo.category.delete', (s, p) =>
-      this.mnemoQuiz.mnemoCategoryDelete(s, p),
+      Promise.resolve(this.mnemoQuiz.mnemoCategoryDelete(s, p)),
     );
     this.registry.register('admin.quiz.mnemo.questions', (s, p) =>
-      this.mnemoQuiz.mnemoQuestions(s, p),
+      Promise.resolve(this.mnemoQuiz.mnemoQuestions(s, p)),
     );
     this.registry.register('admin.quiz.mnemo.question.create', (s, p) =>
-      this.mnemoQuiz.mnemoQuestionCreate(s, p),
+      Promise.resolve(this.mnemoQuiz.mnemoQuestionCreate(s, p)),
     );
     this.registry.register('admin.quiz.mnemo.question.update', (s, p) =>
-      this.mnemoQuiz.mnemoQuestionUpdate(s, p),
+      Promise.resolve(this.mnemoQuiz.mnemoQuestionUpdate(s, p)),
     );
     this.registry.register('admin.quiz.mnemo.question.delete', (s, p) =>
-      this.mnemoQuiz.mnemoQuestionDelete(s, p),
+      Promise.resolve(this.mnemoQuiz.mnemoQuestionDelete(s, p)),
     );
     this.registry.register('admin.chat.delete', (s, p) =>
       this.chat.chatDelete(s, p),
@@ -162,7 +162,7 @@ export class AdminWsRegistrar implements OnModuleInit {
     );
 
     this.registry.register('admin.profile.settings.get', (s, p) =>
-      this.profile.profileSettingsGet(s, p),
+      Promise.resolve(this.profile.profileSettingsGet(s, p)),
     );
     this.registry.register('admin.profile.settings.update', (s, p) =>
       this.profile.profileSettingsUpdate(s, p),
@@ -202,7 +202,7 @@ export class AdminWsRegistrar implements OnModuleInit {
       this.bots.botsNamesList(s, p),
     );
     this.registry.register('admin.bots.settings.get', (s, p) =>
-      this.bots.botSettingsGet(s, p),
+      Promise.resolve(this.bots.botSettingsGet(s, p)),
     );
     this.registry.register('admin.bots.settings.update', (s, p) =>
       this.bots.botSettingsUpdate(s, p),
@@ -218,7 +218,7 @@ export class AdminWsRegistrar implements OnModuleInit {
     );
 
     this.registry.register('admin.perf.snapshot', (s, p) =>
-      this.perf.perfSnapshot(s, p),
+      Promise.resolve(this.perf.perfSnapshot(s, p)),
     );
 
     this.registry.register('admin.rooms.cleanup', (s, p) =>
@@ -234,7 +234,7 @@ export class AdminWsRegistrar implements OnModuleInit {
     );
 
     this.registry.register('admin.rooms.settings.get', (s, p) =>
-      this.rooms.roomsSettingsGet(s, p),
+      Promise.resolve(this.rooms.roomsSettingsGet(s, p)),
     );
     this.registry.register('admin.rooms.settings.update', (s, p) =>
       this.rooms.roomsSettingsUpdate(s, p),

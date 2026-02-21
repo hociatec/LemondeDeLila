@@ -1,10 +1,9 @@
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+﻿import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import {
   isRollActionType,
   isRollAlias,
   normalizeActionType,
-  normalizeLowerActionType,
 } from '../../../../actions/action-service.helper';
 import type {
   PanierExpressMetadata,
@@ -28,6 +27,8 @@ import {
   validatePendingIndexedChoiceActionForActor,
 } from '../../../../core/helpers/pending-actions-rulebook.helper';
 
+type PendingRecord = Record<string, unknown>;
+
 function normalizeNumber(value: unknown): number | null {
   const n = typeof value === 'number' ? value : Number(value);
   if (!Number.isFinite(n)) return null;
@@ -43,11 +44,11 @@ export function getAvailableActions(
   playerId: number,
 ): GameSingleActionDto[] {
   if ((state.status || '').toLowerCase() === 'finished') return [];
-  const rawPending = state.pending as any;
+  const rawPending = asPendingRecord(state.pending);
   const pendingPlayerId = normalizeNumber(rawPending?.playerId);
   if (
     rawPending &&
-    rawPending.blocking &&
+    toBoolean(rawPending.blocking) &&
     pendingPlayerId != null &&
     pendingPlayerId !== playerId
   ) {
@@ -60,14 +61,15 @@ export function getAvailableActions(
       pending: rawPending,
       actorId: playerId,
       actionType: 'draw',
-      samePlayer: (left, right) => normalizeNumber(left) === normalizeNumber(right),
+      samePlayer: (left, right) =>
+        normalizeNumber(left) === normalizeNumber(right),
     }).ok
   ) {
     return [{ type: 'draw' }];
   }
   if (
     rawPending &&
-    rawPending.type === 'choose_pawn' &&
+    toText(rawPending.type) === 'choose_pawn' &&
     pendingPlayerId != null &&
     pendingPlayerId === playerId
   ) {
@@ -75,7 +77,7 @@ export function getAvailableActions(
   }
   if (
     rawPending &&
-    rawPending.type === 'pick' &&
+    toText(rawPending.type) === 'pick' &&
     pendingPlayerId != null &&
     pendingPlayerId === playerId
   ) {
@@ -85,25 +87,26 @@ export function getAvailableActions(
       payloadIndexKey: 'index',
       choicesContainer: 'root',
       choicesKey: 'choices',
-      samePlayer: (left, right) => normalizeNumber(left) === normalizeNumber(right),
+      samePlayer: (left, right) =>
+        normalizeNumber(left) === normalizeNumber(right),
     });
   }
   if (
     rawPending &&
-    rawPending.type === 'exchange' &&
-    rawPending.step === 'confirm' &&
-    rawPending.playerId === playerId
+    toText(rawPending.type) === 'exchange' &&
+    toText(rawPending.step) === 'confirm' &&
+    normalizeNumber(rawPending.playerId) === playerId
   ) {
     return [{ type: 'exchange_accept' }, { type: 'exchange_refuse' }];
   }
   if (
     rawPending &&
-    rawPending.type === 'exchange' &&
-    rawPending.step === 'confirm'
+    toText(rawPending.type) === 'exchange' &&
+    toText(rawPending.step) === 'confirm'
   ) {
     return [];
   }
-  if (rawPending && rawPending.type === 'merchant_request') {
+  if (rawPending && toText(rawPending.type) === 'merchant_request') {
     return pendingPlayerId === playerId
       ? [
           { type: 'merchant_request_accept' },
@@ -123,28 +126,28 @@ export function getAvailableActions(
 
   const pendingQuiz = meta.quiz?.pending?.[playerId];
   const hasPendingQuiz = Boolean(pendingQuiz);
-  const pending = state.pending ?? null;
-  const pendingPid = normalizeNumber((pending as any)?.playerId);
+  const pending = asPendingRecord(state.pending);
+  const pendingPid = normalizeNumber(pending?.playerId);
   const hasPendingExchange = Boolean(
     pending &&
-    pending.type === 'exchange' &&
+    toText(pending.type) === 'exchange' &&
     pendingPid != null &&
     pendingPid === playerId &&
-    (pending as any).step !== 'confirm',
+    toText(pending.step) !== 'confirm',
   );
 
   // IMPORTANT: un quiz "pending" peut provenir d'autres mécaniques (ex: échange refusé),
   // pas uniquement d'une case quiz. Tant que le quiz n'est pas résolu, aucune autre action n'est autorisée.
   if (hasPendingQuiz) {
-    const rawChoices = Array.isArray((pendingQuiz as any)?.choices)
-      ? (pendingQuiz as any).choices
-      : (pendingQuiz as any)?.answer
-        ? [(pendingQuiz as any).answer]
+    const quizPending = asRecord(pendingQuiz);
+    const rawChoices = Array.isArray(quizPending.choices)
+      ? quizPending.choices
+      : toText(quizPending.answer)
+        ? [quizPending.answer]
         : [];
     const choices = rawChoices
-      .map((c: any) => String(c))
-      .map((c: string) => c.trim())
-      .filter((c: string) => c.length > 0);
+      .map((c) => toText(c).trim())
+      .filter((c) => c.length > 0);
     return choices.map((answer) => ({
       type: 'answer_quiz',
       payload: { answer },
@@ -154,29 +157,25 @@ export function getAvailableActions(
   // IMPORTANT: un échange "pending" peut aussi provenir d'une action/carte (pas uniquement d'une case échange).
   // Tant que l'échange n'est pas terminé, aucune autre action n'est autorisée.
   if (hasPendingExchange) {
-    const exchangePending = pending as any;
+    const exchangePending = pending;
+    if (!exchangePending) return [];
 
-    if (exchangePending?.step === 'choose_target') {
-      const targets = Array.isArray(exchangePending.targets)
-        ? exchangePending.targets
-        : [];
+    if (toText(exchangePending.step) === 'choose_target') {
+      const targets = toRecordArray(exchangePending.targets);
       return targets
-        .filter((t: any) => t && typeof t.targetPlayerId === 'number')
-        .map((t: any) => ({
+        .filter((t) => normalizeNumber(t.targetPlayerId) != null)
+        .map((t) => ({
           type: 'exchange_choose_target',
-          payload: { targetPlayerId: t.targetPlayerId },
+          payload: { targetPlayerId: normalizeNumber(t.targetPlayerId) },
         }));
     }
 
-    if (exchangePending?.step === 'choose_give') {
-      const choices = Array.isArray(exchangePending.giveChoices)
-        ? exchangePending.giveChoices
-        : [];
+    if (toText(exchangePending.step) === 'choose_give') {
+      const choices = toUnknownArray(exchangePending.giveChoices);
       return choices
-        .map((c: any) => String(c))
-        .map((c: string) => c.trim())
-        .filter((c: string) => c.length > 0)
-        .map((give: string) => ({
+        .map((c) => toText(c).trim())
+        .filter((c) => c.length > 0)
+        .map((give) => ({
           type: 'exchange_choose_give',
           payload: { give },
         }));
@@ -209,8 +208,8 @@ export function validateAction(
   const rawType = normalizeActionType(action);
   const normalizedType = rawType.toLowerCase();
   const type = rawType as PanierExpressActionType;
-  const pendingAny = state.pending as any;
-  const hasBlockingPending = Boolean(pendingAny?.blocking);
+  const pendingAny = asPendingRecord(state.pending);
+  const hasBlockingPending = toBoolean(pendingAny?.blocking);
   const pendingPlayerId = normalizeNumber(pendingAny?.playerId);
 
   if (hasBlockingPending) {
@@ -260,7 +259,9 @@ export function validateAction(
   }
   if (
     !PANIER_EXPRESS_GAME.actions.includes(type) &&
-    !PANIER_EXPRESS_GAME.actions.includes(normalizedType as any)
+    !PANIER_EXPRESS_GAME.actions.includes(
+      normalizedType as PanierExpressActionType,
+    )
   ) {
     throw new GameValidationError(`Action inconnue: ${rawType}`, {
       gameType: 'panier-express',
@@ -293,7 +294,7 @@ export function validateAction(
   }
 
   if (type === 'choose_pawn') {
-    const pending = state.pending as any;
+    const pending = asPendingRecord(state.pending);
     const validation = validatePendingPawnActionForActor({
       pending,
       actorId: Number(actorId ?? NaN),
@@ -318,7 +319,7 @@ export function validateAction(
   }
 
   if (type === 'pick_choice') {
-    const pending = state.pending as any;
+    const pending = asPendingRecord(state.pending);
     const validation = validatePendingIndexedChoiceActionForActor({
       pending,
       actorId: Number(actorId ?? NaN),
@@ -329,7 +330,8 @@ export function validateAction(
       payloadIndexKey: 'index',
       choicesContainer: 'root',
       choicesKey: 'choices',
-      samePlayer: (left, right) => normalizeNumber(left) === normalizeNumber(right),
+      samePlayer: (left, right) =>
+        normalizeNumber(left) === normalizeNumber(right),
     });
     if (!validation.ok && validation.reason === 'not_pending_for_actor') {
       throw new PlayerActionError('Aucun choix en attente.', {
@@ -373,7 +375,7 @@ export function validateAction(
   }
 
   if (type === 'exchange_choose_give') {
-    const give = payload.give != null ? String(payload.give).trim() : '';
+    const give = toText(payload.give).trim();
     if (!give) {
       throw new GameValidationError('Payload invalide: give', {
         gameType: 'panier-express',
@@ -385,12 +387,12 @@ export function validateAction(
   }
 
   if (type === 'exchange_accept' || type === 'exchange_refuse') {
-    const pending = state.pending as any;
+    const pending = asPendingRecord(state.pending);
     const pid = normalizeNumber(pending?.playerId);
     if (
       !pending ||
-      pending.type !== 'exchange' ||
-      pending.step !== 'confirm' ||
+      toText(pending.type) !== 'exchange' ||
+      toText(pending.step) !== 'confirm' ||
       pid == null ||
       pid !== actorId
     ) {
@@ -406,15 +408,15 @@ export function validateAction(
     type === 'merchant_request_accept' ||
     type === 'merchant_request_refuse'
   ) {
-    const pending = state.pending as any;
+    const pending = asPendingRecord(state.pending);
     const pid = normalizeNumber(pending?.playerId);
     if (
       !pending ||
-      pending.type !== 'merchant_request' ||
+      toText(pending.type) !== 'merchant_request' ||
       pid == null ||
       pid !== actorId
     ) {
-      throw new PlayerActionError("Aucune demande du marchand en attente.", {
+      throw new PlayerActionError('Aucune demande du marchand en attente.', {
         gameType: 'panier-express',
         playerId: actorId ?? undefined,
       });
@@ -423,12 +425,13 @@ export function validateAction(
   }
 
   if (type === 'draw') {
-    const pending = state.pending as any;
+    const pending = asPendingRecord(state.pending);
     const drawValidation = validatePendingDrawActionForActor({
       pending,
       actorId: Number(actorId ?? NaN),
       actionType: 'draw',
-      samePlayer: (left, right) => normalizeNumber(left) === normalizeNumber(right),
+      samePlayer: (left, right) =>
+        normalizeNumber(left) === normalizeNumber(right),
     });
     if (!drawValidation.ok) {
       throw new PlayerActionError('Aucune pioche en attente.', {
@@ -461,8 +464,8 @@ export function validateAction(
           playerId: actorId,
         });
       }
-      const pending = state.pending as any;
-      if (pending && pending.type === 'exchange') {
+      const pending = asPendingRecord(state.pending);
+      if (pending && toText(pending.type) === 'exchange') {
         throw new PlayerActionError("Vous devez terminer l'échange en cours.", {
           gameType: 'panier-express',
           playerId: actorId,
@@ -493,3 +496,36 @@ export function validateAction(
   return { ...action, type };
 }
 
+function asPendingRecord(value: unknown): PendingRecord | null {
+  if (value == null || typeof value !== 'object') return null;
+  return value as PendingRecord;
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  if (value == null || typeof value !== 'object') return {};
+  return value as Record<string, unknown>;
+}
+
+function toUnknownArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function toRecordArray(value: unknown): Record<string, unknown>[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (item): item is Record<string, unknown> =>
+      item != null && typeof item === 'object',
+  );
+}
+
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  return '';
+}
+
+function toBoolean(value: unknown): boolean {
+  return value === true;
+}

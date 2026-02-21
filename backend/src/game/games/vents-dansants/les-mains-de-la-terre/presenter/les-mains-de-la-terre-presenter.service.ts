@@ -52,7 +52,9 @@ export class LesMainsPresenterService {
     return {
       ...state,
       catalog,
-      actions: formatPresenterActions(actions, (action) => this.buildLabel(action)),
+      actions: formatPresenterActions(actions, (action) =>
+        this.buildLabel(action),
+      ),
       extras: {
         hand,
         handCards: this.buildHandCards(hand),
@@ -68,7 +70,10 @@ export class LesMainsPresenterService {
     } as any;
   }
 
-  private buildLabel(action: { type: string; payload?: Record<string, unknown> }): string {
+  private buildLabel(action: {
+    type: string;
+    payload?: Record<string, unknown>;
+  }): string {
     if (action.type === 'request_card') {
       const cardId = String(action.payload?.cardId ?? '');
       return `Demander ${LES_MAINS_CARD_BY_ID[cardId]?.name ?? cardId}`;
@@ -76,7 +81,10 @@ export class LesMainsPresenterService {
     return action.type;
   }
 
-  private buildFamilyCatalog(): Record<string, Array<{ id: string; name: string }>> {
+  private buildFamilyCatalog(): Record<
+    string,
+    Array<{ id: string; name: string }>
+  > {
     const catalog: Record<string, Array<{ id: string; name: string }>> = {};
     const cards = Object.values(LES_MAINS_CARD_BY_ID);
     for (const family of LES_MAINS_FAMILIES) {
@@ -93,8 +101,14 @@ export class LesMainsPresenterService {
     return catalog;
   }
 
-  private buildHandCards(hand: string[]): Array<{ familyId?: LesMainsFamily; memberId: string; label: string }> {
-    type LesMainsHandCard = { familyId?: LesMainsFamily; memberId: string; label: string };
+  private buildHandCards(
+    hand: string[],
+  ): Array<{ familyId?: LesMainsFamily; memberId: string; label: string }> {
+    type LesMainsHandCard = {
+      familyId?: LesMainsFamily;
+      memberId: string;
+      label: string;
+    };
 
     const cards: Array<LesMainsHandCard | null> = hand.map((cardId) => {
       const card = LES_MAINS_CARD_BY_ID[cardId];
@@ -102,7 +116,8 @@ export class LesMainsPresenterService {
         return null;
       }
       const familyId = card.family ?? undefined;
-      const familyLabel = (familyId && FAMILY_LABELS[familyId]) || (familyId ?? 'Carte');
+      const familyLabel =
+        (familyId && FAMILY_LABELS[familyId]) || (familyId ?? 'Carte');
       const label = card.name ? `${familyLabel} - ${card.name}` : cardId;
       return {
         familyId,
@@ -113,13 +128,16 @@ export class LesMainsPresenterService {
     return cards.filter((entry): entry is LesMainsHandCard => entry !== null);
   }
 
-  private buildPlayerViews(players?: GameStateEntity['players']): Array<{ id: number; username: string }> {
+  private buildPlayerViews(
+    players?: GameStateEntity['players'],
+  ): Array<{ id: number; username: string }> {
     if (!Array.isArray(players)) return [];
     return players
       .map((player) => {
         if (!player?.id) return null;
         const username =
-          typeof player.username === 'string' && player.username.trim().length > 0
+          typeof player.username === 'string' &&
+          player.username.trim().length > 0
             ? player.username.trim()
             : `Joueur ${player.id}`;
         return { id: player.id, username };

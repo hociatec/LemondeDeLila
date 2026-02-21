@@ -48,4 +48,3 @@ function ensureDir(dir: string): boolean {
     return false;
   }
 }
-

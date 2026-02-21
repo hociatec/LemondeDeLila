@@ -1,7 +1,10 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
-import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import {
+  getRngMeta,
+  getSafePlayers,
+} from '../../../../setup/setup-service.helper';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { AbsurdissimesDeckService } from '../data/absurdissimes-deck.service';
 import type { AbsurdissimesMetadata } from '../model/les-absurdissimes-state.entity';
@@ -17,8 +20,11 @@ export class AbsurdissimesSetupService {
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const players = getSafePlayers(baseState);
-    const playerIds = players.filter((player) => typeof player?.id === 'number').map((player) => player!.id);
-    const seedMeta = (baseState.metadata ?? {}) as Partial<AbsurdissimesMetadata>;
+    const playerIds = players
+      .filter((player) => typeof player?.id === 'number')
+      .map((player) => player.id);
+    const seedMeta = (baseState.metadata ??
+      {}) as Partial<AbsurdissimesMetadata>;
     let rngMeta = getRngMeta(seedMeta);
     const whiteCards = this.deck.getWhiteCards();
     const blackCards = this.deck.getBlackCards();
@@ -54,7 +60,10 @@ export class AbsurdissimesSetupService {
       judgeIndex,
       roundStage: 'play',
       submissions: {},
-      scores: playerIds.reduce((acc, pid) => ({ ...acc, [pid]: 0 }), {} as Record<number, number>),
+      scores: playerIds.reduce(
+        (acc, pid) => ({ ...acc, [pid]: 0 }),
+        {} as Record<number, number>,
+      ),
       targetScore: Number(seedMeta.targetScore ?? DEFAULT_TARGET),
       remainingPlayers,
       winnerId: null,

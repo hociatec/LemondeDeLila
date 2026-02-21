@@ -1,13 +1,22 @@
 import type { GameSingleActionDto } from '../../engine/dto/game-action.dto';
+import type { GameStateEntity } from '../entities/game-state.entity';
 import { resolvePendingPawnChoiceAction } from './pawn-choice-action.helper';
+
+type TestAction = {
+  type: string;
+  payload?: Record<string, unknown>;
+};
 
 describe('resolvePendingPawnChoiceAction', () => {
   it('returns null when pending type does not match', () => {
     const result = resolvePendingPawnChoiceAction({
       state: {
         pending: { type: 'draw', playerId: 2, data: { pawns: [] } },
-      } as any,
-      action: { type: 'choose_pawn', payload: { pawnId: 'a' } } as any,
+      } as unknown as GameStateEntity,
+      action: {
+        type: 'choose_pawn',
+        payload: { pawnId: 'a' },
+      } as unknown as TestAction,
       resolveChoice: () => ({ id: 'a' }),
     });
     expect(result).toBeNull();
@@ -18,10 +27,15 @@ describe('resolvePendingPawnChoiceAction', () => {
     const result = resolvePendingPawnChoiceAction({
       state: {
         pending: { type: 'choose_pawn', playerId: 2, data: { pawns: options } },
-      } as any,
-      action: { type: 'choose_pawn', payload: { pawnId: 'a' } } as any,
+      } as unknown as GameStateEntity,
+      action: {
+        type: 'choose_pawn',
+        payload: { pawnId: 'a' },
+      } as unknown as TestAction,
       resolveChoice: (raw, opts) =>
-        String(raw) === 'a' && opts.length === 1 ? { id: 'a', label: 'A' } : null,
+        String(raw) === 'a' && opts.length === 1
+          ? { id: 'a', label: 'A' }
+          : null,
     });
 
     expect(result).toEqual({
@@ -41,7 +55,7 @@ describe('resolvePendingPawnChoiceAction', () => {
           playerId: 'x',
           data: { pawns: [{ id: 'b', label: 'B' }] },
         },
-      } as any,
+      } as unknown as GameStateEntity,
       action: {
         type: 'pick_pawn',
         payload: { value: 'b' },
@@ -54,4 +68,3 @@ describe('resolvePendingPawnChoiceAction', () => {
     expect(result?.chosen).toEqual({ id: 'b' });
   });
 });
-

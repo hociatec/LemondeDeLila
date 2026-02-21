@@ -1,7 +1,10 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
-import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import {
+  getRngMeta,
+  getSafePlayers,
+} from '../../../../setup/setup-service.helper';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import {
   GERARD_PRESIDENT_NAMES,
@@ -26,15 +29,12 @@ export class GerardPresidentSetupService {
       Array.from({ length: 2 }, () => card.id),
     );
 
-    const { values: shuffledNames, meta: afterNameShuffle } = this.random.shuffle(rng, nameDeck);
-    const { values: shuffledThemes, meta: afterThemeShuffle } = this.random.shuffle(
-      afterNameShuffle,
-      themeDeck,
-    );
-    const { values: shuffledSpecials, meta: afterSpecialShuffle } = this.random.shuffle(
-      afterThemeShuffle,
-      specialDeck,
-    );
+    const { values: shuffledNames, meta: afterNameShuffle } =
+      this.random.shuffle(rng, nameDeck);
+    const { values: shuffledThemes, meta: afterThemeShuffle } =
+      this.random.shuffle(afterNameShuffle, themeDeck);
+    const { values: shuffledSpecials, meta: afterSpecialShuffle } =
+      this.random.shuffle(afterThemeShuffle, specialDeck);
 
     const hands: Record<number, string[]> = {};
     const specialHands: Record<number, string[]> = {};
@@ -62,7 +62,7 @@ export class GerardPresidentSetupService {
       scores[player.id] = 0;
     }
 
-    const masterId = players.length > 0 ? players[0].id ?? null : null;
+    const masterId = players.length > 0 ? (players[0].id ?? null) : null;
 
     const metadata: GerardPresidentMetadata = {
       rng: afterSpecialShuffle,

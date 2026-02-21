@@ -39,7 +39,9 @@ export class AbsurdissimesPresenterService {
         phases: ABSURDISSIMES_GAME.phaseOrder.map((phase) => phase.id),
         victory: null,
       },
-      actions: formatPresenterActions(actions, (action) => this.buildLabel(action, state)),
+      actions: formatPresenterActions(actions, (action) =>
+        this.buildLabel(action, state),
+      ),
       extras: {
         stage: meta.roundStage,
         currentWhite: meta.currentWhite ?? null,
@@ -71,4 +73,3 @@ export class AbsurdissimesPresenterService {
     return action.type;
   }
 }
-

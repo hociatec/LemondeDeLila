@@ -11,6 +11,12 @@ import type {
 import type { MissionGalaxieMetadata } from '../model/mission-galaxie-state.entity';
 import { loadV1Content } from '../../../../setup/content-loader.helper';
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
 @Injectable()
 export class MissionGalaxieSetupService {
   constructor(
@@ -34,7 +40,7 @@ export class MissionGalaxieSetupService {
       }
     }
 
-    const seedMeta = (base.metadata ?? {}) as any;
+    const seedMeta = asRecord(base.metadata);
     const shuffledQuestions = this.random.shuffle(
       seedMeta,
       questions.questions ?? [],
@@ -53,9 +59,9 @@ export class MissionGalaxieSetupService {
       positions,
       statuses,
       decks: {
-        questions: shuffledQuestions.values as any,
-        challenges: shuffledChallenges.values as any,
-        events: shuffledEvents.values as any,
+        questions: shuffledQuestions.values,
+        challenges: shuffledChallenges.values,
+        events: shuffledEvents.values,
       },
       discards: { questions: [], challenges: [], events: [] },
       pendingContext: null,
@@ -77,19 +83,42 @@ export class MissionGalaxieSetupService {
   }
 
   private loadBoard(): MissionGalaxieBoardJsonV1 {
-    return loadV1Content<MissionGalaxieBoardJsonV1>(this.contentLoader, { gameType: 'mission-galaxie', baseDir: __dirname, filename: 'board.json', arrayField: 'tiles', minItems: 1 });
+    return loadV1Content<MissionGalaxieBoardJsonV1>(this.contentLoader, {
+      gameType: 'mission-galaxie',
+      baseDir: __dirname,
+      filename: 'board.json',
+      arrayField: 'tiles',
+      minItems: 1,
+    });
   }
 
   private loadQuestions(): MissionGalaxieQuestionsJsonV1 {
-    return loadV1Content<MissionGalaxieQuestionsJsonV1>(this.contentLoader, { gameType: 'mission-galaxie', baseDir: __dirname, filename: 'questions.json', arrayField: 'questions', minItems: 1 });
+    return loadV1Content<MissionGalaxieQuestionsJsonV1>(this.contentLoader, {
+      gameType: 'mission-galaxie',
+      baseDir: __dirname,
+      filename: 'questions.json',
+      arrayField: 'questions',
+      minItems: 1,
+    });
   }
 
   private loadChallenges(): MissionGalaxieChallengesJsonV1 {
-    return loadV1Content<MissionGalaxieChallengesJsonV1>(this.contentLoader, { gameType: 'mission-galaxie', baseDir: __dirname, filename: 'challenges.json', arrayField: 'challenges', minItems: 1 });
+    return loadV1Content<MissionGalaxieChallengesJsonV1>(this.contentLoader, {
+      gameType: 'mission-galaxie',
+      baseDir: __dirname,
+      filename: 'challenges.json',
+      arrayField: 'challenges',
+      minItems: 1,
+    });
   }
 
   private loadEvents(): MissionGalaxieEventsJsonV1 {
-    return loadV1Content<MissionGalaxieEventsJsonV1>(this.contentLoader, { gameType: 'mission-galaxie', baseDir: __dirname, filename: 'events.json', arrayField: 'events', minItems: 1 });
+    return loadV1Content<MissionGalaxieEventsJsonV1>(this.contentLoader, {
+      gameType: 'mission-galaxie',
+      baseDir: __dirname,
+      filename: 'events.json',
+      arrayField: 'events',
+      minItems: 1,
+    });
   }
 }
-

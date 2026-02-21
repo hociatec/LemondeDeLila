@@ -33,7 +33,9 @@ export class TurnPoliciesService {
     const players = Array.isArray(state.players) ? state.players : [];
     const player = players.find((p) => {
       const id = Number((p as any)?.id);
-      return Number.isFinite(id) ? id === playerId : (p as any)?.id === playerId;
+      return Number.isFinite(id)
+        ? id === playerId
+        : (p as any)?.id === playerId;
     });
     const username = this.sanitizePlayerName(player?.username);
     return username.length > 0 ? username : `Joueur ${playerId}`;
@@ -44,12 +46,12 @@ export class TurnPoliciesService {
     playerId: number | null | undefined,
     playerNameResolver?: (state: GameStateEntity, playerId: number) => string,
   ): GameStateEntity {
-    if (typeof playerId !== 'number' || !Number.isFinite(playerId)) return state;
+    if (typeof playerId !== 'number' || !Number.isFinite(playerId))
+      return state;
     const label =
       typeof playerNameResolver === 'function'
         ? playerNameResolver(state, playerId)
         : this.playerName(state, playerId);
     return this.core.appendLog(state, turnAnnouncement(label));
   }
-
 }

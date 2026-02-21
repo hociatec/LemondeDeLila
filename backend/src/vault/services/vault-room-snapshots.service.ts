@@ -138,7 +138,9 @@ export class VaultRoomSnapshotsService {
       },
       roster: {
         ownerUserId:
-          typeof payload.room.owner?.id === 'number' ? payload.room.owner.id : null,
+          typeof payload.room.owner?.id === 'number'
+            ? payload.room.owner.id
+            : null,
         players: (payload.room.players ?? []).map((p) => ({
           id: p.id,
           username: p.username,
@@ -161,7 +163,10 @@ export class VaultRoomSnapshotsService {
     const requestedIdRaw = String(snapshotId ?? '').trim();
     let requestedId = requestedIdRaw;
     try {
-      const room = await this.rooms.requireRoomForOwnerAction(roomId, ownerUserId);
+      const room = await this.rooms.requireRoomForOwnerAction(
+        roomId,
+        ownerUserId,
+      );
       const restoredFrom =
         typeof (room as any).restoredFromSnapshotId === 'string'
           ? String((room as any).restoredFromSnapshotId).trim() || ''
@@ -170,7 +175,11 @@ export class VaultRoomSnapshotsService {
         typeof (room as any).restoredOwnerUserId === 'number'
           ? Number((room as any).restoredOwnerUserId)
           : null;
-      if (!requestedId && restoredFrom && (restoredOwner === ownerUserId || restoredOwner == null)) {
+      if (
+        !requestedId &&
+        restoredFrom &&
+        (restoredOwner === ownerUserId || restoredOwner == null)
+      ) {
         // Only auto-overwrite if the snapshot exists for this owner.
         // This prevents blocking saves when ownership was transferred to a different user.
         const exists = await this.snapshots.findOne({
@@ -253,7 +262,12 @@ export class VaultRoomSnapshotsService {
     const rosterHumans = this.uniqueUsers([
       ...humans,
       ...(Number.isFinite(snapshot.roster.ownerUserId)
-        ? [{ id: Number(snapshot.roster.ownerUserId), username: 'proprietaire' }]
+        ? [
+            {
+              id: Number(snapshot.roster.ownerUserId),
+              username: 'proprietaire',
+            },
+          ]
         : []),
     ]);
     const notInTavern = rosterHumans.filter(
@@ -292,7 +306,10 @@ export class VaultRoomSnapshotsService {
     );
     // Mark room as "restored from vault" (persisted) so we can clean it up on owner quit.
     try {
-      const room = await this.rooms.requireRoomForOwnerAction(created.id, ownerUserId);
+      const room = await this.rooms.requireRoomForOwnerAction(
+        created.id,
+        ownerUserId,
+      );
       (room as any).restoredFromSnapshotId = id;
       (room as any).restoredOwnerUserId = ownerUserId;
       await this.rooms.saveRoom(room);
@@ -330,7 +347,10 @@ export class VaultRoomSnapshotsService {
 
     // Restore table ambience.
     try {
-      const room = await this.rooms.requireRoomForOwnerAction(created.id, ownerUserId);
+      const room = await this.rooms.requireRoomForOwnerAction(
+        created.id,
+        ownerUserId,
+      );
       (room as any).tableAmbienceSoundId = snapshot.room.tableAmbienceSoundId;
       await this.rooms.saveRoom(room);
       await this.rooms.invalidateRoomPayloadCache(created.id);
@@ -340,8 +360,12 @@ export class VaultRoomSnapshotsService {
 
     // Start room (sets startedAt + runId).
     const started = await this.rooms.startRoom(created.id, ownerUserId);
-    const startedAt = started.startedAt ? started.startedAt.toISOString() : null;
-    const runId = Number.isFinite((started as any).runId) ? (started as any).runId : null;
+    const startedAt = started.startedAt
+      ? started.startedAt.toISOString()
+      : null;
+    const runId = Number.isFinite((started as any).runId)
+      ? (started as any).runId
+      : null;
 
     const restored = this.remapState(snapshot.game.state, {
       roomId: created.id,
@@ -477,7 +501,10 @@ export class VaultRoomSnapshotsService {
     }
 
     // Patch core metadata.
-    const meta: any = typeof cloned.metadata === 'object' && cloned.metadata ? cloned.metadata : {};
+    const meta: any =
+      typeof cloned.metadata === 'object' && cloned.metadata
+        ? cloned.metadata
+        : {};
     meta.roomId = opts.roomId;
     meta.roomOwnerId = opts.roomOwnerId;
     meta.roomStartedAt = opts.roomStartedAt;
@@ -489,7 +516,9 @@ export class VaultRoomSnapshotsService {
       cloned.players = cloned.players.map((p: any) => {
         const nextId = typeof p?.id === 'number' ? replaceId(p.id) : p?.id;
         const nextName =
-          typeof nextId === 'number' && nextId < 0 && opts.botNamesByNewId.has(nextId)
+          typeof nextId === 'number' &&
+          nextId < 0 &&
+          opts.botNamesByNewId.has(nextId)
             ? opts.botNamesByNewId.get(nextId)
             : p?.username;
         return { ...p, id: nextId, username: nextName };
@@ -497,7 +526,10 @@ export class VaultRoomSnapshotsService {
     }
 
     if (cloned.turn && typeof cloned.turn.currentPlayerId === 'number') {
-      cloned.turn = { ...cloned.turn, currentPlayerId: replaceId(cloned.turn.currentPlayerId) };
+      cloned.turn = {
+        ...cloned.turn,
+        currentPlayerId: replaceId(cloned.turn.currentPlayerId),
+      };
     }
 
     return cloned;
@@ -514,6 +546,9 @@ export class VaultRoomSnapshotsService {
       const username = String(user.username ?? '').trim();
       map.set(id, username || `joueur ${id}`);
     }
-    return Array.from(map.entries()).map(([id, username]) => ({ id, username }));
+    return Array.from(map.entries()).map(([id, username]) => ({
+      id,
+      username,
+    }));
   }
 }

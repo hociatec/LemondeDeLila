@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   Injectable,
   NotFoundException,
@@ -26,8 +26,6 @@ import { RedisClientFactory } from '../../common/redis/redis-client.factory';
 @Injectable()
 export class RoomService {
   private realtimeNotifier?: (roomId: number) => Promise<void> | void;
-  private roomDeletedNotifiers: Array<(roomId: number) => Promise<void> | void> =
-    [];
   private directoryNotifier?: (
     roomId: number,
     reason: string,
@@ -161,7 +159,11 @@ export class RoomService {
     if (set.size === 0) this.roomBans.delete(id);
   }
 
-  async setOwner(roomId: number, userId: number, newOwnerId: number): Promise<Room> {
+  async setOwner(
+    roomId: number,
+    userId: number,
+    newOwnerId: number,
+  ): Promise<Room> {
     const room = await this.requireRoom(roomId);
     this.ensureOwner(room, userId);
     const user = await this.requireUser(newOwnerId);
@@ -176,7 +178,10 @@ export class RoomService {
   /**
    * Internal gateway helper: fetch a room and verify ownership.
    */
-  async requireRoomForOwnerAction(roomId: number, userId: number): Promise<Room> {
+  async requireRoomForOwnerAction(
+    roomId: number,
+    userId: number,
+  ): Promise<Room> {
     const room = await this.requireRoom(roomId);
     this.ensureOwner(room, userId);
     return room;
@@ -530,7 +535,9 @@ export class RoomService {
     const user = await this.requireUser(userId);
 
     const manifest = await this.catalog.getGame(room.gameType);
-    const status = String((manifest as any)?.status ?? 'finished').toLowerCase();
+    const status = String(
+      (manifest as any)?.status ?? 'finished',
+    ).toLowerCase();
     if (status === 'construction' && !RoomService.isAdminRoles(user.roles)) {
       throw new ForbiddenException('Jeu en construction: réservé aux admins');
     }
@@ -620,15 +627,21 @@ export class RoomService {
       const activeHumansAfterLeave = await this.countActiveHumans(room.id);
       if (activeHumansAfterLeave === 0) {
         const snapshotId = String(room.restoredFromSnapshotId ?? '').trim();
-        this.logger.log('Restored room abandoned (no humans left => delete room)', {
-          roomId: room.id,
-          userId,
-          snapshotId: snapshotId || null,
-        });
+        this.logger.log(
+          'Restored room abandoned (no humans left => delete room)',
+          {
+            roomId: room.id,
+            userId,
+            snapshotId: snapshotId || null,
+          },
+        );
         // Best-effort: also delete the vault snapshot so it disappears from the coffre.
         if (snapshotId) {
           try {
-            await this.vaultSnapshots.delete({ id: snapshotId, ownerUserId: userId } as any);
+            await this.vaultSnapshots.delete({
+              id: snapshotId,
+              ownerUserId: userId,
+            } as any);
           } catch {
             // best effort
           }
@@ -741,12 +754,12 @@ export class RoomService {
     // (ex: Object.create(prototype)) avant l'initialisation des fields de classe.
     // Cette méthode garantit que le champ existe avant usage.
     const self = this as unknown as {
-      roomDeletedNotifiers?: Array<(roomId: number) => Promise<void> | void>;
+      _roomDeletedNotifiers?: Array<(roomId: number) => Promise<void> | void>;
     };
-    if (!Array.isArray(self.roomDeletedNotifiers)) {
-      self.roomDeletedNotifiers = [];
+    if (!Array.isArray(self._roomDeletedNotifiers)) {
+      self._roomDeletedNotifiers = [];
     }
-    return self.roomDeletedNotifiers;
+    return self._roomDeletedNotifiers;
   }
 
   async transferOwnerIfCurrent(roomId: number, userId: number): Promise<void> {

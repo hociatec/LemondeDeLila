@@ -5,7 +5,10 @@ import {
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
 import { SAC_VARIANTS } from '../sac-a-malices-variants';
-import { isRollAlias, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  isRollAlias,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 const ALLOWED = new Set([
@@ -24,16 +27,24 @@ const ALLOWED = new Set([
   'sac_set_variant',
 ]);
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
   if (!isStartedState(state)) return [];
 
-  const meta: any = state.metadata ?? {};
-  const setupStep = String(meta?.setupStep ?? '').trim();
+  const meta = asRecord(state.metadata);
+  const setupStep =
+    typeof meta.setupStep === 'string' ? meta.setupStep.trim() : '';
   if (setupStep === 'setup_config') {
-    const ownerId = typeof meta?.ownerPlayerId === 'number' ? meta.ownerPlayerId : null;
+    const ownerId =
+      typeof meta.ownerPlayerId === 'number' ? meta.ownerPlayerId : null;
     if (ownerId != null && ownerId === playerId) {
       return SAC_VARIANTS.map((variant) => ({
         type: 'sac_set_variant',
@@ -43,15 +54,24 @@ export function getAvailableActions(
     return [];
   }
 
-  const pending = state.pending as any;
-  if (pending?.type === 'buy') {
+  const pending = asRecord(state.pending);
+  if (pending.type === 'buy') {
     if ((pending.playerId ?? null) !== playerId) return [];
-    return [{ type: 'buy', payload: {} }, { type: 'skip_buy', payload: {} }];
+    return [
+      { type: 'buy', payload: {} },
+      { type: 'skip_buy', payload: {} },
+    ];
   }
-  if (pending?.type === 'choose_property') {
+  if (pending.type === 'choose_property') {
     if ((pending.playerId ?? null) !== playerId) return [];
-    const options: Array<{ tileIndex: number }> = Array.isArray(pending?.data?.options)
-      ? pending.data.options
+    const pendingData = asRecord(pending.data);
+    const options: Array<{ tileIndex: number }> = Array.isArray(
+      pendingData.options,
+    )
+      ? pendingData.options.map((item) => {
+          const option = asRecord(item);
+          return { tileIndex: Number(option.tileIndex) };
+        })
       : [];
     if (!options.length) return [];
     return options.map((opt) => ({
@@ -63,8 +83,11 @@ export function getAvailableActions(
   if ((state.turn?.currentPlayerId ?? null) !== playerId) return [];
   if (state.pending) return [];
 
-  const inJail = Number(meta?.statuses?.inJail?.[playerId] ?? 0) > 0;
-  const jailCardCount = Number(meta?.statuses?.getOutOfJail?.[playerId] ?? 0) || 0;
+  const statuses = asRecord(meta.statuses);
+  const inJailByPlayer = asRecord(statuses.inJail);
+  const jailCardsByPlayer = asRecord(statuses.getOutOfJail);
+  const inJail = Number(inJailByPlayer[String(playerId)] ?? 0) > 0;
+  const jailCardCount = Number(jailCardsByPlayer[String(playerId)] ?? 0) || 0;
   const defaults = {
     jail: {
       maxTurns: 3,
@@ -73,9 +96,10 @@ export function getAvailableActions(
       allowDoubleEscape: false,
     },
   };
-  const rules: any = meta?.rules ?? {};
-  const jailRules = { ...defaults.jail, ...(rules?.jail ?? {}) };
-  const allowPayFine = Boolean(jailRules.allowPayFine) && Number(jailRules.autoFine ?? 0) > 0;
+  const rules = asRecord(meta.rules);
+  const jailRules = { ...defaults.jail, ...asRecord(rules.jail) };
+  const allowPayFine =
+    Boolean(jailRules.allowPayFine) && Number(jailRules.autoFine ?? 0) > 0;
 
   const actions: GameSingleActionDto[] = [
     { type: 'roll', payload: {} },
@@ -110,14 +134,16 @@ export function validateAction(
   }
 
   if (normalized === 'sac_set_variant') {
-    const meta: any = state.metadata ?? {};
-    const setupStep = String(meta?.setupStep ?? '').trim();
+    const meta = asRecord(state.metadata);
+    const setupStep =
+      typeof meta.setupStep === 'string' ? meta.setupStep.trim() : '';
     if (setupStep !== 'setup_config') {
       throw new PlayerActionError('Configuration indisponible.', {
         gameType: 'sac-a-malices',
       });
     }
-    const ownerId = typeof meta?.ownerPlayerId === 'number' ? meta.ownerPlayerId : null;
+    const ownerId =
+      typeof meta.ownerPlayerId === 'number' ? meta.ownerPlayerId : null;
     if (ownerId != null && actorId != null && actorId !== ownerId) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
         gameType: 'sac-a-malices',
@@ -125,11 +151,15 @@ export function validateAction(
         currentPlayerId: ownerId,
       });
     }
-    return { ...action, type: 'sac_set_variant', payload: action.payload ?? {} };
+    return {
+      ...action,
+      type: 'sac_set_variant',
+      payload: action.payload ?? {},
+    };
   }
 
-  const pending = state.pending as any;
-  if (pending?.type === 'buy') {
+  const pending = asRecord(state.pending);
+  if (pending.type === 'buy') {
     const pid = pending.playerId ?? null;
     if (pid != null && actorId != null && actorId !== pid) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
@@ -141,7 +171,7 @@ export function validateAction(
     if (normalized === 'buy') return { ...action, type: 'buy', payload: {} };
     return { ...action, type: 'skip_buy', payload: {} };
   }
-  if (pending?.type === 'choose_property') {
+  if (pending.type === 'choose_property') {
     const pid = pending.playerId ?? null;
     if (pid != null && actorId != null && actorId !== pid) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
@@ -155,11 +185,21 @@ export function validateAction(
         gameType: 'sac-a-malices',
       });
     }
-    const options: Array<{ tileIndex: number }> = Array.isArray(pending?.data?.options)
-      ? pending.data.options
+    const pendingData = asRecord(pending.data);
+    const options: Array<{ tileIndex: number }> = Array.isArray(
+      pendingData.options,
+    )
+      ? pendingData.options.map((item) => {
+          const option = asRecord(item);
+          return { tileIndex: Number(option.tileIndex) };
+        })
       : [];
-    const tileIndex = Number((action.payload as any)?.tileIndex);
-    if (!Number.isFinite(tileIndex) || !options.some((o) => o.tileIndex === tileIndex)) {
+    const payload = asRecord(action.payload);
+    const tileIndex = Number(payload.tileIndex);
+    if (
+      !Number.isFinite(tileIndex) ||
+      !options.some((o) => o.tileIndex === tileIndex)
+    ) {
       throw new GameValidationError('Choix invalide.', {
         gameType: 'sac-a-malices',
         tileIndex,
@@ -182,6 +222,3 @@ export function validateAction(
   }
   return { ...action, type: normalized, payload: {} };
 }
-
-
-

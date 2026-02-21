@@ -1,6 +1,9 @@
 ﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import { isRollAlias, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  isRollAlias,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
   GameValidationError,
@@ -28,7 +31,7 @@ export function getAvailableActions(
 ): GameSingleActionDto[] {
   if (!isStartedState(state)) return [];
 
-  const pending = state.pending as any;
+  const pending = state.pending;
   const drawActions = getPendingDrawActionsForPlayer(pending, playerId);
   if (drawActions.length > 0) return drawActions;
   if (pending?.type === 'quiz') {
@@ -66,7 +69,7 @@ export function validateAction(
     );
   }
 
-  const pending = state.pending as any;
+  const pending = state.pending;
   if (pending?.type) {
     const pid = pending.playerId ?? null;
     if (pid != null && actorId != null && actorId !== pid) {
@@ -84,15 +87,19 @@ export function validateAction(
         Number.isFinite(right) && Number(left) === Number(right),
     });
     if (drawValidation.ok) return drawValidation.action;
-    if (pending.type === 'draw' && drawValidation.reason === 'wrong_action_type') {
+    if (
+      pending.type === 'draw' &&
+      drawValidation.reason === 'wrong_action_type'
+    ) {
       throw new PlayerActionError('Action non disponible.', {
         gameType: 'voyage-en-terre-de-brumes',
         action: rawType,
       });
     }
-    if (pending.type === 'quiz') return action.type === 'answer_quiz'
-      ? action
-      : { ...action, type: 'answer_quiz' };
+    if (pending.type === 'quiz')
+      return action.type === 'answer_quiz'
+        ? action
+        : { ...action, type: 'answer_quiz' };
     if (pending.type === 'choose_target') {
       const targetValidation = validatePendingChooseTargetActionForActor({
         pending,
@@ -139,7 +146,3 @@ export function validateAction(
   if (normalized === 'choose_target') return action;
   return { ...action, type: 'roll', payload: {} };
 }
-
-
-
-

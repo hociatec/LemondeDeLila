@@ -21,7 +21,7 @@ export class DeckPoliciesService {
     card: TCard | null;
     reshuffled: boolean;
   } {
-    let nextMeta = { ...(params.meta ?? {}) } as TMeta;
+    let nextMeta = { ...(params.meta ?? {}) };
     let drawPile = Array.isArray(params.pile) ? [...params.pile] : [];
     let drawDiscard = Array.isArray(params.discard) ? [...params.discard] : [];
     let reshuffled = false;
@@ -74,7 +74,7 @@ export class DeckPoliciesService {
     discardKey: keyof TMeta & string;
     rngKey?: keyof TMeta & string;
   }): { meta: TMeta; card: TCard | null; reshuffled: boolean } {
-    const sourceMeta = (params.meta ?? {}) as TMeta;
+    const sourceMeta = params.meta ?? {};
     const out = this.drawFromPile<TCard, TMeta>({
       meta: sourceMeta,
       pile: Array.isArray(sourceMeta[params.deckKey])

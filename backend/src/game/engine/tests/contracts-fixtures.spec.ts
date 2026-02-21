@@ -7,11 +7,6 @@ function repoRoot(): string {
   return path.resolve(__dirname, '../../../../..');
 }
 
-function readJson(relativeToRepoRoot: string): any {
-  const abs = path.resolve(repoRoot(), relativeToRepoRoot);
-  return JSON.parse(fs.readFileSync(abs, 'utf-8'));
-}
-
 function tryReadJson(relativeToRepoRoot: string): any | null {
   const abs = path.resolve(repoRoot(), relativeToRepoRoot);
   if (!fs.existsSync(abs)) {

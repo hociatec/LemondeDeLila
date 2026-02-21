@@ -5,7 +5,7 @@ export const A_FOND_LES_BALLONS_PAWNS: AFondLesBallonsPawn[] = [
     id: 'capitaine-cacahuete',
     label: 'Capitaine Cacahuète',
     description:
-      "Écureuil roux moustachu, chapeau de pirate trop grand, cache-œil en noisette, épée en cure-dents. Aventurier grognon, rêve du « trésor de la noix éternelle ». Accessoire : carte au trésor qui sent la confiture. Pouvoir : « À l’abordage ! ».",
+      'Écureuil roux moustachu, chapeau de pirate trop grand, cache-œil en noisette, épée en cure-dents. Aventurier grognon, rêve du « trésor de la noix éternelle ». Accessoire : carte au trésor qui sent la confiture. Pouvoir : « À l’abordage ! ».',
   },
   {
     id: 'professeur-gribouille',
@@ -17,7 +17,7 @@ export const A_FOND_LES_BALLONS_PAWNS: AFondLesBallonsPawn[] = [
     id: 'miss-froufrou',
     label: 'Miss Froufrou',
     description:
-      "Cochon d’Inde blanc et rose, robe à volants, lunettes cœur, mini miroir pomme, parfum fraise. Coquette et gentille. Accessoire : sèche-cheveux enchanté qui joue de la harpe. Pouvoir : « pause beauté ». ",
+      'Cochon d’Inde blanc et rose, robe à volants, lunettes cœur, mini miroir pomme, parfum fraise. Coquette et gentille. Accessoire : sèche-cheveux enchanté qui joue de la harpe. Pouvoir : « pause beauté ». ',
   },
   {
     id: 'sir-croquou',
@@ -50,17 +50,33 @@ const normalizeText = (value: string): string =>
 export const resolvePawnId = (raw: unknown): string | null => {
   if (raw == null) return null;
   if (typeof raw === 'object') {
-    const maybeId = (raw as any)?.id ?? (raw as any)?.pawnId ?? (raw as any)?.value;
-    if (typeof maybeId === 'string' || typeof maybeId === 'number') {
+    const record = raw as Record<string, unknown>;
+    const maybeId = record.id ?? record.pawnId ?? record.value;
+    if (
+      typeof maybeId === 'string' ||
+      typeof maybeId === 'number' ||
+      typeof maybeId === 'boolean'
+    ) {
       raw = maybeId;
     }
   }
-  const text = String(raw).trim();
+  const text = toText(raw);
   if (!text) return null;
   const key = normalizeText(text);
   if (!key) return null;
-  const direct = A_FOND_LES_BALLONS_PAWNS.find((p) => normalizeText(p.id) === key);
+  const direct = A_FOND_LES_BALLONS_PAWNS.find(
+    (p) => normalizeText(p.id) === key,
+  );
   if (direct) return direct.id;
-  const byLabel = A_FOND_LES_BALLONS_PAWNS.find((p) => normalizeText(p.label) === key);
+  const byLabel = A_FOND_LES_BALLONS_PAWNS.find(
+    (p) => normalizeText(p.label) === key,
+  );
   return byLabel ? byLabel.id : null;
+};
+
+const toText = (value: unknown): string => {
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  return '';
 };

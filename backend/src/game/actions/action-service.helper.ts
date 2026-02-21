@@ -5,6 +5,14 @@ const DEFAULT_ACTION_ALIASES: Record<string, string> = {
   roll_dice: 'roll',
 };
 
+function toActionText(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value).trim();
+  }
+  return '';
+}
+
 export type ActionPipelineHandlers<
   State,
   Action,
@@ -93,15 +101,18 @@ export function normalizeLowerActionType(
   return normalizeActionType(action).toLowerCase();
 }
 
-export function isRollAlias(rawType: unknown, normalizedType?: unknown): boolean {
-  const raw = String(rawType ?? '').trim();
+export function isRollAlias(
+  rawType: unknown,
+  normalizedType?: unknown,
+): boolean {
+  const raw = toActionText(rawType);
   if (raw === 'ROLL_DICE' || raw === 'roll_dice') return true;
-  const normalized = String(normalizedType ?? raw.toLowerCase()).trim();
+  const normalized = toActionText(normalizedType) || raw.toLowerCase();
   return normalized === 'roll_dice';
 }
 
 export function normalizeLegacyRollAliasToUpper(rawType: unknown): string {
-  const raw = String(rawType ?? '').trim();
+  const raw = toActionText(rawType);
   return isRollAlias(raw) ? 'ROLL_DICE' : raw;
 }
 
@@ -109,7 +120,7 @@ export function normalizeRollActionType(
   rawType: unknown,
   fallback = 'roll',
 ): string {
-  const raw = String(rawType ?? '').trim();
+  const raw = toActionText(rawType);
   if (!raw) return fallback;
   return isRollAlias(raw) ? fallback : raw;
 }
@@ -120,7 +131,7 @@ export function isRollActionType(
 ): boolean {
   const normalized = normalizeRollActionType(
     rawType,
-    String(normalizedType ?? '').trim() || 'roll',
+    toActionText(normalizedType) || 'roll',
   );
   return normalized === 'roll' || isRollAlias(rawType, normalizedType);
 }

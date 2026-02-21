@@ -5,7 +5,7 @@ import {
   LA_PARADE_SEQUENCE,
 } from '../model/la-parade-sucree-cards';
 import type { LaParadeSucreeMetadata } from '../model/la-parade-sucree-state.entity';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { normalizeActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export function getAvailableActions(
@@ -19,7 +19,9 @@ export function getAvailableActions(
   if (current !== playerId) return [];
   const meta = getMeta(state);
   const nextValue = LA_PARADE_SEQUENCE[meta.sequenceIndex];
-  const hand = Array.isArray(meta.hands?.[playerId]) ? meta.hands[playerId] : [];
+  const hand = Array.isArray(meta.hands?.[playerId])
+    ? meta.hands[playerId]
+    : [];
   const playable = hand.filter(
     (cardId) => LA_PARADE_CARD_BY_ID[cardId]?.value === nextValue,
   );
@@ -43,10 +45,10 @@ export function validateAction(
     throw new Error('Acteur requis.');
   }
   if (!isStartedState(state)) {
-    throw new Error('La partie n\'est pas active.');
+    throw new Error("La partie n'est pas active.");
   }
   if (state.turn?.currentPlayerId !== actorId) {
-    throw new Error('Ce n\'est pas votre tour.');
+    throw new Error("Ce n'est pas votre tour.");
   }
   if (type !== 'play_card' && type !== 'pass') {
     throw new Error(`Action inconnue : ${type}`);
@@ -58,14 +60,16 @@ export function validateAction(
       throw new Error('Carte manquante.');
     }
     const meta = getMeta(state);
-    const hand = Array.isArray(meta.hands?.[actorId]) ? meta.hands[actorId] : [];
+    const hand = Array.isArray(meta.hands?.[actorId])
+      ? meta.hands[actorId]
+      : [];
     if (!hand.includes(cardId)) {
-      throw new Error('Cette carte n\'est pas dans votre main.');
+      throw new Error("Cette carte n'est pas dans votre main.");
     }
     const expected = LA_PARADE_SEQUENCE[meta.sequenceIndex];
     const definition = LA_PARADE_CARD_BY_ID[cardId];
     if (!definition || definition.value !== expected) {
-      throw new Error('Ce n\'est pas la carte attendue.');
+      throw new Error("Ce n'est pas la carte attendue.");
     }
   }
   return action;
@@ -74,6 +78,3 @@ export function validateAction(
 function getMeta(state: GameStateEntity): LaParadeSucreeMetadata {
   return (state.metadata ?? {}) as LaParadeSucreeMetadata;
 }
-
-
-

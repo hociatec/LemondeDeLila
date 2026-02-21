@@ -27,7 +27,12 @@ import { ClientUpdatesModule } from '../../client-updates/client-updates.module'
     StatsModule,
     ClientUpdatesModule,
   ],
-  providers: [GameEngineService, GameEngineStateStore, GameContentService, GameGateway],
+  providers: [
+    GameEngineService,
+    GameEngineStateStore,
+    GameContentService,
+    GameGateway,
+  ],
   exports: [GameEngineService, EngineServicesModule],
 })
 export class EngineModule {}

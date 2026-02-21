@@ -2,7 +2,14 @@ import { buildLesMainsDeLaTerreShortcuts } from '../les-mains-de-la-terre.shortc
 
 describe('LesMainsShortcuts', () => {
   it('retourne un tableau', () => {
-    expect(Array.isArray(buildLesMainsDeLaTerreShortcuts())).toBe(true);
+    expect(
+      Array.isArray(
+        buildLesMainsDeLaTerreShortcuts({
+          metadata: {},
+          currentPlayerId: 1,
+          started: true,
+        }),
+      ),
+    ).toBe(true);
   });
 });
-

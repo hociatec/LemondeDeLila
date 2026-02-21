@@ -1,7 +1,10 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
-import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import {
+  getRngMeta,
+  getSafePlayers,
+} from '../../../../setup/setup-service.helper';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { BANDE_A_BANANE_DECK } from '../model/la-bande-a-banane-cards';
 import type {
@@ -24,7 +27,7 @@ export class BandeABananeSetupService {
       deck,
     );
 
-    let remainingDeck = [...shuffledDeck];
+    const remainingDeck = [...shuffledDeck];
     const hands: Record<number, string[]> = {};
     const troops: Record<number, BandeABananeTroopEntry[]> = {};
     const skipTurn: Record<number, number> = {};

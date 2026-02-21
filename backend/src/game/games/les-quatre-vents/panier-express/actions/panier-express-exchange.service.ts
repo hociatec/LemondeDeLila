@@ -5,7 +5,6 @@ import { playingLog } from '../../../../../common/utils/playing-logger';
 import type { PanierExpressMetadata } from '../model/panier-express-state.entity';
 import { PanierExpressUtils } from '../model/panier-express-utils.service';
 import { PanierExpressDeckService } from './panier-express-deck.service';
-import { PanierExpressDrawService } from './panier-express-draw.service';
 import type { InteractiveExchangeAdapter } from '../../../../modules/exchange/model/interactive-exchange.model';
 import { defaultExchangeTargets } from '../../../../modules/exchange/model/interactive-exchange.model';
 import { InteractiveExchangeService } from '../../../../modules/exchange/services/interactive-exchange.service';
@@ -18,7 +17,6 @@ export class PanierExpressExchangeService {
     private readonly core: GameCoreService,
     private readonly utils: PanierExpressUtils,
     private readonly deckHelper: PanierExpressDeckService,
-    private readonly drawSvc: PanierExpressDrawService,
     private readonly exchangeFlow: InteractiveExchangeService,
     private readonly setup: PanierExpressSetupService,
     private readonly random: RandomService,
@@ -351,7 +349,8 @@ export class PanierExpressExchangeService {
           `[Panier Express] Aucun joueur disponible pour ${resolvedCard}.`,
         );
       }
-      const exchangeLabel = this.utils.formatEventLabel(resolvedCard) || resolvedCard;
+      const exchangeLabel =
+        this.utils.formatEventLabel(resolvedCard) || resolvedCard;
       return {
         ...state,
         metadata,
@@ -845,32 +844,6 @@ export class PanierExpressExchangeService {
         setSkipTurns(state, playerId, turns),
     };
   }
-
-  private movePlayer(
-    state: GameStateEntity,
-    playerId: number,
-    delta: number,
-    metadata: PanierExpressMetadata,
-  ): GameStateEntity {
-    if (!delta || delta === 0) return { ...state, metadata };
-    const positions = { ...(metadata.positions ?? {}) };
-    const laps = { ...(metadata.laps ?? {}) };
-    const tiles = Array.isArray(metadata.tiles) ? metadata.tiles : [];
-    const total = tiles.length || 1;
-    const currentPos = positions[playerId] ?? 0;
-    const wraps = Math.floor((currentPos + delta) / total);
-    const nextPos = (currentPos + delta + total) % total;
-    positions[playerId] = nextPos;
-
-    const currentLaps = typeof laps[playerId] === 'number' ? laps[playerId] : 0;
-    laps[playerId] = Math.max(-1, currentLaps + wraps);
-
-    return { ...state, metadata: { ...metadata, positions, laps } };
-  }
-
-  private defaultExchangeDeck(): string[] {
-    return this.setup.exchangeCards();
-  }
 }
 
 function removeOne(collection: string[], value: string): string[] {
@@ -912,18 +885,34 @@ function addCardToPlayer(
         discarded: true,
       };
     }
-    return { player: { ...player, basket, inventory }, kept: false, discarded: true };
+    return {
+      player: { ...player, basket, inventory },
+      kept: false,
+      discarded: true,
+    };
   }
 
   if (isNeeded) {
-    return { player: { ...player, basket: [...basket, trimmed], inventory }, kept: true, discarded: false };
+    return {
+      player: { ...player, basket: [...basket, trimmed], inventory },
+      kept: true,
+      discarded: false,
+    };
   }
 
   if (inventory.length >= 5) {
-    return { player: { ...player, basket, inventory }, kept: false, discarded: true };
+    return {
+      player: { ...player, basket, inventory },
+      kept: false,
+      discarded: true,
+    };
   }
 
-  return { player: { ...player, inventory: [trimmed, ...inventory], basket }, kept: true, discarded: false };
+  return {
+    player: { ...player, inventory: [trimmed, ...inventory], basket },
+    kept: true,
+    discarded: false,
+  };
 }
 
 function addCardToPlayerState(

@@ -15,7 +15,7 @@ import { PiratesEnVadrouilleBotService } from './bots/pirates-en-vadrouille-bot.
     GameCoreModule,
     GameRegistryModule,
     EngineServicesModule,
-    ],
+  ],
   providers: [
     PiratesEnVadrouilleService,
     PiratesEnVadrouilleSetupService,

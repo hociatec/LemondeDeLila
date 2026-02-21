@@ -3,7 +3,6 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -12,7 +11,11 @@ import {
   LA_GRANDE_MINE_CARD_BY_ID,
   type LaGrandeMineCard,
 } from '../model/la-grande-mine-cards';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import type { LaGrandeMineMetadata } from '../model/la-grande-mine-state.entity';
 
 type LaGrandeMineActionPayload = {
@@ -76,7 +79,7 @@ export class LaGrandeMineDeBarbakActionService {
       : [];
     if (!hand.includes(cardId)) return next;
 
-    let updatedMeta = this.removeCardFromHand(meta, currentId, cardId);
+    const updatedMeta = this.removeCardFromHand(meta, currentId, cardId);
     next = this.setMeta(next, updatedMeta);
     next = this.addCardToDiscard(next, cardId);
 
@@ -279,7 +282,10 @@ export class LaGrandeMineDeBarbakActionService {
       if (player?.id == null) continue;
       next = this.removeRandomTreasure(next, player.id, 2);
     }
-    return this.core.appendLog(next, 'Un éboulement majeur fait voler les trésors !');
+    return this.core.appendLog(
+      next,
+      'Un éboulement majeur fait voler les trésors !',
+    );
   }
 
   private discardRandomFromHand(
@@ -328,7 +334,7 @@ export class LaGrandeMineDeBarbakActionService {
       const meta = this.getMeta(next);
       const domain = (meta.domains ?? {})[playerId];
       const treasures = Array.isArray(domain?.treasures)
-        ? [...domain!.treasures]
+        ? [...domain.treasures]
         : [];
       if (!treasures.length) break;
       const { index, meta: updatedRng } = this.random.pickIndex(
@@ -365,11 +371,9 @@ export class LaGrandeMineDeBarbakActionService {
     const meta = this.getMeta(state);
     const domain = (meta.domains ?? {})[playerId];
     const treasures = Array.isArray(domain?.treasures)
-      ? [...domain!.treasures]
+      ? [...domain.treasures]
       : [];
-    const objects = Array.isArray(domain?.objects)
-      ? [...domain!.objects]
-      : [];
+    const objects = Array.isArray(domain?.objects) ? [...domain.objects] : [];
     if (!treasures.length && !objects.length) {
       return this.discardRandomFromHand(state, playerId, 1);
     }
@@ -476,9 +480,10 @@ export class LaGrandeMineDeBarbakActionService {
     });
   }
 
-  private drawOneCard(
-    meta: LaGrandeMineMetadata,
-  ): { cardId: string | null; meta: LaGrandeMineMetadata } {
+  private drawOneCard(meta: LaGrandeMineMetadata): {
+    cardId: string | null;
+    meta: LaGrandeMineMetadata;
+  } {
     const draw = this.deckPolicies.drawOne<string, LaGrandeMineMetadata>({
       meta,
       deckKey: 'deck',
@@ -500,7 +505,7 @@ export class LaGrandeMineDeBarbakActionService {
       next,
       winnerId
         ? `${resolvePlayerNameFromState(next, winnerId)} devient le Nain suprême !`
-        : 'La mine s\'effondre et personne ne l\'emporte.',
+        : "La mine s'effondre et personne ne l'emporte.",
     );
   }
 
@@ -524,10 +529,16 @@ export class LaGrandeMineDeBarbakActionService {
     return tie ? null : bestId;
   }
 
-  private scoreDomain(domain?: { treasures?: string[]; objects?: string[] }): number {
+  private scoreDomain(domain?: {
+    treasures?: string[];
+    objects?: string[];
+  }): number {
     if (!domain) return 0;
     let total = 0;
-    for (const cardId of [...(domain.treasures ?? []), ...(domain.objects ?? [])]) {
+    for (const cardId of [
+      ...(domain.treasures ?? []),
+      ...(domain.objects ?? []),
+    ]) {
       const definition = LA_GRANDE_MINE_CARD_BY_ID[cardId];
       total += definition?.points ?? 0;
     }
@@ -557,7 +568,6 @@ export class LaGrandeMineDeBarbakActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     return players
       .filter((player) => player?.id != null && player.id !== playerId)
-      .map((player) => player!.id!);
+      .map((player) => player.id);
   }
 }
-

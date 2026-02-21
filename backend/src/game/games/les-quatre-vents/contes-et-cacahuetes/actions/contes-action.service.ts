@@ -3,7 +3,6 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
@@ -13,13 +12,16 @@ import { TurnPoliciesService } from '../../../../modules/turn-policies/services/
 import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
 import type {
   ContesCard,
+  ContesCardType,
   ContesCacahuetesMetadata,
   ContesCacahuetesTile,
   ContesPending,
 } from '../model/contes-et-cacahuetes-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
-
-
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 
 @Injectable()
 export class ContesActionService {
@@ -37,51 +39,51 @@ export class ContesActionService {
     actions: GameSingleActionDto[],
   ): GameStateEntity {
     const next = applyActionsSequentially(state, actions, (next, action) => {
-          const type = normalizeActionType(action);
-          return dispatchByActionType(
-            type,
-            {
-              'choose_pawn': () => {
-                next = this.handleChoosePawn(next, action);
-                return next;
-              },
-              'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'reroll_yes': () => {
-                next = this.handleRerollDecision(next, type === 'reroll_yes');
-                return next;
-              },
-              'reroll_no': () => {
-                next = this.handleRerollDecision(next, type === 'reroll_yes');
-                return next;
-              },
-              'choose_target': () => {
-                next = this.handleChooseTarget(next, action);
-                return next;
-              },
-              'choose_number': () => {
-                next = this.handleChooseNumber(next, action);
-                return next;
-              },
-              'choose_option': () => {
-                next = this.handleChooseOption(next, action);
-                return next;
-              },
-              'draw': () => {
-                next = this.handleDraw(next);
-                return next;
-              },
-              'choose_card': () => {
-                next = this.handleChooseCard(next, action);
-                return next;
-              },
-            },
-            () => next,
-          );
-        });
-        return next;
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          choose_pawn: () => {
+            next = this.handleChoosePawn(next, action);
+            return next;
+          },
+          roll: () => {
+            next = this.handleRoll(next);
+            return next;
+          },
+          reroll_yes: () => {
+            next = this.handleRerollDecision(next, type === 'reroll_yes');
+            return next;
+          },
+          reroll_no: () => {
+            next = this.handleRerollDecision(next, type === 'reroll_yes');
+            return next;
+          },
+          choose_target: () => {
+            next = this.handleChooseTarget(next, action);
+            return next;
+          },
+          choose_number: () => {
+            next = this.handleChooseNumber(next, action);
+            return next;
+          },
+          choose_option: () => {
+            next = this.handleChooseOption(next, action);
+            return next;
+          },
+          draw: () => {
+            next = this.handleDraw(next);
+            return next;
+          },
+          choose_card: () => {
+            next = this.handleChooseCard(next, action);
+            return next;
+          },
+        },
+        () => next,
+      );
+    });
+    return next;
   }
 
   private handleChoosePawn(
@@ -101,18 +103,18 @@ export class ContesActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     const used = new Set(
       players
-        .filter((p: any) => p?.id !== playerId)
-        .map((p: any) => String((p as any)?.pawn ?? '').trim())
+        .filter((p) => p?.id !== playerId)
+        .map((p) => toText(p?.pawn))
         .filter((p: string) => p.length > 0),
     );
     if (used.has(chosen.id)) return state;
 
-    const updatedPlayers = players.map((p: any) =>
+    const updatedPlayers = players.map((p) =>
       p?.id === playerId ? { ...p, pawn: chosen.id } : p,
     );
     let next: GameStateEntity = {
       ...state,
-      players: updatedPlayers as any,
+      players: updatedPlayers,
       pending: null,
     };
     next = this.core.appendLog(
@@ -135,7 +137,7 @@ export class ContesActionService {
     ];
     const usedForPending = new Set(
       playersForPending
-        .map((p: any) => String((p as any)?.pawn ?? '').trim())
+        .map((p) => toText(p?.pawn))
         .filter((p: string) => p.length > 0),
     );
     const choicesForPending = allPawnsForPending
@@ -145,8 +147,8 @@ export class ContesActionService {
       players: playersForPending,
       startPlayerId: playerId,
       isAssigned: (candidateId) => {
-        const player = playersForPending.find((p: any) => p?.id === candidateId);
-        return String((player as any)?.pawn ?? '').trim().length > 0;
+        const player = playersForPending.find((p) => p?.id === candidateId);
+        return toText(player?.pawn).length > 0;
       },
       pawns: choicesForPending,
     });
@@ -166,12 +168,12 @@ export class ContesActionService {
 
     const starterIndex =
       starterId != null
-        ? updatedPlayers.findIndex((p: any) => p?.id === starterId)
+        ? updatedPlayers.findIndex((p) => p?.id === starterId)
         : -1;
     const resolvedStarterId =
       starterId != null && starterIndex >= 0
         ? starterId
-        : updatedPlayers[0]?.id ?? null;
+        : (updatedPlayers[0]?.id ?? null);
     const started: GameStateEntity = {
       ...next,
       pending: null,
@@ -199,9 +201,7 @@ export class ContesActionService {
     const meta = this.getMeta(next);
     const forced = Number(meta.statuses.forcedRollOneTurns?.[currentId] ?? 0);
     const rollOut =
-      forced > 0
-        ? { roll: 1, meta: meta as any }
-        : this.random.rollDice(meta as any, 6);
+      forced > 0 ? { roll: 1, meta } : this.random.rollDice(meta, 6);
     next = {
       ...next,
       metadata: { ...(next.metadata ?? {}), ...rollOut.meta },
@@ -219,7 +219,7 @@ export class ContesActionService {
 
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} lance le dÃ© : \"${rollOut.roll}\".`,
+      `${resolvePlayerNameFromState(next, currentId)} lance le dÃ© : "${rollOut.roll}".`,
     );
 
     const rerollToken = Number(
@@ -252,13 +252,13 @@ export class ContesActionService {
     state: GameStateEntity,
     reroll: boolean,
   ): GameStateEntity {
-    const pending = state.pending as any as ContesPending;
+    const pending = state.pending as ContesPending;
     if (!pending || pending.type !== 'reroll') return state;
     const playerId = pending.playerId;
     let next: GameStateEntity = { ...state, pending: null };
 
     if (reroll) {
-      const out = this.random.rollDice(this.getMeta(next) as any, 6);
+      const out = this.random.rollDice(this.getMeta(next), 6);
       next = {
         ...next,
         metadata: { ...(next.metadata ?? {}), ...out.meta },
@@ -266,7 +266,7 @@ export class ContesActionService {
       };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} relance le dÃ© : \"${out.roll}\".`,
+        `${resolvePlayerNameFromState(next, playerId)} relance le dÃ© : "${out.roll}".`,
       );
       next = this.applyMoveFromRoll(next, playerId, out.roll, 0);
     } else {
@@ -274,7 +274,7 @@ export class ContesActionService {
       next = { ...next, lastRoll: roll };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} garde le rÃ©sultat \"${roll}\".`,
+        `${resolvePlayerNameFromState(next, playerId)} garde le rÃ©sultat "${roll}".`,
       );
       next = this.applyMoveFromRoll(next, playerId, roll, 0);
     }
@@ -288,10 +288,10 @@ export class ContesActionService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const pending = state.pending as any as ContesPending;
+    const pending = state.pending as ContesPending;
     if (!pending || pending.type !== 'choose_target') return state;
     const playerId = pending.playerId;
-    const targetPlayerId = Number((action.payload as any)?.targetPlayerId);
+    const targetPlayerId = Number(asRecord(action.payload).targetPlayerId);
     const target = pending.data.targets.find(
       (t) => t.targetPlayerId === targetPlayerId,
     );
@@ -340,7 +340,7 @@ export class ContesActionService {
     if (ctx === 'key_gold_choose_target') {
       return this.setPending(next, {
         type: 'choose_option',
-        label: `ClÃ© dâ€™or : choisissez lâ€™effet Ã  appliquer Ã  ${resolvePlayerNameFromState(next, targetPlayerId)} (Bonus/Malus).`,
+        label: `ClÃ© dâ€™or : choisissez lâ€™effet Ã  appliquer Ã  ${resolvePlayerNameFromState(next, targetPlayerId)} (Bonus/Malus).`,
         playerId,
         blocking: true,
         choices: ['Bonus', 'Malus'],
@@ -359,10 +359,10 @@ export class ContesActionService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const pending = state.pending as any as ContesPending;
+    const pending = state.pending as ContesPending;
     if (!pending || pending.type !== 'choose_number') return state;
     const playerId = pending.playerId;
-    const value = Number((action.payload as any)?.value);
+    const value = Number(asRecord(action.payload).value);
     if (!Number.isFinite(value)) return state;
 
     let next: GameStateEntity = { ...state, pending: null };
@@ -371,14 +371,14 @@ export class ContesActionService {
 
     const players = Array.isArray(next.players) ? next.players : [];
     const defaultOrder = players
-      .map((p: any) => Number(p?.id))
+      .map((p) => Number(p?.id))
       .filter((id) => Number.isFinite(id));
-    const orderRaw = Array.isArray((pending.data as any)?.order)
-      ? ((pending.data as any).order as number[])
+    const orderRaw = Array.isArray(pending.data?.order)
+      ? pending.data.order
       : defaultOrder;
     const order = orderRaw.filter((id) => Number.isFinite(id));
     const picks: Record<number, number> = {
-      ...((pending.data as any)?.picks ?? {}),
+      ...(pending.data?.picks ?? {}),
       [playerId]: value,
     };
 
@@ -420,10 +420,10 @@ export class ContesActionService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const pending = state.pending as any as ContesPending;
+    const pending = state.pending as ContesPending;
     if (!pending || pending.type !== 'choose_option') return state;
     const playerId = pending.playerId;
-    const option = String((action.payload as any)?.option ?? '');
+    const option = toText(asRecord(action.payload).option);
     if (!pending.choices.some((c) => String(c) === option)) return state;
 
     let next: GameStateEntity = { ...state, pending: null };
@@ -471,14 +471,14 @@ export class ContesActionService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const pending = state.pending as any as ContesPending;
+    const pending = state.pending as ContesPending;
     if (!pending || pending.type !== 'choose_card') return state;
     const playerId = pending.playerId;
 
-    const cardType = String((action.payload as any)?.cardType ?? '');
-    const cardId = Number((action.payload as any)?.cardId);
+    const cardType = toText(asRecord(action.payload).cardType);
+    const cardId = Number(asRecord(action.payload).cardId);
     const pick = pending.data.cards.find(
-      (c) => c.cardType === (cardType as any) && c.cardId === cardId,
+      (c) => c.cardType === cardType && c.cardId === cardId,
     );
     if (!pick) return state;
 
@@ -488,7 +488,7 @@ export class ContesActionService {
     if (ctx.startsWith('abondance_keep_one:')) {
       next = this.core.appendLog(
         next,
-        `Corne dâ€™abondance : ${resolvePlayerNameFromState(next, playerId)} garde \"${pick.title}\".`,
+        `Corne dâ€™abondance : ${resolvePlayerNameFromState(next, playerId)} garde "${pick.title}".`,
       );
       return this.applyBonusEffectById(next, playerId, cardId, 0);
     }
@@ -682,20 +682,24 @@ export class ContesActionService {
     const status = String(state.status ?? '').toLowerCase();
     if (status !== 'started') return state;
 
-    const pending = state.pending as any as ContesPending | null;
+    const pending = state.pending as ContesPending | null;
     if (!pending || pending.type !== 'draw') return state;
 
     const playerId =
       typeof pending.playerId === 'number'
         ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
+        : (state.turn?.currentPlayerId ?? null);
     if (playerId == null) return state;
 
-    const data = (pending.data ?? {}) as any;
+    const data = pending.data ?? {};
     const context = String(data.context ?? 'draw_and_apply');
 
     if (context === 'abondance') {
-      return this.resolveAbondanceDraw({ ...state, pending: null }, playerId, data);
+      return this.resolveAbondanceDraw(
+        { ...state, pending: null },
+        playerId,
+        data,
+      );
     }
 
     return this.resolveQueuedDraw({ ...state, pending: null }, playerId, data);
@@ -707,7 +711,9 @@ export class ContesActionService {
     data: { queue?: string[]; cardType?: string; depth?: number },
   ): GameStateEntity {
     const queue = Array.isArray(data.queue) ? [...data.queue] : [];
-    const fallbackType = String(data.cardType ?? '').trim().toLowerCase();
+    const fallbackType = String(data.cardType ?? '')
+      .trim()
+      .toLowerCase();
     const currentType = (queue.shift() ?? fallbackType) as
       | 'bonus'
       | 'malus'
@@ -803,12 +809,14 @@ export class ContesActionService {
     playerId: number,
     data: { remaining?: number; drawn?: ContesCard[]; depth?: number },
   ): GameStateEntity {
-    const remaining = Number.isFinite(data.remaining) ? Number(data.remaining) : 0;
+    const remaining = Number.isFinite(data.remaining)
+      ? Number(data.remaining)
+      : 0;
     const drawn = Array.isArray(data.drawn) ? [...data.drawn] : [];
     if (remaining <= 0) return state;
 
     const draw = this.drawCard(state, 'bonus');
-    let next = draw.state;
+    const next = draw.state;
     if (draw.card) {
       drawn.push(draw.card);
     }
@@ -835,7 +843,7 @@ export class ContesActionService {
     return this.setPending(next, {
       type: 'choose_card',
       label:
-        'Corne dâ€™abondance : choisissez la carte Bonus Ã  garder, puis EntrÃ©e.',
+        'Corne dâ€™abondance : choisissez la carte Bonus Ã  garder, puis EntrÃ©e.',
       playerId,
       blocking: true,
       choices: drawn.map((c) => c.title),
@@ -890,14 +898,14 @@ export class ContesActionService {
           next,
           playerId,
           'move_other_2',
-          'PoussiÃ¨re de fÃ©e : choisissez un joueur Ã  faire avancer de 2 cases.',
+          'PoussiÃ¨re de fÃ©e : choisissez un joueur Ã  faire avancer de 2 cases.',
         );
       case 6: {
-        const out = this.random.rollDice(this.getMeta(next) as any, 6);
+        const out = this.random.rollDice(this.getMeta(next), 6);
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...out.meta } };
         next = this.core.appendLog(
           next,
-          `Haricot magique : dÃ© \"${out.roll}\", doublÃ©.`,
+          `Haricot magique : dÃ© "${out.roll}", doublÃ©.`,
         );
         return this.moveBy(next, playerId, out.roll * 2, depth);
       }
@@ -967,12 +975,12 @@ export class ContesActionService {
       case 3:
         return this.swapWithClosestBehind(next, playerId);
       case 4: {
-        const out = this.random.rollDice(this.getMeta(next) as any, 6);
+        const out = this.random.rollDice(this.getMeta(next), 6);
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...out.meta } };
         const half = Math.floor(out.roll / 2);
         next = this.core.appendLog(
           next,
-          `Pluie de mots oubliÃ©s : dÃ© \"${out.roll}\", moitiÃ© = ${half}.`,
+          `Pluie de mots oubliÃ©s : dÃ© "${out.roll}", moitiÃ© = ${half}.`,
         );
         return this.moveBy(next, playerId, half, depth);
       }
@@ -990,28 +998,28 @@ export class ContesActionService {
           next,
           playerId,
           'give_bonus_choose_target',
-          'Maladresse : choisissez un joueur Ã  qui donner une de vos cartes Bonus.',
+          'Maladresse : choisissez un joueur Ã  qui donner une de vos cartes Bonus.',
         );
       case 10: {
-        const out = this.random.rollDice(this.getMeta(next) as any, 6);
+        const out = this.random.rollDice(this.getMeta(next), 6);
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...out.meta } };
         next = this.core.appendLog(
           next,
-          `Ombre farceuse : dÃ© \"${out.roll}\", recul.`,
+          `Ombre farceuse : dÃ© "${out.roll}", recul.`,
         );
         return this.moveBy(next, playerId, -out.roll, depth);
       }
       case 11: {
-        const out = this.random.rollDice(this.getMeta(next) as any, 6);
+        const out = this.random.rollDice(this.getMeta(next), 6);
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...out.meta } };
         if (out.roll >= 4)
           return this.core.appendLog(
             next,
-            `Ã‰nigme infernale : \"${out.roll}\" (rÃ©ussi).`,
+            `Ã‰nigme infernale : "${out.roll}" (rÃ©ussi).`,
           );
         next = this.core.appendLog(
           next,
-          `Ã‰nigme infernale : \"${out.roll}\" (ratÃ©) : passez votre tour.`,
+          `Ã‰nigme infernale : "${out.roll}" (ratÃ©) : passez votre tour.`,
         );
         return this.addStatusCount(next, 'skipTurn', playerId, 1);
       }
@@ -1051,7 +1059,7 @@ export class ContesActionService {
         return this.applyCoffreMerveilles(next, playerId, depth);
       case 5: {
         const order = (Array.isArray(next.players) ? next.players : [])
-          .map((p: any) => Number(p?.id))
+          .map((p) => Number(p?.id))
           .filter((id) => Number.isFinite(id));
         return this.setPending(next, {
           type: 'choose_number',
@@ -1082,7 +1090,7 @@ export class ContesActionService {
         next = this.setStatusBool(next, 'reverseNextTurn', playerId, true);
         return this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, playerId)} lira Ã  lâ€™envers : prochain tour en reculant.`,
+          `${resolvePlayerNameFromState(next, playerId)} lira Ã  lâ€™envers : prochain tour en reculant.`,
         );
       case 9:
         return this.setPending(next, {
@@ -1102,11 +1110,11 @@ export class ContesActionService {
       case 11:
         return this.drawAndApply(next, playerId, 'conte', depth);
       case 12: {
-        const out = this.random.rollDice(this.getMeta(next) as any, 6);
+        const out = this.random.rollDice(this.getMeta(next), 6);
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...out.meta } };
         next = this.core.appendLog(
           next,
-          `Montre enchantÃ©e : dÃ© \"${out.roll}\", recul.`,
+          `Montre enchantÃ©e : dÃ© "${out.roll}", recul.`,
         );
         return this.moveBy(next, playerId, -out.roll, depth);
       }
@@ -1161,11 +1169,11 @@ export class ContesActionService {
     depth: number,
   ): GameStateEntity {
     let next = state;
-    const out1 = this.random.nextInt(this.getMeta(next) as any, 3);
+    const out1 = this.random.nextInt(this.getMeta(next), 3);
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...out1.meta } };
-    const out2 = this.random.nextInt(this.getMeta(next) as any, 3);
+    const out2 = this.random.nextInt(this.getMeta(next), 3);
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...out2.meta } };
-    const t = (v: number) =>
+    const t = (v: number): ContesCardType =>
       v === 0 ? 'bonus' : v === 1 ? 'malus' : 'surprise';
     const t1 = t(out1.value);
     const t2 = t(out2.value);
@@ -1173,7 +1181,7 @@ export class ContesActionService {
       next,
       `Coffre aux merveilles : 2 cartes (${t1}, ${t2}).`,
     );
-    return this.queueDraws(next, playerId, [t1 as any, t2 as any], depth);
+    return this.queueDraws(next, playerId, [t1, t2], depth);
   }
 
   private drawCard(
@@ -1183,7 +1191,7 @@ export class ContesActionService {
     const meta = this.getMeta(state);
     const decks = meta.decks;
     const pileKey = type;
-    const discardKey =
+    const discardKey: keyof ContesCacahuetesMetadata['decks'] =
       type === 'bonus'
         ? 'discardBonus'
         : type === 'malus'
@@ -1191,14 +1199,16 @@ export class ContesActionService {
           : type === 'surprise'
             ? 'discardSurprise'
             : 'discardContes';
+    const pile = toContesCardArray(decks[pileKey]);
+    const discard = toContesCardArray(decks[discardKey]);
 
     const draw = this.deckPolicies.drawFromPile<
       ContesCard,
       ContesCacahuetesMetadata
     >({
       meta,
-      pile: [...(decks[pileKey] ?? [])],
-      discard: [...((decks as any)[discardKey] ?? [])],
+      pile: [...pile],
+      discard: [...discard],
       useWholeMetaRng: true,
       discardDrawnCard: true,
     });
@@ -1209,7 +1219,7 @@ export class ContesActionService {
         ...decks,
         [pileKey]: draw.pile,
         [discardKey]: draw.discard,
-      } as any,
+      },
     } as ContesCacahuetesMetadata;
 
     return {
@@ -1266,7 +1276,7 @@ export class ContesActionService {
 
         return true;
       })
-      .map((p: any) => ({
+      .map((p) => ({
         targetPlayerId: p.id,
         targetUsername: p.username ?? `Joueur ${p.id}`,
       }));
@@ -1278,7 +1288,7 @@ export class ContesActionService {
       ) {
         return this.core.appendLog(
           state,
-          'Aucune carte Ã  voler chez les autres joueurs.',
+          'Aucune carte Ã  voler chez les autres joueurs.',
         );
       }
       return this.core.appendLog(state, 'Aucun autre joueur disponible.');
@@ -1302,12 +1312,12 @@ export class ContesActionService {
     if (!tokens.length) {
       return this.core.appendLog(
         state,
-        `${resolvePlayerNameFromState(state, giverId)} n'a aucune carte Bonus Ã  donner.`,
+        `${resolvePlayerNameFromState(state, giverId)} n'a aucune carte Bonus Ã  donner.`,
       );
     }
     return this.setPending(state, {
       type: 'choose_card',
-      label: `Choisissez la carte Bonus Ã  donner Ã  ${resolvePlayerNameFromState(state, targetId)}, puis EntrÃ©e.`,
+      label: `Choisissez la carte Bonus Ã  donner Ã  ${resolvePlayerNameFromState(state, targetId)}, puis EntrÃ©e.`,
       playerId: giverId,
       blocking: true,
       choices: tokens.map((t) => t.title),
@@ -1348,7 +1358,7 @@ export class ContesActionService {
   ): Array<{ cardId: number; title: string }> {
     const out: Array<{ cardId: number; title: string }> = [];
     if (meta.statuses.reverseNextTurn?.[playerId])
-      out.push({ cardId: 8, title: 'Livre Ã  lâ€™envers' });
+      out.push({ cardId: 8, title: 'Livre Ã  lâ€™envers' });
     if (meta.statuses.protectNextMalus?.[playerId])
       out.push({ cardId: 10, title: 'Dragon de papier' });
     return out;
@@ -1375,7 +1385,7 @@ export class ContesActionService {
     if (!cards.length) {
       return this.core.appendLog(
         state,
-        `${resolvePlayerNameFromState(state, fromId)} nâ€™a aucune carte Bonus ou Surprise Ã  voler.`,
+        `${resolvePlayerNameFromState(state, fromId)} nâ€™a aucune carte Bonus ou Surprise Ã  voler.`,
       );
     }
 
@@ -1383,7 +1393,7 @@ export class ContesActionService {
       const only = cards[0];
       const next = this.core.appendLog(
         state,
-        `Vol : ${resolvePlayerNameFromState(state, thiefId)} prend "${only.title}" Ã  ${resolvePlayerNameFromState(state, fromId)}.`,
+        `Vol : ${resolvePlayerNameFromState(state, thiefId)} prend "${only.title}" Ã  ${resolvePlayerNameFromState(state, fromId)}.`,
       );
       return only.cardType === 'bonus'
         ? this.transferBonusToken(next, fromId, thiefId, only.cardId)
@@ -1392,7 +1402,7 @@ export class ContesActionService {
 
     return this.setPending(state, {
       type: 'choose_card',
-      label: `Filet magique : choisissez la carte Ã  voler Ã  ${resolvePlayerNameFromState(state, fromId)}, puis EntrÃ©e.`,
+      label: `Filet magique : choisissez la carte Ã  voler Ã  ${resolvePlayerNameFromState(state, fromId)}, puis EntrÃ©e.`,
       playerId: thiefId,
       blocking: true,
       choices: cards.map((c) => c.title),
@@ -1422,7 +1432,7 @@ export class ContesActionService {
       next = this.addStatusCount(next, 'shieldMalus', toId, 1);
       return this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, fromId)} donne une Amulette protectrice Ã  ${resolvePlayerNameFromState(next, toId)}.`,
+        `${resolvePlayerNameFromState(next, fromId)} donne une Amulette protectrice Ã  ${resolvePlayerNameFromState(next, toId)}.`,
       );
     }
     if (bonusId === 4) {
@@ -1436,7 +1446,7 @@ export class ContesActionService {
       next = this.setStatusBool(next, 'ignoreNextConteAndAdvance', toId, true);
       return this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, fromId)} donne une Cape dâ€™invisibilitÃ© Ã  ${resolvePlayerNameFromState(next, toId)}.`,
+        `${resolvePlayerNameFromState(next, fromId)} donne une Cape dâ€™invisibilitÃ© Ã  ${resolvePlayerNameFromState(next, toId)}.`,
       );
     }
     if (bonusId === 7) {
@@ -1445,7 +1455,7 @@ export class ContesActionService {
       next = this.setStatusBool(next, 'keyOfGold', toId, true);
       return this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, fromId)} donne la ClÃ© dâ€™or Ã  ${resolvePlayerNameFromState(next, toId)}.`,
+        `${resolvePlayerNameFromState(next, fromId)} donne la ClÃ© dâ€™or Ã  ${resolvePlayerNameFromState(next, toId)}.`,
       );
     }
     if (bonusId === 14) {
@@ -1454,7 +1464,7 @@ export class ContesActionService {
       next = this.setStatusBool(next, 'replaceOneOn1By4', toId, true);
       return this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, fromId)} donne Feuille magique Ã  ${resolvePlayerNameFromState(next, toId)}.`,
+        `${resolvePlayerNameFromState(next, fromId)} donne Feuille magique Ã  ${resolvePlayerNameFromState(next, toId)}.`,
       );
     }
     if (bonusId === 2) {
@@ -1464,7 +1474,7 @@ export class ContesActionService {
       next = this.addStatusCount(next, 'rerollToken', toId, 1);
       return this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, fromId)} donne un Parchemin enchantÃ© Ã  ${resolvePlayerNameFromState(next, toId)}.`,
+        `${resolvePlayerNameFromState(next, fromId)} donne un Parchemin enchantÃ© Ã  ${resolvePlayerNameFromState(next, toId)}.`,
       );
     }
     return next;
@@ -1485,7 +1495,7 @@ export class ContesActionService {
       next = this.setStatusBool(next, 'reverseNextTurn', toId, true);
       return this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, fromId)} donne Livre Ã  lâ€™envers Ã  ${resolvePlayerNameFromState(next, toId)}.`,
+        `${resolvePlayerNameFromState(next, fromId)} donne Livre Ã  lâ€™envers Ã  ${resolvePlayerNameFromState(next, toId)}.`,
       );
     }
 
@@ -1495,7 +1505,7 @@ export class ContesActionService {
       next = this.setStatusBool(next, 'protectNextMalus', toId, true);
       return this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, fromId)} donne Dragon de papier Ã  ${resolvePlayerNameFromState(next, toId)}.`,
+        `${resolvePlayerNameFromState(next, fromId)} donne Dragon de papier Ã  ${resolvePlayerNameFromState(next, toId)}.`,
       );
     }
 
@@ -1512,7 +1522,7 @@ export class ContesActionService {
     if (!tokens.length) {
       return this.core.appendLog(
         state,
-        `${resolvePlayerNameFromState(state, fromId)} n'a aucune carte Bonus Ã  donner.`,
+        `${resolvePlayerNameFromState(state, fromId)} n'a aucune carte Bonus Ã  donner.`,
       );
     }
     return this.transferBonusToken(state, fromId, toId, tokens[0].cardId);
@@ -1667,7 +1677,7 @@ export class ContesActionService {
     next = this.setStatusCount(next, 'skipTurn', playerId, 999);
     return this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} est bloquÃ©(e) jusquâ€™Ã  ce quâ€™un autre joueur atteigne ou dÃ©passe sa case.`,
+      `${resolvePlayerNameFromState(next, playerId)} est bloquÃ©(e) jusquâ€™Ã  ce quâ€™un autre joueur atteigne ou dÃ©passe sa case.`,
     );
   }
 
@@ -1690,7 +1700,7 @@ export class ContesActionService {
     let next = this.teleport(state, playerId, idx);
     next = this.core.appendLog(
       next,
-      `Passage obscur : retour Ã  la case Malus ${idx + 1}.`,
+      `Passage obscur : retour Ã  la case Malus ${idx + 1}.`,
     );
     return this.applyTileEffect(next, playerId, tiles[idx], depth + 1);
   }
@@ -1737,8 +1747,9 @@ export class ContesActionService {
     playerId: number,
     key: keyof ContesCacahuetesMetadata['statuses'],
   ): GameStateEntity {
-    const meta = this.getMeta(state) as any;
-    const current = Number(meta.statuses?.[key]?.[playerId] ?? 0);
+    const meta = this.getMeta(state);
+    const map = this.getStatusMap(meta, key);
+    const current = Number(map[playerId] ?? 0);
     if (!Number.isFinite(current) || current <= 0) return state;
     return this.setStatusCount(state, String(key), playerId, current - 1);
   }
@@ -1756,8 +1767,11 @@ export class ContesActionService {
     playerId: number,
     value: number,
   ): GameStateEntity {
-    const meta = this.getMeta(state) as any;
-    const statuses = meta.statuses ?? {};
+    const meta = this.getMeta(state);
+    const statuses = meta.statuses as unknown as Record<
+      string,
+      Record<number, unknown>
+    >;
     const map = { ...(statuses[key] ?? {}) };
     if (!value) delete map[playerId];
     else map[playerId] = value;
@@ -1777,8 +1791,11 @@ export class ContesActionService {
     playerId: number,
     value: boolean,
   ): GameStateEntity {
-    const meta = this.getMeta(state) as any;
-    const statuses = meta.statuses ?? {};
+    const meta = this.getMeta(state);
+    const statuses = meta.statuses as unknown as Record<
+      string,
+      Record<number, unknown>
+    >;
     const map = { ...(statuses[key] ?? {}) };
     if (!value) delete map[playerId];
     else map[playerId] = true;
@@ -1798,8 +1815,11 @@ export class ContesActionService {
     playerId: number,
     delta: number,
   ): GameStateEntity {
-    const meta = this.getMeta(state) as any;
-    const statuses = meta.statuses ?? {};
+    const meta = this.getMeta(state);
+    const statuses = meta.statuses as unknown as Record<
+      string,
+      Record<number, unknown>
+    >;
     const map = { ...(statuses[key] ?? {}) };
     const current = Number(map[playerId] ?? 0);
     map[playerId] = (Number.isFinite(current) ? current : 0) + delta;
@@ -1816,7 +1836,7 @@ export class ContesActionService {
   private pawnLabel(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
     const player = players.find((p) => p?.id === id);
-    const pawn = String((player as any)?.pawn ?? '').trim();
+    const pawn = toText(player?.pawn);
     if (pawn) return `"${pawn}"`;
     return 'un pion';
   }
@@ -1837,16 +1857,50 @@ export class ContesActionService {
   }
 
   private getMeta(state: GameStateEntity): ContesCacahuetesMetadata {
-    return (state.metadata ?? {}) as any as ContesCacahuetesMetadata;
+    return (state.metadata ?? {}) as ContesCacahuetesMetadata;
+  }
+
+  private getStatusMap(
+    meta: ContesCacahuetesMetadata,
+    key: keyof ContesCacahuetesMetadata['statuses'],
+  ): Record<number, unknown> {
+    const statuses = meta.statuses as unknown as Record<
+      string,
+      Record<number, unknown>
+    >;
+    return statuses[String(key)] ?? {};
   }
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
 
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  return '';
+}
 
-
-
-
-
-
-
-
+function toContesCardArray(value: unknown): ContesCard[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((entry) => {
+      const record = asRecord(entry);
+      const id = Number(record.id);
+      const type = toText(record.type);
+      const title = toText(record.title);
+      const text = toText(record.text);
+      const isType =
+        type === 'bonus' ||
+        type === 'malus' ||
+        type === 'surprise' ||
+        type === 'conte';
+      if (!Number.isFinite(id) || !isType || !title || !text) return null;
+      return { id, type, title, text } as ContesCard;
+    })
+    .filter((entry): entry is ContesCard => entry !== null);
+}

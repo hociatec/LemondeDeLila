@@ -5,7 +5,8 @@ function stableStringify(value: unknown): string {
 
   const t = typeof value;
   if (t === 'string') return JSON.stringify(value);
-  if (t === 'number') return Number.isFinite(value as number) ? String(value) : 'null';
+  if (t === 'number')
+    return Number.isFinite(value as number) ? String(value) : 'null';
   if (t === 'boolean') return (value as boolean) ? 'true' : 'false';
 
   if (Array.isArray(value)) {
@@ -24,7 +25,9 @@ function stableStringify(value: unknown): string {
 }
 
 export function computeActionId(type: string, payload: unknown): string {
-  const t = String(type ?? '').trim().toLowerCase();
+  const t = String(type ?? '')
+    .trim()
+    .toLowerCase();
   const canonicalPayload = stableStringify(payload ?? null);
   const hex = createHash('sha256')
     .update(`${t}|${canonicalPayload}`, 'utf8')
@@ -32,4 +35,3 @@ export function computeActionId(type: string, payload: unknown): string {
     .slice(0, 16);
   return `act_${hex}`;
 }
-

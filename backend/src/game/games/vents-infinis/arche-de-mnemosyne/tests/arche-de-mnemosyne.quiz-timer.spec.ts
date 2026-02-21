@@ -1,6 +1,6 @@
 import { ArcheDeMnemosyneService } from '../arche-de-mnemosyne.service';
 
-describe("ArcheDeMnemosyneService quiz timer", () => {
+describe('ArcheDeMnemosyneService quiz timer', () => {
   const makeService = (questions: any[] = []) =>
     new ArcheDeMnemosyneService(
       { register: jest.fn() } as any,
@@ -11,9 +11,15 @@ describe("ArcheDeMnemosyneService quiz timer", () => {
         }),
       } as any,
       { advanceTurn: (s: any) => s } as any,
-      { listCategories: () => [{ id: 'c1', name: 'Cat' }], listQuestions: () => questions } as any,
       {
-        pickIndex: (_meta: any, len: number) => ({ index: Math.max(0, Math.min(len - 1, 0)), meta: {} }),
+        listCategories: () => [{ id: 'c1', name: 'Cat' }],
+        listQuestions: () => questions,
+      } as any,
+      {
+        pickIndex: (_meta: any, len: number) => ({
+          index: Math.max(0, Math.min(len - 1, 0)),
+          meta: {},
+        }),
         shuffle: (_meta: any, arr: any) => ({ meta: {}, values: arr }),
       } as any,
     );
@@ -74,26 +80,48 @@ describe("ArcheDeMnemosyneService quiz timer", () => {
     };
 
     const afterA = service.applyActions(state, [
-      { type: 'answer_quiz', payload: { answerIndex: 0 }, meta: { actorId: 1 } } as any,
-    ]);
+      {
+        type: 'answer_quiz',
+        payload: { answerIndex: 0 },
+        meta: { actorId: 1 },
+      } as any,
+    ]) as any;
     expect(afterA.metadata.currentQuestion).toBeTruthy();
     expect(afterA.metadata.quizDeadlineAtMs).toBeTruthy();
 
     const afterB = service.applyActions(afterA, [
-      { type: 'answer_quiz', payload: { answerIndex: 1 }, meta: { actorId: 2 } } as any,
-    ]);
-    const messages = (afterB.log ?? []).map((l: any) => String(l?.message ?? ''));
-    expect(messages.some((m: string) => m === 'A répond : Bonne réponse.')).toBe(true);
-    expect(messages.some((m: string) => m === 'B répond : Mauvaise réponse.')).toBe(true);
+      {
+        type: 'answer_quiz',
+        payload: { answerIndex: 1 },
+        meta: { actorId: 2 },
+      } as any,
+    ]) as any;
+    const messages = (afterB.log ?? []).map((l: any) =>
+      String(l?.message ?? ''),
+    );
+    expect(
+      messages.some((m: string) => m === 'A répond : Bonne réponse.'),
+    ).toBe(true);
+    expect(
+      messages.some((m: string) => m === 'B répond : Mauvaise réponse.'),
+    ).toBe(true);
     expect(messages.some((m: string) => m.includes('répond : A.'))).toBe(false);
     expect(messages.some((m: string) => m.includes('répond : B.'))).toBe(false);
-    expect(messages.some((m: string) => m.includes('La bonne réponse était'))).toBe(true);
-    expect(messages.some((m: string) => m.includes('Prochaine question dans'))).toBe(true);
-    expect(messages.some((m: string) => m === 'Fin de la manche 1.')).toBe(true);
+    expect(
+      messages.some((m: string) => m.includes('La bonne réponse était')),
+    ).toBe(true);
+    expect(
+      messages.some((m: string) => m.includes('Prochaine question dans')),
+    ).toBe(true);
+    expect(messages.some((m: string) => m === 'Fin de la manche 1.')).toBe(
+      true,
+    );
     expect(afterB.metadata.currentQuestion).toBeNull();
     expect(afterB.metadata.quizDeadlineAtMs).toBeNull();
     expect(typeof afterB.metadata.interQuestionUntilMs).toBe('number');
-    expect(Object.keys(afterB.metadata.quizAnswersByPlayerId ?? {}).length).toBe(0);
+    expect(
+      Object.keys(afterB.metadata.quizAnswersByPlayerId ?? {}).length,
+    ).toBe(0);
     expect(afterB.round).toBe(2);
   });
 
@@ -140,16 +168,36 @@ describe("ArcheDeMnemosyneService quiz timer", () => {
     };
 
     const afterA = service.applyActions(state, [
-      { type: 'answer_quiz', payload: { answerIndex: 1 }, meta: { actorId: 1 } } as any, // wrong
+      {
+        type: 'answer_quiz',
+        payload: { answerIndex: 1 },
+        meta: { actorId: 1 },
+      } as any, // wrong
     ]);
     const afterB = service.applyActions(afterA, [
-      { type: 'answer_quiz', payload: { answerIndex: 2 }, meta: { actorId: 2 } } as any, // wrong
+      {
+        type: 'answer_quiz',
+        payload: { answerIndex: 2 },
+        meta: { actorId: 2 },
+      } as any, // wrong
     ]);
 
-    const messages = (afterB.log ?? []).map((l: any) => String(l?.message ?? ''));
-    expect(messages.some((m: string) => m === `Personne n'a trouvé la bonne réponse.`)).toBe(true);
-    expect(messages.some((m: string) => m.includes(`Personne n'a trouvé la bonne réponse (`))).toBe(false);
-    expect(messages.some((m: string) => m.includes('La bonne réponse était'))).toBe(false);
+    const messages = (afterB.log ?? []).map((l: any) =>
+      String(l?.message ?? ''),
+    );
+    expect(
+      messages.some(
+        (m: string) => m === `Personne n'a trouvé la bonne réponse.`,
+      ),
+    ).toBe(true);
+    expect(
+      messages.some((m: string) =>
+        m.includes(`Personne n'a trouvé la bonne réponse (`),
+      ),
+    ).toBe(false);
+    expect(
+      messages.some((m: string) => m.includes('La bonne réponse était')),
+    ).toBe(false);
   });
 
   it('when game ends: does not announce a next question countdown', () => {
@@ -195,18 +243,34 @@ describe("ArcheDeMnemosyneService quiz timer", () => {
     };
 
     const afterA = service.applyActions(state, [
-      { type: 'answer_quiz', payload: { answerIndex: 0 }, meta: { actorId: 1 } } as any, // correct
-    ]);
+      {
+        type: 'answer_quiz',
+        payload: { answerIndex: 0 },
+        meta: { actorId: 1 },
+      } as any, // correct
+    ]) as any;
     const afterB = service.applyActions(afterA, [
-      { type: 'answer_quiz', payload: { answerIndex: 1 }, meta: { actorId: 2 } } as any, // wrong
-    ]);
+      {
+        type: 'answer_quiz',
+        payload: { answerIndex: 1 },
+        meta: { actorId: 2 },
+      } as any, // wrong
+    ]) as any;
 
     expect(String(afterB.status ?? '')).toBe('finished');
     expect(afterB.metadata.interQuestionUntilMs).toBeNull();
 
-    const messages = (afterB.log ?? []).map((l: any) => String(l?.message ?? ''));
-    expect(messages.some((m: string) => m.includes('Prochaine question dans 5 secondes'))).toBe(false);
-    expect(messages.some((m: string) => m === 'Fin de la manche 1.')).toBe(true);
+    const messages = (afterB.log ?? []).map((l: any) =>
+      String(l?.message ?? ''),
+    );
+    expect(
+      messages.some((m: string) =>
+        m.includes('Prochaine question dans 5 secondes'),
+      ),
+    ).toBe(false);
+    expect(messages.some((m: string) => m === 'Fin de la manche 1.')).toBe(
+      true,
+    );
   });
 
   it('on timeout: logs the correct answer and waits 5s before next question', () => {
@@ -255,12 +319,24 @@ describe("ArcheDeMnemosyneService quiz timer", () => {
       { type: 'mnemo_timeout', payload: {}, meta: { actor: 'system' } } as any,
     ]);
 
-    const messages = (after.log ?? []).map((l: any) => String(l?.message ?? ''));
-    expect(messages.some((m: string) => m === 'Lilas répond : Mauvaise réponse.')).toBe(true);
-    expect(messages.some((m: string) => m === 'Bot répond : Temps écoulé.')).toBe(true);
-    expect(messages.some((m: string) => m.includes('La bonne réponse était'))).toBe(false);
-    expect(messages.some((m: string) => m.includes('Prochaine question dans'))).toBe(true);
-    expect(messages.some((m: string) => m === 'Fin de la manche 1.')).toBe(true);
+    const messages = (after.log ?? []).map((l: any) =>
+      String(l?.message ?? ''),
+    );
+    expect(
+      messages.some((m: string) => m === 'Lilas répond : Mauvaise réponse.'),
+    ).toBe(true);
+    expect(
+      messages.some((m: string) => m === 'Bot répond : Temps écoulé.'),
+    ).toBe(true);
+    expect(
+      messages.some((m: string) => m.includes('La bonne réponse était')),
+    ).toBe(false);
+    expect(
+      messages.some((m: string) => m.includes('Prochaine question dans')),
+    ).toBe(true);
+    expect(messages.some((m: string) => m === 'Fin de la manche 1.')).toBe(
+      true,
+    );
     expect(after.metadata.currentQuestion).toBeNull();
     expect(typeof after.metadata.interQuestionUntilMs).toBe('number');
     expect(after.round).toBe(2);

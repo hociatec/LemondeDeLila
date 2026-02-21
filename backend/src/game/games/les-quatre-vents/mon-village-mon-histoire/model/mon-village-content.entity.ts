@@ -1,4 +1,7 @@
-import type { MonVillageCard, MonVillageTile } from './mon-village-state.entity';
+import type {
+  MonVillageCard,
+  MonVillageTile,
+} from './mon-village-state.entity';
 
 export type MonVillageBoardJsonV1 = {
   version: 1;

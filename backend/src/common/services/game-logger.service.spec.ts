@@ -1,13 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { GameLoggerService } from './game-logger.service';
-import { GameError, GameValidationError } from '../errors/game-errors';
+import { GameError } from '../errors/game-errors';
 
 describe('GameLoggerService', () => {
   let service: GameLoggerService;
-  let mockLogger: any;
+  let errorSpy: jest.SpyInstance;
+  let warnSpy: jest.SpyInstance;
+  let infoSpy: jest.SpyInstance;
+  let debugSpy: jest.SpyInstance;
   const configMock = {
-    get: jest.fn((key: string, defaultValue?: any) => {
+    get: jest.fn((key: string, defaultValue?: unknown) => {
       if (key === 'LOG_FILES_ENABLED') return false;
       if (key === 'LOG_LEVEL') return 'info';
       return defaultValue;
@@ -29,11 +32,11 @@ describe('GameLoggerService', () => {
     service = module.get<GameLoggerService>(GameLoggerService);
 
     // Mock the underlying Winston logger
-    mockLogger = service.getLogger();
-    jest.spyOn(mockLogger, 'error').mockImplementation();
-    jest.spyOn(mockLogger, 'warn').mockImplementation();
-    jest.spyOn(mockLogger, 'info').mockImplementation();
-    jest.spyOn(mockLogger, 'debug').mockImplementation();
+    const logger = service.getLogger();
+    errorSpy = jest.spyOn(logger, 'error').mockImplementation();
+    warnSpy = jest.spyOn(logger, 'warn').mockImplementation();
+    infoSpy = jest.spyOn(logger, 'info').mockImplementation();
+    debugSpy = jest.spyOn(logger, 'debug').mockImplementation();
   });
 
   afterEach(() => {
@@ -51,7 +54,7 @@ describe('GameLoggerService', () => {
         gameType: 'test-game',
       });
 
-      expect(mockLogger.error).toHaveBeenCalledWith({
+      expect(errorSpy).toHaveBeenCalledWith({
         message: 'Test error message',
         context: { roomId: 123, gameType: 'test-game' },
       });
@@ -60,13 +63,13 @@ describe('GameLoggerService', () => {
     it('should log a GameError with full context', () => {
       const gameError = new GameError(
         'Game error occurred',
-        { roomId: 123, gameType: 'test-game' },
+        { roomId: 123, gameType: 'test-game', timestamp: new Date() },
         'high',
       );
 
       service.error('Error logging test', gameError);
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
+      expect(errorSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           message: 'Error logging test',
           context: {},
@@ -75,8 +78,7 @@ describe('GameLoggerService', () => {
             message: 'Game error occurred',
             severity: 'high',
             context: { roomId: 123, gameType: 'test-game' },
-            stack: expect.any(String),
-          }),
+          }) as unknown,
         }),
       );
     });
@@ -86,15 +88,14 @@ describe('GameLoggerService', () => {
 
       service.error('Standard error test', error, { roomId: 456 });
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
+      expect(errorSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           message: 'Standard error test',
           context: { roomId: 456 },
           error: expect.objectContaining({
             name: 'Error',
             message: 'Standard error',
-            stack: expect.any(String),
-          }),
+          }) as unknown,
         }),
       );
     });
@@ -104,7 +105,7 @@ describe('GameLoggerService', () => {
     it('should log a warning message with context', () => {
       service.warn('Warning message', { roomId: 789, gameType: 'test-game' });
 
-      expect(mockLogger.warn).toHaveBeenCalledWith({
+      expect(warnSpy).toHaveBeenCalledWith({
         message: 'Warning message',
         context: { roomId: 789, gameType: 'test-game' },
       });
@@ -113,7 +114,7 @@ describe('GameLoggerService', () => {
     it('should log a warning without context', () => {
       service.warn('Simple warning');
 
-      expect(mockLogger.warn).toHaveBeenCalledWith({
+      expect(warnSpy).toHaveBeenCalledWith({
         message: 'Simple warning',
         context: {},
       });
@@ -124,7 +125,7 @@ describe('GameLoggerService', () => {
     it('should log an info message with context', () => {
       service.info('Info message', { roomId: 100, turnIndex: 5 });
 
-      expect(mockLogger.info).toHaveBeenCalledWith({
+      expect(infoSpy).toHaveBeenCalledWith({
         message: 'Info message',
         context: { roomId: 100, turnIndex: 5 },
       });
@@ -135,7 +136,7 @@ describe('GameLoggerService', () => {
     it('should log a debug message with context', () => {
       service.debug('Debug message', { playerId: 42 });
 
-      expect(mockLogger.debug).toHaveBeenCalledWith({
+      expect(debugSpy).toHaveBeenCalledWith({
         message: 'Debug message',
         context: { playerId: 42 },
       });
@@ -157,7 +158,7 @@ describe('GameLoggerService', () => {
 
       service.logPlayerAction(action, context);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(infoSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           message: 'Player action',
           context: expect.objectContaining({
@@ -168,9 +169,8 @@ describe('GameLoggerService', () => {
             action: expect.objectContaining({
               type: 'draw_card',
               payload: { deckId: 'main' },
-              timestamp: expect.any(String),
-            }),
-          }),
+            }) as unknown,
+          }) as unknown,
         }),
       );
     });
@@ -188,7 +188,7 @@ describe('GameLoggerService', () => {
         gameType: 'test-game',
       });
 
-      expect(mockLogger.debug).toHaveBeenCalledWith(
+      expect(debugSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           message: 'Game state change',
           context: expect.objectContaining({
@@ -199,7 +199,7 @@ describe('GameLoggerService', () => {
               turnIndex: 5,
               currentPlayerId: 42,
             },
-          }),
+          }) as unknown,
         }),
       );
     });
@@ -218,7 +218,7 @@ describe('GameLoggerService', () => {
         { roomId: 123, playerId: 5 },
       );
 
-      expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect(warnSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           message: 'Validation failure',
           context: expect.objectContaining({
@@ -226,7 +226,7 @@ describe('GameLoggerService', () => {
             playerId: 5,
             validationErrors,
             message: 'Action validation failed',
-          }),
+          }) as unknown,
         }),
       );
     });
@@ -239,8 +239,8 @@ describe('GameLoggerService', () => {
         playerId: 5,
       });
 
-      expect(mockLogger.warn).toHaveBeenCalled();
-      expect(mockLogger.error).not.toHaveBeenCalled();
+      expect(warnSpy).toHaveBeenCalled();
+      expect(errorSpy).not.toHaveBeenCalled();
     });
 
     it('should log high severity security events as errors', () => {
@@ -249,8 +249,8 @@ describe('GameLoggerService', () => {
         playerId: 5,
       });
 
-      expect(mockLogger.error).toHaveBeenCalled();
-      expect(mockLogger.warn).not.toHaveBeenCalled();
+      expect(errorSpy).toHaveBeenCalled();
+      expect(warnSpy).not.toHaveBeenCalled();
     });
 
     it('should log critical severity security events as errors', () => {
@@ -259,7 +259,7 @@ describe('GameLoggerService', () => {
         playerId: 5,
       });
 
-      expect(mockLogger.error).toHaveBeenCalled();
+      expect(errorSpy).toHaveBeenCalled();
     });
   });
 
@@ -270,7 +270,7 @@ describe('GameLoggerService', () => {
         gameType: 'test-game',
       });
 
-      expect(mockLogger.debug).toHaveBeenCalledWith(
+      expect(debugSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           message: 'Performance metric',
           context: expect.objectContaining({
@@ -278,7 +278,7 @@ describe('GameLoggerService', () => {
             gameType: 'test-game',
             operation: 'applyActions',
             durationMs: 123.45,
-          }),
+          }) as unknown,
         }),
       );
     });

@@ -33,7 +33,7 @@ export class AdminCatalogInvalidationService {
 
   async invalidateCatalogAndNotify(adminId: number) {
     this.registry.invalidateCache();
-    await this.catalog.clearCache();
+    this.catalog.clearCache();
     await this.notifyCatalogInvalidated(adminId);
   }
 }

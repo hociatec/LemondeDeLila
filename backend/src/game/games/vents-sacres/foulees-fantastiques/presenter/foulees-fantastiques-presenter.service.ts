@@ -76,9 +76,7 @@ export class FouleesFantastiquesPresenterService {
           Array.isArray(names) && typeof names[pawn.pawnIndex] === 'string'
             ? String(names[pawn.pawnIndex]).trim()
             : `animal ${pawn.pawnIndex + 1}`;
-        stableLines.push(
-          `${label}: case ${pos + 1}/${meta.trackLength}.`,
-        );
+        stableLines.push(`${label}: case ${pos + 1}/${meta.trackLength}.`);
       }
     } else {
       stableLines.push('Aucun animal sorti.');
@@ -125,7 +123,9 @@ export class FouleesFantastiquesPresenterService {
         panels: {
           stable: {
             title: 'État',
-            message: stableLines.length ? stableLines.join(' ') : 'État: inconnu.',
+            message: stableLines.length
+              ? stableLines.join(' ')
+              : 'État: inconnu.',
           },
           position: {
             title: 'Position',

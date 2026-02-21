@@ -1,11 +1,8 @@
 ﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import {
-  DAME_NATURE_CARD_BY_ID,
-  DameNatureFamilyCardDefinition,
-} from '../model/dame-nature-cards';
+import { DAME_NATURE_CARD_BY_ID } from '../model/dame-nature-cards';
 import type { DameNatureMetadata } from '../model/dame-nature-state.entity';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { normalizeActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export type DameNatureActionType = 'ask_card' | 'pass';
@@ -26,7 +23,7 @@ function getPlayerHand(meta: DameNatureMetadata, playerId: number): string[] {
 function getOpponents(state: GameStateEntity, playerId: number): number[] {
   return (Array.isArray(state.players) ? state.players : [])
     .filter((player) => player?.id != null && player.id !== playerId)
-    .map((player) => player!.id);
+    .map((player) => player.id);
 }
 
 export function getAvailableActions(
@@ -70,11 +67,11 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error('La partie n\'est pas commencée.');
+    throw new Error("La partie n'est pas commencée.");
   }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== actorId) {
-    throw new Error('Ce n\'est pas votre tour.');
+    throw new Error("Ce n'est pas votre tour.");
   }
 
   if (type === 'pass') {
@@ -106,6 +103,3 @@ export function validateAction(
 
   return { type: 'ask_card', payload: { cardId, targetPlayerId: target } };
 }
-
-
-

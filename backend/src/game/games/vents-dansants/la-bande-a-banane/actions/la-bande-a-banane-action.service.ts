@@ -3,7 +3,6 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -12,7 +11,11 @@ import {
   BANDE_A_BANANE_CARD_BY_ID,
   BandeABananeCardDefinition,
 } from '../model/la-bande-a-banane-cards';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import type {
   BandeABananeMetadata,
   BandeABananeTroopEntry,
@@ -85,7 +88,12 @@ export class BandeABananeActionService {
         next = this.playMonkey(next, currentId, definition);
         break;
       case 'joker':
-        next = this.playJoker(next, currentId, definition, payload.species ?? null);
+        next = this.playJoker(
+          next,
+          currentId,
+          definition,
+          payload.species ?? null,
+        );
         break;
       case 'action':
         next = this.playAction(next, currentId, definition, payload);
@@ -110,7 +118,13 @@ export class BandeABananeActionService {
     playerId: number,
     card: BandeABananeCardDefinition,
   ): GameStateEntity {
-    return this.addCardToTroop(state, playerId, card.id, card.species ?? null, false);
+    return this.addCardToTroop(
+      state,
+      playerId,
+      card.id,
+      card.species ?? null,
+      false,
+    );
   }
 
   private playJoker(
@@ -162,7 +176,7 @@ export class BandeABananeActionService {
       let next = this.discardRandomCard(state, playerId);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} chute sur un tigre et lâche une carte.`,
+        `${resolvePlayerNameFromState(next, playerId)} chute sur un tigre et lï¿½che une carte.`,
       );
       return next;
     }
@@ -189,9 +203,10 @@ export class BandeABananeActionService {
     let next = this.setMeta(state, nextMeta);
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} vole ${this.getCardName(stolen)} à ${
-        resolvePlayerNameFromState(next, targetId)
-      }.`,
+      `${resolvePlayerNameFromState(next, playerId)} vole ${this.getCardName(stolen)} ï¿½ ${resolvePlayerNameFromState(
+        next,
+        targetId,
+      )}.`,
     );
     return next;
   }
@@ -224,7 +239,7 @@ export class BandeABananeActionService {
       next = this.setMeta(next, nextMeta);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} échange ${this.getCardName(
+        `${resolvePlayerNameFromState(next, playerId)} ï¿½change ${this.getCardName(
           returned,
         )} avec ${resolvePlayerNameFromState(next, targetId)}.`,
       );
@@ -235,18 +250,25 @@ export class BandeABananeActionService {
     next = this.setMeta(next, nextMeta);
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} donne une carte à ${
-        resolvePlayerNameFromState(next, targetId)
-      }.`,
+      `${resolvePlayerNameFromState(next, playerId)} donne une carte ï¿½ ${resolvePlayerNameFromState(
+        next,
+        targetId,
+      )}.`,
     );
     return next;
   }
 
-  private playGrimpeur(state: GameStateEntity, playerId: number): GameStateEntity {
+  private playGrimpeur(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
     let next = state;
     let nextMeta = this.getMeta(next);
     for (let i = 0; i < 2; i += 1) {
-      const { cardId, meta: updatedMeta } = this.drawForPlayer(nextMeta, playerId);
+      const { cardId, meta: updatedMeta } = this.drawForPlayer(
+        nextMeta,
+        playerId,
+      );
       nextMeta = updatedMeta;
       next = this.setMeta(next, nextMeta);
       if (cardId) {
@@ -287,7 +309,7 @@ export class BandeABananeActionService {
     if (this.hasWinningTroupe(this.getMeta(next), playerId)) {
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} crie « BANAAAANE ! » et devient le chef de la Bande à Banane !`,
+        `${resolvePlayerNameFromState(next, playerId)} crie ï¿½ BANAAAANE ! ï¿½ et devient le chef de la Bande ï¿½ Banane !`,
       );
       next = {
         ...next,
@@ -302,7 +324,10 @@ export class BandeABananeActionService {
     return next;
   }
 
-  private enforceHandLimit(state: GameStateEntity, playerId: number): GameStateEntity {
+  private enforceHandLimit(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
     let next = state;
     let nextMeta = this.getMeta(next);
     let hand = this.getPlayerHand(nextMeta, playerId);
@@ -318,9 +343,9 @@ export class BandeABananeActionService {
       next = this.setMeta(next, nextMeta);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} dépasse 7 cartes et défausse ${
-          this.getCardName(cardId)
-        }.`,
+        `${resolvePlayerNameFromState(next, playerId)} dï¿½passe 7 cartes et dï¿½fausse ${this.getCardName(
+          cardId,
+        )}.`,
       );
       hand = this.getPlayerHand(nextMeta, playerId);
     }
@@ -402,7 +427,10 @@ export class BandeABananeActionService {
     const meta = this.getMeta(state);
     if (meta.drawnPlayerId === playerId) return state;
     const { meta: updatedMeta, cardId } = this.drawForPlayer(meta, playerId);
-    const next = this.setMeta(state, { ...updatedMeta, drawnPlayerId: playerId });
+    const next = this.setMeta(state, {
+      ...updatedMeta,
+      drawnPlayerId: playerId,
+    });
     if (cardId) {
       return this.core.appendLog(
         next,
@@ -437,7 +465,10 @@ export class BandeABananeActionService {
     return hand.includes(cardId);
   }
 
-  private getPlayerHand(meta: BandeABananeMetadata, playerId: number): string[] {
+  private getPlayerHand(
+    meta: BandeABananeMetadata,
+    playerId: number,
+  ): string[] {
     return Array.isArray(meta.hands?.[playerId]) ? meta.hands[playerId] : [];
   }
 
@@ -484,9 +515,10 @@ export class BandeABananeActionService {
     meta: BandeABananeMetadata,
     playerId: number,
   ): boolean {
-    const entries = Array.isArray(meta.troops?.[playerId]) ? meta.troops[playerId] : [];
+    const entries = Array.isArray(meta.troops?.[playerId])
+      ? meta.troops[playerId]
+      : [];
     const species = new Set(entries.map((entry) => entry.species));
     return species.size >= 5;
   }
 }
-

@@ -26,4 +26,3 @@ export class GameStatusOverride1769400000000 implements MigrationInterface {
     await queryRunner.dropColumn('game_catalog_overrides', 'status');
   }
 }
-

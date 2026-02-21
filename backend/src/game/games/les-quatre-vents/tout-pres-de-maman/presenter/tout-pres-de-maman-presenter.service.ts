@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
 
@@ -6,7 +6,10 @@ import { formatPresenterActions } from '../../../../presenters/actions-presenter
 import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import * as Rulebook from '../rulebook/rulebook';
 import { TOUT_PRES_DE_MAMAN_GAME } from '../definitions/tout-pres-de-maman.definition';
-import type { ToutPresDeMamanCard, ToutPresDeMamanMetadata } from '../model/tout-pres-de-maman-state.entity';
+import type {
+  ToutPresDeMamanCard,
+  ToutPresDeMamanMetadata,
+} from '../model/tout-pres-de-maman-state.entity';
 
 @Injectable()
 export class ToutPresDeMamanPresenterService {
@@ -31,6 +34,8 @@ export class ToutPresDeMamanPresenterService {
       return `${name} : ${count} eucalyptus`;
     });
 
+    const stateRecord = asRecord(state);
+    const baseExtras = asRecord(stateRecord.extras);
     return {
       ...state,
       catalog: {
@@ -42,10 +47,10 @@ export class ToutPresDeMamanPresenterService {
               }
             : null,
       },
-      actions: formatPresenterActions(actions, (action) => 'Lancer le dé'),
+      actions: formatPresenterActions(actions, () => 'Lancer le dé'),
       pending: state.pending ?? null,
       extras: {
-        ...(state as any).extras,
+        ...baseExtras,
         tokens: `${tokens} / ${totalNeeded} jetons eucalyptus`,
         nextCard: nextCard?.text ?? 'Pile de cartes vide',
         ui: {
@@ -71,17 +76,24 @@ export class ToutPresDeMamanPresenterService {
         meta.tiles,
         meta.positions,
       ),
-    } as any;
+    } as GameStateWithActions;
   }
 
   private getMeta(state: GameStateEntity): ToutPresDeMamanMetadata {
     return (state.metadata ?? {}) as ToutPresDeMamanMetadata;
   }
 
-  private peekNextCard(meta: ToutPresDeMamanMetadata): ToutPresDeMamanCard | null {
+  private peekNextCard(
+    meta: ToutPresDeMamanMetadata,
+  ): ToutPresDeMamanCard | null {
     const deck = Array.isArray(meta.deckCards) ? meta.deckCards : [];
     if (!deck.length) return null;
     const id = deck[0];
     return meta.cards.find((card) => card.id === id) ?? null;
   }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  if (value == null || typeof value !== 'object') return {};
+  return value as Record<string, unknown>;
 }

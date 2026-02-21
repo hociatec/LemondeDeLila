@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
-import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import { getSafePlayers } from '../../../../setup/setup-service.helper';
 import { loadV1Content } from '../../../../setup/content-loader.helper';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
@@ -132,10 +132,7 @@ export class FouleesFantastiquesSetupService {
 
     const withBoard = this.recomputeBoardView(hydrated);
 
-    const currentId =
-      withBoard.turn?.currentPlayerId ??
-      players[0]?.id ??
-      null;
+    const currentId = withBoard.turn?.currentPlayerId ?? players[0]?.id ?? null;
     if (currentId == null) {
       return withBoard;
     }
@@ -195,4 +192,3 @@ export class FouleesFantastiquesSetupService {
     return { ...state, metadata: { ...(state.metadata ?? {}), ...updated } };
   }
 }
-

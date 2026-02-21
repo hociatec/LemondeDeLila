@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddRoomTableAmbienceSoundId1768400000000
-  implements MigrationInterface
-{
+export class AddRoomTableAmbienceSoundId1768400000000 implements MigrationInterface {
   name = 'AddRoomTableAmbienceSoundId1768400000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -17,4 +15,3 @@ export class AddRoomTableAmbienceSoundId1768400000000
     );
   }
 }
-

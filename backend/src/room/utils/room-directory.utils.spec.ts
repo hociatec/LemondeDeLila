@@ -44,6 +44,7 @@ function makeRoom(
 ): Room {
   return {
     id: partial.id,
+    runId: partial.runId ?? 0,
     name: partial.name ?? `Room ${partial.id}`,
     gameType: partial.gameType,
     maxPlayers: partial.maxPlayers ?? 4,

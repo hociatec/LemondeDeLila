@@ -1,15 +1,17 @@
-﻿import { Injectable, Optional } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import type {
   GameStateEntity,
   PendingState,
   TurnStateEntity,
 } from '../../../../core/entities/game-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -55,56 +57,69 @@ export class MinuitActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    const next = applyActionsSequentially(this.ensurePawnSelection(state), actions, (next, action) => {
-          const type = normalizeActionType(action);
-          return dispatchByActionType(
-            type,
-            {
-              'pick_pawn': () => {
-                next = this.handlePickPawn(next, action);
-            next = this.ensurePawnSelection(next);
-                return next;
-              },
-              'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'draw': () => {
-                next = this.handleDraw(next);
-                return next;
-              },
-              'answer_quiz': () => {
-                next = this.handleAnswerQuiz(next, action);
-                return next;
-              },
-              'choose_target': () => {
-                next = this.handleChooseTarget(next, action);
-                return next;
-              },
+    const next = applyActionsSequentially(
+      this.ensurePawnSelection(state),
+      actions,
+      (next, action) => {
+        const type = normalizeActionType(action);
+        return dispatchByActionType(
+          type,
+          {
+            pick_pawn: () => {
+              next = this.handlePickPawn(next, action);
+              next = this.ensurePawnSelection(next);
+              return next;
             },
-            () => next,
-          );
-        });
-        return next;
+            roll: () => {
+              next = this.handleRoll(next);
+              return next;
+            },
+            draw: () => {
+              next = this.handleDraw(next);
+              return next;
+            },
+            answer_quiz: () => {
+              next = this.handleAnswerQuiz(next, action);
+              return next;
+            },
+            choose_target: () => {
+              next = this.handleChooseTarget(next, action);
+              return next;
+            },
+          },
+          () => next,
+        );
+      },
+    );
+    return next;
   }
 
-  private isBotLike(player: any, meta?: MinuitMetadata): boolean {
-    if (!player) return false;
-    if (player.isBot === true) return true;
-    const id = Number(player.id);
+  private isBotLike(player: unknown, meta?: MinuitMetadata): boolean {
+    const playerRecord = asRecord(player);
+    if (!playerRecord) return false;
+    if (playerRecord.isBot === true) return true;
+    const id = Number(playerRecord.id);
     if (Number.isFinite(id) && id < 0) return true;
-    if (Number.isFinite(id) && Array.isArray(meta?.botPlayerIds) && meta.botPlayerIds.includes(id)) {
+    if (
+      Number.isFinite(id) &&
+      Array.isArray(meta?.botPlayerIds) &&
+      meta.botPlayerIds.includes(id)
+    ) {
       return true;
     }
-    const username = String(player?.username ?? '').toLowerCase();
+    const username =
+      typeof playerRecord.username === 'string'
+        ? playerRecord.username.toLowerCase()
+        : '';
     return username.includes('bot');
   }
 
-  private hasPawnAssigned(player: any, meta: MinuitMetadata): boolean {
-    if (!player) return false;
-    const playerId = Number(player.id);
+  private hasPawnAssigned(player: unknown, meta: MinuitMetadata): boolean {
+    const playerRecord = asRecord(player);
+    const playerId = Number(playerRecord.id);
     if (!Number.isFinite(playerId)) return false;
-    const playerPawn = String(player.pawn ?? '').trim();
+    const playerPawn =
+      typeof playerRecord.pawn === 'string' ? playerRecord.pawn.trim() : '';
     if (playerPawn.length > 0) return true;
     const metaPawn = String((meta.pawns ?? {})[playerId] ?? '').trim();
     return metaPawn.length > 0;
@@ -120,7 +135,7 @@ export class MinuitActionService {
 
     let meta = meta0;
 
-    // "Piochez Ã  nouveau une carte au lieu de lancer le dÃ©" (tour suivant).
+    // "Piochez �  nouveau une carte au lieu de lancer le dé" (tour suivant).
     if (meta.statuses?.forceDrawNextTurn?.[currentId] === true) {
       meta = {
         ...meta,
@@ -140,7 +155,7 @@ export class MinuitActionService {
       };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} pioche une carte au lieu de lancer le dÃ©.`,
+        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} pioche une carte au lieu de lancer le dé.`,
       );
       return {
         ...next,
@@ -148,13 +163,13 @@ export class MinuitActionService {
           type: 'draw',
           playerId: currentId,
           blocking: true,
-          label: 'Piocher une carte NoÃ«l (Espace).',
+          label: 'Piocher une carte Noël (Espace).',
           data: { context: 'force_draw' },
         },
       };
     }
 
-    const rng = this.random.rollDice(meta as any, 6);
+    const rng = this.random.rollDice(meta, 6);
     meta = { ...meta, ...rng.meta };
     const roll = rng.roll;
 
@@ -165,7 +180,7 @@ export class MinuitActionService {
     };
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} lance le dÃ© : "${roll}".`,
+      `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} lance le dé : "${roll}".`,
     );
 
     next = this.move(next, currentId, roll);
@@ -179,13 +194,13 @@ export class MinuitActionService {
 
   private handleDraw(state: GameStateEntity): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
-    const pending = state.pending as any;
+    const pending = state.pending;
     if (!pending || pending.type !== 'draw') return state;
 
     const currentId =
       typeof pending.playerId === 'number'
         ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
+        : (state.turn?.currentPlayerId ?? null);
     if (currentId == null) return state;
 
     let next: GameStateEntity = { ...state, pending: null };
@@ -197,7 +212,10 @@ export class MinuitActionService {
     return this.advanceTurnOrKeep(next, currentId);
   }
 
-  private applyDrawCard(state: GameStateEntity, playerId: number): GameStateEntity {
+  private applyDrawCard(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
     let next = state;
     let meta = this.getMeta(next);
     const draw = this.drawCard(meta);
@@ -227,29 +245,27 @@ export class MinuitActionService {
     const pending = meta.pendingQuiz ?? null;
     if (!pending || pending.playerId !== currentId) return state;
 
-    const answer = String((action.payload as any)?.answer ?? '').trim();
+    const answer = toText(asRecord(action.payload).answer).trim();
     const correct =
       pending.anyCorrect === true
         ? true
         : (pending.answer ?? '').trim().toLowerCase() === answer.toLowerCase();
 
     let next: GameStateEntity = state;
-    const who = resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS);
+    const who = resolvePlayerNameFromState(
+      next,
+      currentId,
+      MINUIT_PLAYER_NAME_OPTIONS,
+    );
     if (correct) {
       const delta =
         typeof pending.successDelta === 'number' ? pending.successDelta : 0;
-      next = this.core.appendLog(
-        next,
-        `${who} a choisi la bonne rÃ©ponse !`,
-      );
+      next = this.core.appendLog(next, `${who} a choisi la bonne réponse !`);
       if (delta > 0) {
         next = this.move(next, currentId, delta);
       }
     } else {
-      next = this.core.appendLog(
-        next,
-        `${who} a validÃ© la mauvaise rÃ©ponse.`,
-      );
+      next = this.core.appendLog(next, `${who} a validé la mauvaise réponse.`);
       const failDelta =
         typeof pending.failureDelta === 'number' ? pending.failureDelta : 0;
       if (failDelta !== 0) {
@@ -277,14 +293,14 @@ export class MinuitActionService {
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
 
-    const pending = state.pending as any;
+    const pending = state.pending;
     if (
       !pending ||
       pending.type !== 'choose_target' ||
       pending.playerId !== currentId
     )
       return state;
-    const targetPlayerId = Number((action.payload as any)?.targetPlayerId);
+    const targetPlayerId = Number(asRecord(action.payload).targetPlayerId);
     if (!Number.isFinite(targetPlayerId)) return state;
 
     let meta = this.getMeta(state);
@@ -310,7 +326,7 @@ export class MinuitActionService {
       };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} Ã©change sa position avec ${resolvePlayerNameFromState(next, targetPlayerId, MINUIT_PLAYER_NAME_OPTIONS)}.`,
+        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} échange sa position avec ${resolvePlayerNameFromState(next, targetPlayerId, MINUIT_PLAYER_NAME_OPTIONS)}.`,
       );
       return this.advanceTurnOrKeep(next, currentId);
     }
@@ -323,7 +339,7 @@ export class MinuitActionService {
       };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} offre un cadeau Ã  ${resolvePlayerNameFromState(next, targetPlayerId, MINUIT_PLAYER_NAME_OPTIONS)}.`,
+        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} offre un cadeau �  ${resolvePlayerNameFromState(next, targetPlayerId, MINUIT_PLAYER_NAME_OPTIONS)}.`,
       );
       next = this.move(next, targetPlayerId, 1);
       next = this.move(next, currentId, 2);
@@ -341,7 +357,7 @@ export class MinuitActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     const meta = this.getMeta(state);
     if (players.length < MINUIT_GAME.minPlayers) return state;
-    const hasPendingPick = (state.pending as any)?.type === 'pick_pawn';
+    const hasPendingPick = state.pending?.type === 'pick_pawn';
     const needsPawnSelection = players.some(
       (p) => !!p && !this.isBotLike(p, meta) && !this.hasPawnAssigned(p, meta),
     );
@@ -399,12 +415,14 @@ export class MinuitActionService {
   }
 
   private queuePawnSelection(state: GameStateEntity): GameStateEntity {
-    const pending = state.pending as any;
+    const pending = state.pending;
     const players = Array.isArray(state.players) ? state.players : [];
     const meta = this.getMeta(state);
     if (pending && pending.type === 'pick_pawn') {
       const pendingPlayerId = Number(pending.playerId);
-      const pendingPlayer = players.find((p) => Number(p?.id) === pendingPlayerId);
+      const pendingPlayer = players.find(
+        (p) => Number(p?.id) === pendingPlayerId,
+      );
       if (
         pendingPlayer &&
         !this.isBotLike(pendingPlayer, meta) &&
@@ -421,16 +439,14 @@ export class MinuitActionService {
         ? { ...state, pending: null }
         : state;
     }
-    const taken = new Set<string>(
-      [
-        ...players
+    const taken = new Set<string>([
+      ...players
         .map((p) => (typeof p?.pawn === 'string' ? String(p.pawn).trim() : ''))
-          .filter((pawn) => pawn.length > 0),
-        ...Object.values(meta.pawns ?? {})
-          .map((pawn) => String(pawn ?? '').trim())
-          .filter((pawn) => pawn.length > 0),
-      ],
-    );
+        .filter((pawn) => pawn.length > 0),
+      ...Object.values(meta.pawns ?? {})
+        .map((pawn) => String(pawn ?? '').trim())
+        .filter((pawn) => pawn.length > 0),
+    ]);
     const choiceEntries = this.listPawnChoiceEntries(this.getMeta(state));
     const available = choiceEntries.filter((entry) => !taken.has(entry.id));
     const entries = available.length ? available : [...choiceEntries];
@@ -439,21 +455,29 @@ export class MinuitActionService {
       startPlayerId: players[0]?.id ?? null,
       isAssigned: (playerId) => {
         const player = players.find((p) => Number(p?.id) === playerId);
-        return !player || this.isBotLike(player, meta) || this.hasPawnAssigned(player, meta);
+        return (
+          !player ||
+          this.isBotLike(player, meta) ||
+          this.hasPawnAssigned(player, meta)
+        );
       },
       pendingType: 'pick_pawn',
-      labelForPlayer: (playerLabel) => `C'est Ã  ${playerLabel} de choisir son pion.`,
+      labelForPlayer: (playerLabel) =>
+        `C'est �  ${playerLabel} de choisir son pion.`,
       pawns: entries.map((entry) => ({
         id: entry.id,
         label: entry.label,
         description: entry.description,
       })),
       includeChoiceMapData: true,
-      pawnDataMapper: (choice: any) => ({
-        id: String(choice?.id ?? '').trim(),
-        label: String(choice?.label ?? '').trim(),
-        description: String(choice?.description ?? '').trim(),
-      }),
+      pawnDataMapper: (choice: unknown) => {
+        const choiceRecord = asRecord(choice);
+        return {
+          id: toText(choiceRecord.id).trim(),
+          label: toText(choiceRecord.label).trim(),
+          description: toText(choiceRecord.description).trim(),
+        };
+      },
     });
     if (!pendingInfo) return state;
     const fallbackTurn: TurnStateEntity = {
@@ -534,17 +558,20 @@ export class MinuitActionService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const pending = state.pending as any;
+    const pending = state.pending;
     if (!pending || pending.type !== 'pick_pawn') return state;
     const playerId = Number(pending.playerId);
     if (!Number.isFinite(playerId)) return state;
-    const payload = (action?.payload ?? {}) as any;
-    const requestedPawn = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
-    const options = Array.isArray(pending?.data?.pawns)
-      ? pending.data.pawns
+    const payload = asRecord(action?.payload ?? {});
+    const requestedPawn =
+      payload.pawnId ?? payload.pawn ?? payload.value ?? null;
+    const pendingData = asRecord(pending.data);
+    const options = Array.isArray(pendingData.pawns)
+      ? pendingData.pawns.map((entry) => asRecord(entry))
       : [];
     const chosen = this.setupFlow.resolvePawnChoice(requestedPawn, options);
-    const resolvedPawn = String(chosen?.id ?? '').trim();
+    const chosenRecord = asRecord(chosen);
+    const resolvedPawn = toText(chosenRecord.id).trim();
     if (!resolvedPawn) return state;
     const players = Array.isArray(state.players) ? state.players : [];
     const takenByOthers = new Set<string>(
@@ -588,11 +615,14 @@ export class MinuitActionService {
   ): Array<{ id: string; label: string; description: string }> {
     const fromContent = Array.isArray(meta.pawnChoices)
       ? meta.pawnChoices
-          .map((p) => ({
-            id: String((p as any)?.id ?? '').trim(),
-            name: String((p as any)?.name ?? '').trim(),
-            description: String((p as any)?.description ?? '').trim(),
-          }))
+          .map((p) => {
+            const pawn = asRecord(p);
+            return {
+              id: toText(pawn.id).trim(),
+              name: toText(pawn.name).trim(),
+              description: toText(pawn.description).trim(),
+            };
+          })
           .filter((p) => p.id.length > 0 && p.name.length > 0)
           .map((p) => ({
             id: p.id,
@@ -601,7 +631,11 @@ export class MinuitActionService {
           }))
       : [];
     if (fromContent.length) return fromContent;
-    return MINUIT_PAWNS.map((name) => ({ id: name, label: name, description: '' }));
+    return MINUIT_PAWNS.map((name) => ({
+      id: name,
+      label: name,
+      description: '',
+    }));
   }
 
   private arePawnsEqual(
@@ -613,8 +647,8 @@ export class MinuitActionService {
       ...Object.keys(b ?? {}),
     ]);
     for (const key of keys) {
-      const ai = a ? a[Number(key)] ?? '' : '';
-      const bi = b ? b[Number(key)] ?? '' : '';
+      const ai = a ? (a[Number(key)] ?? '') : '';
+      const bi = b ? (b[Number(key)] ?? '') : '';
       if (ai !== bi) return false;
     }
     return true;
@@ -634,7 +668,7 @@ export class MinuitActionService {
     if (occupant != null) {
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} place ${this.pawnPossessiveLabel(next, playerId)} sur une case occupÃ©e : recul d'une case.`,
+        `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} place ${this.pawnPossessiveLabel(next, playerId)} sur une case occupée : recul d'une case.`,
       );
       next = this.move(next, playerId, -1);
       meta = this.getMeta(next);
@@ -648,7 +682,8 @@ export class MinuitActionService {
       next,
       `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} place ${this.pawnPossessiveLabel(next, playerId)} en case ${afterPos + 1} (${tile.title}).`,
     );
-    const description = String((tile as any)?.description ?? '').trim();
+    const description =
+      typeof tile.description === 'string' ? tile.description.trim() : '';
     if (description) {
       next = this.core.appendLog(next, description);
     }
@@ -676,7 +711,7 @@ export class MinuitActionService {
           },
         };
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-        return this.core.appendLog(next, 'Malus ignorÃ©.');
+        return this.core.appendLog(next, 'Malus ignoré.');
       }
       if (delta !== 0) {
         const beforePos = meta.positions?.[playerId] ?? 0;
@@ -703,7 +738,7 @@ export class MinuitActionService {
           },
         };
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-        return this.core.appendLog(next, 'Passe ton tour ignorÃ©.');
+        return this.core.appendLog(next, 'Passe ton tour ignoré.');
       }
       const turns = typeof tile.skipTurns === 'number' ? tile.skipTurns : 1;
       const curr = meta.statuses?.skipTurn?.[playerId] ?? 0;
@@ -728,7 +763,7 @@ export class MinuitActionService {
           type: 'draw',
           playerId,
           blocking: true,
-          label: 'Piocher une carte NoÃ«l (Espace).',
+          label: 'Piocher une carte Noël (Espace).',
         },
       };
     }
@@ -752,11 +787,11 @@ export class MinuitActionService {
       return next;
     }
 
-    if (/Ã©changez votre position avec un autre joueur/i.test(text)) {
+    if (/échangez votre position avec un autre joueur/i.test(text)) {
       const targets = this.otherPlayers(next, playerId);
       const pending: PendingState = {
         type: 'choose_target',
-        label: 'Choisissez un joueur dans la liste, puis EntrÃ©e.',
+        label: 'Choisissez un joueur dans la liste, puis Entrée.',
         playerId,
         blocking: true,
         choices: targets.map((t) => t.username),
@@ -775,11 +810,11 @@ export class MinuitActionService {
       };
     }
 
-    if (/vous offrez un cadeau Ã  un autre joueur/i.test(text)) {
+    if (/vous offrez un cadeau � {2}un autre joueur/i.test(text)) {
       const targets = this.otherPlayers(next, playerId);
       const pending: PendingState = {
         type: 'choose_target',
-        label: 'Choisissez un joueur dans la liste, puis EntrÃ©e.',
+        label: 'Choisissez un joueur dans la liste, puis Entrée.',
         playerId,
         blocking: true,
         choices: targets.map((t) => t.username),
@@ -810,7 +845,7 @@ export class MinuitActionService {
         },
       };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      return this.core.appendLog(next, 'Protection malus activÃ©e.');
+      return this.core.appendLog(next, 'Protection malus activée.');
     }
 
     if (/Ignorez la prochaine case.*Passe ton tour/i.test(text)) {
@@ -827,7 +862,7 @@ export class MinuitActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       return this.core.appendLog(
         next,
-        'Protection Â« passe ton tour Â» activÃ©e.',
+        'Protection « passe ton tour » activée.',
       );
     }
 
@@ -844,8 +879,8 @@ export class MinuitActionService {
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
-    // Force pioche au prochain tour (au lieu de lancer le dÃ©).
-    if (/Piochez Ã  nouveau une carte au lieu de lancer le dÃ©/i.test(text)) {
+    // Force pioche au prochain tour (au lieu de lancer le dé).
+    if (/Piochez � {2}nouveau une carte au lieu de lancer le dé/i.test(text)) {
       meta = {
         ...meta,
         statuses: {
@@ -859,18 +894,18 @@ export class MinuitActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       return this.core.appendLog(
         next,
-        'Au prochain tour, piochez une carte Ã  la place du dÃ©.',
+        'Au prochain tour, piochez une carte �  la place du dé.',
       );
     }
 
-    // Aller Ã  la case neutre la plus proche derriÃ¨re.
-    if (/case neutre la plus proche derriÃ¨re/i.test(text)) {
+    // Aller �  la case neutre la plus proche derrière.
+    if (/case neutre la plus proche derrière/i.test(text)) {
       const pos = meta.positions[playerId] ?? 0;
       const prevPos = findPrev(meta.tiles, pos, (t) => t.type === 'neutral');
       if (prevPos != null) {
         next = this.core.appendLog(
           next,
-          'Retour Ã  la case neutre la plus proche derriÃ¨re.',
+          'Retour �  la case neutre la plus proche derrière.',
         );
         next = this.setPos(next, playerId, prevPos);
         return this.applyLanding(next, playerId);
@@ -897,7 +932,7 @@ export class MinuitActionService {
       );
     }
 
-    if (/jusqu['â€™]Ã  la prochaine Carte NoÃ«l/i.test(text)) {
+    if (/jusqu['’]� {2}la prochaine Carte Noël/i.test(text)) {
       const nextPos = findNext(
         meta.tiles,
         meta.positions[playerId] ?? 0,
@@ -909,7 +944,7 @@ export class MinuitActionService {
       }
     }
 
-    if (/jusqu['â€™]Ã  la case prÃ©cÃ©dente Carte NoÃ«l/i.test(text)) {
+    if (/jusqu['’]� {2}la case précédente Carte Noël/i.test(text)) {
       const prevPos = findPrev(
         meta.tiles,
         meta.positions[playerId] ?? 0,
@@ -918,14 +953,14 @@ export class MinuitActionService {
       if (prevPos != null) {
         next = this.core.appendLog(
           next,
-          "Recule jusqu'Ã  la prÃ©cÃ©dente Carte NoÃ«l.",
+          "Recule jusqu'�  la précédente Carte Noël.",
         );
         next = this.setPos(next, playerId, prevPos);
         return this.applyLanding(next, playerId);
       }
     }
 
-    if (/position avec le joueur juste derriÃ¨re/i.test(text)) {
+    if (/position avec le joueur juste derrière/i.test(text)) {
       const behind = findBehind(meta.positions, playerId);
       if (behind != null) {
         const actorPos = meta.positions[playerId] ?? 0;
@@ -941,15 +976,15 @@ export class MinuitActionService {
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
         next = this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} Ã©change sa position avec ${resolvePlayerNameFromState(next, behind, MINUIT_PLAYER_NAME_OPTIONS)}.`,
+          `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} échange sa position avec ${resolvePlayerNameFromState(next, behind, MINUIT_PLAYER_NAME_OPTIONS)}.`,
         );
         return next;
       }
     }
 
     if (
-      /Relancez immÃ©diatement le dÃ©/i.test(text) ||
-      /Relancez le dÃ© maintenant/i.test(text)
+      /Relancez immédiatement le dé/i.test(text) ||
+      /Relancez le dé maintenant/i.test(text)
     ) {
       meta = {
         ...meta,
@@ -962,14 +997,17 @@ export class MinuitActionService {
         },
       };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      return this.core.appendLog(next, `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} rejoue.`);
+      return this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} rejoue.`,
+      );
     }
 
-    if (/Lancez le dÃ© et avancez du nombre obtenu/i.test(text)) {
-      const rng = this.random.rollDice(meta as any, 6);
+    if (/Lancez le dé et avancez du nombre obtenu/i.test(text)) {
+      const rng = this.random.rollDice(meta, 6);
       meta = { ...meta, ...rng.meta };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      next = this.core.appendLog(next, `Bonus : dÃ© = "${rng.roll}".`);
+      next = this.core.appendLog(next, `Bonus : dé = "${rng.roll}".`);
       next = this.move(next, playerId, rng.roll);
       return this.applyLanding(next, playerId);
     }
@@ -987,7 +1025,7 @@ export class MinuitActionService {
     const lines = Array.isArray(card.lines) ? card.lines : [];
     const filtered = lines.filter(
       (line) =>
-        !/^si le joueur a la bonne rÃ©ponse/i.test(String(line ?? '').trim()),
+        !/^si le joueur a la bonne réponse/i.test(String(line ?? '').trim()),
     );
     const withoutChoices = filtered.filter(
       (line) => !/^[*]?[abc]\)/i.test(String(line ?? '').trim()),
@@ -1045,7 +1083,10 @@ export class MinuitActionService {
       card: draw.card,
       meta: {
         ...draw.meta,
-        decks: { cards: draw.pile as any, discard: draw.discard as any },
+        decks: {
+          cards: Array.isArray(draw.pile) ? [...draw.pile] : [],
+          discard: Array.isArray(draw.discard) ? [...draw.discard] : [],
+        },
       },
     };
   }
@@ -1071,7 +1112,7 @@ export class MinuitActionService {
       ? answerLine.replace(/^[*]?[abc]\)\s*/i, '').trim()
       : undefined;
     const anyCorrect = lines.some((l) =>
-      /Les trois rÃ©ponses sont just(e|es)/i.test(l),
+      /Les trois réponses sont just(e|es)/i.test(l),
     );
     const fullText = lines.join(' ');
     const successDelta = extractMoveDelta(fullText);
@@ -1094,7 +1135,14 @@ export class MinuitActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     return players
       .filter((p) => p?.id != null && p.id !== me)
-      .map((p) => ({ id: p.id, username: resolvePlayerNameFromState(state, p.id, MINUIT_PLAYER_NAME_OPTIONS) }));
+      .map((p) => ({
+        id: p.id,
+        username: resolvePlayerNameFromState(
+          state,
+          p.id,
+          MINUIT_PLAYER_NAME_OPTIONS,
+        ),
+      }));
   }
 
   private findOccupant(
@@ -1111,7 +1159,7 @@ export class MinuitActionService {
   }
 
   private getMeta(state: GameStateEntity): MinuitMetadata {
-    return (state.metadata ?? {}) as any as MinuitMetadata;
+    return (state.metadata ?? {}) as MinuitMetadata;
   }
 
   private pawnLabel(state: GameStateEntity, id: number): string {
@@ -1124,7 +1172,10 @@ export class MinuitActionService {
     return 'un pion';
   }
 
-  private resolvePawnName(meta: MinuitMetadata, pawnIdOrLabel: unknown): string {
+  private resolvePawnName(
+    meta: MinuitMetadata,
+    pawnIdOrLabel: unknown,
+  ): string {
     const value = String(pawnIdOrLabel ?? '').trim();
     if (!value) return '';
 
@@ -1135,7 +1186,10 @@ export class MinuitActionService {
       const name = String((pawn as any)?.name ?? '').trim();
       if (!id || !name) continue;
       if (id === value || name === value) return name;
-      if (id.toLowerCase() === normalized || name.toLowerCase() === normalized) {
+      if (
+        id.toLowerCase() === normalized ||
+        name.toLowerCase() === normalized
+      ) {
         return name;
       }
     }
@@ -1146,11 +1200,14 @@ export class MinuitActionService {
 
   private pawnPossessiveLabel(state: GameStateEntity, id: number): string {
     const raw = this.pawnLabel(state, id);
-    const inner = String(raw ?? '').trim().replace(/^"(.*)"$/, '$1').trim();
+    const inner = String(raw ?? '')
+      .trim()
+      .replace(/^"(.*)"$/, '$1')
+      .trim();
     if (!inner) return '"son pion"';
     const stripped = inner
       .replace(/^(le|la|les|un|une)\s+/i, '')
-      .replace(/^l['â€™]\s*/i, '')
+      .replace(/^l['’]\s*/i, '')
       .trim();
     const base = this.lowercaseFirst(stripped || inner);
     const feminine = /^(la|une)\s+/i.test(inner);
@@ -1182,7 +1239,9 @@ export class MinuitActionService {
     return this.promptPolicies ?? new PromptPoliciesService(this.core);
   }
 
-  private restoreStarterAfterPawnSelection(state: GameStateEntity): GameStateEntity {
+  private restoreStarterAfterPawnSelection(
+    state: GameStateEntity,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     if (meta.starterRestoredAfterPawnSelection === true) {
       return state;
@@ -1193,8 +1252,13 @@ export class MinuitActionService {
       typeof meta.starterPlayerId === 'number'
         ? meta.starterPlayerId
         : Number(meta.starterPlayerId);
-    const starterId = Number.isFinite(starterIdRaw) ? Number(starterIdRaw) : null;
-    if (starterId == null || !players.some((p) => Number(p?.id) === starterId)) {
+    const starterId = Number.isFinite(starterIdRaw)
+      ? Number(starterIdRaw)
+      : null;
+    if (
+      starterId == null ||
+      !players.some((p) => Number(p?.id) === starterId)
+    ) {
       return {
         ...state,
         metadata: {
@@ -1228,7 +1292,10 @@ export class MinuitActionService {
     return next;
   }
 
-  private advanceTurnOrKeep(state: GameStateEntity, playerId: number): GameStateEntity {
+  private advanceTurnOrKeep(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const keep = meta.statuses?.keepTurn?.[playerId] ?? 0;
     if (keep > 0) {
@@ -1280,11 +1347,11 @@ function extractMoveDelta(text: string): number {
     return map[v] ?? 0;
   };
   const forward = text.match(
-    /avancez?\s+(?:de|d['â€™])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
+    /avancez?\s+(?:de|d['’])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
   );
   if (forward) return parse(forward[1]);
   const backward = text.match(
-    /reculez?\s+(?:de|d['â€™])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
+    /reculez?\s+(?:de|d['’])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
   );
   if (backward) return -parse(backward[1]);
   return 0;
@@ -1307,11 +1374,11 @@ function extractFailureDelta(text: string): number {
     return map[v] ?? 0;
   };
   const backward = text.match(
-    /sinon[^.]*reculez?\s+(?:de|d['â€™])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
+    /sinon[^.]*reculez?\s+(?:de|d['’])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
   );
   if (backward) return -parse(backward[1]);
   const forward = text.match(
-    /sinon[^.]*avancez?\s+(?:de|d['â€™])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
+    /sinon[^.]*avancez?\s+(?:de|d['’])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
   );
   if (forward) return parse(forward[1]);
   return 0;
@@ -1331,7 +1398,7 @@ function extractSkipTurns(text: string): number {
 function findNext<T>(
   items: T[],
   start: number,
-  predicate: (v: any) => boolean,
+  predicate: (v: T) => boolean,
 ): number | null {
   for (let i = start + 1; i < items.length; i += 1) {
     if (predicate(items[i])) return i;
@@ -1342,7 +1409,7 @@ function findNext<T>(
 function findPrev<T>(
   items: T[],
   start: number,
-  predicate: (v: any) => boolean,
+  predicate: (v: T) => boolean,
 ): number | null {
   for (let i = start - 1; i >= 0; i -= 1) {
     if (predicate(items[i])) return i;
@@ -1366,3 +1433,16 @@ function findBehind(
   return ranked[idx - 1].id;
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  return '';
+}

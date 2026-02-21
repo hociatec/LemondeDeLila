@@ -4,6 +4,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import type { Request } from 'express';
 
 /**
  * Guard for CI uploads (GitHub Actions, etc.) without requiring a JWT admin login.
@@ -13,7 +14,7 @@ import {
 @Injectable()
 export class ClientUpdatesUploadTokenGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
-    const req = context.switchToHttp().getRequest();
+    const req = context.switchToHttp().getRequest<Request>();
     const configured = (process.env.CLIENT_UPDATES_UPLOAD_TOKEN || '').trim();
     if (!configured) {
       throw new UnauthorizedException(

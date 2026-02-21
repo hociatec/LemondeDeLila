@@ -3,6 +3,10 @@ import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../dto/game-action.dto';
+import {
+  GameStateEntity,
+  PendingState,
+} from '../../core/entities/game-state.entity';
 import { formatPresenterActions } from '../../presenters/actions-presenter.helper';
 
 /**
@@ -28,7 +32,6 @@ export abstract class BasePresenterService {
     state: GameStateEntity,
     actions?: GameSingleActionDto[],
   ): GameStateWithActions {
-    const started = this.isStarted(state);
     const currentId = this.getCurrentPlayerId(state);
     const metadata = this.getMetadata(state);
 
@@ -63,7 +66,6 @@ export abstract class BasePresenterService {
     userId: number,
     actions?: GameSingleActionDto[],
   ): GameStateWithActions {
-    const started = this.isStarted(state);
     const currentId = this.getCurrentPlayerId(state);
     const metadata = this.getMetadata(state);
 
@@ -96,7 +98,7 @@ export abstract class BasePresenterService {
   protected formatActions(actions: GameSingleActionDto[]): Array<{
     type: string;
     label: string;
-    payload: Record<string, any>;
+    payload: Record<string, unknown>;
   }> {
     return formatPresenterActions(actions, (a) => this.getActionLabel(a.type));
   }
@@ -139,8 +141,12 @@ export abstract class BasePresenterService {
    * @param state - État actuel du jeu
    * @returns Métadonnées du jeu
    */
-  protected getMetadata(state: GameStateEntity): any {
-    return state.metadata ?? {};
+  protected getMetadata(state: GameStateEntity): Record<string, unknown> {
+    const metadata = state.metadata;
+    if (metadata && typeof metadata === 'object') {
+      return metadata as Record<string, unknown>;
+    }
+    return {};
   }
 
   /**
@@ -165,7 +171,7 @@ export abstract class BasePresenterService {
    */
   protected abstract buildCatalog(): {
     phases: string[];
-    victory: any;
+    victory: unknown;
   };
 
   /**
@@ -180,9 +186,11 @@ export abstract class BasePresenterService {
    * @returns Actions disponibles
    */
   protected getAvailableActions(
-    state: GameStateEntity,
-    currentPlayerId: number | null,
+    _state: GameStateEntity,
+    _currentPlayerId: number | null,
   ): GameSingleActionDto[] {
+    void _state;
+    void _currentPlayerId;
     return [];
   }
 
@@ -215,9 +223,9 @@ export abstract class BasePresenterService {
    */
   protected abstract buildPendingState(
     state: GameStateEntity,
-    metadata: any,
+    metadata: Record<string, unknown>,
     currentPlayerId: number | null,
-  ): any;
+  ): PendingState | null;
 
   /**
    * Construit le pending state pour un utilisateur spécifique.
@@ -233,16 +241,18 @@ export abstract class BasePresenterService {
    */
   protected buildPendingStateForUser(
     state: GameStateEntity,
-    metadata: any,
+    metadata: Record<string, unknown>,
     userId: number,
     currentPlayerId: number | null,
-  ): any {
+  ): PendingState | null {
+    void metadata;
+    void currentPlayerId;
     const pending = this.buildPendingState(state, metadata, currentPlayerId);
     return this.filterPendingForUser(pending, userId);
   }
 
   protected shouldExposePendingToUser(
-    pending: any,
+    pending: PendingState | null,
     userId: number,
   ): boolean {
     if (!pending) return false;
@@ -253,10 +263,10 @@ export abstract class BasePresenterService {
   }
 
   protected filterPendingForUser(
-    pending: any,
+    pending: PendingState | null,
     userId: number,
-    fallback: any = null,
-  ): any {
+    fallback: PendingState | null = null,
+  ): PendingState | null {
     return this.shouldExposePendingToUser(pending, userId) ? pending : fallback;
   }
 
@@ -271,7 +281,7 @@ export abstract class BasePresenterService {
    */
   protected abstract buildExtras(
     state: GameStateEntity,
-    metadata: any,
+    metadata: Record<string, unknown>,
     currentPlayerId: number | null,
   ): Record<string, unknown>;
 
@@ -311,8 +321,8 @@ export abstract class BasePresenterService {
    */
   protected buildExtrasForUser(
     state: GameStateEntity,
-    metadata: any,
-    userId: number,
+    metadata: Record<string, unknown>,
+    _userId: number,
     currentPlayerId: number | null,
   ): Record<string, unknown> {
     return this.buildExtras(state, metadata, currentPlayerId);

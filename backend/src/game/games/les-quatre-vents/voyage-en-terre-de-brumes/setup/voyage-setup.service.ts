@@ -9,6 +9,8 @@ import type {
   VoyageMetadata,
 } from '../model/voyage.types';
 
+type VoyageRuntimeMetadata = VoyageMetadata & Record<string, unknown>;
+
 @Injectable()
 export class VoyageSetupService {
   constructor(
@@ -31,7 +33,7 @@ export class VoyageSetupService {
       collections[p.id] = { legend: 0, farce: 0, treasure: 0, landscape: 0 };
     }
 
-    const seedMeta = (base.metadata ?? {}) as any;
+    const seedMeta = this.getRuntimeMeta(base);
     const s1 = this.random.shuffle(seedMeta, legend.cards ?? []);
     const s2 = this.random.shuffle(s1.meta, farce.cards ?? []);
     const s3 = this.random.shuffle(s2.meta, treasure.cards ?? []);
@@ -42,10 +44,10 @@ export class VoyageSetupService {
       positions,
       statuses: { skipTurn: {}, lastTargetByActor: {} },
       decks: {
-        legend: { cards: s1.values as any, discard: [] },
-        farce: { cards: s2.values as any, discard: [] },
-        treasure: { cards: s3.values as any, discard: [] },
-        landscape: { cards: s4.values as any, discard: [] },
+        legend: { cards: s1.values, discard: [] },
+        farce: { cards: s2.values, discard: [] },
+        treasure: { cards: s3.values, discard: [] },
+        landscape: { cards: s4.values, discard: [] },
       },
       collections,
       pendingQuiz: null,
@@ -66,7 +68,13 @@ export class VoyageSetupService {
   }
 
   private loadBoard(): VoyageBoardJsonV1 {
-    return loadV1Content<VoyageBoardJsonV1>(this.contentLoader, { gameType: 'voyage-en-terre-de-brumes', baseDir: __dirname, filename: 'board.json', arrayField: 'tiles', minItems: 1 });
+    return loadV1Content<VoyageBoardJsonV1>(this.contentLoader, {
+      gameType: 'voyage-en-terre-de-brumes',
+      baseDir: __dirname,
+      filename: 'board.json',
+      arrayField: 'tiles',
+      minItems: 1,
+    });
   }
 
   private loadCards(filename: string): VoyageCardsJsonV1 {
@@ -78,5 +86,8 @@ export class VoyageSetupService {
       minItems: 1,
     });
   }
-}
 
+  private getRuntimeMeta(state: GameStateEntity): VoyageRuntimeMetadata {
+    return (state.metadata ?? {}) as VoyageRuntimeMetadata;
+  }
+}

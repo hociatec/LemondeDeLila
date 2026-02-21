@@ -1,8 +1,4 @@
-export type MnemoQuestionStatus =
-  | 'validated'
-  | 'pending'
-  | 'to_edit'
-  | 'trash';
+export type MnemoQuestionStatus = 'validated' | 'pending' | 'to_edit' | 'trash';
 
 export type MnemoQuizCategory = {
   id: string;

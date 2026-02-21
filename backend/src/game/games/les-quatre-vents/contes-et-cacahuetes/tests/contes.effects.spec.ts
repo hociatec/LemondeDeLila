@@ -4,8 +4,20 @@ import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
+import type { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { ContesCacahuetesSetupService } from '../setup/contes-et-cacahuetes-setup.service';
 import { ContesActionService } from '../actions/contes-action.service';
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function toText(value: unknown): string {
+  return typeof value === 'string' ? value : '';
+}
 
 function baseState(): GameStateEntity {
   return {
@@ -16,35 +28,45 @@ function baseState(): GameStateEntity {
     lastRoll: null,
     log: [],
     players: [
-      { id: 1, username: 'Lilas', isBot: false } as any,
-      { id: 2, username: 'Bucky', isBot: true } as any,
-      { id: 3, username: 'Otis', isBot: false } as any,
+      { id: 1, username: 'Lilas', isBot: false },
+      { id: 2, username: 'Bucky', isBot: true },
+      { id: 3, username: 'Otis', isBot: false },
     ],
     turn: { currentPlayerId: 1, direction: 1 },
     metadata: {
       gameType: 'contes-et-cacahuetes',
       rng: { seed: 1234, counter: 0 },
-    } as any,
+    },
     botThinking: false,
-  } as any;
+  };
 }
 
 describe('Contes effects', () => {
   it('keeps Cape d’Invisibilite aligned with conte tile behavior', async () => {
     const moduleRef = await Test.createTestingModule({
-      providers: [GameCoreService, RandomService, SetupFlowService, ContesCacahuetesSetupService],
+      providers: [
+        GameCoreService,
+        RandomService,
+        SetupFlowService,
+        ContesCacahuetesSetupService,
+      ],
     }).compile();
 
     const setup = moduleRef.get(ContesCacahuetesSetupService);
     const state = setup.hydrateInitialState(baseState());
-    const bonusDeck = ((state.metadata as any)?.decks?.bonus ?? []) as Array<{
-      id: number;
-      text: string;
-    }>;
-    const cape = bonusDeck.find((c) => Number(c?.id) === 4);
+    const metadata = asRecord(state.metadata);
+    const decks = asRecord(metadata.decks);
+    const bonusDeck: unknown[] = Array.isArray(decks.bonus)
+      ? (decks.bonus as unknown[])
+      : [];
+    const cape = bonusDeck.find((card) => {
+      const row = asRecord(card);
+      return Number(row.id ?? 0) === 4;
+    });
+    const capeRow = asRecord(cape);
 
-    expect(cape?.text ?? '').toContain('case Conte');
-    expect(cape?.text ?? '').not.toContain('case Malus');
+    expect(toText(capeRow.text)).toContain('case Conte');
+    expect(toText(capeRow.text)).not.toContain('case Malus');
   });
 
   it('requires a number choice from each player for Poussiere de rire', async () => {
@@ -58,7 +80,7 @@ describe('Contes effects', () => {
         {
           provide: 'TurnFlowService',
           useValue: {
-            advanceTurn: (state: any) => state,
+            advanceTurn: (state: GameStateEntity): GameStateEntity => state,
           },
         },
         {
@@ -66,11 +88,17 @@ describe('Contes effects', () => {
           useFactory: (
             core: GameCoreService,
             random: RandomService,
-            turns: any,
+            turns: TurnFlowService,
             setupFlow: SetupFlowService,
             deckPolicies: DeckPoliciesService,
           ) =>
-            new ContesActionService(core, random, turns, setupFlow, deckPolicies),
+            new ContesActionService(
+              core,
+              random,
+              turns,
+              setupFlow,
+              deckPolicies,
+            ),
           inject: [
             GameCoreService,
             RandomService,
@@ -106,26 +134,35 @@ describe('Contes effects', () => {
         ...(state.metadata ?? {}),
         positions: { 1: 58, 2: 58, 3: 58 },
       },
-    } as any;
+    };
 
-    state = actionsService.applyActions(state, [
-      { type: 'choose_number', payload: { value: 2 } } as any,
-    ]);
-    expect((state.pending as any)?.playerId).toBe(2);
-    expect((state.pending as any)?.data?.picks?.[1]).toBe(2);
+    const chooseTwo: GameSingleActionDto[] = [
+      { type: 'choose_number', payload: { value: 2 } },
+    ];
+    state = actionsService.applyActions(state, chooseTwo);
+    const pending1 = asRecord(state.pending);
+    const data1 = asRecord(pending1.data);
+    const picks1 = asRecord(data1.picks);
+    expect(Number(pending1.playerId)).toBe(2);
+    expect(Number(picks1['1'] ?? 0)).toBe(2);
 
-    state = actionsService.applyActions(state, [
-      { type: 'choose_number', payload: { value: 3 } } as any,
-    ]);
-    expect((state.pending as any)?.playerId).toBe(3);
-    expect((state.pending as any)?.data?.picks?.[2]).toBe(3);
+    const chooseThree: GameSingleActionDto[] = [
+      { type: 'choose_number', payload: { value: 3 } },
+    ];
+    state = actionsService.applyActions(state, chooseThree);
+    const pending2 = asRecord(state.pending);
+    const data2 = asRecord(pending2.data);
+    const picks2 = asRecord(data2.picks);
+    expect(Number(pending2.playerId)).toBe(3);
+    expect(Number(picks2['2'] ?? 0)).toBe(3);
 
-    state = actionsService.applyActions(state, [
-      { type: 'choose_number', payload: { value: 1 } } as any,
-    ]);
+    const chooseOne: GameSingleActionDto[] = [
+      { type: 'choose_number', payload: { value: 1 } },
+    ];
+    state = actionsService.applyActions(state, chooseOne);
     expect(state.pending ?? null).toBeNull();
     expect(String(state.status ?? '').toLowerCase()).toBe('finished');
-    expect(Number((state.metadata as any)?.winnerId ?? 0)).toBe(2);
+    const finalMeta = asRecord(state.metadata);
+    expect(Number(finalMeta.winnerId ?? 0)).toBe(2);
   });
 });
-

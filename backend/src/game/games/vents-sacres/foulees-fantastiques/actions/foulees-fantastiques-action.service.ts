@@ -1,14 +1,16 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type {
   GameStateEntity,
   PendingState,
 } from '../../../../core/entities/game-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-
 
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
@@ -19,10 +21,7 @@ import {
   FOULEES_FAMILY_PENDING_LABEL,
   toFouleesFamilyChoice,
 } from '../definitions/family.definition';
-import type {
-  FouleesFantastiquesMetadata,
-  FouleesFantastiquesPawnState,
-} from '../model/foulees-fantastiques-state.entity';
+import type { FouleesFantastiquesMetadata } from '../model/foulees-fantastiques-state.entity';
 import { FouleesFantastiquesSetupService } from '../setup/foulees-fantastiques-setup.service';
 
 type PendingMove = {
@@ -45,31 +44,30 @@ export class FouleesFantastiquesActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    
     const status = String(state.status ?? '').toLowerCase();
     if (status !== 'started') return state;
     const next = applyActionsSequentially(state, actions, (next, action) => {
-          const type = normalizeActionType(action);
-          return dispatchByActionType(
-            type,
-            {
-              'choose_family': () => {
-                next = this.handleChooseFamily(next, action);
-                return next;
-              },
-              'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'move_pawn': () => {
-                next = this.handleMovePawn(next, action);
-                return next;
-              },
-            },
-            () => next,
-          );
-        });
-        return next;
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          choose_family: () => {
+            next = this.handleChooseFamily(next, action);
+            return next;
+          },
+          roll: () => {
+            next = this.handleRoll(next);
+            return next;
+          },
+          move_pawn: () => {
+            next = this.handleMovePawn(next, action);
+            return next;
+          },
+        },
+        () => next,
+      );
+    });
+    return next;
   }
 
   private ensureFamilyPending(state: GameStateEntity): GameStateEntity {
@@ -77,9 +75,8 @@ export class FouleesFantastiquesActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     if (!players.length) return state;
 
-    const familyIdByPlayer = (meta.familyIdByPlayer ??
-      {}) as Record<number, string>;
-    const familyByPlayer = (meta.familyByPlayer ?? {}) as Record<number, string>;
+    const familyIdByPlayer = meta.familyIdByPlayer ?? {};
+    const familyByPlayer = meta.familyByPlayer ?? {};
 
     const allChosen = players.every((p) => {
       const f = familyIdByPlayer[p.id];
@@ -87,18 +84,19 @@ export class FouleesFantastiquesActionService {
     });
     if (allChosen) {
       let next: GameStateEntity = { ...state, phase: 'turn', pending: null };
-      const habitatByPlayer = (meta.habitatByPlayer ?? {}) as Record<
-        number,
-        string
-      >;
-      const pawnNamesByPlayer = (meta.pawnNamesByPlayer ??
-        {}) as Record<number, string[]>;
+      const habitatByPlayer = meta.habitatByPlayer ?? {};
+      const pawnNamesByPlayer = meta.pawnNamesByPlayer ?? {};
       for (const p of players) {
         const color = meta.colorsByPlayer?.[p.id];
         const family = familyByPlayer[p.id];
         const habitat = habitatByPlayer[p.id];
         const pawns = pawnNamesByPlayer[p.id];
-        if (!family || !habitat || !Array.isArray(pawns) || pawns.length !== 4) {
+        if (
+          !family ||
+          !habitat ||
+          !Array.isArray(pawns) ||
+          pawns.length !== 4
+        ) {
           continue;
         }
         next = this.core.appendLog(
@@ -156,16 +154,22 @@ export class FouleesFantastiquesActionService {
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
     const pending: any = state.pending ?? null;
-    if (!pending || pending.type !== 'choose_family' || pending.playerId !== currentId) {
+    if (
+      !pending ||
+      pending.type !== 'choose_family' ||
+      pending.playerId !== currentId
+    ) {
       return state;
     }
     const withPrompt = this.appendLogOnce(
       state,
       `${resolvePlayerNameFromState(state, currentId)} doit choisir une famille d'animaux.`,
     );
-    const meta = (withPrompt.metadata ?? {}) as any as FouleesFantastiquesMetadata;
+    const meta = (withPrompt.metadata ??
+      {}) as any as FouleesFantastiquesMetadata;
 
-    const rawFamily = (action.payload as any)?.familyId ?? (action.payload as any)?.value;
+    const rawFamily =
+      (action.payload as any)?.familyId ?? (action.payload as any)?.value;
     const selected = this.setupFlow.resolveChoice(
       rawFamily,
       FOULEES_FAMILY_PACKS.map(toFouleesFamilyChoice),
@@ -181,12 +185,15 @@ export class FouleesFantastiquesActionService {
       return this.core.appendLog(state, 'Famille invalide.');
     }
 
-    const familyIdByPlayer = (meta.familyIdByPlayer ??
-      {}) as Record<number, string>;
+    const familyIdByPlayer = meta.familyIdByPlayer ?? {};
     const takenByOther = Object.entries(familyIdByPlayer).some(([pid, fid]) => {
       const otherId = Number(pid);
       if (!Number.isFinite(otherId) || otherId === currentId) return false;
-      return String(fid ?? '').trim().toLowerCase() === familyId;
+      return (
+        String(fid ?? '')
+          .trim()
+          .toLowerCase() === familyId
+      );
     });
     if (takenByOther) {
       return this.core.appendLog(
@@ -214,7 +221,11 @@ export class FouleesFantastiquesActionService {
         [currentId]: [...pack.pawns],
       },
     };
-    let next: GameStateEntity = { ...withPrompt, metadata: nextMeta, pending: null };
+    let next: GameStateEntity = {
+      ...withPrompt,
+      metadata: nextMeta,
+      pending: null,
+    };
     next = this.core.appendLog(
       next,
       `${resolvePlayerNameFromState(next, currentId)} choisit la famille des ${pack.family} (${pack.habitat}).`,
@@ -229,7 +240,11 @@ export class FouleesFantastiquesActionService {
     if (state.pending) return state;
 
     // Tant que les familles ne sont pas choisies, on force l'étape de setup.
-    if (String(state.phase ?? '').toLowerCase().trim() !== 'turn') {
+    if (
+      String(state.phase ?? '')
+        .toLowerCase()
+        .trim() !== 'turn'
+    ) {
       return this.ensureFamilyPending(state);
     }
 
@@ -557,7 +572,7 @@ export class FouleesFantastiquesActionService {
     state: GameStateEntity,
     playerId: number,
     move: { pawnIndex: number; targetProgress: number },
-    roll: number,
+    _roll: number,
   ): GameStateEntity {
     const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     const pawns = Array.isArray(meta.pawnsByPlayer?.[playerId])
@@ -585,7 +600,6 @@ export class FouleesFantastiquesActionService {
       },
     };
 
-    const rollInt = Number.isFinite(roll) ? Math.trunc(roll) : 0;
     const offset = meta.offsets?.[playerId] ?? 0;
     const pawnLabel = this.pawnOwnedLabel(state, playerId, move.pawnIndex);
     if (prevProg < 0 && nextProg === 0) {
@@ -655,17 +669,20 @@ export class FouleesFantastiquesActionService {
   private applyCapture(
     state: GameStateEntity,
     moverId: number,
-    moverPawnIndex: number,
+    _moverPawnIndex: number,
     moverProgress: number,
   ): GameStateEntity {
-    const baseMeta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
+    const baseMeta = (state.metadata ??
+      {}) as any as FouleesFantastiquesMetadata;
     if (!(typeof moverProgress === 'number')) return state;
-    if (moverProgress < 0 || moverProgress >= baseMeta.trackLength) return state;
+    if (moverProgress < 0 || moverProgress >= baseMeta.trackLength)
+      return state;
 
     const moverOffset = baseMeta.offsets?.[moverId] ?? 0;
     const moverPos = (moverOffset + moverProgress) % baseMeta.trackLength;
     const isSafe =
-      Array.isArray(baseMeta.safeTiles) && baseMeta.safeTiles.includes(moverPos);
+      Array.isArray(baseMeta.safeTiles) &&
+      baseMeta.safeTiles.includes(moverPos);
     if (isSafe) return state;
 
     const players = Array.isArray(state.players) ? state.players : [];
@@ -715,7 +732,9 @@ export class FouleesFantastiquesActionService {
     if (extraTurn) {
       const currentId = state.turn?.currentPlayerId ?? null;
       const who =
-        currentId != null ? resolvePlayerNameFromState(state, currentId) : 'Le joueur';
+        currentId != null
+          ? resolvePlayerNameFromState(state, currentId)
+          : 'Le joueur';
       const next = this.core.appendLog(state, `${who} rejoue.`);
       return this.appendTurnAnnouncement(next);
     }
@@ -732,7 +751,10 @@ export class FouleesFantastiquesActionService {
     return this.appendLogOnce(state, message);
   }
 
-  private appendLogOnce(state: GameStateEntity, message: string): GameStateEntity {
+  private appendLogOnce(
+    state: GameStateEntity,
+    message: string,
+  ): GameStateEntity {
     const log = Array.isArray(state.log) ? state.log : [];
     const lastMessage = String(log[log.length - 1]?.message ?? '').trim();
     if (lastMessage === message) {
@@ -833,8 +855,3 @@ export class FouleesFantastiquesActionService {
     return `du ${raw}`;
   }
 }
-
-
-
-
-

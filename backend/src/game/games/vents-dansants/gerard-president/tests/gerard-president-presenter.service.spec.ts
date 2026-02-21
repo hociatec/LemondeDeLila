@@ -7,6 +7,11 @@ describe('GerardPresidentPresenterService', () => {
     const service = new GerardPresidentPresenterService();
     const state: GameStateEntity = {
       status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
       turn: { currentPlayerId: 1, direction: 1 },
       players: [
         { id: 1, username: 'Ana' },
@@ -45,12 +50,12 @@ describe('GerardPresidentPresenterService', () => {
       },
     };
 
-    const result = service.exposeStateForUser(state, 1);
+    const result = service.exposeStateForUser(state, 1) as any;
 
     expect(result.catalog).toBeDefined();
-    expect(Array.isArray(result.catalog.names)).toBe(true);
-    expect(result.catalog.specials?.length).toBeGreaterThan(0);
-    expect(result.catalog.themes?.length).toBeGreaterThan(0);
+    expect(Array.isArray(result.catalog?.names)).toBe(true);
+    expect(result.catalog?.specials?.length).toBeGreaterThan(0);
+    expect(result.catalog?.themes?.length).toBeGreaterThan(0);
     expect(result.extras?.handCards?.length).toBeGreaterThan(0);
     expect(result.extras?.playerViews?.length).toBe(2);
     expect(result.actions?.some((a) => a.type === 'play_name')).toBe(true);

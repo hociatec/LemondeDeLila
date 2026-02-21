@@ -24,7 +24,8 @@ export class LesMainsDeLaTerreService extends AbstractGameService {
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'VentsDansants';
   readonly displayName = LES_MAINS_GAME.displayName;
-  readonly description = 'Complétez des familles de métiers tout en jouant des cartes spéciales déboussolantes.';
+  readonly description =
+    'Complétez des familles de métiers tout en jouant des cartes spéciales déboussolantes.';
   readonly minPlayers = LES_MAINS_GAME.minPlayers;
   readonly maxPlayers = LES_MAINS_GAME.maxPlayers;
 
@@ -41,11 +42,17 @@ export class LesMainsDeLaTerreService extends AbstractGameService {
     return this.setup.hydrateInitialState(baseState);
   }
 
-  applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
+  applyActions(
+    state: GameStateEntity,
+    actions: GameSingleActionDto[],
+  ): GameStateEntity {
     return this.actions.applyActions(state, actions);
   }
 
-  getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
+  getAvailableActions(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameSingleActionDto[] {
     return Rulebook.getAvailableActions(state, playerId);
   }
 
@@ -57,11 +64,17 @@ export class LesMainsDeLaTerreService extends AbstractGameService {
     return Rulebook.validateAction(state, action, actorId);
   }
 
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
   }
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     return this.bots.getBotActions(state, botPlayerId);
   }
 

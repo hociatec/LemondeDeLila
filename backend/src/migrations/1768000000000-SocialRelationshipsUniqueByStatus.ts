@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner, TableIndex } from 'typeorm';
 
-export class SocialRelationshipsUniqueByStatus1768000000000
-  implements MigrationInterface
-{
+export class SocialRelationshipsUniqueByStatus1768000000000 implements MigrationInterface {
   name = 'SocialRelationshipsUniqueByStatus1768000000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -38,4 +36,3 @@ export class SocialRelationshipsUniqueByStatus1768000000000
     );
   }
 }
-

@@ -3,7 +3,6 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
@@ -11,7 +10,11 @@ import { DAME_NATURE_CARD_BY_ID } from '../model/dame-nature-cards';
 import type { DameNatureMetadata } from '../model/dame-nature-state.entity';
 import type { DameNatureActionPayload } from '../rulebook/rulebook';
 
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 @Injectable()
 export class DameNatureActionService {
   constructor(
@@ -60,13 +63,22 @@ export class DameNatureActionService {
 
     const meta = this.getMeta(state);
     if (!this.playerHasCard(meta, targetId, cardId)) {
-      return this.drawAndAdvance(state, currentId, `La carte ${this.getCardName(cardId)} n'est pas chez le joueur demandé.`);
+      return this.drawAndAdvance(
+        state,
+        currentId,
+        `La carte ${this.getCardName(cardId)} n'est pas chez le joueur demandï¿½.`,
+      );
     }
 
-    let next = this.transferCardBetweenPlayers(state, targetId, currentId, cardId);
+    let next = this.transferCardBetweenPlayers(
+      state,
+      targetId,
+      currentId,
+      cardId,
+    );
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} récupère ${this.getCardName(cardId)} de ${resolvePlayerNameFromState(next, targetId)}.`,
+      `${resolvePlayerNameFromState(next, currentId)} rï¿½cupï¿½re ${this.getCardName(cardId)} de ${resolvePlayerNameFromState(next, targetId)}.`,
     );
 
     next = this.registerFamilyCard(next, currentId, cardId);
@@ -86,14 +98,17 @@ export class DameNatureActionService {
     return next;
   }
 
-  private drawCardForPlayer(state: GameStateEntity, playerId: number): GameStateEntity {
+  private drawCardForPlayer(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const { cardId, meta: updatedMeta } = this.drawOneCard(meta);
     let next = this.setMeta(state, updatedMeta);
     if (!cardId) {
       return this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} ne trouve plus aucune carte à piocher.`,
+        `${resolvePlayerNameFromState(next, playerId)} ne trouve plus aucune carte ï¿½ piocher.`,
       );
     }
 
@@ -163,7 +178,14 @@ export class DameNatureActionService {
     cardId: string,
   ): GameStateEntity {
     let next = this.removeCardFromHand(state, fromId, cardId);
-    next = this.addCardToHand(this.setMeta(next, this.removeFamilyCard(this.getMeta(next), fromId, cardId)), toId, cardId);
+    next = this.addCardToHand(
+      this.setMeta(
+        next,
+        this.removeFamilyCard(this.getMeta(next), fromId, cardId),
+      ),
+      toId,
+      cardId,
+    );
     return next;
   }
 
@@ -193,19 +215,33 @@ export class DameNatureActionService {
     return next;
   }
 
-  private checkVictory(state: GameStateEntity, playerId: number): GameStateEntity {
+  private checkVictory(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
     if (this.isGameFinished(state)) return state;
-    const completed = this.getCompletedFamilyCount(this.getMeta(state), playerId);
+    const completed = this.getCompletedFamilyCount(
+      this.getMeta(state),
+      playerId,
+    );
     if (completed >= 4) {
       const meta = this.getMeta(state);
-      return { ...state, status: 'finished', metadata: { ...meta, winnerId: playerId } };
+      return {
+        ...state,
+        status: 'finished',
+        metadata: { ...meta, winnerId: playerId },
+      };
     }
     return state;
   }
 
-  private getCompletedFamilyCount(meta: DameNatureMetadata, playerId: number): number {
+  private getCompletedFamilyCount(
+    meta: DameNatureMetadata,
+    playerId: number,
+  ): number {
     const playerFamilies = meta.families?.[playerId] ?? {};
-    return Object.values(playerFamilies).filter((cards) => cards.length >= 6).length;
+    return Object.values(playerFamilies).filter((cards) => cards.length >= 6)
+      .length;
   }
 
   private drawOneCard(meta: DameNatureMetadata): {
@@ -250,7 +286,10 @@ export class DameNatureActionService {
     return this.setMeta(state, { ...meta, hands });
   }
 
-  private addCardToDiscard(state: GameStateEntity, cardId: string): GameStateEntity {
+  private addCardToDiscard(
+    state: GameStateEntity,
+    cardId: string,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const discard = [...(meta.discard ?? []), cardId];
     return this.setMeta(state, { ...meta, discard });
@@ -281,7 +320,10 @@ export class DameNatureActionService {
     return this.setMeta(state, { ...meta, lastQuizCardId: cardId });
   }
 
-  private setMeta(state: GameStateEntity, metadata: DameNatureMetadata): GameStateEntity {
+  private setMeta(
+    state: GameStateEntity,
+    metadata: DameNatureMetadata,
+  ): GameStateEntity {
     return { ...state, metadata };
   }
 
@@ -289,8 +331,15 @@ export class DameNatureActionService {
     return (state.metadata ?? {}) as DameNatureMetadata;
   }
 
-  private playerHasCard(meta: DameNatureMetadata, playerId: number, cardId: string): boolean {
-    return Array.isArray(meta.hands?.[playerId]) && meta.hands![playerId].includes(cardId);
+  private playerHasCard(
+    meta: DameNatureMetadata,
+    playerId: number,
+    cardId: string,
+  ): boolean {
+    return (
+      Array.isArray(meta.hands?.[playerId]) &&
+      meta.hands[playerId].includes(cardId)
+    );
   }
 
   private getCardName(cardId: string): string {
@@ -312,4 +361,3 @@ export class DameNatureActionService {
     return String(state.status ?? '').toLowerCase() === 'finished';
   }
 }
-

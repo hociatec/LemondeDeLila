@@ -9,11 +9,7 @@ import { GerardPresidentSetupService } from './setup/gerard-president-setup.serv
 import { GerardPresidentService } from './gerard-president.service';
 
 @Module({
-  imports: [
-    BoardGameDeckKitModule,
-    GameCoreModule,
-    GameRegistryModule,
-    ],
+  imports: [BoardGameDeckKitModule, GameCoreModule, GameRegistryModule],
   providers: [
     GerardPresidentService,
     GerardPresidentSetupService,

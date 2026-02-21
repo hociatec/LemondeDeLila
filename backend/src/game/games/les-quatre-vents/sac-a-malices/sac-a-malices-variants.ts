@@ -49,7 +49,8 @@ export const SAC_VARIANTS: SacVariantConfig[] = [
   {
     id: 'gaia',
     label: 'Gaïa',
-    summary: 'Variante écologie : projets durables et cartes Chance/Communauté.',
+    summary:
+      'Variante écologie : projets durables et cartes Chance/Communauté.',
     gameType: 'sac-a-malices-gaia',
     contentDir: 'variants/gaia/model/content',
     rules: buildRules({
@@ -62,7 +63,8 @@ export const SAC_VARIANTS: SacVariantConfig[] = [
   {
     id: 'violette-boussole',
     label: 'Violette & Boussole',
-    summary: 'Variante Toulouse : propriétés, loyers, Chance/Caisse, Parc Gratuit.',
+    summary:
+      'Variante Toulouse : propriétés, loyers, Chance/Caisse, Parc Gratuit.',
     gameType: 'sac-a-malices-violette-boussole',
     contentDir: 'variants/violette-boussole/model/content',
     rules: buildRules(),
@@ -71,7 +73,8 @@ export const SAC_VARIANTS: SacVariantConfig[] = [
   {
     id: 'sabord-quai',
     label: 'Sabord et Quai',
-    summary: 'Variante Nantes : propriétés, loyers, Chance/Caisse, Parc Gratuit.',
+    summary:
+      'Variante Nantes : propriétés, loyers, Chance/Caisse, Parc Gratuit.',
     gameType: 'sac-a-malices-sabord-quai',
     contentDir: 'variants/sabord-quai/model/content',
     rules: buildRules(),
@@ -89,7 +92,8 @@ export const SAC_VARIANTS: SacVariantConfig[] = [
   {
     id: 'cosmos-credit',
     label: 'Cosmos & Crédit',
-    summary: 'Variante cosmique : anomalies/événements, doubles pour sortir de prison.',
+    summary:
+      'Variante cosmique : anomalies/événements, doubles pour sortir de prison.',
     gameType: 'sac-a-malices-cosmos-credit',
     contentDir: 'variants/cosmos-credit/model/content',
     rules: buildRules({
@@ -107,7 +111,8 @@ export const SAC_VARIANTS: SacVariantConfig[] = [
   {
     id: 'pintzel-couronnes',
     label: 'Pintzel & Couronnes !',
-    summary: 'Variante Strasbourg : propriétés, loyers, Chance/Caisse, Parc Gratuit.',
+    summary:
+      'Variante Strasbourg : propriétés, loyers, Chance/Caisse, Parc Gratuit.',
     gameType: 'sac-a-malices-pintzel-couronnes',
     contentDir: 'variants/pintzel-couronnes/model/content',
     rules: buildRules(),
@@ -115,7 +120,9 @@ export const SAC_VARIANTS: SacVariantConfig[] = [
   },
 ];
 
-export const SAC_VARIANT_BY_ID = SAC_VARIANTS.reduce<Record<SacVariantId, SacVariantConfig>>(
+export const SAC_VARIANT_BY_ID = SAC_VARIANTS.reduce<
+  Record<SacVariantId, SacVariantConfig>
+>(
   (acc, variant) => {
     acc[variant.id] = variant;
     return acc;
@@ -198,5 +205,7 @@ export const parseVariantInput = (raw: unknown): SacVariantId | null => {
 };
 
 export const buildVariantChoiceLabel = (): string => {
-  return SAC_VARIANTS.map((variant, idx) => `${idx + 1}=${variant.label}`).join(' ; ');
+  return SAC_VARIANTS.map((variant, idx) => `${idx + 1}=${variant.label}`).join(
+    ' ; ',
+  );
 };

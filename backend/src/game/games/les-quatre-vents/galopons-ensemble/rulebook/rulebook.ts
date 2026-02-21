@@ -3,7 +3,6 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import {
   normalizeActionType,
   normalizeLegacyRollAliasToUpper,
-  normalizeLowerActionType,
 } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
@@ -21,13 +20,19 @@ import {
   validatePendingDrawActionForActor,
 } from '../../../../core/helpers/pending-actions-rulebook.helper';
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
   if (!isStartedState(state)) return [];
 
-  const pending = state.pending as any;
+  const pending = state.pending;
   if (pending) {
     const drawActions = getPendingDrawActionsForPlayer(pending, playerId);
     if (drawActions.length > 0) return drawActions;
@@ -69,7 +74,7 @@ export function validateAction(
     });
   }
 
-  const pending = state.pending as any;
+  const pending = state.pending;
   if (pending) {
     const drawValidation = validatePendingDrawActionForActor({
       pending,
@@ -79,7 +84,11 @@ export function validateAction(
     if (drawValidation.ok) {
       return drawValidation.action;
     }
-    if (pending.type === 'draw' && drawValidation.reason === 'wrong_action_type') {
+    const pendingRow = asRecord(pending);
+    if (
+      pendingRow.type === 'draw' &&
+      drawValidation.reason === 'wrong_action_type'
+    ) {
       throw new PlayerActionError('Action non disponible.', {
         gameType: 'galopons-ensemble',
       });
@@ -95,7 +104,7 @@ export function validateAction(
       return targetValidation.action;
     }
     if (
-      pending.type === 'choose_target' &&
+      pendingRow.type === 'choose_target' &&
       targetValidation.reason === 'wrong_action_type'
     ) {
       throw new PlayerActionError('Choix invalide.', {
@@ -103,7 +112,7 @@ export function validateAction(
       });
     }
     if (
-      pending.type === 'choose_target' &&
+      pendingRow.type === 'choose_target' &&
       targetValidation.reason === 'invalid_target'
     ) {
       throw new GameValidationError('Cible invalide.', {
@@ -112,7 +121,7 @@ export function validateAction(
       });
     }
 
-    if (pending.playerId !== actorId) {
+    if (Number(pendingRow.playerId ?? null) !== actorId) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
         gameType: 'galopons-ensemble',
       });
@@ -134,7 +143,3 @@ export function validateAction(
   if (type === 'ROLL_DICE') return { type: 'roll', payload: {} };
   return { type, payload: action.payload ?? {} };
 }
-
-
-
-

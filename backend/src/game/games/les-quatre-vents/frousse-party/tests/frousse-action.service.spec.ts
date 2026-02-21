@@ -1,4 +1,5 @@
-﻿import type { GameStateEntity } from '../../../../../core/entities/game-state.entity';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return */
+import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { BoardEffectsPoliciesService } from '../../../../modules/board-effects-policies/services/board-effects-policies.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
@@ -22,7 +23,14 @@ describe('FrousseActionService movement effects', () => {
       })),
     };
 
-    const service = new FrousseActionService(random, turns, core, new SetupFlowService(), new BoardEffectsPoliciesService(), new DeckPoliciesService(random));
+    const service = new FrousseActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new BoardEffectsPoliciesService(),
+      new DeckPoliciesService(random),
+    );
 
     const state: GameStateEntity = {
       status: 'started',
@@ -49,9 +57,9 @@ describe('FrousseActionService movement effects', () => {
         decks: {
           cards: [
             {
-              category: 'Fantôme',
+              category: 'Fant�me',
               localNumber: 999,
-              text: 'Le fantôme surgit en hurlant.\nAvancez de 5 cases puis reculez de 3.',
+              text: 'Le fant�me surgit en hurlant.\nAvancez de 5 cases puis reculez de 3.',
             },
           ],
           discard: [],
@@ -61,7 +69,9 @@ describe('FrousseActionService movement effects', () => {
       extras: {},
     } as any;
 
-    const next = service.applyActions(state, [{ type: 'draw', payload: {} } as any]);
+    const next = service.applyActions(state, [
+      { type: 'draw', payload: {} } as any,
+    ]);
     const meta: any = next.metadata ?? {};
 
     // 12 -> +5 -> 17 -> -3 -> 14 (index 13)
@@ -85,7 +95,14 @@ describe('FrousseActionService movement effects', () => {
       })),
     };
 
-    const service = new FrousseActionService(random, turns, core, new SetupFlowService(), new BoardEffectsPoliciesService(), new DeckPoliciesService(random));
+    const service = new FrousseActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new BoardEffectsPoliciesService(),
+      new DeckPoliciesService(random),
+    );
 
     const state: GameStateEntity = {
       status: 'started',
@@ -116,11 +133,13 @@ describe('FrousseActionService movement effects', () => {
       extras: {},
     } as any;
 
-    const next = service.applyActions(state, [{ type: 'roll', payload: {} } as any]);
+    const next = service.applyActions(state, [
+      { type: 'roll', payload: {} } as any,
+    ]);
     const messages = (next.log ?? []).map((l: any) => l.message);
 
     expect(messages).toContain('Reculez de 2 cases.');
-    expect(messages).not.toContain('3 au dé, recul de 2 cases.');
+    expect(messages).not.toContain('3 au d�, recul de 2 cases.');
   });
 
   it('formats doubled roll log with "=" (not "->")', () => {
@@ -140,7 +159,14 @@ describe('FrousseActionService movement effects', () => {
       })),
     };
 
-    const service = new FrousseActionService(random, turns, core, new SetupFlowService(), new BoardEffectsPoliciesService(), new DeckPoliciesService(random));
+    const service = new FrousseActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new BoardEffectsPoliciesService(),
+      new DeckPoliciesService(random),
+    );
 
     const state: GameStateEntity = {
       status: 'started',
@@ -171,7 +197,9 @@ describe('FrousseActionService movement effects', () => {
       extras: {},
     } as any;
 
-    const next = service.applyActions(state, [{ type: 'roll', payload: {} } as any]);
+    const next = service.applyActions(state, [
+      { type: 'roll', payload: {} } as any,
+    ]);
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
     const rollMessage = messages.find((m) => m.includes('lance le')) ?? '';
 
@@ -196,7 +224,14 @@ describe('FrousseActionService movement effects', () => {
       })),
     };
 
-    const service = new FrousseActionService(random, turns, core, new SetupFlowService(), new BoardEffectsPoliciesService(), new DeckPoliciesService(random));
+    const service = new FrousseActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new BoardEffectsPoliciesService(),
+      new DeckPoliciesService(random),
+    );
 
     const state: GameStateEntity = {
       status: 'started',
@@ -227,7 +262,9 @@ describe('FrousseActionService movement effects', () => {
       extras: {},
     } as any;
 
-    const next = service.applyActions(state, [{ type: 'roll', payload: {} } as any]);
+    const next = service.applyActions(state, [
+      { type: 'roll', payload: {} } as any,
+    ]);
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
     const rollMessage = messages.find((m) => m.includes('lance le')) ?? '';
 
@@ -251,7 +288,14 @@ describe('FrousseActionService movement effects', () => {
       })),
     };
 
-    const service = new FrousseActionService(random, turns, core, new SetupFlowService(), new BoardEffectsPoliciesService(), new DeckPoliciesService(random));
+    const service = new FrousseActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new BoardEffectsPoliciesService(),
+      new DeckPoliciesService(random),
+    );
 
     const state: GameStateEntity = {
       status: 'started',
@@ -272,10 +316,12 @@ describe('FrousseActionService movement effects', () => {
       extras: {},
     } as any;
 
-    const next = service.applyActions(state, [{ type: 'roll', payload: {} } as any]);
+    const next = service.applyActions(state, [
+      { type: 'roll', payload: {} } as any,
+    ]);
     expect(next.pending?.type).toBe('choose_pawn');
     expect(String(next.pending?.label ?? '')).toContain(
-      "C'est à Lilas de choisir",
+      "C'est � Lilas de choisir",
     );
   });
 
@@ -296,15 +342,32 @@ describe('FrousseActionService movement effects', () => {
       })),
     };
 
-    const service = new FrousseActionService(random, turns, core, new SetupFlowService(), new BoardEffectsPoliciesService(), new DeckPoliciesService(random));
+    const service = new FrousseActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new BoardEffectsPoliciesService(),
+      new DeckPoliciesService(random),
+    );
 
     const state: GameStateEntity = {
       status: 'started',
       turnIndex: 0,
       turn: { currentPlayerId: 2, direction: 1 },
       players: [
-        { id: 1, username: 'Lilas', pawn: 'citrouille-rigolote', pawnLabel: 'Une citrouille rigolote' } as any,
-        { id: 2, username: 'Bucky', pawn: 'balai-farceur', pawnLabel: 'Un balai farceur' } as any,
+        {
+          id: 1,
+          username: 'Lilas',
+          pawn: 'citrouille-rigolote',
+          pawnLabel: 'Une citrouille rigolote',
+        } as any,
+        {
+          id: 2,
+          username: 'Bucky',
+          pawn: 'balai-farceur',
+          pawnLabel: 'Un balai farceur',
+        } as any,
       ],
       pending: null,
       metadata: {
@@ -323,8 +386,20 @@ describe('FrousseActionService movement effects', () => {
           ignoreNextTrap: {},
         },
         tiles: [
-          { n: 1, type: 'normal', title: 'Départ', label: 'case 1. Départ (case neutre)', description: '' },
-          { n: 2, type: 'normal', title: 'Hall', label: 'case 2. Hall (case neutre)', description: '' },
+          {
+            n: 1,
+            type: 'normal',
+            title: 'D�part',
+            label: 'case 1. D�part (case neutre)',
+            description: '',
+          },
+          {
+            n: 2,
+            type: 'normal',
+            title: 'Hall',
+            label: 'case 2. Hall (case neutre)',
+            description: '',
+          },
           {
             n: 3,
             type: 'normal',
@@ -339,7 +414,9 @@ describe('FrousseActionService movement effects', () => {
       extras: {},
     } as any;
 
-    const next = service.applyActions(state, [{ type: 'roll', payload: {} } as any]);
+    const next = service.applyActions(state, [
+      { type: 'roll', payload: {} } as any,
+    ]);
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
     const placement = messages.find((m) => m.includes('Bucky place')) ?? '';
 
@@ -364,7 +441,14 @@ describe('FrousseActionService movement effects', () => {
       })),
     };
 
-    const service = new FrousseActionService(random, turns, core, new SetupFlowService(), new BoardEffectsPoliciesService(), new DeckPoliciesService(random));
+    const service = new FrousseActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new BoardEffectsPoliciesService(),
+      new DeckPoliciesService(random),
+    );
 
     const state: GameStateEntity = {
       status: 'started',
@@ -391,9 +475,9 @@ describe('FrousseActionService movement effects', () => {
         decks: {
           cards: [
             {
-              category: 'Piège',
+              category: 'Pi�ge',
               localNumber: 1,
-              text: 'Une bougie clignote et vous joue un tour. Lancez le dé deux fois et gardez le plus petit résultat.',
+              text: 'Une bougie clignote et vous joue un tour. Lancez le d� deux fois et gardez le plus petit r�sultat.',
             },
           ],
           discard: [],
@@ -403,17 +487,16 @@ describe('FrousseActionService movement effects', () => {
       extras: {},
     } as any;
 
-    const next = service.applyActions(state, [{ type: 'draw', payload: {} } as any]);
+    const next = service.applyActions(state, [
+      { type: 'draw', payload: {} } as any,
+    ]);
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
 
     expect(
       messages.some((m) => /^Lilas rejoue/i.test(m) || /rejoue\s*\(/i.test(m)),
     ).toBe(false);
-    expect(
-      messages.some((m) => /gardez le plus petit résultat/i.test(m)),
-    ).toBe(true);
+    expect(messages.some((m) => /gardez le plus petit r�sultat/i.test(m))).toBe(
+      true,
+    );
   });
 });
-
-
-

@@ -5,21 +5,20 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as jwt from 'jsonwebtoken';
+import type { Request } from 'express';
+import jsonwebtoken from 'jsonwebtoken';
 import { WsAuthPayload } from '../interfaces/ws-auth-payload';
 import {
   getJwtVerifyAlgorithms,
   requireJwtVerifyKey,
 } from '../auth/jwt-config';
 
-type StrictWsAuthPayload = WsAuthPayload & jwt.JwtPayload;
-
 @Injectable()
 export class WsJwtGuard implements CanActivate {
   constructor(private readonly config: ConfigService) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const client = context.switchToWs().getClient<any>();
+    const client = context.switchToWs().getClient<WsClient>();
     const request = client.req || client.request;
     const handshake = client.handshake;
     const token =
@@ -35,11 +34,13 @@ export class WsJwtGuard implements CanActivate {
     return true;
   }
 
-  private extractBearer(headers: any): string | null {
+  private extractBearer(
+    headers: Record<string, unknown> | undefined,
+  ): string | null {
     if (!headers) {
       return null;
     }
-    const authHeader = headers.authorization || headers.Authorization;
+    const authHeader = headers['authorization'] || headers['Authorization'];
     if (authHeader && typeof authHeader === 'string') {
       const parts = authHeader.split(' ');
       if (
@@ -53,12 +54,15 @@ export class WsJwtGuard implements CanActivate {
     return null;
   }
 
-  private extractQueryTokenFromAuth(auth: any): string | null {
+  private extractQueryTokenFromAuth(
+    auth: Record<string, unknown> | undefined,
+  ): string | null {
     if (!auth) {
       return null;
     }
-    if (typeof auth.token === 'string' && auth.token.trim() !== '') {
-      return auth.token;
+    const token = auth['token'];
+    if (typeof token === 'string' && token.trim() !== '') {
+      return token;
     }
     return null;
   }
@@ -91,7 +95,7 @@ export class WsJwtGuard implements CanActivate {
       10,
     );
     try {
-      const verifyOptions: jwt.VerifyOptions = {
+      const verifyOptions: JwtVerifyOptions = {
         algorithms: getJwtVerifyAlgorithms(this.config),
         issuer,
         clockTolerance,
@@ -100,25 +104,63 @@ export class WsJwtGuard implements CanActivate {
         verifyOptions.audience = audience;
       }
 
-      const payload = jwt.verify(token, key, verifyOptions);
+      const payload = jwtVerify(token, key, verifyOptions);
 
       if (!payload || typeof payload !== 'object') {
         throw new UnauthorizedException('Token invalide');
       }
+      const typedPayload = payload as Partial<VerifiedWsPayload>;
       if (
-        typeof payload.sub !== 'string' ||
-        !payload.sub.trim() ||
-        typeof payload.exp !== 'number' ||
-        typeof payload.iat !== 'number'
+        typeof typedPayload.sub !== 'string' ||
+        !typedPayload.sub.trim() ||
+        typeof typedPayload.id !== 'number' ||
+        typeof typedPayload.exp !== 'number' ||
+        typeof typedPayload.iat !== 'number'
       ) {
         throw new UnauthorizedException('Token invalide');
       }
-      if (!Number.isFinite(payload.id) || (payload.id as number) <= 0) {
+      if (!Number.isFinite(typedPayload.id) || typedPayload.id <= 0) {
         throw new UnauthorizedException('Token invalide');
       }
-      return payload;
+      return typedPayload as VerifiedWsPayload;
     } catch {
       throw new UnauthorizedException('Token invalide');
     }
   }
 }
+
+type WsHandshake = {
+  headers?: Record<string, unknown>;
+  auth?: Record<string, unknown>;
+  url?: string;
+};
+
+type WsClient = {
+  req?: Request;
+  request?: Request;
+  handshake?: WsHandshake;
+  handshakeHeaders?: Record<string, unknown>;
+  url?: string;
+  user?: WsAuthPayload;
+};
+
+type JwtVerifyOptions = {
+  algorithms?: string[];
+  issuer?: string;
+  audience?: string;
+  clockTolerance?: number;
+};
+
+type JwtVerifier = (
+  token: string,
+  key: string | Buffer,
+  options: JwtVerifyOptions,
+) => unknown;
+
+type VerifiedWsPayload = WsAuthPayload & {
+  sub: string;
+  exp: number;
+  iat: number;
+};
+
+const jwtVerify = (jsonwebtoken as unknown as { verify: JwtVerifier }).verify;

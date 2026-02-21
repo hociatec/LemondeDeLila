@@ -224,7 +224,10 @@ export class RoomDirectoryWsHandler {
 
   async invitePresenceList(session: WsSession, payload: any) {
     const user = requireUser(session);
-    const dto = this.validator.validate(RoomInvitePresenceListDto, payload ?? {});
+    const dto = this.validator.validate(
+      RoomInvitePresenceListDto,
+      payload ?? {},
+    );
 
     const room = await this.roomRepo.findOne({
       where: { id: dto.roomId },
@@ -264,7 +267,9 @@ export class RoomDirectoryWsHandler {
         pendingInvite: Boolean(this.invites.findActive(room.id, p.id)),
       }))
       .sort((a, b) =>
-        a.username.localeCompare(b.username, undefined, { sensitivity: 'base' }),
+        a.username.localeCompare(b.username, undefined, {
+          sensitivity: 'base',
+        }),
       );
 
     return {

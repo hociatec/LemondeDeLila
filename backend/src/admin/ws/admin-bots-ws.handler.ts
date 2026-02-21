@@ -38,7 +38,7 @@ export class AdminBotsWsHandler {
     };
   }
 
-  async botSettingsGet(session: WsSession, payload: any) {
+  botSettingsGet(session: WsSession, payload: any) {
     requireAdmin(session);
     this.validator.validate(AdminBotSettingsGetWsDto, payload ?? {});
     return {

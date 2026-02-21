@@ -34,7 +34,7 @@ export class ChatService {
     const createdAt = new Date();
 
     const message = this.messages.create({
-      user: { id: user.id } as any,
+      user: { id: user.id } as ChatMessage['user'],
       message: sanitized,
       messageId,
       createdAt,
@@ -242,20 +242,25 @@ export class ChatService {
   private removeFromCache(messageId: string): void {
     if (!this.historyCache) return;
     const idx = this.historyCache.findIndex(
-      (m) => (m as any)?.id === messageId,
+      (m) => this.getCachedId(m) === messageId,
     );
     if (idx >= 0) this.historyCache.splice(idx, 1);
   }
 
   private replaceInCache(message: Record<string, unknown>): void {
     if (!this.historyCache) return;
-    const id = (message as any)?.id;
+    const id = this.getCachedId(message);
     if (!id) return;
-    const idx = this.historyCache.findIndex((m) => (m as any)?.id === id);
+    const idx = this.historyCache.findIndex((m) => this.getCachedId(m) === id);
     if (idx >= 0) {
       this.historyCache[idx] = message;
     } else {
       this.appendToCache(message);
     }
+  }
+
+  private getCachedId(message: Record<string, unknown>): string | null {
+    const raw = message['id'];
+    return typeof raw === 'string' && raw.trim() ? raw : null;
   }
 }

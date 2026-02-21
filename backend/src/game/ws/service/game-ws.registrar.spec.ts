@@ -20,4 +20,3 @@ describe('GameWsRegistrar', () => {
     expect(registry.has('game.modules')).toBe(true);
   });
 });
-

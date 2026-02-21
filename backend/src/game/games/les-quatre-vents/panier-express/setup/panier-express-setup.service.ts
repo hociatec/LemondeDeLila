@@ -1,5 +1,4 @@
 ﻿import { Injectable } from '@nestjs/common';
-import * as path from 'node:path';
 import { DeckManagerService } from '../../../../modules/cards/services/deck-manager.service';
 import {
   DeckPoolService,
@@ -20,7 +19,6 @@ import {
   PanierExpressPawn,
   PanierExpressPawnsJsonV1,
   PanierExpressQuizzesJsonV1,
-  PanierExpressShoppingListsJsonV1,
   PanierExpressStandsJsonV1,
 } from '../model/panier-express-content.entity';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
@@ -38,35 +36,72 @@ export class PanierExpressSetupService {
   ) {}
 
   private loadBoard(): PanierExpressBoardJsonV1 {
-    return loadV1Content<PanierExpressBoardJsonV1>(this.contentLoader, { gameType: 'panier-express', baseDir: __dirname, filename: 'board.json', arrayField: 'tiles', minItems: 1 });
+    return loadV1Content<PanierExpressBoardJsonV1>(this.contentLoader, {
+      gameType: 'panier-express',
+      baseDir: __dirname,
+      filename: 'board.json',
+      arrayField: 'tiles',
+      minItems: 1,
+    });
   }
 
   private loadCourses(): PanierExpressCoursesJsonV1 {
-    return loadV1Content<PanierExpressCoursesJsonV1>(this.contentLoader, { gameType: 'panier-express', baseDir: __dirname, filename: 'courses.json', arrayField: 'items', minItems: 1 });
+    return loadV1Content<PanierExpressCoursesJsonV1>(this.contentLoader, {
+      gameType: 'panier-express',
+      baseDir: __dirname,
+      filename: 'courses.json',
+      arrayField: 'items',
+      minItems: 1,
+    });
   }
 
   private loadStands(): PanierExpressStandsJsonV1 {
-    return loadV1Content<PanierExpressStandsJsonV1>(this.contentLoader, { gameType: 'panier-express', baseDir: __dirname, filename: 'stands.json', arrayField: 'stands', minItems: 1 });
+    return loadV1Content<PanierExpressStandsJsonV1>(this.contentLoader, {
+      gameType: 'panier-express',
+      baseDir: __dirname,
+      filename: 'stands.json',
+      arrayField: 'stands',
+      minItems: 1,
+    });
   }
 
   private loadEvents(): PanierExpressEventsJsonV1 {
-    return loadV1Content<PanierExpressEventsJsonV1>(this.contentLoader, { gameType: 'panier-express', baseDir: __dirname, filename: 'events.json', arrayField: 'events', minItems: 1 });
+    return loadV1Content<PanierExpressEventsJsonV1>(this.contentLoader, {
+      gameType: 'panier-express',
+      baseDir: __dirname,
+      filename: 'events.json',
+      arrayField: 'events',
+      minItems: 1,
+    });
   }
 
   private loadExchanges(): PanierExpressExchangesJsonV1 {
-    return loadV1Content<PanierExpressExchangesJsonV1>(this.contentLoader, { gameType: 'panier-express', baseDir: __dirname, filename: 'exchanges.json', arrayField: 'exchanges', minItems: 1 });
+    return loadV1Content<PanierExpressExchangesJsonV1>(this.contentLoader, {
+      gameType: 'panier-express',
+      baseDir: __dirname,
+      filename: 'exchanges.json',
+      arrayField: 'exchanges',
+      minItems: 1,
+    });
   }
 
   private loadQuizzes(): PanierExpressQuizzesJsonV1 {
-    return loadV1Content<PanierExpressQuizzesJsonV1>(this.contentLoader, { gameType: 'panier-express', baseDir: __dirname, filename: 'quizzes.json', arrayField: 'quizzes' });
-  }
-
-  private loadShoppingLists(): PanierExpressShoppingListsJsonV1 {
-    return loadV1Content<PanierExpressShoppingListsJsonV1>(this.contentLoader, { gameType: 'panier-express', baseDir: __dirname, filename: 'shopping-lists.json', arrayField: 'lists', minItems: 1 });
+    return loadV1Content<PanierExpressQuizzesJsonV1>(this.contentLoader, {
+      gameType: 'panier-express',
+      baseDir: __dirname,
+      filename: 'quizzes.json',
+      arrayField: 'quizzes',
+    });
   }
 
   private loadPawns(): PanierExpressPawnsJsonV1 {
-    return loadV1Content<PanierExpressPawnsJsonV1>(this.contentLoader, { gameType: 'panier-express', baseDir: __dirname, filename: 'pawns.json', arrayField: 'pawns', minItems: 1 });
+    return loadV1Content<PanierExpressPawnsJsonV1>(this.contentLoader, {
+      gameType: 'panier-express',
+      baseDir: __dirname,
+      filename: 'pawns.json',
+      arrayField: 'pawns',
+      minItems: 1,
+    });
   }
 
   courseItems(): string[] {
@@ -231,4 +266,3 @@ export class PanierExpressSetupService {
     return updated as PanierExpressDeckPool;
   }
 }
-

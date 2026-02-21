@@ -36,7 +36,7 @@ import { PanierExpressPresenterService } from './presenter/panier-express-presen
     QuizModule,
     ExchangeModule,
     VictoryModule,
-    ],
+  ],
   providers: [
     PanierExpressService,
     PanierExpressSetupService,

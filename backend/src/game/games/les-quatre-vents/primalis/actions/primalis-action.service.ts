@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
-
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -12,9 +11,11 @@ import type {
   PrimalisResources,
   PrimalisTile,
 } from '../model/primalis-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
-
-
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 
 type PrimalisFace =
   | 'herbivore'
@@ -23,6 +24,12 @@ type PrimalisFace =
   | 'leaf'
   | 'danger'
   | 'relance';
+
+function asPartialMeta(value: unknown): Partial<PrimalisMetadata> {
+  return value != null && typeof value === 'object'
+    ? (value as Partial<PrimalisMetadata>)
+    : {};
+}
 
 @Injectable()
 export class PrimalisActionService {
@@ -37,19 +44,19 @@ export class PrimalisActionService {
     actions: GameSingleActionDto[],
   ): GameStateEntity {
     const next = applyActionsSequentially(state, actions, (next, action) => {
-          const type = normalizeActionType(action);
-          return dispatchByActionType(
-            type,
-            {
-              'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-            },
-            () => next,
-          );
-        });
-        return next;
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          roll: () => {
+            next = this.handleRoll(next);
+            return next;
+          },
+        },
+        () => next,
+      );
+    });
+    return next;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -61,9 +68,9 @@ export class PrimalisActionService {
     if (state.pending) return state;
 
     const meta = this.getMeta(state);
-    const rng = this.random.rollDice(meta as any, 6);
+    const rng = this.random.rollDice(meta as Record<string, unknown>, 6);
     let face = this.mapFace(rng.roll);
-    let nextMeta = { ...meta, ...rng.meta };
+    let nextMeta: PrimalisMetadata = { ...meta, ...asPartialMeta(rng.meta) };
     let next: GameStateEntity = {
       ...state,
       lastRoll: rng.roll,
@@ -75,9 +82,9 @@ export class PrimalisActionService {
     );
 
     if (face === 'relance') {
-      const reroll = this.random.rollDice(nextMeta as any, 6);
+      const reroll = this.random.rollDice(nextMeta, 6);
       face = this.mapFace(reroll.roll);
-      nextMeta = { ...nextMeta, ...reroll.meta };
+      nextMeta = { ...nextMeta, ...asPartialMeta(reroll.meta) };
       next = {
         ...next,
         lastRoll: reroll.roll,
@@ -145,14 +152,12 @@ export class PrimalisActionService {
   ): GameStateEntity {
     if (!tile) return state;
     let next = state;
-    const meta = this.getMeta(next);
     const resources = this.getResources(next, playerId);
 
     switch (tile.n) {
       case 1:
         if (face === 'egg' || face === 'leaf') {
-          const addition =
-            face === 'egg' ? { eggs: 1 } : { leaves: 1 };
+          const addition = face === 'egg' ? { eggs: 1 } : { leaves: 1 };
           next = this.addResources(next, playerId, addition);
           next = this.core.appendLog(
             next,
@@ -250,7 +255,7 @@ export class PrimalisActionService {
     const current = meta.positions?.[playerId] ?? 0;
     const tiles = meta.tiles ?? [];
     const nextPos = Math.min(
-      (tiles.length ? tiles[tiles.length - 1].n : 0),
+      tiles.length ? tiles[tiles.length - 1].n : 0,
       current + 1,
     );
     return this.setPosition(state, playerId, nextPos);
@@ -286,8 +291,14 @@ export class PrimalisActionService {
     const meta = this.getMeta(state);
     const resources = this.getResources(state, playerId);
     const updated: PrimalisResources = {
-      herbivores: Math.max(0, resources.herbivores + (adjustments.herbivores ?? 0)),
-      carnivores: Math.max(0, resources.carnivores + (adjustments.carnivores ?? 0)),
+      herbivores: Math.max(
+        0,
+        resources.herbivores + (adjustments.herbivores ?? 0),
+      ),
+      carnivores: Math.max(
+        0,
+        resources.carnivores + (adjustments.carnivores ?? 0),
+      ),
       eggs: Math.max(0, resources.eggs + (adjustments.eggs ?? 0)),
       leaves: Math.max(0, resources.leaves + (adjustments.leaves ?? 0)),
     };
@@ -298,15 +309,14 @@ export class PrimalisActionService {
     };
   }
 
-  private finishGame(
-    state: GameStateEntity,
-    playerId: number,
-  ): GameStateEntity {
+  private finishGame(state: GameStateEntity): GameStateEntity {
     const meta = this.getMeta(state);
-    const entries = Object.entries(meta.collections ?? {}).map(([id, resources]) => ({
-      id: Number(id),
-      resources,
-    }));
+    const entries = Object.entries(meta.collections ?? {}).map(
+      ([id, resources]) => ({
+        id: Number(id),
+        resources,
+      }),
+    );
     let best = entries[0];
     for (const entry of entries) {
       if (!best) {
@@ -396,7 +406,9 @@ export class PrimalisActionService {
     return resources ?? { herbivores: 0, carnivores: 0, eggs: 0, leaves: 0 };
   }
 
-  private determineDuplicate(resources: PrimalisResources): Partial<PrimalisResources> {
+  private determineDuplicate(
+    resources: PrimalisResources,
+  ): Partial<PrimalisResources> {
     if (resources.herbivores >= resources.carnivores) {
       return { herbivores: 1 };
     }
@@ -406,13 +418,19 @@ export class PrimalisActionService {
   private enableDangerAmplification(state: GameStateEntity): GameStateEntity {
     const meta = this.getMeta(state);
     const statuses = { ...meta.statuses, dangerAmplified: true };
-    return { ...state, metadata: { ...(state.metadata ?? {}), ...meta, statuses } };
+    return {
+      ...state,
+      metadata: { ...(state.metadata ?? {}), ...meta, statuses },
+    };
   }
 
   private disableDangerAmplification(state: GameStateEntity): GameStateEntity {
     const meta = this.getMeta(state);
     const statuses = { ...meta.statuses, dangerAmplified: false };
-    return { ...state, metadata: { ...(state.metadata ?? {}), ...meta, statuses } };
+    return {
+      ...state,
+      metadata: { ...(state.metadata ?? {}), ...meta, statuses },
+    };
   }
 
   private computeScore(resources: PrimalisResources): number {
@@ -432,14 +450,9 @@ export class PrimalisActionService {
       if (!player?.id) continue;
       const pos = meta.positions?.[player.id] ?? 0;
       if (pos >= last) {
-        return this.finishGame(state, player.id);
+        return this.finishGame(state);
       }
     }
     return state;
   }
 }
-
-
-
-
-

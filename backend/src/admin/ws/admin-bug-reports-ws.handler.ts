@@ -4,6 +4,7 @@ import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { BugReportsService } from '../../bug-reports/bug-reports.service';
 import { BugReportCommentsService } from '../../bug-reports/bug-report-comments.service';
+import type { BugReportEntity } from '../../bug-reports/entities/bug-report.entity';
 import {
   AdminBugReportCreateWsDto,
   AdminBugReportIdWsDto,
@@ -37,7 +38,7 @@ export class AdminBugReportsWsHandler {
     this.validator.validate(AdminBugReportsListWsDto, payload ?? {});
     const items = await this.reports.list();
     const counts = await this.comments.countByReportIds(items.map((r) => r.id));
-    const withCounts = items.map((r: any) => ({
+    const withCounts = items.map((r: BugReportEntity) => ({
       ...r,
       commentsCount: counts[r.id] ?? 0,
     }));
@@ -54,7 +55,9 @@ export class AdminBugReportsWsHandler {
     const counts = await this.comments.countByReportIds([report.id]);
     return {
       type: 'admin.bugReports.get',
-      payload: { report: { ...(report as any), commentsCount: counts[report.id] ?? 0 } },
+      payload: {
+        report: { ...report, commentsCount: counts[report.id] ?? 0 },
+      },
     };
   }
 

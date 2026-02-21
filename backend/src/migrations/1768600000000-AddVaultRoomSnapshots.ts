@@ -24,4 +24,3 @@ export class AddVaultRoomSnapshots1768600000000 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE IF EXISTS vault_room_snapshots`);
   }
 }
-

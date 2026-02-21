@@ -15,8 +15,10 @@ export class NawakBotService {
   ): GameSingleActionDto[] {
     const meta = (state.metadata ?? {}) as NawakMetadata;
     const stage = meta.roundStage ?? 'choose';
-    const preferTypes = stage === 'choose' ? ['choose_answer'] : ['vote_answer'];
-    const fallbackTypes = stage === 'choose' ? ['vote_answer'] : ['choose_answer'];
+    const preferTypes =
+      stage === 'choose' ? ['choose_answer'] : ['vote_answer'];
+    const fallbackTypes =
+      stage === 'choose' ? ['vote_answer'] : ['choose_answer'];
     const actions = Rulebook.getAvailableActions(state, botPlayerId);
     if (!actions.length) return [];
 

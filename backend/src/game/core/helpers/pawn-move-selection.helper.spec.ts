@@ -33,10 +33,14 @@ describe('pawn-move-selection.helper', () => {
     const pending = {
       data: { moves: [{ pawnIndex: 2, targetProgress: 9 }] },
     };
-    expect(resolvePendingPawnMove(pending, { pawnIndex: 2, targetProgress: 9 })).toEqual({
+    expect(
+      resolvePendingPawnMove(pending, { pawnIndex: 2, targetProgress: 9 }),
+    ).toEqual({
       pawnIndex: 2,
       targetProgress: 9,
     });
-    expect(resolvePendingPawnMove(pending, { pawnIndex: 2, targetProgress: 8 })).toBeNull();
+    expect(
+      resolvePendingPawnMove(pending, { pawnIndex: 2, targetProgress: 8 }),
+    ).toBeNull();
   });
 });

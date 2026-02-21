@@ -3,7 +3,6 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
@@ -12,7 +11,11 @@ import {
   PIMP_MY_RIDE_CAR_NAMES,
   PIMP_MY_RIDE_CATEGORY_ORDER,
 } from '../model/pimp-my-ride-cards';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import type {
   PimpMyRideCompletedCar,
   PimpMyRideMetadata,
@@ -23,12 +26,15 @@ export class PimpMyRideActionPayload {
   cardId?: string | null;
 }
 
-const CATEGORY_LABELS: Record<typeof PIMP_MY_RIDE_CATEGORY_ORDER[number], string> = {
+const CATEGORY_LABELS: Record<
+  (typeof PIMP_MY_RIDE_CATEGORY_ORDER)[number],
+  string
+> = {
   carrosserie: 'la carrosserie',
   roues: 'les roues',
   moteur: 'le moteur',
   volant: 'le volant',
-  sieges: 'les sièges',
+  sieges: 'les siï¿½ges',
   phares: 'les phares',
   accessoires: 'les accessoires',
 };
@@ -46,27 +52,27 @@ export class PimpMyRideActionService {
     actions: GameSingleActionDto[],
   ): GameStateEntity {
     const next = applyActionsSequentially(state, actions, (next, action) => {
-          const type = normalizeActionType(action);
-          return dispatchByActionType(
-            type,
-            {
-              'play_card': () => {
-                next = this.handlePlayCard(next, action);
-                return next;
-              },
-              'discard_card': () => {
-                next = this.handleDiscardCard(next, action);
-                return next;
-              },
-              'pass': () => {
-                next = this.handlePass(next);
-                return next;
-              },
-            },
-            () => next,
-          );
-        });
-        return next;
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          play_card: () => {
+            next = this.handlePlayCard(next, action);
+            return next;
+          },
+          discard_card: () => {
+            next = this.handleDiscardCard(next, action);
+            return next;
+          },
+          pass: () => {
+            next = this.handlePass(next);
+            return next;
+          },
+        },
+        () => next,
+      );
+    });
+    return next;
   }
 
   private handlePass(state: GameStateEntity): GameStateEntity {
@@ -151,19 +157,23 @@ export class PimpMyRideActionService {
     next = this.setMeta(next, updatedMeta);
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} jette ${this.getCardName(cardId)} à la défausse.`,
+      `${resolvePlayerNameFromState(next, playerId)} jette ${this.getCardName(cardId)} ï¿½ la dï¿½fausse.`,
     );
 
     next = this.turns.advanceTurn(next);
     return this.clearDrawn(next);
   }
 
-  private completeCar(state: GameStateEntity, playerId: number): GameStateEntity {
+  private completeCar(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
     let next = state;
     const meta = this.getMeta(next);
     const progress = this.getProgress(meta, playerId);
     const carParts = [...progress.carParts];
-    const carNameEntry = PIMP_MY_RIDE_CAR_NAMES[meta.carNameIndex % PIMP_MY_RIDE_CAR_NAMES.length];
+    const carNameEntry =
+      PIMP_MY_RIDE_CAR_NAMES[meta.carNameIndex % PIMP_MY_RIDE_CAR_NAMES.length];
     const completedCar: PimpMyRideCompletedCar = {
       name: carNameEntry.name,
       description: carNameEntry.description,
@@ -211,7 +221,11 @@ export class PimpMyRideActionService {
     const meta = this.getMeta(state);
     if (meta.drawnPlayerId === playerId) return state;
     const { cardId, meta: updatedMeta } = this.drawOneCard(meta);
-    let next = this.setMeta(state, { ...updatedMeta, drawnPlayerId: playerId, drawnCardId: cardId });
+    let next = this.setMeta(state, {
+      ...updatedMeta,
+      drawnPlayerId: playerId,
+      drawnCardId: cardId,
+    });
     if (cardId) {
       next = this.core.appendLog(
         next,
@@ -221,7 +235,7 @@ export class PimpMyRideActionService {
     } else {
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} ne trouve plus de cartes à piocher.`,
+        `${resolvePlayerNameFromState(next, playerId)} ne trouve plus de cartes ï¿½ piocher.`,
       );
     }
     return next;
@@ -240,7 +254,11 @@ export class PimpMyRideActionService {
     return { cardId: draw.card, meta: draw.meta };
   }
 
-  private addCardToHand(state: GameStateEntity, playerId: number, cardId: string): GameStateEntity {
+  private addCardToHand(
+    state: GameStateEntity,
+    playerId: number,
+    cardId: string,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const hands = { ...(meta.hands ?? {}) };
     const playerHand = [...(hands[playerId] ?? [])];
@@ -255,7 +273,9 @@ export class PimpMyRideActionService {
     cardId: string,
   ): PimpMyRideMetadata {
     const hands = { ...(meta.hands ?? {}) };
-    const playerHand = Array.isArray(hands[playerId]) ? [...hands[playerId]] : [];
+    const playerHand = Array.isArray(hands[playerId])
+      ? [...hands[playerId]]
+      : [];
     const index = playerHand.indexOf(cardId);
     if (index >= 0) {
       playerHand.splice(index, 1);
@@ -264,7 +284,10 @@ export class PimpMyRideActionService {
     return { ...meta, hands };
   }
 
-  private addCardToDiscard(meta: PimpMyRideMetadata, cardId: string): PimpMyRideMetadata {
+  private addCardToDiscard(
+    meta: PimpMyRideMetadata,
+    cardId: string,
+  ): PimpMyRideMetadata {
     const discard = [...(meta.discard ?? []), cardId];
     return { ...meta, discard };
   }
@@ -280,7 +303,10 @@ export class PimpMyRideActionService {
     };
   }
 
-  private getProgress(meta: PimpMyRideMetadata, playerId: number): PimpMyRidePlayerProgress {
+  private getProgress(
+    meta: PimpMyRideMetadata,
+    playerId: number,
+  ): PimpMyRidePlayerProgress {
     return (
       meta.progress?.[playerId] ?? {
         stageIndex: 0,
@@ -290,7 +316,10 @@ export class PimpMyRideActionService {
     );
   }
 
-  private setMeta(state: GameStateEntity, metadata: PimpMyRideMetadata): GameStateEntity {
+  private setMeta(
+    state: GameStateEntity,
+    metadata: PimpMyRideMetadata,
+  ): GameStateEntity {
     return { ...state, metadata };
   }
 
@@ -303,7 +332,10 @@ export class PimpMyRideActionService {
     playerId: number,
     cardId: string,
   ): boolean {
-    return Array.isArray(meta.hands?.[playerId]) && meta.hands![playerId].includes(cardId);
+    return (
+      Array.isArray(meta.hands?.[playerId]) &&
+      meta.hands[playerId].includes(cardId)
+    );
   }
 
   private getCardName(cardId: string): string {
@@ -312,7 +344,10 @@ export class PimpMyRideActionService {
 
   private clearDrawn(state: GameStateEntity): GameStateEntity {
     const meta = this.getMeta(state);
-    return this.setMeta(state, { ...meta, drawnPlayerId: null, drawnCardId: null });
+    return this.setMeta(state, {
+      ...meta,
+      drawnPlayerId: null,
+      drawnCardId: null,
+    });
   }
 }
-

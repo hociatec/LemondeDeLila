@@ -3,7 +3,6 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import {
   normalizeActionType,
   normalizeLegacyRollAliasToUpper,
-  normalizeLowerActionType,
 } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
@@ -19,13 +18,19 @@ import {
   validatePendingPawnMoveActionForActor,
 } from '../../../../core/helpers/pending-pawn-move-rulebook.helper';
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
   if (!isStartedState(state)) return [];
 
-  const pending = state.pending as any;
+  const pending = state.pending;
   if (pending) {
     const pendingMoveActions = getPendingPawnMoveActionsForPlayer(
       pending,
@@ -36,7 +41,8 @@ export function getAvailableActions(
     if (pendingMoveActions.length > 0) {
       return pendingMoveActions;
     }
-    if (pending.playerId !== playerId) return [];
+    const pendingRow = asRecord(pending);
+    if (Number(pendingRow.playerId ?? null) !== playerId) return [];
     return [];
   }
 
@@ -69,7 +75,7 @@ export function validateAction(
     });
   }
 
-  const pending = state.pending as any;
+  const pending = state.pending;
   if (pending) {
     const moveValidation = validatePendingPawnMoveActionForActor({
       pending,
@@ -110,7 +116,3 @@ export function validateAction(
   if (type === 'ROLL_DICE') return { type: 'roll', payload: {} };
   return { type: 'roll', payload: {} };
 }
-
-
-
-

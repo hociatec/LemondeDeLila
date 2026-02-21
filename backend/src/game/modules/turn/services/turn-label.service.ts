@@ -60,15 +60,20 @@ export class TurnLabelService {
           : currentPlayerId;
 
       if (targetPlayerId != null) {
-        const found = players.find((p) => Number((p as any)?.id) === targetPlayerId);
+        const found = players.find(
+          (p) => Number((p as any)?.id) === targetPlayerId,
+        );
         const username = this.sanitizePlayerName(found?.username);
-        const name = username.length > 0 ? username : `Joueur ${targetPlayerId}`;
+        const name =
+          username.length > 0 ? username : `Joueur ${targetPlayerId}`;
         return `C'est à ${name} de choisir son pion.`;
       }
     }
 
     if (currentPlayerId != null) {
-      const found = players.find((p) => Number((p as any)?.id) === currentPlayerId);
+      const found = players.find(
+        (p) => Number((p as any)?.id) === currentPlayerId,
+      );
       const username = this.sanitizePlayerName(found?.username);
       const name = username.length > 0 ? username : `Joueur ${currentPlayerId}`;
       return `C'est à ${name} de jouer.`;
@@ -77,7 +82,12 @@ export class TurnLabelService {
     const idx = typeof state.turnIndex === 'number' ? state.turnIndex : -1;
     const byIndex = idx >= 0 && idx < players.length ? players[idx] : null;
     const username = this.sanitizePlayerName(byIndex?.username);
-    const name = username.length > 0 ? username : byIndex?.id != null ? `Joueur ${byIndex.id}` : null;
+    const name =
+      username.length > 0
+        ? username
+        : byIndex?.id != null
+          ? `Joueur ${byIndex.id}`
+          : null;
     if (name) return `C'est à ${name} de jouer.`;
 
     return 'Tour en cours.';

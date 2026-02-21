@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import type {
   GameSingleActionDto,
@@ -9,7 +9,10 @@ import { AbstractGameService } from '../../../engine/abstract/abstract-game.serv
 import { GameCoreService } from '../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../modules/turn/services/turn-flow.service';
 import { RandomService } from '../../../modules/random/services/random.service';
-import { actionShortcut, interfaceShortcut } from '../../../engine/shortcuts/shortcut-utils';
+import {
+  actionShortcut,
+  interfaceShortcut,
+} from '../../../engine/shortcuts/shortcut-utils';
 import { MnemoQuizStoreService } from './store/mnemo-quiz-store.service';
 import {
   applyActionsSequentially,
@@ -65,8 +68,6 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
   readonly minPlayers = 1;
   readonly maxPlayers = 8;
 
-  private readonly logger = new Logger(ArcheDeMnemosyneService.name);
-
   constructor(
     registry: GameRegistryService,
     private readonly core: GameCoreService,
@@ -85,9 +86,10 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       // IMPORTANT: ne pas déduire depuis players[0] (peut être un bot) sinon les prompts de config
       // sont "assignés" au bot et invisibles pour le vrai propriétaire.
       if (typeof baseMeta.roomOwnerId === 'number') return baseMeta.roomOwnerId;
-      if (typeof baseMeta.ownerPlayerId === 'number') return baseMeta.ownerPlayerId;
+      if (typeof baseMeta.ownerPlayerId === 'number')
+        return baseMeta.ownerPlayerId;
 
-      const firstHumanId = players.find((p: any) => p && !(p as any).isBot)?.id ?? null;
+      const firstHumanId = players.find((p: any) => p && !p.isBot)?.id ?? null;
       return firstHumanId ?? initialFirstId;
     })();
 
@@ -102,23 +104,24 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       timeoutPoints: -1,
     };
 
-	    const meta: MnemoQuizMetadata = {
-	      rng: typeof baseState.metadata === 'object' && baseState.metadata ? (baseState.metadata as any).rng : undefined,
-	      ownerPlayerId,
-	      config,
+    const meta: MnemoQuizMetadata = {
+      rng:
+        typeof baseState.metadata === 'object' && baseState.metadata
+          ? (baseState.metadata as any).rng
+          : undefined,
+      ownerPlayerId,
+      config,
       selectedCategoryId: null,
-      scoresByPlayerId: Object.fromEntries(
-        players.map((p: any) => [p.id, 0]),
-      ) as any,
+      scoresByPlayerId: Object.fromEntries(players.map((p: any) => [p.id, 0])),
       usedQuestionIds: [],
       currentQuestion: null,
       quizAnswersByPlayerId: {},
-	      quizDeadlineAtMs: null,
-	      adminView: { page: 'setup' },
-	      prompt: this.buildConfigPrompt(config),
-	      promptOwnerId: ownerPlayerId,
-	      winnerId: null,
-	    };
+      quizDeadlineAtMs: null,
+      adminView: { page: 'setup' },
+      prompt: this.buildConfigPrompt(config),
+      promptOwnerId: ownerPlayerId,
+      winnerId: null,
+    };
 
     const firstId =
       players.find((p: any) => p?.id === ownerPlayerId)?.id ?? initialFirstId;
@@ -173,7 +176,9 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       'mnemo_edit_question',
     ]);
     const meta = this.getMeta(state);
-    const actor = String((action as any)?.meta?.actor ?? '').trim().toLowerCase();
+    const actor = String((action as any)?.meta?.actor ?? '')
+      .trim()
+      .toLowerCase();
     const isSystem = actor === 'system';
 
     if (type === 'mnemo_timeout') {
@@ -189,7 +194,9 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 
     if (type === 'mnemo_start') {
       if (
-        String(state.phase ?? '').toLowerCase().trim() === 'setup' &&
+        String(state.phase ?? '')
+          .toLowerCase()
+          .trim() === 'setup' &&
         meta.prompt
       ) {
         throw new Error('Veuillez terminer la configuration.');
@@ -239,11 +246,11 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       return { ...action, type, payload: { answerIndex: idx } };
     }
 
-	    // Admin / configuration.
-	    if (type.startsWith('mnemo_')) {
-	      if (isSystem) {
-	        return { ...action, type, payload: action.payload ?? {} };
-	      }
+    // Admin / configuration.
+    if (type.startsWith('mnemo_')) {
+      if (isSystem) {
+        return { ...action, type, payload: action.payload ?? {} };
+      }
 
       if (this.isOwner(state, actorId)) {
         return { ...action, type, payload: action.payload ?? {} };
@@ -292,7 +299,10 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     return [interfaceShortcut('S', 'score'), actionShortcut('SPACE', 'draw')];
   }
 
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     const meta = this.getMeta(state);
     const { quizAnswersByPlayerId: _quizAnswersByPlayerId, ...metaRest } =
       (meta ?? {}) as any;
@@ -341,28 +351,37 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       actions: formatPresenterActions(actions),
       pending: built,
       extras: {
-        ...(((state as any).extras ?? {}) as any),
+        ...((state as any).extras ?? {}),
         ui: {
-          ...((((state as any).extras ?? {}) as any)?.ui ?? {}),
+          ...(((state as any).extras ?? {})?.ui ?? {}),
           panels: {
-            ...((((state as any).extras ?? {}) as any)?.ui?.panels ?? {}),
+            ...(((state as any).extras ?? {})?.ui?.panels ?? {}),
             score: { title: 'Score', message: scoreMessage },
           },
         },
       },
-    } as any;
+    };
   }
 
-  private applyOne(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
+  private applyOne(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
     const type = normalizeActionType(action) as ActionType;
     const payload: any = action.payload ?? {};
     const meta = this.getMeta(state);
 
     if (type === 'mnemo_timeout') {
       const q = meta.currentQuestion;
-      const deadline = typeof (meta as any).quizDeadlineAtMs === 'number' ? (meta as any).quizDeadlineAtMs : null;
+      const deadline =
+        typeof (meta as any).quizDeadlineAtMs === 'number'
+          ? (meta as any).quizDeadlineAtMs
+          : null;
       if (!q || deadline == null) {
-        const until = typeof (meta as any).interQuestionUntilMs === 'number' ? (meta as any).interQuestionUntilMs : null;
+        const until =
+          typeof (meta as any).interQuestionUntilMs === 'number'
+            ? (meta as any).interQuestionUntilMs
+            : null;
         if (until == null) return state;
         if (Date.now() < until) return state;
 
@@ -378,89 +397,112 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       const playerIds = players
         .map((p: any) => Number(p?.id))
         .filter((id: number) => Number.isFinite(id));
-      const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<number, number>;
+      const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<
+        number,
+        number
+      >;
       const timedOutIds = playerIds.filter((id) => answers[id] == null);
-      return this.syncBotPending(this.resolveQuizIfReady(state, true, timedOutIds));
+      return this.syncBotPending(
+        this.resolveQuizIfReady(state, true, timedOutIds),
+      );
     }
 
-	    if (type === 'mnemo_prompt_cancel') {
-	      const cleared = {
-	        ...state,
-	        metadata: { ...meta, prompt: null, promptOwnerId: null },
-	      };
-	      return this.core.appendLog(cleared, 'Configuration fermée.');
-	    }
+    if (type === 'mnemo_prompt_cancel') {
+      const cleared = {
+        ...state,
+        metadata: { ...meta, prompt: null, promptOwnerId: null },
+      };
+      return this.core.appendLog(cleared, 'Configuration fermée.');
+    }
 
-	    if (type === 'mnemo_open_config') {
-	      const actorId = (action as any)?.meta?.actorId ?? null;
-	      if (!this.canConfigure(state, actorId)) {
-	        return state;
-	      }
-	      const prompt = this.buildConfigPrompt(meta.config);
-	      return { ...state, metadata: { ...meta, prompt, promptOwnerId: actorId } };
-	    }
-
-	    if (type === 'mnemo_set_config') {
-	      const actorId = (action as any)?.meta?.actorId ?? null;
-	      const ownerId =
-	        typeof (meta as any).promptOwnerId === 'number' ? (meta as any).promptOwnerId : null;
-	      if (actorId == null || ownerId == null || actorId !== ownerId) {
-	        return state;
-	      }
-	      const correctSoloPoints = this.clampInt(
-	        payload.correctSoloPoints,
-	        -50,
-	        50,
-	        Number(meta.config.correctSoloPoints ?? 2),
-	      );
-	      const correctMultiPoints = this.clampInt(
-	        payload.correctMultiPoints,
-	        -50,
-	        50,
-	        Number(meta.config.correctMultiPoints ?? 1),
-	      );
-	      const wrongPoints = this.clampInt(
-	        payload.wrongPoints,
-	        -50,
-	        50,
-	        Number(meta.config.wrongPoints ?? 0),
-	      );
-	      const timeoutPoints = this.clampInt(
-	        payload.timeoutPoints,
-	        -50,
-	        50,
-	        Number(meta.config.timeoutPoints ?? -1),
-	      );
-	      const targetPoints = Math.max(1, Math.min(200, Number(payload.targetPoints ?? 20)));
-	      const timerSeconds = Math.max(5, Math.min(300, Number(payload.timerSeconds ?? 30)));
-	      const useTimer = this.parseBool(payload.useTimer, false);
-    const config: MnemoQuizConfig = {
-      targetPoints,
-      useTimer,
-      timerSeconds,
-      interQuestionSeconds: this.clampInt(
-        payload.interQuestionSeconds,
-        1,
-        60,
-        Number(meta.config.interQuestionSeconds ?? 15),
-      ),
-      correctSoloPoints,
-      correctMultiPoints,
-      wrongPoints,
-      timeoutPoints,
-    };
-	      const next = {
-	        ...state,
-	        metadata: { ...meta, config, prompt: null, promptOwnerId: null },
-	      };
-	      return this.core.appendLog(next, 'Configuration enregistrée.');
-	    }
-
-    if (type === 'mnemo_start') {
-      if (String(state.phase ?? '').toLowerCase().trim() !== 'setup') {
+    if (type === 'mnemo_open_config') {
+      const actorId = (action as any)?.meta?.actorId ?? null;
+      if (!this.canConfigure(state, actorId)) {
         return state;
       }
-      const categoryId = typeof payload.categoryId === 'string' ? payload.categoryId.trim() : null;
+      const prompt = this.buildConfigPrompt(meta.config);
+      return {
+        ...state,
+        metadata: { ...meta, prompt, promptOwnerId: actorId },
+      };
+    }
+
+    if (type === 'mnemo_set_config') {
+      const actorId = (action as any)?.meta?.actorId ?? null;
+      const ownerId =
+        typeof (meta as any).promptOwnerId === 'number'
+          ? (meta as any).promptOwnerId
+          : null;
+      if (actorId == null || ownerId == null || actorId !== ownerId) {
+        return state;
+      }
+      const correctSoloPoints = this.clampInt(
+        payload.correctSoloPoints,
+        -50,
+        50,
+        Number(meta.config.correctSoloPoints ?? 2),
+      );
+      const correctMultiPoints = this.clampInt(
+        payload.correctMultiPoints,
+        -50,
+        50,
+        Number(meta.config.correctMultiPoints ?? 1),
+      );
+      const wrongPoints = this.clampInt(
+        payload.wrongPoints,
+        -50,
+        50,
+        Number(meta.config.wrongPoints ?? 0),
+      );
+      const timeoutPoints = this.clampInt(
+        payload.timeoutPoints,
+        -50,
+        50,
+        Number(meta.config.timeoutPoints ?? -1),
+      );
+      const targetPoints = Math.max(
+        1,
+        Math.min(200, Number(payload.targetPoints ?? 20)),
+      );
+      const timerSeconds = Math.max(
+        5,
+        Math.min(300, Number(payload.timerSeconds ?? 30)),
+      );
+      const useTimer = this.parseBool(payload.useTimer, false);
+      const config: MnemoQuizConfig = {
+        targetPoints,
+        useTimer,
+        timerSeconds,
+        interQuestionSeconds: this.clampInt(
+          payload.interQuestionSeconds,
+          1,
+          60,
+          Number(meta.config.interQuestionSeconds ?? 15),
+        ),
+        correctSoloPoints,
+        correctMultiPoints,
+        wrongPoints,
+        timeoutPoints,
+      };
+      const next = {
+        ...state,
+        metadata: { ...meta, config, prompt: null, promptOwnerId: null },
+      };
+      return this.core.appendLog(next, 'Configuration enregistrée.');
+    }
+
+    if (type === 'mnemo_start') {
+      if (
+        String(state.phase ?? '')
+          .toLowerCase()
+          .trim() !== 'setup'
+      ) {
+        return state;
+      }
+      const categoryId =
+        typeof payload.categoryId === 'string'
+          ? payload.categoryId.trim()
+          : null;
       const selected = categoryId && categoryId.length ? categoryId : null;
       const categories = this.store.listCategories();
       const actorId = (action as any)?.meta?.actorId ?? null;
@@ -471,7 +513,11 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         prompt: null,
         promptOwnerId: null,
       };
-      let started: GameStateEntity = { ...state, phase: 'play', metadata: withSelection };
+      let started: GameStateEntity = {
+        ...state,
+        phase: 'play',
+        metadata: withSelection,
+      };
       if (actorId != null) {
         const label = selected
           ? (categories.find((c) => c.id === selected)?.name ?? selected)
@@ -500,7 +546,10 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       const currentId = state.turn?.currentPlayerId ?? null;
       if (currentId != null && actorId !== currentId) return state;
       if (interUntilMs != null) {
-        const clearedMeta: MnemoQuizMetadata = { ...meta, interQuestionUntilMs: null };
+        const clearedMeta: MnemoQuizMetadata = {
+          ...meta,
+          interQuestionUntilMs: null,
+        };
         const clearedState = { ...state, metadata: clearedMeta as any };
         return this.syncBotPending(this.drawNextQuestionOrStay(clearedState));
       }
@@ -522,7 +571,10 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 
       // Ne pas annoncer les réponses/état des autres joueurs pendant la question (évite l'effet "triche").
       // Les résultats sont annoncés à la fin (quand tout le monde a répondu / temps écoulé).
-      return { ...state, metadata: { ...meta, quizAnswersByPlayerId: answers } };
+      return {
+        ...state,
+        metadata: { ...meta, quizAnswersByPlayerId: answers },
+      };
     }
 
     if (!this.isOwner(state, (action as any)?.meta?.actorId ?? null)) {
@@ -531,16 +583,29 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     }
 
     if (type === 'mnemo_open_admin') {
-      return { ...state, metadata: { ...meta, adminView: { page: 'categories' }, prompt: null } };
+      return {
+        ...state,
+        metadata: { ...meta, adminView: { page: 'categories' }, prompt: null },
+      };
     }
 
     if (type === 'mnemo_open_all_questions') {
       const raw = String(payload.status ?? 'all').trim();
       const status =
-        raw === 'validated' || raw === 'pending' || raw === 'to_edit' || raw === 'trash'
+        raw === 'validated' ||
+        raw === 'pending' ||
+        raw === 'to_edit' ||
+        raw === 'trash'
           ? (raw as any)
           : 'all';
-      return { ...state, metadata: { ...meta, adminView: { page: 'all_questions', status }, prompt: null } };
+      return {
+        ...state,
+        metadata: {
+          ...meta,
+          adminView: { page: 'all_questions', status },
+          prompt: null,
+        },
+      };
     }
 
     if (type === 'mnemo_back') {
@@ -588,7 +653,14 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         initialText: cat.name,
         cancelActionType: 'mnemo_prompt_cancel',
       };
-      return { ...state, metadata: { ...meta, prompt, adminView: { page: 'category', categoryId } } };
+      return {
+        ...state,
+        metadata: {
+          ...meta,
+          prompt,
+          adminView: { page: 'category', categoryId },
+        },
+      };
     }
 
     if (type === 'mnemo_rename_category') {
@@ -614,7 +686,10 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         this.store.deleteCategory(categoryId);
         const nextView: MnemoAdminPage = { page: 'categories' };
         return this.core.appendLog(
-          { ...state, metadata: { ...meta, adminView: nextView, prompt: null } },
+          {
+            ...state,
+            metadata: { ...meta, adminView: nextView, prompt: null },
+          },
           'Catégorie supprimée (questions mises à la corbeille).',
         );
       } catch (err) {
@@ -627,8 +702,16 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 
     if (type === 'mnemo_open_category') {
       const categoryId = String(payload.categoryId ?? '').trim();
-      if (!this.store.listCategories().some((c) => c.id === categoryId)) return state;
-      return { ...state, metadata: { ...meta, adminView: { page: 'category', categoryId }, prompt: null } };
+      if (!this.store.listCategories().some((c) => c.id === categoryId))
+        return state;
+      return {
+        ...state,
+        metadata: {
+          ...meta,
+          adminView: { page: 'category', categoryId },
+          prompt: null,
+        },
+      };
     }
 
     if (type === 'mnemo_open_add_question') {
@@ -642,13 +725,40 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         cancelActionType: 'mnemo_prompt_cancel',
         fields: [
           { key: 'question', label: 'Question', kind: 'text', initialText: '' },
-          { key: 'correct', label: 'Bonne réponse', kind: 'text', initialText: '' },
-          { key: 'wrong1', label: 'Mauvaise réponse 1', kind: 'text', initialText: '' },
-          { key: 'wrong2', label: 'Mauvaise réponse 2', kind: 'text', initialText: '' },
-          { key: 'wrong3', label: 'Mauvaise réponse 3', kind: 'text', initialText: '' },
+          {
+            key: 'correct',
+            label: 'Bonne réponse',
+            kind: 'text',
+            initialText: '',
+          },
+          {
+            key: 'wrong1',
+            label: 'Mauvaise réponse 1',
+            kind: 'text',
+            initialText: '',
+          },
+          {
+            key: 'wrong2',
+            label: 'Mauvaise réponse 2',
+            kind: 'text',
+            initialText: '',
+          },
+          {
+            key: 'wrong3',
+            label: 'Mauvaise réponse 3',
+            kind: 'text',
+            initialText: '',
+          },
         ],
       };
-      return { ...state, metadata: { ...meta, prompt, adminView: { page: 'category', categoryId } } };
+      return {
+        ...state,
+        metadata: {
+          ...meta,
+          prompt,
+          adminView: { page: 'category', categoryId },
+        },
+      };
     }
 
     if (type === 'mnemo_add_question') {
@@ -679,13 +789,27 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     if (type === 'mnemo_open_questions') {
       const categoryId = String(payload.categoryId ?? '').trim();
       const status = this.normalizeStatus(payload.status);
-      return { ...state, metadata: { ...meta, adminView: { page: 'questions', categoryId, status }, prompt: null } };
+      return {
+        ...state,
+        metadata: {
+          ...meta,
+          adminView: { page: 'questions', categoryId, status },
+          prompt: null,
+        },
+      };
     }
 
     if (type === 'mnemo_open_question') {
       const questionId = String(payload.questionId ?? '').trim();
       const categoryId = String(payload.categoryId ?? '').trim();
-      return { ...state, metadata: { ...meta, adminView: { page: 'question', categoryId, questionId }, prompt: null } };
+      return {
+        ...state,
+        metadata: {
+          ...meta,
+          adminView: { page: 'question', categoryId, questionId },
+          prompt: null,
+        },
+      };
     }
 
     if (type === 'mnemo_set_question_status') {
@@ -715,12 +839,42 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         actionType: 'mnemo_edit_question',
         cancelActionType: 'mnemo_prompt_cancel',
         fields: [
-          { key: 'questionId', label: 'Id (ne pas modifier)', kind: 'text', initialText: q.id },
-          { key: 'question', label: 'Question', kind: 'text', initialText: q.question },
-          { key: 'correct', label: 'Bonne réponse', kind: 'text', initialText: q.correct },
-          { key: 'wrong1', label: 'Mauvaise réponse 1', kind: 'text', initialText: q.wrong1 },
-          { key: 'wrong2', label: 'Mauvaise réponse 2', kind: 'text', initialText: q.wrong2 },
-          { key: 'wrong3', label: 'Mauvaise réponse 3', kind: 'text', initialText: q.wrong3 },
+          {
+            key: 'questionId',
+            label: 'Id (ne pas modifier)',
+            kind: 'text',
+            initialText: q.id,
+          },
+          {
+            key: 'question',
+            label: 'Question',
+            kind: 'text',
+            initialText: q.question,
+          },
+          {
+            key: 'correct',
+            label: 'Bonne réponse',
+            kind: 'text',
+            initialText: q.correct,
+          },
+          {
+            key: 'wrong1',
+            label: 'Mauvaise réponse 1',
+            kind: 'text',
+            initialText: q.wrong1,
+          },
+          {
+            key: 'wrong2',
+            label: 'Mauvaise réponse 2',
+            kind: 'text',
+            initialText: q.wrong2,
+          },
+          {
+            key: 'wrong3',
+            label: 'Mauvaise réponse 3',
+            kind: 'text',
+            initialText: q.wrong3,
+          },
         ],
       };
       return { ...state, metadata: { ...meta, prompt } };
@@ -759,7 +913,10 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 
       answers[actorId] = answerIndex;
 
-      return { ...state, metadata: { ...meta, quizAnswersByPlayerId: answers } };
+      return {
+        ...state,
+        metadata: { ...meta, quizAnswersByPlayerId: answers },
+      };
 
       /* const currentId = state.turn?.currentPlayerId ?? null;
       const idx = Number(payload.answerIndex);
@@ -827,7 +984,10 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       .filter((id: number) => Number.isFinite(id));
     if (!playerIds.length) return state;
 
-    const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<number, number>;
+    const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<
+      number,
+      number
+    >;
     const allAnswered = playerIds.every((id) => answers[id] != null);
     if (!force && !allAnswered) {
       return state;
@@ -837,94 +997,120 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     // 5s inter-question pause as the timeout path.
     const endedBecauseAllAnswered = !force && allAnswered;
 
-	    const correctIds = playerIds.filter((id) => {
-	      const idx = Number(answers[id]);
-	      if (!Number.isFinite(idx)) return false;
-	      const choice = q.choices[idx] ?? '';
-	      return choice === q.correctChoice;
-	    });
-	    const answeredIds = playerIds.filter((id) => answers[id] != null);
-	    const wrongAnsweredIds = answeredIds.filter((id) => !correctIds.includes(id));
+    const correctIds = playerIds.filter((id) => {
+      const idx = Number(answers[id]);
+      if (!Number.isFinite(idx)) return false;
+      const choice = q.choices[idx] ?? '';
+      return choice === q.correctChoice;
+    });
+    const answeredIds = playerIds.filter((id) => answers[id] != null);
+    const wrongAnsweredIds = answeredIds.filter(
+      (id) => !correctIds.includes(id),
+    );
 
-	    const correctSoloPoints = this.clampInt(
-	      meta.config?.correctSoloPoints,
-	      -50,
-	      50,
-	      2,
-	    );
-	    const correctMultiPoints = this.clampInt(
-	      meta.config?.correctMultiPoints,
-	      -50,
-	      50,
-	      1,
-	    );
-	    const wrongPoints = this.clampInt(meta.config?.wrongPoints, -50, 50, 0);
-	    const timeoutPoints = this.clampInt(meta.config?.timeoutPoints, -50, 50, -1);
+    const correctSoloPoints = this.clampInt(
+      meta.config?.correctSoloPoints,
+      -50,
+      50,
+      2,
+    );
+    const correctMultiPoints = this.clampInt(
+      meta.config?.correctMultiPoints,
+      -50,
+      50,
+      1,
+    );
+    const wrongPoints = this.clampInt(meta.config?.wrongPoints, -50, 50, 0);
+    const timeoutPoints = this.clampInt(
+      meta.config?.timeoutPoints,
+      -50,
+      50,
+      -1,
+    );
 
-	    const nextScores = { ...(meta.scoresByPlayerId ?? {}) } as any as Record<number, number>;
-	    let next = state;
+    const nextScores = { ...(meta.scoresByPlayerId ?? {}) } as any as Record<
+      number,
+      number
+    >;
+    let next = state;
 
-	    if (correctIds.length === 0) {
-	      next = this.core.appendLog(next, `Personne n'a trouvé la bonne réponse.`);
-	    } else if (correctIds.length === 1) {
-	      const id = correctIds[0]!;
-	      nextScores[id] = (nextScores[id] ?? 0) + correctSoloPoints;
-	      const msg =
-	        correctSoloPoints === 0
-	          ? `${resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS)} ne marque aucun point.`
-	          : correctSoloPoints > 0
-	            ? `${resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS)} gagne +${correctSoloPoints} points.`
-	            : `${resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS)} perd ${Math.abs(correctSoloPoints)} points.`;
-	      next = this.core.appendLog(next, msg);
-	    } else {
-	      for (const id of correctIds) {
-	        nextScores[id] = (nextScores[id] ?? 0) + correctMultiPoints;
-	      }
-	      const labels = correctIds.map((id) => resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS)).join(', ');
-	      const msg =
-	        correctMultiPoints === 0
-	          ? `Plusieurs bonnes réponses (${labels}) : aucun point.`
-	          : correctMultiPoints > 0
-	            ? `Plusieurs bonnes réponses (${labels}) : +${correctMultiPoints} points chacun.`
-	            : `Plusieurs bonnes réponses (${labels}) : -${Math.abs(correctMultiPoints)} points chacun.`;
-	      next = this.core.appendLog(next, msg);
-	    }
+    if (correctIds.length === 0) {
+      next = this.core.appendLog(next, `Personne n'a trouvé la bonne réponse.`);
+    } else if (correctIds.length === 1) {
+      const id = correctIds[0];
+      nextScores[id] = (nextScores[id] ?? 0) + correctSoloPoints;
+      const msg =
+        correctSoloPoints === 0
+          ? `${resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS)} ne marque aucun point.`
+          : correctSoloPoints > 0
+            ? `${resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS)} gagne +${correctSoloPoints} points.`
+            : `${resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS)} perd ${Math.abs(correctSoloPoints)} points.`;
+      next = this.core.appendLog(next, msg);
+    } else {
+      for (const id of correctIds) {
+        nextScores[id] = (nextScores[id] ?? 0) + correctMultiPoints;
+      }
+      const labels = correctIds
+        .map((id) =>
+          resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS),
+        )
+        .join(', ');
+      const msg =
+        correctMultiPoints === 0
+          ? `Plusieurs bonnes réponses (${labels}) : aucun point.`
+          : correctMultiPoints > 0
+            ? `Plusieurs bonnes réponses (${labels}) : +${correctMultiPoints} points chacun.`
+            : `Plusieurs bonnes réponses (${labels}) : -${Math.abs(correctMultiPoints)} points chacun.`;
+      next = this.core.appendLog(next, msg);
+    }
 
-	    if (wrongAnsweredIds.length && wrongPoints !== 0) {
-	      for (const id of wrongAnsweredIds) {
-	        nextScores[id] = (nextScores[id] ?? 0) + wrongPoints;
-	      }
-	    }
+    if (wrongAnsweredIds.length && wrongPoints !== 0) {
+      for (const id of wrongAnsweredIds) {
+        nextScores[id] = (nextScores[id] ?? 0) + wrongPoints;
+      }
+    }
 
-	    if (force) {
-	      const timedOut = (Array.isArray(timedOutPlayerIds) ? timedOutPlayerIds : [])
-	        .map((id) => Number(id))
-	        .filter((id) => Number.isFinite(id));
-	      const unique = [...new Set(timedOut)]
-	        .filter((id) => playerIds.includes(id))
-	        .filter((id) => answers[id] == null);
-	      if (unique.length) {
-	        for (const id of unique) {
-	          nextScores[id] = (nextScores[id] ?? 0) + timeoutPoints;
-	        }
-	        const labels = unique.map((id) => resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS)).join(', ');
-	        const msg =
-	          timeoutPoints === 0
-	            ? `Temps écoulé: ${labels} ne marque aucun point.`
-	            : timeoutPoints > 0
-	              ? `Temps écoulé: ${labels} gagne +${timeoutPoints} points.`
-	              : `Temps écoulé: ${labels} perd ${Math.abs(timeoutPoints)} points.`;
-	        next = this.core.appendLog(next, msg);
-	      }
-	    }
+    if (force) {
+      const timedOut = (
+        Array.isArray(timedOutPlayerIds) ? timedOutPlayerIds : []
+      )
+        .map((id) => Number(id))
+        .filter((id) => Number.isFinite(id));
+      const unique = [...new Set(timedOut)]
+        .filter((id) => playerIds.includes(id))
+        .filter((id) => answers[id] == null);
+      if (unique.length) {
+        for (const id of unique) {
+          nextScores[id] = (nextScores[id] ?? 0) + timeoutPoints;
+        }
+        const labels = unique
+          .map((id) =>
+            resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS),
+          )
+          .join(', ');
+        const msg =
+          timeoutPoints === 0
+            ? `Temps écoulé: ${labels} ne marque aucun point.`
+            : timeoutPoints > 0
+              ? `Temps écoulé: ${labels} gagne +${timeoutPoints} points.`
+              : `Temps écoulé: ${labels} perd ${Math.abs(timeoutPoints)} points.`;
+        next = this.core.appendLog(next, msg);
+      }
+    }
 
     const target = meta.config?.targetPoints ?? 20;
-    const willFinish = playerIds.some((id) => Number(nextScores[id] ?? 0) >= target);
+    const willFinish = playerIds.some(
+      (id) => Number(nextScores[id] ?? 0) >= target,
+    );
 
-      if (force || endedBecauseAllAnswered) {
-        for (const id of playerIds) {
-          const idx = answers[id];
-          const who = resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS);
+    if (force || endedBecauseAllAnswered) {
+      for (const id of playerIds) {
+        const idx = answers[id];
+        const who = resolvePlayerNameFromState(
+          state,
+          id,
+          ARCHE_PLAYER_NAME_OPTIONS,
+        );
         if (idx == null) {
           next = this.core.appendLog(next, `${who} répond : Temps écoulé.`);
           continue;
@@ -933,16 +1119,26 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         const correct = choice === q.correctChoice;
         next = this.core.appendLog(
           next,
-          correct ? `${who} répond : Bonne réponse.` : `${who} répond : Mauvaise réponse.`,
+          correct
+            ? `${who} répond : Bonne réponse.`
+            : `${who} répond : Mauvaise réponse.`,
         );
       }
 
       if (wrongAnsweredIds.length && correctIds.length > 0) {
-        next = this.core.appendLog(next, `La bonne réponse était : ${q.correctChoice}.`);
+        next = this.core.appendLog(
+          next,
+          `La bonne réponse était : ${q.correctChoice}.`,
+        );
       }
       next = this.core.appendLog(next, `Fin de la manche ${currentRound}.`);
       if (!willFinish) {
-        const interSeconds = this.clampInt(meta.config?.interQuestionSeconds, 1, 60, 15);
+        const interSeconds = this.clampInt(
+          meta.config?.interQuestionSeconds,
+          1,
+          60,
+          15,
+        );
         next = this.core.appendLog(
           next,
           `Prochaine question dans ${interSeconds} secondes. Appuyez sur Espace.`,
@@ -950,7 +1146,12 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       }
     }
 
-    const interQuestionSeconds = this.clampInt(meta.config?.interQuestionSeconds, 1, 60, 15);
+    const interQuestionSeconds = this.clampInt(
+      meta.config?.interQuestionSeconds,
+      1,
+      60,
+      15,
+    );
     const afterMeta: MnemoQuizMetadata = {
       ...meta,
       scoresByPlayerId: nextScores,
@@ -963,13 +1164,19 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     };
 
     const reached = playerIds
-      .map((id) => ({ id, score: Number(afterMeta.scoresByPlayerId?.[id] ?? 0) }))
+      .map((id) => ({
+        id,
+        score: Number(afterMeta.scoresByPlayerId?.[id] ?? 0),
+      }))
       .filter((x) => x.score >= target);
 
     if (reached.length) {
-      reached.sort((a, b) => (b.score - a.score) || (a.id - b.id));
-      const winnerId = reached[0]!.id;
-      const finished = this.core.appendLog(next, `${resolvePlayerNameFromState(next, winnerId, ARCHE_PLAYER_NAME_OPTIONS)} a gagné !`);
+      reached.sort((a, b) => b.score - a.score || a.id - b.id);
+      const winnerId = reached[0].id;
+      const finished = this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, winnerId, ARCHE_PLAYER_NAME_OPTIONS)} a gagné !`,
+      );
       return {
         ...finished,
         status: 'finished',
@@ -1008,10 +1215,15 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         ? meta.selectedCategoryId
         : null;
 
-    let pool = all.filter((q) => (selected ? q.categoryId === selected : true));
+    const pool = all.filter((q) =>
+      selected ? q.categoryId === selected : true,
+    );
 
     if (categories.length === 0) {
-      return this.core.appendLog(state, 'Aucune catégorie : utilisez Administration > Ajouter une catégorie.');
+      return this.core.appendLog(
+        state,
+        'Aucune catégorie : utilisez Administration > Ajouter une catégorie.',
+      );
     }
     if (all.length === 0) {
       return this.core.appendLog(
@@ -1032,8 +1244,8 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     const remaining = pool.filter((q) => !used.has(q.id));
     const pickFrom = remaining.length ? remaining : pool;
     const pick = this.random.pickIndex(meta as any, pickFrom.length);
-    const picked = pickFrom[pick.index]!;
-    let rngMeta = pick.meta as any as MnemoQuizMetadata;
+    const picked = pickFrom[pick.index];
+    let rngMeta = pick.meta as MnemoQuizMetadata;
 
     // Auto-"validate" questions that are played (legacy data may still be pending/to_edit).
     // This ensures the game doesn't get stuck on "validated only" semantics and matches the simplified admin UX.
@@ -1046,7 +1258,9 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     }
 
     const normalizeKey = (value: unknown) =>
-      String(value ?? '').trim().toLocaleLowerCase('fr');
+      String(value ?? '')
+        .trim()
+        .toLocaleLowerCase('fr');
 
     const rawChoices = [
       picked.correct,
@@ -1075,8 +1289,11 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         .flatMap((q) => [q.correct, q.wrong1, q.wrong2, q.wrong3])
         .map((s) => String(s ?? '').trim())
         .filter((s) => s.length > 0);
-      const candidatesShuffled = this.random.shuffle(rngMeta as any, candidatesRaw);
-      rngMeta = candidatesShuffled.meta as any;
+      const candidatesShuffled = this.random.shuffle(
+        rngMeta as any,
+        candidatesRaw,
+      );
+      rngMeta = candidatesShuffled.meta;
       for (const c of candidatesShuffled.values) {
         if (unique.length >= 4) break;
         const key = normalizeKey(c);
@@ -1088,11 +1305,14 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     }
     // Fallback: conserver 4 choix même s'il reste des doublons (data pauvre).
     while (unique.length < 4 && rawChoices[unique.length]) {
-      unique.push(rawChoices[unique.length]!);
+      unique.push(rawChoices[unique.length]);
     }
 
-    const shuffled = this.random.shuffle(rngMeta as any, unique.length ? unique : rawChoices);
-    rngMeta = shuffled.meta as any;
+    const shuffled = this.random.shuffle(
+      rngMeta as any,
+      unique.length ? unique : rawChoices,
+    );
+    rngMeta = shuffled.meta;
     const choices = shuffled.values;
     const currentQuestion = {
       id: picked.id,
@@ -1102,13 +1322,13 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       correctChoice: String(picked.correct ?? '').trim(),
     };
 
-    const nextUsed = remaining.length
-      ? [...used, picked.id]
-      : [picked.id];
+    const nextUsed = remaining.length ? [...used, picked.id] : [picked.id];
 
     const timerSeconds = Number(rngMeta.config?.timerSeconds ?? 30);
     const useTimer = Boolean(rngMeta.config?.useTimer);
-    const quizDeadlineAtMs = useTimer ? Date.now() + Math.max(1, timerSeconds) * 1000 : null;
+    const quizDeadlineAtMs = useTimer
+      ? Date.now() + Math.max(1, timerSeconds) * 1000
+      : null;
 
     return {
       ...state,
@@ -1122,9 +1342,14 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     };
   }
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] | null {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] | null {
     const meta = this.getMeta(state);
-    const phase = String(state.phase ?? '').toLowerCase().trim();
+    const phase = String(state.phase ?? '')
+      .toLowerCase()
+      .trim();
     const currentId = state.turn?.currentPlayerId ?? null;
 
     if (currentId !== botPlayerId) return null;
@@ -1158,7 +1383,10 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     const bot = players.find((p: any) => p?.id === botPlayerId) as any;
     if (!bot?.isBot) return null;
 
-    const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<number, number>;
+    const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<
+      number,
+      number
+    >;
     if (answers[botPlayerId] != null) return null;
 
     // Le jeu expose toujours 4 choix, mais on reste robuste.
@@ -1174,7 +1402,9 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
   private parseBool(value: any, defaultValue = false): boolean {
     if (typeof value === 'boolean') return value;
     if (typeof value === 'number') return value !== 0;
-    const t = String(value ?? '').trim().toLowerCase();
+    const t = String(value ?? '')
+      .trim()
+      .toLowerCase();
     if (!t) return defaultValue;
     if (t === '1' || t === 'true' || t === 'oui' || t === 'yes' || t === 'on')
       return true;
@@ -1185,13 +1415,20 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 
   private syncBotPending(state: GameStateEntity): GameStateEntity {
     try {
-      if (!state || String(state.status ?? '').toLowerCase().trim() === 'finished') {
+      if (
+        !state ||
+        String(state.status ?? '')
+          .toLowerCase()
+          .trim() === 'finished'
+      ) {
         return state;
       }
 
       const meta = this.getMeta(state);
       const players = Array.isArray(state.players) ? state.players : [];
-      const phase = String(state.phase ?? '').toLowerCase().trim();
+      const phase = String(state.phase ?? '')
+        .toLowerCase()
+        .trim();
       const promptOwnerId =
         typeof (meta as any).promptOwnerId === 'number'
           ? (meta as any).promptOwnerId
@@ -1199,22 +1436,36 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 
       if (phase === 'setup') {
         if (meta.prompt && typeof promptOwnerId === 'number') {
-          const promptOwner = players.find((p: any) => p?.id === promptOwnerId) ?? null;
+          const promptOwner =
+            players.find((p: any) => p?.id === promptOwnerId) ?? null;
           if (!state.pending && promptOwner?.isBot) {
             return {
               ...state,
-              pending: { type: 'mnemo_set_config', playerId: promptOwnerId, blocking: true } as any,
+              pending: {
+                type: 'mnemo_set_config',
+                playerId: promptOwnerId,
+                blocking: true,
+              } as any,
             };
           }
           return state.pending ? { ...state, pending: null } : state;
         }
 
         const currentId = state.turn?.currentPlayerId ?? null;
-        const currentPlayer = players.find((p: any) => p?.id === currentId) ?? null;
-        if (!state.pending && currentPlayer?.isBot && typeof currentId === 'number') {
+        const currentPlayer =
+          players.find((p: any) => p?.id === currentId) ?? null;
+        if (
+          !state.pending &&
+          currentPlayer?.isBot &&
+          typeof currentId === 'number'
+        ) {
           return {
             ...state,
-            pending: { type: 'mnemo_start', playerId: currentId, blocking: true } as any,
+            pending: {
+              type: 'mnemo_start',
+              playerId: currentId,
+              blocking: true,
+            } as any,
           };
         }
         return state.pending ? { ...state, pending: null } : state;
@@ -1238,13 +1489,20 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         ) {
           return {
             ...state,
-            pending: { type: 'draw', playerId: currentId, blocking: true } as any,
+            pending: {
+              type: 'draw',
+              playerId: currentId,
+              blocking: true,
+            } as any,
           };
         }
         return state.pending ? { ...state, pending: null } : state;
       }
 
-      const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<number, number>;
+      const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<
+        number,
+        number
+      >;
       const bots = players
         .filter((p: any) => p?.isBot)
         .map((p: any) => Number(p?.id))
@@ -1256,7 +1514,10 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         return state.pending ? { ...state, pending: null } : state;
       }
 
-      return { ...state, pending: { type: 'quiz', playerId: nextBot, blocking: true } as any };
+      return {
+        ...state,
+        pending: { type: 'quiz', playerId: nextBot, blocking: true } as any,
+      };
     } catch {
       return state;
     }
@@ -1283,15 +1544,18 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       return {
         type: 'draw',
         playerId: userId,
-        label: "Piochez une question (Espace).",
+        label: 'Piochez une question (Espace).',
       };
     }
 
     const promptOwnerId =
-      typeof (meta as any).promptOwnerId === 'number' ? (meta as any).promptOwnerId : null;
+      typeof (meta as any).promptOwnerId === 'number'
+        ? (meta as any).promptOwnerId
+        : null;
     const canSeePrompt =
       Boolean(meta.prompt) &&
-      (promptOwnerId === userId || (promptOwnerId == null && this.isOwner(state, userId)));
+      (promptOwnerId === userId ||
+        (promptOwnerId == null && this.isOwner(state, userId)));
 
     if (canSeePrompt && meta.prompt) {
       const prompt = meta.prompt;
@@ -1309,35 +1573,41 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
           },
         };
       }
-	      if (prompt.type === 'config_prompt') {
-	        return {
-	          type: 'config_prompt',
-	          playerId: userId,
-	          label: prompt.title,
-	          choices: [],
-	          data: {
-	            title: prompt.title,
-	            actionType: prompt.actionType,
-	            cancelActionType: prompt.cancelActionType ?? 'mnemo_prompt_cancel',
-	            fields: prompt.fields.map((f) => ({
-	              key: f.key,
-	              label: f.label,
-	              kind: f.kind ?? 'text',
-	              initialText: f.initialText ?? '',
-	            })),
-	          },
-	        };
-	      }
+      if (prompt.type === 'config_prompt') {
+        return {
+          type: 'config_prompt',
+          playerId: userId,
+          label: prompt.title,
+          choices: [],
+          data: {
+            title: prompt.title,
+            actionType: prompt.actionType,
+            cancelActionType: prompt.cancelActionType ?? 'mnemo_prompt_cancel',
+            fields: prompt.fields.map((f) => ({
+              key: f.key,
+              label: f.label,
+              kind: f.kind ?? 'text',
+              initialText: f.initialText ?? '',
+            })),
+          },
+        };
+      }
     }
 
-    if (meta.currentQuestion && (meta.quizAnswersByPlayerId as any)?.[userId] == null) {
+    if (
+      meta.currentQuestion &&
+      (meta.quizAnswersByPlayerId as any)?.[userId] == null
+    ) {
       return {
         type: 'quiz',
         label: 'Réponses possibles',
         playerId: userId,
         question: meta.currentQuestion.question,
         choices: meta.currentQuestion.choices,
-        deadlineAtMs: typeof (meta as any).quizDeadlineAtMs === 'number' ? (meta as any).quizDeadlineAtMs : null,
+        deadlineAtMs:
+          typeof (meta as any).quizDeadlineAtMs === 'number'
+            ? (meta as any).quizDeadlineAtMs
+            : null,
       };
     }
 
@@ -1350,7 +1620,11 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     }
 
     if (meta.adminView.page === 'setup') {
-      if (String(state.phase ?? '').toLowerCase().trim() !== 'setup') {
+      if (
+        String(state.phase ?? '')
+          .toLowerCase()
+          .trim() !== 'setup'
+      ) {
         return null;
       }
       const categories = this.store.listCategories();
@@ -1386,39 +1660,45 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         choices,
       };
     }
-	    if (view.page === 'all_questions') {
-	      const categories = this.store.listCategories();
-	      const categoryNameById = Object.fromEntries(categories.map((c) => [c.id, c.name]));
-	      const statusFilter = (view as any).status ?? 'all';
-	      const all = this.store.listQuestions();
-	      const list =
-	        statusFilter === 'all'
-	          ? all
-	          : all.filter((q) => String(q.status ?? 'pending') === String(statusFilter));
+    if (view.page === 'all_questions') {
+      const categories = this.store.listCategories();
+      const categoryNameById = Object.fromEntries(
+        categories.map((c) => [c.id, c.name]),
+      );
+      const statusFilter = (view as any).status ?? 'all';
+      const all = this.store.listQuestions();
+      const list =
+        statusFilter === 'all'
+          ? all
+          : all.filter(
+              (q) => String(q.status ?? 'pending') === String(statusFilter),
+            );
 
-	      const choices = [
-	        ...list.map((q) => {
-	          const cat = categoryNameById[q.categoryId] ?? q.categoryId;
-	          const status = String(q.status ?? 'pending');
-	          return `[${this.statusLabel(status)}] ${cat}: ${this.compactQuestionLabel(q.question)}`;
-	        }),
-	        'Filtrer: toutes',
-	        'Filtrer: validées',
-	        'Filtrer: en attente',
-	        'Filtrer: à modifier',
-	        'Filtrer: corbeille',
-	        'Retour',
-	      ];
+      const choices = [
+        ...list.map((q) => {
+          const cat = categoryNameById[q.categoryId] ?? q.categoryId;
+          const status = String(q.status ?? 'pending');
+          return `[${this.statusLabel(status)}] ${cat}: ${this.compactQuestionLabel(q.question)}`;
+        }),
+        'Filtrer: toutes',
+        'Filtrer: validées',
+        'Filtrer: en attente',
+        'Filtrer: à modifier',
+        'Filtrer: corbeille',
+        'Retour',
+      ];
 
-	      return {
-	        type: 'mnemo_admin',
-	        label: `Administration - Questions (${this.statusLabel(statusFilter)})`,
-	        playerId: userId,
-	        choices,
-	      };
-	    }
+      return {
+        type: 'mnemo_admin',
+        label: `Administration - Questions (${this.statusLabel(statusFilter)})`,
+        playerId: userId,
+        choices,
+      };
+    }
     if (view.page === 'category') {
-      const cat = this.store.listCategories().find((c) => c.id === view.categoryId);
+      const cat = this.store
+        .listCategories()
+        .find((c) => c.id === view.categoryId);
       const name = cat?.name ?? view.categoryId;
       return {
         type: 'mnemo_admin',
@@ -1436,49 +1716,60 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         ],
       };
     }
-	    if (view.page === 'questions') {
-	      const list = this.store.listQuestions({ categoryId: view.categoryId, status: view.status });
-	      const choices = [
-	        ...list.map((q) => this.compactQuestionLabel(q.question)),
-	        'Retour',
-	      ];
-	      return {
-	        type: 'mnemo_admin',
-	        label: `Questions - ${this.statusLabel(view.status)}`,
-	        playerId: userId,
-	        choices,
-	      };
-	    }
-	    if (view.page === 'question') {
-	      return {
-	        type: 'mnemo_admin',
-	        label: 'Question',
-	        playerId: userId,
-	        choices: [
-	          'Passer en: validée',
-	          'Passer en: en attente',
-	          'Passer en: à modifier',
-	          'Passer en: corbeille',
-	          'Modifier contenu',
-	          'Retour',
-	        ],
-	      };
-	    }
+    if (view.page === 'questions') {
+      const list = this.store.listQuestions({
+        categoryId: view.categoryId,
+        status: view.status,
+      });
+      const choices = [
+        ...list.map((q) => this.compactQuestionLabel(q.question)),
+        'Retour',
+      ];
+      return {
+        type: 'mnemo_admin',
+        label: `Questions - ${this.statusLabel(view.status)}`,
+        playerId: userId,
+        choices,
+      };
+    }
+    if (view.page === 'question') {
+      return {
+        type: 'mnemo_admin',
+        label: 'Question',
+        playerId: userId,
+        choices: [
+          'Passer en: validée',
+          'Passer en: en attente',
+          'Passer en: à modifier',
+          'Passer en: corbeille',
+          'Modifier contenu',
+          'Retour',
+        ],
+      };
+    }
 
     return null;
   }
 
-  private buildActionsForUser(state: GameStateEntity, userId: number): GameSingleActionDto[] {
+  private buildActionsForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameSingleActionDto[] {
     const meta = this.getMeta(state);
     const currentId = state.turn?.currentPlayerId ?? null;
-    const phase = String(state.phase ?? '').toLowerCase().trim();
+    const phase = String(state.phase ?? '')
+      .toLowerCase()
+      .trim();
     const actions: GameSingleActionDto[] = [];
 
     const promptOwnerId =
-      typeof (meta as any).promptOwnerId === 'number' ? (meta as any).promptOwnerId : null;
+      typeof (meta as any).promptOwnerId === 'number'
+        ? (meta as any).promptOwnerId
+        : null;
     const canSeePrompt =
       Boolean(meta.prompt) &&
-      (promptOwnerId === userId || (promptOwnerId == null && this.isOwner(state, userId)));
+      (promptOwnerId === userId ||
+        (promptOwnerId == null && this.isOwner(state, userId)));
 
     if (canSeePrompt && meta.prompt) {
       // IMPORTANT: le moteur filtre les actions par "allowedTypes".
@@ -1489,14 +1780,19 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       if (promptActionType) {
         actions.push({ type: promptActionType, payload: {} });
       }
-      const cancelType = String((meta.prompt as any)?.cancelActionType ?? 'mnemo_prompt_cancel')
+      const cancelType = String(
+        (meta.prompt as any)?.cancelActionType ?? 'mnemo_prompt_cancel',
+      )
         .trim()
         .toLowerCase();
       actions.push({ type: cancelType || 'mnemo_prompt_cancel', payload: {} });
       return actions;
     }
 
-    if (meta.currentQuestion && (meta.quizAnswersByPlayerId as any)?.[userId] == null) {
+    if (
+      meta.currentQuestion &&
+      (meta.quizAnswersByPlayerId as any)?.[userId] == null
+    ) {
       for (let i = 0; i < 4; i++) {
         actions.push({ type: 'answer_quiz', payload: { answerIndex: i } });
       }
@@ -1532,10 +1828,16 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 
     const view = meta.adminView;
     if (view.page === 'categories') {
-      actions.push({ type: 'mnemo_open_all_questions', payload: { status: 'all' } });
+      actions.push({
+        type: 'mnemo_open_all_questions',
+        payload: { status: 'all' },
+      });
       const categories = this.store.listCategories();
       for (const c of categories) {
-        actions.push({ type: 'mnemo_open_category', payload: { categoryId: c.id } });
+        actions.push({
+          type: 'mnemo_open_category',
+          payload: { categoryId: c.id },
+        });
       }
       actions.push({ type: 'mnemo_open_add_category', payload: {} });
       actions.push({ type: 'mnemo_back', payload: {} });
@@ -1548,7 +1850,9 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       const list =
         statusFilter === 'all'
           ? all
-          : all.filter((q) => String(q.status ?? 'pending') === String(statusFilter));
+          : all.filter(
+              (q) => String(q.status ?? 'pending') === String(statusFilter),
+            );
 
       for (const q of list) {
         actions.push({
@@ -1556,30 +1860,66 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
           payload: { categoryId: q.categoryId, questionId: q.id },
         });
       }
-      actions.push({ type: 'mnemo_open_all_questions', payload: { status: 'all' } });
-      actions.push({ type: 'mnemo_open_all_questions', payload: { status: 'validated' } });
-      actions.push({ type: 'mnemo_open_all_questions', payload: { status: 'pending' } });
-      actions.push({ type: 'mnemo_open_all_questions', payload: { status: 'to_edit' } });
-      actions.push({ type: 'mnemo_open_all_questions', payload: { status: 'trash' } });
+      actions.push({
+        type: 'mnemo_open_all_questions',
+        payload: { status: 'all' },
+      });
+      actions.push({
+        type: 'mnemo_open_all_questions',
+        payload: { status: 'validated' },
+      });
+      actions.push({
+        type: 'mnemo_open_all_questions',
+        payload: { status: 'pending' },
+      });
+      actions.push({
+        type: 'mnemo_open_all_questions',
+        payload: { status: 'to_edit' },
+      });
+      actions.push({
+        type: 'mnemo_open_all_questions',
+        payload: { status: 'trash' },
+      });
       actions.push({ type: 'mnemo_back', payload: {} });
       return actions;
     }
 
     if (view.page === 'category') {
       const categoryId = view.categoryId;
-      actions.push({ type: 'mnemo_open_add_question', payload: { categoryId } });
-      actions.push({ type: 'mnemo_open_questions', payload: { categoryId, status: 'validated' } });
-      actions.push({ type: 'mnemo_open_questions', payload: { categoryId, status: 'pending' } });
-      actions.push({ type: 'mnemo_open_questions', payload: { categoryId, status: 'to_edit' } });
-      actions.push({ type: 'mnemo_open_questions', payload: { categoryId, status: 'trash' } });
-      actions.push({ type: 'mnemo_open_rename_category', payload: { categoryId } });
+      actions.push({
+        type: 'mnemo_open_add_question',
+        payload: { categoryId },
+      });
+      actions.push({
+        type: 'mnemo_open_questions',
+        payload: { categoryId, status: 'validated' },
+      });
+      actions.push({
+        type: 'mnemo_open_questions',
+        payload: { categoryId, status: 'pending' },
+      });
+      actions.push({
+        type: 'mnemo_open_questions',
+        payload: { categoryId, status: 'to_edit' },
+      });
+      actions.push({
+        type: 'mnemo_open_questions',
+        payload: { categoryId, status: 'trash' },
+      });
+      actions.push({
+        type: 'mnemo_open_rename_category',
+        payload: { categoryId },
+      });
       actions.push({ type: 'mnemo_delete_category', payload: { categoryId } });
       actions.push({ type: 'mnemo_back', payload: {} });
       return actions;
     }
 
     if (view.page === 'questions') {
-      const list = this.store.listQuestions({ categoryId: view.categoryId, status: view.status });
+      const list = this.store.listQuestions({
+        categoryId: view.categoryId,
+        status: view.status,
+      });
       for (const q of list) {
         actions.push({
           type: 'mnemo_open_question',
@@ -1592,11 +1932,26 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 
     if (view.page === 'question') {
       const questionId = view.questionId;
-      actions.push({ type: 'mnemo_set_question_status', payload: { questionId, status: 'validated' } });
-      actions.push({ type: 'mnemo_set_question_status', payload: { questionId, status: 'pending' } });
-      actions.push({ type: 'mnemo_set_question_status', payload: { questionId, status: 'to_edit' } });
-      actions.push({ type: 'mnemo_set_question_status', payload: { questionId, status: 'trash' } });
-      actions.push({ type: 'mnemo_open_edit_question', payload: { questionId } });
+      actions.push({
+        type: 'mnemo_set_question_status',
+        payload: { questionId, status: 'validated' },
+      });
+      actions.push({
+        type: 'mnemo_set_question_status',
+        payload: { questionId, status: 'pending' },
+      });
+      actions.push({
+        type: 'mnemo_set_question_status',
+        payload: { questionId, status: 'to_edit' },
+      });
+      actions.push({
+        type: 'mnemo_set_question_status',
+        payload: { questionId, status: 'trash' },
+      });
+      actions.push({
+        type: 'mnemo_open_edit_question',
+        payload: { questionId },
+      });
       actions.push({ type: 'mnemo_back', payload: {} });
       return actions;
     }
@@ -1608,13 +1963,21 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     if (view.page === 'categories') return { page: 'setup' };
     if (view.page === 'all_questions') return { page: 'categories' };
     if (view.page === 'category') return { page: 'categories' };
-    if (view.page === 'questions') return { page: 'category', categoryId: view.categoryId };
-    if (view.page === 'question') return { page: 'questions', categoryId: view.categoryId, status: 'pending' };
+    if (view.page === 'questions')
+      return { page: 'category', categoryId: view.categoryId };
+    if (view.page === 'question')
+      return {
+        page: 'questions',
+        categoryId: view.categoryId,
+        status: 'pending',
+      };
     return { page: 'setup' };
   }
 
   private normalizeStatus(value: any): MnemoQuestionStatus {
-    const raw = String(value ?? '').trim().toLowerCase();
+    const raw = String(value ?? '')
+      .trim()
+      .toLowerCase();
     if (raw === 'validated') return 'validated';
     if (raw === 'to_edit') return 'to_edit';
     if (raw === 'trash') return 'trash';
@@ -1622,7 +1985,9 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
   }
 
   private statusLabel(value: any): string {
-    const raw = String(value ?? '').trim().toLowerCase();
+    const raw = String(value ?? '')
+      .trim()
+      .toLowerCase();
     if (raw === 'all') return 'toutes';
     if (raw === 'validated') return 'validée';
     if (raw === 'pending') return 'en attente';
@@ -1635,9 +2000,9 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     return {
       type: 'config_prompt',
       title: 'Configuration - Arche de Mnémosyne',
-	      actionType: 'mnemo_set_config',
-	      cancelActionType: 'mnemo_prompt_cancel',
-	      fields: [
+      actionType: 'mnemo_set_config',
+      cancelActionType: 'mnemo_prompt_cancel',
+      fields: [
         {
           key: 'correctSoloPoints',
           label: 'Points accordés si un seul joueur répond correctement',
@@ -1646,7 +2011,8 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         },
         {
           key: 'correctMultiPoints',
-          label: 'Points accordés par joueur en cas de bonnes réponses multiples',
+          label:
+            'Points accordés par joueur en cas de bonnes réponses multiples',
           kind: 'number',
           initialText: String((config as any)?.correctMultiPoints ?? 1),
         },
@@ -1690,20 +2056,28 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     };
   }
 
-	  private clampInt(value: any, min: number, max: number, fallback: number): number {
-	    const candidate = Number(value);
-	    if (!Number.isFinite(candidate)) return this.clampInt(fallback, min, max, 0);
-	    const rounded = Math.round(candidate);
-	    if (rounded < min) return min;
-	    if (rounded > max) return max;
-	    return rounded;
-	  }
+  private clampInt(
+    value: any,
+    min: number,
+    max: number,
+    fallback: number,
+  ): number {
+    const candidate = Number(value);
+    if (!Number.isFinite(candidate))
+      return this.clampInt(fallback, min, max, 0);
+    const rounded = Math.round(candidate);
+    if (rounded < min) return min;
+    if (rounded > max) return max;
+    return rounded;
+  }
 
-	  private compactQuestionLabel(value: string): string {
-	    const trimmed = String(value ?? '').replace(/\s+/g, ' ').trim();
-	    if (trimmed.length <= 80) return trimmed;
-	    return trimmed.slice(0, 77) + '...';
-	  }
+  private compactQuestionLabel(value: string): string {
+    const trimmed = String(value ?? '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (trimmed.length <= 80) return trimmed;
+    return trimmed.slice(0, 77) + '...';
+  }
 
   private isOwner(state: GameStateEntity, playerId: number | null): boolean {
     if (playerId == null) return false;
@@ -1714,12 +2088,20 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     return ownerId === playerId;
   }
 
-  private canConfigure(state: GameStateEntity, actorId: number | null): boolean {
+  private canConfigure(
+    state: GameStateEntity,
+    actorId: number | null,
+  ): boolean {
     if (actorId == null) return false;
     if (this.isOwner(state, actorId)) return true;
 
     // Autoriser le joueur courant à configurer la partie pendant le setup.
-    if (String(state.phase ?? '').toLowerCase().trim() !== 'setup') return false;
+    if (
+      String(state.phase ?? '')
+        .toLowerCase()
+        .trim() !== 'setup'
+    )
+      return false;
     const currentId = state.turn?.currentPlayerId ?? null;
     return currentId === actorId;
   }
@@ -1741,20 +2123,17 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     const config =
       raw?.config && typeof raw.config === 'object'
         ? raw.config
-          : ({
-              targetPoints: 20,
-              useTimer: true,
-              timerSeconds: 30,
-              interQuestionSeconds: 15,
-              correctSoloPoints: 2,
-              correctMultiPoints: 1,
-              wrongPoints: 0,
-              timeoutPoints: -1,
+        : ({
+            targetPoints: 20,
+            useTimer: true,
+            timerSeconds: 30,
+            interQuestionSeconds: 15,
+            correctSoloPoints: 2,
+            correctMultiPoints: 1,
+            wrongPoints: 0,
+            timeoutPoints: -1,
           } as MnemoQuizConfig);
 
-    return { ...(raw as any), adminView, config } as any;
+    return { ...raw, adminView, config };
   }
 }
-
-
-

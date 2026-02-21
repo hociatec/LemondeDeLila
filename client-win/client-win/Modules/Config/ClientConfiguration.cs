@@ -28,6 +28,7 @@ public sealed class ClientConfiguration
     public Uri PresenceGatewayWs { get; }
     public Uri NotifyGatewayWs { get; }
     public Uri GameGatewayWs { get; }
+    public Uri UpdatesCheckUrl { get; }
     public string JwtIssuer { get; }
     public string? JwtAudience { get; }
     public string? JwtSignaturePublicKeyPath { get; }
@@ -41,6 +42,7 @@ public sealed class ClientConfiguration
         Uri presenceGatewayWs,
         Uri notifyGatewayWs,
         Uri gameGatewayWs,
+        Uri updatesCheckUrl,
         string jwtIssuer,
         string? jwtAudience,
         string? jwtSignaturePublicKeyPath,
@@ -53,6 +55,7 @@ public sealed class ClientConfiguration
         PresenceGatewayWs = presenceGatewayWs;
         NotifyGatewayWs = notifyGatewayWs;
         GameGatewayWs = gameGatewayWs;
+        UpdatesCheckUrl = updatesCheckUrl;
         JwtIssuer = jwtIssuer;
         JwtAudience = jwtAudience;
         JwtSignaturePublicKeyPath = jwtSignaturePublicKeyPath;
@@ -118,6 +121,8 @@ public sealed class ClientConfiguration
         gameGateway = UpgradeToSecureWs(gameGateway, httpBase);
 
         Validate(new[] { apiGateway, realtimeGateway, presenceGateway, notifyGateway, gameGateway }, httpBase);
+        var defaultUpdateCheck = new Uri(httpBase, "../client/version").ToString();
+        var updatesCheckUrl = ToHttpUri(Get(properties, "updates.check.url", defaultUpdateCheck));
 
         string jwtIssuer = Get(properties, "jwt.issuer", "le-monde-de-lila");
         string? jwtAudience = Normalize(Get(properties, "jwt.audience", string.Empty));
@@ -137,6 +142,7 @@ public sealed class ClientConfiguration
             presenceGateway,
             notifyGateway,
             gameGateway,
+            updatesCheckUrl,
             jwtIssuer,
             jwtAudience,
             jwtPublicKeyPath,
@@ -151,6 +157,7 @@ public sealed class ClientConfiguration
         Log.Information("  - WebSocket Presence: {PresenceGateway}", presenceGateway);
         Log.Information("  - WebSocket Notify: {NotifyGateway}", notifyGateway);
         Log.Information("  - WebSocket Game: {GameGateway}", gameGateway);
+        Log.Information("  - Updates check URL: {UpdatesCheckUrl}", updatesCheckUrl);
         if (!string.IsNullOrWhiteSpace(jwtPublicKeyPath))
         {
             Log.Information("  - JWT signature public key: {JwtPublicKey}", jwtPublicKeyPath);

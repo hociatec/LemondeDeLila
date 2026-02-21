@@ -1,7 +1,7 @@
 ﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { OlympiaDeckType } from '../model/olympia-cards';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { normalizeActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import type {
   OlympiaMetadata,
@@ -33,7 +33,9 @@ export function getAvailableActions(
     return actions;
   }
 
-  const hand = Array.isArray(meta.hands?.[playerId]) ? meta.hands[playerId] : [];
+  const hand = Array.isArray(meta.hands?.[playerId])
+    ? meta.hands[playerId]
+    : [];
   for (const cardId of hand) {
     actions.push({
       type: 'play_card',
@@ -54,10 +56,10 @@ export function validateAction(
     throw new Error('Acteur requis.');
   }
   if (!isStartedState(state)) {
-    throw new Error('La partie n\'est pas ouverte.');
+    throw new Error("La partie n'est pas ouverte.");
   }
   if (state.turn?.currentPlayerId !== actorId) {
-    throw new Error('Ce n\'est pas votre tour.');
+    throw new Error("Ce n'est pas votre tour.");
   }
   if (type !== 'draw_card' && type !== 'play_card' && type !== 'pass') {
     throw new Error(`Action inconnue : ${type}`);
@@ -86,9 +88,11 @@ export function validateAction(
       throw new Error('Carte à jouer manquante.');
     }
     const meta = getMeta(state);
-    const hand = Array.isArray(meta.hands?.[actorId]) ? meta.hands[actorId] : [];
+    const hand = Array.isArray(meta.hands?.[actorId])
+      ? meta.hands[actorId]
+      : [];
     if (!hand.includes(cardId)) {
-      throw new Error('Cette carte n\'est pas dans votre main.');
+      throw new Error("Cette carte n'est pas dans votre main.");
     }
     if (hasBlockingStatus(meta.statuses, actorId, 'block_play')) {
       throw new Error('Vous ne pouvez pas jouer de carte.');
@@ -113,6 +117,3 @@ function hasBlockingStatus(
 function getMeta(state: GameStateEntity): OlympiaMetadata {
   return (state.metadata ?? {}) as OlympiaMetadata;
 }
-
-
-

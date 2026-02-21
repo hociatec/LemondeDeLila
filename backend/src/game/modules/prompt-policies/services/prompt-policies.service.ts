@@ -24,7 +24,7 @@ export class PromptPoliciesService {
     const chooserId =
       typeof pending.playerId === 'number'
         ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
+        : (state.turn?.currentPlayerId ?? null);
     if (chooserId == null) return state;
     return this.appendLogOnce(state, buildMessage(chooserId));
   }

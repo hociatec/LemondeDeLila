@@ -6,7 +6,7 @@ import {
   BandeABananeMonkeySpecies,
 } from '../model/la-bande-a-banane-cards';
 import type { BandeABananeMetadata } from '../model/la-bande-a-banane-state.entity';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { normalizeActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 export type BandeABananeActionPayload = {
@@ -15,8 +15,6 @@ export type BandeABananeActionPayload = {
   cardToGiveId?: string | null;
   species?: BandeABananeMonkeySpecies | null;
 };
-
-type ValidActionType = 'play_card' | 'pass';
 
 function getMeta(state: GameStateEntity): BandeABananeMetadata {
   return (state.metadata ?? {}) as BandeABananeMetadata;
@@ -30,7 +28,9 @@ function getPlayerSpeciesSet(
   meta: BandeABananeMetadata,
   playerId: number,
 ): Set<BandeABananeMonkeySpecies> {
-  const troops = Array.isArray(meta.troops?.[playerId]) ? meta.troops[playerId] : [];
+  const troops = Array.isArray(meta.troops?.[playerId])
+    ? meta.troops[playerId]
+    : [];
   return new Set(troops.map((entry) => entry.species));
 }
 
@@ -52,10 +52,14 @@ function getMissingSpecies(
 function getOpponentIds(state: GameStateEntity, playerId: number): number[] {
   return (Array.isArray(state.players) ? state.players : [])
     .filter((player) => player?.id != null && player.id !== playerId)
-    .map((player) => player!.id);
+    .map((player) => player.id);
 }
 
-function playerHasCard(meta: BandeABananeMetadata, playerId: number, cardId: string): boolean {
+function playerHasCard(
+  meta: BandeABananeMetadata,
+  playerId: number,
+  cardId: string,
+): boolean {
   return getPlayerHand(meta, playerId).includes(cardId);
 }
 
@@ -68,7 +72,10 @@ function playerHasSpecies(
   return getPlayerSpeciesSet(meta, playerId).has(species);
 }
 
-function opponentHasCards(meta: BandeABananeMetadata, targetId: number): boolean {
+function opponentHasCards(
+  meta: BandeABananeMetadata,
+  targetId: number,
+): boolean {
   return getPlayerHand(meta, targetId).length > 0;
 }
 
@@ -82,16 +89,17 @@ export function getAvailableActions(
   const meta = getMeta(state);
   const hand = getPlayerHand(meta, playerId);
   const opponents = getOpponentIds(state, playerId);
-  const available: GameSingleActionDto[] = [
-    { type: 'pass', payload: {} },
-  ];
+  const available: GameSingleActionDto[] = [{ type: 'pass', payload: {} }];
 
   for (const cardId of hand) {
     const definition = BANDE_A_BANANE_CARD_BY_ID[cardId];
     if (!definition) continue;
 
     if (definition.type === 'monkey') {
-      if (definition.species && playerHasSpecies(meta, playerId, definition.species)) {
+      if (
+        definition.species &&
+        playerHasSpecies(meta, playerId, definition.species)
+      ) {
         continue;
       }
       available.push({ type: 'play_card', payload: { cardId } });
@@ -176,11 +184,11 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error('La partie n\'est pas commencée.');
+    throw new Error("La partie n'est pas commencée.");
   }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== actorId) {
-    throw new Error('Ce n\'est pas votre tour.');
+    throw new Error("Ce n'est pas votre tour.");
   }
 
   if (type === 'pass') {
@@ -260,7 +268,7 @@ function validateActionCard(
       throw new Error('Cible invalide.');
     }
     if (!opponentHasCards(meta, targetId)) {
-      throw new Error('La cible n\'a pas de cartes à voler.');
+      throw new Error("La cible n'a pas de cartes à voler.");
     }
     return { type: 'play_card', payload };
   }
@@ -271,20 +279,20 @@ function validateActionCard(
       throw new Error('Choisissez une cible pour échanger.');
     }
     if (targetId === actorId) {
-      throw new Error('Impossible de s\'échanger avec soi-même.');
+      throw new Error("Impossible de s'échanger avec soi-même.");
     }
     if (!opponents.includes(targetId)) {
       throw new Error('Cible invalide.');
     }
     if (!opponentHasCards(meta, targetId)) {
-      throw new Error('La cible n\'a pas de cartes à échanger.');
+      throw new Error("La cible n'a pas de cartes à échanger.");
     }
     const giveCardId = String(payload.cardToGiveId ?? '').trim();
     if (!giveCardId) {
       throw new Error('Choisissez une carte à donner.');
     }
     if (giveCardId === card.id) {
-      throw new Error('Vous ne pouvez pas donner la carte d\'action.');
+      throw new Error("Vous ne pouvez pas donner la carte d'action.");
     }
     if (!playerHasCard(meta, actorId, giveCardId)) {
       throw new Error('Vous ne possédez pas cette carte à donner.');
@@ -298,6 +306,3 @@ function validateActionCard(
 
   return { type: 'play_card', payload };
 }
-
-
-

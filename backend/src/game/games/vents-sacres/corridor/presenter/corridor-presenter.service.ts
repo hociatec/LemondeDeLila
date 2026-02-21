@@ -61,11 +61,16 @@ export class CorridorPresenterService extends BasePresenterService {
           return 'Mur horizontal ici';
         if (type === 'corridor_place_wall' && o === 'v')
           return 'Mur vertical ici';
-        return String((action as any)?.label ?? (action as any)?.type ?? '').trim();
+        return String(
+          (action as any)?.label ?? (action as any)?.type ?? '',
+        ).trim();
       },
     );
 
-    const blockedEdges = this.gridBlockedEdges.buildFromWalls(size, meta?.walls);
+    const blockedEdges = this.gridBlockedEdges.buildFromWalls(
+      size,
+      meta?.walls,
+    );
     const cellTags = this.buildGridCellTags(state, userId, size);
 
     return {
@@ -145,7 +150,12 @@ export class CorridorPresenterService extends BasePresenterService {
       })),
       ...walls.map((w) => ({
         type: 'corridor_place_wall',
-        payload: { x: w.x, y: w.y, o: w.o, _ui: { key: 'M', kind: 'place_wall' } },
+        payload: {
+          x: w.x,
+          y: w.y,
+          o: w.o,
+          _ui: { key: 'M', kind: 'place_wall' },
+        },
       })),
     ];
   }

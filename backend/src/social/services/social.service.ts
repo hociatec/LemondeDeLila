@@ -8,10 +8,7 @@ import {
   SocialProfile,
   SocialProfileVisibility,
 } from '../entities/social-profile.entity';
-import {
-  SocialRelationship,
-  SocialRelationshipStatus,
-} from '../entities/social-relationship.entity';
+import { SocialRelationship } from '../entities/social-relationship.entity';
 
 const PROFILE_VISIBILITY: SocialProfileVisibility[] = [
   'public',
@@ -405,7 +402,7 @@ export class SocialService {
     try {
       rows = await buildQuery(true).getRawMany();
     } catch (error) {
-      const message = String((error as any)?.message ?? '');
+      const message = String(error?.message ?? '');
       if (!/collation/i.test(message)) {
         throw error;
       }

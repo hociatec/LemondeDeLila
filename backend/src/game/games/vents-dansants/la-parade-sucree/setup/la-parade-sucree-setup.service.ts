@@ -1,13 +1,19 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
-import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import {
+  getRngMeta,
+  getSafePlayers,
+} from '../../../../setup/setup-service.helper';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import {
   INITIAL_CANDIES,
   LA_PARADE_CARD_DECK,
 } from '../model/la-parade-sucree-cards';
-import type { CandyCounts, LaParadeSucreeMetadata } from '../model/la-parade-sucree-state.entity';
+import type {
+  CandyCounts,
+  LaParadeSucreeMetadata,
+} from '../model/la-parade-sucree-state.entity';
 
 @Injectable()
 export class LaParadeSucreeSetupService {
@@ -18,7 +24,10 @@ export class LaParadeSucreeSetupService {
     const seedMeta = (baseState.metadata ?? {}) as LaParadeSucreeMetadata;
     let rngMeta = getRngMeta(seedMeta);
     const deck = [...LA_PARADE_CARD_DECK];
-    const { values: shuffled, meta: updatedRng } = this.random.shuffle(rngMeta, deck);
+    const { values: shuffled, meta: updatedRng } = this.random.shuffle(
+      rngMeta,
+      deck,
+    );
     rngMeta = updatedRng;
 
     const hands: Record<number, string[]> = {};

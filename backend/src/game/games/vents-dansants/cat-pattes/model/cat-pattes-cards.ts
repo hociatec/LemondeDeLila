@@ -41,11 +41,13 @@ const createCopies = (
   count: number,
   value: Partial<CatPattesCardDefinition>,
 ) =>
-  Array.from({ length: count }, (_, index) =>
-    ({
-      id: `${prefix}-${index + 1}`,
-      ...value,
-    } as CatPattesCardDefinition),
+  Array.from(
+    { length: count },
+    (_, index) =>
+      ({
+        id: `${prefix}-${index + 1}`,
+        ...value,
+      }) as CatPattesCardDefinition,
   );
 
 const deck: CatPattesCardDefinition[] = [

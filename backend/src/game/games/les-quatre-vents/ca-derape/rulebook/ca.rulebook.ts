@@ -4,7 +4,6 @@ import {
   isRollActionType,
   normalizeActionType,
   normalizeLegacyRollAliasToUpper,
-  normalizeLowerActionType,
 } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
@@ -30,7 +29,7 @@ export function getAvailableActions(
 ): GameSingleActionDto[] {
   if (!isStartedState(state)) return [];
 
-  const pending = state.pending as any;
+  const pending = state.pending;
   if (pending) {
     const drawActions = getPendingDrawActionsForPlayer(pending, playerId);
     if (drawActions.length > 0) return drawActions;
@@ -72,8 +71,9 @@ export function validateAction(
   actorId: number | null,
 ): GameSingleActionDto {
   const rawType = normalizeActionType(action);
-  const normalized =
-    normalizeLegacyRollAliasToUpper(rawType) as CaDerapeActionType;
+  const normalized = normalizeLegacyRollAliasToUpper(
+    rawType,
+  ) as CaDerapeActionType;
 
   if (!CA_DERAPE_GAME.actions.includes(normalized)) {
     throw new GameValidationError(`Action inconnue: ${rawType || '(vide)'}`, {
@@ -93,7 +93,7 @@ export function validateAction(
     });
   }
 
-  const pending: any = state.pending;
+  const pending = state.pending;
   if (pending) {
     const drawValidation = validatePendingDrawActionForActor({
       pending,
@@ -103,7 +103,10 @@ export function validateAction(
     if (drawValidation.ok) {
       return drawValidation.action;
     }
-    if (pending.type === 'draw' && drawValidation.reason === 'wrong_action_type') {
+    if (
+      pending.type === 'draw' &&
+      drawValidation.reason === 'wrong_action_type'
+    ) {
       throw new PlayerActionError('Action non disponible.', {
         gameType: 'ca-derape',
       });
@@ -152,15 +155,19 @@ export function validateAction(
         payloadValueKey: 'playerId',
         valuesKey: 'playerIds',
       });
-      if (!playerValidation.ok && playerValidation.reason === 'wrong_action_type') {
+      if (
+        !playerValidation.ok &&
+        playerValidation.reason === 'wrong_action_type'
+      ) {
         throw new PlayerActionError('Choix invalide.', {
           gameType: 'ca-derape',
         });
       }
       if (!playerValidation.ok) {
+        const payload = asRecord(action.payload);
         throw new GameValidationError('Joueur invalide.', {
           gameType: 'ca-derape',
-          playerId: Number((action.payload as any)?.playerId),
+          playerId: toNumber(payload.playerId),
         });
       }
       return playerValidation.action;
@@ -176,15 +183,19 @@ export function validateAction(
         payloadValueKey: 'delta',
         valuesKey: 'deltas',
       });
-      if (!deltaValidation.ok && deltaValidation.reason === 'wrong_action_type') {
+      if (
+        !deltaValidation.ok &&
+        deltaValidation.reason === 'wrong_action_type'
+      ) {
         throw new PlayerActionError('Choix invalide.', {
           gameType: 'ca-derape',
         });
       }
       if (!deltaValidation.ok) {
+        const payload = asRecord(action.payload);
         throw new GameValidationError('Choix invalide.', {
           gameType: 'ca-derape',
-          delta: Number((action.payload as any)?.delta),
+          delta: toNumber(payload.delta),
         });
       }
       return deltaValidation.action;
@@ -207,5 +218,18 @@ export function validateAction(
   return { type: normalized, payload: action.payload ?? {} };
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  if (value == null || typeof value !== 'object') return {};
+  return value as Record<string, unknown>;
+}
 
-
+function toNumber(value: unknown): number {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : NaN;
+  }
+  if (typeof value !== 'string') {
+    return NaN;
+  }
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) ? parsed : NaN;
+}

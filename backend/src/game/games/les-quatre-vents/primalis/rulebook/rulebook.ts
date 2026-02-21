@@ -1,11 +1,17 @@
 ﻿import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import {
-  PlayerActionError,
-} from '../../../../../common/errors/game-errors';
+import { PlayerActionError } from '../../../../../common/errors/game-errors';
 import { PRIMALIS_GAME } from '../definitions/primalis.definition';
-import { isRollAlias, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  isRollAlias,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import { canPlayerActOnTurn } from '../../../../rulebook/rulebook-guard.helper';
+import type { PrimalisActionType } from '../model/primalis-state.entity';
+
+function isPrimalisActionType(value: string): value is PrimalisActionType {
+  return (PRIMALIS_GAME.actions as readonly string[]).includes(value);
+}
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -20,11 +26,10 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const rawType = normalizeActionType(action);
-  const type = isRollAlias(rawType)
-    ? 'roll'
-    : (rawType as typeof PRIMALIS_GAME.actions[number]);
-  if (!PRIMALIS_GAME.actions.includes(type as any)) {
+  const normalizedType = normalizeActionType(action);
+  const rawType = typeof normalizedType === 'string' ? normalizedType : '';
+  const maybeType = isRollAlias(rawType) ? 'roll' : rawType;
+  if (!isPrimalisActionType(maybeType)) {
     throw new PlayerActionError(`Action inconnue: ${rawType || '(vide)'}`, {
       gameType: 'primalis',
     });
@@ -50,6 +55,3 @@ export function validateAction(
   }
   return { type: 'roll', payload: {} };
 }
-
-
-

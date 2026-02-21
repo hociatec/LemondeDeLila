@@ -9,13 +9,19 @@ import * as CorridorRulebook from '../rulebook/rulebook';
 export class CorridorBotService {
   constructor(private readonly botRunner: BotRunnerService) {}
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     const current = state.turn?.currentPlayerId ?? null;
     if (current !== botPlayerId) return [];
 
     const meta = (state.metadata ?? {}) as CorridorMetadata;
     const moveTargets = CorridorRulebook.listLegalPawnMoves(state, botPlayerId);
-    const wallTargets = CorridorRulebook.listLegalWallPlacements(state, botPlayerId);
+    const wallTargets = CorridorRulebook.listLegalWallPlacements(
+      state,
+      botPlayerId,
+    );
 
     const moveActions: GameSingleActionDto[] = moveTargets.map((to) => ({
       type: 'corridor_move',
@@ -38,7 +44,8 @@ export class CorridorBotService {
     const myGoalY = myIdx === 0 ? size - 1 : 0;
     const oppGoalY = myIdx === 0 ? 0 : size - 1;
     const myPos = CorridorRulebook.getPawnPos(meta, botPlayerId);
-    const oppPos = oppId != null ? CorridorRulebook.getPawnPos(meta, oppId) : null;
+    const oppPos =
+      oppId != null ? CorridorRulebook.getPawnPos(meta, oppId) : null;
 
     const myDist =
       size && myPos
@@ -49,14 +56,22 @@ export class CorridorBotService {
         ? CorridorRulebook.shortestDistanceToGoal(meta, oppPos, oppGoalY)
         : null;
 
-    const remaining = (meta?.wallsRemainingByPlayerId ?? {})[String(botPlayerId)] ?? 0;
+    const remaining =
+      (meta?.wallsRemainingByPlayerId ?? {})[String(botPlayerId)] ?? 0;
 
     // Bot agressif:
     // 1) Anti-victoire: si l'adversaire a un coup gagnant au prochain tour, poser un mur qui l'empêche.
-    if (remaining > 0 && oppId != null && oppPos != null && wallTargets.length > 0) {
+    if (
+      remaining > 0 &&
+      oppId != null &&
+      oppPos != null &&
+      wallTargets.length > 0
+    ) {
       const opponentWinNow = (() => {
         const moves = CorridorRulebook.listLegalPawnMoves(state, oppId);
-        return moves.some((m) => CorridorRulebook.isWinningPos(state, oppId, m));
+        return moves.some((m) =>
+          CorridorRulebook.isWinningPos(state, oppId, m),
+        );
       })();
 
       if (opponentWinNow) {
@@ -97,7 +112,14 @@ export class CorridorBotService {
         // Initiative: un peu d'aléatoire pour que le bot place aussi des murs en début de partie.
         Math.random() < 0.35);
 
-    if (wantAggressiveWall && wallTargets.length > 0 && myPos && oppPos && myDist != null && oppDist != null) {
+    if (
+      wantAggressiveWall &&
+      wallTargets.length > 0 &&
+      myPos &&
+      oppPos &&
+      myDist != null &&
+      oppDist != null
+    ) {
       const bestWall = this.pickAggressiveWall(
         meta,
         myGoalY,
@@ -116,9 +138,16 @@ export class CorridorBotService {
       }
     }
 
-    const bestMove = this.pickMoveByShortestPath(meta, myGoalY, myPos, moveTargets);
+    const bestMove = this.pickMoveByShortestPath(
+      meta,
+      myGoalY,
+      myPos,
+      moveTargets,
+    );
     if (bestMove != null) {
-      return [{ type: 'corridor_move', payload: { x: bestMove.x, y: bestMove.y } }];
+      return [
+        { type: 'corridor_move', payload: { x: bestMove.x, y: bestMove.y } },
+      ];
     }
 
     const wallActions: GameSingleActionDto[] = wallTargets.map((w) => ({
@@ -131,7 +160,10 @@ export class CorridorBotService {
       [...moveActions, ...wallActions],
       { state, playerId: botPlayerId },
       'random',
-      { preferTypes: ['corridor_move'], fallbackTypes: ['corridor_move', 'corridor_place_wall'] },
+      {
+        preferTypes: ['corridor_move'],
+        fallbackTypes: ['corridor_move', 'corridor_place_wall'],
+      },
     );
   }
 
@@ -165,8 +197,16 @@ export class CorridorBotService {
     oppPos: { x: number; y: number },
     walls: Array<{ x: number; y: number; o: 'h' | 'v' }>,
   ): { x: number; y: number; o: 'h' | 'v' } | null {
-    const baseMy = CorridorRulebook.shortestDistanceToGoal(meta, myPos, myGoalY);
-    const baseOpp = CorridorRulebook.shortestDistanceToGoal(meta, oppPos, oppGoalY);
+    const baseMy = CorridorRulebook.shortestDistanceToGoal(
+      meta,
+      myPos,
+      myGoalY,
+    );
+    const baseOpp = CorridorRulebook.shortestDistanceToGoal(
+      meta,
+      oppPos,
+      oppGoalY,
+    );
     if (baseMy == null || baseOpp == null) return null;
 
     let best: { x: number; y: number; o: 'h' | 'v' } | null = null;
@@ -174,8 +214,16 @@ export class CorridorBotService {
 
     for (const w of walls) {
       const tmp = CorridorRulebook.applyWall(meta, w);
-      const nextMy = CorridorRulebook.shortestDistanceToGoal(tmp, myPos, myGoalY);
-      const nextOpp = CorridorRulebook.shortestDistanceToGoal(tmp, oppPos, oppGoalY);
+      const nextMy = CorridorRulebook.shortestDistanceToGoal(
+        tmp,
+        myPos,
+        myGoalY,
+      );
+      const nextOpp = CorridorRulebook.shortestDistanceToGoal(
+        tmp,
+        oppPos,
+        oppGoalY,
+      );
       if (nextMy == null || nextOpp == null) continue;
 
       const oppGain = nextOpp - baseOpp;
@@ -201,7 +249,7 @@ export class CorridorBotService {
   private pickWallToPreventImmediateWin(
     state: GameStateEntity,
     meta: CorridorMetadata,
-    botPlayerId: number,
+    _botPlayerId: number,
     opponentId: number,
     myGoalY: number,
     oppGoalY: number,
@@ -209,8 +257,16 @@ export class CorridorBotService {
     oppPos: { x: number; y: number },
     walls: Array<{ x: number; y: number; o: 'h' | 'v' }>,
   ): { x: number; y: number; o: 'h' | 'v' } | null {
-    const baseMy = CorridorRulebook.shortestDistanceToGoal(meta, myPos, myGoalY);
-    const baseOpp = CorridorRulebook.shortestDistanceToGoal(meta, oppPos, oppGoalY);
+    const baseMy = CorridorRulebook.shortestDistanceToGoal(
+      meta,
+      myPos,
+      myGoalY,
+    );
+    const baseOpp = CorridorRulebook.shortestDistanceToGoal(
+      meta,
+      oppPos,
+      oppGoalY,
+    );
     if (baseMy == null || baseOpp == null) return null;
 
     let best: { x: number; y: number; o: 'h' | 'v' } | null = null;
@@ -218,14 +274,26 @@ export class CorridorBotService {
 
     for (const w of walls) {
       const tmpMeta = CorridorRulebook.applyWall(meta, w);
-      const tmpState = { ...(state as any), metadata: tmpMeta } as GameStateEntity;
-      const canStillWin = CorridorRulebook.listLegalPawnMoves(tmpState, opponentId).some((m) =>
-        CorridorRulebook.isWinningPos(tmpState, opponentId, m),
-      );
+      const tmpState = {
+        ...(state as any),
+        metadata: tmpMeta,
+      } as GameStateEntity;
+      const canStillWin = CorridorRulebook.listLegalPawnMoves(
+        tmpState,
+        opponentId,
+      ).some((m) => CorridorRulebook.isWinningPos(tmpState, opponentId, m));
       if (canStillWin) continue;
 
-      const nextMy = CorridorRulebook.shortestDistanceToGoal(tmpMeta, myPos, myGoalY);
-      const nextOpp = CorridorRulebook.shortestDistanceToGoal(tmpMeta, oppPos, oppGoalY);
+      const nextMy = CorridorRulebook.shortestDistanceToGoal(
+        tmpMeta,
+        myPos,
+        myGoalY,
+      );
+      const nextOpp = CorridorRulebook.shortestDistanceToGoal(
+        tmpMeta,
+        oppPos,
+        oppGoalY,
+      );
       if (nextMy == null || nextOpp == null) continue;
 
       const oppGain = nextOpp - baseOpp;
@@ -240,4 +308,3 @@ export class CorridorBotService {
     return best;
   }
 }
-

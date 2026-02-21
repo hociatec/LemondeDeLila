@@ -16,7 +16,9 @@ export class BugReportCommentsService {
 
   async countByReportIds(reportIds: string[]): Promise<Record<string, number>> {
     const ids = Array.from(
-      new Set((reportIds ?? []).map((id) => String(id ?? '').trim()).filter(Boolean)),
+      new Set(
+        (reportIds ?? []).map((id) => String(id ?? '').trim()).filter(Boolean),
+      ),
     );
     if (ids.length === 0) return {};
 
@@ -30,9 +32,9 @@ export class BugReportCommentsService {
 
     const out: Record<string, number> = {};
     for (const row of rows) {
-      const reportId = String((row as any)?.reportId ?? '').trim();
+      const reportId = String(row.reportId ?? '').trim();
       if (!reportId) continue;
-      const count = Number((row as any)?.count ?? 0);
+      const count = Number(row.count ?? 0);
       out[reportId] = Number.isFinite(count) ? count : 0;
     }
     return out;

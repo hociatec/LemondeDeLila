@@ -3,7 +3,6 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
@@ -13,8 +12,11 @@ import type {
   CerclesSacresCircle,
   CerclesSacresMetadata,
 } from '../model/cercles-sacres-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
-
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 
 import {
   CERCLES_SACRES_GOAL,
@@ -132,11 +134,14 @@ export class CerclesSacresActionService {
     const circle: CerclesSacresCircle = {
       id: `circle-${currentId}-${playerCircles.length + 1}`,
       cards: cardIds,
-      themes: circleThemes as Record<CerclesSacresTheme, string>,
+      themes: circleThemes,
     };
 
     playerCircles.push(circle);
-    const circles = { ...(updatedMeta.circles ?? {}), [currentId]: playerCircles };
+    const circles = {
+      ...(updatedMeta.circles ?? {}),
+      [currentId]: playerCircles,
+    };
     updatedMeta = { ...updatedMeta, circles };
     next = this.setMeta(next, updatedMeta);
 
@@ -248,9 +253,10 @@ export class CerclesSacresActionService {
     };
   }
 
-  private drawOneCard(
-    meta: CerclesSacresMetadata,
-  ): { cardId: string | null; meta: CerclesSacresMetadata } {
+  private drawOneCard(meta: CerclesSacresMetadata): {
+    cardId: string | null;
+    meta: CerclesSacresMetadata;
+  } {
     const draw = this.deckPolicies.drawOne<string, CerclesSacresMetadata>({
       meta,
       deckKey: 'deck',
@@ -268,7 +274,7 @@ export class CerclesSacresActionService {
     playerId: number,
     cardIds: string[],
   ): CerclesSacresMetadata {
-    let hands = { ...(meta.hands ?? {}) };
+    const hands = { ...(meta.hands ?? {}) };
     const playerHand = Array.isArray(hands[playerId])
       ? [...hands[playerId]]
       : [];
@@ -287,7 +293,7 @@ export class CerclesSacresActionService {
     playerId: number,
     cardId: string,
   ): CerclesSacresMetadata {
-    let hands = { ...(meta.hands ?? {}) };
+    const hands = { ...(meta.hands ?? {}) };
     const playerHand = Array.isArray(hands[playerId])
       ? [...hands[playerId]]
       : [];
@@ -323,6 +329,3 @@ export class CerclesSacresActionService {
     return { ...state, metadata };
   }
 }
-
-
-

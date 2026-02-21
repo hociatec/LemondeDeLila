@@ -8,8 +8,10 @@ export function buildPawnSelectionPending(
   players: PlayerLike[],
   meta: FrousseMetadata,
 ): PendingState | null {
-  const cleaned = (players ?? [])
-    .filter((p): p is { id: number; pawn?: unknown } => Boolean(p && typeof p.id === 'number'));
+  const cleaned = (players ?? []).filter(
+    (p): p is { id: number; pawn?: unknown } =>
+      Boolean(p && typeof p.id === 'number'),
+  );
   if (!cleaned.length) return null;
 
   const assigned = new Set<string>(
@@ -43,4 +45,3 @@ function availablePawns(meta: FrousseMetadata, assigned: Set<string>) {
     return id != null && !assigned.has(id);
   });
 }
-

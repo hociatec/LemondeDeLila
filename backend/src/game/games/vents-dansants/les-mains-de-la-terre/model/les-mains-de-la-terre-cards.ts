@@ -86,12 +86,24 @@ const mainCards: LesMainsCardDefinition[] = Object.entries(familyCards).flatMap(
 );
 
 const specialCards: LesMainsCardDefinition[] = [
-  { id: 'special-voyage-autour-du-monde', name: 'Voyage autour du monde', type: 'special' },
+  {
+    id: 'special-voyage-autour-du-monde',
+    name: 'Voyage autour du monde',
+    type: 'special',
+  },
   { id: 'special-metier-disparu', name: 'Métier disparu', type: 'special' },
-  { id: 'special-formation-express', name: 'Formation express', type: 'special' },
+  {
+    id: 'special-formation-express',
+    name: 'Formation express',
+    type: 'special',
+  },
   { id: 'special-greve-mondiale', name: 'Grève mondiale', type: 'special' },
   { id: 'special-boussole-perdue', name: 'Boussole perdue', type: 'special' },
-  { id: 'special-passation-de-savoir', name: 'Passation de savoir', type: 'special' },
+  {
+    id: 'special-passation-de-savoir',
+    name: 'Passation de savoir',
+    type: 'special',
+  },
   { id: 'special-fete-du-metier', name: 'Fête du métier', type: 'special' },
 ];
 
@@ -111,6 +123,8 @@ export const LES_MAINS_FAMILIES: LesMainsFamily[] = [
   'innovation',
   'sante',
 ];
-export const LES_MAINS_SPECIAL_CARD_IDS = new Set(specialCards.map((card) => card.id));
+export const LES_MAINS_SPECIAL_CARD_IDS = new Set(
+  specialCards.map((card) => card.id),
+);
 export const isLesMainsSpecialCard = (cardId: string): boolean =>
   LES_MAINS_SPECIAL_CARD_IDS.has(cardId);

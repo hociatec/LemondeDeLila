@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using System.Windows;
 using client_win.Modules.Game.Shell.Services;
@@ -60,13 +60,13 @@ public sealed class PresenceLauncher : IPresenceLauncher
             _navigation.Show(_viewModel!);
         });
 
-        return "Présence ouverte.";
+        return "PrÃ©sence ouverte.";
     }
 
     private async Task OpenStoryBookAsync(int userId, string username)
     {
         var stats = _services.GetRequiredService<IStatsService>();
-        // Depuis Présence, Échap doit revenir à la Présence (pas à la vue précédente).
+        // Depuis PrÃ©sence, Ã‰chap doit revenir Ã  la PrÃ©sence (pas Ã  la vue prÃ©cÃ©dente).
         var returnContent = (object?)_viewModel;
         if (returnContent == null)
         {
@@ -118,44 +118,6 @@ public sealed class PresenceLauncher : IPresenceLauncher
         }).Task;
     }
 
-#if false
-    private Task CloseInternalAsync(bool restorePrevious, bool preservePreviousView = false)
-    {
-        return Application.Current.Dispatcher.InvokeAsync(() =>
-        {
-            if (restorePrevious && _previousView != null)
-            {
-                var previous = _previousView;
-                _navigation.Show(previous);
-
-                // Après un écran plein (Présence), on redonne explicitement un focus "utile" à la vue précédente.
-                // Sans ça, WPF peut laisser le focus sur le host / un élément détruit, et les raccourcis ne repartent pas.
-                _ = Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
-                {
-                    try
-                    {
-                        if (previous is GameRoomView room)
-                        {
-                            room.RequestFocusGameZone(GameFocusReason.AfterDialog);
-                            return;
-                        }
-
-                        if (!previous.IsKeyboardFocusWithin)
-                        {
-                            previous.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
-                        }
-                    }
-                    catch
-                    {
-                        // Best-effort
-                    }
-                }));
-            }
-            if (!preservePreviousView)
-            {
-                _previousView = null;
-            }
-        }).Task;
-    }
-#endif
 }
+
+

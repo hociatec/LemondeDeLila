@@ -54,7 +54,7 @@ describe('MorpionService', () => {
     state = service.applyActions(state, [play(1, 2, 0)]);
 
     expect(String(state.status)).toBe('finished');
-    expect((state.metadata as any).winnerId).toBe(1);
+    expect(state.metadata.winnerId).toBe(1);
   });
 
   it('suggests a bot move on its turn', async () => {
@@ -101,6 +101,8 @@ describe('MorpionService', () => {
 
     const exposed: any = service.exposeStateForUser(state, 1);
     expect(exposed?.extras?.ui?.panels?.position?.message).toContain('Plateau');
-    expect(exposed?.extras?.ui?.panels?.play?.message).toContain('Cases libres');
+    expect(exposed?.extras?.ui?.panels?.play?.message).toContain(
+      'Cases libres',
+    );
   });
 });

@@ -1,25 +1,49 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+
 import { ConfigService } from '@nestjs/config';
-import * as jwt from 'jsonwebtoken';
+
+import type { VerifyOptions } from 'jsonwebtoken';
+import { verify as jwtVerify } from 'jsonwebtoken';
+
+import type { IncomingHttpHeaders, IncomingMessage } from 'http';
+
 import type { WsAuthPayload } from '../interfaces/ws-auth-payload';
-import type { WebSocket } from 'ws';
+
 import {
   getJwtVerifyAlgorithms,
   requireJwtVerifyKey,
 } from '../auth/jwt-config';
 
-type StrictWsAuthPayload = WsAuthPayload & jwt.JwtPayload;
+export type WsRequestLike = IncomingMessage & {
+  url?: string;
+  headers?: IncomingHttpHeaders;
+};
+
+export type WsClientLike = {
+  upgradeReq?: WsRequestLike;
+  req?: WsRequestLike;
+  handshakeHeaders?: IncomingHttpHeaders;
+  url?: string;
+};
+
+type JwtVerifyOptions = VerifyOptions;
+
+type VerifiedWsPayload = WsAuthPayload & {
+  sub: string;
+  exp: number;
+  iat: number;
+};
 
 @Injectable()
 export class WsJwtAuthService {
   constructor(private readonly config: ConfigService) {}
 
-  extractToken(client: WebSocket, args: any[]): string | null {
-    const request: any =
-      (args && args[0]) || (client as any).upgradeReq || (client as any).req;
-    const urlCandidate = (client as any).url || request?.url || '';
+  extractToken(client: WsClientLike, args: unknown[]): string | null {
+    const firstArg = args[0];
+    const request = this.resolveRequest(client, firstArg);
+    const urlCandidate = this.pickUrl(client, request);
     const headerToken =
-      this.extractBearer((client as any).handshakeHeaders) ||
+      this.extractBearer(client.handshakeHeaders) ||
       this.extractBearer(request?.headers);
     if (headerToken) {
       return headerToken;
@@ -27,29 +51,27 @@ export class WsJwtAuthService {
     return this.extractQueryToken(urlCandidate);
   }
 
-  extractClientVersion(client: WebSocket, args: any[]): string | null {
-    const request: any =
-      (args && args[0]) || (client as any).upgradeReq || (client as any).req;
-    const urlCandidate = (client as any).url || request?.url || '';
-
-    const headers = (client as any).handshakeHeaders || request?.headers;
+  extractClientVersion(client: WsClientLike, args: unknown[]): string | null {
+    const firstArg = args[0];
+    const request = this.resolveRequest(client, firstArg);
+    const urlCandidate = this.pickUrl(client, request);
+    const headers = client.handshakeHeaders ?? request?.headers;
     const headerVersion =
-      (headers?.['x-lila-client-version'] as string | undefined) ||
-      (headers?.['X-Lila-Client-Version'] as string | undefined);
-    if (headerVersion && typeof headerVersion === 'string') {
-      const trimmed = headerVersion.trim();
-      if (trimmed) return trimmed;
+      this.readHeader(headers, 'x-lila-client-version') ??
+      this.readHeader(headers, 'X-Lila-Client-Version');
+    if (headerVersion) {
+      return headerVersion;
     }
 
-    if (urlCandidate && typeof urlCandidate === 'string') {
+    if (urlCandidate) {
       try {
         const url = new URL(urlCandidate, 'ws://localhost');
-        const v =
-          url.searchParams.get('v') ||
-          url.searchParams.get('version') ||
-          url.searchParams.get('clientVersion') ||
-          null;
-        const trimmed = (v || '').trim();
+        const fromQuery =
+          url.searchParams.get('v') ??
+          url.searchParams.get('version') ??
+          url.searchParams.get('clientVersion') ??
+          '';
+        const trimmed = fromQuery.trim();
         return trimmed || null;
       } catch {
         return null;
@@ -72,32 +94,25 @@ export class WsJwtAuthService {
       10,
     );
     try {
-      const verifyOptions: jwt.VerifyOptions = {
+      const verifyOptions: JwtVerifyOptions = {
         algorithms: getJwtVerifyAlgorithms(this.config),
         issuer,
         clockTolerance,
+        ...(audience ? { audience } : {}),
       };
-      if (audience) {
-        verifyOptions.audience = audience;
-      }
-
-      const payload = jwt.verify(token, key, verifyOptions);
-
+      const payload = jwtVerify(token, key, verifyOptions);
       if (!payload || typeof payload !== 'object') {
         throw new UnauthorizedException('Token invalide');
       }
-      if (
-        typeof payload.sub !== 'string' ||
-        !payload.sub.trim() ||
-        typeof payload.exp !== 'number' ||
-        typeof payload.iat !== 'number'
-      ) {
+      const record = WsJwtAuthService.toRecord(payload);
+      const sub = WsJwtAuthService.getTrimmedString(record, 'sub');
+      const id = WsJwtAuthService.getNumber(record, 'id');
+      const exp = WsJwtAuthService.getNumber(record, 'exp');
+      const iat = WsJwtAuthService.getNumber(record, 'iat');
+      if (!sub || id == null || exp == null || iat == null) {
         throw new UnauthorizedException('Token invalide');
       }
-      if (!Number.isFinite(payload.id) || (payload.id as number) <= 0) {
-        throw new UnauthorizedException('Token invalide');
-      }
-      return payload;
+      return WsJwtAuthService.buildVerifiedPayload(record, id, sub, exp, iat);
     } catch {
       throw new UnauthorizedException('Token invalide');
     }
@@ -112,20 +127,63 @@ export class WsJwtAuthService {
     }
   }
 
-  private extractBearer(headers: any): string | null {
+  private resolveRequest(
+    client: WsClientLike,
+    firstArg: unknown,
+  ): WsRequestLike | null {
+    if (firstArg && typeof firstArg === 'object' && firstArg !== null) {
+      return firstArg as WsRequestLike;
+    }
+    return client.upgradeReq ?? client.req ?? null;
+  }
+
+  private pickUrl(
+    client: WsClientLike,
+    request: WsRequestLike | null,
+  ): string | null {
+    const raw =
+      (typeof client.url === 'string' ? client.url : '') ||
+      (typeof request?.url === 'string' ? request.url : '');
+    const trimmed = raw.trim();
+    return trimmed || null;
+  }
+
+  private readHeader(
+    headers: IncomingHttpHeaders | undefined,
+    key: string,
+  ): string | null {
     if (!headers) return null;
-    const authHeader = headers.authorization || headers.Authorization;
-    if (authHeader && typeof authHeader === 'string') {
-      const parts = authHeader.split(' ');
-      if (parts.length === 2 && parts[0].toLowerCase() === 'bearer') {
-        return parts[1];
-      }
+    const normalizedKey = key.toLowerCase();
+    const raw = headers[normalizedKey];
+    return this.normalizeHeaderValue(raw);
+  }
+
+  private extractBearer(
+    headers: IncomingHttpHeaders | undefined,
+  ): string | null {
+    if (!headers) return null;
+    const authHeader =
+      this.readHeader(headers, 'authorization') ??
+      this.readHeader(headers, 'Authorization');
+    if (!authHeader) return null;
+    const parts = authHeader.split(' ');
+    if (parts.length === 2 && parts[0].toLowerCase() === 'bearer') {
+      return parts[1];
     }
     return null;
   }
 
-  private extractQueryToken(urlCandidate?: string): string | null {
-    if (!urlCandidate || typeof urlCandidate !== 'string') {
+  private normalizeHeaderValue(
+    raw: string | string[] | undefined,
+  ): string | null {
+    if (!raw) return null;
+    const value = Array.isArray(raw) ? raw[0] : raw;
+    if (typeof value !== 'string') return null;
+    return value.trim() || null;
+  }
+
+  private extractQueryToken(urlCandidate: string | null): string | null {
+    if (!urlCandidate) {
       return null;
     }
     try {
@@ -134,5 +192,70 @@ export class WsJwtAuthService {
     } catch {
       return null;
     }
+  }
+
+  private static toRecord(value: unknown): Record<string, unknown> {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      return value as Record<string, unknown>;
+    }
+    return {};
+  }
+
+  private static getTrimmedString(
+    record: Record<string, unknown>,
+    key: string,
+  ): string {
+    const value = record[key];
+    return typeof value === 'string' ? value.trim() : '';
+  }
+
+  private static getOptionalString(
+    record: Record<string, unknown>,
+    key: string,
+  ): string | undefined {
+    const value = record[key];
+    return typeof value === 'string' && value.trim().length > 0
+      ? value.trim()
+      : undefined;
+  }
+
+  private static getNumber(
+    record: Record<string, unknown>,
+    key: string,
+  ): number | null {
+    const value = record[key];
+    return typeof value === 'number' && Number.isFinite(value) ? value : null;
+  }
+
+  private static getStringArray(
+    record: Record<string, unknown>,
+    key: string,
+  ): string[] | undefined {
+    const value = record[key];
+    if (!Array.isArray(value)) {
+      return undefined;
+    }
+    const strings = value.filter(
+      (item): item is string => typeof item === 'string',
+    );
+    return strings.length > 0 ? strings : undefined;
+  }
+
+  private static buildVerifiedPayload(
+    record: Record<string, unknown>,
+    id: number,
+    sub: string,
+    exp: number,
+    iat: number,
+  ): VerifiedWsPayload {
+    return {
+      id,
+      username: WsJwtAuthService.getTrimmedString(record, 'username') || sub,
+      email: WsJwtAuthService.getOptionalString(record, 'email'),
+      roles: WsJwtAuthService.getStringArray(record, 'roles'),
+      sub,
+      exp,
+      iat,
+    };
   }
 }

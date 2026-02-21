@@ -3,12 +3,14 @@ import type {
   GameStateEntity,
   PendingState,
 } from '../../../../core/entities/game-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -32,33 +34,36 @@ export class VoyageActionService {
     private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
-  applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
+  applyActions(
+    state: GameStateEntity,
+    actions: GameSingleActionDto[],
+  ): GameStateEntity {
     const next = applyActionsSequentially(state, actions, (next, action) => {
-          const type = normalizeActionType(action);
-          return dispatchByActionType(
-            type,
-            {
-              'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'draw': () => {
-                next = this.handleDraw(next);
-                return next;
-              },
-              'answer_quiz': () => {
-                next = this.handleAnswerQuiz(next, action);
-                return next;
-              },
-              'choose_target': () => {
-                next = this.handleChooseTarget(next, action);
-                return next;
-              },
-            },
-            () => next,
-          );
-        });
-        return next;
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          roll: () => {
+            next = this.handleRoll(next);
+            return next;
+          },
+          draw: () => {
+            next = this.handleDraw(next);
+            return next;
+          },
+          answer_quiz: () => {
+            next = this.handleAnswerQuiz(next, action);
+            return next;
+          },
+          choose_target: () => {
+            next = this.handleChooseTarget(next, action);
+            return next;
+          },
+        },
+        () => next,
+      );
+    });
+    return next;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -68,7 +73,7 @@ export class VoyageActionService {
     if (state.pending) return state;
 
     const meta0 = this.getMeta(state);
-    const rng = this.random.rollDice(meta0 as any, 6);
+    const rng = this.random.rollDice(meta0, 6);
     const roll = rng.roll;
     let meta: VoyageMetadata = { ...meta0, ...rng.meta };
 
@@ -96,15 +101,17 @@ export class VoyageActionService {
 
   private handleDraw(state: GameStateEntity): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
-    const pending = state.pending as any;
+    const pending = state.pending;
     if (!pending || pending.type !== 'draw') return state;
     const playerId =
       typeof pending.playerId === 'number'
         ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
+        : (state.turn?.currentPlayerId ?? null);
     if (playerId == null) return state;
 
-    const deckType = String(pending?.data?.deck ?? '').trim() as VoyageTileType;
+    const deckType = toText(
+      asRecord(pending.data).deck,
+    ).trim() as VoyageTileType;
     let next: GameStateEntity = { ...state, pending: null };
 
     const meta0 = this.getMeta(next);
@@ -129,28 +136,32 @@ export class VoyageActionService {
     action: GameSingleActionDto,
   ): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
-    const pending = state.pending as any;
+    const pending = state.pending;
     if (!pending || pending.type !== 'quiz') return state;
 
     const playerId =
       typeof pending.playerId === 'number'
         ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
+        : (state.turn?.currentPlayerId ?? null);
     if (playerId == null) return state;
 
     const meta0 = this.getMeta(state);
     const quiz = meta0.pendingQuiz;
     if (!quiz || quiz.playerId !== playerId) return state;
 
-    const payload: any = action?.payload ?? {};
-    const answerRaw =
-      String(payload.answer ?? payload.choice ?? payload.value ?? '').trim();
+    const payload = asRecord(action?.payload ?? {});
+    const answerRaw = toText(
+      payload.answer ?? payload.choice ?? payload.value,
+    ).trim();
     const choiceIndex =
-      typeof payload.choiceIndex === 'number' && Number.isFinite(payload.choiceIndex)
+      typeof payload.choiceIndex === 'number' &&
+      Number.isFinite(payload.choiceIndex)
         ? Math.trunc(payload.choiceIndex)
         : null;
     const choice =
-      choiceIndex != null && Array.isArray(quiz.choices) && quiz.choices[choiceIndex]
+      choiceIndex != null &&
+      Array.isArray(quiz.choices) &&
+      quiz.choices[choiceIndex]
         ? String(quiz.choices[choiceIndex]).trim()
         : answerRaw;
     const ok =
@@ -166,13 +177,16 @@ export class VoyageActionService {
 
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
 
-    next = this.core.appendLog(next, ok ? 'Bonne réponse !' : 'Mauvaise réponse.');
+    next = this.core.appendLog(
+      next,
+      ok ? 'Bonne réponse !' : 'Mauvaise réponse.',
+    );
 
     // Légende : si bonne réponse, on conserve la carte et on applique éventuellement un bonus.
     if (ok) {
       next = this.incrementCollection(next, playerId, 'legend');
-      if (typeof (quiz as any).successDelta === 'number' && (quiz as any).successDelta !== 0) {
-        const delta = Math.trunc((quiz as any).successDelta);
+      if (typeof quiz.successDelta === 'number' && quiz.successDelta !== 0) {
+        const delta = Math.trunc(quiz.successDelta);
         next = this.core.appendLog(next, `Bonus : déplacement ${delta}.`);
         next = this.move(next, playerId, delta);
         next = this.applyLanding(next, playerId, { kind: 'none' });
@@ -192,25 +206,28 @@ export class VoyageActionService {
     action: GameSingleActionDto,
   ): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
-    const pending = state.pending as any;
+    const pending = state.pending;
     if (!pending || pending.type !== 'choose_target') return state;
 
     const playerId =
       typeof pending.playerId === 'number'
         ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
+        : (state.turn?.currentPlayerId ?? null);
     if (playerId == null) return state;
 
-    const targetId = Number((action?.payload as any)?.targetPlayerId);
+    const targetId = Number(asRecord(action?.payload).targetPlayerId);
     if (!Number.isFinite(targetId)) return state;
 
     let next: GameStateEntity = { ...state, pending: null };
     const meta0 = this.getMeta(next);
-    const kind = String(pending?.data?.kind ?? '').trim();
+    const kind = toText(asRecord(pending.data).kind).trim();
     const last = meta0.statuses?.lastTargetByActor?.[playerId] ?? null;
     if (last != null && last === targetId) {
       // Règle : aucun joueur ne peut être ciblé deux fois de suite par une même personne.
-      next = this.core.appendLog(next, "Cible invalide : vous ne pouvez pas viser le même joueur deux fois de suite.");
+      next = this.core.appendLog(
+        next,
+        'Cible invalide : vous ne pouvez pas viser le même joueur deux fois de suite.',
+      );
       return { ...next, pending }; // on laisse le pending ouvert
     }
     if (kind === 'swap') {
@@ -278,7 +295,10 @@ export class VoyageActionService {
         // joueurs puissent terminer le tour en cours et jouer une fois.
         const countdown = Math.max(0, players.length);
         const remainingTurns = Math.max(0, players.length - 1);
-        const updated: VoyageMetadata = { ...metaNow, finishCountdown: countdown };
+        const updated: VoyageMetadata = {
+          ...metaNow,
+          finishCountdown: countdown,
+        };
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...updated } };
         next = this.core.appendLog(
           next,
@@ -289,7 +309,10 @@ export class VoyageActionService {
     }
 
     if (tile.type === 'rest') {
-      next = this.core.appendLog(next, 'Repos : vous passez votre prochain tour.');
+      next = this.core.appendLog(
+        next,
+        'Repos : vous passez votre prochain tour.',
+      );
       return this.addSkip(next, playerId, 1);
     }
 
@@ -320,7 +343,12 @@ export class VoyageActionService {
       return next;
     }
 
-    if (tile.type === 'legend' || tile.type === 'farce' || tile.type === 'treasure' || tile.type === 'landscape') {
+    if (
+      tile.type === 'legend' ||
+      tile.type === 'farce' ||
+      tile.type === 'treasure' ||
+      tile.type === 'landscape'
+    ) {
       const pending: PendingState = {
         type: 'draw',
         playerId,
@@ -457,10 +485,16 @@ export class VoyageActionService {
       // Cas "second joueur installé à la table" : on cible automatiquement.
       if (/second\s+joueur/i.test(text)) {
         const players = Array.isArray(next.players) ? next.players : [];
-        const ids = players.map((p) => p?.id).filter((id): id is number => Number.isFinite(id as any));
-        const targetId = ids.length >= 2 ? (ids[1] === playerId ? ids[0] : ids[1]) : null;
+        const ids = players
+          .map((p) => p?.id)
+          .filter((id): id is number => Number.isFinite(id));
+        const targetId =
+          ids.length >= 2 ? (ids[1] === playerId ? ids[0] : ids[1]) : null;
         if (targetId != null) {
-          next = this.core.appendLog(next, `Échange automatique avec ${resolvePlayerNameFromState(next, targetId)}.`);
+          next = this.core.appendLog(
+            next,
+            `Échange automatique avec ${resolvePlayerNameFromState(next, targetId)}.`,
+          );
           next = this.exchangeRandomCards(next, playerId, targetId, count);
           return this.setLastTarget(next, playerId, targetId);
         }
@@ -492,7 +526,9 @@ export class VoyageActionService {
           const meta = this.getMeta(next);
           const last = other
             .map((p) => p.id)
-            .sort((a, b) => (meta.positions?.[a] ?? 0) - (meta.positions?.[b] ?? 0))[0];
+            .sort(
+              (a, b) => (meta.positions?.[a] ?? 0) - (meta.positions?.[b] ?? 0),
+            )[0];
           next = this.core.appendLog(
             next,
             `${resolvePlayerNameFromState(next, playerId)} échange sa place avec ${resolvePlayerNameFromState(next, last)}.`,
@@ -544,9 +580,17 @@ export class VoyageActionService {
   private takeRandomCard(
     state: GameStateEntity,
     playerId: number,
-  ): { state: GameStateEntity; kind: 'legend' | 'farce' | 'treasure' | 'landscape' | null } {
+  ): {
+    state: GameStateEntity;
+    kind: 'legend' | 'farce' | 'treasure' | 'landscape' | null;
+  } {
     const meta = this.getMeta(state);
-    const c = meta.collections?.[playerId] ?? { legend: 0, farce: 0, treasure: 0, landscape: 0 };
+    const c = meta.collections?.[playerId] ?? {
+      legend: 0,
+      farce: 0,
+      treasure: 0,
+      landscape: 0,
+    };
     const candidates: Array<'legend' | 'farce' | 'treasure' | 'landscape'> = [];
     if ((c.legend ?? 0) > 0) candidates.push('legend');
     if ((c.treasure ?? 0) > 0) candidates.push('treasure');
@@ -554,17 +598,20 @@ export class VoyageActionService {
     if ((c.farce ?? 0) > 0) candidates.push('farce');
     if (!candidates.length) return { state, kind: null };
 
-    const picked = this.random.pickOne(meta as any, candidates);
+    const picked = this.random.pickOne(meta, candidates);
     let next: GameStateEntity = {
       ...state,
-      metadata: { ...(state.metadata ?? {}), ...meta, ...(picked.meta as any) },
+      metadata: { ...(state.metadata ?? {}), ...meta, ...picked.meta },
     };
     if (!picked.value) return { state: next, kind: null };
     next = this.decrementCollection(next, playerId, picked.value);
     return { state: next, kind: picked.value };
   }
 
-  private parseQuizCard(playerId: number, card: VoyageCard): VoyagePendingQuiz | null {
+  private parseQuizCard(
+    playerId: number,
+    card: VoyageCard,
+  ): VoyagePendingQuiz | null {
     const effect = String(card.effect ?? '');
     const choiceLines = effect
       .split(/\s*(?=[*]?[ABC]\))/i)
@@ -574,9 +621,13 @@ export class VoyageActionService {
 
     const qMatch = effect.match(/question\s*:\s*([^?]+\?)/i);
     const question = (qMatch?.[1] ?? card.title ?? 'Quiz').trim();
-    const choices = choiceLines.map((l) => l.replace(/^[*]?[ABC]\)\s*/i, '').trim());
+    const choices = choiceLines.map((l) =>
+      l.replace(/^[*]?[ABC]\)\s*/i, '').trim(),
+    );
     const answerLine = choiceLines.find((l) => l.trim().startsWith('*')) ?? '';
-    const answer = answerLine ? answerLine.replace(/^[*]?[ABC]\)\s*/i, '').trim() : undefined;
+    const answer = answerLine
+      ? answerLine.replace(/^[*]?[ABC]\)\s*/i, '').trim()
+      : undefined;
     const successDelta = extractMoveDelta(effect);
     return {
       playerId,
@@ -585,7 +636,7 @@ export class VoyageActionService {
       question,
       choices,
       answer,
-      ...(successDelta ? ({ successDelta } as any) : {}),
+      ...(successDelta ? { successDelta } : {}),
     };
   }
 
@@ -602,7 +653,16 @@ export class VoyageActionService {
             ? 'treasure'
             : 'landscape';
 
-    const deck: VoyageDeck = (meta.decks as any)?.[deckId] ?? { cards: [], discard: [] };
+    const decks = asRecord(meta.decks);
+    const rawDeck = asRecord(decks[deckId]);
+    const deck: VoyageDeck = {
+      cards: Array.isArray(rawDeck.cards)
+        ? (rawDeck.cards as VoyageCard[])
+        : [],
+      discard: Array.isArray(rawDeck.discard)
+        ? (rawDeck.discard as VoyageCard[])
+        : [],
+    };
     const draw = this.deckPolicies.drawFromPile<VoyageCard, VoyageMetadata>({
       meta,
       pile: Array.isArray(deck.cards) ? deck.cards : [],
@@ -614,8 +674,11 @@ export class VoyageActionService {
       ...draw.meta,
       decks: {
         ...draw.meta.decks,
-        [deckId]: { cards: draw.pile as VoyageCard[], discard: draw.discard as VoyageCard[] },
-      } as any,
+        [deckId]: {
+          cards: draw.pile,
+          discard: draw.discard,
+        },
+      },
     };
     return { card: draw.card, meta: nextMeta };
   }
@@ -631,22 +694,35 @@ export class VoyageActionService {
       return state;
     }
     const meta = this.getMeta(state);
-    const deck = (meta.decks as any)?.[deckType] as VoyageDeck | undefined;
-    const discard = Array.isArray(deck?.discard) ? deck!.discard : [];
+    const decks = asRecord(meta.decks);
+    const rawDeck = asRecord(decks[deckType]);
+    const deck: VoyageDeck = {
+      cards: Array.isArray(rawDeck.cards)
+        ? (rawDeck.cards as VoyageCard[])
+        : [],
+      discard: Array.isArray(rawDeck.discard)
+        ? (rawDeck.discard as VoyageCard[])
+        : [],
+    };
+    const discard = Array.isArray(deck?.discard) ? deck.discard : [];
     const nextMeta: VoyageMetadata = {
       ...meta,
       decks: {
         ...meta.decks,
         [deckType]: {
-          cards: Array.isArray(deck?.cards) ? deck!.cards : [],
+          cards: deck.cards,
           discard: [...discard, card],
         },
-      } as any,
+      },
     };
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
 
-  private move(state: GameStateEntity, playerId: number, delta: number): GameStateEntity {
+  private move(
+    state: GameStateEntity,
+    playerId: number,
+    delta: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const tiles = Array.isArray(meta.tiles) ? meta.tiles : [];
     const max = Math.max(0, tiles.length - 1);
@@ -659,7 +735,11 @@ export class VoyageActionService {
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
 
-  private swapPositions(state: GameStateEntity, a: number, b: number): GameStateEntity {
+  private swapPositions(
+    state: GameStateEntity,
+    a: number,
+    b: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const posA = meta.positions?.[a] ?? 0;
     const posB = meta.positions?.[b] ?? 0;
@@ -670,14 +750,21 @@ export class VoyageActionService {
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
 
-  private addSkip(state: GameStateEntity, playerId: number, turns: number): GameStateEntity {
+  private addSkip(
+    state: GameStateEntity,
+    playerId: number,
+    turns: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const current = meta.statuses?.skipTurn?.[playerId] ?? 0;
     const nextMeta: VoyageMetadata = {
       ...meta,
       statuses: {
         ...meta.statuses,
-        skipTurn: { ...(meta.statuses.skipTurn ?? {}), [playerId]: current + turns },
+        skipTurn: {
+          ...(meta.statuses.skipTurn ?? {}),
+          [playerId]: current + turns,
+        },
       },
     };
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
@@ -697,7 +784,7 @@ export class VoyageActionService {
     };
     const nextCollections = {
       ...(meta.collections ?? {}),
-      [playerId]: { ...current, [kind]: (current as any)[kind] + 1 },
+      [playerId]: { ...current, [kind]: current[kind] + 1 },
     };
     const nextMeta: VoyageMetadata = { ...meta, collections: nextCollections };
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
@@ -715,7 +802,7 @@ export class VoyageActionService {
       treasure: 0,
       landscape: 0,
     };
-    const nextVal = Math.max(0, (current as any)[kind] - 1);
+    const nextVal = Math.max(0, current[kind] - 1);
     const nextCollections = {
       ...(meta.collections ?? {}),
       [playerId]: { ...current, [kind]: nextVal },
@@ -745,7 +832,8 @@ export class VoyageActionService {
     const allow = (k: keyof typeof c) => filter[k] !== false;
 
     if (allow('legend') && (c.legend ?? 0) > 0) candidates.push('legend');
-    if (allow('landscape') && (c.landscape ?? 0) > 0) candidates.push('landscape');
+    if (allow('landscape') && (c.landscape ?? 0) > 0)
+      candidates.push('landscape');
     if (allow('treasure') && (c.treasure ?? 0) > 0) candidates.push('treasure');
     if (allow('farce') && (c.farce ?? 0) > 0) candidates.push('farce');
 
@@ -753,13 +841,16 @@ export class VoyageActionService {
       return this.core.appendLog(state, 'Aucune carte à perdre.');
     }
 
-    const picked = this.random.pickOne(meta as any, candidates);
+    const picked = this.random.pickOne(meta, candidates);
     let next: GameStateEntity = {
       ...state,
-      metadata: { ...(state.metadata ?? {}), ...meta, ...(picked.meta as any) },
+      metadata: { ...(state.metadata ?? {}), ...meta, ...picked.meta },
     };
     if (!picked.value) return next;
-    next = this.core.appendLog(next, `Vous perdez une carte (${picked.value}).`);
+    next = this.core.appendLog(
+      next,
+      `Vous perdez une carte (${picked.value}).`,
+    );
     return this.decrementCollection(next, playerId, picked.value);
   }
 
@@ -770,7 +861,11 @@ export class VoyageActionService {
     const nextRemaining = Math.max(0, remaining - 1);
     let next: GameStateEntity = {
       ...state,
-      metadata: { ...(state.metadata ?? {}), ...meta, finishCountdown: nextRemaining },
+      metadata: {
+        ...(state.metadata ?? {}),
+        ...meta,
+        finishCountdown: nextRemaining,
+      },
     };
     next = this.turns.advanceTurn(next);
     if (nextRemaining <= 0) {
@@ -783,13 +878,22 @@ export class VoyageActionService {
     const meta = this.getMeta(state);
     const players = Array.isArray(state.players) ? state.players : [];
     const score = (id: number) => {
-      const c = meta.collections?.[id] ?? { legend: 0, farce: 0, treasure: 0, landscape: 0 };
-      const total = (c.legend ?? 0) + (c.farce ?? 0) + (c.treasure ?? 0) + (c.landscape ?? 0);
+      const c = meta.collections?.[id] ?? {
+        legend: 0,
+        farce: 0,
+        treasure: 0,
+        landscape: 0,
+      };
+      const total =
+        (c.legend ?? 0) +
+        (c.farce ?? 0) +
+        (c.treasure ?? 0) +
+        (c.landscape ?? 0);
       return { total, legend: c.legend ?? 0 };
     };
     const ranked = players
       .map((p) => ({ id: p.id, ...score(p.id) }))
-      .sort((a, b) => (b.total - a.total) || (b.legend - a.legend) || (a.id - b.id));
+      .sort((a, b) => b.total - a.total || b.legend - a.legend || a.id - b.id);
     const winnerId = ranked[0]?.id ?? null;
     const nextMeta: VoyageMetadata = { ...meta, winnerId };
     let next: GameStateEntity = {
@@ -798,7 +902,10 @@ export class VoyageActionService {
       metadata: { ...(state.metadata ?? {}), ...nextMeta },
     };
     if (winnerId != null) {
-      next = this.core.appendLog(next, `${resolvePlayerNameFromState(next, winnerId)} remporte la partie !`);
+      next = this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, winnerId)} remporte la partie !`,
+      );
     }
     return next;
   }
@@ -810,14 +917,21 @@ export class VoyageActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     return players
       .filter((p) => p?.id != null && p.id !== me)
-      .map((p) => ({ id: p.id, username: resolvePlayerNameFromState(state, p.id) }));
+      .map((p) => ({
+        id: p.id,
+        username: resolvePlayerNameFromState(state, p.id),
+      }));
   }
 
   private getMeta(state: GameStateEntity): VoyageMetadata {
-    return (state.metadata ?? {}) as any as VoyageMetadata;
+    return (state.metadata ?? {}) as VoyageMetadata;
   }
 
-  private setLastTarget(state: GameStateEntity, actorId: number, targetId: number): GameStateEntity {
+  private setLastTarget(
+    state: GameStateEntity,
+    actorId: number,
+    targetId: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const last = meta.statuses?.lastTargetByActor ?? {};
     const nextMeta: VoyageMetadata = {
@@ -832,12 +946,12 @@ export class VoyageActionService {
 
   private pawnLabel(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
-    const player: any = players.find((p) => p?.id === id);
-
-    const explicitLabel = String(player?.pawnLabel ?? '').trim();
+    const player = players.find((p) => p?.id === id);
+    const playerRecord = asRecord(player);
+    const explicitLabel = toText(playerRecord.pawnLabel).trim();
     if (explicitLabel) return `"${explicitLabel}"`;
 
-    const pawnId = String(player?.pawn ?? '').trim();
+    const pawnId = toText(playerRecord.pawn).trim();
     if (pawnId) return `"${pawnId}"`;
 
     const fallback = resolvePlayerNameFromState(state, id);
@@ -855,7 +969,9 @@ function bounce(target: number, max: number): number {
 }
 
 function normalize(value: string): string {
-  return String(value ?? '').trim().toLowerCase();
+  return String(value ?? '')
+    .trim()
+    .toLowerCase();
 }
 
 function extractMoveDelta(text: string): number {
@@ -888,7 +1004,8 @@ function extractMoveDelta(text: string): number {
 function extractSkipTurns(text: string): number {
   if (/Passez trois tours/i.test(text)) return 3;
   if (/Passez deux tours/i.test(text)) return 2;
-  if (/Passez votre tour/i.test(text) || /Passe ton prochain tour/i.test(text)) return 1;
+  if (/Passez votre tour/i.test(text) || /Passe ton prochain tour/i.test(text))
+    return 1;
   return 0;
 }
 
@@ -898,8 +1015,16 @@ function extractCardCount(text: string): number {
   return 1;
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
 
-
-
-
-
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  return '';
+}

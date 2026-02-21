@@ -9,6 +9,12 @@ import type {
   GaloponsMetadata,
 } from '../model/galopons.types';
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
 @Injectable()
 export class GaloponsSetupService {
   constructor(
@@ -28,7 +34,7 @@ export class GaloponsSetupService {
       apples[p.id] = 0;
     }
 
-    const seedMeta = (base.metadata ?? {}) as any;
+    const seedMeta = asRecord(base.metadata);
     const shuffled = this.random.shuffle(seedMeta, cards.cards ?? []);
 
     const meta: GaloponsMetadata = {
@@ -37,7 +43,7 @@ export class GaloponsSetupService {
       apples,
       ious: {},
       statuses: { skipTurn: {} },
-      decks: { cards: shuffled.values as any, discard: [] },
+      decks: { cards: shuffled.values, discard: [] },
       pendingContext: null,
       finish: {
         triggered: false,
@@ -61,11 +67,22 @@ export class GaloponsSetupService {
   }
 
   private loadBoard(): GaloponsBoardJsonV1 {
-    return loadV1Content<GaloponsBoardJsonV1>(this.contentLoader, { gameType: 'galopons-ensemble', baseDir: __dirname, filename: 'board.json', arrayField: 'tiles', minItems: 1 });
+    return loadV1Content<GaloponsBoardJsonV1>(this.contentLoader, {
+      gameType: 'galopons-ensemble',
+      baseDir: __dirname,
+      filename: 'board.json',
+      arrayField: 'tiles',
+      minItems: 1,
+    });
   }
 
   private loadCards(): GaloponsCardsJsonV1 {
-    return loadV1Content<GaloponsCardsJsonV1>(this.contentLoader, { gameType: 'galopons-ensemble', baseDir: __dirname, filename: 'cards.json', arrayField: 'cards', minItems: 1 });
+    return loadV1Content<GaloponsCardsJsonV1>(this.contentLoader, {
+      gameType: 'galopons-ensemble',
+      baseDir: __dirname,
+      filename: 'cards.json',
+      arrayField: 'cards',
+      minItems: 1,
+    });
   }
 }
-

@@ -142,7 +142,10 @@ export class AdminClientUpdatesWsHandler {
 
   async clientUpdateSchedule(session: WsSession, payload: any) {
     const admin = requireAdmin(session);
-    const dto = this.validator.validate(AdminClientUpdateScheduleWsDto, payload);
+    const dto = this.validator.validate(
+      AdminClientUpdateScheduleWsDto,
+      payload,
+    );
 
     const minutesFromDto =
       typeof dto.delayMinutes === 'number' && Number.isFinite(dto.delayMinutes)
@@ -208,7 +211,10 @@ export class AdminClientUpdatesWsHandler {
       this.warningAtMs = null;
       try {
         const now = Date.now();
-        const etaSeconds = Math.max(0, Math.round((scheduledAtMs - now) / 1000));
+        const etaSeconds = Math.max(
+          0,
+          Math.round((scheduledAtMs - now) / 1000),
+        );
         await Promise.all(
           recipients.map((u) =>
             this.notifications.notifyUser(u.id, 'client.update.imminent', {
@@ -265,10 +271,7 @@ export class AdminClientUpdatesWsHandler {
       this.scheduledAtMs = null;
     };
 
-    this.scheduledTimer = setTimeout(
-      () => void sendUpdateAvailable(),
-      delayMs,
-    );
+    this.scheduledTimer = setTimeout(() => void sendUpdateAvailable(), delayMs);
 
     return {
       type: 'admin.client.update.schedule',

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { GameCoreService } from '../../../core/services/game-core.service';
 import {
   GameStateEntity,
@@ -32,8 +32,6 @@ import {
   PanierExpressPlayer,
   PanierExpressDeckPool,
 } from './model/panier-express-state.entity';
-import { PANIER_EXPRESS_PHASES } from './definitions/rules.definition';
-import { PANIER_EXPRESS_VICTORY } from './definitions/victory.definition';
 import { playingLog } from '../../../../common/utils/playing-logger';
 import { PanierExpressSetupService } from './setup/panier-express-setup.service';
 import { PanierExpressDrawService } from './actions/panier-express-draw.service';
@@ -63,24 +61,23 @@ export class PanierExpressService extends AbstractGameService {
   readonly minPlayers = 2;
   readonly maxPlayers = 10;
   private static readonly SHOPPING_LIST_SIZE = 3;
-  private readonly phaseOrder = PANIER_EXPRESS_PHASES;
 
   constructor(
     registry: GameRegistryService,
     private readonly core: GameCoreService,
-    private readonly turns: TurnService,
+    _turns: TurnService,
     private readonly deckPool: DeckPoolService,
     private readonly movement: BoardMovementService,
     private readonly tileRegistry: TileEffectRegistryService<
       GameStateEntity,
       { playerId: number; tile: PanierExpressTile }
     >,
-    private readonly turnActions: TurnActionsService,
+    _turnActions: TurnActionsService,
     private readonly standEffects: StandEffectRegistryService<GameStateEntity>,
     private readonly resolver: ActionResolverService,
     private readonly turnStatus: TurnStatusService,
-    private readonly victory: VictoryService,
-    private readonly botRunner: BotRunnerService,
+    _victory: VictoryService,
+    _botRunner: BotRunnerService,
     private readonly actionLogSvc: ActionLogService,
     private readonly setup: PanierExpressSetupService,
     private readonly drawSvc: PanierExpressDrawService,
@@ -158,14 +155,16 @@ export class PanierExpressService extends AbstractGameService {
     });
   }
 
-  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+  getShortcuts(
+    ctx: GameShortcutsContext<PanierExpressMetadata>,
+  ): GameShortcutHint[] {
     return buildPanierExpressShortcuts(ctx);
   }
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const status = (baseState.status || '').toLowerCase();
     const players = baseState.players ?? [];
-    const meta: any = (baseState.metadata ?? {}) as any;
+    const meta = this.getMetadataRecord(baseState);
     const looksInitialized =
       Boolean(meta?.category) ||
       Boolean(meta?.subcategory) ||
@@ -233,10 +232,7 @@ export class PanierExpressService extends AbstractGameService {
         existingList.length > 0
           ? existingList
           : this.buildShoppingList(usedLists);
-      const existingPawn =
-        typeof (p as any)?.pawn === 'string'
-          ? String((p as any).pawn).trim()
-          : '';
+      const existingPawn = this.getPawnText(p);
       let pawn: string | undefined =
         existingPawn.length > 0 ? existingPawn : undefined;
       if (pawn) {
@@ -287,9 +283,7 @@ export class PanierExpressService extends AbstractGameService {
     let withLogs: GameStateEntity = initial;
     hydratedPlayers.forEach((p, idx) => {
       const originalPlayer = (baseState.players ?? [])[idx];
-      const hadPawn =
-        typeof (originalPlayer as any)?.pawn === 'string' &&
-        String((originalPlayer as any)?.pawn).trim().length > 0;
+      const hadPawn = this.getPawnText(originalPlayer).length > 0;
       const hadList =
         Array.isArray(originalPlayer?.shoppingList) &&
         originalPlayer.shoppingList.length > 0;
@@ -306,10 +300,7 @@ export class PanierExpressService extends AbstractGameService {
           ' re\u00e7oit une liste de courses: ' +
           listLabel.join(', '),
       );
-      const pawn =
-        typeof (p as any)?.pawn === 'string'
-          ? String((p as any).pawn).trim()
-          : '';
+      const pawn = this.getPawnText(p);
       if (!hadPawn && pawn) {
         withLogs = this.core.appendLog(
           withLogs,
@@ -501,7 +492,7 @@ export class PanierExpressService extends AbstractGameService {
         revealInventory: {},
         revealShoppingList: {},
         noDrawCourses: {},
-      } as any,
+      },
       meta.statuses,
     );
     const positions = this.ensurePlayerPositions(meta.positions, players);
@@ -513,14 +504,12 @@ export class PanierExpressService extends AbstractGameService {
         : [],
     };
     const lastObtainedCourse: Record<number, string | null> = {};
-    Object.entries((meta as any)?.lastObtainedCourse ?? {}).forEach(
-      ([pid, val]) => {
-        const id = Number(pid);
-        if (!Number.isFinite(id)) return;
-        const trimmed = val != null ? String(val).trim() : '';
-        lastObtainedCourse[id] = trimmed ? trimmed : null;
-      },
-    );
+    Object.entries(asRecord(meta.lastObtainedCourse)).forEach(([pid, val]) => {
+      const id = Number(pid);
+      if (!Number.isFinite(id)) return;
+      const trimmed = toText(val).trim();
+      lastObtainedCourse[id] = trimmed ? trimmed : null;
+    });
     const movementDirection =
       meta.movementDirection === -1 || meta.movementDirection === 1
         ? meta.movementDirection
@@ -588,12 +577,12 @@ export class PanierExpressService extends AbstractGameService {
         ...(override?.revealInventory ?? {}),
       },
       revealShoppingList: {
-        ...((defaults as any)?.revealShoppingList ?? {}),
-        ...((override as any)?.revealShoppingList ?? {}),
+        ...(defaults.revealShoppingList ?? {}),
+        ...(override?.revealShoppingList ?? {}),
       },
       noDrawCourses: {
-        ...((defaults as any)?.noDrawCourses ?? {}),
-        ...((override as any)?.noDrawCourses ?? {}),
+        ...(defaults.noDrawCourses ?? {}),
+        ...(override?.noDrawCourses ?? {}),
       },
     };
   }
@@ -631,18 +620,13 @@ export class PanierExpressService extends AbstractGameService {
     if (!pawnChoices.length) return state;
     const pawns = pawnChoices.map((pawn) => pawn.name);
     const players = state.players ?? [];
-    let meta = this.getMetadata(state) as any;
+    let meta = this.getMetadata(state);
     const used = new Set(
-      players
-        .map((p: any) =>
-          typeof p?.pawn === 'string' ? String(p.pawn).trim() : '',
-        )
-        .filter((p: string) => p.length > 0),
+      players.map((p) => this.getPawnText(p)).filter((pawn) => pawn.length > 0),
     );
     const assignedBots: Array<{ id: number; pawn: string }> = [];
-    const updated = players.map((p: any) => {
-      const currentPawn =
-        typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
+    const updated = players.map((p) => {
+      const currentPawn = this.getPawnText(p);
       if (currentPawn.length > 0) {
         used.add(currentPawn);
         return p;
@@ -650,10 +634,9 @@ export class PanierExpressService extends AbstractGameService {
       if (!this.utils.isBot(p)) return p;
       const available = pawns.filter((pawn) => !used.has(pawn));
       const pool = available.length > 0 ? available : pawns;
-      const picked = this.random.pickOne(meta as any, pool);
+      const picked = this.random.pickOne(meta, pool);
       meta = picked.meta;
-      const chosen =
-        typeof picked.value === 'string' ? String(picked.value).trim() : '';
+      const chosen = toText(picked.value).trim();
       if (!chosen) return p;
       used.add(chosen);
       assignedBots.push({ id: p.id, pawn: chosen });
@@ -677,8 +660,8 @@ export class PanierExpressService extends AbstractGameService {
   }
 
   private queuePawnSelection(state: GameStateEntity): GameStateEntity {
-    const pending = state.pending as any;
-    if (pending && pending.type === 'choose_pawn') {
+    const pending = state.pending;
+    if (pending?.type === 'choose_pawn') {
       return state;
     }
     const pawnChoices = this.setup.pawnChoices();
@@ -686,7 +669,7 @@ export class PanierExpressService extends AbstractGameService {
 
     const players = state.players ?? [];
     const missing = players.filter(
-      (p: any) => !p?.pawn && !this.utils.isBot(p),
+      (p) => !this.getPawnText(p) && !this.utils.isBot(p),
     );
     if (!missing.length) {
       const withBots = this.assignBotPawns(state);
@@ -694,9 +677,9 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     // Reset bot pawns during setup so humans can pick among all options.
-    const normalizedPlayers = players.map((p: any) => {
+    const normalizedPlayers = players.map((p) => {
       if (!this.utils.isBot(p)) return p;
-      const pawn = typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
+      const pawn = this.getPawnText(p);
       if (!pawn) return p;
       return { ...p, pawn: undefined };
     });
@@ -707,11 +690,9 @@ export class PanierExpressService extends AbstractGameService {
 
     const taken = new Set(
       normalizedPlayers
-        .filter((p: any) => !this.utils.isBot(p))
-        .map((p: any) =>
-          typeof p?.pawn === 'string' ? String(p.pawn).trim() : '',
-        )
-        .filter((p: string) => p.length > 0),
+        .filter((p) => !this.utils.isBot(p))
+        .map((p) => this.getPawnText(p))
+        .filter((pawn) => pawn.length > 0),
     );
     const available = pawnChoices.filter((pawn) => !taken.has(pawn.name));
     const choices = available.length > 0 ? available : pawnChoices;
@@ -734,7 +715,7 @@ export class PanierExpressService extends AbstractGameService {
         label: `${this.utils.playerName(withClearedBots, chooser.id)} choisit son pion (puis Entrée).`,
         choices: pawns.map((pawn) => pawn.label),
         data: { pawns },
-      } as any,
+      },
       turn: {
         ...(state.turn ?? { currentPlayerId: chooser.id, direction: 1 }),
         currentPlayerId: chooser.id,
@@ -751,18 +732,18 @@ export class PanierExpressService extends AbstractGameService {
     const players = state.players ?? [];
     if (players.length < this.minPlayers) return state;
     const needsPawnSelection = players.some(
-      (p: any) => !p?.pawn && !this.utils.isBot(p),
+      (p) => !this.getPawnText(p) && !this.utils.isBot(p),
     );
     if (needsPawnSelection) {
       return this.queuePawnSelection(state);
     }
     const withBots = this.assignBotPawns(state);
     const readyPlayers = withBots.players ?? [];
-    const meta = this.getMetadata(withBots) as any;
+    const meta = this.getMetadata(withBots);
     let withLogs: GameStateEntity = withBots;
     if (!meta.pawnAnnouncementsDone) {
-      readyPlayers.forEach((p: any) => {
-        const pawn = typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
+      readyPlayers.forEach((p) => {
+        const pawn = this.getPawnText(p);
         if (!pawn) return;
         withLogs = this.core.appendLog(
           withLogs,
@@ -795,17 +776,17 @@ export class PanierExpressService extends AbstractGameService {
     const players = state.players ?? [];
     if (!players.length) return state;
 
-    const meta = this.getMetadata(state) as any;
+    const meta = this.getMetadata(state);
     if (meta?.starterChosenAfterPawnSelection === true) {
       return state;
     }
 
-    const pick = this.random.nextInt(meta as any, players.length);
+    const pick = this.random.nextInt(meta, players.length);
     const starterIndex = Math.max(0, Math.min(players.length - 1, pick.value));
     const starter = players[starterIndex] ?? players[0];
     const nextMeta = {
       ...meta,
-      ...(pick.meta as any),
+      ...pick.meta,
       starterChosenAfterPawnSelection: true,
     };
     let next: GameStateEntity = {
@@ -838,15 +819,15 @@ export class PanierExpressService extends AbstractGameService {
     if (currentId == null) return state;
     // Anti-triche: le serveur est la source de vérité pour l'aléatoire (dés).
     // Bonus: RNG seedé dans metadata pour rendre le dé déterministe en debug/tests (si besoin).
-    const meta = this.getMetadata(state) as any;
+    const meta = this.getMetadata(state);
     const rng = this.random.rollDice(meta, 6);
     const roll = rng.roll;
     const direction = state.turn?.direction === -1 ? -1 : 1;
     const signedRoll = roll * direction;
 
     playingLog('panier.roll', {
-      roomId: (state.metadata as any)?.roomId ?? null,
-      gameType: (state.metadata as any)?.gameType ?? null,
+      roomId: this.getMetadataRecord(state).roomId ?? null,
+      gameType: this.getMetadataRecord(state).gameType ?? null,
       userId: action?.meta?.actorId ?? currentId,
       type: action?.type ?? 'roll',
       currentId,
@@ -904,11 +885,12 @@ export class PanierExpressService extends AbstractGameService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const pending = state.pending as any;
+    const pending = state.pending;
     if (!pending || pending.type !== 'draw') return state;
+    const actionMeta = asRecord(action.meta);
     const actorId =
-      typeof (action.meta as any)?.actorId === 'number'
-        ? (action.meta as any).actorId
+      typeof actionMeta.actorId === 'number'
+        ? actionMeta.actorId
         : Number(pending.playerId);
     const pendingPlayerId = Number(pending.playerId);
     if (
@@ -922,8 +904,8 @@ export class PanierExpressService extends AbstractGameService {
       );
     }
 
-    const data = (pending?.data ?? {}) as any;
-    const kind = String(data.kind ?? 'queue').trim();
+    const data = asRecord(pending.data);
+    const kind = toText(data.kind).trim() || 'queue';
     let next: GameStateEntity = { ...state, pending: null };
 
     if (kind === 'event.card') {
@@ -932,24 +914,24 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     if (kind === 'event.tirage_chanceux') {
-      const metaNow = this.getMetadata(next) as any;
+      const metaNow = this.getMetadata(next);
       const metaRng = this.random.createMetaRng(metaNow);
-      let nextPool = (metaNow.decks ?? {}) as any;
+      let nextPool: PanierExpressDeckPool = metaNow.decks;
       const offered: string[] = [];
       const seen = new Set<string>();
       let safety = 0;
       while (offered.length < 3 && safety < 30) {
         const draw = this.deckPool.draw<string>(
-          nextPool,
+          asStringDeckPool(nextPool),
           'courses-bonus',
           metaRng.rng,
         );
-        nextPool = draw.pool as any;
+        nextPool = draw.pool;
         const card = String(draw.card ?? '').trim();
         if (!card) break;
         if (seen.has(card)) {
           nextPool = this.deckPool.discard<string>(
-            nextPool,
+            asStringDeckPool(nextPool),
             'courses-bonus',
             card,
           );
@@ -963,7 +945,7 @@ export class PanierExpressService extends AbstractGameService {
         ...next,
         metadata: {
           ...metaRng.getMeta(),
-          decks: nextPool as any,
+          decks: nextPool,
         },
       };
       const uniqueOffered = Array.from(new Set(offered));
@@ -988,15 +970,15 @@ export class PanierExpressService extends AbstractGameService {
           choices: offered,
           data: { kind: 'event.tirage_chanceux', offered },
         },
-      } as any;
+      };
     }
 
     if (kind === 'event.producteur_genereux') {
       next = this.drawSvc.drawCourse(next, pendingPlayerId, 'bonus');
-      const metaNow = this.getMetadata(next) as any;
+      const metaNow = this.getMetadata(next);
       const metaRng = this.random.createMetaRng(metaNow);
       const draw = this.deckPool.draw<string>(
-        metaNow.decks ?? {},
+        asStringDeckPool(metaNow.decks),
         'courses-bonus',
         metaRng.rng,
       );
@@ -1005,12 +987,12 @@ export class PanierExpressService extends AbstractGameService {
         ...next,
         metadata: {
           ...metaRng.getMeta(),
-          decks: draw.pool as any,
+          decks: draw.pool,
         },
       };
       const targets = (next.players ?? [])
         .filter((p) => p.id !== pendingPlayerId)
-        .map((p: any) => ({ playerId: p.id, username: p.username }));
+        .map((p) => ({ playerId: p.id, username: p.username }));
       if (!offer) {
         next = this.core.appendLog(
           next,
@@ -1019,16 +1001,16 @@ export class PanierExpressService extends AbstractGameService {
         return this.advanceAfterDraw(next);
       }
       if (!targets.length) {
-        const metaNowAfter = this.getMetadata(next) as any;
+        const metaNowAfter = this.getMetadata(next);
         next = {
           ...next,
           metadata: {
             ...metaNowAfter,
             decks: this.deckPool.discard<string>(
-              metaNowAfter.decks ?? {},
+              asStringDeckPool(metaNowAfter.decks),
               'courses-bonus',
               offer,
-            ) as any,
+            ),
           },
         };
         next = this.core.appendLog(
@@ -1045,24 +1027,24 @@ export class PanierExpressService extends AbstractGameService {
           blocking: true,
           label: 'Choisissez un joueur pour recevoir la carte, puis Entrée.',
           choices: targets
-            .map((t: any) => String(t?.username ?? ''))
-            .filter((v: string) => v.length > 0),
+            .map((t) => toText(t.username).trim())
+            .filter((v) => v.length > 0),
           data: {
             kind: 'event.producteur_genereux.choose_target',
             offer,
             targets,
           },
         },
-      } as any;
+      };
     }
 
     if (kind === 'event.changement_de_saison') {
       next = this.drawSvc.drawCourse(next, pendingPlayerId, 'bonus');
-      const order = Array.isArray(data?.order)
-        ? data.order.map((v: any) => Number(v))
-        : [];
-      const cursor = Number(data?.cursor);
-      const processed = Number(data?.processed);
+      const order = toUnknownArray(data.order)
+        .map((v) => Number(v))
+        .filter((v) => Number.isFinite(v));
+      const cursor = Number(data.cursor);
+      const processed = Number(data.processed);
       if (
         !order.length ||
         !Number.isFinite(cursor) ||
@@ -1071,13 +1053,11 @@ export class PanierExpressService extends AbstractGameService {
         return this.advanceAfterDraw(next);
       }
 
-      let nextCursor = (cursor + 1) % order.length;
-      let nextProcessed = processed + 1;
+      const nextCursor = (cursor + 1) % order.length;
+      const nextProcessed = processed + 1;
       while (nextProcessed < order.length) {
         const nextPid = Number(order[nextCursor]);
-        const player = (next.players ?? []).find(
-          (p: any) => p.id === nextPid,
-        ) as any;
+        const player = (next.players ?? []).find((p) => p.id === nextPid);
         const cards = this.utils.toStringArray(player?.inventory);
         if (cards.length) {
           return {
@@ -1094,7 +1074,7 @@ export class PanierExpressService extends AbstractGameService {
                 cursor: nextCursor,
                 processed: nextProcessed,
               },
-            } as any,
+            },
           };
         }
         return {
@@ -1111,7 +1091,7 @@ export class PanierExpressService extends AbstractGameService {
               processed: nextProcessed,
             },
           },
-        } as any;
+        };
       }
 
       next = this.core.appendLog(
@@ -1121,17 +1101,17 @@ export class PanierExpressService extends AbstractGameService {
       return this.advanceAfterDraw(next);
     }
 
-    const queue = Array.isArray(data?.queue) ? data.queue : [];
-    const cursor = Number(data?.cursor ?? 0);
+    const queue = toDrawQueueEntries(data.queue);
+    const cursor = Number(data.cursor ?? 0);
     const entry = queue[cursor];
-    if (!entry || !Number.isFinite(entry?.playerId)) {
+    if (!entry || !Number.isFinite(entry.playerId)) {
       return this.advanceAfterDraw(next);
     }
 
     next = this.drawSvc.drawCourse(
       next,
       Number(entry.playerId),
-      entry?.standId ? String(entry.standId) : undefined,
+      toText(entry.standId).trim() || undefined,
     );
 
     const nextCursor = cursor + 1;
@@ -1141,12 +1121,12 @@ export class PanierExpressService extends AbstractGameService {
         ...next,
         pending: {
           type: 'draw',
-          playerId: nextEntry?.playerId,
+          playerId: nextEntry.playerId,
           blocking: true,
           label: pending.label ?? 'Piocher une carte (Espace).',
           data: { kind: 'queue', queue, cursor: nextCursor },
         },
-      } as any;
+      };
     }
 
     return this.advanceAfterDraw(next);
@@ -1173,7 +1153,7 @@ export class PanierExpressService extends AbstractGameService {
         label,
         data,
       },
-    } as any;
+    };
   }
 
   private queueCourseDraws(
@@ -1190,21 +1170,22 @@ export class PanierExpressService extends AbstractGameService {
       .filter((task) => Number.isFinite(task.playerId));
     if (!sanitized.length) return state;
 
-    const pending = state.pending as any;
+    const pending = state.pending;
     if (pending?.type === 'draw' && pending?.data?.kind === 'queue') {
-      const queue = Array.isArray(pending.data.queue) ? pending.data.queue : [];
+      const pendingData = asRecord(pending.data);
+      const queue = toDrawQueueEntries(pendingData.queue);
       return {
         ...state,
         pending: {
           ...pending,
           data: {
-            ...(pending.data ?? {}),
+            ...pendingData,
             kind: 'queue',
             queue: [...queue, ...sanitized],
-            cursor: Number(pending.data.cursor ?? 0),
+            cursor: Number(pendingData.cursor ?? 0),
           },
         },
-      } as any;
+      };
     }
 
     if (state.pending) {
@@ -1224,7 +1205,7 @@ export class PanierExpressService extends AbstractGameService {
         label,
         data: { kind: 'queue', queue: sanitized, cursor: 0 },
       },
-    } as any;
+    };
   }
 
   private advanceAfterDraw(state: GameStateEntity): GameStateEntity {
@@ -1282,7 +1263,7 @@ export class PanierExpressService extends AbstractGameService {
         : this.buildTiles();
     const currentPos = meta.positions[playerId] ?? 0;
     const nextPos = this.movement.moveCircular(tiles.length, currentPos, roll);
-    const tile = this.movement.tileAt(tiles, nextPos);
+    this.movement.tileAt(tiles, nextPos);
 
     // Tour de plateau : modifier quand le joueur "repasse" par la case départ.
     // - Avancer et dépasser la case départ => +1 (ou plus si gros déplacement)
@@ -1315,7 +1296,7 @@ export class PanierExpressService extends AbstractGameService {
 
   private tileLabel(tile: PanierExpressTile | undefined): string {
     if (!tile) return 'inconnu';
-    const label = String((tile as any)?.label ?? '').trim();
+    const label = toText(tile.label).trim();
     if (label) return label;
     const fallbackId = tile.id ?? 'inconnu';
     switch (tile.type) {
@@ -1378,7 +1359,7 @@ export class PanierExpressService extends AbstractGameService {
       );
     }
     const label = this.tileLabel(tile);
-    const description = String((tile as any)?.description ?? '').trim();
+    const description = toText(tile.description).trim();
     const caseNumber = position + 1;
     const announced = this.core.appendLog(
       ensured,
@@ -1531,7 +1512,7 @@ export class PanierExpressService extends AbstractGameService {
   ): GameStateEntity {
     const ensured = this.ensureMetadata(state);
     const meta = this.getMetadata(ensured);
-    let drawn = this.drawFromPool(meta, 'events');
+    let drawn = this.drawFromPool<string>(meta, 'events');
     let metadata = drawn.metadata;
     if (!drawn.card) {
       // Réinitialiser le deck d'événements si épuisé, puis retenter.
@@ -1540,7 +1521,7 @@ export class PanierExpressService extends AbstractGameService {
         'events',
         this.deckPool.shuffle([...this.setup.eventCards()]),
       );
-      drawn = this.drawFromPool(
+      drawn = this.drawFromPool<string>(
         { ...meta, decks: refilled as PanierExpressDeckPool },
         'events',
       );
@@ -1554,7 +1535,7 @@ export class PanierExpressService extends AbstractGameService {
     const eventLabel = this.utils.formatEventLabel(event);
     next = this.core.appendLog(
       next,
-      `[Panier Express] Carte Événement : ${eventLabel || String(event)}.`,
+      `[Panier Express] Carte Événement : ${eventLabel || event}.`,
     );
 
     const setPickPending = (params: {
@@ -1563,17 +1544,18 @@ export class PanierExpressService extends AbstractGameService {
       choices: string[];
       data?: Record<string, unknown>;
     }): GameStateEntity => {
+      const pendingState: PendingState = {
+        type: 'pick',
+        playerId,
+        blocking: true,
+        label: params.label,
+        choices: params.choices,
+        data: { kind: params.kind, ...(params.data ?? {}) },
+      };
       return {
         ...next,
-        pending: {
-          type: 'pick',
-          playerId,
-          blocking: true,
-          label: params.label,
-          choices: params.choices,
-          data: { kind: params.kind, ...(params.data ?? {}) },
-        },
-      } as any;
+        pending: pendingState,
+      };
     };
 
     const ensureDiscardCourses = (): string[] => {
@@ -1605,7 +1587,7 @@ export class PanierExpressService extends AbstractGameService {
       const trimmed = String(card ?? '').trim();
       if (!trimmed) return { updated: false };
       let updated = false;
-      const players = (next.players ?? []).map((p: any) => {
+      const players = (next.players ?? []).map((p) => {
         if (p.id !== pid) return p;
         const basket = this.utils.toStringArray(p.basket);
         const inventory = this.utils.toStringArray(p.inventory);
@@ -1630,7 +1612,7 @@ export class PanierExpressService extends AbstractGameService {
       const trimmed = String(card ?? '').trim();
       if (!trimmed) return { updated: false };
       let updated = false;
-      const players = (next.players ?? []).map((p: any) => {
+      const players = (next.players ?? []).map((p) => {
         if (p.id !== pid) return p;
         const inventory = this.utils.toStringArray(p.inventory);
         if (!inventory.includes(trimmed)) return p;
@@ -1644,7 +1626,7 @@ export class PanierExpressService extends AbstractGameService {
     const addOneCourseToPlayer = (pid: number, card: string): void => {
       const trimmed = String(card ?? '').trim();
       if (!trimmed) return;
-      const players = (next.players ?? []).map((p: any) => {
+      const players = (next.players ?? []).map((p) => {
         if (p.id !== pid) return p;
         const list = this.utils.toStringArray(p.shoppingList);
         const basket = this.utils.toStringArray(p.basket);
@@ -1681,22 +1663,18 @@ export class PanierExpressService extends AbstractGameService {
         return { ...p, inventory: [...inventory, trimmed], basket };
       });
       next = { ...next, players };
-      const metaNow = this.getMetadata(next) as any;
-      const playerNow = (next.players ?? []).find((p: any) => p.id === pid);
+      const metaNow = this.getMetadata(next);
+      const playerNow = (next.players ?? []).find((p) => p.id === pid);
       const hasCard =
-        this.utils
-          .toStringArray((playerNow as any)?.basket)
-          .includes(trimmed) ||
-        this.utils
-          .toStringArray((playerNow as any)?.inventory)
-          .includes(trimmed);
+        this.utils.toStringArray(playerNow?.basket).includes(trimmed) ||
+        this.utils.toStringArray(playerNow?.inventory).includes(trimmed);
       if (hasCard) {
         next = {
           ...next,
           metadata: {
             ...metaNow,
             lastObtainedCourse: {
-              ...(metaNow?.lastObtainedCourse ?? {}),
+              ...(metaNow.lastObtainedCourse ?? {}),
               [pid]: trimmed,
             },
           },
@@ -1705,7 +1683,7 @@ export class PanierExpressService extends AbstractGameService {
     };
 
     const discardRandomCourse = (pid: number): string | null => {
-      const player = (next.players ?? []).find((p) => p.id === pid) as any;
+      const player = (next.players ?? []).find((p) => p.id === pid);
       if (!player) return null;
       const basket = this.utils.toStringArray(player.basket);
       const inventory = this.utils.toStringArray(player.inventory);
@@ -1717,7 +1695,7 @@ export class PanierExpressService extends AbstractGameService {
         ? inventory.filter((c) => !basket.includes(c))
         : inventory;
       if (!inventoryOnly.length) return null;
-      const metaRng = this.random.createMetaRng(this.getMetadata(next) as any);
+      const metaRng = this.random.createMetaRng(this.getMetadata(next));
       const picked = this.random.pickOne(metaRng.getMeta(), inventoryOnly);
       next = { ...next, metadata: picked.meta };
       const card = String(picked.value ?? '').trim();
@@ -1729,6 +1707,17 @@ export class PanierExpressService extends AbstractGameService {
       }
       return null;
     };
+    const buildTargets = (excludePlayerId: number) =>
+      (next.players ?? [])
+        .filter((p) => p.id !== excludePlayerId)
+        .map((p) => ({ playerId: p.id, username: p.username }));
+    const buildTargetChoices = (
+      targets: Array<{ playerId: number; username: string }>,
+    ) =>
+      targets
+        .map((target) => toText(target.username).trim())
+        .filter((name) => name.length > 0);
+
     switch (event) {
       case 'stand-ferme':
         next = this.turnStatus.setStatus(next, playerId, 'skipTurn', 1);
@@ -1798,12 +1787,8 @@ export class PanierExpressService extends AbstractGameService {
         });
         break;
       case 'panier-bonus': {
-        const targets = (next.players ?? [])
-          .filter((p) => p.id !== playerId)
-          .map((p: any) => ({ playerId: p.id, username: p.username }));
-        const choices = targets
-          .map((t: any) => String(t?.username ?? ''))
-          .filter((v: string) => v.length > 0);
+        const targets = buildTargets(playerId);
+        const choices = buildTargetChoices(targets);
         if (!choices.length) {
           next = this.core.appendLog(
             next,
@@ -1854,7 +1839,7 @@ export class PanierExpressService extends AbstractGameService {
         break;
       }
       case 'emballage-defectueux': {
-        const me = (next.players ?? []).find((p) => p.id === playerId) as any;
+        const me = this.getPlayers(next).find((p) => p.id === playerId);
         const cards = this.utils.toStringArray(me?.inventory);
         if (!cards.length) {
           next = this.core.appendLog(
@@ -1950,7 +1935,7 @@ export class PanierExpressService extends AbstractGameService {
       case 'marche-anime':
         next = this.queueCourseDraws(
           next,
-          (next.players ?? []).map((p: any) => ({
+          this.getPlayers(next).map((p) => ({
             playerId: p.id,
             standId: 'bonus',
           })),
@@ -1969,13 +1954,13 @@ export class PanierExpressService extends AbstractGameService {
         const metaNow = this.getMetadata(next);
         const tiles = Array.isArray(metaNow.tiles) ? metaNow.tiles : [];
         const positions = metaNow.positions ?? {};
-        const targets = (next.players ?? [])
-          .map((p: any) => {
+        const targets = this.getPlayers(next)
+          .map((p) => {
             const pos = positions[p.id] ?? 0;
-            const tile = tiles[pos] as any;
+            const tile = tiles[pos];
             if (
               tile?.type === 'stand' &&
-              String(tile.standId ?? '').startsWith('bio')
+              toText(tile.standId).startsWith('bio')
             ) {
               return { playerId: p.id, standId: 'bonus' };
             }
@@ -2016,7 +2001,7 @@ export class PanierExpressService extends AbstractGameService {
             current,
             steps * direction,
           );
-          const tile = tiles[idx] as any;
+          const tile = tiles[idx];
           if (tile?.type === 'stand') {
             stands += 1;
             if (stands >= 2) {
@@ -2050,14 +2035,10 @@ export class PanierExpressService extends AbstractGameService {
         break;
       }
       case 'echange-spontane': {
-        const me = (next.players ?? []).find((p) => p.id === playerId) as any;
+        const me = this.getPlayers(next).find((p) => p.id === playerId);
         const inv = this.utils.toStringArray(me?.inventory);
-        const targets = (next.players ?? [])
-          .filter((p) => p.id !== playerId)
-          .map((p: any) => ({ playerId: p.id, username: p.username }));
-        const choices = targets
-          .map((t: any) => String(t?.username ?? ''))
-          .filter((v: string) => v.length > 0);
+        const targets = buildTargets(playerId);
+        const choices = buildTargetChoices(targets);
         if (!inv.length || !choices.length) {
           next = this.core.appendLog(
             next,
@@ -2082,7 +2063,7 @@ export class PanierExpressService extends AbstractGameService {
         break;
       }
       case 'intemperie-au-marche':
-        (next.players ?? []).forEach((p: any) => {
+        this.getPlayers(next).forEach((p) => {
           next = this.movePlayer(next, p.id, -1);
         });
         next = this.core.appendLog(
@@ -2117,9 +2098,9 @@ export class PanierExpressService extends AbstractGameService {
         break;
       }
       case 'recette-express': {
-        const me = (next.players ?? []).find((p) => p.id === playerId) as any;
-        const list = this.utils.toStringArray(me?.shoppingList);
-        const basket = this.utils.toStringArray(me?.basket);
+        const me = this.getPlayers(next).find((p) => p.id === playerId);
+        const list = this.utils.toStringArray(me?.shoppingList ?? []);
+        const basket = this.utils.toStringArray(me?.basket ?? []);
         const owned = new Set(basket);
         const uniques = new Set(list.filter((item) => owned.has(item)));
         const requiredItems = 1;
@@ -2138,9 +2119,7 @@ export class PanierExpressService extends AbstractGameService {
           });
           break;
         }
-        const metaRng = this.random.createMetaRng(
-          this.getMetadata(next) as any,
-        );
+        const metaRng = this.random.createMetaRng(this.getMetadata(next));
         const picked = this.random.pickOne(metaRng.getMeta(), list);
         next = { ...next, metadata: picked.meta };
         const card = String(picked.value ?? '').trim();
@@ -2153,7 +2132,7 @@ export class PanierExpressService extends AbstractGameService {
         }
         next = {
           ...next,
-          players: (next.players ?? []).map((p: any) => {
+          players: this.getPlayers(next).map((p) => {
             if (p.id !== playerId) return p;
             const nextBasket = this.utils.toStringArray(p.basket);
             return { ...p, basket: [...nextBasket, card] };
@@ -2165,10 +2144,10 @@ export class PanierExpressService extends AbstractGameService {
           metadata: {
             ...metaNow,
             lastObtainedCourse: {
-              ...((metaNow as any)?.lastObtainedCourse ?? {}),
+              ...(metaNow.lastObtainedCourse ?? {}),
               [playerId]: card,
             },
-          } as any,
+          },
         };
         next = this.core.appendLog(
           next,
@@ -2189,8 +2168,8 @@ export class PanierExpressService extends AbstractGameService {
         let bestIndex: number | null = null;
         let bestDistance = Number.POSITIVE_INFINITY;
         for (let idx = 0; idx < total; idx += 1) {
-          const tile = tiles[idx] as any;
-          if (tile?.type !== 'stand') continue;
+          const tile = asRecord(tiles[idx]);
+          if (tile.type !== 'stand') continue;
           const forward = (idx - position + total) % total;
           const backward = (position - idx + total) % total;
           const dist = Math.min(forward, backward);
@@ -2210,8 +2189,8 @@ export class PanierExpressService extends AbstractGameService {
           });
           break;
         }
-        const targets = (next.players ?? []).filter(
-          (p: any) => (metaNow.positions?.[p.id] ?? 0) === bestIndex,
+        const targets = this.getPlayers(next).filter(
+          (p) => (metaNow.positions?.[p.id] ?? 0) === bestIndex,
         );
         if (!targets.length) {
           next = this.core.appendLog(
@@ -2226,7 +2205,7 @@ export class PanierExpressService extends AbstractGameService {
         }
         next = this.queueCourseDraws(
           next,
-          targets.map((p: any) => ({ playerId: p.id, standId: 'bonus' })),
+          targets.map((p) => ({ playerId: p.id, standId: 'bonus' })),
           'Piocher une course bonus (Espace).',
         );
         next = this.core.appendLog(
@@ -2242,9 +2221,7 @@ export class PanierExpressService extends AbstractGameService {
       }
       case 'produit-oublie': {
         const items = this.setup.courseItems();
-        const metaRng = this.random.createMetaRng(
-          this.getMetadata(next) as any,
-        );
+        const metaRng = this.random.createMetaRng(this.getMetadata(next));
         const picked = items.length
           ? this.random.pickOne(metaRng.getMeta(), items)
           : null;
@@ -2276,9 +2253,7 @@ export class PanierExpressService extends AbstractGameService {
           });
           break;
         }
-        const metaRng = this.random.createMetaRng(
-          this.getMetadata(next) as any,
-        );
+        const metaRng = this.random.createMetaRng(this.getMetadata(next));
         const picked = this.random.pickOne(metaRng.getMeta(), discard);
         next = { ...next, metadata: picked.meta };
         const card = String(picked.value ?? '').trim();
@@ -2307,7 +2282,7 @@ export class PanierExpressService extends AbstractGameService {
       case 'controle-des-inventaires': {
         let maxId: number | null = null;
         let max = -1;
-        (next.players ?? []).forEach((p: any) => {
+        this.getPlayers(next).forEach((p) => {
           const inv = this.utils.toStringArray(p.inventory);
           if (inv.length > max) {
             max = inv.length;
@@ -2335,8 +2310,7 @@ export class PanierExpressService extends AbstractGameService {
         break;
       }
       case 'stand-surprise': {
-        const metaAny = this.getMetadata(next) as any;
-        const rng = this.random.rollDice(metaAny, 6);
+        const rng = this.random.rollDice(this.getMetadata(next), 6);
         next = { ...next, metadata: rng.meta };
         const roll = rng.roll;
         const matcher =
@@ -2351,8 +2325,8 @@ export class PanierExpressService extends AbstractGameService {
         const current = metaNow.positions?.[playerId] ?? 0;
         for (let steps = 1; steps < total; steps += 1) {
           const idx = this.movement.moveCircular(total, current, steps);
-          const tile = tiles[idx] as any;
-          if (tile?.type === 'stand' && matcher(String(tile.standId ?? ''))) {
+          const tile = asRecord(tiles[idx]);
+          if (tile.type === 'stand' && matcher(toText(tile.standId))) {
             next = this.movePlayer(next, playerId, steps);
             break;
           }
@@ -2382,10 +2356,10 @@ export class PanierExpressService extends AbstractGameService {
         });
         break;
       case 'conseil-de-voisinage': {
-        const me = (next.players ?? []).find((p) => p.id === playerId) as any;
-        const myList = this.utils.toStringArray(me?.shoppingList);
-        const myBasket = this.utils.toStringArray(me?.basket);
-        const myInventory = this.utils.toStringArray(me?.inventory);
+        const me = this.getPlayers(next).find((p) => p.id === playerId);
+        const myList = this.utils.toStringArray(me?.shoppingList ?? []);
+        const myBasket = this.utils.toStringArray(me?.basket ?? []);
+        const myInventory = this.utils.toStringArray(me?.inventory ?? []);
         const missing = new Set(
           myList.filter((item) => !myBasket.includes(item)),
         );
@@ -2405,7 +2379,7 @@ export class PanierExpressService extends AbstractGameService {
           card: string;
           label: string;
         }> = [];
-        (next.players ?? []).forEach((p: any) => {
+        this.getPlayers(next).forEach((p) => {
           if (p.id === playerId) return;
           const inv = this.utils.toStringArray(p.inventory);
           inv.forEach((card) => {
@@ -2438,9 +2412,9 @@ export class PanierExpressService extends AbstractGameService {
         break;
       }
       case 'troc-improvise': {
-        const order = (next.players ?? [])
-          .map((p: any) => Number(p.id))
-          .filter((id: any) => Number.isFinite(id));
+        const order = this.getPlayers(next)
+          .map((p) => Number(p.id))
+          .filter((id) => Number.isFinite(id));
         const start = order.indexOf(playerId);
         if (!order.length || start < 0) {
           next = this.core.appendLog(
@@ -2458,7 +2432,7 @@ export class PanierExpressService extends AbstractGameService {
         while (processed < order.length) {
           const pid = order[cursor];
           const inv = this.utils.toStringArray(
-            (next.players ?? []).find((p: any) => p.id === pid)?.inventory,
+            this.getPlayers(next).find((p) => p.id === pid)?.inventory ?? [],
           );
           if (inv.length) {
             next = {
@@ -2476,7 +2450,7 @@ export class PanierExpressService extends AbstractGameService {
                   cursor,
                   processed,
                 },
-              } as any,
+              },
             };
             break;
           }
@@ -2496,9 +2470,9 @@ export class PanierExpressService extends AbstractGameService {
         break;
       }
       case 'changement-de-saison': {
-        const order = (next.players ?? [])
-          .map((p: any) => Number(p.id))
-          .filter((id: any) => Number.isFinite(id));
+        const order = this.getPlayers(next)
+          .map((p) => Number(p.id))
+          .filter((id) => Number.isFinite(id));
         const start = order.indexOf(playerId);
         if (!order.length || start < 0) {
           next = this.core.appendLog(
@@ -2516,9 +2490,7 @@ export class PanierExpressService extends AbstractGameService {
         let processed = 0;
         while (processed < order.length) {
           const pid = order[cursor];
-          const player = (next.players ?? []).find(
-            (p: any) => p.id === pid,
-          ) as any;
+          const player = this.getPlayers(next).find((p) => p.id === pid);
           const cards = this.utils.toStringArray(player?.inventory);
           if (cards.length) {
             next = {
@@ -2536,7 +2508,7 @@ export class PanierExpressService extends AbstractGameService {
                   processed,
                   cards,
                 },
-              } as any,
+              },
             };
             break;
           }
@@ -2555,7 +2527,7 @@ export class PanierExpressService extends AbstractGameService {
                 processed,
               },
             },
-          } as any;
+          };
           break;
           cursor = (cursor + 1) % order.length;
           processed += 1;
@@ -2568,8 +2540,8 @@ export class PanierExpressService extends AbstractGameService {
         break;
       }
       case 'echange-obligatoire': {
-        const players = next.players ?? [];
-        const idx = players.findIndex((p: any) => p.id === playerId);
+        const players = this.getPlayers(next);
+        const idx = players.findIndex((p) => p.id === playerId);
         if (idx < 0 || players.length < 2) {
           next = this.core.appendLog(
             next,
@@ -2582,12 +2554,8 @@ export class PanierExpressService extends AbstractGameService {
           break;
         }
         const targetId = Number(players[(idx + 1) % players.length]?.id);
-        const me = (next.players ?? []).find(
-          (p: any) => p.id === playerId,
-        ) as any;
-        const target = (next.players ?? []).find(
-          (p: any) => p.id === targetId,
-        ) as any;
+        const me = this.getPlayers(next).find((p) => p.id === playerId);
+        const target = this.getPlayers(next).find((p) => p.id === targetId);
         const myInv = this.utils.toStringArray(me?.inventory);
         const theirInv = this.utils.toStringArray(target?.inventory);
         if (!myInv.length || !theirInv.length) {
@@ -2601,13 +2569,11 @@ export class PanierExpressService extends AbstractGameService {
           });
           break;
         }
-        const metaRng = this.random.createMetaRng(
-          this.getMetadata(next) as any,
-        );
+        const metaRng = this.random.createMetaRng(this.getMetadata(next));
         const pickA = this.random.pickOne(metaRng.getMeta(), myInv);
         next = { ...next, metadata: pickA.meta };
         const giveA = String(pickA.value ?? '').trim();
-        const pickB = this.random.pickOne(next.metadata as any, theirInv);
+        const pickB = this.random.pickOne(this.getMetadata(next), theirInv);
         next = { ...next, metadata: pickB.meta };
         const giveB = String(pickB.value ?? '').trim();
         if (giveA) removeOneCourseFromPlayer(playerId, giveA);
@@ -2626,9 +2592,9 @@ export class PanierExpressService extends AbstractGameService {
         break;
       }
       case 'inversion-de-panier': {
-        const others = (next.players ?? [])
-          .filter((p: any) => p.id !== playerId)
-          .map((p: any) => p.id);
+        const others = this.getPlayers(next)
+          .filter((p) => p.id !== playerId)
+          .map((p) => p.id);
         if (!others.length) {
           next = this.core.appendLog(
             next,
@@ -2640,21 +2606,19 @@ export class PanierExpressService extends AbstractGameService {
           });
           break;
         }
-        const metaRng = this.random.createMetaRng(
-          this.getMetadata(next) as any,
-        );
+        const metaRng = this.random.createMetaRng(this.getMetadata(next));
         const picked = this.random.pickOne(metaRng.getMeta(), others);
         next = { ...next, metadata: picked.meta };
         const targetId = Number(picked.value);
-        const playersWithInventory = (next.players ?? []).map((p: any) => {
+        const playersWithInventory = this.getPlayers(next).map((p) => {
           if (p.id !== playerId && p.id !== targetId) return p;
           return { ...p, inventory: this.utils.toStringArray(p.inventory) };
         });
-        const me = playersWithInventory.find((p: any) => p.id === playerId);
-        const target = playersWithInventory.find((p: any) => p.id === targetId);
+        const me = playersWithInventory.find((p) => p.id === playerId);
+        const target = playersWithInventory.find((p) => p.id === targetId);
         const myInventory = this.utils.toStringArray(me?.inventory);
         const theirInventory = this.utils.toStringArray(target?.inventory);
-        const swapped = playersWithInventory.map((p: any) => {
+        const swapped = playersWithInventory.map((p) => {
           if (p.id === playerId) return { ...p, inventory: theirInventory };
           if (p.id === targetId) return { ...p, inventory: myInventory };
           return p;
@@ -2766,10 +2730,7 @@ export class PanierExpressService extends AbstractGameService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const actorId =
-      typeof (action.meta as any)?.actorId === 'number'
-        ? (action.meta as any).actorId
-        : null;
+    const actorId = this.getActorIdFromAction(action);
     const playerId = actorId ?? state.turn?.currentPlayerId ?? null;
     const targetPlayerId = action.payload?.targetPlayerId ?? null;
     if (typeof playerId !== 'number' || typeof targetPlayerId !== 'number') {
@@ -2785,10 +2746,7 @@ export class PanierExpressService extends AbstractGameService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const actorId =
-      typeof (action.meta as any)?.actorId === 'number'
-        ? (action.meta as any).actorId
-        : null;
+    const actorId = this.getActorIdFromAction(action);
     const playerId = actorId ?? state.turn?.currentPlayerId ?? null;
     const give = action.payload?.give ?? null;
     if (typeof playerId !== 'number' || typeof give !== 'string') {
@@ -2806,10 +2764,7 @@ export class PanierExpressService extends AbstractGameService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const actorId =
-      typeof (action.meta as any)?.actorId === 'number'
-        ? (action.meta as any).actorId
-        : null;
+    const actorId = this.getActorIdFromAction(action);
     if (typeof actorId !== 'number') {
       return this.core.appendLog(
         state,
@@ -2827,23 +2782,24 @@ export class PanierExpressService extends AbstractGameService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const actorId =
-      typeof (action.meta as any)?.actorId === 'number'
-        ? (action.meta as any).actorId
-        : null;
+    const actorId = this.getActorIdFromAction(action);
     if (typeof actorId !== 'number') {
       return this.core.appendLog(
         state,
         "[Panier Express] Refus d'échange invalide.",
       );
     }
-    const pending = state.pending as any;
+    const pending = this.getPendingRecord(state);
     const pendingCard =
-      pending && pending.type === 'exchange' && pending.step === 'confirm'
-        ? String(pending.card ?? '')
+      pending &&
+      toText(pending.type) === 'exchange' &&
+      toText(pending.step) === 'confirm'
+        ? toText(pending.card)
         : '';
     const initiatorId =
-      pending && pending.type === 'exchange' && pending.step === 'confirm'
+      pending &&
+      toText(pending.type) === 'exchange' &&
+      toText(pending.step) === 'confirm'
         ? Number(pending.initiatorPlayerId)
         : NaN;
 
@@ -2862,20 +2818,18 @@ export class PanierExpressService extends AbstractGameService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const actorId =
-      typeof (action.meta as any)?.actorId === 'number'
-        ? (action.meta as any).actorId
-        : null;
+    const actorId = this.getActorIdFromAction(action);
     if (typeof actorId !== 'number') {
       return this.core.appendLog(
         state,
         '[Panier Express] Acceptation du marchand invalide.',
       );
     }
-    const pending = state.pending as any;
+    const pending = this.getPendingRecord(state);
+    const pendingData = asRecord(pending?.data);
     const ingredient =
-      pending && pending.type === 'merchant_request'
-        ? String(pending.data?.ingredient ?? '').trim()
+      pending && toText(pending.type) === 'merchant_request'
+        ? toText(pendingData.ingredient).trim()
         : '';
     if (!ingredient) {
       return this.core.appendLog(
@@ -2905,20 +2859,18 @@ export class PanierExpressService extends AbstractGameService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const actorId =
-      typeof (action.meta as any)?.actorId === 'number'
-        ? (action.meta as any).actorId
-        : null;
+    const actorId = this.getActorIdFromAction(action);
     if (typeof actorId !== 'number') {
       return this.core.appendLog(
         state,
         '[Panier Express] Refus du marchand invalide.',
       );
     }
-    const pending = state.pending as any;
+    const pending = this.getPendingRecord(state);
+    const pendingData = asRecord(pending?.data);
     const ingredient =
-      pending && pending.type === 'merchant_request'
-        ? String(pending.data?.ingredient ?? '').trim()
+      pending && toText(pending.type) === 'merchant_request'
+        ? toText(pendingData.ingredient).trim()
         : '';
     let next: GameStateEntity = { ...state, pending: null };
     next = this.applySkipTurnTile(next, actorId, 2, true);
@@ -2943,9 +2895,8 @@ export class PanierExpressService extends AbstractGameService {
     action: GameSingleActionDto,
   ): GameStateEntity {
     const playerId =
-      (typeof (action.meta as any)?.actorId === 'number'
-        ? (action.meta as any).actorId
-        : action.payload?.playerId) ??
+      this.getActorIdFromAction(action) ??
+      action.payload?.playerId ??
       state.turn?.currentPlayerId ??
       null;
     if (typeof playerId !== 'number') {
@@ -2978,13 +2929,17 @@ export class PanierExpressService extends AbstractGameService {
       action,
       pendingType: 'choose_pawn',
       resolveChoice: (rawValue, options) => {
-        const key = String(rawValue ?? '').trim().toLowerCase();
+        const key = toText(rawValue).trim().toLowerCase();
         if (!key) return null;
         return (
-          options.find((option: any) => {
-            const byId = String(option?.id ?? '').trim().toLowerCase();
-            const byLabel = String(option?.label ?? '').trim().toLowerCase();
-            return (byId.length > 0 && byId === key) || (byLabel.length > 0 && byLabel === key);
+          options.find((option) => {
+            const optionRecord = asRecord(option);
+            const byId = toText(optionRecord.id).trim().toLowerCase();
+            const byLabel = toText(optionRecord.label).trim().toLowerCase();
+            return (
+              (byId.length > 0 && byId === key) ||
+              (byLabel.length > 0 && byLabel === key)
+            );
           }) ?? null
         );
       },
@@ -3004,7 +2959,7 @@ export class PanierExpressService extends AbstractGameService {
     let next: GameStateEntity = {
       ...state,
       pending: null,
-      players: (state.players ?? []).map((player: any) =>
+      players: this.getPlayers(state).map((player) =>
         player.id === resolved.playerId ? { ...player, pawn: chosen } : player,
       ),
     };
@@ -3028,12 +2983,10 @@ export class PanierExpressService extends AbstractGameService {
     action: GameSingleActionDto,
   ): GameStateEntity {
     const actorId =
-      typeof (action.meta as any)?.actorId === 'number'
-        ? (action.meta as any).actorId
-        : (state.turn?.currentPlayerId ?? null);
+      this.getActorIdFromAction(action) ?? state.turn?.currentPlayerId ?? null;
     if (typeof actorId !== 'number') return state;
 
-    const pending = state.pending as any;
+    const pending = this.getPendingRecord(state);
     if (!pending || pending.type !== 'pick' || pending.playerId !== actorId) {
       return this.core.appendLog(
         state,
@@ -3042,20 +2995,22 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     const index = Number(action.payload?.index);
-    const choices = Array.isArray(pending.choices) ? pending.choices : [];
+    const choices = toUnknownArray(pending.choices).map((value) =>
+      toText(value),
+    );
     if (!Number.isFinite(index) || index < 0 || index >= choices.length) {
       return this.core.appendLog(state, `[Panier Express] Choix invalide.`);
     }
 
-    const meta = this.getMetadata(state);
-    const kind = String(pending?.data?.kind ?? '').trim();
+    const pendingData = asRecord(pending.data);
+    const kind = toText(pendingData.kind).trim();
 
     const updatePlayer = (
       base: GameStateEntity,
       playerId: number,
-      updater: (player: any) => any,
+      updater: (player: PanierExpressPlayer) => PanierExpressPlayer,
     ): GameStateEntity => {
-      const players = (base.players ?? []).map((p: any) =>
+      const players = this.getPlayers(base).map((p) =>
         p.id === playerId ? updater(p) : p,
       );
       return { ...base, players };
@@ -3069,7 +3024,7 @@ export class PanierExpressService extends AbstractGameService {
       const trimmed = String(card ?? '').trim();
       if (!trimmed) return { state: base, removed: false };
       let removed = false;
-      const updated = updatePlayer(base, playerId, (p: any) => {
+      const updated = updatePlayer(base, playerId, (p) => {
         const inventory = this.utils.toStringArray(p.inventory);
         if (inventory.includes(trimmed)) {
           removed = true;
@@ -3108,7 +3063,7 @@ export class PanierExpressService extends AbstractGameService {
       const trimmed = String(card ?? '').trim();
       if (!trimmed) return base;
       let kept = false;
-      const next = updatePlayer(base, playerId, (p: any) => {
+      const next = updatePlayer(base, playerId, (p) => {
         const list = this.utils.toStringArray(p.shoppingList);
         const basket = this.utils.toStringArray(p.basket);
         const inventory = this.utils.toStringArray(p.inventory);
@@ -3141,13 +3096,13 @@ export class PanierExpressService extends AbstractGameService {
         kept = true;
         return { ...p, inventory: [...inventory, trimmed], basket };
       });
-      const nextMeta = this.getMetadata(next) as any;
-      const discards = Array.isArray(nextMeta?.discards?.courses)
-        ? nextMeta.discards.courses.map((v: any) => String(v))
+      const nextMeta = this.getMetadata(next);
+      const discards = Array.isArray(nextMeta.discards?.courses)
+        ? nextMeta.discards.courses.map((v) => String(v))
         : [];
       const withDiscard = kept
         ? next
-        : ({
+        : {
             ...next,
             metadata: {
               ...nextMeta,
@@ -3156,18 +3111,18 @@ export class PanierExpressService extends AbstractGameService {
                 courses: [...discards, trimmed],
               },
             },
-          } as any);
+          };
       if (!kept) return withDiscard;
-      const metaAfter = this.getMetadata(withDiscard) as any;
+      const metaAfter = this.getMetadata(withDiscard);
       return {
         ...withDiscard,
         metadata: {
           ...metaAfter,
           lastObtainedCourse: {
-            ...(metaAfter?.lastObtainedCourse ?? {}),
+            ...(metaAfter.lastObtainedCourse ?? {}),
             [playerId]: trimmed,
           },
-        } as any,
+        },
       };
     };
 
@@ -3176,10 +3131,10 @@ export class PanierExpressService extends AbstractGameService {
       pending: null,
     });
     if (kind === 'event.tirage_chanceux') {
-      const offered: string[] = Array.isArray(pending?.data?.offered)
-        ? pending.data.offered.map((v: any) => String(v))
-        : Array.isArray(pending?.data?.cards)
-          ? pending.data.cards.map((v: any) => String(v))
+      const offered: string[] = Array.isArray(pendingData.offered)
+        ? pendingData.offered.map((v) => String(v))
+        : Array.isArray(pendingData.cards)
+          ? pendingData.cards.map((v) => String(v))
           : [];
       const uniqueOffered: string[] = Array.from(new Set(offered));
       const chosen: string = uniqueOffered[index] ?? '';
@@ -3190,16 +3145,16 @@ export class PanierExpressService extends AbstractGameService {
         (_v: string, i: number) => i !== index,
       );
       if (unchosen.length) {
-        const metaNow = this.getMetadata(next) as any;
+        const metaNow = this.getMetadata(next);
         next = {
           ...next,
           metadata: {
             ...metaNow,
             decks: this.deckPool.discardMany<string>(
-              metaNow.decks ?? {},
+              metaNow.decks,
               'courses-bonus',
               unchosen,
-            ) as any,
+            ) as PanierExpressDeckPool,
           },
         };
       }
@@ -3220,8 +3175,8 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     if (kind === 'event.discard') {
-      const cards = Array.isArray(pending?.data?.cards)
-        ? pending.data.cards.map((v: any) => String(v))
+      const cards = Array.isArray(pendingData.cards)
+        ? pendingData.cards.map((v) => String(v))
         : [];
       const chosen = cards[index] ?? '';
       let next = clearPending(state);
@@ -3241,15 +3196,15 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     if (kind === 'event.producteur_genereux.choose_card') {
-      const cards = Array.isArray(pending?.data?.cards)
-        ? pending.data.cards.map((v: any) => String(v))
+      const cards = Array.isArray(pendingData.cards)
+        ? pendingData.cards.map((v) => String(v))
         : [];
       const chosen = cards[index] ?? '';
-      const targets = Array.isArray(pending?.data?.targets)
-        ? pending.data.targets
-        : [];
+      const targets = toUnknownArray(pendingData.targets).map((item) =>
+        asRecord(item),
+      );
       const choices = targets
-        .map((t: any) => String(t?.username ?? ''))
+        .map((t) => toText(t.username))
         .filter((v: string) => v.length > 0);
       return {
         ...state,
@@ -3266,19 +3221,19 @@ export class PanierExpressService extends AbstractGameService {
             targets,
           },
         },
-      } as any;
+      };
     }
 
     if (kind === 'event.producteur_genereux.choose_target') {
-      const targets = Array.isArray(pending?.data?.targets)
-        ? pending.data.targets
-        : [];
+      const targets = toUnknownArray(pendingData.targets).map((item) =>
+        asRecord(item),
+      );
       const chosenTarget = targets[index];
-      const targetPlayerId = Number(chosenTarget?.playerId);
-      const offer = String(pending?.data?.offer ?? '').trim();
-      const give = String(pending?.data?.give ?? '').trim();
+      const targetPlayerId = Number(chosenTarget.playerId);
+      const offer = toText(pendingData.offer).trim();
+      const give = toText(pendingData.give).trim();
       const card = offer || give;
-      const offerFromInventory = Boolean(pending?.data?.offerFromInventory);
+      const offerFromInventory = Boolean(pendingData.offerFromInventory);
       if (!Number.isFinite(targetPlayerId) || !card) {
         return clearPending(state);
       }
@@ -3307,18 +3262,16 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     if (kind === 'event.panier_bonus.choose_target') {
-      const targets = Array.isArray(pending?.data?.targets)
-        ? pending.data.targets
-        : [];
+      const targets = toUnknownArray(pendingData.targets).map((item) =>
+        asRecord(item),
+      );
       const chosenTarget = targets[index];
-      const targetPlayerId = Number(chosenTarget?.playerId);
+      const targetPlayerId = Number(chosenTarget.playerId);
       if (!Number.isFinite(targetPlayerId)) return clearPending(state);
 
       let next = clearPending(state);
-      const target = (next.players ?? []).find(
-        (p: any) => p.id === targetPlayerId,
-      ) as any;
-      const cards = this.utils.toStringArray(target?.inventory);
+      const target = this.getPlayers(next).find((p) => p.id === targetPlayerId);
+      const cards = this.utils.toStringArray(target?.inventory ?? []);
       if (!cards.length) {
         next = this.core.appendLog(
           next,
@@ -3326,7 +3279,7 @@ export class PanierExpressService extends AbstractGameService {
         );
         return this.phaseFlow.advanceTurn(next);
       }
-      const metaRng = this.random.createMetaRng(this.getMetadata(next) as any);
+      const metaRng = this.random.createMetaRng(this.getMetadata(next));
       const picked = this.random.pickOne(metaRng.getMeta(), cards);
       next = { ...next, metadata: picked.meta };
       const stolen = String(picked.value ?? '').trim();
@@ -3350,16 +3303,14 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     if (kind === 'event.echange_spontane.choose_target') {
-      const targets = Array.isArray(pending?.data?.targets)
-        ? pending.data.targets
-        : [];
+      const targets = toUnknownArray(pendingData.targets).map((item) =>
+        asRecord(item),
+      );
       const chosenTarget = targets[index];
-      const targetPlayerId = Number(chosenTarget?.playerId);
+      const targetPlayerId = Number(chosenTarget.playerId);
       if (!Number.isFinite(targetPlayerId)) return clearPending(state);
-      const me = (state.players ?? []).find(
-        (p: any) => p.id === actorId,
-      ) as any;
-      const inv = this.utils.toStringArray(me?.inventory);
+      const me = this.getPlayers(state).find((p) => p.id === actorId);
+      const inv = this.utils.toStringArray(me?.inventory ?? []);
       if (!inv.length) return clearPending(state);
       return {
         ...state,
@@ -3370,21 +3321,19 @@ export class PanierExpressService extends AbstractGameService {
           label: 'Choisissez la carte à donner (inventaire), puis Entrée.',
           choices: inv,
           data: { kind: 'event.echange_spontane.choose_give', targetPlayerId },
-        } as any,
+        },
       };
     }
 
     if (kind === 'event.echange_spontane.choose_give') {
-      const targetPlayerId = Number(pending?.data?.targetPlayerId);
+      const targetPlayerId = Number(pendingData.targetPlayerId);
       if (!Number.isFinite(targetPlayerId)) return clearPending(state);
-      const give = String(choices[index] ?? '').trim();
+      const give = toText(choices[index]).trim();
       if (!give) return clearPending(state);
 
       let next = clearPending(state);
-      const target = (next.players ?? []).find(
-        (p: any) => p.id === targetPlayerId,
-      ) as any;
-      const targetInv = this.utils.toStringArray(target?.inventory);
+      const target = this.getPlayers(next).find((p) => p.id === targetPlayerId);
+      const targetInv = this.utils.toStringArray(target?.inventory ?? []);
       if (!targetInv.length) {
         next = this.core.appendLog(
           next,
@@ -3392,7 +3341,7 @@ export class PanierExpressService extends AbstractGameService {
         );
         return this.phaseFlow.advanceTurn(next);
       }
-      const metaRng = this.random.createMetaRng(this.getMetadata(next) as any);
+      const metaRng = this.random.createMetaRng(this.getMetadata(next));
       const picked = this.random.pickOne(metaRng.getMeta(), targetInv);
       next = { ...next, metadata: picked.meta };
       const take = String(picked.value ?? '').trim();
@@ -3420,12 +3369,12 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     if (kind === 'event.conseil_voisinage.pick') {
-      const candidates = Array.isArray(pending?.data?.candidates)
-        ? pending.data.candidates
-        : [];
+      const candidates = toUnknownArray(pendingData.candidates).map((item) =>
+        asRecord(item),
+      );
       const chosen = candidates[index];
-      const targetPlayerId = Number(chosen?.targetPlayerId);
-      const card = String(chosen?.card ?? '').trim();
+      const targetPlayerId = Number(chosen.targetPlayerId);
+      const card = toText(chosen.card).trim();
       if (!Number.isFinite(targetPlayerId) || !card) return clearPending(state);
 
       let next = clearPending(state);
@@ -3435,15 +3384,13 @@ export class PanierExpressService extends AbstractGameService {
         next = addCourseToPlayer(next, actorId, card);
       }
 
-      const me = (next.players ?? []).find((p: any) => p.id === actorId) as any;
-      const myInv = this.utils.toStringArray(me?.inventory);
+      const me = this.getPlayers(next).find((p) => p.id === actorId);
+      const myInv = this.utils.toStringArray(me?.inventory ?? []);
       if (myInv.length) {
-        const metaRng = this.random.createMetaRng(
-          this.getMetadata(next) as any,
-        );
+        const metaRng = this.random.createMetaRng(this.getMetadata(next));
         const picked = this.random.pickOne(metaRng.getMeta(), myInv);
         next = { ...next, metadata: picked.meta };
-        const give = String(picked.value ?? '').trim();
+        const give = toText(picked.value).trim();
         if (give) {
           const removedGive = removeCourseFromPlayer(next, actorId, give);
           next = removedGive.state;
@@ -3466,12 +3413,12 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     if (kind === 'event.troc_improvise') {
-      const order = Array.isArray(pending?.data?.order)
-        ? pending.data.order.map((v: any) => Number(v))
+      const order = Array.isArray(pendingData.order)
+        ? pendingData.order.map((v) => Number(v))
         : [];
-      const cursor = Number(pending?.data?.cursor);
-      const processed = Number(pending?.data?.processed);
-      const give = String(choices[index] ?? '').trim();
+      const cursor = Number(pendingData.cursor);
+      const processed = Number(pendingData.processed);
+      const give = toText(choices[index]).trim();
       if (
         !order.length ||
         !Number.isFinite(cursor) ||
@@ -3505,10 +3452,8 @@ export class PanierExpressService extends AbstractGameService {
       let nextProcessed = processed + 1;
       while (nextProcessed < order.length) {
         const pid = Number(order[nextCursor]);
-        const player = (next.players ?? []).find(
-          (p: any) => p.id === pid,
-        ) as any;
-        const inv = this.utils.toStringArray(player?.inventory);
+        const player = this.getPlayers(next).find((p) => p.id === pid);
+        const inv = this.utils.toStringArray(player?.inventory ?? []);
         if (inv.length) {
           return {
             ...next,
@@ -3525,7 +3470,7 @@ export class PanierExpressService extends AbstractGameService {
                 cursor: nextCursor,
                 processed: nextProcessed,
               },
-            } as any,
+            },
           };
         }
         nextCursor = (nextCursor + 1) % order.length;
@@ -3540,11 +3485,12 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     if (kind === 'event.changement_de_saison') {
-      const order = Array.isArray(pending?.data?.order)
-        ? pending.data.order.map((v: any) => Number(v))
+      const pendingData = asRecord(pending?.data);
+      const order = Array.isArray(pendingData.order)
+        ? pendingData.order.map((v) => Number(v))
         : [];
-      const cursor = Number(pending?.data?.cursor);
-      const processed = Number(pending?.data?.processed);
+      const cursor = Number(pendingData.cursor);
+      const processed = Number(pendingData.processed);
       const chosen = String(choices[index] ?? '').trim();
       if (
         !order.length ||
@@ -3575,15 +3521,16 @@ export class PanierExpressService extends AbstractGameService {
             processed,
           },
         },
-      } as any;
+      };
     }
 
     if (kind === 'tile.move_to_stand_choice') {
-      const targets = Array.isArray(pending?.data?.targets)
-        ? pending.data.targets
+      const tileData = asRecord(pendingData);
+      const targets = Array.isArray(pendingData.targets)
+        ? tileData.targets
         : [];
-      const target = targets[index];
-      if (!target || !Number.isFinite(Number(target.position))) {
+      const target = asRecord(targets[index]);
+      if (!targets[index] || !Number.isFinite(Number(target.position))) {
         return clearPending(state);
       }
       const ensured = this.ensureMetadata(state);
@@ -3619,20 +3566,20 @@ export class PanierExpressService extends AbstractGameService {
         `[Panier Express] ${this.utils.playerName(
           state,
           actorId,
-        )} choisit de rejoindre ${target.label} (case ${target.caseNumber}).`,
+        )} choisit de rejoindre ${toText(target.label)} (case ${Number(target.caseNumber)}).`,
       );
       next = this.movePlayer(next, actorId, delta);
       next = this.resolveTile(next, actorId);
       next = this.appendActionLog(next, actorId, 'tile', {
         tile: 'move_to_stand_choice',
-        standId: target.standId ?? undefined,
-        caseNumber: target.caseNumber,
+        standId: toText(target.standId) || undefined,
+        caseNumber: Number(target.caseNumber),
       });
       return this.advanceAfterDraw(next);
     }
 
     if (kind === 'tile.move_choice') {
-      const delta = Math.max(1, Math.abs(Number(pending?.data?.delta ?? 2)));
+      const delta = Math.max(1, Math.abs(Number(pendingData.delta ?? 2)));
       const signed = index === 0 ? delta : -delta;
       let next = clearPending(state);
       next = this.applyMoveDelta(next, actorId, signed);
@@ -3644,14 +3591,12 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     if (kind === 'exchange.troc_rapide.choose_give') {
-      const targetPlayerId = Number(pending?.data?.targetPlayerId);
+      const targetPlayerId = Number(pendingData.targetPlayerId);
       if (!Number.isFinite(targetPlayerId)) return clearPending(state);
-      const give = String(choices[index] ?? '').trim();
+      const give = toText(choices[index]).trim();
       if (!give) return clearPending(state);
       let next = clearPending(state);
-      const target = (next.players ?? []).find(
-        (p: any) => p.id === targetPlayerId,
-      ) as any;
+      const target = this.getPlayers(next).find((p) => p.id === targetPlayerId);
       const targetInv = this.utils.toStringArray(target?.inventory);
       if (!targetInv.length) {
         next = this.core.appendLog(
@@ -3660,10 +3605,10 @@ export class PanierExpressService extends AbstractGameService {
         );
         return this.phaseFlow.advanceTurn(next);
       }
-      const metaRng = this.random.createMetaRng(this.getMetadata(next) as any);
+      const metaRng = this.random.createMetaRng(this.getMetadata(next));
       const picked = this.random.pickOne(metaRng.getMeta(), targetInv);
       next = { ...next, metadata: picked.meta };
-      const take = String(picked.value ?? '').trim();
+      const take = toText(picked.value).trim();
       const removedGive = removeCourseFromPlayer(next, actorId, give);
       next = removedGive.state;
       const removedTake = removeCourseFromPlayer(next, targetPlayerId, take);
@@ -3707,16 +3652,16 @@ export class PanierExpressService extends AbstractGameService {
     };
 
     if (kind === 'exchange.strategique.choose_target') {
-      const exchangeId = pending?.data?.exchangeId ?? null;
-      const targets = Array.isArray(pending?.data?.targets)
-        ? pending.data.targets
+      const exchangeId = pendingData.exchangeId ?? null;
+      const targets = Array.isArray(pendingData.targets)
+        ? pendingData.targets
         : [];
-      const chosenTarget = targets[index];
+      const chosenTarget = asRecord(targets[index]);
       const targetPlayerId = Number(chosenTarget?.playerId);
       if (!Number.isFinite(targetPlayerId)) return clearPending(state);
-      const target = (state.players ?? []).find(
-        (p: any) => p.id === targetPlayerId,
-      ) as any;
+      const target = this.getPlayers(state).find(
+        (p) => p.id === targetPlayerId,
+      );
       const targetInv = this.utils.toStringArray(target?.inventory);
       if (!targetInv.length) {
         let next = clearPending(state);
@@ -3741,21 +3686,19 @@ export class PanierExpressService extends AbstractGameService {
             targetPlayerId,
             takeChoices: targetInv,
           },
-        } as any,
+        },
       };
     }
 
     if (kind === 'exchange.strategique.choose_take') {
-      const exchangeId = pending?.data?.exchangeId ?? null;
-      const targetPlayerId = Number(pending?.data?.targetPlayerId);
-      const takeChoices = Array.isArray(pending?.data?.takeChoices)
-        ? pending.data.takeChoices.map((v: any) => String(v))
+      const exchangeId = pendingData.exchangeId ?? null;
+      const targetPlayerId = Number(pendingData.targetPlayerId);
+      const takeChoices = Array.isArray(pendingData.takeChoices)
+        ? pendingData.takeChoices.map((v) => String(v))
         : [];
-      const take = String(takeChoices[index] ?? '').trim();
+      const take = toText(takeChoices[index]).trim();
       if (!Number.isFinite(targetPlayerId) || !take) return clearPending(state);
-      const me = (state.players ?? []).find(
-        (p: any) => p.id === actorId,
-      ) as any;
+      const me = this.getPlayers(state).find((p) => p.id === actorId);
       const myInv = this.utils.toStringArray(me?.inventory);
       if (!myInv.length) return clearPending(state);
       return {
@@ -3772,15 +3715,15 @@ export class PanierExpressService extends AbstractGameService {
             targetPlayerId,
             take,
           },
-        } as any,
+        },
       };
     }
 
     if (kind === 'exchange.strategique.choose_give') {
-      const exchangeId = pending?.data?.exchangeId ?? null;
-      const targetPlayerId = Number(pending?.data?.targetPlayerId);
-      const take = String(pending?.data?.take ?? '').trim();
-      const give = String(choices[index] ?? '').trim();
+      const exchangeId = pendingData.exchangeId ?? null;
+      const targetPlayerId = Number(pendingData.targetPlayerId);
+      const take = toText(pendingData.take).trim();
+      const give = toText(choices[index]).trim();
       if (!Number.isFinite(targetPlayerId) || !take || !give)
         return clearPending(state);
       return {
@@ -3799,16 +3742,16 @@ export class PanierExpressService extends AbstractGameService {
             give,
             take,
           },
-        } as any,
+        },
       };
     }
 
     if (kind === 'exchange.strategique.confirm') {
-      const initiatorId = Number(pending?.data?.initiatorId);
-      const targetPlayerId = Number(pending?.data?.targetPlayerId);
-      const give = String(pending?.data?.give ?? '').trim();
-      const take = String(pending?.data?.take ?? '').trim();
-      const exchangeId = pending?.data?.exchangeId ?? null;
+      const initiatorId = Number(pendingData.initiatorId);
+      const targetPlayerId = Number(pendingData.targetPlayerId);
+      const give = toText(pendingData.give).trim();
+      const take = toText(pendingData.take).trim();
+      const exchangeId = pendingData.exchangeId ?? null;
       if (
         !Number.isFinite(initiatorId) ||
         !Number.isFinite(targetPlayerId) ||
@@ -3818,14 +3761,14 @@ export class PanierExpressService extends AbstractGameService {
         return clearPending(state);
       }
 
-      const meta = this.getMetadata(state) as any;
-      const alreadyResolved = Array.isArray(meta?.actionLog)
+      const meta = this.getMetadata(state);
+      const alreadyResolved = Array.isArray(meta.actionLog)
         ? meta.actionLog.some(
-            (e: any) =>
-              e?.type === 'exchange' &&
-              e?.payload?.kind === 'exchange.strategique.confirm' &&
+            (entry) =>
+              entry?.type === 'exchange' &&
+              asRecord(entry.payload).kind === 'exchange.strategique.confirm' &&
               exchangeId != null &&
-              e?.payload?.exchangeId === exchangeId,
+              asRecord(entry.payload).exchangeId === exchangeId,
           )
         : false;
 
@@ -3865,17 +3808,15 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     if (kind === 'exchange.troc_fruit_legume.choose_target') {
-      const targets = Array.isArray(pending?.data?.targets)
-        ? pending.data.targets
-        : [];
+      const targets = toUnknownArray(pendingData.targets).map((item) =>
+        asRecord(item),
+      );
       const chosenTarget = targets[index];
-      const targetPlayerId = Number(chosenTarget?.playerId);
+      const targetPlayerId = Number(chosenTarget.playerId);
       if (!Number.isFinite(targetPlayerId)) return clearPending(state);
       const { fruit } = buildCourseSets();
-      const me = (state.players ?? []).find(
-        (p: any) => p.id === actorId,
-      ) as any;
-      const myInv = this.utils.toStringArray(me?.inventory);
+      const me = this.getPlayers(state).find((p) => p.id === actorId);
+      const myInv = this.utils.toStringArray(me?.inventory ?? []);
       const fruitCards = myInv.filter((c) => fruit.has(c));
       if (!fruitCards.length) {
         let next = clearPending(state);
@@ -3897,20 +3838,18 @@ export class PanierExpressService extends AbstractGameService {
             kind: 'exchange.troc_fruit_legume.choose_give',
             targetPlayerId,
           },
-        } as any,
+        },
       };
     }
 
     if (kind === 'exchange.troc_fruit_legume.choose_give') {
-      const targetPlayerId = Number(pending?.data?.targetPlayerId);
-      const give = String(choices[index] ?? '').trim();
+      const targetPlayerId = Number(pendingData.targetPlayerId);
+      const give = toText(choices[index]).trim();
       if (!Number.isFinite(targetPlayerId) || !give) return clearPending(state);
       let next = clearPending(state);
       const { veg } = buildCourseSets();
-      const target = (next.players ?? []).find(
-        (p: any) => p.id === targetPlayerId,
-      ) as any;
-      const targetInv = this.utils.toStringArray(target?.inventory);
+      const target = this.getPlayers(next).find((p) => p.id === targetPlayerId);
+      const targetInv = this.utils.toStringArray(target?.inventory ?? []);
       const vegCards = targetInv.filter((c) => veg.has(c));
       if (!vegCards.length) {
         next = this.core.appendLog(
@@ -3919,10 +3858,10 @@ export class PanierExpressService extends AbstractGameService {
         );
         return this.phaseFlow.advanceTurn(next);
       }
-      const metaRng = this.random.createMetaRng(this.getMetadata(next) as any);
+      const metaRng = this.random.createMetaRng(this.getMetadata(next));
       const picked = this.random.pickOne(metaRng.getMeta(), vegCards);
       next = { ...next, metadata: picked.meta };
-      const take = String(picked.value ?? '').trim();
+      const take = toText(picked.value).trim();
       const removedGive = removeCourseFromPlayer(next, actorId, give);
       next = removedGive.state;
       const removedTake = removeCourseFromPlayer(next, targetPlayerId, take);
@@ -3938,17 +3877,15 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     if (kind === 'exchange.echange_saison.choose_target') {
-      const targets = Array.isArray(pending?.data?.targets)
-        ? pending.data.targets
-        : [];
+      const targets = toUnknownArray(pendingData.targets).map((item) =>
+        asRecord(item),
+      );
       const chosenTarget = targets[index];
-      const targetPlayerId = Number(chosenTarget?.playerId);
+      const targetPlayerId = Number(chosenTarget.playerId);
       if (!Number.isFinite(targetPlayerId)) return clearPending(state);
       const { summerFruit } = buildCourseSets();
-      const me = (state.players ?? []).find(
-        (p: any) => p.id === actorId,
-      ) as any;
-      const myInv = this.utils.toStringArray(me?.inventory);
+      const me = this.getPlayers(state).find((p) => p.id === actorId);
+      const myInv = this.utils.toStringArray(me?.inventory ?? []);
       const fruitCards = myInv.filter((c) => summerFruit.has(c));
       if (!fruitCards.length) {
         let next = clearPending(state);
@@ -3971,20 +3908,18 @@ export class PanierExpressService extends AbstractGameService {
           label: "Choisissez le fruit d'été à donner, puis Entrée.",
           choices: fruitCards,
           data: { kind: 'exchange.echange_saison.choose_give', targetPlayerId },
-        } as any,
+        },
       };
     }
 
     if (kind === 'exchange.echange_saison.choose_give') {
-      const targetPlayerId = Number(pending?.data?.targetPlayerId);
-      const give = String(choices[index] ?? '').trim();
+      const targetPlayerId = Number(pendingData.targetPlayerId);
+      const give = toText(choices[index]).trim();
       if (!Number.isFinite(targetPlayerId) || !give) return clearPending(state);
       let next = clearPending(state);
       const { winterVeg } = buildCourseSets();
-      const target = (next.players ?? []).find(
-        (p: any) => p.id === targetPlayerId,
-      ) as any;
-      const targetInv = this.utils.toStringArray(target?.inventory);
+      const target = this.getPlayers(next).find((p) => p.id === targetPlayerId);
+      const targetInv = this.utils.toStringArray(target?.inventory ?? []);
       const winterVegCards = targetInv.filter((c) => winterVeg.has(c));
       if (!winterVegCards.length) {
         next = this.core.appendLog(
@@ -3993,10 +3928,10 @@ export class PanierExpressService extends AbstractGameService {
         );
         return this.phaseFlow.advanceTurn(next);
       }
-      const metaRng = this.random.createMetaRng(this.getMetadata(next) as any);
+      const metaRng = this.random.createMetaRng(this.getMetadata(next));
       const picked = this.random.pickOne(metaRng.getMeta(), winterVegCards);
       next = { ...next, metadata: picked.meta };
-      const take = String(picked.value ?? '').trim();
+      const take = toText(picked.value).trim();
       const removedGive = removeCourseFromPlayer(next, actorId, give);
       next = removedGive.state;
       const removedTake = removeCourseFromPlayer(next, targetPlayerId, take);
@@ -4012,7 +3947,7 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     if (kind === 'exchange.marche_noir.discard') {
-      const chosen = String(choices[index] ?? '').trim();
+      const chosen = toText(choices[index]).trim();
       let next = clearPending(state);
       if (chosen) {
         next = discardCourse(next, actorId, chosen);
@@ -4029,12 +3964,12 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     if (kind === 'exchange.choose_target') {
-      const targets = Array.isArray(pending?.data?.targets)
-        ? pending.data.targets
-        : [];
+      const targets = toUnknownArray(pendingData.targets).map((item) =>
+        asRecord(item),
+      );
       const chosen = targets[index];
-      const targetPlayerId = Number(chosen?.playerId);
-      const card = String(pending?.data?.card ?? '').trim();
+      const targetPlayerId = Number(chosen.playerId);
+      const card = toText(pendingData.card).trim();
       if (!Number.isFinite(targetPlayerId)) return clearPending(state);
       const next = clearPending(state);
       return this.exchangeSvc.applyExchangeCard(
@@ -4046,9 +3981,9 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     if (kind === 'exchange.impose.choose_card') {
-      const initiatorId = Number(pending?.data?.initiatorId);
-      const cards = Array.isArray(pending?.data?.cards)
-        ? pending.data.cards.map((v: any) => String(v))
+      const initiatorId = Number(pendingData.initiatorId);
+      const cards = Array.isArray(pendingData.cards)
+        ? pendingData.cards.map((v) => String(v))
         : [];
       const give = cards[index] ?? '';
       if (!Number.isFinite(initiatorId) || !give) return clearPending(state);
@@ -4060,17 +3995,17 @@ export class PanierExpressService extends AbstractGameService {
         next = addCourseToPlayer(next, initiatorId, give);
       }
       try {
-        const initiator = (next.players ?? []).find(
-          (p: any) => p.id === initiatorId,
-        ) as any;
-        const initiatorInv = this.utils.toStringArray(initiator?.inventory);
+        const initiator = this.getPlayers(next).find(
+          (p) => p.id === initiatorId,
+        );
+        const initiatorInv = this.utils.toStringArray(
+          initiator?.inventory ?? [],
+        );
         if (initiatorInv.length > 0) {
-          const metaRng = this.random.createMetaRng(
-            this.getMetadata(next) as any,
-          );
+          const metaRng = this.random.createMetaRng(this.getMetadata(next));
           const picked = this.random.pickOne(metaRng.getMeta(), initiatorInv);
           next = { ...next, metadata: picked.meta };
-          const back = String(picked.value ?? '').trim();
+          const back = toText(picked.value).trim();
           if (back) {
             const removedBack = removeCourseFromPlayer(next, initiatorId, back);
             next = removedBack.state;
@@ -4107,9 +4042,7 @@ export class PanierExpressService extends AbstractGameService {
     action: GameSingleActionDto,
   ): GameStateEntity {
     const playerId =
-      typeof (action.meta as any)?.actorId === 'number'
-        ? (action.meta as any).actorId
-        : (state.turn?.currentPlayerId ?? null);
+      this.getActorIdFromAction(action) ?? state.turn?.currentPlayerId ?? null;
     if (typeof playerId !== 'number') return state;
     const meta = this.getMetadata(state);
     const quizState = meta.quiz;
@@ -4164,13 +4097,6 @@ export class PanierExpressService extends AbstractGameService {
     return this.phaseFlow.advanceTurn(next);
   }
 
-  private drawBonusCourse(
-    state: GameStateEntity,
-    playerId: number,
-  ): GameStateEntity {
-    return this.drawSvc.drawCourse(state, playerId, 'bonus');
-  }
-
   private applyMoveDelta(
     state: GameStateEntity,
     playerId: number,
@@ -4202,7 +4128,7 @@ export class PanierExpressService extends AbstractGameService {
         label: `Choisissez : avancer ou reculer de ${steps} cases, puis Entrée.`,
         choices: [`Avancer (+${steps})`, `Reculer (-${steps})`],
         data: { kind: 'tile.move_choice', delta: steps },
-      } as any,
+      },
     };
   }
 
@@ -4272,7 +4198,7 @@ export class PanierExpressService extends AbstractGameService {
             caseNumber: entry.caseNumber,
           })),
         },
-      } as any,
+      },
     };
   }
 
@@ -4373,148 +4299,6 @@ export class PanierExpressService extends AbstractGameService {
     };
   }
 
-  private applyVictory(state: GameStateEntity): GameStateEntity {
-    if ((state.status || '').toLowerCase() === 'finished') return state;
-    const meta = this.getMetadata(state);
-    const result = this.victory.evaluate(state, PANIER_EXPRESS_VICTORY);
-    if (!result || !result.finished) return state;
-    const winnerId =
-      typeof result.winnerId === 'number' ? result.winnerId : meta.winnerId;
-    const nextMeta: PanierExpressMetadata = {
-      ...meta,
-      winnerId: winnerId ?? null,
-    };
-    const nextState: GameStateEntity = {
-      ...state,
-      metadata: nextMeta,
-      status: 'finished',
-    };
-    const winnerName =
-      winnerId != null
-        ? this.utils.playerName(state, winnerId)
-        : 'Partie terminée';
-    const logged = this.core.appendLog(
-      nextState,
-      `[Panier Express] ${winnerName} remporte la partie !`,
-    );
-    return this.appendActionLog(logged, winnerId ?? null, 'victory', {
-      conditionId: result.conditionId,
-    });
-  }
-
-  private advancePhases(state: GameStateEntity): GameStateEntity {
-    let next = state;
-    for (const phase of this.phaseOrder) {
-      if (phase.id === 'check_victory') {
-        next = this.applyVictory(next);
-      } else if (phase.onEnter) {
-        next = phase.onEnter(next);
-      }
-      if ((next.status || '').toLowerCase() === 'finished') break;
-    }
-    return next;
-  }
-
-  private advanceTurn(state: GameStateEntity): GameStateEntity {
-    const players = state.players ?? [];
-    if (players.length === 0) return state;
-    const meta = this.getMetadata(state);
-    const currentId = state.turn?.currentPlayerId ?? null;
-    const currentIndex =
-      currentId != null
-        ? players.findIndex((p) => p.id === currentId)
-        : state.turnIndex;
-    const next = this.turns.nextTurn(
-      players,
-      currentIndex >= 0 ? currentIndex : state.turnIndex,
-      meta.statuses.skipTurn,
-    );
-    playingLog('panier.advanceTurn', {
-      roomId: (state.metadata as any)?.roomId ?? null,
-      gameType: (state.metadata as any)?.gameType ?? null,
-      userId: currentId,
-      type: 'advance_turn',
-      currentId,
-      currentIndex,
-      nextTurnIndex: next.turnIndex,
-      nextCurrentPlayerId: next.currentPlayerId,
-      skipTurn: next.skipTurn,
-    });
-
-    const revealInventory: Record<number, number> = {};
-    Object.entries(meta.statuses?.revealInventory ?? {}).forEach(
-      ([pid, val]) => {
-        const nextVal = Math.max(0, Number(val) - 1);
-        if (nextVal > 0) {
-          revealInventory[Number(pid)] = nextVal;
-        }
-      },
-    );
-
-    const revealShoppingList: Record<number, number> = {};
-    Object.entries((meta.statuses as any)?.revealShoppingList ?? {}).forEach(
-      ([pid, val]) => {
-        const nextVal = Math.max(0, Number(val) - 1);
-        if (nextVal > 0) {
-          revealShoppingList[Number(pid)] = nextVal;
-        }
-      },
-    );
-
-    const noDrawCourses: Record<number, number> = {};
-    Object.entries((meta.statuses as any)?.noDrawCourses ?? {}).forEach(
-      ([pid, val]) => {
-        const nextVal = Math.max(0, Number(val) - 1);
-        if (nextVal > 0) {
-          noDrawCourses[Number(pid)] = nextVal;
-        }
-      },
-    );
-
-    let movementDirection: 1 | -1 = meta.movementDirection === -1 ? -1 : 1;
-    let movementDirectionOwnerId =
-      typeof meta.movementDirectionOwnerId === 'number'
-        ? meta.movementDirectionOwnerId
-        : null;
-    if (
-      movementDirection === -1 &&
-      movementDirectionOwnerId != null &&
-      next.currentPlayerId === movementDirectionOwnerId
-    ) {
-      movementDirection = 1;
-      movementDirectionOwnerId = null;
-    }
-
-    const nextMeta: PanierExpressMetadata = {
-      ...meta,
-      movementDirection,
-      movementDirectionOwnerId,
-      statuses: {
-        ...meta.statuses,
-        skipTurn: next.skipTurn,
-        revealInventory,
-        revealShoppingList,
-        noDrawCourses,
-      } as any,
-    };
-    return {
-      ...state,
-      metadata: nextMeta,
-      turnIndex: next.turnIndex,
-      turn: {
-        currentPlayerId: next.currentPlayerId,
-        direction: movementDirection,
-        label:
-          next.currentPlayerId != null
-            ? `Tour ${next.turnIndex + 1} : ${this.utils.playerName(
-                state,
-                next.currentPlayerId,
-              )}`
-            : undefined,
-      },
-    };
-  }
-
   private drawFromPool<T = unknown>(
     meta: PanierExpressMetadata,
     key: string,
@@ -4544,24 +4328,29 @@ export class PanierExpressService extends AbstractGameService {
     return { ...state, metadata: { ...meta, actionLog } };
   }
 
-  private injectQuizAnswer(
-    actions: GameSingleActionDto[],
-    meta: PanierExpressMetadata,
-    playerId: number,
-  ): GameSingleActionDto[] {
-    if (!Array.isArray(actions)) return [];
-    const pending = meta.quiz?.pending?.[playerId];
-    const choices = Array.isArray(pending?.choices) ? pending?.choices : [];
-    const answer = typeof pending?.answer === 'string' ? pending.answer : null;
-    if (!pending || (!choices.length && !answer)) return actions;
-    const effectiveAnswer = answer ?? choices[0];
-    return actions.map((a) => {
-      if (!a || (a.type || '').toLowerCase() !== 'answer_quiz') return a;
-      return {
-        ...a,
-        payload: { ...(a.payload ?? {}), answer: effectiveAnswer },
-      };
-    });
+  private getMetadataRecord(state: GameStateEntity): Record<string, unknown> {
+    return asRecord(state.metadata);
+  }
+
+  private getPawnText(player: unknown): string {
+    const record = asRecord(player);
+    return toText(record.pawn).trim();
+  }
+
+  private getPlayers(state: GameStateEntity): PanierExpressPlayer[] {
+    return (state.players ?? []) as PanierExpressPlayer[];
+  }
+
+  private getActorIdFromAction(action: GameSingleActionDto): number | null {
+    const meta = asRecord(action.meta);
+    return typeof meta.actorId === 'number' ? meta.actorId : null;
+  }
+
+  private getPendingRecord(
+    state: GameStateEntity,
+  ): Record<string, unknown> | null {
+    if (state.pending == null) return null;
+    return asRecord(state.pending);
   }
 
   private getMetadata(state: GameStateEntity): PanierExpressMetadata {
@@ -4577,7 +4366,7 @@ export class PanierExpressService extends AbstractGameService {
     }
     if (typeof value === 'string') {
       try {
-        const parsed = JSON.parse(value);
+        const parsed: unknown = JSON.parse(value);
         if (Array.isArray(parsed)) {
           return parsed
             .map((v) => (v == null ? '' : String(v)))
@@ -4627,4 +4416,38 @@ export class PanierExpressService extends AbstractGameService {
     }
     return fallback;
   }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  if (value == null || typeof value !== 'object') return {};
+  return value as Record<string, unknown>;
+}
+
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  return '';
+}
+
+function toUnknownArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function toDrawQueueEntries(
+  value: unknown,
+): Array<{ playerId: number; standId?: string }> {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => asRecord(item))
+    .map((item) => ({
+      playerId: Number(item.playerId),
+      standId: toText(item.standId).trim() || undefined,
+    }))
+    .filter((entry) => Number.isFinite(entry.playerId));
+}
+
+function asStringDeckPool(pool: PanierExpressDeckPool): DeckPoolState<string> {
+  return pool as DeckPoolState<string>;
 }

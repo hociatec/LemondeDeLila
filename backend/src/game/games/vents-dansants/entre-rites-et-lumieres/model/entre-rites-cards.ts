@@ -25,7 +25,11 @@ export interface RiteSpecialCard {
 
 export type RiteCardDefinition = RiteFamilyCard | RiteSpecialCard;
 
-const FAMILY_DEFINITIONS: { id: RiteFamilyId; name: string; members: string[] }[] = [
+const FAMILY_DEFINITIONS: {
+  id: RiteFamilyId;
+  name: string;
+  members: string[];
+}[] = [
   {
     id: 'symboles-sacres',
     name: 'Symboles Sacrés',
@@ -114,7 +118,8 @@ const SPECIALS: RiteSpecialCard[] = [
     id: 'benediction',
     type: 'special',
     name: 'La Bénédiction',
-    description: 'Tous les autres joueurs vous offrent une carte de leur choix.',
+    description:
+      'Tous les autres joueurs vous offrent une carte de leur choix.',
     effect: 'collect_from_others',
   },
   {
@@ -152,22 +157,23 @@ const SPECIALS: RiteSpecialCard[] = [
     id: 'aube-nouvelle',
     type: 'special',
     name: 'L’Aube Nouvelle',
-    description:
-      'Chaque joueur défausse une carte puis pioche deux cartes.',
+    description: 'Chaque joueur défausse une carte puis pioche deux cartes.',
     effect: 'reshuffle_cycle',
   },
   {
     id: 'etoile-orient',
     type: 'special',
     name: 'L’Étoile de l’Orient',
-    description: 'Personne ne peut demander de cartes ni jouer de pouvoirs pendant deux tours.',
+    description:
+      'Personne ne peut demander de cartes ni jouer de pouvoirs pendant deux tours.',
     effect: 'peace_turns',
   },
   {
     id: 'chant-coq',
     type: 'special',
     name: 'Le Chant du Coq',
-    description: 'Chaque joueur révèle sa main et vous pouvez choisir une carte révélée.',
+    description:
+      'Chaque joueur révèle sa main et vous pouvez choisir une carte révélée.',
     effect: 'reveal_and_steal',
   },
 ];

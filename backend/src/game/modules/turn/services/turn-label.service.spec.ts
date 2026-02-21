@@ -88,6 +88,8 @@ describe('TurnLabelService', () => {
       } as any,
     });
 
-    expect(service.compute(state, 'jeu-oie')).toBe("C'est à Olaf de choisir son pion.");
+    expect(service.compute(state, 'jeu-oie')).toBe(
+      "C'est à Olaf de choisir son pion.",
+    );
   });
 });

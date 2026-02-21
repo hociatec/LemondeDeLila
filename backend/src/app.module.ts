@@ -30,6 +30,8 @@ import { BugReportsModule } from './bug-reports/bug-reports.module';
 import { RedisModule } from './common/redis/redis.module';
 import { VaultModule } from './vault/vault.module';
 
+type EnvValidationInput = Record<string, unknown>;
+
 @Module({
   imports: [
     GameLoggerModule,
@@ -86,17 +88,18 @@ import { VaultModule } from './vault/vault.module';
         WS_TICKET_TTL_SECONDS: Joi.number().default(60),
         WS_SHARED_SECRET: Joi.string().optional(),
         REALTIME_WS_SECRET: Joi.string().optional(),
-      }).custom((env, helpers) => {
+      }).custom((rawEnv, helpers) => {
+        const env = rawEnv as EnvValidationInput;
         const nodeEnv = (
-          (env.NODE_ENV as string | undefined) || 'development'
+          (env['NODE_ENV'] as string | undefined) || 'development'
         ).toLowerCase();
         if (nodeEnv === 'production') {
-          if (!env.SESSION_STORE_REDIS_URL) {
+          if (!env['SESSION_STORE_REDIS_URL']) {
             return helpers.error('any.custom', {
               message: 'SESSION_STORE_REDIS_URL est requis en production',
             });
           }
-          if (!env.GAME_ENGINE_STATE_REDIS_URL) {
+          if (!env['GAME_ENGINE_STATE_REDIS_URL']) {
             return helpers.error('any.custom', {
               message: 'GAME_ENGINE_STATE_REDIS_URL est requis en production',
             });
@@ -104,18 +107,18 @@ import { VaultModule } from './vault/vault.module';
         }
 
         const alg = (
-          (env.JWT_ALGORITHM as string | undefined) || ''
+          (env['JWT_ALGORITHM'] as string | undefined) || ''
         ).toUpperCase();
         const hasRsa =
-          !!env.JWT_PRIVATE_KEY_PEM ||
-          !!env.JWT_PRIVATE_KEY_PATH ||
-          !!env.JWT_PUBLIC_KEY_PEM ||
-          !!env.JWT_PUBLIC_KEY_PATH;
+          !!env['JWT_PRIVATE_KEY_PEM'] ||
+          !!env['JWT_PRIVATE_KEY_PATH'] ||
+          !!env['JWT_PUBLIC_KEY_PEM'] ||
+          !!env['JWT_PUBLIC_KEY_PATH'];
         const effectiveAlg =
           alg === 'HS256' || alg === 'RS256' ? alg : hasRsa ? 'RS256' : 'HS256';
 
         if (effectiveAlg === 'HS256') {
-          if (!env.JWT_SECRET) {
+          if (!env['JWT_SECRET']) {
             return helpers.error('any.custom', {
               message: 'JWT_SECRET est requis en mode HS256',
             });
@@ -123,13 +126,13 @@ import { VaultModule } from './vault/vault.module';
           return env;
         }
 
-        if (!env.JWT_PRIVATE_KEY_PEM && !env.JWT_PRIVATE_KEY_PATH) {
+        if (!env['JWT_PRIVATE_KEY_PEM'] && !env['JWT_PRIVATE_KEY_PATH']) {
           return helpers.error('any.custom', {
             message:
               'JWT_PRIVATE_KEY_PEM ou JWT_PRIVATE_KEY_PATH est requis en mode RS256',
           });
         }
-        if (!env.JWT_PUBLIC_KEY_PEM && !env.JWT_PUBLIC_KEY_PATH) {
+        if (!env['JWT_PUBLIC_KEY_PEM'] && !env['JWT_PUBLIC_KEY_PATH']) {
           return helpers.error('any.custom', {
             message:
               'JWT_PUBLIC_KEY_PEM ou JWT_PUBLIC_KEY_PATH est requis en mode RS256',

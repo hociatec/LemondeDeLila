@@ -274,47 +274,6 @@ public partial class GamePlayView
 
         notify.CollectionChanged += _choicesChanged;
     }
-
-    private bool TryAutoFocusQuizQuestion()
-    {
-        if (DataContext is not GamePlayViewModel vm || !vm.IsQuizPending)
-        {
-            _lastAutoFocusedQuizQuestionText = string.Empty;
-            return false;
-        }
-
-        var question = (vm.QuizQuestionText ?? string.Empty).Trim();
-        if (string.IsNullOrWhiteSpace(question))
-        {
-            return false;
-        }
-
-        if (string.Equals(_lastAutoFocusedQuizQuestionText, question, StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        _lastAutoFocusedQuizQuestionText = question;
-
-        // Quiz: the question is shown as first row in the list (index 0).
-        if (!ChoicesList.IsVisible || ChoicesList.Items.Count <= 0)
-        {
-            return false;
-        }
-
-        try
-        {
-            ChoicesList.SelectedIndex = 0;
-            ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
-            TryFocusChoiceIndex(ChoicesList, 0);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     private void UpdateChoicesAccessibility()
     {
         if (_vm == null)
@@ -411,28 +370,6 @@ public partial class GamePlayView
 
         return false;
     }
-
-    private void TryFocusFirstChoice()
-    {
-        if (_vm == null)
-        {
-            return;
-        }
-
-        if (!ChoicesList.IsVisible || ChoicesList.Items.Count == 0)
-        {
-            return;
-        }
-
-        if (ChoicesList.SelectedIndex < 0)
-        {
-            ChoicesList.SelectedIndex = 0;
-        }
-
-        ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
-        TryFocusChoiceIndex(ChoicesList, 0);
-    }
-
     private void ForceFocusGameZone() => ForceFocusGameZoneCore(forceFromOutsideTextInput: false);
 
     private void RequestGameZoneFocusFromVm(GameFocusReason reason)
@@ -763,3 +700,5 @@ public partial class GamePlayView
         }
     }
 }
+
+

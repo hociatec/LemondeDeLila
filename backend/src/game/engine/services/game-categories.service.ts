@@ -207,7 +207,10 @@ export class GameCategoriesService implements OnModuleInit {
     }
 
     // Détacher les jeux affectés (null).
-    await this.assignmentsRepo.update({ categoryId: key }, { categoryId: null });
+    await this.assignmentsRepo.update(
+      { categoryId: key },
+      { categoryId: null },
+    );
 
     await this.categoriesRepo.delete({ id: key });
     root.categories = root.categories.filter((c) => c.id !== key);

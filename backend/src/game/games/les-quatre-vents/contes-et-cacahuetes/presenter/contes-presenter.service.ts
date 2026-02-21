@@ -17,7 +17,7 @@ export class ContesPresenterService {
     userId: number,
   ): GameStateWithActions {
     const actions = Rulebook.getAvailableActions(state, userId);
-    const meta = (state.metadata ?? {}) as any as ContesCacahuetesMetadata;
+    const meta = (state.metadata ?? {}) as ContesCacahuetesMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
     const scoreLines = players.map((p) => {
@@ -30,8 +30,9 @@ export class ContesPresenterService {
       return `${name} : case ${position}/60.`;
     });
 
+    const stateRecord = state as unknown as Record<string, unknown>;
     const extras = {
-      ...(state as any).extras,
+      ...asRecord(stateRecord.extras),
       currentPlayerView: {
         id: userId,
         username: me?.username ?? `Joueur ${userId}`,
@@ -63,7 +64,16 @@ export class ContesPresenterService {
       actions: formatPresenterActions(actions),
       pending: state.pending ?? null,
       extras,
-      board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
-    } as any;
+      board: this.boardPayload.buildTilesPositionsLaps(
+        meta.tiles,
+        meta.positions,
+      ),
+    } as GameStateWithActions;
   }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
 }

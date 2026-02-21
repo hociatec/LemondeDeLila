@@ -1,11 +1,44 @@
 import { ExecutionContext } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as jwt from 'jsonwebtoken';
+import jsonwebtoken from 'jsonwebtoken';
 import { generateKeyPairSync } from 'crypto';
 import { HttpJwtGuard } from './http-jwt.guard';
 import { WsJwtGuard } from './ws-jwt.guard';
 
-function createHttpContext(request: any): ExecutionContext {
+type JwtSignOptions = {
+  algorithm: 'HS256' | 'RS256';
+  issuer: string;
+  subject: string;
+  expiresIn: string;
+};
+
+type JwtSigner = (
+  payload: object,
+  secretOrKey: string | Buffer,
+  options: JwtSignOptions,
+) => string;
+
+const jwtSign = (jsonwebtoken as unknown as { sign: JwtSigner }).sign;
+
+type HttpRequestLike = {
+  headers: Record<string, string>;
+  user?: { id?: number; username?: string };
+};
+
+type WsClientLike = {
+  handshakeHeaders: Record<string, string>;
+  handshake: {
+    headers: Record<string, string>;
+    auth: Record<string, string>;
+  };
+  req: {
+    headers: Record<string, string>;
+  };
+  url: string;
+  user?: { id?: number; username?: string };
+};
+
+function createHttpContext(request: HttpRequestLike): ExecutionContext {
   return {
     switchToHttp: () => ({
       getRequest: () => request,
@@ -13,7 +46,7 @@ function createHttpContext(request: any): ExecutionContext {
   } as unknown as ExecutionContext;
 }
 
-function createWsContext(client: any): ExecutionContext {
+function createWsContext(client: WsClientLike): ExecutionContext {
   return {
     switchToWs: () => ({
       getClient: () => client,
@@ -28,13 +61,13 @@ describe('Auth guards', () => {
 
   it('HttpJwtGuard attaches payload to request', () => {
     const guard = new HttpJwtGuard(config);
-    const token = jwt.sign({ username: 'lila' }, secret, {
+    const token = jwtSign({ username: 'lila' }, secret, {
       algorithm: 'HS256',
       issuer,
       subject: '1',
       expiresIn: '1h',
     });
-    const request: any = {
+    const request: HttpRequestLike = {
       headers: { authorization: `Bearer ${token}` },
     };
     const context = createHttpContext(request);
@@ -45,13 +78,13 @@ describe('Auth guards', () => {
 
   it('WsJwtGuard accepts token via query string', () => {
     const guard = new WsJwtGuard(config);
-    const token = jwt.sign({ id: 42, username: 'x' }, secret, {
+    const token = jwtSign({ id: 42, username: 'x' }, secret, {
       algorithm: 'HS256',
       issuer,
       subject: '42',
       expiresIn: '1h',
     });
-    const client: any = {
+    const client: WsClientLike = {
       handshakeHeaders: {},
       handshake: { headers: {}, auth: {} },
       req: { headers: {} },
@@ -77,14 +110,16 @@ describe('Auth guards', () => {
     });
     const guard = new HttpJwtGuard(rsaConfig);
 
-    const token = jwt.sign({ username: 'lila' }, privateKeyPem, {
+    const token = jwtSign({ username: 'lila' }, privateKeyPem, {
       algorithm: 'RS256',
       issuer,
       subject: '1',
       expiresIn: '1h',
     });
 
-    const request: any = { headers: { authorization: `Bearer ${token}` } };
+    const request: HttpRequestLike = {
+      headers: { authorization: `Bearer ${token}` },
+    };
     const context = createHttpContext(request);
 
     expect(guard.canActivate(context)).toBe(true);

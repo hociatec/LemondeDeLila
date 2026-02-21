@@ -12,7 +12,7 @@ export class AdminPerfWsHandler {
     private readonly perf: PerfMetricsService,
   ) {}
 
-  async perfSnapshot(session: WsSession, payload: any) {
+  perfSnapshot(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminPerfSnapshotWsDto, payload ?? {});
     const snapshot = this.perf.snapshot({ windowSeconds: dto.windowSeconds });

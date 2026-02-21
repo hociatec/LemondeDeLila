@@ -3,17 +3,19 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
-import { PromptPoliciesService } from '../../../../modules/prompt-policies/services/prompt-policies.service';
 import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
 import type { JeuOieMetadata, JeuOieTile } from '../model/jeu-oie-state.entity';
 
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 @Injectable()
 export class JeuOieActionService {
   constructor(
@@ -22,7 +24,6 @@ export class JeuOieActionService {
     private readonly core: GameCoreService,
     private readonly setupFlow: SetupFlowService,
     @Optional() private readonly turnPolicies?: TurnPoliciesService,
-    @Optional() private readonly promptPolicies?: PromptPoliciesService,
   ) {}
 
   applyActions(
@@ -61,18 +62,19 @@ export class JeuOieActionService {
       pendingType: 'choose_pawn',
       resolveChoice: (rawPawn, options) =>
         this.setupFlow.resolvePawnChoice(rawPawn, options),
-    }) as
-      | {
-          playerId: number;
-          options: any[];
-          chosen: { id: string; label: string; feminine: boolean };
-        }
-      | null;
+    }) as {
+      playerId: number;
+      options: any[];
+      chosen: { id: string; label: string; feminine: boolean };
+    } | null;
     if (!resolved) return state;
     const { playerId, options, chosen } = resolved;
 
     const meta = this.getMeta(state);
-    const assigned = { ...(meta.pawnByPlayerId ?? {}) } as Record<number, string>;
+    const assigned = { ...(meta.pawnByPlayerId ?? {}) } as Record<
+      number,
+      string
+    >;
     if (assigned[playerId]) return state;
     if (Object.values(assigned).some((id) => id === chosen.id)) return state;
 
@@ -101,9 +103,15 @@ export class JeuOieActionService {
 
     const playersForPending = Array.isArray(next.players) ? next.players : [];
     const metaForPending = this.getMeta(next);
-    const pawnByPlayerIdForPending = (metaForPending.pawnByPlayerId ?? {}) as Record<number, string>;
-    const allPawnsForPending = Array.isArray(metaForPending.pawns) ? metaForPending.pawns : [];
-    const usedForPending = new Set(Object.values(pawnByPlayerIdForPending).filter((v) => typeof v === 'string'));
+    const pawnByPlayerIdForPending = metaForPending.pawnByPlayerId ?? {};
+    const allPawnsForPending = Array.isArray(metaForPending.pawns)
+      ? metaForPending.pawns
+      : [];
+    const usedForPending = new Set(
+      Object.values(pawnByPlayerIdForPending).filter(
+        (v) => typeof v === 'string',
+      ),
+    );
     const choicesForPending = allPawnsForPending
       .map((p: any) => ({
         id: String(p?.id ?? '').trim(),
@@ -114,7 +122,8 @@ export class JeuOieActionService {
     const pendingInfo = this.setupFlow.createSequentialPawnPending({
       players: playersForPending,
       startPlayerId: playerId,
-      isAssigned: (candidateId) => Boolean(pawnByPlayerIdForPending[candidateId]),
+      isAssigned: (candidateId) =>
+        Boolean(pawnByPlayerIdForPending[candidateId]),
       pawns: choicesForPending,
       pawnDataMapper: (p: any) => ({
         id: String(p?.id ?? '').trim(),
@@ -140,11 +149,13 @@ export class JeuOieActionService {
     const starterId =
       typeof nextMeta.setupStarterId === 'number'
         ? nextMeta.setupStarterId
-        : players[0]?.id ?? null;
+        : (players[0]?.id ?? null);
     const starterIndex =
       starterId != null ? players.findIndex((p) => p?.id === starterId) : -1;
     const resolvedStarterId =
-      starterId != null && starterIndex >= 0 ? starterId : players[0]?.id ?? null;
+      starterId != null && starterIndex >= 0
+        ? starterId
+        : (players[0]?.id ?? null);
     let started: GameStateEntity = {
       ...next,
       pending: null,
@@ -155,7 +166,10 @@ export class JeuOieActionService {
         direction: 1,
       },
     };
-    const starterName = resolvePlayerNameFromState(started, resolvedStarterId ?? 0);
+    const starterName = resolvePlayerNameFromState(
+      started,
+      resolvedStarterId ?? 0,
+    );
     started = this.core.appendLog(
       started,
       `D\u00e9but de partie : ${starterName} commence.`,
@@ -296,9 +310,7 @@ export class JeuOieActionService {
     if (tile.type === 'inn' || tile.type === 'prison') {
       const turns = tile.skipTurns ?? 1;
       const suffix =
-        turns === 1
-          ? ''
-          : ` (passera ses ${turns} prochains tours).`;
+        turns === 1 ? '' : ` (passera ses ${turns} prochains tours).`;
       next = this.core.appendLog(
         next,
         `${resolvePlayerNameFromState(next, playerId)} perd ${turns} tour(s).${suffix}`,
@@ -424,14 +436,4 @@ export class JeuOieActionService {
   private getTurnPolicies(): TurnPoliciesService {
     return this.turnPolicies ?? new TurnPoliciesService(this.core);
   }
-
-  private getPromptPolicies(): PromptPoliciesService {
-    return this.promptPolicies ?? new PromptPoliciesService(this.core);
-  }
 }
-
-
-
-
-
-

@@ -1,14 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import type {
-  GameStateEntity,
-  PendingState,
-} from '../../../../core/entities/game-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+﻿import { Injectable } from '@nestjs/common';
+import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -31,6 +30,12 @@ const ZONE_MAP: Array<{ min: number; max: number; id: number }> = [
   { min: 42, max: 42, id: 8 },
 ];
 
+function asPartialMeta(value: unknown): Partial<MonVillageMetadata> {
+  return value != null && typeof value === 'object'
+    ? (value as Partial<MonVillageMetadata>)
+    : {};
+}
+
 function getZoneForTile(n: number): number | null {
   const entry = ZONE_MAP.find((range) => n >= range.min && n <= range.max);
   return entry?.id ?? null;
@@ -50,19 +55,19 @@ export class MonVillageActionService {
     actions: GameSingleActionDto[],
   ): GameStateEntity {
     const next = applyActionsSequentially(state, actions, (next, action) => {
-          const type = normalizeActionType(action);
-          return dispatchByActionType(
-            type,
-            {
-              'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-            },
-            () => next,
-          );
-        });
-        return next;
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          roll: () => {
+            next = this.handleRoll(next);
+            return next;
+          },
+        },
+        () => next,
+      );
+    });
+    return next;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -86,15 +91,22 @@ export class MonVillageActionService {
         this.core.appendLog(
           {
             ...state,
-            metadata: { ...(state.metadata ?? {}), ...meta, statuses: nextStatuses },
+            metadata: {
+              ...(state.metadata ?? {}),
+              ...meta,
+              statuses: nextStatuses,
+            },
           },
           `${resolvePlayerNameFromState(state, playerId)} saute son tour (${skip} restant).`,
         ),
       );
     }
 
-    const rng = this.random.rollDice(meta as any, 6);
-    const nextMeta = { ...meta, ...rng.meta };
+    const rng = this.random.rollDice(meta as Record<string, unknown>, 6);
+    const nextMeta: MonVillageMetadata = {
+      ...meta,
+      ...asPartialMeta(rng.meta),
+    };
     let next: GameStateEntity = {
       ...state,
       lastRoll: rng.roll,
@@ -192,10 +204,12 @@ export class MonVillageActionService {
     playerId: number,
   ): GameStateEntity {
     const meta = this.getMeta(state);
-    const entries = Object.entries(meta.collections ?? {}).map(([id, value]) => ({
-      id: Number(id),
-      ...value,
-    }));
+    const entries = Object.entries(meta.collections ?? {}).map(
+      ([id, value]) => ({
+        id: Number(id),
+        ...value,
+      }),
+    );
     let best = entries
       .filter((entry) => Number.isFinite(entry.id))
       .sort((a, b) => b.total - a.total)[0];
@@ -214,7 +228,8 @@ export class MonVillageActionService {
           if (
             tied.some(
               (entry) =>
-                entry.id !== best.id && (entry.byZone?.[zone] ?? 0) === zoneBest.count,
+                entry.id !== best.id &&
+                (entry.byZone?.[zone] ?? 0) === zoneBest.count,
             )
           ) {
             continue;
@@ -274,17 +289,25 @@ export class MonVillageActionService {
     meta: MonVillageMetadata,
     zoneId: number,
   ): { card: MonVillageCard | null; meta: MonVillageMetadata } {
-    const draw = this.deckPolicies.drawFromPile<MonVillageCard, MonVillageMetadata>({
+    const draw = this.deckPolicies.drawFromPile<
+      MonVillageCard,
+      MonVillageMetadata
+    >({
       meta,
       pile: Array.isArray(meta.decks?.[zoneId]) ? meta.decks[zoneId] : [],
-      discard: Array.isArray(meta.discards?.[zoneId]) ? meta.discards[zoneId] : [],
+      discard: Array.isArray(meta.discards?.[zoneId])
+        ? meta.discards[zoneId]
+        : [],
       useWholeMetaRng: true,
       discardDrawnCard: true,
     });
     const nextMeta: MonVillageMetadata = {
       ...draw.meta,
-      decks: { ...draw.meta.decks, [zoneId]: draw.pile as MonVillageCard[] },
-      discards: { ...draw.meta.discards, [zoneId]: draw.discard as MonVillageCard[] },
+      decks: { ...draw.meta.decks, [zoneId]: draw.pile },
+      discards: {
+        ...draw.meta.discards,
+        [zoneId]: draw.discard,
+      },
     };
     return { card: draw.card, meta: nextMeta };
   }
@@ -295,7 +318,7 @@ export class MonVillageActionService {
 
   private pawnLabel(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
-    const player = players.find((p: any) => p?.id === id) as any;
+    const player = players.find((p) => p?.id === id) ?? null;
     const pawn =
       typeof player?.pawn === 'string' ? String(player.pawn).trim() : '';
     if (!pawn) return '"son pion"';
@@ -307,12 +330,9 @@ export class MonVillageActionService {
       .trim();
     const core = inner || pawn;
     const lowered =
-      core.length <= 1 ? core.toLowerCase() : `${core.charAt(0).toLowerCase()}${core.slice(1)}`;
+      core.length <= 1
+        ? core.toLowerCase()
+        : `${core.charAt(0).toLowerCase()}${core.slice(1)}`;
     return `"${feminine ? 'sa' : 'son'} ${lowered}"`;
   }
 }
-
-
-
-
-

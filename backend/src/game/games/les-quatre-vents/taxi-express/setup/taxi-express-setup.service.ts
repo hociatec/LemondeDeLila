@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
-import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import { getSafePlayers } from '../../../../setup/setup-service.helper';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import type {
@@ -11,6 +11,8 @@ import type {
 } from '../model/taxi-content.entity';
 import type { TaxiExpressMetadata } from '../model/taxi-state.entity';
 import { loadV1Content } from '../../../../setup/content-loader.helper';
+
+type TaxiExpressRuntimeMetadata = TaxiExpressMetadata & Record<string, unknown>;
 
 @Injectable()
 export class TaxiExpressSetupService {
@@ -38,9 +40,9 @@ export class TaxiExpressSetupService {
       activeClients[player.id] = null;
     }
 
-    const seedMeta = (baseState.metadata ?? {}) as TaxiExpressMetadata;
+    const seedMeta = this.getRuntimeMeta(baseState);
     const clientIds = (clients.cards ?? []).map((card) => card.id);
-    const firstShuffle = this.random.shuffle(seedMeta as any, clientIds);
+    const firstShuffle = this.random.shuffle(seedMeta, clientIds);
     let meta: TaxiExpressMetadata = {
       ...seedMeta,
       ...firstShuffle.meta,
@@ -63,7 +65,7 @@ export class TaxiExpressSetupService {
     };
 
     const eventIds = (events.cards ?? []).map((card) => card.id);
-    const eventShuffle = this.random.shuffle(meta as any, eventIds);
+    const eventShuffle = this.random.shuffle(meta, eventIds);
     meta = {
       ...meta,
       ...eventShuffle.meta,
@@ -80,15 +82,36 @@ export class TaxiExpressSetupService {
   }
 
   private loadBoard(): TaxiExpressBoardJsonV1 {
-    return loadV1Content<TaxiExpressBoardJsonV1>(this.contentLoader, { gameType: 'taxi-express', baseDir: __dirname, filename: 'board.json', arrayField: 'tiles', minItems: 1 });
+    return loadV1Content<TaxiExpressBoardJsonV1>(this.contentLoader, {
+      gameType: 'taxi-express',
+      baseDir: __dirname,
+      filename: 'board.json',
+      arrayField: 'tiles',
+      minItems: 1,
+    });
   }
 
   private loadClients(): TaxiExpressClientsJsonV1 {
-    return loadV1Content<TaxiExpressClientsJsonV1>(this.contentLoader, { gameType: 'taxi-express', baseDir: __dirname, filename: 'clients.json', arrayField: 'cards', minItems: 1 });
+    return loadV1Content<TaxiExpressClientsJsonV1>(this.contentLoader, {
+      gameType: 'taxi-express',
+      baseDir: __dirname,
+      filename: 'clients.json',
+      arrayField: 'cards',
+      minItems: 1,
+    });
   }
 
   private loadEvents(): TaxiExpressEventsJsonV1 {
-    return loadV1Content<TaxiExpressEventsJsonV1>(this.contentLoader, { gameType: 'taxi-express', baseDir: __dirname, filename: 'events.json', arrayField: 'cards', minItems: 1 });
+    return loadV1Content<TaxiExpressEventsJsonV1>(this.contentLoader, {
+      gameType: 'taxi-express',
+      baseDir: __dirname,
+      filename: 'events.json',
+      arrayField: 'cards',
+      minItems: 1,
+    });
+  }
+
+  private getRuntimeMeta(state: GameStateEntity): TaxiExpressRuntimeMetadata {
+    return (state.metadata ?? {}) as TaxiExpressRuntimeMetadata;
   }
 }
-

@@ -63,7 +63,11 @@ describe('Critical Cases Matrix', () => {
     } as any);
 
     state = service.applyActions(state, [
-      { type: 'morpion_play', payload: { x: 0, y: 0 }, meta: { actorId: 1 } } as any,
+      {
+        type: 'morpion_play',
+        payload: { x: 0, y: 0 },
+        meta: { actorId: 1 },
+      } as any,
     ]);
     expect(state.turn?.currentPlayerId).toBe(2);
   });
@@ -90,7 +94,7 @@ describe('Critical Cases Matrix', () => {
     state = service.applyActions(state, [play(1, 2, 0)]);
 
     expect(state.status).toBe('finished');
-    expect((state.metadata as any).winnerId).toBe(1);
+    expect(state.metadata.winnerId).toBe(1);
   });
 
   it("erreurs d'action: une action indisponible est rejetee pour le joueur courant", async () => {
@@ -104,7 +108,13 @@ describe('Critical Cases Matrix', () => {
       {} as any,
       {} as any,
       {} as any,
-      { logValidationFailure: jest.fn(), error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() } as any,
+      {
+        logValidationFailure: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        info: jest.fn(),
+        debug: jest.fn(),
+      } as any,
       {} as any,
     );
 

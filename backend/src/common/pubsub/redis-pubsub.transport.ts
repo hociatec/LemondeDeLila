@@ -11,9 +11,12 @@ export class RedisPubSubTransport<TEvent> {
     private readonly channel: string,
     private readonly createClient: (url: string, name: string) => Redis = (
       url,
-      _name,
+      name,
     ) => {
-      const client = new Redis(url, { lazyConnect: true });
+      const client = new Redis(url, {
+        lazyConnect: true,
+        connectionName: name,
+      });
       // Important: ioredis emits an 'error' event which will crash the process if unhandled.
       // Default transport is best-effort; dedicated factories can log details.
       client.on('error', () => {});
@@ -52,10 +55,9 @@ export class RedisPubSubTransport<TEvent> {
     await this.subscriber.subscribe(this.channel);
   }
 
-  async disconnect(): Promise<void> {
-    await Promise.all([
-      this.publisher.disconnect(),
-      this.subscriber.disconnect(),
-    ]);
+  disconnect(): Promise<void> {
+    this.publisher.disconnect();
+    this.subscriber.disconnect();
+    return Promise.resolve();
   }
 }

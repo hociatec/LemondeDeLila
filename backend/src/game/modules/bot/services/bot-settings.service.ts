@@ -81,7 +81,11 @@ export class BotSettingsService implements OnModuleInit {
       botDrawDelayMs: root.botDrawDelayMs,
     });
     if (!this.cache) {
-      this.cache = { botTurnDelayMs: root.botTurnDelayMs, botStartDelayMs: root.botStartDelayMs, botDrawDelayMs: root.botDrawDelayMs };
+      this.cache = {
+        botTurnDelayMs: root.botTurnDelayMs,
+        botStartDelayMs: root.botStartDelayMs,
+        botDrawDelayMs: root.botDrawDelayMs,
+      };
     } else {
       this.cache = {
         botTurnDelayMs: root.botTurnDelayMs,

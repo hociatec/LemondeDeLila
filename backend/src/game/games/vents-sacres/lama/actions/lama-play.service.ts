@@ -23,7 +23,11 @@ export class LamaPlayService {
     actorId: number,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const tracker = meta.turnTracker ?? { playerId: actorId, drawn: false, played: false };
+    const tracker = meta.turnTracker ?? {
+      playerId: actorId,
+      drawn: false,
+      played: false,
+    };
     if (
       this.shared.asNumberOrNull((tracker as any).playerId) === actorId &&
       this.shared.asBoolean((tracker as any).played)
@@ -38,18 +42,20 @@ export class LamaPlayService {
         return 0;
       }
     })();
-    const value = (rawValue >= 1 && rawValue <= 7 ? rawValue : 0) as LamaCardValue;
+    const value = (
+      rawValue >= 1 && rawValue <= 7 ? rawValue : 0
+    ) as LamaCardValue;
     const count = 1;
 
     const discard = Array.isArray(meta.discard) ? [...meta.discard] : [];
-    const top = discard.length ? (discard[discard.length - 1] as LamaCardValue) : null;
+    const top = discard.length ? discard[discard.length - 1] : null;
     if (!top) return state;
 
     const allowed = new Set<LamaCardValue>([top, nextLamaValue(top)]);
     if (!allowed.has(value)) return state;
 
     const handsByPlayerId = { ...(meta.handsByPlayerId ?? {}) };
-    const hand = [...((handsByPlayerId[String(actorId)] as LamaCardValue[]) ?? [])];
+    const hand = [...(handsByPlayerId[String(actorId)] ?? [])];
     const availableCount = hand.filter((v) => v === value).length;
     if (availableCount < count) return state;
 
@@ -77,7 +83,11 @@ export class LamaPlayService {
       ...meta,
       handsByPlayerId,
       discard,
-      turnTracker: { playerId: actorId, drawn: (tracker as any).drawn, played: true },
+      turnTracker: {
+        playerId: actorId,
+        drawn: (tracker as any).drawn,
+        played: true,
+      },
       suppressTurnAnnouncement: false,
     };
 
@@ -91,25 +101,32 @@ export class LamaPlayService {
       return this.round.endRound(endedState, actorId);
     }
 
-    const nextPlayerId = this.round.findNextActivePlayerId(players, nextMeta, actorId);
-    const nextState = createPendingState({
-      ...state,
-      metadata: {
-        ...nextMeta,
-        turnTracker: { playerId: nextPlayerId, drawn: false, played: false },
-        suppressTurnAnnouncement: false,
-      } as any,
-      log,
-      turnIndex: (state.turnIndex ?? 0) + 1,
-      turn: {
-        ...(state.turn ?? { direction: 1 }),
-        currentPlayerId: nextPlayerId,
-        direction: 1,
-        label: nextPlayerId
-          ? `Tour de ${this.shared.playerLabel(players as any[], nextPlayerId)}`
-          : undefined,
-      },
-    } as GameStateEntity, { step: 'turn_choice', playerId: nextPlayerId } as any);
+    const nextPlayerId = this.round.findNextActivePlayerId(
+      players,
+      nextMeta,
+      actorId,
+    );
+    const nextState = createPendingState(
+      {
+        ...state,
+        metadata: {
+          ...nextMeta,
+          turnTracker: { playerId: nextPlayerId, drawn: false, played: false },
+          suppressTurnAnnouncement: false,
+        } as any,
+        log,
+        turnIndex: (state.turnIndex ?? 0) + 1,
+        turn: {
+          ...(state.turn ?? { direction: 1 }),
+          currentPlayerId: nextPlayerId,
+          direction: 1,
+          label: nextPlayerId
+            ? `Tour de ${this.shared.playerLabel(players as any[], nextPlayerId)}`
+            : undefined,
+        },
+      } as GameStateEntity,
+      { step: 'turn_choice', playerId: nextPlayerId } as any,
+    );
 
     if (this.round.isRoundEnded(nextMeta, players)) {
       const winnerId = this.round.findRoundWinnerId(nextMeta, players);

@@ -3,6 +3,12 @@ export type SeededRngState = {
   counter: number;
 };
 
+type RngMeta = Record<string, unknown>;
+type RngLike = {
+  seed?: unknown;
+  counter?: unknown;
+};
+
 function normalizeSeed(value: unknown): number | null {
   const n = typeof value === 'number' ? value : Number(value);
   if (!Number.isFinite(n)) return null;
@@ -18,17 +24,25 @@ function fnv1a32(input: string): number {
   return hash >>> 0;
 }
 
-function deriveSeedFromContext(meta: Record<string, any>): number | null {
-  const roomId = meta?.roomId;
-  const startedAt = meta?.roomStartedAt;
-  const gameType = meta?.gameType;
-  const runIdRaw = meta?.roomRunId;
+function toStablePart(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'bigint')
+    return String(value);
+  if (typeof value === 'boolean') return value ? '1' : '0';
+  return '';
+}
+
+function deriveSeedFromContext(meta: RngMeta): number | null {
+  const roomId = meta['roomId'];
+  const startedAt = meta['roomStartedAt'];
+  const gameType = meta['gameType'];
+  const runIdRaw = meta['roomRunId'];
   const runId =
     typeof runIdRaw === 'number' ? runIdRaw : Number(runIdRaw ?? NaN);
   if (roomId == null || startedAt == null) return null;
-  const input = `${String(gameType ?? '')}|${String(roomId)}|${String(startedAt)}|${
-    Number.isFinite(runId) ? String(runId) : ''
-  }`;
+  const input = `${toStablePart(gameType)}|${toStablePart(roomId)}|${toStablePart(
+    startedAt,
+  )}|${Number.isFinite(runId) ? String(runId) : ''}`;
   return fnv1a32(input);
 }
 
@@ -43,8 +57,11 @@ function mulberry32(seed: number): () => number {
   };
 }
 
-export function ensureSeededRng(meta: Record<string, any>): SeededRngState {
-  const current = meta?.rng ?? null;
+export function ensureSeededRng(meta: RngMeta): SeededRngState {
+  const current =
+    meta['rng'] && typeof meta['rng'] === 'object'
+      ? (meta['rng'] as RngLike)
+      : null;
   const seed =
     normalizeSeed(current?.seed) ??
     deriveSeedFromContext(meta) ??
@@ -53,9 +70,9 @@ export function ensureSeededRng(meta: Record<string, any>): SeededRngState {
   return { seed, counter };
 }
 
-export function nextRngFloat(meta: Record<string, any>): {
+export function nextRngFloat(meta: RngMeta): {
   value: number;
-  meta: Record<string, any>;
+  meta: RngMeta;
 } {
   const rng = ensureSeededRng(meta);
   const generator = mulberry32((rng.seed + rng.counter) >>> 0);
@@ -65,9 +82,9 @@ export function nextRngFloat(meta: Record<string, any>): {
 }
 
 export function nextRngInt(
-  meta: Record<string, any>,
+  meta: RngMeta,
   maxExclusive: number,
-): { value: number; meta: Record<string, any> } {
+): { value: number; meta: RngMeta } {
   const max = Math.floor(maxExclusive);
   if (!Number.isFinite(max) || max <= 0) {
     return { value: 0, meta };

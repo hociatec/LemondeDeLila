@@ -162,15 +162,14 @@ export class NotificationInboxDbService {
         .andWhere('it.contactId = :contactId', { contactId: cid })
         .andWhere('it.deletedAt IS NULL');
 
-      const rows = (await qb.getRawMany()) as Array<any>;
+      const rows = await qb.getRawMany();
       return rows
         .map((r) => ({
           id: String(r?.id ?? ''),
           userId: Number(r?.userId ?? 0),
           kind: String(r?.kind ?? ''),
           contactId: r?.contactId ? String(r.contactId) : null,
-          fromUserId:
-            r?.fromUserId == null ? null : Number(r.fromUserId),
+          fromUserId: r?.fromUserId == null ? null : Number(r.fromUserId),
           fromUsername: r?.fromUsername ? String(r.fromUsername) : null,
           toUserId: r?.toUserId == null ? null : Number(r.toUserId),
           message: r?.message ? String(r.message) : null,
@@ -200,8 +199,9 @@ export class NotificationInboxDbService {
   }
 
   async deleteManyByIds(ids: string[]): Promise<number> {
-    const clean = Array.from(new Set((ids ?? []).map((x) => String(x || '').trim())))
-      .filter((x) => x);
+    const clean = Array.from(
+      new Set((ids ?? []).map((x) => String(x || '').trim())),
+    ).filter((x) => x);
     if (clean.length === 0) return 0;
     const res = await this.repo
       .createQueryBuilder()

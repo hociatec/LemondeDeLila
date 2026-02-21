@@ -3,7 +3,6 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import {
@@ -11,7 +10,11 @@ import {
   OlympiaDeckType,
   OlympiaEffect,
 } from '../model/olympia-cards';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import type {
   OlympiaMetadata,
   OlympiaStatus,
@@ -88,7 +91,6 @@ export class OlympiaActionService {
       next,
       `${resolvePlayerNameFromState(next, currentId)} pioche ${this.getCardName(entry.cardId)} (${deck}).`,
     );
-    const nextMeta = this.getMeta(next);
     next = this.checkVictory(next, currentId);
     return next;
   }
@@ -108,7 +110,9 @@ export class OlympiaActionService {
     if (!definition) return state;
 
     const meta = this.getMeta(state);
-    const hand = Array.isArray(meta.hands?.[currentId]) ? meta.hands[currentId] : [];
+    const hand = Array.isArray(meta.hands?.[currentId])
+      ? meta.hands[currentId]
+      : [];
     if (!hand.includes(cardId)) return state;
 
     let nextMeta = this.removeCardFromHand(meta, currentId, cardId);
@@ -128,7 +132,12 @@ export class OlympiaActionService {
         ? definition.effect
         : [definition.effect];
       for (const effect of effects) {
-        next = this.applyEffect(next, currentId, effect, payload.targetPlayerId ?? null);
+        next = this.applyEffect(
+          next,
+          currentId,
+          effect,
+          payload.targetPlayerId ?? null,
+        );
       }
     }
 
@@ -148,19 +157,34 @@ export class OlympiaActionService {
   ): GameStateEntity {
     let next = state;
     if (effect.type === 'prestige') {
-      const targets = this.resolveTargets(next, actorId, targetId, effect.target);
+      const targets = this.resolveTargets(
+        next,
+        actorId,
+        targetId,
+        effect.target,
+      );
       for (const tid of targets) {
         next = this.addPrestige(next, tid, effect.value);
       }
     } else if (effect.type === 'steal') {
       next = this.applySteal(next, actorId, effect.value);
     } else if (effect.type === 'draw') {
-      const targets = this.resolveTargets(next, actorId, targetId, effect.target);
+      const targets = this.resolveTargets(
+        next,
+        actorId,
+        targetId,
+        effect.target,
+      );
       for (const tid of targets) {
         next = this.drawForPlayer(next, tid, effect.amount, effect.decks);
       }
     } else if (effect.type === 'status') {
-      const targets = this.resolveTargets(next, actorId, targetId, effect.target);
+      const targets = this.resolveTargets(
+        next,
+        actorId,
+        targetId,
+        effect.target,
+      );
       for (const tid of targets) {
         next = this.addStatus(next, tid, {
           key: effect.key,
@@ -169,9 +193,14 @@ export class OlympiaActionService {
         });
       }
     } else if (effect.type === 'discard') {
-      const targets = this.resolveTargets(next, actorId, targetId, effect.target);
+      const targets = this.resolveTargets(
+        next,
+        actorId,
+        targetId,
+        effect.target,
+      );
       for (const tid of targets) {
-        next = this.discardRandom(next, tid, effect.amount, effect.categories);
+        next = this.discardRandom(next, tid, effect.amount);
       }
     } else if (effect.type === 'exchange') {
       if (targetId != null) {
@@ -196,9 +225,10 @@ export class OlympiaActionService {
     descriptor: 'self' | 'target' | 'all' | 'others',
   ): number[] {
     const players = Array.isArray(state.players) ? state.players : [];
-    const ids = players.filter((p) => p?.id != null).map((p) => p!.id);
+    const ids = players.filter((p) => p?.id != null).map((p) => p.id);
     if (descriptor === 'self') return [actorId];
-    if (descriptor === 'target' && explicitTarget != null) return [explicitTarget];
+    if (descriptor === 'target' && explicitTarget != null)
+      return [explicitTarget];
     if (descriptor === 'all') return ids;
     if (descriptor === 'others') return ids.filter((id) => id !== actorId);
     return [];
@@ -236,7 +266,11 @@ export class OlympiaActionService {
     return this.setMeta(state, { ...meta, statuses });
   }
 
-  private addSkip(state: GameStateEntity, playerId: number, turns: number): GameStateEntity {
+  private addSkip(
+    state: GameStateEntity,
+    playerId: number,
+    turns: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const skipTurn = { ...(meta.skipTurn ?? {}) };
     skipTurn[playerId] = (skipTurn[playerId] ?? 0) + turns;
@@ -247,10 +281,11 @@ export class OlympiaActionService {
     state: GameStateEntity,
     playerId: number,
     amount: number,
-    categories?: string[],
   ): GameStateEntity {
     const meta = this.getMeta(state);
-    const hand = Array.isArray(meta.hands?.[playerId]) ? [...meta.hands![playerId]] : [];
+    const hand = Array.isArray(meta.hands?.[playerId])
+      ? [...meta.hands[playerId]]
+      : [];
     if (!hand.length) return state;
     const discardList = [...(meta.discard ?? [])];
     const removed: string[] = [];
@@ -281,10 +316,10 @@ export class OlympiaActionService {
   ): GameStateEntity {
     const meta = this.getMeta(state);
     const actorHand = Array.isArray(meta.hands?.[actorId])
-      ? [...meta.hands![actorId]]
+      ? [...meta.hands[actorId]]
       : [];
     const targetHand = Array.isArray(meta.hands?.[targetId])
-      ? [...meta.hands![targetId]]
+      ? [...meta.hands[targetId]]
       : [];
     const actorCard = actorHand.find((cardId) =>
       categories.includes(OLYMPIA_CARD_BY_ID[cardId]?.category as string),
@@ -312,7 +347,7 @@ export class OlympiaActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     const opponents = players.filter((p) => p?.id != null && p.id !== actorId);
     if (!opponents.length) return state;
-    const target = opponents[0]!;
+    const target = opponents[0];
     let next = this.addPrestige(state, actorId, amount);
     next = this.addPrestige(next, target.id, -amount);
     return this.core.appendLog(
@@ -333,7 +368,10 @@ export class OlympiaActionService {
         const meta = this.getMeta(next);
         const entry = this.drawOneCard(meta, deck);
         if (!entry.cardId) continue;
-        next = this.setMeta(next, this.addCardToHand(entry.meta, playerId, entry.cardId));
+        next = this.setMeta(
+          next,
+          this.addCardToHand(entry.meta, playerId, entry.cardId),
+        );
         next = this.core.appendLog(
           next,
           `${resolvePlayerNameFromState(next, playerId)} pioche ${this.getCardName(entry.cardId)} (${deck}).`,
@@ -366,7 +404,9 @@ export class OlympiaActionService {
     cardId: string,
   ): OlympiaMetadata {
     const hands = { ...(meta.hands ?? {}) };
-    const playerHand = Array.isArray(hands[playerId]) ? [...hands[playerId]] : [];
+    const playerHand = Array.isArray(hands[playerId])
+      ? [...hands[playerId]]
+      : [];
     const index = playerHand.indexOf(cardId);
     if (index >= 0) {
       playerHand.splice(index, 1);
@@ -444,4 +484,3 @@ export class OlympiaActionService {
     return OLYMPIA_CARD_BY_ID[cardId]?.name ?? cardId;
   }
 }
-

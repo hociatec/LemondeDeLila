@@ -3,7 +3,9 @@ import type {
   PlayerStateEntity,
 } from '../core/entities/game-state.entity';
 
-export function getSafePlayers(baseState: GameStateEntity): PlayerStateEntity[] {
+export function getSafePlayers(
+  baseState: GameStateEntity,
+): PlayerStateEntity[] {
   return Array.isArray(baseState.players) ? baseState.players : [];
 }
 

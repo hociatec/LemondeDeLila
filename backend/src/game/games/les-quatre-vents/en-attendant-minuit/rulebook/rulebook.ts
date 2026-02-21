@@ -12,7 +12,6 @@ import type { MinuitMetadata } from '../model/minuit.types';
 import {
   normalizeActionType,
   normalizeLegacyRollAliasToUpper,
-  normalizeLowerActionType,
 } from '../../../../actions/action-service.helper';
 import {
   getPendingPawnActionsForPlayer,
@@ -27,12 +26,26 @@ import {
 import { toPlayerId } from '../../../../core/helpers/player-id.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  return '';
+}
+
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
   const status = String(state.status ?? '').toLowerCase();
-  const pawnPending = state.pending as any;
+  const pawnPending = state.pending;
   const pawnActions = getPendingPawnActionsForPlayer(
     pawnPending,
     playerId,
@@ -43,7 +56,7 @@ export function getAvailableActions(
   }
   if (status !== 'started') return [];
 
-  const meta = (state.metadata ?? {}) as any as MinuitMetadata;
+  const meta = (state.metadata ?? {}) as MinuitMetadata;
   const pendingQuiz = meta.pendingQuiz ?? null;
   if (pendingQuiz) {
     if (toPlayerId(pendingQuiz.playerId) !== playerId) return [];
@@ -53,11 +66,15 @@ export function getAvailableActions(
     }));
   }
 
-  const activePending = state.pending as any;
+  const activePending = state.pending;
   if (activePending) {
-    const drawActions = getPendingDrawActionsForPlayer(activePending, playerId, {
-      samePlayer: (left, right) => toPlayerId(left) === toPlayerId(right),
-    });
+    const drawActions = getPendingDrawActionsForPlayer(
+      activePending,
+      playerId,
+      {
+        samePlayer: (left, right) => toPlayerId(left) === toPlayerId(right),
+      },
+    );
     if (drawActions.length > 0) return drawActions;
     const targetActions = getPendingChooseTargetActionsForPlayer(
       activePending,
@@ -95,7 +112,7 @@ export function validateAction(
     });
   }
 
-  const pickPawnPending = state.pending as any;
+  const pickPawnPending = state.pending;
   if (pickPawnPending && pickPawnPending.type === 'pick_pawn') {
     const pawnValidation = validatePendingPawnActionForActor({
       pending: pickPawnPending,
@@ -113,9 +130,9 @@ export function validateAction(
       throw new GameValidationError('Choix de pion invalide.', {
         gameType: 'en-attendant-minuit',
         pawn:
-          (action.payload as any)?.pawn ??
-          (action.payload as any)?.pawnId ??
-          (action.payload as any)?.value ??
+          asRecord(action.payload).pawn ??
+          asRecord(action.payload).pawnId ??
+          asRecord(action.payload).value ??
           null,
       });
     }
@@ -124,7 +141,7 @@ export function validateAction(
         gameType: 'en-attendant-minuit',
       });
     }
-    return pawnValidation.action as GameSingleActionDto;
+    return pawnValidation.action;
   }
 
   if (!isStartedState(state)) {
@@ -133,7 +150,7 @@ export function validateAction(
     });
   }
 
-  const meta = (state.metadata ?? {}) as any as MinuitMetadata;
+  const meta = (state.metadata ?? {}) as MinuitMetadata;
   if (meta.pendingQuiz) {
     if (type !== 'answer_quiz') {
       throw new PlayerActionError('Action non disponible.', {
@@ -147,7 +164,7 @@ export function validateAction(
         expectedPlayerId: meta.pendingQuiz.playerId,
       });
     }
-    const answer = String((action.payload as any)?.answer ?? '').trim();
+    const answer = toText(asRecord(action.payload).answer).trim();
     if (!answer) {
       throw new GameValidationError('Payload invalide: answer', {
         gameType: 'en-attendant-minuit',
@@ -157,7 +174,7 @@ export function validateAction(
     return { type: 'answer_quiz', payload: { answer } };
   }
 
-  const actionPending = state.pending as any;
+  const actionPending = state.pending;
   if (actionPending) {
     const drawValidation = validatePendingDrawActionForActor({
       pending: actionPending,
@@ -228,6 +245,3 @@ export function validateAction(
   if (type === 'ROLL_DICE') return { type: 'roll', payload: {} };
   return { type, payload: action.payload ?? {} };
 }
-
-
-

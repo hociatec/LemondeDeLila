@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
-import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
-import { RandomService } from '../../../../modules/random/services/random.service';
 import {
-  LA_GRANDE_MINE_CARDS,
-} from '../model/la-grande-mine-cards';
+  getRngMeta,
+  getSafePlayers,
+} from '../../../../setup/setup-service.helper';
+import { RandomService } from '../../../../modules/random/services/random.service';
+import { LA_GRANDE_MINE_CARDS } from '../model/la-grande-mine-cards';
 import type { LaGrandeMineMetadata } from '../model/la-grande-mine-state.entity';
 
 @Injectable()

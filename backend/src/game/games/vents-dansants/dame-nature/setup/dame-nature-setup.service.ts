@@ -1,7 +1,10 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
-import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import {
+  getRngMeta,
+  getSafePlayers,
+} from '../../../../setup/setup-service.helper';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import {
   DAME_NATURE_CARD_BY_ID,
@@ -28,7 +31,7 @@ export class DameNatureSetupService {
 
     const hands: Record<number, string[]> = {};
     const families: Record<number, Record<string, string[]>> = {};
-    let remaining = [...shuffledFamilies];
+    const remaining = [...shuffledFamilies];
 
     for (const player of players) {
       if (!player?.id) continue;
@@ -37,15 +40,23 @@ export class DameNatureSetupService {
       for (let i = 0; i < 5 && remaining.length; i += 1) {
         const cardId = remaining.shift()!;
         hand.push(cardId);
-        const familyId = (DAME_NATURE_CARD_BY_ID[cardId] as any)?.familyId ?? 'unknown';
+        const familyId =
+          (DAME_NATURE_CARD_BY_ID[cardId] as any)?.familyId ?? 'unknown';
         familyMap[familyId] = [...(familyMap[familyId] ?? []), cardId];
       }
       hands[player.id] = hand;
       families[player.id] = familyMap;
     }
 
-    const drawPile = [...remaining, ...DAME_NATURE_QUIZ_CARD_IDS, ...DAME_NATURE_NATURE_CARD_IDS];
-    const { values: shuffledDeck, meta: finalMeta } = this.random.shuffle(rngMeta, drawPile);
+    const drawPile = [
+      ...remaining,
+      ...DAME_NATURE_QUIZ_CARD_IDS,
+      ...DAME_NATURE_NATURE_CARD_IDS,
+    ];
+    const { values: shuffledDeck, meta: finalMeta } = this.random.shuffle(
+      rngMeta,
+      drawPile,
+    );
 
     const metadata: DameNatureMetadata = {
       rng: finalMeta,

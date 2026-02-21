@@ -29,7 +29,9 @@ export class CerclesSacresBotService {
     const actions = Rulebook.getAvailableActions(state, botPlayerId);
     if (!actions.length) return [];
 
-    const circleAction = actions.find((action) => action.type === 'form_circle');
+    const circleAction = actions.find(
+      (action) => action.type === 'form_circle',
+    );
     if (circleAction) {
       const combo = this.buildCircle(state, botPlayerId);
       if (combo.length === CIRCLE_THEMES.length) {
@@ -48,12 +50,11 @@ export class CerclesSacresBotService {
     );
   }
 
-  private buildCircle(
-    state: GameStateEntity,
-    playerId: number,
-  ): string[] {
+  private buildCircle(state: GameStateEntity, playerId: number): string[] {
     const meta = (state.metadata ?? {}) as CerclesSacresMetadata;
-    const hand = Array.isArray(meta.hands?.[playerId]) ? meta.hands[playerId] : [];
+    const hand = Array.isArray(meta.hands?.[playerId])
+      ? meta.hands[playerId]
+      : [];
     const cardsByTheme = new Map<CerclesSacresTheme, string[]>();
     for (const cardId of hand) {
       const definition = CERCLES_SACRES_CARD_BY_ID[cardId];

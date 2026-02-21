@@ -1,14 +1,16 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type {
   GameStateEntity,
   PendingState,
 } from '../../../../core/entities/game-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-
 
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
@@ -37,35 +39,35 @@ export class CaActionService {
     actions: GameSingleActionDto[],
   ): GameStateEntity {
     const next = applyActionsSequentially(state, actions, (next, action) => {
-          const type = normalizeActionType(action);
-          return dispatchByActionType(
-            type,
-            {
-              'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'draw': () => {
-                next = this.handleDraw(next);
-                return next;
-              },
-              'choose_target': () => {
-                next = this.handleChooseTarget(next, action);
-                return next;
-              },
-              'choose_next_player': () => {
-                next = this.handleChooseNextPlayer(next, action);
-                return next;
-              },
-              'choose_next_delta': () => {
-                next = this.handleChooseNextDelta(next, action);
-                return next;
-              },
-            },
-            () => next,
-          );
-        });
-        return finalize(next);
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          roll: () => {
+            next = this.handleRoll(next);
+            return next;
+          },
+          draw: () => {
+            next = this.handleDraw(next);
+            return next;
+          },
+          choose_target: () => {
+            next = this.handleChooseTarget(next, action);
+            return next;
+          },
+          choose_next_player: () => {
+            next = this.handleChooseNextPlayer(next, action);
+            return next;
+          },
+          choose_next_delta: () => {
+            next = this.handleChooseNextDelta(next, action);
+            return next;
+          },
+        },
+        () => next,
+      );
+    });
+    return finalize(next);
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -91,7 +93,7 @@ export class CaActionService {
     }
 
     if (roll <= 0) {
-      const rng = this.random.rollDice(meta as any, 6);
+      const rng = this.random.rollDice(meta, 6);
       meta = { ...meta, ...rng.meta };
       roll = rng.roll;
     }
@@ -118,7 +120,7 @@ export class CaActionService {
     if (deltaFromPrevious !== 0) {
       meta = {
         ...meta,
-        statuses: { ...meta.statuses, nextPlayerDelta: null } as any,
+        statuses: { ...meta.statuses, nextPlayerDelta: null },
       };
     }
 
@@ -141,13 +143,16 @@ export class CaActionService {
             ? null
             : (meta.statuses?.mirrorNextRollFrom?.[currentId] ?? null),
         },
-      } as any,
+      },
     };
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
 
     next = this.core.appendLog(
       next,
-      resolvePlayerNameFromState(next, currentId) + ' lance le dé : "' + String(roll) + '".',
+      resolvePlayerNameFromState(next, currentId) +
+        ' lance le dé : "' +
+        String(roll) +
+        '".',
     );
 
     // Move by roll, plus optional +/-1.
@@ -157,7 +162,9 @@ export class CaActionService {
     if (deltaFromPrevious !== 0) {
       next = this.core.appendLog(
         next,
-        'Déplacement ' + (deltaFromPrevious > 0 ? '+1' : '-1') + ' appliqué au lancer.',
+        'Déplacement ' +
+          (deltaFromPrevious > 0 ? '+1' : '-1') +
+          ' appliqué au lancer.',
       );
     }
 
@@ -193,7 +200,11 @@ export class CaActionService {
     }
     updatedSince[currentId] = move !== 0 ? 0 : (updatedSince[currentId] ?? 0);
     updatedLast[currentId] = move;
-    meta = { ...meta, turnsSinceMoved: updatedSince, lastMoveDelta: updatedLast };
+    meta = {
+      ...meta,
+      turnsSinceMoved: updatedSince,
+      lastMoveDelta: updatedLast,
+    };
 
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
 
@@ -202,17 +213,28 @@ export class CaActionService {
       const verb = move >= 0 ? 'avance' : 'recule';
       next = this.core.appendLog(
         next,
-        resolvePlayerNameFromState(next, currentId) + ' ' + verb + ' de ' + String(Math.abs(move)) + ' ' + casesWord + '.',
+        resolvePlayerNameFromState(next, currentId) +
+          ' ' +
+          verb +
+          ' de ' +
+          String(Math.abs(move)) +
+          ' ' +
+          casesWord +
+          '.',
       );
     } else {
-      next = this.core.appendLog(next, resolvePlayerNameFromState(next, currentId) + ' ne se déplace pas.');
+      next = this.core.appendLog(
+        next,
+        resolvePlayerNameFromState(next, currentId) + ' ne se déplace pas.',
+      );
     }
 
     // Landing tile info (neutral vs card).
     meta = this.getMeta(next);
-    const tile = meta.tiles?.[after] as any;
-    const label = String(tile?.label ?? '').trim();
-    const desc = String(tile?.description ?? '').trim();
+    const tile = meta.tiles?.[after];
+    const label = typeof tile?.label === 'string' ? tile.label.trim() : '';
+    const desc =
+      typeof tile?.description === 'string' ? tile.description.trim() : '';
     const isNeutral = Boolean(tile?.isNeutral);
 
     next = this.core.appendLog(
@@ -232,7 +254,10 @@ export class CaActionService {
     // Victory.
     if (after >= meta.tiles.length - 1) {
       meta = { ...meta, winnerId: currentId };
-      next = this.core.appendLog(next, resolvePlayerNameFromState(next, currentId) + ' remporte la partie !');
+      next = this.core.appendLog(
+        next,
+        resolvePlayerNameFromState(next, currentId) + ' remporte la partie !',
+      );
       return {
         ...next,
         status: 'finished',
@@ -257,16 +282,15 @@ export class CaActionService {
     };
   }
 
-
   private handleDraw(state: GameStateEntity): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
-    const pending = state.pending as any;
+    const pending = state.pending;
     if (!pending || pending.type !== 'draw') return state;
 
     const playerId =
       typeof pending.playerId === 'number'
         ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
+        : (state.turn?.currentPlayerId ?? null);
     if (playerId == null) return state;
 
     let next: GameStateEntity = { ...state, pending: null };
@@ -284,7 +308,10 @@ export class CaActionService {
 
     next = this.core.appendLog(
       next,
-      resolvePlayerNameFromState(next, playerId) + ' pioche : "' + String(card.title) + '".',
+      resolvePlayerNameFromState(next, playerId) +
+        ' pioche : "' +
+        String(card.title) +
+        '".',
     );
     if (card.text) {
       next = this.core.appendLog(next, String(card.text));
@@ -299,7 +326,8 @@ export class CaActionService {
 
     if (next.pending) return next;
 
-    const override = (this.getMeta(next).pendingContext as PendingContext) ?? null;
+    const override =
+      (this.getMeta(next).pendingContext as PendingContext) ?? null;
     if (
       override &&
       (override.kind === 'choose_next_player' ||
@@ -313,7 +341,6 @@ export class CaActionService {
     return this.advanceTurnWithNextDelta(next);
   }
 
-
   private handleChooseTarget(
     state: GameStateEntity,
     action: GameSingleActionDto,
@@ -322,7 +349,7 @@ export class CaActionService {
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
 
-    const pending = state.pending as any;
+    const pending = state.pending;
     if (
       !pending ||
       pending.type !== 'choose_target' ||
@@ -330,7 +357,7 @@ export class CaActionService {
     )
       return state;
 
-    const targetPlayerId = Number((action.payload as any)?.targetPlayerId);
+    const targetPlayerId = Number(asRecord(action.payload).targetPlayerId);
     if (!Number.isFinite(targetPlayerId)) return state;
 
     let meta = this.getMeta(state);
@@ -372,7 +399,7 @@ export class CaActionService {
             ...(meta.statuses?.mirrorNextRollFrom ?? {}),
             [currentId]: targetPlayerId,
           },
-        } as any,
+        },
       };
       let next: GameStateEntity = {
         ...state,
@@ -397,7 +424,7 @@ export class CaActionService {
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
 
-    const pending = state.pending as any;
+    const pending = state.pending;
     if (
       !pending ||
       pending.type !== 'choose_next_player' ||
@@ -405,7 +432,7 @@ export class CaActionService {
     )
       return state;
 
-    const playerId = Number((action.payload as any)?.playerId);
+    const playerId = Number(asRecord(action.payload).playerId);
     if (!Number.isFinite(playerId)) return state;
 
     const players = Array.isArray(state.players) ? state.players : [];
@@ -438,14 +465,14 @@ export class CaActionService {
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
 
-    const pending = state.pending as any;
+    const pending = state.pending;
     if (
       !pending ||
       pending.type !== 'choose_next_delta' ||
       pending.playerId !== currentId
     )
       return state;
-    const delta = Number((action.payload as any)?.delta);
+    const delta = Number(asRecord(action.payload).delta);
     if (!Number.isFinite(delta) || (delta !== -1 && delta !== 1))
       return { ...state, pending: null };
 
@@ -453,7 +480,7 @@ export class CaActionService {
     meta = {
       ...meta,
       pendingContext: null,
-      statuses: { ...meta.statuses, nextPlayerDelta: delta } as any,
+      statuses: { ...meta.statuses, nextPlayerDelta: delta },
     };
     let next: GameStateEntity = {
       ...state,
@@ -481,9 +508,10 @@ export class CaActionService {
     let lastLandingIsNeutral = true;
 
     const logLanding = (pos: number) => {
-      const tile = meta.tiles?.[pos] as any;
-      const label = String(tile?.label ?? '').trim();
-      const desc = String(tile?.description ?? '').trim();
+      const tile = meta.tiles?.[pos];
+      const label = typeof tile?.label === 'string' ? tile.label.trim() : '';
+      const desc =
+        typeof tile?.description === 'string' ? tile.description.trim() : '';
       const isNeutral = Boolean(tile?.isNeutral);
       lastLandingPos = pos;
       lastLandingIsNeutral = isNeutral;
@@ -530,7 +558,8 @@ export class CaActionService {
     const applyMove = (delta: number, reason: string) => {
       if (!delta) return;
 
-      const ignorePenalty = meta.statuses?.ignoreNextPenalty?.[actorId] === true;
+      const ignorePenalty =
+        meta.statuses?.ignoreNextPenalty?.[actorId] === true;
       if (ignorePenalty && delta < 0) {
         meta = {
           ...meta,
@@ -587,7 +616,8 @@ export class CaActionService {
     };
 
     const applySkip = (count: number, reason: string) => {
-      const ignorePenalty = meta.statuses?.ignoreNextPenalty?.[actorId] === true;
+      const ignorePenalty =
+        meta.statuses?.ignoreNextPenalty?.[actorId] === true;
       if (ignorePenalty) {
         meta = {
           ...meta,
@@ -618,7 +648,12 @@ export class CaActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       next = this.core.appendLog(
         next,
-        resolvePlayerNameFromState(next, actorId) + ' devra passer ' + String(count) + ' tour(s) (' + reason + ').',
+        resolvePlayerNameFromState(next, actorId) +
+          ' devra passer ' +
+          String(count) +
+          ' tour(s) (' +
+          reason +
+          ').',
       );
     };
 
@@ -647,25 +682,30 @@ export class CaActionService {
       // They behave like a card effect applied after landing on a non-neutral tile.
       if (card.id >= 33 && card.id <= 37) {
         const delta = Number(card.moveDelta ?? 0);
-          if (Number.isFinite(delta) && delta !== 0) {
-            applyMove(delta, 'carte');
-            meta = this.getMeta(next);
-            if (meta.winnerId != null) return finalize(next);
-          }
+        if (Number.isFinite(delta) && delta !== 0) {
+          applyMove(delta, 'carte');
+          meta = this.getMeta(next);
+          if (meta.winnerId != null) return finalize(next);
+        }
 
         next = this.applySpecialAfterMove(next, actorId, card);
         return finalize(next);
       }
       // 61) roll twice and move total
       if (card.id === 61) {
-        const r1 = this.random.rollDice(meta as any, 6);
+        const r1 = this.random.rollDice(meta, 6);
         meta = { ...meta, ...r1.meta };
-        const r2 = this.random.rollDice(meta as any, 6);
+        const r2 = this.random.rollDice(meta, 6);
         meta = { ...meta, ...r2.meta };
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
         next = this.core.appendLog(
           next,
-          resolvePlayerNameFromState(next, actorId) + ' lance deux dés: ' + String(r1.roll) + ' et ' + String(r2.roll) + '.',
+          resolvePlayerNameFromState(next, actorId) +
+            ' lance deux dés: ' +
+            String(r1.roll) +
+            ' et ' +
+            String(r2.roll) +
+            '.',
         );
         applyMove(r1.roll + r2.roll, 'règle');
         return finalize(next);
@@ -697,7 +737,10 @@ export class CaActionService {
             },
           },
         };
-        return finalize({ ...next, metadata: { ...(next.metadata ?? {}), ...meta } });
+        return finalize({
+          ...next,
+          metadata: { ...(next.metadata ?? {}), ...meta },
+        });
       }
 
       // 64) back 3 then forward 2 => net -1
@@ -718,7 +761,10 @@ export class CaActionService {
             },
           },
         };
-        return finalize({ ...next, metadata: { ...(next.metadata ?? {}), ...meta } });
+        return finalize({
+          ...next,
+          metadata: { ...(next.metadata ?? {}), ...meta },
+        });
       }
 
       // 66) forward 3 then back 1 => net +2
@@ -741,7 +787,10 @@ export class CaActionService {
         };
         meta = {
           ...meta,
-          pendingContext: { kind: 'choose_next_player', actorId } satisfies PendingContext,
+          pendingContext: {
+            kind: 'choose_next_player',
+            actorId,
+          } satisfies PendingContext,
         };
         return finalize({
           ...next,
@@ -754,7 +803,8 @@ export class CaActionService {
       if (card.id === 68) {
         const pending: PendingState = {
           type: 'choose_next_delta',
-          label: 'Choisissez l\'effet pour le prochain joueur dans la liste, puis Entrée.',
+          label:
+            "Choisissez l'effet pour le prochain joueur dans la liste, puis Entrée.",
           playerId: actorId,
           blocking: true,
           choices: ['Avancer de 1', 'Reculer de 1'],
@@ -762,7 +812,10 @@ export class CaActionService {
         };
         meta = {
           ...meta,
-          pendingContext: { kind: 'choose_next_delta', actorId } satisfies PendingContext,
+          pendingContext: {
+            kind: 'choose_next_delta',
+            actorId,
+          } satisfies PendingContext,
         };
         return finalize({
           ...next,
@@ -783,7 +836,10 @@ export class CaActionService {
             },
           },
         };
-        return finalize({ ...next, metadata: { ...(next.metadata ?? {}), ...meta } });
+        return finalize({
+          ...next,
+          metadata: { ...(next.metadata ?? {}), ...meta },
+        });
       }
 
       // 70) mirror next roll from a chosen player
@@ -806,7 +862,10 @@ export class CaActionService {
           };
           meta = {
             ...meta,
-            pendingContext: { kind: 'mirror_next_roll', actorId } satisfies PendingContext,
+            pendingContext: {
+              kind: 'mirror_next_roll',
+              actorId,
+            } satisfies PendingContext,
           };
           return {
             ...next,
@@ -856,7 +915,10 @@ export class CaActionService {
         };
         meta = {
           ...meta,
-          pendingContext: { kind: 'swap_after_move', actorId } satisfies PendingContext,
+          pendingContext: {
+            kind: 'swap_after_move',
+            actorId,
+          } satisfies PendingContext,
         };
         return finalize({
           ...next,
@@ -872,10 +934,9 @@ export class CaActionService {
     return finalize(next);
   }
 
-
   private applyGlobal(
     state: GameStateEntity,
-    actorId: number,
+    _actorId: number,
     card: CaCard,
   ): GameStateEntity {
     let next = state;
@@ -886,24 +947,28 @@ export class CaActionService {
     const positions = { ...(meta.positions ?? {}) };
     const lastIndex = Math.max(0, (meta.tiles?.length ?? 0) - 1);
 
-    const clampPos = (p) => clamp(p, 0, lastIndex);
+    const clampPos = (p: number) => clamp(p, 0, lastIndex);
 
-    const logAll = (message) => {
+    const logAll = (message: string) => {
       next = this.core.appendLog(next, message);
     };
 
     if (card.id === 41) {
       const vals = ids.map((id) => positions[id] ?? 0);
-      const shuffled = this.random.shuffle(meta as any, vals);
+      const shuffled = this.random.shuffle(meta, vals);
       meta = { ...meta, ...shuffled.meta };
       ids.forEach((id, i) => (positions[id] = shuffled.values[i] ?? 0));
       logAll('Chaos : les positions sont m?lang?es.');
     } else if (card.id === 42) {
       // Reverse ranking positions.
-      const ranked = [...ids].sort((a, b) => (positions[a] ?? 0) - (positions[b] ?? 0));
+      const ranked = [...ids].sort(
+        (a, b) => (positions[a] ?? 0) - (positions[b] ?? 0),
+      );
       const old = ranked.map((id) => positions[id] ?? 0);
       const reversed = [...old].reverse();
-      ranked.forEach((id, i) => (positions[id] = reversed[i] ?? (positions[id] ?? 0)));
+      ranked.forEach(
+        (id, i) => (positions[id] = reversed[i] ?? positions[id] ?? 0),
+      );
       logAll('Chaos : ordre du classement invers?.');
     } else if (card.id === 43) {
       // Common lost turn: everyone skips one turn.
@@ -929,17 +994,19 @@ export class CaActionService {
       logAll('Tout le monde avance de 1 case.');
     } else if (card.id === 49) {
       // General shift: each player takes the position of the one just behind (circular).
-      const ranked = [...ids].sort((a, b) => (positions[b] ?? 0) - (positions[a] ?? 0));
+      const ranked = [...ids].sort(
+        (a, b) => (positions[b] ?? 0) - (positions[a] ?? 0),
+      );
       const old = ranked.map((id) => positions[id] ?? 0);
       ranked.forEach((id, i) => {
         const fromIdx = (i + 1) % ranked.length;
-        positions[id] = old[fromIdx] ?? (positions[id] ?? 0);
+        positions[id] = old[fromIdx] ?? positions[id] ?? 0;
       });
       logAll('D?calage g?n?ral des positions.');
     } else if (card.id === 50) {
       // Everyone rolls once and moves.
       for (const id of ids) {
-        const rng = this.random.rollDice(meta as any, 6);
+        const rng = this.random.rollDice(meta, 6);
         meta = { ...meta, ...rng.meta };
         positions[id] = clampPos((positions[id] ?? 0) + rng.roll);
       }
@@ -952,14 +1019,18 @@ export class CaActionService {
     // Winner check (highest position reaching the end).
     const reached = ids.filter((id) => (positions[id] ?? 0) >= lastIndex);
     if (reached.length) {
-      const winner = reached.sort((a, b) => (positions[b] ?? 0) - (positions[a] ?? 0))[0];
+      const winner = reached.sort(
+        (a, b) => (positions[b] ?? 0) - (positions[a] ?? 0),
+      )[0];
       meta = { ...meta, winnerId: winner };
-      next = this.core.appendLog(next, resolvePlayerNameFromState(next, winner) + ' remporte la partie !');
+      next = this.core.appendLog(
+        next,
+        resolvePlayerNameFromState(next, winner) + ' remporte la partie !',
+      );
     }
 
     return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
   }
-
 
   private applyConditional(
     state: GameStateEntity,
@@ -972,14 +1043,18 @@ export class CaActionService {
     const lastIndex = Math.max(0, (meta.tiles?.length ?? 0) - 1);
     const pos = meta.positions?.[actorId] ?? 0;
 
-    const ids = Object.keys(meta.positions ?? {}).map(Number).filter(Number.isFinite);
+    const ids = Object.keys(meta.positions ?? {})
+      .map(Number)
+      .filter(Number.isFinite);
     const positions = { ...(meta.positions ?? {}) };
 
-    const ordered = [...ids].sort((a, b) => (positions[a] ?? 0) - (positions[b] ?? 0));
+    const ordered = [...ids].sort(
+      (a, b) => (positions[a] ?? 0) - (positions[b] ?? 0),
+    );
     const leader = ordered[ordered.length - 1];
     const last = ordered[0];
 
-    const applyMove = (delta, note) => {
+    const applyMove = (delta: number, note: string) => {
       if (!delta) return;
       const after = clamp(pos + delta, 0, lastIndex);
       meta = {
@@ -989,7 +1064,17 @@ export class CaActionService {
         turnsSinceMoved: { ...(meta.turnsSinceMoved ?? {}), [actorId]: 0 },
       };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      next = this.core.appendLog(next, resolvePlayerNameFromState(next, actorId) + ' ' + (delta >= 0 ? 'avance' : 'recule') + ' de ' + String(Math.abs(delta)) + ' case(s) (' + note + ').');
+      next = this.core.appendLog(
+        next,
+        resolvePlayerNameFromState(next, actorId) +
+          ' ' +
+          (delta >= 0 ? 'avance' : 'recule') +
+          ' de ' +
+          String(Math.abs(delta)) +
+          ' case(s) (' +
+          note +
+          ').',
+      );
     };
 
     if (card.id === 51) {
@@ -1013,7 +1098,10 @@ export class CaActionService {
           },
         };
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-        next = this.core.appendLog(next, "Condition : un tour d'attente est annulé.");
+        next = this.core.appendLog(
+          next,
+          "Condition : un tour d'attente est annulé.",
+        );
       }
     } else if (card.id === 55) {
       const isMultiple = (pos + 1) % 5 === 0;
@@ -1022,13 +1110,25 @@ export class CaActionService {
       const tsm = meta.turnsSinceMoved?.[actorId] ?? 0;
       applyMove(tsm >= 2 ? 5 : 0, 'condition');
     } else if (card.id === 57) {
-      const same = ids.find((id) => id !== actorId && (positions[id] ?? 0) === pos);
+      const same = ids.find(
+        (id) => id !== actorId && (positions[id] ?? 0) === pos,
+      );
       if (same != null) {
         const aAfter = clamp(pos + 2, 0, lastIndex);
         const sAfter = clamp((positions[same] ?? 0) + 2, 0, lastIndex);
-        meta = { ...meta, positions: { ...positions, [actorId]: aAfter, [same]: sAfter } };
+        meta = {
+          ...meta,
+          positions: { ...positions, [actorId]: aAfter, [same]: sAfter },
+        };
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-        next = this.core.appendLog(next, 'Condition : ' + resolvePlayerNameFromState(next, actorId) + ' et ' + resolvePlayerNameFromState(next, same) + ' avancent de 2 cases.');
+        next = this.core.appendLog(
+          next,
+          'Condition : ' +
+            resolvePlayerNameFromState(next, actorId) +
+            ' et ' +
+            resolvePlayerNameFromState(next, same) +
+            ' avancent de 2 cases.',
+        );
       }
     } else if (card.id === 58) {
       // "Rejouez immédiatement" est ignoré (règle du jeu: la carte termine toujours le tour).
@@ -1037,9 +1137,19 @@ export class CaActionService {
       // If you are just behind someone by 1, join them.
       const aheadId = ordered[ordered.indexOf(actorId) + 1];
       if (aheadId != null && (positions[aheadId] ?? 0) === pos + 1) {
-        meta = { ...meta, positions: { ...positions, [actorId]: positions[aheadId] ?? pos } };
+        meta = {
+          ...meta,
+          positions: { ...positions, [actorId]: positions[aheadId] ?? pos },
+        };
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-        next = this.core.appendLog(next, 'Condition : ' + resolvePlayerNameFromState(next, actorId) + ' rejoint ' + resolvePlayerNameFromState(next, aheadId) + '.');
+        next = this.core.appendLog(
+          next,
+          'Condition : ' +
+            resolvePlayerNameFromState(next, actorId) +
+            ' rejoint ' +
+            resolvePlayerNameFromState(next, aheadId) +
+            '.',
+        );
       }
     } else if (card.id === 60) {
       // Best-effort: if your last movement was exactly +1, you advance +1 again.
@@ -1052,13 +1162,15 @@ export class CaActionService {
     const endPos = meta.positions?.[actorId] ?? 0;
     if (endPos >= lastIndex) {
       meta = { ...meta, winnerId: actorId };
-      next = this.core.appendLog(next, resolvePlayerNameFromState(next, actorId) + ' remporte la partie !');
+      next = this.core.appendLog(
+        next,
+        resolvePlayerNameFromState(next, actorId) + ' remporte la partie !',
+      );
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
     return next;
   }
-
 
   private applySpecialAfterMove(
     state: GameStateEntity,
@@ -1072,16 +1184,26 @@ export class CaActionService {
     const myPos = meta.positions?.[actorId] ?? 0;
     const lastIndex = Math.max(0, (meta.tiles?.length ?? 0) - 1);
 
-    const ids = Object.keys(meta.positions ?? {}).map(Number).filter(Number.isFinite);
+    const ids = Object.keys(meta.positions ?? {})
+      .map(Number)
+      .filter(Number.isFinite);
     const others = ids.filter((id) => id !== actorId);
-    const maxPos = others.length ? Math.max(...others.map((id) => meta.positions?.[id] ?? 0)) : myPos;
+    const maxPos = others.length
+      ? Math.max(...others.map((id) => meta.positions?.[id] ?? 0))
+      : myPos;
 
     // 33) Raccourci secret: take the lead.
     if (card.id === 33) {
       const target = clamp(maxPos + 1, 0, lastIndex);
-      meta = { ...meta, positions: { ...(meta.positions ?? {}), [actorId]: target } };
+      meta = {
+        ...meta,
+        positions: { ...(meta.positions ?? {}), [actorId]: target },
+      };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      next = this.core.appendLog(next, resolvePlayerNameFromState(next, actorId) + ' prend la premi?re place.');
+      next = this.core.appendLog(
+        next,
+        resolvePlayerNameFromState(next, actorId) + ' prend la premi?re place.',
+      );
       return next;
     }
 
@@ -1121,7 +1243,10 @@ export class CaActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       next = this.core.appendLog(
         next,
-        resolvePlayerNameFromState(next, actorId) + ' saute au-dessus de ' + resolvePlayerNameFromState(next, ahead.id) + '.',
+        resolvePlayerNameFromState(next, actorId) +
+          ' saute au-dessus de ' +
+          resolvePlayerNameFromState(next, ahead.id) +
+          '.',
       );
       return next;
     }
@@ -1141,14 +1266,14 @@ export class CaActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       next = this.core.appendLog(
         next,
-        resolvePlayerNameFromState(next, actorId) + " avance jusqu'à une case multiple de 5.",
+        resolvePlayerNameFromState(next, actorId) +
+          " avance jusqu'à une case multiple de 5.",
       );
       return next;
     }
 
     return next;
   }
-
 
   private advanceTurnWithNextDelta(state: GameStateEntity): GameStateEntity {
     // The game rule is: movement happens on roll, and card draw is mandatory on non-neutral tiles.
@@ -1160,7 +1285,10 @@ export class CaActionService {
     card: CaCard | null;
     meta: CaMetadata;
   } {
-    const flow = this.deckPolicies.drawOne<CaCard, any>({
+    const flow = this.deckPolicies.drawOne<
+      CaCard,
+      { cards: CaCard[]; discard: CaCard[]; rng: CaMetadata }
+    >({
       meta: {
         cards: Array.isArray(meta.decks?.cards) ? meta.decks.cards : [],
         discard: Array.isArray(meta.decks?.discard) ? meta.decks.discard : [],
@@ -1172,7 +1300,7 @@ export class CaActionService {
     });
 
     const baseMeta: CaMetadata = {
-      ...(flow.meta.rng as CaMetadata),
+      ...flow.meta.rng,
       decks: {
         cards: Array.isArray(flow.meta.cards) ? flow.meta.cards : [],
         discard: Array.isArray(flow.meta.discard) ? flow.meta.discard : [],
@@ -1194,7 +1322,7 @@ export class CaActionService {
   }
 
   private getMeta(state: GameStateEntity): CaMetadata {
-    return (state.metadata ?? {}) as any as CaMetadata;
+    return (state.metadata ?? {}) as CaMetadata;
   }
 
   private otherPlayers(
@@ -1204,13 +1332,18 @@ export class CaActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     return players
       .filter((p) => p?.id != null && p.id !== me)
-      .map((p) => ({ id: p.id, username: resolvePlayerNameFromState(state, p.id) }));
+      .map((p) => ({
+        id: p.id,
+        username: resolvePlayerNameFromState(state, p.id),
+      }));
   }
 
   private pawnLabel(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
-    const p = players.find((x: any) => x?.id === id) as any;
-    const pawn = typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
+    const player = players.find((x) => x?.id === id);
+    const playerRecord = asRecord(player);
+    const pawn =
+      typeof playerRecord.pawn === 'string' ? playerRecord.pawn.trim() : '';
     const resolved = pawn || resolvePlayerNameFromState(state, id);
     return `"${resolved}"`;
   }
@@ -1226,7 +1359,8 @@ function finalize(state: GameStateEntity): GameStateEntity {
   return state;
 }
 
-
-
-
-
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}

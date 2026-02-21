@@ -273,7 +273,11 @@ export class BotService {
   }
 
   async removeAllBotsForRoom(roomId: number): Promise<void> {
-    await this.bots.delete({ room: { id: roomId } as any });
+    await this.bots
+      .createQueryBuilder()
+      .delete()
+      .where('room_id = :roomId', { roomId })
+      .execute();
   }
 
   private async countActiveHumans(roomId: number): Promise<number> {

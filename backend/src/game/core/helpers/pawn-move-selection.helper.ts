@@ -3,12 +3,31 @@ type PendingMoveOption = {
   targetProgress: number;
 };
 
-export function getPendingPawnMoveOptions(pending: any): PendingMoveOption[] {
-  const moves = Array.isArray(pending?.data?.moves) ? pending.data.moves : [];
+type PendingMoveData = {
+  data?: {
+    moves?: unknown;
+  };
+};
+
+type MovePayload = {
+  pawnIndex?: unknown;
+  targetProgress?: unknown;
+};
+
+export function getPendingPawnMoveOptions(
+  pending: PendingMoveData,
+): PendingMoveOption[] {
+  const movesRaw = Array.isArray(pending?.data?.moves)
+    ? pending.data.moves
+    : [];
+  const moves = movesRaw.filter(
+    (move): move is Record<string, unknown> =>
+      Boolean(move) && typeof move === 'object',
+  );
   return moves
-    .map((move: any) => ({
-      pawnIndex: Number(move?.pawnIndex),
-      targetProgress: Number(move?.targetProgress),
+    .map((move) => ({
+      pawnIndex: Number(move.pawnIndex),
+      targetProgress: Number(move.targetProgress),
     }))
     .filter(
       (move) =>
@@ -17,9 +36,12 @@ export function getPendingPawnMoveOptions(pending: any): PendingMoveOption[] {
 }
 
 export function listPendingPawnMoveActions(
-  pending: any,
+  pending: PendingMoveData,
   actionType: string = 'move_pawn',
-): Array<{ type: string; payload: { pawnIndex: number; targetProgress: number } }> {
+): Array<{
+  type: string;
+  payload: { pawnIndex: number; targetProgress: number };
+}> {
   return getPendingPawnMoveOptions(pending).map((move) => ({
     type: actionType,
     payload: {
@@ -30,8 +52,8 @@ export function listPendingPawnMoveActions(
 }
 
 export function resolvePendingPawnMove(
-  pending: any,
-  payload: any,
+  pending: PendingMoveData,
+  payload: MovePayload,
 ): PendingMoveOption | null {
   const pawnIndex = Number(payload?.pawnIndex);
   const targetProgress = Number(payload?.targetProgress);

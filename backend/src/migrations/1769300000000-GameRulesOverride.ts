@@ -18,4 +18,3 @@ export class GameRulesOverride1769300000000 implements MigrationInterface {
     await queryRunner.dropColumn('game_catalog_overrides', 'rules');
   }
 }
-

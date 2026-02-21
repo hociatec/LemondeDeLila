@@ -17,12 +17,14 @@ export class AFondLesBallonsPresenterService {
     userId: number,
   ): GameStateWithActions {
     const actions = Rulebook.getAvailableActions(state, userId);
-    const meta = (state.metadata ?? {}) as any as AFondLesBallonsMetadata;
+    const meta = (state.metadata ?? {}) as AFondLesBallonsMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
+    const stateRecord = state as unknown as Record<string, unknown>;
+    const stateExtras = asRecord(stateRecord.extras);
 
     const extras = {
-      ...(state as any).extras,
+      ...stateExtras,
       currentPlayerView: {
         id: userId,
         username: me?.username ?? `Joueur ${userId}`,
@@ -50,7 +52,16 @@ export class AFondLesBallonsPresenterService {
       actions: formatPresenterActions(actions),
       pending: state.pending ?? null,
       extras,
-      board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
-    } as any;
+      board: this.boardPayload.buildTilesPositionsLaps(
+        meta.tiles,
+        meta.positions,
+      ),
+    } as GameStateWithActions;
   }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
 }

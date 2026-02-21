@@ -5,7 +5,6 @@ import {
   isRollActionType,
   normalizeActionType,
 } from '../../../../actions/action-service.helper';
-import { requiredString } from '../../../../core/helpers/payload-validators.helper';
 import {
   getPendingPawnActionsForPlayer,
   validatePendingPawnActionForActor,
@@ -33,7 +32,7 @@ export function getAvailableActions(
   playerId: number,
 ): GameSingleActionDto[] {
   if (!isStartedState(state)) return [];
-  const pending = state.pending as any;
+  const pending = asPendingRecord(state.pending);
   if (pending) {
     const drawActions = getPendingDrawActionsForPlayer(pending, playerId, {
       samePlayer: samePlayerId,
@@ -61,11 +60,7 @@ export function validateAction(
 ): GameSingleActionDto {
   const type = normalizeActionType(action);
   const isRoll = isRollActionType(type);
-  if (
-    !isRoll &&
-    type !== 'draw' &&
-    type !== 'choose_pawn'
-  ) {
+  if (!isRoll && type !== 'draw' && type !== 'choose_pawn') {
     throw new GameValidationError(`Action inconnue: ${type}`, {
       gameType: GAME_TYPE,
       action: { type },
@@ -80,7 +75,7 @@ export function validateAction(
       gameType: GAME_TYPE,
     });
   }
-  const pending = state.pending as any;
+  const pending = asPendingRecord(state.pending);
   if (pending) {
     const drawValidation = validatePendingDrawActionForActor({
       pending,
@@ -91,7 +86,10 @@ export function validateAction(
     if (drawValidation.ok) {
       return drawValidation.action;
     }
-    if (pending.type === 'draw' && drawValidation.reason === 'wrong_action_type') {
+    if (
+      pending.type === 'draw' &&
+      drawValidation.reason === 'wrong_action_type'
+    ) {
       throw new PlayerActionError('Action non disponible.', {
         gameType: GAME_TYPE,
       });
@@ -131,5 +129,29 @@ export function validateAction(
   return { type: 'roll', payload: {} };
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
 
+function asPendingRecord(value: unknown): {
+  type?: string;
+  playerId?: unknown;
+  data?: Record<string, unknown>;
+} | null {
+  if (!value || typeof value !== 'object') return null;
+  const record = asRecord(value);
+  return {
+    type: toText(record.type),
+    playerId: record.playerId,
+    data: asRecord(record.data),
+  };
+}
 
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  return '';
+}

@@ -9,11 +9,7 @@ import { OlympiaPresenterService } from './presenter/olympia-presenter.service';
 import { OlympiaBotService } from './bots/olympia-bot.service';
 
 @Module({
-  imports: [
-    BoardGameCoreKitModule,
-    GameCoreModule,
-    GameRegistryModule,
-    ],
+  imports: [BoardGameCoreKitModule, GameCoreModule, GameRegistryModule],
   providers: [
     OlympiaService,
     OlympiaSetupService,

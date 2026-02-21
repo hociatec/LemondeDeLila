@@ -1,6 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import type { WebSocket } from 'ws';
 import { WsTicketScope, WsTicketService } from './ws-ticket.service';
+import type { IncomingHttpHeaders, IncomingMessage } from 'http';
+
+type WsRequestLike = IncomingMessage & {
+  url?: string;
+  headers?: IncomingHttpHeaders;
+};
+
+type WsClientLike = {
+  upgradeReq?: WsRequestLike;
+  req?: WsRequestLike;
+  handshakeHeaders?: IncomingHttpHeaders;
+  url?: string;
+};
 
 export type WsTicketValidationResult =
   | { ok: true; reason: 'not_required' | 'ok'; ticketPresent: boolean }
@@ -18,7 +30,11 @@ export class WsTicketAuthService {
    * Validates a short-lived WS ticket from query or headers.
    * Returns true if valid; false otherwise (callers typically close the socket).
    */
-  validate(client: WebSocket, args: any[], scope: WsTicketScope): boolean {
+  validate(
+    client: WsClientLike,
+    args: unknown[],
+    scope: WsTicketScope,
+  ): boolean {
     const ticket = this.extractTicket(client, args);
     if (!ticket) {
       return false;
@@ -36,8 +52,8 @@ export class WsTicketAuthService {
    * In that case, only enforce a ticket when a user token is present.
    */
   validateIfTokenPresent(
-    client: WebSocket,
-    args: any[],
+    client: WsClientLike,
+    args: unknown[],
     scope: WsTicketScope,
     hasUserToken: boolean,
   ): boolean {
@@ -48,8 +64,8 @@ export class WsTicketAuthService {
   }
 
   validateIfTokenPresentDetailed(
-    client: WebSocket,
-    args: any[],
+    client: WsClientLike,
+    args: unknown[],
     scope: WsTicketScope,
     hasUserToken: boolean,
   ): WsTicketValidationResult {
@@ -70,36 +86,75 @@ export class WsTicketAuthService {
     }
   }
 
-  private extractTicket(client: WebSocket, args: any[]): string | null {
-    const request: any =
-      (args && args[0]) || (client as any).upgradeReq || (client as any).req;
-    const urlCandidate = (client as any).url || request?.url || '';
+  private extractTicket(client: WsClientLike, args: unknown[]): string | null {
+    const firstArg = args[0];
+    const request = this.resolveRequest(client, firstArg);
+    const urlCandidate = this.pickUrl(client, request);
 
-    if (typeof urlCandidate === 'string' && urlCandidate.trim()) {
-      try {
-        const url = new URL(urlCandidate, 'ws://localhost');
-        const fromQuery =
-          url.searchParams.get('ticket') || url.searchParams.get('wsTicket');
-        if (fromQuery && fromQuery.trim()) {
-          return fromQuery.trim();
+    if (urlCandidate) {
+      const trimmedUrl = urlCandidate.trim();
+      if (trimmedUrl) {
+        try {
+          const url = new URL(trimmedUrl, 'ws://localhost');
+          const fromQuery =
+            url.searchParams.get('ticket') ?? url.searchParams.get('wsTicket');
+          if (fromQuery && fromQuery.trim()) {
+            return fromQuery.trim();
+          }
+        } catch {
+          /* ignore */
         }
-      } catch {
-        /* ignore */
       }
     }
 
-    const headers = (client as any).handshakeHeaders || request?.headers;
-    if (!headers) return null;
-    const value =
-      headers['x-lila-ws-ticket'] ||
-      headers['X-Lila-Ws-Ticket'] ||
-      headers['x-ws-ticket'] ||
-      headers['x-lila-ticket'] ||
-      headers['x-lila-ws-ticket'.toLowerCase()] ||
-      null;
-    if (typeof value === 'string' && value.trim()) {
-      return value.trim();
+    const headers = client.handshakeHeaders ?? request?.headers;
+    return this.readTicketHeader(headers);
+  }
+
+  private readTicketHeader(
+    headers: IncomingHttpHeaders | undefined,
+  ): string | null {
+    if (!headers) {
+      return null;
+    }
+    const candidates = ['x-lila-ws-ticket', 'x-lila-ticket', 'x-ws-ticket'];
+    for (const key of candidates) {
+      const value = this.normalizeHeaderValue(headers[key]);
+      if (value) {
+        return value;
+      }
     }
     return null;
+  }
+
+  private resolveRequest(
+    client: WsClientLike,
+    firstArg: unknown,
+  ): WsRequestLike | null {
+    if (firstArg && typeof firstArg === 'object' && firstArg !== null) {
+      return firstArg as WsRequestLike;
+    }
+    return client.upgradeReq ?? client.req ?? null;
+  }
+
+  private pickUrl(
+    client: WsClientLike,
+    request: WsRequestLike | null,
+  ): string | null {
+    const raw =
+      (typeof client.url === 'string' ? client.url : '') ||
+      (typeof request?.url === 'string' ? request.url : '');
+    const trimmed = raw.trim();
+    return trimmed || null;
+  }
+
+  private normalizeHeaderValue(
+    raw: string | string[] | undefined,
+  ): string | null {
+    if (!raw) return null;
+    const value = Array.isArray(raw) ? raw[0] : raw;
+    if (typeof value !== 'string') return null;
+    const trimmed = value.trim();
+    return trimmed || null;
   }
 }

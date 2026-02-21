@@ -35,4 +35,3 @@ export class GridBlockedEdgesService {
     return blocked;
   }
 }
-

@@ -24,7 +24,8 @@ export class ZigEtZagService extends AbstractGameService {
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'VentsDansants';
   readonly displayName = ZIG_ET_ZAG_GAME.displayName;
-  readonly description = 'Bataille tendre où chaque duel ramasse les cartes en jeu.';
+  readonly description =
+    'Bataille tendre où chaque duel ramasse les cartes en jeu.';
   readonly minPlayers = ZIG_ET_ZAG_GAME.minPlayers;
   readonly maxPlayers = ZIG_ET_ZAG_GAME.maxPlayers;
 

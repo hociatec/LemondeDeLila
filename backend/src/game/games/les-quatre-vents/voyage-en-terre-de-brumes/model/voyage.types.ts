@@ -33,6 +33,7 @@ export type VoyagePendingQuiz = {
   question: string;
   choices: string[];
   answer?: string;
+  successDelta?: number;
 };
 
 export type VoyageMetadata = {

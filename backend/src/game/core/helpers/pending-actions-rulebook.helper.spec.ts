@@ -284,7 +284,10 @@ describe('pending-actions-rulebook.helper', () => {
       ok: true,
       cardType: 'malus',
       cardId: 22,
-      action: { type: 'choose_card', payload: { cardType: 'malus', cardId: 22 } },
+      action: {
+        type: 'choose_card',
+        payload: { cardType: 'malus', cardId: 22 },
+      },
     });
 
     expect(

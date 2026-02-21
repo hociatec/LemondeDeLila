@@ -8,7 +8,10 @@ import * as Rulebook from '../rulebook/rulebook';
 export class VoyageBotService {
   constructor(private readonly botRunner: BotRunnerService) {}
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     const available = Rulebook.getAvailableActions(state, botPlayerId);
     return this.botRunner.choose(
       available,
@@ -21,4 +24,3 @@ export class VoyageBotService {
     );
   }
 }
-

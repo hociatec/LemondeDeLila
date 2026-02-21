@@ -19,4 +19,3 @@ export class AddRoomRestoreMetadata1769220000000 implements MigrationInterface {
     `);
   }
 }
-

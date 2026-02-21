@@ -1,4 +1,4 @@
-using System.Threading;
+﻿using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
@@ -49,14 +49,19 @@ public partial class GamePlayView
             return;
         }
 
+        if (IsGameFinished(vm))
+        {
+            return;
+        }
+
         if (sender is ListBox list && ReferenceEquals(list, HandList) && HandList.IsVisible && HandList.Items.Count > 0)
         {
-            e.Handled = true;
             try
             {
                 var sent = await vm.SubmitSelectedHandCardAsync(CancellationToken.None).ConfigureAwait(true);
                 if (sent)
                 {
+                    e.Handled = true;
                     NoteHandSubmittedForFocusRestore();
                     return;
                 }
@@ -76,8 +81,10 @@ public partial class GamePlayView
                     var sentChoice = await vm.SubmitSelectedChoiceAsync(CancellationToken.None).ConfigureAwait(true);
                     if (sentChoice)
                     {
+                        e.Handled = true;
                         // Hand-driven flow (LAMA, etc.): keep focus anchored on hand list.
                         NoteHandSubmittedForFocusRestore();
+                        return;
                     }
                 }
             }
@@ -90,12 +97,12 @@ public partial class GamePlayView
 
         if (sender is ListBox choiceList && ReferenceEquals(choiceList, ChoicesList) && ChoicesList.Items.Count > 0)
         {
-            e.Handled = true;
             try
             {
                 var sent = await vm.SubmitSelectedChoiceAsync(CancellationToken.None).ConfigureAwait(true);
                 if (sent)
                 {
+                    e.Handled = true;
                     NoteChoiceSubmittedForFocusRestore(vm);
                 }
             }
@@ -140,7 +147,7 @@ public partial class GamePlayView
             return false;
         }
 
-        // Naviguer la liste même si le focus est ailleurs (Tab/Maj+Tab, historique, etc.).
+        // Naviguer la liste mÃªme si le focus est ailleurs (Tab/Maj+Tab, historique, etc.).
         e.Handled = true;
 
         var count = targetList.Items.Count;
@@ -154,7 +161,7 @@ public partial class GamePlayView
         if (next >= count) next = count - 1;
 
         // Borne haute/basse: ne pas "reboucler" visuellement/sonorement.
-        // Si la liste est déjà focusée, on consomme la touche sans re-focaliser le même item.
+        // Si la liste est dÃ©jÃ  focusÃ©e, on consomme la touche sans re-focaliser le mÃªme item.
         if (next == current && wasFocusWithinTarget)
         {
             return true;
@@ -248,52 +255,10 @@ public partial class GamePlayView
 
         return false;
     }
-
-    private bool TryFocusHandOrChoicesList()
-    {
-        if (DataContext is GamePlayViewModel vmChoosePawn &&
-            vmChoosePawn.IsChoosePawnPending &&
-            ChoicesList.IsVisible &&
-            ChoicesList.Items.Count > 0)
-        {
-            var idx = ChoicesList.SelectedIndex;
-            if (idx < 0) idx = 0;
-            if (idx >= ChoicesList.Items.Count) idx = ChoicesList.Items.Count - 1;
-            ChoicesList.SelectedIndex = idx;
-            ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
-            TryFocusChoiceIndex(ChoicesList, idx);
-            return true;
-        }
-
-        if (HandList.IsVisible && HandList.Items.Count > 0)
-        {
-            var idx = HandList.SelectedIndex;
-            if (idx < 0) idx = 0;
-            if (idx >= HandList.Items.Count) idx = HandList.Items.Count - 1;
-            HandList.SelectedIndex = idx;
-            HandList.ScrollIntoView(HandList.SelectedItem);
-            TryFocusChoiceIndex(HandList, idx);
-            return true;
-        }
-
-        if (ChoicesList.IsVisible && ChoicesList.Items.Count > 0)
-        {
-            var idx = ChoicesList.SelectedIndex;
-            if (idx < 0) idx = 0;
-            if (idx >= ChoicesList.Items.Count) idx = ChoicesList.Items.Count - 1;
-            ChoicesList.SelectedIndex = idx;
-            ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
-            TryFocusChoiceIndex(ChoicesList, idx);
-            return true;
-        }
-
-        return false;
-    }
-
     private async void OnRootPreviewKeyDown(object sender, KeyEventArgs e)
     {
-        // Routed events: si une couche plus haute (ex: ShortcutBindingsBehavior) a déjà consommé la touche,
-        // ne pas la retraiter ici (sinon double envoi/annonces doublées).
+        // Routed events: si une couche plus haute (ex: ShortcutBindingsBehavior) a dÃ©jÃ  consommÃ© la touche,
+        // ne pas la retraiter ici (sinon double envoi/annonces doublÃ©es).
         if (e.Handled)
         {
             return;
@@ -304,14 +269,14 @@ public partial class GamePlayView
             return;
         }
 
-        // Quand un prompt inline est affiché, ne pas intercepter les touches au niveau racine :
+        // Quand un prompt inline est affichÃ©, ne pas intercepter les touches au niveau racine :
         // - laisser Tab naviguer dans le prompt
-        // - laisser Entrée/Échap valider/annuler (géré par le prompt)
+        // - laisser EntrÃ©e/Ã‰chap valider/annuler (gÃ©rÃ© par le prompt)
         // - ne pas forwarder les touches au serveur pendant une saisie
         if (DataContext is GamePlayViewModel promptVm && promptVm.HasInlinePrompt)
         {
-            // IMPORTANT: si le focus n'est pas déjà dans le prompt, Tab peut "sortir" de la zone de jeu
-            // (historique/chat) et bloquer l'accès à la configuration. On force donc le focus dans le prompt.
+            // IMPORTANT: si le focus n'est pas dÃ©jÃ  dans le prompt, Tab peut "sortir" de la zone de jeu
+            // (historique/chat) et bloquer l'accÃ¨s Ã  la configuration. On force donc le focus dans le prompt.
             if (e.Key == Key.Tab)
             {
                 e.Handled = true;
@@ -335,7 +300,7 @@ public partial class GamePlayView
 
         if (e.Key == Key.Tab)
         {
-            // Laisser WPF gérer Tab/Maj+Tab pour permettre l'accès à l'historique et au chat.
+            // Laisser WPF gÃ©rer Tab/Maj+Tab pour permettre l'accÃ¨s Ã  l'historique et au chat.
             // La capture de focus reste active uniquement pendant un prompt inline (bloc plus haut).
             return;
         }
@@ -366,20 +331,22 @@ public partial class GamePlayView
         {
             return;
         }
+        var isFinishedState = IsGameFinished(vm);
 
-        // UX clavier (ex: LAMA) : la main extra (pas les choix de pending) prend la priorité.
+        // UX clavier (ex: LAMA) : la main extra (pas les choix de pending) prend la prioritÃ©.
         if ((e.Key == Key.Enter || e.Key == Key.Return) &&
+            !isFinishedState &&
             !vm.IsChoosePawnPending &&
             HandList.IsVisible &&
             HandList.Items.Count > 0 &&
             !vm.Grid.IsVisible)
         {
-            e.Handled = true;
             try
             {
                 var sent = await vm.SubmitSelectedHandCardAsync(CancellationToken.None).ConfigureAwait(true);
                 if (sent)
                 {
+                    e.Handled = true;
                     NoteHandSubmittedForFocusRestore();
                     return;
                 }
@@ -398,8 +365,10 @@ public partial class GamePlayView
                     var sentChoice = await vm.SubmitSelectedChoiceAsync(CancellationToken.None).ConfigureAwait(true);
                     if (sentChoice)
                     {
+                        e.Handled = true;
                         // Hand-driven flow (LAMA, etc.): keep focus anchored on hand list.
                         NoteHandSubmittedForFocusRestore();
+                        return;
                     }
                 }
             }
@@ -407,41 +376,44 @@ public partial class GamePlayView
             {
                 // ignore
             }
-            return;
+            // No local hand/choice action was sent: keep ENTER available for server shortcuts
+            // (ex: room restart on finished games).
         }
 
-        // UX clavier (ex: LAMA) : si la liste de main/choix est affichée, Entrée valide le choix sélectionné
-        // même si le focus n'est pas déjà dans la ListBox (on navigue souvent via ↑/↓ depuis la zone de jeu).
+        // UX clavier (ex: LAMA) : si la liste de main/choix est affichÃ©e, EntrÃ©e valide le choix sÃ©lectionnÃ©
+        // mÃªme si le focus n'est pas dÃ©jÃ  dans la ListBox (on navigue souvent via â†‘/â†“ depuis la zone de jeu).
         if ((e.Key == Key.Enter || e.Key == Key.Return) &&
+            !isFinishedState &&
             ChoicesList.IsVisible &&
             ChoicesList.Items.Count > 0 &&
             !vm.Grid.IsVisible)
         {
-            e.Handled = true;
             try
             {
                 var sent = await vm.SubmitSelectedChoiceAsync(CancellationToken.None).ConfigureAwait(true);
                 if (sent)
                 {
+                    e.Handled = true;
                     NoteChoiceSubmittedForFocusRestore(vm);
+                    return;
                 }
             }
             catch
             {
                 // ignore
             }
-            return;
+            // No local choice action sent: allow ENTER fallback to server shortcut handling.
         }
 
-        // Grille: laisser Entrée/Espace activer la case (Button.Command) au lieu de renvoyer une touche "ENTER" au serveur.
-        // Sinon Corridor (prendre le pion / déplacement / pose de mur) devient inutilisable.
+        // Grille: laisser EntrÃ©e/Espace activer la case (Button.Command) au lieu de renvoyer une touche "ENTER" au serveur.
+        // Sinon Corridor (prendre le pion / dÃ©placement / pose de mur) devient inutilisable.
         if (vm.Grid.IsVisible && IsFocusWithinGrid() && (e.Key == Key.Enter || e.Key == Key.Return || e.Key == Key.Space))
         {
             return;
         }
 
-        // Empêche la navigation directionnelle WPF (flèches) de "sortir" du jeu et de casser l'interaction
-        // après un Tab/Maj+Tab : on garde/ramène le focus sur une ancre stable dans la zone de jeu.
+        // EmpÃªche la navigation directionnelle WPF (flÃ¨ches) de "sortir" du jeu et de casser l'interaction
+        // aprÃ¨s un Tab/Maj+Tab : on garde/ramÃ¨ne le focus sur une ancre stable dans la zone de jeu.
         if (e.Key is Key.Left or Key.Right or Key.Up or Key.Down)
         {
             if (ChoicesList.IsVisible && IsFocusWithinChoices())
@@ -460,7 +432,7 @@ public partial class GamePlayView
             return;
         }
 
-        // Grille: 'M' est un raccourci UI local (liste d'actions de la case), pas une touche envoyée au serveur.
+        // Grille: 'M' est un raccourci UI local (liste d'actions de la case), pas une touche envoyÃ©e au serveur.
         if (e.Key == Key.M && vm.Grid.IsVisible)
         {
             return;
@@ -522,4 +494,18 @@ public partial class GamePlayView
 
         return !string.IsNullOrWhiteSpace(normalized);
     }
+
+    private static bool IsGameFinished(GamePlayViewModel vm)
+    {
+        if (vm == null)
+        {
+            return false;
+        }
+
+        var status = vm.Session?.LastState?.status;
+        var normalized = (status ?? string.Empty).Trim();
+        return string.Equals(normalized, "finished", StringComparison.OrdinalIgnoreCase);
+    }
 }
+
+

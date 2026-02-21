@@ -48,6 +48,9 @@ export function validatePendingPawnActionForActor(params: {
   if (!pawnId) {
     return { ok: false, reason: 'invalid_pawn' };
   }
-  return { ok: true, pawnId, action: { type: pendingType, payload: { pawnId } } };
+  return {
+    ok: true,
+    pawnId,
+    action: { type: pendingType, payload: { pawnId } },
+  };
 }
-

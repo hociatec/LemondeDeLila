@@ -2,5 +2,7 @@ import type { GameShortcutsBuilder } from '../../../../engine/shortcuts/game-sho
 import { positionOnlyShortcuts } from '../../../../engine/shortcuts/shortcut-presets';
 import { actionShortcut } from '../../../../engine/shortcuts/shortcut-utils';
 
-export const buildMissionGalaxieShortcuts: GameShortcutsBuilder = () =>
-  [...positionOnlyShortcuts(), actionShortcut('SPACE', 'draw')];
+export const buildMissionGalaxieShortcuts: GameShortcutsBuilder = () => [
+  ...positionOnlyShortcuts(),
+  actionShortcut('SPACE', 'draw'),
+];

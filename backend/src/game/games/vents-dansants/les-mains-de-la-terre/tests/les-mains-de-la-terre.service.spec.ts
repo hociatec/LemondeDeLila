@@ -1,9 +1,15 @@
 import { LesMainsDeLaTerreService } from '../les-mains-de-la-terre.service';
 
 describe('LesMainsDeLaTerreService', () => {
-  it('doit être défini', () => {
+  it('doit ï¿½tre dï¿½fini', () => {
     const registry = { register: jest.fn() } as any;
-    const service = new LesMainsDeLaTerreService(registry, {} as any, {} as any, {} as any, {} as any);
+    const service = new LesMainsDeLaTerreService(
+      registry,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
     expect(service).toBeDefined();
   });
 });

@@ -16,7 +16,9 @@ export class AFondLesBallonsBotService {
     if (available.length === 0) return [];
 
     const current = state.turn?.currentPlayerId ?? null;
-    const isPendingForMe = !!(state.pending as any)?.playerId && (state.pending as any).playerId === botPlayerId;
+    const pendingPlayerId = state.pending?.playerId ?? null;
+    const isPendingForMe =
+      typeof pendingPlayerId === 'number' && pendingPlayerId === botPlayerId;
 
     if (current !== botPlayerId && !isPendingForMe) return [];
 

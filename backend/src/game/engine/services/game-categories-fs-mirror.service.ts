@@ -124,7 +124,7 @@ export class GameCategoriesFsMirrorService {
         `- syncedAt: \`${now}\``,
         '',
         'Ce dossier est un miroir automatique de la taverne.',
-        "Ne pas y mettre de code: il peut être renommé/supprimé automatiquement.",
+        'Ne pas y mettre de code: il peut être renommé/supprimé automatiquement.',
         '',
       ].join('\n'),
     );
@@ -149,8 +149,13 @@ export class GameCategoriesFsMirrorService {
           const metaPath = path.join(full, '.category.json');
           try {
             const raw = await fs.promises.readFile(metaPath, 'utf-8');
-            const parsed = JSON.parse(raw.replace(/^\uFEFF/, '')) as any;
-            const id = String(parsed?.id ?? '').trim();
+            const parsed = GameCategoriesFsMirrorService.parseJson(
+              raw.replace(/^\uFEFF/, ''),
+            );
+            const id = GameCategoriesFsMirrorService.getTrimmedString(
+              parsed,
+              'id',
+            );
             if (id && !knownIds.has(id)) {
               await fs.promises.rm(full, { recursive: true, force: true });
               continue;
@@ -268,19 +273,28 @@ export class GameCategoriesFsMirrorService {
     }
   }
 
-  private async tryReadCategoryMeta(folder: string): Promise<MirrorIndexEntry | null> {
+  private async tryReadCategoryMeta(
+    folder: string,
+  ): Promise<MirrorIndexEntry | null> {
     try {
       const metaPath = path.join(folder, '.category.json');
       const raw = await fs.promises.readFile(metaPath, 'utf-8');
-      const parsed = JSON.parse(raw.replace(/^\uFEFF/, '')) as any;
-      const id = String(parsed?.id ?? '').trim();
+      const parsed = GameCategoriesFsMirrorService.parseJson(
+        raw.replace(/^\uFEFF/, ''),
+      );
+      const id = GameCategoriesFsMirrorService.getTrimmedString(parsed, 'id');
       if (!id) return null;
       return {
         id,
-        name: String(parsed?.name ?? '').trim(),
+        name:
+          GameCategoriesFsMirrorService.getTrimmedString(parsed, 'name') || id,
         parentId:
-          typeof parsed?.parentId === 'string' ? parsed.parentId.trim() : null,
-        updatedAt: String(parsed?.updatedAt ?? '').trim(),
+          GameCategoriesFsMirrorService.getTrimmedString(parsed, 'parentId') ||
+          null,
+        updatedAt: GameCategoriesFsMirrorService.getTrimmedString(
+          parsed,
+          'updatedAt',
+        ),
       };
     } catch {
       return null;
@@ -289,9 +303,7 @@ export class GameCategoriesFsMirrorService {
 
   private safeFolderName(value: string): string {
     const raw = String(value ?? '').trim();
-    const noDiacritics = raw
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
+    const noDiacritics = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const cleaned = noDiacritics
       .replace(/[\\/]+/g, ' ')
       .replace(/[<>:"|?*\u0000-\u001F]+/g, ' ')
@@ -301,7 +313,7 @@ export class GameCategoriesFsMirrorService {
     return noTrailing.length > 0 ? noTrailing.slice(0, 120) : 'Categorie';
   }
 
-  private async safeWriteJson(filePath: string, data: any): Promise<void> {
+  private async safeWriteJson(filePath: string, data: unknown): Promise<void> {
     try {
       const tmp = `${filePath}.tmp`;
       await fs.promises.writeFile(
@@ -327,5 +339,25 @@ export class GameCategoriesFsMirrorService {
         `Ecriture texte miroir échouée (${filePath}): ${(err as Error).message}`,
       );
     }
+  }
+
+  private static parseJson(value: string): Record<string, unknown> {
+    try {
+      const parsed = JSON.parse(value);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return parsed as Record<string, unknown>;
+      }
+    } catch {
+      // ignore
+    }
+    return {};
+  }
+
+  private static getTrimmedString(
+    record: Record<string, unknown>,
+    key: string,
+  ): string {
+    const value = record[key];
+    return typeof value === 'string' ? value.trim() : '';
   }
 }

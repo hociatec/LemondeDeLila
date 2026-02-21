@@ -5,7 +5,7 @@ import {
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
 import type { GerardPresidentMetadata } from '../model/gerard-president-state.entity';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { normalizeActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
   GERARD_PRESIDENT_GAME,
@@ -34,10 +34,7 @@ export function getAvailableActions(
   if (currentPlayer !== playerId) return [];
   const meta = getMeta(state);
   const available: GameSingleActionDto[] = [];
-  if (
-    meta.roundPhase === 'waiting_theme' &&
-    meta.masterId === playerId
-  ) {
+  if (meta.roundPhase === 'waiting_theme' && meta.masterId === playerId) {
     available.push({ type: 'set_theme' });
     if ((meta.specialHands?.[playerId] ?? []).length) {
       available.push({ type: 'play_special' });
@@ -142,9 +139,12 @@ export function validateAction(
 
   if (type === 'play_special') {
     if (meta.roundPhase === 'choosing_winner') {
-      throw new GameValidationError('Impossible de jouer une carte maintenant.', {
-        gameType: 'gerard-president',
-      });
+      throw new GameValidationError(
+        'Impossible de jouer une carte maintenant.',
+        {
+          gameType: 'gerard-president',
+        },
+      );
     }
     const cardId = String(payload.cardId ?? '').trim();
     if (!cardId) {
@@ -163,7 +163,7 @@ export function validateAction(
 
   if (type === 'pass') {
     if (meta.roundPhase !== 'collecting_names') {
-      throw new GameValidationError("Vous ne pouvez pas passer maintenant.", {
+      throw new GameValidationError('Vous ne pouvez pas passer maintenant.', {
         gameType: 'gerard-president',
       });
     }
@@ -197,6 +197,3 @@ export function validateAction(
 
   return { ...action, type };
 }
-
-
-

@@ -62,4 +62,3 @@ describe('pawn-pending-rulebook.helper', () => {
     ).toEqual({ ok: false, reason: 'invalid_pawn' });
   });
 });
-

@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
-
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -13,9 +12,13 @@ import type {
   TaxiExpressEventCard,
   TaxiExpressMetadata,
 } from '../model/taxi-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeLowerActionType,
+} from '../../../../actions/action-service.helper';
 
-
+type TaxiExpressRuntimeMetadata = TaxiExpressMetadata & Record<string, unknown>;
 
 @Injectable()
 export class TaxiExpressActionService {
@@ -33,23 +36,23 @@ export class TaxiExpressActionService {
     actions: GameSingleActionDto[],
   ): GameStateEntity {
     const next = applyActionsSequentially(state, actions, (next, action) => {
-          const type = normalizeLowerActionType(action);
-          return dispatchByActionType(
-            type,
-            {
-              'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'roll dice': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-            },
-            () => next,
-          );
-        });
-        return next;
+      const type = normalizeLowerActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          roll: () => {
+            next = this.handleRoll(next);
+            return next;
+          },
+          'roll dice': () => {
+            next = this.handleRoll(next);
+            return next;
+          },
+        },
+        () => next,
+      );
+    });
+    return next;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -67,7 +70,7 @@ export class TaxiExpressActionService {
     const client = clientId != null ? this.findClient(meta, clientId) : null;
     if (!client) return next;
 
-    const rollResult = this.random.rollDice(meta as any, 6);
+    const rollResult = this.random.rollDice(meta, 6);
     const afterRollMeta: TaxiExpressMetadata = {
       ...meta,
       ...rollResult.meta,
@@ -268,8 +271,8 @@ export class TaxiExpressActionService {
       cardId: draw.card,
       meta: {
         ...draw.meta,
-        deckClients: draw.pile as number[],
-        discardClients: draw.discard as number[],
+        deckClients: draw.pile,
+        discardClients: draw.discard,
       },
     };
   }
@@ -287,8 +290,8 @@ export class TaxiExpressActionService {
     });
     const nextMeta = {
       ...draw.meta,
-      deckEvents: draw.pile as number[],
-      discardEvents: draw.discard as number[],
+      deckEvents: draw.pile,
+      discardEvents: draw.discard,
     };
     const card = draw.card == null ? null : this.findEvent(nextMeta, draw.card);
     return { card, meta: nextMeta };
@@ -329,8 +332,8 @@ export class TaxiExpressActionService {
     };
   }
 
-  private getMeta(state: GameStateEntity): TaxiExpressMetadata {
-    return (state.metadata ?? {}) as TaxiExpressMetadata;
+  private getMeta(state: GameStateEntity): TaxiExpressRuntimeMetadata {
+    return (state.metadata ?? {}) as TaxiExpressRuntimeMetadata;
   }
 
   private findClient(
@@ -366,14 +369,12 @@ export class TaxiExpressActionService {
     return tiles[index];
   }
 
-  private tileTitleById(meta: TaxiExpressMetadata, tileId: number | null): string {
+  private tileTitleById(
+    meta: TaxiExpressMetadata,
+    tileId: number | null,
+  ): string {
     const index = this.findTileIndexById(meta, tileId);
     const tile = index != null ? this.getTileByIndex(meta, index) : null;
     return tile?.title ?? `case ${tileId ?? '?'}`;
   }
 }
-
-
-
-
-

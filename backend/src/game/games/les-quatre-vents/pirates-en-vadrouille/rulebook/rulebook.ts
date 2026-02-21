@@ -5,12 +5,28 @@ import {
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
 import { PIRATES_GAME } from '../definitions/pirates-en-vadrouille.definition';
-import { isRollAlias, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  isRollAlias,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
   getPendingChooseTargetActionsForPlayer,
   validatePendingChooseTargetActionForActor,
 } from '../../../../core/helpers/pending-actions-rulebook.helper';
+import type { PiratesEnVadrouilleActionType } from '../model/pirates-en-vadrouille-state.entity';
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function isPiratesActionType(
+  value: string,
+): value is PiratesEnVadrouilleActionType {
+  return (PIRATES_GAME.actions as readonly string[]).includes(value);
+}
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -18,7 +34,7 @@ export function getAvailableActions(
 ): GameSingleActionDto[] {
   if (!isStartedState(state)) return [];
 
-  const pending = state.pending as any;
+  const pending = state.pending;
   if (pending) {
     const targetActions = getPendingChooseTargetActionsForPlayer(
       pending,
@@ -39,17 +55,17 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const rawType = normalizeActionType(action);
-  const type = isRollAlias(rawType)
-    ? 'roll'
-    : (rawType as typeof PIRATES_GAME.actions[number]);
-  if (!PIRATES_GAME.actions.includes(type as any)) {
+  const normalizedType = normalizeActionType(action);
+  const rawType = typeof normalizedType === 'string' ? normalizedType : '';
+  const maybeType = isRollAlias(rawType) ? 'roll' : rawType;
+  if (!isPiratesActionType(maybeType)) {
     throw new GameValidationError(`Action inconnue: ${rawType || '(vide)'}`, {
       gameType: 'pirates-en-vadrouille',
       action: rawType,
       allowedActions: PIRATES_GAME.actions,
     });
   }
+  const type = maybeType;
   if (actorId == null) {
     throw new PlayerActionError('Acteur requis.', {
       gameType: 'pirates-en-vadrouille',
@@ -63,7 +79,7 @@ export function validateAction(
     });
   }
 
-  const pending = state.pending as any;
+  const pending = state.pending;
   if (pending) {
     const targetValidation = validatePendingChooseTargetActionForActor({
       pending,
@@ -75,8 +91,9 @@ export function validateAction(
     if (targetValidation.ok) {
       return targetValidation.action;
     }
+    const pendingRow = asRecord(pending);
     if (
-      pending.type === 'choose_target' &&
+      pendingRow.type === 'choose_target' &&
       targetValidation.reason === 'wrong_action_type'
     ) {
       throw new PlayerActionError('Action non disponible.', {
@@ -84,7 +101,7 @@ export function validateAction(
       });
     }
     if (
-      pending.type === 'choose_target' &&
+      pendingRow.type === 'choose_target' &&
       targetValidation.reason === 'invalid_target'
     ) {
       throw new GameValidationError('Cible invalide.', {
@@ -92,7 +109,7 @@ export function validateAction(
         targetPlayerId: targetValidation.targetPlayerId,
       });
     }
-    if (pending.playerId !== actorId) {
+    if (Number(pendingRow.playerId ?? null) !== actorId) {
       throw new PlayerActionError("Ce n'est pas votre action.", {
         gameType: 'pirates-en-vadrouille',
       });
@@ -114,6 +131,3 @@ export function validateAction(
   if (type === 'roll') return { type: 'roll', payload: action.payload ?? {} };
   return action;
 }
-
-
-

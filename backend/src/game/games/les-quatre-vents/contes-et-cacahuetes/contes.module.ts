@@ -28,5 +28,3 @@ import { ContesBotService } from './bots/contes-bot.service';
   exports: [ContesService],
 })
 export class ContesModule {}
-
-

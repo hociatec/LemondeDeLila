@@ -6,12 +6,10 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, WebSocket } from 'ws';
-import { ConfigService } from '@nestjs/config';
 import { RoomService } from '../services/room.service';
 import { BotService } from '../../bot/services/bot.service';
 import { Inject, Logger, forwardRef } from '@nestjs/common';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
-import { WsSignatureService } from '../../common/ws/ws-signature.service';
 import type { RoomPayload, RoomPlayer } from '../dto/room-response.dto';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { PerfMetricsService } from '../../common/services/perf-metrics.service';
@@ -65,7 +63,10 @@ export class RoomGateway
   private readonly lastPong = new WeakMap<WebSocket, number>();
   private readonly pingIntervalMs = 25_000;
   private readonly lastChatSentAt = new WeakMap<WebSocket, number>();
-  private readonly messageQueueByClient = new WeakMap<WebSocket, Promise<void>>();
+  private readonly messageQueueByClient = new WeakMap<
+    WebSocket,
+    Promise<void>
+  >();
 
   private readonly roomChat = new Map<
     number,
@@ -86,7 +87,6 @@ export class RoomGateway
     @Inject(forwardRef(() => BotService))
     private readonly botService: BotService,
     private readonly auth: WsJwtAuthService,
-    private readonly signature: WsSignatureService,
     private readonly catalog: CatalogService,
     private readonly perf: PerfMetricsService,
     private readonly invites: RoomInviteService,
@@ -438,7 +438,10 @@ export class RoomGateway
       }
       const remainingTotalConnections =
         remainingConnections + remainingSilentConnections;
-      const userStillConnected = this.hasUserConnections(meta.roomId, meta.userId);
+      const userStillConnected = this.hasUserConnections(
+        meta.roomId,
+        meta.userId,
+      );
       // si plus aucune connexion pour cette room, on supprime la table côté service
       if (meta.role === 'participant') {
         // Important: ne pas "quitter" en DB si l'utilisateur a encore une autre connexion
@@ -509,7 +512,10 @@ export class RoomGateway
     const prev = this.messageQueueByClient.get(client) ?? Promise.resolve();
     const next = prev.then(fn, fn);
     // Keep the chain alive even if one handler throws.
-    this.messageQueueByClient.set(client, next.catch(() => {}));
+    this.messageQueueByClient.set(
+      client,
+      next.catch(() => {}),
+    );
     return next;
   }
 
@@ -523,7 +529,11 @@ export class RoomGateway
       const nextStatus = String(payload?.room?.status ?? '')
         .toLowerCase()
         .trim();
-      if (previousStatus === 'started' && nextStatus && nextStatus !== 'started') {
+      if (
+        previousStatus === 'started' &&
+        nextStatus &&
+        nextStatus !== 'started'
+      ) {
         await this.promoteConnectedSpectatorsToParticipants(roomId);
         await this.roomsService.invalidateRoomPayloadCache(roomId);
         payload = await this.roomsService.getRoomPayload(roomId);
@@ -1014,7 +1024,11 @@ export class RoomGateway
     try {
       leftPayload = await this.roomsService.getRoomPayload(roomId);
       this.applySpectators(roomId, leftPayload);
-      this.safeSend(client, { type: 'room.left', roomId, payload: leftPayload });
+      this.safeSend(client, {
+        type: 'room.left',
+        roomId,
+        payload: leftPayload,
+      });
     } catch {
       this.safeSend(client, { type: 'room.deleted', roomId });
     }
@@ -1023,9 +1037,6 @@ export class RoomGateway
     (async () => {
       try {
         if (wasParticipant) {
-          const started =
-            (leftPayload?.room?.status || '').toLowerCase() === 'started' ||
-            Boolean(leftPayload?.room?.startedAt);
           await this.roomsService.leaveRoom(roomId, userId, {
             // Leave explicite : si la table devient vide (plus aucun humain/bot), elle doit disparaître.
             // Garder preserveRoom uniquement quand il reste d'autres connexions (autres joueurs / autre socket).
@@ -1109,11 +1120,7 @@ export class RoomGateway
     await this.perf.measure(
       'ws.room.reset.total',
       async () => {
-        const room = await this.roomsService.resetRoom(
-          meta.roomId,
-          meta.userId,
-          false,
-        );
+        await this.roomsService.resetRoom(meta.roomId, meta.userId, false);
 
         // Après un reset, tous les connectés "visibles" doivent être considérés comme joueurs.
         // (Les admins en mode silent restent en dehors du roster.)
@@ -1816,7 +1823,11 @@ export class RoomGateway
       try {
         const leftPayload = await this.roomsService.getRoomPayload(roomId);
         this.applySpectators(roomId, leftPayload);
-        this.safeSend(socket, { type: 'room.left', roomId, payload: leftPayload });
+        this.safeSend(socket, {
+          type: 'room.left',
+          roomId,
+          payload: leftPayload,
+        });
       } catch {
         this.safeSend(socket, { type: 'room.deleted', roomId });
       }
@@ -1832,10 +1843,6 @@ export class RoomGateway
       const v = (r || '').trim().toLowerCase();
       return v === 'role_admin' || v === 'admin' || v === 'administrator';
     });
-  }
-
-  private countSpectators(roomId: number): number {
-    return listVisibleSpectators(this.clients.values(), roomId).length;
   }
 
   private hasUserConnections(roomId: number, userId: number): boolean {
@@ -1930,7 +1937,10 @@ export class RoomGateway
     this.pendingParticipantLeaves.delete(key);
   }
 
-  private scheduleDelayedParticipantLeave(roomId: number, userId: number): void {
+  private scheduleDelayedParticipantLeave(
+    roomId: number,
+    userId: number,
+  ): void {
     const key = this.buildParticipantLeaveKey(roomId, userId);
     if (this.pendingParticipantLeaves.has(key)) return;
 

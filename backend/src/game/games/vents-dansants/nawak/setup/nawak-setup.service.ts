@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 
-import { getRngMeta, getSafePlayers } from '../../../../setup/setup-service.helper';
+import { getSafePlayers } from '../../../../setup/setup-service.helper';
 import { NawakChallengeService } from '../data/nawak-challenge.service';
 import type { NawakMetadata } from '../model/nawak-state.entity';
 
@@ -13,11 +13,11 @@ export class NawakSetupService {
     const players = getSafePlayers(baseState);
     const playerIds = players
       .filter((player) => typeof player?.id === 'number')
-      .map((player) => player!.id);
+      .map((player) => player.id);
     const metaSeed = (baseState.metadata ?? {}) as Partial<NawakMetadata>;
     const initialScores: Record<number, number> = {};
     playerIds.forEach((pid) => {
-      initialScores[pid] = (metaSeed.scores?.[pid] ?? 0) as number;
+      initialScores[pid] = metaSeed.scores?.[pid] ?? 0;
     });
     const targetScore = Math.max(1, Number(metaSeed.targetScore ?? 5));
     const meta: NawakMetadata = {
@@ -36,7 +36,8 @@ export class NawakSetupService {
       winnerId: null,
     };
 
-    const { challenge, meta: withChallenge } = this.challengeService.loadChallenge(meta);
+    const { challenge, meta: withChallenge } =
+      this.challengeService.loadChallenge(meta);
     const metadata: NawakMetadata = {
       ...withChallenge,
       targetScore,

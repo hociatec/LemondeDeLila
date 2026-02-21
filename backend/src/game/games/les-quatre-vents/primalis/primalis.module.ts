@@ -15,7 +15,7 @@ import { PrimalisBotService } from './bots/primalis-bot.service';
     GameCoreModule,
     GameRegistryModule,
     EngineServicesModule,
-    ],
+  ],
   providers: [
     PrimalisService,
     PrimalisSetupService,

@@ -13,7 +13,9 @@ export class NawakChallengeService {
   constructor(private readonly random: RandomService) {
     this.challenges = this.loadChallenges();
     if (!this.challenges.length) {
-      this.logger.warn('Aucun défi Nawak chargé. Ajoutez des données dans data/nawak-defis.txt.');
+      this.logger.warn(
+        'Aucun défi Nawak chargé. Ajoutez des données dans data/nawak-defis.txt.',
+      );
     }
   }
 
@@ -25,7 +27,10 @@ export class NawakChallengeService {
       throw new Error('Pas de défi disponible pour Nawak !');
     }
     const seed = meta.rng ?? {};
-    const { index, meta: rngMeta } = this.random.pickIndex(seed, this.challenges.length);
+    const { index, meta: rngMeta } = this.random.pickIndex(
+      seed,
+      this.challenges.length,
+    );
     const challenge = this.challenges[index];
     return {
       challenge,
@@ -56,7 +61,10 @@ export class NawakChallengeService {
         const content = fs.readFileSync(candidate, 'utf-8');
         return this.parseContent(content);
       } catch (error: any) {
-        this.logger.error(`Impossible de lire ${candidate} :`, error?.message ?? error);
+        this.logger.error(
+          `Impossible de lire ${candidate} :`,
+          error?.message ?? error,
+        );
       }
     }
     this.logger.error(

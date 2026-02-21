@@ -34,7 +34,10 @@ describe('pending-pawn-move-rulebook.helper', () => {
     expect(result).toEqual({
       ok: true,
       move: { pawnIndex: 2, targetProgress: 6 },
-      action: { type: 'move_pawn', payload: { pawnIndex: 2, targetProgress: 6 } },
+      action: {
+        type: 'move_pawn',
+        payload: { pawnIndex: 2, targetProgress: 6 },
+      },
     });
   });
 

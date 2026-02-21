@@ -14,9 +14,16 @@ export class BoardPayloadService {
     const tiles = Array.isArray(tilesRaw) ? tilesRaw : [];
 
     const positions: Record<string, number> = {};
-    if (positionsRaw && typeof positionsRaw === 'object' && !Array.isArray(positionsRaw)) {
-      for (const [k, v] of Object.entries(positionsRaw as Record<string, unknown>)) {
-        const n = typeof v === 'number' ? v : Number.parseInt(String(v ?? ''), 10);
+    if (
+      positionsRaw &&
+      typeof positionsRaw === 'object' &&
+      !Array.isArray(positionsRaw)
+    ) {
+      for (const [k, v] of Object.entries(
+        positionsRaw as Record<string, unknown>,
+      )) {
+        const n =
+          typeof v === 'number' ? v : Number.parseInt(String(v ?? ''), 10);
         if (!Number.isFinite(n)) continue;
         positions[String(k)] = Math.trunc(n);
       }
@@ -25,13 +32,16 @@ export class BoardPayloadService {
     const laps: Record<string, number> = {};
     if (lapsRaw && typeof lapsRaw === 'object' && !Array.isArray(lapsRaw)) {
       for (const [k, v] of Object.entries(lapsRaw as Record<string, unknown>)) {
-        const n = typeof v === 'number' ? v : Number.parseInt(String(v ?? ''), 10);
+        const n =
+          typeof v === 'number' ? v : Number.parseInt(String(v ?? ''), 10);
         if (!Number.isFinite(n)) continue;
         laps[String(k)] = Math.trunc(n);
       }
     }
 
-    return Object.keys(laps).length > 0 ? { tiles, positions, laps } : { tiles, positions };
+    return Object.keys(laps).length > 0
+      ? { tiles, positions, laps }
+      : { tiles, positions };
   }
 
   buildPositionPanelMessage(params: {
@@ -59,7 +69,9 @@ export class BoardPayloadService {
 
     const caseNumber = Math.max(1, Math.trunc(pos) + 1);
     const lap = board.laps?.[String(playerId)];
-    const tourPlateau = Number.isFinite(lap) ? String(Math.trunc(lap as number)) : '?';
+    const tourPlateau = Number.isFinite(lap)
+      ? String(Math.trunc(lap as number))
+      : '?';
     return `Tour plateau ${tourPlateau}, case ${caseNumber}/${totalTiles}.`;
   }
 }

@@ -4,8 +4,12 @@ describe('LamaSharedService', () => {
   it('strips game-zone suffix from player labels', () => {
     const shared = new LamaSharedService();
 
-    expect(shared.sanitizePlayerName('Garfield (zone de jeu)')).toBe('Garfield');
-    expect(shared.sanitizePlayerName('Garfield (zone de jeux)')).toBe('Garfield');
+    expect(shared.sanitizePlayerName('Garfield (zone de jeu)')).toBe(
+      'Garfield',
+    );
+    expect(shared.sanitizePlayerName('Garfield (zone de jeux)')).toBe(
+      'Garfield',
+    );
     expect(shared.sanitizePlayerName('Garfield (game zone)')).toBe('Garfield');
   });
 
@@ -16,4 +20,3 @@ describe('LamaSharedService', () => {
     expect(shared.playerLabel(players as any[], 2)).toBe('Garfield');
   });
 });
-

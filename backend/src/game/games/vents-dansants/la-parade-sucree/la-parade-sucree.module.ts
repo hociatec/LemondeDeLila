@@ -9,11 +9,7 @@ import { LaParadeSucreePresenterService } from './presenter/la-parade-sucree-pre
 import { LaParadeSucreeBotService } from './bots/la-parade-sucree-bot.service';
 
 @Module({
-  imports: [
-    BoardGameCoreKitModule,
-    GameCoreModule,
-    GameRegistryModule,
-    ],
+  imports: [BoardGameCoreKitModule, GameCoreModule, GameRegistryModule],
   providers: [
     LaParadeSucreeService,
     LaParadeSucreeSetupService,

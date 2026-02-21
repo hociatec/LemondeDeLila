@@ -15,7 +15,7 @@ import { TaxiExpressBotService } from './bots/taxi-express-bot.service';
     GameCoreModule,
     GameRegistryModule,
     EngineServicesModule,
-    ],
+  ],
   providers: [
     TaxiExpressService,
     TaxiExpressSetupService,

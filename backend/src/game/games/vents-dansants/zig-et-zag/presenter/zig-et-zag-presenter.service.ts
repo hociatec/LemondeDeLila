@@ -41,7 +41,8 @@ export class ZigEtZagPresenterService {
       .map((player) => {
         const pid = Number(player?.id);
         if (!Number.isFinite(pid)) return null;
-        const name = String(player?.username ?? `Joueur ${pid}`).trim() || `Joueur ${pid}`;
+        const name =
+          String(player?.username ?? `Joueur ${pid}`).trim() || `Joueur ${pid}`;
         const current = deckCounts[pid] ?? 0;
         const base = initialDeckCounts[pid] ?? current;
         return `${name}: ${current}/${base}`;
@@ -49,7 +50,9 @@ export class ZigEtZagPresenterService {
       .filter((line): line is string => Boolean(line));
     panels.decks = {
       title: 'Cartes',
-      message: deckSummary.length ? deckSummary.join('. ') : 'Aucune carte distribuee.',
+      message: deckSummary.length
+        ? deckSummary.join('. ')
+        : 'Aucune carte distribuee.',
     };
 
     const stage = meta.roundState?.stage ?? 'selection';
@@ -65,7 +68,9 @@ export class ZigEtZagPresenterService {
         phases: ZIG_ET_ZAG_GAME.phaseOrder.map((phase) => phase.id),
         victory: null,
       },
-      actions: formatPresenterActions(actions, (action) => this.actionLabel(action)),
+      actions: formatPresenterActions(actions, (action) =>
+        this.actionLabel(action),
+      ),
       extras: {
         hand: handRows,
         stage,

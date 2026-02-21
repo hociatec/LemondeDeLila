@@ -4,10 +4,7 @@ import * as Rulebook from '../rulebook/rulebook';
 
 @Injectable()
 export class LaGrandeMineDeBarbakBotService {
-  getBotActions(
-    state: any,
-    botPlayerId: number,
-  ): GameSingleActionDto[] {
+  getBotActions(state: any, botPlayerId: number): GameSingleActionDto[] {
     const actions = Rulebook.getAvailableActions(state, botPlayerId);
     if (!actions.length) return [];
     const preferred = actions.find((action) => action.type === 'play_card');

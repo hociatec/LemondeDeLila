@@ -17,4 +17,3 @@ describe('LamaLogService', () => {
     expect(second.length).toBe(1);
   });
 });
-

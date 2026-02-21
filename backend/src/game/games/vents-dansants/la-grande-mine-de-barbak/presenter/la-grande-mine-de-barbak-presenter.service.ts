@@ -18,7 +18,9 @@ export class LaGrandeMineDeBarbakPresenterService {
   ): GameStateWithActions {
     const meta = this.getMeta(state);
     const actions = Rulebook.getAvailableActions(state, userId);
-    const hand = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
+    const hand = Array.isArray(meta.hands?.[userId])
+      ? [...meta.hands[userId]]
+      : [];
     const handCounts = summarizeHandCounts(meta.hands);
     const panels = buildLamaLikePanels({
       hand,

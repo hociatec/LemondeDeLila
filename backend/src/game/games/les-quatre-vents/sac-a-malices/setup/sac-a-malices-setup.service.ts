@@ -25,6 +25,16 @@ import {
   type SacVariantConfig,
 } from '../sac-a-malices-variants';
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function toNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
 @Injectable()
 export class SacAMalicesSetupService {
   constructor(
@@ -42,7 +52,10 @@ export class SacAMalicesSetupService {
     return this.buildConfiguredState(base, variantId);
   }
 
-  applyVariantSelection(base: GameStateEntity, variantId: SacVariantId): GameStateEntity {
+  applyVariantSelection(
+    base: GameStateEntity,
+    variantId: SacVariantId,
+  ): GameStateEntity {
     return this.buildConfiguredState(base, variantId);
   }
 
@@ -55,10 +68,9 @@ export class SacAMalicesSetupService {
   private buildSetupState(base: GameStateEntity): GameStateEntity {
     const players = Array.isArray(base.players) ? base.players : [];
     const meta = (base.metadata ?? {}) as SacMetadata;
+    const metaRecord = asRecord(meta);
     const ownerId =
-      typeof (meta as any)?.ownerPlayerId === 'number'
-        ? (meta as any).ownerPlayerId
-        : (players[0]?.id ?? null);
+      toNumber(metaRecord.ownerPlayerId) ?? players[0]?.id ?? null;
     const starterId =
       typeof meta.setupStarterId === 'number'
         ? meta.setupStarterId
@@ -68,17 +80,10 @@ export class SacAMalicesSetupService {
             base.turn?.currentPlayerId ?? null,
           );
 
-    const pendingInfo = this.buildVariantChoicePending(
-      players,
-      ownerId,
-      meta,
-    );
+    const pendingInfo = this.buildVariantChoicePending(players, ownerId, meta);
     const pending = pendingInfo?.pending ?? null;
     const currentPlayerId =
-      pendingInfo?.playerId ??
-      ownerId ??
-      base.turn?.currentPlayerId ??
-      null;
+      pendingInfo?.playerId ?? ownerId ?? base.turn?.currentPlayerId ?? null;
     const turnIndex = pendingInfo?.turnIndex ?? base.turnIndex;
 
     return {
@@ -138,7 +143,10 @@ export class SacAMalicesSetupService {
     });
   }
 
-  private buildConfiguredState(base: GameStateEntity, variantId: SacVariantId): GameStateEntity {
+  private buildConfiguredState(
+    base: GameStateEntity,
+    variantId: SacVariantId,
+  ): GameStateEntity {
     const variant = SAC_VARIANT_BY_ID[variantId] ?? SAC_VARIANTS[0];
     const board = this.loadBoard(variant);
     const groups = this.loadGroups(variant);
@@ -156,7 +164,7 @@ export class SacAMalicesSetupService {
       money[p.id] = startMoney;
     }
 
-    const seedMeta = (base.metadata ?? {}) as any;
+    const seedMeta = asRecord(base.metadata);
     const s1 = this.random.shuffle(seedMeta, chance.cards ?? []);
     const s2 = this.random.shuffle(s1.meta, community.cards ?? []);
 
@@ -180,8 +188,8 @@ export class SacAMalicesSetupService {
       pot: 0,
       rules: variant.rules,
       decks: {
-        chance: { cards: s1.values as any, discard: [] },
-        community: { cards: s2.values as any, discard: [] },
+        chance: { cards: s1.values, discard: [] },
+        community: { cards: s2.values, discard: [] },
       },
       data: {
         groups: groups.groups ?? [],
@@ -224,11 +232,18 @@ export class SacAMalicesSetupService {
     fallbackId: number | null,
   ): number | null {
     if (!players.length) return fallbackId;
-    if (typeof fallbackId === 'number' && players.some((p) => p?.id === fallbackId)) {
+    if (
+      typeof fallbackId === 'number' &&
+      players.some((p) => p?.id === fallbackId)
+    ) {
       return fallbackId;
     }
     const seed = ensureSeededRng((meta ?? {}) as Record<string, unknown>).seed;
-    const shuffled = seededShuffle(players, seed, 'sac-a-malices:setup-starter');
+    const shuffled = seededShuffle(
+      players,
+      seed,
+      'sac-a-malices:setup-starter',
+    );
     return shuffled[0]?.id ?? fallbackId ?? players[0]?.id ?? null;
   }
 
@@ -281,7 +296,10 @@ export class SacAMalicesSetupService {
     });
   }
 
-  private loadCards(variant: SacVariantConfig, filename: string): SacCardsJsonV1 {
+  private loadCards(
+    variant: SacVariantConfig,
+    filename: string,
+  ): SacCardsJsonV1 {
     const contentDir = variant.contentDir;
     return loadV1Content<SacCardsJsonV1>(this.contentLoader, {
       gameType: variant.gameType,

@@ -1,6 +1,11 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as jwt from 'jsonwebtoken';
+import {
+  type SignOptions,
+  type VerifyOptions,
+  sign as jwtSign,
+  verify as jwtVerify,
+} from 'jsonwebtoken';
 import { randomBytes, randomUUID } from 'crypto';
 
 export type WsTicketScope = 'api' | 'presence' | 'notify' | 'room' | 'game';
@@ -40,11 +45,11 @@ export class WsTicketService {
       jti: randomUUID(),
     };
 
-    const ticket = jwt.sign(payload, secret, {
+    const ticket = jwtSign(payload, secret, {
       expiresIn: expiresInSeconds,
       audience: 'lila-ws',
       issuer: 'lila-backend',
-    });
+    } as SignOptions);
 
     return { ticket, expiresInSeconds, scope };
   }
@@ -52,25 +57,33 @@ export class WsTicketService {
   verify(ticket: string, scope: WsTicketScope): WsTicketPayload {
     const secret = this.getSecret();
     try {
-      const decoded = jwt.verify(ticket, secret, {
+      const decoded = jwtVerify(ticket, secret, {
         audience: 'lila-ws',
         issuer: 'lila-backend',
-      }) as WsTicketPayload;
+      } as VerifyOptions);
 
       if (!decoded || typeof decoded !== 'object') {
         throw new UnauthorizedException('Ticket invalide');
       }
+      const typed = decoded as Partial<WsTicketPayload>;
 
-      if (decoded.scope !== scope) {
+      if (typed.scope !== scope) {
         throw new UnauthorizedException('Ticket invalide (scope)');
       }
 
-      const userId = parseInt(decoded.sub, 10);
+      if (typeof typed.sub !== 'string') {
+        throw new UnauthorizedException('Ticket invalide (sub)');
+      }
+      const userId = parseInt(typed.sub, 10);
       if (!Number.isFinite(userId) || userId <= 0) {
         throw new UnauthorizedException('Ticket invalide (sub)');
       }
 
-      return decoded;
+      if (typeof typed.jti !== 'string' || !typed.jti.trim()) {
+        throw new UnauthorizedException('Ticket invalide (jti)');
+      }
+
+      return typed as WsTicketPayload;
     } catch {
       throw new UnauthorizedException('Ticket invalide');
     }
@@ -95,7 +108,7 @@ export class WsTicketService {
       if (!this.warnedMissingSecret) {
         this.warnedMissingSecret = true;
         this.logger.warn(
-          'WS_TICKET_SECRET manquant: utilisation d’un secret éphémère (dev uniquement).',
+          'WS_TICKET_SECRET manquant: utilisation dâ€™un secret Ã©phÃ©mÃ¨re (dev uniquement).',
         );
       }
       return this.ephemeralSecret;

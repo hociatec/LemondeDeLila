@@ -3,12 +3,15 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerName } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import type { AbsurdissimesMetadata } from '../model/les-absurdissimes-state.entity';
 
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 type AbsurdissimesActionPayload = {
   cardId?: string | null;
   winnerId?: number | null;
@@ -87,11 +90,17 @@ export class AbsurdissimesActionService {
       next = this.setMeta(next, meta);
       const judgeTurn = this.getJudgeId(next, meta);
       next = { ...next, turn: { currentPlayerId: judgeTurn, direction: 1 } };
-      next = this.core.appendLog(next, 'Les cartes sont prêtes : le juge choisit la proposition gagnante.');
+      next = this.core.appendLog(
+        next,
+        'Les cartes sont prï¿½tes : le juge choisit la proposition gagnante.',
+      );
       return next;
     }
 
-    next = { ...next, turn: { currentPlayerId: remainingPlayers[0], direction: 1 } };
+    next = {
+      ...next,
+      turn: { currentPlayerId: remainingPlayers[0], direction: 1 },
+    };
     return next;
   }
 
@@ -106,16 +115,18 @@ export class AbsurdissimesActionService {
     const judgeId = this.getJudgeId(state, meta);
     if (judgeId !== currentPlayerId) return state;
     const payload = (action.payload ?? {}) as AbsurdissimesActionPayload;
-    const winnerId = typeof payload.winnerId === 'number' ? payload.winnerId : null;
+    const winnerId =
+      typeof payload.winnerId === 'number' ? payload.winnerId : null;
     if (winnerId == null) return state;
-    if (!Object.prototype.hasOwnProperty.call(meta.submissions, winnerId)) return state;
+    if (!Object.prototype.hasOwnProperty.call(meta.submissions, winnerId))
+      return state;
 
     const scores = { ...meta.scores };
     scores[winnerId] = (scores[winnerId] ?? 0) + 1;
     meta = { ...meta, scores };
     let next = this.core.appendLog(
       state,
-      `${resolvePlayerName(state.players, winnerId)} remporte la manche avec la réponse ${meta.submissions[winnerId] ?? ''}.`,
+      `${resolvePlayerName(state.players, winnerId)} remporte la manche avec la rï¿½ponse ${meta.submissions[winnerId] ?? ''}.`,
     );
 
     const target = meta.targetScore;
@@ -129,7 +140,10 @@ export class AbsurdissimesActionService {
 
     if (hasWinner) {
       next = this.setMeta({ ...next, status: 'finished' }, meta);
-      next = this.core.appendLog(next, `${resolvePlayerName(next.players, winnerId)} atteint ${target} points !`);
+      next = this.core.appendLog(
+        next,
+        `${resolvePlayerName(next.players, winnerId)} atteint ${target} points !`,
+      );
       return next;
     }
 
@@ -155,7 +169,10 @@ export class AbsurdissimesActionService {
       remainingPlayers: players.filter((pid) => pid !== judgeId),
     };
     const nextPlayer = meta.remainingPlayers[0] ?? judgeId;
-    const nextState = this.setMeta({ ...state, turn: { currentPlayerId: nextPlayer, direction: 1 } }, meta);
+    const nextState = this.setMeta(
+      { ...state, turn: { currentPlayerId: nextPlayer, direction: 1 } },
+      meta,
+    );
     nextState.log = [...nextState.log];
     return this.core.appendLog(
       nextState,
@@ -189,7 +206,10 @@ export class AbsurdissimesActionService {
     };
   }
 
-  private drawWhiteCard(meta: AbsurdissimesMetadata): { card: string | null; meta: AbsurdissimesMetadata } {
+  private drawWhiteCard(meta: AbsurdissimesMetadata): {
+    card: string | null;
+    meta: AbsurdissimesMetadata;
+  } {
     const draw = this.deckPolicies.drawOne<string, AbsurdissimesMetadata>({
       meta,
       deckKey: 'whiteDeck',
@@ -204,14 +224,20 @@ export class AbsurdissimesActionService {
     };
   }
 
-  private getJudgeId(state: GameStateEntity, meta: AbsurdissimesMetadata): number | null {
+  private getJudgeId(
+    state: GameStateEntity,
+    meta: AbsurdissimesMetadata,
+  ): number | null {
     const players = this.getPlayerIds(state.players);
     if (!players.length) return null;
     const index = meta.judgeIndex % players.length;
     return players[index] ?? players[0] ?? null;
   }
 
-  private setMeta(state: GameStateEntity, metadata: AbsurdissimesMetadata): GameStateEntity {
+  private setMeta(
+    state: GameStateEntity,
+    metadata: AbsurdissimesMetadata,
+  ): GameStateEntity {
     return { ...state, metadata };
   }
 
@@ -222,7 +248,6 @@ export class AbsurdissimesActionService {
   private getPlayerIds(players?: GameStateEntity['players']): number[] {
     return (Array.isArray(players) ? players : [])
       .filter((player) => typeof player?.id === 'number')
-      .map((player) => player!.id);
+      .map((player) => player.id);
   }
 }
-

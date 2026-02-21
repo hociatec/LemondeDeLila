@@ -294,21 +294,6 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         FocusHistory();
     }
 
-    private bool IsFocusWithinChatOrHistory()
-    {
-        if (ChatHost?.IsKeyboardFocusWithin == true)
-        {
-            return true;
-        }
-
-        if (HistoryHost?.IsKeyboardFocusWithin == true)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     private void CycleTabFocus(bool backwards)
     {
         var regions = GetAvailableFocusRegions();

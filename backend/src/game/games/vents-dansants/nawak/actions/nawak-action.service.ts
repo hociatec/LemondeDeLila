@@ -3,7 +3,6 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerName } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { NawakChallengeService } from '../data/nawak-challenge.service';
@@ -11,9 +10,11 @@ import type {
   NawakMetadata,
   NawakRoundSummary,
 } from '../model/nawak-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType } from '../../../../actions/action-service.helper';
-
-
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 
 type NawakActionPayload = {
   answerIndex?: number | null;
@@ -58,7 +59,8 @@ export class NawakActionService {
       return state;
     }
     const payload = (action.payload ?? {}) as NawakActionPayload;
-    const answerIndex = typeof payload.answerIndex === 'number' ? payload.answerIndex : null;
+    const answerIndex =
+      typeof payload.answerIndex === 'number' ? payload.answerIndex : null;
     if (answerIndex == null || answerIndex < 0 || answerIndex >= 3) {
       return state;
     }
@@ -70,7 +72,8 @@ export class NawakActionService {
     meta = { ...meta, submissions };
 
     let next = this.setMeta(state, meta);
-    const answerLabel = meta.currentChallenge.answers?.[answerIndex] ?? 'réponse inconnue';
+    const answerLabel =
+      meta.currentChallenge.answers?.[answerIndex] ?? 'rï¿½ponse inconnue';
     next = this.core.appendLog(
       next,
       `${resolvePlayerName(state.players, currentId)} choisit "${answerLabel}".`,
@@ -86,7 +89,10 @@ export class NawakActionService {
         votes: {},
       };
       next = this.setMeta(next, updatedMeta);
-      next = this.core.appendLog(next, 'Tous les choix sont faits : votez maintenant pour une réponse étrangère !');
+      next = this.core.appendLog(
+        next,
+        'Tous les choix sont faits : votez maintenant pour une rï¿½ponse ï¿½trangï¿½re !',
+      );
     }
 
     return this.turns.advanceTurn(next);
@@ -105,7 +111,10 @@ export class NawakActionService {
       return state;
     }
     const payload = (action.payload ?? {}) as NawakActionPayload;
-    const targetPlayerId = typeof payload.targetPlayerId === 'number' ? payload.targetPlayerId : null;
+    const targetPlayerId =
+      typeof payload.targetPlayerId === 'number'
+        ? payload.targetPlayerId
+        : null;
     if (targetPlayerId == null || targetPlayerId === currentId) {
       return state;
     }
@@ -155,7 +164,9 @@ export class NawakActionService {
     });
 
     const targetScore = meta.targetScore ?? 5;
-    const qualified = playerIds.filter((pid) => (scores[pid] ?? 0) >= targetScore);
+    const qualified = playerIds.filter(
+      (pid) => (scores[pid] ?? 0) >= targetScore,
+    );
     const tie = qualified.length > 1;
     const winnerId = !tie && qualified.length === 1 ? qualified[0] : null;
 
@@ -197,7 +208,7 @@ export class NawakActionService {
     const scoreboard = playerIds
       .map(
         (pid) =>
-          `${resolvePlayerName(state.players, pid)} ${(scores[pid] ?? 0)} pts`,
+          `${resolvePlayerName(state.players, pid)} ${scores[pid] ?? 0} pts`,
       )
       .join(' / ');
     next = this.core.appendLog(next, `Scores : ${scoreboard}`);
@@ -216,7 +227,10 @@ export class NawakActionService {
     }
 
     if (tie) {
-      next = this.core.appendLog(next, 'Égalité détectée : un nouveau défi va départager les joueurs.');
+      next = this.core.appendLog(
+        next,
+        'ï¿½galitï¿½ dï¿½tectï¿½e : un nouveau dï¿½fi va dï¿½partager les joueurs.',
+      );
     }
 
     return this.turns.advanceTurn(next);
@@ -226,16 +240,16 @@ export class NawakActionService {
     return (state.metadata ?? {}) as NawakMetadata;
   }
 
-  private setMeta(state: GameStateEntity, metadata: NawakMetadata): GameStateEntity {
+  private setMeta(
+    state: GameStateEntity,
+    metadata: NawakMetadata,
+  ): GameStateEntity {
     return { ...state, metadata };
   }
 
   private getPlayerIds(players?: GameStateEntity['players']): number[] {
     return (Array.isArray(players) ? players : [])
       .filter((player) => typeof player?.id === 'number')
-      .map((player) => player!.id);
+      .map((player) => player.id);
   }
 }
-
-
-

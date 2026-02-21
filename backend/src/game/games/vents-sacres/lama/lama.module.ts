@@ -20,7 +20,12 @@ import { LamaShortcutsService } from './shortcuts/lama-shortcuts.service';
 import { LamaLogService } from './logging/lama-log.service';
 
 @Module({
-  imports: [ConfigModule, GameCoreModule, GameRegistryModule, RandomGameCoreKitModule],
+  imports: [
+    ConfigModule,
+    GameCoreModule,
+    GameRegistryModule,
+    RandomGameCoreKitModule,
+  ],
   providers: [
     LamaService,
     LamaPresenter,

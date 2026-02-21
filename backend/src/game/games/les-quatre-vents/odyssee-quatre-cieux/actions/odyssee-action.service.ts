@@ -3,19 +3,33 @@ import type {
   GameStateEntity,
   PendingState,
 } from '../../../../core/entities/game-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
-
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
-import type { OdysseeMetadata, OdysseePawnState } from '../model/odyssee.types';
+import type { OdysseeMetadata } from '../model/odyssee.types';
 
 type PendingMove = { pawnIndex: number; targetProgress: number; label: string };
 const ODYSSEE_DEFAULT_PAWN_NAMES = ['Aube', 'Brise', 'Comete', 'Dune'] as const;
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function asPartialMeta(value: unknown): Partial<OdysseeMetadata> {
+  return value != null && typeof value === 'object'
+    ? (value as Partial<OdysseeMetadata>)
+    : {};
+}
 
 @Injectable()
 export class OdysseeActionService {
@@ -30,31 +44,31 @@ export class OdysseeActionService {
     actions: GameSingleActionDto[],
   ): GameStateEntity {
     const next = applyActionsSequentially(state, actions, (next, action) => {
-          const type = normalizeActionType(action);
-          return dispatchByActionType(
-            type,
-            {
-              'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'ROLL_DICE': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'roll_dice': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'move_pawn': () => {
-                next = this.handleMovePawn(next, action);
-                return next;
-              },
-            },
-            () => next,
-          );
-        });
-        return next;
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          roll: () => {
+            next = this.handleRoll(next);
+            return next;
+          },
+          ROLL_DICE: () => {
+            next = this.handleRoll(next);
+            return next;
+          },
+          roll_dice: () => {
+            next = this.handleRoll(next);
+            return next;
+          },
+          move_pawn: () => {
+            next = this.handleMovePawn(next, action);
+            return next;
+          },
+        },
+        () => next,
+      );
+    });
+    return next;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -65,8 +79,8 @@ export class OdysseeActionService {
     if (currentId == null) return state;
 
     let meta = this.getMeta(state);
-    const rng = this.random.rollDice(meta as any, 6);
-    meta = { ...meta, ...rng.meta };
+    const rng = this.random.rollDice(meta as Record<string, unknown>, 6);
+    meta = { ...meta, ...asPartialMeta(rng.meta) };
     const roll = rng.roll;
 
     let next: GameStateEntity = {
@@ -90,7 +104,7 @@ export class OdysseeActionService {
 
     if (moves.length === 1) {
       next = this.applyMove(next, currentId, moves[0], roll);
-      if ((this.getMeta(next) as any).winnerId) return next;
+      if (this.getMeta(next).winnerId) return next;
       return this.endTurn(next, roll === 6);
     }
 
@@ -120,22 +134,39 @@ export class OdysseeActionService {
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
 
-    const pending = state.pending as any;
+    const pending = state.pending;
+    const pendingRow = asRecord(pending);
     if (
       !pending ||
-      pending.type !== 'choose_pawn' ||
-      pending.playerId !== currentId
+      pendingRow.type !== 'choose_pawn' ||
+      Number(pendingRow.playerId ?? null) !== currentId
     )
       return state;
 
-    const pawnIndex = Number((action.payload as any)?.pawnIndex);
-    const targetProgress = Number((action.payload as any)?.targetProgress);
+    const payload = asRecord(action.payload);
+    const pawnIndex = Number(payload.pawnIndex);
+    const targetProgress = Number(payload.targetProgress);
     if (!Number.isFinite(pawnIndex) || !Number.isFinite(targetProgress))
       return state;
 
-    const roll = Number(pending?.data?.roll);
+    const pendingData = asRecord(pendingRow.data);
+    const roll = Number(pendingData.roll);
     const moves: Array<{ pawnIndex: number; targetProgress: number }> =
-      Array.isArray(pending?.data?.moves) ? pending.data.moves : [];
+      Array.isArray(pendingData.moves)
+        ? pendingData.moves
+            .map((entry) => {
+              const row = asRecord(entry);
+              return {
+                pawnIndex: Number(row.pawnIndex),
+                targetProgress: Number(row.targetProgress),
+              };
+            })
+            .filter(
+              (move) =>
+                Number.isFinite(move.pawnIndex) &&
+                Number.isFinite(move.targetProgress),
+            )
+        : [];
     if (
       !moves.some(
         (m) => m.pawnIndex === pawnIndex && m.targetProgress === targetProgress,
@@ -144,13 +175,7 @@ export class OdysseeActionService {
       return { ...state, pending: null };
     }
 
-    const label =
-      pending.choices?.[
-        moves.findIndex(
-          (m) =>
-            m.pawnIndex === pawnIndex && m.targetProgress === targetProgress,
-        )
-      ] ?? this.choicePawnLabel(state, currentId, pawnIndex);
+    const label = this.choicePawnLabel(state, currentId, pawnIndex);
 
     let next: GameStateEntity = { ...state, pending: null };
     next = this.applyMove(
@@ -160,7 +185,7 @@ export class OdysseeActionService {
       roll,
     );
 
-    if ((this.getMeta(next) as any).winnerId) return next;
+    if (this.getMeta(next).winnerId) return next;
     return this.endTurn(next, roll === 6);
   }
 
@@ -225,7 +250,6 @@ export class OdysseeActionService {
     state: GameStateEntity,
     playerId: number,
     move: PendingMove,
-    _roll: number,
   ): GameStateEntity {
     let meta = this.getMeta(state);
     const trackLen = meta.trackLength;
@@ -258,7 +282,10 @@ export class OdysseeActionService {
         next,
         `${this.playerName(next, playerId)} place ${pawnLabel} en case ${pos + 1}.`,
       );
-    } else if (move.targetProgress >= trackLen && move.targetProgress < pathLen) {
+    } else if (
+      move.targetProgress >= trackLen &&
+      move.targetProgress < pathLen
+    ) {
       const homeIndex = move.targetProgress - trackLen + 1;
       next = this.core.appendLog(
         next,
@@ -297,7 +324,7 @@ export class OdysseeActionService {
   private applyCapture(
     state: GameStateEntity,
     moverId: number,
-    moverPawnIndex: number,
+    _moverPawnIndex: number,
     moverProgress: number,
   ): GameStateEntity {
     const meta = this.getMeta(state);
@@ -316,16 +343,17 @@ export class OdysseeActionService {
         ? meta.pawnsByPlayer[p.id]
         : [];
 
-      const updated = pawns.map((pawn: any) => {
-        const prog = typeof pawn?.progress === 'number' ? pawn.progress : -1;
+      const updated = pawns.map((pawn) => {
+        const row = asRecord(pawn);
+        const prog = typeof row.progress === 'number' ? row.progress : -1;
         if (prog < 0 || prog >= meta.trackLength) return pawn;
         const pos = (offset + prog) % meta.trackLength;
         if (pos !== moverPos) return pawn;
         next = this.core.appendLog(
           next,
-        `${this.playerName(next, moverId)} capture ${this.playerName(next, p.id)} (${this.pawnLabel(next, p.id, pawn.pawnIndex)}) : retour à la base.`,
+          `${this.playerName(next, moverId)} capture ${this.playerName(next, p.id)} (${this.pawnLabel(next, p.id, Number(row.pawnIndex))}) : retour à la base.`,
         );
-        return { ...pawn, progress: -1 };
+        return { ...row, progress: -1 };
       });
 
       next = {
@@ -368,7 +396,7 @@ export class OdysseeActionService {
   }
 
   private getMeta(state: GameStateEntity): OdysseeMetadata {
-    return (state.metadata ?? {}) as any as OdysseeMetadata;
+    return (state.metadata ?? {}) as OdysseeMetadata;
   }
 
   private playerName(state: GameStateEntity, id: number): string {
@@ -402,18 +430,19 @@ export class OdysseeActionService {
     playerId: number,
     pawnIndex: number,
   ): string {
-    const meta = this.getMeta(state) as any;
-    const names = Array.isArray(meta?.pawnNamesByPlayer?.[playerId])
-      ? meta.pawnNamesByPlayer[playerId]
-      : [];
+    const metaRecord = asRecord(this.getMeta(state));
+    const byPlayer = asRecord(metaRecord.pawnNamesByPlayer);
+    const namesValue = byPlayer[String(playerId)];
+    const names = Array.isArray(namesValue) ? namesValue : [];
     const byIndex =
-      typeof names[pawnIndex] === 'string' ? String(names[pawnIndex]).trim() : '';
+      typeof names[pawnIndex] === 'string'
+        ? String(names[pawnIndex]).trim()
+        : '';
     if (byIndex) return byIndex;
 
     const players = Array.isArray(state.players) ? state.players : [];
-    const p = players.find((x: any) => x?.id === playerId) as any;
-    const singlePawn =
-      typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
+    const p = players.find((x) => x?.id === playerId) ?? null;
+    const singlePawn = typeof p?.pawn === 'string' ? String(p.pawn).trim() : '';
     if (singlePawn) return singlePawn;
 
     const base =
@@ -423,5 +452,3 @@ export class OdysseeActionService {
     return `${base} (${this.playerName(state, playerId)})`;
   }
 }
-
-

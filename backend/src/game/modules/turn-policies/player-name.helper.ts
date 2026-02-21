@@ -1,6 +1,9 @@
 import type { GameStateEntity } from '../../core/entities/game-state.entity';
 
-type PlayerLike = { id?: number | string; username?: string | null } | null | undefined;
+type PlayerLike =
+  | { id?: number | string; username?: string | null }
+  | null
+  | undefined;
 
 export interface ResolvePlayerNameOptions {
   coerceNumericIds?: boolean;

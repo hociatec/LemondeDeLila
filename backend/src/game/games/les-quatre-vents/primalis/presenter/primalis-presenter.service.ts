@@ -5,8 +5,17 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import { PRIMALIS_GAME } from '../definitions/primalis.definition';
-import type { PrimalisMetadata, PrimalisResources } from '../model/primalis-state.entity';
+import type {
+  PrimalisMetadata,
+  PrimalisResources,
+} from '../model/primalis-state.entity';
 import * as Rulebook from '../rulebook/rulebook';
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
 
 @Injectable()
 export class PrimalisPresenterService {
@@ -36,10 +45,12 @@ export class PrimalisPresenterService {
         phases: PRIMALIS_GAME.phaseOrder.map((p) => p.id),
         victory: null,
       },
-      actions: formatPresenterActions(actions, (action) => action.type === 'roll' ? 'Lancer le dé' : action.type),
+      actions: formatPresenterActions(actions, (action) =>
+        action.type === 'roll' ? 'Lancer le dé' : action.type,
+      ),
       pending: state.pending ?? null,
       extras: {
-        ...(state as any).extras,
+        ...asRecord(state.extras),
         currentPlayerView: {
           id: userId,
           username: me?.username ?? `Joueur ${userId}`,
@@ -67,8 +78,11 @@ export class PrimalisPresenterService {
           },
         },
       },
-      board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
-    } as any;
+      board: this.boardPayload.buildTilesPositionsLaps(
+        meta.tiles,
+        meta.positions,
+      ),
+    };
   }
 
   private renderResources(resources: PrimalisResources): string {
@@ -81,7 +95,10 @@ export class PrimalisPresenterService {
     return pieces.join(' | ');
   }
 
-  private getResources(meta: PrimalisMetadata, playerId: number): PrimalisResources {
+  private getResources(
+    meta: PrimalisMetadata,
+    playerId: number,
+  ): PrimalisResources {
     return (
       meta.collections?.[playerId] ?? {
         herbivores: 0,

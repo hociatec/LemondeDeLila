@@ -1,18 +1,42 @@
 import type { GameShortcutsBuilder } from '../../../engine/shortcuts/game-shortcuts';
-import { interfaceShortcut, actionShortcut } from '../../../engine/shortcuts/shortcut-utils';
+import {
+  interfaceShortcut,
+  actionShortcut,
+} from '../../../engine/shortcuts/shortcut-utils';
 
 export const buildSacAMalicesShortcuts: GameShortcutsBuilder = (ctx) => {
-  const meta: any = ctx?.metadata ?? {};
+  const metaRecord =
+    ctx?.metadata && typeof ctx.metadata === 'object'
+      ? (ctx.metadata as Record<string, unknown>)
+      : {};
+  const statuses =
+    metaRecord.statuses && typeof metaRecord.statuses === 'object'
+      ? (metaRecord.statuses as Record<string, unknown>)
+      : {};
+  const inJailByPlayer =
+    statuses.inJail && typeof statuses.inJail === 'object'
+      ? (statuses.inJail as Record<string, unknown>)
+      : {};
+  const jailCardsByPlayer =
+    statuses.getOutOfJail && typeof statuses.getOutOfJail === 'object'
+      ? (statuses.getOutOfJail as Record<string, unknown>)
+      : {};
   const currentId =
     typeof ctx?.currentPlayerId === 'number' ? ctx.currentPlayerId : null;
   const inJail =
-    currentId != null && Number(meta?.statuses?.inJail?.[currentId] ?? 0) > 0;
+    currentId != null && Number(inJailByPlayer[String(currentId)] ?? 0) > 0;
   const jailCards =
-    currentId != null ? Number(meta?.statuses?.getOutOfJail?.[currentId] ?? 0) : 0;
-  const rules: any = meta?.rules ?? {};
+    currentId != null ? Number(jailCardsByPlayer[String(currentId)] ?? 0) : 0;
+  const rules =
+    metaRecord.rules && typeof metaRecord.rules === 'object'
+      ? (metaRecord.rules as Record<string, unknown>)
+      : {};
+  const jailRules =
+    rules.jail && typeof rules.jail === 'object'
+      ? (rules.jail as Record<string, unknown>)
+      : {};
   const allowPayFine =
-    Boolean(rules?.jail?.allowPayFine) &&
-    Number(rules?.jail?.autoFine ?? 0) > 0;
+    Boolean(jailRules.allowPayFine) && Number(jailRules.autoFine ?? 0) > 0;
 
   const shortcuts = [
     interfaceShortcut('P', 'position'),

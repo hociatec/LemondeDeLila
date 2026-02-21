@@ -53,4 +53,3 @@ describe('SoundsController', () => {
     expect(res.sendFile).not.toHaveBeenCalled();
   });
 });
-

@@ -5,6 +5,7 @@ import {
   sanitizeAction,
 } from './validated-action.dto';
 import { PayloadValidationError } from '../../../common/errors/game-errors';
+import { ValidatedGameActionDto } from './validated-action.dto';
 
 describe('ValidatedActionDto', () => {
   describe('validateAction', () => {
@@ -122,25 +123,25 @@ describe('ValidatedActionDto', () => {
       const action = {
         type: '  DRAW  ',
         payload: {},
-      };
+      } as ValidatedGameActionDto;
 
-      const result = sanitizeAction(action as any);
+      const result = sanitizeAction(action);
 
       expect(result.type).toBe('draw');
     });
 
     it('should remove dangerous keys from payload', () => {
-      const action = {
+      const action: ValidatedGameActionDto = {
         type: 'draw',
         payload: {
           cardId: '123',
           __proto__: { evil: 'code' },
           constructor: { bad: 'stuff' },
           prototype: { more: 'evil' },
-        } as any,
+        },
       };
 
-      const result = sanitizeAction(action as any);
+      const result = sanitizeAction(action);
 
       expect(result.payload).toBeDefined();
       expect(result.payload).toHaveProperty('cardId');
@@ -153,41 +154,45 @@ describe('ValidatedActionDto', () => {
     });
 
     it('should limit nested object depth', () => {
-      const deepObject: any = { level1: {} };
-      let current = deepObject.level1;
+      const deepObject: Record<string, unknown> = { level1: {} };
+      let current = deepObject.level1 as Record<string, unknown>;
       for (let i = 2; i <= 10; i++) {
         current[`level${i}`] = {};
-        current = current[`level${i}`];
+        current = current[`level${i}`] as Record<string, unknown>;
       }
 
-      const action = {
+      const action: ValidatedGameActionDto = {
         type: 'action',
         payload: deepObject,
       };
 
-      const result = sanitizeAction(action as any);
+      const result = sanitizeAction(action);
 
       // Should have been truncated at max depth
       expect(result.payload).toBeDefined();
     });
 
     it('should limit array length', () => {
-      const action = {
+      const action: ValidatedGameActionDto = {
         type: 'action',
         payload: {
           items: Array(200).fill('item'),
         },
       };
 
-      const result = sanitizeAction(action as any);
+      const result = sanitizeAction(action);
 
-      expect(result.payload?.items).toBeDefined();
-      expect((result.payload?.items as any[]).length).toBe(100);
+      const items = result.payload?.items;
+      expect(Array.isArray(items)).toBe(true);
+      if (!Array.isArray(items)) {
+        return;
+      }
+      expect(items).toHaveLength(100);
     });
 
     it('should skip keys longer than 100 characters', () => {
       const longKey = 'a'.repeat(101);
-      const action = {
+      const action: ValidatedGameActionDto = {
         type: 'action',
         payload: {
           [longKey]: 'value',
@@ -195,7 +200,7 @@ describe('ValidatedActionDto', () => {
         },
       };
 
-      const result = sanitizeAction(action as any);
+      const result = sanitizeAction(action);
 
       expect(result.payload).not.toHaveProperty(longKey);
       expect(result.payload).toHaveProperty('normalKey');

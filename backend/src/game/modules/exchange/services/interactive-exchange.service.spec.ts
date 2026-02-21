@@ -30,8 +30,12 @@ function adapter(): InteractiveExchangeAdapter {
           targetUsername: p.username,
         })),
     getInventory: (state, playerId) => {
-      const player = (state.players ?? []).find((p) => p.id === playerId) as any;
-      const inventory = Array.isArray(player?.inventory) ? player.inventory : [];
+      const player = (state.players ?? []).find(
+        (p) => p.id === playerId,
+      ) as any;
+      const inventory = Array.isArray(player?.inventory)
+        ? player.inventory
+        : [];
       return inventory.map((v: unknown) => String(v));
     },
     removeFromInventory: (state, playerId, card) => {

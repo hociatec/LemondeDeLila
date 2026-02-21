@@ -7,7 +7,10 @@ type PendingActionFailureReason =
 
 export type PendingDrawValidationResult =
   | { ok: true; action: GameSingleActionDto }
-  | { ok: false; reason: Exclude<PendingActionFailureReason, 'invalid_target'> };
+  | {
+      ok: false;
+      reason: Exclude<PendingActionFailureReason, 'invalid_target'>;
+    };
 
 export type PendingChooseTargetValidationResult =
   | { ok: true; action: GameSingleActionDto; targetPlayerId: number }
@@ -52,6 +55,31 @@ export type PendingCardChoiceValidationResult =
       reason: 'not_pending_for_actor' | 'wrong_action_type' | 'invalid_card';
     };
 
+type GenericRecord = Record<string, unknown>;
+
+function asRecord(value: unknown): GenericRecord {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return value as GenericRecord;
+  }
+  return {};
+}
+
+function asArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value).trim();
+  }
+  return '';
+}
+
+function getDataRecord(pending: unknown): GenericRecord {
+  return asRecord(asRecord(pending).data);
+}
+
 function defaultSamePlayer(a: unknown, b: unknown): boolean {
   const left = Number(a);
   const right = Number(b);
@@ -59,48 +87,48 @@ function defaultSamePlayer(a: unknown, b: unknown): boolean {
 }
 
 function getChoicesFromPending(params: {
-  pending: any;
+  pending: unknown;
   choicesContainer: 'data' | 'root';
   choicesKey: string;
 }): unknown[] {
+  const pendingRecord = asRecord(params.pending);
   if (params.choicesContainer === 'root') {
-    return Array.isArray(params.pending?.[params.choicesKey])
-      ? params.pending[params.choicesKey]
-      : [];
+    return asArray(pendingRecord[params.choicesKey]);
   }
-  return Array.isArray(params.pending?.data?.[params.choicesKey])
-    ? params.pending.data[params.choicesKey]
-    : [];
+  return asArray(getDataRecord(params.pending)[params.choicesKey]);
 }
 
 export function getPendingDrawActionsForPlayer(
-  pending: any,
+  pending: unknown,
   playerId: number,
   options?: {
     pendingType?: string;
     samePlayer?: (left: unknown, right: unknown) => boolean;
   },
 ): GameSingleActionDto[] {
-  const pendingType = String(options?.pendingType ?? '').trim() || 'draw';
+  const pendingType = toText(options?.pendingType) || 'draw';
   const samePlayer = options?.samePlayer ?? defaultSamePlayer;
-  if (!pending || pending.type !== pendingType) return [];
-  if (!samePlayer(pending.playerId, playerId)) return [];
+  if (!pending || toText(asRecord(pending).type) !== pendingType) return [];
+  if (!samePlayer(asRecord(pending).playerId, playerId)) return [];
   return [{ type: pendingType, payload: {} }];
 }
 
 export function validatePendingDrawActionForActor(params: {
-  pending: any;
+  pending: unknown;
   actorId: number;
   actionType: string;
   pendingType?: string;
   samePlayer?: (left: unknown, right: unknown) => boolean;
 }): PendingDrawValidationResult {
-  const pendingType = String(params.pendingType ?? '').trim() || 'draw';
+  const pendingType = toText(params.pendingType) || 'draw';
   const samePlayer = params.samePlayer ?? defaultSamePlayer;
-  if (!params.pending || params.pending.type !== pendingType) {
+  if (
+    !params.pending ||
+    toText(asRecord(params.pending).type) !== pendingType
+  ) {
     return { ok: false, reason: 'not_pending_for_actor' };
   }
-  if (!samePlayer(params.pending.playerId, params.actorId)) {
+  if (!samePlayer(asRecord(params.pending).playerId, params.actorId)) {
     return { ok: false, reason: 'not_pending_for_actor' };
   }
   if (params.actionType !== pendingType) {
@@ -110,7 +138,7 @@ export function validatePendingDrawActionForActor(params: {
 }
 
 export function getPendingChooseTargetActionsForPlayer(
-  pending: any,
+  pending: unknown,
   playerId: number,
   options?: {
     pendingType?: string;
@@ -119,17 +147,16 @@ export function getPendingChooseTargetActionsForPlayer(
     targetsKey?: string;
   },
 ): GameSingleActionDto[] {
-  const pendingType = String(options?.pendingType ?? '').trim() || 'choose_target';
+  const pendingType = toText(options?.pendingType) || 'choose_target';
   const samePlayer = options?.samePlayer ?? defaultSamePlayer;
-  const targetKey = String(options?.targetKey ?? '').trim() || 'targetPlayerId';
-  const targetsKey = String(options?.targetsKey ?? '').trim() || 'targets';
-  if (!pending || pending.type !== pendingType) return [];
-  if (!samePlayer(pending.playerId, playerId)) return [];
-  const targets: Array<Record<string, any>> = Array.isArray(
-    pending?.data?.[targetsKey],
-  )
-    ? pending.data[targetsKey]
-    : [];
+  const targetKey = toText(options?.targetKey) || 'targetPlayerId';
+  const targetsKey = toText(options?.targetsKey) || 'targets';
+  if (!pending || toText(asRecord(pending).type) !== pendingType) return [];
+  if (!samePlayer(asRecord(pending).playerId, playerId)) return [];
+  const targets = asArray(getDataRecord(pending)[targetsKey]).filter(
+    (target): target is Record<string, unknown> =>
+      Boolean(target) && typeof target === 'object',
+  );
   return targets
     .map((target) => Number(target?.[targetKey]))
     .filter((value) => Number.isFinite(value))
@@ -140,34 +167,36 @@ export function getPendingChooseTargetActionsForPlayer(
 }
 
 export function validatePendingChooseTargetActionForActor(params: {
-  pending: any;
+  pending: unknown;
   actorId: number;
   actionType: string;
-  payload: any;
+  payload: unknown;
   pendingType?: string;
   samePlayer?: (left: unknown, right: unknown) => boolean;
   targetKey?: string;
   targetsKey?: string;
 }): PendingChooseTargetValidationResult {
-  const pendingType = String(params.pendingType ?? '').trim() || 'choose_target';
+  const pendingType = toText(params.pendingType) || 'choose_target';
   const samePlayer = params.samePlayer ?? defaultSamePlayer;
-  const targetKey = String(params.targetKey ?? '').trim() || 'targetPlayerId';
-  const targetsKey = String(params.targetsKey ?? '').trim() || 'targets';
-  if (!params.pending || params.pending.type !== pendingType) {
+  const targetKey = toText(params.targetKey) || 'targetPlayerId';
+  const targetsKey = toText(params.targetsKey) || 'targets';
+  if (
+    !params.pending ||
+    toText(asRecord(params.pending).type) !== pendingType
+  ) {
     return { ok: false, reason: 'not_pending_for_actor' };
   }
-  if (!samePlayer(params.pending.playerId, params.actorId)) {
+  if (!samePlayer(asRecord(params.pending).playerId, params.actorId)) {
     return { ok: false, reason: 'not_pending_for_actor' };
   }
   if (params.actionType !== pendingType) {
     return { ok: false, reason: 'wrong_action_type' };
   }
-  const targets: Array<Record<string, any>> = Array.isArray(
-    params.pending?.data?.[targetsKey],
-  )
-    ? params.pending.data[targetsKey]
-    : [];
-  const targetPlayerId = Number(params.payload?.[targetKey]);
+  const targets = asArray(getDataRecord(params.pending)[targetsKey]).filter(
+    (target): target is Record<string, unknown> =>
+      Boolean(target) && typeof target === 'object',
+  );
+  const targetPlayerId = Number(asRecord(params.payload)[targetKey]);
   if (
     !Number.isFinite(targetPlayerId) ||
     !targets.some((t) => Number(t?.[targetKey]) === targetPlayerId)
@@ -182,7 +211,7 @@ export function validatePendingChooseTargetActionForActor(params: {
 }
 
 export function getPendingIndexedChoiceActionsForPlayer(
-  pending: any,
+  pending: unknown,
   playerId: number,
   options?: {
     pendingType?: string;
@@ -193,17 +222,21 @@ export function getPendingIndexedChoiceActionsForPlayer(
     choicesKey?: string;
   },
 ): GameSingleActionDto[] {
-  const pendingType = String(options?.pendingType ?? '').trim() || 'choose_option';
-  const actionType = String(options?.actionType ?? '').trim() || pendingType;
-  const payloadIndexKey = String(options?.payloadIndexKey ?? '').trim() || 'choiceIndex';
+  const pendingType = toText(options?.pendingType) || 'choose_option';
+  const actionType = toText(options?.actionType) || pendingType;
+  const payloadIndexKey = toText(options?.payloadIndexKey) || 'choiceIndex';
   const samePlayer = options?.samePlayer ?? defaultSamePlayer;
   const choicesContainer = options?.choicesContainer ?? 'data';
-  const choicesKey = String(options?.choicesKey ?? '').trim() || 'choices';
+  const choicesKey = toText(options?.choicesKey) || 'choices';
 
-  if (!pending || pending.type !== pendingType) return [];
-  if (!samePlayer(pending.playerId, playerId)) return [];
+  if (!pending || toText(asRecord(pending).type) !== pendingType) return [];
+  if (!samePlayer(asRecord(pending).playerId, playerId)) return [];
 
-  const choices = getChoicesFromPending({ pending, choicesContainer, choicesKey });
+  const choices = getChoicesFromPending({
+    pending,
+    choicesContainer,
+    choicesKey,
+  });
   return choices.map((_, index) => ({
     type: actionType,
     payload: { [payloadIndexKey]: index },
@@ -211,10 +244,10 @@ export function getPendingIndexedChoiceActionsForPlayer(
 }
 
 export function validatePendingIndexedChoiceActionForActor(params: {
-  pending: any;
+  pending: unknown;
   actorId: number;
   actionType: string;
-  payload: any;
+  payload: unknown;
   pendingType?: string;
   expectedActionType?: string;
   payloadIndexKey?: string;
@@ -222,18 +255,20 @@ export function validatePendingIndexedChoiceActionForActor(params: {
   choicesContainer?: 'data' | 'root';
   choicesKey?: string;
 }): PendingIndexedChoiceValidationResult {
-  const pendingType = String(params.pendingType ?? '').trim() || 'choose_option';
-  const expectedActionType =
-    String(params.expectedActionType ?? '').trim() || pendingType;
-  const payloadIndexKey = String(params.payloadIndexKey ?? '').trim() || 'choiceIndex';
+  const pendingType = toText(params.pendingType) || 'choose_option';
+  const expectedActionType = toText(params.expectedActionType) || pendingType;
+  const payloadIndexKey = toText(params.payloadIndexKey) || 'choiceIndex';
   const samePlayer = params.samePlayer ?? defaultSamePlayer;
   const choicesContainer = params.choicesContainer ?? 'data';
-  const choicesKey = String(params.choicesKey ?? '').trim() || 'choices';
+  const choicesKey = toText(params.choicesKey) || 'choices';
 
-  if (!params.pending || params.pending.type !== pendingType) {
+  if (
+    !params.pending ||
+    toText(asRecord(params.pending).type) !== pendingType
+  ) {
     return { ok: false, reason: 'not_pending_for_actor' };
   }
-  if (!samePlayer(params.pending.playerId, params.actorId)) {
+  if (!samePlayer(asRecord(params.pending).playerId, params.actorId)) {
     return { ok: false, reason: 'not_pending_for_actor' };
   }
   if (params.actionType !== expectedActionType) {
@@ -245,7 +280,7 @@ export function validatePendingIndexedChoiceActionForActor(params: {
     choicesContainer,
     choicesKey,
   });
-  const choiceIndex = Number(params.payload?.[payloadIndexKey]);
+  const choiceIndex = Number(asRecord(params.payload)[payloadIndexKey]);
   if (
     !Number.isFinite(choiceIndex) ||
     choiceIndex < 0 ||
@@ -257,12 +292,15 @@ export function validatePendingIndexedChoiceActionForActor(params: {
   return {
     ok: true,
     choiceIndex,
-    action: { type: expectedActionType, payload: { [payloadIndexKey]: choiceIndex } },
+    action: {
+      type: expectedActionType,
+      payload: { [payloadIndexKey]: choiceIndex },
+    },
   };
 }
 
 export function getPendingStringChoiceActionsForPlayer(
-  pending: any,
+  pending: unknown,
   playerId: number,
   options?: {
     pendingType?: string;
@@ -273,18 +311,22 @@ export function getPendingStringChoiceActionsForPlayer(
     choicesKey?: string;
   },
 ): GameSingleActionDto[] {
-  const pendingType = String(options?.pendingType ?? '').trim() || 'choose_option';
-  const actionType = String(options?.actionType ?? '').trim() || pendingType;
-  const payloadOptionKey = String(options?.payloadOptionKey ?? '').trim() || 'option';
+  const pendingType = toText(options?.pendingType) || 'choose_option';
+  const actionType = toText(options?.actionType) || pendingType;
+  const payloadOptionKey = toText(options?.payloadOptionKey) || 'option';
   const samePlayer = options?.samePlayer ?? defaultSamePlayer;
   const choicesContainer = options?.choicesContainer ?? 'root';
-  const choicesKey = String(options?.choicesKey ?? '').trim() || 'choices';
+  const choicesKey = toText(options?.choicesKey) || 'choices';
 
-  if (!pending || pending.type !== pendingType) return [];
-  if (!samePlayer(pending.playerId, playerId)) return [];
+  if (!pending || toText(asRecord(pending).type) !== pendingType) return [];
+  if (!samePlayer(asRecord(pending).playerId, playerId)) return [];
 
-  const choices = getChoicesFromPending({ pending, choicesContainer, choicesKey })
-    .map((value) => String(value ?? '').trim())
+  const choices = getChoicesFromPending({
+    pending,
+    choicesContainer,
+    choicesKey,
+  })
+    .map((value) => toText(value))
     .filter((value) => value.length > 0);
 
   return choices.map((option) => ({
@@ -294,10 +336,10 @@ export function getPendingStringChoiceActionsForPlayer(
 }
 
 export function validatePendingStringChoiceActionForActor(params: {
-  pending: any;
+  pending: unknown;
   actorId: number;
   actionType: string;
-  payload: any;
+  payload: unknown;
   pendingType?: string;
   expectedActionType?: string;
   payloadOptionKey?: string;
@@ -305,31 +347,33 @@ export function validatePendingStringChoiceActionForActor(params: {
   choicesContainer?: 'data' | 'root';
   choicesKey?: string;
 }): PendingStringChoiceValidationResult {
-  const pendingType = String(params.pendingType ?? '').trim() || 'choose_option';
-  const expectedActionType =
-    String(params.expectedActionType ?? '').trim() || pendingType;
-  const payloadOptionKey = String(params.payloadOptionKey ?? '').trim() || 'option';
+  const pendingType = toText(params.pendingType) || 'choose_option';
+  const expectedActionType = toText(params.expectedActionType) || pendingType;
+  const payloadOptionKey = toText(params.payloadOptionKey) || 'option';
   const samePlayer = params.samePlayer ?? defaultSamePlayer;
   const choicesContainer = params.choicesContainer ?? 'root';
-  const choicesKey = String(params.choicesKey ?? '').trim() || 'choices';
+  const choicesKey = toText(params.choicesKey) || 'choices';
 
-  if (!params.pending || params.pending.type !== pendingType) {
+  if (
+    !params.pending ||
+    toText(asRecord(params.pending).type) !== pendingType
+  ) {
     return { ok: false, reason: 'not_pending_for_actor' };
   }
-  if (!samePlayer(params.pending.playerId, params.actorId)) {
+  if (!samePlayer(asRecord(params.pending).playerId, params.actorId)) {
     return { ok: false, reason: 'not_pending_for_actor' };
   }
   if (params.actionType !== expectedActionType) {
     return { ok: false, reason: 'wrong_action_type' };
   }
 
-  const option = String(params.payload?.[payloadOptionKey] ?? '').trim();
+  const option = toText(asRecord(params.payload)[payloadOptionKey]);
   const choices = getChoicesFromPending({
     pending: params.pending,
     choicesContainer,
     choicesKey,
   })
-    .map((value) => String(value ?? '').trim())
+    .map((value) => toText(value))
     .filter((value) => value.length > 0);
 
   if (!option || !choices.includes(option)) {
@@ -339,12 +383,15 @@ export function validatePendingStringChoiceActionForActor(params: {
   return {
     ok: true,
     option,
-    action: { type: expectedActionType, payload: { [payloadOptionKey]: option } },
+    action: {
+      type: expectedActionType,
+      payload: { [payloadOptionKey]: option },
+    },
   };
 }
 
 export function getPendingNumberChoiceActionsForPlayer(
-  pending: any,
+  pending: unknown,
   playerId: number,
   options?: {
     pendingType?: string;
@@ -357,20 +404,20 @@ export function getPendingNumberChoiceActionsForPlayer(
     samePlayer?: (left: unknown, right: unknown) => boolean;
   },
 ): GameSingleActionDto[] {
-  const pendingType = String(options?.pendingType ?? '').trim() || 'choose_number';
-  const actionType = String(options?.actionType ?? '').trim() || pendingType;
-  const payloadValueKey = String(options?.payloadValueKey ?? '').trim() || 'value';
-  const minKey = String(options?.minKey ?? '').trim() || 'min';
-  const maxKey = String(options?.maxKey ?? '').trim() || 'max';
+  const pendingType = toText(options?.pendingType) || 'choose_number';
+  const actionType = toText(options?.actionType) || pendingType;
+  const payloadValueKey = toText(options?.payloadValueKey) || 'value';
+  const minKey = toText(options?.minKey) || 'min';
+  const maxKey = toText(options?.maxKey) || 'max';
   const defaultMin = Number(options?.defaultMin ?? 1);
   const defaultMax = Number(options?.defaultMax ?? 3);
   const samePlayer = options?.samePlayer ?? defaultSamePlayer;
 
-  if (!pending || pending.type !== pendingType) return [];
-  if (!samePlayer(pending.playerId, playerId)) return [];
+  if (!pending || toText(asRecord(pending).type) !== pendingType) return [];
+  if (!samePlayer(asRecord(pending).playerId, playerId)) return [];
 
-  const min = Number(pending?.data?.[minKey] ?? defaultMin);
-  const max = Number(pending?.data?.[maxKey] ?? defaultMax);
+  const min = Number(asRecord(asRecord(pending).data)[minKey] ?? defaultMin);
+  const max = Number(asRecord(asRecord(pending).data)[maxKey] ?? defaultMax);
   if (!Number.isFinite(min) || !Number.isFinite(max) || max < min) return [];
 
   const values: number[] = [];
@@ -385,10 +432,10 @@ export function getPendingNumberChoiceActionsForPlayer(
 }
 
 export function validatePendingNumberChoiceActionForActor(params: {
-  pending: any;
+  pending: unknown;
   actorId: number;
   actionType: string;
-  payload: any;
+  payload: unknown;
   pendingType?: string;
   expectedActionType?: string;
   payloadValueKey?: string;
@@ -398,29 +445,35 @@ export function validatePendingNumberChoiceActionForActor(params: {
   defaultMax?: number;
   samePlayer?: (left: unknown, right: unknown) => boolean;
 }): PendingNumberChoiceValidationResult {
-  const pendingType = String(params.pendingType ?? '').trim() || 'choose_number';
-  const expectedActionType =
-    String(params.expectedActionType ?? '').trim() || pendingType;
-  const payloadValueKey = String(params.payloadValueKey ?? '').trim() || 'value';
-  const minKey = String(params.minKey ?? '').trim() || 'min';
-  const maxKey = String(params.maxKey ?? '').trim() || 'max';
+  const pendingType = toText(params.pendingType) || 'choose_number';
+  const expectedActionType = toText(params.expectedActionType) || pendingType;
+  const payloadValueKey = toText(params.payloadValueKey) || 'value';
+  const minKey = toText(params.minKey) || 'min';
+  const maxKey = toText(params.maxKey) || 'max';
   const defaultMin = Number(params.defaultMin ?? 1);
   const defaultMax = Number(params.defaultMax ?? 3);
   const samePlayer = params.samePlayer ?? defaultSamePlayer;
 
-  if (!params.pending || params.pending.type !== pendingType) {
+  if (
+    !params.pending ||
+    toText(asRecord(params.pending).type) !== pendingType
+  ) {
     return { ok: false, reason: 'not_pending_for_actor' };
   }
-  if (!samePlayer(params.pending.playerId, params.actorId)) {
+  if (!samePlayer(asRecord(params.pending).playerId, params.actorId)) {
     return { ok: false, reason: 'not_pending_for_actor' };
   }
   if (params.actionType !== expectedActionType) {
     return { ok: false, reason: 'wrong_action_type' };
   }
 
-  const min = Number(params.pending?.data?.[minKey] ?? defaultMin);
-  const max = Number(params.pending?.data?.[maxKey] ?? defaultMax);
-  const value = Number(params.payload?.[payloadValueKey]);
+  const min = Number(
+    asRecord(asRecord(params.pending).data)[minKey] ?? defaultMin,
+  );
+  const max = Number(
+    asRecord(asRecord(params.pending).data)[maxKey] ?? defaultMax,
+  );
+  const value = Number(asRecord(params.payload)[payloadValueKey]);
 
   if (
     !Number.isFinite(min) ||
@@ -441,7 +494,7 @@ export function validatePendingNumberChoiceActionForActor(params: {
 }
 
 export function getPendingNumberSetChoiceActionsForPlayer(
-  pending: any,
+  pending: unknown,
   playerId: number,
   options?: {
     pendingType?: string;
@@ -451,20 +504,18 @@ export function getPendingNumberSetChoiceActionsForPlayer(
     samePlayer?: (left: unknown, right: unknown) => boolean;
   },
 ): GameSingleActionDto[] {
-  const pendingType = String(options?.pendingType ?? '').trim() || 'choose_number';
-  const actionType = String(options?.actionType ?? '').trim() || pendingType;
-  const payloadValueKey = String(options?.payloadValueKey ?? '').trim() || 'value';
-  const valuesKey = String(options?.valuesKey ?? '').trim() || 'values';
+  const pendingType = toText(options?.pendingType) || 'choose_number';
+  const actionType = toText(options?.actionType) || pendingType;
+  const payloadValueKey = toText(options?.payloadValueKey) || 'value';
+  const valuesKey = toText(options?.valuesKey) || 'values';
   const samePlayer = options?.samePlayer ?? defaultSamePlayer;
 
-  if (!pending || pending.type !== pendingType) return [];
-  if (!samePlayer(pending.playerId, playerId)) return [];
+  if (!pending || toText(asRecord(pending).type) !== pendingType) return [];
+  if (!samePlayer(asRecord(pending).playerId, playerId)) return [];
 
-  const values = Array.isArray(pending?.data?.[valuesKey])
-    ? pending.data[valuesKey]
-        .map((entry: unknown) => Number(entry))
-        .filter((entry: number) => Number.isFinite(entry))
-    : [];
+  const values = asArray(getDataRecord(pending)[valuesKey])
+    .map((entry: unknown) => Number(entry))
+    .filter((entry: number) => Number.isFinite(entry));
 
   return values.map((value: number) => ({
     type: actionType,
@@ -473,39 +524,39 @@ export function getPendingNumberSetChoiceActionsForPlayer(
 }
 
 export function validatePendingNumberSetChoiceActionForActor(params: {
-  pending: any;
+  pending: unknown;
   actorId: number;
   actionType: string;
-  payload: any;
+  payload: unknown;
   pendingType?: string;
   expectedActionType?: string;
   payloadValueKey?: string;
   valuesKey?: string;
   samePlayer?: (left: unknown, right: unknown) => boolean;
 }): PendingNumberSetChoiceValidationResult {
-  const pendingType = String(params.pendingType ?? '').trim() || 'choose_number';
-  const expectedActionType =
-    String(params.expectedActionType ?? '').trim() || pendingType;
-  const payloadValueKey = String(params.payloadValueKey ?? '').trim() || 'value';
-  const valuesKey = String(params.valuesKey ?? '').trim() || 'values';
+  const pendingType = toText(params.pendingType) || 'choose_number';
+  const expectedActionType = toText(params.expectedActionType) || pendingType;
+  const payloadValueKey = toText(params.payloadValueKey) || 'value';
+  const valuesKey = toText(params.valuesKey) || 'values';
   const samePlayer = params.samePlayer ?? defaultSamePlayer;
 
-  if (!params.pending || params.pending.type !== pendingType) {
+  if (
+    !params.pending ||
+    toText(asRecord(params.pending).type) !== pendingType
+  ) {
     return { ok: false, reason: 'not_pending_for_actor' };
   }
-  if (!samePlayer(params.pending.playerId, params.actorId)) {
+  if (!samePlayer(asRecord(params.pending).playerId, params.actorId)) {
     return { ok: false, reason: 'not_pending_for_actor' };
   }
   if (params.actionType !== expectedActionType) {
     return { ok: false, reason: 'wrong_action_type' };
   }
 
-  const values = Array.isArray(params.pending?.data?.[valuesKey])
-    ? params.pending.data[valuesKey]
-        .map((entry: unknown) => Number(entry))
-        .filter((entry: number) => Number.isFinite(entry))
-    : [];
-  const value = Number(params.payload?.[payloadValueKey]);
+  const values = asArray(getDataRecord(params.pending)[valuesKey])
+    .map((entry: unknown) => Number(entry))
+    .filter((entry: number) => Number.isFinite(entry));
+  const value = Number(asRecord(params.payload)[payloadValueKey]);
 
   if (!Number.isFinite(value) || !values.includes(value)) {
     return { ok: false, reason: 'invalid_value', value };
@@ -519,7 +570,7 @@ export function validatePendingNumberSetChoiceActionForActor(params: {
 }
 
 export function getPendingCardChoiceActionsForPlayer(
-  pending: any,
+  pending: unknown,
   playerId: number,
   options?: {
     pendingType?: string;
@@ -530,26 +581,28 @@ export function getPendingCardChoiceActionsForPlayer(
     samePlayer?: (left: unknown, right: unknown) => boolean;
   },
 ): GameSingleActionDto[] {
-  const pendingType = String(options?.pendingType ?? '').trim() || 'choose_card';
-  const actionType = String(options?.actionType ?? '').trim() || pendingType;
-  const cardsKey = String(options?.cardsKey ?? '').trim() || 'cards';
-  const payloadCardTypeKey =
-    String(options?.payloadCardTypeKey ?? '').trim() || 'cardType';
-  const payloadCardIdKey =
-    String(options?.payloadCardIdKey ?? '').trim() || 'cardId';
+  const pendingType = toText(options?.pendingType) || 'choose_card';
+  const actionType = toText(options?.actionType) || pendingType;
+  const cardsKey = toText(options?.cardsKey) || 'cards';
+  const payloadCardTypeKey = toText(options?.payloadCardTypeKey) || 'cardType';
+  const payloadCardIdKey = toText(options?.payloadCardIdKey) || 'cardId';
   const samePlayer = options?.samePlayer ?? defaultSamePlayer;
 
-  if (!pending || pending.type !== pendingType) return [];
-  if (!samePlayer(pending.playerId, playerId)) return [];
+  if (!pending || toText(asRecord(pending).type) !== pendingType) return [];
+  if (!samePlayer(asRecord(pending).playerId, playerId)) return [];
 
-  const cards = Array.isArray(pending?.data?.[cardsKey]) ? pending.data[cardsKey] : [];
+  const cards = asArray(getDataRecord(pending)[cardsKey]);
   return cards
-    .map((card: any) => ({
-      cardType: String(card?.[payloadCardTypeKey] ?? '').trim(),
-      cardId: Number(card?.[payloadCardIdKey]),
-    }))
-    .filter((card: { cardType: string; cardId: number }) =>
-      card.cardType.length > 0 && Number.isFinite(card.cardId),
+    .map((entry) => {
+      const card = asRecord(entry);
+      return {
+        cardType: toText(card[payloadCardTypeKey]),
+        cardId: Number(card[payloadCardIdKey]),
+      };
+    })
+    .filter(
+      (card: { cardType: string; cardId: number }) =>
+        card.cardType.length > 0 && Number.isFinite(card.cardId),
     )
     .map((card: { cardType: string; cardId: number }) => ({
       type: actionType,
@@ -561,10 +614,10 @@ export function getPendingCardChoiceActionsForPlayer(
 }
 
 export function validatePendingCardChoiceActionForActor(params: {
-  pending: any;
+  pending: unknown;
   actorId: number;
   actionType: string;
-  payload: any;
+  payload: unknown;
   pendingType?: string;
   expectedActionType?: string;
   cardsKey?: string;
@@ -572,37 +625,37 @@ export function validatePendingCardChoiceActionForActor(params: {
   payloadCardIdKey?: string;
   samePlayer?: (left: unknown, right: unknown) => boolean;
 }): PendingCardChoiceValidationResult {
-  const pendingType = String(params.pendingType ?? '').trim() || 'choose_card';
-  const expectedActionType =
-    String(params.expectedActionType ?? '').trim() || pendingType;
-  const cardsKey = String(params.cardsKey ?? '').trim() || 'cards';
-  const payloadCardTypeKey =
-    String(params.payloadCardTypeKey ?? '').trim() || 'cardType';
-  const payloadCardIdKey =
-    String(params.payloadCardIdKey ?? '').trim() || 'cardId';
+  const pendingType = toText(params.pendingType) || 'choose_card';
+  const expectedActionType = toText(params.expectedActionType) || pendingType;
+  const cardsKey = toText(params.cardsKey) || 'cards';
+  const payloadCardTypeKey = toText(params.payloadCardTypeKey) || 'cardType';
+  const payloadCardIdKey = toText(params.payloadCardIdKey) || 'cardId';
   const samePlayer = params.samePlayer ?? defaultSamePlayer;
 
-  if (!params.pending || params.pending.type !== pendingType) {
+  if (
+    !params.pending ||
+    toText(asRecord(params.pending).type) !== pendingType
+  ) {
     return { ok: false, reason: 'not_pending_for_actor' };
   }
-  if (!samePlayer(params.pending.playerId, params.actorId)) {
+  if (!samePlayer(asRecord(params.pending).playerId, params.actorId)) {
     return { ok: false, reason: 'not_pending_for_actor' };
   }
   if (params.actionType !== expectedActionType) {
     return { ok: false, reason: 'wrong_action_type' };
   }
 
-  const cardType = String(params.payload?.[payloadCardTypeKey] ?? '').trim();
-  const cardId = Number(params.payload?.[payloadCardIdKey]);
-  const cards = Array.isArray(params.pending?.data?.[cardsKey])
-    ? params.pending.data[cardsKey]
-    : [];
+  const cardType = toText(asRecord(params.payload)[payloadCardTypeKey]);
+  const cardId = Number(asRecord(params.payload)[payloadCardIdKey]);
+  const cards = asArray(getDataRecord(params.pending)[cardsKey]);
 
-  const found = cards.some(
-    (card: any) =>
-      String(card?.[payloadCardTypeKey] ?? '').trim() === cardType &&
-      Number(card?.[payloadCardIdKey]) === cardId,
-  );
+  const found = cards.some((entry) => {
+    const card = asRecord(entry);
+    return (
+      toText(card[payloadCardTypeKey]) === cardType &&
+      Number(card[payloadCardIdKey]) === cardId
+    );
+  });
   if (!cardType || !Number.isFinite(cardId) || !found) {
     return { ok: false, reason: 'invalid_card' };
   }

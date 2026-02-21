@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using client_win.Modules.Admin.Dtos;
@@ -12,7 +12,7 @@ public sealed partial class AdminViewModel
     {
         _page = AdminPage.MnemoQuizCategories;
         ConfigureItemsViewForPage();
-        Title = "Quiz (Mnémosyne) - Catégories";
+        Title = "Quiz (MnÃ©mosyne) - CatÃ©gories";
         Details = string.Empty;
         IsTextInputVisible = false;
         IsAdditionalPermissionsVisible = false;
@@ -30,11 +30,11 @@ public sealed partial class AdminViewModel
                 Items.Clear();
                 foreach (var c in _mnemoQuizCategories.OrderBy(c => c.Name))
                 {
-                    Items.Add(new AdminMenuItem($"Catégorie : {c.Name}", tag: c));
+                    Items.Add(new AdminMenuItem($"CatÃ©gorie : {c.Name}", tag: c));
                 }
-                Items.Add(new AdminMenuItem("Ajouter une catégorie", tag: "mnemo.category.create"));
+                Items.Add(new AdminMenuItem("Ajouter une catÃ©gorie", tag: "mnemo.category.create"));
                 SelectedItem = Items.FirstOrDefault();
-                Status = "Entrée : sélectionner. Échap : retour.";
+                Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
                 RestoreFocusIfAny();
             });
         }
@@ -50,7 +50,7 @@ public sealed partial class AdminViewModel
         ConfigureItemsViewForPage();
         _selectedMnemoQuizCategory = category;
         _selectedMnemoQuizQuestion = null;
-        Title = $"Quiz (Mnémosyne) - {category.Name}";
+        Title = $"Quiz (MnÃ©mosyne) - {category.Name}";
         Details = $"Id: {category.Id}";
         IsTextInputVisible = false;
         IsAdditionalPermissionsVisible = false;
@@ -58,11 +58,11 @@ public sealed partial class AdminViewModel
         Items.Clear();
         Items.Add(new AdminMenuItem("Questions", tag: "mnemo.questions.list"));
         Items.Add(new AdminMenuItem("Ajouter une question", tag: "mnemo.question.create"));
-        Items.Add(new AdminMenuItem("Renommer la catégorie", tag: "mnemo.category.rename"));
-        Items.Add(new AdminMenuItem("Supprimer la catégorie", tag: "mnemo.category.delete"));
+        Items.Add(new AdminMenuItem("Renommer la catÃ©gorie", tag: "mnemo.category.rename"));
+        Items.Add(new AdminMenuItem("Supprimer la catÃ©gorie", tag: "mnemo.category.delete"));
         Items.Add(new AdminMenuItem("Retour", tag: "mnemo.back"));
         SelectedItem = Items.FirstOrDefault();
-        Status = "Entrée : sélectionner. Échap : retour.";
+        Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
         RestoreFocusIfAny();
     }
 
@@ -86,7 +86,7 @@ public sealed partial class AdminViewModel
 
         if (action == "mnemo.category.delete")
         {
-            var confirm = await _dialogs.Confirm("Supprimer", $"Supprimer la catégorie \"{category.Name}\" ? (Les questions seront mises à la corbeille)").ConfigureAwait(true);
+            var confirm = await _dialogs.Confirm("Supprimer", $"Supprimer la catÃ©gorie \"{category.Name}\" ? (Les questions seront mises Ã  la corbeille)").ConfigureAwait(true);
             if (confirm != true) return;
             IsBusy = true;
             try
@@ -106,7 +106,7 @@ public sealed partial class AdminViewModel
         {
             BuildMnemoQuizEditText(
                 title: $"Ajouter une question ({category.Name})",
-                label: "5 lignes : Question, Bonne réponse, Mauvaise 1, Mauvaise 2, Mauvaise 3",
+                label: "5 lignes : Question, Bonne rÃ©ponse, Mauvaise 1, Mauvaise 2, Mauvaise 3",
                 initialValue: string.Empty,
                 mode: "mnemo.question.create");
             return;
@@ -118,7 +118,7 @@ public sealed partial class AdminViewModel
             return;
         }
 
-        // Filtrage par statut supprimé (UI simplifiée).
+        // Filtrage par statut supprimÃ© (UI simplifiÃ©e).
     }
 
     private async Task LoadMnemoQuizQuestionsAsync(string categoryId, string? status)
@@ -126,8 +126,8 @@ public sealed partial class AdminViewModel
         _page = AdminPage.MnemoQuizQuestions;
         ConfigureItemsViewForPage();
         var statusLabel = string.IsNullOrWhiteSpace(status) ? "toutes" : status;
-        Title = $"Quiz (Mnémosyne) - Questions ({statusLabel})";
-        Details = $"Catégorie: {categoryId}";
+        Title = $"Quiz (MnÃ©mosyne) - Questions ({statusLabel})";
+        Details = $"CatÃ©gorie: {categoryId}";
         IsTextInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         IsSecondaryInputVisible = false;
@@ -150,7 +150,7 @@ public sealed partial class AdminViewModel
                 }
                 Items.Add(new AdminMenuItem("Retour", tag: "mnemo.back"));
                 SelectedItem = Items.FirstOrDefault();
-                Status = "Entrée : sélectionner. Échap : retour.";
+                Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
                 RestoreFocusIfAny();
             });
         }
@@ -165,7 +165,7 @@ public sealed partial class AdminViewModel
         _page = AdminPage.MnemoQuizQuestionActions;
         ConfigureItemsViewForPage();
         _selectedMnemoQuizQuestion = question;
-        Title = "Quiz (Mnémosyne) - Question";
+        Title = "Quiz (MnÃ©mosyne) - Question";
         var answers = (question.Answers ?? new()).ToArray();
         Details =
             $"Id: {question.Id}\n\nQ: {question.Question}\n\n" +
@@ -179,10 +179,10 @@ public sealed partial class AdminViewModel
         IsSecondaryInputVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Modifier la question", tag: "mnemo.question.edit"));
-        Items.Add(new AdminMenuItem("Supprimer définitivement", tag: "mnemo.question.delete"));
+        Items.Add(new AdminMenuItem("Supprimer dÃ©finitivement", tag: "mnemo.question.delete"));
         Items.Add(new AdminMenuItem("Retour", tag: "mnemo.back"));
         SelectedItem = Items.FirstOrDefault();
-        Status = "Entrée : sélectionner. Échap : retour.";
+        Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
         RestoreFocusIfAny();
     }
 
@@ -214,7 +214,7 @@ public sealed partial class AdminViewModel
             });
             BuildMnemoQuizEditText(
                 title: "Modifier la question",
-                label: "5 lignes : Question, Bonne réponse, Mauvaise 1, Mauvaise 2, Mauvaise 3",
+                label: "5 lignes : Question, Bonne rÃ©ponse, Mauvaise 1, Mauvaise 2, Mauvaise 3",
                 initialValue: block,
                 mode: "mnemo.question.edit");
             return;
@@ -222,7 +222,7 @@ public sealed partial class AdminViewModel
 
         if (action == "mnemo.question.delete")
         {
-            var confirm = await _dialogs.Confirm("Supprimer", "Supprimer définitivement cette question ?").ConfigureAwait(true);
+            var confirm = await _dialogs.Confirm("Supprimer", "Supprimer dÃ©finitivement cette question ?").ConfigureAwait(true);
             if (confirm != true) return;
             IsBusy = true;
             try
@@ -245,8 +245,8 @@ public sealed partial class AdminViewModel
         _selectedMnemoQuizCategory = null;
         _selectedMnemoQuizQuestion = null;
         BuildMnemoQuizEditText(
-            title: "Quiz (Mnémosyne) - Ajouter une catégorie",
-            label: "Nom de catégorie",
+            title: "Quiz (MnÃ©mosyne) - Ajouter une catÃ©gorie",
+            label: "Nom de catÃ©gorie",
             initialValue: string.Empty,
             mode: "mnemo.category.create");
     }
@@ -303,7 +303,7 @@ public sealed partial class AdminViewModel
         IsFourthInputVisible = false;
         IsFifthInputVisible = false;
         Details = string.Empty;
-        Status = "Saisissez puis Entrée pour valider. Échap : retour.";
+        Status = "Saisissez puis EntrÃ©e pour valider. Ã‰chap : retour.";
         _currentEditMode = mode;
         RestoreFocusIfAny();
 
@@ -341,14 +341,14 @@ public sealed partial class AdminViewModel
         PrimaryInputAcceptsReturn = false;
         TextInputLabel = "Question";
         TextInput = question ?? string.Empty;
-        SecondaryInputLabel = "Bonne réponse";
+        SecondaryInputLabel = "Bonne rÃ©ponse";
         SecondaryInput = correct ?? string.Empty;
         SecondaryInputAcceptsReturn = false;
-        ThirdInputLabel = "Réponse 1";
+        ThirdInputLabel = "RÃ©ponse 1";
         ThirdInput = wrong1 ?? string.Empty;
-        FourthInputLabel = "Réponse 2";
+        FourthInputLabel = "RÃ©ponse 2";
         FourthInput = wrong2 ?? string.Empty;
-        FifthInputLabel = "Réponse 3";
+        FifthInputLabel = "RÃ©ponse 3";
         FifthInput = wrong3 ?? string.Empty;
         IsTextInputVisible = true;
         IsSecondaryInputVisible = true;
@@ -356,31 +356,10 @@ public sealed partial class AdminViewModel
         IsFourthInputVisible = true;
         IsFifthInputVisible = true;
         Details = string.Empty;
-        Status = "Tab : champ suivant. Entrée : valider. Échap : retour.";
+        Status = "Tab : champ suivant. EntrÃ©e : valider. Ã‰chap : retour.";
         _currentEditMode = mode;
         RestoreFocusIfAny();
     }
-
-    private static bool TryParseMnemoQuestionBlock(string raw, out string question, out string[] answers)
-    {
-        var lines = (raw ?? string.Empty)
-            .Split('\n')
-            .Select(s => (s ?? string.Empty).Trim())
-            .Where(s => !string.IsNullOrWhiteSpace(s))
-            .ToArray();
-
-        if (lines.Length < 5)
-        {
-            question = string.Empty;
-            answers = Array.Empty<string>();
-            return false;
-        }
-
-        question = lines[0];
-        answers = new[] { lines[1], lines[2], lines[3], lines[4] };
-        return !string.IsNullOrWhiteSpace(question) && answers.All(a => !string.IsNullOrWhiteSpace(a));
-    }
-
     private async Task SubmitMnemoQuizEditAsync()
     {
         var mode = _currentEditMode ?? string.Empty;
@@ -391,7 +370,7 @@ public sealed partial class AdminViewModel
             var name = value.Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
-                await _dialogs.ShowError("Quiz", "Nom de catégorie requis.").ConfigureAwait(true);
+                await _dialogs.ShowError("Quiz", "Nom de catÃ©gorie requis.").ConfigureAwait(true);
                 return;
             }
             IsBusy = true;
@@ -413,7 +392,7 @@ public sealed partial class AdminViewModel
             var name = value.Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
-                await _dialogs.ShowError("Quiz", "Nom de catégorie requis.").ConfigureAwait(true);
+                await _dialogs.ShowError("Quiz", "Nom de catÃ©gorie requis.").ConfigureAwait(true);
                 return;
             }
             IsBusy = true;
@@ -490,4 +469,6 @@ public sealed partial class AdminViewModel
         }
     }
 }
+
+
 

@@ -15,7 +15,7 @@ import { MonVillageBotService } from './bots/mon-village-bot.service';
     GameCoreModule,
     GameRegistryModule,
     EngineServicesModule,
-    ],
+  ],
   providers: [
     MonVillageService,
     MonVillageSetupService,

@@ -1,4 +1,7 @@
-import type { ToutPresDeMamanCard, ToutPresDeMamanTile } from './tout-pres-de-maman-state.entity';
+import type {
+  ToutPresDeMamanCard,
+  ToutPresDeMamanTile,
+} from './tout-pres-de-maman-state.entity';
 
 export interface ToutPresDeMamanBoardJsonV1 {
   version: 1;

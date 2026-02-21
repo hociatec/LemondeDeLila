@@ -6,7 +6,10 @@ import type {
   GameStateWithActions,
 } from '../../../engine/dto/game-action.dto';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
-import type { GameShortcutHint, GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import { LamaPresenter } from './lama.presenter';
 import { LamaActionService } from './actions/lama-action.service';
 import { LamaSetupService } from './setup/lama-setup.service';
@@ -19,7 +22,8 @@ export class LamaService extends AbstractGameService {
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'Les Vents Sacrés';
   readonly displayName = 'LAMA';
-  readonly description = 'Défaussez vos cartes ou sortez de la manche pour minimiser vos jetons.';
+  readonly description =
+    'Défaussez vos cartes ou sortez de la manche pour minimiser vos jetons.';
   readonly minPlayers = 2;
   readonly maxPlayers = 6;
 
@@ -38,15 +42,24 @@ export class LamaService extends AbstractGameService {
     return this.setup.hydrateInitialState(baseState);
   }
 
-  applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
+  applyActions(
+    state: GameStateEntity,
+    actions: GameSingleActionDto[],
+  ): GameStateEntity {
     return this.actions.applyActions(state, actions);
   }
 
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
   }
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     return this.bots.getBotActions(state, botPlayerId);
   }
 

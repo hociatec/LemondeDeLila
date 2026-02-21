@@ -68,9 +68,13 @@ export class NotificationService implements OnModuleDestroy {
         ? { reason: reason.trim() }
         : null;
     const message =
-      payload != null ? JSON.stringify({ type: 'server.disconnect', payload }) : null;
+      payload != null
+        ? JSON.stringify({ type: 'server.disconnect', payload })
+        : null;
 
-    for (const [userId, sockets] of Array.from(this.socketsByUserId.entries())) {
+    for (const [userId, sockets] of Array.from(
+      this.socketsByUserId.entries(),
+    )) {
       for (const socket of Array.from(sockets)) {
         if (socket.readyState === WebSocket.OPEN && message) {
           try {

@@ -156,12 +156,6 @@ public sealed class MainMenuViewModel : ObservableObject
         StatusMessage = "Flèches haut/bas : naviguer. Entrée : sélectionner.";
     }
 
-    private static string FormatMenuLabel(string baseLabel, int unread)
-    {
-        unread = Math.Max(0, unread);
-        return $"{baseLabel} ({unread})";
-    }
-
     private async Task RefreshAdminVisibilityAsync()
     {
         var capabilities = await _capabilities.GetAsync().ConfigureAwait(true);

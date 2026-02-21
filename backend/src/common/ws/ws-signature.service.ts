@@ -1,11 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { WebSocket } from 'ws';
 import { timingSafeEqual } from 'crypto';
+import type { IncomingHttpHeaders, IncomingMessage } from 'http';
+
+export type WsRequestLike = IncomingMessage & {
+  url?: string;
+  headers?: IncomingHttpHeaders;
+};
+
+export type WsClientLike = {
+  upgradeReq?: WsRequestLike;
+  req?: WsRequestLike;
+  handshakeHeaders?: IncomingHttpHeaders;
+  url?: string;
+};
 
 /**
- * Vérifie la présence d'un secret partagé pour les connexions WS sensibles.
- * Le client envoie le secret dans le paramètre `signature` (ou certains headers)
+ * Verifie la presence d'un secret partage pour les connexions WS sensibles.
+ * Le client envoie le secret dans le parametre `signature` (ou certains headers)
  * et le backend le compare en constant-time pour limiter les fuites d'information.
  */
 @Injectable()
@@ -13,7 +25,7 @@ export class WsSignatureService {
   private readonly secret: string | null;
   private readonly logger = new Logger(WsSignatureService.name);
 
-  constructor(private readonly config: ConfigService) {
+  constructor(config: ConfigService) {
     this.secret = this.normalize(
       config.get<string>('WS_SHARED_SECRET') ||
         config.get<string>('REALTIME_WS_SECRET') ||
@@ -26,44 +38,54 @@ export class WsSignatureService {
     return Boolean(this.secret);
   }
 
-  validate(client: WebSocket, args: any[]): boolean {
+  validate(client: WsClientLike, args: unknown[]): boolean {
     if (!this.secret) {
       return true;
     }
     const provided = this.extractSignature(client, args);
     if (!provided) {
-      this.logger.warn('Connexion WS refusée: signature absente.');
+      this.logger.warn('Connexion WS refusee: signature absente.');
       return false;
     }
     return this.compare(this.secret, provided);
   }
 
-  private extractSignature(client: WebSocket, args: any[]): string | null {
-    const request: any =
-      (args && args[0]) || (client as any).upgradeReq || (client as any).req;
-    const urlCandidate = (client as any).url || request?.url || '';
-    if (typeof urlCandidate === 'string' && urlCandidate.trim()) {
-      try {
-        const url = new URL(urlCandidate, 'ws://localhost');
-        const fromQuery = url.searchParams.get('signature');
-        if (fromQuery && fromQuery.trim()) {
-          return fromQuery.trim();
+  private extractSignature(
+    client: WsClientLike,
+    args: unknown[],
+  ): string | null {
+    const firstArg = args[0];
+    const request = this.resolveRequest(client, firstArg);
+    const urlCandidate = this.pickUrl(client, request);
+
+    if (urlCandidate) {
+      const trimmedUrl = urlCandidate.trim();
+      if (trimmedUrl) {
+        try {
+          const url = new URL(trimmedUrl, 'ws://localhost');
+          const fromQuery = url.searchParams.get('signature');
+          if (fromQuery && fromQuery.trim()) {
+            return fromQuery.trim();
+          }
+        } catch {
+          /* ignore invalid URL */
         }
-      } catch {
-        /* ignore invalid URL */
       }
     }
-    const headers = (client as any).handshakeHeaders || request?.headers;
+
+    const headers = client.handshakeHeaders ?? request?.headers;
     const headerSignature = this.extractHeaderSignature(headers);
     if (!headerSignature) {
       this.logger.warn(
-        'Connexion WS refusée: signature absente (query/header).',
+        'Connexion WS refusee: signature absente (query/header).',
       );
     }
     return headerSignature;
   }
 
-  private extractHeaderSignature(headers: any): string | null {
+  private extractHeaderSignature(
+    headers: IncomingHttpHeaders | undefined,
+  ): string | null {
     if (!headers) {
       return null;
     }
@@ -74,12 +96,43 @@ export class WsSignatureService {
       'x-signature',
     ];
     for (const key of candidates) {
-      const value = headers[key] || headers[key.toLowerCase()] || null;
-      if (typeof value === 'string' && value.trim()) {
-        return value.trim();
+      const value = this.normalizeHeaderValue(headers[key]);
+      if (value) {
+        return value;
       }
     }
     return null;
+  }
+
+  private resolveRequest(
+    client: WsClientLike,
+    firstArg: unknown,
+  ): WsRequestLike | null {
+    if (firstArg && typeof firstArg === 'object' && firstArg !== null) {
+      return firstArg as WsRequestLike;
+    }
+    return client.upgradeReq ?? client.req ?? null;
+  }
+
+  private pickUrl(
+    client: WsClientLike,
+    request: WsRequestLike | null,
+  ): string | null {
+    const raw =
+      (typeof client.url === 'string' ? client.url : '') ||
+      (typeof request?.url === 'string' ? request.url : '');
+    const trimmed = raw.trim();
+    return trimmed || null;
+  }
+
+  private normalizeHeaderValue(
+    raw: string | string[] | undefined,
+  ): string | null {
+    if (!raw) return null;
+    const value = Array.isArray(raw) ? raw[0] : raw;
+    if (typeof value !== 'string') return null;
+    const trimmed = value.trim();
+    return trimmed || null;
   }
 
   private compare(expected: string, provided: string): boolean {

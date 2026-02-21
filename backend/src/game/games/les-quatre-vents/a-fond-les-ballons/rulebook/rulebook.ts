@@ -4,10 +4,7 @@ import {
   isRollActionType,
   normalizeActionType,
 } from '../../../../actions/action-service.helper';
-import {
-  requiredInt,
-  requiredString,
-} from '../../../../core/helpers/payload-validators.helper';
+import { requiredInt } from '../../../../core/helpers/payload-validators.helper';
 import {
   getPendingPawnActionsForPlayer,
   validatePendingPawnActionForActor,
@@ -30,7 +27,7 @@ export function getAvailableActions(
 ): GameSingleActionDto[] {
   if (!isStartedState(state)) return [];
 
-  const pending = state.pending as any;
+  const pending = asPendingRecord(state.pending);
   if (pending) {
     const drawActions = getPendingDrawActionsForPlayer(pending, playerId);
     if (drawActions.length > 0) return drawActions;
@@ -42,12 +39,8 @@ export function getAvailableActions(
     if (pawnActions.length > 0) {
       return pawnActions;
     }
-    if (pending.type === 'swap' && pending.playerId === playerId) {
-      const targets: Array<{ targetPlayerId: number }> = Array.isArray(
-        pending?.data?.targets,
-      )
-        ? pending.data.targets
-        : [];
+    if (pending.type === 'swap' && Number(pending.playerId) === playerId) {
+      const targets = normalizeTargets(pending?.data?.targets);
       return targets.map((t) => ({
         type: 'swap_choose_target',
         payload: { targetPlayerId: t.targetPlayerId },
@@ -92,7 +85,7 @@ export function validateAction(
   const current = state.turn?.currentPlayerId ?? null;
 
   if (type === 'draw') {
-    const pending = state.pending as any;
+    const pending = asPendingRecord(state.pending);
     const drawValidation = validatePendingDrawActionForActor({
       pending,
       actorId,
@@ -106,7 +99,7 @@ export function validateAction(
     return drawValidation.action;
   }
   if (type === 'choose_pawn') {
-    const pending = state.pending as any;
+    const pending = asPendingRecord(state.pending);
     const pawnValidation = validatePendingPawnActionForActor({
       pending,
       actorId,
@@ -114,7 +107,10 @@ export function validateAction(
       payload: action.payload ?? {},
       pendingType: 'choose_pawn',
     });
-    if (!pawnValidation.ok && pawnValidation.reason === 'not_pending_for_actor') {
+    if (
+      !pawnValidation.ok &&
+      pawnValidation.reason === 'not_pending_for_actor'
+    ) {
       throw new PlayerActionError('Action non disponible.', {
         gameType: GAME_TYPE,
       });
@@ -134,17 +130,17 @@ export function validateAction(
   }
 
   if (type === 'swap_choose_target') {
-    const pending = state.pending as any;
-    if (!pending || pending.type !== 'swap' || pending.playerId !== actorId) {
+    const pending = asPendingRecord(state.pending);
+    if (
+      !pending ||
+      pending.type !== 'swap' ||
+      Number(pending.playerId) !== actorId
+    ) {
       throw new PlayerActionError('Action non disponible.', {
         gameType: GAME_TYPE,
       });
     }
-    const targets: Array<{ targetPlayerId: number }> = Array.isArray(
-      pending?.data?.targets,
-    )
-      ? pending.data.targets
-      : [];
+    const targets = normalizeTargets(pending?.data?.targets);
     const targetPlayerId = (() => {
       try {
         return requiredInt(
@@ -181,6 +177,40 @@ export function validateAction(
   return { type: 'roll', payload: {} };
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
 
+function asPendingRecord(value: unknown): {
+  type?: string;
+  playerId?: unknown;
+  data?: Record<string, unknown>;
+} | null {
+  if (!value || typeof value !== 'object') return null;
+  const record = asRecord(value);
+  return {
+    type: toText(record.type),
+    playerId: record.playerId,
+    data: asRecord(record.data),
+  };
+}
 
+function normalizeTargets(value: unknown): Array<{ targetPlayerId: number }> {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((entry) => {
+      const record = asRecord(entry);
+      const targetPlayerId = Number(record.targetPlayerId);
+      return Number.isFinite(targetPlayerId) ? { targetPlayerId } : null;
+    })
+    .filter((entry): entry is { targetPlayerId: number } => entry !== null);
+}
 
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  return '';
+}

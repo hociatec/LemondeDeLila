@@ -7,7 +7,12 @@ import { ArcheDeMnemosyneService } from './arche-de-mnemosyne.service';
 import { MnemoQuizStoreService } from './store/mnemo-quiz-store.service';
 
 @Module({
-  imports: [ConfigModule, GameCoreModule, GameRegistryModule, RandomTurnGameKitModule],
+  imports: [
+    ConfigModule,
+    GameCoreModule,
+    GameRegistryModule,
+    RandomTurnGameKitModule,
+  ],
   providers: [ArcheDeMnemosyneService, MnemoQuizStoreService],
   exports: [ArcheDeMnemosyneService, MnemoQuizStoreService],
 })

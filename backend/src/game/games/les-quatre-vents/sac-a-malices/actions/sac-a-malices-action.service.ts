@@ -1,14 +1,16 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type {
   GameStateEntity,
   PendingState,
 } from '../../../../core/entities/game-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
 
-
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -17,10 +19,47 @@ import { SacAMalicesSetupService } from '../setup/sac-a-malices-setup.service';
 import type {
   SacCard,
   SacDeck,
+  SacGroupsJsonV1,
   SacMetadata,
   SacTile,
 } from '../model/sac-a-malices.types';
-import { SAC_VARIANT_BY_ID, parseVariantInput } from '../sac-a-malices-variants';
+import {
+  SAC_VARIANT_BY_ID,
+  parseVariantInput,
+} from '../sac-a-malices-variants';
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function toStringValue(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0
+    ? value.trim()
+    : null;
+}
+
+function toNumberValue(value: unknown): number | null {
+  const candidate =
+    typeof value === 'number'
+      ? value
+      : typeof value === 'string' && value.trim().length
+        ? Number(value.trim())
+        : NaN;
+  return Number.isFinite(candidate) ? candidate : null;
+}
+
+function getHouseCost(
+  group: SacGroupsJsonV1['groups'][number] | null,
+  level: number,
+): number {
+  if (!group) return 0;
+  const levelKey = String(clamp(level, 1, 4)) as '1' | '2' | '3' | '4';
+  const perLevel = group.housePrices?.[levelKey];
+  if (Number.isFinite(perLevel ?? NaN)) return Number(perLevel);
+  return group.housePrice ?? 0;
+}
 
 @Injectable()
 export class SacAMalicesActionService {
@@ -31,83 +70,93 @@ export class SacAMalicesActionService {
     private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
-  applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
+  applyActions(
+    state: GameStateEntity,
+    actions: GameSingleActionDto[],
+  ): GameStateEntity {
     const next = applyActionsSequentially(state, actions, (next, action) => {
-          const type = normalizeActionType(action);
-          return dispatchByActionType(
-            type,
-            {
-              'sac_set_variant': () => {
-                next = this.applyVariantConfig(next, action);
-                return next;
-              },
-              'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'buy': () => {
-                next = this.handleBuy(next, true);
-                return next;
-              },
-              'skip_buy': () => {
-                next = this.handleBuy(next, false);
-                return next;
-              },
-              'build': () => {
-                next = this.openChooseProperty(next, 'build');
-                return next;
-              },
-              'sell_building': () => {
-                next = this.openChooseProperty(next, 'sell_building');
-                return next;
-              },
-              'mortgage': () => {
-                next = this.openChooseProperty(next, 'mortgage');
-                return next;
-              },
-              'unmortgage': () => {
-                next = this.openChooseProperty(next, 'unmortgage');
-                return next;
-              },
-              'choose_property': () => {
-                next = this.handleChooseProperty(next, action);
-                return next;
-              },
-              'pay_fine': () => {
-                next = this.handlePayFine(next);
-                return next;
-              },
-              'use_jail_card': () => {
-                next = this.handleUseJailCard(next);
-                return next;
-              },
-            },
-            () => next,
-          );
-        });
-        return next;
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          sac_set_variant: () => {
+            next = this.applyVariantConfig(next, action);
+            return next;
+          },
+          roll: () => {
+            next = this.handleRoll(next);
+            return next;
+          },
+          buy: () => {
+            next = this.handleBuy(next, true);
+            return next;
+          },
+          skip_buy: () => {
+            next = this.handleBuy(next, false);
+            return next;
+          },
+          build: () => {
+            next = this.openChooseProperty(next, 'build');
+            return next;
+          },
+          sell_building: () => {
+            next = this.openChooseProperty(next, 'sell_building');
+            return next;
+          },
+          mortgage: () => {
+            next = this.openChooseProperty(next, 'mortgage');
+            return next;
+          },
+          unmortgage: () => {
+            next = this.openChooseProperty(next, 'unmortgage');
+            return next;
+          },
+          choose_property: () => {
+            next = this.handleChooseProperty(next, action);
+            return next;
+          },
+          pay_fine: () => {
+            next = this.handlePayFine(next);
+            return next;
+          },
+          use_jail_card: () => {
+            next = this.handleUseJailCard(next);
+            return next;
+          },
+        },
+        () => next,
+      );
+    });
+    return next;
   }
 
-  private applyVariantConfig(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
+  private applyVariantConfig(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     if (meta.setupStep !== 'setup_config') return state;
 
-    const payload = (action?.payload ?? {}) as any;
-    const rawVariant = payload.variant ?? payload.variantId ?? payload.value ?? null;
-    const parsed = parseVariantInput(rawVariant) ?? parseVariantInput(meta.variantId) ?? 'classic';
+    const payload = asRecord(action?.payload);
+    const candidateVariant =
+      toStringValue(payload.variant ?? payload.variantId ?? payload.value) ??
+      toStringValue(meta.variantId);
+    const parsedCandidate = parseVariantInput(candidateVariant ?? null);
+    const parsed = parsedCandidate ?? 'classic';
     const variant = SAC_VARIANT_BY_ID[parsed] ?? SAC_VARIANT_BY_ID['classic'];
     const chosenId = variant?.id ?? 'classic';
 
     let next = this.setup.applyVariantSelection(state, chosenId);
-    const actorId =
-      typeof (action as any)?.meta?.actorId === 'number'
-        ? (action as any).meta.actorId
-        : null;
+    const actionMeta = asRecord((action as unknown as { meta?: unknown }).meta);
+    const actorId = toNumberValue(actionMeta.actorId);
     const label = variant?.label ?? chosenId;
-    if (rawVariant == null || parseVariantInput(rawVariant) == null) {
+    if (!parsedCandidate) {
       next = this.core.appendLog(next, `Variante inconnue, défaut "${label}".`);
     } else if (actorId != null) {
-      next = this.core.appendLog(next, `${resolvePlayerNameFromState(next, actorId)} choisit la variante : ${label}.`);
+      next = this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, actorId)} choisit la variante : ${label}.`,
+      );
     } else {
       next = this.core.appendLog(next, `Variante choisie : ${label}.`);
     }
@@ -132,8 +181,8 @@ export class SacAMalicesActionService {
     if (jailTurns > 0) {
       if (rules.jail.allowDoubleEscape) {
         // 2d6 : si double => sortie immédiate et déplacement ; sinon on attend.
-        const r1 = this.random.rollDice(meta as any, 6);
-        const r2 = this.random.rollDice(r1.meta as any, 6);
+        const r1 = this.random.rollDice(meta as Record<string, unknown>, 6);
+        const r2 = this.random.rollDice(r1.meta, 6);
         meta = { ...meta, ...r2.meta };
         const d1 = r1.roll;
         const d2 = r2.roll;
@@ -155,17 +204,26 @@ export class SacAMalicesActionService {
           next = this.setJailTurns(next, currentId, remainingTurns);
           if (remainingTurns <= 0) {
             if (rules.jail.autoFine > 0) {
-              next = this.core.appendLog(next, `Sortie automatique : amende ${rules.jail.autoFine} €.`);
-              next = this.addMoney(next, currentId, -rules.jail.autoFine, { toPot: true });
+              next = this.core.appendLog(
+                next,
+                `Sortie automatique : amende ${rules.jail.autoFine} €.`,
+              );
+              next = this.addMoney(next, currentId, -rules.jail.autoFine, {
+                toPot: true,
+              });
             } else {
               next = this.core.appendLog(next, 'Sortie automatique.');
             }
             next = this.setJailTurns(next, currentId, 0);
           } else {
-            next = this.core.appendLog(next, `Prison : il reste ${remainingTurns} tour(s).`);
+            next = this.core.appendLog(
+              next,
+              `Prison : il reste ${remainingTurns} tour(s).`,
+            );
           }
           next = this.checkWinner(next);
-          if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
+          if (this.getMeta(next).winnerId != null)
+            return { ...next, status: 'finished' };
           return this.advanceTurn(next);
         }
 
@@ -177,7 +235,8 @@ export class SacAMalicesActionService {
         next = this.moveForward(next, currentId, sum);
         next = this.applyLanding(next, currentId);
         next = this.checkWinner(next);
-        if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
+        if (this.getMeta(next).winnerId != null)
+          return { ...next, status: 'finished' };
         if (next.pending) {
           next = this.setExtraRoll(next, currentId, true);
           return next;
@@ -188,20 +247,33 @@ export class SacAMalicesActionService {
       }
 
       // Version "attente" : on attend N tours, puis amende auto (si configurée).
-      let next = this.setJailTurns(state, currentId, Math.max(0, jailTurns - 1));
+      let next = this.setJailTurns(
+        state,
+        currentId,
+        Math.max(0, jailTurns - 1),
+      );
       const remaining = this.getMeta(next).statuses?.inJail?.[currentId] ?? 0;
       if (remaining <= 0) {
         if (rules.jail.autoFine > 0) {
-          next = this.core.appendLog(next, `Sortie automatique : amende ${rules.jail.autoFine} €.`);
-          next = this.addMoney(next, currentId, -rules.jail.autoFine, { toPot: true });
+          next = this.core.appendLog(
+            next,
+            `Sortie automatique : amende ${rules.jail.autoFine} €.`,
+          );
+          next = this.addMoney(next, currentId, -rules.jail.autoFine, {
+            toPot: true,
+          });
         } else {
           next = this.core.appendLog(next, 'Sortie automatique.');
         }
       } else {
-        next = this.core.appendLog(next, `Prison : il reste ${remaining} tour(s).`);
+        next = this.core.appendLog(
+          next,
+          `Prison : il reste ${remaining} tour(s).`,
+        );
       }
       next = this.checkWinner(next);
-      if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
+      if (this.getMeta(next).winnerId != null)
+        return { ...next, status: 'finished' };
       return this.advanceTurn(next);
     }
 
@@ -210,8 +282,8 @@ export class SacAMalicesActionService {
     meta = this.getMeta(state);
 
     // 2d6
-    const r1 = this.random.rollDice(meta as any, 6);
-    const r2 = this.random.rollDice(r1.meta as any, 6);
+    const r1 = this.random.rollDice(meta as Record<string, unknown>, 6);
+    const r2 = this.random.rollDice(r1.meta, 6);
     meta = { ...meta, ...r2.meta };
     const d1 = r1.roll;
     const d2 = r2.roll;
@@ -240,14 +312,16 @@ export class SacAMalicesActionService {
       next = this.setConsecutiveDoubles(next, currentId, 0);
       next = this.setExtraRoll(next, currentId, false);
       next = this.checkWinner(next);
-      if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
+      if (this.getMeta(next).winnerId != null)
+        return { ...next, status: 'finished' };
       return this.advanceTurn(next);
     }
 
     meta = this.getMeta(next);
     if (meta.statuses?.eliminated?.[currentId]) {
       next = this.checkWinner(next);
-      if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
+      if (this.getMeta(next).winnerId != null)
+        return { ...next, status: 'finished' };
       return this.advanceTurn(next);
     }
 
@@ -257,7 +331,8 @@ export class SacAMalicesActionService {
     next = this.moveForward(next, currentId, sum);
     next = this.applyLanding(next, currentId);
     next = this.checkWinner(next);
-    if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
+    if (this.getMeta(next).winnerId != null)
+      return { ...next, status: 'finished' };
     if (next.pending) {
       if (isDouble) {
         next = this.setExtraRoll(next, currentId, true);
@@ -276,22 +351,29 @@ export class SacAMalicesActionService {
 
   private handleBuy(state: GameStateEntity, accept: boolean): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
-    const pending = state.pending as any;
-    if (!pending || pending.type !== 'buy') return state;
+    const pending = state.pending;
+    const pendingRow = asRecord(pending);
+    if (!pending || pendingRow.type !== 'buy') return state;
     const playerId =
-      typeof pending.playerId === 'number'
-        ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
+      typeof pendingRow.playerId === 'number'
+        ? pendingRow.playerId
+        : (state.turn?.currentPlayerId ?? null);
     if (playerId == null) return state;
 
-    const tileIndex = Number(pending?.data?.tileIndex);
+    const pendingData = asRecord(pendingRow.data);
+    const tileIndex = toNumberValue(pendingData.tileIndex);
+    if (tileIndex == null) return state;
     if (!Number.isFinite(tileIndex)) return state;
 
     let next: GameStateEntity = { ...state, pending: null };
     if (!accept) {
-      next = this.core.appendLog(next, `${resolvePlayerNameFromState(next, playerId)} n'achète pas.`);
+      next = this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, playerId)} n'achète pas.`,
+      );
       next = this.checkWinner(next);
-      if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
+      if (this.getMeta(next).winnerId != null)
+        return { ...next, status: 'finished' };
       return this.advanceTurnOrExtraRoll(next, playerId);
     }
 
@@ -306,12 +388,12 @@ export class SacAMalicesActionService {
 
     const price = this.getPurchasePrice(meta, tile);
     if (price <= 0) {
-      next = this.core.appendLog(next, "Achat impossible (prix inconnu).");
+      next = this.core.appendLog(next, 'Achat impossible (prix inconnu).');
       return this.advanceTurnOrExtraRoll(next, playerId);
     }
     const cash = meta.money?.[playerId] ?? 0;
     if (cash < price) {
-      next = this.core.appendLog(next, "Fonds insuffisants.");
+      next = this.core.appendLog(next, 'Fonds insuffisants.');
       return this.advanceTurnOrExtraRoll(next, playerId);
     }
 
@@ -323,7 +405,8 @@ export class SacAMalicesActionService {
     );
 
     next = this.checkWinner(next);
-    if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
+    if (this.getMeta(next).winnerId != null)
+      return { ...next, status: 'finished' };
     return this.advanceTurnOrExtraRoll(next, playerId);
   }
 
@@ -336,17 +419,24 @@ export class SacAMalicesActionService {
     const meta = this.getMeta(state);
     const rules = this.getRules(meta);
     if (!rules.jail.allowPayFine || rules.jail.autoFine <= 0) {
-      return this.core.appendLog(state, "Sortie de prison par amende : indisponible dans cette variante.");
+      return this.core.appendLog(
+        state,
+        'Sortie de prison par amende : indisponible dans cette variante.',
+      );
     }
     const jailTurns = meta.statuses?.inJail?.[playerId] ?? 0;
     if (jailTurns <= 0) return state;
 
     let next = state;
-    next = this.core.appendLog(next, `Prison : vous payez ${rules.jail.autoFine} € pour sortir.`);
+    next = this.core.appendLog(
+      next,
+      `Prison : vous payez ${rules.jail.autoFine} € pour sortir.`,
+    );
     next = this.addMoney(next, playerId, -rules.jail.autoFine, { toPot: true });
     next = this.setJailTurns(next, playerId, 0);
     next = this.checkWinner(next);
-    if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
+    if (this.getMeta(next).winnerId != null)
+      return { ...next, status: 'finished' };
     return next;
   }
 
@@ -362,7 +452,10 @@ export class SacAMalicesActionService {
 
     const count = meta.statuses?.getOutOfJail?.[playerId] ?? 0;
     if (count <= 0) {
-      return this.core.appendLog(state, 'Vous n’avez pas de carte "Sortie de prison".');
+      return this.core.appendLog(
+        state,
+        'Vous n’avez pas de carte "Sortie de prison".',
+      );
     }
 
     let next = state;
@@ -400,12 +493,15 @@ export class SacAMalicesActionService {
         if (!group) continue;
         if (!this.isGroupComplete(meta, playerId, group)) continue;
         const supportsHotel =
-          Number(group?.hotelPrice ?? 0) > 0 && Number(group?.rents?.hotel ?? 0) > 0;
+          Number(group?.hotelPrice ?? 0) > 0 &&
+          Number(group?.rents?.hotel ?? 0) > 0;
         if (!supportsHotel && b.houses >= 4) continue;
         const nextLevel = clamp(b.houses + 1, 1, 4);
-        const houseCost =
-          Number(group?.housePrices?.[String(nextLevel) as any] ?? group?.housePrice ?? 0) || 0;
-        const cost = supportsHotel && b.houses >= 4 ? Number(group.hotelPrice ?? 0) || 0 : houseCost;
+        const houseCost = getHouseCost(group, nextLevel);
+        const cost =
+          supportsHotel && b.houses >= 4
+            ? Number(group.hotelPrice ?? 0) || 0
+            : houseCost;
         if (!Number.isFinite(cost) || cost <= 0 || myCash < cost) continue;
         options.push({ tileIndex, label: `${tile.title} (coût ${cost} €)` });
         continue;
@@ -416,13 +512,14 @@ export class SacAMalicesActionService {
         if (!b.hotel && b.houses <= 0) continue;
         const group = this.getGroup(meta, tile.group ?? '');
         const supportsHotel =
-          Number(group?.hotelPrice ?? 0) > 0 && Number(group?.rents?.hotel ?? 0) > 0;
+          Number(group?.hotelPrice ?? 0) > 0 &&
+          Number(group?.rents?.hotel ?? 0) > 0;
         const refund = (() => {
           if (!group) return 0;
-          if (supportsHotel && b.hotel) return Math.floor((Number(group.hotelPrice ?? 0) || 0) / 2);
+          if (supportsHotel && b.hotel)
+            return Math.floor((Number(group.hotelPrice ?? 0) || 0) / 2);
           const level = clamp(b.houses, 1, 4);
-          const cost =
-            Number(group?.housePrices?.[String(level) as any] ?? group?.housePrice ?? 0) || 0;
+          const cost = getHouseCost(group, level);
           return Math.floor(cost / 2);
         })();
         options.push({ tileIndex, label: `${tile.title} (remb. ${refund} €)` });
@@ -447,7 +544,10 @@ export class SacAMalicesActionService {
     }
 
     if (!options.length) {
-      return this.core.appendLog(state, 'Aucune propriété disponible pour cette action.');
+      return this.core.appendLog(
+        state,
+        'Aucune propriété disponible pour cette action.',
+      );
     }
 
     const pending: PendingState = {
@@ -469,24 +569,31 @@ export class SacAMalicesActionService {
     return { ...state, pending };
   }
 
-  private handleChooseProperty(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
+  private handleChooseProperty(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
-    const pending = state.pending as any;
-    if (!pending || pending.type !== 'choose_property') return state;
+    const pending = state.pending;
+    const pendingRow = asRecord(pending);
+    if (!pending || pendingRow.type !== 'choose_property') return state;
 
     const playerId =
-      typeof pending.playerId === 'number'
-        ? pending.playerId
-        : state.turn?.currentPlayerId ?? null;
+      typeof pendingRow.playerId === 'number'
+        ? pendingRow.playerId
+        : (state.turn?.currentPlayerId ?? null);
     if (playerId == null) return state;
 
-    const wanted = Number((action?.payload as any)?.tileIndex);
-    const options: Array<{ tileIndex: number }> = Array.isArray(pending?.data?.options)
-      ? pending.data.options
+    const payload = asRecord(action.payload);
+    const wanted = toNumberValue(payload.tileIndex);
+    const data = asRecord(pendingRow.data);
+    const options: Array<{ tileIndex: number }> = Array.isArray(data.options)
+      ? (data.options as Array<{ tileIndex: number }>)
       : [];
-    if (!Number.isFinite(wanted) || !options.some((o) => o.tileIndex === wanted)) return state;
+    if (wanted == null) return state;
+    if (!options.some((o) => o.tileIndex === wanted)) return state;
 
-    const kind = String(pending?.data?.kind ?? '').trim();
+    const kind = toStringValue(data.kind) ?? '';
     let next: GameStateEntity = { ...state, pending: null };
 
     const meta = this.getMeta(next);
@@ -505,54 +612,15 @@ export class SacAMalicesActionService {
     }
 
     next = this.checkWinner(next);
-    if (this.getMeta(next).winnerId != null) return { ...next, status: 'finished' };
+    if (this.getMeta(next).winnerId != null)
+      return { ...next, status: 'finished' };
     return next;
   }
 
-  private handleJailTurn(
+  private applyLanding(
     state: GameStateEntity,
     playerId: number,
-    isDouble: boolean,
-    rollSum: number,
   ): GameStateEntity {
-    let next = state;
-    let meta = this.getMeta(next);
-    const jailTurns = meta.statuses?.inJail?.[playerId] ?? 0;
-    if (jailTurns <= 0) return next;
-
-    // Carte sortie de prison
-    const outCards = meta.statuses?.getOutOfJail?.[playerId] ?? 0;
-    if (outCards > 0) {
-      next = this.core.appendLog(next, 'Carte "Sortie de prison" utilisée.');
-      next = this.setGetOutOfJail(next, playerId, outCards - 1);
-      next = this.setJailTurns(next, playerId, 0);
-      return next;
-    }
-
-    if (isDouble) {
-      next = this.core.appendLog(next, 'Double : vous sortez de prison.');
-      next = this.setJailTurns(next, playerId, 0);
-      return next;
-    }
-
-    const remaining = Math.max(0, jailTurns - 1);
-    next = this.setJailTurns(next, playerId, remaining);
-
-    if (remaining <= 0) {
-      // Sortie automatique : amende 100€
-      next = this.core.appendLog(next, 'Sortie automatique : amende 100 €.');
-      next = this.addMoney(next, playerId, -100, { toPot: true });
-      return next;
-    }
-
-    next = this.core.appendLog(
-      next,
-      `Prison : vous restez bloqué (${remaining} tour(s)).`,
-    );
-    return next;
-  }
-
-  private applyLanding(state: GameStateEntity, playerId: number): GameStateEntity {
     let next = state;
     const meta = this.getMeta(next);
     const tiles = Array.isArray(meta.tiles) ? meta.tiles : [];
@@ -580,7 +648,10 @@ export class SacAMalicesActionService {
       }
       const pot = this.getMeta(next).pot ?? 0;
       if (pot > 0) {
-        next = this.core.appendLog(next, `Parc Gratuit : vous récupérez ${pot} €.`);
+        next = this.core.appendLog(
+          next,
+          `Parc Gratuit : vous récupérez ${pot} €.`,
+        );
         next = this.setPot(next, 0);
         next = this.addMoney(next, playerId, pot, { toPot: false });
       } else {
@@ -590,7 +661,9 @@ export class SacAMalicesActionService {
     }
 
     if (tile.type === 'tax') {
-      const amount = extractEuroAmount(`${tile.title} ${tile.description ?? ''}`);
+      const amount = extractEuroAmount(
+        `${tile.title} ${tile.description ?? ''}`,
+      );
       if (amount > 0) {
         next = this.core.appendLog(next, `Taxe : ${amount} €.`);
         next = this.addMoney(next, playerId, -amount, { toPot: true });
@@ -608,7 +681,11 @@ export class SacAMalicesActionService {
       return this.drawAndApply(next, playerId, 'community');
     }
 
-    if (tile.type === 'property' || tile.type === 'station' || tile.type === 'utility') {
+    if (
+      tile.type === 'property' ||
+      tile.type === 'station' ||
+      tile.type === 'utility'
+    ) {
       const owner = meta.ownership?.[pos];
       if (owner == null) {
         const price = this.getPurchasePrice(meta, tile);
@@ -624,12 +701,21 @@ export class SacAMalicesActionService {
       }
       if (owner === playerId) return next;
       const rules = this.getRules(meta);
-      if (rules.rentBlockedInJail && (meta.statuses?.inJail?.[owner] ?? 0) > 0) {
-        return this.core.appendLog(next, 'Le propriétaire est en prison : pas de loyer.');
+      if (
+        rules.rentBlockedInJail &&
+        (meta.statuses?.inJail?.[owner] ?? 0) > 0
+      ) {
+        return this.core.appendLog(
+          next,
+          'Le propriétaire est en prison : pas de loyer.',
+        );
       }
       const b = this.getBuilding(meta, pos);
       if (b.mortgaged) {
-        return this.core.appendLog(next, 'Propriété hypothéquée : pas de loyer.');
+        return this.core.appendLog(
+          next,
+          'Propriété hypothéquée : pas de loyer.',
+        );
       }
       const rent = this.getRent(meta, tile, pos, owner, state.lastRoll ?? 0);
       if (rent > 0) {
@@ -663,7 +749,7 @@ export class SacAMalicesActionService {
   private applyCard(
     state: GameStateEntity,
     playerId: number,
-    deckId: 'chance' | 'community',
+    _deckId: 'chance' | 'community',
     card: SacCard,
   ): GameStateEntity {
     let next = state;
@@ -683,17 +769,27 @@ export class SacAMalicesActionService {
       const players = Array.isArray(next.players) ? next.players : [];
       const alive = players
         .map((p) => p?.id)
-        .filter((id): id is number => typeof id === 'number' && Number.isFinite(id))
+        .filter(
+          (id): id is number => typeof id === 'number' && Number.isFinite(id),
+        )
         .filter((id) => !meta0.statuses?.eliminated?.[id]);
 
       if (everyone.kind === 'pay') {
-        next = this.core.appendLog(next, `Tous les joueurs paient ${everyone.amount} €.`);
+        next = this.core.appendLog(
+          next,
+          `Tous les joueurs paient ${everyone.amount} €.`,
+        );
         for (const id of alive) {
-          next = this.addMoney(next, id, -everyone.amount, { toPot: rules.potEnabled && !everyone.toBank });
+          next = this.addMoney(next, id, -everyone.amount, {
+            toPot: rules.potEnabled && !everyone.toBank,
+          });
         }
         return next;
       }
-      next = this.core.appendLog(next, `Tous les joueurs reçoivent ${everyone.amount} €.`);
+      next = this.core.appendLog(
+        next,
+        `Tous les joueurs reçoivent ${everyone.amount} €.`,
+      );
       for (const id of alive) {
         next = this.addMoney(next, id, everyone.amount, { toPot: false });
       }
@@ -707,7 +803,10 @@ export class SacAMalicesActionService {
 
     const delta = extractMoveDelta(text);
     if (delta !== 0) {
-      next = this.core.appendLog(next, `Déplacement : ${delta > 0 ? '+' : ''}${delta}.`);
+      next = this.core.appendLog(
+        next,
+        `Déplacement : ${delta > 0 ? '+' : ''}${delta}.`,
+      );
       next = this.moveForward(next, playerId, delta);
       return this.applyLanding(next, playerId);
     }
@@ -736,7 +835,10 @@ export class SacAMalicesActionService {
 
     const money = extractMoneyDelta(text);
     if (money !== 0) {
-      next = this.core.appendLog(next, `Caisse : ${money > 0 ? '+' : ''}${money} €.`);
+      next = this.core.appendLog(
+        next,
+        `Caisse : ${money > 0 ? '+' : ''}${money} €.`,
+      );
       next = this.addMoney(next, playerId, money, { toPot: money < 0 });
       return next;
     }
@@ -762,7 +864,10 @@ export class SacAMalicesActionService {
     if (!draw.card) {
       const nextMeta: SacMetadata = {
         ...draw.meta,
-        decks: { ...meta.decks, [deckId]: { cards: draw.pile as any, discard: draw.discard as any } },
+        decks: {
+          ...meta.decks,
+          [deckId]: { cards: draw.pile, discard: draw.discard },
+        },
       };
       return { card: null, meta: nextMeta };
     }
@@ -778,17 +883,26 @@ export class SacAMalicesActionService {
     return { card, meta: nextMeta };
   }
 
-  private moveForward(state: GameStateEntity, playerId: number, delta: number): GameStateEntity {
+  private moveForward(
+    state: GameStateEntity,
+    playerId: number,
+    delta: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const rules = this.getRules(meta);
     const tiles = Array.isArray(meta.tiles) ? meta.tiles : [];
     const len = tiles.length || 40;
     const pos = meta.positions?.[playerId] ?? 0;
-    const nextPos = ((pos + delta) % len + len) % len;
+    const nextPos = (((pos + delta) % len) + len) % len;
     let next = this.setPos(state, playerId, nextPos);
     if (delta > 0 && nextPos < pos) {
-      next = this.core.appendLog(next, `Passage sur Départ : +${rules.passStartBonus} €.`);
-      next = this.addMoney(next, playerId, rules.passStartBonus, { toPot: false });
+      next = this.core.appendLog(
+        next,
+        `Passage sur Départ : +${rules.passStartBonus} €.`,
+      );
+      next = this.addMoney(next, playerId, rules.passStartBonus, {
+        toPot: false,
+      });
     }
     return next;
   }
@@ -807,13 +921,21 @@ export class SacAMalicesActionService {
     const target = clamp(pos, 0, len - 1);
     let next = this.setPos(state, playerId, target);
     if (options.collectStart && target < current) {
-      next = this.core.appendLog(next, `Passage sur Départ : +${rules.passStartBonus} €.`);
-      next = this.addMoney(next, playerId, rules.passStartBonus, { toPot: false });
+      next = this.core.appendLog(
+        next,
+        `Passage sur Départ : +${rules.passStartBonus} €.`,
+      );
+      next = this.addMoney(next, playerId, rules.passStartBonus, {
+        toPot: false,
+      });
     }
     return next;
   }
 
-  private sendToJail(state: GameStateEntity, playerId: number): GameStateEntity {
+  private sendToJail(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const rules = this.getRules(meta);
     const jailPos = this.findJailTile(meta.tiles) ?? 30;
@@ -828,15 +950,24 @@ export class SacAMalicesActionService {
     return idx >= 0 ? idx : null;
   }
 
-  private findTileByName(tiles: SacTile[] | undefined, rawName: string): number | null {
+  private findTileByName(
+    tiles: SacTile[] | undefined,
+    rawName: string,
+  ): number | null {
     const name = normalize(rawName);
     if (!name) return null;
     const list = Array.isArray(tiles) ? tiles : [];
-    const idx = list.findIndex((t) => normalize(stripParens(t?.title ?? '')).includes(name));
+    const idx = list.findIndex((t) =>
+      normalize(stripParens(t?.title ?? '')).includes(name),
+    );
     return idx >= 0 ? idx : null;
   }
 
-  private setPos(state: GameStateEntity, playerId: number, pos: number): GameStateEntity {
+  private setPos(
+    state: GameStateEntity,
+    playerId: number,
+    pos: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const tiles = Array.isArray(meta.tiles) ? meta.tiles : [];
     const len = tiles.length || 40;
@@ -848,7 +979,11 @@ export class SacAMalicesActionService {
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
 
-  private setOwner(state: GameStateEntity, tileIndex: number, ownerId: number): GameStateEntity {
+  private setOwner(
+    state: GameStateEntity,
+    tileIndex: number,
+    ownerId: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const nextMeta: SacMetadata = {
       ...meta,
@@ -859,60 +994,95 @@ export class SacAMalicesActionService {
 
   private setPot(state: GameStateEntity, value: number): GameStateEntity {
     const meta = this.getMeta(state);
-    const nextMeta: SacMetadata = { ...meta, pot: Math.max(0, Math.trunc(value)) };
+    const nextMeta: SacMetadata = {
+      ...meta,
+      pot: Math.max(0, Math.trunc(value)),
+    };
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
 
-  private addSkip(state: GameStateEntity, playerId: number, turns: number): GameStateEntity {
+  private addSkip(
+    state: GameStateEntity,
+    playerId: number,
+    turns: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const current = meta.statuses?.skipTurn?.[playerId] ?? 0;
     const nextMeta: SacMetadata = {
       ...meta,
       statuses: {
         ...meta.statuses,
-        skipTurn: { ...(meta.statuses.skipTurn ?? {}), [playerId]: current + turns },
+        skipTurn: {
+          ...(meta.statuses.skipTurn ?? {}),
+          [playerId]: current + turns,
+        },
       },
     };
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
 
-  private setJailTurns(state: GameStateEntity, playerId: number, turns: number): GameStateEntity {
+  private setJailTurns(
+    state: GameStateEntity,
+    playerId: number,
+    turns: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const nextMeta: SacMetadata = {
       ...meta,
       statuses: {
         ...meta.statuses,
-        inJail: { ...(meta.statuses.inJail ?? {}), [playerId]: Math.max(0, Math.trunc(turns)) },
+        inJail: {
+          ...(meta.statuses.inJail ?? {}),
+          [playerId]: Math.max(0, Math.trunc(turns)),
+        },
       },
     };
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
 
-  private setGetOutOfJail(state: GameStateEntity, playerId: number, count: number): GameStateEntity {
+  private setGetOutOfJail(
+    state: GameStateEntity,
+    playerId: number,
+    count: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const nextMeta: SacMetadata = {
       ...meta,
       statuses: {
         ...meta.statuses,
-        getOutOfJail: { ...(meta.statuses.getOutOfJail ?? {}), [playerId]: Math.max(0, Math.trunc(count)) },
+        getOutOfJail: {
+          ...(meta.statuses.getOutOfJail ?? {}),
+          [playerId]: Math.max(0, Math.trunc(count)),
+        },
       },
     };
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
 
-  private setExtraRoll(state: GameStateEntity, playerId: number, value: boolean): GameStateEntity {
+  private setExtraRoll(
+    state: GameStateEntity,
+    playerId: number,
+    value: boolean,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const nextMeta: SacMetadata = {
       ...meta,
       statuses: {
         ...meta.statuses,
-        extraRoll: { ...(meta.statuses.extraRoll ?? {}), [playerId]: Boolean(value) },
+        extraRoll: {
+          ...(meta.statuses.extraRoll ?? {}),
+          [playerId]: Boolean(value),
+        },
       },
     };
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
 
-  private setConsecutiveDoubles(state: GameStateEntity, playerId: number, value: number): GameStateEntity {
+  private setConsecutiveDoubles(
+    state: GameStateEntity,
+    playerId: number,
+    value: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const nextMeta: SacMetadata = {
       ...meta,
@@ -927,7 +1097,10 @@ export class SacAMalicesActionService {
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
 
-  private advanceTurnOrExtraRoll(state: GameStateEntity, playerId: number): GameStateEntity {
+  private advanceTurnOrExtraRoll(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     if (meta.statuses?.eliminated?.[playerId]) return this.advanceTurn(state);
     if (meta.statuses?.extraRoll?.[playerId]) {
@@ -960,20 +1133,13 @@ export class SacAMalicesActionService {
     const nextBuilding = {
       houses: clamp(Number(patch.houses ?? current.houses) || 0, 0, 4),
       hotel: patch.hotel != null ? Boolean(patch.hotel) : current.hotel,
-      mortgaged: patch.mortgaged != null ? Boolean(patch.mortgaged) : current.mortgaged,
+      mortgaged:
+        patch.mortgaged != null ? Boolean(patch.mortgaged) : current.mortgaged,
     };
     const nextMeta: SacMetadata = {
       ...meta,
       buildings: { ...(meta.buildings ?? {}), [tileIndex]: nextBuilding },
     };
-    return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
-  }
-
-  private clearBuilding(state: GameStateEntity, tileIndex: number): GameStateEntity {
-    const meta = this.getMeta(state);
-    const nextBuildings = { ...(meta.buildings ?? {}) } as any;
-    delete nextBuildings[tileIndex];
-    const nextMeta: SacMetadata = { ...meta, buildings: nextBuildings };
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
 
@@ -983,22 +1149,32 @@ export class SacAMalicesActionService {
     return meta.data?.groups?.find((g) => normalize(g.color) === key) ?? null;
   }
 
-  private isGroupComplete(meta: SacMetadata, ownerId: number, group: any): boolean {
-    const props: string[] = Array.isArray(group?.properties) ? group.properties : [];
+  private isGroupComplete(
+    meta: SacMetadata,
+    ownerId: number,
+    group: any,
+  ): boolean {
+    const props: string[] = Array.isArray(group?.properties)
+      ? group.properties
+      : [];
     if (!props.length) return false;
     const idxs = props
       .map((name) => this.findTileByName(meta.tiles, name))
-      .filter((idx) => idx != null) as number[];
+      .filter((idx) => idx != null);
     if (!idxs.length) return false;
     return idxs.every(
-      (idx) => meta.ownership?.[idx] === ownerId && !this.getBuilding(meta, idx).mortgaged,
+      (idx) =>
+        meta.ownership?.[idx] === ownerId &&
+        !this.getBuilding(meta, idx).mortgaged,
     );
   }
 
   private getMortgageValue(meta: SacMetadata, tile: SacTile): number {
     if (tile.type === 'station') return meta.data?.stations?.mortgage ?? 0;
     if (tile.type === 'utility') {
-      const u = meta.data?.utilities?.find((x) => normalize(x.name) === normalize(tile.title));
+      const u = meta.data?.utilities?.find(
+        (x) => normalize(x.name) === normalize(tile.title),
+      );
       return u?.mortgage ?? 0;
     }
     if (tile.type === 'property') {
@@ -1009,9 +1185,12 @@ export class SacAMalicesActionService {
   }
 
   private getUnmortgageCost(meta: SacMetadata, tile: SacTile): number {
-    if (tile.type === 'station') return meta.data?.stations?.unmortgageCost ?? 0;
+    if (tile.type === 'station')
+      return meta.data?.stations?.unmortgageCost ?? 0;
     if (tile.type === 'utility') {
-      const u = meta.data?.utilities?.find((x) => normalize(x.name) === normalize(tile.title));
+      const u = meta.data?.utilities?.find(
+        (x) => normalize(x.name) === normalize(tile.title),
+      );
       return u?.unmortgageCost ?? 0;
     }
     if (tile.type === 'property') {
@@ -1021,7 +1200,11 @@ export class SacAMalicesActionService {
     return 0;
   }
 
-  private buildOne(state: GameStateEntity, playerId: number, tileIndex: number): GameStateEntity {
+  private buildOne(
+    state: GameStateEntity,
+    playerId: number,
+    tileIndex: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const tile = meta.tiles?.[tileIndex];
     if (!tile || tile.type !== 'property') return state;
@@ -1032,13 +1215,21 @@ export class SacAMalicesActionService {
     const b = this.getBuilding(meta, tileIndex);
     if (b.mortgaged || b.hotel) return state;
     const supportsHotel =
-      Number(group?.hotelPrice ?? 0) > 0 && Number(group?.rents?.hotel ?? 0) > 0;
+      Number(group?.hotelPrice ?? 0) > 0 &&
+      Number(group?.rents?.hotel ?? 0) > 0;
     if (!supportsHotel && b.houses >= 4) return state;
 
     const nextLevel = clamp(b.houses + 1, 1, 4);
     const houseCost =
-      Number(group?.housePrices?.[String(nextLevel) as any] ?? group?.housePrice ?? 0) || 0;
-    const cost = supportsHotel && b.houses >= 4 ? Number(group.hotelPrice ?? 0) || 0 : houseCost;
+      Number(
+        group?.housePrices?.[String(nextLevel) as any] ??
+          group?.housePrice ??
+          0,
+      ) || 0;
+    const cost =
+      supportsHotel && b.houses >= 4
+        ? Number(group.hotelPrice ?? 0) || 0
+        : houseCost;
     const cash = meta.money?.[playerId] ?? 0;
     if (!Number.isFinite(cost) || cost <= 0 || cash < cost) return state;
 
@@ -1051,38 +1242,60 @@ export class SacAMalicesActionService {
       return this.setBuilding(next, tileIndex, { hotel: true, houses: 0 });
     }
     next = this.core.appendLog(next, `Maison construite sur "${tile.title}".`);
-    return this.setBuilding(next, tileIndex, { houses: b.houses + 1, hotel: false });
+    return this.setBuilding(next, tileIndex, {
+      houses: b.houses + 1,
+      hotel: false,
+    });
   }
 
-  private sellOne(state: GameStateEntity, playerId: number, tileIndex: number): GameStateEntity {
+  private sellOne(
+    state: GameStateEntity,
+    playerId: number,
+    tileIndex: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const tile = meta.tiles?.[tileIndex];
     if (!tile || tile.type !== 'property') return state;
     const group = this.getGroup(meta, tile.group ?? '');
     if (!group) return state;
     const supportsHotel =
-      Number(group?.hotelPrice ?? 0) > 0 && Number(group?.rents?.hotel ?? 0) > 0;
+      Number(group?.hotelPrice ?? 0) > 0 &&
+      Number(group?.rents?.hotel ?? 0) > 0;
 
     const b = this.getBuilding(meta, tileIndex);
     if (!b.hotel && b.houses <= 0) return state;
 
     if (supportsHotel && b.hotel) {
       const refund = Math.floor((group.hotelPrice ?? 0) / 2);
-      let next = this.core.appendLog(state, `Hôtel vendu sur "${tile.title}" (+${refund} €).`);
+      let next = this.core.appendLog(
+        state,
+        `Hôtel vendu sur "${tile.title}" (+${refund} €).`,
+      );
       next = this.setBuilding(next, tileIndex, { hotel: false, houses: 4 });
       return this.addMoney(next, playerId, refund, { toPot: false });
     }
 
     const level = clamp(b.houses, 1, 4);
     const cost =
-      Number(group?.housePrices?.[String(level) as any] ?? group?.housePrice ?? 0) || 0;
+      Number(
+        group?.housePrices?.[String(level) as any] ?? group?.housePrice ?? 0,
+      ) || 0;
     const refund = Math.floor(cost / 2);
-    let next = this.core.appendLog(state, `Maison vendue sur "${tile.title}" (+${refund} €).`);
-    next = this.setBuilding(next, tileIndex, { houses: Math.max(0, b.houses - 1) });
+    let next = this.core.appendLog(
+      state,
+      `Maison vendue sur "${tile.title}" (+${refund} €).`,
+    );
+    next = this.setBuilding(next, tileIndex, {
+      houses: Math.max(0, b.houses - 1),
+    });
     return this.addMoney(next, playerId, refund, { toPot: false });
   }
 
-  private mortgageTile(state: GameStateEntity, playerId: number, tileIndex: number): GameStateEntity {
+  private mortgageTile(
+    state: GameStateEntity,
+    playerId: number,
+    tileIndex: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const tile = meta.tiles?.[tileIndex];
     if (!tile) return state;
@@ -1095,12 +1308,19 @@ export class SacAMalicesActionService {
     const amount = this.getMortgageValue(meta, tile);
     if (!Number.isFinite(amount) || amount <= 0) return state;
 
-    let next = this.core.appendLog(state, `Hypothèque : "${tile.title}" (+${amount} €).`);
+    let next = this.core.appendLog(
+      state,
+      `Hypothèque : "${tile.title}" (+${amount} €).`,
+    );
     next = this.setBuilding(next, tileIndex, { mortgaged: true });
     return this.addMoney(next, playerId, amount, { toPot: false });
   }
 
-  private unmortgageTile(state: GameStateEntity, playerId: number, tileIndex: number): GameStateEntity {
+  private unmortgageTile(
+    state: GameStateEntity,
+    playerId: number,
+    tileIndex: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const tile = meta.tiles?.[tileIndex];
     if (!tile) return state;
@@ -1113,13 +1333,19 @@ export class SacAMalicesActionService {
     const cash = meta.money?.[playerId] ?? 0;
     if (!Number.isFinite(cost) || cost <= 0 || cash < cost) return state;
 
-    let next = this.core.appendLog(state, `Levée d’hypothèque : "${tile.title}" (-${cost} €).`);
+    let next = this.core.appendLog(
+      state,
+      `Levée d’hypothèque : "${tile.title}" (-${cost} €).`,
+    );
     next = this.addMoney(next, playerId, -cost, { toPot: false });
     if (this.getMeta(next).statuses?.eliminated?.[playerId]) return next;
     return this.setBuilding(next, tileIndex, { mortgaged: false });
   }
 
-  private loseOneInfrastructure(state: GameStateEntity, playerId: number): GameStateEntity {
+  private loseOneInfrastructure(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
     const meta0 = this.getMeta(state);
     const tiles = Array.isArray(meta0.tiles) ? meta0.tiles : [];
 
@@ -1140,24 +1366,39 @@ export class SacAMalicesActionService {
     const picked = this.random.pickOne(meta0 as any, ownedWithInfra);
     let next: GameStateEntity = {
       ...state,
-      metadata: { ...(state.metadata ?? {}), ...meta0, ...(picked.meta as any) },
+      metadata: {
+        ...(state.metadata ?? {}),
+        ...meta0,
+        ...picked.meta,
+      },
     };
-    const tileIndex = picked.value as number | null;
+    const tileIndex = picked.value;
     if (tileIndex == null) return next;
 
     const tile = tiles[tileIndex];
-    const group = tile ? this.getGroup(this.getMeta(next), tile.group ?? '') : null;
+    const group = tile
+      ? this.getGroup(this.getMeta(next), tile.group ?? '')
+      : null;
     const supportsHotel =
-      Number(group?.hotelPrice ?? 0) > 0 && Number(group?.rents?.hotel ?? 0) > 0;
+      Number(group?.hotelPrice ?? 0) > 0 &&
+      Number(group?.rents?.hotel ?? 0) > 0;
 
     const b = this.getBuilding(this.getMeta(next), tileIndex);
     if (supportsHotel && b.hotel) {
-      next = this.core.appendLog(next, `Infrastructure perdue : hôtel sur "${tile?.title ?? 'propriété'}".`);
+      next = this.core.appendLog(
+        next,
+        `Infrastructure perdue : hôtel sur "${tile?.title ?? 'propriété'}".`,
+      );
       return this.setBuilding(next, tileIndex, { hotel: false, houses: 4 });
     }
     if (b.houses > 0) {
-      next = this.core.appendLog(next, `Infrastructure perdue : -1 sur "${tile?.title ?? 'propriété'}".`);
-      return this.setBuilding(next, tileIndex, { houses: Math.max(0, b.houses - 1) });
+      next = this.core.appendLog(
+        next,
+        `Infrastructure perdue : -1 sur "${tile?.title ?? 'propriété'}".`,
+      );
+      return this.setBuilding(next, tileIndex, {
+        houses: Math.max(0, b.houses - 1),
+      });
     }
     return next;
   }
@@ -1178,18 +1419,27 @@ export class SacAMalicesActionService {
       pot:
         rules.potEnabled && options.toPot
           ? (meta.pot ?? 0) + Math.max(0, -delta)
-          : meta.pot ?? 0,
+          : (meta.pot ?? 0),
     };
-    let next: GameStateEntity = { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
+    let next: GameStateEntity = {
+      ...state,
+      metadata: { ...(state.metadata ?? {}), ...nextMeta },
+    };
     if (nextMoney < 0) {
-      next = this.core.appendLog(next, `${resolvePlayerNameFromState(next, playerId)} est en faillite !`);
+      next = this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, playerId)} est en faillite !`,
+      );
       next = this.setEliminated(next, playerId, true);
       next = this.releaseAssets(next, playerId);
     }
     return next;
   }
 
-  private releaseAssets(state: GameStateEntity, playerId: number): GameStateEntity {
+  private releaseAssets(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const ownership = { ...(meta.ownership ?? {}) } as any;
     const buildings = { ...(meta.buildings ?? {}) } as any;
@@ -1212,19 +1462,29 @@ export class SacAMalicesActionService {
         inJail: { ...(statuses.inJail ?? {}), [playerId]: 0 },
         skipTurn: { ...(statuses.skipTurn ?? {}), [playerId]: 0 },
         extraRoll: { ...(statuses.extraRoll ?? {}), [playerId]: false },
-        consecutiveDoubles: { ...(statuses.consecutiveDoubles ?? {}), [playerId]: 0 },
+        consecutiveDoubles: {
+          ...(statuses.consecutiveDoubles ?? {}),
+          [playerId]: 0,
+        },
       },
     };
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
 
-  private setEliminated(state: GameStateEntity, playerId: number, value: boolean): GameStateEntity {
+  private setEliminated(
+    state: GameStateEntity,
+    playerId: number,
+    value: boolean,
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const nextMeta: SacMetadata = {
       ...meta,
       statuses: {
         ...meta.statuses,
-        eliminated: { ...(meta.statuses.eliminated ?? {}), [playerId]: Boolean(value) },
+        eliminated: {
+          ...(meta.statuses.eliminated ?? {}),
+          [playerId]: Boolean(value),
+        },
       },
     };
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
@@ -1233,11 +1493,15 @@ export class SacAMalicesActionService {
   private getPurchasePrice(meta: SacMetadata, tile: SacTile): number {
     if (tile.type === 'station') return meta.data?.stations?.purchasePrice ?? 0;
     if (tile.type === 'utility') {
-      const u = meta.data?.utilities?.find((x) => normalize(x.name) === normalize(tile.title));
+      const u = meta.data?.utilities?.find(
+        (x) => normalize(x.name) === normalize(tile.title),
+      );
       return u?.purchasePrice ?? 0;
     }
     if (tile.type === 'property') {
-      const group = meta.data?.groups?.find((g) => normalize(g.color) === normalize(tile.group ?? ''));
+      const group = meta.data?.groups?.find(
+        (g) => normalize(g.color) === normalize(tile.group ?? ''),
+      );
       return group?.purchasePrice ?? 0;
     }
     return 0;
@@ -1255,7 +1519,7 @@ export class SacAMalicesActionService {
       const count = stations
         .map((name) => this.findTileByName(meta.tiles, name))
         .filter((idx) => idx != null)
-        .filter((idx) => meta.ownership?.[idx as number] === ownerId).length;
+        .filter((idx) => meta.ownership?.[idx] === ownerId).length;
       const rents = meta.data?.stations?.rents ?? ({} as any);
       const key = String(clamp(count, 1, 4)) as '1' | '2' | '3' | '4';
       return Number(rents[key] ?? 0) || 0;
@@ -1265,9 +1529,14 @@ export class SacAMalicesActionService {
       const utils = meta.data?.utilities ?? [];
       const idxs = utils
         .map((u) => this.findTileByName(meta.tiles, u.name))
-        .filter((idx) => idx != null) as number[];
-      const owned = idxs.filter((idx) => meta.ownership?.[idx] === ownerId).length;
-      const multiplier = owned >= 2 ? (utils[0]?.multiplier2 ?? 10) : (utils[0]?.multiplier1 ?? 4);
+        .filter((idx) => idx != null);
+      const owned = idxs.filter(
+        (idx) => meta.ownership?.[idx] === ownerId,
+      ).length;
+      const multiplier =
+        owned >= 2
+          ? (utils[0]?.multiplier2 ?? 10)
+          : (utils[0]?.multiplier1 ?? 4);
       return Math.max(0, Math.trunc(multiplier * Math.max(0, lastRoll)));
     }
 
@@ -1342,13 +1611,21 @@ export class SacAMalicesActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     const alive = players
       .map((p) => p?.id)
-      .filter((id): id is number => typeof id === 'number' && Number.isFinite(id))
+      .filter(
+        (id): id is number => typeof id === 'number' && Number.isFinite(id),
+      )
       .filter((id) => !meta.statuses?.eliminated?.[id]);
     if (alive.length === 1) {
       const winnerId = alive[0];
       const nextMeta: SacMetadata = { ...meta, winnerId };
-      const next = { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
-      return this.core.appendLog(next, `${resolvePlayerNameFromState(next, winnerId)} remporte la partie !`);
+      const next = {
+        ...state,
+        metadata: { ...(state.metadata ?? {}), ...nextMeta },
+      };
+      return this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, winnerId)} remporte la partie !`,
+      );
     }
     return state;
   }
@@ -1400,7 +1677,9 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 function stripParens(text: string): string {
-  return String(text ?? '').replace(/\([^)]*\)/g, '').trim();
+  return String(text ?? '')
+    .replace(/\([^)]*\)/g, '')
+    .trim();
 }
 
 function normalize(value: string): string {
@@ -1447,9 +1726,13 @@ function extractMoveDelta(text: string): number {
     };
     return map[v] ?? 0;
   };
-  const forward = text.match(/avance(?:z)?\s+de\s+([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+case/i);
+  const forward = text.match(
+    /avance(?:z)?\s+de\s+([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
+  );
   if (forward) return parse(forward[1]);
-  const backward = text.match(/recule(?:z)?\s+de\s+([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+case/i);
+  const backward = text.match(
+    /recule(?:z)?\s+de\s+([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
+  );
   if (backward) return -parse(backward[1]);
   return 0;
 }
@@ -1457,7 +1740,11 @@ function extractMoveDelta(text: string): number {
 function extractSkipTurns(text: string): number {
   if (/Passez trois tours/i.test(text)) return 3;
   if (/Passez deux tours/i.test(text)) return 2;
-  if (/Passez votre prochain tour/i.test(text) || /Passez votre tour/i.test(text)) return 1;
+  if (
+    /Passez votre prochain tour/i.test(text) ||
+    /Passez votre tour/i.test(text)
+  )
+    return 1;
   return 0;
 }
 
@@ -1482,23 +1769,23 @@ function extractAllPlayersMoney(
   const pay = text.match(/Tous\s+les\s+joueurs\s+(?:paient|payent)\s+(\d+)/i);
   if (pay?.[1]) {
     const n = Number(pay[1]);
-    if (Number.isFinite(n) && n > 0) return { kind: 'pay', amount: Math.trunc(n), toBank };
+    if (Number.isFinite(n) && n > 0)
+      return { kind: 'pay', amount: Math.trunc(n), toBank };
   }
 
   const receive = text.match(/Tous\s+les\s+joueurs\s+re[çc]oivent\s+(\d+)/i);
   if (receive?.[1]) {
     const n = Number(receive[1]);
-    if (Number.isFinite(n) && n > 0) return { kind: 'receive', amount: Math.trunc(n), toBank };
+    if (Number.isFinite(n) && n > 0)
+      return { kind: 'receive', amount: Math.trunc(n), toBank };
   }
 
   return null;
 }
 
 function mentionsInfrastructureLoss(text: string): boolean {
-  return /perd(?:ez|s)?\s+une\s+infrastructure/i.test(text) || /perds\s+une\s+infrastructure/i.test(text);
+  return (
+    /perd(?:ez|s)?\s+une\s+infrastructure/i.test(text) ||
+    /perds\s+une\s+infrastructure/i.test(text)
+  );
 }
-
-
-
-
-

@@ -4,6 +4,7 @@ import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { AdminUsersService } from '../services/admin-users.service';
 import { AdminCatalogInvalidationService } from '../services/admin-catalog-invalidation.service';
+import type { AdminListUsersDto } from '../dto/admin-list-users.dto';
 import {
   AdminBanUserWsDto,
   AdminListUsersWsDto,
@@ -22,7 +23,16 @@ export class AdminUsersWsHandler {
   async usersList(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminListUsersWsDto, payload);
-    const result = await this.users.list(dto as any);
+    const query: AdminListUsersDto = {
+      search: dto.search,
+      role: dto.role,
+      status: dto.status ?? 'all',
+      createdAfter: dto.createdAfter,
+      createdBefore: dto.createdBefore,
+      page: dto.page ?? 1,
+      limit: dto.limit ?? 20,
+    };
+    const result = await this.users.list(query);
     return { type: 'admin.users.list', payload: result };
   }
 

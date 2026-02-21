@@ -15,7 +15,7 @@ export class AdminProfileWsHandler {
     private readonly settings: SocialProfileSettingsService,
   ) {}
 
-  async profileSettingsGet(session: WsSession, payload: any) {
+  profileSettingsGet(session: WsSession, payload: any) {
     requireAdmin(session);
     this.validator.validate(AdminProfileSettingsGetWsDto, payload ?? {});
     return { type: 'admin.profile.settings.get', payload: this.settings.get() };

@@ -13,14 +13,23 @@ import { SAC_VARIANTS } from '../sac-a-malices-variants';
 export class SacAMalicesPresenterService {
   constructor(private readonly boardPayload: BoardPayloadService) {}
 
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     const actions = Rulebook.getAvailableActions(state, userId);
-    const meta = (state.metadata ?? {}) as any as SacMetadata;
+    const meta = (state.metadata ?? {}) as SacMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
     const money = meta.money?.[userId] ?? 0;
-    const pending = this.buildVariantPrompt(meta, players, userId) ?? state.pending ?? null;
+    const pending =
+      this.buildVariantPrompt(meta, players, userId) ?? state.pending ?? null;
     const propertyPanels = this.buildPropertyPanels(meta, players, userId);
+    const stateRecord = state as unknown as Record<string, unknown>;
+    const extrasBase =
+      stateRecord.extras && typeof stateRecord.extras === 'object'
+        ? (stateRecord.extras as Record<string, unknown>)
+        : {};
 
     return {
       ...state,
@@ -31,7 +40,7 @@ export class SacAMalicesPresenterService {
       actions: formatPresenterActions(actions),
       pending,
       extras: {
-        ...(state as any).extras,
+        ...extrasBase,
         currentPlayerView: {
           id: userId,
           username: me?.username ?? `Joueur ${userId}`,
@@ -73,23 +82,34 @@ export class SacAMalicesPresenterService {
           },
         },
       },
-      board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
-    } as any;
+      board: this.boardPayload.buildTilesPositionsLaps(
+        meta.tiles,
+        meta.positions,
+      ),
+    };
   }
 
   private buildVariantPrompt(
     meta: SacMetadata,
     players: Array<{ id: number }>,
     userId: number,
-  ): any | null {
+  ): {
+    type: string;
+    playerId: number;
+    label: string;
+    blocking: boolean;
+    choices: string[];
+  } | null {
     if ((meta.setupStep ?? '') !== 'setup_config') return null;
+    const metadataRecord = meta as unknown as Record<string, unknown>;
+    const rawOwnerId = metadataRecord.ownerPlayerId;
     const ownerId =
-      typeof (meta as any)?.ownerPlayerId === 'number'
-        ? (meta as any).ownerPlayerId
-        : (players[0]?.id ?? null);
+      typeof rawOwnerId === 'number' ? rawOwnerId : (players[0]?.id ?? null);
     if (ownerId == null || ownerId !== userId) return null;
 
-    const choices = SAC_VARIANTS.map((variant) => variant.label).filter((label) => label && label.trim());
+    const choices = SAC_VARIANTS.map((variant) => variant.label).filter(
+      (label) => label && label.trim(),
+    );
     if (choices.length === 0) {
       return null;
     }
@@ -127,7 +147,11 @@ export class SacAMalicesPresenterService {
         ['property', 'station', 'utility'].includes(String(tile?.type ?? '')),
       );
 
-    const formatTile = (idx: number, title: string, ownerId: number | null) => {
+    const formatTile = (
+      _idx: number,
+      title: string,
+      ownerId: number | null,
+    ) => {
       if (ownerId == null) return `${title} (libre)`;
       const ownerName = nameById.get(ownerId) ?? `Joueur ${ownerId}`;
       return `${title} (${ownerName})`;

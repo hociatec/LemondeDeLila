@@ -1,10 +1,8 @@
 ﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import {
-  ENTRE_RITES_CARD_BY_ID,
-} from '../model/entre-rites-cards';
+import { ENTRE_RITES_CARD_BY_ID } from '../model/entre-rites-cards';
 import type { EntreRitesMetadata } from '../model/entre-rites-state.entity';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { normalizeActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 
 type EntreRitesActionType = 'ask_card' | 'pass';
@@ -25,10 +23,14 @@ function hasFamilyExposure(
 ): boolean {
   const card = ENTRE_RITES_CARD_BY_ID[cardId];
   if (!card || card.type !== 'family') return true;
-  const hand = Array.isArray(meta.hands?.[playerId]) ? meta.hands[playerId] : [];
+  const hand = Array.isArray(meta.hands?.[playerId])
+    ? meta.hands[playerId]
+    : [];
   return hand.some((item) => {
     const definition = ENTRE_RITES_CARD_BY_ID[item];
-    return definition?.type === 'family' && definition.familyId === card.familyId;
+    return (
+      definition?.type === 'family' && definition.familyId === card.familyId
+    );
   });
 }
 
@@ -47,7 +49,7 @@ export function getAvailableActions(
   const actions: GameSingleActionDto[] = [];
   const opponents = (Array.isArray(state.players) ? state.players : [])
     .filter((p) => p?.id != null && p.id !== playerId)
-    .map((p) => p!.id);
+    .map((p) => p.id);
 
   for (const opponentId of opponents) {
     const opponentHand = Array.isArray(meta.hands?.[opponentId])
@@ -122,6 +124,3 @@ export function validateAction(
 
   return { type: 'ask_card', payload: { cardId, targetPlayerId: targetId } };
 }
-
-
-

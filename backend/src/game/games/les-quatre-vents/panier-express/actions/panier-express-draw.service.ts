@@ -105,9 +105,10 @@ export class PanierExpressDrawService {
       discards:
         discarded && card
           ? {
-              ...(((metadata as any)?.discards ?? {}) as any),
+              ...((metadata as any)?.discards ?? {}),
               courses: [
-                ...((((metadata as any)?.discards?.courses ?? []) as any[]) ?? []),
+                ...((((metadata as any)?.discards?.courses ?? []) as any[]) ??
+                  []),
                 card,
               ],
             }

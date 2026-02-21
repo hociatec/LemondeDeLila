@@ -12,9 +12,7 @@ export type BandeABananeActionType =
   | 'cris-de-la-jungle'
   | 'grimpeur-fou';
 
-export type BandeABananeTrapType =
-  | 'piege-a-noix-de-coco'
-  | 'tigre-rodeur';
+export type BandeABananeTrapType = 'piege-a-noix-de-coco' | 'tigre-rodeur';
 
 export interface BandeABananeCardDefinition {
   id: string;
@@ -30,10 +28,14 @@ const createCopies = (
   count: number,
   details: Partial<BandeABananeCardDefinition>,
 ): BandeABananeCardDefinition[] =>
-  Array.from({ length: count }, (_, index) => ({
-    id: `${prefix}-${index + 1}`,
-    ...details,
-  } as BandeABananeCardDefinition));
+  Array.from(
+    { length: count },
+    (_, index) =>
+      ({
+        id: `${prefix}-${index + 1}`,
+        ...details,
+      }) as BandeABananeCardDefinition,
+  );
 
 const deck: BandeABananeCardDefinition[] = [
   ...createCopies('monkey-capucin', 6, {
@@ -93,5 +95,7 @@ const deck: BandeABananeCardDefinition[] = [
 ];
 
 export const BANDE_A_BANANE_DECK = deck;
-export const BANDE_A_BANANE_CARD_BY_ID: Record<string, BandeABananeCardDefinition> =
-  Object.fromEntries(deck.map((card) => [card.id, card]));
+export const BANDE_A_BANANE_CARD_BY_ID: Record<
+  string,
+  BandeABananeCardDefinition
+> = Object.fromEntries(deck.map((card) => [card.id, card]));

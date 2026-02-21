@@ -1,6 +1,9 @@
 ﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import { isRollAlias, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  isRollAlias,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
   getPendingPawnActionsForPlayer,
@@ -116,6 +119,3 @@ export function validateAction(
   }
   return { ...action, type: 'roll', payload: {} };
 }
-
-
-

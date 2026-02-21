@@ -1,10 +1,8 @@
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import type { AbsurdissimesMetadata } from '../model/les-absurdissimes-state.entity';
-import { normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import { normalizeActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
-
-type AbsurdissimesActionType = 'play_card' | 'judge_pick';
 
 type AbsurdissimesActionPayload = {
   cardId?: string | null;
@@ -18,7 +16,7 @@ function getMeta(state: GameStateEntity): AbsurdissimesMetadata {
 function getPlayerIds(players?: GameStateEntity['players']): number[] {
   return (Array.isArray(players) ? players : [])
     .filter((player) => typeof player?.id === 'number')
-    .map((player) => player!.id);
+    .map((player) => player.id);
 }
 
 export function getJudgeId(
@@ -79,7 +77,7 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error('La partie n\'est pas démarrée.');
+    throw new Error("La partie n'est pas démarrée.");
   }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== actorId) {
@@ -128,6 +126,3 @@ export function validateAction(
   }
   return { type: 'judge_pick', payload: { winnerId } };
 }
-
-
-

@@ -38,7 +38,10 @@ describe('JeuOieActionService', () => {
         GameContentLoaderService,
         RandomService,
         SetupFlowService,
-        { provide: 'TurnFlowService', useValue: { advanceTurn: (s: any) => s } },
+        {
+          provide: 'TurnFlowService',
+          useValue: { advanceTurn: (s: any) => s },
+        },
         JeuOieSetupService,
         {
           provide: JeuOieActionService,
@@ -48,7 +51,12 @@ describe('JeuOieActionService', () => {
             turns: { advanceTurn: (s: any) => any },
             setupFlow: SetupFlowService,
           ) => new JeuOieActionService(random, turns as any, core, setupFlow),
-          inject: [RandomService, GameCoreService, 'TurnFlowService', SetupFlowService],
+          inject: [
+            RandomService,
+            GameCoreService,
+            'TurnFlowService',
+            SetupFlowService,
+          ],
         },
       ],
     }).compile();
@@ -88,11 +96,19 @@ describe('JeuOieActionService', () => {
       meta: (state.metadata ?? {}) as any,
     } as any);
 
-    const next = actions.applyActions(state, [{ type: 'roll', payload: {} } as any]);
+    const next = actions.applyActions(state, [
+      { type: 'roll', payload: {} } as any,
+    ]);
     const messages = (next.log ?? []).map((e: any) => String(e?.message ?? ''));
 
-    expect(messages.some((m) => m.includes('Otis place "son coq rockeur" en case 4 (Case neutre).'))).toBe(true);
-    expect(messages.some((m) => m.includes('case 4 (Case 4 - Case neutre)'))).toBe(false);
+    expect(
+      messages.some((m) =>
+        m.includes('Otis place "son coq rockeur" en case 4 (Case neutre).'),
+      ),
+    ).toBe(true);
+    expect(
+      messages.some((m) => m.includes('case 4 (Case 4 - Case neutre)')),
+    ).toBe(false);
   });
 
   it('demande de choisir son pion via le pending label au demarrage', async () => {
@@ -116,9 +132,12 @@ describe('JeuOieActionService', () => {
     const starterId = Number(meta.setupStarterId);
     expect((state.pending as any)?.playerId).toBe(starterId);
     const starterName =
-      state.players?.find((p: any) => p?.id === starterId)?.username ?? `Joueur ${starterId}`;
+      state.players?.find((p: any) => p?.id === starterId)?.username ??
+      `Joueur ${starterId}`;
     const pendingLabel = String((state.pending as any)?.label ?? '');
-    expect(pendingLabel.includes(`${starterName} de choisir son pion.`)).toBe(true);
+    expect(pendingLabel.includes(`${starterName} de choisir son pion.`)).toBe(
+      true,
+    );
   });
 
   it('demarre la partie apres le choix de pion de tous les joueurs', async () => {
@@ -128,7 +147,10 @@ describe('JeuOieActionService', () => {
         GameContentLoaderService,
         RandomService,
         SetupFlowService,
-        { provide: 'TurnFlowService', useValue: { advanceTurn: (s: any) => s } },
+        {
+          provide: 'TurnFlowService',
+          useValue: { advanceTurn: (s: any) => s },
+        },
         JeuOieSetupService,
         {
           provide: JeuOieActionService,
@@ -138,7 +160,12 @@ describe('JeuOieActionService', () => {
             turns: { advanceTurn: (s: any) => any },
             setupFlow: SetupFlowService,
           ) => new JeuOieActionService(random, turns as any, core, setupFlow),
-          inject: [RandomService, GameCoreService, 'TurnFlowService', SetupFlowService],
+          inject: [
+            RandomService,
+            GameCoreService,
+            'TurnFlowService',
+            SetupFlowService,
+          ],
         },
       ],
     }).compile();
@@ -161,7 +188,8 @@ describe('JeuOieActionService', () => {
     const messages = (next.log ?? []).map((e: any) => String(e?.message ?? ''));
     const starterId = Number(meta.setupStarterId);
     const starterName =
-      next.players?.find((p: any) => p?.id === starterId)?.username ?? `Joueur ${starterId}`;
+      next.players?.find((p: any) => p?.id === starterId)?.username ??
+      `Joueur ${starterId}`;
     expect(
       messages.some(
         (m) =>
@@ -172,4 +200,3 @@ describe('JeuOieActionService', () => {
     ).toBe(true);
   });
 });
-

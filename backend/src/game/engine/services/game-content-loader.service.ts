@@ -7,7 +7,7 @@ import { GameContentError } from '../../../common/errors/game-errors';
 /**
  * Configuration for loading game content
  */
-export interface ContentLoadConfig<T = any> {
+export interface ContentLoadConfig<T = unknown> {
   /** Game identifier (e.g., 'dame-nature') */
   gameType: string;
   /** Base directory (usually __dirname from the calling service) */
@@ -17,20 +17,20 @@ export interface ContentLoadConfig<T = any> {
   /** Subdirectory containing content files (defaults to 'model/content') */
   contentDir?: string;
   /** Validators to run on the loaded data */
-  validators?: Array<(data: any) => void>;
+  validators?: Array<(data: unknown) => void>;
   /** Optional transformer to convert raw JSON to desired type */
-  transformer?: (data: any) => T;
+  transformer?: (data: unknown) => T;
   /** Cache time-to-live in milliseconds (undefined = cache forever) */
   ttl?: number;
   /** Optional logger function */
-  logger?: (event: string, data: any) => void;
+  logger?: (event: string, data: unknown) => void;
 }
 
 /**
  * Cached content entry
  */
 interface CachedContent {
-  value: any;
+  value: unknown;
   loadedAt: number;
   fileMtimeMs: number | null;
 }
@@ -40,17 +40,17 @@ interface CachedContent {
  */
 export interface ContentValidators {
   /** Validates the version field */
-  version: (expectedVersion: number) => (data: any) => void;
+  version: (expectedVersion: number) => (data: unknown) => void;
   /** Validates that a field is an array with optional minimum length */
-  arrayField: (field: string, minLength?: number) => (data: any) => void;
+  arrayField: (field: string, minLength?: number) => (data: unknown) => void;
   /** Validates that required fields exist */
-  requiredFields: (...fields: string[]) => (data: any) => void;
+  requiredFields: (...fields: string[]) => (data: unknown) => void;
   /** Validates the type of a field */
-  typeCheck: (field: string, expectedType: string) => (data: any) => void;
+  typeCheck: (field: string, expectedType: string) => (data: unknown) => void;
   /** Validates that a field is a non-empty string */
-  nonEmptyString: (field: string) => (data: any) => void;
+  nonEmptyString: (field: string) => (data: unknown) => void;
   /** Validates that a field is a positive number */
-  positiveNumber: (field: string) => (data: any) => void;
+  positiveNumber: (field: string) => (data: unknown) => void;
 }
 
 /**
@@ -71,13 +71,18 @@ export class GameContentLoaderService {
    * Use these in your ContentLoadConfig validators array.
    */
   readonly validators: ContentValidators = {
-    version: (expectedVersion: number) => (data: any) => {
-      if (!data || data.version !== expectedVersion) {
+    version: (expectedVersion: number) => (data: unknown) => {
+      const record = GameContentLoaderService.toRecord(data);
+      const versionValue = record['version'];
+      if (versionValue !== expectedVersion) {
         throw new GameContentError(
           `Invalid version. Expected ${expectedVersion}`,
           {
             expectedVersion,
-            actualVersion: data?.version,
+            actualVersion:
+              typeof versionValue === 'number'
+                ? versionValue
+                : GameContentLoaderService.stringifyField(versionValue),
           },
         );
       }
@@ -85,23 +90,25 @@ export class GameContentLoaderService {
 
     arrayField:
       (field: string, minLength = 0) =>
-      (data: any) => {
-        if (!Array.isArray(data[field])) {
+      (data: unknown) => {
+        const record = GameContentLoaderService.toRecord(data);
+        const fieldValue = record[field];
+        if (!Array.isArray(fieldValue)) {
           throw new GameContentError(
             `Missing or invalid array field: ${field}`,
             {
               field,
-              actualType: typeof data[field],
+              actualType: typeof fieldValue,
             },
           );
         }
-        if (minLength > 0 && data[field].length < minLength) {
+        if (minLength > 0 && fieldValue.length < minLength) {
           throw new GameContentError(
             `${field} must have at least ${minLength} item(s)`,
             {
               field,
               minLength,
-              actualLength: data[field].length,
+              actualLength: fieldValue.length,
             },
           );
         }
@@ -109,8 +116,9 @@ export class GameContentLoaderService {
 
     requiredFields:
       (...fields: string[]) =>
-      (data: any) => {
-        const missing = fields.filter((f) => !(f in data));
+      (data: unknown) => {
+        const record = GameContentLoaderService.toRecord(data);
+        const missing = fields.filter((f) => !(f in record));
         if (missing.length > 0) {
           throw new GameContentError(
             `Missing required fields: ${missing.join(', ')}`,
@@ -122,38 +130,44 @@ export class GameContentLoaderService {
         }
       },
 
-    typeCheck: (field: string, expectedType: string) => (data: any) => {
-      if (typeof data[field] !== expectedType) {
+    typeCheck: (field: string, expectedType: string) => (data: unknown) => {
+      const record = GameContentLoaderService.toRecord(data);
+      const fieldValue = record[field];
+      if (typeof fieldValue !== expectedType) {
         throw new GameContentError(
-          `Field ${field} must be of type ${expectedType}, got ${typeof data[field]}`,
+          `Field ${field} must be of type ${expectedType}, got ${typeof fieldValue}`,
           {
             field,
             expectedType,
-            actualType: typeof data[field],
+            actualType: typeof fieldValue,
           },
         );
       }
     },
 
-    nonEmptyString: (field: string) => (data: any) => {
-      if (typeof data[field] !== 'string' || data[field].trim() === '') {
+    nonEmptyString: (field: string) => (data: unknown) => {
+      const record = GameContentLoaderService.toRecord(data);
+      const fieldValue = record[field];
+      if (typeof fieldValue !== 'string' || fieldValue.trim() === '') {
         throw new GameContentError(
           `Field ${field} must be a non-empty string`,
           {
             field,
-            actualType: typeof data[field],
-            actualValue: data[field],
+            actualType: typeof fieldValue,
+            actualValue: fieldValue,
           },
         );
       }
     },
 
-    positiveNumber: (field: string) => (data: any) => {
-      if (typeof data[field] !== 'number' || data[field] <= 0) {
+    positiveNumber: (field: string) => (data: unknown) => {
+      const record = GameContentLoaderService.toRecord(data);
+      const fieldValue = record[field];
+      if (typeof fieldValue !== 'number' || fieldValue <= 0) {
         throw new GameContentError(`Field ${field} must be a positive number`, {
           field,
-          actualType: typeof data[field],
-          actualValue: data[field],
+          actualType: typeof fieldValue,
+          actualValue: fieldValue,
         });
       }
     },
@@ -177,7 +191,7 @@ export class GameContentLoaderService {
    *   ],
    * });
    */
-  loadContent<T = any>(config: ContentLoadConfig<T>): T {
+  loadContent<T = unknown>(config: ContentLoadConfig<T>): T {
     const cacheKey = this.buildCacheKey(config);
     const filePath = this.buildPath(config);
     const currentMtimeMs = this.tryGetFileMtimeMs(filePath);
@@ -192,7 +206,7 @@ export class GameContentLoaderService {
 
     try {
       // Load JSON with encoding fallback
-      const raw = readJsonFileWithFallback<any>(filePath);
+      const raw = readJsonFileWithFallback<unknown>(filePath);
 
       // Validate
       this.validateContent(raw, config.validators);
@@ -293,8 +307,8 @@ export class GameContentLoaderService {
    * @throws Error if any validator fails
    */
   private validateContent(
-    data: any,
-    validators?: Array<(data: any) => void>,
+    data: unknown,
+    validators?: Array<(data: unknown) => void>,
   ): void {
     if (!validators) return;
     for (const validator of validators) {
@@ -309,7 +323,10 @@ export class GameContentLoaderService {
    * @param error - Original error
    * @returns Error with detailed message
    */
-  private createError(config: ContentLoadConfig, error: any): GameContentError {
+  private createError(
+    config: ContentLoadConfig,
+    error: unknown,
+  ): GameContentError {
     // If already a GameContentError, return it as-is
     if (error instanceof GameContentError) {
       return error;
@@ -325,5 +342,21 @@ export class GameContentLoaderService {
         originalError: error instanceof Error ? error.message : error,
       },
     );
+  }
+
+  private static toRecord(value: unknown): Record<string, unknown> {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      return value as Record<string, unknown>;
+    }
+    return {};
+  }
+
+  private static stringifyField(value: unknown): string {
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean')
+      return String(value);
+    if (Array.isArray(value)) return JSON.stringify(value);
+    if (value && typeof value === 'object') return JSON.stringify(value);
+    return String(value ?? '');
   }
 }

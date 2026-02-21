@@ -9,11 +9,7 @@ import { EntreRitesService } from './entre-rites.service';
 import { EntreRitesBotService } from './bots/entre-rites-bot.service';
 
 @Module({
-  imports: [
-    BoardGameDeckKitModule,
-    GameCoreModule,
-    GameRegistryModule,
-    ],
+  imports: [BoardGameDeckKitModule, GameCoreModule, GameRegistryModule],
   providers: [
     EntreRitesService,
     EntreRitesSetupService,

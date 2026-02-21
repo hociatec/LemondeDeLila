@@ -25,7 +25,10 @@ export class SetupFlowService {
     if (!players.length) return null;
 
     const startId = this.toPlayerId(params.startPlayerId);
-    const startIndex = startId != null ? players.findIndex((p) => this.toPlayerId(p?.id) === startId) : -1;
+    const startIndex =
+      startId != null
+        ? players.findIndex((p) => this.toPlayerId(p?.id) === startId)
+        : -1;
     const baseIndex = startIndex >= 0 ? startIndex : 0;
     let nextIndex = -1;
     for (let i = 0; i < players.length; i += 1) {
@@ -92,7 +95,9 @@ export class SetupFlowService {
         ...pawn,
         label:
           typeof params.choiceLabelBuilder === 'function'
-            ? String(params.choiceLabelBuilder(pawn as PawnChoice) ?? pawn.label).trim()
+            ? String(
+                params.choiceLabelBuilder(pawn as PawnChoice) ?? pawn.label,
+              ).trim()
             : pawn.label,
       })),
       labelForPlayer:
@@ -102,7 +107,9 @@ export class SetupFlowService {
         ...(params.extraPendingData ?? {}),
         ...(params.includeChoiceMapData === true
           ? {
-              choices: availableChoices.map((choice) => String((choice as any)?.label ?? '').trim()),
+              choices: availableChoices.map((choice) =>
+                String((choice as any)?.label ?? '').trim(),
+              ),
             }
           : {}),
         pawns: availableChoices.map((choice) =>
@@ -128,7 +135,7 @@ export class SetupFlowService {
 
     const value =
       typeof raw === 'object' && raw != null
-        ? (raw as any)?.id ?? (raw as any)?.value ?? raw
+        ? ((raw as any)?.id ?? (raw as any)?.value ?? raw)
         : raw;
     const key = this.normalizeKey(value);
     if (!key) return null;
@@ -156,12 +163,12 @@ export class SetupFlowService {
 
     const candidate =
       typeof raw === 'object' && raw != null
-        ? (raw as any)?.id ??
+        ? ((raw as any)?.id ??
           (raw as any)?.pawnId ??
           (raw as any)?.pawn ??
           (raw as any)?.value ??
           (raw as any)?.label ??
-          raw
+          raw)
         : raw;
 
     return this.resolveChoice(candidate, normalized) as TChoice | null;
@@ -186,7 +193,9 @@ export class SetupFlowService {
       .filter((choice) => choice.id.length > 0 && choice.label.length > 0);
   }
 
-  private normalizePawnChoices<TChoice extends PawnChoice>(choices: TChoice[]): Array<TChoice & SetupChoice> {
+  private normalizePawnChoices<TChoice extends PawnChoice>(
+    choices: TChoice[],
+  ): Array<TChoice & SetupChoice> {
     return (Array.isArray(choices) ? choices : [])
       .map((choice) => {
         const id = String((choice as any)?.id ?? '').trim();

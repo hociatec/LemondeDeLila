@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import type { GameStateEntity, PendingState } from '../../../../core/entities/game-state.entity';
+﻿import { Injectable } from '@nestjs/common';
+import type {
+  GameStateEntity,
+  PendingState,
+} from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
-
 
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -20,12 +22,25 @@ import type {
   PiratesEnVadrouilleObstacleCard,
   PiratesEnVadrouilleTreasureCard,
 } from '../model/pirates-en-vadrouille-state.entity';
-import { applyActionsSequentially, dispatchByActionType, normalizeActionType, normalizeLowerActionType } from '../../../../actions/action-service.helper';
+import {
+  applyActionsSequentially,
+  dispatchByActionType,
+  normalizeActionType,
+} from '../../../../actions/action-service.helper';
 
-
-import { OBSTACLE_CARD_EFFECTS, BONUS_CARD_EFFECTS, PiratesCardEffect } from './pirate-card-effects';
+import {
+  OBSTACLE_CARD_EFFECTS,
+  BONUS_CARD_EFFECTS,
+  PiratesCardEffect,
+} from './pirate-card-effects';
 
 type DeckName = 'bonus' | 'treasure' | 'obstacle';
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
 
 @Injectable()
 export class PiratesEnVadrouilleActionService {
@@ -41,23 +56,23 @@ export class PiratesEnVadrouilleActionService {
     actions: GameSingleActionDto[],
   ): GameStateEntity {
     const next = applyActionsSequentially(state, actions, (next, action) => {
-          const type = normalizeActionType(action);
-          return dispatchByActionType(
-            type,
-            {
-              'roll': () => {
-                next = this.handleRoll(next);
-                return next;
-              },
-              'choose_target': () => {
-                next = this.handleChooseTarget(next, action);
-                return next;
-              },
-            },
-            () => next,
-          );
-        });
-        return next;
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          roll: () => {
+            next = this.handleRoll(next);
+            return next;
+          },
+          choose_target: () => {
+            next = this.handleChooseTarget(next, action);
+            return next;
+          },
+        },
+        () => next,
+      );
+    });
+    return next;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -81,14 +96,18 @@ export class PiratesEnVadrouilleActionService {
         this.core.appendLog(
           {
             ...state,
-            metadata: { ...(state.metadata ?? {}), ...meta, statuses: nextStatuses },
+            metadata: {
+              ...(state.metadata ?? {}),
+              ...meta,
+              statuses: nextStatuses,
+            },
           },
           `${resolvePlayerNameFromState(state, playerId)} saute son tour (${skip} restant).`,
         ),
       );
     }
 
-    const rng = this.random.rollDice(meta as any, 6);
+    const rng = this.random.rollDice(meta as Record<string, unknown>, 6);
     const nextMeta = { ...meta, ...rng.meta };
     let next: GameStateEntity = {
       ...state,
@@ -131,18 +150,23 @@ export class PiratesEnVadrouilleActionService {
     action: GameSingleActionDto,
   ): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
-    const pending = state.pending as any;
+    const pending = state.pending;
     if (!pending || !isPendingType(state, 'choose_target')) return state;
     const playerId = state.turn?.currentPlayerId ?? null;
     if (playerId == null) return state;
 
-    const payload = action.payload as any;
-    const targetId = Number(payload?.targetPlayerId);
-    const options: Array<{ targetPlayerId: number }> = Array.isArray(
-      pending?.data?.options,
-    )
-      ? pending.data.options
+    const payload = asRecord(action.payload);
+    const targetId = Number(payload.targetPlayerId);
+    const pendingData = asRecord(pending.data);
+    const optionsRaw = Array.isArray(pendingData.options)
+      ? pendingData.options
       : [];
+    const options: Array<{ targetPlayerId: number }> = optionsRaw
+      .map((entry) => {
+        const row = asRecord(entry);
+        return { targetPlayerId: Number(row.targetPlayerId) };
+      })
+      .filter((entry) => Number.isFinite(entry.targetPlayerId));
     if (
       !Number.isFinite(targetId) ||
       !options.some((opt) => opt.targetPlayerId === targetId)
@@ -213,12 +237,7 @@ export class PiratesEnVadrouilleActionService {
       ...state,
       metadata: { ...(state.metadata ?? {}), ...draw.meta },
     };
-    const card =
-      draw.card as
-        | PiratesEnVadrouilleBonusCard
-        | PiratesEnVadrouilleTreasureCard
-        | PiratesEnVadrouilleObstacleCard
-        | null;
+    const card = draw.card;
     if (!card) {
       return this.core.appendLog(
         next,
@@ -269,7 +288,7 @@ export class PiratesEnVadrouilleActionService {
       case 'immunity':
         return this.addImmunity(next, playerId, effect.turns);
       case 'reroll':
-        return this.setKeepTurn(next, playerId);
+        return this.setKeepTurn(next);
       case 'targetMove':
       case 'stealTreasure':
         return this.promptTargetSelection(next, playerId, effect);
@@ -359,12 +378,7 @@ export class PiratesEnVadrouilleActionService {
         ...targetCollection,
         treasures: trimmed,
       });
-      next = this.addCardToCollection(
-        next,
-        ctx.actorId,
-        'treasure',
-        stolen,
-      );
+      next = this.addCardToCollection(next, ctx.actorId, 'treasure', stolen);
       return this.core.appendLog(
         next,
         `${resolvePlayerNameFromState(next, ctx.actorId)} dérobe "${stolen.title}" à ${resolvePlayerNameFromState(
@@ -384,7 +398,7 @@ export class PiratesEnVadrouilleActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     const targets = players
       .filter((p) => p?.id != null && p.id !== playerId)
-      .map((p) => ({ targetPlayerId: p.id as number }));
+      .map((p) => ({ targetPlayerId: p.id }));
     if (!targets.length) return state;
 
     const pending: PendingState = {
@@ -535,7 +549,6 @@ export class PiratesEnVadrouilleActionService {
     playerId: number,
     amount: number,
   ): GameStateEntity {
-    const meta = this.getMeta(state);
     const collection = this.getCollection(state, playerId);
     const updated = {
       ...collection,
@@ -544,17 +557,31 @@ export class PiratesEnVadrouilleActionService {
     return this.setCollection(state, playerId, updated);
   }
 
-  private setKeepTurn(
-    state: GameStateEntity,
-    playerId: number,
-  ): GameStateEntity {
+  private setKeepTurn(state: GameStateEntity): GameStateEntity {
     const meta = this.getMeta(state);
     const copy: PiratesEnVadrouilleMetadata = { ...meta, keepTurn: true };
     return { ...state, metadata: { ...(state.metadata ?? {}), ...copy } };
   }
 
-  private drawFromDeck(meta: PiratesEnVadrouilleMetadata, deck: DeckName) {
-    const draw = this.deckPolicies.drawFromPile<any, PiratesEnVadrouilleMetadata>({
+  private drawFromDeck(
+    meta: PiratesEnVadrouilleMetadata,
+    deck: DeckName,
+  ): {
+    card:
+      | PiratesEnVadrouilleBonusCard
+      | PiratesEnVadrouilleTreasureCard
+      | PiratesEnVadrouilleObstacleCard
+      | null;
+    meta: PiratesEnVadrouilleMetadata;
+  } {
+    type DeckCard =
+      | PiratesEnVadrouilleBonusCard
+      | PiratesEnVadrouilleTreasureCard
+      | PiratesEnVadrouilleObstacleCard;
+    const draw = this.deckPolicies.drawFromPile<
+      DeckCard,
+      PiratesEnVadrouilleMetadata
+    >({
       meta,
       pile: Array.isArray(meta.decks?.[deck]) ? meta.decks[deck] : [],
       discard: Array.isArray(meta.discards?.[deck]) ? meta.discards[deck] : [],
@@ -563,10 +590,10 @@ export class PiratesEnVadrouilleActionService {
     });
     const nextMeta: PiratesEnVadrouilleMetadata = {
       ...draw.meta,
-      decks: { ...draw.meta.decks, [deck]: draw.pile as any[] },
-      discards: { ...draw.meta.discards, [deck]: draw.discard as any[] },
+      decks: { ...draw.meta.decks, [deck]: draw.pile },
+      discards: { ...draw.meta.discards, [deck]: draw.discard },
     };
-    return { card: draw.card, meta: nextMeta };
+    return { card: draw.card ?? null, meta: nextMeta };
   }
 
   private formatActionMessage(
@@ -616,7 +643,9 @@ export class PiratesEnVadrouilleActionService {
     };
   }
 
-  private getTotalCards(collection: PiratesEnVadrouilleMetadata['collections'][number]): number {
+  private getTotalCards(
+    collection: PiratesEnVadrouilleMetadata['collections'][number],
+  ): number {
     return (
       (collection.treasures?.length ?? 0) +
       (collection.obstacles?.length ?? 0) +
@@ -653,7 +682,7 @@ export class PiratesEnVadrouilleActionService {
 
   private pawnLabel(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
-    const player = players.find((p: any) => p?.id === id) as any;
+    const player = players.find((p) => p?.id === id) ?? null;
     const pawn =
       typeof player?.pawn === 'string' ? String(player.pawn).trim() : '';
     if (!pawn) return '"son pion"';
@@ -665,7 +694,9 @@ export class PiratesEnVadrouilleActionService {
       .trim();
     const core = inner || pawn;
     const lowered =
-      core.length <= 1 ? core.toLowerCase() : `${core.charAt(0).toLowerCase()}${core.slice(1)}`;
+      core.length <= 1
+        ? core.toLowerCase()
+        : `${core.charAt(0).toLowerCase()}${core.slice(1)}`;
     return `"${feminine ? 'sa' : 'son'} ${lowered}"`;
   }
 
@@ -673,8 +704,3 @@ export class PiratesEnVadrouilleActionService {
     return (state.metadata ?? {}) as PiratesEnVadrouilleMetadata;
   }
 }
-
-
-
-
-

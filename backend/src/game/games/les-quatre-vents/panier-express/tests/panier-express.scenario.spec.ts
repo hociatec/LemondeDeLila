@@ -1,4 +1,4 @@
-import { Test } from '@nestjs/testing';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call */
 import { PanierExpressService } from '../panier-express.service';
 import { createPanierExpressTestingModule } from './panier-express-test-harness';
 

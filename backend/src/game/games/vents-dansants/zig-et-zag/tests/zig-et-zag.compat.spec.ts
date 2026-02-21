@@ -11,7 +11,10 @@ describe('ZigEtZag compat', () => {
   it('exposes draw_card actions even if waitingPlayers ids are serialized as strings', async () => {
     const service = new ZigEtZagActionService(
       new GameCoreService(),
-      new TurnFlowService(new TurnService(), new TurnPoliciesService(new GameCoreService())),
+      new TurnFlowService(
+        new TurnService(),
+        new TurnPoliciesService(new GameCoreService()),
+      ),
       new RandomService(),
     );
 
@@ -50,7 +53,9 @@ describe('ZigEtZag compat', () => {
 
     const actions = Rulebook.getAvailableActions(state, 1);
     expect(actions.length).toBeGreaterThan(0);
-    expect(actions.every((a: any) => String(a?.type) === 'draw_card')).toBe(true);
+    expect(actions.every((a: any) => String(a?.type) === 'draw_card')).toBe(
+      true,
+    );
 
     // The service should be able to apply the action even if ids are strings in the roundState.
     const after: any = service.applyActions(state, [
@@ -81,14 +86,19 @@ describe('ZigEtZag compat', () => {
 
     const hydrated: any = setup.hydrateInitialState(base);
     expect(hydrated.turn?.currentPlayerId).toBe(-2);
-    const messages = (hydrated.log ?? []).map((x: any) => String(x?.message ?? ''));
+    const messages = (hydrated.log ?? []).map((x: any) =>
+      String(x?.message ?? ''),
+    );
     expect(messages).toContain("C'est au tour de Bot.");
   });
 
   it('enforces strict draw order and logs draw/reveal flow', async () => {
     const service = new ZigEtZagActionService(
       new GameCoreService(),
-      new TurnFlowService(new TurnService(), new TurnPoliciesService(new GameCoreService())),
+      new TurnFlowService(
+        new TurnService(),
+        new TurnPoliciesService(new GameCoreService()),
+      ),
       new RandomService(),
     );
 
@@ -135,7 +145,9 @@ describe('ZigEtZag compat', () => {
       { type: 'draw_card', payload: {}, meta: { actorId: 1 } },
     ] as any);
     expect((afterP1.metadata?.playerDecks?.['1'] ?? []).length).toBe(0);
-    const afterP1Messages = (afterP1.log ?? []).map((x: any) => x?.message ?? '');
+    const afterP1Messages = (afterP1.log ?? []).map(
+      (x: any) => x?.message ?? '',
+    );
     expect(afterP1Messages).toContain('Hacene pioche.');
     expect(afterP1Messages).toContain("C'est au tour de Lila.");
     expect(afterP1.metadata?.roundState?.waitingPlayers).toEqual([2]);
@@ -143,14 +155,19 @@ describe('ZigEtZag compat', () => {
     const afterP2: any = service.applyActions(afterP1, [
       { type: 'draw_card', payload: {}, meta: { actorId: 2 } },
     ] as any);
-    const afterP2Messages = (afterP2.log ?? []).map((x: any) => x?.message ?? '');
+    const afterP2Messages = (afterP2.log ?? []).map(
+      (x: any) => x?.message ?? '',
+    );
     expect(afterP2Messages).toContain('Lila pioche.');
     expect(afterP2Messages).toContain('Hacene et Lila dévoilent leurs cartes.');
   });
   it('applies full capture count on winner deck summary (+2/-2 on a basic trick)', async () => {
     const service = new ZigEtZagActionService(
       new GameCoreService(),
-      new TurnFlowService(new TurnService(), new TurnPoliciesService(new GameCoreService())),
+      new TurnFlowService(
+        new TurnService(),
+        new TurnPoliciesService(new GameCoreService()),
+      ),
       new RandomService(),
     );
 
@@ -190,15 +207,21 @@ describe('ZigEtZag compat', () => {
     };
 
     const afterP1: any = service.applyActions(state, [
-      { type: 'select_card', payload: { cardId: 'pantoufle-loup' }, meta: { actorId: 1 } },
+      {
+        type: 'select_card',
+        payload: { cardId: 'pantoufle-loup' },
+        meta: { actorId: 1 },
+      },
     ] as any);
     const afterP2: any = service.applyActions(afterP1, [
-      { type: 'select_card', payload: { cardId: 'pantoufle-poisson' }, meta: { actorId: 2 } },
+      {
+        type: 'select_card',
+        payload: { cardId: 'pantoufle-poisson' },
+        meta: { actorId: 2 },
+      },
     ] as any);
 
     expect((afterP2.metadata?.playerDecks?.['1'] ?? []).length).toBe(4);
     expect((afterP2.metadata?.playerDecks?.['2'] ?? []).length).toBe(0);
   });
 });
-
-

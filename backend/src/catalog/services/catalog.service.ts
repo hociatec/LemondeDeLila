@@ -17,6 +17,9 @@ export type CatalogGame = {
   manifestPath?: string;
   rulesPath?: string;
 };
+type RegistryGameWithOptionalStatus = {
+  status?: unknown;
+};
 
 export type CategoryNode = {
   id: string;
@@ -89,7 +92,7 @@ export class CatalogService {
     );
   }
 
-  async clearCache(): Promise<void> {
+  clearCache(): void {
     this.cachedGames = null;
     this.cacheExpiresAt = 0;
   }
@@ -108,12 +111,15 @@ export class CatalogService {
       const rawSubcategory = this.formatCategoryName(def.subcategory || '');
 
       const category = rawSubcategory || rawCategory;
+      const withStatus = def as RegistryGameWithOptionalStatus;
+      const status =
+        typeof withStatus.status === 'string' ? withStatus.status : 'finished';
       const subcategory = '';
       const categories = this.buildCategoryRefs(category, subcategory);
       return {
         id: def.id,
         name: def.name,
-        status: String((def as any)?.status ?? 'finished'),
+        status,
         minPlayers: def.minPlayers ?? 2,
         maxPlayers: def.maxPlayers ?? 6,
         chatEnabled:

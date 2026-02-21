@@ -3,7 +3,11 @@ import { requireUser } from '../../common/ws/ws-auth';
 import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { VaultRoomSnapshotsService } from '../services/vault-room-snapshots.service';
-import { VaultAbandonWsDto, VaultIdWsDto, VaultSaveWsDto } from './vault-ws.dto';
+import {
+  VaultAbandonWsDto,
+  VaultIdWsDto,
+  VaultSaveWsDto,
+} from './vault-ws.dto';
 
 @Injectable()
 export class VaultWsHandler {

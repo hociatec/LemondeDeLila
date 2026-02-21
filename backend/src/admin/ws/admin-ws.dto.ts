@@ -5,7 +5,6 @@ import {
   IsDateString,
   IsIn,
   IsInt,
-  IsNotEmpty,
   IsOptional,
   IsPositive,
   IsString,
@@ -455,4 +454,3 @@ export class AdminBotSettingsUpdateWsDto {
   @Min(0)
   botDrawDelayMs?: number;
 }
-

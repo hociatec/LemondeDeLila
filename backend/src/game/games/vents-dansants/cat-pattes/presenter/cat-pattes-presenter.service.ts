@@ -18,7 +18,9 @@ export class CatPattesPresenterService {
     const meta = (state.metadata ?? {}) as CatPattesMetadata;
     const actions = Rulebook.getAvailableActions(state, userId);
     const pending = this.normalizePending(state.pending as any, actions);
-    const handIds = Array.isArray(meta.hands?.[userId]) ? [...meta.hands[userId]] : [];
+    const handIds = Array.isArray(meta.hands?.[userId])
+      ? [...meta.hands[userId]]
+      : [];
     const hand = handIds.map((id) => CAT_PATTES_CARD_BY_ID[id]?.name ?? id);
 
     const players = Array.isArray(state.players) ? state.players : [];
@@ -45,7 +47,10 @@ export class CatPattesPresenterService {
     });
 
     const handCounts = Object.entries(meta.hands ?? {})
-      .map(([id, cards]) => `Joueur ${id}: ${Array.isArray(cards) ? cards.length : 0}`)
+      .map(
+        ([id, cards]) =>
+          `Joueur ${id}: ${Array.isArray(cards) ? cards.length : 0}`,
+      )
       .join(' • ');
 
     const extras = {
@@ -63,11 +68,15 @@ export class CatPattesPresenterService {
         panels: {
           hand: {
             title: 'Main',
-            message: hand.length ? `Main : ${hand.join(', ')}` : 'Main : (vide)',
+            message: hand.length
+              ? `Main : ${hand.join(', ')}`
+              : 'Main : (vide)',
           },
           hands: {
             title: 'Mains',
-            message: handCounts ? `Mains : ${handCounts}` : 'Mains : (inconnues)',
+            message: handCounts
+              ? `Mains : ${handCounts}`
+              : 'Mains : (inconnues)',
           },
           play: {
             title: 'À jouer',
@@ -103,7 +112,9 @@ export class CatPattesPresenterService {
     actions: Array<{ type?: string; payload?: Record<string, unknown> }>,
   ): any {
     if (!pending || typeof pending !== 'object') return pending ?? null;
-    const type = String(pending?.type ?? '').trim().toLowerCase();
+    const type = String(pending?.type ?? '')
+      .trim()
+      .toLowerCase();
     if (type !== 'choose_pawn') return pending;
 
     const rawChoices = Array.isArray(pending?.choices) ? pending.choices : [];
@@ -117,7 +128,9 @@ export class CatPattesPresenterService {
       };
     }
 
-    const pendingPawns = Array.isArray(pending?.data?.pawns) ? pending.data.pawns : [];
+    const pendingPawns = Array.isArray(pending?.data?.pawns)
+      ? pending.data.pawns
+      : [];
     const pawnsFromPendingData = pendingPawns
       .map((pawn: any) => String(pawn?.label ?? pawn?.id ?? '').trim())
       .filter((choice: string) => choice.length > 0);
@@ -129,10 +142,17 @@ export class CatPattesPresenterService {
     }
 
     const pawnsFromActions = (Array.isArray(actions) ? actions : [])
-      .filter((action) => String(action?.type ?? '').trim().toLowerCase() === 'choose_pawn')
+      .filter(
+        (action) =>
+          String(action?.type ?? '')
+            .trim()
+            .toLowerCase() === 'choose_pawn',
+      )
       .map((action) => {
-        const payload = (action?.payload ?? {}) as Record<string, unknown>;
-        return String(payload.pawnId ?? payload.pawn ?? payload.value ?? '').trim();
+        const payload = action?.payload ?? {};
+        return String(
+          payload.pawnId ?? payload.pawn ?? payload.value ?? '',
+        ).trim();
       })
       .filter((choice) => choice.length > 0);
     if (pawnsFromActions.length > 0) {

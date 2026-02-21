@@ -7,9 +7,13 @@ import { MorpionPresenter } from './morpion.presenter';
 import { MorpionService } from './morpion.service';
 
 @Module({
-  imports: [ConfigModule, GameCoreModule, GameRegistryModule, GridGameCoreKitModule],
+  imports: [
+    ConfigModule,
+    GameCoreModule,
+    GameRegistryModule,
+    GridGameCoreKitModule,
+  ],
   providers: [MorpionService, MorpionPresenter],
   exports: [MorpionService],
 })
 export class MorpionModule {}
-

@@ -9,11 +9,7 @@ import { BandeABananeSetupService } from './setup/la-bande-a-banane-setup.servic
 import { BandeABananeService } from './la-bande-a-banane.service';
 
 @Module({
-  imports: [
-    BoardGameDeckKitModule,
-    GameCoreModule,
-    GameRegistryModule,
-    ],
+  imports: [BoardGameDeckKitModule, GameCoreModule, GameRegistryModule],
   providers: [
     BandeABananeService,
     BandeABananeSetupService,

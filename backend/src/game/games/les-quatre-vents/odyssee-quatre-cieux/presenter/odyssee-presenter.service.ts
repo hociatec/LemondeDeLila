@@ -7,6 +7,12 @@ import { ODYSSEE_GAME } from '../definitions/odyssee.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { OdysseeMetadata } from '../model/odyssee.types';
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
 @Injectable()
 export class OdysseePresenterService {
   exposeStateForUser(
@@ -14,7 +20,7 @@ export class OdysseePresenterService {
     userId: number,
   ): GameStateWithActions {
     const actions = Rulebook.getAvailableActions(state, userId);
-    const meta = (state.metadata ?? {}) as any as OdysseeMetadata;
+    const meta = (state.metadata ?? {}) as OdysseeMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
     const trackLength = meta.trackLength ?? 0;
@@ -76,7 +82,7 @@ export class OdysseePresenterService {
       actions: formatPresenterActions(actions),
       pending: state.pending ?? null,
       extras: {
-        ...(state as any).extras,
+        ...asRecord(state.extras),
         currentPlayerView: {
           id: userId,
           username: me?.username ?? `Joueur ${userId}`,
@@ -92,7 +98,12 @@ export class OdysseePresenterService {
                 if (pawns.length === 0) return 'Position: inconnue.';
 
                 const parts = pawns
-                  .filter((p) => p && typeof p.pawnIndex === 'number' && typeof p.progress === 'number')
+                  .filter(
+                    (p) =>
+                      p &&
+                      typeof p.pawnIndex === 'number' &&
+                      typeof p.progress === 'number',
+                  )
                   .map((p) => `Pion ${p.pawnIndex + 1}: ${p.progress}`);
                 if (parts.length === 0) return 'Position: inconnue.';
                 return `Pions: ${parts.join(', ')}.`;
@@ -117,6 +128,6 @@ export class OdysseePresenterService {
         offsets: meta.offsets ?? {},
         pawnsByPlayer: meta.pawnsByPlayer ?? {},
       },
-    } as any;
+    };
   }
 }

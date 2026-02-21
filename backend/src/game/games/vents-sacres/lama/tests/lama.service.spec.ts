@@ -84,12 +84,18 @@ describe('LamaService', () => {
     expect(Boolean(state?.pending?.blocking)).toBe(true);
     const exposed: any = service.exposeStateForUser(state, 1);
     expect(String(exposed?.pending?.type ?? '')).toBe('config_prompt');
-    expect((exposed?.actions ?? []).some((a: any) => a?.type === 'lama_set_config')).toBe(true);
+    expect(
+      (exposed?.actions ?? []).some((a: any) => a?.type === 'lama_set_config'),
+    ).toBe(true);
 
     const started: any = service.applyActions(state, [
       {
         type: 'lama_set_config',
-        payload: { loseAtScore: 40, roundPauseSeconds: 2, allowPlayAfterDraw: 'true' },
+        payload: {
+          loseAtScore: 40,
+          roundPauseSeconds: 2,
+          allowPlayAfterDraw: 'true',
+        },
         meta: { actorId: 1 },
       } as any,
     ]);
@@ -133,7 +139,9 @@ describe('LamaService', () => {
 
     const actions = service.getBotActions(state, 2);
     expect(actions.length).toBeGreaterThan(0);
-    expect(['lama_play', 'draw', 'lama_quit', 'lama_return']).toContain(actions[0].type);
+    expect(['lama_play', 'draw', 'lama_quit', 'lama_return']).toContain(
+      actions[0].type,
+    );
   });
 
   it('declares keyboard shortcuts', async () => {
@@ -145,9 +153,17 @@ describe('LamaService', () => {
       started: true,
     });
 
-    expect(shortcuts.some((s: any) => s?.type === 'interface' && s?.id === 'discard')).toBe(true);
-    expect(shortcuts.some((s: any) => s?.type === 'interface' && s?.id === 'hands')).toBe(true);
-    expect(shortcuts.some((s: any) => s?.type === 'interface' && s?.id === 'score')).toBe(true);
+    expect(
+      shortcuts.some(
+        (s: any) => s?.type === 'interface' && s?.id === 'discard',
+      ),
+    ).toBe(true);
+    expect(
+      shortcuts.some((s: any) => s?.type === 'interface' && s?.id === 'hands'),
+    ).toBe(true);
+    expect(
+      shortcuts.some((s: any) => s?.type === 'interface' && s?.id === 'score'),
+    ).toBe(true);
     expect(
       shortcuts.some(
         (s: any) => s?.type === 'action' && s?.actionType === 'lama_quit',
@@ -233,7 +249,8 @@ describe('LamaService', () => {
     ]);
     expect(afterFirst.turn.currentPlayerId).toBe(1);
     const deckAfterFirst = (afterFirst.metadata.deck ?? []).length;
-    const handAfterFirst = (afterFirst.metadata.handsByPlayerId?.['2'] ?? []).length;
+    const handAfterFirst = (afterFirst.metadata.handsByPlayerId?.['2'] ?? [])
+      .length;
 
     // Simule un bug externe: tracker du tour ne correspond plus au joueur courant.
     const desynced: any = {
@@ -250,9 +267,16 @@ describe('LamaService', () => {
 
     // La 2e pioche doit être ignorée (même si turnTracker est incohérent).
     expect((afterSecond.metadata.deck ?? []).length).toBe(deckAfterFirst);
-    expect((afterSecond.metadata.handsByPlayerId?.['2'] ?? []).length).toBe(handAfterFirst);
-    const messages = (afterSecond.log ?? []).map((l: any) => String(l?.message ?? ''));
-    expect(messages.filter((m: string) => (m ?? '').startsWith('Bot pioche ')).length).toBe(1);
+    expect((afterSecond.metadata.handsByPlayerId?.['2'] ?? []).length).toBe(
+      handAfterFirst,
+    );
+    const messages = (afterSecond.log ?? []).map((l: any) =>
+      String(l?.message ?? ''),
+    );
+    expect(
+      messages.filter((m: string) => (m ?? '').startsWith('Bot pioche '))
+        .length,
+    ).toBe(1);
   });
 
   it('includes discard top in pending label', async () => {
@@ -353,8 +377,12 @@ describe('LamaService', () => {
     const quitMessages = afterQuit.log
       .slice(base.log.length)
       .map((l: any) => String(l?.message ?? ''));
-    expect(quitMessages.some((m: string) => m.includes('se retire'))).toBe(true);
-    expect(quitMessages.some((m: string) => m.includes('ne jouera plus'))).toBe(true);
+    expect(quitMessages.some((m: string) => m.includes('se retire'))).toBe(
+      true,
+    );
+    expect(quitMessages.some((m: string) => m.includes('ne jouera plus'))).toBe(
+      true,
+    );
 
     // peek discard (info action)
     const afterPeek: any = service.applyActions(base, [
@@ -382,7 +410,9 @@ describe('LamaService', () => {
     const passMessages = afterPass.log
       .slice(passState.log.length)
       .map((l: any) => String(l?.message ?? ''));
-    expect(passMessages.some((m: string) => m.includes('se retire'))).toBe(true);
+    expect(passMessages.some((m: string) => m.includes('se retire'))).toBe(
+      true,
+    );
 
     // return token (requires return_token step)
     const returnState: any = {
@@ -397,13 +427,19 @@ describe('LamaService', () => {
       pending: { step: 'return_token', playerId: 1 },
     };
     const afterReturn: any = service.applyActions(returnState, [
-      { type: 'lama_return', payload: { value: 10 }, meta: { actorId: 1 } } as any,
+      {
+        type: 'lama_return',
+        payload: { value: 10 },
+        meta: { actorId: 1 },
+      } as any,
     ]);
     expect(afterReturn.log.length).toBeGreaterThan(returnState.log.length);
     const returnMessages = afterReturn.log
       .slice(returnState.log.length)
       .map((l: any) => String(l?.message ?? ''));
-    expect(returnMessages.some((m: string) => m.includes('diamant'))).toBe(true);
+    expect(returnMessages.some((m: string) => m.includes('diamant'))).toBe(
+      true,
+    );
   });
 
   it('logs "doit piocher" before a bot draw (no double draw)', async () => {
@@ -443,9 +479,14 @@ describe('LamaService', () => {
       { type: 'draw', payload: {}, meta: { actorId: 2 } } as any,
     ]);
 
-    const messages = (after.log ?? []).map((l: any) => String(l?.message ?? ''));
+    const messages = (after.log ?? []).map((l: any) =>
+      String(l?.message ?? ''),
+    );
     expect(messages.some((m: string) => m.includes('doit piocher'))).toBe(true);
-    expect(messages.filter((m: string) => (m ?? '').startsWith('Bot pioche ')).length).toBe(1);
+    expect(
+      messages.filter((m: string) => (m ?? '').startsWith('Bot pioche '))
+        .length,
+    ).toBe(1);
   });
 
   it('redacts drawn card labels in the log for opponents (only the drawer sees the card)', async () => {
@@ -488,8 +529,12 @@ describe('LamaService', () => {
     const exposedA: any = service.exposeStateForUser(state, 1);
     const exposedB: any = service.exposeStateForUser(state, 2);
 
-    const messagesA = (exposedA.log ?? []).map((l: any) => String(l?.message ?? ''));
-    const messagesB = (exposedB.log ?? []).map((l: any) => String(l?.message ?? ''));
+    const messagesA = (exposedA.log ?? []).map((l: any) =>
+      String(l?.message ?? ''),
+    );
+    const messagesB = (exposedB.log ?? []).map((l: any) =>
+      String(l?.message ?? ''),
+    );
 
     expect(messagesA).toContain('A pioche un 5.');
     expect(messagesA).toContain('B pioche une carte.');
@@ -539,7 +584,8 @@ describe('LamaService', () => {
     expect(afterFirst.turn.currentPlayerId).toBe(1);
     expect(Boolean(afterFirst.metadata?.turnTracker?.drawn)).toBe(false);
     const deckAfterFirst = (afterFirst.metadata.deck ?? []).length;
-    const handAfterFirst = (afterFirst.metadata.handsByPlayerId?.['2'] ?? []).length;
+    const handAfterFirst = (afterFirst.metadata.handsByPlayerId?.['2'] ?? [])
+      .length;
 
     const afterSecond: any = service.applyActions(afterFirst, [
       { type: 'draw', payload: {}, meta: { actorId: 2 } } as any,
@@ -547,9 +593,16 @@ describe('LamaService', () => {
 
     // Second draw is ignored (one draw per turn).
     expect((afterSecond.metadata.deck ?? []).length).toBe(deckAfterFirst);
-    expect((afterSecond.metadata.handsByPlayerId?.['2'] ?? []).length).toBe(handAfterFirst);
-    const messages = (afterSecond.log ?? []).map((l: any) => String(l?.message ?? ''));
-    expect(messages.filter((m: string) => (m ?? '').startsWith('Bot pioche ')).length).toBe(1);
+    expect((afterSecond.metadata.handsByPlayerId?.['2'] ?? []).length).toBe(
+      handAfterFirst,
+    );
+    const messages = (afterSecond.log ?? []).map((l: any) =>
+      String(l?.message ?? ''),
+    );
+    expect(
+      messages.filter((m: string) => (m ?? '').startsWith('Bot pioche '))
+        .length,
+    ).toBe(1);
   });
 
   it('offers only single-card plays in pending choices', async () => {
@@ -587,9 +640,13 @@ describe('LamaService', () => {
     const choices = exposed?.pending?.choices ?? [];
     expect(choices).toEqual(['1', '1', '1']);
 
-    const playActions = (exposed?.actions ?? []).filter((a: any) => a?.type === 'lama_play');
+    const playActions = (exposed?.actions ?? []).filter(
+      (a: any) => a?.type === 'lama_play',
+    );
     expect(playActions.length).toBe(3);
-    expect(playActions.every((a: any) => Number(a?.payload?.count ?? 0) === 1)).toBe(true);
+    expect(
+      playActions.every((a: any) => Number(a?.payload?.count ?? 0) === 1),
+    ).toBe(true);
   });
 
   it('does not offer draw/quit in pending choices (draw is via SPACE)', async () => {
@@ -624,9 +681,15 @@ describe('LamaService', () => {
     };
 
     const exposed: any = service.exposeStateForUser(state, 1);
-    const choices = (exposed?.pending?.choices ?? []).map((c: any) => String(c));
+    const choices = (exposed?.pending?.choices ?? []).map((c: any) =>
+      String(c),
+    );
     // The hand list contains only cards.
-    expect(choices.every((c: string) => ['1', '2', '3', '4', '5', '6', 'LAMA'].includes(c))).toBe(true);
+    expect(
+      choices.every((c: string) =>
+        ['1', '2', '3', '4', '5', '6', 'LAMA'].includes(c),
+      ),
+    ).toBe(true);
 
     const actionTypes = (exposed?.actions ?? []).map((a: any) =>
       String(a?.type ?? '').toLowerCase(),
@@ -717,7 +780,9 @@ describe('LamaService', () => {
     ]);
 
     expect(after.turnIndex).toBe(state.turnIndex);
-    expect((after.metadata?.deck ?? []).length).toBe((state.metadata?.deck ?? []).length);
+    expect((after.metadata?.deck ?? []).length).toBe(
+      (state.metadata?.deck ?? []).length,
+    );
     expect((after.metadata?.handsByPlayerId?.['1'] ?? []).length).toBe(
       (state.metadata?.handsByPlayerId?.['1'] ?? []).length,
     );
@@ -851,7 +916,11 @@ describe('LamaService', () => {
     };
 
     const after: any = service.applyActions(state, [
-      { type: 'lama_play', payload: { value: 1, count: 1 }, meta: { actorId: 1 } } as any,
+      {
+        type: 'lama_play',
+        payload: { value: 1, count: 1 },
+        meta: { actorId: 1 },
+      } as any,
     ]);
 
     expect(after.turn.currentPlayerId).toBe(2);
@@ -891,7 +960,11 @@ describe('LamaService', () => {
     };
 
     const after: any = service.applyActions(state, [
-      { type: 'lama_play', payload: { value: 1, count: 1 }, meta: { actorId: 1 } } as any,
+      {
+        type: 'lama_play',
+        payload: { value: 1, count: 1 },
+        meta: { actorId: 1 },
+      } as any,
     ]);
 
     // B keeps 3,4,LAMA => 3+4+10 = 17 (duplicates ignored).
@@ -936,7 +1009,11 @@ describe('LamaService', () => {
     };
 
     const after: any = service.applyActions(state, [
-      { type: 'lama_return', payload: { value: 0 }, meta: { actorId: 1 } } as any,
+      {
+        type: 'lama_return',
+        payload: { value: 0 },
+        meta: { actorId: 1 },
+      } as any,
     ]);
     expect(String(after.metadata?.step ?? '')).toBe('round_pause');
     expect(Number(after.round ?? 0)).toBe(2);
@@ -988,8 +1065,12 @@ describe('LamaService', () => {
     ]);
 
     // No duplicate "Fin de la manche" or extra penalties.
-    const messages = (after.log ?? []).map((l: any) => String(l?.message ?? ''));
-    expect(messages.filter((m: string) => m === 'Fin de la manche 1.').length).toBe(1);
+    const messages = (after.log ?? []).map((l: any) =>
+      String(l?.message ?? ''),
+    );
+    expect(
+      messages.filter((m: string) => m === 'Fin de la manche 1.').length,
+    ).toBe(1);
     expect(Number(after.metadata?.scoresByPlayerId?.['1'] ?? 0)).toBe(12);
   });
 
@@ -1039,8 +1120,12 @@ describe('LamaService', () => {
       { type: 'lama_quit', payload: {}, meta: { actorId: 2 } } as any,
     ]);
 
-    const messages = (after.log ?? []).map((l: any) => String(l?.message ?? ''));
-    expect(messages.filter((m: string) => m === 'Fin de la manche 3.').length).toBe(1);
+    const messages = (after.log ?? []).map((l: any) =>
+      String(l?.message ?? ''),
+    );
+    expect(
+      messages.filter((m: string) => m === 'Fin de la manche 3.').length,
+    ).toBe(1);
     expect(String(after.metadata?.step ?? '')).toBe('return_token');
     expect(Number(after.metadata?.endedRoundNumber ?? 0)).toBe(3);
   });
@@ -1086,11 +1171,17 @@ describe('LamaService', () => {
     ]);
 
     // Loser gets penalty, Winner stays at 0 => no return_token prompt should happen.
-    expect(Number(after.metadata?.scoresByPlayerId?.['2'] ?? 0)).toBe(2 + 3 + 10);
+    expect(Number(after.metadata?.scoresByPlayerId?.['2'] ?? 0)).toBe(
+      2 + 3 + 10,
+    );
     expect(Number(after.metadata?.scoresByPlayerId?.['1'] ?? 0)).toBe(0);
     expect(Number(after.metadata?.pendingReturnPlayerId ?? 0)).toBe(0);
-    const messages = (after.log ?? []).map((l: any) => String(l?.message ?? ''));
-    expect(messages.some((m: string) => m.includes("n'a rien à rendre"))).toBe(true);
+    const messages = (after.log ?? []).map((l: any) =>
+      String(l?.message ?? ''),
+    );
+    expect(messages.some((m: string) => m.includes("n'a rien à rendre"))).toBe(
+      true,
+    );
   });
 
   it('n’invite pas au retour de jetons après la première manche', async () => {
@@ -1132,7 +1223,9 @@ describe('LamaService', () => {
       { type: 'lama_play', payload: { value: 1 }, meta: { actorId: 1 } } as any,
     ]);
 
-    expect(Number(after.metadata?.scoresByPlayerId?.['2'] ?? 0)).toBe(2 + 3 + 10);
+    expect(Number(after.metadata?.scoresByPlayerId?.['2'] ?? 0)).toBe(
+      2 + 3 + 10,
+    );
     expect(Number(after.metadata?.scoresByPlayerId?.['1'] ?? 0)).toBe(5);
     expect(String(after.metadata?.step ?? '')).toBe('turn_choice');
     expect(after.metadata?.pendingReturnPlayerId).toBeNull();

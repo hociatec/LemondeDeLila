@@ -31,7 +31,9 @@ export class AbsurdissimesDeckService {
       const raw = fs.readFileSync(filePath, 'utf-8');
       return this.parseCards(raw);
     } catch (error: any) {
-      this.logger.error(`Impossible de lire ${fileName} : ${error?.message ?? 'erreur inconnue'}`);
+      this.logger.error(
+        `Impossible de lire ${fileName} : ${error?.message ?? 'erreur inconnue'}`,
+      );
       return [];
     }
   }
@@ -39,8 +41,26 @@ export class AbsurdissimesDeckService {
   private resolveDataPath(fileName: string): string | null {
     const candidates = [
       path.resolve(__dirname, 'data', fileName),
-      path.resolve(process.cwd(), 'src', 'game', 'games', 'vents-dansants', 'les-absurdissimes', 'data', fileName),
-      path.resolve(process.cwd(), 'dist', 'game', 'games', 'vents-dansants', 'les-absurdissimes', 'data', fileName),
+      path.resolve(
+        process.cwd(),
+        'src',
+        'game',
+        'games',
+        'vents-dansants',
+        'les-absurdissimes',
+        'data',
+        fileName,
+      ),
+      path.resolve(
+        process.cwd(),
+        'dist',
+        'game',
+        'games',
+        'vents-dansants',
+        'les-absurdissimes',
+        'data',
+        fileName,
+      ),
     ];
     for (const candidate of candidates) {
       if (fs.existsSync(candidate)) {
@@ -57,7 +77,10 @@ export class AbsurdissimesDeckService {
     while ((match = regex.exec(content))) {
       const raw = match[2].trim();
       if (raw) {
-        const normalized = raw.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+        const normalized = raw
+          .replace(/[\r\n]+/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
         cards.push(normalized);
       }
     }

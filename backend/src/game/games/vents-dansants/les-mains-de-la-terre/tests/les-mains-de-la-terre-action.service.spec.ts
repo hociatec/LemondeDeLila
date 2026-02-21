@@ -3,15 +3,17 @@ import { RandomService } from '../../../../modules/random/services/random.servic
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { TurnService } from '../../../../modules/turn/services/turn.service';
+import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
 import { LesMainsActionService } from '../actions/les-mains-de-la-terre-action.service';
 
 describe('LesMainsActionService draw behavior', () => {
   const makeService = () => {
+    const core = new GameCoreService();
     const random = new RandomService();
     const deckPolicies = new DeckPoliciesService(random);
     return new LesMainsActionService(
-      new GameCoreService(),
-      new TurnFlowService(new TurnService()),
+      core,
+      new TurnFlowService(new TurnService(), new TurnPoliciesService(core)),
       random,
       deckPolicies,
     ) as any;

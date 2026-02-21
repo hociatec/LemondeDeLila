@@ -2,6 +2,14 @@
 
 describe('NawakShortcuts', () => {
   it('returns hints array', () => {
-    expect(Array.isArray(buildNawakShortcuts())).toBe(true);
+    expect(
+      Array.isArray(
+        buildNawakShortcuts({
+          metadata: {},
+          currentPlayerId: 1,
+          started: true,
+        }),
+      ),
+    ).toBe(true);
   });
 });
