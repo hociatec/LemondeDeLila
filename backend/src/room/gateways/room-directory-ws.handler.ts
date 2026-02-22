@@ -204,7 +204,7 @@ export class RoomDirectoryWsHandler {
     }
 
     const invite = this.invites.create(room.id, user.id, dto.userId);
-    this.notifications.notifyUser(dto.userId, 'rooms.invite.received', {
+    void this.notifications.notifyUser(dto.userId, 'rooms.invite.received', {
       invitationId: invite.id,
       room: {
         id: room.id,
@@ -297,7 +297,7 @@ export class RoomDirectoryWsHandler {
     }
     if (!dto.accept) {
       this.invites.delete(dto.invitationId);
-      this.notifications.notifyUser(
+      void this.notifications.notifyUser(
         invite.fromUserId,
         'rooms.invite.responded',
         {
@@ -326,7 +326,7 @@ export class RoomDirectoryWsHandler {
       } catch {
         // ignore
       }
-      this.notifications.notifyUser(
+      void this.notifications.notifyUser(
         invite.fromUserId,
         'rooms.invite.responded',
         {
@@ -363,7 +363,7 @@ export class RoomDirectoryWsHandler {
         } catch {
           // ignore
         }
-        this.notifications.notifyUser(
+        void this.notifications.notifyUser(
           invite.fromUserId,
           'rooms.invite.responded',
           {
@@ -382,12 +382,16 @@ export class RoomDirectoryWsHandler {
     }
 
     const state = await this.rooms.getRoomPayload(invite.roomId);
-    this.notifications.notifyUser(invite.fromUserId, 'rooms.invite.responded', {
-      invitationId: dto.invitationId,
-      roomId: invite.roomId,
-      accepted: true,
-      by: { id: user.id, username: user.username },
-    });
+    void this.notifications.notifyUser(
+      invite.fromUserId,
+      'rooms.invite.responded',
+      {
+        invitationId: dto.invitationId,
+        roomId: invite.roomId,
+        accepted: true,
+        by: { id: user.id, username: user.username },
+      },
+    );
     return {
       type: 'rooms.invite.accepted',
       payload: { roomId: invite.roomId, room: state.room, spectator: false },

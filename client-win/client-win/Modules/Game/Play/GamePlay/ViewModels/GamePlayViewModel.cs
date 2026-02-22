@@ -73,6 +73,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private Task? _initializeTask;
 
     private GameSession? _session;
+
+    public GameSession? Session => _session;
     private bool _isSpectator;
     private PendingTextPrompt? _pendingTextPrompt;
     private PendingConfigPrompt? _pendingConfigPrompt;

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { PendingState } from '../../../core/entities/game-state.entity';
 import { pawnPlacement } from '../../../core/helpers/game-log-text.helper';
+import { stringOrEmpty } from '@common/utils/string-value.utils';
 
 type LandingTile = {
   type?: string | null;
@@ -17,7 +18,7 @@ type DrawPolicy = {
 @Injectable()
 export class BoardEffectsPoliciesService {
   formatTileLabel(position: number, rawLabel: unknown): string {
-    const label = String(rawLabel ?? '').trim();
+    const label = stringOrEmpty(rawLabel).trim();
     if (!label) return `Case ${position + 1}`;
     if (/^(case|depart|arrivee)\b/i.test(label)) return label;
     return `Case ${position + 1} - ${label}`;
@@ -42,21 +43,17 @@ export class BoardEffectsPoliciesService {
   }): { logs: string[]; pending: PendingState | null; isFinish: boolean } {
     const logs: string[] = [];
     const tile = params.tile ?? null;
-    const type = String(tile?.type ?? '')
-      .trim()
-      .toLowerCase();
-    const description = String(tile?.description ?? '').trim();
+    const type = stringOrEmpty(tile?.type).trim().toLowerCase();
+    const description = stringOrEmpty(tile?.description).trim();
 
     if (description) {
       logs.push(description);
     } else if (params.defaultNeutralLog) {
-      logs.push(String(params.defaultNeutralLog).trim());
+      logs.push(stringOrEmpty(params.defaultNeutralLog).trim());
     }
 
     const finishTypes = (params.finishTypes ?? ['finish']).map((value) =>
-      String(value ?? '')
-        .trim()
-        .toLowerCase(),
+      stringOrEmpty(value).trim().toLowerCase(),
     );
     if (finishTypes.includes(type)) {
       return { logs, pending: null, isFinish: true };

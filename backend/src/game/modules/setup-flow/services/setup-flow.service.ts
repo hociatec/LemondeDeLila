@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { PendingState } from '../../../core/entities/game-state.entity';
+import { stringOrEmpty } from '@common/utils/string-value.utils';
 
 type SetupPlayer = { id: number; username?: string | null };
 type SetupChoice = { id: string; label: string; [key: string]: unknown };
@@ -175,7 +176,7 @@ export class SetupFlowService {
   }
 
   normalizeKey(value: unknown): string {
-    return String(value ?? '')
+    return stringOrEmpty(value)
       .trim()
       .toLowerCase()
       .normalize('NFD')
@@ -187,8 +188,8 @@ export class SetupFlowService {
     return (Array.isArray(choices) ? choices : [])
       .map((choice) => ({
         ...choice,
-        id: String((choice as any)?.id ?? '').trim(),
-        label: String((choice as any)?.label ?? '').trim(),
+        id: stringOrEmpty((choice as any)?.id).trim(),
+        label: stringOrEmpty((choice as any)?.label).trim(),
       }))
       .filter((choice) => choice.id.length > 0 && choice.label.length > 0);
   }
@@ -198,8 +199,8 @@ export class SetupFlowService {
   ): Array<TChoice & SetupChoice> {
     return (Array.isArray(choices) ? choices : [])
       .map((choice) => {
-        const id = String((choice as any)?.id ?? '').trim();
-        const label = String((choice as any)?.label ?? id).trim();
+        const id = stringOrEmpty((choice as any)?.id).trim();
+        const label = stringOrEmpty((choice as any)?.label ?? id).trim();
         return { ...(choice as any), id, label } as TChoice & SetupChoice;
       })
       .filter((choice) => choice.id.length > 0 && choice.label.length > 0);
@@ -207,14 +208,14 @@ export class SetupFlowService {
 
   private defaultPawnData(choice: PawnChoice): Record<string, unknown> {
     return {
-      id: String((choice as any)?.id ?? '').trim(),
-      label: String((choice as any)?.label ?? '').trim(),
-      description: String((choice as any)?.description ?? '').trim(),
+      id: stringOrEmpty((choice as any)?.id).trim(),
+      label: stringOrEmpty((choice as any)?.label).trim(),
+      description: stringOrEmpty((choice as any)?.description).trim(),
     };
   }
 
   private playerLabel(player: SetupPlayer | null | undefined): string {
-    const username = String(player?.username ?? '').trim();
+    const username = stringOrEmpty(player?.username).trim();
     if (username.length > 0) return username;
     const id = Number(player?.id ?? 0);
     return Number.isFinite(id) && id > 0 ? `Joueur ${id}` : 'Joueur';

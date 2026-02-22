@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { GameStateEntity } from '../../../core/entities/game-state.entity';
 
-export type TurnStatusKey = 'skip' | 'stun' | string;
+export type TurnStatusKey = string;
 
 @Injectable()
 export class TurnStatusService {

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { stringOrEmpty } from '@common/utils/string-value.utils';
 
 @Injectable()
 export class BoardPayloadService {
@@ -23,7 +24,7 @@ export class BoardPayloadService {
         positionsRaw as Record<string, unknown>,
       )) {
         const n =
-          typeof v === 'number' ? v : Number.parseInt(String(v ?? ''), 10);
+          typeof v === 'number' ? v : Number.parseInt(stringOrEmpty(v), 10);
         if (!Number.isFinite(n)) continue;
         positions[String(k)] = Math.trunc(n);
       }
@@ -33,7 +34,7 @@ export class BoardPayloadService {
     if (lapsRaw && typeof lapsRaw === 'object' && !Array.isArray(lapsRaw)) {
       for (const [k, v] of Object.entries(lapsRaw as Record<string, unknown>)) {
         const n =
-          typeof v === 'number' ? v : Number.parseInt(String(v ?? ''), 10);
+          typeof v === 'number' ? v : Number.parseInt(stringOrEmpty(v), 10);
         if (!Number.isFinite(n)) continue;
         laps[String(k)] = Math.trunc(n);
       }

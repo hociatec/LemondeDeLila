@@ -5,12 +5,18 @@ function stableStringify(value: unknown): string {
 
   const t = typeof value;
   if (t === 'string') return JSON.stringify(value);
-  if (t === 'number')
-    return Number.isFinite(value as number) ? String(value) : 'null';
-  if (t === 'boolean') return (value as boolean) ? 'true' : 'false';
+  if (t === 'number') {
+    const numeric = value as number;
+    return Number.isFinite(numeric) ? String(numeric) : 'null';
+  }
+  if (t === 'boolean') {
+    const booleanValue = value as boolean;
+    return booleanValue ? 'true' : 'false';
+  }
 
   if (Array.isArray(value)) {
-    return `[${value.map((v) => stableStringify(v)).join(',')}]`;
+    const contents = value.map((v) => stableStringify(v)).join(',');
+    return `[${contents}]`;
   }
 
   if (t === 'object') {

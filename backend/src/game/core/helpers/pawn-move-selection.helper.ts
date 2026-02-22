@@ -3,19 +3,19 @@ type PendingMoveOption = {
   targetProgress: number;
 };
 
-type PendingMoveData = {
+export type PendingMoveData = {
   data?: {
     moves?: unknown;
   };
 };
 
-type MovePayload = {
+export type MovePayload = {
   pawnIndex?: unknown;
   targetProgress?: unknown;
 };
 
 export function getPendingPawnMoveOptions(
-  pending: PendingMoveData,
+  pending: PendingMoveData | null | undefined,
 ): PendingMoveOption[] {
   const movesRaw = Array.isArray(pending?.data?.moves)
     ? pending.data.moves
@@ -36,7 +36,7 @@ export function getPendingPawnMoveOptions(
 }
 
 export function listPendingPawnMoveActions(
-  pending: PendingMoveData,
+  pending: PendingMoveData | null | undefined,
   actionType: string = 'move_pawn',
 ): Array<{
   type: string;
@@ -52,7 +52,7 @@ export function listPendingPawnMoveActions(
 }
 
 export function resolvePendingPawnMove(
-  pending: PendingMoveData,
+  pending: PendingMoveData | null | undefined,
   payload: MovePayload,
 ): PendingMoveOption | null {
   const pawnIndex = Number(payload?.pawnIndex);

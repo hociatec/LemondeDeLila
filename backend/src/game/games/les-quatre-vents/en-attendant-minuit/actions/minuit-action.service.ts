@@ -1176,7 +1176,17 @@ export class MinuitActionService {
     meta: MinuitMetadata,
     pawnIdOrLabel: unknown,
   ): string {
-    const value = String(pawnIdOrLabel ?? '').trim();
+    const rawLabel =
+      pawnIdOrLabel === null || pawnIdOrLabel === undefined
+        ? ''
+        : pawnIdOrLabel;
+    const preparedLabel =
+      typeof rawLabel === 'string' ||
+      typeof rawLabel === 'number' ||
+      typeof rawLabel === 'boolean'
+        ? String(rawLabel)
+        : '';
+    const value = preparedLabel.trim();
     if (!value) return '';
 
     const normalized = value.toLowerCase();

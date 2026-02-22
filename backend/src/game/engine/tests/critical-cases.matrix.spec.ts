@@ -4,25 +4,76 @@ import { GridCellActionsService } from '../../modules/grid/services/grid-cell-ac
 import { MorpionPresenter } from '../../games/vents-sacres/morpion/morpion.presenter';
 import { MorpionService } from '../../games/vents-sacres/morpion/morpion.service';
 import { GameEngineService } from '../services/game-engine.service';
+import { GameRegistryService } from '../services/game-registry.service';
+import { GameLoggerService } from '../../common/services/game-logger.service';
+import type { GameStateEntity } from '../../core/entities/game-state.entity';
+import type { GameSingleActionDto } from '../dto/game-action.dto';
+import type { GameRulesAdapter } from '../interfaces/game-rules-adapter.interface';
+
+const registryStub: Partial<GameRegistryService> = {
+  register: () => undefined,
+};
+
+const defaultPlayers: GameStateEntity['players'] = [
+  { id: 1, username: 'A' },
+  { id: 2, username: 'B' },
+];
+
+function clonePlayers() {
+  return defaultPlayers.map((player) => ({ ...player }));
+}
+
+function buildBaseState(
+  overrides: Partial<GameStateEntity> = {},
+): GameStateEntity {
+  return {
+    status: 'setup',
+    phase: 'setup',
+    round: 1,
+    turnIndex: 0,
+    lastRoll: null,
+    log: [],
+    metadata: {},
+    players: overrides.players ?? clonePlayers(),
+    ...overrides,
+  };
+}
+
+const createMorpion = () =>
+  new MorpionService(
+    registryStub as GameRegistryService,
+    new MorpionPresenter(new GridCellActionsService()),
+  );
+
+function buildPlayAction(
+  actorId: number,
+  x: number,
+  y: number,
+): GameSingleActionDto {
+  return {
+    type: 'morpion_play',
+    payload: { x, y },
+    meta: { actorId },
+  };
+}
+
+function extractWinnerId(state: GameStateEntity): number | null {
+  const metadata = state.metadata;
+  if (!metadata || typeof metadata !== 'object') {
+    return null;
+  }
+  const candidate = (metadata as { winnerId?: unknown }).winnerId;
+  return typeof candidate === 'number' ? candidate : null;
+}
 
 describe('Critical Cases Matrix', () => {
-  const createMorpion = () =>
-    new MorpionService(
-      { register: () => {} } as any,
-      new MorpionPresenter(new GridCellActionsService()),
-    );
-
   it('debut de partie: hydrate un etat started avec un joueur courant', () => {
     const service = createMorpion();
-    const state: any = service.hydrateInitialState({
-      status: 'setup',
-      players: [
-        { id: 1, username: 'A' },
-        { id: 2, username: 'B' },
-      ],
-      log: [],
-      metadata: {},
-    } as any);
+    const state = service.hydrateInitialState(
+      buildBaseState({
+        status: 'setup',
+      }),
+    );
 
     expect(state.status).toBe('started');
     expect(state.turn?.currentPlayerId).toBe(1);
@@ -52,88 +103,84 @@ describe('Critical Cases Matrix', () => {
 
   it('tour suivant: apres une action valide, le tour passe au joueur suivant', () => {
     const service = createMorpion();
-    let state: any = service.hydrateInitialState({
-      status: 'started',
-      players: [
-        { id: 1, username: 'A' },
-        { id: 2, username: 'B' },
-      ],
-      log: [],
-      metadata: {},
-    } as any);
+    let state: GameStateEntity = service.hydrateInitialState(
+      buildBaseState({ status: 'started' }),
+    );
 
-    state = service.applyActions(state, [
-      {
-        type: 'morpion_play',
-        payload: { x: 0, y: 0 },
-        meta: { actorId: 1 },
-      } as any,
-    ]);
+    state = service.applyActions(state, [buildPlayAction(1, 0, 0)]);
     expect(state.turn?.currentPlayerId).toBe(2);
   });
 
   it('victoire: une ligne gagnante termine la partie avec winnerId', () => {
     const service = createMorpion();
-    let state: any = service.hydrateInitialState({
-      status: 'started',
-      players: [
-        { id: 1, username: 'A' },
-        { id: 2, username: 'B' },
-      ],
-      log: [],
-      metadata: {},
-    } as any);
+    let state: GameStateEntity = service.hydrateInitialState(
+      buildBaseState({ status: 'started' }),
+    );
 
-    const play = (actorId: number, x: number, y: number) =>
-      ({ type: 'morpion_play', payload: { x, y }, meta: { actorId } }) as any;
-
-    state = service.applyActions(state, [play(1, 0, 0)]);
-    state = service.applyActions(state, [play(2, 0, 1)]);
-    state = service.applyActions(state, [play(1, 1, 0)]);
-    state = service.applyActions(state, [play(2, 1, 1)]);
-    state = service.applyActions(state, [play(1, 2, 0)]);
+    const plays = [
+      buildPlayAction(1, 0, 0),
+      buildPlayAction(2, 0, 1),
+      buildPlayAction(1, 1, 0),
+      buildPlayAction(2, 1, 1),
+      buildPlayAction(1, 2, 0),
+    ];
+    for (const action of plays) {
+      state = service.applyActions(state, [action]);
+    }
 
     expect(state.status).toBe('finished');
-    expect(state.metadata.winnerId).toBe(1);
+    expect(extractWinnerId(state)).toBe(1);
   });
 
   it("erreurs d'action: une action indisponible est rejetee pour le joueur courant", async () => {
-    const engine = new GameEngineService(
-      {} as any,
-      {} as any,
-      {} as any,
-      {} as any,
-      {} as any,
-      {} as any,
-      {} as any,
-      {} as any,
-      {} as any,
-      {
-        logValidationFailure: jest.fn(),
-        error: jest.fn(),
-        warn: jest.fn(),
-        info: jest.fn(),
-        debug: jest.fn(),
-      } as any,
-      {} as any,
-    );
+    const loggerStub = {
+      logValidationFailure: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      info: jest.fn(),
+      debug: jest.fn(),
+    } as unknown as GameLoggerService;
 
-    const state: any = {
-      turn: { currentPlayerId: 1, direction: 1 },
-      pending: { type: 'draw', playerId: 1, blocking: true },
-      metadata: { gameType: 'morpion', roomId: 1 },
+    const engine = Object.create(
+      GameEngineService.prototype,
+    ) as GameEngineService;
+    const engineWithLogger = engine as GameEngineService & {
+      gameLogger?: GameLoggerService;
     };
-    const handler: any = {
-      getAvailableActions: jest.fn(() => [{ type: 'draw', payload: {} }]),
+    engineWithLogger.gameLogger = loggerStub;
+
+    const state: GameStateEntity = {
+      ...buildBaseState({
+        turn: { currentPlayerId: 1, direction: 1 },
+        pending: { type: 'draw', playerId: 1, blocking: true },
+        metadata: { gameType: 'morpion', roomId: 1 },
+      }),
+    };
+    const handler: GameRulesAdapter = {
+      gameType: 'morpion',
+      category: 'tests',
+      displayName: 'Morpion',
+      hydrateInitialState: (incoming) => incoming,
+      applyActions: (current) => current,
+      getAvailableActions: () => [{ type: 'draw', payload: {} }],
+    };
+    const validateActions = (
+      engine as unknown as {
+        validateActions: (
+          state: GameStateEntity,
+          handler: GameRulesAdapter,
+          actions: GameSingleActionDto[],
+          actorId: number | null,
+        ) => Promise<GameSingleActionDto[]>;
+      }
+    ).validateActions;
+    const invalidAction: GameSingleActionDto = {
+      type: 'play_card',
+      payload: {},
     };
 
     await expect(
-      (engine as any).validateActions(
-        state,
-        handler,
-        [{ type: 'play_card', payload: {} }],
-        1,
-      ),
+      validateActions(state, handler, [invalidAction], 1),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 });

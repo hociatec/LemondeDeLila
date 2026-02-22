@@ -8,6 +8,7 @@ import { CAT_PATTES_GAME } from '../definitions/game.definition';
 import type { CatPattesMetadata } from '../model/cat-pattes-state.entity';
 import { CAT_PATTES_CARD_BY_ID } from '../model/cat-pattes-cards';
 import { CAT_PATTES_GOAL } from '../model/cat-pattes-state.entity';
+import { stringOrEmpty } from '@common/utils/string-value.utils';
 
 @Injectable()
 export class CatPattesPresenterService {
@@ -119,7 +120,7 @@ export class CatPattesPresenterService {
 
     const rawChoices = Array.isArray(pending?.choices) ? pending.choices : [];
     const normalizedChoices = rawChoices
-      .map((choice: unknown) => String(choice ?? '').trim())
+      .map((choice: unknown) => stringOrEmpty(choice).trim())
       .filter((choice: string) => choice.length > 0);
     if (normalizedChoices.length > 0) {
       return {
@@ -132,7 +133,7 @@ export class CatPattesPresenterService {
       ? pending.data.pawns
       : [];
     const pawnsFromPendingData = pendingPawns
-      .map((pawn: any) => String(pawn?.label ?? pawn?.id ?? '').trim())
+      .map((pawn: any) => stringOrEmpty(pawn?.label ?? pawn?.id ?? '').trim())
       .filter((choice: string) => choice.length > 0);
     if (pawnsFromPendingData.length > 0) {
       return {
@@ -150,8 +151,8 @@ export class CatPattesPresenterService {
       )
       .map((action) => {
         const payload = action?.payload ?? {};
-        return String(
-          payload.pawnId ?? payload.pawn ?? payload.value ?? '',
+        return stringOrEmpty(
+          payload.pawnId ?? payload.pawn ?? payload.value,
         ).trim();
       })
       .filter((choice) => choice.length > 0);

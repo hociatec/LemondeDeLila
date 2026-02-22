@@ -14,6 +14,7 @@ import {
   getPendingPawnActionsForPlayer,
   validatePendingPawnActionForActor,
 } from '../../../../core/helpers/pawn-pending-rulebook.helper';
+import { stringOrEmpty } from '@common/utils/string-value.utils';
 
 type CatPattesActionPayload = {
   cardId?: string | null;
@@ -49,11 +50,6 @@ function samePlayerId(a: unknown, b: unknown): boolean {
   const left = Number(a);
   const right = Number(b);
   return Number.isFinite(left) && Number.isFinite(right) && left === right;
-}
-
-function toPlayerId(value: unknown): number | null {
-  const id = Number(value);
-  return Number.isFinite(id) ? id : null;
 }
 
 export function canPlayPattes(
@@ -96,7 +92,7 @@ export function playerCanReceiveObstacle(
 }
 
 function normalizePawnKey(value: unknown): string {
-  return String(value ?? '')
+  return stringOrEmpty(value)
     .trim()
     .toLowerCase()
     .normalize('NFD')

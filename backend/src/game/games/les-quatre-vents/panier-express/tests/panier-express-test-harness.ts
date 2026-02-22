@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call */
 import { Test } from '@nestjs/testing';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { DeckPoolService } from '../../../../modules/cards/services/deck-pool.service';

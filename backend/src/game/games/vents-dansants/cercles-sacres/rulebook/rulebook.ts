@@ -82,10 +82,11 @@ export function validateAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): GameSingleActionDto {
-  const type = normalizeActionType(action) as CerclesSacresActionType;
+  const requestedType = normalizeActionType(action);
+  const type = requestedType as CerclesSacresActionType;
   const payload = (action?.payload ?? {}) as CerclesSacresActionPayload;
   if (type !== 'form_circle' && type !== 'discard_card' && type !== 'pass') {
-    throw new Error(`Action inconnue: ${type}`);
+    throw new Error(`Action inconnue: ${requestedType ?? 'unknown'}`);
   }
   if (actorId == null) {
     throw new Error('Acteur requis');

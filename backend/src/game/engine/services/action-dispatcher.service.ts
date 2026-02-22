@@ -140,7 +140,10 @@ export class ActionDispatcherService {
 
 function getMetadata(state: GameStateEntity): Record<string, unknown> {
   const metadata = state.metadata;
-  return metadata && typeof metadata === 'object' ? metadata : {};
+  return (metadata && typeof metadata === 'object' ? metadata : {}) as Record<
+    string,
+    unknown
+  >;
 }
 
 function getGameType(state: GameStateEntity): string | undefined {

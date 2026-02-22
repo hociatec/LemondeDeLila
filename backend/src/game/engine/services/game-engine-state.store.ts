@@ -162,7 +162,7 @@ export class GameEngineStateStore {
       .then(() => this.persistState(key, state))
       .catch(() => undefined);
     this.persistQueue.set(key, next);
-    next.finally(() => {
+    void next.finally(() => {
       if (this.persistQueue.get(key) === next) {
         this.persistQueue.delete(key);
       }

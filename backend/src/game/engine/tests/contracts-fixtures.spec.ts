@@ -1,44 +1,48 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-type AnyRecord = Record<string, any>;
+type JsonObject = Record<string, unknown>;
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 function repoRoot(): string {
   return path.resolve(__dirname, '../../../../..');
 }
 
-function tryReadJson(relativeToRepoRoot: string): any | null {
+function tryReadJson(relativeToRepoRoot: string): JsonObject | null {
   const abs = path.resolve(repoRoot(), relativeToRepoRoot);
   if (!fs.existsSync(abs)) {
     return null;
   }
-  return JSON.parse(fs.readFileSync(abs, 'utf-8'));
+  const raw = JSON.parse(fs.readFileSync(abs, 'utf-8')) as unknown;
+  if (!isJsonObject(raw)) {
+    return null;
+  }
+  return raw;
 }
 
-function expectString(value: any): void {
+function expectString(value: unknown): void {
   expect(typeof value).toBe('string');
 }
 
-function expectNumber(value: any): void {
+function expectNumber(value: unknown): void {
   expect(typeof value).toBe('number');
 }
 
-function expectBoolean(value: any): void {
+function expectBoolean(value: unknown): void {
   expect(typeof value).toBe('boolean');
 }
 
-function expectArray(value: any): void {
+function expectArray(value: unknown): void {
   expect(Array.isArray(value)).toBe(true);
 }
 
 describe('Contract fixtures', () => {
   it('parses game.state fixtures and contains expected keys', () => {
-    const setup = tryReadJson(
-      'contracts/fixtures/game.state.setup.json',
-    ) as AnyRecord;
-    const started = tryReadJson(
-      'contracts/fixtures/game.state.started.json',
-    ) as AnyRecord;
+    const setup = tryReadJson('contracts/fixtures/game.state.setup.json');
+    const started = tryReadJson('contracts/fixtures/game.state.started.json');
     if (!setup || !started) {
       return;
     }
@@ -59,36 +63,49 @@ describe('Contract fixtures', () => {
       expect(state.turn.direction === 1 || state.turn.direction === -1).toBe(
         true,
       );
-      expect(
-        state.turn.currentPlayerId === null ||
-          typeof state.turn.currentPlayerId === 'number',
-      ).toBe(true);
-      expectString(state.turn.label);
+      const turn = state.turn;
+      expect(isJsonObject(turn)).toBe(true);
+      if (isJsonObject(turn)) {
+        expect(
+          turn.currentPlayerId === null ||
+            typeof turn.currentPlayerId === 'number',
+        ).toBe(true);
+        expectString(turn.label);
+      }
 
       if (state.players != null) {
         expectArray(state.players);
       }
 
-      expect(state.extras && typeof state.extras === 'object').toBe(true);
-      expectArray(state.extras.playerViews);
-      expectArray(state.extras.players);
-      expectArray(state.extras.shortcuts);
+      const extras = state.extras;
+      expect(isJsonObject(extras)).toBe(true);
+      if (isJsonObject(extras)) {
+        expectArray(extras.playerViews);
+        expectArray(extras.players);
+        expectArray(extras.shortcuts);
+      }
     }
 
-    expect(setup.status.toLowerCase()).toBe('setup');
-    expect(started.status.toLowerCase()).toBe('started');
+    const setupStatus =
+      typeof setup.status === 'string' ? setup.status.toLowerCase() : '';
+    const startedStatus =
+      typeof started.status === 'string' ? started.status.toLowerCase() : '';
+    expect(setupStatus).toBe('setup');
+    expect(startedStatus).toBe('started');
   });
 
   it('parses room.payload fixture and contains expected keys', () => {
-    const payload = tryReadJson(
-      'contracts/fixtures/room.payload.json',
-    ) as AnyRecord;
+    const payload = tryReadJson('contracts/fixtures/room.payload.json');
     if (!payload) {
       return;
     }
-    expect(payload.room && typeof payload.room === 'object').toBe(true);
-    expectNumber(payload.room.id);
-    expectString(payload.room.gameType);
-    expectArray(payload.room.players);
+    const room = payload['room'];
+    expect(isJsonObject(room)).toBe(true);
+    if (!isJsonObject(room)) {
+      return;
+    }
+    expectNumber(room.id);
+    expectString(room.gameType);
+    expectArray(room.players);
   });
 });

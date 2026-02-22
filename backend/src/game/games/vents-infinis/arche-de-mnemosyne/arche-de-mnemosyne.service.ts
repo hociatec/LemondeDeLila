@@ -27,6 +27,7 @@ import type {
   MnemoQuizMetadata,
 } from './model/mnemo-quiz.model';
 import { resolvePlayerNameFromState } from '../../../modules/turn-policies/player-name.helper';
+import { stringOrEmpty } from '@common/utils/string-value.utils';
 
 type ActionType =
   | 'draw'
@@ -1258,16 +1259,14 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     }
 
     const normalizeKey = (value: unknown) =>
-      String(value ?? '')
-        .trim()
-        .toLocaleLowerCase('fr');
+      stringOrEmpty(value).trim().toLocaleLowerCase('fr');
 
     const rawChoices = [
       picked.correct,
       picked.wrong1,
       picked.wrong2,
       picked.wrong3,
-    ].map((s) => String(s ?? '').trim());
+    ].map((s) => stringOrEmpty(s).trim());
 
     // Éviter les doublons de libellés (certaines UIs dédoublonnent ou utilisent le libellé comme clé).
     // Remplir si besoin avec des distracteurs provenant d'autres questions de la même catégorie (puis global).
@@ -1287,7 +1286,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       ];
       const candidatesRaw = candidateQuestions
         .flatMap((q) => [q.correct, q.wrong1, q.wrong2, q.wrong3])
-        .map((s) => String(s ?? '').trim())
+        .map((s) => stringOrEmpty(s).trim())
         .filter((s) => s.length > 0);
       const candidatesShuffled = this.random.shuffle(
         rngMeta as any,

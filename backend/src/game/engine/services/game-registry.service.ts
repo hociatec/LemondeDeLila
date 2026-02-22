@@ -5,8 +5,26 @@ import {
   GameDefinition,
   GameRulesAdapter,
 } from '../interfaces/game-rules-adapter.interface';
-import { GameCatalogOverridesService } from './game-catalog-overrides.service';
+import {
+  GameCatalogOverridesService,
+  GameDefinitionWithOverrides,
+} from './game-catalog-overrides.service';
 import { GameCategoriesService } from './game-categories.service';
+
+type ManifestData = {
+  code?: string;
+  id?: string;
+  name?: string;
+  summary?: string;
+  description?: string;
+  enabled?: boolean;
+  minPlayers?: number;
+  maxPlayers?: number;
+  chatEnabled?: boolean;
+  chatSoundsEnabled?: boolean;
+  category?: string;
+  subcategory?: string;
+};
 
 @Injectable()
 export class GameRegistryService {
@@ -64,39 +82,42 @@ export class GameRegistryService {
   async listGames(options?: {
     includeDisabledOverrides?: boolean;
   }): Promise<GameDefinition[]> {
-    if (this.cachedDefinitions) {
-      const ttl =
-        process.env.NODE_ENV === 'development'
-          ? this.devTtlMs
-          : Number.POSITIVE_INFINITY;
-      if (Date.now() - this.cachedAtMs < ttl) {
-        const withOverrides = this.cachedDefinitions.map((d) =>
-          this.overrides.apply(d),
-        ) as any[];
-        const filtered = options?.includeDisabledOverrides
-          ? withOverrides
-          : withOverrides.filter((d) => d.enabled !== false);
-        return filtered.map((d: any) => {
-          const { enabled, ...rest } = d;
-          return rest as GameDefinition;
-        });
-      }
+    const useCache = this.cachedDefinitions && this.isCacheFresh();
+    if (useCache && this.cachedDefinitions) {
+      return this.buildGameListFromDefinitions(this.cachedDefinitions, options);
     }
+
     const definitions = await this.loadDefinitionsFromFs();
     const merged = definitions.map((def) => this.enrichWithHandler(def));
-
-    const withOverrides = merged.map((d) => this.overrides.apply(d) as any);
-    const filtered = options?.includeDisabledOverrides
-      ? withOverrides
-      : withOverrides.filter((d: any) => d.enabled !== false);
-
-    // Cache: on conserve la liste brute (handler + FS), les overrides sont appliqués à la volée.
     this.cachedDefinitions = merged;
     this.cachedAtMs = Date.now();
-    return filtered.map((d: any) => {
-      const { enabled, ...rest } = d;
-      return rest as GameDefinition;
+    return this.buildGameListFromDefinitions(merged, options);
+  }
+
+  private buildGameListFromDefinitions(
+    defs: GameDefinition[],
+    options?: { includeDisabledOverrides?: boolean },
+  ): GameDefinition[] {
+    const withOverrides: GameDefinitionWithOverrides[] = defs.map((d) =>
+      this.overrides.apply(d),
+    );
+    const filtered = options?.includeDisabledOverrides
+      ? withOverrides
+      : withOverrides.filter((d) => d.enabled !== false);
+    return filtered.map((entry): GameDefinition => {
+      const { enabled, status, ...rest } = entry;
+      void enabled;
+      void status;
+      return rest;
     });
+  }
+
+  private isCacheFresh(): boolean {
+    const ttl =
+      process.env.NODE_ENV === 'development'
+        ? this.devTtlMs
+        : Number.POSITIVE_INFINITY;
+    return Date.now() - this.cachedAtMs < ttl;
   }
 
   private enrichWithHandler(def: GameDefinition): GameDefinition {
@@ -166,10 +187,7 @@ export class GameRegistryService {
       const raw = await fs.promises.readFile(manifestPath, 'utf-8');
       // Certains fichiers JSON peuvent contenir un BOM UTF-8 (U+FEFF) au début.
       // JSON.parse ne le tolère pas -> on le supprime.
-      const data = JSON.parse(raw.replace(/^\uFEFF/, '')) as Record<
-        string,
-        any
-      >;
+      const data = JSON.parse(raw.replace(/^\uFEFF/, '')) as ManifestData;
       if (data.enabled === false) {
         this.logger.warn(
           `Jeu désactivé ignoré (manifest): ${manifestPath} (${data.code ?? data.id ?? 'unknown'})`,
@@ -218,7 +236,9 @@ export class GameRegistryService {
         rulesPath: path.join(path.dirname(manifestPath), 'rules.md'),
       };
     } catch (error) {
-      this.logger.warn(`Manifest invalide ${manifestPath}: ${error}`);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error ?? '');
+      this.logger.warn(`Manifest invalide ${manifestPath}: ${errorMessage}`);
       return null;
     }
   }

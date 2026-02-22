@@ -1,4 +1,8 @@
 import type { GameSingleActionDto } from '../../engine/dto/game-action.dto';
+import type {
+  PendingPawnChoicePayload,
+  PendingPawnPayload,
+} from './pawn-selection.helper';
 import {
   isPendingPawnForPlayer,
   listPendingPawnActions,
@@ -15,7 +19,7 @@ export type PendingPawnValidationResult =
   | { ok: false; reason: PendingPawnFailureReason };
 
 export function getPendingPawnActionsForPlayer(
-  pending: any,
+  pending: PendingPawnPayload | null | undefined,
   playerId: number,
   pendingType: string = 'choose_pawn',
 ): GameSingleActionDto[] {
@@ -26,10 +30,10 @@ export function getPendingPawnActionsForPlayer(
 }
 
 export function validatePendingPawnActionForActor(params: {
-  pending: any;
+  pending: PendingPawnPayload | null | undefined;
   actorId: number;
   actionType: string;
-  payload: any;
+  payload?: PendingPawnChoicePayload;
   pendingType?: string;
   idResolver?: (value: unknown) => string;
 }): PendingPawnValidationResult {

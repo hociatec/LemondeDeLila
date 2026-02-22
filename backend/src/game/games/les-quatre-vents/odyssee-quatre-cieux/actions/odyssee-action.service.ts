@@ -103,7 +103,7 @@ export class OdysseeActionService {
     }
 
     if (moves.length === 1) {
-      next = this.applyMove(next, currentId, moves[0], roll);
+      next = this.applyMove(next, currentId, moves[0]);
       if (this.getMeta(next).winnerId) return next;
       return this.endTurn(next, roll === 6);
     }
@@ -178,12 +178,11 @@ export class OdysseeActionService {
     const label = this.choicePawnLabel(state, currentId, pawnIndex);
 
     let next: GameStateEntity = { ...state, pending: null };
-    next = this.applyMove(
-      next,
-      currentId,
-      { pawnIndex, targetProgress, label },
-      roll,
-    );
+    next = this.applyMove(next, currentId, {
+      pawnIndex,
+      targetProgress,
+      label,
+    });
 
     if (this.getMeta(next).winnerId) return next;
     return this.endTurn(next, roll === 6);

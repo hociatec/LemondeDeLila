@@ -204,12 +204,15 @@ function sanitizePayload(
       );
     } else if (Array.isArray(value)) {
       // Limit array length
-      sanitized[sanitizedKey] = value.slice(0, 100).map((item) => {
-        if (item && typeof item === 'object') {
-          return sanitizePayload(item as Record<string, unknown>, depth + 1);
-        }
-        return item;
-      });
+      const arrayValue = value as unknown[];
+      sanitized[sanitizedKey] = arrayValue
+        .slice(0, 100)
+        .map((item: unknown) => {
+          if (item && typeof item === 'object') {
+            return sanitizePayload(item as Record<string, unknown>, depth + 1);
+          }
+          return item;
+        });
     } else {
       // Primitive values are safe
       sanitized[sanitizedKey] = value;

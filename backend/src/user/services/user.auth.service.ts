@@ -21,7 +21,7 @@ export class UserAuthService {
   private readonly logger = new Logger(UserAuthService.name);
   private readonly jwtSigningKey: string;
   private readonly jwtAlgorithm: jwt.Algorithm;
-  private readonly jwtExpiresIn: string;
+  private readonly jwtExpiresIn: jwt.SignOptions['expiresIn'];
   private readonly jwtIssuer: string;
   private readonly jwtAudience: string | undefined;
 
@@ -31,7 +31,10 @@ export class UserAuthService {
   ) {
     this.jwtSigningKey = requireJwtSigningKey(this.config);
     this.jwtAlgorithm = getJwtAlgorithm(this.config);
-    this.jwtExpiresIn = this.config.get<string>('JWT_EXPIRES_IN', '12h');
+    this.jwtExpiresIn = this.config.get<jwt.SignOptions['expiresIn']>(
+      'JWT_EXPIRES_IN',
+      '12h',
+    );
     this.jwtIssuer = this.config.get<string>('JWT_ISSUER', 'le-monde-de-lila');
     const aud = this.config.get<string>('JWT_AUDIENCE');
     this.jwtAudience = aud && aud.trim() ? aud.trim() : undefined;

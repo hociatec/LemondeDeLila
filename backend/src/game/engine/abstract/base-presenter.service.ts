@@ -1,12 +1,11 @@
-import type { GameStateEntity } from '../../core/entities/game-state.entity';
+import type {
+  GameStateEntity,
+  PendingState,
+} from '../../core/entities/game-state.entity';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../dto/game-action.dto';
-import {
-  GameStateEntity,
-  PendingState,
-} from '../../core/entities/game-state.entity';
 import { formatPresenterActions } from '../../presenters/actions-presenter.helper';
 
 /**
@@ -159,7 +158,7 @@ export abstract class BasePresenterService {
     const extrasFromState = (state as GameStateEntity & { extras?: unknown })
       .extras;
     return extrasFromState && typeof extrasFromState === 'object'
-      ? (extrasFromState as Record<string, unknown>)
+      ? extrasFromState
       : {};
   }
 

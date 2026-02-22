@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { playingLog } from '../../../../common/utils/playing-logger';
+import { stringOrEmpty } from '@common/utils/string-value.utils';
 
 @Injectable()
 export class BotSchedulerService {
@@ -40,7 +41,7 @@ export class BotSchedulerService {
           playingLog('engine.bot.stale', {
             roomId,
             gameType,
-            reason: err instanceof Error ? err.message : String(err),
+            reason: err instanceof Error ? err.message : stringOrEmpty(err),
           });
           onStale?.(err);
           return;
@@ -48,7 +49,7 @@ export class BotSchedulerService {
         playingLog('engine.bot.error', {
           roomId,
           gameType,
-          message: err instanceof Error ? err.message : String(err),
+          message: err instanceof Error ? err.message : stringOrEmpty(err),
         });
       });
     }, delayMs);
@@ -58,7 +59,7 @@ export class BotSchedulerService {
 
   private isRoomNotFound(err: unknown): boolean {
     if (err instanceof NotFoundException) return true;
-    const message = err instanceof Error ? err.message : String(err ?? '');
+    const message = err instanceof Error ? err.message : stringOrEmpty(err);
     return (
       message.includes('Room introuvable') ||
       message.includes('Table introuvable')

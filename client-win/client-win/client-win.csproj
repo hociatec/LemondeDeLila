@@ -8,6 +8,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <ApplicationTitle>Le Monde de Lila</ApplicationTitle>
     <Version>1.2.602</Version>
     <AssemblyVersion>1.2.602.0</AssemblyVersion>

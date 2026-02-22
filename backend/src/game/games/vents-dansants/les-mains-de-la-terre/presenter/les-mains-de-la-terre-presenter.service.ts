@@ -15,6 +15,7 @@ import {
   buildLamaLikePanels,
   summarizeHandCounts,
 } from '../../../../presenters/lamalike-presenter.helper';
+import { stringOrEmpty } from '@common/utils/string-value.utils';
 
 const FAMILY_LABELS: Record<LesMainsFamily, string> = {
   tradition: 'Tradition',
@@ -75,7 +76,7 @@ export class LesMainsPresenterService {
     payload?: Record<string, unknown>;
   }): string {
     if (action.type === 'request_card') {
-      const cardId = String(action.payload?.cardId ?? '');
+      const cardId = stringOrEmpty(action.payload?.cardId);
       return `Demander ${LES_MAINS_CARD_BY_ID[cardId]?.name ?? cardId}`;
     }
     return action.type;

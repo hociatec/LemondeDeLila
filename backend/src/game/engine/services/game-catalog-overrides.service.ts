@@ -22,7 +22,7 @@ type OverridesRoot = {
   games: Record<string, GameCatalogOverride>;
 };
 
-type GameDefinitionWithOverrides = GameDefinition & {
+export type GameDefinitionWithOverrides = GameDefinition & {
   enabled?: boolean;
   status?: GameCatalogStatus;
 };

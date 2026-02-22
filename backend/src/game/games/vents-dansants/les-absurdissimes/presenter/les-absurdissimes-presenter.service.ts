@@ -11,6 +11,7 @@ import {
   buildLamaLikePanels,
   summarizeHandCounts,
 } from '../../../../presenters/lamalike-presenter.helper';
+import { stringOrEmpty } from '@common/utils/string-value.utils';
 
 @Injectable()
 export class AbsurdissimesPresenterService {
@@ -63,7 +64,7 @@ export class AbsurdissimesPresenterService {
     state: GameStateEntity,
   ): string {
     if (action.type === 'play_card') {
-      const cardId = String(action.payload?.cardId ?? '');
+      const cardId = stringOrEmpty(action.payload?.cardId);
       return cardId ? `Jouer ${cardId}` : 'Jouer une carte';
     }
     if (action.type === 'judge_pick') {

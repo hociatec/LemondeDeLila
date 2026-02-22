@@ -73,7 +73,7 @@ export function validateAction(
   const rawType = normalizeActionType(action);
   const type = rawType as GerardPresidentActionType;
   if (!GERARD_PRESIDENT_GAME.actions.includes(type)) {
-    throw new GameValidationError(`Action inconnue : ${rawType}`, {
+    throw new GameValidationError(`Action inconnue : ${rawType}`, {
       gameType: 'gerard-president',
     });
   }

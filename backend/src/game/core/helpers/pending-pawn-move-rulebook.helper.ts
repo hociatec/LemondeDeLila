@@ -1,5 +1,10 @@
 import type { GameSingleActionDto } from '../../engine/dto/game-action.dto';
+import type { PendingPawnPayload } from './pawn-selection.helper';
 import { isPendingPawnForPlayer } from './pawn-selection.helper';
+import type {
+  MovePayload,
+  PendingMoveData,
+} from './pawn-move-selection.helper';
 import {
   listPendingPawnMoveActions,
   resolvePendingPawnMove,
@@ -19,7 +24,7 @@ export type PendingPawnMoveValidationResult =
   | { ok: false; reason: PendingPawnMoveFailureReason };
 
 export function getPendingPawnMoveActionsForPlayer(
-  pending: any,
+  pending: PendingPawnPayload | null | undefined,
   playerId: number,
   pendingType: string = 'choose_pawn',
   actionType: string = 'move_pawn',
@@ -27,14 +32,14 @@ export function getPendingPawnMoveActionsForPlayer(
   if (!isPendingPawnForPlayer(pending, playerId, pendingType)) {
     return [];
   }
-  return listPendingPawnMoveActions(pending, actionType);
+  return listPendingPawnMoveActions(pending as PendingMoveData, actionType);
 }
 
 export function validatePendingPawnMoveActionForActor(params: {
-  pending: any;
+  pending: PendingPawnPayload | null | undefined;
   actorId: number | null;
   actionType: string;
-  payload: any;
+  payload?: MovePayload;
   pendingType?: string;
   expectedActionType?: string;
 }): PendingPawnMoveValidationResult {
@@ -49,7 +54,10 @@ export function validatePendingPawnMoveActionForActor(params: {
     return { ok: false, reason: 'wrong_action_type' };
   }
 
-  const move = resolvePendingPawnMove(params.pending, params.payload ?? {});
+  const move = resolvePendingPawnMove(
+    params.pending as PendingMoveData,
+    params.payload ?? {},
+  );
   if (!move) {
     return { ok: false, reason: 'invalid_move' };
   }

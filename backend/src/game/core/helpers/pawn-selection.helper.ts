@@ -5,7 +5,7 @@ type PendingPawnOption = {
   label: string;
 };
 
-type PendingPawnPayload = {
+export type PendingPawnPayload = {
   type?: unknown;
   playerId?: unknown;
   data?: {
@@ -13,7 +13,7 @@ type PendingPawnPayload = {
   };
 };
 
-type PendingPawnChoicePayload = {
+export type PendingPawnChoicePayload = {
   pawnId?: unknown;
   pawn?: unknown;
   value?: unknown;
@@ -44,7 +44,7 @@ function normalizeOption(
 }
 
 export function isPendingPawnForPlayer(
-  pending: PendingPawnPayload,
+  pending: PendingPawnPayload | null | undefined,
   playerId: number | null,
   pendingType: string = 'choose_pawn',
 ): boolean {
@@ -55,7 +55,7 @@ export function isPendingPawnForPlayer(
 }
 
 export function getPendingPawnOptions(
-  pending: PendingPawnPayload,
+  pending: PendingPawnPayload | null | undefined,
 ): PendingPawnOption[] {
   const fromDataRaw = Array.isArray(pending?.data?.pawns)
     ? pending.data.pawns
@@ -70,7 +70,7 @@ export function getPendingPawnOptions(
 }
 
 export function listPendingPawnActions(
-  pending: PendingPawnPayload,
+  pending: PendingPawnPayload | null | undefined,
   actionType: string,
 ): Array<{ type: string; payload: { pawnId: string } }> {
   return getPendingPawnOptions(pending)
@@ -80,7 +80,7 @@ export function listPendingPawnActions(
 }
 
 export function resolvePendingPawnId(
-  pending: PendingPawnPayload,
+  pending: PendingPawnPayload | null | undefined,
   payload: PendingPawnChoicePayload,
   normalize: NormalizeFn = defaultNormalize,
 ): string | null {

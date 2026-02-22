@@ -33,6 +33,8 @@ export type PendingState = {
   question?: string | null;
   choices?: string[];
   data?: Record<string, unknown>;
+  step?: string | null;
+  initiatorPlayerId?: number | null;
 };
 
 export type GameStateEntity = {
@@ -47,8 +49,11 @@ export type GameStateEntity = {
   turn?: TurnStateEntity;
   metadata?: unknown;
   pending?: PendingState | null;
+  extras?: Record<string, unknown>;
+  board?: unknown;
   /**
    * Indique qu'un bot est en cours de "reflexion" et qu'aucune action humaine ne doit etre acceptee.
    */
   botThinking?: boolean;
+  botThinkingSince?: number | null;
 };

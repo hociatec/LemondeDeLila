@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import type { LamaMetadata } from '../model/lama.model';
+import { stringOrEmpty } from '@common/utils/string-value.utils';
 
 @Injectable()
 export class LamaSharedService {
   sanitizePlayerName(raw: unknown): string {
-    let name = String(raw ?? '').trim();
+    let name = stringOrEmpty(raw).trim();
     name = name
       .replace(/[\r\n\t]+/g, ' ')
       .replace(/\s{2,}/g, ' ')

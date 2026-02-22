@@ -612,7 +612,7 @@ export class PresenceService implements OnModuleDestroy {
     playersByUser: Map<number, PresenceBroadcastPlayer>,
   ): PresencePublicPlayer[] {
     return Array.from(playersByUser.values()).map(
-      ({ contextLocked, ...rest }) => rest,
+      ({ contextLocked: _contextLocked, ...rest }) => rest,
     );
   }
 

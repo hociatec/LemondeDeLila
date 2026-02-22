@@ -3150,11 +3150,13 @@ export class PanierExpressService extends AbstractGameService {
           ...next,
           metadata: {
             ...metaNow,
-            decks: this.deckPool.discardMany<string>(
-              metaNow.decks,
-              'courses-bonus',
-              unchosen,
-            ) as PanierExpressDeckPool,
+            decks: asStringDeckPool(
+              this.deckPool.discardMany<string>(
+                asStringDeckPool(metaNow.decks),
+                'courses-bonus',
+                unchosen,
+              ),
+            ),
           },
         };
       }
@@ -3525,9 +3527,8 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     if (kind === 'tile.move_to_stand_choice') {
-      const tileData = asRecord(pendingData);
-      const targets = Array.isArray(pendingData.targets)
-        ? tileData.targets
+      const targets: unknown[] = Array.isArray(pendingData.targets)
+        ? (pendingData.targets as unknown[])
         : [];
       const target = asRecord(targets[index]);
       if (!targets[index] || !Number.isFinite(Number(target.position))) {

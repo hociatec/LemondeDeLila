@@ -502,10 +502,9 @@ public partial class GamePlayView
             return false;
         }
 
-        var status = vm.Session?.LastState?.status;
+        var status = vm.Session?.LastState?.Status;
         var normalized = (status ?? string.Empty).Trim();
         return string.Equals(normalized, "finished", StringComparison.OrdinalIgnoreCase);
     }
 }
-
 

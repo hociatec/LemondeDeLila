@@ -7,6 +7,7 @@ import { NotificationService } from './notification.service';
 import { User } from '../../user/entities/user.entity';
 import { NotificationInboxDbService } from './notification-inbox-db.service';
 import { UserBadgeCountsService } from './user-badge-counts.service';
+import { stringOrEmpty } from '@common/utils/string-value.utils';
 
 export type AdminContactItem = {
   kind: 'admin_contact';
@@ -19,7 +20,7 @@ export type AdminContactItem = {
   id: string;
   createdAt: string;
   readAt?: string | null;
-  status?: 'open' | 'in_progress' | 'handled';
+  status?: AdminContactStatus;
   handled?: boolean;
   statusAt?: string | null;
   statusByUserId?: number | null;
@@ -40,7 +41,7 @@ export type AdminContactThreadSummary = {
   fromUsername: string;
   toUserId?: number | null;
   unreadCount: number;
-  status: 'open' | 'in_progress' | 'handled';
+  status: AdminContactStatus;
   handled: boolean;
   statusAt?: string | null;
   statusByUserId?: number | null;
@@ -49,6 +50,8 @@ export type AdminContactThreadSummary = {
   handledByUserId?: number | null;
   handledByUsername?: string | null;
 };
+
+export type AdminContactStatus = 'open' | 'in_progress' | 'handled';
 
 @Injectable()
 export class AdminContactService {
@@ -80,12 +83,8 @@ export class AdminContactService {
       .filter((id) => typeof id === 'number' && id > 0);
   }
 
-  private static normalizeContactStatus(
-    value: unknown,
-  ): 'open' | 'in_progress' | 'handled' {
-    const v = String(value ?? '')
-      .trim()
-      .toLowerCase();
+  private static normalizeContactStatus(value: unknown): AdminContactStatus {
+    const v = stringOrEmpty(value).trim().toLowerCase();
     if (v === 'handled' || v === 'done' || v === 'resolved') return 'handled';
     if (v === 'in_progress' || v === 'in progress' || v === 'progress')
       return 'in_progress';
@@ -93,7 +92,7 @@ export class AdminContactService {
   }
 
   private static normalizeContactPayload(payload: any): {
-    status: 'open' | 'in_progress' | 'handled';
+    status: AdminContactStatus;
     handled: boolean;
     statusAt: string | null;
     statusByUserId: number | null;
@@ -247,7 +246,7 @@ export class AdminContactService {
     from: Pick<WsAuthPayload, 'id' | 'username' | 'roles'>,
     userId: number,
     inboxItemId: string,
-  ): Promise<{ status: 'open' | 'in_progress' | 'handled' }> {
+  ): Promise<{ status: AdminContactStatus }> {
     if (!this.isStaffRoles(from.roles)) {
       throw new Error('Accès refusé.');
     }
@@ -264,7 +263,7 @@ export class AdminContactService {
     from: Pick<WsAuthPayload, 'id' | 'username' | 'roles'>,
     userId: number,
     inboxItemId: string,
-    status: 'open' | 'in_progress' | 'handled' | string,
+    status: unknown,
   ): Promise<void> {
     if (!this.isStaffRoles(from.roles)) {
       throw new Error('Accès refusé.');
@@ -474,7 +473,7 @@ export class AdminContactService {
   async setStatusForContact(
     from: Pick<WsAuthPayload, 'id' | 'username' | 'roles'>,
     contactId: string,
-    status: 'open' | 'in_progress' | 'handled' | string,
+    status: unknown,
   ): Promise<void> {
     if (!this.isStaffRoles(from.roles)) {
       throw new Error('Accès refusé.');

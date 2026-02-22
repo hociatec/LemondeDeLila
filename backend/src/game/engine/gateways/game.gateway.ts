@@ -21,24 +21,19 @@ import { isVersionLower } from '../../../common/utils/version.utils';
 import { WsTicketAuthService } from '../../../common/ws/ws-ticket-auth.service';
 import { RoomService } from '../../../room/services/room.service';
 import { GameContentService } from '../services/game-content.service';
+import type { WsClientLike } from '../../../common/ws/ws-jwt-auth.service';
 
 type Payload = Record<string, unknown>;
 type TraceInfo = { traceId: string | null; sentAtMs: number | null };
 const WS_READY_STATE_OPEN = 1;
 
-interface GameWebSocket {
+interface GameWebSocket extends WsClientLike {
   readyState: number;
   send(data: string, cb?: (err?: Error) => void): void;
   close(code?: number, reason?: string): void;
   terminate(): void;
   ping(): void;
   on(event: string, listener: (...args: unknown[]) => void): void;
-}
-
-interface GameWebSocketWithUrl extends GameWebSocket {
-  url?: string;
-  upgradeReq?: { url?: string };
-  req?: { url?: string };
 }
 type IncomingPayload = { type?: string; payload?: Payload };
 type GameStatePayload = GameStateWithActions & Record<string, unknown>;
@@ -161,7 +156,7 @@ export class GameGateway
       // Considère aussi l'activité applicative comme un signe de vie, pas uniquement les pongs.
       // Cela évite les déconnexions quand le client est "idle" mais envoie un keep-alive.
       this.lastPong.set(client, Date.now());
-      this.handleMessage(client, raw);
+      void this.handleMessage(client, raw);
     });
     client.on('error', () => client.close());
     // Heartbeat : ping régulier pour maintenir la connexion et détecter les resets silencieux.
@@ -515,9 +510,7 @@ export class GameGateway
       'ws.game.actions.total',
       async () => {
         this.setRoom(meta, roomId, gameType, client);
-        const actions: GameSingleActionDto[] = Array.isArray(payload?.actions)
-          ? payload.actions
-          : [];
+        const actions = this.extractIncomingActions(payload);
         playingLog('ws.game.actions', {
           userId: meta.userId,
           roomId,
@@ -537,7 +530,7 @@ export class GameGateway
     payload: Payload,
   ) {
     const ctx = await this.ensureRoomContext(client, meta, payload);
-    const key = String(payload?.key ?? '');
+    const key = this.parseStringFromPayload(payload, 'key') ?? '';
     if (!ctx) {
       this.sendError(client, 'Parametres jeu manquants', 'game.key');
       return;
@@ -760,11 +753,15 @@ export class GameGateway
         typeof payload.outcomesByPlayerId === 'object'
           ? (payload.outcomesByPlayerId as Record<string, unknown>)
           : {};
-      const viewerOutcome =
-        viewerPlayerId != null
-          ? String(outcomesByPlayerId[String(viewerPlayerId)] ?? '').trim() ||
-            null
-          : null;
+      const viewerOutcome = (() => {
+        if (viewerPlayerId == null) return null;
+        const rawOutcome = outcomesByPlayerId[String(viewerPlayerId)];
+        if (typeof rawOutcome === 'string') {
+          const trimmed = rawOutcome.trim();
+          return trimmed.length > 0 ? trimmed : null;
+        }
+        return null;
+      })();
 
       this.safeSend(socket, {
         type: 'game.ended',
@@ -1224,11 +1221,27 @@ export class GameGateway
     return null;
   }
 
+  private extractIncomingActions(payload: Payload): GameSingleActionDto[] {
+    const candidate = payload.actions;
+    if (!Array.isArray(candidate)) {
+      return [];
+    }
+    return candidate.filter((action) => this.isGameSingleActionDto(action));
+  }
+
+  private isGameSingleActionDto(value: unknown): value is GameSingleActionDto {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+    const candidate = value as Record<string, unknown>;
+    return typeof candidate.type === 'string';
+  }
+
   private resolveUrlCandidate(
     client: GameWebSocket,
     args: unknown[],
   ): string | null {
-    const wsClient = client as GameWebSocketWithUrl;
+    const wsClient = client;
     const request = Array.isArray(args) ? args[0] : undefined;
     const candidate =
       (request &&

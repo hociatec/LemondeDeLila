@@ -20,7 +20,9 @@ export class RoomAutoCleanupService implements OnModuleInit, OnModuleDestroy {
 
   onModuleInit() {
     // Timer is always running (cheap). Actual execution is gated by settings.
-    this.timer = setInterval(() => this.tick().catch(() => {}), 30_000);
+    this.timer = setInterval(() => {
+      this.tick().catch(() => {});
+    }, 30_000);
     setTimeout(() => {
       this.tick().catch(() => {});
     }, 5_000);

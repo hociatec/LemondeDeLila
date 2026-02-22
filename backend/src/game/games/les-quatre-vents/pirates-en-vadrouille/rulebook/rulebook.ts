@@ -14,7 +14,7 @@ import {
   getPendingChooseTargetActionsForPlayer,
   validatePendingChooseTargetActionForActor,
 } from '../../../../core/helpers/pending-actions-rulebook.helper';
-import type { PiratesEnVadrouilleActionType } from '../model/pirates-en-vadrouille-state.entity';
+import type { PiratesEnVadrouilleActionType } from '../definitions/pirates-en-vadrouille.definition';
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value != null && typeof value === 'object'

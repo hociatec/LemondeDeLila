@@ -5,7 +5,11 @@
   UnauthorizedException,
 } from '@nestjs/common';
 import { RoomService } from '../../../room/services/room.service';
-import { RoomPayload } from '../../../room/dto/room-response.dto';
+import {
+  RoomPayload,
+  RoomPlayer,
+  RoomBotState,
+} from '../../../room/dto/room-response.dto';
 import { GameCoreService } from '../../core/services/game-core.service';
 import {
   GameSingleActionDto,
@@ -13,7 +17,10 @@ import {
   GameStateWithActions,
 } from '../dto/game-action.dto';
 import { GameRegistryService } from './game-registry.service';
-import { GameStateEntity } from '../../core/entities/game-state.entity';
+import type {
+  GameStateEntity,
+  PendingState,
+} from '../../core/entities/game-state.entity';
 import type { GameRulesAdapter } from '../interfaces/game-rules-adapter.interface';
 import { TurnLabelService } from '../../modules/turn/services/turn-label.service';
 import { BotRunnerService } from '../../modules/bot/services/bot-runner.service';
@@ -24,6 +31,7 @@ import {
   validateActions as validateActionDtos,
   sanitizeAction,
 } from '../dto/validated-action.dto';
+import type { ValidatedGameActionDto } from '../dto/validated-action.dto';
 import { PayloadValidationError } from '../../../common/errors/game-errors';
 import { GameLoggerService } from '../../../common/services/game-logger.service';
 import { GameStatsService } from '../../../stats/services/game-stats.service';
@@ -47,6 +55,14 @@ type GameEndedPayload = {
   outcomesByPlayerId: Record<string, GameEndedOutcome>;
   playersById: Record<string, string>;
   turnIndex: number | null;
+};
+
+type CurrentPlayerView = {
+  shoppingList?: unknown;
+  basket?: unknown;
+  inventory?: unknown;
+  stable?: unknown;
+  position?: unknown;
 };
 
 @Injectable()
@@ -527,7 +543,7 @@ export class GameEngineService {
         }
 
         this.cleanupRoom(roomId, gameType);
-        const rebuilt = await this.buildInitialState(payload, gameType);
+        const rebuilt = this.buildInitialState(payload, gameType);
         const marked = await this.normalizeBotThinking(
           roomId,
           gameType,
@@ -573,7 +589,7 @@ export class GameEngineService {
           roomStatus,
         });
         this.cleanupRoom(roomId, gameType);
-        const rebuilt = await this.buildInitialState(payload, gameType);
+        const rebuilt = this.buildInitialState(payload, gameType);
         const marked = await this.normalizeBotThinking(
           roomId,
           gameType,
@@ -614,7 +630,7 @@ export class GameEngineService {
       // Démarrage : à la transition vers "started", reconstruire l'état initial à partir de la room
       // (permet d'avoir un premier joueur aléatoire via le GameCoreService).
       if (previousStatus !== 'started' && nextStatus === 'started') {
-        const rebuilt = await this.buildInitialState(payload, gameType);
+        const rebuilt = this.buildInitialState(payload, gameType);
         const marked = await this.normalizeBotThinking(
           roomId,
           gameType,
@@ -643,7 +659,7 @@ export class GameEngineService {
           roomRunId: roomRunId ?? null,
         });
         this.cleanupRoom(roomId, gameType);
-        const rebuilt = await this.buildInitialState(payload, gameType);
+        const rebuilt = this.buildInitialState(payload, gameType);
         const marked = await this.normalizeBotThinking(
           roomId,
           gameType,
@@ -653,7 +669,7 @@ export class GameEngineService {
         return marked;
       }
       if (!gameStarted && incomingPlayers !== currentPlayers) {
-        const rebuilt = await this.buildInitialState(payload, gameType);
+        const rebuilt = this.buildInitialState(payload, gameType);
         const marked = await this.normalizeBotThinking(
           roomId,
           gameType,
@@ -679,7 +695,7 @@ export class GameEngineService {
       return forcedFinished;
     }
 
-    const state = await this.buildInitialState(payload, gameType);
+    const state = this.buildInitialState(payload, gameType);
     const marked = await this.normalizeBotThinking(
       roomId,
       gameType,
@@ -796,21 +812,13 @@ export class GameEngineService {
 
       const allowedTypes = new Set(
         available
-          .map((a) =>
-            String((a as any)?.type ?? '')
-              .toLowerCase()
-              .trim(),
-          )
+          .map((a) => this.normalizeActionType(a.type))
           .filter((t) => t.length > 0),
       );
       if (allowedTypes.size === 0) return false;
 
       const requestedTypes = (Array.isArray(actions) ? actions : [])
-        .map((a) =>
-          String((a as any)?.type ?? '')
-            .toLowerCase()
-            .trim(),
-        )
+        .map((a) => this.normalizeActionType(a.type))
         .filter((t) => t.length > 0);
       if (requestedTypes.length === 0) return false;
 
@@ -908,16 +916,10 @@ export class GameEngineService {
       return this.exposeState(marked, gameType);
     }
 
-    const next = await handler.applyActions(current, sanitizedActions);
+    const next = handler.applyActions(current, sanitizedActions);
     const botTurn = this.isBotTurn(next);
     let marked = await this.markBotThinking(roomId, gameType, next, botTurn);
-    const drawAction = sanitizedActions.find((a) =>
-      ['draw', 'draw_card'].includes(
-        String(a.type ?? '')
-          .trim()
-          .toLowerCase(),
-      ),
-    );
+    const drawAction = sanitizedActions.find((a) => this.isDrawAction(a));
     if (drawAction) {
       const actionPlayerId = allowBotTurn
         ? (botActorId ?? null)
@@ -937,8 +939,8 @@ export class GameEngineService {
     );
     marked = this.appendSkipTurnAnnouncements(marked);
     if ((marked.status || '').toLowerCase() === 'finished') {
-      const meta = (marked as any)?.metadata;
-      const obj = meta && typeof meta === 'object' ? meta : {};
+      const metadata = this.toMetadata(marked);
+      const obj = { ...metadata };
       const { winnerId, outcomesByPlayerId } =
         this.deriveFinishedOutcomes(marked);
 
@@ -1050,11 +1052,22 @@ export class GameEngineService {
     return null;
   }
 
+  private getMetadataObject(
+    metadata: Record<string, unknown>,
+    key: string,
+  ): Record<string, unknown> | null {
+    const value = metadata[key];
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      return value as Record<string, unknown>;
+    }
+    return null;
+  }
+
   private normalizeWinnerMetadata<TState extends { metadata?: unknown }>(
     state: TState,
   ): TState {
-    const meta = (state as any)?.metadata;
-    if (!meta || typeof meta !== 'object') return state;
+    const meta = this.toMetadata(state);
+    if (Object.keys(meta).length === 0) return state;
 
     const winnerId = meta?.winnerId;
     if (winnerId !== null && winnerId !== undefined) {
@@ -1064,11 +1077,11 @@ export class GameEngineService {
     }
 
     for (const key of ['winnerPlayerId', 'winner_id'] as const) {
-      const value = meta?.[key];
+      const value = meta[key];
       if (value === null || value === undefined) continue;
       if (typeof value === 'string' && value.trim().length === 0) continue;
       return {
-        ...(state as any),
+        ...state,
         metadata: {
           ...meta,
           winnerId: value,
@@ -1080,7 +1093,14 @@ export class GameEngineService {
   }
 
   private normalizeUsernameForLog(username: unknown): string {
-    let name = String(username ?? '').trim();
+    let name = '';
+    if (typeof username === 'string') {
+      name = username.trim();
+    } else if (typeof username === 'number' || typeof username === 'boolean') {
+      name = String(username).trim();
+    } else {
+      return '';
+    }
     name = name
       .replace(/[\r\n\t]+/g, ' ')
       .replace(/\s{2,}/g, ' ')
@@ -1100,6 +1120,18 @@ export class GameEngineService {
       }
     }
     return name;
+  }
+
+  private normalizeActionType(value: unknown): string {
+    if (typeof value !== 'string') {
+      return '';
+    }
+    return value.trim().toLowerCase();
+  }
+
+  private isDrawAction(action: GameSingleActionDto): boolean {
+    const type = this.normalizeActionType(action.type);
+    return type === 'draw' || type === 'draw_card';
   }
 
   /**
@@ -1187,18 +1219,13 @@ export class GameEngineService {
     winnerId: number | null;
     outcomesByPlayerId: Record<string, 'won' | 'lost'> | null;
   } {
-    const players = Array.isArray((state as any)?.players)
-      ? (state as any).players
-      : [];
-    const humans = players.filter(
-      (p: any) => p && typeof p.id === 'number' && !p.isBot,
-    );
+    const players = state.players ?? [];
+    const humans = players.filter((p) => !p.isBot);
 
-    const meta = (state as any)?.metadata;
-    const metaObj = meta && typeof meta === 'object' ? meta : {};
+    const metadata = this.toMetadata(state);
 
-    const winnerFromMeta = this.tryReadWinnerId(metaObj);
-    const existingOutcomes = this.tryReadOutcomesByPlayerId(metaObj);
+    const winnerFromMeta = this.tryReadWinnerId(metadata);
+    const existingOutcomes = this.tryReadOutcomesByPlayerId(metadata);
 
     let winnerId = winnerFromMeta;
     if (winnerId == null && existingOutcomes) {
@@ -1216,10 +1243,7 @@ export class GameEngineService {
       outcomesByPlayerId = existingOutcomes;
     } else if (winnerId != null) {
       outcomesByPlayerId = Object.fromEntries(
-        humans.map((p: any) => [
-          String(p.id),
-          p.id === winnerId ? 'won' : 'lost',
-        ]),
+        humans.map((p) => [String(p.id), p.id === winnerId ? 'won' : 'lost']),
       );
     }
 
@@ -1231,14 +1255,9 @@ export class GameEngineService {
     gameType: string,
     state: GameStateWithActions,
   ): GameEndedPayload {
-    const metadata =
-      state?.metadata && typeof state.metadata === 'object'
-        ? state.metadata
-        : {};
+    const metadata = this.toMetadata(state);
     const { winnerId, outcomesByPlayerId } = this.deriveFinishedOutcomes(state);
-    const players = Array.isArray((state as any)?.players)
-      ? (state as any).players
-      : [];
+    const players = state.players ?? [];
 
     const playersById: Record<string, string> = {};
     for (const p of players) {
@@ -1247,7 +1266,7 @@ export class GameEngineService {
       if (id == null) {
         continue;
       }
-      const username = String(p?.username ?? '').trim();
+      const username = this.normalizeUsernameForLog(p.username);
       if (!username) {
         continue;
       }
@@ -1273,7 +1292,7 @@ export class GameEngineService {
       }
     }
 
-    const finishedAtRaw = (metadata as any)?.finishedAt;
+    const finishedAtRaw = metadata['finishedAt'];
     const finishedAt =
       typeof finishedAtRaw === 'string' && finishedAtRaw.trim().length > 0
         ? finishedAtRaw.trim()
@@ -1295,11 +1314,7 @@ export class GameEngineService {
     };
   }
 
-  private tryReadWinnerId(meta: any): number | null {
-    if (!meta || typeof meta !== 'object') {
-      return null;
-    }
-
+  private tryReadWinnerId(meta: Record<string, unknown>): number | null {
     for (const key of ['winnerId', 'winnerPlayerId', 'winner_id']) {
       const raw = meta[key];
       if (typeof raw === 'number' && Number.isFinite(raw)) {
@@ -1317,22 +1332,18 @@ export class GameEngineService {
   }
 
   private tryReadOutcomesByPlayerId(
-    meta: any,
+    meta: Record<string, unknown>,
   ): Record<string, 'won' | 'lost'> | null {
-    if (!meta || typeof meta !== 'object') {
-      return null;
-    }
-
-    const raw = meta.outcomesByPlayerId;
-    if (!raw || typeof raw !== 'object') {
+    const rawOutcomes = meta.outcomesByPlayerId;
+    if (!rawOutcomes || typeof rawOutcomes !== 'object') {
       return null;
     }
 
     const out: Record<string, 'won' | 'lost'> = {};
-    for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
-      const normalized = String(value ?? '')
-        .trim()
-        .toLowerCase();
+    for (const [key, value] of Object.entries(
+      rawOutcomes as Record<string, unknown>,
+    )) {
+      const normalized = this.normalizeMetadataString(value).toLowerCase();
       if (normalized !== 'won' && normalized !== 'lost') {
         continue;
       }
@@ -1466,28 +1477,28 @@ export class GameEngineService {
       ) {
         return state;
       }
-      const players = Array.isArray(state.players) ? state.players : [];
+      const players = state.players ?? [];
       if (players.length === 0) return state;
 
-      const roomPlayers = Array.isArray(payload?.room?.players)
+      const roomPlayers: RoomPlayer[] = Array.isArray(payload?.room?.players)
         ? payload.room.players
         : [];
-      const roomBots = Array.isArray(payload?.room?.bots)
+      const roomBots: RoomBotState[] = Array.isArray(payload?.room?.bots)
         ? payload.room.bots
         : [];
 
       const humanById = new Map<number, string>();
       for (const p of roomPlayers) {
-        const id = Number((p as any)?.id ?? 0);
+        const id = p.id;
         if (!Number.isFinite(id) || id <= 0) continue;
-        const username = this.normalizeUsernameForLog((p as any)?.username);
+        const username = this.normalizeUsernameForLog(p.username);
         if (!username) continue;
         humanById.set(id, username);
       }
 
       const roomBotNames = roomBots
-        .map((b: any) => this.normalizeUsernameForLog(b?.name))
-        .filter((n: string) => n.length > 0);
+        .map((b) => this.normalizeUsernameForLog(b.name))
+        .filter((n) => n.length > 0);
       const allowedBotNames = new Set(roomBotNames);
 
       // Bots "sièges" (id négatif) proviennent de payload.room.bots (GameCoreService buildPlayers).
@@ -1495,16 +1506,15 @@ export class GameEngineService {
       // sinon l'exclusion est visuellement sans effet et le bot continue de jouer.
       const allowedBotIds = new Set<number>(
         roomBots
-          .map((b: any) => Number(b?.id ?? 0))
-          .filter((id: number) => Number.isFinite(id) && id > 0)
-          .map((id: number) => -Math.abs(id)),
+          .map((b) => -Math.abs(b.id))
+          .filter((id) => Number.isFinite(id) && id > 0),
       );
 
       // Bots already present in the game state (initial bots / already replaced seats).
       const assignedBotNames = new Set(
         players
-          .filter((p) => (p as any)?.isBot === true)
-          .map((p) => this.normalizeUsernameForLog((p as any)?.username))
+          .filter((p) => p.isBot === true)
+          .map((p) => this.normalizeUsernameForLog(p.username))
           .filter((n) => n.length > 0),
       );
 
@@ -1517,20 +1527,20 @@ export class GameEngineService {
 
       let changed = false;
       const mappedPlayers = players.map((p) => {
-        const id = Number((p as any)?.id ?? 0);
+        const id = p.id;
         if (!Number.isFinite(id) || id === 0) return p;
 
         const roomUsername = humanById.get(id) ?? null;
-        const isBot = (p as any)?.isBot === true;
+        const isBot = p.isBot === true;
 
         // Human is present in room: ensure player is human with correct username.
         if (roomUsername) {
           if (
             isBot ||
-            this.normalizeUsernameForLog((p as any)?.username) !== roomUsername
+            this.normalizeUsernameForLog(p.username) !== roomUsername
           ) {
             changed = true;
-            return { ...(p as any), isBot: false, username: roomUsername };
+            return { ...p, isBot: false, username: roomUsername };
           }
           return p;
         }
@@ -1539,7 +1549,7 @@ export class GameEngineService {
         if (!isBot && availableBotNames.length > 0) {
           const botName = availableBotNames.shift()!;
           changed = true;
-          return { ...(p as any), isBot: true, username: botName };
+          return { ...p, isBot: true, username: botName };
         }
 
         return p;
@@ -1547,10 +1557,10 @@ export class GameEngineService {
 
       // Remove room bots that no longer exist (id < 0 and not in allowedBotIds).
       const filteredPlayers = mappedPlayers.filter((p) => {
-        const id = Number(p?.id ?? 0);
+        const id = p.id;
         if (!Number.isFinite(id) || id === 0) return true;
-        const isBot = p?.isBot === true;
-        const name = this.normalizeUsernameForLog(p?.username);
+        const isBot = p.isBot === true;
+        const name = this.normalizeUsernameForLog(p.username);
         if (isBot && (!name || !allowedBotNames.has(name))) {
           return false;
         }
@@ -1592,7 +1602,7 @@ export class GameEngineService {
         }
       }
 
-      const pendingPlayerId = (state.pending as any)?.playerId ?? null;
+      const pendingPlayerId = state.pending?.playerId ?? null;
       if (
         typeof pendingPlayerId === 'number' &&
         pendingPlayerId !== 0 &&
@@ -1602,7 +1612,7 @@ export class GameEngineService {
         state = {
           ...state,
           pending: state.pending
-            ? { ...(state.pending as any), playerId: null }
+            ? { ...state.pending, playerId: null }
             : state.pending,
         };
       }
@@ -1686,7 +1696,7 @@ export class GameEngineService {
     // Priorité: si une action "pending" est attendue d'un bot (même si ce n'est pas son tour),
     // déclencher ce bot d'abord. Certains jeux utilisent `pending` pour des choix bloquants
     // (pick/exchange/quiz) et peuvent laisser `turn.currentPlayerId` inchangé.
-    const pending = state.pending as any;
+    const pending = state.pending ?? null;
     const pendingPlayerIdRaw = pending?.playerId;
     const pendingPlayerId =
       pendingPlayerIdRaw != null && Number.isFinite(Number(pendingPlayerIdRaw))
@@ -1720,17 +1730,22 @@ export class GameEngineService {
     return null;
   }
 
-  private pendingSignature(pending: unknown): string | null {
-    if (!pending || typeof pending !== 'object') return null;
-    const p = pending as any;
+  private pendingSignature(
+    pending: PendingState | null | undefined,
+  ): string | null {
+    if (!pending) return null;
     return JSON.stringify({
-      type: typeof p.type === 'string' ? p.type : null,
-      step: typeof p.step === 'string' ? p.step : null,
-      playerId: typeof p.playerId === 'number' ? p.playerId : null,
+      type: typeof pending.type === 'string' ? pending.type : null,
+      step: typeof pending.step === 'string' ? pending.step : null,
+      playerId: typeof pending.playerId === 'number' ? pending.playerId : null,
       initiatorPlayerId:
-        typeof p.initiatorPlayerId === 'number' ? p.initiatorPlayerId : null,
+        typeof pending.initiatorPlayerId === 'number'
+          ? pending.initiatorPlayerId
+          : null,
       targetPlayerId:
-        typeof p.targetPlayerId === 'number' ? p.targetPlayerId : null,
+        typeof pending.targetPlayerId === 'number'
+          ? pending.targetPlayerId
+          : null,
     });
   }
 
@@ -1762,13 +1777,10 @@ export class GameEngineService {
         return;
       }
 
-      const meta: any =
-        current?.metadata && typeof current.metadata === 'object'
-          ? current.metadata
-          : {};
+      const meta = this.toMetadata(current);
       const fallbackActorId =
-        typeof meta.ownerPlayerId === 'number'
-          ? meta.ownerPlayerId
+        typeof meta['ownerPlayerId'] === 'number'
+          ? meta['ownerPlayerId']
           : (current.turn?.currentPlayerId ?? current.players?.[0]?.id ?? null);
 
       const sanitizedActions = (Array.isArray(actions) ? actions : []).map(
@@ -1782,7 +1794,7 @@ export class GameEngineService {
         }),
       );
 
-      const next = await handler.applyActions(current, sanitizedActions);
+      const next = handler.applyActions(current, sanitizedActions);
       const botTurn = this.isBotTurn(next);
       let marked = await this.markBotThinking(roomId, gameType, next, botTurn);
       marked = this.normalizeWinnerMetadata(marked);
@@ -1825,15 +1837,10 @@ export class GameEngineService {
 
     // Timed transitions (currently used by LAMA for "pause between rounds").
     if (gameType === 'lama') {
-      const meta: any =
-        state?.metadata && typeof state.metadata === 'object'
-          ? state.metadata
-          : {};
-      if (String(meta.step ?? '') === 'round_pause') {
-        const untilMs =
-          typeof meta.roundPauseUntilMs === 'number'
-            ? meta.roundPauseUntilMs
-            : null;
+      const lamaMeta = this.toMetadata(state);
+      const step = this.normalizeMetadataString(lamaMeta['step']);
+      if (step === 'round_pause') {
+        const untilMs = this.parseMetadataNumber(lamaMeta['roundPauseUntilMs']);
         const delayMs =
           untilMs != null
             ? Math.max(0, untilMs - GameEngineService.nowMs())
@@ -1847,15 +1854,16 @@ export class GameEngineService {
           run: async () => {
             const latest = (await this.store.get(roomId, gameType)) ?? null;
             if (!latest) return;
-            const latestMeta: any =
-              latest?.metadata && typeof latest.metadata === 'object'
-                ? latest.metadata
-                : {};
-            if (String(latestMeta.step ?? '') !== 'round_pause') return;
+            const latestMeta = this.toMetadata(latest);
+            const latestStep = this.normalizeMetadataString(latestMeta['step']);
+            if (latestStep !== 'round_pause') return;
+            const latestUntilMs = this.parseMetadataNumber(
+              latestMeta['roundPauseUntilMs'],
+            );
             if (
-              typeof latestMeta.roundPauseUntilMs === 'number' &&
               typeof untilMs === 'number' &&
-              latestMeta.roundPauseUntilMs !== untilMs
+              latestUntilMs !== null &&
+              latestUntilMs !== untilMs
             ) {
               return;
             }
@@ -1874,23 +1882,18 @@ export class GameEngineService {
 
     // Timed transitions: Arche de Mnemosyne quiz timeout.
     if (gameType === 'arche-de-mnemosyne') {
-      const meta: any =
-        state?.metadata && typeof state.metadata === 'object'
-          ? state.metadata
-          : {};
-      const useTimer = Boolean(meta?.config?.useTimer);
-      const untilMs =
-        typeof meta.quizDeadlineAtMs === 'number'
-          ? meta.quizDeadlineAtMs
-          : null;
+      const mnemoMeta = this.toMetadata(state);
+      const configMeta = this.getMetadataObject(mnemoMeta, 'config');
+      const useTimer = configMeta?.['useTimer'] === true;
+      const untilMs = this.parseMetadataNumber(mnemoMeta['quizDeadlineAtMs']);
+      const questionMeta = this.getMetadataObject(mnemoMeta, 'currentQuestion');
       const questionId =
-        typeof meta?.currentQuestion?.id === 'string'
-          ? meta.currentQuestion.id
+        questionMeta && typeof questionMeta['id'] === 'string'
+          ? questionMeta['id']
           : null;
-      const interUntilMs =
-        typeof meta?.interQuestionUntilMs === 'number'
-          ? meta.interQuestionUntilMs
-          : null;
+      const interUntilMs = this.parseMetadataNumber(
+        mnemoMeta['interQuestionUntilMs'],
+      );
 
       if (interUntilMs != null && !questionId) {
         const delayMs = Math.max(0, interUntilMs - GameEngineService.nowMs());
@@ -1903,13 +1906,22 @@ export class GameEngineService {
           run: async () => {
             const latest = (await this.store.get(roomId, gameType)) ?? null;
             if (!latest) return;
-            const latestMeta: any =
-              latest?.metadata && typeof latest.metadata === 'object'
-                ? latest.metadata
-                : {};
-            if (typeof latestMeta?.currentQuestion?.id === 'string') return;
-            if (typeof latestMeta?.interQuestionUntilMs !== 'number') return;
-            if (latestMeta.interQuestionUntilMs !== interUntilMs) return;
+            const latestMeta = this.toMetadata(latest);
+            const latestQuestionMeta = this.getMetadataObject(
+              latestMeta,
+              'currentQuestion',
+            );
+            if (
+              latestQuestionMeta &&
+              typeof latestQuestionMeta['id'] === 'string'
+            ) {
+              return;
+            }
+            const latestInterUntilMs = this.parseMetadataNumber(
+              latestMeta['interQuestionUntilMs'],
+            );
+            if (latestInterUntilMs === null) return;
+            if (latestInterUntilMs !== interUntilMs) return;
             await this.applySystemActions(roomId, gameType, [
               { type: 'mnemo_timeout', payload: {} },
             ]);
@@ -1927,17 +1939,27 @@ export class GameEngineService {
           run: async () => {
             const latest = (await this.store.get(roomId, gameType)) ?? null;
             if (!latest) return;
-            const latestMeta: any =
-              latest?.metadata && typeof latest.metadata === 'object'
-                ? latest.metadata
-                : {};
-            if (!latestMeta?.config?.useTimer) return;
-            if (typeof latestMeta?.currentQuestion?.id !== 'string') return;
-            if (latestMeta.currentQuestion.id !== questionId) return;
+            const latestMeta = this.toMetadata(latest);
+            const latestConfigMeta = this.getMetadataObject(
+              latestMeta,
+              'config',
+            );
+            if (latestConfigMeta?.['useTimer'] !== true) return;
+            const latestQuestionMeta = this.getMetadataObject(
+              latestMeta,
+              'currentQuestion',
+            );
             if (
-              typeof latestMeta.quizDeadlineAtMs === 'number' &&
-              latestMeta.quizDeadlineAtMs !== untilMs
+              !latestQuestionMeta ||
+              typeof latestQuestionMeta['id'] !== 'string'
             ) {
+              return;
+            }
+            if (latestQuestionMeta['id'] !== questionId) return;
+            const latestDeadline = this.parseMetadataNumber(
+              latestMeta['quizDeadlineAtMs'],
+            );
+            if (latestDeadline !== null && latestDeadline !== untilMs) {
               return;
             }
             await this.applySystemActions(roomId, gameType, [
@@ -1966,15 +1988,12 @@ export class GameEngineService {
     const baseDelayMs = this.botSettings.getBotTurnDelayMs();
     const initialDelayMs = this.botSettings.getBotStartDelayMs();
     const drawDelayMs = this.botSettings.getBotDrawDelayMs();
-    const meta: any =
-      state?.metadata && typeof state.metadata === 'object'
-        ? state.metadata
-        : {};
-    const immediateStart = meta?.botImmediateStartPending === true;
-    const pending: any = state.pending as any;
+    const meta = this.toMetadata(state);
+    const immediateStart = meta['botImmediateStartPending'] === true;
+    const pending = state.pending ?? null;
     const pendingType =
       typeof pending?.type === 'string'
-        ? String(pending.type).trim().toLowerCase()
+        ? pending.type.trim().toLowerCase()
         : '';
     const pendingPlayerIdRaw = pending?.playerId;
     const pendingPlayerId =
@@ -1989,9 +2008,12 @@ export class GameEngineService {
         pendingType === 'choose_target');
     const isQuizPending =
       gameType === 'arche-de-mnemosyne' && pending?.type === 'quiz';
+    const configMeta = this.getMetadataObject(meta, 'config');
     const quizTimerSeconds =
-      isQuizPending && typeof meta?.config?.timerSeconds === 'number'
-        ? Number(meta.config.timerSeconds)
+      isQuizPending &&
+      configMeta &&
+      typeof configMeta['timerSeconds'] === 'number'
+        ? Number(configMeta['timerSeconds'])
         : null;
     const quizTimerMs =
       quizTimerSeconds != null && Number.isFinite(quizTimerSeconds)
@@ -2151,10 +2173,10 @@ export class GameEngineService {
     }
   }
 
-  private async buildInitialState(
+  private buildInitialState(
     payload: RoomPayload,
     gameType: string,
-  ): Promise<GameStateEntity> {
+  ): GameStateEntity {
     const baseState = this.core.buildBaseState(payload, gameType);
     const status = String(baseState.status ?? '')
       .toLowerCase()
@@ -2207,7 +2229,7 @@ export class GameEngineService {
     const players = Array.isArray(state.players) ? state.players : [];
     if (!players.length) return state;
 
-    const pending = state.pending as any;
+    const pending = state.pending ?? null;
     const pendingPlayerId =
       typeof pending?.playerId === 'number' ? pending.playerId : null;
     const blockingPending = pending?.blocking === true;
@@ -2216,7 +2238,8 @@ export class GameEngineService {
       return state;
     }
 
-    if ((state.metadata as any)?.starterChosenAfterPawnSelection === true) {
+    const starterMeta = this.toMetadata(state);
+    if (starterMeta['starterChosenAfterPawnSelection'] === true) {
       // Certains jeux tirent explicitement le starter après setup (ex: choix de pion).
       return state;
     }
@@ -2265,7 +2288,8 @@ export class GameEngineService {
     ) {
       return state;
     }
-    const pendingType = String((state.pending as any)?.type ?? '')
+    const pending = state.pending ?? null;
+    const pendingType = String(pending?.type ?? '')
       .trim()
       .toLowerCase();
     if (pendingType === 'pick_pawn') {
@@ -2273,7 +2297,7 @@ export class GameEngineService {
     }
 
     const log = Array.isArray(state.log) ? state.log : [];
-    const recentMessages = log.slice(-3).map((entry: any) =>
+    const recentMessages = log.slice(-3).map((entry) =>
       String(entry?.message ?? '')
         .trim()
         .toLowerCase(),
@@ -2302,9 +2326,8 @@ export class GameEngineService {
       return false;
     }
 
-    const finishedAtRaw = (state.metadata as any)?.finishedAt;
-    const finishedAt =
-      typeof finishedAtRaw === 'string' ? finishedAtRaw.trim() : '';
+    const metadata = this.toMetadata(state);
+    const finishedAt = this.normalizeMetadataString(metadata['finishedAt']);
     if (!finishedAt) {
       return false;
     }
@@ -2323,6 +2346,7 @@ export class GameEngineService {
     gameType: string,
     state: GameStateEntity,
   ): Promise<void> {
+    await Promise.resolve();
     if (String(state?.status ?? '').toLowerCase() !== 'finished') {
       return;
     }
@@ -2336,9 +2360,9 @@ export class GameEngineService {
       return;
     }
 
-    const expectedFinishedAt = String(
-      (state?.metadata as any)?.finishedAt ?? '',
-    ).trim();
+    const expectedFinishedAt = this.normalizeMetadataString(
+      this.toMetadata(state)['finishedAt'],
+    );
 
     this.botScheduler.schedule({
       key: systemKey,
@@ -2355,9 +2379,9 @@ export class GameEngineService {
               return;
             }
 
-            const latestFinishedAt = String(
-              (latest?.metadata as any)?.finishedAt ?? '',
-            ).trim();
+            const latestFinishedAt = this.normalizeMetadataString(
+              this.toMetadata(latest)['finishedAt'],
+            );
             if (
               expectedFinishedAt &&
               latestFinishedAt &&
@@ -2428,9 +2452,9 @@ export class GameEngineService {
     const isBot = actionableBotId != null || (botTurn === true && !handler);
     const now = GameEngineService.nowMs();
     const marked = {
-      ...(this.store.markBotThinking(state, isBot) as any),
+      ...this.store.markBotThinking(state, isBot),
       botThinkingSince: isBot ? now : null,
-    } as GameStateEntity;
+    };
     await this.store.set(roomId, gameType, marked, { asyncPersist: true });
     return marked;
   }
@@ -2440,19 +2464,18 @@ export class GameEngineService {
     gameType: string,
     state: GameStateEntity,
   ): Promise<GameStateEntity> {
-    const s: any = state as any;
     const since =
-      typeof s.botThinkingSince === 'number'
-        ? (s.botThinkingSince as number)
+      typeof state.botThinkingSince === 'number'
+        ? state.botThinkingSince
         : null;
     if (!state.botThinking) {
       return state;
     }
     if (since == null) {
       const patched = {
-        ...(state as any),
+        ...state,
         botThinkingSince: GameEngineService.nowMs(),
-      } as GameStateEntity;
+      };
       await this.store.set(roomId, gameType, patched, { asyncPersist: true });
       return patched;
     }
@@ -2469,10 +2492,10 @@ export class GameEngineService {
       },
     });
     const cleared = {
-      ...(state as any),
+      ...state,
       botThinking: false,
       botThinkingSince: null,
-    } as GameStateEntity;
+    };
     await this.store.set(roomId, gameType, cleared, { asyncPersist: true });
     return cleared;
   }
@@ -2483,9 +2506,10 @@ export class GameEngineService {
     actions: GameSingleActionDto[],
     actorId: number | null,
   ): Promise<GameSingleActionDto[]> {
-    const ctx = (state?.metadata ?? {}) as any;
-    const ctxGameType = ctx?.gameType ?? null;
-    const ctxRoomId = ctx?.roomId ?? null;
+    const ctx = this.toMetadata(state);
+    const ctxGameType =
+      typeof ctx['gameType'] === 'string' ? ctx['gameType'] : null;
+    const ctxRoomId = this.parseMetadataNumber(ctx['roomId']);
     const list = Array.isArray(actions) ? actions : [];
     if (list.length === 0) {
       return [];
@@ -2495,7 +2519,7 @@ export class GameEngineService {
     }
 
     // Step 1: Validate DTOs with class-validator
-    let validatedDtos;
+    let validatedDtos: ValidatedGameActionDto[] = [];
     try {
       validatedDtos = await validateActionDtos(list, {
         gameType: ctxGameType,
@@ -2526,10 +2550,13 @@ export class GameEngineService {
     if (handler?.getAvailableActions && actorId != null) {
       try {
         const available = handler.getAvailableActions(state, actorId) ?? [];
+        const availableList = Array.isArray(available) ? available : [];
         allowedTypes = new Set(
-          (Array.isArray(available) ? available : []).map((a: any) =>
-            String(a?.type ?? '').toLowerCase(),
-          ),
+          availableList.map((entry) => {
+            if (!entry || typeof entry !== 'object') return '';
+            const entryType = typeof entry.type === 'string' ? entry.type : '';
+            return this.normalizeActionType(entryType);
+          }),
         );
       } catch (err) {
         this.gameLogger.error(
@@ -2701,12 +2728,12 @@ export class GameEngineService {
       delete nextExtras.grid;
     }
 
-    const out: any = {
+    const out = {
       ...state,
       actions: [],
       pending: null,
       extras: nextExtras,
-    };
+    } as GameStateWithActions & Record<string, unknown>;
     if (out.board !== undefined) {
       delete out.board;
     }
@@ -2772,41 +2799,35 @@ export class GameEngineService {
         return next;
       }
 
-      const prevMeta: any =
-        previous?.metadata && typeof previous.metadata === 'object'
-          ? previous.metadata
-          : {};
-      const nextMeta: any =
-        next?.metadata && typeof next.metadata === 'object'
-          ? next.metadata
-          : {};
+      const prevMeta = this.toMetadata(previous);
+      const nextMeta = this.toMetadata(next);
 
-      const tiles = Array.isArray(nextMeta.tiles) ? nextMeta.tiles : [];
+      const tiles = Array.isArray(nextMeta['tiles'])
+        ? (nextMeta['tiles'] as Record<string, unknown>[])
+        : [];
       const prevPositions =
-        prevMeta.positions &&
-        typeof prevMeta.positions === 'object' &&
-        !Array.isArray(prevMeta.positions)
-          ? prevMeta.positions
-          : {};
+        this.getMetadataObject(prevMeta, 'positions') ??
+        ({} as Record<string, unknown>);
       const nextPositions =
-        nextMeta.positions &&
-        typeof nextMeta.positions === 'object' &&
-        !Array.isArray(nextMeta.positions)
-          ? nextMeta.positions
-          : {};
+        this.getMetadataObject(nextMeta, 'positions') ??
+        ({} as Record<string, unknown>);
 
       if (tiles.length === 0) {
         return next;
       }
 
       const players = Array.isArray(next.players) ? next.players : [];
+      type PlayerMovement = {
+        id: number;
+        username: string;
+        prevPos: number | null;
+        nextPos: number | null;
+      };
       const changed = players
-        .map((p: any) => ({
-          id: p?.id,
-          username: String(p?.username ?? '').trim(),
-        }))
-        .filter((p: any) => typeof p.id === 'number' && Number.isFinite(p.id))
-        .map((p: any) => {
+        .map<PlayerMovement | null>((p) => {
+          if (!p || typeof p.id !== 'number') return null;
+          const username =
+            this.normalizeUsernameForLog(p.username) || `joueur ${p.id}`;
           const prevRaw = prevPositions[String(p.id)];
           const nextRaw = nextPositions[String(p.id)];
           const prevPos =
@@ -2814,17 +2835,20 @@ export class GameEngineService {
           const nextPos =
             typeof nextRaw === 'number' ? nextRaw : Number(nextRaw);
           return {
-            id: p.id as number,
-            username: p.username,
+            id: p.id,
+            username,
             prevPos: Number.isFinite(prevPos) ? Math.trunc(prevPos) : null,
             nextPos: Number.isFinite(nextPos) ? Math.trunc(nextPos) : null,
           };
         })
         .filter(
-          (p: any) =>
-            p.nextPos != null && p.prevPos != null && p.nextPos !== p.prevPos,
+          (p): p is PlayerMovement =>
+            p != null &&
+            p.nextPos != null &&
+            p.prevPos != null &&
+            p.nextPos !== p.prevPos,
         )
-        .sort((a: any, b: any) => (a.id as number) - (b.id as number));
+        .sort((a, b) => a.id - b.id);
 
       if (changed.length === 0) {
         return next;
@@ -2837,10 +2861,14 @@ export class GameEngineService {
           continue;
         }
 
-        const tile: any = tiles[idx] ?? {};
-        const labelRaw = String(tile.label ?? '').trim();
-        const titleRaw = String(tile.title ?? tile.name ?? '').trim();
-        const descriptionRaw = String(tile.description ?? '').trim();
+        const tile = tiles[idx] ?? {};
+        const labelRaw = this.normalizeMetadataString(tile['label']);
+        const titleRaw = this.normalizeMetadataString(
+          tile['title'] ?? tile['name'],
+        );
+        const descriptionRaw = this.normalizeMetadataString(
+          tile['description'],
+        );
 
         const caseNumber = idx + 1;
         const label = labelRaw || titleRaw ? labelRaw || titleRaw : '';
@@ -2853,7 +2881,8 @@ export class GameEngineService {
           const log = Array.isArray(out.log) ? out.log : [];
           const msgs: string[] = [];
           for (let i = log.length - 1; i >= 0 && msgs.length < 4; i -= 1) {
-            const msg = (log[i] as any)?.message;
+            const entry = log[i];
+            const msg = entry?.message;
             if (typeof msg === 'string' && msg.trim().length > 0) {
               msgs.push(String(msg).trim());
             }
@@ -2897,27 +2926,29 @@ export class GameEngineService {
 
   private appendSkipTurnAnnouncements(state: GameStateEntity): GameStateEntity {
     try {
-      const meta: any =
-        state?.metadata && typeof state.metadata === 'object'
-          ? state.metadata
-          : {};
-      const turnFlow: any =
-        meta?.turnFlow && typeof meta.turnFlow === 'object'
-          ? meta.turnFlow
-          : {};
-      const skippedRaw = turnFlow?.skipped;
-      const skipped = Array.isArray(skippedRaw) ? skippedRaw : [];
+      const meta = this.toMetadata(state);
+      const turnFlow =
+        this.getMetadataObject(meta, 'turnFlow') ??
+        ({} as Record<string, unknown>);
+      const skippedRaw = turnFlow['skipped'];
+      const skipped = Array.isArray(skippedRaw)
+        ? (skippedRaw as unknown[])
+        : [];
       if (!skipped.length) {
         return state;
       }
 
       let out = state;
       for (const entry of skipped) {
-        const id = typeof entry?.id === 'number' ? entry.id : null;
+        if (!entry || typeof entry !== 'object') continue;
+        const data = entry as Record<string, unknown>;
+        const id = typeof data['id'] === 'number' ? data['id'] : null;
         if (id == null) continue;
         const remaining =
-          typeof entry?.remainingAfter === 'number' ? entry.remainingAfter : 0;
-        const player = out.players?.find((p: any) => p?.id === id) ?? null;
+          typeof data['remainingAfter'] === 'number'
+            ? data['remainingAfter']
+            : 0;
+        const player = out.players?.find((p) => p?.id === id) ?? null;
         const name = this.normalizeUsernameForLog(player?.username);
         const who = name ? name : `joueur ${id}`;
         const suffix = remaining > 0 ? ` (${remaining} restant)` : '';
@@ -3012,7 +3043,8 @@ export class GameEngineService {
     const ui = uiExisting ? { ...uiExisting } : {};
     const panelsExisting = GameEngineService.extractPanels(uiExisting);
     const panels = panelsExisting ? { ...panelsExisting } : {};
-    const currentPlayerView = extrasAfter['currentPlayerView'];
+    const currentPlayerView =
+      (extrasAfter['currentPlayerView'] as CurrentPlayerView | null) ?? null;
     const metadata =
       stateWithTurnPanel.metadata &&
       typeof stateWithTurnPanel.metadata === 'object'
@@ -3036,7 +3068,7 @@ export class GameEngineService {
 
     const buildListMessage = (title: string, itemsRaw: unknown) => {
       const items = Array.isArray(itemsRaw)
-        ? itemsRaw.map((x) => String(x ?? '').trim()).filter((x) => x)
+        ? itemsRaw.map((x) => this.normalizeMetadataString(x)).filter((x) => x)
         : [];
 
       if (items.length === 0) return `${title}: (vide)`;
@@ -3050,7 +3082,7 @@ export class GameEngineService {
     };
 
     const normalizeSentence = (text: unknown): string => {
-      const t = String(text ?? '').trim();
+      const t = this.normalizeMetadataString(text);
       if (!t) return '';
       return t.endsWith('.') ? t : `${t}.`;
     };
@@ -3133,7 +3165,9 @@ export class GameEngineService {
 
   private isRoomNotFound(err: unknown): boolean {
     if (err instanceof NotFoundException) return true;
-    const message = err instanceof Error ? err.message : String(err ?? '');
+    const message = this.normalizeMetadataString(
+      err instanceof Error ? err.message : err,
+    );
     return (
       message.includes('Room introuvable') ||
       message.includes('Table introuvable')
@@ -3154,9 +3188,17 @@ export class GameEngineService {
   private static extractExtras(
     state: GameStateWithActions | GameStateEntity | null | undefined,
   ): Record<string, unknown> {
-    const extras = state?.extras;
-    if (extras && typeof extras === 'object' && !Array.isArray(extras)) {
-      return extras as Record<string, unknown>;
+    if (!state) {
+      return {};
+    }
+    const candidate =
+      'extras' in state ? (state as { extras?: unknown }).extras : undefined;
+    if (
+      candidate &&
+      typeof candidate === 'object' &&
+      !Array.isArray(candidate)
+    ) {
+      return candidate as Record<string, unknown>;
     }
     return {};
   }

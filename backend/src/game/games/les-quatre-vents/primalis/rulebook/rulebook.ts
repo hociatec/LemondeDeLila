@@ -7,7 +7,7 @@ import {
   normalizeActionType,
 } from '../../../../actions/action-service.helper';
 import { canPlayerActOnTurn } from '../../../../rulebook/rulebook-guard.helper';
-import type { PrimalisActionType } from '../model/primalis-state.entity';
+import type { PrimalisActionType } from '../definitions/primalis.definition';
 
 function isPrimalisActionType(value: string): value is PrimalisActionType {
   return (PRIMALIS_GAME.actions as readonly string[]).includes(value);
