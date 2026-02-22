@@ -1,0 +1,30 @@
+import type { GameStateEntity } from '../../../core/entities/game-state.entity';
+import type { GameSingleActionDto, GameStateWithActions } from '../../../engine/dto/game-action.dto';
+import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
+import type { GameShortcutHint, GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
+import { MonVillageActionService } from './actions/mon-village-action.service';
+import { MonVillagePresenterService } from './presenter/mon-village-presenter.service';
+import { MonVillageSetupService } from './setup/mon-village-setup.service';
+import { MonVillageBotService } from './bots/mon-village-bot.service';
+export declare class MonVillageService extends AbstractGameService {
+    private readonly setup;
+    private readonly actions;
+    private readonly presenter;
+    private readonly bots;
+    readonly gameType = "mon-village-mon-histoire";
+    readonly category = "JeuxDePlateaux";
+    readonly subcategory = "LesQuatreVents";
+    readonly displayName: string;
+    readonly description = "Parcourez les m\u00E9tiers et collectionnez les cartes qui feront la richesse de votre village.";
+    readonly minPlayers: number;
+    readonly maxPlayers: number;
+    constructor(registry: GameRegistryService, setup: MonVillageSetupService, actions: MonVillageActionService, presenter: MonVillagePresenterService, bots: MonVillageBotService);
+    hydrateInitialState(baseState: GameStateEntity): GameStateEntity;
+    applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity;
+    getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[];
+    validateAction(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameSingleActionDto;
+    getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[];
+    exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions;
+    getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[];
+}

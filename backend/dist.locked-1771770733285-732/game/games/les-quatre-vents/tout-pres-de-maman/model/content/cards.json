@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "cards": [
+    {
+      "id": 1,
+      "text": "Vous sentez une odeur agréable de plantes sauvages. Avancez de 1 case."
+    },
+    {
+      "id": 2,
+      "text": "Vous trébuchez légèrement sur une racine sèche. Reculez d’1 case."
+    },
+    {
+      "id": 3,
+      "text": "Vous aidez un bandicoot. Gagnez 1 jeton eucalyptus."
+    },
+    {
+      "id": 4,
+      "text": "Vous faites un bond intérieur. Avancez de 2 cases."
+    },
+    {
+      "id": 5,
+      "text": "Vous vous reposez. Passez votre prochain tour."
+    },
+    {
+      "id": 6,
+      "text": "Un bruissement vous inquiète. Reculez de 2 cases."
+    },
+    {
+      "id": 7,
+      "text": "Un raccourci naturel vous attire. Avancez jusqu’à la prochaine case Carte."
+    },
+    {
+      "id": 8,
+      "text": "Vous partagez vos feuilles. Donnez 1 jeton eucalyptus à un autre joueur."
+    },
+    {
+      "id": 9,
+      "text": "Vous prenez trop d’élan. Reculez jusqu’à la dernière case jeton."
+    },
+    {
+      "id": 10,
+      "text": "Une bourrasque traverse la forêt. Tous les joueurs reculent d’1 case."
+    },
+    {
+      "id": 11,
+      "text": "Un fruit vous inspire confiance. Au prochain tour, vous pouvez relancer le dé."
+    },
+    {
+      "id": 12,
+      "text": "Vous aidez un échidné. Gagnez 1 jeton eucalyptus."
+    },
+    {
+      "id": 13,
+      "text": "Vous marchez dans une zone humide. Passez votre prochain tour."
+    },
+    {
+      "id": 14,
+      "text": "Un appel réconfortant vous guide. Avancez de 3 cases."
+    },
+    {
+      "id": 15,
+      "text": "Un bruit vous surprend. Reculez jusqu’à la dernière case bonds."
+    },
+    {
+      "id": 16,
+      "text": "Vous jouez avec un diable de Tasmanie. Lancez le dé et avancez du nombre obtenu."
+    },
+    {
+      "id": 17,
+      "text": "Vous vous sentez fatigué. Reculez d’1 case."
+    },
+    {
+      "id": 18,
+      "text": "Une brise vous redonne courage. Avancez de 2 cases."
+    },
+    {
+      "id": 19,
+      "text": "Vous empruntez un mauvais chemin. Reculez de 2 cases."
+    },
+    {
+      "id": 20,
+      "text": "Vous accompagnez un quokka. Gagnez 1 jeton eucalyptus."
+    },
+    {
+      "id": 21,
+      "text": "Un rire de kookaburra résonne. Tous les joueurs avancent de 1 case."
+    },
+    {
+      "id": 22,
+      "text": "Vous écoutez les sons de la forêt. Restez sur place ce tour-ci."
+    },
+    {
+      "id": 23,
+      "text": "Un oiseau vous encourage. Lancez le dé : si vous faites 4 ou plus, avancez d’1 case."
+    },
+    {
+      "id": 24,
+      "text": "Un tronc creux rappelle un passage rapide. Avancez jusqu’à la prochaine case bonds."
+    },
+    {
+      "id": 25,
+      "text": "Vous perdez un jeton eucalyptus. Défaussez-en un si vous en avez."
+    },
+    {
+      "id": 26,
+      "text": "Un koala vous invite à avancer à deux. Avancez de 1 case et choisissez un joueur pour avancer aussi."
+    },
+    {
+      "id": 27,
+      "text": "Une pierre arrondie vous amuse. Aucun effet."
+    },
+    {
+      "id": 28,
+      "text": "Vous vous abritez. Passez votre prochain tour."
+    },
+    {
+      "id": 29,
+      "text": "Vous trouvez des feuilles savoureuses. Avancez de 2 cases et gagnez 1 jeton eucalyptus."
+    },
+    {
+      "id": 30,
+      "text": "Vous ressentez une grande fierté. Avancez de 1 case."
+    }
+  ]
+}

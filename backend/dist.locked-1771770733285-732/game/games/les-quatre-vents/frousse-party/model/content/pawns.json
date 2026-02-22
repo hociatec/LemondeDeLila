@@ -1,0 +1,36 @@
+﻿{
+    "version": 1,
+    "pawns": [
+        {
+            "id": "citrouille-rigolote",
+            "name": "Une citrouille rigolote",
+            "description": "Petite citrouille aux traits joyeux et au chapeau de sorcière bancal."
+        },
+        {
+            "id": "fantome-peureux",
+            "name": "Un fantôme peureux",
+            "description": "Petit spectre blanc aux yeux écarquillés, tremblotant comme une feuille."
+        },
+        {
+            "id": "chat-noir-curieux",
+            "name": "Un chat noir curieux",
+            "description": "Chat à la cape violette, prêt à explorer chaque recoin."
+        },
+        {
+            "id": "chandelier-qui-court",
+            "name": "Un chandelier qui court",
+            "description": "Ancien chandelier animé dont les bras se meuvent aussi vite que la lumière."
+        },
+        {
+            "id": "balai-farceur",
+            "name": "Un balai farceur",
+            "description": "Balai volant rigolard, langue tirée et bêtises à foison."
+        },
+        {
+            "id": "livre-sauteur",
+            "name": "Un livre sauteur",
+            "description": "Grimoire animé qui bondit devant vous, impatient de partager ses secrets."
+        }
+    ]
+}
+

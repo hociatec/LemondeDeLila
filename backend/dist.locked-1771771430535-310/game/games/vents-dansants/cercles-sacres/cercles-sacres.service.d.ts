@@ -1,0 +1,30 @@
+import type { GameStateEntity } from '../../../core/entities/game-state.entity';
+import type { GameSingleActionDto, GameStateWithActions } from '../../../engine/dto/game-action.dto';
+import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
+import type { GameShortcutHint, GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
+import { CerclesSacresActionService } from './actions/cercles-sacres-action.service';
+import { CerclesSacresPresenterService } from './presenter/cercles-sacres-presenter.service';
+import { CerclesSacresSetupService } from './setup/cercles-sacres-setup.service';
+import { CerclesSacresBotService } from './bots/cercles-sacres-bot.service';
+export declare class CerclesSacresService extends AbstractGameService {
+    private readonly setup;
+    private readonly actions;
+    private readonly presenter;
+    private readonly bots;
+    readonly gameType = "cercles-sacres";
+    readonly category = "JeuxDePlateaux";
+    readonly subcategory = "VentsDansants";
+    readonly displayName: string;
+    readonly description = "Formez trois Cercles Sacr\u00E9s en alignant six cartes th\u00E9matiques.";
+    readonly minPlayers: number;
+    readonly maxPlayers: number;
+    constructor(registry: GameRegistryService, setup: CerclesSacresSetupService, actions: CerclesSacresActionService, presenter: CerclesSacresPresenterService, bots: CerclesSacresBotService);
+    hydrateInitialState(baseState: GameStateEntity): GameStateEntity;
+    applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity;
+    getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[];
+    validateAction(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameSingleActionDto;
+    exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions;
+    getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[];
+    getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[];
+}

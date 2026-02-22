@@ -1,0 +1,30 @@
+import type { GameStateEntity } from '../../../core/entities/game-state.entity';
+import type { GameSingleActionDto, GameStateWithActions } from '../../../engine/dto/game-action.dto';
+import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
+import { AventureSauvageSetupService } from './setup/aventure-sauvage-setup.service';
+import { AventureSauvageActionService } from './actions/aventure-sauvage-action.service';
+import { AventureSauvagePresenterService } from './presenter/aventure-sauvage-presenter.service';
+import { AventureSauvageBotService } from './bots/aventure-sauvage-bot.service';
+import type { GameShortcutHint, GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
+export declare class AventureSauvageService extends AbstractGameService {
+    private readonly setup;
+    private readonly actions;
+    private readonly presenter;
+    private readonly bots;
+    readonly gameType = "aventure-sauvage";
+    readonly category = "JeuxDePlateaux";
+    readonly subcategory = "LesQuatreVents";
+    readonly displayName: "Aventure Sauvage";
+    readonly description = "Course en jungle jusqu'\u00E0 la mare.";
+    readonly minPlayers: 2;
+    readonly maxPlayers: 6;
+    constructor(registry: GameRegistryService, setup: AventureSauvageSetupService, actions: AventureSauvageActionService, presenter: AventureSauvagePresenterService, bots: AventureSauvageBotService);
+    hydrateInitialState(baseState: GameStateEntity): GameStateEntity;
+    applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity;
+    getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[];
+    validateAction(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameSingleActionDto;
+    getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[];
+    exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions;
+    getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[];
+}

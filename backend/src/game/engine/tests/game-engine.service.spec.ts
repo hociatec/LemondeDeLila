@@ -59,6 +59,47 @@ describe('GameEngineService', () => {
     });
   });
 
+  it('returns fallback score/hand panel messages from extras when ui.panels are missing', async () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      { getHandler: jest.fn(() => ({})) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    (engine as any).getStateForUser = jest.fn().mockResolvedValue({
+      status: 'started',
+      players: [{ id: 1, username: 'Lila' }],
+      turn: { currentPlayerId: 1, direction: 1 },
+      extras: {
+        hand: ['1', 'LAMA'],
+        score: ['Total jetons: 4', 'Lila: 4'],
+      },
+      log: [],
+    });
+
+    const score = await engine.handleKeyPress(1, 'any', 1, 'S');
+    const hand = await engine.handleKeyPress(1, 'any', 1, 'E');
+
+    expect(score).toEqual({
+      kind: 'panel',
+      panelId: 'score',
+      message: 'Score : Total jetons: 4 | Lila: 4.',
+    });
+    expect(hand).toEqual({
+      kind: 'panel',
+      panelId: 'hands',
+      message: 'Main : 1, LAMA.',
+    });
+  });
+
   it('does not replay stale skip-turn announcements on subsequent actions', async () => {
     const startedAt = '2026-02-09T00:00:00.000Z';
     const players = [
@@ -644,5 +685,89 @@ describe('GameEngineService', () => {
         gameType: 'corridor',
       }),
     );
+  });
+
+  it('keeps negative-id room bots when syncing a started roster', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const state: any = {
+      status: 'started',
+      turnIndex: 4,
+      players: [
+        { id: 1, username: 'Hacene', isBot: false },
+        { id: -7, username: 'Idéfix', isBot: true },
+      ],
+      turn: { currentPlayerId: -7, direction: 1 },
+      metadata: {},
+      log: [],
+      extras: {},
+    };
+    const payload: any = {
+      room: {
+        players: [{ id: 1, username: 'Hacene' }],
+        bots: [{ id: 7, name: 'Idéfix' }],
+      },
+    };
+
+    const next = (engine as any).syncRosterForStartedRoom(state, payload);
+    const bot = (next.players ?? []).find((p: any) => p?.id === -7);
+
+    expect(bot).toBeDefined();
+    expect(bot?.isBot).toBe(true);
+    expect(next.turn?.currentPlayerId).toBe(-7);
+  });
+
+  it('keeps negative-id room bots by id even when bot name changed', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const state: any = {
+      status: 'started',
+      turnIndex: 8,
+      players: [
+        { id: 1, username: 'Hacene', isBot: false },
+        { id: -11, username: 'Idefix', isBot: true },
+      ],
+      turn: { currentPlayerId: -11, direction: 1 },
+      metadata: {},
+      log: [],
+      extras: {},
+    };
+    const payload: any = {
+      room: {
+        players: [{ id: 1, username: 'Hacene' }],
+        bots: [{ id: 11, name: 'Idéfix' }],
+      },
+    };
+
+    const next = (engine as any).syncRosterForStartedRoom(state, payload);
+    const bot = (next.players ?? []).find((p: any) => p?.id === -11);
+
+    expect(bot).toBeDefined();
+    expect(bot?.isBot).toBe(true);
+    expect(next.turn?.currentPlayerId).toBe(-11);
   });
 });

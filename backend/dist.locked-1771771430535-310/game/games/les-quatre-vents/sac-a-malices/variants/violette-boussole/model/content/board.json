@@ -1,0 +1,267 @@
+{
+  "version": 1,
+  "tiles": [
+    {
+      "n": 1,
+      "title": "Départ",
+      "description": "Vous êtes aux portes de Toulouse, prêt à traverser ses rues ensoleillées et à empocher 200 euros.",
+      "type": "start"
+    },
+    {
+      "n": 2,
+      "title": "Rue du Taur (beige)",
+      "description": "Une rue étroite et vibrante, où les façades rose brique racontent mille histoires de la ville.",
+      "type": "property",
+      "group": "beige"
+    },
+    {
+      "n": 3,
+      "title": "Rue des Filatiers (beige)",
+      "description": "Une artère commerçante où résonnent parfums, accents chantants et rires du centre historique.",
+      "type": "property",
+      "group": "beige"
+    },
+    {
+      "n": 4,
+      "title": "Caisse de Communauté",
+      "description": "Une main inattendue vous tend une carte ; le destin occitan s’invite dans votre route.",
+      "type": "community"
+    },
+    {
+      "n": 5,
+      "title": "Taxe de la Violette",
+      "description": "Pour honorer l’emblème parfumé de Toulouse, vous versez 200 euros… avec élégance.",
+      "type": "tax"
+    },
+    {
+      "n": 6,
+      "title": "Gare Matabiau",
+      "description": "Sous les grandes verrières, les trains s’élancent vers les quatre coins du Sud-Ouest.",
+      "type": "station"
+    },
+    {
+      "n": 7,
+      "title": "Rue Saint-Rome (bleue)",
+      "description": "Rue piétonne effervescente, bordée de boutiques où tout Toulouse semble se croiser.",
+      "type": "property",
+      "group": "bleue"
+    },
+    {
+      "n": 8,
+      "title": "Rue Alsace-Lorraine (bleue)",
+      "description": "Large artère lumineuse, battement de cœur de la ville rose.",
+      "type": "property",
+      "group": "bleue"
+    },
+    {
+      "n": 9,
+      "title": "Rue du Languedoc (bleue)",
+      "description": "Un ruban citadin où se mêlent élégance, douceur de vivre et accents toniques.",
+      "type": "property",
+      "group": "bleue"
+    },
+    {
+      "n": 10,
+      "title": "Chance",
+      "description": "Le vent d’Autan souffle… piochez une carte et laissez-vous surprendre.",
+      "type": "chance"
+    },
+    {
+      "n": 11,
+      "title": "Place du Capitole (rose)",
+      "description": "Immense place emblématique, où le sol marqué de la croix occitane veille sur les passants.",
+      "type": "property",
+      "group": "rose"
+    },
+    {
+      "n": 12,
+      "title": "Place Saint-Georges (rose)",
+      "description": "Place claire et animée, bercée par les terrasses et les voix chaleureuses.",
+      "type": "property",
+      "group": "rose"
+    },
+    {
+      "n": 13,
+      "title": "Compagnie du Tram Tisséo",
+      "description": "Les rames glissent vers les quartiers lointains, reliant vies, places et colines.",
+      "type": "utility"
+    },
+    {
+      "n": 14,
+      "title": "Place Esquirol (rose)",
+      "description": "Un carrefour vivant où se rencontrent traditions, modernité et tumulte urbain.",
+      "type": "property",
+      "group": "rose"
+    },
+    {
+      "n": 15,
+      "title": "Gare Saint-Agne",
+      "description": "Petite gare tranquille, posée entre briques rouges et arbres paisibles.",
+      "type": "station"
+    },
+    {
+      "n": 16,
+      "title": "Boulevard Carnot (orange)",
+      "description": "Large avenue où s’étirent ombres et soleils, sillonnée d’un flot calme et régulier.",
+      "type": "property",
+      "group": "orange"
+    },
+    {
+      "n": 17,
+      "title": "Boulevard Lazare Carnot (orange)",
+      "description": "Boulevard dynamique où souffle le rythme moderne de la ville.",
+      "type": "property",
+      "group": "orange"
+    },
+    {
+      "n": 18,
+      "title": "Boulevard des Récollets (orange)",
+      "description": "Un axe lumineux bordé d’arbres, où flotte l’esprit du quartier Saint-Cyprien.",
+      "type": "property",
+      "group": "orange"
+    },
+    {
+      "n": 19,
+      "title": "Chance",
+      "description": "Le sort toulousain se mêle à votre tour ; piochez et acceptez l’inattendu.",
+      "type": "chance"
+    },
+    {
+      "n": 20,
+      "title": "Parc Gratuit",
+      "description": "Le Jardin des Plantes vous ouvre ses allées fleuries, oasis de calme sous le soleil du Midi — ici, tout est gratuit.",
+      "type": "free"
+    },
+    {
+      "n": 21,
+      "title": "Basilique Saint-Sernin (rouge)",
+      "description": "Majestueuse, elle étend son ombre romane sur la ville depuis des siècles.",
+      "type": "property",
+      "group": "rouge"
+    },
+    {
+      "n": 22,
+      "title": "Couvent des Jacobins (rouge)",
+      "description": "Son immense palmier de pierre s’élève comme un souffle mystique au cœur de Toulouse.",
+      "type": "property",
+      "group": "rouge"
+    },
+    {
+      "n": 23,
+      "title": "Gare de Toulouse-Montaudran",
+      "description": "Ancien fief de l’Aéropostale, où plane encore l’esprit de Mermoz et Saint-Exupéry.",
+      "type": "station"
+    },
+    {
+      "n": 24,
+      "title": "Prairie des Filtres (jaune)",
+      "description": "Une grande étendue douce au bord de la Garonne, où Toulouse aime se poser et respirer.",
+      "type": "property",
+      "group": "jaune"
+    },
+    {
+      "n": 25,
+      "title": "Jardin des Compans-Caffarelli (jaune)",
+      "description": "Un parc élégant où le jardin japonais invite à la sérénité.",
+      "type": "property",
+      "group": "jaune"
+    },
+    {
+      "n": 26,
+      "title": "Compagnie Aérospatiale",
+      "description": "Sous vos pieds, la ville produit satellites et rêves d’étoiles.",
+      "type": "utility"
+    },
+    {
+      "n": 27,
+      "title": "Gare de Colomiers",
+      "description": "Au seuil de l’aéronautique, les voyageurs croisent ingénieurs, étudiants et rêveurs du ciel.",
+      "type": "station"
+    },
+    {
+      "n": 28,
+      "title": "Rue Saint-Antoine du T (jaune)",
+      "description": "Rue pleine de caractère, où se mêlent éclats de vie, commerces et accents chantants.",
+      "type": "property",
+      "group": "jaune"
+    },
+    {
+      "n": 29,
+      "title": "Place Saint-Pierre (vert)",
+      "description": "Berceau des nuits étudiantes et des rires au bord de la Garonne.",
+      "type": "property",
+      "group": "vert"
+    },
+    {
+      "n": 30,
+      "title": "Taxe de Luxe",
+      "description": "Vos goûts raffinés vous coûtent 100 crédits ; le chic occitan n’est pas gratuit.",
+      "type": "tax"
+    },
+    {
+      "n": 31,
+      "title": "Prison",
+      "description": "Les portes grincent lentement ; vous n’êtes ici qu’en visite… pour l’instant.",
+      "type": "jail"
+    },
+    {
+      "n": 32,
+      "title": "Ruelles du Vieux Toulouse (vert)",
+      "description": "Un dédale de briques roses, de mystère et de lumière douce.",
+      "type": "property",
+      "group": "vert"
+    },
+    {
+      "n": 33,
+      "title": "Quartier Carmes (vert)",
+      "description": "Un quartier chaleureux où cafés, marchés et ruelles chantent la vie toulousaine.",
+      "type": "property",
+      "group": "vert"
+    },
+    {
+      "n": 34,
+      "title": "Caisse de Communauté",
+      "description": "Une carte vous attend, porteuse d’aide ou d’embarras.",
+      "type": "community"
+    },
+    {
+      "n": 35,
+      "title": "Quartier Saint-Cyprien (violet)",
+      "description": "Rive droite vibrante, mêlant art, soleil et fraîcheur des cours intérieures.",
+      "type": "property",
+      "group": "violet"
+    },
+    {
+      "n": 36,
+      "title": "Caisse de Communauté",
+      "description": "Une nouvelle carte vous appelle — surprise ou poisse, la ville décide.",
+      "type": "community"
+    },
+    {
+      "n": 37,
+      "title": "Allez en Prison",
+      "description": "Le verdict tombe comme un accent sec : direction la prison, sans détour.",
+      "type": "go_to_jail"
+    },
+    {
+      "n": 38,
+      "title": "Musée des Augustins (violet)",
+      "description": "Dans ses salles silencieuses s’alignent sculptures, peintures et ombres du passé.",
+      "type": "property",
+      "group": "violet"
+    },
+    {
+      "n": 39,
+      "title": "Chance",
+      "description": "Le hasard souffle comme le vent d’Autan — parfois chaud, parfois contrarié.",
+      "type": "chance"
+    },
+    {
+      "n": 40,
+      "title": "Quai de la Daurade (violet)",
+      "description": "Un lieu magique où la Garonne s’embrase au coucher du soleil, éclat final de votre tour.",
+      "type": "property",
+      "group": "violet"
+    }
+  ]
+}

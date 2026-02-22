@@ -1,0 +1,8 @@
+{
+  "code": "tout-pres-de-maman",
+  "name": "Tout près de Maman !",
+  "minPlayers": 2,
+  "maxPlayers": 6,
+  "engine": "tout-pres-de-maman",
+  "summary": "Parcourez la forêt d’eucalyptus, collectionnez les jetons et retrouvez maman."
+}

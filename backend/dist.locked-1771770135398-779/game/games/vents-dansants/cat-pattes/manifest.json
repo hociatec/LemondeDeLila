@@ -1,0 +1,8 @@
+{
+  "code": "cat-pattes",
+  "name": "Cat Pattes !",
+  "minPlayers": 2,
+  "maxPlayers": 6,
+  "engine": "cat-pattes",
+  "summary": "Course féline jusqu'à 1 000 pattes en jouant des cartes Pattes, Parades, Obstacles et Bots."
+}

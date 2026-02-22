@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "cards": [
+    {
+      "id": 1,
+      "text": "Le vent d’Autan souffle dans votre direction : avancez jusqu’à la case Départ et empochez 200 €."
+    },
+    {
+      "id": 2,
+      "text": "Vous êtes invité à un match au Stadium : avancez au Stade Toulousain."
+    },
+    {
+      "id": 3,
+      "text": "Un avion d’Airbus survole votre partie… et vous inspire : avancez de 3 cases."
+    },
+    {
+      "id": 4,
+      "text": "Une file immense au métro Jean-Jaurès vous bloque : reculez de 2 cases."
+    },
+    {
+      "id": 5,
+      "text": "Un étudiant vous prête sa trottinette électrique : avancez jusqu’à la prochaine Gare."
+    },
+    {
+      "id": 6,
+      "text": "Vous gagnez une place pour un concert au Zénith : recevez 50 €."
+    },
+    {
+      "id": 7,
+      "text": "Un grimpeur du quartier Saint-Pierre renverse son verre : payez 10 €."
+    },
+    {
+      "id": 8,
+      "text": "Les quais de la Garonne s’animent : avancez jusqu’à la Prairie des Filtres."
+    },
+    {
+      "id": 9,
+      "text": "Coup de chance ! Une chocolaterie offre des dégustations gratuites : recevez 20 €."
+    },
+    {
+      "id": 10,
+      "text": "Vous vous perdez dans les ruelles du Vieux-Toulouse : passez votre tour."
+    },
+    {
+      "id": 11,
+      "text": "Un joueur du TFC vous offre son maillot dédicacé : gagnez 40 €."
+    },
+    {
+      "id": 12,
+      "text": "Vous tombez dans un embouteillage monstrueux au Pont Neuf : reculez de 3 cases."
+    },
+    {
+      "id": 13,
+      "text": "Le vent d’Autan se calme enfin : rejouez immédiatement."
+    },
+    {
+      "id": 14,
+      "text": "Une soirée sur les berges se transforme en fête géante : payez 25 €."
+    },
+    {
+      "id": 15,
+      "text": "Vous prenez le métro, ligne A, en mode “sardines” : payez 5 €."
+    },
+    {
+      "id": 16,
+      "text": "Une navette spatiale d’ArianeGroup inspire votre destin : avancez jusqu’à la dernière case du plateau."
+    },
+    {
+      "id": 17,
+      "text": "Un pigeonnier toulousain vous offre un instant de grâce… ou pas : payez 10 €."
+    },
+    {
+      "id": 18,
+      "text": "Vous assistez à un spectacle de rue au Capitole : payez 15 €."
+    },
+    {
+      "id": 19,
+      "text": "Un étudiant vous demande de signer sa pétition : perdez 5 €."
+    },
+    {
+      "id": 20,
+      "text": "Un vendeur ambulant vous charme avec un cassoulet fumant : payez 20 €."
+    },
+    {
+      "id": 21,
+      "text": "Vous gagnez une visite guidée du Canal du Midi : recevez 45 €."
+    },
+    {
+      "id": 22,
+      "text": "Un événement musical aux Carmes vous attire : avancez de 4 cases."
+    },
+    {
+      "id": 23,
+      "text": "Le contrôleur Tisséo passe au même moment que vous : payez 20 €."
+    },
+    {
+      "id": 24,
+      "text": "Une photo de vous place du Capitole devient virale : gagnez 60 €."
+    },
+    {
+      "id": 25,
+      "text": "Vous aidez un touriste à retrouver le Quartier Saint-Cyprien : avancez jusqu’à la prochaine case rose."
+    },
+    {
+      "id": 26,
+      "text": "Le marché Victor-Hugo vous inspire : gagnez 30 €."
+    },
+    {
+      "id": 27,
+      "text": "Vous faites tomber votre sac dans la Garonne (oh pitchoun !) : perdez 25 €."
+    },
+    {
+      "id": 28,
+      "text": "Vous êtes convié à un apéro du quartier : payez 15 €, mais rejouez."
+    },
+    {
+      "id": 29,
+      "text": "Le Minotaure de la Halle de la Machine vous fait signe : avancez jusqu’à la prochaine Caisse de Communauté."
+    },
+    {
+      "id": 30,
+      "text": "Un spectacle de l’Opéra du Capitole vous éblouit : payez 50 €."
+    }
+  ]
+}

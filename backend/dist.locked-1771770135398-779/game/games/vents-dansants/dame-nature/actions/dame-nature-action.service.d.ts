@@ -1,0 +1,32 @@
+import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { GameCoreService } from '../../../../core/services/game-core.service';
+import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
+export declare class DameNatureActionService {
+    private readonly core;
+    private readonly turns;
+    private readonly deckPolicies;
+    constructor(core: GameCoreService, turns: TurnFlowService, deckPolicies: DeckPoliciesService);
+    applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity;
+    private handlePass;
+    private handleAskCard;
+    private drawAndAdvance;
+    private drawCardForPlayer;
+    private registerFamilyCard;
+    private transferCardBetweenPlayers;
+    private applyNatureEffect;
+    private checkVictory;
+    private getCompletedFamilyCount;
+    private drawOneCard;
+    private addCardToHand;
+    private removeCardFromHand;
+    private addCardToDiscard;
+    private removeFamilyCard;
+    private setLastQuiz;
+    private setMeta;
+    private getMeta;
+    private playerHasCard;
+    private getCardName;
+    private isGameFinished;
+}

@@ -407,7 +407,10 @@ public partial class GamePlayView
 
         // Grille: laisser EntrÃ©e/Espace activer la case (Button.Command) au lieu de renvoyer une touche "ENTER" au serveur.
         // Sinon Corridor (prendre le pion / dÃ©placement / pose de mur) devient inutilisable.
-        if (vm.Grid.IsVisible && IsFocusWithinGrid() && (e.Key == Key.Enter || e.Key == Key.Return || e.Key == Key.Space))
+        if (!isFinishedState &&
+            vm.Grid.IsVisible &&
+            IsFocusWithinGrid() &&
+            (e.Key == Key.Enter || e.Key == Key.Return || e.Key == Key.Space))
         {
             return;
         }
@@ -507,4 +510,3 @@ public partial class GamePlayView
         return string.Equals(normalized, "finished", StringComparison.OrdinalIgnoreCase);
     }
 }
-

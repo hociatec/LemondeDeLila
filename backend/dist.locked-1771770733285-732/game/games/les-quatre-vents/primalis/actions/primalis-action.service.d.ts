@@ -1,0 +1,30 @@
+import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { GameCoreService } from '../../../../core/services/game-core.service';
+import { RandomService } from '../../../../modules/random/services/random.service';
+import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+export declare class PrimalisActionService {
+    private readonly random;
+    private readonly turns;
+    private readonly core;
+    constructor(random: RandomService, turns: TurnFlowService, core: GameCoreService);
+    applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity;
+    private handleRoll;
+    private applyFaceEffect;
+    private applyTileEffects;
+    private applyDanger;
+    private advancePlayer;
+    private advanceAllPlayers;
+    private addResources;
+    private finishGame;
+    private mapFace;
+    private setPosition;
+    private getTileForPlayer;
+    private getResources;
+    private determineDuplicate;
+    private enableDangerAmplification;
+    private disableDangerAmplification;
+    private computeScore;
+    private getMeta;
+    private checkFinish;
+}

@@ -256,6 +256,15 @@ export class GameEngineService {
 
     const state = await this.getStateForUser(roomId, gameType, userId);
     const handler = this.registry.getHandler(gameType);
+    const status = String(state?.status ?? '')
+      .toLowerCase()
+      .trim();
+
+    // Priority rule: ENTER must always restart when the game is finished,
+    // regardless of any declared shortcut mapping.
+    if (normalized === 'ENTER' && status === 'finished') {
+      return { kind: 'room', op: 'restart' };
+    }
 
     const declared: GameShortcutHint[] = handler?.getShortcuts
       ? handler.getShortcuts({
@@ -277,9 +286,6 @@ export class GameEngineService {
     });
 
     if (!match || typeof match !== 'object') {
-      const status = String(state?.status ?? '')
-        .toLowerCase()
-        .trim();
       if (normalized === 'X') {
         return { kind: 'room', op: 'reset' };
       }
@@ -347,6 +353,26 @@ export class GameEngineService {
             message = `C'est au tour du joueur ${currentPlayerId}.`;
           } else {
             message = 'Tour en cours indisponible.';
+          }
+        }
+      }
+      if (!message) {
+        const toStringList = (raw: unknown): string[] =>
+          Array.isArray(raw)
+            ? raw
+                .map((v) => this.normalizeMetadataString(v))
+                .filter((v) => v.length > 0)
+            : [];
+
+        if (panelId === 'hand' || panelId === 'hands') {
+          const hand = toStringList(extras['hand']);
+          if (hand.length > 0) {
+            message = `Main : ${hand.join(', ')}.`;
+          }
+        } else if (panelId === 'score') {
+          const score = toStringList(extras['score']);
+          if (score.length > 0) {
+            message = `Score : ${score.join(' | ')}.`;
           }
         }
       }
@@ -1560,7 +1586,7 @@ export class GameEngineService {
       const allowedBotIds = new Set<number>(
         roomBots
           .map((b) => -Math.abs(b.id))
-          .filter((id) => Number.isFinite(id) && id > 0),
+          .filter((id) => Number.isFinite(id) && id < 0),
       );
 
       // Bots already present in the game state (initial bots / already replaced seats).
@@ -1612,13 +1638,15 @@ export class GameEngineService {
         const id = p.id;
         if (!Number.isFinite(id) || id === 0) return true;
         const isBot = p.isBot === true;
-        const name = this.normalizeUsernameForLog(p.username);
-        if (isBot && (!name || !allowedBotNames.has(name))) {
-          return false;
+        // Stable bot seats are identified by negative ids.
+        // Keep/remove them by id only (name may evolve/canonicalize across layers).
+        if (id < 0) {
+          if (!isBot) return true;
+          return allowedBotIds.has(id);
         }
-        if (id >= 0) return true;
         if (!isBot) return true;
-        return allowedBotIds.has(id);
+        const name = this.normalizeUsernameForLog(p.username);
+        return Boolean(name && allowedBotNames.has(name));
       });
       const nextPlayers = filteredPlayers;
       if (nextPlayers.length !== mappedPlayers.length) {
