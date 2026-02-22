@@ -342,14 +342,37 @@ export class LamaPresenter extends BasePresenterService {
 
     const scoreBy = metadata.scoresByPlayerId ?? {};
     const myScore = Number(scoreBy[String(userId)] ?? 0);
-    const scoreLines = players
-      .filter((p) => p?.id)
-      .map((p) => {
+    const namesById = new Map<number, string>();
+    players
+      .filter((p) => typeof p?.id === 'number')
+      .forEach((p) => {
         const pid = p.id;
-        const s = Number(scoreBy[String(pid)] ?? 0);
-        const name = this.sanitizePlayerName(p.username) || `#${pid}`;
-        return `${name}: ${s}`;
+        namesById.set(
+          pid,
+          this.sanitizePlayerName(p.username) || `Joueur ${pid}`,
+        );
       });
+    const scoreLines: string[] = [];
+    const seenIds = new Set<number>();
+
+    const pushScoreLine = (pid: number) => {
+      if (!Number.isFinite(pid) || seenIds.has(pid)) {
+        return;
+      }
+      seenIds.add(pid);
+      const name = namesById.get(pid) || `Joueur ${pid}`;
+      const scoreValue = Number(scoreBy[String(pid)] ?? 0);
+      scoreLines.push(`${name}: ${scoreValue}`);
+    };
+
+    players
+      .filter((p) => typeof p?.id === 'number')
+      .forEach((p) => pushScoreLine(p.id));
+    Object.keys(scoreBy)
+      .map((key) => Number(key))
+      .filter((pid) => Number.isFinite(pid) && !seenIds.has(pid))
+      .sort((a, b) => a - b)
+      .forEach((pid) => pushScoreLine(pid));
 
     const discard = Array.isArray(metadata.discard) ? metadata.discard : [];
     const top = discard.length ? discard[discard.length - 1] : null;

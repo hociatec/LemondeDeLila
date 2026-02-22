@@ -20,6 +20,7 @@ import { GameRegistryService } from './game-registry.service';
 import type {
   GameStateEntity,
   PendingState,
+  PlayerStateEntity,
 } from '../../core/entities/game-state.entity';
 import type { GameRulesAdapter } from '../interfaces/game-rules-adapter.interface';
 import { TurnLabelService } from '../../modules/turn/services/turn-label.service';
@@ -1122,6 +1123,45 @@ export class GameEngineService {
     return name;
   }
 
+  private buildPlayersFromPayload(payload: RoomPayload): PlayerStateEntity[] {
+    const result: PlayerStateEntity[] = [];
+    const roomPlayers: RoomPlayer[] = Array.isArray(payload?.room?.players)
+      ? payload.room.players
+      : [];
+    for (const player of roomPlayers) {
+      const pid =
+        typeof player?.id === 'number' ? player.id : Number(player?.id ?? NaN);
+      if (!Number.isFinite(pid) || pid === 0) continue;
+      result.push({
+        id: pid,
+        username:
+          this.normalizeUsernameForLog(player.username) || `Joueur ${pid}`,
+        isBot: false,
+      });
+    }
+    const roomBots: RoomBotState[] = Array.isArray(payload?.room?.bots)
+      ? payload.room.bots
+      : [];
+    for (const bot of roomBots) {
+      const rawId =
+        typeof bot?.id === 'number'
+          ? bot.id
+          : typeof bot?.id === 'string'
+            ? Number(bot.id)
+            : NaN;
+      if (!Number.isFinite(rawId)) continue;
+      const pid = -Math.abs(rawId);
+      if (pid === 0) continue;
+      result.push({
+        id: pid,
+        username:
+          this.normalizeUsernameForLog(bot.name) || `Bot ${Math.abs(pid)}`,
+        isBot: true,
+      });
+    }
+    return result;
+  }
+
   private normalizeActionType(value: unknown): string {
     if (typeof value !== 'string') {
       return '';
@@ -1469,6 +1509,7 @@ export class GameEngineService {
     payload: RoomPayload,
   ): GameStateEntity {
     try {
+      let changed = false;
       if (
         !state ||
         String(state.status ?? '')
@@ -1477,8 +1518,16 @@ export class GameEngineService {
       ) {
         return state;
       }
-      const players = state.players ?? [];
-      if (players.length === 0) return state;
+      let players = state.players ?? [];
+      if (players.length === 0) {
+        const rebuiltPlayers = this.buildPlayersFromPayload(payload);
+        if (rebuiltPlayers.length === 0) {
+          return state;
+        }
+        changed = true;
+        state = { ...state, players: rebuiltPlayers };
+        players = rebuiltPlayers;
+      }
 
       const roomPlayers: RoomPlayer[] = Array.isArray(payload?.room?.players)
         ? payload.room.players
@@ -1525,7 +1574,6 @@ export class GameEngineService {
         }
       }
 
-      let changed = false;
       const mappedPlayers = players.map((p) => {
         const id = p.id;
         if (!Number.isFinite(id) || id === 0) return p;
