@@ -1519,14 +1519,21 @@ export class GameEngineService {
         return state;
       }
       let players = state.players ?? [];
-      if (players.length === 0) {
-        const rebuiltPlayers = this.buildPlayersFromPayload(payload);
-        if (rebuiltPlayers.length === 0) {
-          return state;
-        }
+      const desiredPlayers = this.buildPlayersFromPayload(payload);
+      if (players.length === 0 && desiredPlayers.length === 0) {
+        return state;
+      }
+      if (players.length === 0 && desiredPlayers.length > 0) {
+        players = desiredPlayers;
         changed = true;
-        state = { ...state, players: rebuiltPlayers };
-        players = rebuiltPlayers;
+      } else if (desiredPlayers.length > 0) {
+        const missing = desiredPlayers.filter(
+          (desired) => !players.some((existing) => existing?.id === desired.id),
+        );
+        if (missing.length > 0) {
+          players = [...players, ...missing];
+          changed = true;
+        }
       }
 
       const roomPlayers: RoomPlayer[] = Array.isArray(payload?.room?.players)
