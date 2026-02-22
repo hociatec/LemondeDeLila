@@ -4,7 +4,6 @@ const path = require('path');
 const distPath = path.resolve(process.cwd(), 'dist');
 
 if (!fs.existsSync(distPath)) {
-  // Nothing to clean yet.
   return;
 }
 
@@ -16,7 +15,6 @@ try {
       Math.random() * 1000,
     )}`;
 
-    // Keep the old dist out of the way instead of failing the build.
     fs.renameSync(distPath, fallbackPath);
     console.warn(
       `[prepare-dist] Could not remove ${distPath} (${error.code}). Renamed to ${fallbackPath} so the build can continue.`,

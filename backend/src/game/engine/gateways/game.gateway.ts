@@ -79,7 +79,7 @@ export class GameGateway
     Map<string, string>
   >();
   private readonly lastPayloadBySocket = new WeakMap<
-    WebSocket,
+    GameWebSocket,
     GameStatePayload
   >();
   private readonly pingIntervalMs = 25000;
