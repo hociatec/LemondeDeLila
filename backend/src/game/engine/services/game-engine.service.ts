@@ -1523,15 +1523,12 @@ export class GameEngineService {
       if (players.length === 0 && desiredPlayers.length === 0) {
         return state;
       }
-      if (players.length === 0 && desiredPlayers.length > 0) {
-        players = desiredPlayers;
-        changed = true;
-      } else if (desiredPlayers.length > 0) {
-        const missing = desiredPlayers.filter(
-          (desired) => !players.some((existing) => existing?.id === desired.id),
-        );
-        if (missing.length > 0) {
-          players = [...players, ...missing];
+      if (desiredPlayers.length > 0) {
+        const same =
+          players.length === desiredPlayers.length &&
+          players.every((p, i) => p?.id === desiredPlayers[i]?.id);
+        if (!same) {
+          players = desiredPlayers;
           changed = true;
         }
       }
