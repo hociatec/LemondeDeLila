@@ -155,7 +155,7 @@ public sealed class ShellInputController
                 // Tavern (Catalog): handle Escape at the window level for the same reason as Presence.
                 // When focus is parked on RootHost during a navigation/focus-safety pass, the CatalogView's
                 // PreviewKeyDown won't receive the event (tunneling targets the focused element only).
-                if (_navigation.CurrentContent is CatalogViewModel cvm)
+                if (TryResolveCatalogContext(window, out var cv, out var cvm, out var catalogContent))
                 {
                     e.Handled = true;
                     _ = Application.Current?.Dispatcher?.BeginInvoke(
@@ -164,8 +164,7 @@ public sealed class ShellInputController
                         {
                             try
                             {
-                                var root = window != null ? TryGetContentRoot(window) : null;
-                                if (root is CatalogView cv)
+                                if (cv != null)
                                 {
                                     var inCategoriesColumn = cv.IsCategoriesColumnFocused || !cv.IsKeyboardFocusWithin;
                                     var inSubCategoriesColumn = cv.IsSubCategoriesColumnFocused;
@@ -178,13 +177,13 @@ public sealed class ShellInputController
                                             new Action(() => cv.FocusAfterEscapeFromShell(result)));
                                     }
 
-                                    EnsureCatalogCloseNavigatesSomewhere(cvm, result);
+                                    EnsureCatalogCloseNavigatesSomewhere(catalogContent, cvm, result);
                                 }
                                 else
                                 {
                                     // Best-effort fallback: if we can't resolve the view, still honor Escape.
                                     var result = cvm.HandleEscape(closeFromCategoryColumn: true, fromSubCategoryColumn: false);
-                                    EnsureCatalogCloseNavigatesSomewhere(cvm, result);
+                                    EnsureCatalogCloseNavigatesSomewhere(catalogContent, cvm, result);
                                 }
                             }
                             catch
@@ -425,7 +424,46 @@ public sealed class ShellInputController
         return null;
     }
 
-    private void EnsureCatalogCloseNavigatesSomewhere(CatalogViewModel catalog, CatalogEscapeResult result)
+    private bool TryResolveCatalogContext(
+        Window? window,
+        out CatalogView? view,
+        out CatalogViewModel viewModel,
+        out object catalogContent)
+    {
+        view = null;
+        viewModel = null!;
+        catalogContent = _navigation.CurrentContent ?? new object();
+
+        var current = _navigation.CurrentContent;
+        if (current is CatalogViewModel currentVm)
+        {
+            viewModel = currentVm;
+            view = window != null ? TryGetContentRoot(window) as CatalogView : null;
+            catalogContent = current;
+            return true;
+        }
+
+        if (current is CatalogView currentView && currentView.DataContext is CatalogViewModel currentViewVm)
+        {
+            view = currentView;
+            viewModel = currentViewVm;
+            catalogContent = current;
+            return true;
+        }
+
+        var root = window != null ? TryGetContentRoot(window) : null;
+        if (root is CatalogView rootView && rootView.DataContext is CatalogViewModel rootVm)
+        {
+            view = rootView;
+            viewModel = rootVm;
+            catalogContent = current ?? rootView;
+            return true;
+        }
+
+        return false;
+    }
+
+    private void EnsureCatalogCloseNavigatesSomewhere(object catalogContent, CatalogViewModel catalogVm, CatalogEscapeResult result)
     {
         if (result != CatalogEscapeResult.Closed)
         {
@@ -441,13 +479,18 @@ public sealed class ShellInputController
             {
                 try
                 {
-                    if (!ReferenceEquals(_navigation.CurrentContent, catalog))
+                    var current = _navigation.CurrentContent;
+                    var stillOnCatalog =
+                        ReferenceEquals(current, catalogContent) ||
+                        ReferenceEquals(current, catalogVm) ||
+                        (current is CatalogView currentView && ReferenceEquals(currentView.DataContext, catalogVm));
+                    if (!stillOnCatalog)
                     {
                         return;
                     }
 
                     var home = _home.HomeContent;
-                    if (home == null || ReferenceEquals(home, catalog))
+                    if (home == null || ReferenceEquals(home, catalogContent) || ReferenceEquals(home, catalogVm))
                     {
                         return;
                     }
