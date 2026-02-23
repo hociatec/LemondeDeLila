@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using Microsoft.Extensions.Logging;
+using client_win.Core.Text;
 
 namespace client_win.Modules.Shell.Services;
 
@@ -66,7 +67,7 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
         }
 
         var list = messages
-            .Select(m => (m ?? string.Empty).Trim())
+            .Select(m => MojibakeTextRepair.Fix(m).Trim())
             .Where(m => m.Length > 0)
             .ToList();
         if (list.Count == 0)
@@ -87,7 +88,7 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
 
     public void Enqueue(string message, AnnouncementPriority priority = AnnouncementPriority.Polite)
     {
-        var trimmed = (message ?? string.Empty).Trim();
+        var trimmed = MojibakeTextRepair.Fix(message).Trim();
         if (trimmed.Length == 0)
         {
             return;
@@ -238,4 +239,3 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
         }
     }
 }
-

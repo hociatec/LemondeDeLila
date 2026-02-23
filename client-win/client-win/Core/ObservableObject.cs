@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using client_win.Core.Text;
 
 namespace client_win.Core;
 
@@ -13,6 +14,11 @@ public abstract class ObservableObject : INotifyPropertyChanged
 
     protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
+        if (value is string text)
+        {
+            value = (T)(object)MojibakeTextRepair.Fix(text);
+        }
+
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
             return false;

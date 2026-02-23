@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using Serilog;
+using client_win.Core.Text;
 
 namespace client_win.Modules.Shell.Services;
 
@@ -50,6 +51,7 @@ public sealed class ScreenReaderAnnouncer : IScreenReaderAnnouncer, IDisposable
 
     private void Announce(string message, bool interrupt, bool requireAppActive = true)
     {
+        message = MojibakeTextRepair.Fix(message);
         if (string.IsNullOrWhiteSpace(message))
         {
             return;

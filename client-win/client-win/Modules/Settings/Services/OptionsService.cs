@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using client_win.Core.Settings;
+using client_win.Core.Text;
 using client_win.Modules.Config;
 using client_win.Modules.Settings.Models;
 using client_win.Modules.Settings.ViewModels;
@@ -23,6 +24,7 @@ public sealed class OptionsService : IOptionsService
     public OptionsService()
     {
         _state = new OptionsState();
+        ApplyGlobalTextRepair();
     }
 
     public OptionsService(SettingsManager<OptionsState> settingsManager)
@@ -30,6 +32,7 @@ public sealed class OptionsService : IOptionsService
         _settingsManager = settingsManager ?? throw new ArgumentNullException(nameof(settingsManager));
         _state = _settingsManager.Current;
         UpgradeStateIfNeeded();
+        ApplyGlobalTextRepair();
     }
 
     public OptionsService(SettingsManager<OptionsState> settingsManager, INavigationService navigation)
@@ -38,6 +41,7 @@ public sealed class OptionsService : IOptionsService
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         _state = _settingsManager.Current;
         UpgradeStateIfNeeded();
+        ApplyGlobalTextRepair();
     }
 
     public OptionsService(
@@ -52,6 +56,7 @@ public sealed class OptionsService : IOptionsService
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _state = _settingsManager.Current;
         UpgradeStateIfNeeded();
+        ApplyGlobalTextRepair();
     }
 
     public OptionsState Current => _state;
@@ -61,6 +66,7 @@ public sealed class OptionsService : IOptionsService
     public void Update(OptionsState state)
     {
         _state = state ?? throw new ArgumentNullException(nameof(state));
+        ApplyGlobalTextRepair();
 
         if (_settingsManager != null)
         {
@@ -173,6 +179,7 @@ public sealed class OptionsService : IOptionsService
     {
         MuteAll = source.MuteAll,
         ConfirmExit = source.ConfirmExit,
+        RepairBrokenAccents = source.RepairBrokenAccents,
         EnableBetaGames = source.EnableBetaGames,
         SoundAmbience = source.SoundAmbience,
         SoundAppLaunch = source.SoundAppLaunch,
@@ -257,5 +264,17 @@ public sealed class OptionsService : IOptionsService
         _state.SoundTavernAmbienceVolume = legacy;
         _state.SoundAmbienceSplit = true;
         _settingsManager.UpdateAndSave(_state);
+    }
+
+    private void ApplyGlobalTextRepair()
+    {
+        try
+        {
+            MojibakeTextRepair.SetEnabled(_state.RepairBrokenAccents);
+        }
+        catch
+        {
+            // best-effort
+        }
     }
 }

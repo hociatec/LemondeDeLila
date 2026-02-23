@@ -69,6 +69,12 @@ public sealed class OptionsViewModel : ObservableObject
         set => Update(() => _state.ConfirmExit, v => _state.ConfirmExit = v, value);
     }
 
+    public bool RepairBrokenAccents
+    {
+        get => _state.RepairBrokenAccents;
+        set => Update(() => _state.RepairBrokenAccents, v => _state.RepairBrokenAccents = v, value);
+    }
+
     public bool EnableBetaGames
     {
         get => _state.EnableBetaGames;

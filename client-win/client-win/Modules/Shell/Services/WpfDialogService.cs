@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Collections.Generic;
+using client_win.Core.Text;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 
@@ -17,14 +18,19 @@ namespace client_win.Modules.Shell.Services;
 public sealed class WpfDialogService : IDialogService
 {
     public Task ShowError(string title, string message) =>
-        InvokeAsync(() => ShowTextDialog(title, message, kind: "Erreur"));
+        InvokeAsync(() => ShowTextDialog(Fix(title), Fix(message), kind: "Erreur"));
 
     public Task ShowInfo(string title, string message) =>
-        InvokeAsync(() => ShowTextDialog(title, message, kind: "Information"));
+        InvokeAsync(() => ShowTextDialog(Fix(title), Fix(message), kind: "Information"));
 
     public Task<bool?> Confirm(string title, string message, string? okText = null, string? cancelText = null) =>
         InvokeAsync<bool?>(() =>
         {
+            title = Fix(title);
+            message = Fix(message);
+            okText = Fix(okText);
+            cancelText = Fix(cancelText);
+
             if (string.IsNullOrWhiteSpace(okText) && string.IsNullOrWhiteSpace(cancelText))
             {
                 var result = ShowOwned(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question);
@@ -35,10 +41,19 @@ public sealed class WpfDialogService : IDialogService
         });
 
     public Task<DialogChoice?> Choose(string title, string message, string primaryText, string secondaryText, string cancelText) =>
-        InvokeAsync<DialogChoice?>(() => ShowCustomChoice(title, message, primaryText, secondaryText, cancelText));
+        InvokeAsync<DialogChoice?>(() =>
+            ShowCustomChoice(Fix(title), Fix(message), Fix(primaryText), Fix(secondaryText), Fix(cancelText)));
 
     public Task<string?> Pick(string title, string message, IReadOnlyList<string> options, string? okText = null, string? cancelText = null) =>
-        InvokeAsync(() => ShowPickDialog(title, message, options, okText ?? "OK", cancelText ?? "Annuler"));
+        InvokeAsync(() =>
+            ShowPickDialog(
+                Fix(title),
+                Fix(message),
+                options?.Select(Fix).ToArray() ?? Array.Empty<string>(),
+                Fix(okText ?? "OK"),
+                Fix(cancelText ?? "Annuler")));
+
+    private static string Fix(string? value) => MojibakeTextRepair.Fix(value);
 
     private static bool? ShowCustomConfirm(string title, string message, string okText, string cancelText)
     {
