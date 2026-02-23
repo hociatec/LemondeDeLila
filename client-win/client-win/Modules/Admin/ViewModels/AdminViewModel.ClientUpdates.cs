@@ -1,8 +1,6 @@
 using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Threading;
 
 namespace client_win.Modules.Admin.ViewModels;
 
@@ -12,7 +10,7 @@ public sealed partial class AdminViewModel
     {
         _page = AdminPage.ClientUpdates;
         Title = "Mises a jour client";
-        Details = "Renseigne le delai et le message. La publication et la distribution seront lancees a l'echeance.";
+        Details = "Renseigne le delai et le message. La publication est lancee immediatement, puis la bascule forcee a l'echeance.";
         Items.Clear();
         Items.Add(new AdminMenuItem("Valider la mise a jour", tag: "clientUpdate.schedule"));
         SelectedItem = Items.FirstOrDefault();
@@ -48,11 +46,23 @@ public sealed partial class AdminViewModel
         try
         {
             var message = NormalizeClientUpdateMessage();
+
+            // Robustesse: publier immédiatement avant de planifier la bascule.
+            // Cela évite la course "déconnexion avant publication effective", principale cause
+            // des redémarrages où ClickOnce ne propose pas encore la nouvelle version.
+            var publish = await _publisher
+                .BuildAndUploadAsync(message, version: null)
+                .ConfigureAwait(true);
+
+            if (!publish.Success)
+            {
+                await _dialogs.ShowError("Mise a jour", publish.StatusMessage).ConfigureAwait(true);
+                return;
+            }
+
             var (delivered, delaySeconds, scheduledAt) = await _admin
                 .ScheduleClientUpdateAsync(minutes, message)
                 .ConfigureAwait(true);
-
-            ArmClientUpdatePublishTimer(delaySeconds, message);
 
             var delayShown = Math.Max(1, (int)Math.Round(delaySeconds / 60.0));
             var when = scheduledAt;
@@ -63,95 +73,14 @@ public sealed partial class AdminViewModel
 
             await _dialogs.ShowInfo(
                     "Mise a jour",
-                    $"Alerte envoyee a {delivered} utilisateur(s). Publication/distribution dans {delayShown} minute(s), vers {when}.")
+                    $"Version publiee: {publish.PublishedVersion ?? "inconnue"}. " +
+                    $"Alerte envoyee a {delivered} utilisateur(s). " +
+                    $"Bascule forcee dans {delayShown} minute(s), vers {when}.")
                 .ConfigureAwait(true);
         }
         finally
         {
             IsBusy = false;
         }
-    }
-
-    private void ArmClientUpdatePublishTimer(int delaySeconds, string? message)
-    {
-        try
-        {
-            _clientUpdatePublishCts?.Cancel();
-            _clientUpdatePublishCts?.Dispose();
-        }
-        catch
-        {
-            // ignore
-        }
-
-        var effectiveDelaySeconds = Math.Max(60, delaySeconds);
-        var cts = new CancellationTokenSource();
-        _clientUpdatePublishCts = cts;
-
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await Task.Delay(TimeSpan.FromSeconds(effectiveDelaySeconds), cts.Token).ConfigureAwait(false);
-                if (cts.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                await (await _dispatcher.InvokeAsync(async () =>
-                {
-                    if (cts.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    IsBusy = true;
-                    try
-                    {
-                        var publish = await _publisher
-                            .BuildAndUploadAsync(message, version: null, cts.Token)
-                            .ConfigureAwait(true);
-
-                        if (!publish.Success)
-                        {
-                            await _dialogs.ShowError("Mise a jour", publish.StatusMessage).ConfigureAwait(true);
-                            return;
-                        }
-
-                        var (delivered, minRequiredVersion) = await _admin
-                            .ForceClientUpdateLatestAsync(message, cts.Token)
-                            .ConfigureAwait(true);
-
-                        await _dialogs.ShowInfo(
-                                "Mise a jour",
-                                $"Version publiee: {(publish.PublishedVersion ?? minRequiredVersion)}. " +
-                                $"Mise a jour forcee envoyee a {delivered} utilisateur(s).")
-                            .ConfigureAwait(true);
-                    }
-                    finally
-                    {
-                        IsBusy = false;
-                    }
-                }, DispatcherPriority.Background)).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                // ignore
-            }
-            catch (Exception ex)
-            {
-                await _dispatcher.InvokeAsync(async () =>
-                {
-                    try
-                    {
-                        await _dialogs.ShowError("Mise a jour", ex.Message).ConfigureAwait(true);
-                    }
-                    catch
-                    {
-                        // ignore
-                    }
-                }, DispatcherPriority.Background);
-            }
-        });
     }
 }

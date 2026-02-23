@@ -87,7 +87,6 @@ public sealed partial class AdminViewModel : ObservableObject
     private string _fifthInput = string.Empty;
     private string _clientUpdateMessage = string.Empty;
     private string _clientUpdateDelayMinutes = "1";
-    private System.Threading.CancellationTokenSource? _clientUpdatePublishCts;
     private bool _primaryInputAcceptsReturn = true;
     private bool _secondaryInputAcceptsReturn;
     private bool _isPrimaryInputVisible;

@@ -7,6 +7,7 @@ import { PayloadValidationService } from '../../common/validation/payload-valida
 import { NotificationService } from '../../notification/services/notification.service';
 import { User } from '../../user/entities/user.entity';
 import { ClientUpdatesService } from '../../client-updates/services/client-updates.service';
+import { parseVersion } from '../../common/utils/version.utils';
 import {
   AdminClientUpdateAnnounceWsDto,
   AdminClientUpdateForceLatestWsDto,
@@ -242,21 +243,40 @@ export class AdminClientUpdatesWsHandler {
       );
     }
 
-    const sendUpdateAvailable = async () => {
+    const sendForcedUpdate = async () => {
       if (this.scheduledAtMs !== scheduledAtMs) return;
       this.scheduledTimer = null;
       try {
         const latest = await this.clientUpdates.getLatest();
+        const publishedClickOnce =
+          await this.clientUpdates.getPublishedClickOnceVersionFromDisk();
+        const latestVersion =
+          (publishedClickOnce || latest?.version || '').trim() || null;
+        if (!latestVersion || parseVersion(latestVersion) == null) {
+          // Sécurité: ne jamais déconnecter tout le monde si aucune version ClickOnce valide n'est publiée.
+          this.scheduledAtMs = null;
+          return;
+        }
+
+        await this.clientUpdates.saveLatest({
+          version: latestVersion,
+          publishedAt: latest?.publishedAt ?? new Date().toISOString(),
+          message: latest?.message ?? null,
+          publicUrl: latest?.publicUrl ?? null,
+          minRequiredVersion: latestVersion,
+        });
+
         const url = this.clientUpdates.resolveClientPublicUrl(latest);
-        const version = latest?.version?.trim() || null;
 
         await Promise.all(
           recipients.map((u) =>
-            this.notifications.notifyUser(u.id, 'client.update.available', {
+            this.notifications.notifyUser(u.id, 'client.update.required', {
               message:
                 latest?.message ??
-                'Une mise à jour du client est disponible et va être installée automatiquement.',
-              version,
+                'Une mise à jour du client est requise pour continuer.',
+              minRequiredVersion: latestVersion,
+              currentVersion: null,
+              publishedAt: latest?.publishedAt ?? null,
               url,
               fromUserId,
               fromUsername,
@@ -271,7 +291,7 @@ export class AdminClientUpdatesWsHandler {
       this.scheduledAtMs = null;
     };
 
-    this.scheduledTimer = setTimeout(() => void sendUpdateAvailable(), delayMs);
+    this.scheduledTimer = setTimeout(() => void sendForcedUpdate(), delayMs);
 
     return {
       type: 'admin.client.update.schedule',
