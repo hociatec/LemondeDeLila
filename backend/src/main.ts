@@ -108,7 +108,9 @@ async function bootstrap() {
   // Static hosting for ClickOnce client updates through the existing API virtual host.
   // Nginx currently proxies all paths to the backend, so we serve /updates/* here.
   const nodeEnv = (
-    config.get<string>('NODE_ENV') || process.env.NODE_ENV || 'development'
+    config.get<string>('NODE_ENV') ||
+    process.env.NODE_ENV ||
+    'development'
   ).toLowerCase();
   const defaultUpdatesDir =
     nodeEnv === 'production'
@@ -124,8 +126,7 @@ async function bootstrap() {
         // Keep a stable default path relative to the backend project root.
         path.resolve(__dirname, '..', 'data', 'client-updates', 'client-win');
   const updatesDir =
-    config.get<string>('CLIENT_UPDATES_DIR') ||
-    defaultUpdatesDir;
+    config.get<string>('CLIENT_UPDATES_DIR') || defaultUpdatesDir;
   if (!config.get<string>('CLIENT_UPDATES_DIR') && nodeEnv === 'production') {
     console.warn(
       `[updates] CLIENT_UPDATES_DIR is not set; using resilient default path: ${updatesDir}. ` +

@@ -6,6 +6,8 @@ BACKEND_SERVICE="${BACKEND_SERVICE:-lila-backend.service}"
 DEPLOY_USER="${DEPLOY_USER:-}"
 DEPLOY_LOCK_FILE="${DEPLOY_LOCK_FILE:-/var/lock/lemonde-deploy.lock}"
 EFFECTIVE_DEPLOY_USER=""
+SERVICE_WAS_ACTIVE=0
+SERVICE_STOPPED=0
 
 if [[ -z "$LILA_REPO_DIR" ]]; then
   echo "[deploy] ERROR: LILA_REPO_DIR is not set (edit the systemd unit)"
@@ -70,7 +72,24 @@ if ! flock -n 9; then
   exit 99
 fi
 echo "$$" >"$DEPLOY_LOCK_FILE"
-trap 'rm -f "$DEPLOY_LOCK_FILE"' EXIT
+
+on_exit() {
+  local code="$?"
+  trap - EXIT
+
+  rm -f "$DEPLOY_LOCK_FILE" >/dev/null 2>&1 || true
+
+  # When we stop the backend service, a failure mid-deploy can leave the server down.
+  # Best-effort: try to bring the service back if it was active when we started.
+  if [[ "$code" != "0" && "$SERVICE_WAS_ACTIVE" == "1" && "$SERVICE_STOPPED" == "1" ]]; then
+    echo "[deploy] WARN: deploy failed; attempting to restart backend service: $BACKEND_SERVICE"
+    systemctl start "$BACKEND_SERVICE" || true
+    systemctl --no-pager --full status "$BACKEND_SERVICE" || true
+  fi
+
+  exit "$code"
+}
+trap on_exit EXIT
 
 run_as_deploy_user() {
   local current_user
@@ -134,11 +153,18 @@ cleanup_runtime_generated_changes
 echo "[deploy] git pull --ff-only"
 retry 3 3 run_as_deploy_user git pull --ff-only
 
+echo "[deploy] stopping systemd service before npm ci/build (avoid breaking live Node by rewriting node_modules/dist)"
+if systemctl is-active --quiet "$BACKEND_SERVICE"; then
+  SERVICE_WAS_ACTIVE=1
+  systemctl stop "$BACKEND_SERVICE" || true
+  SERVICE_STOPPED=1
+fi
+
 echo "[deploy] backend: npm ci/build/migrations"
 retry 2 5 run_as_deploy_user bash -lc "cd \"$LILA_REPO_DIR/backend\" && npm ci && npm run build && npm run migration:run"
 
-echo "[deploy] restarting systemd service: $BACKEND_SERVICE"
-systemctl restart "$BACKEND_SERVICE"
+echo "[deploy] starting systemd service: $BACKEND_SERVICE"
+systemctl start "$BACKEND_SERVICE"
 systemctl --no-pager --full status "$BACKEND_SERVICE" || true
 
 echo "[deploy] done"

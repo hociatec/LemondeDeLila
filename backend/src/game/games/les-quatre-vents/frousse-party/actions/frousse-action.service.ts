@@ -902,9 +902,7 @@ export class FrousseActionService {
 
     // Immediate roll: if odd then skip.
     if (
-      /si le résultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(
-        text,
-      )
+      /si le résultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(text)
     ) {
       const out = this.random.rollDice(meta, 6);
       meta = { ...meta, ...out.meta };

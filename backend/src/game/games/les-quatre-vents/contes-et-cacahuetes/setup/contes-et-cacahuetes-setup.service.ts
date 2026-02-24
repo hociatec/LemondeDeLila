@@ -95,7 +95,7 @@ export class ContesCacahuetesSetupService {
         description: toText(choice.description).trim(),
       }),
     });
-    let next: GameStateEntity = {
+    const next: GameStateEntity = {
       ...baseState,
       players: updatedPlayers,
       phase: 'playing',

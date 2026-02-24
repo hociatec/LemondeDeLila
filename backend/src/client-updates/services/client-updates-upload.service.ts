@@ -76,8 +76,8 @@ export class ClientUpdatesUploadService {
       const meta = parsed.meta;
       if (!meta || typeof meta !== 'object') return null;
       if (
-        typeof (meta as ClientUpdateMeta).version !== 'string' ||
-        typeof (meta as ClientUpdateMeta).publishedAt !== 'string'
+        typeof meta.version !== 'string' ||
+        typeof meta.publishedAt !== 'string'
       ) {
         return null;
       }
@@ -87,7 +87,7 @@ export class ClientUpdatesUploadService {
           typeof parsed.completedAt === 'string'
             ? parsed.completedAt
             : new Date().toISOString(),
-        meta: meta as ClientUpdateMeta,
+        meta: meta,
       };
     } catch {
       return null;
@@ -248,7 +248,9 @@ export class ClientUpdatesUploadService {
     const dir = path.join(this.uploadsRoot(), uploadId);
     const metaPath = path.join(dir, 'meta.json');
     if (!fs.existsSync(metaPath)) {
-      throw new BadRequestException(`Upload introuvable (uploadId=${uploadId}).`);
+      throw new BadRequestException(
+        `Upload introuvable (uploadId=${uploadId}).`,
+      );
     }
 
     const partPath = path.join(dir, `${index}.part`);
@@ -273,7 +275,9 @@ export class ClientUpdatesUploadService {
       if (completedMarker) {
         return { ok: true, alreadyCompleted: true, meta: completedMarker.meta };
       }
-      throw new BadRequestException(`Upload introuvable (uploadId=${uploadId}).`);
+      throw new BadRequestException(
+        `Upload introuvable (uploadId=${uploadId}).`,
+      );
     }
 
     const lockPath = path.join(dir, '.complete.lock');
@@ -298,7 +302,8 @@ export class ClientUpdatesUploadService {
         }
         const fallbackMeta: ClientUpdateMeta = {
           version: meta.version || `uploaded-${Date.now()}`,
-          publishedAt: meta.completedAt || meta.createdAt || new Date().toISOString(),
+          publishedAt:
+            meta.completedAt || meta.createdAt || new Date().toISOString(),
           message: meta.message || null,
           publicUrl: this.updates.getPublicUrl(),
           minRequiredVersion: meta.minRequiredVersion || null,

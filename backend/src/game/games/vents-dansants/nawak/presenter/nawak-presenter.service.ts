@@ -60,9 +60,13 @@ export class NawakPresenterService {
   ): string {
     if (action.type === 'choose_answer') {
       const index = Number(action.payload?.answerIndex ?? 0);
-      const answer =
+      const raw =
         meta.currentChallenge.answers?.[index] ?? `réponse ${index + 1}`;
-      return `Choisir «»`;
+      const answer = String(raw)
+        .replace(/[\r\n\t]+/g, ' ')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+      return `Choisir «${answer.length > 0 ? answer : `réponse ${index + 1}`}»`;
     }
     if (action.type === 'vote_answer') {
       const target = Number(action.payload?.targetPlayerId ?? 0);

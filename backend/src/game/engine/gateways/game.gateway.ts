@@ -868,9 +868,7 @@ export class GameGateway
   private safeSend(client: GameWebSocket, payload: Payload) {
     if (client.readyState !== WS_READY_STATE_OPEN) return;
     try {
-      client.send(
-        this.unsafeStringify(this.sanitizeOutgoingPayload(payload) as Payload),
-      );
+      client.send(this.unsafeStringify(this.sanitizeOutgoingPayload(payload)));
     } catch (err) {
       this.logger.warn('Echec envoi WS game', err as Error);
       try {

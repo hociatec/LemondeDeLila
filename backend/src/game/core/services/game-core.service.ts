@@ -40,8 +40,9 @@ function extractPawnPromptToken(message: string): string | null {
     return 'prompt:choose-your-pawn';
   }
 
-  const withPlayer =
-    /^c['’]est à (.+?) de choisir son pion(?:[.,!?]|$)/i.exec(text);
+  const withPlayer = /^c['’]est à (.+?) de choisir son pion(?:[.,!?]|$)/i.exec(
+    text,
+  );
   if (withPlayer) {
     return `prompt:choose-pawn:${normalizePromptToken(withPlayer[1])}`;
   }
