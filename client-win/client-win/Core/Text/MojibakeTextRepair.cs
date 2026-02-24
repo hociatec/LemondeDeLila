@@ -9,6 +9,7 @@ public static class MojibakeTextRepair
 {
     private static readonly object Gate = new();
     private static bool _enabled;
+    public static event Action<bool>? EnabledChanged;
 
     private static readonly (Regex Pattern, string Replacement)[] Replacements =
     [
@@ -64,6 +65,59 @@ public static class MojibakeTextRepair
         (new Regex("Â(?=[,;:.!?])", RegexOptions.Compiled), string.Empty),
     ];
 
+    private static readonly (Regex Pattern, string Replacement)[] PhraseReplacements =
+    [
+        (new Regex(@"\bmise\s+a\s+jour\b", RegexOptions.Compiled | RegexOptions.IgnoreCase), "mise à jour"),
+        (new Regex(@"\bmises\s+a\s+jour\b", RegexOptions.Compiled | RegexOptions.IgnoreCase), "mises à jour"),
+        (new Regex(@"\ba\s+l'?echeance\b", RegexOptions.Compiled | RegexOptions.IgnoreCase), "à l'échéance"),
+    ];
+
+    private static readonly Regex WordRegex = new(@"\b[0-9A-Za-z][0-9A-Za-z'-]*\b", RegexOptions.Compiled);
+    private static readonly Dictionary<string, string> WordReplacements = new(StringComparer.Ordinal)
+    {
+        ["acces"] = "accès",
+        ["annulee"] = "annulée",
+        ["annulees"] = "annulées",
+        ["categorie"] = "catégorie",
+        ["categories"] = "catégories",
+        ["connecte"] = "connecté",
+        ["connectes"] = "connectés",
+        ["deconnecte"] = "déconnecté",
+        ["deconnectes"] = "déconnectés",
+        ["delai"] = "délai",
+        ["delais"] = "délais",
+        ["echeance"] = "échéance",
+        ["echeances"] = "échéances",
+        ["ecran"] = "écran",
+        ["ecrans"] = "écrans",
+        ["entree"] = "entrée",
+        ["entrees"] = "entrées",
+        ["etagere"] = "étagère",
+        ["etageres"] = "étagères",
+        ["etre"] = "être",
+        ["etres"] = "êtres",
+        ["fermee"] = "fermée",
+        ["fermees"] = "fermées",
+        ["forcage"] = "forçage",
+        ["general"] = "général",
+        ["immediat"] = "immédiat",
+        ["immediatement"] = "immédiatement",
+        ["immediates"] = "immédiates",
+        ["modere"] = "modéré",
+        ["parametre"] = "paramètre",
+        ["parametres"] = "paramètres",
+        ["redemarrage"] = "redémarrage",
+        ["regle"] = "réglé",
+        ["regler"] = "régler",
+        ["reouverture"] = "réouverture",
+        ["requis"] = "requis",
+        ["requise"] = "requise",
+        ["resume"] = "résumé",
+        ["sauvegarde"] = "sauvegardé",
+        ["terminee"] = "terminée",
+        ["tres"] = "très",
+    };
+
     public static bool IsEnabled
     {
         get
@@ -77,9 +131,26 @@ public static class MojibakeTextRepair
 
     public static void SetEnabled(bool enabled)
     {
+        var changed = false;
         lock (Gate)
         {
+            if (_enabled != enabled)
+            {
+                changed = true;
+            }
             _enabled = enabled;
+        }
+
+        if (changed)
+        {
+            try
+            {
+                EnabledChanged?.Invoke(enabled);
+            }
+            catch
+            {
+                // best-effort
+            }
         }
     }
 
@@ -91,38 +162,43 @@ public static class MojibakeTextRepair
             return input;
         }
 
-        if (!LooksSuspicious(input))
+        var best = input;
+        if (LooksSuspicious(input))
         {
-            return input;
+            var currentScore = Score(input);
+            var targeted = ApplyTargetedReplacements(input);
+            var targetedScore = Score(targeted);
+
+            best = targetedScore < currentScore ? targeted : input;
+            var bestScore = Math.Min(currentScore, targetedScore);
+
+            foreach (var candidate in BuildCandidates(input, targeted))
+            {
+                var normalized = ApplyTargetedReplacements(candidate);
+                var normalizedScore = Score(normalized);
+                if (normalizedScore < bestScore)
+                {
+                    best = normalized;
+                    bestScore = normalizedScore;
+                    continue;
+                }
+
+                var score = Score(candidate);
+                if (score < bestScore)
+                {
+                    best = candidate;
+                    bestScore = score;
+                }
+            }
         }
 
-        var currentScore = Score(input);
-        var targeted = ApplyTargetedReplacements(input);
-        var targetedScore = Score(targeted);
-
-        var best = targetedScore < currentScore ? targeted : input;
-        var bestScore = Math.Min(currentScore, targetedScore);
-
-        foreach (var candidate in BuildCandidates(input, targeted))
+        var normalizedFrench = ApplyFrenchReplacements(best);
+        if (normalizedFrench.Length == 0)
         {
-            var normalized = ApplyTargetedReplacements(candidate);
-            var normalizedScore = Score(normalized);
-            if (normalizedScore < bestScore)
-            {
-                best = normalized;
-                bestScore = normalizedScore;
-                continue;
-            }
-
-            var score = Score(candidate);
-            if (score < bestScore)
-            {
-                best = candidate;
-                bestScore = score;
-            }
+            return best;
         }
 
-        return best;
+        return normalizedFrench;
     }
 
     private static IEnumerable<string> BuildCandidates(string original, string targeted)
@@ -217,6 +293,57 @@ public static class MojibakeTextRepair
             output = pattern.Replace(output, replacement);
         }
         return output;
+    }
+
+    private static string ApplyFrenchReplacements(string value)
+    {
+        var output = value;
+        foreach (var (pattern, replacement) in PhraseReplacements)
+        {
+            output = pattern.Replace(output, m => MatchCase(replacement, m.Value));
+        }
+
+        output = WordRegex.Replace(output, match =>
+        {
+            var token = match.Value;
+            if (token.Length <= 1)
+            {
+                return token;
+            }
+
+            var lower = token.ToLowerInvariant();
+            if (!WordReplacements.TryGetValue(lower, out var replacement))
+            {
+                return token;
+            }
+
+            return MatchCase(replacement, token);
+        });
+
+        return output;
+    }
+
+    private static string MatchCase(string replacement, string source)
+    {
+        if (source.Length == 0 || replacement.Length == 0)
+        {
+            return replacement;
+        }
+
+        var isAllUpper = source.ToUpperInvariant() == source;
+        if (isAllUpper)
+        {
+            return replacement.ToUpperInvariant();
+        }
+
+        if (char.IsUpper(source[0]))
+        {
+            var chars = replacement.ToCharArray();
+            chars[0] = char.ToUpperInvariant(chars[0]);
+            return new string(chars);
+        }
+
+        return replacement;
     }
 
     private static int Score(string value)

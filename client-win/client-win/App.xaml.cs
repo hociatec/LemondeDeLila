@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using client_win.Core.Accessibility;
+using client_win.Core.Text;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Config;
 using client_win.Modules.MainMenu.Services;
@@ -68,6 +69,7 @@ namespace client_win
         protected override void OnStartup(StartupEventArgs e)
         {
             AnimationDisabler.Disable();
+            GlobalUiTextRepair.Initialize();
             string? appDataPath = null;
             var boot = Stopwatch.StartNew();
             try
