@@ -563,6 +563,69 @@ describe('MinuitActionService', () => {
 
     expect(nextCardMentions).toBe(1);
   });
+
+  it('stops landing loops without overflowing the call stack', () => {
+    const { random, turns, core } = createDeps();
+    random.rollDice.mockReturnValue({ roll: 1, meta: {} });
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [
+        { id: 1, username: 'Lilas', pawn: 'Le Renne' } as any,
+        { id: 2, username: 'Bucky', pawn: 'Le Lutin', isBot: true } as any,
+      ],
+      metadata: {
+        positions: { 1: 2, 2: 5 },
+        statuses: { skipTurn: {}, keepTurn: {} },
+        tiles: [
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
+          { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 3, title: 'Case neutre', type: 'neutral', description: '' },
+          {
+            n: 4,
+            title: 'Case avance',
+            type: 'move',
+            delta: 2,
+            description: '',
+          },
+          {
+            n: 5,
+            title: 'Case avance',
+            type: 'move',
+            delta: 1,
+            description: '',
+          },
+          { n: 6, title: 'Case neutre', type: 'neutral', description: '' },
+        ],
+        decks: { cards: [], discard: [] },
+      } as any,
+      pending: null,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = service.applyActions(state, [
+      { type: 'roll', payload: {} } as any,
+    ]);
+
+    const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
+    expect(
+      messages.some((m) =>
+        m.includes(
+          'Enchaînement de cases interrompu pour éviter une boucle infinie.',
+        ),
+      ),
+    ).toBe(true);
+  });
 });
 
 describe('Minuit Rulebook compat', () => {

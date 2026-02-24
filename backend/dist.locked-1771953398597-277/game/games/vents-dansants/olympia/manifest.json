@@ -1,0 +1,8 @@
+{
+  "code": "olympia",
+  "name": "Olympia",
+  "minPlayers": 2,
+  "maxPlayers": 6,
+  "engine": "olympia",
+  "summary": "Accumulez le plus de prestige divin en jouant héros, exploits, créatures, actions, attaques et événements."
+}

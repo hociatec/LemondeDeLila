@@ -1,0 +1,36 @@
+﻿{
+  "version": 1,
+  "pawns": [
+    {
+      "id": "lutin",
+      "name": "Le Lutin",
+      "description": "Vous observez ce petit être malicieux, coiffé d’un bonnet pointu et vêtu d’une tunique verte bordée de fourrure blanche. Toujours en mouvement, il adore livrer les cadeaux à toute vitesse, et son énergie fait scintiller la magie des préparatifs de Noël tout autour de vous."
+    },
+    {
+      "id": "bonhomme-de-neige",
+      "name": "Le Bonhomme de Neige",
+      "description": "Vous souriez en voyant ce bonhomme de neige coiffé d’un chapeau haut-de-forme noir. Il déambule joyeusement, apportant la fraîcheur de l’hiver et une bonne humeur contagieuse à chaque coin du plateau."
+    },
+    {
+      "id": "fee-des-flocons",
+      "name": "La Fée des Flocons",
+      "description": "Vous êtes émerveillé par cette fée légère et élégante, vêtue d’une robe bleu glacé. Partout où elle passe, les flocons scintillants tourbillonnent autour d’elle, révélant la magie subtile et féérique de Noël."
+    },
+    {
+      "id": "pere-noel",
+      "name": "Le Père Noël",
+      "description": "Vous le voyez avancer d’un pas sûr, sa barbe blanche flottant légèrement et son rire chaleureux résonnant. Son traîneau est toujours prêt à décoller, et sa présence réchauffe le cœur de tous ceux qui l’entourent."
+    },
+    {
+      "id": "renne",
+      "name": "Le Renne",
+      "description": "Vous admirez la majesté de ce renne paré d’un harnais doré. Il traverse le plateau avec élégance et dynamisme, symbole de noblesse et d’esprit d’équipe, entraînant la fête dans son sillage."
+    },
+    {
+      "id": "bonhomme-pain-epices",
+      "name": "Le Petit Bonhomme en Pain d'Épices",
+      "description": "Vous sentez presque le parfum sucré de ce petit bonhomme en pain d’épices, décoré de délicat glaçage blanc. Son sourire chaleureux et sa gentillesse feront fondre le cœur de tous les joueurs autour du plateau."
+    }
+  ]
+}
+

@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "cards": [
+    {
+      "id": 1,
+      "text": "Vous aidez à recoller une brique qui s’est fait la malle sur une façade flamande du Vieux-Lille : recevez 100 €."
+    },
+    {
+      "id": 2,
+      "text": "Au marché de Wazemmes, un marchand vous file un vieux livre de recettes “à l’din biloute” : recevez 50 €."
+    },
+    {
+      "id": 3,
+      "text": "Une drache monumentale vous trempe jusqu’au slip dans les ruelles du Vieux-Lille : reculez de deux cases."
+    },
+    {
+      "id": 4,
+      "text": "Vous filez un coup d’main à planter des fleurs place du Théâtre : recevez 75 €."
+    },
+    {
+      "id": 5,
+      "text": "Vous participez à un nettoyage autour de la Citadelle : recevez 100 €."
+    },
+    {
+      "id": 6,
+      "text": "En descendant la Rue de Béthune, vous bousculez un passant avec votre cornet de frites : payez 25 €."
+    },
+    {
+      "id": 7,
+      "text": "Vous êtes choisi pour aider à préparer une expo au Palais des Beaux-Arts : recevez 150 €."
+    },
+    {
+      "id": 8,
+      "text": "Dans une boutique du quartier des antiquaires, vous tombez sur une vieille chope en étain… un vrai trésor ch’ti : recevez 100 €."
+    },
+    {
+      "id": 9,
+      "text": "Un pigeon bien téméraire sur la Grand’Place vous surprend en plein vol : reculez de deux cases."
+    },
+    {
+      "id": 10,
+      "text": "Vous guidez des touristes perdus entre deux estaminets : recevez 30 €."
+    },
+    {
+      "id": 11,
+      "text": "Vous prêtez main-forte à un atelier de cuisine autour du maroilles : recevez 80 €."
+    },
+    {
+      "id": 12,
+      "text": "Vous faites une p’tite éraflure en visitant le Beffroi : payez 55 €."
+    },
+    {
+      "id": 13,
+      "text": "Vous découvrez une statuette oubliée dans un coin du Palais Rihour : recevez 150 €."
+    },
+    {
+      "id": 14,
+      "text": "Vous êtes invité à une dégustation de gaufres fourrées de la rue Esquermoise : recevez 20 €."
+    },
+    {
+      "id": 15,
+      "text": "Sortie de prison : gardez cette carte et utilisez-la quand ça vous arrange, hein biloute."
+    },
+    {
+      "id": 16,
+      "text": "Vous aidez à ramasser les déchets le long de la Deûle : recevez 75 €."
+    },
+    {
+      "id": 17,
+      "text": "En flânant rue de la Clef, vous renversez par accident l’étal d’un petit artisan : payez 50 €."
+    },
+    {
+      "id": 18,
+      "text": "Vous assistez à un spectacle au Théâtre du Nord : payez 60 €."
+    },
+    {
+      "id": 19,
+      "text": "Vous êtes invité à une fête du houblon : recevez 15 €."
+    },
+    {
+      "id": 20,
+      "text": "Vous aidez un voisin à retrouver son chat perdu du côté du parc Jean-Baptiste Lebas : recevez 10 €."
+    },
+    {
+      "id": 21,
+      "text": "Vous participez à un concours de ch’tites fricadelles : vous gagnez le prix du meilleur dégustateur — recevez 80 €."
+    },
+    {
+      "id": 22,
+      "text": "Lors de la Braderie, votre sac se déchire et provoque une belle pagaille : payez 20 €."
+    },
+    {
+      "id": 23,
+      "text": "Vous trouvez une vieille carte postale rare sur un stand de la Braderie : payez 150 €."
+    },
+    {
+      "id": 24,
+      "text": "Un musicien de rue vous dédie une chanson place Rihour : recevez 30 €."
+    },
+    {
+      "id": 25,
+      "text": "Vous aidez à installer les décorations de Noël autour du Beffroi : recevez 100 €."
+    },
+    {
+      "id": 26,
+      "text": "Vous contribuez à la rénovation d’une vieille fontaine lilloise : payez 80 €."
+    },
+    {
+      "id": 27,
+      "text": "Vous tombez sur une petite sculpture cachée dans un jardin du Vieux-Lille : recevez 100 €."
+    },
+    {
+      "id": 28,
+      "text": "Vous vous perdez dans les ruelles pavées derrière Notre-Dame-de-la-Treille : reculez de trois cases."
+    },
+    {
+      "id": 29,
+      "text": "Vous aidez à organiser un tournoi de water-polo à la Piscine Marx Dormoy : recevez 70 €."
+    },
+    {
+      "id": 30,
+      "text": "Vous participez à une dégustation de bières locales et partagez vos avis “d’expert” : recevez 130 €."
+    }
+  ]
+}

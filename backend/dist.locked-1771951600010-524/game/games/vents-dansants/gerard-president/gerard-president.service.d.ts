@@ -1,0 +1,30 @@
+import type { GameStateEntity } from '../../../core/entities/game-state.entity';
+import type { GameSingleActionDto, GameStateWithActions } from '../../../engine/dto/game-action.dto';
+import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
+import type { GameShortcutHint, GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
+import { GerardPresidentActionService } from './actions/gerard-president-action.service';
+import { GerardPresidentBotService } from './bots/gerard-president-bot.service';
+import { GerardPresidentPresenterService } from './presenter/gerard-president-presenter.service';
+import { GerardPresidentSetupService } from './setup/gerard-president-setup.service';
+export declare class GerardPresidentService extends AbstractGameService {
+    private readonly setup;
+    private readonly actions;
+    private readonly presenter;
+    private readonly bots;
+    readonly gameType = "gerard-president";
+    readonly category = "JeuxDePlateaux";
+    readonly subcategory = "VentsDansants";
+    readonly displayName: string;
+    readonly description = "Un jeu d\u2019humour o\u00F9 le pr\u00E9nom le plus absurde remporte les manches.";
+    readonly minPlayers: number;
+    readonly maxPlayers: number;
+    constructor(registry: GameRegistryService, setup: GerardPresidentSetupService, actions: GerardPresidentActionService, presenter: GerardPresidentPresenterService, bots: GerardPresidentBotService);
+    hydrateInitialState(baseState: GameStateEntity): GameStateEntity;
+    applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity;
+    getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[];
+    validateAction(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameSingleActionDto;
+    exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions;
+    getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[];
+    getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[];
+}

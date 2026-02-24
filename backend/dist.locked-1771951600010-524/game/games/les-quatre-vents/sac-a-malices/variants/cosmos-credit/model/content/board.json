@@ -1,0 +1,266 @@
+{
+  "version": 1,
+  "tiles": [
+    {
+      "n": 1,
+      "title": "Départ — “Décollage”",
+      "description": "Recevez 200 crédits cosmiques en passant par la case départ.",
+      "type": "start"
+    },
+    {
+      "n": 2,
+      "title": "Propriété 1 — “Mercure” (planète)",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 1"
+    },
+    {
+      "n": 3,
+      "title": "Carte Communauté — “Événement Spatial”",
+      "description": "",
+      "type": "community"
+    },
+    {
+      "n": 4,
+      "title": "Propriété 2 — “Vénus” (planète)",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 1"
+    },
+    {
+      "n": 5,
+      "title": "Taxe — “Taxe de Navigation Stellaire” (payez 100 crédits)",
+      "description": "",
+      "type": "tax"
+    },
+    {
+      "n": 6,
+      "title": "Propriété 3 — “Station Lunaire” (base orbitale)",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 1"
+    },
+    {
+      "n": 7,
+      "title": "Carte Chance — “Anomalie Spatiale”",
+      "description": "",
+      "type": "chance"
+    },
+    {
+      "n": 8,
+      "title": "Propriété 4 — “Mars” (planète)",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 1"
+    },
+    {
+      "n": 9,
+      "title": "Propriété 5 — “Ceinture d’Astéroïdes” (zone minière)",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 1"
+    },
+    {
+      "n": 10,
+      "title": "Prison — “Trou Noir” (prison)",
+      "description": "",
+      "type": "jail"
+    },
+    {
+      "n": 11,
+      "title": "Propriété 6 — “Jupiter” (planète)",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 0"
+    },
+    {
+      "n": 12,
+      "title": "Propriété spéciale — “Laboratoire de Recherche Stellaire” (gare / transport)",
+      "description": "",
+      "type": "station"
+    },
+    {
+      "n": 13,
+      "title": "Propriété 7 — “Saturne” (planète)",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 2"
+    },
+    {
+      "n": 14,
+      "title": "Propriété 8 — “Titan” (lune de Saturne)",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 2"
+    },
+    {
+      "n": 15,
+      "title": "Propriété 9 — “Taxe de Radiation Cosmique” (payez 150 crédits)",
+      "description": "",
+      "type": "tax"
+    },
+    {
+      "n": 16,
+      "title": "Propriété 10 — “Station Spatiale Internationale”",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 2"
+    },
+    {
+      "n": 17,
+      "title": "Carte Communauté — “Événement Spatial”",
+      "description": "",
+      "type": "community"
+    },
+    {
+      "n": 18,
+      "title": "Propriété 11 — “Uranus” (planète)",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 2"
+    },
+    {
+      "n": 19,
+      "title": "Propriété 12 — “Neptune” (planète)",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 2"
+    },
+    {
+      "n": 20,
+      "title": "Parking Gratuit — “Zone de Gravité Nulle”",
+      "description": "",
+      "type": "free"
+    },
+    {
+      "n": 21,
+      "title": "Propriété 13 — “Pluton” (planète naine)",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 0"
+    },
+    {
+      "n": 22,
+      "title": "Carte Chance — “Anomalie Spatiale”",
+      "description": "",
+      "type": "chance"
+    },
+    {
+      "n": 23,
+      "title": "Propriété 14 — “Exoplanète Kepler-22b”",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 3"
+    },
+    {
+      "n": 24,
+      "title": "Propriété 15 — “Nébuleuse d’Orion”",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 3"
+    },
+    {
+      "n": 25,
+      "title": "Propriété spéciale — “Centrale Énergétique Solaire” (gare / transport)",
+      "description": "",
+      "type": "station"
+    },
+    {
+      "n": 26,
+      "title": "Propriété 16 — “Trou de Ver” (case spéciale, genre “aller en prison” ou déplacement)",
+      "description": "",
+      "type": "jail"
+    },
+    {
+      "n": 27,
+      "title": "Propriété 17 — “Galaxie d’Andromède”",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 3"
+    },
+    {
+      "n": 28,
+      "title": "Propriété 18 — “Supernova” (case spéciale, paiement ou gain)",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 3"
+    },
+    {
+      "n": 29,
+      "title": "Carte Communauté — “Événement Spatial”",
+      "description": "",
+      "type": "community"
+    },
+    {
+      "n": 30,
+      "title": "Propriété 19 — “Comète Halley”",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 3"
+    },
+    {
+      "n": 31,
+      "title": "Propriété 20 — “Astéroïde Vesta”",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 0"
+    },
+    {
+      "n": 32,
+      "title": "Propriété spéciale — “Station de Rechargement Interstellaire” (gare / transport)",
+      "description": "",
+      "type": "station"
+    },
+    {
+      "n": 33,
+      "title": "Carte Chance — “Anomalie Spatiale”",
+      "description": "",
+      "type": "chance"
+    },
+    {
+      "n": 34,
+      "title": "Propriété 21 — “Quasar”",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 4"
+    },
+    {
+      "n": 35,
+      "title": "Taxe — “Taxe de Débris Spatiaux” (payez 200 crédits)",
+      "description": "",
+      "type": "tax"
+    },
+    {
+      "n": 36,
+      "title": "Propriété 22 — “Pulsar”",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 4"
+    },
+    {
+      "n": 37,
+      "title": "Carte Communauté — “Événement Spatial”",
+      "description": "",
+      "type": "community"
+    },
+    {
+      "n": 38,
+      "title": "Propriété 23 — “Amas d’Étoiles”",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 4"
+    },
+    {
+      "n": 39,
+      "title": "Carte Chance — “Anomalie Spatiale”",
+      "description": "",
+      "type": "chance"
+    },
+    {
+      "n": 40,
+      "title": "Aller en Prison — “Trou Noir” (renvoie à la case 10)",
+      "description": "",
+      "type": "jail"
+    }
+  ]
+}

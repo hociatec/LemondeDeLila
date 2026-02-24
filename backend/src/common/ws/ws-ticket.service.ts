@@ -108,7 +108,7 @@ export class WsTicketService {
       if (!this.warnedMissingSecret) {
         this.warnedMissingSecret = true;
         this.logger.warn(
-          'WS_TICKET_SECRET manquant: utilisation dâ€™un secret Ã©phÃ©mÃ¨re (dev uniquement).',
+          "WS_TICKET_SECRET manquant: utilisation d'un secret éphémère (dev uniquement).",
         );
       }
       return this.ephemeralSecret;

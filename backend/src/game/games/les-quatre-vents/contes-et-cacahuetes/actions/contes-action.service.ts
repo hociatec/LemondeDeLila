@@ -632,21 +632,6 @@ export class ContesActionService {
       );
     }
 
-    const ignore = Boolean(meta.statuses.ignoreNextConteAndAdvance?.[playerId]);
-    if (ignore && this.canUseBonusCards(state, playerId)) {
-      let next = this.setStatusBool(
-        state,
-        'ignoreNextConteAndAdvance',
-        playerId,
-        false,
-      );
-      next = this.core.appendLog(
-        next,
-        `${resolvePlayerNameFromState(next, playerId)} ignore l’effet Conte (Cape d’invisibilité) et avance d’1 case.`,
-      );
-      return this.moveBy(next, playerId, 1, depth);
-    }
-
     return this.drawAndApply(state, playerId, 'conte', depth);
   }
 
@@ -657,6 +642,24 @@ export class ContesActionService {
     depth: number,
   ): GameStateEntity {
     if (type === 'malus') {
+      const meta = this.getMeta(state);
+      const ignore = Boolean(
+        meta.statuses.ignoreNextConteAndAdvance?.[playerId],
+      );
+      if (ignore && this.canUseBonusCards(state, playerId)) {
+        let next = this.setStatusBool(
+          state,
+          'ignoreNextConteAndAdvance',
+          playerId,
+          false,
+        );
+        next = this.core.appendLog(
+          next,
+          `${resolvePlayerNameFromState(next, playerId)} ignore l’effet Malus (Cape d’invisibilité) et avance d’1 case.`,
+        );
+        return this.moveBy(next, playerId, 1, depth);
+      }
+
       const protectedOut = this.maybeProtectFromMalus(state, playerId);
       if (protectedOut.protected) {
         return this.core.appendLog(
@@ -892,7 +895,7 @@ export class ContesActionService {
         );
         return this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, playerId)} obtient une Cape d’invisibilité (prochaine case Conte ignorée).`,
+          `${resolvePlayerNameFromState(next, playerId)} obtient une Cape d’invisibilité (prochaine case Malus ignorée).`,
         );
       case 5:
         return this.startChooseTarget(

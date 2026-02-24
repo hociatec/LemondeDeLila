@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-02-18T21:36:32.358Z",
+  "generatedAt": "2026-02-24T18:27:28.158Z",
   "baselineUpdatedAt": "2026-02-20",
   "metrics": {
-    "manualActionPayloadParsing": 37,
+    "manualActionPayloadParsing": 5,
     "directPendingAssignments": 85,
     "mojibakeMatches": 23
   },

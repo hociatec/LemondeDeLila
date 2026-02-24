@@ -1,0 +1,8 @@
+﻿{
+  "code": "odyssee-quatre-cieux",
+  "name": "L'Odyssée des Quatre Cieux",
+  "minPlayers": 2,
+  "maxPlayers": 4,
+  "engine": "odyssee-quatre-cieux",
+  "summary": "Jeu de course galactique (type petits chevaux) : 56 cases + échelle finale."
+}

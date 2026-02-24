@@ -34,9 +34,9 @@ export const CAT_PATTES_OBSTACLE_TO_PARADE: Record<
 > = {
   gamelle: 'croquettes',
   pluie: 'rayon',
-  chien: 'saut',
+  chien: 'dodo',
   coussin: 'coussin',
-  sol: 'dodo',
+  sol: 'saut',
 };
 
 function hasBot(
@@ -44,6 +44,28 @@ function hasBot(
   type: string,
 ): boolean {
   return Array.isArray(bots) && bots.includes(type as any);
+}
+
+function obstacleIsIgnoredByBots(
+  obstacle: CatPattesObstacleType,
+  bots: CatPattesMetadata['bots'][number],
+): boolean {
+  if (obstacle === 'gamelle' && hasBot(bots, 'reserve')) {
+    return true;
+  }
+  if (obstacle === 'chien' && hasBot(bots, 'chat-ninja')) {
+    return true;
+  }
+  if (obstacle === 'coussin' && hasBot(bots, 'patte-blindee')) {
+    return true;
+  }
+  if (
+    (obstacle === 'pluie' || obstacle === 'sol') &&
+    hasBot(bots, 'passage-star')
+  ) {
+    return true;
+  }
+  return false;
 }
 
 function samePlayerId(a: unknown, b: unknown): boolean {
@@ -64,7 +86,7 @@ export function canPlayPattes(
   if (!hasSun && !passageStar) {
     return false;
   }
-  if (obstacle && !hasBot(bots, 'patte-blindee')) {
+  if (obstacle && !obstacleIsIgnoredByBots(obstacle, bots)) {
     return false;
   }
   const currentPos = Number(meta.positions?.[playerId] ?? 0);
@@ -79,13 +101,7 @@ export function playerCanReceiveObstacle(
   obstacle: CatPattesObstacleType,
 ): boolean {
   const bots = meta.bots?.[playerId] ?? [];
-  if (hasBot(bots, 'patte-blindee')) {
-    return false;
-  }
-  if (obstacle === 'chien' && hasBot(bots, 'chat-ninja')) {
-    return false;
-  }
-  if (obstacle === 'gamelle' && hasBot(bots, 'reserve')) {
+  if (obstacleIsIgnoredByBots(obstacle, bots)) {
     return false;
   }
   return !meta.obstacles?.[playerId];

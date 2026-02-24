@@ -659,6 +659,16 @@ export class PanierExpressService extends AbstractGameService {
     return next;
   }
 
+  private withPending(
+    state: GameStateEntity,
+    pending: PendingState,
+  ): GameStateEntity {
+    return {
+      ...state,
+      pending,
+    };
+  }
+
   private queuePawnSelection(state: GameStateEntity): GameStateEntity {
     const pending = state.pending;
     if (pending?.type === 'choose_pawn') {
@@ -706,16 +716,17 @@ export class PanierExpressService extends AbstractGameService {
           : pawn.name,
       description: pawn.description ?? '',
     }));
+    const pendingChoice: PendingState = {
+      type: 'choose_pawn',
+      playerId: chooser.id,
+      blocking: true,
+      label: `${this.utils.playerName(withClearedBots, chooser.id)} choisit son pion (puis Entrée).`,
+      choices: pawns.map((pawn) => pawn.label),
+      data: { pawns },
+    };
     const withPending: GameStateEntity = {
       ...withClearedBots,
-      pending: {
-        type: 'choose_pawn',
-        playerId: chooser.id,
-        blocking: true,
-        label: `${this.utils.playerName(withClearedBots, chooser.id)} choisit son pion (puis Entrée).`,
-        choices: pawns.map((pawn) => pawn.label),
-        data: { pawns },
-      },
+      pending: pendingChoice,
       turn: {
         ...(state.turn ?? { currentPlayerId: chooser.id, direction: 1 }),
         currentPlayerId: chooser.id,
@@ -960,17 +971,14 @@ export class PanierExpressService extends AbstractGameService {
         );
         return this.advanceAfterDraw(next);
       }
-      return {
-        ...next,
-        pending: {
-          type: 'pick',
-          playerId: pendingPlayerId,
-          blocking: true,
-          label: 'Choisissez une carte (tirage chanceux), puis Entrée.',
-          choices: offered,
-          data: { kind: 'event.tirage_chanceux', offered },
-        },
-      };
+      return this.withPending(next, {
+        type: 'pick',
+        playerId: pendingPlayerId,
+        blocking: true,
+        label: 'Choisissez une carte (tirage chanceux), puis Entrée.',
+        choices: offered,
+        data: { kind: 'event.tirage_chanceux', offered },
+      });
     }
 
     if (kind === 'event.producteur_genereux') {
@@ -1019,23 +1027,20 @@ export class PanierExpressService extends AbstractGameService {
         );
         return this.advanceAfterDraw(next);
       }
-      return {
-        ...next,
-        pending: {
-          type: 'pick',
-          playerId: pendingPlayerId,
-          blocking: true,
-          label: 'Choisissez un joueur pour recevoir la carte, puis Entrée.',
-          choices: targets
-            .map((t) => toText(t.username).trim())
-            .filter((v) => v.length > 0),
-          data: {
-            kind: 'event.producteur_genereux.choose_target',
-            offer,
-            targets,
-          },
+      return this.withPending(next, {
+        type: 'pick',
+        playerId: pendingPlayerId,
+        blocking: true,
+        label: 'Choisissez un joueur pour recevoir la carte, puis Entrée.',
+        choices: targets
+          .map((t) => toText(t.username).trim())
+          .filter((v) => v.length > 0),
+        data: {
+          kind: 'event.producteur_genereux.choose_target',
+          offer,
+          targets,
         },
-      };
+      });
     }
 
     if (kind === 'event.changement_de_saison') {
@@ -1060,38 +1065,32 @@ export class PanierExpressService extends AbstractGameService {
         const player = (next.players ?? []).find((p) => p.id === nextPid);
         const cards = this.utils.toStringArray(player?.inventory);
         if (cards.length) {
-          return {
-            ...next,
-            pending: {
-              type: 'pick',
-              playerId: nextPid,
-              blocking: true,
-              label: 'Choisissez une carte à défausser, puis Entrée.',
-              choices: cards,
-              data: {
-                kind: 'event.changement_de_saison',
-                order,
-                cursor: nextCursor,
-                processed: nextProcessed,
-              },
-            },
-          };
-        }
-        return {
-          ...next,
-          pending: {
-            type: 'draw',
+          return this.withPending(next, {
+            type: 'pick',
             playerId: nextPid,
             blocking: true,
-            label: 'Piocher une course bonus (Espace).',
+            label: 'Choisissez une carte à défausser, puis Entrée.',
+            choices: cards,
             data: {
               kind: 'event.changement_de_saison',
               order,
               cursor: nextCursor,
               processed: nextProcessed,
             },
+          });
+        }
+        return this.withPending(next, {
+          type: 'draw',
+          playerId: nextPid,
+          blocking: true,
+          label: 'Piocher une course bonus (Espace).',
+          data: {
+            kind: 'event.changement_de_saison',
+            order,
+            cursor: nextCursor,
+            processed: nextProcessed,
           },
-        };
+        });
       }
 
       next = this.core.appendLog(
@@ -1117,16 +1116,13 @@ export class PanierExpressService extends AbstractGameService {
     const nextCursor = cursor + 1;
     if (nextCursor < queue.length) {
       const nextEntry = queue[nextCursor];
-      return {
-        ...next,
-        pending: {
-          type: 'draw',
-          playerId: nextEntry.playerId,
-          blocking: true,
-          label: pending.label ?? 'Piocher une carte (Espace).',
-          data: { kind: 'queue', queue, cursor: nextCursor },
-        },
-      };
+      return this.withPending(next, {
+        type: 'draw',
+        playerId: nextEntry.playerId,
+        blocking: true,
+        label: pending.label ?? 'Piocher une carte (Espace).',
+        data: { kind: 'queue', queue, cursor: nextCursor },
+      });
     }
 
     return this.advanceAfterDraw(next);
@@ -1144,16 +1140,13 @@ export class PanierExpressService extends AbstractGameService {
         `[Panier Express] Une action est déjà en attente.`,
       );
     }
-    return {
-      ...state,
-      pending: {
-        type: 'draw',
-        playerId,
-        blocking: true,
-        label,
-        data,
-      },
-    };
+    return this.withPending(state, {
+      type: 'draw',
+      playerId,
+      blocking: true,
+      label,
+      data,
+    });
   }
 
   private queueCourseDraws(
@@ -1174,18 +1167,15 @@ export class PanierExpressService extends AbstractGameService {
     if (pending?.type === 'draw' && pending?.data?.kind === 'queue') {
       const pendingData = asRecord(pending.data);
       const queue = toDrawQueueEntries(pendingData.queue);
-      return {
-        ...state,
-        pending: {
-          ...pending,
-          data: {
-            ...pendingData,
-            kind: 'queue',
-            queue: [...queue, ...sanitized],
-            cursor: Number(pendingData.cursor ?? 0),
-          },
+      return this.withPending(state, {
+        ...pending,
+        data: {
+          ...pendingData,
+          kind: 'queue',
+          queue: [...queue, ...sanitized],
+          cursor: Number(pendingData.cursor ?? 0),
         },
-      };
+      });
     }
 
     if (state.pending) {
@@ -1196,16 +1186,13 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     const first = sanitized[0];
-    return {
-      ...state,
-      pending: {
-        type: 'draw',
-        playerId: first.playerId,
-        blocking: true,
-        label,
-        data: { kind: 'queue', queue: sanitized, cursor: 0 },
-      },
-    };
+    return this.withPending(state, {
+      type: 'draw',
+      playerId: first.playerId,
+      blocking: true,
+      label,
+      data: { kind: 'queue', queue: sanitized, cursor: 0 },
+    });
   }
 
   private advanceAfterDraw(state: GameStateEntity): GameStateEntity {
@@ -2435,23 +2422,20 @@ export class PanierExpressService extends AbstractGameService {
             this.getPlayers(next).find((p) => p.id === pid)?.inventory ?? [],
           );
           if (inv.length) {
-            next = {
-              ...next,
-              pending: {
-                type: 'pick',
-                playerId: pid,
-                blocking: true,
-                label:
-                  'Choisissez une carte à donner au joueur suivant, puis Entrée.',
-                choices: inv,
-                data: {
-                  kind: 'event.troc_improvise',
-                  order,
-                  cursor,
-                  processed,
-                },
+            next = this.withPending(next, {
+              type: 'pick',
+              playerId: pid,
+              blocking: true,
+              label:
+                'Choisissez une carte à donner au joueur suivant, puis Entrée.',
+              choices: inv,
+              data: {
+                kind: 'event.troc_improvise',
+                order,
+                cursor,
+                processed,
               },
-            };
+            });
             break;
           }
           cursor = (cursor + 1) % order.length;

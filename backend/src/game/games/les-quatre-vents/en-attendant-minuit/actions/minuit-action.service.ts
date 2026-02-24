@@ -40,6 +40,7 @@ const MINUIT_PAWNS = [
 const MINUIT_PLAYER_NAME_OPTIONS = {
   coerceNumericIds: true,
 } as const;
+const MINUIT_MAX_LANDING_STEPS = 128;
 
 @Injectable()
 export class MinuitActionService {
@@ -657,116 +658,122 @@ export class MinuitActionService {
     playerId: number,
   ): GameStateEntity {
     let next = state;
-    let meta = this.getMeta(next);
-    const pos = meta.positions?.[playerId] ?? 0;
-    let tile = meta.tiles[pos] as MinuitTile | undefined;
-    if (!tile) return next;
-
-    const occupant = this.findOccupant(meta, playerId, pos);
-    if (occupant != null) {
-      next = this.core.appendLog(
-        next,
-        `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} place ${this.pawnPossessiveLabel(next, playerId)} sur une case occupée : recul d'une case.`,
-      );
-      next = this.move(next, playerId, -1);
-      meta = this.getMeta(next);
-      const afterPos = meta.positions?.[playerId] ?? 0;
-      tile = meta.tiles[afterPos] as MinuitTile | undefined;
+    for (let step = 0; step < MINUIT_MAX_LANDING_STEPS; step += 1) {
+      let meta = this.getMeta(next);
+      const pos = meta.positions?.[playerId] ?? 0;
+      let tile = meta.tiles[pos] as MinuitTile | undefined;
       if (!tile) return next;
-    }
 
-    const afterPos = meta.positions?.[playerId] ?? 0;
-    next = this.core.appendLog(
-      next,
-      `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} place ${this.pawnPossessiveLabel(next, playerId)} en case ${afterPos + 1} (${tile.title}).`,
-    );
-    const description =
-      typeof tile.description === 'string' ? tile.description.trim() : '';
-    if (description) {
-      next = this.core.appendLog(next, description);
-    }
-    if (afterPos === 55) {
-      meta = { ...meta, winnerId: playerId };
+      const occupant = this.findOccupant(meta, playerId, pos);
+      if (occupant != null) {
+        next = this.core.appendLog(
+          next,
+          `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} place ${this.pawnPossessiveLabel(next, playerId)} sur une case occupée : recul d'une case.`,
+        );
+        next = this.move(next, playerId, -1);
+        meta = this.getMeta(next);
+        const afterPos = meta.positions?.[playerId] ?? 0;
+        tile = meta.tiles[afterPos] as MinuitTile | undefined;
+        if (!tile) return next;
+      }
+
+      const afterPos = meta.positions?.[playerId] ?? 0;
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} atteint Minuit !`,
+        `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} place ${this.pawnPossessiveLabel(next, playerId)} en case ${afterPos + 1} (${tile.title}).`,
       );
-      return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-    }
-
-    if (tile.type === 'move') {
-      const delta = typeof tile.delta === 'number' ? tile.delta : 0;
-      const ignore = meta.statuses?.ignoreNextMalus?.[playerId] === true;
-      if (ignore && delta < 0) {
-        meta = {
-          ...meta,
-          statuses: {
-            ...meta.statuses,
-            ignoreNextMalus: {
-              ...(meta.statuses.ignoreNextMalus ?? {}),
-              [playerId]: false,
-            },
-          },
-        };
-        next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-        return this.core.appendLog(next, 'Malus ignoré.');
+      const description =
+        typeof tile.description === 'string' ? tile.description.trim() : '';
+      if (description) {
+        next = this.core.appendLog(next, description);
       }
-      if (delta !== 0) {
-        const beforePos = meta.positions?.[playerId] ?? 0;
+      if (afterPos === 55) {
+        meta = { ...meta, winnerId: playerId };
+        next = this.core.appendLog(
+          next,
+          `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} atteint Minuit !`,
+        );
+        return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+      }
+
+      if (tile.type === 'move') {
+        const delta = typeof tile.delta === 'number' ? tile.delta : 0;
+        const ignore = meta.statuses?.ignoreNextMalus?.[playerId] === true;
+        if (ignore && delta < 0) {
+          meta = {
+            ...meta,
+            statuses: {
+              ...meta.statuses,
+              ignoreNextMalus: {
+                ...(meta.statuses.ignoreNextMalus ?? {}),
+                [playerId]: false,
+              },
+            },
+          };
+          next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+          return this.core.appendLog(next, 'Malus ignoré.');
+        }
+        if (delta === 0) return next;
+
+        const beforePos = afterPos;
         next = this.move(next, playerId, delta);
-        const afterMeta = this.getMeta(next);
-        const afterPos = afterMeta.positions?.[playerId] ?? beforePos;
-        if (afterPos === beforePos) return next;
-        return this.applyLanding(next, playerId);
+        const movedMeta = this.getMeta(next);
+        const movedPos = movedMeta.positions?.[playerId] ?? beforePos;
+        if (movedPos === beforePos) return next;
+        continue;
       }
-      return next;
-    }
 
-    if (tile.type === 'skip') {
-      const ignore = meta.statuses?.ignoreNextSkip?.[playerId] === true;
-      if (ignore) {
+      if (tile.type === 'skip') {
+        const ignore = meta.statuses?.ignoreNextSkip?.[playerId] === true;
+        if (ignore) {
+          meta = {
+            ...meta,
+            statuses: {
+              ...meta.statuses,
+              ignoreNextSkip: {
+                ...(meta.statuses.ignoreNextSkip ?? {}),
+                [playerId]: false,
+              },
+            },
+          };
+          next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+          return this.core.appendLog(next, 'Passe ton tour ignoré.');
+        }
+        const turns = typeof tile.skipTurns === 'number' ? tile.skipTurns : 1;
+        const curr = meta.statuses?.skipTurn?.[playerId] ?? 0;
         meta = {
           ...meta,
           statuses: {
             ...meta.statuses,
-            ignoreNextSkip: {
-              ...(meta.statuses.ignoreNextSkip ?? {}),
-              [playerId]: false,
+            skipTurn: {
+              ...(meta.statuses.skipTurn ?? {}),
+              [playerId]: curr + turns,
             },
           },
         };
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-        return this.core.appendLog(next, 'Passe ton tour ignoré.');
+        return next;
       }
-      const turns = typeof tile.skipTurns === 'number' ? tile.skipTurns : 1;
-      const curr = meta.statuses?.skipTurn?.[playerId] ?? 0;
-      meta = {
-        ...meta,
-        statuses: {
-          ...meta.statuses,
-          skipTurn: {
-            ...(meta.statuses.skipTurn ?? {}),
-            [playerId]: curr + turns,
+
+      if (tile.type === 'card') {
+        return {
+          ...next,
+          pending: {
+            type: 'draw',
+            playerId,
+            blocking: true,
+            label: 'Piocher une carte Noël (Espace).',
           },
-        },
-      };
-      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+        };
+      }
+
       return next;
     }
 
-    if (tile.type === 'card') {
-      return {
-        ...next,
-        pending: {
-          type: 'draw',
-          playerId,
-          blocking: true,
-          label: 'Piocher une carte Noël (Espace).',
-        },
-      };
-    }
-
-    return next;
+    return this.core.appendLog(
+      next,
+      'Enchaînement de cases interrompu pour éviter une boucle infinie.',
+    );
   }
 
   private applyCard(

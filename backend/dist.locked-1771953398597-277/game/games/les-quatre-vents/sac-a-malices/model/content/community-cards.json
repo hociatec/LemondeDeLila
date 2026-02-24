@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "cards": [
+    {
+      "id": 1,
+      "text": "Vous aidez à restaurer les vitraux de l’église Saint-Michel : recevez 100 €."
+    },
+    {
+      "id": 2,
+      "text": "En flânant parmi les étals du marché des Halles, vous découvrez un vieux livre de recettes bourguignonnes oublié : recevez 50 €."
+    },
+    {
+      "id": 3,
+      "text": "Vous êtes surpris par une averse en flânant dans les ruelles du Vieux Dijon : reculez de deux cases."
+    },
+    {
+      "id": 4,
+      "text": "Vous prêtez main-forte au Jardin Darcy pour la plantation des fleurs : recevez 75 €."
+    },
+    {
+      "id": 5,
+      "text": "Vous participez à l’entretien du Parc de la Colombière : recevez 100 €."
+    },
+    {
+      "id": 6,
+      "text": "Vous vous laissez emporter par la foule sur la Rue de la Liberté et heurtez un passant : payez 50 € d’amende."
+    },
+    {
+      "id": 7,
+      "text": "Vous êtes choisi pour présenter une exposition au Musée des Beaux-Arts : recevez 150 €."
+    },
+    {
+      "id": 8,
+      "text": "Vous trouvez une pièce de collection dans une boutique des Antiquaires : recevez 100 €."
+    },
+    {
+      "id": 9,
+      "text": "Un corbeau joueur surgit sur la Place François Rude et vous surprend : reculez de deux cases."
+    },
+    {
+      "id": 10,
+      "text": "Vous recevez une récompense pour avoir guidé un groupe de touristes : recevez 50 €."
+    },
+    {
+      "id": 11,
+      "text": "Vous aidez à l’organisation d’un festival gastronomique : recevez 100 €."
+    },
+    {
+      "id": 12,
+      "text": "Vous payez pour réparer un petit dégât causé dans la Tour Philippe le Bon : payez 75 €."
+    },
+    {
+      "id": 13,
+      "text": "Vous découvrez une peinture oubliée au Palais des Ducs : recevez 150 €."
+    },
+    {
+      "id": 14,
+      "text": "Vous êtes invité à une dégustation de fromages Époisses et Chaource : recevez 50 €."
+    },
+    {
+      "id": 15,
+      "text": "Sortie de prison : cette carte peut être gardée en vue d'une utilisation ultérieur."
+    },
+    {
+      "id": 16,
+      "text": "Vous aidez à nettoyer les quais du Canal de Bourgogne : recevez 75 €."
+    },
+    {
+      "id": 17,
+      "text": "En flânant sur la Rue des Godrans, vous heurtez accidentellement l’étal d’un artisan : payez 50 €."
+    },
+    {
+      "id": 18,
+      "text": "Vous assistez à une représentation au Théâtre Dijon Bourgogne : recevez 100 €."
+    },
+    {
+      "id": 19,
+      "text": "Vous êtes invité à la Fête du Cassis à Dijon et goûtez aux meilleurs nectars de la ville : recevez 150 €."
+    },
+    {
+      "id": 20,
+      "text": "Vous aidez un voisin à retrouver son chien perdu dans le Parc du Suzon : recevez 20 €."
+    },
+    {
+      "id": 21,
+      "text": "Vous participez au concours annuel de gougères sur la Place Wilson et remportez le prix du meilleur dégustateur : recevez 100 €."
+    },
+    {
+      "id": 22,
+      "text": "Lors de la Ruée de la Fada dans les rues de Dijon, votre costume subit quelques mésaventures : payez 20 €."
+    },
+    {
+      "id": 23,
+      "text": "Vous trouvez un ancien manuscrit au marché des Halles : recevez 150 €."
+    },
+    {
+      "id": 24,
+      "text": "Vous êtes invité à la Fête de la Musique sur le Boulevard de Brosses : recevez 50 €."
+    },
+    {
+      "id": 25,
+      "text": "Vous aidez à décorer les rues pour Noël : recevez 100 €."
+    },
+    {
+      "id": 26,
+      "text": "Vous versez une contribution pour la rénovation d’une fontaine du centre-ville : payez 50 €."
+    },
+    {
+      "id": 27,
+      "text": "Vous découvrez une ancienne sculpture dans un jardin public : recevez 100 €."
+    },
+    {
+      "id": 28,
+      "text": "Vous perdez votre chemin en flânant dans le Quartier des Antiquaires : reculez de trois cases."
+    },
+    {
+      "id": 29,
+      "text": "Vous prêtez main-forte à l’organisation d’un tournoi à la Piscine Olympique de Dijon : vous recevez 70 €."
+    },
+    {
+      "id": 30,
+      "text": "Vous participez à une dégustation de grands crus bourguignons et partagez vos conseils avec les visiteurs : vous recevez 150 €."
+    }
+  ]
+}

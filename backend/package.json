@@ -99,6 +99,9 @@
         }
       ]
     },
+    "moduleNameMapper": {
+      "^@common/(.*)$": "<rootDir>/common/$1"
+    },
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],

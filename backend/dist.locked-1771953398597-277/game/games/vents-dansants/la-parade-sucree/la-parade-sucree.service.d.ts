@@ -1,0 +1,30 @@
+import type { GameStateEntity } from '../../../core/entities/game-state.entity';
+import type { GameSingleActionDto, GameStateWithActions } from '../../../engine/dto/game-action.dto';
+import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
+import type { GameShortcutHint, GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
+import { LaParadeSucreeActionService } from './actions/la-parade-sucree-action.service';
+import { LaParadeSucreePresenterService } from './presenter/la-parade-sucree-presenter.service';
+import { LaParadeSucreeSetupService } from './setup/la-parade-sucree-setup.service';
+import { LaParadeSucreeBotService } from './bots/la-parade-sucree-bot.service';
+export declare class LaParadeSucreeService extends AbstractGameService {
+    private readonly setup;
+    private readonly actions;
+    private readonly presenter;
+    private readonly bots;
+    readonly gameType = "la-parade-sucree";
+    readonly category = "JeuxDePlateaux";
+    readonly subcategory = "VentsDansants";
+    readonly displayName: string;
+    readonly description = "Posez les cartes dans l\u0092ordre et collectionnez les friandises des cases sp\u00E9ciales.";
+    readonly minPlayers: number;
+    readonly maxPlayers: number;
+    constructor(registry: GameRegistryService, setup: LaParadeSucreeSetupService, actions: LaParadeSucreeActionService, presenter: LaParadeSucreePresenterService, bots: LaParadeSucreeBotService);
+    hydrateInitialState(baseState: GameStateEntity): GameStateEntity;
+    applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity;
+    getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[];
+    validateAction(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameSingleActionDto;
+    exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions;
+    getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[];
+    getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[];
+}

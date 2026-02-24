@@ -42,7 +42,7 @@ function baseState(): GameStateEntity {
 }
 
 describe('Contes effects', () => {
-  it('keeps Cape d’Invisibilite aligned with conte tile behavior', async () => {
+  it('keeps Cape d’Invisibilite aligned with malus tile behavior', async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         GameCoreService,
@@ -65,8 +65,8 @@ describe('Contes effects', () => {
     });
     const capeRow = asRecord(cape);
 
-    expect(toText(capeRow.text)).toContain('case Conte');
-    expect(toText(capeRow.text)).not.toContain('case Malus');
+    expect(toText(capeRow.text)).toContain('case Malus');
+    expect(toText(capeRow.text)).not.toContain('case Conte');
   });
 
   it('requires a number choice from each player for Poussiere de rire', async () => {

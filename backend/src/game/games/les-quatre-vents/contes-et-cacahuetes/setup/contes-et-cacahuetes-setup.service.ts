@@ -271,7 +271,7 @@ function buildTiles(): ContesCacahuetesTile[] {
     { type: 'conte', label: `Case Conte - Kenya : Le feu volant` },
     {
       type: 'bonus',
-      label: `Case Bonus - Le conte vous applaudit. ì vous la récompense !`,
+      label: `Case Bonus - Le conte vous applaudit. À vous la récompense !`,
     },
     { type: 'conte', label: `Case Conte - Chili : La lune et le renard` },
     {
@@ -379,7 +379,7 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 4,
       type: 'bonus',
       title: `Cape d'Invisibilité`,
-      text: `Si vous arrivez sur une case Conte, son effet est automatiquement ignoré et vous avancez d'une case supplémentaire.`,
+      text: `Si vous arrivez sur une case Malus, son effet est automatiquement ignoré et vous avancez d'une case supplémentaire.`,
     },
     {
       id: 5,
