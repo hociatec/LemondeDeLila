@@ -1,4 +1,4 @@
-<Window x:Class="client_win.Modules.Settings.Views.OptionsDialog"
+﻿<Window x:Class="client_win.Modules.Settings.Views.OptionsDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Options" Height="600" Width="800"
@@ -106,7 +106,7 @@
                                                 <StackPanel Margin="8">
                                                     <TextBlock Text="Général" FontSize="20" Foreground="White" />
                                                     <TextBlock Text="Comportement général du client." Foreground="#9CB2D1" Margin="0 2 0 10" />
-                                                    <CheckBox Content="Demander confirmation à la fermeture" IsChecked="{Binding ConfirmExit}" />
+                                                    <CheckBox Content="Demander confirmation à la fermeture" IsChecked="{Binding ConfirmExit}" />`r`n                                                    <CheckBox Content="Corriger automatiquement les accents cassés (expérimental)" IsChecked="{Binding RepairBrokenAccents}" />
                                                     <CheckBox Content="Activer les jeux en bêta (instable)" IsChecked="{Binding EnableBetaGames}" />
                                                 </StackPanel>
                                             </ScrollViewer>
