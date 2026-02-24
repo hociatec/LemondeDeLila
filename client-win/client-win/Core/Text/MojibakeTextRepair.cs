@@ -129,6 +129,16 @@ public static class MojibakeTextRepair
         }
     }
 
+    public static bool ShouldFix(string? value)
+    {
+        if (!IsEnabled || string.IsNullOrEmpty(value))
+        {
+            return false;
+        }
+
+        return LooksSuspicious(value);
+    }
+
     public static void SetEnabled(bool enabled)
     {
         var changed = false;
@@ -158,6 +168,11 @@ public static class MojibakeTextRepair
     {
         var input = value ?? string.Empty;
         if (!IsEnabled || input.Length == 0)
+        {
+            return input;
+        }
+
+        if (!LooksSuspicious(input))
         {
             return input;
         }

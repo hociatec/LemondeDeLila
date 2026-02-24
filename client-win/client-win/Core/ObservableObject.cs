@@ -14,7 +14,7 @@ public abstract class ObservableObject : INotifyPropertyChanged
 
     protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
-        if (value is string text)
+        if (value is string text && MojibakeTextRepair.ShouldFix(text))
         {
             value = (T)(object)MojibakeTextRepair.Fix(text);
         }

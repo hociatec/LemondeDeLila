@@ -93,29 +93,53 @@ public static class GlobalUiTextRepair
         switch (node)
         {
             case Window w:
-                w.Title = MojibakeTextRepair.Fix(w.Title);
+                if (MojibakeTextRepair.ShouldFix(w.Title))
+                {
+                    w.Title = MojibakeTextRepair.Fix(w.Title);
+                }
                 break;
             case TextBlock tb:
-                tb.Text = MojibakeTextRepair.Fix(tb.Text);
+                if (MojibakeTextRepair.ShouldFix(tb.Text))
+                {
+                    tb.Text = MojibakeTextRepair.Fix(tb.Text);
+                }
                 break;
             case AccessText at:
-                at.Text = MojibakeTextRepair.Fix(at.Text);
+                if (MojibakeTextRepair.ShouldFix(at.Text))
+                {
+                    at.Text = MojibakeTextRepair.Fix(at.Text);
+                }
                 break;
             case Run run:
-                run.Text = MojibakeTextRepair.Fix(run.Text);
+                if (MojibakeTextRepair.ShouldFix(run.Text))
+                {
+                    run.Text = MojibakeTextRepair.Fix(run.Text);
+                }
                 break;
             case TextBox textBox:
                 // Preserve bindings on Text by updating the current value without replacing them.
-                textBox.SetCurrentValue(TextBox.TextProperty, MojibakeTextRepair.Fix(textBox.Text));
+                if (MojibakeTextRepair.ShouldFix(textBox.Text))
+                {
+                    textBox.SetCurrentValue(TextBox.TextProperty, MojibakeTextRepair.Fix(textBox.Text));
+                }
                 break;
             case ContentControl cc when cc.Content is string content:
-                cc.Content = MojibakeTextRepair.Fix(content);
+                if (MojibakeTextRepair.ShouldFix(content))
+                {
+                    cc.Content = MojibakeTextRepair.Fix(content);
+                }
                 break;
             case HeaderedContentControl hcc when hcc.Header is string header:
-                hcc.Header = MojibakeTextRepair.Fix(header);
+                if (MojibakeTextRepair.ShouldFix(header))
+                {
+                    hcc.Header = MojibakeTextRepair.Fix(header);
+                }
                 break;
             case HeaderedItemsControl hic when hic.Header is string itemsHeader:
-                hic.Header = MojibakeTextRepair.Fix(itemsHeader);
+                if (MojibakeTextRepair.ShouldFix(itemsHeader))
+                {
+                    hic.Header = MojibakeTextRepair.Fix(itemsHeader);
+                }
                 break;
         }
 
@@ -124,7 +148,10 @@ public static class GlobalUiTextRepair
             var tip = ToolTipService.GetToolTip(fe) as string;
             if (!string.IsNullOrEmpty(tip))
             {
-                ToolTipService.SetToolTip(fe, MojibakeTextRepair.Fix(tip));
+                if (MojibakeTextRepair.ShouldFix(tip))
+                {
+                    ToolTipService.SetToolTip(fe, MojibakeTextRepair.Fix(tip));
+                }
             }
         }
 
@@ -133,7 +160,10 @@ public static class GlobalUiTextRepair
             var name = AutomationProperties.GetName(ui);
             if (!string.IsNullOrWhiteSpace(name))
             {
-                AutomationProperties.SetName(ui, MojibakeTextRepair.Fix(name));
+                if (MojibakeTextRepair.ShouldFix(name))
+                {
+                    AutomationProperties.SetName(ui, MojibakeTextRepair.Fix(name));
+                }
             }
         }
     }
