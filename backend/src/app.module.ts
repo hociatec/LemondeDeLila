@@ -82,7 +82,10 @@ type EnvValidationInput = Record<string, unknown>;
           .default(true),
         ENABLE_PROTOTYPE_GAMES: Joi.string().optional(),
         CLIENT_UPDATES_DIR: Joi.string().optional(),
+        CLIENT_UPDATES_META_PATH: Joi.string().optional(),
+        CLIENT_UPDATES_UPLOADS_DIR: Joi.string().optional(),
         CLIENT_UPDATES_PUBLIC_URL: Joi.string().uri().optional(),
+        TAVERNE_CATEGORIES_ROOT: Joi.string().optional(),
         // WS tickets must have their own secret (do not reuse JWT_SECRET).
         WS_TICKET_SECRET: Joi.string().min(32).required(),
         WS_TICKET_TTL_SECONDS: Joi.number().default(60),

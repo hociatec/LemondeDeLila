@@ -65,7 +65,9 @@ Ce mécanisme remplace le secret partagé statique côté client (déconseillé)
 | `LOG_DIR`, `LOG_FILES_ENABLED`, `LOG_LEVEL` | Contrôlent l’écriture des logs Winston (dossier, activation fichiers, niveau). En container : préférer `LOG_FILES_ENABLED=false` pour loguer sur stdout. |
 | `CLIENT_UPDATES_DIR` | Dossier servi sur `/updates/client-win/` (ClickOnce/ZIP). Recommandé: un chemin persistant hors du dépôt. |
 | `CLIENT_UPDATES_META_PATH` | Chemin du fichier `latest.json` (métadonnées), recommandé hors du dépôt. |
+| `CLIENT_UPDATES_UPLOADS_DIR` | Dossier des uploads chunkés temporaires (`init/chunk/complete`), recommandé hors du dépôt. |
 | `CLIENT_UPDATES_PUBLIC_URL` | URL publique des updates (ex: `https://api.lilas.hociatec.fr/updates/client-win/`). |
+| `TAVERNE_CATEGORIES_ROOT` | Dossier miroir des catégories taverne. En production, le laisser hors du dépôt pour éviter un worktree Git “dirty”. |
 
 ## Tests
 

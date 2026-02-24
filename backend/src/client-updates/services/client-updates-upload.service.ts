@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
 } from '@nestjs/common';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -23,6 +24,12 @@ type UploadMetaFile = {
   completedAt?: string | null;
 };
 
+type CompletedUploadMarker = {
+  uploadId: string;
+  completedAt: string;
+  meta: ClientUpdateMeta;
+};
+
 function getErrorMessage(value: unknown): string {
   if (value instanceof Error && typeof value.message === 'string') {
     const message = value.message.trim();
@@ -35,6 +42,7 @@ function getErrorMessage(value: unknown): string {
 
 @Injectable()
 export class ClientUpdatesUploadService {
+  private readonly logger = new Logger(ClientUpdatesUploadService.name);
   constructor(private readonly updates: ClientUpdatesService) {}
 
   private uploadsRoot() {
@@ -44,6 +52,63 @@ export class ClientUpdatesUploadService {
     }
     const baseDir = path.dirname(this.updates.getTargetDir());
     return path.join(baseDir, 'uploads');
+  }
+
+  private completedUploadsRoot() {
+    return path.join(this.uploadsRoot(), '.completed');
+  }
+
+  private completedMarkerPath(uploadId: string) {
+    return path.join(this.completedUploadsRoot(), `${uploadId}.json`);
+  }
+
+  private async readCompletedMarker(
+    uploadId: string,
+  ): Promise<CompletedUploadMarker | null> {
+    const markerPath = this.completedMarkerPath(uploadId);
+    try {
+      const raw = await fs.promises.readFile(markerPath, 'utf-8');
+      const parsed = JSON.parse(
+        raw.replace(/^\uFEFF/, ''),
+      ) as Partial<CompletedUploadMarker>;
+      if (!parsed || typeof parsed !== 'object') return null;
+      if ((parsed.uploadId || '').trim() !== uploadId) return null;
+      const meta = parsed.meta;
+      if (!meta || typeof meta !== 'object') return null;
+      if (
+        typeof (meta as ClientUpdateMeta).version !== 'string' ||
+        typeof (meta as ClientUpdateMeta).publishedAt !== 'string'
+      ) {
+        return null;
+      }
+      return {
+        uploadId,
+        completedAt:
+          typeof parsed.completedAt === 'string'
+            ? parsed.completedAt
+            : new Date().toISOString(),
+        meta: meta as ClientUpdateMeta,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  private async writeCompletedMarker(
+    uploadId: string,
+    meta: ClientUpdateMeta,
+  ): Promise<void> {
+    const root = this.completedUploadsRoot();
+    await fs.promises.mkdir(root, { recursive: true });
+    const marker: CompletedUploadMarker = {
+      uploadId,
+      completedAt: new Date().toISOString(),
+      meta,
+    };
+    await fs.promises.writeFile(
+      this.completedMarkerPath(uploadId),
+      JSON.stringify(marker, null, 2),
+    );
   }
 
   async status() {
@@ -183,7 +248,7 @@ export class ClientUpdatesUploadService {
     const dir = path.join(this.uploadsRoot(), uploadId);
     const metaPath = path.join(dir, 'meta.json');
     if (!fs.existsSync(metaPath)) {
-      throw new BadRequestException('Upload introuvable.');
+      throw new BadRequestException(`Upload introuvable (uploadId=${uploadId}).`);
     }
 
     const partPath = path.join(dir, `${index}.part`);
@@ -203,8 +268,12 @@ export class ClientUpdatesUploadService {
 
     const dir = path.join(this.uploadsRoot(), uploadId);
     const metaPath = path.join(dir, 'meta.json');
+    const completedMarker = await this.readCompletedMarker(uploadId);
     if (!fs.existsSync(metaPath)) {
-      throw new BadRequestException('Upload introuvable.');
+      if (completedMarker) {
+        return { ok: true, alreadyCompleted: true, meta: completedMarker.meta };
+      }
+      throw new BadRequestException(`Upload introuvable (uploadId=${uploadId}).`);
     }
 
     const lockPath = path.join(dir, '.complete.lock');
@@ -220,7 +289,21 @@ export class ClientUpdatesUploadService {
       const meta = JSON.parse(metaRaw.replace(/^\uFEFF/, '')) as UploadMetaFile;
 
       if (meta.completedAt) {
-        throw new ConflictException('Upload déjà finalisé.');
+        if (completedMarker) {
+          return {
+            ok: true,
+            alreadyCompleted: true,
+            meta: completedMarker.meta,
+          };
+        }
+        const fallbackMeta: ClientUpdateMeta = {
+          version: meta.version || `uploaded-${Date.now()}`,
+          publishedAt: meta.completedAt || meta.createdAt || new Date().toISOString(),
+          message: meta.message || null,
+          publicUrl: this.updates.getPublicUrl(),
+          minRequiredVersion: meta.minRequiredVersion || null,
+        };
+        return { ok: true, alreadyCompleted: true, meta: fallbackMeta };
       }
 
       const parts = (await fs.promises.readdir(dir))
@@ -253,6 +336,8 @@ export class ClientUpdatesUploadService {
         out.on('error', reject);
         out.on('finish', resolve);
       });
+      let published = false;
+      let markerWritten = false;
 
       try {
         for (const part of parts) {
@@ -284,6 +369,17 @@ export class ClientUpdatesUploadService {
           metaPath,
           JSON.stringify(updatedMeta, null, 2),
         );
+        published = true;
+        try {
+          await this.writeCompletedMarker(uploadId, saved);
+          markerWritten = true;
+        } catch (err) {
+          this.logger.warn(
+            `Impossible d'écrire le marqueur de finalisation uploadId=${uploadId}: ${getErrorMessage(
+              err,
+            )}`,
+          );
+        }
 
         return { ok: true, meta: saved };
       } finally {
@@ -295,9 +391,11 @@ export class ClientUpdatesUploadService {
         fs.promises.rm(zipPath, { force: true }).catch(() => {
           /* ignore */
         });
-        fs.promises.rm(dir, { recursive: true, force: true }).catch(() => {
-          /* ignore */
-        });
+        if (published && markerWritten) {
+          fs.promises.rm(dir, { recursive: true, force: true }).catch(() => {
+            /* ignore */
+          });
+        }
       }
     } finally {
       try {

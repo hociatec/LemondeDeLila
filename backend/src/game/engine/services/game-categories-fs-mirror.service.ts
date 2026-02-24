@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 
 type MirrorIndexEntry = {
@@ -21,10 +22,22 @@ export class GameCategoriesFsMirrorService {
   private readonly root: string;
 
   constructor() {
-    const envRoot = process.env.TAVERNE_CATEGORIES_ROOT;
-    this.root = envRoot
-      ? path.resolve(envRoot)
-      : path.resolve(process.cwd(), 'data', 'taverne-categories');
+    const envRoot = (process.env.TAVERNE_CATEGORIES_ROOT || '').trim();
+    if (envRoot) {
+      this.root = path.resolve(envRoot);
+      return;
+    }
+    const nodeEnv = (process.env.NODE_ENV || '').trim().toLowerCase();
+    this.root =
+      nodeEnv === 'production'
+        ? path.join(
+            os.homedir(),
+            '.local',
+            'share',
+            'lemonde-de-lila',
+            'taverne-categories',
+          )
+        : path.resolve(process.cwd(), 'data', 'taverne-categories');
   }
 
   async syncAll(input: {

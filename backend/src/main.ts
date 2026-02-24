@@ -9,6 +9,7 @@ import { ServLoggerService } from './common/services/serv-logger.service';
 import * as express from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 
 const bootstrapLogger = new Logger('bootstrap');
 
@@ -106,22 +107,29 @@ async function bootstrap() {
 
   // Static hosting for ClickOnce client updates through the existing API virtual host.
   // Nginx currently proxies all paths to the backend, so we serve /updates/* here.
+  const nodeEnv = (
+    config.get<string>('NODE_ENV') || process.env.NODE_ENV || 'development'
+  ).toLowerCase();
+  const defaultUpdatesDir =
+    nodeEnv === 'production'
+      ? path.join(
+          os.homedir(),
+          '.local',
+          'share',
+          'lemonde-de-lila',
+          'client-updates',
+          'client-win',
+        )
+      : // IMPORTANT: do not depend on process.cwd() (can vary between systemd / manual runs).
+        // Keep a stable default path relative to the backend project root.
+        path.resolve(__dirname, '..', 'data', 'client-updates', 'client-win');
   const updatesDir =
     config.get<string>('CLIENT_UPDATES_DIR') ||
-    // IMPORTANT: do not depend on process.cwd() (can vary between systemd / manual runs).
-    // Keep a stable default path relative to the backend project root.
-    path.resolve(__dirname, '..', 'data', 'client-updates', 'client-win');
-  if (
-    !config.get<string>('CLIENT_UPDATES_DIR') &&
-    (process.env.NODE_ENV || '').toLowerCase() === 'production'
-  ) {
-    // This is the most common cause of "my ClickOnce client stopped working after a backend deploy":
-    // deployments that run `git pull` in-place can overwrite backend/data/client-updates/*.
-    // Keeping artifacts in a persistent directory outside the repo avoids that class of outage.
-
+    defaultUpdatesDir;
+  if (!config.get<string>('CLIENT_UPDATES_DIR') && nodeEnv === 'production') {
     console.warn(
-      `[updates] CLIENT_UPDATES_DIR is not set; using default inside repo: ${updatesDir}. ` +
-        `In production, set CLIENT_UPDATES_DIR to a persistent directory outside the git checkout to avoid losing ClickOnce artifacts on deploy.`,
+      `[updates] CLIENT_UPDATES_DIR is not set; using resilient default path: ${updatesDir}. ` +
+        `For explicit control, set CLIENT_UPDATES_DIR in the systemd environment.`,
     );
   }
   try {
@@ -202,9 +210,6 @@ async function bootstrap() {
         .map((origin) => origin.trim())
         .filter(Boolean)
     : null;
-  const nodeEnv = (
-    config.get<string>('NODE_ENV') || 'development'
-  ).toLowerCase();
   app.enableCors({
     origin:
       origins && origins.length > 0

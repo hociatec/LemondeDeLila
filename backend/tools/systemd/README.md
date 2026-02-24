@@ -20,6 +20,7 @@ sudo systemctl daemon-reload
 2) Configurer le chemin du dépôt sur le serveur:
 
 - Éditer `/etc/systemd/system/lila-backend-deploy.service` et définir `LILA_REPO_DIR=/chemin/vers/lemondeDeLila`.
+- Optionnel: définir `DEPLOY_USER=ubuntu` si vous voulez forcer un user précis. Sinon le script prend automatiquement le propriétaire du dossier du repo.
 
 3) Autoriser l’utilisateur du service backend à déclencher le deploy sans mot de passe (sudoers):
 
@@ -44,11 +45,14 @@ dans le dossier du dépôt, stocker les artifacts dans `backend/data/client-upda
 les fichiers publiés et empêcher les clients ClickOnce de démarrer / se mettre à jour.
 
 Solution recommandée : configurer `CLIENT_UPDATES_DIR` vers un dossier persistant **hors du repo**.
+Ajouter aussi `CLIENT_UPDATES_META_PATH` et `CLIENT_UPDATES_UPLOADS_DIR` pour que tout le flux (init/chunk/complete)
+reste persistant et idempotent.
 
 Exemple (drop-in systemd) :
 
 - Copier `backend/tools/systemd/lila-backend.service.d/20-client-updates.conf` vers `/etc/systemd/system/lila-backend.service.d/20-client-updates.conf`
 - Adapter les chemins + l'URL publique
+- Optionnel mais recommandé : définir `TAVERNE_CATEGORIES_ROOT` hors repo pour éviter des fichiers modifiés au runtime qui bloquent `git pull`
 - Puis :
 
 ```bash
@@ -61,4 +65,3 @@ sudo systemctl restart lila-backend.service
 - `POST /api/admin/maintenance/deploy` (JWT admin + header `x-admin-maintenance-token`)
 - `GET /api/admin/maintenance/deploy/status`
 - `GET /api/admin/maintenance/deploy/logs?tail=200`
-

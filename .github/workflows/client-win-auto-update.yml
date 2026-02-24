@@ -141,6 +141,12 @@ jobs:
           LILA_UPLOAD_TOKEN: ${{ secrets.LILA_UPLOAD_TOKEN }}
         run: |
           $ErrorActionPreference = "Stop"
+          function Get-HttpStatusCode {
+            param([System.Management.Automation.ErrorRecord]$ErrorRecord)
+            $resp = $ErrorRecord.Exception.Response
+            if (-not $resp) { return 0 }
+            try { return [int]$resp.StatusCode } catch { return 0 }
+          }
           function Invoke-WithRetry {
             param(
               [scriptblock]$Action,
@@ -152,6 +158,10 @@ jobs:
               try {
                 return & $Action
               } catch {
+                $status = Get-HttpStatusCode -ErrorRecord $_
+                $isClientError = $status -ge 400 -and $status -lt 500
+                $retryableClientError = $status -eq 409 -or $status -eq 429
+                if ($isClientError -and -not $retryableClientError) { throw }
                 if ($attempt -ge $MaxAttempts) { throw }
                 $delay = [Math]::Min(30, $BaseDelaySeconds * [Math]::Pow(2, $attempt - 1))
                 Start-Sleep -Seconds ([int]$delay)
@@ -188,6 +198,7 @@ jobs:
           $init = Invoke-WithRetry { Invoke-RestMethod -Method Post -Uri $initUrl -Headers $headers -ContentType "application/json" -Body $initBody }
           $uploadId = $init.uploadId
           if ([string]::IsNullOrWhiteSpace($uploadId)) { throw "uploadId missing" }
+          Write-Host "Initialized chunked upload: uploadId=$uploadId bytes=$size version=$ver"
 
           $chunkSize = 10MB
           $buffer = New-Object byte[] $chunkSize

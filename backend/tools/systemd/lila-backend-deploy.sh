@@ -3,8 +3,9 @@ set -euo pipefail
 
 LILA_REPO_DIR="${LILA_REPO_DIR:-}"
 BACKEND_SERVICE="${BACKEND_SERVICE:-lila-backend.service}"
-DEPLOY_USER="${DEPLOY_USER:-backend}"
+DEPLOY_USER="${DEPLOY_USER:-}"
 DEPLOY_LOCK_FILE="${DEPLOY_LOCK_FILE:-/var/lock/lemonde-deploy.lock}"
+EFFECTIVE_DEPLOY_USER=""
 
 if [[ -z "$LILA_REPO_DIR" ]]; then
   echo "[deploy] ERROR: LILA_REPO_DIR is not set (edit the systemd unit)"
@@ -16,9 +17,49 @@ if [[ ! -d "$LILA_REPO_DIR" ]]; then
   exit 2
 fi
 
+resolve_repo_owner_user() {
+  local owner
+  owner="$(stat -c '%U' "$LILA_REPO_DIR" 2>/dev/null || true)"
+  if [[ -z "$owner" || "$owner" == "UNKNOWN" ]]; then
+    return 1
+  fi
+  if id -u "$owner" >/dev/null 2>&1; then
+    printf '%s' "$owner"
+    return 0
+  fi
+  return 1
+}
+
+resolve_effective_deploy_user() {
+  local configured repo_owner
+  configured="$(printf '%s' "$DEPLOY_USER" | xargs)"
+  if [[ -n "$configured" ]]; then
+    if id -u "$configured" >/dev/null 2>&1; then
+      EFFECTIVE_DEPLOY_USER="$configured"
+      return 0
+    fi
+    echo "[deploy] WARN: DEPLOY_USER '$configured' does not exist"
+  fi
+
+  repo_owner="$(resolve_repo_owner_user || true)"
+  if [[ -n "$repo_owner" ]]; then
+    EFFECTIVE_DEPLOY_USER="$repo_owner"
+    return 0
+  fi
+
+  EFFECTIVE_DEPLOY_USER=""
+  return 0
+}
+
+resolve_effective_deploy_user
+
 echo "[deploy] repo: $LILA_REPO_DIR"
 echo "[deploy] backend service: $BACKEND_SERVICE"
-echo "[deploy] deploy user: $DEPLOY_USER"
+if [[ -n "$EFFECTIVE_DEPLOY_USER" ]]; then
+  echo "[deploy] deploy user: $EFFECTIVE_DEPLOY_USER"
+else
+  echo "[deploy] deploy user: current user ($(id -un))"
+fi
 echo "[deploy] lock: $DEPLOY_LOCK_FILE"
 
 mkdir -p "$(dirname "$DEPLOY_LOCK_FILE")"
@@ -32,13 +73,22 @@ echo "$$" >"$DEPLOY_LOCK_FILE"
 trap 'rm -f "$DEPLOY_LOCK_FILE"' EXIT
 
 run_as_deploy_user() {
-  if id -u "$DEPLOY_USER" >/dev/null 2>&1; then
-    # shellcheck disable=SC2016
-    runuser -u "$DEPLOY_USER" -- "$@"
-  else
-    echo "[deploy] WARN: user '$DEPLOY_USER' not found; running as current user"
+  local current_user
+  current_user="$(id -un)"
+
+  if [[ -z "$EFFECTIVE_DEPLOY_USER" || "$EFFECTIVE_DEPLOY_USER" == "$current_user" ]]; then
     "$@"
+    return
   fi
+
+  if [[ "$(id -u)" -ne 0 ]]; then
+    echo "[deploy] WARN: cannot switch to '$EFFECTIVE_DEPLOY_USER' without root privileges; running as '$current_user'"
+    "$@"
+    return
+  fi
+
+  # shellcheck disable=SC2016
+  runuser -u "$EFFECTIVE_DEPLOY_USER" -- "$@"
 }
 
 retry() {
@@ -60,7 +110,26 @@ retry() {
   done
 }
 
+cleanup_runtime_generated_changes() {
+  # Runtime mirrors can dirty the worktree and block `git pull --ff-only`.
+  # These paths are generated and safe to restore/clean before deploy.
+  local restore_paths=(
+    "backend/data/taverne-categories"
+  )
+
+  for p in "${restore_paths[@]}"; do
+    if git rev-parse --verify HEAD >/dev/null 2>&1; then
+      git restore --worktree -- "$p" >/dev/null 2>&1 || true
+    fi
+  done
+
+  git clean -fd -- backend/data/client-updates/uploads >/dev/null 2>&1 || true
+}
+
 cd "$LILA_REPO_DIR"
+
+echo "[deploy] cleanup runtime-generated git changes"
+cleanup_runtime_generated_changes
 
 echo "[deploy] git pull --ff-only"
 retry 3 3 run_as_deploy_user git pull --ff-only
@@ -73,4 +142,3 @@ systemctl restart "$BACKEND_SERVICE"
 systemctl --no-pager --full status "$BACKEND_SERVICE" || true
 
 echo "[deploy] done"
-
