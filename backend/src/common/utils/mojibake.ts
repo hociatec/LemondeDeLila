@@ -77,6 +77,78 @@ function applyTargetedMojibakeReplacements(value: string): string {
   return out;
 }
 
+function preserveWordCase(input: string, replacement: string): string {
+  if (!input || !replacement) return replacement;
+  if (input === input.toUpperCase()) return replacement.toUpperCase();
+  if (input[0] === input[0].toUpperCase()) {
+    return replacement[0].toUpperCase() + replacement.slice(1);
+  }
+  return replacement;
+}
+
+function normalizeFrenchDisplayTypos(value: string): string {
+  let out = String(value ?? '');
+  if (!out) return '';
+
+  out = out
+    .replace(/\bmise\s+a\s+jour\b/gi, (raw) =>
+      preserveWordCase(raw, 'mise à jour'),
+    )
+    .replace(/\bmises\s+a\s+jour\b/gi, (raw) =>
+      preserveWordCase(raw, 'mises à jour'),
+    )
+    .replace(/\bpublication\/distribution\b/gi, (raw) =>
+      preserveWordCase(raw, 'publication/distribution'),
+    )
+    .replace(/\ba\s+l(?:['’]|\s+)echeance\b/gi, (raw) =>
+      preserveWordCase(raw, "à l'échéance"),
+    );
+
+  const wordMap: Record<string, string> = {
+    delai: 'délai',
+    delais: 'délais',
+    echeance: 'échéance',
+    echeances: 'échéances',
+    etagere: 'étagère',
+    etageres: 'étagères',
+    parametre: 'paramètre',
+    parametres: 'paramètres',
+    reponse: 'réponse',
+    reponses: 'réponses',
+    ecran: 'écran',
+    ecrans: 'écrans',
+  };
+
+  out = out.replace(/\b[0-9A-Za-z][0-9A-Za-z'-]*\b/g, (token) => {
+    const replacement = wordMap[token.toLowerCase()];
+    if (!replacement) return token;
+    return preserveWordCase(token, replacement);
+  });
+
+  return out;
+}
+
+function shouldNormalizeFrenchDisplayText(key: string | undefined): boolean {
+  if (!key) return false;
+  const normalized = key.toLowerCase();
+  return (
+    normalized === 'message' ||
+    normalized === 'text' ||
+    normalized === 'title' ||
+    normalized === 'description' ||
+    normalized === 'label' ||
+    normalized === 'rules' ||
+    normalized === 'prompt' ||
+    normalized === 'instruction' ||
+    normalized === 'instructions' ||
+    normalized === 'help' ||
+    normalized === 'summary' ||
+    normalized === 'details' ||
+    normalized === 'reason' ||
+    normalized === 'subtitle'
+  );
+}
+
 export function fixMojibakeString(value: string): string {
   const score = (s: string) => {
     const suspicious = (
@@ -166,9 +238,13 @@ export function fixMojibakeString(value: string): string {
 function fixMojibakeDeepInternal(
   value: unknown,
   seen: WeakMap<object, unknown>,
+  key?: string,
 ): unknown {
   if (typeof value === 'string') {
-    return fixMojibakeString(value);
+    const fixed = fixMojibakeString(value);
+    return shouldNormalizeFrenchDisplayText(key)
+      ? normalizeFrenchDisplayTypos(fixed)
+      : fixed;
   }
   if (Array.isArray(value)) {
     if (seen.has(value)) {
@@ -177,7 +253,7 @@ function fixMojibakeDeepInternal(
     const out: unknown[] = [];
     seen.set(value, out);
     for (const item of value) {
-      out.push(fixMojibakeDeepInternal(item, seen));
+      out.push(fixMojibakeDeepInternal(item, seen, key));
     }
     return out;
   }
@@ -189,7 +265,7 @@ function fixMojibakeDeepInternal(
     const out: Record<string, unknown> = {};
     seen.set(value, out);
     Object.keys(obj).forEach((k) => {
-      out[k] = fixMojibakeDeepInternal(obj[k], seen);
+      out[k] = fixMojibakeDeepInternal(obj[k], seen, k);
     });
     return out;
   }

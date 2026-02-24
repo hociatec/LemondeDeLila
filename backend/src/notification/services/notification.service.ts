@@ -5,6 +5,7 @@ import {
   NotificationTransport,
   NotificationEvent,
 } from './notification-transport';
+import { fixMojibakeDeep } from '../../common/utils/mojibake';
 
 @Injectable()
 export class NotificationService implements OnModuleDestroy {
@@ -41,25 +42,27 @@ export class NotificationService implements OnModuleDestroy {
   }
 
   async notifyUser(userId: number, type: string, payload: any) {
+    const repairedPayload = fixMojibakeDeep(payload);
     await this.transport.publish({
       userId,
       type,
-      payload,
+      payload: repairedPayload,
       origin: this.instanceId,
     });
-    this.dispatchToLocal(userId, type, payload);
+    this.dispatchToLocal(userId, type, repairedPayload);
   }
 
   // Broadcast to all connected users.
   // Implementation detail: userId=0 is treated as a "global" event and dispatched to every socket.
   async notifyAll(type: string, payload: any) {
+    const repairedPayload = fixMojibakeDeep(payload);
     await this.transport.publish({
       userId: 0,
       type,
-      payload,
+      payload: repairedPayload,
       origin: this.instanceId,
     });
-    this.dispatchToAllLocal(type, payload);
+    this.dispatchToAllLocal(type, repairedPayload);
   }
 
   disconnectAll(reason?: string) {
@@ -95,14 +98,15 @@ export class NotificationService implements OnModuleDestroy {
   }
 
   private handleExternalEvent(event: NotificationEvent) {
+    const repairedPayload = fixMojibakeDeep(event.payload);
     if (event.origin === this.instanceId) {
       return;
     }
     if (event.userId === 0) {
-      this.dispatchToAllLocal(event.type, event.payload);
+      this.dispatchToAllLocal(event.type, repairedPayload);
       return;
     }
-    this.dispatchToLocal(event.userId, event.type, event.payload);
+    this.dispatchToLocal(event.userId, event.type, repairedPayload);
   }
 
   private dispatchToLocal(userId: number, type: string, payload: any) {

@@ -21,6 +21,7 @@ import { isVersionLower } from '../../../common/utils/version.utils';
 import { WsTicketAuthService } from '../../../common/ws/ws-ticket-auth.service';
 import { RoomService } from '../../../room/services/room.service';
 import { GameContentService } from '../services/game-content.service';
+import { fixMojibakeDeep } from '../../../common/utils/mojibake';
 import type { WsClientLike } from '../../../common/ws/ws-jwt-auth.service';
 
 type Payload = Record<string, unknown>;
@@ -860,10 +861,16 @@ export class GameGateway
     return JSON.stringify(payload);
   }
 
+  private sanitizeOutgoingPayload<T>(payload: T): T {
+    return fixMojibakeDeep(payload);
+  }
+
   private safeSend(client: GameWebSocket, payload: Payload) {
     if (client.readyState !== WS_READY_STATE_OPEN) return;
     try {
-      client.send(this.unsafeStringify(payload));
+      client.send(
+        this.unsafeStringify(this.sanitizeOutgoingPayload(payload) as Payload),
+      );
     } catch (err) {
       this.logger.warn('Echec envoi WS game', err as Error);
       try {
@@ -893,13 +900,19 @@ export class GameGateway
 
   private getEncodedStateMessage(payload: GameStatePayload): string {
     if (!payload || typeof payload !== 'object') {
-      return JSON.stringify({ type: 'game.state', payload });
+      return JSON.stringify({
+        type: 'game.state',
+        payload: this.sanitizeOutgoingPayload(payload),
+      });
     }
     const cached = this.encodedStateMessageCache.get(payload);
     if (cached) {
       return cached;
     }
-    const encoded = JSON.stringify({ type: 'game.state', payload });
+    const encoded = JSON.stringify({
+      type: 'game.state',
+      payload: this.sanitizeOutgoingPayload(payload),
+    });
     this.encodedStateMessageCache.set(payload, encoded);
     return encoded;
   }
@@ -913,7 +926,10 @@ export class GameGateway
     if (!patch) {
       return null;
     }
-    const encodedPatch = JSON.stringify({ type: 'game.patch', payload: patch });
+    const encodedPatch = JSON.stringify({
+      type: 'game.patch',
+      payload: this.sanitizeOutgoingPayload(patch),
+    });
     const patchBytes = Buffer.byteLength(encodedPatch, 'utf8');
     const fullBytes = Buffer.byteLength(fullStateEncoded, 'utf8');
     if (patchBytes + this.minPatchBytesSaved >= fullBytes) {

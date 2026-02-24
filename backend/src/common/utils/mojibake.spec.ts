@@ -155,6 +155,30 @@ describe('Mojibake utilities', () => {
       expect(result.a).toBe(result.b);
       expect(result.a.value).not.toBe('forÃƒÂªt');
     });
+
+    it('normalizes common missing accents for display keys only', () => {
+      const input = {
+        message: 'Mise a jour: delai avant publication a l echeance.',
+        title: 'Parametres',
+        rules: 'Consigne: aller a l etagere puis donner la reponse.',
+        code: 'delai',
+        nested: {
+          description: 'Aller a l etagere pour voir la reponse.',
+          key: 'etagere',
+        },
+      };
+
+      const result = fixMojibakeDeep(input);
+      expect(result.message).toContain('Mise à jour');
+      expect(result.message).toContain('délai');
+      expect(result.title).toBe('Paramètres');
+      expect(result.rules).toContain('étagère');
+      expect(result.rules).toContain('réponse');
+      expect(result.nested.description).toContain('étagère');
+      expect(result.nested.description).toContain('réponse');
+      expect(result.code).toBe('delai');
+      expect(result.nested.key).toBe('etagere');
+    });
   });
 
   describe('readTextFileWithFallback', () => {
