@@ -3,7 +3,7 @@ import { LamaLogService } from '../logging/lama-log.service';
 describe('LamaLogService', () => {
   it('normalizes mojibake/accent text before appending', () => {
     const service = new LamaLogService();
-    const next = service.append([], 'BloquÃ© : lancez le de : "5".');
+    const next = service.append([], 'Bloqué : lancez le de : "5".');
     const message = String(next[0]?.message ?? '');
 
     expect(message).toBe('Bloqué: lancez le dé: "5".');

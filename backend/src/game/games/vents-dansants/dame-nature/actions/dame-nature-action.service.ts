@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
@@ -66,7 +66,7 @@ export class DameNatureActionService {
       return this.drawAndAdvance(
         state,
         currentId,
-        `La carte ${this.getCardName(cardId)} n'est pas chez le joueur demand�.`,
+        `La carte ${this.getCardName(cardId)} n'est pas chez le joueur demandé.`,
       );
     }
 
@@ -78,7 +78,7 @@ export class DameNatureActionService {
     );
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} r�cup�re ${this.getCardName(cardId)} de ${resolvePlayerNameFromState(next, targetId)}.`,
+      `${resolvePlayerNameFromState(next, currentId)} récupère ${this.getCardName(cardId)} de ${resolvePlayerNameFromState(next, targetId)}.`,
     );
 
     next = this.registerFamilyCard(next, currentId, cardId);
@@ -108,7 +108,7 @@ export class DameNatureActionService {
     if (!cardId) {
       return this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} ne trouve plus aucune carte � piocher.`,
+        `${resolvePlayerNameFromState(next, playerId)} ne trouve plus aucune carte à piocher.`,
       );
     }
 

@@ -195,7 +195,7 @@ describe('JeuOieActionService', () => {
         (m) =>
           m.includes(starterName) &&
           m.includes('commence.') &&
-          (m.includes('Début de partie') || m.includes('DÃ©but de partie')),
+          (m.includes('Début de partie') || m.includes('Début de partie')),
       ),
     ).toBe(true);
   });

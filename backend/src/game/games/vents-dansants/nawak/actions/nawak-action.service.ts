@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerName } from '../../../../modules/turn-policies/player-name.helper';
@@ -73,7 +73,7 @@ export class NawakActionService {
 
     let next = this.setMeta(state, meta);
     const answerLabel =
-      meta.currentChallenge.answers?.[answerIndex] ?? 'r�ponse inconnue';
+      meta.currentChallenge.answers?.[answerIndex] ?? 'réponse inconnue';
     next = this.core.appendLog(
       next,
       `${resolvePlayerName(state.players, currentId)} choisit "${answerLabel}".`,
@@ -91,7 +91,7 @@ export class NawakActionService {
       next = this.setMeta(next, updatedMeta);
       next = this.core.appendLog(
         next,
-        'Tous les choix sont faits : votez maintenant pour une r�ponse �trang�re !',
+        'Tous les choix sont faits : votez maintenant pour une réponse étrangère !',
       );
     }
 
@@ -229,7 +229,7 @@ export class NawakActionService {
     if (tie) {
       next = this.core.appendLog(
         next,
-        '�galit� d�tect�e : un nouveau d�fi va d�partager les joueurs.',
+        'égalité détectée : un nouveau défi va départager les joueurs.',
       );
     }
 

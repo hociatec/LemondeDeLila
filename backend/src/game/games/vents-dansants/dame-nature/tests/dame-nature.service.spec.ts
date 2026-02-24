@@ -1,7 +1,7 @@
-import { DameNatureService } from '../dame-nature.service';
+﻿import { DameNatureService } from '../dame-nature.service';
 
 describe('DameNatureService', () => {
-  it('devrait �tre d�fini', () => {
+  it('devrait être défini', () => {
     const registry = { register: jest.fn() } as any;
     const service = new DameNatureService(
       registry,

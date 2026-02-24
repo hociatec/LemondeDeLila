@@ -1,7 +1,7 @@
-import { LesMainsDeLaTerreService } from '../les-mains-de-la-terre.service';
+﻿import { LesMainsDeLaTerreService } from '../les-mains-de-la-terre.service';
 
 describe('LesMainsDeLaTerreService', () => {
-  it('doit �tre d�fini', () => {
+  it('doit être défini', () => {
     const registry = { register: jest.fn() } as any;
     const service = new LesMainsDeLaTerreService(
       registry,

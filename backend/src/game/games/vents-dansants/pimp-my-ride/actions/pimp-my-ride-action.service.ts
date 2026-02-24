@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
@@ -34,7 +34,7 @@ const CATEGORY_LABELS: Record<
   roues: 'les roues',
   moteur: 'le moteur',
   volant: 'le volant',
-  sieges: 'les si�ges',
+  sieges: 'les sièges',
   phares: 'les phares',
   accessoires: 'les accessoires',
 };
@@ -157,7 +157,7 @@ export class PimpMyRideActionService {
     next = this.setMeta(next, updatedMeta);
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} jette ${this.getCardName(cardId)} � la d�fausse.`,
+      `${resolvePlayerNameFromState(next, playerId)} jette ${this.getCardName(cardId)} à la défausse.`,
     );
 
     next = this.turns.advanceTurn(next);
@@ -235,7 +235,7 @@ export class PimpMyRideActionService {
     } else {
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} ne trouve plus de cartes � piocher.`,
+        `${resolvePlayerNameFromState(next, playerId)} ne trouve plus de cartes à piocher.`,
       );
     }
     return next;

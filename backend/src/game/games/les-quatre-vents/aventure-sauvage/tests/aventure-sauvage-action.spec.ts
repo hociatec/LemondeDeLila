@@ -229,7 +229,7 @@ describe('AventureSauvageActionService', () => {
       messages.some((m) => /Lilas place "sa girafe" en case/.test(m)),
     ).toBe(true);
     expect(
-      messages.some((m) => /Lilas lance le d(?:e|é|Ã©)\s*:\s*"\d"\./.test(m)),
+      messages.some((m) => /Lilas lance le d(?:e|é|é)\s*:\s*"\d"\./.test(m)),
     ).toBe(true);
   });
 
