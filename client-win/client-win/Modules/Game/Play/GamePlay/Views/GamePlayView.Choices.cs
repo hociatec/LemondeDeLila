@@ -21,8 +21,14 @@ public partial class GamePlayView
     private int _restoreHandFocusIndex;
     private int _restoreChoiceFocusMisses;
     private int _restoreHandFocusMisses;
+    private bool _preferredInteractiveFocusForceFromOutside = true;
 
     public void FocusPreferredInteractiveElement()
+    {
+        FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
+    }
+
+    public void FocusPreferredInteractiveElement(bool forceFromOutsideTextInput)
     {
         if (DataContext is GamePlayViewModel vmNow && vmNow.HasInlinePrompt)
         {
@@ -30,6 +36,7 @@ public partial class GamePlayView
             return;
         }
 
+        _preferredInteractiveFocusForceFromOutside = forceFromOutsideTextInput;
         var requestId = Interlocked.Increment(ref _preferredInteractiveFocusRequestId);
         RunPreferredInteractiveFocusPass(requestId);
         QueuePreferredInteractiveFocusPass(requestId, DispatcherPriority.Input);
@@ -49,7 +56,7 @@ public partial class GamePlayView
             return;
         }
 
-        ForceFocusGameZoneCore(forceFromOutsideTextInput: true);
+        ForceFocusGameZoneCore(forceFromOutsideTextInput: _preferredInteractiveFocusForceFromOutside);
     }
 
     private void NoteChoiceSubmittedForFocusRestore()
@@ -392,7 +399,16 @@ public partial class GamePlayView
             return;
         }
 
-        FocusPreferredInteractiveElement();
+        // "GamePlayReady" is emitted on frequent state transitions (turn/action updates).
+        // Keep focus stable if the user is currently reading chat/history to avoid
+        // repetitive "Zone de jeu" announcements from screen readers.
+        if (reason == GameFocusReason.GamePlayReady)
+        {
+            FocusPreferredInteractiveElement(forceFromOutsideTextInput: false);
+            return;
+        }
+
+        FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
     }
 
     private void ForceFocusGameZoneCore(bool forceFromOutsideTextInput)
@@ -700,5 +716,3 @@ public partial class GamePlayView
         }
     }
 }
-
-

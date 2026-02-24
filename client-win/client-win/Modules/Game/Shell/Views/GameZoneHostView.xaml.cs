@@ -29,8 +29,22 @@ public partial class GameZoneHostView : UserControl
 
     public GameFocusAttemptResult FocusGameZone(GameFocusReason reason)
     {
+        // Avoid re-focusing the same game zone on frequent state updates:
+        // if focus is already within this host, keep it stable.
+        if (IsFocusInside(this))
+        {
+            return GameZoneHost?.Content == null
+                ? GameFocusAttemptResult.Anchor
+                : GameFocusAttemptResult.Interactive;
+        }
+
         if (GameZoneHost?.Content == null)
         {
+            if (ReferenceEquals(Keyboard.FocusedElement, GameZoneEmptyAnchor))
+            {
+                return GameFocusAttemptResult.Anchor;
+            }
+
             if (GameZoneEmptyAnchor?.Focus() == true)
             {
                 Keyboard.Focus(GameZoneEmptyAnchor);
@@ -186,6 +200,12 @@ public partial class GameZoneHostView : UserControl
 
     private void FocusGameZoneAnchor()
     {
+        if (ReferenceEquals(Keyboard.FocusedElement, GameZoneFocusAnchor) ||
+            ReferenceEquals(Keyboard.FocusedElement, GameZoneEmptyAnchor))
+        {
+            return;
+        }
+
         if (GameZoneFocusAnchor?.Focus() == true)
         {
             Keyboard.Focus(GameZoneFocusAnchor);
