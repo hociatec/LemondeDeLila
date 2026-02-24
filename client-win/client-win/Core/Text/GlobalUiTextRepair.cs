@@ -105,7 +105,8 @@ public static class GlobalUiTextRepair
                 run.Text = MojibakeTextRepair.Fix(run.Text);
                 break;
             case TextBox textBox:
-                textBox.Text = MojibakeTextRepair.Fix(textBox.Text);
+                // Preserve bindings on Text by updating the current value without replacing them.
+                textBox.SetCurrentValue(TextBox.TextProperty, MojibakeTextRepair.Fix(textBox.Text));
                 break;
             case ContentControl cc when cc.Content is string content:
                 cc.Content = MojibakeTextRepair.Fix(content);
