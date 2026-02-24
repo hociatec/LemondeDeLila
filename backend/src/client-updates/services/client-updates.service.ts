@@ -3,7 +3,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { parseVersion } from '../../common/utils/version.utils';
 
 const execFileAsync = promisify(execFile);
@@ -18,6 +18,7 @@ export type ClientUpdateMeta = {
 
 @Injectable()
 export class ClientUpdatesService {
+  private readonly logger = new Logger(ClientUpdatesService.name);
   private readonly updatesDir: string;
   private readonly metaPath: string;
   private readonly legacyApplicationName = 'client-win.application';
@@ -476,13 +477,24 @@ export class ClientUpdatesService {
 
     const targetDir = this.getTargetDir();
     const parent = path.dirname(targetDir);
-    const releasesDir = path.join(parent, 'client-win.releases');
-    await fs.promises.mkdir(releasesDir, { recursive: true });
+    let releasesDir: string | null = path.join(parent, 'client-win.releases');
+    let canUseDirectorySwap = true;
+    try {
+      await fs.promises.mkdir(releasesDir, { recursive: true });
+    } catch (err) {
+      canUseDirectorySwap = false;
+      const message =
+        (err as NodeJS.ErrnoException)?.message || 'erreur inconnue';
+      this.logger.warn(
+        `Impossible de préparer le dossier de backups (${releasesDir}). ` +
+          `Fallback publication sans swap de répertoire: ${message}`,
+      );
+      releasesDir = null;
+    }
 
     // Publish strategy:
     // - Primary: swap directories (fast, avoids duplicating storage).
     // - Fallback: replace directory contents (works even when renames/symlinks are constrained).
-    const backupDir = path.join(releasesDir, `backup.${Date.now()}`);
     let published = false;
 
     const resolveExistingTarget = async (): Promise<string | null> => {
@@ -513,15 +525,18 @@ export class ClientUpdatesService {
       return null;
     };
 
-    try {
-      const existingTargetPath = await resolveExistingTarget();
-      if (existingTargetPath) {
-        await fs.promises.rename(existingTargetPath, backupDir);
-        await fs.promises.rename(stagingDir, targetDir);
-        published = true;
+    if (canUseDirectorySwap && releasesDir) {
+      const backupDir = path.join(releasesDir, `backup.${Date.now()}`);
+      try {
+        const existingTargetPath = await resolveExistingTarget();
+        if (existingTargetPath) {
+          await fs.promises.rename(existingTargetPath, backupDir);
+          await fs.promises.rename(stagingDir, targetDir);
+          published = true;
+        }
+      } catch {
+        // fallback below
       }
-    } catch {
-      // fallback below
     }
 
     if (!published) {
@@ -547,27 +562,29 @@ export class ClientUpdatesService {
     }
 
     // Best-effort cleanup: keep last 3 backups.
-    try {
-      const entries = await fs.promises.readdir(releasesDir, {
-        withFileTypes: true,
-      });
-      const dirs = entries
-        .filter((e) => e.isDirectory())
-        .map((e) => e.name)
-        .filter((n) => n.startsWith('backup.'))
-        .sort()
-        .reverse();
-      const keep = new Set(dirs.slice(0, 3));
-      for (const d of dirs) {
-        if (keep.has(d)) continue;
-        fs.promises
-          .rm(path.join(releasesDir, d), { recursive: true, force: true })
-          .catch(() => {
-            /* ignore */
-          });
+    if (releasesDir) {
+      try {
+        const entries = await fs.promises.readdir(releasesDir, {
+          withFileTypes: true,
+        });
+        const dirs = entries
+          .filter((e) => e.isDirectory())
+          .map((e) => e.name)
+          .filter((n) => n.startsWith('backup.'))
+          .sort()
+          .reverse();
+        const keep = new Set(dirs.slice(0, 3));
+        for (const d of dirs) {
+          if (keep.has(d)) continue;
+          fs.promises
+            .rm(path.join(releasesDir, d), { recursive: true, force: true })
+            .catch(() => {
+              /* ignore */
+            });
+        }
+      } catch {
+        // ignore
       }
-    } catch {
-      // ignore
     }
 
     fs.promises.rm(baseTmp, { recursive: true, force: true }).catch(() => {
