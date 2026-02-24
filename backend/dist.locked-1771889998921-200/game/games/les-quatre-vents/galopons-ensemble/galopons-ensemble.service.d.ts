@@ -1,0 +1,31 @@
+import type { GameStateEntity } from '../../../core/entities/game-state.entity';
+import type { GameSingleActionDto, GameStateWithActions } from '../../../engine/dto/game-action.dto';
+import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
+import type { GameShortcutHint, GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
+import { GaloponsSetupService } from './setup/galopons-setup.service';
+import { GaloponsActionService } from './actions/galopons-action.service';
+import { GaloponsPresenterService } from './presenter/galopons-presenter.service';
+import { GaloponsBotService } from './bots/galopons-bot.service';
+export declare class GaloponsEnsembleService extends AbstractGameService {
+    private readonly setup;
+    private readonly actions;
+    private readonly presenter;
+    private readonly bots;
+    readonly gameType = "galopons-ensemble";
+    readonly category = "JeuxDePlateaux";
+    readonly subcategory = "LesQuatreVents";
+    readonly displayName: string;
+    readonly description = "Course \u00E9questre avec pommes et cartes.";
+    readonly minPlayers: number;
+    readonly maxPlayers: number;
+    constructor(registry: GameRegistryService, setup: GaloponsSetupService, actions: GaloponsActionService, presenter: GaloponsPresenterService, bots: GaloponsBotService);
+    hydrateInitialState(baseState: GameStateEntity): GameStateEntity;
+    applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity;
+    getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[];
+    validateAction(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameSingleActionDto;
+    getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[];
+    exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions;
+    getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[];
+    shouldAnnounceBoardArrivals(): boolean;
+}

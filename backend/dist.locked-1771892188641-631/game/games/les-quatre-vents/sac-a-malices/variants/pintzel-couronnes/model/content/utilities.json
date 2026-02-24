@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "utilities": [
+    {
+      "name": "Compagnie des Trams CTS",
+      "purchasePrice": 150,
+      "mortgage": 75,
+      "unmortgageCost": 83,
+      "multiplier1": 4,
+      "multiplier2": 10
+    },
+    {
+      "name": "Centrale Électrique du Port-du-Rhin",
+      "purchasePrice": 150,
+      "mortgage": 75,
+      "unmortgageCost": 83,
+      "multiplier1": 4,
+      "multiplier2": 10
+    }
+  ]
+}

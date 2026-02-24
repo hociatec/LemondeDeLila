@@ -1,0 +1,30 @@
+import type { GameStateEntity } from '../../../core/entities/game-state.entity';
+import type { GameSingleActionDto, GameStateWithActions } from '../../../engine/dto/game-action.dto';
+import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
+import type { GameShortcutHint, GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
+import { CaSetupService } from './setup/ca.setup';
+import { CaActionService } from './actions/ca-actions.service';
+import { CaPresenterService } from './presenter/ca-presenter.service';
+import { CaBotService } from './bots/ca-bot.service';
+export declare class CaDerapeService extends AbstractGameService {
+    private readonly setup;
+    private readonly actions;
+    private readonly presenter;
+    private readonly bots;
+    readonly gameType = "ca-derape";
+    readonly category = "JeuxDePlateaux";
+    readonly subcategory = "LesQuatreVents";
+    readonly displayName: string;
+    readonly description = "Course chaotique sur 30 cases avec cartes Situation.";
+    readonly minPlayers: number;
+    readonly maxPlayers: number;
+    constructor(registry: GameRegistryService, setup: CaSetupService, actions: CaActionService, presenter: CaPresenterService, bots: CaBotService);
+    hydrateInitialState(baseState: GameStateEntity): GameStateEntity;
+    applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity;
+    getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[];
+    validateAction(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameSingleActionDto;
+    getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[];
+    exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions;
+    getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[];
+}

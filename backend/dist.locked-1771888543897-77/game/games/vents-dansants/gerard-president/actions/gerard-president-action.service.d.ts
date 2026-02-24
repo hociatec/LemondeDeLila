@@ -1,0 +1,32 @@
+import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { RandomService } from '../../../../modules/random/services/random.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
+export declare class GerardPresidentActionService {
+    private readonly random;
+    private readonly deckPolicies;
+    constructor(random: RandomService, deckPolicies: DeckPoliciesService);
+    applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity;
+    private applyAction;
+    private handleSetTheme;
+    private handlePlayName;
+    private handlePlaySpecial;
+    private handleChooseWinner;
+    private handlePass;
+    private cloneMetadata;
+    private cloneRecordOfArrays;
+    private cloneNumberRecord;
+    private addSubmission;
+    private recordSpecialTarget;
+    private applySpecialEffect;
+    private pickRandomPlayer;
+    private findNeighbor;
+    private removeRandomFromHand;
+    private getPlayers;
+    private setCurrentPlayer;
+    private appendLog;
+    private formatPlayer;
+    private drawCards;
+    private filterPlayableNames;
+    private getNextPlayer;
+}

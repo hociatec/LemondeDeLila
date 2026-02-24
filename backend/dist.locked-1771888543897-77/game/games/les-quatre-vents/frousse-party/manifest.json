@@ -1,0 +1,8 @@
+﻿{
+  "code": "frousse-party",
+  "name": "Frousse Party !",
+  "minPlayers": 2,
+  "maxPlayers": 6,
+  "engine": "frousse-party",
+  "summary": "Course dans un manoir (50 cases) avec cartes pièges/farces/fantômes/bonus."
+}

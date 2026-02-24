@@ -1,0 +1,294 @@
+{
+  "version": 1,
+  "stands": [
+    {
+      "id": "fruitier",
+      "items": [
+        "pomme",
+        "poire",
+        "peche",
+        "banane",
+        "melon"
+      ]
+    },
+    {
+      "id": "maraicher",
+      "items": [
+        "concombre",
+        "mais",
+        "asperge",
+        "feve",
+        "pois-gourmand"
+      ]
+    },
+    {
+      "id": "bio-fruits",
+      "items": [
+        "abricot",
+        "nashi",
+        "kiwano",
+        "nefle",
+        "nectarine"
+      ]
+    },
+    {
+      "id": "primeur",
+      "items": [
+        "fleur-de-courgette",
+        "fane-de-radis",
+        "pousse-de-bambou",
+        "feuille-de-basilic",
+        "jeune-pousse-d-ortie"
+      ]
+    },
+    {
+      "id": "fruits-exotiques",
+      "items": [
+        "mangue",
+        "papaye",
+        "kiwi",
+        "ananas",
+        "litchi"
+      ]
+    },
+    {
+      "id": "legumes-racines",
+      "items": [
+        "betterave",
+        "radis",
+        "pomme-de-terre",
+        "carotte",
+        "rutabaga"
+      ]
+    },
+    {
+      "id": "legumes-feuilles",
+      "items": [
+        "salade",
+        "epinard",
+        "mache",
+        "cresson",
+        "blette"
+      ]
+    },
+    {
+      "id": "fruits-rouges",
+      "items": [
+        "fraise",
+        "framboise",
+        "cerise",
+        "mure",
+        "cassis"
+      ]
+    },
+    {
+      "id": "legumes-secs",
+      "items": [
+        "pois-chiche",
+        "lentille",
+        "haricot-sec",
+        "pois-casse",
+        "lupin"
+      ]
+    },
+    {
+      "id": "agrumes",
+      "items": [
+        "orange",
+        "citron",
+        "pamplemousse",
+        "bergamote",
+        "cumquat"
+      ]
+    },
+    {
+      "id": "legumes-ete",
+      "items": [
+        "tomate",
+        "aubergine",
+        "poivron",
+        "patisson",
+        "haricot-vert"
+      ]
+    },
+    {
+      "id": "fruits-secs",
+      "items": [
+        "amande",
+        "noisette",
+        "noix",
+        "noix-de-coco",
+        "chataigne"
+      ]
+    },
+    {
+      "id": "fruits-hiver",
+      "items": [
+        "kaki",
+        "coing",
+        "mandarine",
+        "clementine",
+        "physalis"
+      ]
+    },
+    {
+      "id": "legumes-exotiques",
+      "items": [
+        "patate-douce",
+        "igname",
+        "amarante",
+        "gombo",
+        "taro"
+      ]
+    },
+    {
+      "id": "champignons",
+      "items": [
+        "cepe",
+        "champignon-de-paris",
+        "pleurote",
+        "shiitake",
+        "girolle"
+      ]
+    },
+    {
+      "id": "primeur-special",
+      "items": [
+        "celeri-branche",
+        "fenouil",
+        "roquette",
+        "panais",
+        "feuille-de-moutarde"
+      ]
+    },
+    {
+      "id": "bio-legumes",
+      "items": [
+        "oignon",
+        "laitue",
+        "courgette",
+        "ail",
+        "echalote"
+      ]
+    },
+    {
+      "id": "primeur-hivernal",
+      "items": [
+        "chou",
+        "navet",
+        "topinambour",
+        "salsifis",
+        "poireau"
+      ]
+    },
+    {
+      "id": "maraicher-automne",
+      "items": [
+        "figue",
+        "prune",
+        "raisin",
+        "jujube",
+        "sorbe"
+      ]
+    },
+    {
+      "id": "bonus",
+      "items": [
+        "abricot",
+        "ail",
+        "amande",
+        "amarante",
+        "ananas",
+        "asperge",
+        "aubergine",
+        "banane",
+        "bergamote",
+        "betterave",
+        "blette",
+        "carotte",
+        "cassis",
+        "cepe",
+        "celeri-branche",
+        "cerise",
+        "champignon-de-paris",
+        "chataigne",
+        "chou",
+        "citron",
+        "clementine",
+        "coing",
+        "concombre",
+        "courgette",
+        "cresson",
+        "cumquat",
+        "echalote",
+        "epinard",
+        "fane-de-radis",
+        "feuille-de-basilic",
+        "feuille-de-moutarde",
+        "feve",
+        "fenouil",
+        "figue",
+        "fleur-de-courgette",
+        "fraise",
+        "framboise",
+        "girolle",
+        "gombo",
+        "haricot-sec",
+        "haricot-vert",
+        "igname",
+        "jeune-pousse-d-ortie",
+        "jujube",
+        "kaki",
+        "kiwano",
+        "kiwi",
+        "laitue",
+        "lentille",
+        "litchi",
+        "lupin",
+        "mache",
+        "mais",
+        "mandarine",
+        "mangue",
+        "melon",
+        "mure",
+        "navet",
+        "nectarine",
+        "nefle",
+        "nashi",
+        "noisette",
+        "noix",
+        "noix-de-coco",
+        "oignon",
+        "orange",
+        "panais",
+        "papaye",
+        "patate-douce",
+        "patisson",
+        "peche",
+        "physalis",
+        "pleurote",
+        "poire",
+        "poireau",
+        "pois-casse",
+        "pois-chiche",
+        "pois-gourmand",
+        "pomme",
+        "pomme-de-terre",
+        "poivron",
+        "pamplemousse",
+        "prune",
+        "radis",
+        "raisin",
+        "roquette",
+        "rutabaga",
+        "salsifis",
+        "salade",
+        "shiitake",
+        "sorbe",
+        "taro",
+        "tomate",
+        "topinambour"
+      ]
+    }
+  ]
+}

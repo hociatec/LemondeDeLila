@@ -1,0 +1,37 @@
+import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { GameCoreService } from '../../../../core/services/game-core.service';
+import { RandomService } from '../../../../modules/random/services/random.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { BoardEffectsPoliciesService } from '../../../../modules/board-effects-policies/services/board-effects-policies.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
+import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
+export declare class AventureSauvageActionService {
+    private readonly core;
+    private readonly random;
+    private readonly setupFlow;
+    private readonly boardEffects;
+    private readonly deckPolicies;
+    private readonly turnPolicies?;
+    constructor(core: GameCoreService, random: RandomService, setupFlow: SetupFlowService, boardEffects: BoardEffectsPoliciesService, deckPolicies: DeckPoliciesService, turnPolicies?: TurnPoliciesService | undefined);
+    applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity;
+    private handleRoll;
+    private handleDraw;
+    private handleChoosePawn;
+    private applyLanding;
+    private drawAndApplyCard;
+    private availablePawns;
+    private moveBy;
+    private addSkipTurns;
+    private drawCard;
+    private clampMove;
+    private getMeta;
+    private pawnLabel;
+    private pawnPossessiveLabel;
+    private lowercaseFirst;
+    private appendTurnAnnouncement;
+    private ensurePawnSelectionPrompt;
+    private getTurnPolicies;
+    private advanceTurn;
+    private autoSkipIfNeeded;
+}

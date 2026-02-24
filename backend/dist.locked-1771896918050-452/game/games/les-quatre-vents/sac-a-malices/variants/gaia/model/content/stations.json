@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "stations": {
+    "properties": [],
+    "purchasePrice": 0,
+    "mortgage": 0,
+    "unmortgageCost": 0,
+    "rents": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0
+    }
+  }
+}

@@ -1,0 +1,105 @@
+import { OnModuleDestroy } from '@nestjs/common';
+import { WebSocket } from 'ws';
+import { ChatService } from '../../chat/services/chat.service';
+import { ChatSettingsService } from '../../chat/services/chat-settings.service';
+import { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
+import { RoomParticipant } from '../../room/entities/room-participant.entity';
+import { Repository } from 'typeorm';
+import { PresenceTransport } from './presence-transport';
+import { User } from '../../user/entities/user.entity';
+export type PresenceConnectionContext = 'home' | 'chat' | 'table' | 'tavern' | 'messaging' | 'social' | 'stats' | 'notifications' | 'other';
+type PresenceActivity = PresenceConnectionContext;
+export type PresenceAvailability = 'available' | 'occupied' | 'absent';
+type PresenceClient = {
+    socket: WebSocket;
+    user: WsAuthPayload;
+    context: PresenceConnectionContext;
+    contextLocked: boolean;
+    roomHint: {
+        id: number;
+        name?: string | null;
+    } | null;
+    lastInteractionAt: number;
+};
+export type PresenceBroadcastPlayer = {
+    id: number;
+    username: string;
+    currentRoom: {
+        id: number;
+        name: string;
+    } | null;
+    activity: PresenceActivity;
+    contextLocked: boolean;
+    lastInteractionAt: number;
+    roomStarted: boolean | null;
+};
+export type PresenceListItem = {
+    id: number;
+    username: string;
+    activity: PresenceConnectionContext;
+    currentRoom: {
+        id: number;
+        name: string;
+    } | null;
+    lastInteractionAt: number;
+    roomStarted: boolean | null;
+    availability?: PresenceAvailability;
+    location?: string;
+};
+export declare class PresenceService implements OnModuleDestroy {
+    private readonly chat;
+    private readonly chatSettings;
+    private readonly participants;
+    private readonly users;
+    private readonly transport;
+    private readonly logger;
+    private readonly clients;
+    private readonly playersByOrigin;
+    private heartbeatTimer;
+    private readonly pingIntervalMs;
+    private readonly pingTimeoutMs;
+    private readonly instanceId;
+    private readonly originTtlMs;
+    private readonly chatBanCache;
+    private readonly chatBanCacheTtlMs;
+    private readonly absentAfterMs;
+    constructor(chat: ChatService, chatSettings: ChatSettingsService, participants: Repository<RoomParticipant>, users: Repository<User>, transport: PresenceTransport);
+    onModuleDestroy(): Promise<void>;
+    register(socket: WebSocket, user: WsAuthPayload, context?: PresenceConnectionContext): void;
+    unregister(socket: WebSocket): void;
+    handleClientPayload(from: PresenceClient, raw: any): Promise<void>;
+    private handleChatSend;
+    private handleChatEdit;
+    private handleChatDelete;
+    isChatBannedNow(userId: number): Promise<boolean>;
+    getChatBanInfo(userId: number): Promise<{
+        until: Date | null;
+        reason: string | null;
+    } | null>;
+    private getChatBan;
+    private safeSend;
+    private handlePresenceContext;
+    private parseRoomId;
+    sendHistory(to: WebSocket): Promise<void>;
+    broadcastPresence(): void;
+    isUserInTavern(userId: number): boolean;
+    private collectPlayers;
+    private attachRooms;
+    private scoreActivity;
+    private broadcast;
+    private broadcastChat;
+    private emitPresence;
+    private toPublicPlayers;
+    private handleExternalPresence;
+    findClient(socket: WebSocket): PresenceClient | undefined;
+    listPlayers(): PresenceListItem[];
+    private pruneOrigins;
+    private mergePlayersFromOrigins;
+    private enrichMergedPlayers;
+    private computeAvailability;
+    private computeLocation;
+    private ensureHeartbeat;
+    private stopHeartbeat;
+    private runHeartbeat;
+}
+export {};

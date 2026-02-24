@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "groups": [
+    {
+      "color": "Beige",
+      "properties": [
+        "Rue du Taur",
+        "Rue des Filatiers."
+      ],
+      "purchasePrice": 60,
+      "mortgage": 30,
+      "unmortgageCost": 33,
+      "rents": {
+        "base": 2,
+        "house1": 0,
+        "house2": 0,
+        "house3": 0,
+        "house4": 0,
+        "hotel": 250
+      },
+      "housePrice": 0,
+      "hotelPrice": 100
+    },
+    {
+      "color": "Bleu",
+      "properties": [
+        "Rue Saint-Rome",
+        "Rue Alsace-Lorraine",
+        "Rue du Languedoc."
+      ],
+      "purchasePrice": 100,
+      "mortgage": 50,
+      "unmortgageCost": 55,
+      "rents": {
+        "base": 6,
+        "house1": 0,
+        "house2": 0,
+        "house3": 0,
+        "house4": 0,
+        "hotel": 550
+      },
+      "housePrice": 0,
+      "hotelPrice": 100
+    },
+    {
+      "color": "Rose",
+      "properties": [
+        "Place du Capitole",
+        "Place Saint-Georges",
+        "Place Esquirol."
+      ],
+      "purchasePrice": 140,
+      "mortgage": 70,
+      "unmortgageCost": 77,
+      "rents": {
+        "base": 10,
+        "house1": 0,
+        "house2": 0,
+        "house3": 0,
+        "house4": 0,
+        "hotel": 750
+      },
+      "housePrice": 0,
+      "hotelPrice": 200
+    },
+    {
+      "color": "Orange",
+      "properties": [
+        "Boulevard Carnot",
+        "Boulevard Lazare Carnot",
+        "Boulevard des Récollets."
+      ],
+      "purchasePrice": 180,
+      "mortgage": 90,
+      "unmortgageCost": 99,
+      "rents": {
+        "base": 14,
+        "house1": 0,
+        "house2": 0,
+        "house3": 0,
+        "house4": 0,
+        "hotel": 950
+      },
+      "housePrice": 0,
+      "hotelPrice": 200
+    },
+    {
+      "color": "Rouge",
+      "properties": [
+        "Basilique Saint-Sernin",
+        "Couvent des Jacobins."
+      ],
+      "purchasePrice": 220,
+      "mortgage": 110,
+      "unmortgageCost": 121,
+      "rents": {
+        "base": 18,
+        "house1": 0,
+        "house2": 0,
+        "house3": 0,
+        "house4": 0,
+        "hotel": 1050
+      },
+      "housePrice": 0,
+      "hotelPrice": 300
+    },
+    {
+      "color": "Jaune",
+      "properties": [
+        "Prairie des Filtres",
+        "Jardin des Compans-Caffarelli",
+        "Rue Saint-Antoine du T."
+      ],
+      "purchasePrice": 260,
+      "mortgage": 130,
+      "unmortgageCost": 143,
+      "rents": {
+        "base": 22,
+        "house1": 0,
+        "house2": 0,
+        "house3": 0,
+        "house4": 0,
+        "hotel": 1150
+      },
+      "housePrice": 0,
+      "hotelPrice": 300
+    },
+    {
+      "color": "Vert",
+      "properties": [
+        "Place Saint-Pierre",
+        "Ruelles du Vieux Toulouse",
+        "Quartier Carmes."
+      ],
+      "purchasePrice": 300,
+      "mortgage": 150,
+      "unmortgageCost": 165,
+      "rents": {
+        "base": 26,
+        "house1": 0,
+        "house2": 0,
+        "house3": 0,
+        "house4": 0,
+        "hotel": 1275
+      },
+      "housePrice": 0,
+      "hotelPrice": 400
+    },
+    {
+      "color": "Violet",
+      "properties": [
+        "Quartier Saint-Cyprien",
+        "Musée des Augustins",
+        "Quai de la Daurade."
+      ],
+      "purchasePrice": 350,
+      "mortgage": 175,
+      "unmortgageCost": 193,
+      "rents": {
+        "base": 35,
+        "house1": 0,
+        "house2": 0,
+        "house3": 0,
+        "house4": 0,
+        "hotel": 1500
+      },
+      "housePrice": 0,
+      "hotelPrice": 400
+    }
+  ]
+}

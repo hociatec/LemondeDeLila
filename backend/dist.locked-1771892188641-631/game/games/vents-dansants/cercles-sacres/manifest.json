@@ -1,0 +1,8 @@
+{
+  "code": "cercles-sacres",
+  "name": "Cercles Sacrés",
+  "minPlayers": 2,
+  "maxPlayers": 6,
+  "engine": "cercles-sacres",
+  "summary": "Formez trois cercles sacrés en réunissant six thèmes différents."
+}

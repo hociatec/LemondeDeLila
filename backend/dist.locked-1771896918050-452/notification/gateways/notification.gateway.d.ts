@@ -1,0 +1,31 @@
+import { OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import { Server, WebSocket } from 'ws';
+import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
+import { NotificationService } from '../services/notification.service';
+import { ClientUpdatesService } from '../../client-updates/services/client-updates.service';
+import { WsTicketAuthService } from '../../common/ws/ws-ticket-auth.service';
+import { Repository } from 'typeorm';
+import { SocialRelationship } from '../../social/entities/social-relationship.entity';
+import { AdminContactService } from '../services/admin-contact.service';
+import { UserBadgeCountsService } from '../services/user-badge-counts.service';
+export declare class NotificationGateway implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket> {
+    private readonly auth;
+    private readonly notifications;
+    private readonly clientUpdates;
+    private readonly wsTickets;
+    private readonly adminContacts;
+    private readonly counts;
+    private readonly relationships;
+    server: Server<WebSocket>;
+    private readonly logger;
+    private readonly clients;
+    private readonly socketCountsByUserId;
+    constructor(auth: WsJwtAuthService, notifications: NotificationService, clientUpdates: ClientUpdatesService, wsTickets: WsTicketAuthService, adminContacts: AdminContactService, counts: UserBadgeCountsService, relationships: Repository<SocialRelationship>);
+    private extractOriginFromWsArgs;
+    handleConnection(client: WebSocket, ...args: any[]): Promise<void>;
+    handleDisconnect(client: WebSocket): void;
+    private notifyFriendsPresence;
+    private safeSend;
+    private onClientMessage;
+    private safeSendResponse;
+}

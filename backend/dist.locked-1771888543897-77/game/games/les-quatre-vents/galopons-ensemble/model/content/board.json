@@ -1,0 +1,325 @@
+﻿{
+    "version":  1,
+    "tiles":  [
+                  {
+                      "n":  1,
+                      "title":  "Départ",
+                      "type":  "start",
+                      "region":  "prairie",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  2,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "prairie",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  3,
+                      "title":  "Fer à cheval",
+                      "type":  "card",
+                      "region":  "prairie",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  4,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "prairie",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  5,
+                      "title":  "Bonus",
+                      "type":  "bonus",
+                      "region":  "prairie",
+                      "apples":  1,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  6,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "prairie",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  7,
+                      "title":  "Fer à cheval",
+                      "type":  "card",
+                      "region":  "prairie",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  8,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "prairie",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  9,
+                      "title":  "Fer à cheval",
+                      "type":  "card",
+                      "region":  "prairie",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  10,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "prairie",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  11,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "riviere",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  12,
+                      "title":  "Fer à cheval",
+                      "type":  "card",
+                      "region":  "riviere",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  13,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "riviere",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  14,
+                      "title":  "Stop",
+                      "type":  "skip",
+                      "region":  "riviere",
+                      "apples":  0,
+                      "skipTurns":  1
+                  },
+                  {
+                      "n":  15,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "riviere",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  16,
+                      "title":  "Bonus",
+                      "type":  "bonus",
+                      "region":  "riviere",
+                      "apples":  1,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  17,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "riviere",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  18,
+                      "title":  "Fer à cheval",
+                      "type":  "card",
+                      "region":  "riviere",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  19,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "riviere",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  20,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "riviere",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  21,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "foret",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  22,
+                      "title":  "Fer à cheval",
+                      "type":  "card",
+                      "region":  "foret",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  23,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "foret",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  24,
+                      "title":  "Stop",
+                      "type":  "skip",
+                      "region":  "foret",
+                      "apples":  0,
+                      "skipTurns":  1
+                  },
+                  {
+                      "n":  25,
+                      "title":  "Bonus",
+                      "type":  "bonus",
+                      "region":  "foret",
+                      "apples":  1,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  26,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "foret",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  27,
+                      "title":  "Fer à cheval",
+                      "type":  "card",
+                      "region":  "foret",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  28,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "foret",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  29,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "foret",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  30,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "foret",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  31,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "montagne",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  32,
+                      "title":  "Fer à cheval",
+                      "type":  "card",
+                      "region":  "montagne",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  33,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "montagne",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  34,
+                      "title":  "Fer à cheval",
+                      "type":  "card",
+                      "region":  "montagne",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  35,
+                      "title":  "Bonus",
+                      "type":  "bonus",
+                      "region":  "montagne",
+                      "apples":  1,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  36,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "montagne",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  37,
+                      "title":  "Fer à cheval",
+                      "type":  "card",
+                      "region":  "montagne",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  38,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "montagne",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  39,
+                      "title":  "Neutre",
+                      "type":  "neutral",
+                      "region":  "montagne",
+                      "apples":  0,
+                      "skipTurns":  0
+                  },
+                  {
+                      "n":  40,
+                      "title":  "Arrivée",
+                      "type":  "finish",
+                      "region":  "montagne",
+                      "apples":  0,
+                      "skipTurns":  0
+                  }
+              ]
+}

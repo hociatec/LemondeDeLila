@@ -1,0 +1,36 @@
+﻿{
+  "version": 1,
+  "pawns": [
+    {
+      "id": "panier-osier",
+      "name": "panier en osier",
+      "description": "Un panier classique et solide pour demarrer les courses."
+    },
+    {
+      "id": "sac-toile",
+      "name": "sac en toile",
+      "description": "Un sac leger et pratique, ideal pour les petits achats."
+    },
+    {
+      "id": "chariot-roulettes",
+      "name": "chariot a roulettes",
+      "description": "Un chariot maniable qui suit facilement chaque deplacement."
+    },
+    {
+      "id": "cagette-bois",
+      "name": "cagette en bois",
+      "description": "Une cagette robuste pour transporter fruits et legumes."
+    },
+    {
+      "id": "cabas-pliable",
+      "name": "cabas pliable",
+      "description": "Un cabas compact qui se range vite entre deux stands."
+    },
+    {
+      "id": "brouette-jardinier",
+      "name": "brouette de jardinier",
+      "description": "Une brouette stable pour ramener des courses en volume."
+    }
+  ]
+}
+

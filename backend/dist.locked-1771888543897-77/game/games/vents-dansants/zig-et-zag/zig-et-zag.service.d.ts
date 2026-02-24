@@ -1,0 +1,30 @@
+import type { GameStateEntity } from '../../../core/entities/game-state.entity';
+import type { GameSingleActionDto, GameStateWithActions } from '../../../engine/dto/game-action.dto';
+import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
+import type { GameShortcutHint, GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
+import { ZigEtZagActionService } from './actions/zig-et-zag-action.service';
+import { ZigEtZagPresenterService } from './presenter/zig-et-zag-presenter.service';
+import { ZigEtZagSetupService } from './setup/zig-et-zag-setup.service';
+import { ZigEtZagBotService } from './bots/zig-et-zag-bot.service';
+export declare class ZigEtZagService extends AbstractGameService {
+    private readonly setup;
+    private readonly actions;
+    private readonly presenter;
+    private readonly bots;
+    readonly gameType = "zig-et-zag";
+    readonly category = "JeuxDePlateaux";
+    readonly subcategory = "VentsDansants";
+    readonly displayName: string;
+    readonly description = "Bataille tendre o\u00F9 chaque duel ramasse les cartes en jeu.";
+    readonly minPlayers: number;
+    readonly maxPlayers: number;
+    constructor(registry: GameRegistryService, setup: ZigEtZagSetupService, actions: ZigEtZagActionService, presenter: ZigEtZagPresenterService, bots: ZigEtZagBotService);
+    hydrateInitialState(baseState: GameStateEntity): GameStateEntity;
+    applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity;
+    getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[];
+    validateAction(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameSingleActionDto;
+    exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions;
+    getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[];
+    getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[];
+}

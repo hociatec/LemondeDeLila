@@ -1,0 +1,8 @@
+{
+  "code": "la-grande-mine-de-barbak",
+  "name": "La Grande Mine de Barbak !",
+  "minPlayers": 2,
+  "maxPlayers": 6,
+  "engine": "la-grande-mine",
+  "summary": "Collectez trésors, objets et défiez les autres nains dans les galeries de Barbak pour devenir le Nain suprême."
+}

@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "cards": [
+    {
+      "id": 1,
+      "text": "Vous participez à une dégustation de bières artisanales à Wazemmes. Avancez jusqu’au Marché de Wazemmes et recevez 200 €."
+    },
+    {
+      "id": 2,
+      "text": "Votre Maroilles fait sensation au marché : recevez 150 € pour vos talents culinaires."
+    },
+    {
+      "id": 3,
+      "text": "Vous vous perdez dans les ruelles du Vieux-Lille. Reculez de trois cases pour retrouver votre route."
+    },
+    {
+      "id": 4,
+      "text": "Les cloches du Beffroi résonnent pour vous annoncer un heureux événement : avancez jusqu’au Beffroi."
+    },
+    {
+      "id": 5,
+      "text": "Votre visite du Palais Rihour attire l’attention d’un mécène : recevez 100 €."
+    },
+    {
+      "id": 6,
+      "text": "Vous êtes invité à une fête foraine sur la Grand’Place : avancez directement et profitez de la fête."
+    },
+    {
+      "id": 7,
+      "text": "Une exposition imprévue à la Piscine – Musée d’art et d’industrie vous retient plus longtemps que prévu : passez votre prochain tour."
+    },
+    {
+      "id": 8,
+      "text": "Vous trouvez une rare Bêtise de Cambrai au marché : recevez 50 € de récompense."
+    },
+    {
+      "id": 9,
+      "text": "Votre vélo se crève en traversant le Parc Jean-Baptiste Lebas : reculez de deux cases pour le réparer."
+    },
+    {
+      "id": 10,
+      "text": "Vous aidez à la rénovation du Beffroi et gagnez les remerciements de la ville : recevez 100 €."
+    },
+    {
+      "id": 11,
+      "text": "Un tramway Ilévia vous transporte gratuitement jusqu’au Boulevard de l’Ouest : avancez jusqu’à cette case."
+    },
+    {
+      "id": 12,
+      "text": "Vous participez à la Fête de la bière de Lille : recevez 150 € pour vos ventes et exploits."
+    },
+    {
+      "id": 13,
+      "text": "Une pluie soudaine vous surprend sur la Rue de la Monnaie : retournez à la case Départ pour vous abriter."
+    },
+    {
+      "id": 14,
+      "text": "Vous êtes élu « visiteur d’honneur » sur la Place Louise de Bettignies : recevez 200 €."
+    },
+    {
+      "id": 15,
+      "text": "Vous découvrez un trésor caché dans une cave à bières artisanales : avancez jusqu’au Marché de Wazemmes et recevez 150 €."
+    },
+    {
+      "id": 16,
+      "text": "Un troubadour chante votre louange sur la Place du Concert : avancez jusqu’à cette case et recevez 100 €."
+    },
+    {
+      "id": 17,
+      "text": "Vous êtes choisi pour inaugurer une exposition à la Piscine – Musée d’art et d’industrie : recevez 150 €."
+    },
+    {
+      "id": 18,
+      "text": "Votre vélo dérape sur les pavés et vous heurtez un kiosque : reculez de deux cases."
+    },
+    {
+      "id": 19,
+      "text": "Vous découvrez un vieux parchemin dans la Bibliothèque municipale de Lille : recevez 50 €."
+    },
+    {
+      "id": 20,
+      "text": "Un festival de musique vous enchante sur le Boulevard de Brosses : avancez jusqu’à cette case."
+    },
+    {
+      "id": 21,
+      "text": "Vous aidez à organiser le marché de Noël sur la Grand’Place : recevez 200 €."
+    },
+    {
+      "id": 22,
+      "text": "Une erreur de livraison de bières artisanales vous coûte cher : payez 100 €."
+    },
+    {
+      "id": 23,
+      "text": "Vous trouvez une pièce d’or sous un banc du Jardin Vauban : recevez 100 €."
+    },
+    {
+      "id": 24,
+      "text": "Un peintre vous offre un portrait sur la Rue Esquermoise : recevez 50 €."
+    },
+    {
+      "id": 25,
+      "text": "Votre visite guidée au Musée d’Histoire Naturelle attire des admirateurs : recevez 150 €."
+    },
+    {
+      "id": 26,
+      "text": "Un corbeau vole votre Bêtise de Cambrai sur la Rue de la Clef : reculez de trois cases."
+    },
+    {
+      "id": 27,
+      "text": "Vous participez au concours de gaufres géantes de Lille : recevez 200 €."
+    },
+    {
+      "id": 28,
+      "text": "Les cloches du Beffroi sonnent à votre honneur : avancez jusqu’à cette case et recevez 100 €."
+    },
+    {
+      "id": 29,
+      "text": "Votre promenade en vélo dans le Parc Jean-Baptiste Lebas est interrompue par une averse : reculez de deux cases."
+    },
+    {
+      "id": 30,
+      "text": "Une invitation exclusive à une brasserie artisanale vous rapporte 250 €."
+    }
+  ]
+}

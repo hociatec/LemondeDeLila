@@ -1,0 +1,32 @@
+import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { GameCoreService } from '../../../../core/services/game-core.service';
+import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+export declare class OlympiaActionService {
+    private readonly core;
+    private readonly turns;
+    constructor(core: GameCoreService, turns: TurnFlowService);
+    applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity;
+    private handlePass;
+    private handleDrawCard;
+    private handlePlayCard;
+    private applyEffect;
+    private resolveTargets;
+    private addPrestige;
+    private addStatus;
+    private addSkip;
+    private discardRandom;
+    private exchangeCard;
+    private applySteal;
+    private drawForPlayer;
+    private drawOneCard;
+    private removeCardFromHand;
+    private addCardToHand;
+    private addCardToDiscard;
+    private checkVictory;
+    private advanceAndTick;
+    private cleanStatuses;
+    private getMeta;
+    private setMeta;
+    private getCardName;
+}

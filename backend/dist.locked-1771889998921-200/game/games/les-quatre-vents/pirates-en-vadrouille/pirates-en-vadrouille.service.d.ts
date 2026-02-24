@@ -1,0 +1,30 @@
+import type { GameStateEntity } from '../../../core/entities/game-state.entity';
+import type { GameSingleActionDto, GameStateWithActions } from '../../../engine/dto/game-action.dto';
+import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
+import type { GameShortcutHint, GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
+import { PiratesEnVadrouilleSetupService } from './setup/pirates-en-vadrouille-setup.service';
+import { PiratesEnVadrouilleActionService } from './actions/pirates-en-vadrouille-action.service';
+import { PiratesEnVadrouillePresenterService } from './presenter/pirates-en-vadrouille-presenter.service';
+import { PiratesEnVadrouilleBotService } from './bots/pirates-en-vadrouille-bot.service';
+export declare class PiratesEnVadrouilleService extends AbstractGameService {
+    private readonly setup;
+    private readonly actions;
+    private readonly presenter;
+    private readonly bots;
+    readonly gameType = "pirates-en-vadrouille";
+    readonly category = "JeuxDePlateaux";
+    readonly subcategory = "LesQuatreVents";
+    readonly displayName: string;
+    readonly description = "Parcourez l\u2019\u00EEle Papayousse, piochez bonus ou obstacles et r\u00E9coltez tr\u00E9sors et pi\u00E8ces d\u2019or.";
+    readonly minPlayers: number;
+    readonly maxPlayers: number;
+    constructor(registry: GameRegistryService, setup: PiratesEnVadrouilleSetupService, actions: PiratesEnVadrouilleActionService, presenter: PiratesEnVadrouillePresenterService, bots: PiratesEnVadrouilleBotService);
+    hydrateInitialState(baseState: GameStateEntity): GameStateEntity;
+    applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity;
+    getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[];
+    validateAction(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameSingleActionDto;
+    getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[];
+    exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions;
+    getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[];
+}

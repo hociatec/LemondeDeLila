@@ -1,0 +1,8 @@
+{
+  "code": "taxi-express",
+  "name": "Taxi Express",
+  "minPlayers": 2,
+  "maxPlayers": 5,
+  "engine": "taxi-express",
+  "summary": "Transportez vos clients en évitant les obstacles pour valider cinq trajets."
+}
