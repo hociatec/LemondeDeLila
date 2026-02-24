@@ -38,7 +38,7 @@ public static class ClientUpdateManager
                 .ConfigureAwait(true);
             if (info != null)
             {
-                return await HandleServerInfoAsync(dialogs, info, source: "startup", cancellationToken)
+                return await HandleServerInfoAsync(dialogs, config, info, source: "startup", cancellationToken)
                     .ConfigureAwait(true);
             }
 
@@ -46,7 +46,7 @@ public static class ClientUpdateManager
                 .ConfigureAwait(true);
             if (info != null)
             {
-                return await HandleServerInfoAsync(dialogs, info, source: "startup-retry", cancellationToken)
+                return await HandleServerInfoAsync(dialogs, config, info, source: "startup-retry", cancellationToken)
                     .ConfigureAwait(true);
             }
 
@@ -59,6 +59,7 @@ public static class ClientUpdateManager
     }
 
     public static Task HandleRequiredFromNotifyAsync(
+        ClientConfiguration config,
         IDialogService dialogs,
         string? message,
         string? minRequiredVersion,
@@ -84,7 +85,7 @@ public static class ClientUpdateManager
             dialogs,
             title: "Mise a jour requise",
             message: msg + "\n\nLancement de la mise a jour..." + RestartHint,
-            clickOnceUrl: url,
+            clickOnceUrl: ResolveUpdateUrl(config, url),
             reason: "notify-required",
             required: true,
             deDupKey: $"notify-required:{minRequiredVersion}",
@@ -92,6 +93,7 @@ public static class ClientUpdateManager
     }
 
     public static Task HandleAvailableFromNotifyAsync(
+        ClientConfiguration config,
         IDialogService dialogs,
         string? message,
         string? latestVersion,
@@ -111,7 +113,7 @@ public static class ClientUpdateManager
             dialogs,
             title: "Mise a jour",
             message: msg + "\n\nLancement de la mise a jour..." + RestartHint,
-            clickOnceUrl: url,
+            clickOnceUrl: ResolveUpdateUrl(config, url),
             reason: "notify-available",
             required: false,
             deDupKey: $"notify-available:{latestVersion}",
@@ -126,7 +128,7 @@ public static class ClientUpdateManager
     {
         var info = await ClientUpdateApi.GetAsync(config, forceRefresh: true, cancellationToken)
             .ConfigureAwait(false);
-        var url = info?.Url;
+        var url = ResolveUpdateUrl(config, info?.Url);
         var min = info?.MinRequiredVersion;
 
         var msg = (errorMessage ?? string.Empty).Trim();
@@ -157,6 +159,7 @@ public static class ClientUpdateManager
 
     private static async Task<bool> HandleServerInfoAsync(
         IDialogService dialogs,
+        ClientConfiguration config,
         ClientUpdateInfo? info,
         string source,
         CancellationToken cancellationToken)
@@ -189,11 +192,12 @@ public static class ClientUpdateManager
                 msg += $"\n\n{info.Message.Trim()}";
             }
 
+            var resolvedUrl = ResolveUpdateUrl(config, info.Url);
             await ClientUpdateCoordinator.EnforceAsync(
                     dialogs,
                     title: "Mise a jour requise",
                     message: msg + "\n\nLancement de la mise a jour..." + RestartHint,
-                    clickOnceUrl: info.Url,
+                    clickOnceUrl: resolvedUrl,
                     reason: $"{source}-required",
                     required: true,
                     deDupKey: $"{source}-required:{info.MinRequiredVersion}:{info.LatestVersion}",
@@ -215,11 +219,12 @@ public static class ClientUpdateManager
                 msg += $"\n\n{info.Message.Trim()}";
             }
 
+            var resolvedUrl = ResolveUpdateUrl(config, info.Url);
             await ClientUpdateCoordinator.EnforceAsync(
                     dialogs,
                     title: "Mise a jour",
                     message: msg + "\n\nLancement de la mise a jour..." + RestartHint,
-                    clickOnceUrl: info.Url,
+                    clickOnceUrl: resolvedUrl,
                     reason: $"{source}-available",
                     required: false,
                     deDupKey: $"{source}-available:{info.LatestVersion}",
@@ -333,6 +338,37 @@ public static class ClientUpdateManager
         }
 
         return parts.ToArray();
+    }
+
+    private static string? ResolveUpdateUrl(ClientConfiguration config, string? serverUrl)
+    {
+        var direct = (serverUrl ?? string.Empty).Trim();
+        if (!string.IsNullOrWhiteSpace(direct))
+        {
+            return direct;
+        }
+
+        try
+        {
+            var fromCheck = new Uri(config.UpdatesCheckUrl, "../updates/client-win/").ToString();
+            if (!string.IsNullOrWhiteSpace(fromCheck))
+            {
+                return fromCheck;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        try
+        {
+            return new Uri(config.HttpBase, "../updates/client-win/").ToString();
+        }
+        catch
+        {
+            return null;
+        }
     }
 
 }

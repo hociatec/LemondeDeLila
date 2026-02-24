@@ -53,6 +53,21 @@ public static class ClientUpdateCoordinator
             var result = await ClientUpdateInstaller
                 .InstallLatestAsync(dialogs, clickOnceUrl, reason, cancellationToken)
                 .ConfigureAwait(true);
+
+            if (!result.Started && required)
+            {
+                foreach (var delay in new[] { 1200, 2500 })
+                {
+                    await Task.Delay(delay, cancellationToken).ConfigureAwait(true);
+                    result = await ClientUpdateInstaller
+                        .InstallLatestAsync(dialogs, clickOnceUrl, reason, cancellationToken)
+                        .ConfigureAwait(true);
+                    if (result.Started)
+                    {
+                        break;
+                    }
+                }
+            }
             var started = result.Started;
 
             FlowChanged?.Invoke(new ClientUpdateFlowState(

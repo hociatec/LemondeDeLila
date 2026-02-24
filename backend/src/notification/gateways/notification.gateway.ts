@@ -108,6 +108,7 @@ export class NotificationGateway
               ),
             },
           });
+          await new Promise((resolve) => setTimeout(resolve, 300));
           client.close(4406, 'update required');
           return;
         }
@@ -683,6 +684,7 @@ export class NotificationGateway
               url,
             },
           });
+          await new Promise((resolve) => setTimeout(resolve, 300));
           try {
             client.close(4406, 'update required');
           } catch {

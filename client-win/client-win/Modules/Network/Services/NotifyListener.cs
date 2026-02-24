@@ -1096,6 +1096,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
         try
         {
             await Updates.ClientUpdateManager.HandleRequiredFromNotifyAsync(
+                    _config,
                     _dialogs,
                     message,
                     minRequiredVersion,
@@ -1122,6 +1123,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
         try
         {
             await Updates.ClientUpdateManager.HandleAvailableFromNotifyAsync(
+                    _config,
                     _dialogs,
                     message,
                     version,

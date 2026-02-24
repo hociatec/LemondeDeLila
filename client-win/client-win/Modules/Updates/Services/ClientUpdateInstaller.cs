@@ -93,16 +93,10 @@ public static class ClientUpdateInstaller
                 "Le serveur n'est peut-être pas correctement publié.");
         }
 
-        if (isAlreadyClickOnceInstalled)
-        {
-            // On est déjà sous ClickOnce: on refuse de relancer dfshim (qui peut afficher des boîtes système)
-            // et on reste sur une mise à jour "in-place" uniquement.
-            return new ClientUpdateInstallResult(
-                false,
-                ClientUpdateInstallOutcome.NotStarted,
-                "Mise à jour silencieuse impossible sur cette installation ClickOnce.\n\n" +
-                "Action: relance l'application et réessaie. Si le problème persiste, republie la mise à jour côté serveur.");
-        }
+        // IMPORTANT robustesse:
+        // même sur une installation ClickOnce existante, si la MAJ silencieuse échoue
+        // on doit quand même pouvoir lancer dfshim (fallback). Sinon on reste bloqué
+        // dans des boucles "fermeture -> redémarrage sans proposition de MAJ".
 
         try
         {

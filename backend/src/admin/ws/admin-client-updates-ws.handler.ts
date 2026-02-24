@@ -287,6 +287,9 @@ export class AdminClientUpdatesWsHandler {
       } catch {
         // ignore
       }
+      // Laisser un court délai pour que les clients reçoivent/traitent le signal de mise à jour
+      // avant la fermeture WS forcée.
+      await new Promise((resolve) => setTimeout(resolve, 1200));
       this.notifications.disconnectAll('Mise à jour en cours.');
       this.scheduledAtMs = null;
     };
