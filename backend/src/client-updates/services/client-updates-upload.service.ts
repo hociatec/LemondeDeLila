@@ -38,7 +38,12 @@ export class ClientUpdatesUploadService {
   constructor(private readonly updates: ClientUpdatesService) {}
 
   private uploadsRoot() {
-    return path.join(os.tmpdir(), 'lila-client-update-uploads');
+    const override = (process.env.CLIENT_UPDATES_UPLOADS_DIR || '').trim();
+    if (override) {
+      return override;
+    }
+    const baseDir = path.dirname(this.updates.getTargetDir());
+    return path.join(baseDir, 'uploads');
   }
 
   async status() {
@@ -133,6 +138,7 @@ export class ClientUpdatesUploadService {
   }) {
     const uploadId = randomUUID();
     const root = this.uploadsRoot();
+    await fs.promises.mkdir(root, { recursive: true });
     const dir = path.join(root, uploadId);
     await fs.promises.mkdir(dir, { recursive: true });
 
