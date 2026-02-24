@@ -1515,23 +1515,6 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 	        }
 	    }
 
-    private static void TryOpenUrl(string url)
-    {
-        if (string.IsNullOrWhiteSpace(url))
-        {
-            return;
-        }
-
-        try
-        {
-            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-        }
-        catch
-        {
-            // ignore
-        }
-    }
-
     public async ValueTask DisposeAsync()
     {
         await StopAsync().ConfigureAwait(false);

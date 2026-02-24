@@ -103,26 +103,4 @@ public static class ClientUpdateCoordinator
         }
     }
 
-  public static async Task<bool> PromptAsync(
-        IDialogService dialogs,
-        string title,
-        string message,
-        string? clickOnceUrl,
-        string reason,
-        string? deDupKey = null,
-        CancellationToken cancellationToken = default)
-    {
-        // Compat: on n'offre plus de choix "ignorer", on force la mise à jour.
-        await EnforceAsync(
-                dialogs,
-                title,
-                message,
-                clickOnceUrl,
-                reason,
-                required: false,
-                deDupKey: deDupKey,
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(true);
-        return true;
-    }
 }

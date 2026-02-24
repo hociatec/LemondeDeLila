@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -180,23 +179,6 @@ public sealed class ShellErrorHandler : IDisposable
         await Updates.ClientUpdateManager
             .HandleRequiredFromErrorAsync(_config, _dialogs, err.Message)
             .ConfigureAwait(false);
-    }
-
-    private static void TryOpenUrl(string url)
-    {
-        if (string.IsNullOrWhiteSpace(url))
-        {
-            return;
-        }
-
-        try
-        {
-            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-        }
-        catch
-        {
-            // ignore
-        }
     }
 
     private void EnsureHomeVisible()

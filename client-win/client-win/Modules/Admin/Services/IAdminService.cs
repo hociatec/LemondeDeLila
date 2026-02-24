@@ -30,7 +30,6 @@ public interface IAdminService
 
     Task<int> BroadcastAsync(string message, CancellationToken cancellationToken = default);
     Task<(int delivered, int delaySeconds, string scheduledAt)> ScheduleClientUpdateAsync(int delayMinutes, string? message = null, CancellationToken cancellationToken = default);
-    Task<(int delivered, string minRequiredVersion)> ForceClientUpdateLatestAsync(string? message = null, CancellationToken cancellationToken = default);
 
     Task<AdminChatMessageDto[]> GetChatMessagesAsync(int limit = 200, bool includeDeleted = false, CancellationToken cancellationToken = default);
     Task<AdminChatSettingsDto> GetChatSettingsAsync(CancellationToken cancellationToken = default);

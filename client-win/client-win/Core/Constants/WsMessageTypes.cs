@@ -151,7 +151,6 @@ public static class WsMessageTypes
 
         public const string Broadcast = "admin.broadcast";
         public const string ClientUpdateAnnounce = "admin.client.update.announce";
-        public const string ClientUpdateForceLatest = "admin.client.update.forceLatest";
         public const string ClientUpdateSchedule = "admin.client.update.schedule";
 
         public const string ChatMessages = "admin.chat.messages";

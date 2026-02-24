@@ -162,14 +162,6 @@ export class AdminClientUpdatesWsHandler {
         : Math.max(60, Math.round(secondsFromDto ?? 60));
     const delayMs = effectiveDelaySeconds * 1000;
 
-    if (this.scheduledTimer) {
-      clearTimeout(this.scheduledTimer);
-      this.scheduledTimer = null;
-    }
-
-    const scheduledAtMs = Date.now() + delayMs;
-    this.scheduledAtMs = scheduledAtMs;
-
     const ids = await this.userRepo
       .createQueryBuilder('u')
       .select(['u.id'])
@@ -186,6 +178,9 @@ export class AdminClientUpdatesWsHandler {
       this.scheduledTimer = null;
       this.scheduledAtMs = null;
     }
+
+    const scheduledAtMs = Date.now() + delayMs;
+    this.scheduledAtMs = scheduledAtMs;
 
     const warningLeadMs = 5 * 60 * 1000;
     const warningDelayMs = Math.max(0, delayMs - warningLeadMs);
