@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { BoardEffectsPoliciesService } from '../../../../modules/board-effects-policies/services/board-effects-policies.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
@@ -56,9 +56,9 @@ describe('FrousseActionService movement effects', () => {
         decks: {
           cards: [
             {
-              category: 'Fant�me',
+              category: 'Fantôme',
               localNumber: 999,
-              text: 'Le fant�me surgit en hurlant.\nAvancez de 5 cases puis reculez de 3.',
+              text: 'Le fantôme surgit en hurlant.\nAvancez de 5 cases puis reculez de 3.',
             },
           ],
           discard: [],
@@ -138,7 +138,7 @@ describe('FrousseActionService movement effects', () => {
     const messages = (next.log ?? []).map((l: any) => l.message);
 
     expect(messages).toContain('Reculez de 2 cases.');
-    expect(messages).not.toContain('3 au d�, recul de 2 cases.');
+    expect(messages).not.toContain('3 au dé, recul de 2 cases.');
   });
 
   it('formats doubled roll log with "=" (not "->")', () => {
@@ -320,7 +320,7 @@ describe('FrousseActionService movement effects', () => {
     ]);
     expect(next.pending?.type).toBe('choose_pawn');
     expect(String(next.pending?.label ?? '')).toContain(
-      "C'est � Lilas de choisir",
+      "C'est à Lilas de choisir",
     );
   });
 
@@ -388,8 +388,8 @@ describe('FrousseActionService movement effects', () => {
           {
             n: 1,
             type: 'normal',
-            title: 'D�part',
-            label: 'case 1. D�part (case neutre)',
+            title: 'Départ',
+            label: 'case 1. Départ (case neutre)',
             description: '',
           },
           {
@@ -474,9 +474,9 @@ describe('FrousseActionService movement effects', () => {
         decks: {
           cards: [
             {
-              category: 'Pi�ge',
+              category: 'Piège',
               localNumber: 1,
-              text: 'Une bougie clignote et vous joue un tour. Lancez le d� deux fois et gardez le plus petit r�sultat.',
+              text: 'Une bougie clignote et vous joue un tour. Lancez le dé deux fois et gardez le plus petit résultat.',
             },
           ],
           discard: [],
@@ -494,7 +494,7 @@ describe('FrousseActionService movement effects', () => {
     expect(
       messages.some((m) => /^Lilas rejoue/i.test(m) || /rejoue\s*\(/i.test(m)),
     ).toBe(false);
-    expect(messages.some((m) => /gardez le plus petit r�sultat/i.test(m))).toBe(
+    expect(messages.some((m) => /gardez le plus petit résultat/i.test(m))).toBe(
       true,
     );
   });

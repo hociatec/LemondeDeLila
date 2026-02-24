@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerName } from '../../../../modules/turn-policies/player-name.helper';
@@ -92,7 +92,7 @@ export class AbsurdissimesActionService {
       next = { ...next, turn: { currentPlayerId: judgeTurn, direction: 1 } };
       next = this.core.appendLog(
         next,
-        'Les cartes sont pr�tes : le juge choisit la proposition gagnante.',
+        'Les cartes sont prêtes : le juge choisit la proposition gagnante.',
       );
       return next;
     }
@@ -126,7 +126,7 @@ export class AbsurdissimesActionService {
     meta = { ...meta, scores };
     let next = this.core.appendLog(
       state,
-      `${resolvePlayerName(state.players, winnerId)} remporte la manche avec la r�ponse ${meta.submissions[winnerId] ?? ''}.`,
+      `${resolvePlayerName(state.players, winnerId)} remporte la manche avec la réponse ${meta.submissions[winnerId] ?? ''}.`,
     );
 
     const target = meta.targetScore;

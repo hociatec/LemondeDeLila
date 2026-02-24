@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../../../modules/turn-policies/player-name.helper';
@@ -176,7 +176,7 @@ export class BandeABananeActionService {
       let next = this.discardRandomCard(state, playerId);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} chute sur un tigre et l�che une carte.`,
+        `${resolvePlayerNameFromState(next, playerId)} chute sur un tigre et lâche une carte.`,
       );
       return next;
     }
@@ -203,7 +203,7 @@ export class BandeABananeActionService {
     let next = this.setMeta(state, nextMeta);
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} vole ${this.getCardName(stolen)} � ${resolvePlayerNameFromState(
+      `${resolvePlayerNameFromState(next, playerId)} vole ${this.getCardName(stolen)} à ${resolvePlayerNameFromState(
         next,
         targetId,
       )}.`,
@@ -239,7 +239,7 @@ export class BandeABananeActionService {
       next = this.setMeta(next, nextMeta);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} �change ${this.getCardName(
+        `${resolvePlayerNameFromState(next, playerId)} échange ${this.getCardName(
           returned,
         )} avec ${resolvePlayerNameFromState(next, targetId)}.`,
       );
@@ -250,7 +250,7 @@ export class BandeABananeActionService {
     next = this.setMeta(next, nextMeta);
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} donne une carte � ${resolvePlayerNameFromState(
+      `${resolvePlayerNameFromState(next, playerId)} donne une carte à ${resolvePlayerNameFromState(
         next,
         targetId,
       )}.`,
@@ -309,7 +309,7 @@ export class BandeABananeActionService {
     if (this.hasWinningTroupe(this.getMeta(next), playerId)) {
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} crie � BANAAAANE ! � et devient le chef de la Bande � Banane !`,
+        `${resolvePlayerNameFromState(next, playerId)} crie à BANAAAANE ! à et devient le chef de la Bande à Banane !`,
       );
       next = {
         ...next,
@@ -343,7 +343,7 @@ export class BandeABananeActionService {
       next = this.setMeta(next, nextMeta);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} d�passe 7 cartes et d�fausse ${this.getCardName(
+        `${resolvePlayerNameFromState(next, playerId)} dépasse 7 cartes et défausse ${this.getCardName(
           cardId,
         )}.`,
       );

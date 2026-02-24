@@ -112,7 +112,7 @@ export class GaloponsActionService {
     };
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} lance le d� : "${roll}".`,
+      `${resolvePlayerNameFromState(next, currentId)} lance le dé : "${roll}".`,
     );
 
     next = this.move(next, currentId, roll);
@@ -122,12 +122,12 @@ export class GaloponsActionService {
     if (meta.winnerId != null) return { ...next, status: 'finished' };
     if (next.pending) return next;
 
-    // Fin de manche : si d�clench�e et que tous ont jou�.
+    // Fin de manche : si déclenchée et que tous ont joué.
     if (meta.finish?.triggered && meta.finish.pendingIds.length === 0) {
       return this.finishGame(next);
     }
 
-    // Rejouer imm�diat ? (d�clench� par carte)
+    // Rejouer immédiat ? (déclenché par carte)
     const keepTurn = asRecord(meta).keepTurn === true;
     if (keepTurn) {
       meta = { ...meta };
@@ -139,7 +139,7 @@ export class GaloponsActionService {
       );
     }
 
-    // Si fin de manche d�clench�e, retirer le joueur courant des pendingIds.
+    // Si fin de manche déclenchée, retirer le joueur courant des pendingIds.
     if (meta.finish?.triggered) {
       const pendingIds = meta.finish.pendingIds.filter(
         (id) => id !== currentId,
@@ -202,7 +202,7 @@ export class GaloponsActionService {
       if (a <= 0) {
         next = this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, currentId)} n'a pas de pomme � donner.`,
+          `${resolvePlayerNameFromState(next, currentId)} n'a pas de pomme à donner.`,
         );
         if (ctx.replayAfter)
           return this.core.appendLog(
@@ -225,7 +225,7 @@ export class GaloponsActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId)} donne une pomme � ${resolvePlayerNameFromState(next, targetPlayerId)}.`,
+        `${resolvePlayerNameFromState(next, currentId)} donne une pomme à ${resolvePlayerNameFromState(next, targetPlayerId)}.`,
       );
       next = this.core.appendLog(
         next,
@@ -256,7 +256,7 @@ export class GaloponsActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId)} re�oit une pomme en remerciement.`,
+        `${resolvePlayerNameFromState(next, currentId)} reçoit une pomme en remerciement.`,
       );
       if (ctx.replayAfter)
         return this.core.appendLog(
@@ -306,10 +306,10 @@ export class GaloponsActionService {
     } else if (tile.type === 'skip') {
       next = this.core.appendLog(next, `Passez des tours.`);
     } else if (tile.type === 'finish') {
-      next = this.core.appendLog(next, `�curie finale.`);
+      next = this.core.appendLog(next, `Écurie finale.`);
     }
 
-    // Si arriv�e : d�clenche fin de manche.
+    // Si arrivée : déclenche fin de manche.
     if (tile.type === 'finish') {
       if (!meta.finish?.triggered) {
         const others = Object.keys(meta.positions ?? {})
@@ -331,13 +331,13 @@ export class GaloponsActionService {
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
         next = this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, playerId)} atteint l'�curie finale (+1 pomme).`,
+          `${resolvePlayerNameFromState(next, playerId)} atteint l'Écurie finale (+1 pomme).`,
         );
       }
       return next;
     }
 
-    // Si case occup�e : l'autre recule de 5.
+    // Si case occupée : l'autre recule de 5.
     const occupant = this.findOccupant(meta, playerId, pos);
     if (occupant != null) {
       next = this.core.appendLog(
@@ -423,12 +423,12 @@ export class GaloponsActionService {
     const text = card.text;
     const replayAfter = /Rejouez/i.test(text);
 
-    // Donner une pomme (peut �tre combin� avec "Rejouez imm�diatement").
+    // Donner une pomme (peut être combiné avec "Rejouez immédiatement").
     if (/Donnez-lui une pomme/i.test(text)) {
       const targets = this.otherPlayers(next, playerId);
       const pending: PendingState = {
         type: 'choose_target',
-        label: 'Choisissez un joueur dans la liste, puis Entr�e.',
+        label: 'Choisissez un joueur dans la liste, puis Entrée.',
         playerId,
         blocking: true,
         choices: targets.map((t) => t.username),
@@ -523,7 +523,7 @@ export class GaloponsActionService {
       const targets = this.otherPlayers(next, playerId);
       const pending: PendingState = {
         type: 'choose_target',
-        label: 'Choisissez un joueur dans la liste, puis Entr�e.',
+        label: 'Choisissez un joueur dans la liste, puis Entrée.',
         playerId,
         blocking: true,
         choices: targets.map((t) => t.username),
@@ -554,7 +554,7 @@ export class GaloponsActionService {
       const targets = this.otherPlayers(next, playerId);
       const pending: PendingState = {
         type: 'choose_target',
-        label: 'Choisissez un joueur dans la liste, puis Entr�e.',
+        label: 'Choisissez un joueur dans la liste, puis Entrée.',
         playerId,
         blocking: true,
         choices: targets.map((t) => t.username),
@@ -580,10 +580,10 @@ export class GaloponsActionService {
       };
     }
 
-    // D�fausser une pomme.
+    // Défausser une pomme.
     if (
-      /D�faussez-vous d''une pomme/i.test(text) ||
-      /D�faussez-vous d'une pomme/i.test(text)
+      /Défaussez-vous d''une pomme/i.test(text) ||
+      /Défaussez-vous d'une pomme/i.test(text)
     ) {
       const a = meta.apples?.[playerId] ?? 0;
       if (a > 0) {
@@ -592,12 +592,12 @@ export class GaloponsActionService {
       }
       return this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} n'a pas de pomme � d�fausser.`,
+        `${resolvePlayerNameFromState(next, playerId)} n'a pas de pomme à défausser.`,
       );
     }
 
-    // Avance jusqu'� prochaine r�gion.
-    if (/jusqu['�]� la prochaine case for�t/i.test(text)) {
+    // Avance jusqu'à prochaine région.
+    if (/jusqu['’]à la prochaine case forêt/i.test(text)) {
       const nextPos = findNext(
         meta.tiles,
         meta.positions[playerId] ?? 0,
@@ -608,7 +608,7 @@ export class GaloponsActionService {
         return this.applyLanding(next, playerId);
       }
     }
-    if (/jusqu['�]� la prochaine case montagne/i.test(text)) {
+    if (/jusqu['’]à la prochaine case montagne/i.test(text)) {
       const nextPos = findNext(
         meta.tiles,
         meta.positions[playerId] ?? 0,
@@ -739,7 +739,7 @@ export class GaloponsActionService {
     const lower = pawn.toLowerCase();
     const feminine = lower.startsWith('la ') || lower.startsWith('une ');
     const inner = pawn
-      .replace(/^l['�]\s*/i, '')
+      .replace(/^l['’]\s*/i, '')
       .replace(/^(le|la|les|un|une)\s+/i, '')
       .trim();
     const core = inner || pawn;
@@ -775,9 +775,9 @@ function extractMoveDelta(text: string): number {
     return numWords[key] ?? 0;
   };
 
-  const forwardApos = text.match(/Avancez\s+d['�]\s*(\d+)\s+case/i);
+  const forwardApos = text.match(/Avancez\s+d['’]\s*(\d+)\s+case/i);
   if (forwardApos) return Number(forwardApos[1]) || 0;
-  const forwardOneApos = text.match(/Avancez\s+d['�]\s*(un|une)\s+case/i);
+  const forwardOneApos = text.match(/Avancez\s+d['’]\s*(un|une)\s+case/i);
   if (forwardOneApos) return 1;
 
   const forward = text.match(/Avancez\s+de\s+(\d+)\s+case/i);
@@ -787,9 +787,9 @@ function extractMoveDelta(text: string): number {
   );
   if (forwardWords) return parseNumberish(forwardWords[1]);
 
-  const backApos = text.match(/Reculez\s+d['�]\s*(\d+)\s+case/i);
+  const backApos = text.match(/Reculez\s+d['’]\s*(\d+)\s+case/i);
   if (backApos) return -(Number(backApos[1]) || 0);
-  const backOneApos = text.match(/Reculez\s+d['�]\s*(un|une)\s+case/i);
+  const backOneApos = text.match(/Reculez\s+d['’]\s*(un|une)\s+case/i);
   if (backOneApos) return -1;
 
   const back = text.match(/Reculez\s+de\s+(\d+)\s+case/i);

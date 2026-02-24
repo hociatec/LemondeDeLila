@@ -184,7 +184,7 @@ export class FrousseActionService {
 
     let meta = this.getMeta(state);
 
-    // Saut de tour: si l'Ã©tat courant indique un tour Ã  passer, on consomme et on avance.
+    // Saut de tour: si l'état courant indique un tour à passer, on consomme et on avance.
     const skipNow = meta.statuses?.skipTurn?.[currentId] ?? 0;
     if (skipNow > 0) {
       meta = {
@@ -223,7 +223,7 @@ export class FrousseActionService {
       const rollLabel = this.formatRollLabel(roll);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId)} tente de se libÃ©rer : dÃ© = "${rollLabel}".`,
+        `${resolvePlayerNameFromState(next, currentId)} tente de se libérer : dé = "${rollLabel}".`,
       );
       const ok =
         blocked.kind === 'need_roll_one_of'
@@ -236,7 +236,7 @@ export class FrousseActionService {
       if (!ok) {
         next = this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, currentId)} reste bloquÃ©.`,
+          `${resolvePlayerNameFromState(next, currentId)} reste bloqué.`,
         );
         return this.advanceTurnWithAnnouncement(next);
       }
@@ -251,7 +251,7 @@ export class FrousseActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId)} se libÃ¨re !`,
+        `${resolvePlayerNameFromState(next, currentId)} se libère !`,
       );
       return this.advanceTurnWithAnnouncement(next);
     }
@@ -280,13 +280,13 @@ export class FrousseActionService {
     if (roll.rolls && roll.rolls.length >= 2) {
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId)} lance deux dÃ©s : "${roll.rolls[0]}" et "${roll.rolls[1]}" (garde "${roll.value}").`,
+        `${resolvePlayerNameFromState(next, currentId)} lance deux dés : "${roll.rolls[0]}" et "${roll.rolls[1]}" (garde "${roll.value}").`,
       );
     } else {
       const rollLabel = this.formatRollLabel(roll);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId)} lance le dÃ© : "${rollLabel}".`,
+        `${resolvePlayerNameFromState(next, currentId)} lance le dé : "${rollLabel}".`,
       );
     }
 
@@ -317,7 +317,7 @@ export class FrousseActionService {
     if (meta.winnerId != null) return { ...next, status: 'finished' };
     if (next.pending) return next;
 
-    // Relance immÃ©diate (cartes bonus/farces).
+    // Relance immédiate (cartes bonus/farces).
     if (meta.keepTurnNow === true) {
       delete meta.keepTurnNow;
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
@@ -373,7 +373,7 @@ export class FrousseActionService {
     };
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} Ã©change sa position avec ${resolvePlayerNameFromState(next, targetPlayerId)}.`,
+      `${resolvePlayerNameFromState(next, currentId)} échange sa position avec ${resolvePlayerNameFromState(next, targetPlayerId)}.`,
     );
     return this.advanceTurnWithAnnouncement(next);
   }
@@ -443,7 +443,7 @@ export class FrousseActionService {
       meta = { ...meta, winnerId: playerId };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} s'Ã©chappe du manoir !`,
+        `${resolvePlayerNameFromState(next, playerId)} s'échappe du manoir !`,
       );
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
@@ -495,14 +495,14 @@ export class FrousseActionService {
         },
       };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      if (/PiÃ¨ge/i.test(draw.card.category)) {
+      if (/Piège/i.test(draw.card.category)) {
         ignored = true;
       }
     }
 
     // Ignore ghost/trap/prank.
     if (
-      /FantÃ´me/i.test(draw.card.category) &&
+      /Fantôme/i.test(draw.card.category) &&
       meta.statuses.ignoreNextGhost?.[playerId]
     ) {
       meta = {
@@ -536,7 +536,7 @@ export class FrousseActionService {
       ignored = true;
     }
     if (
-      /PiÃ¨ge/i.test(draw.card.category) &&
+      /Piège/i.test(draw.card.category) &&
       meta.statuses.ignoreNextTrap?.[playerId]
     ) {
       meta = {
@@ -554,7 +554,7 @@ export class FrousseActionService {
     }
 
     const effectLabel = ignored
-      ? 'Effet ignorÃ©.'
+      ? 'Effet ignoré.'
       : describeCardEffect(draw.card);
     const cardText = normalizeCardText(draw.card.text);
     const withEffect = formatCardDrawLog(
@@ -602,9 +602,9 @@ export class FrousseActionService {
 
     // Ghost random swap (admin: random target).
     if (
-      /FantÃ´me/i.test(card.category) &&
-      /fantÃ´me farceur/i.test(text) &&
-      /Ã©chang|Ã©change/i.test(text)
+      /Fantôme/i.test(card.category) &&
+      /fantôme farceur/i.test(text) &&
+      /échang|échange/i.test(text)
     ) {
       const targets = this.otherPlayers(next, playerId);
       if (!targets.length) return next;
@@ -625,21 +625,21 @@ export class FrousseActionService {
       };
       next = this.core.appendLog(
         { ...next, metadata: { ...(next.metadata ?? {}), ...meta } },
-        `${resolvePlayerNameFromState(next, playerId)} Ã©change sa position avec ${resolvePlayerNameFromState(next, target.id)}.`,
+        `${resolvePlayerNameFromState(next, playerId)} échange sa position avec ${resolvePlayerNameFromState(next, target.id)}.`,
       );
       return next;
     }
 
     // Swap with another player (choice).
     if (
-      /Ã©chang|echange/i.test(text) &&
+      /échang|echange/i.test(text) &&
       (/votre place/i.test(text) || /vos places/i.test(text))
     ) {
       const targets = this.otherPlayers(next, playerId);
       if (!targets.length) return next;
       const pending: PendingState = {
         type: 'choose_target',
-        label: 'Choisissez un joueur dans la liste, puis EntrÃ©e.',
+        label: 'Choisissez un joueur dans la liste, puis Entrée.',
         playerId,
         blocking: true,
         choices: targets.map((t) => t.username),
@@ -659,7 +659,7 @@ export class FrousseActionService {
     }
 
     // Ignore traps until next symbol (one draw).
-    if (/Ignorez les piÃ¨ges jusqu['â€™]au prochain symbole/i.test(text)) {
+    if (/Ignorez les pièges jusqu['’]au prochain symbole/i.test(text)) {
       meta = {
         ...meta,
         statuses: {
@@ -675,8 +675,8 @@ export class FrousseActionService {
 
     // Ignore next trap / ghost.
     if (
-      /Ignorez le prochain piÃ¨ge/i.test(text) ||
-      /Ignorez les piÃ¨ges/i.test(text)
+      /Ignorez le prochain piège/i.test(text) ||
+      /Ignorez les pièges/i.test(text)
     ) {
       meta = {
         ...meta,
@@ -690,7 +690,7 @@ export class FrousseActionService {
       };
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
-    if (/Ignorez la prochaine carte FantÃ´me/i.test(text)) {
+    if (/Ignorez la prochaine carte Fantôme/i.test(text)) {
       meta = {
         ...meta,
         statuses: {
@@ -716,7 +716,7 @@ export class FrousseActionService {
         },
       };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      return this.core.appendLog(next, 'Protection farce activÃ©e.');
+      return this.core.appendLog(next, 'Protection farce activée.');
     }
 
     if (/Sautez\s+6\s+cases/i.test(text)) {
@@ -788,7 +788,7 @@ export class FrousseActionService {
     }
 
     // Next move limited to 1.
-    if (/n['â€™]avancerez que d['â€™](une|un)e seule case/i.test(text)) {
+    if (/n['’]avancerez que d['’](une|un)e seule case/i.test(text)) {
       meta = {
         ...meta,
         statuses: {
@@ -849,7 +849,7 @@ export class FrousseActionService {
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
-    // Si vous faites un trois, reculez de 2 cases (prochain dÃ©).
+    // Si vous faites un trois, reculez de 2 cases (prochain dé).
     if (/Si vous faites un trois, reculez de 2 cases/i.test(text)) {
       meta = {
         ...meta,
@@ -874,10 +874,10 @@ export class FrousseActionService {
       return this.applyLanding(next, playerId);
     }
 
-    // Relance immÃ©diate.
+    // Relance immédiate.
     if (
-      /Relancez le dÃ©/i.test(text) ||
-      (/Relancez/i.test(text) && /dÃ©/i.test(text))
+      /Relancez le dé/i.test(text) ||
+      (/Relancez/i.test(text) && /dé/i.test(text))
     ) {
       meta.keepTurnNow = true;
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
@@ -902,14 +902,14 @@ export class FrousseActionService {
 
     // Immediate roll: if odd then skip.
     if (
-      /si le rÃ©sultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(
+      /si le résultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(
         text,
       )
     ) {
       const out = this.random.rollDice(meta, 6);
       meta = { ...meta, ...out.meta };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      next = this.core.appendLog(next, `Test : dÃ© = "${out.roll}".`);
+      next = this.core.appendLog(next, `Test : dé = "${out.roll}".`);
       if (out.roll % 2 === 1) {
         const curr = meta.statuses.skipTurn?.[playerId] ?? 0;
         meta = {
@@ -946,7 +946,7 @@ export class FrousseActionService {
 
     // Go to case 1.
     if (
-      /case dÃ©part/i.test(text) ||
+      /case départ/i.test(text) ||
       /Retour a la case une/i.test(text) ||
       (/Retournez/i.test(text) && /case une/i.test(text))
     ) {
@@ -1077,7 +1077,7 @@ export class FrousseActionService {
     }
 
     if (roll.doubledFrom != null) {
-      label = `${label} (doublÃ© = ${roll.value})`;
+      label = `${label} (doublé = ${roll.value})`;
     }
 
     return label;
@@ -1177,7 +1177,7 @@ export class FrousseActionService {
     }
     const stripped = inner
       .replace(/^(un|une|le|la|les)\s+/i, '')
-      .replace(/^l['â€™]\s*/i, '')
+      .replace(/^l['’]\s*/i, '')
       .trim();
     const base = this.lowercaseFirst(stripped || inner);
     const feminine = /^(une|la)\s+/i.test(inner);
@@ -1228,7 +1228,7 @@ export class FrousseActionService {
     if (typeof starter?.id === 'number') {
       next = this.core.appendLog(
         next,
-        `[Frousse Party] DÃ©but de partie : ${resolvePlayerNameFromState(next, starter.id)} commence.`,
+        `[Frousse Party] Début de partie : ${resolvePlayerNameFromState(next, starter.id)} commence.`,
       );
       next = this.core.appendLog(
         next,
@@ -1346,11 +1346,11 @@ function extractMoveDelta(text: string): number {
     return numWords[key] ?? 0;
   };
 
-  // GÃ¨re les effets composÃ©s (ex: "Avancez de 5 cases, puis reculez de 3")
-  // en cumulant toutes les consignes de mouvement prÃ©sentes dans le texte.
+  // Gère les effets composés (ex: "Avancez de 5 cases, puis reculez de 3")
+  // en cumulant toutes les consignes de mouvement présentes dans le texte.
   let total = 0;
   const forwardOrBackPattern =
-    /(avancez|reculez)\s+(?:de|d['â€™])\s*(\d+|un|une|deux|trois|quatre|cinq|six)(?:\s+cases?)?/gi;
+    /(avancez|reculez)\s+(?:de|d['’])\s*(\d+|un|une|deux|trois|quatre|cinq|six)(?:\s+cases?)?/gi;
   let fbMatch: RegExpExecArray | null;
   while ((fbMatch = forwardOrBackPattern.exec(text)) !== null) {
     const amount = parseNumberish(fbMatch[2]);
@@ -1368,19 +1368,19 @@ function extractMoveDelta(text: string): number {
   if (total !== 0) return total;
 
   const narrativeForward = text.match(
-    /avancez[\s\S]*?d['â€™]\s*(\d+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
+    /avancez[\s\S]*?d['’]\s*(\d+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
   );
   if (narrativeForward) return parseNumberish(narrativeForward[1]);
 
   const narrativeBack = text.match(
-    /recul(?:ez|ant|e|es)?[\s\S]*?d['â€™]\s*(\d+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
+    /recul(?:ez|ant|e|es)?[\s\S]*?d['’]\s*(\d+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
   );
   if (narrativeBack) return -parseNumberish(narrativeBack[1]);
 
-  const forwardApos = text.match(/Avancez\s+d['â€™]\s*(\d+)\s+case/i);
+  const forwardApos = text.match(/Avancez\s+d['’]\s*(\d+)\s+case/i);
   if (forwardApos) return Number(forwardApos[1]) || 0;
   const forwardAposWords = text.match(
-    /Avancez\s+d['â€™]\s*(un|une|deux|trois|quatre|cinq|six)\s+case/i,
+    /Avancez\s+d['’]\s*(un|une|deux|trois|quatre|cinq|six)\s+case/i,
   );
   if (forwardAposWords) return parseNumberish(forwardAposWords[1]);
 
@@ -1391,10 +1391,10 @@ function extractMoveDelta(text: string): number {
   );
   if (forwardWords) return parseNumberish(forwardWords[1]);
 
-  const backApos = text.match(/Reculez\s+d['â€™]\s*(\d+)\s+case/i);
+  const backApos = text.match(/Reculez\s+d['’]\s*(\d+)\s+case/i);
   if (backApos) return -(Number(backApos[1]) || 0);
   const backAposWords = text.match(
-    /Reculez\s+d['â€™]\s*(un|une|deux|trois|quatre|cinq|six)\s+case/i,
+    /Reculez\s+d['’]\s*(un|une|deux|trois|quatre|cinq|six)\s+case/i,
   );
   if (backAposWords) return -parseNumberish(backAposWords[1]);
 
@@ -1427,24 +1427,24 @@ function describeCardEffect(card: FrousseCard): string {
   const text = card.text ?? '';
 
   if (
-    /FantÃ´me/i.test(card.category) &&
-    /fantÃ´me farceur/i.test(text) &&
-    /Ã©chang|echange/i.test(text)
+    /Fantôme/i.test(card.category) &&
+    /fantôme farceur/i.test(text) &&
+    /échang|echange/i.test(text)
   ) {
-    return 'Ã‰change alÃ©atoire de place.';
+    return 'Échange aléatoire de place.';
   }
   if (
-    /Ã©chang|echange/i.test(text) &&
+    /échang|echange/i.test(text) &&
     (/votre place/i.test(text) || /vos places/i.test(text))
   ) {
-    return 'Ã‰changez votre place avec un autre joueur.';
+    return 'Échangez votre place avec un autre joueur.';
   }
-  if (/Ignorez le prochain piÃ¨ge/i.test(text))
-    return 'Ignorez le prochain piÃ¨ge.';
-  if (/Ignorez les piÃ¨ges jusqu['â€™]au prochain symbole/i.test(text))
-    return 'Ignorez les piÃ¨ges jusquâ€™au prochain symbole.';
-  if (/Ignorez la prochaine carte FantÃ´me/i.test(text))
-    return 'Ignorez la prochaine carte FantÃ´me.';
+  if (/Ignorez le prochain piège/i.test(text))
+    return 'Ignorez le prochain piège.';
+  if (/Ignorez les pièges jusqu['’]au prochain symbole/i.test(text))
+    return 'Ignorez les pièges jusqu’au prochain symbole.';
+  if (/Ignorez la prochaine carte Fantôme/i.test(text))
+    return 'Ignorez la prochaine carte Fantôme.';
   if (/annule une farce/i.test(text) || /rien ne vous arrive/i.test(text))
     return 'Ignorez la prochaine farce.';
   if (
@@ -1453,12 +1453,12 @@ function describeCardEffect(card: FrousseCard): string {
   )
     return 'Sautez 6 cases.';
   if (/Doublez votre prochain lancer/i.test(text))
-    return 'Doublez le prochain lancer de dÃ©.';
+    return 'Doublez le prochain lancer de dé.';
   if (
     /gardez le plus petit/i.test(text) ||
     /gardez le chiffre le plus bas/i.test(text)
   )
-    return 'Rejouez en gardant le plus petit rÃ©sultat.';
+    return 'Rejouez en gardant le plus petit résultat.';
   if (/malus de moins 2/i.test(text) || /malus de -2/i.test(text))
     return 'Rejouez avec un malus de -2 au lancer.';
   if (/Si vous faites un trois, reculez de 2 cases/i.test(text))
@@ -1466,16 +1466,16 @@ function describeCardEffect(card: FrousseCard): string {
   if (/jusqu['’]a la case 40/i.test(text))
     return 'Allez directement a la case 40.';
   if (
-    /Relancez le dÃ©/i.test(text) ||
-    (/Relancez/i.test(text) && /dÃ©/i.test(text))
+    /Relancez le dé/i.test(text) ||
+    (/Relancez/i.test(text) && /dé/i.test(text))
   )
-    return 'Rejouez immÃ©diatement.';
+    return 'Rejouez immédiatement.';
   if (/laissant les autres joueurs (filer|avancer) de 3 cases/i.test(text))
     return 'Les autres avancent de 3 cases, vous passez 1 tour.';
   if (
-    /si le rÃ©sultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(text)
+    /si le résultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(text)
   ) {
-    return 'Lancez le dÃ© : si le rÃ©sultat est impair, passez 1 tour.';
+    return 'Lancez le dé : si le résultat est impair, passez 1 tour.';
   }
   const skip = extractSkipTurns(text);
   if (skip > 0) return `Passez ${skip} tour${skip > 1 ? 's' : ''}.`;
@@ -1495,20 +1495,20 @@ function describeCardEffect(card: FrousseCard): string {
 
   const need56 = text.match(/lancer un (\d) ou un (\d)/i);
   if (need56)
-    return `BloquÃ© : lancez un ${need56[1]} ou un ${need56[2]} pour vous libÃ©rer.`;
+    return `Bloqué : lancez un ${need56[1]} ou un ${need56[2]} pour vous libérer.`;
   const need6 = text.match(/obtenir un 6/i);
   if (need6 && /jusqu/i.test(text))
-    return 'BloquÃ© : obtenez un 6 pour vous libÃ©rer.';
+    return 'Bloqué : obtenez un 6 pour vous libérer.';
   const needMin = text.match(/obtenez pas un (\d) ou plus/i);
   if (needMin)
-    return `BloquÃ© : obtenez ${needMin[1]} ou plus pour vous libÃ©rer.`;
+    return `Bloqué : obtenez ${needMin[1]} ou plus pour vous libérer.`;
   if (/nombre pair/i.test(text))
-    return 'BloquÃ© : obtenez un nombre pair pour vous libÃ©rer.';
+    return 'Bloqué : obtenez un nombre pair pour vous libérer.';
 
-  if (/n['â€™]avancerez que d['â€™](une|un)e seule case/i.test(text))
-    return 'Au prochain tour, avancez dâ€™une seule case.';
+  if (/n['’]avancerez que d['’](une|un)e seule case/i.test(text))
+    return 'Au prochain tour, avancez d’une seule case.';
 
-  return 'Effet immÃ©diat.';
+  return 'Effet immédiat.';
 }
 
 function normalizeCardText(text: string): string {

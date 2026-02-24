@@ -59,6 +59,7 @@ public sealed class GameTableOpener : IGameTableOpener
     private readonly IVaultClient _vault;
     private readonly ICatalogService _catalog;
     private readonly IGameFocusCoordinator _focus;
+    private readonly IHomeViewAccessor _homeAccessor;
     private static int _globalSoundsPreloaded;
 
     public GameTableOpener(
@@ -82,7 +83,8 @@ public sealed class GameTableOpener : IGameTableOpener
         ITextPromptService textPrompts,
         IVaultClient vault,
         ICatalogService catalog,
-        IGameFocusCoordinator focus)
+        IGameFocusCoordinator focus,
+        IHomeViewAccessor homeAccessor)
     {
         _logger = logger;
         _config = config ?? throw new ArgumentNullException(nameof(config));
@@ -105,6 +107,7 @@ public sealed class GameTableOpener : IGameTableOpener
         _vault = vault ?? throw new ArgumentNullException(nameof(vault));
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         _focus = focus ?? throw new ArgumentNullException(nameof(focus));
+        _homeAccessor = homeAccessor ?? throw new ArgumentNullException(nameof(homeAccessor));
     }
 
     private IAnnouncementService AnnouncementService => _announcementService ?? throw new InvalidOperationException("Le service d'annonces n'est pas disponible.");
@@ -710,6 +713,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     // Après une sortie de table, la taverne est un "hub" et ne doit pas servir de back-stack vers
                     // des vues modales (ex: Mon coffre fort). Fermer la taverne doit ramener au menu principal.
                     var safeReturn = returnContent is MainMenuViewModel ? returnContent : null;
+                    var homeContent = _homeAccessor.HomeContent;
 
                     CatalogViewModel? catalogVm = null;
                     catalogVm = new CatalogViewModel(
@@ -726,6 +730,12 @@ public sealed class GameTableOpener : IGameTableOpener
                                     break;
                                 case not null:
                                     try { _navigation.Show(safeReturn); } catch { /* ignore */ }
+                                    break;
+                                default:
+                                    if (homeContent != null && !ReferenceEquals(homeContent, catalogVm))
+                                    {
+                                        try { _navigation.Show(homeContent); } catch { /* ignore */ }
+                                    }
                                     break;
                             }
                         },

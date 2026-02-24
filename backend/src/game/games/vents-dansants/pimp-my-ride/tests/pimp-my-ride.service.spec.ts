@@ -1,7 +1,7 @@
-import { PimpMyRideService } from '../pimp-my-ride.service';
+﻿import { PimpMyRideService } from '../pimp-my-ride.service';
 
 describe('PimpMyRideService', () => {
-  it('devrait �tre d�fini', () => {
+  it('devrait être défini', () => {
     const registry = { register: jest.fn() } as any;
     const service = new PimpMyRideService(
       registry,

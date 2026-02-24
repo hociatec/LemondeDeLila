@@ -1,4 +1,4 @@
-import type { GameDefinition } from '../../../../engine/model/game-definition.model';
+﻿import type { GameDefinition } from '../../../../engine/model/game-definition.model';
 
 export type LaParadeSucreeActionType = 'play_card' | 'pass';
 export type LaParadeSucreePhaseId = 'round';
@@ -11,7 +11,7 @@ export const LA_PARADE_SUCREE_GAME: GameDefinition<
   null
 > = {
   id: 'la-parade-sucree',
-  displayName: 'La Parade Sucrï¿½e !',
+  displayName: 'La Parade Sucrée !',
   minPlayers: 2,
   maxPlayers: 6,
   roles: [],

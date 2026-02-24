@@ -1,8 +1,8 @@
-{
+﻿{
   "code": "la-parade-sucree",
-  "name": "La Parade Sucrï¿½e !",
+  "name": "La Parade Sucrée !",
   "minPlayers": 2,
   "maxPlayers": 6,
   "engine": "la-parade-sucree",
-  "summary": "Posez vos cartes dans lï¿½ordre, collectez les friandises des cases spï¿½ciales et devenez la star du carnaval."
+  "summary": "Posez vos cartes dans l'ordre, collectez les friandises des cases spéciales et devenez la star du carnaval."
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
 import { resolvePlayerName } from '../../../../modules/turn-policies/player-name.helper';
@@ -22,7 +22,7 @@ export class NawakPresenterService {
       : [];
     const panels = buildLamaLikePanels({
       hand,
-      discardLabel: 'D�fis disponibles',
+      discardLabel: 'Défis disponibles',
       scoreLines: Object.entries(meta.scores ?? {}).map(
         ([playerId, value]) => `Joueur ${playerId}: ${value ?? 0}`,
       ),
@@ -61,8 +61,8 @@ export class NawakPresenterService {
     if (action.type === 'choose_answer') {
       const index = Number(action.payload?.answerIndex ?? 0);
       const answer =
-        meta.currentChallenge.answers?.[index] ?? `r�ponse ${index + 1}`;
-      return `Choisir �${answer}�`;
+        meta.currentChallenge.answers?.[index] ?? `réponse ${index + 1}`;
+      return `Choisir «»`;
     }
     if (action.type === 'vote_answer') {
       const target = Number(action.payload?.targetPlayerId ?? 0);
