@@ -104,6 +104,9 @@ public static class GlobalUiTextRepair
             case Run run:
                 run.Text = MojibakeTextRepair.Fix(run.Text);
                 break;
+            case TextBox textBox:
+                textBox.Text = MojibakeTextRepair.Fix(textBox.Text);
+                break;
             case ContentControl cc when cc.Content is string content:
                 cc.Content = MojibakeTextRepair.Fix(content);
                 break;
