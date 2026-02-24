@@ -192,12 +192,19 @@ public static class MojibakeTextRepair
             }
         }
 
+        if (IsLossyAccentTransform(input, best))
+        {
+            best = input;
+        }
         var normalizedFrench = ApplyFrenchReplacements(best);
         if (normalizedFrench.Length == 0)
         {
             return best;
         }
-
+        if (IsLossyAccentTransform(best, normalizedFrench))
+        {
+            return best;
+        }
         return normalizedFrench;
     }
 
@@ -359,5 +366,34 @@ public static class MojibakeTextRepair
                value.IndexOf('Â') >= 0 ||
                value.IndexOf("â", StringComparison.Ordinal) >= 0 ||
                value.IndexOf('�') >= 0;
+    }
+    private static bool IsLossyAccentTransform(string before, string after)
+    {
+        if (before.Length == 0 || after.Length == 0)
+        {
+            return false;
+        }
+
+        var beforeAccents = CountNonAsciiLetters(before);
+        if (beforeAccents == 0)
+        {
+            return false;
+        }
+
+        return CountNonAsciiLetters(after) < beforeAccents;
+    }
+
+    private static int CountNonAsciiLetters(string value)
+    {
+        var count = 0;
+        foreach (var ch in value)
+        {
+            if (ch > 0x7F && char.IsLetter(ch))
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 }
