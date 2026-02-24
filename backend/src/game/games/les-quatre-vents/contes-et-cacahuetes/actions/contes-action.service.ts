@@ -10,6 +10,7 @@ import { DeckPoliciesService } from '../../../../modules/deck-policies/services/
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
 import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
+import { fixMojibakeDeep } from '../../../../../common/utils/mojibake';
 import type {
   ContesCard,
   ContesCardType,
@@ -83,7 +84,7 @@ export class ContesActionService {
         () => next,
       );
     });
-    return next;
+    return fixMojibakeDeep(next);
   }
 
   private handleChoosePawn(
@@ -1758,7 +1759,7 @@ export class ContesActionService {
     state: GameStateEntity,
     pending: Exclude<ContesPending, null>,
   ): GameStateEntity {
-    return { ...state, pending };
+    return { ...state, pending: fixMojibakeDeep(pending) };
   }
 
   private setStatusCount(

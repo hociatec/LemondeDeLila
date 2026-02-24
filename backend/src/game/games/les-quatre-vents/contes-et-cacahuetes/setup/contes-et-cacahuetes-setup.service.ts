@@ -5,6 +5,7 @@ import { getSafePlayers } from '../../../../setup/setup-service.helper';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { fixMojibakeDeep } from '../../../../../common/utils/mojibake';
 import type {
   ContesCacahuetesMetadata,
   ContesCacahuetesTile,
@@ -94,7 +95,7 @@ export class ContesCacahuetesSetupService {
         description: toText(choice.description).trim(),
       }),
     });
-    const next: GameStateEntity = {
+    let next: GameStateEntity = {
       ...baseState,
       players: updatedPlayers,
       phase: 'playing',
@@ -114,7 +115,7 @@ export class ContesCacahuetesSetupService {
         ...metaBase,
       },
     };
-    return next;
+    return fixMojibakeDeep(next);
   }
 
   private getRuntimeMeta(state: GameStateEntity): ContesRuntimeMetadata {

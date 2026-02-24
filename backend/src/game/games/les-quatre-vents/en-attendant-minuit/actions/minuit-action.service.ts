@@ -135,7 +135,7 @@ export class MinuitActionService {
 
     let meta = meta0;
 
-    // "Piochez �  nouveau une carte au lieu de lancer le dé" (tour suivant).
+    // "Piochez à nouveau une carte au lieu de lancer le dé" (tour suivant).
     if (meta.statuses?.forceDrawNextTurn?.[currentId] === true) {
       meta = {
         ...meta,
@@ -339,7 +339,7 @@ export class MinuitActionService {
       };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} offre un cadeau �  ${resolvePlayerNameFromState(next, targetPlayerId, MINUIT_PLAYER_NAME_OPTIONS)}.`,
+        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} offre un cadeau à ${resolvePlayerNameFromState(next, targetPlayerId, MINUIT_PLAYER_NAME_OPTIONS)}.`,
       );
       next = this.move(next, targetPlayerId, 1);
       next = this.move(next, currentId, 2);
@@ -462,8 +462,6 @@ export class MinuitActionService {
         );
       },
       pendingType: 'pick_pawn',
-      labelForPlayer: (playerLabel) =>
-        `C'est �  ${playerLabel} de choisir son pion.`,
       pawns: entries.map((entry) => ({
         id: entry.id,
         label: entry.label,
@@ -810,7 +808,7 @@ export class MinuitActionService {
       };
     }
 
-    if (/vous offrez un cadeau � {2}un autre joueur/i.test(text)) {
+    if (/vous offrez un cadeau à un autre joueur/i.test(text)) {
       const targets = this.otherPlayers(next, playerId);
       const pending: PendingState = {
         type: 'choose_target',
@@ -880,7 +878,7 @@ export class MinuitActionService {
     }
 
     // Force pioche au prochain tour (au lieu de lancer le dé).
-    if (/Piochez � {2}nouveau une carte au lieu de lancer le dé/i.test(text)) {
+    if (/Piochez à nouveau une carte au lieu de lancer le dé/i.test(text)) {
       meta = {
         ...meta,
         statuses: {
@@ -894,18 +892,18 @@ export class MinuitActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       return this.core.appendLog(
         next,
-        'Au prochain tour, piochez une carte �  la place du dé.',
+        'Au prochain tour, piochez une carte à la place du dé.',
       );
     }
 
-    // Aller �  la case neutre la plus proche derrière.
+    // Aller à la case neutre la plus proche derrière.
     if (/case neutre la plus proche derrière/i.test(text)) {
       const pos = meta.positions[playerId] ?? 0;
       const prevPos = findPrev(meta.tiles, pos, (t) => t.type === 'neutral');
       if (prevPos != null) {
         next = this.core.appendLog(
           next,
-          'Retour �  la case neutre la plus proche derrière.',
+          'Retour à la case neutre la plus proche derrière.',
         );
         next = this.setPos(next, playerId, prevPos);
         return this.applyLanding(next, playerId);
@@ -932,7 +930,7 @@ export class MinuitActionService {
       );
     }
 
-    if (/jusqu['’]� {2}la prochaine Carte Noël/i.test(text)) {
+    if (/jusqu['’]à la prochaine Carte Noël/i.test(text)) {
       const nextPos = findNext(
         meta.tiles,
         meta.positions[playerId] ?? 0,
@@ -944,7 +942,7 @@ export class MinuitActionService {
       }
     }
 
-    if (/jusqu['’]� {2}la case précédente Carte Noël/i.test(text)) {
+    if (/jusqu['’]à la case précédente Carte Noël/i.test(text)) {
       const prevPos = findPrev(
         meta.tiles,
         meta.positions[playerId] ?? 0,
@@ -953,7 +951,7 @@ export class MinuitActionService {
       if (prevPos != null) {
         next = this.core.appendLog(
           next,
-          "Recule jusqu'�  la précédente Carte Noël.",
+          "Recule jusqu'à la précédente Carte Noël.",
         );
         next = this.setPos(next, playerId, prevPos);
         return this.applyLanding(next, playerId);

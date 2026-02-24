@@ -68,11 +68,18 @@ function applyTargetedMojibakeReplacements(value: string): string {
     [/\u00E2\u20AC\u00A2/g, '•'],
     [/Â /g, ' '],
     [/Â(?=[,;:.!?])/g, ''],
+    [/Ò©/g, 'é'],
+    [/Ò®/g, 'î'],
   ];
 
   for (const [pattern, replacement] of replacements) {
     out = out.replace(pattern, replacement);
   }
+
+  // Legacy mojibake seen in imported French content blobs.
+  out = out
+    .replace(/(^|[.!?]\s+)ì\s+/g, '$1À ')
+    .replace(/\bì\s+/g, 'à ');
 
   return out;
 }

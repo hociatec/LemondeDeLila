@@ -21,6 +21,34 @@ function toPlayerNameText(raw: unknown): string {
   return '';
 }
 
+function normalizePromptToken(value: string): string {
+  return String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function extractPawnPromptToken(message: string): string | null {
+  const text = String(message ?? '').trim();
+  if (!text) return null;
+
+  const normalized = normalizePromptToken(text);
+  if (normalized.includes('choisissez votre pion')) {
+    return 'prompt:choose-your-pawn';
+  }
+
+  const withPlayer =
+    /^c['’]est à (.+?) de choisir son pion(?:[.,!?]|$)/i.exec(text);
+  if (withPlayer) {
+    return `prompt:choose-pawn:${normalizePromptToken(withPlayer[1])}`;
+  }
+
+  return null;
+}
+
 @Injectable()
 export class GameCoreService {
   private sanitizePlayerName(raw: unknown): string {
@@ -110,6 +138,20 @@ export class GameCoreService {
   appendLog(state: GameStateEntity, message: string): GameStateEntity {
     const normalizedMessage = normalizeGameLogMessage(message);
     if (!normalizedMessage) return state;
+
+    const nextPromptToken = extractPawnPromptToken(normalizedMessage);
+    if (nextPromptToken) {
+      const log = Array.isArray(state.log) ? state.log : [];
+      const recent = log.slice(-6);
+      const hasSamePrompt = recent.some((entry) => {
+        const existingToken = extractPawnPromptToken(
+          String(entry?.message ?? ''),
+        );
+        return existingToken != null && existingToken === nextPromptToken;
+      });
+      if (hasSamePrompt) return state;
+    }
+
     const lastMessage = state.log?.[state.log.length - 1]?.message ?? '';
     if (String(lastMessage) === normalizedMessage) return state;
     const entry: GameLogEntry = {

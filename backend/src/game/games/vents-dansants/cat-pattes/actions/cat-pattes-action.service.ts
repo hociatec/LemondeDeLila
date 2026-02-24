@@ -585,7 +585,74 @@ export class CatPattesActionService {
   }
 
   private ensurePawnSelectionPrompt(state: GameStateEntity): GameStateEntity {
-    return state;
+    if (String(state.status ?? '').toLowerCase() !== 'started') return state;
+    const players = Array.isArray(state.players) ? state.players : [];
+    if (!players.length) return state;
+
+    const meta = this.getMeta(state);
+    const hasAssignedPawn = (playerId: number): boolean => {
+      if (meta.pawnByPlayerId?.[playerId]) return true;
+      const player = players.find((p) => Number(p?.id) === Number(playerId));
+      const playerPawn =
+        typeof player?.pawn === 'string' ? player.pawn.trim() : '';
+      return playerPawn.length > 0;
+    };
+    const needsPawn = (player: any): boolean =>
+      !this.isBotLike(player) && !hasAssignedPawn(Number(player?.id));
+
+    const missingHumans = players.filter((player) => needsPawn(player));
+    if (!missingHumans.length) {
+      return state.pending?.type === 'choose_pawn'
+        ? { ...state, pending: null }
+        : state;
+    }
+
+    if (state.pending?.type === 'choose_pawn') {
+      const pendingPlayerId = Number(state.pending.playerId);
+      if (
+        Number.isFinite(pendingPlayerId) &&
+        missingHumans.some((player) => Number(player?.id) === pendingPlayerId)
+      ) {
+        return state;
+      }
+    }
+
+    const usedPawns = new Set(
+      Object.values(meta.pawnByPlayerId ?? {}).filter(
+        (pawn): pawn is string =>
+          typeof pawn === 'string' && pawn.trim().length > 0,
+      ),
+    );
+    const allPawns = Array.isArray(meta.pawns) ? meta.pawns : [];
+    const availablePawns = allPawns.filter((pawn) => !usedPawns.has(pawn));
+    const selectedPawns = availablePawns.length > 0 ? availablePawns : allPawns;
+    if (!selectedPawns.length) return state;
+
+    const pendingInfo = this.setupFlow.createSequentialPawnPending({
+      players,
+      startPlayerId:
+        typeof state.turn?.currentPlayerId === 'number'
+          ? state.turn.currentPlayerId
+          : (players[0]?.id ?? null),
+      isAssigned: (playerId) => {
+        const player = players.find((entry) => Number(entry?.id) === playerId);
+        return this.isBotLike(player) || hasAssignedPawn(playerId);
+      },
+      pawns: selectedPawns.map((name) => ({ id: name, label: name })),
+    });
+    if (!pendingInfo) return state;
+
+    const next: GameStateEntity = {
+      ...state,
+      pending: pendingInfo.pending,
+      turnIndex: pendingInfo.turnIndex,
+      turn: {
+        ...(state.turn ?? { direction: 1 }),
+        currentPlayerId: pendingInfo.playerId,
+        direction: 1,
+      },
+    };
+    return next;
   }
 
   private getTurnPolicies(): TurnPoliciesService {

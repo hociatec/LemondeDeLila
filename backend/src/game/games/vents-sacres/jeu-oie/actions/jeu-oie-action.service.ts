@@ -201,14 +201,14 @@ export class JeuOieActionService {
 
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(state, currentId)} lance le dÃ© : "${roll}".`,
+      `${resolvePlayerNameFromState(state, currentId)} lance le dé : "${roll}".`,
     );
 
     if (inWell) {
       if (roll !== 1) {
         const logged = this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, currentId)} reste bloquÃ© dans le puits.`,
+          `${resolvePlayerNameFromState(next, currentId)} reste bloqué dans le puits.`,
         );
         return this.turns.advanceTurn(logged, {
           playerNameResolver: (s, id) => resolvePlayerNameFromState(s, id),
@@ -309,11 +309,9 @@ export class JeuOieActionService {
 
     if (tile.type === 'inn' || tile.type === 'prison') {
       const turns = tile.skipTurns ?? 1;
-      const suffix =
-        turns === 1 ? '' : ` (passera ses ${turns} prochains tours).`;
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} perd ${turns} tour(s).${suffix}`,
+        `${resolvePlayerNameFromState(next, playerId)} perd ${turns} tour(s).`,
       );
       meta = this.getMeta(next);
       const currentSkip = meta.statuses?.skipTurn?.[playerId] ?? 0;
@@ -343,8 +341,8 @@ export class JeuOieActionService {
       next = this.core.appendLog(
         next,
         magicRoll <= 3
-          ? `DÃ© magique : avance de ${magicRoll} case(s).`
-          : `DÃ© magique : recule de ${magicRoll} case(s).`,
+          ? `Dé magique : avance de ${magicRoll} case(s).`
+          : `Dé magique : recule de ${magicRoll} case(s).`,
       );
       return this.applyLanding(next, playerId, moved, magicRoll);
     }
@@ -355,7 +353,7 @@ export class JeuOieActionService {
       well[playerId] = true;
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} est bloquÃ© dans le puits (il faut faire 1 pour sortir).`,
+        `${resolvePlayerNameFromState(next, playerId)} est bloqué dans le puits (il faut faire 1 pour sortir).`,
       );
       return {
         ...next,
@@ -430,7 +428,77 @@ export class JeuOieActionService {
   }
 
   private ensurePawnSelectionPrompt(state: GameStateEntity): GameStateEntity {
-    return state;
+    if (String(state.status ?? '').toLowerCase() !== 'started') return state;
+    const players = Array.isArray(state.players) ? state.players : [];
+    if (!players.length) return state;
+
+    const meta = this.getMeta(state);
+    const isAssigned = (playerId: number): boolean =>
+      Boolean(meta.pawnByPlayerId?.[playerId]);
+
+    const missingPlayers = players.filter((player) => !isAssigned(player.id));
+    if (!missingPlayers.length) {
+      return state.pending?.type === 'choose_pawn'
+        ? { ...state, pending: null }
+        : state;
+    }
+
+    if (state.pending?.type === 'choose_pawn') {
+      const pendingPlayerId = Number(state.pending.playerId);
+      if (Number.isFinite(pendingPlayerId) && !isAssigned(pendingPlayerId)) {
+        return state;
+      }
+    }
+
+    const usedPawnIds = new Set(
+      Object.values(meta.pawnByPlayerId ?? {}).filter(
+        (pawnId): pawnId is string => typeof pawnId === 'string',
+      ),
+    );
+    const availablePawns = (Array.isArray(meta.pawns) ? meta.pawns : [])
+      .map((pawn: any) => ({
+        id: String(pawn?.id ?? '').trim(),
+        label: String(pawn?.label ?? '').trim(),
+        feminine: Boolean(pawn?.feminine),
+      }))
+      .filter((pawn) => pawn.id.length > 0 && !usedPawnIds.has(pawn.id));
+    const fallbackPawns = (Array.isArray(meta.pawns) ? meta.pawns : [])
+      .map((pawn: any) => ({
+        id: String(pawn?.id ?? '').trim(),
+        label: String(pawn?.label ?? '').trim(),
+        feminine: Boolean(pawn?.feminine),
+      }))
+      .filter((pawn) => pawn.id.length > 0);
+    const pawns = availablePawns.length > 0 ? availablePawns : fallbackPawns;
+    if (!pawns.length) return state;
+
+    const pendingInfo = this.setupFlow.createSequentialPawnPending({
+      players,
+      startPlayerId:
+        typeof state.turn?.currentPlayerId === 'number'
+          ? state.turn.currentPlayerId
+          : (players[0]?.id ?? null),
+      isAssigned,
+      pawns,
+      pawnDataMapper: (choice: any) => ({
+        id: String(choice?.id ?? '').trim(),
+        label: String(choice?.label ?? '').trim(),
+        feminine: Boolean(choice?.feminine),
+      }),
+    });
+    if (!pendingInfo) return state;
+
+    const next: GameStateEntity = {
+      ...state,
+      pending: pendingInfo.pending,
+      turnIndex: pendingInfo.turnIndex,
+      turn: {
+        ...(state.turn ?? { direction: 1 }),
+        currentPlayerId: pendingInfo.playerId,
+        direction: 1,
+      },
+    };
+    return next;
   }
 
   private getTurnPolicies(): TurnPoliciesService {
