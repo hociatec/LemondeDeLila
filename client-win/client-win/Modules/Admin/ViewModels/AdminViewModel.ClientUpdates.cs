@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using client_win.Modules.Updates;
 
 namespace client_win.Modules.Admin.ViewModels;
 
@@ -60,6 +61,7 @@ public sealed partial class AdminViewModel
                 return;
             }
 
+            ClientUpdateNotifySuppression.SuppressFor(TimeSpan.FromSeconds(30));
             var (delivered, delaySeconds, scheduledAt) = await _admin
                 .ScheduleClientUpdateAsync(minutes, message)
                 .ConfigureAwait(true);

@@ -17,6 +17,7 @@ using client_win.Modules.Catalog.Views;
 using client_win.Modules.Network.Services;
 using client_win.Modules.Network.WebSockets;
 using client_win.Modules.Shell.Services;
+using client_win.Modules.Updates;
 using client_win.Modules.MainMenu.Views;
 using client_win.Modules.User.Services;
 using client_win.Modules.Notifications.Models;
@@ -474,6 +475,10 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 
             if (string.Equals(type, "client.update.available", StringComparison.OrdinalIgnoreCase))
             {
+                if (ClientUpdateNotifySuppression.IsActive())
+                {
+                    return;
+                }
                 var payload = root.TryGetProperty("payload", out var p) ? p : default;
                 var message = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("message", out var m)
                     ? (m.GetString() ?? string.Empty)
@@ -496,6 +501,10 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 
             if (string.Equals(type, "client.update.imminent", StringComparison.OrdinalIgnoreCase))
             {
+                if (ClientUpdateNotifySuppression.IsActive())
+                {
+                    return;
+                }
                 var payload = root.TryGetProperty("payload", out var p) ? p : default;
                 var message = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("message", out var m)
                     ? (m.GetString() ?? string.Empty)
@@ -519,6 +528,10 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 
             if (string.Equals(type, "client.update.required", StringComparison.OrdinalIgnoreCase))
             {
+                if (ClientUpdateNotifySuppression.IsActive())
+                {
+                    return;
+                }
                 var payload = root.TryGetProperty("payload", out var p) ? p : default;
                 var message = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("message", out var m)
                     ? (m.GetString() ?? string.Empty)
