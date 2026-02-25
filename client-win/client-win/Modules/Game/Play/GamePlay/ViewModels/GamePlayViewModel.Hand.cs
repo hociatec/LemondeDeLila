@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Game.Play.Actions.Dtos;
+using client_win.Modules.Game.Play.GamePlay.Dtos;
 using client_win.Modules.Game.Play.State.Dtos;
 using client_win.Modules.Game.Play.State.Services;
 

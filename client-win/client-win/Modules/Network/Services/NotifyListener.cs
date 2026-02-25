@@ -25,7 +25,6 @@ using client_win.Modules.Notifications.Services;
 using client_win.Modules.MainMenu.Services;
 using client_win.Modules.Notifications.Views;
 using client_win.Modules.Messaging.Views;
-using client_win.Modules.Updates;
 using client_win.Modules.Game.RoomDirectory.Services;
 using client_win.Modules.Game.Shell.Services;
 using Serilog;
