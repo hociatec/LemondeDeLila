@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Relation,
   Unique,
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
@@ -21,12 +22,12 @@ export class GameMatchPlayer {
   @ManyToOne(() => GameMatch, (m) => m.players, { eager: false })
   @JoinColumn({ name: 'match_id' })
   @Index('idx_game_match_players_match')
-  match!: GameMatch;
+  match!: Relation<GameMatch>;
 
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'user_id' })
   @Index('idx_game_match_players_user')
-  user!: User;
+  user!: Relation<User>;
 
   @Column({ type: 'varchar', length: 80 })
   username!: string;
