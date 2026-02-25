@@ -1,0 +1,268 @@
+{
+  "version": 1,
+  "tiles": [
+    {
+      "id": "case-1-entree",
+      "type": "start",
+      "label": "Entr\u00e9e du march\u00e9",
+      "description": "Vous voici \u00e0 l\u2019entr\u00e9e du march\u00e9. L\u2019air embaume les fruits et l\u00e9gumes frais, les \u00e9tals s\u2019\u00e9tendent devant vous."
+    },
+    {
+      "id": "case-2-stand-fruitier",
+      "type": "stand",
+      "standId": "fruitier",
+      "label": "Stand Fruitier",
+      "description": "Pommes, poires et p\u00eaches sont dispos\u00e9es en pyramides color\u00e9es. Piochez une carte Courses."
+    },
+    {
+      "id": "case-3-evenement",
+      "type": "event",
+      "label": "\u00c9v\u00e9nement",
+      "description": "Un impr\u00e9vu surgit dans le march\u00e9. Piochez une carte \u00c9v\u00e9nement et appliquez son effet."
+    },
+    {
+      "id": "case-4-stand-maraicher",
+      "type": "stand",
+      "standId": "maraicher",
+      "label": "Stand Mara\u00eecher",
+      "description": "Concombres, ma\u00efs et asperges fra\u00eeches brillent sous les lampes du march\u00e9. Piochez une carte Courses."
+    },
+    {
+      "id": "case-5-echange",
+      "type": "exchange",
+      "label": "\u00c9change",
+      "description": "Un marchand semble int\u00e9ress\u00e9 par les l\u00e9gumes de votre chariot. Il vous demande un ingr\u00e9dient qui lui ferait plaisir. Si vous l'avez dans votre inventaire, donnez-lui, sinon passez deux tours."
+    },
+    {
+      "id": "case-6-stand-bio",
+      "type": "stand",
+      "standId": "bio-fruits",
+      "label": "Stand Bio",
+      "description": "Tout est bio et parfum\u00e9. Piochez une carte Courses."
+    },
+    {
+      "id": "case-7-avance-1",
+      "type": "move",
+      "delta": 1,
+      "label": "Avanc\u00e9e",
+      "description": "Une all\u00e9e d\u00e9gag\u00e9e vous permet de vous rapprocher d\u2019un stand de votre choix."
+    },
+    {
+      "id": "case-8-stand-primeur",
+      "type": "stand",
+      "standId": "primeur",
+      "label": "Stand Primeur",
+      "description": "Jeunes pousses et herbes aromatiques \u00e9veillent vos sens. Piochez une carte Courses."
+    },
+    {
+      "id": "case-9-repos",
+      "type": "rest",
+      "label": "Repos",
+      "description": "Un marchand organise une d\u00e9gustation."
+    },
+    {
+      "id": "case-10-stand-fruits-exotiques",
+      "type": "stand",
+      "standId": "fruits-exotiques",
+      "label": "Stand Fruits Exotiques",
+      "description": "Mangues, papayes et kiwis vous invitent \u00e0 go\u00fbter. Piochez une carte Courses."
+    },
+    {
+      "id": "case-11-echange",
+      "type": "exchange",
+      "label": "\u00c9change",
+      "description": "Une opportunit\u00e9 d\u2019\u00e9changer se pr\u00e9sente. Piochez une carte \u00c9change et suivez son effet."
+    },
+    {
+      "id": "case-12-stand-legumes-racines",
+      "type": "stand",
+      "standId": "legumes-racines",
+      "label": "Stand L\u00e9gumes Racines",
+      "description": "Betteraves, radis et pommes de terre sont expos\u00e9s. Piochez une carte Courses."
+    },
+    {
+      "id": "case-13-recule-2",
+      "type": "move",
+      "delta": -2,
+      "label": "Recule",
+      "description": "Une all\u00e9e encombr\u00e9e vous oblige \u00e0 revenir en arri\u00e8re. Reculez de 2 cases."
+    },
+    {
+      "id": "case-14-stand-legumes-feuilles",
+      "type": "stand",
+      "standId": "legumes-feuilles",
+      "label": "Stand L\u00e9gumes Feuilles",
+      "description": "Salades, \u00e9pinards et blettes fra\u00eeches. Piochez une carte Courses."
+    },
+    {
+      "id": "case-15-mini-quiz",
+      "type": "quiz",
+      "label": "Mini Quiz",
+      "description": "Une question sur les fruits et l\u00e9gumes du march\u00e9 vous est pos\u00e9e."
+    },
+    {
+      "id": "case-16-stand-fruits-rouges",
+      "type": "stand",
+      "standId": "fruits-rouges",
+      "label": "Stand Fruits Rouges",
+      "description": "Fraises, framboises et cerises. Piochez une carte Courses."
+    },
+    {
+      "id": "case-17-evenement",
+      "type": "event",
+      "label": "\u00c9v\u00e9nement",
+      "description": "Un \u00e9tal est temporairement ferm\u00e9. Piochez une carte \u00c9v\u00e9nement et appliquez son effet."
+    },
+    {
+      "id": "case-18-stand-legumes-secs",
+      "type": "stand",
+      "standId": "legumes-secs",
+      "label": "Stand L\u00e9gumes Secs",
+      "description": "Pois chiches, lentilles et haricots secs. Piochez une carte Courses."
+    },
+    {
+      "id": "case-19-echange",
+      "type": "exchange",
+      "label": "\u00c9change",
+      "description": "\u00c9changez une carte avec un autre joueur. Piochez une carte \u00c9change et suivez son effet."
+    },
+    {
+      "id": "case-20-stand-bio",
+      "type": "stand",
+      "standId": "bio-legumes",
+      "label": "Stand Bio",
+      "description": "Oignons, courgettes et laitues bio. Piochez une carte Courses."
+    },
+    {
+      "id": "case-21-stand-au-choix",
+      "type": "move_choice",
+      "delta": 2,
+      "label": "Stand au choix",
+      "description": "Choisissez votre prochaine destination pour compl\u00e9ter votre panier efficacement. Choisissez : avancez ou reculez de 2 cases."
+    },
+    {
+      "id": "case-22-stand-primeur-special",
+      "type": "stand",
+      "standId": "primeur-special",
+      "label": "Stand Primeur Sp\u00e9cial",
+      "description": "C\u00e9leri-branche, fenouil et roquette. Piochez une carte Courses."
+    },
+    {
+      "id": "case-23-courses-supplementaires",
+      "type": "bonus_course",
+      "label": "Courses suppl\u00e9mentaires",
+      "description": "Une promotion sp\u00e9ciale vous permet d\u2019obtenir une carte en plus. Piochez une carte Courses bonus."
+    },
+    {
+      "id": "case-24-stand-agrumes",
+      "type": "stand",
+      "standId": "agrumes",
+      "label": "Stand des Agrumes",
+      "description": "Oranges, citrons et pamplemousses colorent le march\u00e9. Piochez une carte Courses."
+    },
+    {
+      "id": "case-25-repos",
+      "type": "rest",
+      "label": "Repos",
+      "description": "Vous profitez de l\u2019ombre d\u2019un \u00e9tal pour souffler un instant."
+    },
+    {
+      "id": "case-26-stand-fruits-secs",
+      "type": "stand",
+      "standId": "fruits-secs",
+      "label": "Stand Fruits Secs",
+      "description": "Amandes, noisettes et noix. Piochez une carte Courses."
+    },
+    {
+      "id": "case-27-troc-improvise",
+      "type": "exchange",
+      "label": "Troc improvis\u00e9",
+      "description": "\u00c9changez une carte avec un joueur voisin. Piochez une carte \u00c9change et suivez son effet."
+    },
+    {
+      "id": "case-28-stand-legumes-ete",
+      "type": "stand",
+      "standId": "legumes-ete",
+      "label": "Stand L\u00e9gumes d'\u00e9t\u00e9",
+      "description": "Tomates, aubergines et poivrons. Piochez une carte Courses."
+    },
+    {
+      "id": "case-29-meteo",
+      "type": "move",
+      "label": "M\u00e9t\u00e9o",
+      "description": "Un orage \u00e9clate soudainement. Reculez de 1 \u00e0 10 cases al\u00e9atoirement."
+    },
+    {
+      "id": "case-30-stand-fruits-hiver",
+      "type": "stand",
+      "standId": "fruits-hiver",
+      "label": "Stand Fruits d'hiver",
+      "description": "Kakis, coings et mandarines. Piochez une carte Courses."
+    },
+    {
+      "id": "case-31-echange",
+      "type": "exchange",
+      "label": "\u00c9change",
+      "description": "Une opportunit\u00e9 d\u2019\u00e9changer avec un autre joueur. Piochez une carte \u00c9change et suivez son effet."
+    },
+    {
+      "id": "case-32-stand-legumes-exotiques",
+      "type": "stand",
+      "standId": "legumes-exotiques",
+      "label": "Stand L\u00e9gumes Exotiques",
+      "description": "Patates douces, ignames et amarante. Piochez une carte Courses."
+    },
+    {
+      "id": "case-33-mini-quiz",
+      "type": "quiz",
+      "label": "Mini Quiz",
+      "description": "R\u00e9pondez correctement \u00e0 une question."
+    },
+    {
+      "id": "case-34-stand-champignons",
+      "type": "stand",
+      "standId": "champignons",
+      "label": "Stand des Champignons",
+      "description": "C\u00e8pes, champignons de Paris et pleurotes. Piochez une carte Courses."
+    },
+    {
+      "id": "case-35-energie",
+      "type": "move",
+      "delta": 2,
+      "label": "\u00c9nergie",
+      "description": "Une all\u00e9e d\u00e9gag\u00e9e vous donne un coup de boost. Avancez de 2 cases."
+    },
+    {
+      "id": "case-36-stand-primeur-hivernal",
+      "type": "stand",
+      "standId": "primeur-hivernal",
+      "label": "Stand Primeur Hivernal",
+      "description": "Choux, navets et topinambours. Piochez une carte Courses."
+    },
+    {
+      "id": "case-37-evenement",
+      "type": "event",
+      "label": "\u00c9v\u00e9nement",
+      "description": "Une situation inattendue survient. Piochez une carte \u00c9v\u00e9nement et appliquez son effet."
+    },
+    {
+      "id": "case-38-stand-maraicher-automne",
+      "type": "stand",
+      "standId": "maraicher-automne",
+      "label": "Stand Mara\u00eecher d'automne",
+      "description": "Fruits frais et color\u00e9s : figues, prunes et raisins. Piochez une carte Courses."
+    },
+    {
+      "id": "case-39-echange-libre",
+      "type": "exchange",
+      "label": "\u00c9change libre",
+      "description": "Proposez un \u00e9change selon votre strat\u00e9gie. Piochez une carte \u00c9change et suivez son effet."
+    },
+    {
+      "id": "case-40-repos",
+      "type": "rest",
+      "label": "Repos",
+      "description": "Vous atteignez une jolie fontaine au centre du march\u00e9. Vous soufflez un instant et planifiez vos prochains mouvements."
+    }
+  ]
+}

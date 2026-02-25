@@ -1,0 +1,10 @@
+﻿{
+  "code": "nawak",
+  "name": "Nawak !",
+  "minPlayers": 2,
+  "maxPlayers": 8,
+  "engine": "nawak",
+  "summary": "Choisissez les réponses les plus absurdes et faites voter les autres pour marquer des points.",
+  "category": "JeuxDePlateaux",
+  "subcategory": "VentsDansants"
+}

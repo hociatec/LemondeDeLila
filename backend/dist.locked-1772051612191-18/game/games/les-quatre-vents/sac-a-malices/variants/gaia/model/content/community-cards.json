@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "cards": [
+    {
+      "id": 1,
+      "text": "Tri des déchets réussi — Reçois 50 crédits verts."
+    },
+    {
+      "id": 2,
+      "text": "Participation à un atelier écologique — Avance de 2 cases."
+    },
+    {
+      "id": 3,
+      "text": "Jardin botanique fleuri — Reçois 100 crédits verts."
+    },
+    {
+      "id": 4,
+      "text": "Réduction de l’empreinte carbone — Tu peux éviter une taxe la prochaine fois."
+    },
+    {
+      "id": 5,
+      "text": "Banque verte te donne un prêt — Reçois 200 crédits verts."
+    },
+    {
+      "id": 6,
+      "text": "Projet zéro déchet validé — Avance jusqu’à “Projet zéro déchet”."
+    },
+    {
+      "id": 7,
+      "text": "Santé des océans améliorée — Reçois 150 crédits verts."
+    },
+    {
+      "id": 8,
+      "text": "Taxe sur les énergies fossiles — Paye 100 crédits verts."
+    },
+    {
+      "id": 9,
+      "text": "Protéger les animaux sauvages — Reçois 100 crédits verts."
+    },
+    {
+      "id": 10,
+      "text": "Journée sans voiture — Avance jusqu’à “Piste cyclable”."
+    },
+    {
+      "id": 11,
+      "text": "Gaspillage d’eau — Paye 50 crédits verts."
+    },
+    {
+      "id": 12,
+      "text": "Installation de composteurs — Reçois 50 crédits verts."
+    },
+    {
+      "id": 13,
+      "text": "Projet de reforestation — Avance à “Projet de reforestation”."
+    },
+    {
+      "id": 14,
+      "text": "Éducation environnementale — Reçois 100 crédits verts."
+    },
+    {
+      "id": 15,
+      "text": "Pollution sonore — Paye 50 crédits verts."
+    },
+    {
+      "id": 16,
+      "text": "Fermeture d’une usine polluante — Tous les joueurs reçoivent 50 crédits verts."
+    }
+  ]
+}

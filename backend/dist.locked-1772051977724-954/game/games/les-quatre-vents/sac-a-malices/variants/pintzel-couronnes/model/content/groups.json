@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "groups": [
+    {
+      "color": "Beige",
+      "properties": [
+        "Rue du Maroquin",
+        "Rue Mercière."
+      ],
+      "purchasePrice": 60,
+      "mortgage": 30,
+      "unmortgageCost": 33,
+      "rents": {
+        "base": 2,
+        "house1": 10,
+        "house2": 30,
+        "house3": 90,
+        "house4": 160,
+        "hotel": 250
+      },
+      "housePrice": 50,
+      "hotelPrice": 100
+    },
+    {
+      "color": "Bleu",
+      "properties": [
+        "Rue des Grandes Arcades",
+        "Rue des Hallebardes",
+        "Place Gutenberg."
+      ],
+      "purchasePrice": 100,
+      "mortgage": 50,
+      "unmortgageCost": 55,
+      "rents": {
+        "base": 6,
+        "house1": 30,
+        "house2": 90,
+        "house3": 270,
+        "house4": 400,
+        "hotel": 550
+      },
+      "housePrice": 50,
+      "hotelPrice": 100
+    },
+    {
+      "color": "Rose",
+      "properties": [
+        "Place du Marché-aux-Cochons-de-Lait",
+        "Place Kléber",
+        "Place Broglie."
+      ],
+      "purchasePrice": 140,
+      "mortgage": 70,
+      "unmortgageCost": 77,
+      "rents": {
+        "base": 10,
+        "house1": 50,
+        "house2": 150,
+        "house3": 450,
+        "house4": 625,
+        "hotel": 750
+      },
+      "housePrice": 100,
+      "hotelPrice": 200
+    },
+    {
+      "color": "Orange",
+      "properties": [
+        "Boulevard de la Victoire",
+        "Boulevard de Lyon",
+        "Boulevard de Nancy."
+      ],
+      "purchasePrice": 180,
+      "mortgage": 90,
+      "unmortgageCost": 99,
+      "rents": {
+        "base": 14,
+        "house1": 70,
+        "house2": 200,
+        "house3": 550,
+        "house4": 750,
+        "hotel": 950
+      },
+      "housePrice": 100,
+      "hotelPrice": 200
+    },
+    {
+      "color": "Rouge",
+      "properties": [
+        "Cathédrale Notre-Dame de Strasbourg",
+        "Maison Kammerzell."
+      ],
+      "purchasePrice": 220,
+      "mortgage": 110,
+      "unmortgageCost": 121,
+      "rents": {
+        "base": 18,
+        "house1": 90,
+        "house2": 250,
+        "house3": 700,
+        "house4": 875,
+        "hotel": 1050
+      },
+      "housePrice": 150,
+      "hotelPrice": 300
+    },
+    {
+      "color": "Jaune",
+      "properties": [
+        "Petite France",
+        "Parc de la Citadelle",
+        "Grand’Rue."
+      ],
+      "purchasePrice": 260,
+      "mortgage": 130,
+      "unmortgageCost": 143,
+      "rents": {
+        "base": 22,
+        "house1": 110,
+        "house2": 330,
+        "house3": 800,
+        "house4": 975,
+        "hotel": 1150
+      },
+      "housePrice": 150,
+      "hotelPrice": 300
+    },
+    {
+      "color": "Vert",
+      "properties": [
+        "Place Saint-Étienne",
+        "Ruelles de la Krutenau",
+        "Quartier des Tanneurs."
+      ],
+      "purchasePrice": 300,
+      "mortgage": 150,
+      "unmortgageCost": 165,
+      "rents": {
+        "base": 26,
+        "house1": 130,
+        "house2": 390,
+        "house3": 900,
+        "house4": 1100,
+        "hotel": 1275
+      },
+      "housePrice": 200,
+      "hotelPrice": 400
+    },
+    {
+      "color": "Violet",
+      "properties": [
+        "Quartier de la Robertsau",
+        "Musée Alsacien",
+        "Place de la Cathédrale."
+      ],
+      "purchasePrice": 350,
+      "mortgage": 175,
+      "unmortgageCost": 193,
+      "rents": {
+        "base": 35,
+        "house1": 175,
+        "house2": 500,
+        "house3": 1100,
+        "house4": 1300,
+        "hotel": 1500
+      },
+      "housePrice": 200,
+      "hotelPrice": 400
+    }
+  ]
+}

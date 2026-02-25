@@ -1,0 +1,469 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "VaultRoomSnapshotsService", {
+    enumerable: true,
+    get: function() {
+        return VaultRoomSnapshotsService;
+    }
+});
+const _common = require("@nestjs/common");
+const _typeorm = require("@nestjs/typeorm");
+const _typeorm1 = require("typeorm");
+const _crypto = require("crypto");
+const _vaultroomsnapshotentity = require("../entities/vault-room-snapshot.entity");
+const _roomservice = require("../../room/services/room.service");
+const _botservice = require("../../bot/services/bot.service");
+const _roombotentity = require("../../room/entities/room-bot.entity");
+const _gameengineservice = require("../../game/engine/services/game-engine.service");
+const _gameregistryservice = require("../../game/engine/services/game-registry.service");
+const _notificationservice = require("../../notification/services/notification.service");
+const _presenceservice = require("../../presence/services/presence.service");
+function _ts_decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+function _ts_metadata(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+function _ts_param(paramIndex, decorator) {
+    return function(target, key) {
+        decorator(target, key, paramIndex);
+    };
+}
+let VaultRoomSnapshotsService = class VaultRoomSnapshotsService {
+    async list(ownerUserId) {
+        const items = await this.snapshots.find({
+            where: {
+                ownerUserId
+            },
+            order: {
+                createdAt: 'DESC'
+            },
+            take: 50
+        });
+        return items.map((s)=>({
+                id: s.id,
+                name: s.name,
+                roomName: s.roomName,
+                gameType: s.gameType,
+                playersLabel: s.playersLabel,
+                createdAt: s.createdAt.toISOString()
+            }));
+    }
+    async delete(ownerUserId, snapshotId) {
+        const id = String(snapshotId ?? '').trim();
+        if (!id) throw new _common.BadRequestException('id requis');
+        const res = await this.snapshots.delete({
+            id,
+            ownerUserId
+        });
+        return (res.affected ?? 0) > 0;
+    }
+    async save(ownerUserId, roomId, snapshotId) {
+        if (!Number.isFinite(roomId) || roomId <= 0) {
+            throw new _common.BadRequestException('roomId invalide');
+        }
+        const payload = await this.rooms.getRoomPayload(roomId);
+        const isOwner = payload?.room?.owner?.id === ownerUserId;
+        const isPlayer = payload?.room?.players?.some((p)=>p?.id === ownerUserId);
+        if (!isOwner && !isPlayer) {
+            throw new _common.BadRequestException("Vous n'êtes pas sur cette table.");
+        }
+        if (!isOwner) {
+            throw new _common.BadRequestException('Seul le propriétaire de la table peut sauvegarder.');
+        }
+        const started = String(payload?.room?.status ?? '').toLowerCase() === 'started' || Boolean(payload?.room?.startedAt);
+        if (!started) {
+            throw new _common.BadRequestException('Sauvegarde impossible : la partie doit être démarrée.');
+        }
+        const gameType = String(payload?.room?.gameType ?? '').trim();
+        if (!gameType) {
+            throw new _common.BadRequestException('Type de jeu invalide');
+        }
+        const state = await this.engine.exportInternalState(roomId, gameType);
+        if (!state) {
+            throw new _common.BadRequestException("État de jeu introuvable (la table n'est peut-être pas démarrée).");
+        }
+        const gameName = String(this.registry.getHandler(gameType)?.displayName ?? '').trim() || gameType;
+        const dateFr = new Intl.DateTimeFormat('fr-FR', {
+            timeZone: 'Europe/Paris',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }).format(new Date());
+        const players = (payload.room.players ?? []).map((p)=>String(p?.username ?? '').trim()).filter((u)=>u.length > 0);
+        const playersShort = players.slice(0, 6).join(', ') + (players.length > 6 ? ', …' : '');
+        const name = `${gameName}, ${dateFr} (${playersShort || 'joueurs'})`.slice(0, 200);
+        const playersLabel = players.join(', ').slice(0, 255);
+        const snapshot = {
+            version: 1,
+            savedAt: new Date().toISOString(),
+            room: {
+                name: String(payload.room.name ?? '').trim() || `Table ${gameType}`,
+                isPrivate: Boolean(payload.room.isPrivate),
+                maxPlayers: Number(payload.room.maxPlayers ?? 4) || 4,
+                tableAmbienceSoundId: typeof payload.room?.tableAmbienceSoundId === 'string' ? String(payload.room.tableAmbienceSoundId).trim() || null : null
+            },
+            roster: {
+                ownerUserId: typeof payload.room.owner?.id === 'number' ? payload.room.owner.id : null,
+                players: (payload.room.players ?? []).map((p)=>({
+                        id: p.id,
+                        username: p.username
+                    })),
+                spectators: (payload.room.spectators ?? []).map((s)=>({
+                        id: s.id,
+                        username: s.username
+                    })),
+                bots: (payload.room.bots ?? []).map((b)=>({
+                        id: b.id,
+                        name: b.name
+                    }))
+            },
+            game: {
+                gameType,
+                state
+            }
+        };
+        // If a snapshot id is provided, update it (overwrite) instead of creating a new entry.
+        // Also: if the room was created by restoring a snapshot, always overwrite that original snapshot
+        // (prevents accidental duplicates if the client doesn't carry the id).
+        const requestedIdRaw = String(snapshotId ?? '').trim();
+        let requestedId = requestedIdRaw;
+        try {
+            const room = await this.rooms.requireRoomForOwnerAction(roomId, ownerUserId);
+            const restoredFrom = typeof room.restoredFromSnapshotId === 'string' ? String(room.restoredFromSnapshotId).trim() || '' : '';
+            const restoredOwner = typeof room.restoredOwnerUserId === 'number' ? Number(room.restoredOwnerUserId) : null;
+            if (!requestedId && restoredFrom && (restoredOwner === ownerUserId || restoredOwner == null)) {
+                // Only auto-overwrite if the snapshot exists for this owner.
+                // This prevents blocking saves when ownership was transferred to a different user.
+                const exists = await this.snapshots.findOne({
+                    where: {
+                        id: restoredFrom,
+                        ownerUserId
+                    },
+                    select: [
+                        'id'
+                    ]
+                });
+                if (exists) {
+                    requestedId = restoredFrom;
+                }
+            }
+        } catch  {
+        // best-effort (room may already be closing/deleted)
+        }
+        let entity;
+        if (requestedId) {
+            const existing = await this.snapshots.findOne({
+                where: {
+                    id: requestedId,
+                    ownerUserId
+                }
+            });
+            if (existing) {
+                existing.name = name;
+                existing.gameType = gameType;
+                existing.roomName = snapshot.room.name.slice(0, 255);
+                existing.playersLabel = playersLabel;
+                existing.snapshotJson = JSON.stringify(snapshot);
+                existing.createdAt = new Date();
+                entity = await this.snapshots.save(existing);
+            } else {
+                entity = this.snapshots.create({
+                    id: (0, _crypto.randomUUID)(),
+                    ownerUserId,
+                    name,
+                    gameType,
+                    roomName: snapshot.room.name.slice(0, 255),
+                    playersLabel,
+                    snapshotJson: JSON.stringify(snapshot),
+                    createdAt: new Date()
+                });
+                await this.snapshots.save(entity);
+            }
+        } else {
+            entity = this.snapshots.create({
+                id: (0, _crypto.randomUUID)(),
+                ownerUserId,
+                name,
+                gameType,
+                roomName: snapshot.room.name.slice(0, 255),
+                playersLabel,
+                snapshotJson: JSON.stringify(snapshot),
+                createdAt: new Date()
+            });
+            await this.snapshots.save(entity);
+        }
+        // Sauvegarde de table = "archiver et fermer" : tout le monde retourne à la taverne.
+        // Le RoomGateway enverra 'room.deleted' à tous les clients connectés.
+        await this.rooms.adminDestroyRoom(roomId);
+        return {
+            id: entity.id
+        };
+    }
+    async restore(ownerUserId, snapshotId) {
+        const id = String(snapshotId ?? '').trim();
+        if (!id) throw new _common.BadRequestException('id requis');
+        const entity = await this.snapshots.findOne({
+            where: {
+                id,
+                ownerUserId
+            }
+        });
+        if (!entity) {
+            throw new _common.BadRequestException('Sauvegarde introuvable');
+        }
+        const snapshot = this.parseSnapshot(entity.snapshotJson);
+        const humans = (snapshot.roster.players ?? []).filter((p)=>typeof p?.id === 'number' && p.id > 0);
+        if (humans.length === 0) {
+            throw new _common.BadRequestException('Sauvegarde invalide : aucun joueur');
+        }
+        const rosterHumans = this.uniqueUsers([
+            ...humans,
+            ...Number.isFinite(snapshot.roster.ownerUserId) ? [
+                {
+                    id: Number(snapshot.roster.ownerUserId),
+                    username: 'proprietaire'
+                }
+            ] : []
+        ]);
+        const notInTavern = rosterHumans.filter((p)=>!this.presence.isUserInTavern(p.id));
+        if (notInTavern.length > 0) {
+            throw new _common.BadRequestException(`Restauration impossible : joueurs absents de la taverne : ${notInTavern.map((p)=>String(p.username ?? `joueur ${p.id}`)).join(', ')}.`);
+        }
+        const unavailable = [];
+        for (const p of rosterHumans){
+            // The restorer can be "still attached" to a previous room record while
+            // already being back in tavern context. We allow restore for that user:
+            // createRoom/joinRoom will handle leaving prior rooms safely.
+            if (p.id === ownerUserId) continue;
+            const activeRoom = await this.rooms.findLatestActiveRoomForUser(p.id);
+            if (activeRoom?.roomId && activeRoom.roomId > 0) {
+                unavailable.push(String(p.username ?? `joueur ${p.id}`));
+            }
+        }
+        if (unavailable.length > 0) {
+            throw new _common.BadRequestException(`Restauration impossible : joueurs encore en table : ${unavailable.join(', ')}.`);
+        }
+        const gameType = snapshot.game.gameType;
+        const roomName = snapshot.room.name;
+        const created = await this.rooms.createRoom(ownerUserId, gameType, `${roomName} (restaurée)`, snapshot.room.maxPlayers, snapshot.room.isPrivate);
+        // Mark room as "restored from vault" (persisted) so we can clean it up on owner quit.
+        try {
+            const room = await this.rooms.requireRoomForOwnerAction(created.id, ownerUserId);
+            room.restoredFromSnapshotId = id;
+            room.restoredOwnerUserId = ownerUserId;
+            await this.rooms.saveRoom(room);
+        } catch  {
+        // best-effort
+        }
+        // Join all other human players.
+        for (const p of humans){
+            if (p.id === ownerUserId) continue;
+            await this.rooms.joinRoom(created.id, p.id, {
+                allowPrivate: snapshot.room.isPrivate
+            });
+        }
+        // Recreate bots + build id mapping.
+        const oldBots = snapshot.roster.bots ?? [];
+        const botIdMap = new Map();
+        for (const b of oldBots){
+            const added = await this.bots.addBotSystem(created.id);
+            // Preserve names when possible.
+            try {
+                const desired = String(b?.name ?? '').trim();
+                if (desired) {
+                    added.name = desired;
+                    await this.roomBots.save(added);
+                }
+            } catch  {
+            // best-effort
+            }
+            const oldPlayerId = -Math.abs(Number(b.id));
+            const newPlayerId = -Math.abs(Number(added.id));
+            botIdMap.set(oldPlayerId, newPlayerId);
+        }
+        // Restore table ambience.
+        try {
+            const room = await this.rooms.requireRoomForOwnerAction(created.id, ownerUserId);
+            room.tableAmbienceSoundId = snapshot.room.tableAmbienceSoundId;
+            await this.rooms.saveRoom(room);
+            await this.rooms.invalidateRoomPayloadCache(created.id);
+        } catch  {
+        // best-effort
+        }
+        // Start room (sets startedAt + runId).
+        const started = await this.rooms.startRoom(created.id, ownerUserId);
+        const startedAt = started.startedAt ? started.startedAt.toISOString() : null;
+        const runId = Number.isFinite(started.runId) ? started.runId : null;
+        const restored = this.remapState(snapshot.game.state, {
+            roomId: created.id,
+            roomOwnerId: ownerUserId,
+            roomStartedAt: startedAt,
+            roomRunId: runId,
+            botIdMap,
+            botNamesByNewId: new Map(Array.from(botIdMap.entries()).map(([_, newId])=>{
+                const old = oldBots.find((b)=>-Math.abs(Number(b.id)) === _);
+                return [
+                    newId,
+                    old?.name ?? 'Bot'
+                ];
+            }))
+        });
+        await this.engine.restoreInternalState(created.id, gameType, restored);
+        // Note: la restauration ne supprime pas la sauvegarde.
+        // L'utilisateur peut restaurer plusieurs fois ou supprimer manuellement.
+        // Notify players to open the restored table.
+        for (const p of humans){
+            await this.notifications.notifyUser(p.id, 'rooms.restore.ready', {
+                roomId: created.id,
+                roomName: `${roomName} (restaurée)`,
+                by: {
+                    id: ownerUserId
+                }
+            });
+        }
+        return {
+            roomId: created.id
+        };
+    }
+    /**
+   * Supprime une table créée via restauration (sans supprimer la sauvegarde).
+   * Utilisé quand le propriétaire quitte la table (Q) sans la re-sauvegarder,
+   * pour que la sauvegarde redevienne restaurable.
+   */ async abandonRestoredRoom(ownerUserId, roomId) {
+        const id = typeof roomId === 'number' && Number.isFinite(roomId) && roomId > 0 ? Math.floor(roomId) : 0;
+        if (id <= 0) {
+            throw new _common.BadRequestException('roomId invalide');
+        }
+        let snapshotId = null;
+        try {
+            const room = await this.rooms.requireRoomForOwnerAction(id, ownerUserId);
+            snapshotId = typeof room.restoredFromSnapshotId === 'string' ? String(room.restoredFromSnapshotId).trim() || null : null;
+            const restoredOwner = typeof room.restoredOwnerUserId === 'number' ? Number(room.restoredOwnerUserId) : null;
+            if (!snapshotId || restoredOwner !== ownerUserId) {
+                return false;
+            }
+        } catch  {
+            return false;
+        }
+        try {
+            await this.rooms.adminDestroyRoom(id);
+        } catch  {
+            return false;
+        }
+        return true;
+    }
+    parseSnapshot(raw) {
+        let parsed;
+        try {
+            parsed = JSON.parse(String(raw ?? ''));
+        } catch  {
+            throw new _common.BadRequestException('Sauvegarde corrompue (JSON invalide).');
+        }
+        if (!parsed || parsed.version !== 1) {
+            throw new _common.BadRequestException('Sauvegarde incompatible.');
+        }
+        return parsed;
+    }
+    remapState(state, opts) {
+        const replaceId = (value)=>{
+            if (typeof value === 'number' && opts.botIdMap.has(value)) {
+                return opts.botIdMap.get(value);
+            }
+            return value;
+        };
+        const deep = (value)=>{
+            if (value == null) return value;
+            if (typeof value === 'number') return replaceId(value);
+            if (typeof value === 'string') return value;
+            if (typeof value === 'boolean') return value;
+            if (Array.isArray(value)) return value.map(deep);
+            if (typeof value === 'object') {
+                const out = {};
+                for (const [k, v] of Object.entries(value)){
+                    const maybeId = Number(k);
+                    const key = Number.isFinite(maybeId) && opts.botIdMap.has(maybeId) ? String(opts.botIdMap.get(maybeId)) : k;
+                    out[key] = deep(v);
+                }
+                return out;
+            }
+            return value;
+        };
+        const cloned = deep(state);
+        cloned.status = 'started';
+        if (Array.isArray(state?.log)) {
+            cloned.log = deep(state.log);
+        }
+        // Patch core metadata.
+        const meta = typeof cloned.metadata === 'object' && cloned.metadata ? cloned.metadata : {};
+        meta.roomId = opts.roomId;
+        meta.roomOwnerId = opts.roomOwnerId;
+        meta.roomStartedAt = opts.roomStartedAt;
+        meta.roomRunId = opts.roomRunId;
+        cloned.metadata = meta;
+        // Patch players list: update bot ids + names.
+        if (Array.isArray(cloned.players)) {
+            cloned.players = cloned.players.map((p)=>{
+                const nextId = typeof p?.id === 'number' ? replaceId(p.id) : p?.id;
+                const nextName = typeof nextId === 'number' && nextId < 0 && opts.botNamesByNewId.has(nextId) ? opts.botNamesByNewId.get(nextId) : p?.username;
+                return {
+                    ...p,
+                    id: nextId,
+                    username: nextName
+                };
+            });
+        }
+        if (cloned.turn && typeof cloned.turn.currentPlayerId === 'number') {
+            cloned.turn = {
+                ...cloned.turn,
+                currentPlayerId: replaceId(cloned.turn.currentPlayerId)
+            };
+        }
+        return cloned;
+    }
+    uniqueUsers(users) {
+        const map = new Map();
+        for (const user of users){
+            if (!user || !Number.isFinite(user.id) || user.id <= 0) continue;
+            const id = Math.floor(user.id);
+            if (map.has(id)) continue;
+            const username = String(user.username ?? '').trim();
+            map.set(id, username || `joueur ${id}`);
+        }
+        return Array.from(map.entries()).map(([id, username])=>({
+                id,
+                username
+            }));
+    }
+    constructor(snapshots, roomBots, rooms, bots, engine, registry, notifications, presence){
+        this.snapshots = snapshots;
+        this.roomBots = roomBots;
+        this.rooms = rooms;
+        this.bots = bots;
+        this.engine = engine;
+        this.registry = registry;
+        this.notifications = notifications;
+        this.presence = presence;
+    }
+};
+VaultRoomSnapshotsService = _ts_decorate([
+    (0, _common.Injectable)(),
+    _ts_param(0, (0, _typeorm.InjectRepository)(_vaultroomsnapshotentity.VaultRoomSnapshotEntity)),
+    _ts_param(1, (0, _typeorm.InjectRepository)(_roombotentity.RoomBot)),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _typeorm1.Repository === "undefined" ? Object : _typeorm1.Repository,
+        typeof _typeorm1.Repository === "undefined" ? Object : _typeorm1.Repository,
+        typeof _roomservice.RoomService === "undefined" ? Object : _roomservice.RoomService,
+        typeof _botservice.BotService === "undefined" ? Object : _botservice.BotService,
+        typeof _gameengineservice.GameEngineService === "undefined" ? Object : _gameengineservice.GameEngineService,
+        typeof _gameregistryservice.GameRegistryService === "undefined" ? Object : _gameregistryservice.GameRegistryService,
+        typeof _notificationservice.NotificationService === "undefined" ? Object : _notificationservice.NotificationService,
+        typeof _presenceservice.PresenceService === "undefined" ? Object : _presenceservice.PresenceService
+    ])
+], VaultRoomSnapshotsService);
