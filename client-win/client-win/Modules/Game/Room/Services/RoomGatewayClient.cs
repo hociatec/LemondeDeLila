@@ -313,6 +313,14 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
     {
         if (socket == null) return;
 
+        // Never keep a disconnected/error socket in the warm pool.
+        if (socket.State is WebSocketState.Disconnected or WebSocketState.Error)
+        {
+            try { await socket.CloseAsync().ConfigureAwait(false); } catch { }
+            try { await socket.DisposeAsync().ConfigureAwait(false); } catch { }
+            return;
+        }
+
         var shouldKeep = false;
         await _warmGate.WaitAsync().ConfigureAwait(false);
         try
@@ -377,7 +385,15 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
 
         if (warm != null)
         {
-            return (warm, true);
+            if (warm.State is WebSocketState.Disconnected or WebSocketState.Error)
+            {
+                try { await warm.CloseAsync().ConfigureAwait(false); } catch { }
+                try { await warm.DisposeAsync().ConfigureAwait(false); } catch { }
+            }
+            else
+            {
+                return (warm, true);
+            }
         }
 
         var socket = _socketFactory();

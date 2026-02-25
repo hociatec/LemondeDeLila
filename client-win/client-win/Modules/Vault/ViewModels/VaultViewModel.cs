@@ -23,6 +23,8 @@ public sealed class VaultViewModel : ObservableObject, IDisposable, IShellConten
     private bool _isBusy;
     private bool _initialized;
     private bool _hasLoaded;
+    private bool _refreshPending;
+    private bool _disposed;
     private string _status = "Chargement du coffre fort…";
     private VaultSnapshotItem? _selected;
 
@@ -46,6 +48,7 @@ public sealed class VaultViewModel : ObservableObject, IDisposable, IShellConten
         CloseCommand = new RelayCommand(_close);
 
         Items.CollectionChanged += OnItemsChanged;
+        _vault.SnapshotsChanged += OnSnapshotsChanged;
     }
 
     private void OnItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -122,6 +125,9 @@ public sealed class VaultViewModel : ObservableObject, IDisposable, IShellConten
 
     public void Dispose()
     {
+        if (_disposed) return;
+        _disposed = true;
+        _vault.SnapshotsChanged -= OnSnapshotsChanged;
     }
 
     public async Task LoadAsync()
@@ -218,6 +224,29 @@ public sealed class VaultViewModel : ObservableObject, IDisposable, IShellConten
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private void OnSnapshotsChanged(object? sender, EventArgs e)
+    {
+        _ = RefreshAfterExternalChangeAsync();
+    }
+
+    private async Task RefreshAfterExternalChangeAsync()
+    {
+        if (_disposed || !_initialized) return;
+        if (IsBusy)
+        {
+            _refreshPending = true;
+            return;
+        }
+
+        await LoadAsync().ConfigureAwait(true);
+
+        if (_refreshPending)
+        {
+            _refreshPending = false;
+            await RefreshAfterExternalChangeAsync().ConfigureAwait(true);
         }
     }
 }

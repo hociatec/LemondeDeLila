@@ -283,6 +283,10 @@ export class VaultRoomSnapshotsService {
 
     const unavailable: string[] = [];
     for (const p of rosterHumans) {
+      // The restorer can be "still attached" to a previous room record while
+      // already being back in tavern context. We allow restore for that user:
+      // createRoom/joinRoom will handle leaving prior rooms safely.
+      if (p.id === ownerUserId) continue;
       const activeRoom = await this.rooms.findLatestActiveRoomForUser(p.id);
       if (activeRoom?.roomId && activeRoom.roomId > 0) {
         unavailable.push(String(p.username ?? `joueur ${p.id}`));

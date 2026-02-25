@@ -1,4 +1,4 @@
-import { Global, Module } from '@nestjs/common';
+import { Global, Module, forwardRef } from '@nestjs/common';
 import { GameCoreService } from './services/game-core.service';
 import { BoardModule } from '../modules/board/board.module';
 import { MovementModule } from '../modules/movement/movement.module';
@@ -22,7 +22,7 @@ import { VictoryModule } from '../modules/victory/victory.module';
     QuizModule,
     EffectsModule,
     BotModule,
-    TurnModule,
+    forwardRef(() => TurnModule),
     VictoryModule,
   ],
   providers: [GameCoreService],

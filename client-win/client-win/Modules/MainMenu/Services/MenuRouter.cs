@@ -243,14 +243,14 @@ public sealed class MenuRouter : IMenuRouter
         return Task.FromResult("Catalogue ouvert.");
     }
 
-    public Task<string> OpenVault()
+    public async Task<string> OpenVault()
     {
         _logger.LogInformation("Ouverture de Mon coffre fort");
 
         var previous = _navigation.CurrentContent;
         if (previous == null)
         {
-            return Task.FromResult("Impossible d'ouvrir Mon coffre fort (vue prÃ©cÃ©dente indisponible).");
+            return "Impossible d'ouvrir Mon coffre fort (vue prÃ©cÃ©dente indisponible).";
         }
 
         _vaultReturnContent = previous;
@@ -276,7 +276,18 @@ public sealed class MenuRouter : IMenuRouter
 
         SetPresenceContextForContent(_vaultVm);
         _navigation.Show(_vaultVm);
-        return Task.FromResult("Mon coffre fort ouvert.");
+        if (_vaultVm != null)
+        {
+            try
+            {
+                await _vaultVm.LoadAsync().ConfigureAwait(true);
+            }
+            catch
+            {
+                // best-effort: the view model already reports UI errors.
+            }
+        }
+        return "Mon coffre fort ouvert.";
     }
 
     public Task<string> OpenStats()
@@ -880,5 +891,4 @@ public sealed class MenuRouter : IMenuRouter
     }
 
 }
-
 

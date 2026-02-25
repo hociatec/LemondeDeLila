@@ -15,6 +15,7 @@ public sealed class VaultClient : IVaultClient
 {
     private readonly WsRequestClient _ws;
     private readonly ISessionService _session;
+    public event EventHandler? SnapshotsChanged;
 
     public VaultClient(WsRequestClient ws, ISessionService session)
     {
@@ -124,6 +125,7 @@ public sealed class VaultClient : IVaultClient
         {
             throw new InvalidOperationException("Sauvegarde impossible (id manquant).");
         }
+        NotifySnapshotsChanged();
         return id;
     }
 
@@ -165,7 +167,12 @@ public sealed class VaultClient : IVaultClient
             throw new InvalidOperationException(res.Error ?? "Suppression impossible.");
         }
 
-        return res.Payload?.Ok ?? false;
+        var ok = res.Payload?.Ok ?? false;
+        if (ok)
+        {
+            NotifySnapshotsChanged();
+        }
+        return ok;
     }
 
     public async Task<bool> AbandonAsync(int roomId, CancellationToken cancellationToken = default)
@@ -184,5 +191,17 @@ public sealed class VaultClient : IVaultClient
         }
 
         return res.Payload?.Ok ?? false;
+    }
+
+    private void NotifySnapshotsChanged()
+    {
+        try
+        {
+            SnapshotsChanged?.Invoke(this, EventArgs.Empty);
+        }
+        catch
+        {
+            // best-effort
+        }
     }
 }

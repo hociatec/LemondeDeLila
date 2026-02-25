@@ -1,0 +1,38 @@
+import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { GameCoreService } from '../../../../core/services/game-core.service';
+import { RandomService } from '../../../../modules/random/services/random.service';
+import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
+export declare class VoyageActionService {
+    private readonly random;
+    private readonly turns;
+    private readonly core;
+    private readonly deckPolicies;
+    constructor(random: RandomService, turns: TurnFlowService, core: GameCoreService, deckPolicies: DeckPoliciesService);
+    applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity;
+    private handleRoll;
+    private handleDraw;
+    private handleAnswerQuiz;
+    private handleChooseTarget;
+    private applyLanding;
+    private applyCard;
+    private applyGenericEffect;
+    private exchangeRandomCards;
+    private takeRandomCard;
+    private parseQuizCard;
+    private drawCard;
+    private discardDrawnCard;
+    private move;
+    private swapPositions;
+    private addSkip;
+    private incrementCollection;
+    private decrementCollection;
+    private loseRandomCard;
+    private advanceTurnWithCountdown;
+    private finishByScore;
+    private otherPlayers;
+    private getMeta;
+    private setLastTarget;
+    private pawnLabel;
+}
