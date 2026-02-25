@@ -11,16 +11,19 @@ internal sealed class GamePlayChoicesSubmission
     private readonly Func<GameSession, string, int, GameClientAction?> _tryBuildPendingAction;
     private readonly Func<GameSession, bool> _hasServerPendingChoices;
     private readonly Func<string, GameClientAction?> _tryGetLocalAction;
+    private readonly Func<GameClientAction, string?, Task<bool>>? _confirmBeforeSendAsync;
     private int _submitInProgress;
 
     internal GamePlayChoicesSubmission(
         Func<GameSession, string, int, GameClientAction?> tryBuildPendingAction,
         Func<GameSession, bool> hasServerPendingChoices,
-        Func<string, GameClientAction?> tryGetLocalAction)
+        Func<string, GameClientAction?> tryGetLocalAction,
+        Func<GameClientAction, string?, Task<bool>>? confirmBeforeSendAsync = null)
     {
         _tryBuildPendingAction = tryBuildPendingAction ?? throw new ArgumentNullException(nameof(tryBuildPendingAction));
         _hasServerPendingChoices = hasServerPendingChoices ?? throw new ArgumentNullException(nameof(hasServerPendingChoices));
         _tryGetLocalAction = tryGetLocalAction ?? throw new ArgumentNullException(nameof(tryGetLocalAction));
+        _confirmBeforeSendAsync = confirmBeforeSendAsync;
     }
 
     internal async Task<bool> SubmitAsync(
@@ -65,6 +68,15 @@ internal sealed class GamePlayChoicesSubmission
                 // 2) Choix locaux (sélecteurs) construits à partir des informations serveur (ex: discard_card, ask_card).
                 action = _tryGetLocalAction(choice);
                 if (action == null)
+                {
+                    return false;
+                }
+            }
+
+            if (_confirmBeforeSendAsync != null)
+            {
+                var confirmed = await _confirmBeforeSendAsync(action, choice).ConfigureAwait(false);
+                if (!confirmed)
                 {
                     return false;
                 }

@@ -93,10 +93,84 @@ public sealed partial class GamePlayViewModel
 
         if (!hasActionForCard)
         {
+            // Cat Pattes: play card directly if a matching play_card action exists.
+            var playActions = actions
+                .Where(action => string.Equals(action.Type, "play_card", StringComparison.OrdinalIgnoreCase))
+                .Where(action => TryExtractCardId(action.Payload, out var payloadCardId) &&
+                                 string.Equals(payloadCardId, card.CardId, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (playActions.Count == 1)
+            {
+                var chosen = playActions[0];
+                await session.SendActionsAsync(
+                        new[] { new GameClientAction(type: chosen.Type, payload: chosen.Payload) },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+                return true;
+            }
+
+            if (playActions.Count > 1)
+            {
+                var started = _choices.TryStartPlayCardSelection(
+                    state,
+                    card.CardId,
+                    card.Label,
+                    msg => MessageReceived?.Invoke(new GamePlayHistoryMessage(msg)));
+                return started;
+            }
+
             return false;
         }
 
         await TrySendActionAsync("select_card", new { cardId = card.CardId }, cancellationToken).ConfigureAwait(false);
+        return true;
+    }
+
+    public async Task<bool> DiscardSelectedHandCardAsync(CancellationToken cancellationToken = default)
+    {
+        if (_isSpectator)
+        {
+            return false;
+        }
+
+        var session = _session;
+        if (session == null || !session.IsConnected)
+        {
+            return false;
+        }
+
+        var card = GetSelectedHandCard();
+        if (card == null || card.Disabled)
+        {
+            return false;
+        }
+
+        var state = session.LastState;
+        if (state == null)
+        {
+            return false;
+        }
+
+        var actions = state.Actions ?? new List<GameAvailableActionDto>();
+        var discardAction = actions.FirstOrDefault(action =>
+            string.Equals(action.Type, "discard_card", StringComparison.OrdinalIgnoreCase) &&
+            TryExtractCardId(action.Payload, out var payloadCardId) &&
+            string.Equals(payloadCardId, card.CardId, StringComparison.OrdinalIgnoreCase));
+
+        if (discardAction == null || string.IsNullOrWhiteSpace(discardAction.Type))
+        {
+            return false;
+        }
+
+        var clientAction = new GameClientAction(type: discardAction.Type, payload: discardAction.Payload);
+        var confirmed = await ConfirmDiscardIfNeededAsync(clientAction, card.Label).ConfigureAwait(true);
+        if (!confirmed)
+        {
+            return true; // handled (user canceled)
+        }
+
+        await session.SendActionsAsync(new[] { clientAction }, cancellationToken).ConfigureAwait(false);
         return true;
     }
 

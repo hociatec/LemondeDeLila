@@ -333,6 +333,30 @@ public partial class GamePlayView
         }
         var isFinishedState = IsGameFinished(vm);
 
+        if (!isFinishedState &&
+            (Keyboard.Modifiers & (ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Windows)) == ModifierKeys.None &&
+            e.Key == Key.D &&
+            !vm.Grid.IsVisible &&
+            HandList.IsVisible &&
+            HandList.Items.Count > 0 &&
+            string.Equals(vm.GameId, "cat-pattes", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                var handled = await vm.DiscardSelectedHandCardAsync(CancellationToken.None).ConfigureAwait(true);
+                if (handled)
+                {
+                    e.Handled = true;
+                    NoteHandSubmittedForFocusRestore();
+                    return;
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
         // UX clavier (ex: LAMA) : la main extra (pas les choix de pending) prend la prioritÃ©.
         if ((e.Key == Key.Enter || e.Key == Key.Return) &&
             !isFinishedState &&

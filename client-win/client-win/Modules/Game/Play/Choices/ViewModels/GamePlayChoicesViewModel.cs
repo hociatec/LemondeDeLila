@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Core;
@@ -20,7 +23,9 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
     private int _selectedChoiceIndex = -1;
     private string _choicesLabel = string.Empty;
 
-    public GamePlayChoicesViewModel(GamePlayActionDispatcher actions)
+    public GamePlayChoicesViewModel(
+        GamePlayActionDispatcher actions,
+        Func<GameClientAction, string?, Task<bool>>? confirmBeforeSendAsync = null)
     {
         _actions = actions ?? throw new ArgumentNullException(nameof(actions));
         _list = new GamePlayChoicesListController(
@@ -34,7 +39,8 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
                 return _actions.TryBuildPendingChoiceAction(session, choice, index, out var action) ? action : null;
             },
             hasServerPendingChoices: session => (session.LastState?.Pending?.Choices?.Count ?? 0) > 0,
-            tryGetLocalAction: choice => _localChoices.TryGetAction(choice, out var action) ? action : null);
+            tryGetLocalAction: choice => _localChoices.TryGetAction(choice, out var action) ? action : null,
+            confirmBeforeSendAsync: confirmBeforeSendAsync);
     }
 
     public ObservableCollection<string> PendingChoices { get; } = new();
@@ -84,6 +90,78 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
         return _sync.TryStartAskSelection(state, announce, setLabel: s => ChoicesLabel = s);
     }
 
+    public bool TryStartPlayCardSelection(
+        GameStateDto state,
+        string cardId,
+        string? cardLabel,
+        Action<string> announce)
+    {
+        if (state == null || string.IsNullOrWhiteSpace(cardId))
+        {
+            return false;
+        }
+
+        var actions = state.Actions ?? new List<GameAvailableActionDto>();
+        if (actions.Count == 0)
+        {
+            return false;
+        }
+
+        var candidates = actions
+            .Where(a => string.Equals(a.Type, "play_card", StringComparison.OrdinalIgnoreCase))
+            .Where(a => TryExtractCardId(a.Payload, out var payloadCardId) &&
+                        string.Equals(payloadCardId, cardId, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        if (candidates.Count <= 1)
+        {
+            return false;
+        }
+
+        var namesById = new Dictionary<int, string>();
+        foreach (var player in state.Players ?? new List<GamePlayerDto>())
+        {
+            if (player == null) continue;
+            var name = (player.Username ?? string.Empty).Trim();
+            if (name.Length == 0)
+            {
+                name = $"Joueur {player.Id}";
+            }
+            namesById[player.Id] = name;
+        }
+
+        var choices = new Dictionary<string, GameClientAction>(StringComparer.Ordinal);
+        foreach (var action in candidates)
+        {
+            var label = "Jouer";
+            if (TryExtractTargetPlayerId(action.Payload, out var targetId))
+            {
+                var name = namesById.TryGetValue(targetId, out var targetName)
+                    ? targetName
+                    : $"Joueur {targetId}";
+                label = $"Sur {name}";
+            }
+
+            var key = ChoiceLabelUniquifier.MakeUniqueChoiceLabel(choices, label);
+            choices[key] = new GameClientAction(action.Type, action.Payload);
+        }
+
+        if (choices.Count == 0)
+        {
+            return false;
+        }
+
+        _localChoices.Set("play_card", choices);
+        _list.Apply(choices.Keys.ToList());
+
+        var labelText = string.IsNullOrWhiteSpace(cardLabel)
+            ? "Choisissez une cible dans la liste, puis Entrée."
+            : $"Choisissez une cible pour {cardLabel}, puis Entrée.";
+        ChoicesLabel = labelText;
+        announce(labelText);
+        return true;
+    }
+
     public bool HasDiscardChoices(GameStateDto? state) => GamePlayChoiceBuilder.HasDiscardChoices(state);
 
     public void ClearLocalChoices(bool onlyWhenNoServerPending, GameSession session)
@@ -101,5 +179,57 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
             }
         }
         _list.Clear();
+    }
+
+    private static bool TryExtractCardId(JsonElement payload, out string cardId)
+    {
+        cardId = string.Empty;
+        if (payload.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        if (!payload.TryGetProperty("cardId", out var candidate) ||
+            candidate.ValueKind != JsonValueKind.String)
+        {
+            return false;
+        }
+
+        var value = candidate.GetString();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        cardId = value.Trim();
+        return true;
+    }
+
+    private static bool TryExtractTargetPlayerId(JsonElement payload, out int targetPlayerId)
+    {
+        targetPlayerId = 0;
+        if (payload.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        if (!payload.TryGetProperty("targetPlayerId", out var candidate))
+        {
+            return false;
+        }
+
+        if (candidate.ValueKind == JsonValueKind.Number && candidate.TryGetInt32(out var asInt))
+        {
+            targetPlayerId = asInt;
+            return true;
+        }
+
+        if (candidate.ValueKind == JsonValueKind.String && int.TryParse(candidate.GetString(), out var parsed))
+        {
+            targetPlayerId = parsed;
+            return true;
+        }
+
+        return false;
     }
 }

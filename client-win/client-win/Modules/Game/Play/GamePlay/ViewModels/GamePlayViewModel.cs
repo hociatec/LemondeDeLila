@@ -123,7 +123,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         _endgameSounds = new GamePlayEndgameSoundPlayer(sounds ?? throw new ArgumentNullException(nameof(sounds)));
         _diceSounds = new GamePlayDiceSoundPlayer(sounds ?? throw new ArgumentNullException(nameof(sounds)));
         _logSounds = new GamePlayLogSoundPlayer(sounds ?? throw new ArgumentNullException(nameof(sounds)));
-        _choices = new GamePlayChoicesViewModel(_actions);
+        _choices = new GamePlayChoicesViewModel(_actions, ConfirmDiscardIfNeededAsync);
         _choicesPropertyChangedHandler = (_, e) =>
         {
             if (string.Equals(e.PropertyName, nameof(GamePlayChoicesViewModel.ChoicesLabel), StringComparison.Ordinal))
@@ -244,6 +244,41 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private void RequestGameZoneFocus(GameFocusReason reason)
     {
         GameZoneFocusRequested?.Invoke(reason);
+    }
+
+    private async Task<bool> ConfirmDiscardIfNeededAsync(
+        GameClientAction action,
+        string? choiceLabel)
+    {
+        if (action == null)
+        {
+            return false;
+        }
+
+        var type = (action.Type ?? string.Empty).Trim();
+        if (!string.Equals(type, "discard_card", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // Only prompt for Cat Pattes to avoid altering behavior across all games.
+        if (!string.Equals(GameId, "cat-pattes", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var label = (choiceLabel ?? string.Empty).Trim();
+        var message = string.IsNullOrWhiteSpace(label)
+            ? "Défausser cette carte ?"
+            : $"Défausser {label} ?";
+
+        var confirmed = await _dialogs.Confirm(
+            title: "Défausser",
+            message: message,
+            okText: "Oui",
+            cancelText: "Non").ConfigureAwait(true);
+
+        return confirmed == true;
     }
 
     public bool HasPendingTextPrompt => _pendingTextPrompt != null;

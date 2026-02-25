@@ -164,6 +164,24 @@ internal static class GamePlayExtrasParser
                 return cards;
             }
 
+            var handIds = new List<string>();
+            if (state.Extras.TryGetProperty("handIds", out var handIdsNode) &&
+                handIdsNode.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var idNode in handIdsNode.EnumerateArray())
+                {
+                    if (idNode.ValueKind == JsonValueKind.String)
+                    {
+                        var value = (idNode.GetString() ?? string.Empty).Trim();
+                        handIds.Add(value);
+                    }
+                    else
+                    {
+                        handIds.Add(string.Empty);
+                    }
+                }
+            }
+
             var index = 0;
             foreach (var item in handNode.EnumerateArray())
             {
@@ -178,14 +196,21 @@ internal static class GamePlayExtrasParser
                     var text = (item.GetString() ?? string.Empty).Trim();
                     if (text.Length == 0)
                     {
+                        index++;
                         continue;
                     }
-                    cardId = text;
+                    var idFallback = index < handIds.Count ? handIds[index] : string.Empty;
+                    cardId = !string.IsNullOrWhiteSpace(idFallback) ? idFallback : text;
                     label = text;
                 }
                 else if (item.ValueKind == JsonValueKind.Object)
                 {
                     cardId = GetString(item, "id");
+                    if (string.IsNullOrWhiteSpace(cardId))
+                    {
+                        var idFallback = index < handIds.Count ? handIds[index] : string.Empty;
+                        cardId = !string.IsNullOrWhiteSpace(idFallback) ? idFallback : null;
+                    }
                     label = GetString(item, "label") ?? string.Empty;
                     color = GetString(item, "color");
                     family = GetString(item, "family") ?? GetString(item, "familyId");
@@ -209,6 +234,7 @@ internal static class GamePlayExtrasParser
 
                 if (string.IsNullOrWhiteSpace(label))
                 {
+                    index++;
                     continue;
                 }
 
