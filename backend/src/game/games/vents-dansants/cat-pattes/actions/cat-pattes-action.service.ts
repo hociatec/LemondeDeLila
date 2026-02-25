@@ -325,6 +325,7 @@ export class CatPattesActionService {
         return state;
     }
 
+    const hadObstacle = Boolean(meta.obstacles?.[currentId]);
     let updatedMeta = this.removeCardFromHand(meta, currentId, cardId);
     updatedMeta = this.addCardToDiscard(updatedMeta, cardId);
     let next = this.setMeta(state, updatedMeta);
@@ -348,6 +349,16 @@ export class CatPattesActionService {
 
     if (this.getMeta(next).winnerId != null) {
       return this.clearDrawn(next);
+    }
+
+    // Règle: si un Pouvoir est joué en réponse à un obstacle, le joueur rejoue immédiatement.
+    // Interprétation: si un obstacle est actif au moment où le Pouvoir est joué, on conserve le tour.
+    if (definition.type === 'bot' && hadObstacle) {
+      const withLog = this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, currentId)} rejoue immédiatement grâce au Pouvoir.`,
+      );
+      return this.clearDrawn(withLog);
     }
 
     next = this.clearDrawn(next);
@@ -499,10 +510,10 @@ export class CatPattesActionService {
     }
     bots[playerId] = playerBots;
     let next = this.setMeta(state, { ...meta, bots });
-    next = this.core.appendLog(
-      next,
-      `${resolvePlayerNameFromState(next, playerId)} active ${card.name}.`,
-    );
+      next = this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, playerId)} active ${card.name} (Pouvoir).`,
+      );
     return next;
   }
 
