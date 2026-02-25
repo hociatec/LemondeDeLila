@@ -1,0 +1,30 @@
+import type { GameStateEntity } from '../../../core/entities/game-state.entity';
+import type { GameSingleActionDto, GameStateWithActions } from '../../../engine/dto/game-action.dto';
+import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
+import type { GameShortcutHint, GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
+import { PimpMyRideActionService } from './actions/pimp-my-ride-action.service';
+import { PimpMyRidePresenterService } from './presenter/pimp-my-ride-presenter.service';
+import { PimpMyRideSetupService } from './setup/pimp-my-ride-setup.service';
+import { PimpMyRideBotService } from './bots/pimp-my-ride-bot.service';
+export declare class PimpMyRideService extends AbstractGameService {
+    private readonly setup;
+    private readonly actions;
+    private readonly presenter;
+    private readonly bots;
+    readonly gameType = "pimp-my-ride";
+    readonly category = "JeuxDePlateaux";
+    readonly subcategory = "VentsDansants";
+    readonly displayName: string;
+    readonly description = "Soyez le premier \u00E0 construire trois voitures compl\u00E8tes en respectant l\u2019ordre de construction classique.";
+    readonly minPlayers: number;
+    readonly maxPlayers: number;
+    constructor(registry: GameRegistryService, setup: PimpMyRideSetupService, actions: PimpMyRideActionService, presenter: PimpMyRidePresenterService, bots: PimpMyRideBotService);
+    hydrateInitialState(baseState: GameStateEntity): GameStateEntity;
+    applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity;
+    getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[];
+    validateAction(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameSingleActionDto;
+    exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions;
+    getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[];
+    getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[];
+}

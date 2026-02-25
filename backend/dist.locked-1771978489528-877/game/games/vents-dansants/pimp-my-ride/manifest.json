@@ -1,0 +1,8 @@
+﻿{
+  "code": "pimp-my-ride",
+  "name": "Pimp My Ride",
+  "minPlayers": 2,
+  "maxPlayers": 6,
+  "engine": "pimp-my-ride",
+  "summary": "Assemble trois voitures complètes en suivant l’ordre de construction et en collectionnant les pièces les plus folles."
+}

@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows;
+using System.Windows.Threading;
 using client_win.Core;
 using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Shell.Services;
@@ -229,7 +231,16 @@ public sealed class VaultViewModel : ObservableObject, IDisposable, IShellConten
 
     private void OnSnapshotsChanged(object? sender, EventArgs e)
     {
-        _ = RefreshAfterExternalChangeAsync();
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher == null || dispatcher.CheckAccess())
+        {
+            _ = RefreshAfterExternalChangeAsync();
+            return;
+        }
+
+        _ = dispatcher.BeginInvoke(
+            DispatcherPriority.Background,
+            new Action(() => _ = RefreshAfterExternalChangeAsync()));
     }
 
     private async Task RefreshAfterExternalChangeAsync()

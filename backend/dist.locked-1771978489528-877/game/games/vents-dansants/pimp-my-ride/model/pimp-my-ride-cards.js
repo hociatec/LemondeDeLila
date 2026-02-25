@@ -1,0 +1,847 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PIMP_MY_RIDE_CAR_NAMES = exports.PIMP_MY_RIDE_CARD_BY_ID = exports.PIMP_MY_RIDE_DECK = exports.PIMP_MY_RIDE_CATEGORY_ORDER = void 0;
+exports.PIMP_MY_RIDE_CATEGORY_ORDER = [
+    'carrosserie',
+    'roues',
+    'moteur',
+    'volant',
+    'sieges',
+    'phares',
+    'accessoires',
+];
+const cards = [
+    {
+        id: 'pimp-carrosserie-1',
+        name: 'Ford Mustang – Américaine (muscle car)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-carrosserie-2',
+        name: 'Toyota Supra – Japonaise (sportive)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-carrosserie-3',
+        name: 'Renault Clio – Française (citadine élégante)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-carrosserie-4',
+        name: 'Seat Ibiza – Espagnole (citadine fun)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-carrosserie-5',
+        name: 'Mercedes Classe E – Allemande (berline haut de gamme)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-carrosserie-6',
+        name: 'Mini Cooper – Anglaise (compacte classique)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-carrosserie-7',
+        name: 'Ferrari Portofino – Italienne (roadster de luxe)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-carrosserie-8',
+        name: 'Volvo XC90 – Suédoise (SUV, sûr et robuste)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-carrosserie-9',
+        name: 'Holden Colorado – Australienne (pick-up tout-terrain)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-carrosserie-10',
+        name: 'Chevrolet Onix – Brésilienne (citadine colorée)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-carrosserie-11',
+        name: 'Lada Niva – Russe (4x4 robuste)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-carrosserie-12',
+        name: 'BYD Dolphin – Chinoise (citadine électrique)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-carrosserie-13',
+        name: 'Hyundai Ioniq – Coréenne (citadine futuriste)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-carrosserie-14',
+        name: 'Tata Nano – Indienne (mini car économique)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-carrosserie-15',
+        name: 'Monteverdi Hai 450 – Suisse (sportive de luxe)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-carrosserie-16',
+        name: 'Venturi Fétish – Monégasque (sportive électrique)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-carrosserie-17',
+        name: 'Polestar 2 – Norvégienne (électrique élégante)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-carrosserie-18',
+        name: 'Dacia Spring – Roumaine (citadine électrique compacte)',
+        category: 'carrosserie',
+    },
+    {
+        id: 'pimp-roues-19',
+        name: 'Roues classiques (stables et fiables)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-roues-20',
+        name: 'Roues sport (rapides et dynamiques)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-roues-21',
+        name: 'Roues multicolores (amusantes et pétillantes)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-roues-22',
+        name: 'Roues lumineuses (clignotantes et rigolotes)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-roues-23',
+        name: 'Roues à motifs (étoiles, rayures ou pois)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-roues-24',
+        name: 'Roues farfelues (formes inattendues et amusantes)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-roues-25',
+        name: 'Roues futuristes (transparentes et originales)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-roues-26',
+        name: 'Roues gonflables (souples et légères)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-roues-27',
+        name: 'Roues rebondissantes (amusantes et dynamiques)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-roues-28',
+        name: 'Roues disco (colorées et clignotantes)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-roues-29',
+        name: 'Roues vintage (style ancien et charmant)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-roues-30',
+        name: 'Roues phosphorescentes (brillent dans le noir)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-roues-31',
+        name: 'Roues musicales (vibrent et font du bruit)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-roues-32',
+        name: 'Roues miniatures (petites et rigolotes)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-roues-33',
+        name: 'Roues géantes (imposantes et spectaculaires)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-roues-34',
+        name: 'Roues surprise (effets imprévus et amusants)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-roues-35',
+        name: 'Roues électriques (brillantes et modernes)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-roues-36',
+        name: 'Roues fantaisie (formes et couleurs originales)',
+        category: 'roues',
+    },
+    {
+        id: 'pimp-moteur-37',
+        name: 'Moteur V6 (puissant et fiable)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-moteur-38',
+        name: 'Moteur V8 (rapide et nerveux)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-moteur-39',
+        name: 'Moteur électrique (silencieux et futuriste)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-moteur-40',
+        name: 'Moteur hybride (efficace et écologique)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-moteur-41',
+        name: 'Moteur diesel (robuste et endurant)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-moteur-42',
+        name: 'Moteur turbo (vif et énergique)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-moteur-43',
+        name: 'Moteur à explosion (imprévisible et bruyant)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-moteur-44',
+        name: 'Moteur rotatif (original et surprenant)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-moteur-45',
+        name: 'Moteur de course (rapide et pétillant)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-moteur-46',
+        name: 'Moteur miniature (rigolo et compact)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-moteur-47',
+        name: 'Moteur ancien (nostalgique et charmant)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-moteur-48',
+        name: 'Moteur surpuissant (extrême et impressionnant)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-moteur-49',
+        name: 'Moteur farfelu (bruits amusants et imprévus)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-moteur-50',
+        name: 'Moteur silencieux (discret et élégant)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-moteur-51',
+        name: 'Moteur futuriste (brillant et innovant)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-moteur-52',
+        name: 'Moteur gonflable (absurde et amusant)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-moteur-53',
+        name: 'Moteur musical (fait vibrer au rythme de la musique)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-moteur-54',
+        name: 'Moteur surprise (effets imprévus et rigolos)',
+        category: 'moteur',
+    },
+    {
+        id: 'pimp-volant-55',
+        name: 'Volant classique (fiable et simple)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-volant-56',
+        name: 'Volant sport (rapide et nerveux)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-volant-57',
+        name: 'Volant lumineux (clignotant et coloré)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-volant-58',
+        name: 'Volant en bois sculpté (élégant et charmant)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-volant-59',
+        name: 'Volant farfelu (avec boutons qui font des sons bizarres)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-volant-60',
+        name: 'Volant transparent (futuriste et mystérieux)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-volant-61',
+        name: 'Volant miniature (tout petit et rigolo)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-volant-62',
+        name: 'Volant géant (imposant et spectaculaire)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-volant-63',
+        name: 'Volant donut (sucré et amusant)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-volant-64',
+        name: 'Volant tactile (vibre à chaque mouvement)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-volant-65',
+        name: 'Volant multicolore (arc-en-ciel et joyeux)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-volant-66',
+        name: 'Volant volant (avec petites ailes décoratives)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-volant-67',
+        name: 'Volant à boutons farceurs (petits sons imprévisibles)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-volant-68',
+        name: 'Volant rétro (style ancien, nostalgique)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-volant-69',
+        name: 'Volant électrique (brillant et moderne)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-volant-70',
+        name: 'Volant musical (joue un air quand on tourne)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-volant-71',
+        name: 'Volant coussiné (extra confortable)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-volant-72',
+        name: 'Volant surprise (effets inattendus et rigolos)',
+        category: 'volant',
+    },
+    {
+        id: 'pimp-sieges-73',
+        name: 'Sièges classiques (confortables et stables)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-sieges-74',
+        name: 'Sièges sport (serrés et dynamiques)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-sieges-75',
+        name: 'Sièges en velours (douillets et élégants)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-sieges-76',
+        name: 'Sièges multicolores (amusants et pétillants)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-sieges-77',
+        name: 'Sièges rigolos (formes originales et farfelues)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-sieges-78',
+        name: 'Sièges chauffants (chaleureux et confortables)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-sieges-79',
+        name: 'Sièges gonflables (souples et légers)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-sieges-80',
+        name: 'Sièges lumineux (avec LED intégrées)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-sieges-81',
+        name: 'Sièges en forme d’animaux (panda, chat, lapin…)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-sieges-82',
+        name: 'Sièges flottants (comme sur un nuage)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-sieges-83',
+        name: 'Sièges musicaux (vibrent au rythme de la musique)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-sieges-84',
+        name: 'Sièges rétro (style ancien et charmant)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-sieges-85',
+        name: 'Sièges avec appuie-tête farfelu (formes bizarres)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-sieges-86',
+        name: 'Sièges à ressorts (rebondissants et amusants)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-sieges-87',
+        name: 'Sièges en fourrure synthétique (doux et cocooning)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-sieges-88',
+        name: 'Sièges escamotables (qui se replient rigolotement)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-sieges-89',
+        name: 'Sièges à motifs rigolos (dessins et couleurs folles)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-sieges-90',
+        name: 'Sièges surprise (effets imprévisibles et amusants)',
+        category: 'sieges',
+    },
+    {
+        id: 'pimp-phares-91',
+        name: 'Phares classiques (clairs et fiables)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-phares-92',
+        name: 'Phares lumineux (brillants et éclatants)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-phares-93',
+        name: 'Phares disco (colorés et clignotants)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-phares-94',
+        name: 'Phares farfelus (formes rigolotes et inattendues)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-phares-95',
+        name: 'Phares lasers (futuristes et impressionnants)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-phares-96',
+        name: 'Phares flottants (léger effet magique)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-phares-97',
+        name: 'Phares multicolores (arc-en-ciel à chaque nuit)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-phares-98',
+        name: 'Phares vintage (style ancien et charmant)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-phares-99',
+        name: 'Phares phosphorescents (brillent dans le noir)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-phares-100',
+        name: 'Phares clignotants rapides (effet fou et amusant)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-phares-101',
+        name: 'Phares en forme de cœur (romantiques et drôles)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-phares-102',
+        name: 'Phares à motifs (étoiles, rayures ou pois)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-phares-103',
+        name: 'Phares lumineux et sonores (amusants et interactifs)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-phares-104',
+        name: 'Phares en forme de soleil (rayonnants et joyeux)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-phares-105',
+        name: 'Phares holographiques (futuristes et colorés)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-phares-106',
+        name: 'Phares surprise (effets inattendus et amusants)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-phares-107',
+        name: 'Phares à LED farfelus (formes bizarres et ludiques)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-phares-108',
+        name: 'Phares mini projecteurs (illuminent le sol de motifs rigolos)',
+        category: 'phares',
+    },
+    {
+        id: 'pimp-accessoires-109',
+        name: 'Rubans de fête sur les rétros (colorés et flottants)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-110',
+        name: 'Aileron avec guirlande de Noël (festif et brillant)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-111',
+        name: 'Papillon de feutre pailleté sur l’antenne radio (magique et scintillant)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-112',
+        name: 'Claxon trompette jouant la Zumba (amusant et bruyant)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-113',
+        name: 'Autocollant chat tirant la langue sur le pare-brise arrière (mignon et rigolo)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-114',
+        name: 'Bouquet de ballons à l’hélium au-dessus de la voiture (léger et flottant)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-115',
+        name: 'Chapeau de clown sur le toit (absurde et drôle)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-116',
+        name: 'Cornes de licorne sur le capot (fantastique et surprenant)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-117',
+        name: 'Sirène en plastique sur le tableau de bord (rigolote et insolite)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-118',
+        name: 'Fausse moustache sur la calandre (loufoque et charmante)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-119',
+        name: 'Nappe à fleurs sur le toit (improbable et colorée)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-120',
+        name: 'Mini ventilo vibrant à l’intérieur (farfelu et amusant)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-121',
+        name: 'Guirlande de fanions sur les portes (festive et joyeuse)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-122',
+        name: 'Plante artificielle sur le tableau de bord (verte et rigolote)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-123',
+        name: 'Mini drapeau de pirate sur l’antenne (farce et aventure)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-124',
+        name: 'Tapis de sol en forme de pastèque (absurde et original)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-125',
+        name: 'Autocollant licorne sur le coffre (fantaisie et humour)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-126',
+        name: 'Figurine danseuse hawaïenne sur le tableau de bord (exotique et drôle)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-127',
+        name: 'Chiffon coloré flottant sur le rétroviseur (léger et pétillant)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-128',
+        name: 'Mini disco ball suspendue (brillante et festive)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-129',
+        name: 'Couronne de fleurs sur le toit (joyeuse et charmante)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-130',
+        name: 'Petits grelots sur les roues (sonore et farfelu)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-131',
+        name: 'Mini loupe sur le capot (originale et drôle)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-132',
+        name: 'Fausse corne de rhinocéros sur le toit (improbable et rigolote)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-133',
+        name: 'Lumières clignotantes en spirale (fantaisie et magique)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-134',
+        name: 'Mini radar fantaisiste sur le toit (farfelu et amusant)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-135',
+        name: 'Trophée miniature collé sur le coffre (humoristique et prétentieux)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-136',
+        name: 'Petit panda en peluche sur le capot (mignon et surprenant)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-137',
+        name: 'Petit ventilateur solaire sur le toit (original et lumineux)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-138',
+        name: 'Plaque d’immatriculation rigolote (absurde et humoristique)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-139',
+        name: 'Cloche de vache suspendue à l’attelage, traînant au sol dans un rafu du diable (amusante et sonore)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-140',
+        name: 'Claxonne farfelu accroché au rétroviseur, jouant un air de cirque (amusant et surprenant)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-141',
+        name: 'Petite éolienne sur le toit (rigolote et farfelue)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-142',
+        name: 'Mini fanfare sur le tableau de bord (joyeuse et sonore)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-143',
+        name: 'Couronne de Noël enrubannée sur l’antenne (festive et colorée)',
+        category: 'accessoires',
+    },
+    {
+        id: 'pimp-accessoires-144',
+        name: 'Mini fusée sur le toit (prête à décoller, complètement absurde)',
+        category: 'accessoires',
+    },
+];
+exports.PIMP_MY_RIDE_DECK = cards;
+exports.PIMP_MY_RIDE_CARD_BY_ID = Object.fromEntries(cards.map((card) => [card.id, card]));
+exports.PIMP_MY_RIDE_CAR_NAMES = [
+    { name: 'Fête-sur-Rétros', description: 'Rubans de fête sur les rétros' },
+    {
+        name: 'Guirlande Explosive',
+        description: 'Aileron avec guirlande de Noël',
+    },
+    {
+        name: 'Papillon Psychédélique',
+        description: 'Papillon de feutre pailleté sur l’antenne radio',
+    },
+    { name: 'Zumbatronique', description: 'Claxon trompette jouant la Zumba' },
+    {
+        name: 'Chatastrophique',
+        description: 'Autocollant chat tirant la langue sur le pare-brise arrière',
+    },
+    {
+        name: 'Ballon Infernal',
+        description: 'Bouquet de ballons à l’hélium au-dessus de la voiture',
+    },
+    { name: 'Clownomètre', description: 'Chapeau de clown sur le toit' },
+    {
+        name: 'Licorne Cataclysmique',
+        description: 'Cornes de licorne sur le capot',
+    },
+    {
+        name: 'Sirène Déjantée',
+        description: 'Sirène en plastique sur le tableau de bord',
+    },
+    {
+        name: 'Moustache Apocalyptique',
+        description: 'Fausse moustache sur la calandre',
+    },
+    { name: 'Nappe Infernale', description: 'Nappe à fleurs sur le toit' },
+    {
+        name: 'Ventilo Frénétique',
+        description: 'Mini ventilo vibrant à l’intérieur',
+    },
+    {
+        name: 'Fanions Insensés',
+        description: 'Guirlande de fanions sur les portes',
+    },
+    {
+        name: 'Plante Détraquée',
+        description: 'Plante artificielle sur le tableau de bord',
+    },
+    {
+        name: 'Pirate Déchaîné',
+        description: 'Mini drapeau de pirate sur l’antenne',
+    },
+    {
+        name: 'Pastèque Catastrophique',
+        description: 'Tapis de sol en forme de pastèque',
+    },
+    { name: 'Licorne Absurde', description: 'Autocollant licorne sur le coffre' },
+    {
+        name: 'Danseuse Hawaïenne Turbo',
+        description: 'Figurine danseuse hawaïenne sur le tableau de bord',
+    },
+    {
+        name: 'Chiffon Volant',
+        description: 'Chiffon coloré flottant sur le rétroviseur',
+    },
+    { name: 'Disco Atomique', description: 'Mini disco ball suspendue' },
+    { name: 'Couronne Déjantée', description: 'Couronne de fleurs sur le toit' },
+    { name: 'Grelots Furieux', description: 'Petits grelots sur les roues' },
+    { name: 'Loupe Folle', description: 'Mini loupe sur le capot' },
+    {
+        name: 'Rhinocéros Détraqué',
+        description: 'Fausse corne de rhinocéros sur le toit',
+    },
+    {
+        name: 'Spirale Psychédélique',
+        description: 'Lumières clignotantes en spirale',
+    },
+    { name: 'Radar Insensé', description: 'Mini radar fantaisiste sur le toit' },
+    {
+        name: 'Trophée Éhonté',
+        description: 'Trophée miniature collé sur le coffre',
+    },
+    {
+        name: 'Panda Explosif',
+        description: 'Petit panda en peluche sur le capot',
+    },
+    {
+        name: 'Ventilateur Solaire Déchaîné',
+        description: 'Petit ventilateur solaire sur le toit',
+    },
+    {
+        name: 'Plaque Hystérique',
+        description: 'Plaque d’immatriculation rigolote',
+    },
+    {
+        name: 'Cloche du Chaos',
+        description: 'Cloche de vache suspendue à l’attelage',
+    },
+    {
+        name: 'Claxonne Hallucinante',
+        description: 'Claxonne farfelu accroché au rétroviseur',
+    },
+    { name: 'Éolienne Délirante', description: 'Petite éolienne sur le toit' },
+    {
+        name: 'Fanfare Hystérique',
+        description: 'Mini fanfare sur le tableau de bord',
+    },
+    {
+        name: 'Couronne de Noël Déjantée',
+        description: 'Couronne de Noël enrubannée sur l’antenne',
+    },
+    { name: 'Fusée Incontrôlable', description: 'Mini fusée sur le toit' },
+];
+//# sourceMappingURL=pimp-my-ride-cards.js.map
