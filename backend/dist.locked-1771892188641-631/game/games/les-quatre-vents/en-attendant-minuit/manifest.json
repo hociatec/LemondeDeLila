@@ -1,8 +1,0 @@
-﻿{
-  "code": "en-attendant-minuit",
-  "name": "En Attendant Minuit !",
-  "minPlayers": 2,
-  "maxPlayers": 6,
-  "engine": "en-attendant-minuit",
-  "summary": "Course de Noël sur 56 cases : avance, cartes et défis jusqu'à Minuit."
-}

@@ -13,7 +13,10 @@ import { PromptPoliciesService } from '../../../../modules/prompt-policies/servi
 import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
 import {
   CAT_PATTES_CARD_BY_ID,
+  CatPattesBotType,
   CatPattesCardDefinition,
+  CatPattesObstacleType,
+  CatPattesParadeType,
 } from '../model/cat-pattes-cards';
 import {
   applyActionsSequentially,
@@ -34,6 +37,29 @@ type CatPattesActionPayload = {
   pawnId?: string | null;
   pawn?: string | null;
   value?: string | null;
+};
+
+const OBSTACLE_LABELS: Record<CatPattesObstacleType, string> = {
+  gamelle: 'Gamelle vide',
+  pluie: 'Pluie torrentielle',
+  chien: 'Chien enrage',
+  coussin: 'Coussin piege',
+  sol: 'Sol cire',
+};
+
+const PARADE_LABELS: Record<CatPattesParadeType, string> = {
+  croquettes: 'Croquettes',
+  rayon: 'Rayon de soleil',
+  dodo: 'Dodo reparateur',
+  coussin: 'Nouveau coussin',
+  saut: 'Saut agile',
+};
+
+const BOT_EFFECTS: Record<CatPattesBotType, string> = {
+  reserve: 'Ignore Gamelle vide.',
+  'chat-ninja': 'Ignore Chien enrage.',
+  'patte-blindee': 'Ignore Coussin piege.',
+  'passage-star': 'Ignore Pluie torrentielle et Sol cire, et permet de jouer sans soleil.',
 };
 
 @Injectable()
@@ -470,26 +496,45 @@ export class CatPattesActionService {
     let meta = this.getMeta(next);
     const obstacles = { ...(meta.obstacles ?? {}) };
     const currentObstacle = obstacles[playerId] ?? null;
+    const parade = card.parade ?? null;
     if (
       currentObstacle &&
-      card.parade &&
-      CAT_PATTES_OBSTACLE_TO_PARADE[currentObstacle] === card.parade
+      parade &&
+      CAT_PATTES_OBSTACLE_TO_PARADE[currentObstacle] === parade
     ) {
+      const obstacleLabel = OBSTACLE_LABELS[currentObstacle] ?? currentObstacle;
       obstacles[playerId] = null;
       meta = { ...meta, obstacles };
       next = this.setMeta(next, meta);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} neutralise ${currentObstacle} avec ${card.name}.`,
+        `${resolvePlayerNameFromState(next, playerId)} neutralise ${obstacleLabel} avec ${card.name}.`,
       );
       meta = this.getMeta(next);
+    } else if (currentObstacle) {
+      const obstacleLabel = OBSTACLE_LABELS[currentObstacle] ?? currentObstacle;
+      const paradeLabel = parade ? PARADE_LABELS[parade] ?? parade : card.name;
+      next = this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, playerId)} joue ${paradeLabel} mais ne retire pas l'obstacle (${obstacleLabel}).`,
+      );
+    } else {
+      next = this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, playerId)} joue ${card.name} mais n'a aucun obstacle a retirer.`,
+      );
     }
 
-    if (card.parade === 'rayon') {
+    if (parade === 'rayon') {
       const hasSun = { ...(meta.hasSun ?? {}) };
+      const alreadyActive = Boolean(hasSun[playerId]);
       hasSun[playerId] = true;
       meta = { ...meta, hasSun };
       next = this.setMeta(next, meta);
+      next = this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, playerId)} ${alreadyActive ? 'a deja le soleil actif.' : 'active le soleil.'}`,
+      );
     }
 
     return next;
@@ -514,6 +559,13 @@ export class CatPattesActionService {
         next,
         `${resolvePlayerNameFromState(next, playerId)} active ${card.name} (Pouvoir).`,
       );
+    const effect = BOT_EFFECTS[bot];
+    if (effect) {
+      next = this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, playerId)} : ${effect}`,
+      );
+    }
     return next;
   }
 

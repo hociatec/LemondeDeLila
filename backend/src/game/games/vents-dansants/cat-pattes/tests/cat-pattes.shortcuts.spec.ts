@@ -26,5 +26,11 @@ describe('CatPattesShortcuts', () => {
           String(s?.type) === 'interface' && String(s?.id) === 'position',
       ),
     ).toBe(true);
+    expect(
+      shortcuts.some(
+        (s: any) =>
+          String(s?.type) === 'interface' && String(s?.id) === 'info',
+      ),
+    ).toBe(true);
   });
 });

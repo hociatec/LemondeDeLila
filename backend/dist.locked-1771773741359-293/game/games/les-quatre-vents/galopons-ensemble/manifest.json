@@ -1,8 +1,0 @@
-﻿{
-  "code": "galopons-ensemble",
-  "name": "Galopons ensemble !",
-  "minPlayers": 2,
-  "maxPlayers": 4,
-  "engine": "galopons-ensemble",
-  "summary": "Course équestre (40 cases) avec pommes et cartes aventure."
-}

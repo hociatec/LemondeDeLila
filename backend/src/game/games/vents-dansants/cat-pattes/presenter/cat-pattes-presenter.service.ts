@@ -47,6 +47,31 @@ export class CatPattesPresenterService {
       return `${name} : ${value} pattes / ${CAT_PATTES_GOAL}.`;
     });
 
+    const obstacleLabels: Record<string, string> = {
+      gamelle: 'Gamelle vide',
+      pluie: 'Pluie torrentielle',
+      chien: 'Chien enrage',
+      coussin: 'Coussin piege',
+      sol: 'Sol cire',
+    };
+    const botLabels: Record<string, string> = {
+      reserve: 'Reserve secrete',
+      'chat-ninja': 'Chat ninja',
+      'patte-blindee': 'Patte blindee',
+      'passage-star': 'Passage de star',
+    };
+    const effectLines = players.map((p) => {
+      const pid = p?.id;
+      const name = nameById[pid] ?? `Joueur ${pid}`;
+      const hasSun = Boolean(meta.hasSun?.[pid]);
+      const obstacle = meta.obstacles?.[pid] ?? null;
+      const obstacleLabel = obstacle ? obstacleLabels[obstacle] : 'Aucun';
+      const bots = Array.isArray(meta.bots?.[pid]) ? meta.bots[pid] : [];
+      const botNames = bots.map((b) => botLabels[b] ?? String(b));
+      const botLabel = botNames.length ? botNames.join(', ') : 'Aucun';
+      return `${name} : Soleil ${hasSun ? 'actif' : 'absent'} | Obstacle ${obstacleLabel} | Pouvoirs ${botLabel}.`;
+    });
+
     const handCounts = Object.entries(meta.hands ?? {})
       .map(
         ([id, cards]) =>
@@ -82,7 +107,7 @@ export class CatPattesPresenterService {
           play: {
             title: 'À jouer',
             message:
-              '(↑/↓ choisir, Entrée jouer, Espace piocher, C défausser, S score, P progression)',
+              '(↑/↓ choisir, Entrée jouer, Espace piocher, C défausser, S score, P progression, I infos)',
           },
           score: {
             title: 'Score',
@@ -91,6 +116,12 @@ export class CatPattesPresenterService {
           position: {
             title: 'Progression',
             message: progressionLines.join(' '),
+          },
+          info: {
+            title: 'Effets en cours',
+            message: effectLines.length
+              ? effectLines.join('\n')
+              : 'Aucun effet actif.',
           },
         },
       },
@@ -166,3 +197,4 @@ export class CatPattesPresenterService {
     return pending;
   }
 }
+

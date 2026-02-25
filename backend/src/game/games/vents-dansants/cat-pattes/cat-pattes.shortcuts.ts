@@ -8,4 +8,5 @@ export const buildCatPattesShortcuts: GameShortcutsBuilder = () => [
   actionShortcut('SPACE', 'draw'),
   interfaceShortcut('S', 'score'),
   interfaceShortcut('P', 'position'),
+  interfaceShortcut('I', 'info'),
 ];

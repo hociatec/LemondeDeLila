@@ -1,9 +1,0 @@
-{
-  "code": "sac-a-malices",
-  "name": "Sac à Malices!",
-  "minPlayers": 2,
-  "maxPlayers": 8,
-  "engine": "sac-a-malices",
-  "summary": "Jeu de type Monopoly (version Dijon) : achetez, payez des loyers, tirez des cartes Chance et Caisse de Communauté."
-}
-

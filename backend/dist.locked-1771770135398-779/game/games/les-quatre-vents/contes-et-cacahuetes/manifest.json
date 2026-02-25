@@ -1,9 +1,0 @@
-{
-  "code": "contes-et-cacahuetes",
-  "name": "Contes et cacahuètes !",
-  "minPlayers": 2,
-  "maxPlayers": 6,
-  "engine": "contes-et-cacahuetes",
-  "summary": "Course sur 60 cases avec contes, bonus, malus et surprises."
-}
-

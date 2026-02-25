@@ -1,8 +1,0 @@
-{
-  "code": "mon-village-mon-histoire",
-  "name": "Mon Village, Mon Histoire",
-  "minPlayers": 2,
-  "maxPlayers": 6,
-  "engine": "mon-village-mon-histoire",
-  "summary": "Parcourez les métiers et collectionnez les cartes qui feront la richesse de votre village."
-}

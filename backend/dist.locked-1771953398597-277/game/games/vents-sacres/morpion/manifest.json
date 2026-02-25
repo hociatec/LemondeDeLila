@@ -1,9 +1,0 @@
-{
-  "code": "morpion",
-  "name": "Morpion",
-  "minPlayers": 2,
-  "maxPlayers": 2,
-  "engine": "morpion",
-  "summary": "Alignez 3 symboles sur une grille 3×3."
-}
-

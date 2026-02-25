@@ -1,8 +1,0 @@
-﻿{
-  "code": "gerard-president",
-  "name": "Gérard président !",
-  "minPlayers": 3,
-  "maxPlayers": 10,
-  "engine": "gerard-president",
-  "summary": "Le jeu du prénom absurde : soyez le plus hilarant face au Maître du Thème."
-}
