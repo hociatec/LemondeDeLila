@@ -812,11 +812,11 @@ export class GameGateway
       return;
     }
 
-    const errorPayload = JSON.stringify({
-      type: 'error',
-      context: 'room.deleted',
-      payload: { message: 'Table fermee.' },
-    });
+      const errorPayload = JSON.stringify({
+        type: 'error',
+        context: 'room.deleted',
+        payload: {},
+      });
 
     for (const socket of targets) {
       const meta = this.clients.get(socket);

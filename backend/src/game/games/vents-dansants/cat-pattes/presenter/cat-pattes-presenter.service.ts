@@ -69,7 +69,7 @@ export class CatPattesPresenterService {
       const bots = Array.isArray(meta.bots?.[pid]) ? meta.bots[pid] : [];
       const botNames = bots.map((b) => botLabels[b] ?? String(b));
       const botLabel = botNames.length ? botNames.join(', ') : 'Aucun';
-      return `${name} : Soleil ${hasSun ? 'actif' : 'absent'} | Obstacle ${obstacleLabel} | Pouvoirs ${botLabel}.`;
+      return `${name} : Soleil ${hasSun ? 'actif' : 'absent'}, Obstacle ${obstacleLabel}, Pouvoirs ${botLabel}.`;
     });
 
     const handCounts = Object.entries(meta.hands ?? {})
@@ -107,7 +107,7 @@ export class CatPattesPresenterService {
           play: {
             title: 'À jouer',
             message:
-              '(↑/↓ choisir, Entrée jouer, Espace piocher, C défausser, S score, P progression, I infos)',
+              '(↑/↓ choisir, Entrée jouer, Espace piocher, D défausser, S score, P progression, I infos)',
           },
           score: {
             title: 'Score',
@@ -197,4 +197,5 @@ export class CatPattesPresenterService {
     return pending;
   }
 }
+
 

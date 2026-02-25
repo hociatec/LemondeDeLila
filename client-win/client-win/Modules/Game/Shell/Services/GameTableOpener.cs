@@ -1509,10 +1509,10 @@ public sealed class GameTableOpener : IGameTableOpener
 
                     onSessionLeft = type =>
                     {
-                        if (string.Equals(type, "room.deleted", StringComparison.OrdinalIgnoreCase))
-                        {
-                            _ = ExitAsync("Table fermée.", forceTavern: true);
-                        }
+                          if (string.Equals(type, "room.deleted", StringComparison.OrdinalIgnoreCase))
+                          {
+                              _ = ExitAsync(null, forceTavern: true);
+                          }
                         else
                         {
                             // room.left: quitter (ou être éjecté) doit toujours ramener à la taverne.

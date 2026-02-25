@@ -277,7 +277,28 @@ export function validateAction(
     definition.type === 'pattes' &&
     !canPlayPattes(meta, actorId, definition)
   ) {
-    throw new Error('Impossible de courir maintenant.');
+    const bots = meta.bots?.[actorId] ?? [];
+    const passageStar = hasBot(bots, 'passage-star');
+    const hasSun = Boolean(meta.hasSun?.[actorId]);
+    const obstacle = meta.obstacles?.[actorId] ?? null;
+    if (!hasSun && !passageStar) {
+      throw new Error(
+        "Impossible de jouer Pattes: aucun Rayon de soleil actif.",
+      );
+    }
+    if (obstacle && !obstacleIsIgnoredByBots(obstacle, bots)) {
+      throw new Error(
+        'Impossible de jouer Pattes: un obstacle vous bloque.',
+      );
+    }
+    const currentPos = Number(meta.positions?.[actorId] ?? 0);
+    const delta = Number(definition.value ?? 0);
+    if (Number.isFinite(delta) && currentPos + delta > CAT_PATTES_GOAL) {
+      throw new Error(
+        'Impossible de jouer Pattes: depassement de 1 000 pattes.',
+      );
+    }
+    throw new Error('Impossible de jouer Pattes.');
   }
 
   if (definition.type === 'obstacle') {
@@ -297,7 +318,9 @@ export function validateAction(
       throw new Error('Joueur cible invalide.');
     }
     if (!playerCanReceiveObstacle(meta, targetId, definition.obstacle!)) {
-      throw new Error('La cible ne peut pas recevoir cet obstacle.');
+      throw new Error(
+        "La cible ne peut pas recevoir cet obstacle (deja protegee ou deja un obstacle).",
+      );
     }
   }
 
