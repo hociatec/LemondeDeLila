@@ -1098,6 +1098,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
                 if (isOwner && !alreadyStarted)
                 {
+                    try { bindings?.EnsurePreStartGameUiLoaded(); } catch { }
                     try { await _remoteSounds.RefreshAsync(force: false).ConfigureAwait(true); } catch { }
 
                     var current = (room?.TableAmbienceSoundId ?? string.Empty).Trim();

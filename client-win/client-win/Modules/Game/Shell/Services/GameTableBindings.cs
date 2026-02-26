@@ -99,6 +99,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     public Task TogglePrivacyAsync() => _privacy.TogglePrivacyAsync();
     public Task ToggleRoleAsync() => _role.ToggleRoleAsync(ComputeSelfSpectator());
     public Task RequestInfoAsync() => _info.RequestInfoAsync();
+    public void EnsurePreStartGameUiLoaded() => EnsureGamePlayLoaded();
 
     private static bool IsRoomStarted(RoomDto? room)
     {
