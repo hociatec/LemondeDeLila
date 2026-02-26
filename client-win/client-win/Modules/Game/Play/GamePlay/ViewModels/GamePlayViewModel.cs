@@ -978,9 +978,40 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                 }
 
                 var text = (field.Text ?? string.Empty).Trim();
-                if (string.Equals(field.Kind, "number", StringComparison.OrdinalIgnoreCase) &&
-                    int.TryParse(text, out var i))
+                if (string.IsNullOrWhiteSpace(text))
                 {
+                    await _dialogs
+                        .ShowError("Configuration", $"Veuillez remplir le champ : {field.Label}.")
+                        .ConfigureAwait(true);
+                    return false;
+                }
+
+                var isNumber = string.Equals(field.Kind, "number", StringComparison.OrdinalIgnoreCase);
+                var i = 0;
+                if (isNumber && !int.TryParse(text, out i))
+                {
+                    await _dialogs
+                        .ShowError("Configuration", $"Veuillez entrer un nombre pour : {field.Label}.")
+                        .ConfigureAwait(true);
+                    return false;
+                }
+
+                if (isNumber)
+                {
+                    if (field.Min.HasValue && i < field.Min.Value)
+                    {
+                        await _dialogs
+                            .ShowError("Configuration", $"Valeur minimale pour {field.Label} : {field.Min.Value}.")
+                            .ConfigureAwait(true);
+                        return false;
+                    }
+                    if (field.Max.HasValue && i > field.Max.Value)
+                    {
+                        await _dialogs
+                            .ShowError("Configuration", $"Valeur maximale pour {field.Label} : {field.Max.Value}.")
+                            .ConfigureAwait(true);
+                        return false;
+                    }
                     payload[field.Key] = i;
                 }
                 else

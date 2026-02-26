@@ -517,4 +517,43 @@ describe('CatPattes flow', () => {
     );
     expect(messages.some((m) => /Nouvelle manche/i.test(m))).toBe(true);
   });
+
+  it('redacts drawn card names for opponents', async () => {
+    const presenter = new CatPattesPresenterService();
+    const state: any = {
+      ...baseState(),
+      log: [
+        { message: 'Hacene pioche un poney.' },
+        { message: 'Lilas pioche Rayon de soleil.' },
+        { message: 'Hacene passe son tour.' },
+      ],
+      metadata: {
+        ...baseState().metadata,
+        hands: { 1: [], 2: [] },
+        positions: { 1: 0, 2: 0 },
+        points: { 1: 0, 2: 0 },
+        obstacles: { 1: null, 2: null },
+        bots: { 1: [], 2: [] },
+        hasSun: { 1: false, 2: false },
+      },
+    };
+
+    const forHacene: any = presenter.exposeStateForUser(state, 1);
+    const forLilas: any = presenter.exposeStateForUser(state, 2);
+
+    const logsHacene = (forHacene.log ?? []).map((e: any) =>
+      String(e?.message ?? ''),
+    );
+    const logsLilas = (forLilas.log ?? []).map((e: any) =>
+      String(e?.message ?? ''),
+    );
+
+    expect(logsHacene).toContain('Hacene pioche un poney.');
+    expect(logsHacene).toContain('Lilas pioche une carte.');
+    expect(logsHacene).not.toContain('Lilas pioche Rayon de soleil.');
+
+    expect(logsLilas).toContain('Lilas pioche Rayon de soleil.');
+    expect(logsLilas).toContain('Hacene pioche une carte.');
+    expect(logsLilas).not.toContain('Hacene pioche un poney.');
+  });
 });

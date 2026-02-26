@@ -13,6 +13,10 @@ import { stringOrEmpty } from '@common/utils/string-value.utils';
 
 @Injectable()
 export class CatPattesPresenterService {
+  private sanitizePlayerName(raw: unknown): string {
+    return stringOrEmpty(raw).trim();
+  }
+
   exposeStateForUser(
     state: GameStateEntity,
     userId: number,
@@ -154,6 +158,7 @@ export class CatPattesPresenterService {
 
     return {
       ...state,
+      log: this.redactDrawLogForUser(state.log as any, players as any, userId),
       catalog: {
         phases: CAT_PATTES_GAME.phaseOrder.map((phase) => phase.id),
         victory: null,
@@ -162,6 +167,38 @@ export class CatPattesPresenterService {
       extras,
       pending,
     } as any;
+  }
+
+  private redactDrawLogForUser(
+    log: Array<{ message: string; timestamp?: string }> | undefined,
+    players: Array<{ id: number; username?: string }>,
+    userId: number,
+  ): Array<{ message: string; timestamp?: string }> {
+    if (!Array.isArray(log) || log.length === 0) {
+      return Array.isArray(log) ? [...log] : [];
+    }
+
+    const normalize = (raw: unknown): string =>
+      this.sanitizePlayerName(raw).toLowerCase();
+    const idByLabel = new Map<string, number>();
+    for (const p of players) {
+      const name = this.sanitizePlayerName(p?.username);
+      if (name) idByLabel.set(normalize(name), p.id);
+      idByLabel.set(normalize(`joueur ${p.id}`), p.id);
+    }
+
+    const drawRe = /^(.+?) pioche (.+)\.$/;
+    return log.map((entry) => {
+      const message = String(entry?.message ?? '').trim();
+      const match = message.match(drawRe);
+      if (!match) return entry;
+
+      const actorLabel = this.sanitizePlayerName(match[1]);
+      const actorId = idByLabel.get(normalize(actorLabel)) ?? null;
+      if (actorId === userId) return entry;
+
+      return { ...entry, message: `${actorLabel} pioche une carte.` };
+    });
   }
 
   private normalizePending(
