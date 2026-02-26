@@ -21,7 +21,9 @@ export class LamaDrawService {
     actorId: number,
   ): GameStateEntity {
     const dropped = meta.droppedOutByPlayerId ?? {};
-    const drawLocked = Object.values(dropped).some((isOut) => Boolean(isOut));
+    const drawLocked =
+      !meta.allowDrawAfterFirstQuit &&
+      Object.values(dropped).some((isOut) => Boolean(isOut));
     if (drawLocked) {
       return state;
     }

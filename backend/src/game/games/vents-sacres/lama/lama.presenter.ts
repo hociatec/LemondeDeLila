@@ -86,9 +86,7 @@ export class LamaPresenter extends BasePresenterService {
       (meta.handsByPlayerId ?? {})[String(userId)] ?? []
     ).filter((v) => typeof v === 'number' && v >= 1 && v <= LAMA_VALUE);
     const dropped = Boolean((meta.droppedOutByPlayerId ?? {})[String(userId)]);
-    const drawLocked = Object.values(meta.droppedOutByPlayerId ?? {}).some(
-      (isOut) => Boolean(isOut),
-    );
+    const drawLocked = this.isDrawLocked(meta);
     const sortedHandValues = [...handValues].sort((a, b) => a - b);
 
     const current = state.turn?.currentPlayerId ?? null;
@@ -228,9 +226,39 @@ export class LamaPresenter extends BasePresenterService {
             },
             {
               key: 'allowPlayAfterDraw',
-              label: 'Autoriser de rejouer après une pioche (oui/non)',
+              label: 'Autoriser de rejouer aprÃ¨s une pioche (oui/non)',
               kind: 'boolean',
               initialText: metadata.allowPlayAfterDraw ? 'oui' : 'non',
+            },
+            {
+              key: 'startingHandSize',
+              label: 'Cartes distribuées au départ',
+              kind: 'number',
+              min: 1,
+              max: 20,
+              initialText: String(metadata.startingHandSize ?? 6),
+            },
+            {
+              key: 'copiesPerCardValue',
+              label: 'Copies par valeur (1-6 + LAMA)',
+              kind: 'number',
+              min: 1,
+              max: 20,
+              initialText: String(metadata.copiesPerCardValue ?? 8),
+            },
+            {
+              key: 'allowDrawAfterFirstQuit',
+              label: 'Autoriser la pioche après le premier retrait (oui/non)',
+              kind: 'boolean',
+              initialText: metadata.allowDrawAfterFirstQuit ? 'oui' : 'non',
+            },
+            {
+              key: 'returnTokenFromRound',
+              label: 'Rendu de jetons à partir de la manche',
+              kind: 'number',
+              min: 1,
+              max: 50,
+              initialText: String(metadata.returnTokenFromRound ?? 2),
             },
           ],
         },
@@ -278,9 +306,7 @@ export class LamaPresenter extends BasePresenterService {
     const droppedOut = Boolean(
       (metadata.droppedOutByPlayerId ?? {})[String(userId)],
     );
-    const drawLocked = Object.values(metadata.droppedOutByPlayerId ?? {}).some(
-      (isOut) => Boolean(isOut),
-    );
+    const drawLocked = this.isDrawLocked(metadata);
 
     const top = this.topDiscard(metadata);
     if (!top) return null;
@@ -383,9 +409,7 @@ export class LamaPresenter extends BasePresenterService {
     const discard = Array.isArray(metadata.discard) ? metadata.discard : [];
     const top = discard.length ? discard[discard.length - 1] : null;
     const discardTop = top ? lamaCardLabel(top) : '(vide)';
-    const drawLocked = Object.values(metadata.droppedOutByPlayerId ?? {}).some(
-      (isOut) => Boolean(isOut),
-    );
+    const drawLocked = this.isDrawLocked(metadata);
 
     const playableText = (() => {
       if (this.isSetup(state)) {
@@ -485,6 +509,13 @@ export class LamaPresenter extends BasePresenterService {
     if (!top) return null;
     if (top < 1 || top > LAMA_VALUE) return null;
     return top;
+  }
+
+  private isDrawLocked(meta: LamaMetadata): boolean {
+    if (meta.allowDrawAfterFirstQuit) return false;
+    return Object.values(meta.droppedOutByPlayerId ?? {}).some((isOut) =>
+      Boolean(isOut),
+    );
   }
 
   private redactDrawLogForUser(

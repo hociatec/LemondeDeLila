@@ -51,7 +51,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     private readonly Dispatcher _dispatcher;
     private readonly IDialogService _dialogs;
-    private readonly ITextPromptService _textPrompts;
     private readonly Func<CancellationToken, Task<GameSession>> _connect;
     private readonly GamePlayActionDispatcher _actions = new();
     private readonly GamePlayStateProjector _projector = new();
@@ -78,8 +77,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private bool _isSpectator;
     private PendingTextPrompt? _pendingTextPrompt;
     private PendingConfigPrompt? _pendingConfigPrompt;
-    private int _configPromptInProgress;
-    private string _lastConfigPromptSignatureShown = string.Empty;
     private string _inlinePromptTitle = string.Empty;
     private string _inlinePromptActionType = string.Empty;
     private string _inlinePromptCancelActionType = string.Empty;
@@ -117,7 +114,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         GameId = (gameId ?? string.Empty).Trim();
         _connect = connect ?? throw new ArgumentNullException(nameof(connect));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
-        _textPrompts = textPrompts ?? throw new ArgumentNullException(nameof(textPrompts));
+        _ = textPrompts ?? throw new ArgumentNullException(nameof(textPrompts));
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
         _endgameSounds = new GamePlayEndgameSoundPlayer(sounds ?? throw new ArgumentNullException(nameof(sounds)));
@@ -418,161 +415,11 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public async Task<bool> TryOpenPendingConfigPromptAsync(CancellationToken cancellationToken = default)
     {
-        if (_isSpectator) return false;
-        var session = _session;
-        if (session == null) return false;
-        if (!session.IsConnected) return false;
-
-        var prompt = _pendingConfigPrompt;
-        if (prompt == null) return false;
-
-        var actionType = (prompt.ActionType ?? string.Empty).Trim();
-        if (string.IsNullOrWhiteSpace(actionType)) return false;
-
-        var title = (prompt.Title ?? "Configuration").Trim();
-
-        var sig = "config:" + actionType + ":" + title + ":" +
-                  string.Join(
-                      "|",
-                      prompt.Fields.Select(f =>
-                          $"{(f.Key ?? string.Empty).Trim()}:{(f.Kind ?? string.Empty).Trim()}:{f.Min?.ToString() ?? ""}:{f.Max?.ToString() ?? ""}:{(f.InitialText ?? string.Empty).Trim()}"));
-        if (string.Equals(_lastConfigPromptSignatureShown, sig, StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        if (Interlocked.Exchange(ref _configPromptInProgress, 1) == 1)
-        {
-            return false;
-        }
-
-        try
-        {
-            while (true)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var fields = prompt.Fields
-                    .Select(f => (f.Key, f.Label, f.InitialText, f.Kind))
-                    .ToList();
-
-                var values = await _textPrompts.PromptConfigAsync(title, fields).ConfigureAwait(true);
-                if (values == null)
-                {
-                    if (!string.IsNullOrWhiteSpace(prompt.CancelActionType))
-                    {
-                        _lastConfigPromptSignatureShown = sig;
-                        await session
-                            .SendActionsAsync(
-                                new[] { new GameClientAction(prompt.CancelActionType.Trim(), new Dictionary<string, object>()) },
-                                cancellationToken)
-                            .ConfigureAwait(false);
-                        RequestGameZoneFocus(GameFocusReason.AfterDialog);
-                        return true;
-                    }
-
-                    // Certains jeux rendent la configuration obligatoire (pas de cancelActionType).
-                    // Dans ce cas, on empêche la fermeture silencieuse : on informe et on ré-ouvre.
-                    await _dialogs
-                        .ShowError("Configuration", "Configuration obligatoire.")
-                        .ConfigureAwait(true);
-                    continue;
-                }
-
-                var payload = new Dictionary<string, object>(StringComparer.Ordinal);
-                string? validationError = null;
-
-                foreach (var field in prompt.Fields)
-                {
-                    if (!values.TryGetValue(field.Key, out var text))
-                    {
-                        validationError = $"Champ manquant : {field.Label}.";
-                        break;
-                    }
-
-                    if (string.Equals(field.Kind, "number", StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (!int.TryParse((text ?? string.Empty).Trim(), out var value))
-                        {
-                            validationError = $"Veuillez entrer un nombre pour : {field.Label}.";
-                            break;
-                        }
-                        if (field.Min.HasValue && value < field.Min.Value)
-                        {
-                            validationError = $"Valeur minimale pour {field.Label} : {field.Min.Value}.";
-                            break;
-                        }
-                        if (field.Max.HasValue && value > field.Max.Value)
-                        {
-                            validationError = $"Valeur maximale pour {field.Label} : {field.Max.Value}.";
-                            break;
-                        }
-                        payload[field.Key] = value;
-                    }
-                    else if (string.Equals(field.Kind, "bool", StringComparison.OrdinalIgnoreCase) ||
-                             string.Equals(field.Kind, "boolean", StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (!TryParseBool(text, out var value))
-                        {
-                            validationError = $"Veuillez cocher/décocher : {field.Label}.";
-                            break;
-                        }
-                        payload[field.Key] = value;
-                    }
-                    else
-                    {
-                        payload[field.Key] = (text ?? string.Empty).Trim();
-                    }
-                }
-
-                if (!string.IsNullOrWhiteSpace(validationError))
-                {
-                    await _dialogs.ShowError("Configuration", validationError.Trim()).ConfigureAwait(true);
-                    continue;
-                }
-
-                _lastConfigPromptSignatureShown = sig;
-                await session
-                    .SendActionsAsync(new[] { new GameClientAction(actionType, payload) }, cancellationToken)
-                    .ConfigureAwait(false);
-                RequestGameZoneFocus(GameFocusReason.AfterDialog);
-                return true;
-            }
-        }
-        finally
-        {
-            Interlocked.Exchange(ref _configPromptInProgress, 0);
-        }
-    }
-
-    private static bool TryParseBool(string? text, out bool value)
-    {
-        var t = (text ?? string.Empty).Trim();
-        if (bool.TryParse(t, out value))
-        {
-            return true;
-        }
-
-        switch (t.ToLowerInvariant())
-        {
-            case "1":
-            case "oui":
-            case "yes":
-            case "on":
-                value = true;
-                return true;
-            case "0":
-            case "non":
-            case "no":
-            case "off":
-                value = false;
-                return true;
-        }
-
-        value = false;
+        // Les prompts de configuration sont affiches inline dans la vue de jeu.
+        // Cette methode est conservee pour compatibilite, mais devient un no-op.
+        await Task.CompletedTask;
         return false;
     }
-
     public void SetSpectator(bool isSpectator)
     {
         if (_isSpectator == isSpectator)
@@ -633,11 +480,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                 OnPropertyChanged(nameof(HasPendingTextPrompt));
                 UpdatePendingConfigPrompt(next);
                 OnPropertyChanged(nameof(HasPendingConfigPrompt));
-
-                if (HasPendingConfigPrompt)
-                {
-                    _ = TryOpenPendingConfigPromptAsync(CancellationToken.None);
-                }
 
                 SyncInlinePromptFromPending();
                 OnPropertyChanged(nameof(HasInlinePrompt));
@@ -1056,6 +898,44 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                         min: _pendingTextPrompt.Min,
                         max: _pendingTextPrompt.Max,
                         initialText: _pendingTextPrompt.InitialText));
+                }
+
+                return;
+            }
+
+            if (_pendingConfigPrompt != null)
+            {
+                var cfg = _pendingConfigPrompt;
+                var sig = "config:" + (cfg.ActionType ?? string.Empty).Trim() + ":" +
+                          string.Join(
+                              "|",
+                              cfg.Fields.Select(f =>
+                                  $"{(f.Key ?? string.Empty).Trim()}:{(f.Kind ?? string.Empty).Trim()}:{f.Min?.ToString() ?? ""}:{f.Max?.ToString() ?? ""}:{(f.InitialText ?? string.Empty).Trim()}"));
+
+                _inlinePromptActionType = (cfg.ActionType ?? string.Empty).Trim();
+                _inlinePromptCancelActionType = (cfg.CancelActionType ?? string.Empty).Trim();
+                InlinePromptTitle = (cfg.Title ?? "Configuration").Trim();
+
+                if (!string.Equals(_inlinePromptSignature, sig, StringComparison.Ordinal))
+                {
+                    _inlinePromptSignature = sig;
+                    InlinePromptFields.Clear();
+
+                    foreach (var field in cfg.Fields)
+                    {
+                        if (field == null || string.IsNullOrWhiteSpace(field.Key))
+                        {
+                            continue;
+                        }
+
+                        InlinePromptFields.Add(new InlinePromptFieldModel(
+                            key: field.Key,
+                            label: field.Label,
+                            kind: field.Kind,
+                            min: field.Min,
+                            max: field.Max,
+                            initialText: field.InitialText));
+                    }
                 }
 
                 return;

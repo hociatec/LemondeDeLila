@@ -33,7 +33,11 @@ export class LamaRoundService {
       return state;
     }
 
-    const baseDeck = this.buildDeck();
+    const startingHandSize = this.resolveStartingHandSize(meta.startingHandSize);
+    const copiesPerCardValue = this.resolveCopiesPerCardValue(
+      meta.copiesPerCardValue,
+    );
+    const baseDeck = this.buildDeck(copiesPerCardValue);
     const rngMeta =
       typeof meta.rng === 'object' && meta.rng ? { ...(meta.rng as any) } : {};
     const shuffled = this.random.shuffle(rngMeta, baseDeck);
@@ -52,7 +56,7 @@ export class LamaRoundService {
       );
     }
 
-    for (let i = 0; i < 6; i += 1) {
+    for (let i = 0; i < startingHandSize; i += 1) {
       for (const p of roundPlayers) {
         if (!p?.id) continue;
         const card = deck.pop();
@@ -150,7 +154,11 @@ export class LamaRoundService {
           ? Number(scoresByPlayerId[String(winnerPlayerId)] ?? 0)
           : 0;
       const eligible =
-        this.shouldPromptReturn(roundNumber, winnerScore) &&
+        this.shouldPromptReturn(
+          roundNumber,
+          winnerScore,
+          meta.returnTokenFromRound,
+        ) &&
         winnerPlayerId != null
           ? [winnerPlayerId]
           : [];
@@ -226,7 +234,11 @@ export class LamaRoundService {
         ? Number(scoresByPlayerId[String(winnerPlayerId)] ?? 0)
         : 0;
     const eligible =
-      this.shouldPromptReturn(roundNumber, winnerScore) &&
+      this.shouldPromptReturn(
+        roundNumber,
+        winnerScore,
+        meta.returnTokenFromRound,
+      ) &&
       winnerPlayerId != null
         ? [winnerPlayerId]
         : [];
@@ -441,10 +453,10 @@ export class LamaRoundService {
     return null;
   }
 
-  private buildDeck(): LamaCardValue[] {
+  private buildDeck(copiesPerCardValue: number): LamaCardValue[] {
     const deck: LamaCardValue[] = [];
     for (const v of [1, 2, 3, 4, 5, 6, LAMA_VALUE] as LamaCardValue[]) {
-      for (let i = 0; i < 8; i += 1) deck.push(v);
+      for (let i = 0; i < copiesPerCardValue; i += 1) deck.push(v);
     }
     return deck;
   }
@@ -467,9 +479,36 @@ export class LamaRoundService {
   private shouldPromptReturn(
     roundNumber: number,
     winnerScore: number,
+    returnTokenFromRound: number | null | undefined,
   ): boolean {
     if (winnerScore < 1) return false;
-    return roundNumber >= 2;
+    return roundNumber >= this.resolveReturnTokenFromRound(returnTokenFromRound);
+  }
+
+  private resolveStartingHandSize(value: number | null | undefined): number {
+    const parsed = Number(value ?? 6);
+    if (!Number.isFinite(parsed)) return 6;
+    const rounded = Math.floor(parsed);
+    if (rounded < 1 || rounded > 20) return 6;
+    return rounded;
+  }
+
+  private resolveCopiesPerCardValue(value: number | null | undefined): number {
+    const parsed = Number(value ?? 8);
+    if (!Number.isFinite(parsed)) return 8;
+    const rounded = Math.floor(parsed);
+    if (rounded < 1 || rounded > 20) return 8;
+    return rounded;
+  }
+
+  private resolveReturnTokenFromRound(
+    value: number | null | undefined,
+  ): number {
+    const parsed = Number(value ?? 2);
+    if (!Number.isFinite(parsed)) return 2;
+    const rounded = Math.floor(parsed);
+    if (rounded < 1 || rounded > 50) return 2;
+    return rounded;
   }
 
   private buildEliminatedByScore(

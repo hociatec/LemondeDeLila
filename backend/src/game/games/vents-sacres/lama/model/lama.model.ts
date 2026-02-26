@@ -12,6 +12,10 @@ export type LamaMetadata = {
   loseAtScore: number | null;
   roundPauseSeconds: number | null;
   allowPlayAfterDraw: boolean;
+  startingHandSize: number | null;
+  copiesPerCardValue: number | null;
+  allowDrawAfterFirstQuit: boolean;
+  returnTokenFromRound: number | null;
   roundPauseUntilMs: number | null;
   roundNumber: number;
   roundStarterIndex: number;

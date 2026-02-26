@@ -85,6 +85,10 @@ export class LamaSetupService {
       loseAtScore: null,
       roundPauseSeconds: null,
       allowPlayAfterDraw: false,
+      startingHandSize: null,
+      copiesPerCardValue: null,
+      allowDrawAfterFirstQuit: false,
+      returnTokenFromRound: null,
       roundPauseUntilMs: null,
       roundNumber: 1,
       roundStarterIndex: 0,
@@ -159,9 +163,10 @@ export class LamaSetupService {
       try {
         return optionalInt(action.payload ?? {}, 'roundPauseSeconds');
       } catch {
-        return undefined;
+        return Number.NaN;
       }
     })();
+    if (Number.isNaN(roundPauseSeconds)) return state;
     if (
       !Number.isFinite(roundPauseSeconds) ||
       roundPauseSeconds == null ||
@@ -171,11 +176,82 @@ export class LamaSetupService {
       return state;
     }
 
+    const startingHandSizeRaw = (() => {
+      try {
+        return optionalInt(action.payload ?? {}, 'startingHandSize');
+      } catch {
+        return Number.NaN;
+      }
+    })();
+    if (Number.isNaN(startingHandSizeRaw)) return state;
+    const startingHandSize = Number(
+      startingHandSizeRaw ?? meta.startingHandSize ?? 6,
+    );
+    if (
+      !Number.isFinite(startingHandSize) ||
+      startingHandSize < 1 ||
+      startingHandSize > 20
+    ) {
+      return state;
+    }
+
+    const copiesPerCardValueRaw = (() => {
+      try {
+        return optionalInt(action.payload ?? {}, 'copiesPerCardValue');
+      } catch {
+        return Number.NaN;
+      }
+    })();
+    if (Number.isNaN(copiesPerCardValueRaw)) return state;
+    const copiesPerCardValue = Number(
+      copiesPerCardValueRaw ?? meta.copiesPerCardValue ?? 8,
+    );
+    if (
+      !Number.isFinite(copiesPerCardValue) ||
+      copiesPerCardValue < 1 ||
+      copiesPerCardValue > 20
+    ) {
+      return state;
+    }
+
+    const returnTokenFromRoundRaw = (() => {
+      try {
+        return optionalInt(action.payload ?? {}, 'returnTokenFromRound');
+      } catch {
+        return Number.NaN;
+      }
+    })();
+    if (Number.isNaN(returnTokenFromRoundRaw)) return state;
+    const returnTokenFromRound = Number(
+      returnTokenFromRoundRaw ?? meta.returnTokenFromRound ?? 2,
+    );
+    if (
+      !Number.isFinite(returnTokenFromRound) ||
+      returnTokenFromRound < 1 ||
+      returnTokenFromRound > 50
+    ) {
+      return state;
+    }
+
+    const players = Array.isArray(state.players) ? state.players : [];
+    const activePlayers = players.filter((p) => p?.id).length;
+    const deckSize = 7 * copiesPerCardValue;
+    if (activePlayers * startingHandSize + 1 > deckSize) {
+      return state;
+    }
+
     const updatedMeta: LamaMetadata = {
       ...meta,
       loseAtScore,
       roundPauseSeconds,
       allowPlayAfterDraw: this.readAllowPlayAfterDraw(action.payload ?? {}),
+      startingHandSize,
+      copiesPerCardValue,
+      allowDrawAfterFirstQuit: this.readAllowDrawAfterFirstQuit(
+        action.payload ?? {},
+        meta.allowDrawAfterFirstQuit ?? false,
+      ),
+      returnTokenFromRound,
       roundPauseUntilMs: null,
       step: 'turn_choice',
       roundNumber: 1,
@@ -188,7 +264,6 @@ export class LamaSetupService {
     };
 
     let log = state.log;
-    const players = Array.isArray(state.players) ? state.players : [];
     const name = this.shared.playerLabel(players as any[], actorId);
     log = this.logger.append(
       log,
@@ -201,6 +276,22 @@ export class LamaSetupService {
     log = this.logger.append(
       log,
       `${name} ${updatedMeta.allowPlayAfterDraw ? 'autorise' : 'interdit'} de rejouer après une pioche.`,
+    );
+    log = this.logger.append(
+      log,
+      `${name} distribue ${startingHandSize} cartes par manche.`,
+    );
+    log = this.logger.append(
+      log,
+      `${name} règle le paquet à ${copiesPerCardValue} exemplaires par valeur.`,
+    );
+    log = this.logger.append(
+      log,
+      `${name} ${updatedMeta.allowDrawAfterFirstQuit ? 'autorise' : 'interdit'} la pioche après le premier retrait.`,
+    );
+    log = this.logger.append(
+      log,
+      `${name} autorise le rendu de jetons à partir de la manche ${returnTokenFromRound}.`,
     );
     log = this.logger.append(log, `Début de la partie.`);
 
@@ -274,5 +365,36 @@ export class LamaSetupService {
       return false;
     }
     return false;
+  }
+
+  private readAllowDrawAfterFirstQuit(
+    payload: Record<string, unknown>,
+    fallback: boolean,
+  ): boolean {
+    const raw = payload?.allowDrawAfterFirstQuit;
+    if (raw == null || raw === '') return fallback;
+    if (typeof raw === 'boolean') return raw;
+    if (typeof raw === 'number') return raw === 1;
+    if (typeof raw !== 'string') return fallback;
+    const value = raw.trim().toLowerCase();
+    if (
+      value === 'true' ||
+      value === '1' ||
+      value === 'yes' ||
+      value === 'oui' ||
+      value === 'on'
+    ) {
+      return true;
+    }
+    if (
+      value === 'false' ||
+      value === '0' ||
+      value === 'no' ||
+      value === 'non' ||
+      value === 'off'
+    ) {
+      return false;
+    }
+    return fallback;
   }
 }

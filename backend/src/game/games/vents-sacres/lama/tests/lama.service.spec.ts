@@ -95,6 +95,10 @@ describe('LamaService', () => {
           loseAtScore: 40,
           roundPauseSeconds: 2,
           allowPlayAfterDraw: 'true',
+          startingHandSize: 5,
+          copiesPerCardValue: 9,
+          allowDrawAfterFirstQuit: 'true',
+          returnTokenFromRound: 3,
         },
         meta: { actorId: 1 },
       } as any,
@@ -103,6 +107,13 @@ describe('LamaService', () => {
     expect(Number(started.metadata?.roundPauseSeconds ?? -1)).toBe(2);
     expect(Number(started.metadata?.loseAtScore ?? 0)).toBe(40);
     expect(Boolean(started.metadata?.allowPlayAfterDraw)).toBe(true);
+    expect(Number(started.metadata?.startingHandSize ?? 0)).toBe(5);
+    expect(Number(started.metadata?.copiesPerCardValue ?? 0)).toBe(9);
+    expect(Boolean(started.metadata?.allowDrawAfterFirstQuit)).toBe(true);
+    expect(Number(started.metadata?.returnTokenFromRound ?? 0)).toBe(3);
+    expect((started.metadata?.handsByPlayerId?.['1'] ?? []).length).toBe(5);
+    expect((started.metadata?.handsByPlayerId?.['2'] ?? []).length).toBe(5);
+    expect((started.metadata?.deck ?? []).length).toBe(52);
     expect((started.metadata?.discard ?? []).length).toBeGreaterThan(0);
   });
 
@@ -788,6 +799,52 @@ describe('LamaService', () => {
     );
   });
 
+  it('allows draw after another player has quit when configured', async () => {
+    const { service } = createLamaServiceForTest();
+
+    const state: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 5,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: null,
+      metadata: {
+        roundNumber: 1,
+        roundStarterIndex: 0,
+        allowDrawAfterFirstQuit: true,
+        deck: [6, 5],
+        discard: [1],
+        handsByPlayerId: { '1': [2], '2': [3] },
+        droppedOutByPlayerId: { '1': false, '2': true },
+        scoresByPlayerId: { '1': 0, '2': 0 },
+        step: 'turn_choice',
+        pendingReturnQueue: [],
+        pendingReturnPlayerId: null,
+        winnerId: null,
+      },
+    };
+
+    const exposed: any = service.exposeStateForUser(state, 1);
+    const actionTypes = (exposed?.actions ?? []).map((a: any) =>
+      String(a?.type ?? '').toLowerCase(),
+    );
+    expect(actionTypes).toContain('draw');
+
+    const after: any = service.applyActions(state, [
+      { type: 'draw', payload: {}, meta: { actorId: 1 } } as any,
+    ]);
+
+    expect((after.metadata?.deck ?? []).length).toBe(1);
+    expect((after.metadata?.handsByPlayerId?.['1'] ?? []).length).toBe(2);
+  });
+
   it('keeps the turn after a draw when allowPlayAfterDraw is configured', async () => {
     const { service } = createLamaServiceForTest();
 
@@ -1229,5 +1286,49 @@ describe('LamaService', () => {
     expect(Number(after.metadata?.scoresByPlayerId?.['1'] ?? 0)).toBe(5);
     expect(String(after.metadata?.step ?? '')).toBe('turn_choice');
     expect(after.metadata?.pendingReturnPlayerId).toBeNull();
+  });
+
+  it('invite au retour de jetons des la premiere manche quand configure', async () => {
+    const { service } = createLamaServiceForTest();
+
+    const base: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'Winner' },
+        { id: 2, username: 'Loser' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: { step: 'turn_choice', playerId: 1 },
+      metadata: {
+        ownerPlayerId: 1,
+        loseAtScore: 40,
+        roundPauseSeconds: 0,
+        roundPauseUntilMs: null,
+        returnTokenFromRound: 1,
+        roundNumber: 1,
+        roundStarterIndex: 0,
+        deck: [],
+        discard: [1],
+        handsByPlayerId: { '1': [1], '2': [2, 3] },
+        droppedOutByPlayerId: { '1': false, '2': false },
+        scoresByPlayerId: { '1': 5, '2': 0 },
+        step: 'turn_choice',
+        pendingReturnQueue: [],
+        pendingReturnPlayerId: null,
+        winnerId: null,
+      },
+    };
+
+    const after: any = service.applyActions(base, [
+      { type: 'lama_play', payload: { value: 1 }, meta: { actorId: 1 } } as any,
+    ]);
+
+    expect(String(after.metadata?.step ?? '')).toBe('return_token');
+    expect(Number(after.metadata?.pendingReturnPlayerId ?? 0)).toBe(1);
   });
 });
