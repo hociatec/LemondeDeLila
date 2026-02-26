@@ -67,55 +67,74 @@ public static class MojibakeTextRepair
 
     private static readonly (Regex Pattern, string Replacement)[] PhraseReplacements =
     [
-        (new Regex(@"\bmise\s+a\s+jour\b", RegexOptions.Compiled | RegexOptions.IgnoreCase), "mise à jour"),
-        (new Regex(@"\bmises\s+a\s+jour\b", RegexOptions.Compiled | RegexOptions.IgnoreCase), "mises à jour"),
-        (new Regex(@"\ba\s+l'?echeance\b", RegexOptions.Compiled | RegexOptions.IgnoreCase), "à l'échéance"),
+        (new Regex(@"\bmise\s+a\s+jour\b", RegexOptions.Compiled | RegexOptions.IgnoreCase), "mise \u00E0 jour"),
+        (new Regex(@"\bmises\s+a\s+jour\b", RegexOptions.Compiled | RegexOptions.IgnoreCase), "mises \u00E0 jour"),
+        (new Regex(@"\ba\s+l'?echeance\b", RegexOptions.Compiled | RegexOptions.IgnoreCase), "\u00E0 l'\u00E9ch\u00E9ance"),
+        (new Regex(@"\bc['’]est\s+a\b", RegexOptions.Compiled | RegexOptions.IgnoreCase), "c'est \u00E0"),
+        (new Regex(@"\best\s+a\b", RegexOptions.Compiled | RegexOptions.IgnoreCase), "est \u00E0"),
+        (new Regex(@"\ba\s+retirer\b", RegexOptions.Compiled | RegexOptions.IgnoreCase), "\u00E0 retirer"),
+        (new Regex(@"\bn['’]est\s+pas\s+retire\b", RegexOptions.Compiled | RegexOptions.IgnoreCase), "n'est pas retir\u00E9"),
+        (new Regex(@"\bdodo\s+reparateur\b", RegexOptions.Compiled | RegexOptions.IgnoreCase), "dodo r\u00E9parateur"),
+        (new Regex(@"\bchien\s+enrage\b", RegexOptions.Compiled | RegexOptions.IgnoreCase), "chien enrag\u00E9"),
+        (new Regex(@"\bcoussin\s+piege\b", RegexOptions.Compiled | RegexOptions.IgnoreCase), "coussin pi\u00E9g\u00E9"),
+        (new Regex(@"\bsol\s+cire\b", RegexOptions.Compiled | RegexOptions.IgnoreCase), "sol cir\u00E9"),
     ];
 
     private static readonly Regex WordRegex = new(@"\b[0-9A-Za-z][0-9A-Za-z'-]*\b", RegexOptions.Compiled);
     private static readonly Dictionary<string, string> WordReplacements = new(StringComparer.Ordinal)
     {
-        ["acces"] = "accès",
-        ["annulee"] = "annulée",
-        ["annulees"] = "annulées",
-        ["categorie"] = "catégorie",
-        ["categories"] = "catégories",
-        ["connecte"] = "connecté",
-        ["connectes"] = "connectés",
-        ["deconnecte"] = "déconnecté",
-        ["deconnectes"] = "déconnectés",
-        ["delai"] = "délai",
-        ["delais"] = "délais",
-        ["echeance"] = "échéance",
-        ["echeances"] = "échéances",
-        ["ecran"] = "écran",
-        ["ecrans"] = "écrans",
-        ["entree"] = "entrée",
-        ["entrees"] = "entrées",
-        ["etagere"] = "étagère",
-        ["etageres"] = "étagères",
-        ["etre"] = "être",
-        ["etres"] = "êtres",
-        ["fermee"] = "fermée",
-        ["fermees"] = "fermées",
-        ["forcage"] = "forçage",
-        ["general"] = "général",
-        ["immediat"] = "immédiat",
-        ["immediatement"] = "immédiatement",
-        ["immediates"] = "immédiates",
-        ["modere"] = "modéré",
-        ["parametre"] = "paramètre",
-        ["parametres"] = "paramètres",
-        ["redemarrage"] = "redémarrage",
-        ["regle"] = "réglé",
-        ["regler"] = "régler",
-        ["reouverture"] = "réouverture",
+        ["acces"] = "acc\u00E8s",
+        ["annulee"] = "annul\u00E9e",
+        ["annulees"] = "annul\u00E9es",
+        ["categorie"] = "cat\u00E9gorie",
+        ["categories"] = "cat\u00E9gories",
+        ["connecte"] = "connect\u00E9",
+        ["connectes"] = "connect\u00E9s",
+        ["deja"] = "d\u00E9j\u00E0",
+        ["deconnecte"] = "d\u00E9connect\u00E9",
+        ["deconnectes"] = "d\u00E9connect\u00E9s",
+        ["delai"] = "d\u00E9lai",
+        ["delais"] = "d\u00E9lais",
+        ["echeance"] = "\u00E9ch\u00E9ance",
+        ["echeances"] = "\u00E9ch\u00E9ances",
+        ["ecran"] = "\u00E9cran",
+        ["ecrans"] = "\u00E9crans",
+        ["entree"] = "entr\u00E9e",
+        ["entrees"] = "entr\u00E9es",
+        ["etagere"] = "\u00E9tag\u00E8re",
+        ["etageres"] = "\u00E9tag\u00E8res",
+        ["etre"] = "\u00EAtre",
+        ["etres"] = "\u00EAtres",
+        ["fermee"] = "ferm\u00E9e",
+        ["fermees"] = "ferm\u00E9es",
+        ["forcage"] = "for\u00E7age",
+        ["general"] = "g\u00E9n\u00E9ral",
+        ["immediat"] = "imm\u00E9diat",
+        ["immediatement"] = "imm\u00E9diatement",
+        ["immediates"] = "imm\u00E9diates",
+        ["modere"] = "mod\u00E9r\u00E9",
+        ["parametre"] = "param\u00E8tre",
+        ["parametres"] = "param\u00E8tres",
+        ["redemarrage"] = "red\u00E9marrage",
+        ["regle"] = "r\u00E9gl\u00E9",
+        ["regler"] = "r\u00E9gler",
+        ["reparateur"] = "r\u00E9parateur",
+        ["reparateurs"] = "r\u00E9parateurs",
+        ["reouverture"] = "r\u00E9ouverture",
         ["requis"] = "requis",
         ["requise"] = "requise",
-        ["resume"] = "résumé",
-        ["sauvegarde"] = "sauvegardé",
-        ["terminee"] = "terminée",
-        ["tres"] = "très",
+        ["retire"] = "retir\u00E9",
+        ["retires"] = "retir\u00E9s",
+        ["resume"] = "r\u00E9sum\u00E9",
+        ["sauvegarde"] = "sauvegard\u00E9",
+        ["terminee"] = "termin\u00E9e",
+        ["tres"] = "tr\u00E8s",
+        ["enrage"] = "enrag\u00E9",
+        ["enrages"] = "enrag\u00E9s",
+        ["piege"] = "pi\u00E9g\u00E9",
+        ["pieges"] = "pi\u00E9g\u00E9s",
+        ["cire"] = "cir\u00E9",
+        ["cires"] = "cir\u00E9s",
     };
 
     public static bool IsEnabled
@@ -136,7 +155,7 @@ public static class MojibakeTextRepair
             return false;
         }
 
-        return LooksSuspicious(value);
+        return LooksSuspicious(value) || HasFrenchTypoCandidates(value);
     }
 
     public static void SetEnabled(bool enabled)
@@ -172,13 +191,13 @@ public static class MojibakeTextRepair
             return input;
         }
 
-        if (!LooksSuspicious(input))
+        var suspicious = LooksSuspicious(input);
+        if (!suspicious)
         {
-            return input;
+            return ApplyFrenchReplacements(input);
         }
-
         var best = input;
-        if (LooksSuspicious(input))
+        if (suspicious)
         {
             var currentScore = Score(input);
             var targeted = ApplyTargetedReplacements(input);
@@ -381,6 +400,33 @@ public static class MojibakeTextRepair
                value.IndexOf('Â') >= 0 ||
                value.IndexOf("â", StringComparison.Ordinal) >= 0 ||
                value.IndexOf('�') >= 0;
+    }
+
+    private static bool HasFrenchTypoCandidates(string value)
+    {
+        foreach (var (pattern, _) in PhraseReplacements)
+        {
+            if (pattern.IsMatch(value))
+            {
+                return true;
+            }
+        }
+
+        foreach (Match match in WordRegex.Matches(value))
+        {
+            var token = match.Value;
+            if (token.Length <= 1)
+            {
+                continue;
+            }
+
+            if (WordReplacements.ContainsKey(token.ToLowerInvariant()))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
     private static bool IsLossyAccentTransform(string before, string after)
     {

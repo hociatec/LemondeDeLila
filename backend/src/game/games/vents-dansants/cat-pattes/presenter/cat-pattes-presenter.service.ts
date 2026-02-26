@@ -17,8 +17,21 @@ export class CatPattesPresenterService {
     userId: number,
   ): GameStateWithActions {
     const meta = (state.metadata ?? {}) as CatPattesMetadata;
+    const goalPattes = (() => {
+      const parsed = Number(meta.goalPattes ?? CAT_PATTES_GOAL);
+      if (!Number.isFinite(parsed)) return CAT_PATTES_GOAL;
+      const rounded = Math.round(parsed);
+      if (rounded < 600 || rounded > 1500) return CAT_PATTES_GOAL;
+      return rounded;
+    })();
     const actions = Rulebook.getAvailableActions(state, userId);
-    const pending = this.normalizePending(state.pending as any, actions);
+    const basePending = state.pending as any;
+    const pendingForUser =
+      basePending?.type === 'config_prompt' &&
+      Number(basePending?.playerId ?? NaN) !== Number(userId)
+        ? null
+        : basePending;
+    const pending = this.normalizePending(pendingForUser, actions);
     const handIds = Array.isArray(meta.hands?.[userId])
       ? [...meta.hands[userId]]
       : [];
@@ -44,15 +57,15 @@ export class CatPattesPresenterService {
       const pid = p?.id;
       const name = nameById[pid] ?? `Joueur ${pid}`;
       const value = Number(meta.positions?.[pid] ?? 0);
-      return `${name} : ${value} pattes / ${CAT_PATTES_GOAL}.`;
+      return `${name} : ${value} pattes / ${goalPattes}.`;
     });
 
     const obstacleLabels: Record<string, string> = {
       gamelle: 'Gamelle vide',
       pluie: 'Pluie torrentielle',
-      chien: 'Chien enrage',
-      coussin: 'Coussin piege',
-      sol: 'Sol cire',
+      chien: 'Chien enragé',
+      coussin: 'Coussin piégé',
+      sol: 'Sol ciré',
     };
     const botLabels: Record<string, string> = {
       reserve: 'Reserve secrete',
@@ -71,6 +84,9 @@ export class CatPattesPresenterService {
       const botLabel = botNames.length ? botNames.join(', ') : 'Aucun';
       return `${name} : Soleil ${hasSun ? 'actif' : 'absent'}, Obstacle ${obstacleLabel}, Pouvoirs ${botLabel}.`;
     });
+    const viewerName = nameById[userId] ?? `Joueur ${userId}`;
+    const viewerPattes = Number(meta.positions?.[userId] ?? 0);
+    const infoHeader = `${viewerName} : ${viewerPattes} pattes / ${goalPattes}.`;
 
     const handCounts = Object.entries(meta.hands ?? {})
       .map(
@@ -120,8 +136,8 @@ export class CatPattesPresenterService {
           info: {
             title: 'Effets en cours',
             message: effectLines.length
-              ? effectLines.join('\n')
-              : 'Aucun effet actif.',
+              ? `${infoHeader}\n${effectLines.join('\n')}`
+              : `${infoHeader}\nAucun effet actif.`,
           },
         },
       },

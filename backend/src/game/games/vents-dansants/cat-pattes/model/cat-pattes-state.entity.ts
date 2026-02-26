@@ -17,6 +17,9 @@ export interface CatPattesMetadata {
   hasSun: Record<number, boolean>;
   pawns: CatPattesPawn[];
   pawnByPlayerId: Record<number, string>;
+  setupStep?: 'setup_config' | 'choose_pawn' | 'playing';
+  ownerPlayerId?: number | null;
+  goalPattes?: number;
   setupStarterId?: number | null;
   drawnPlayerId?: number | null;
   winnerId?: number | null;

@@ -84,9 +84,12 @@ describe('CatPattes flow', () => {
     seeded.turn = { currentPlayerId: 2, direction: 1 };
 
     let state = setup.hydrateInitialState(seeded);
-    expect((state.pending as any)?.type).toBe('choose_pawn');
+    expect((state.pending as any)?.type).toBe('config_prompt');
     expect((state.pending as any)?.playerId).toBe(1);
 
+    state = actionSvc.applyActions(state, [
+      { type: 'cat_pattes_set_config', payload: { goalPattes: 1000 } } as any,
+    ]);
     state = actionSvc.applyActions(state, [
       { type: 'choose_pawn', payload: { pawnId: 'Maine Coon' } } as any,
     ]);
@@ -155,13 +158,20 @@ describe('CatPattes flow', () => {
     const actionsService = moduleRef.get(CatPattesActionService);
 
     let state = setup.hydrateInitialState(baseState());
-    expect((state.pending as any)?.type).toBe('choose_pawn');
+    expect((state.pending as any)?.type).toBe('config_prompt');
 
     const actionsP1 = Rulebook.getAvailableActions(state as any, 1);
-    expect(actionsP1.every((a: any) => a.type === 'choose_pawn')).toBe(true);
+    expect(
+      actionsP1.every((a: any) => a.type === 'cat_pattes_set_config'),
+    ).toBe(true);
 
     state = actionsService.applyActions(state, [
+      { type: 'cat_pattes_set_config', payload: { goalPattes: 1000 } } as any,
+    ]);
+    state = actionsService.applyActions(state, [
       { type: 'choose_pawn', payload: { pawnId: 'Maine Coon' } } as any,
+    ]);
+    state = actionsService.applyActions(state, [
       { type: 'choose_pawn', payload: { pawnId: 'Siamois' } } as any,
     ]);
 
@@ -238,7 +248,12 @@ describe('CatPattes flow', () => {
 
     let state = setup.hydrateInitialState(baseState());
     state = actionsService.applyActions(state, [
+      { type: 'cat_pattes_set_config', payload: { goalPattes: 1000 } } as any,
+    ]);
+    state = actionsService.applyActions(state, [
       { type: 'choose_pawn', payload: { pawnId: 'Maine Coon' } } as any,
+    ]);
+    state = actionsService.applyActions(state, [
       { type: 'choose_pawn', payload: { pawnId: 'Siamois' } } as any,
     ]);
 
@@ -330,7 +345,12 @@ describe('CatPattes flow', () => {
 
     let state = setup.hydrateInitialState(baseState());
     state = actionsService.applyActions(state, [
+      { type: 'cat_pattes_set_config', payload: { goalPattes: 1000 } } as any,
+    ]);
+    state = actionsService.applyActions(state, [
       { type: 'choose_pawn', payload: { pawnId: 'Maine Coon' } } as any,
+    ]);
+    state = actionsService.applyActions(state, [
       { type: 'choose_pawn', payload: { pawnId: 'Siamois' } } as any,
     ]);
 
@@ -374,7 +394,7 @@ describe('CatPattes flow', () => {
     expect(messages.some((m) => /passe son tour/i.test(m))).toBe(true);
   });
 
-  it('exposes choose_pawn pending choices to the current user', async () => {
+  it('exposes config prompt to the owner at setup', async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         GameCoreService,
@@ -391,14 +411,14 @@ describe('CatPattes flow', () => {
     const state = setup.hydrateInitialState(baseState());
     const exposed: any = presenter.exposeStateForUser(state, 1);
 
-    expect(exposed.pending?.type).toBe('choose_pawn');
-    expect(Array.isArray(exposed.pending?.choices)).toBe(true);
-    expect((exposed.pending?.choices ?? []).length).toBeGreaterThan(0);
+    expect(exposed.pending?.type).toBe('config_prompt');
 
     const actions = Array.isArray(exposed.actions) ? exposed.actions : [];
     expect(actions.length).toBeGreaterThan(0);
     expect(
-      actions.every((a: any) => String(a?.type ?? '') === 'choose_pawn'),
+      actions.every(
+        (a: any) => String(a?.type ?? '') === 'cat_pattes_set_config',
+      ),
     ).toBe(true);
   });
 });

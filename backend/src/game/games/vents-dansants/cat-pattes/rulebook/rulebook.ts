@@ -22,10 +22,19 @@ type CatPattesActionPayload = {
   pawnId?: string | null;
   pawn?: string | null;
   value?: string | null;
+  goalPattes?: number | null;
 };
 
 function getMeta(state: GameStateEntity): CatPattesMetadata {
   return (state.metadata ?? {}) as CatPattesMetadata;
+}
+
+function getGoalPattes(meta: CatPattesMetadata): number {
+  const parsed = Number(meta.goalPattes ?? CAT_PATTES_GOAL);
+  if (!Number.isFinite(parsed)) return CAT_PATTES_GOAL;
+  const rounded = Math.round(parsed);
+  if (rounded < 600 || rounded > 1500) return CAT_PATTES_GOAL;
+  return rounded;
 }
 
 export const CAT_PATTES_OBSTACLE_TO_PARADE: Record<
@@ -92,7 +101,7 @@ export function canPlayPattes(
   const currentPos = Number(meta.positions?.[playerId] ?? 0);
   const delta = Number(card.value ?? 0);
   if (!Number.isFinite(delta) || delta <= 0) return false;
-  return currentPos + delta <= CAT_PATTES_GOAL;
+  return currentPos + delta <= getGoalPattes(meta);
 }
 
 export function playerCanReceiveObstacle(
@@ -122,6 +131,14 @@ export function getAvailableActions(
 ): GameSingleActionDto[] {
   if (!isStartedState(state)) return [];
 
+  const meta = getMeta(state);
+  if ((meta.setupStep ?? '') === 'setup_config') {
+    if (meta.ownerPlayerId != null && samePlayerId(meta.ownerPlayerId, playerId)) {
+      return [{ type: 'cat_pattes_set_config', payload: {} }];
+    }
+    return [];
+  }
+
   const pending = state.pending as any;
   if (pending) {
     const pawnActions = getPendingPawnActionsForPlayer(
@@ -138,7 +155,6 @@ export function getAvailableActions(
   const current = state.turn?.currentPlayerId ?? null;
   if (!samePlayerId(current, playerId)) return [];
 
-  const meta = getMeta(state);
   if (!samePlayerId(meta.drawnPlayerId, playerId)) {
     return [{ type: 'draw', payload: {} }];
   }
@@ -201,6 +217,7 @@ export function validateAction(
     type !== 'discard_card' &&
     type !== 'draw' &&
     type !== 'choose_pawn' &&
+    type !== 'cat_pattes_set_config' &&
     type !== 'pass'
   ) {
     throw new Error(`Action inconnue: ${type}`);
@@ -211,6 +228,28 @@ export function validateAction(
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
     throw new Error("La partie n'est pas démarrée.");
+  }
+
+  const meta = getMeta(state);
+  if ((meta.setupStep ?? '') === 'setup_config') {
+    if (type !== 'cat_pattes_set_config') {
+      throw new Error('Configuration requise avant de commencer.');
+    }
+    if (!samePlayerId(meta.ownerPlayerId, actorId)) {
+      throw new Error("Seul le propriétaire de la table peut configurer.");
+    }
+    const goal = Number(payload.goalPattes ?? payload.value ?? null);
+    if (!Number.isFinite(goal)) {
+      throw new Error('Objectif de pattes invalide.');
+    }
+    const roundedGoal = Math.round(goal);
+    if (roundedGoal < 600 || roundedGoal > 1500) {
+      throw new Error('Objectif de pattes hors limites (600-1500).');
+    }
+    return {
+      type: 'cat_pattes_set_config',
+      payload: { goalPattes: roundedGoal },
+    };
   }
 
   const pending = state.pending as any;
@@ -240,7 +279,6 @@ export function validateAction(
     throw new Error("Ce n'est pas votre tour.");
   }
 
-  const meta = getMeta(state);
   if (!samePlayerId(meta.drawnPlayerId, actorId)) {
     if (type !== 'draw') {
       throw new Error("Vous devez d'abord piocher.");
@@ -303,9 +341,9 @@ export function validateAction(
     }
     const currentPos = Number(meta.positions?.[actorId] ?? 0);
     const delta = Number(definition.value ?? 0);
-    if (Number.isFinite(delta) && currentPos + delta > CAT_PATTES_GOAL) {
+    if (Number.isFinite(delta) && currentPos + delta > getGoalPattes(meta)) {
       throw new Error(
-        'Impossible de jouer Pattes: depassement de 1 000 pattes.',
+        `Impossible de jouer Pattes: depassement de ${getGoalPattes(meta)} pattes.`,
       );
     }
     throw new Error('Impossible de jouer Pattes.');

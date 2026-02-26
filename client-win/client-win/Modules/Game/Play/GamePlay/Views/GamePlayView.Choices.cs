@@ -190,13 +190,12 @@ public partial class GamePlayView
                     {
                         if (!HandList.IsVisible || HandList.Items.Count <= 0)
                         {
-                            // Keep pending restore for a few refresh ticks, then fallback to game zone.
+                            // Keep pending restore for a few refresh ticks, then stop silently.
                             _restoreHandFocusMisses++;
                             if (_restoreHandFocusMisses >= 6)
                             {
                                 _restoreHandFocusAfterSubmit = false;
                                 _restoreHandFocusMisses = 0;
-                                FocusPreferredInteractiveElement();
                             }
                             return;
                         }
@@ -211,7 +210,7 @@ public partial class GamePlayView
 
                         HandList.SelectedIndex = idx;
                         HandList.ScrollIntoView(HandList.SelectedItem);
-                        TryFocusChoiceIndex(HandList, idx);
+                        // Silent restore: keep selection stable without forcing keyboard focus.
                     }
                     catch
                     {
@@ -231,13 +230,12 @@ public partial class GamePlayView
                     {
                         if (!ChoicesList.IsVisible || ChoicesList.Items.Count <= 0)
                         {
-                            // Keep pending restore for a few refresh ticks, then fallback to game zone.
+                            // Keep pending restore for a few refresh ticks, then stop silently.
                             _restoreChoiceFocusMisses++;
                             if (_restoreChoiceFocusMisses >= 6)
                             {
                                 _restoreChoiceFocusAfterSubmit = false;
                                 _restoreChoiceFocusMisses = 0;
-                                FocusPreferredInteractiveElement();
                             }
                             return;
                         }
@@ -252,7 +250,7 @@ public partial class GamePlayView
 
                         ChoicesList.SelectedIndex = idx;
                         ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
-                        TryFocusChoiceIndex(ChoicesList, idx);
+                        // Silent restore: keep selection stable without forcing keyboard focus.
                     }
                     catch
                     {
@@ -639,13 +637,12 @@ public partial class GamePlayView
                 {
                     if (!HandList.IsVisible || HandList.Items.Count <= 0)
                     {
-                        // Keep pending restore for a few refresh ticks, then fallback to game zone.
+                        // Keep pending restore for a few refresh ticks, then stop silently.
                         _restoreHandFocusMisses++;
                         if (_restoreHandFocusMisses >= 6)
                         {
                             _restoreHandFocusAfterSubmit = false;
                             _restoreHandFocusMisses = 0;
-                            FocusPreferredInteractiveElement();
                         }
                         return;
                     }
@@ -666,7 +663,7 @@ public partial class GamePlayView
 
                     HandList.SelectedIndex = idx;
                     HandList.ScrollIntoView(HandList.SelectedItem);
-                    TryFocusChoiceIndex(HandList, idx);
+                    // Silent restore: keep selection stable without forcing keyboard focus.
                 }
                 catch
                 {

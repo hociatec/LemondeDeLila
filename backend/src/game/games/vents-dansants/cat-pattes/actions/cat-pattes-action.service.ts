@@ -37,37 +37,43 @@ type CatPattesActionPayload = {
   pawnId?: string | null;
   pawn?: string | null;
   value?: string | null;
+  goalPattes?: number | null;
 };
 
 const OBSTACLE_LABELS: Record<CatPattesObstacleType, string> = {
   gamelle: 'Gamelle vide',
   pluie: 'Pluie torrentielle',
-  chien: 'Chien enrage',
-  coussin: 'Coussin piege',
-  sol: 'Sol cire',
+  chien: 'Chien enragé',
+  coussin: 'Coussin piégé',
+  sol: 'Sol ciré',
 };
 
 const PARADE_LABELS: Record<CatPattesParadeType, string> = {
   croquettes: 'Croquettes',
   rayon: 'Rayon de soleil',
-  dodo: 'Dodo reparateur',
+  dodo: 'Dodo réparateur',
   coussin: 'Nouveau coussin',
   saut: 'Saut agile',
 };
 
 const BOT_EFFECTS: Record<CatPattesBotType, string> = {
   reserve: 'Ignore Gamelle vide.',
-  'chat-ninja': 'Ignore Chien enrage.',
-  'patte-blindee': 'Ignore Coussin piege.',
-  'passage-star': 'Ignore Pluie torrentielle et Sol cire, et permet de jouer sans soleil.',
+  'chat-ninja': 'Ignore Chien enragé.',
+  'patte-blindee': 'Ignore Coussin piégé.',
+  'passage-star':
+    'Ignore Pluie torrentielle et Sol ciré, et permet de jouer sans soleil.',
 };
 
 const OBSTACLE_IMPACTS: Record<CatPattesObstacleType, string> = {
-  gamelle: "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retire",
-  pluie: "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retire",
-  chien: "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retire",
-  coussin: "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retire",
-  sol: "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retire",
+  gamelle:
+    "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retiré",
+  pluie:
+    "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retiré",
+  chien:
+    "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retiré",
+  coussin:
+    "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retiré",
+  sol: "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retiré",
 };
 
 @Injectable()
@@ -105,6 +111,10 @@ export class CatPattesActionService {
             },
             play_card: () => {
               next = this.handlePlayCard(next, action);
+              return next;
+            },
+            cat_pattes_set_config: () => {
+              next = this.handleSetConfig(next, action);
               return next;
             },
             discard_card: () => {
@@ -153,6 +163,7 @@ export class CatPattesActionService {
 
     const nextMeta: CatPattesMetadata = {
       ...meta,
+      setupStep: 'choose_pawn',
       pawns:
         Array.isArray(meta.pawns) && meta.pawns.length > 0
           ? meta.pawns
@@ -227,6 +238,10 @@ export class CatPattesActionService {
     let started: GameStateEntity = {
       ...next,
       pending: null,
+      metadata: {
+        ...this.getMeta(next),
+        setupStep: 'playing',
+      } as any,
       turnIndex: starterIndex >= 0 ? starterIndex : next.turnIndex,
       turn: {
         ...(next.turn ?? { direction: 1 }),
@@ -249,6 +264,7 @@ export class CatPattesActionService {
     const status = String(state.status ?? '').toLowerCase();
     if (status !== 'started') return state;
     if (state.pending) return state;
+    if ((this.getMeta(state).setupStep ?? '') === 'setup_config') return state;
 
     const currentId = this.toPlayerId(state.turn?.currentPlayerId ?? null);
     if (currentId == null) return state;
@@ -297,6 +313,7 @@ export class CatPattesActionService {
     const currentId = this.toPlayerId(state.turn?.currentPlayerId ?? null);
     if (currentId == null) return state;
     const meta = this.getMeta(state);
+    if ((meta.setupStep ?? '') === 'setup_config') return state;
     if (!this.samePlayerId(meta.drawnPlayerId, currentId)) return state;
 
     const payload = (action.payload ?? {}) as CatPattesActionPayload;
@@ -324,6 +341,7 @@ export class CatPattesActionService {
   ): GameStateEntity {
     const currentId = this.toPlayerId(state.turn?.currentPlayerId ?? null);
     if (currentId == null) return state;
+    if ((this.getMeta(state).setupStep ?? '') === 'setup_config') return state;
 
     const payload = (action.payload ?? {}) as CatPattesActionPayload;
     const cardId = String(payload.cardId ?? '').trim();
@@ -344,7 +362,7 @@ export class CatPattesActionService {
       if (!canPlayPattes(meta, currentId, definition)) return state;
       const currentPos = Number(meta.positions?.[currentId] ?? 0);
       const delta = Number(definition.value ?? 0);
-      if (!Number.isFinite(delta) || currentPos + delta > CAT_PATTES_GOAL)
+      if (!Number.isFinite(delta) || currentPos + delta > this.getGoalPattes(meta))
         return state;
     }
 
@@ -399,12 +417,49 @@ export class CatPattesActionService {
     return this.turns.advanceTurn(next);
   }
 
+  private handleSetConfig(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    const status = String(state.status ?? '').toLowerCase();
+    if (status !== 'started') return state;
+
+    const meta = this.getMeta(state);
+    if ((meta.setupStep ?? '') !== 'setup_config') return state;
+
+    const currentId = this.toPlayerId(state.turn?.currentPlayerId ?? null);
+    if (currentId == null || !this.samePlayerId(meta.ownerPlayerId, currentId)) {
+      return state;
+    }
+
+    const payload = (action.payload ?? {}) as CatPattesActionPayload;
+    const rawGoal = Number(payload.goalPattes ?? payload.value ?? null);
+    if (!Number.isFinite(rawGoal)) return state;
+    const goalPattes = Math.round(rawGoal);
+    if (goalPattes < 600 || goalPattes > 1500) return state;
+
+    let next = this.setMeta(state, {
+      ...meta,
+      setupStep: 'choose_pawn',
+      goalPattes,
+    });
+    next = {
+      ...next,
+      pending: null,
+    };
+    return this.core.appendLog(
+      next,
+      `${resolvePlayerNameFromState(next, currentId)} fixe l'objectif à ${goalPattes} pattes.`,
+    );
+  }
+
   private playPattes(
     state: GameStateEntity,
     playerId: number,
     card: CatPattesCardDefinition,
   ): GameStateEntity {
     const meta = this.getMeta(state);
+    const goalPattes = this.getGoalPattes(meta);
     const positions = { ...(meta.positions ?? {}) };
     const previous = positions[playerId] ?? 0;
     const delta = card.value ?? 0;
@@ -424,12 +479,17 @@ export class CatPattesActionService {
 
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} joue ${card.name} et avance de ${delta} pattes (total ${nextPosition}/${CAT_PATTES_GOAL}).`,
+      `${resolvePlayerNameFromState(next, playerId)} joue ${card.name} et avance de ${delta} pattes (total ${nextPosition}/${goalPattes}).`,
     );
 
-    if (nextPosition === CAT_PATTES_GOAL) {
+    if (nextPosition === goalPattes) {
       const finalMeta = this.getMeta(next);
-      const roundPoints = this.computeRoundPoints(next, playerId, finalMeta);
+      const roundPoints = this.computeRoundPoints(
+        next,
+        playerId,
+        finalMeta,
+        goalPattes,
+      );
       const points = { ...(finalMeta.points ?? {}) };
       points[playerId] = (points[playerId] ?? 0) + roundPoints;
       next = this.setMeta(next, {
@@ -439,7 +499,7 @@ export class CatPattesActionService {
       });
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} atteint ${CAT_PATTES_GOAL} pattes et remporte la manche (${roundPoints} points).`,
+        `${resolvePlayerNameFromState(next, playerId)} atteint ${goalPattes} pattes et remporte la manche (${roundPoints} points).`,
       );
       return { ...next, status: 'finished' };
     }
@@ -451,8 +511,9 @@ export class CatPattesActionService {
     state: GameStateEntity,
     winnerId: number,
     meta: CatPattesMetadata,
+    goalPattes: number,
   ): number {
-    let points = CAT_PATTES_GOAL;
+    let points = goalPattes;
 
     const turboCount = Number(meta.turboPlayed?.[winnerId] ?? 0);
     if (turboCount >= 4) points += 200;
@@ -532,7 +593,7 @@ export class CatPattesActionService {
     } else {
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} joue ${card.name} mais n'a aucun obstacle a retirer.`,
+        `${resolvePlayerNameFromState(next, playerId)} joue ${card.name} mais n'a aucun obstacle à retirer.`,
       );
     }
 
@@ -544,7 +605,7 @@ export class CatPattesActionService {
       next = this.setMeta(next, meta);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} ${alreadyActive ? 'a deja le soleil actif.' : 'active le soleil.'}`,
+        `${resolvePlayerNameFromState(next, playerId)} ${alreadyActive ? 'a déjà le soleil actif.' : 'active le soleil.'}`,
       );
     }
 
@@ -664,6 +725,7 @@ export class CatPattesActionService {
     if (!players.length) return state;
 
     const meta = this.getMeta(state);
+    if ((meta.setupStep ?? '') === 'setup_config') return state;
     const hasAssignedPawn = (playerId: number): boolean => {
       if (meta.pawnByPlayerId?.[playerId]) return true;
       const player = players.find((p) => Number(p?.id) === Number(playerId));
@@ -676,9 +738,15 @@ export class CatPattesActionService {
 
     const missingHumans = players.filter((player) => needsPawn(player));
     if (!missingHumans.length) {
-      return state.pending?.type === 'choose_pawn'
-        ? { ...state, pending: null }
-        : state;
+      const clearedState =
+        state.pending?.type === 'choose_pawn' ? { ...state, pending: null } : state;
+      if ((meta.setupStep ?? '') !== 'playing') {
+        return this.setMeta(clearedState, {
+          ...this.getMeta(clearedState),
+          setupStep: 'playing',
+        });
+      }
+      return clearedState;
     }
 
     if (state.pending?.type === 'choose_pawn') {
@@ -804,5 +872,13 @@ export class CatPattesActionService {
     const a = this.toPlayerId(left);
     const b = this.toPlayerId(right);
     return a != null && b != null && a === b;
+  }
+
+  private getGoalPattes(meta: CatPattesMetadata): number {
+    const parsed = Number(meta.goalPattes ?? CAT_PATTES_GOAL);
+    if (!Number.isFinite(parsed)) return CAT_PATTES_GOAL;
+    const rounded = Math.round(parsed);
+    if (rounded < 600 || rounded > 1500) return CAT_PATTES_GOAL;
+    return rounded;
   }
 }

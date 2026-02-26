@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Threading;
+using client_win.Core.Text;
 using client_win.Modules.Game.History.ViewModels;
 using client_win.Modules.Shell.Services;
 
@@ -51,6 +52,10 @@ public sealed class GameHistorySink : IGameHistorySink
                 var isUiShortcutTagged = trimmed.StartsWith("[ui.shortcut]", StringComparison.OrdinalIgnoreCase);
                 var isUiShortcut = isUi || isUiTurn || isUiShortcutTagged;
                 var cleaned = RemoveInvisibleFormattingChars(StripGamePrefix(trimmed));
+                if (MojibakeTextRepair.ShouldFix(cleaned))
+                {
+                    cleaned = MojibakeTextRepair.Fix(cleaned);
+                }
                 if (string.IsNullOrWhiteSpace(cleaned))
                 {
                     continue;

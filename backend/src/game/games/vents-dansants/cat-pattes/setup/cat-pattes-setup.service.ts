@@ -7,7 +7,6 @@ import {
 } from '../../../../setup/setup-service.helper';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
-import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { CAT_PATTES_DECK, CAT_PATTES_PAWNS } from '../model/cat-pattes-cards';
 import type {
   CatPattesBotType,
@@ -20,7 +19,6 @@ export class CatPattesSetupService {
   constructor(
     _core: GameCoreService,
     private readonly random: RandomService,
-    private readonly setupFlow: SetupFlowService,
   ) {}
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
@@ -65,6 +63,10 @@ export class CatPattesSetupService {
       typeof baseState.turn?.currentPlayerId === 'number'
         ? baseState.turn.currentPlayerId
         : (players[0]?.id ?? null);
+    const ownerPlayerId =
+      this.resolveOwnerPlayerId(players, baseState.metadata ?? {}) ??
+      setupStarterId;
+    const goalPattes = this.resolveGoalPattes(metaSeed?.goalPattes);
 
     const metadata: CatPattesMetadata = {
       rng: updatedRng,
@@ -79,45 +81,41 @@ export class CatPattesSetupService {
       hasSun,
       pawns: [...CAT_PATTES_PAWNS],
       pawnByPlayerId,
+      setupStep: 'setup_config',
+      ownerPlayerId,
+      goalPattes,
       setupStarterId,
       drawnPlayerId: null,
       winnerId: null,
     };
-
-    const usedForPending = new Set(
-      Object.values(metadata.pawnByPlayerId ?? {}).filter(
-        (v) => typeof v === 'string',
-      ),
-    );
-    const choicesForPending = (metadata.pawns ?? []).filter(
-      (p) => !usedForPending.has(p),
-    );
-    const pendingInfo = this.setupFlow.createSequentialPawnPending({
-      players,
-      startPlayerId: setupStarterId,
-      isAssigned: (playerId) => {
-        const player = players.find((p) => p?.id === playerId);
-        return (
-          Boolean(metadata.pawnByPlayerId?.[playerId]) || this.isBotLike(player)
-        );
-      },
-      pawns: choicesForPending.map((name) => ({ id: name, label: name })),
-    });
-    const metadataWithBots =
-      pendingInfo == null
-        ? this.assignMissingBotPawns(players, metadata)
-        : metadata;
     const next: GameStateEntity = {
       ...baseState,
-      metadata: metadataWithBots,
-      pending: pendingInfo?.pending ?? null,
-      turnIndex:
-        pendingInfo?.turnIndex != null
-          ? pendingInfo.turnIndex
-          : baseState.turnIndex,
+      metadata,
+      pending: {
+        type: 'config_prompt',
+        playerId: ownerPlayerId,
+        blocking: true,
+        label: 'Configuration Cat Pattes.',
+        choices: [],
+        data: {
+          title: 'Cat Pattes !',
+          actionType: 'cat_pattes_set_config',
+          fields: [
+            {
+              key: 'goalPattes',
+              label: 'Objectif pattes',
+              kind: 'number',
+              min: 600,
+              max: 1500,
+              initialText: String(goalPattes),
+            },
+          ],
+        },
+      } as any,
+      turnIndex: baseState.turnIndex,
       turn: {
         ...(baseState.turn ?? { direction: 1 }),
-        currentPlayerId: pendingInfo?.playerId ?? setupStarterId,
+        currentPlayerId: ownerPlayerId ?? setupStarterId,
         direction: 1,
       },
     };
@@ -173,5 +171,36 @@ export class CatPattesSetupService {
       .trim()
       .toLowerCase();
     return kind === 'bot' || kind === 'ai';
+  }
+
+  private resolveOwnerPlayerId(
+    players: Array<{ id: number; isBot?: boolean }>,
+    metadata: Record<string, unknown>,
+  ): number | null {
+    const pickFirstHuman = (): number | null => {
+      const human = players.find((p) => p?.id != null && p.isBot !== true);
+      return typeof human?.id === 'number' ? human.id : null;
+    };
+    const ownerRaw =
+      typeof metadata?.ownerPlayerId === 'number'
+        ? metadata.ownerPlayerId
+        : typeof metadata?.roomOwnerId === 'number'
+          ? metadata.roomOwnerId
+          : null;
+    if (
+      typeof ownerRaw === 'number' &&
+      players.some((p) => Number(p?.id) === ownerRaw && p?.isBot !== true)
+    ) {
+      return ownerRaw;
+    }
+    return pickFirstHuman() ?? players[0]?.id ?? null;
+  }
+
+  private resolveGoalPattes(value: unknown): number {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return 1000;
+    const rounded = Math.round(parsed);
+    if (rounded < 600 || rounded > 1500) return 1000;
+    return rounded;
   }
 }
