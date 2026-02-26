@@ -102,7 +102,7 @@ describe('LamaService', () => {
     expect(String(started.phase)).toBe('round');
     expect(Number(started.metadata?.roundPauseSeconds ?? -1)).toBe(2);
     expect(Number(started.metadata?.loseAtScore ?? 0)).toBe(40);
-    expect(Boolean(started.metadata?.allowPlayAfterDraw)).toBe(false);
+    expect(Boolean(started.metadata?.allowPlayAfterDraw)).toBe(true);
     expect((started.metadata?.discard ?? []).length).toBeGreaterThan(0);
   });
 
@@ -247,7 +247,7 @@ describe('LamaService', () => {
     const afterFirst: any = service.applyActions(state, [
       { type: 'draw', payload: {}, meta: { actorId: 2 } } as any,
     ]);
-    expect(afterFirst.turn.currentPlayerId).toBe(1);
+    expect(afterFirst.turn.currentPlayerId).toBe(2);
     const deckAfterFirst = (afterFirst.metadata.deck ?? []).length;
     const handAfterFirst = (afterFirst.metadata.handsByPlayerId?.['2'] ?? [])
       .length;
@@ -581,8 +581,8 @@ describe('LamaService', () => {
     const afterFirst: any = service.applyActions(state, [
       { type: 'draw', payload: {}, meta: { actorId: 2 } } as any,
     ]);
-    expect(afterFirst.turn.currentPlayerId).toBe(1);
-    expect(Boolean(afterFirst.metadata?.turnTracker?.drawn)).toBe(false);
+    expect(afterFirst.turn.currentPlayerId).toBe(2);
+    expect(Boolean(afterFirst.metadata?.turnTracker?.drawn)).toBe(true);
     const deckAfterFirst = (afterFirst.metadata.deck ?? []).length;
     const handAfterFirst = (afterFirst.metadata.handsByPlayerId?.['2'] ?? [])
       .length;
@@ -591,7 +591,7 @@ describe('LamaService', () => {
       { type: 'draw', payload: {}, meta: { actorId: 2 } } as any,
     ]);
 
-    // Second draw is ignored (one draw per turn).
+    // Second draw is ignored (one draw per turn), even if turn is kept.
     expect((afterSecond.metadata.deck ?? []).length).toBe(deckAfterFirst);
     expect((afterSecond.metadata.handsByPlayerId?.['2'] ?? []).length).toBe(
       handAfterFirst,
@@ -788,7 +788,7 @@ describe('LamaService', () => {
     );
   });
 
-  it('passes the turn after a draw even when allowPlayAfterDraw is configured', async () => {
+  it('keeps the turn after a draw when allowPlayAfterDraw is configured', async () => {
     const { service } = createLamaServiceForTest();
 
     const state: any = {
@@ -825,18 +825,18 @@ describe('LamaService', () => {
       { type: 'draw', payload: {}, meta: { actorId: 1 } } as any,
     ]);
 
-    expect(after.turn.currentPlayerId).toBe(2);
+    expect(after.turn.currentPlayerId).toBe(1);
     expect((after.metadata.deck ?? []).length).toBe(1);
     expect((after.metadata.handsByPlayerId?.['1'] ?? []).length).toBe(2);
-    expect(Boolean(after.metadata?.turnTracker?.drawn)).toBe(false);
+    expect(Boolean(after.metadata?.turnTracker?.drawn)).toBe(true);
 
     const exposed: any = service.exposeStateForUser(after, 1);
     const actionTypes = (exposed?.actions ?? []).map((a: any) =>
       String(a?.type ?? '').toLowerCase(),
     );
-    // Turn has passed to next player.
+    // Turn is kept by the same player: draw is blocked, play/quit stay available.
     expect(actionTypes).not.toContain('draw');
-    expect(actionTypes).not.toContain('lama_play');
+    expect(actionTypes).toContain('lama_play');
     expect(actionTypes).toContain('lama_quit');
   });
 

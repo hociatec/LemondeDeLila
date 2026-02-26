@@ -226,6 +226,12 @@ export class LamaPresenter extends BasePresenterService {
               max: 120,
               initialText: String(metadata.roundPauseSeconds ?? 2),
             },
+            {
+              key: 'allowPlayAfterDraw',
+              label: 'Autoriser de rejouer après une pioche (oui/non)',
+              kind: 'boolean',
+              initialText: metadata.allowPlayAfterDraw ? 'oui' : 'non',
+            },
           ],
         },
       };

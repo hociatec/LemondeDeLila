@@ -67,11 +67,29 @@ export class LamaDrawService {
       handsByPlayerId,
       lastDrawTurnIndexByPlayerId: {
         ...((meta as any).lastDrawTurnIndexByPlayerId ?? {}),
-        [String(actorId)]: turnIndex + 1,
+        [String(actorId)]: turnIndex,
       },
       turnTracker: { playerId: actorId, drawn: true, played: false },
       suppressTurnAnnouncement: false,
     };
+
+    const allowPlayAfterDraw = Boolean(meta.allowPlayAfterDraw);
+    if (allowPlayAfterDraw) {
+      return createPendingState(
+        {
+          ...state,
+          metadata: nextMeta as any,
+          log,
+          turn: {
+            ...(state.turn ?? { direction: 1 }),
+            currentPlayerId: actorId,
+            direction: 1,
+            label: `Tour de ${this.shared.playerLabel(players, actorId)}`,
+          },
+        } as GameStateEntity,
+        { step: 'turn_choice', playerId: actorId } as any,
+      );
+    }
 
     const nextPlayerId = this.round.findNextActivePlayerId(
       players,

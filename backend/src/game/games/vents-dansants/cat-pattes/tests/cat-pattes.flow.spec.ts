@@ -412,6 +412,12 @@ describe('CatPattes flow', () => {
     const exposed: any = presenter.exposeStateForUser(state, 1);
 
     expect(exposed.pending?.type).toBe('config_prompt');
+    const fields = Array.isArray(exposed.pending?.data?.fields)
+      ? exposed.pending.data.fields
+      : [];
+    const fieldKeys = fields.map((f: any) => String(f?.key ?? ''));
+    expect(fieldKeys).toContain('goalPattes');
+    expect(fieldKeys).toContain('pointsToWin');
 
     const actions = Array.isArray(exposed.actions) ? exposed.actions : [];
     expect(actions.length).toBeGreaterThan(0);
@@ -420,5 +426,95 @@ describe('CatPattes flow', () => {
         (a: any) => String(a?.type ?? '') === 'cat_pattes_set_config',
       ),
     ).toBe(true);
+  });
+
+  it('starts a new round when pattes goal is reached but points target is not yet met', async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        GameCoreService,
+        RandomService,
+        SetupFlowService,
+        DeckPoliciesService,
+        CatPattesSetupService,
+        {
+          provide: 'TurnFlowService',
+          useValue: {
+            advanceTurn: (state: any) => state,
+          },
+        },
+        {
+          provide: CatPattesActionService,
+          useFactory: (
+            core: GameCoreService,
+            turns: any,
+            setupFlow: SetupFlowService,
+            deckPolicies: DeckPoliciesService,
+            random: RandomService,
+          ) =>
+            new CatPattesActionService(
+              core,
+              turns,
+              setupFlow,
+              deckPolicies,
+              random,
+            ),
+          inject: [
+            GameCoreService,
+            'TurnFlowService',
+            SetupFlowService,
+            DeckPoliciesService,
+            RandomService,
+          ],
+        },
+      ],
+    }).compile();
+
+    const setup = moduleRef.get(CatPattesSetupService);
+    const actionsService = moduleRef.get(CatPattesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    state = actionsService.applyActions(state, [
+      {
+        type: 'cat_pattes_set_config',
+        payload: { goalPattes: 1000, pointsToWin: 10000 },
+      } as any,
+    ]);
+    state = actionsService.applyActions(state, [
+      { type: 'choose_pawn', payload: { pawnId: 'Maine Coon' } } as any,
+    ]);
+    state = actionsService.applyActions(state, [
+      { type: 'choose_pawn', payload: { pawnId: 'Siamois' } } as any,
+    ]);
+
+    const metaBefore: any = { ...(state.metadata ?? {}) };
+    metaBefore.positions = { ...(metaBefore.positions ?? {}), 1: 980 };
+    metaBefore.hasSun = { ...(metaBefore.hasSun ?? {}), 1: true };
+    metaBefore.hands = { ...(metaBefore.hands ?? {}), 1: ['pattes-20-1'] };
+    metaBefore.drawnPlayerId = 1;
+    state = {
+      ...state,
+      metadata: metaBefore,
+      turn: {
+        ...(state.turn ?? { direction: 1 }),
+        currentPlayerId: 1,
+        direction: 1,
+      },
+      turnIndex: 0,
+    };
+
+    state = actionsService.applyActions(state, [
+      { type: 'play_card', payload: { cardId: 'pattes-20-1' } } as any,
+    ]);
+
+    expect(String(state.status ?? '')).toBe('started');
+    expect(Number(state.turn?.currentPlayerId ?? 0)).toBe(1);
+    const metaAfter: any = state.metadata ?? {};
+    expect(Number(metaAfter.positions?.[1] ?? -1)).toBe(0);
+    expect(metaAfter.drawnPlayerId ?? null).toBeNull();
+    expect(Number(metaAfter.points?.[1] ?? 0)).toBeGreaterThan(0);
+    const messages = (state.log ?? []).map((e: any) =>
+      String(e?.message ?? ''),
+    );
+    expect(messages.some((m) => /Nouvelle manche/i.test(m))).toBe(true);
   });
 });

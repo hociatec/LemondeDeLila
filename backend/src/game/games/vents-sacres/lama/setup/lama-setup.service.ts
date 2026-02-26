@@ -175,7 +175,7 @@ export class LamaSetupService {
       ...meta,
       loseAtScore,
       roundPauseSeconds,
-      allowPlayAfterDraw: false,
+      allowPlayAfterDraw: this.readAllowPlayAfterDraw(action.payload ?? {}),
       roundPauseUntilMs: null,
       step: 'turn_choice',
       roundNumber: 1,
@@ -197,6 +197,10 @@ export class LamaSetupService {
     log = this.logger.append(
       log,
       `${name} règle la pause entre manches à ${roundPauseSeconds}s.`,
+    );
+    log = this.logger.append(
+      log,
+      `${name} ${updatedMeta.allowPlayAfterDraw ? 'autorise' : 'interdit'} de rejouer après une pioche.`,
     );
     log = this.logger.append(log, `Début de la partie.`);
 
@@ -243,5 +247,32 @@ export class LamaSetupService {
       },
       Number(clearedMeta.roundStarterIndex ?? 0),
     );
+  }
+
+  private readAllowPlayAfterDraw(payload: Record<string, unknown>): boolean {
+    const raw = payload?.allowPlayAfterDraw;
+    if (typeof raw === 'boolean') return raw;
+    if (typeof raw === 'number') return raw === 1;
+    if (typeof raw !== 'string') return false;
+    const value = raw.trim().toLowerCase();
+    if (
+      value === 'true' ||
+      value === '1' ||
+      value === 'yes' ||
+      value === 'oui' ||
+      value === 'on'
+    ) {
+      return true;
+    }
+    if (
+      value === 'false' ||
+      value === '0' ||
+      value === 'no' ||
+      value === 'non' ||
+      value === 'off'
+    ) {
+      return false;
+    }
+    return false;
   }
 }

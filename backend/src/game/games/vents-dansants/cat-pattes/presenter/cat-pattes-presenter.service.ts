@@ -8,6 +8,7 @@ import { CAT_PATTES_GAME } from '../definitions/game.definition';
 import type { CatPattesMetadata } from '../model/cat-pattes-state.entity';
 import { CAT_PATTES_CARD_BY_ID } from '../model/cat-pattes-cards';
 import { CAT_PATTES_GOAL } from '../model/cat-pattes-state.entity';
+import { CAT_PATTES_POINTS_TO_WIN } from '../model/cat-pattes-state.entity';
 import { stringOrEmpty } from '@common/utils/string-value.utils';
 
 @Injectable()
@@ -25,6 +26,13 @@ export class CatPattesPresenterService {
       return rounded;
     })();
     const actions = Rulebook.getAvailableActions(state, userId);
+    const pointsToWin = (() => {
+      const parsed = Number(meta.pointsToWin ?? CAT_PATTES_POINTS_TO_WIN);
+      if (!Number.isFinite(parsed)) return CAT_PATTES_POINTS_TO_WIN;
+      const rounded = Math.round(parsed);
+      if (rounded < 1000 || rounded > 20000) return CAT_PATTES_POINTS_TO_WIN;
+      return rounded;
+    })();
     const basePending = state.pending as any;
     const pendingForUser =
       basePending?.type === 'config_prompt' &&
@@ -101,6 +109,7 @@ export class CatPattesPresenterService {
       hands: meta.hands,
       positions: meta.positions,
       points: meta.points,
+      pointsToWin,
       obstacles: meta.obstacles,
       bots: meta.bots,
       hasSun: meta.hasSun,
@@ -127,7 +136,7 @@ export class CatPattesPresenterService {
           },
           score: {
             title: 'Score',
-            message: scoreLines.join(' '),
+            message: `${scoreLines.join(' ')} Objectif partie: ${pointsToWin} points.`,
           },
           position: {
             title: 'Progression',

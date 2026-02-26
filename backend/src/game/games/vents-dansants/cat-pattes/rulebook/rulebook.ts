@@ -8,6 +8,7 @@ import {
 } from '../model/cat-pattes-cards';
 import type { CatPattesMetadata } from '../model/cat-pattes-state.entity';
 import { CAT_PATTES_GOAL } from '../model/cat-pattes-state.entity';
+import { CAT_PATTES_POINTS_TO_WIN } from '../model/cat-pattes-state.entity';
 import { normalizeActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
@@ -23,6 +24,7 @@ type CatPattesActionPayload = {
   pawn?: string | null;
   value?: string | null;
   goalPattes?: number | null;
+  pointsToWin?: number | null;
 };
 
 function getMeta(state: GameStateEntity): CatPattesMetadata {
@@ -34,6 +36,14 @@ function getGoalPattes(meta: CatPattesMetadata): number {
   if (!Number.isFinite(parsed)) return CAT_PATTES_GOAL;
   const rounded = Math.round(parsed);
   if (rounded < 600 || rounded > 1500) return CAT_PATTES_GOAL;
+  return rounded;
+}
+
+function getPointsToWin(meta: CatPattesMetadata): number {
+  const parsed = Number(meta.pointsToWin ?? CAT_PATTES_POINTS_TO_WIN);
+  if (!Number.isFinite(parsed)) return CAT_PATTES_POINTS_TO_WIN;
+  const rounded = Math.round(parsed);
+  if (rounded < 1000 || rounded > 20000) return CAT_PATTES_POINTS_TO_WIN;
   return rounded;
 }
 
@@ -246,9 +256,20 @@ export function validateAction(
     if (roundedGoal < 600 || roundedGoal > 1500) {
       throw new Error('Objectif de pattes hors limites (600-1500).');
     }
+    const hasPointsToWin = payload.pointsToWin != null;
+    const rawPointsToWin = hasPointsToWin ? Number(payload.pointsToWin) : NaN;
+    const roundedPointsToWin = Number.isFinite(rawPointsToWin)
+      ? Math.round(rawPointsToWin)
+      : getPointsToWin(meta);
+    if (roundedPointsToWin < 1000 || roundedPointsToWin > 20000) {
+      throw new Error('Objectif de points hors limites (1000-20000).');
+    }
     return {
       type: 'cat_pattes_set_config',
-      payload: { goalPattes: roundedGoal },
+      payload: {
+        goalPattes: roundedGoal,
+        pointsToWin: roundedPointsToWin,
+      },
     };
   }
 

@@ -25,6 +25,7 @@ import {
 } from '../../../../actions/action-service.helper';
 import type { CatPattesMetadata } from '../model/cat-pattes-state.entity';
 import { CAT_PATTES_GOAL } from '../model/cat-pattes-state.entity';
+import { CAT_PATTES_POINTS_TO_WIN } from '../model/cat-pattes-state.entity';
 import {
   CAT_PATTES_OBSTACLE_TO_PARADE,
   canPlayPattes,
@@ -38,6 +39,7 @@ type CatPattesActionPayload = {
   pawn?: string | null;
   value?: string | null;
   goalPattes?: number | null;
+  pointsToWin?: number | null;
 };
 
 const OBSTACLE_LABELS: Record<CatPattesObstacleType, string> = {
@@ -402,6 +404,9 @@ export class CatPattesActionService {
     if (this.getMeta(next).winnerId != null) {
       return this.clearDrawn(next);
     }
+    if (!this.samePlayerId(this.getMeta(next).drawnPlayerId, currentId)) {
+      return next;
+    }
 
     // Règle: si un Pouvoir est joué en réponse à un obstacle, le joueur rejoue immédiatement.
     // Interprétation: si un obstacle est actif au moment où le Pouvoir est joué, on conserve le tour.
@@ -437,11 +442,18 @@ export class CatPattesActionService {
     if (!Number.isFinite(rawGoal)) return state;
     const goalPattes = Math.round(rawGoal);
     if (goalPattes < 600 || goalPattes > 1500) return state;
+    const hasPointsToWin = payload.pointsToWin != null;
+    const rawPointsToWin = hasPointsToWin ? Number(payload.pointsToWin) : NaN;
+    const pointsToWin = Number.isFinite(rawPointsToWin)
+      ? Math.round(rawPointsToWin)
+      : this.getPointsToWin(meta);
+    if (pointsToWin < 1000 || pointsToWin > 20000) return state;
 
     let next = this.setMeta(state, {
       ...meta,
       setupStep: 'choose_pawn',
       goalPattes,
+      pointsToWin,
     });
     next = {
       ...next,
@@ -449,7 +461,7 @@ export class CatPattesActionService {
     };
     return this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} fixe l'objectif à ${goalPattes} pattes.`,
+      `${resolvePlayerNameFromState(next, currentId)} fixe l'objectif à ${goalPattes} pattes et ${pointsToWin} points pour gagner la partie.`,
     );
   }
 
@@ -491,17 +503,27 @@ export class CatPattesActionService {
         goalPattes,
       );
       const points = { ...(finalMeta.points ?? {}) };
-      points[playerId] = (points[playerId] ?? 0) + roundPoints;
+      const totalPoints = (points[playerId] ?? 0) + roundPoints;
+      points[playerId] = totalPoints;
+      const pointsToWin = this.getPointsToWin(finalMeta);
       next = this.setMeta(next, {
         ...finalMeta,
         points,
-        winnerId: playerId,
+        winnerId: totalPoints >= pointsToWin ? playerId : null,
+        drawnPlayerId: null,
       });
       next = this.core.appendLog(
         next,
         `${resolvePlayerNameFromState(next, playerId)} atteint ${goalPattes} pattes et remporte la manche (${roundPoints} points).`,
       );
-      return { ...next, status: 'finished' };
+      if (totalPoints >= pointsToWin) {
+        next = this.core.appendLog(
+          next,
+          `${resolvePlayerNameFromState(next, playerId)} totalise ${totalPoints} points et remporte la partie.`,
+        );
+        return { ...next, status: 'finished' };
+      }
+      return this.startNextRound(next, playerId);
     }
 
     return next;
@@ -880,5 +902,88 @@ export class CatPattesActionService {
     const rounded = Math.round(parsed);
     if (rounded < 600 || rounded > 1500) return CAT_PATTES_GOAL;
     return rounded;
+  }
+
+  private getPointsToWin(meta: CatPattesMetadata): number {
+    const parsed = Number(meta.pointsToWin ?? CAT_PATTES_POINTS_TO_WIN);
+    if (!Number.isFinite(parsed)) return CAT_PATTES_POINTS_TO_WIN;
+    const rounded = Math.round(parsed);
+    if (rounded < 1000 || rounded > 20000) return CAT_PATTES_POINTS_TO_WIN;
+    return rounded;
+  }
+
+  private startNextRound(
+    state: GameStateEntity,
+    roundWinnerId: number,
+  ): GameStateEntity {
+    const meta = this.getMeta(state);
+    const players = Array.isArray(state.players)
+      ? state.players.filter((p: any) => p?.id != null)
+      : [];
+    const playerIds = players.map((p: any) => Number(p.id));
+    const deck = Object.keys(CAT_PATTES_CARD_BY_ID);
+    const shuffled = this.random.shuffle(meta as any, deck);
+    const remainingDeck = Array.isArray(shuffled.values) ? [...shuffled.values] : [];
+    const hands: Record<number, string[]> = {};
+    const positions: Record<number, number> = {};
+    const obstacles: Record<number, CatPattesObstacleType | null> = {};
+    const bots: Record<number, CatPattesBotType[]> = {};
+    const hasSun: Record<number, boolean> = {};
+    const turboPlayed: Record<number, number> = {};
+
+    for (const playerId of playerIds) {
+      positions[playerId] = 0;
+      obstacles[playerId] = null;
+      bots[playerId] = [];
+      hasSun[playerId] = false;
+      turboPlayed[playerId] = 0;
+      const hand: string[] = [];
+      for (let i = 0; i < 6; i += 1) {
+        if (!remainingDeck.length) break;
+        hand.push(remainingDeck.shift()!);
+      }
+      hands[playerId] = hand;
+    }
+
+    const starterId = playerIds.includes(roundWinnerId)
+      ? roundWinnerId
+      : (playerIds[0] ?? roundWinnerId);
+    const starterIndex = players.findIndex((p: any) => Number(p?.id) === starterId);
+    let next = this.setMeta(state, {
+      ...meta,
+      rng: shuffled.meta?.rng ?? meta.rng,
+      deck: remainingDeck,
+      discard: [],
+      hands,
+      positions,
+      obstacles,
+      bots,
+      hasSun,
+      turboPlayed,
+      setupStep: 'playing',
+      setupStarterId: starterId,
+      drawnPlayerId: null,
+      winnerId: null,
+    });
+
+    next = {
+      ...next,
+      pending: null,
+      turnIndex: starterIndex >= 0 ? starterIndex : next.turnIndex,
+      turn: {
+        ...(next.turn ?? { direction: 1 }),
+        currentPlayerId: starterId,
+        direction: 1,
+      },
+    };
+    next = this.core.appendLog(
+      next,
+      `Nouvelle manche : ${resolvePlayerNameFromState(next, starterId)} commence.`,
+    );
+    return this.getTurnPolicies().appendTurnAnnouncement(
+      next,
+      starterId,
+      (s, id) => resolvePlayerNameFromState(s, id),
+    );
   }
 }
