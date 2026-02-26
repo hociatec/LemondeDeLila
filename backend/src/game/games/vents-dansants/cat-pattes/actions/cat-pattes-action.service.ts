@@ -62,6 +62,14 @@ const BOT_EFFECTS: Record<CatPattesBotType, string> = {
   'passage-star': 'Ignore Pluie torrentielle et Sol cire, et permet de jouer sans soleil.',
 };
 
+const OBSTACLE_IMPACTS: Record<CatPattesObstacleType, string> = {
+  gamelle: "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retire",
+  pluie: "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retire",
+  chien: "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retire",
+  coussin: "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retire",
+  sol: "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retire",
+};
+
 @Injectable()
 export class CatPattesActionService {
   constructor(
@@ -253,10 +261,6 @@ export class CatPattesActionService {
       ...updatedMeta,
       drawnPlayerId: currentId,
     });
-    next = this.core.appendLog(
-      next,
-      `${resolvePlayerNameFromState(next, currentId)} pioche.`,
-    );
     if (cardId) {
       next = this.core.appendLog(
         next,
@@ -264,6 +268,10 @@ export class CatPattesActionService {
       );
       return next;
     }
+    next = this.core.appendLog(
+      next,
+      `${resolvePlayerNameFromState(next, currentId)} pioche.`,
+    );
 
     const remainingHand = Array.isArray(updatedMeta.hands?.[currentId])
       ? updatedMeta.hands[currentId]
@@ -484,6 +492,9 @@ export class CatPattesActionService {
       next,
       `${resolvePlayerNameFromState(next, playerId)} inflige ${card.name} à ${resolvePlayerNameFromState(next, targetId)}.`,
     );
+    const targetName = resolvePlayerNameFromState(next, targetId);
+    const impact = OBSTACLE_IMPACTS[obstacle];
+    next = this.core.appendLog(next, `${targetName} ${impact}.`);
     return next;
   }
 

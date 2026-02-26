@@ -75,7 +75,7 @@ public sealed partial class GamePlayViewModel
         }
 
         var card = GetSelectedHandCard();
-        if (card == null || card.Disabled)
+        if (card == null)
         {
             return false;
         }
@@ -91,6 +91,13 @@ public sealed partial class GamePlayViewModel
             string.Equals(action.Type, "select_card", StringComparison.OrdinalIgnoreCase) &&
             TryExtractCardId(action.Payload, out var payloadCardId) &&
             string.Equals(payloadCardId, card.CardId, StringComparison.OrdinalIgnoreCase));
+
+        if (card.Disabled && !hasActionForCard)
+        {
+            MessageReceived?.Invoke(new GamePlayHistoryMessage(
+                BuildHandPlayBlockedMessage(actions, card)));
+            return false;
+        }
 
         if (!hasActionForCard)
         {
@@ -121,6 +128,8 @@ public sealed partial class GamePlayViewModel
                 return started;
             }
 
+            MessageReceived?.Invoke(new GamePlayHistoryMessage(
+                BuildHandPlayBlockedMessage(actions, card)));
             return false;
         }
 
@@ -142,7 +151,7 @@ public sealed partial class GamePlayViewModel
         }
 
         var card = GetSelectedHandCard();
-        if (card == null || card.Disabled)
+        if (card == null)
         {
             return false;
         }
@@ -188,6 +197,32 @@ public sealed partial class GamePlayViewModel
 
         await session.SendActionsAsync(new[] { clientAction }, cancellationToken).ConfigureAwait(false);
         return true;
+    }
+
+    private static string BuildHandPlayBlockedMessage(
+        IReadOnlyCollection<GameAvailableActionDto> actions,
+        HandCardLine card)
+    {
+        if (actions.Any(action => string.Equals(action.Type, "draw", StringComparison.OrdinalIgnoreCase)))
+        {
+            return "Vous devez d'abord piocher (Espace).";
+        }
+
+        var canDiscardSelected = actions.Any(action =>
+            string.Equals(action.Type, "discard_card", StringComparison.OrdinalIgnoreCase) &&
+            (!TryExtractCardId(action.Payload, out var payloadCardId) ||
+             string.Equals(payloadCardId, card.CardId, StringComparison.OrdinalIgnoreCase)));
+        if (canDiscardSelected)
+        {
+            return "Cette carte ne peut pas être jouée maintenant. Appuyez sur D pour la défausser.";
+        }
+
+        if (actions.Any(action => string.Equals(action.Type, "pass", StringComparison.OrdinalIgnoreCase)))
+        {
+            return "Cette carte ne peut pas être jouée maintenant. Passez votre tour.";
+        }
+
+        return "Cette carte ne peut pas être jouée maintenant.";
     }
 
     private void UpdateHandCards(IReadOnlyList<GamePlayExtrasParser.HandCardInfo> cards)
