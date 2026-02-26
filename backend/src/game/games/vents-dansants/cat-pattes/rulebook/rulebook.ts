@@ -257,20 +257,30 @@ export function validateAction(
   }
 
   const cardId = String(payload.cardId ?? '').trim();
-  if (!cardId) {
+  if (!cardId && type === 'play_card') {
+    // Robust fallback: if the client sends a play action without cardId, discard instead.
+    return { type: 'discard_card', payload: {} };
+  }
+  if (!cardId && type !== 'discard_card') {
     throw new Error('Carte introuvable.');
   }
   const hand = Array.isArray(meta.hands?.[actorId]) ? meta.hands[actorId] : [];
+
+  if (type === 'discard_card') {
+    if (!cardId) {
+      return { type: 'discard_card', payload: {} };
+    }
+    if (!hand.includes(cardId)) {
+      throw new Error('Carte indisponible.');
+    }
+    return { type: 'discard_card', payload: { cardId } };
+  }
   if (!hand.includes(cardId)) {
     throw new Error('Carte indisponible.');
   }
   const definition = CAT_PATTES_CARD_BY_ID[cardId];
   if (!definition) {
     throw new Error('Carte invalide.');
-  }
-
-  if (type === 'discard_card') {
-    return { type: 'discard_card', payload: { cardId } };
   }
 
   if (

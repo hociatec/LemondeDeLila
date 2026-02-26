@@ -34,6 +34,7 @@ export class RoomService {
   private redis: Redis | null = null;
   private readonly roomPayloadRedisPrefix = 'room:payload:';
   private readonly roomPayloadTtlSeconds: number;
+  private readonly restoredRoomGraceMs: number;
   private readonly roomBans = new Map<number, Set<number>>();
 
   private static isAdminRoles(roles: unknown): boolean {
@@ -388,14 +389,22 @@ export class RoomService {
     private readonly realtimeTracker: RoomRealtimeTrackerService,
     private readonly config: ConfigService,
     private readonly redisFactory: RedisClientFactory,
-  ) {
-    const ttlCandidate = Number(
-      this.config.get('ROOM_PAYLOAD_CACHE_TTL_SECONDS') ?? 15,
-    );
-    const ttl =
-      Number.isFinite(ttlCandidate) && ttlCandidate >= 1 ? ttlCandidate : 15;
-    this.roomPayloadTtlSeconds = Math.min(ttl, 3600);
-  }
+    ) {
+      const ttlCandidate = Number(
+        this.config.get('ROOM_PAYLOAD_CACHE_TTL_SECONDS') ?? 15,
+      );
+      const ttl =
+        Number.isFinite(ttlCandidate) && ttlCandidate >= 1 ? ttlCandidate : 15;
+      this.roomPayloadTtlSeconds = Math.min(ttl, 3600);
+
+      const restoredGraceCandidate = Number(
+        this.config.get('RESTORED_ROOM_GRACE_MS') ?? 180_000,
+      );
+      this.restoredRoomGraceMs =
+        Number.isFinite(restoredGraceCandidate) && restoredGraceCandidate >= 0
+          ? restoredGraceCandidate
+          : 180_000;
+    }
 
   async primeRoomPayloadCache(
     roomId: number,
@@ -614,6 +623,7 @@ export class RoomService {
       await this.participants.save(participant);
     }
     await this.invalidateRoomPayloadCache(room.id);
+    let preserveRestoredRoom = false;
 
     // Special case: if this room was created by restoring a vault snapshot and the original
     // restorer quits, we only delete the restored room when no human players remain (i.e. only bots would be left).
@@ -624,8 +634,25 @@ export class RoomService {
       room.restoredFromSnapshotId &&
       room.restoredOwnerUserId === userId
     ) {
+      const restoredAtMs =
+        room.createdAt instanceof Date ? room.createdAt.getTime() : 0;
+      const withinGrace =
+        restoredAtMs > 0 &&
+        this.restoredRoomGraceMs > 0 &&
+        Date.now() - restoredAtMs < this.restoredRoomGraceMs;
+      preserveRestoredRoom = withinGrace;
+      if (withinGrace) {
+        this.logger.log(
+          'Restored room owner left within grace window; keep room',
+          {
+            roomId: room.id,
+            userId,
+            graceMs: this.restoredRoomGraceMs,
+          },
+        );
+      }
       const activeHumansAfterLeave = await this.countActiveHumans(room.id);
-      if (activeHumansAfterLeave === 0) {
+      if (activeHumansAfterLeave === 0 && !preserveRestoredRoom) {
         const snapshotId = String(room.restoredFromSnapshotId ?? '').trim();
         this.logger.log(
           'Restored room abandoned (no humans left => delete room)',
@@ -700,11 +727,11 @@ export class RoomService {
       }
     }
 
-    if (opts?.preserveRoom) {
-      this.presenceService.broadcastPresence();
-      this.notifyDirectoryChanged(room.id, 'left');
-      return room;
-    }
+      if (opts?.preserveRoom || preserveRestoredRoom) {
+        this.presenceService.broadcastPresence();
+        this.notifyDirectoryChanged(room.id, 'left');
+        return room;
+      }
 
     let activeHumans = await this.countActiveHumans(room.id);
     if (activeHumans === 0) {
@@ -714,15 +741,15 @@ export class RoomService {
     activeHumans = await this.countActiveHumans(room.id);
     const bots = await this.countBots(room.id);
     const remaining = activeHumans + bots;
-    if (remaining === 0) {
-      this.logger.log('Room deleted (empty)', {
-        roomId: room.id,
-        userId,
-        disconnectOnly: opts?.disconnectOnly === true,
-        preserveRoom: opts?.preserveRoom === true,
-        activeHumans,
-        bots,
-      });
+      if (remaining === 0) {
+        this.logger.log('Room deleted (empty)', {
+          roomId: room.id,
+          userId,
+          disconnectOnly: opts?.disconnectOnly === true,
+          preserveRoom: opts?.preserveRoom === true,
+          activeHumans,
+          bots,
+        });
       for (const notify of this.ensureRoomDeletedNotifiers()) {
         try {
           await notify(room.id);

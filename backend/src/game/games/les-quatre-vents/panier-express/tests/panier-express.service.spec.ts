@@ -247,7 +247,7 @@ describe('PanierExpressService', () => {
       status: 'running',
     } as any);
     base.metadata.positions[1] = 0; // start
-    const afterVictory = (service as any).applyVictory(base);
+    const afterVictory = phaseSvc.advancePhases(base);
     expect(afterVictory.status?.toLowerCase()).toBe('finished');
     expect(afterVictory.metadata.winnerId).toBe(1);
   });

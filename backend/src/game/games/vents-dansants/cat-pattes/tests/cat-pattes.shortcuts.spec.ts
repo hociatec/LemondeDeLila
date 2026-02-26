@@ -17,13 +17,6 @@ describe('CatPattesShortcuts', () => {
     expect(
       shortcuts.some(
         (s: any) =>
-          String(s?.type) === 'action' &&
-          String(s?.actionType) === 'discard_card',
-      ),
-    ).toBe(true);
-    expect(
-      shortcuts.some(
-        (s: any) =>
           String(s?.type) === 'interface' && String(s?.id) === 'score',
       ),
     ).toBe(true);

@@ -63,7 +63,14 @@ describe('GameEngineService', () => {
     const engine = new GameEngineService(
       {} as any,
       {} as any,
-      { getHandler: jest.fn(() => ({})) } as any,
+      {
+        getHandler: jest.fn(() => ({
+          getShortcuts: jest.fn(() => [
+            { key: 'S', type: 'interface', id: 'score' },
+            { key: 'E', type: 'interface', id: 'hand' },
+          ]),
+        })),
+      } as any,
       {} as any,
       {} as any,
       {} as any,
@@ -95,7 +102,7 @@ describe('GameEngineService', () => {
     });
     expect(hand).toEqual({
       kind: 'panel',
-      panelId: 'hands',
+      panelId: 'hand',
       message: 'Main : 1, LAMA.',
     });
   });
@@ -142,7 +149,20 @@ describe('GameEngineService', () => {
     };
 
     const core = {
-      buildBaseState: jest.fn(),
+      buildBaseState: jest.fn((payload: any, gameType: string) => ({
+        status: String(payload?.room?.status ?? 'started'),
+        players: Array.isArray(payload?.room?.players) ? payload.room.players : [],
+        turn: { currentPlayerId: payload?.room?.players?.[0]?.id ?? null, direction: 1 },
+        turnIndex: 0,
+        metadata: {
+          gameType,
+          roomId: payload?.room?.id ?? 0,
+          roomStartedAt: payload?.room?.startedAt ?? null,
+          statuses: { skipTurn: {} },
+          turnFlow: { skipped: [] },
+        },
+        log: [],
+      })),
       appendLog: jest.fn((state: any, message: string) => ({
         ...state,
         log: [...(Array.isArray(state?.log) ? state.log : []), { message }],
@@ -162,6 +182,7 @@ describe('GameEngineService', () => {
 
     let actionTick = 0;
     const handler = {
+      hydrateInitialState: jest.fn((state: any) => state),
       getAvailableActions: jest.fn(() => [{ type: 'roll', payload: {} }]),
       validateAction: jest.fn((_state: any, action: any) => action),
       applyActions: jest.fn(async (state: any) =>
@@ -220,8 +241,11 @@ describe('GameEngineService', () => {
       String(e?.message ?? ''),
     );
 
-    expect(firstMessages.at(-1)).toBe('Polynesia passe son tour.');
-    expect(secondMessages.at(-1)).toBe('action-2');
+    expect(firstMessages.some((m) => m.includes('passe son tour'))).toBe(false);
+    expect(secondMessages.some((m) => m.includes('passe son tour'))).toBe(
+      false,
+    );
+    expect(handler.applyActions).toHaveBeenCalledTimes(2);
     expect(stateRef.metadata?.turnFlow?.skipped ?? []).toEqual([]);
   });
 

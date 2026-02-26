@@ -173,7 +173,7 @@ describe('Critical Cases Matrix', () => {
           actorId: number | null,
         ) => Promise<GameSingleActionDto[]>;
       }
-    ).validateActions;
+    ).validateActions.bind(engine);
     const invalidAction: GameSingleActionDto = {
       type: 'play_card',
       payload: {},

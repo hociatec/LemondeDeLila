@@ -161,7 +161,22 @@ public sealed partial class GamePlayViewModel
 
         if (discardAction == null || string.IsNullOrWhiteSpace(discardAction.Type))
         {
-            return false;
+            var fallback = actions.FirstOrDefault(action =>
+                string.Equals(action.Type, "discard_card", StringComparison.OrdinalIgnoreCase));
+            if (fallback == null || string.IsNullOrWhiteSpace(fallback.Type))
+            {
+                return false;
+            }
+
+            var fallbackAction = new GameClientAction(type: fallback.Type, payload: new { cardId = card.CardId });
+            var fallbackConfirmed = await ConfirmDiscardIfNeededAsync(fallbackAction, card.Label).ConfigureAwait(true);
+            if (!fallbackConfirmed)
+            {
+                return true; // handled (user canceled)
+            }
+
+            await session.SendActionsAsync(new[] { fallbackAction }, cancellationToken).ConfigureAwait(false);
+            return true;
         }
 
         var clientAction = new GameClientAction(type: discardAction.Type, payload: discardAction.Payload);

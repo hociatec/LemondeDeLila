@@ -6,7 +6,6 @@ import {
 
 export const buildCatPattesShortcuts: GameShortcutsBuilder = () => [
   actionShortcut('SPACE', 'draw'),
-  actionShortcut('D', 'discard_card'),
   interfaceShortcut('S', 'score'),
   interfaceShortcut('P', 'position'),
   interfaceShortcut('I', 'info'),

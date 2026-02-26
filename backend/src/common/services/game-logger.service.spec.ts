@@ -77,7 +77,10 @@ describe('GameLoggerService', () => {
             name: 'GameError',
             message: 'Game error occurred',
             severity: 'high',
-            context: { roomId: 123, gameType: 'test-game' },
+            context: expect.objectContaining({
+              roomId: 123,
+              gameType: 'test-game',
+            }),
           }) as unknown,
         }),
       );
