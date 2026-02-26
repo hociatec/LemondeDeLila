@@ -204,6 +204,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
 	        if ((e.Key == Key.Enter || e.Key == Key.Return) &&
 	            DataContext is ViewModels.GameRoomViewModel startVm &&
 	            !IsTextInputFocused() &&
+                !startVm.IsStartWizardOpen &&
 	            startVm.GameZone.IsStarted == false &&
 	            startVm.GameZone.StartCommand.CanExecute(null))
 	        {
@@ -436,5 +437,45 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
     public void RequestInitialFocus()
     {
         RequestFocusGameZoneInternal(GameFocusReason.InitialLoad);
+    }
+
+    private async void OnStartWizardPreviousClick(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not GameRoomViewModel vm)
+        {
+            return;
+        }
+
+        vm.GoPreviousStartWizardStep();
+    }
+
+    private async void OnStartWizardNextClick(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not GameRoomViewModel vm)
+        {
+            return;
+        }
+
+        await vm.GoNextStartWizardStepAsync().ConfigureAwait(true);
+    }
+
+    private void OnStartWizardCancelClick(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not GameRoomViewModel vm)
+        {
+            return;
+        }
+
+        vm.CancelStartWizard();
+    }
+
+    private async void OnStartWizardStartClick(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not GameRoomViewModel vm)
+        {
+            return;
+        }
+
+        await vm.ConfirmStartWizardAsync().ConfigureAwait(true);
     }
 }

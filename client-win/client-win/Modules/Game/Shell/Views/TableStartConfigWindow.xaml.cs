@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -99,17 +100,20 @@ public partial class TableStartConfigWindow : Window
 
     private readonly Vm _vm = new();
     private readonly ISoundService? _sounds;
+    private readonly Func<Task<TableGameConfigWindow.Prompt?>>? _loadGameConfigPromptAsync;
     private StartFlowResult? _result;
 
     private TableStartConfigWindow(
         IReadOnlyList<TableAmbiencePickerWindow.Choice> choices,
         string? currentSoundId,
         ISoundService? sounds,
-        TableGameConfigWindow.Prompt? gameConfigPrompt)
+        TableGameConfigWindow.Prompt? gameConfigPrompt,
+        Func<Task<TableGameConfigWindow.Prompt?>>? loadGameConfigPromptAsync)
     {
         InitializeComponent();
         DataContext = _vm;
         _sounds = sounds;
+        _loadGameConfigPromptAsync = loadGameConfigPromptAsync;
 
         foreach (var c in choices ?? Array.Empty<TableAmbiencePickerWindow.Choice>())
         {
@@ -138,10 +142,11 @@ public partial class TableStartConfigWindow : Window
         string? currentSoundId,
         IReadOnlyList<TableAmbiencePickerWindow.Choice> choices,
         TableGameConfigWindow.Prompt? gameConfigPrompt,
+        Func<Task<TableGameConfigWindow.Prompt?>>? loadGameConfigPromptAsync = null,
         ISoundService? soundService = null)
     {
         var safeOwner = ResolveSafeOwner(owner);
-        var w = new TableStartConfigWindow(choices, currentSoundId, soundService, gameConfigPrompt)
+        var w = new TableStartConfigWindow(choices, currentSoundId, soundService, gameConfigPrompt, loadGameConfigPromptAsync)
         {
             Owner = safeOwner,
             WindowStartupLocation = safeOwner != null ? WindowStartupLocation.CenterOwner : WindowStartupLocation.CenterScreen,
@@ -300,8 +305,25 @@ public partial class TableStartConfigWindow : Window
         try { ChoicesList.Focus(); } catch { }
     }
 
-    private void OnNextClicked(object sender, RoutedEventArgs e)
+    private async void OnNextClicked(object sender, RoutedEventArgs e)
     {
+        if (_vm.ConfigFields.Count == 0 && _loadGameConfigPromptAsync != null)
+        {
+            try
+            {
+                var prompt = await _loadGameConfigPromptAsync().ConfigureAwait(true);
+                if (prompt != null)
+                {
+                    BindGameConfig(prompt);
+                    BuildConfigFieldsUi();
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+        }
+
         _vm.IsAmbienceStep = false;
         UpdateFooterButtons();
         FocusFirstConfigInput();

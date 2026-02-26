@@ -1097,6 +1097,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 var isOwner = selfId > 0 && room?.Owner?.Id == selfId;
                 var alreadyStarted = string.Equals(room?.Status, "started", StringComparison.OrdinalIgnoreCase) ||
                                     !string.IsNullOrWhiteSpace(room?.StartedAt);
+                var roomStartIssuedByWizard = false;
 
                 if (isOwner && !alreadyStarted)
                 {
@@ -1137,31 +1138,71 @@ public sealed class GameTableOpener : IGameTableOpener
                     }
 
                     GameSession? preStartGameSession = null;
+                    GameRoomViewModel.StartWizardConfigPrompt? cachedPrompt = null;
                     try
                     {
-                        TableGameConfigWindow.Prompt? gameConfigPrompt = null;
                         var gameType = (vm?.Game?.Id ?? placeholderGame.Id ?? string.Empty).Trim();
-                        if (!string.IsNullOrWhiteSpace(gameType))
+                        async Task<GameRoomViewModel.StartWizardConfigPrompt?> LoadPromptAsync()
                         {
-                            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
-                            preStartGameSession = await _games.ConnectAsync(session.RoomId, gameType, timeout.Token).ConfigureAwait(false);
-                            var state = await RequestGameStateAsync(preStartGameSession, timeout.Token).ConfigureAwait(false);
-                            _ = TryExtractConfigPrompt(state, out gameConfigPrompt);
+                            if (cachedPrompt != null)
+                            {
+                                return cachedPrompt;
+                            }
+
+                            if (string.IsNullOrWhiteSpace(gameType))
+                            {
+                                return null;
+                            }
+
+                            if (preStartGameSession == null)
+                            {
+                                using var connectTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                                preStartGameSession = await _games.ConnectAsync(session.RoomId, gameType, connectTimeout.Token).ConfigureAwait(false);
+                            }
+
+                            using var fetchTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                            cachedPrompt = await TryFetchPreStartConfigPromptAsync(preStartGameSession, fetchTimeout.Token).ConfigureAwait(false);
+                            if (cachedPrompt != null)
+                            {
+                                return cachedPrompt;
+                            }
+
+                            // Certains jeux n'exposent config_prompt qu'apres room.start.
+                            if (!roomStartIssuedByWizard)
+                            {
+                                await session.SendCommandAsync("room.start", payload: null).ConfigureAwait(true);
+                                roomStartIssuedByWizard = true;
+                                using var fetchAfterStartTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                                cachedPrompt = await TryFetchPreStartConfigPromptAsync(preStartGameSession, fetchAfterStartTimeout.Token).ConfigureAwait(false);
+                            }
+
+                            return cachedPrompt;
                         }
 
-                        TableStartConfigWindow.StartFlowResult? startFlow = null;
-                        await dispatcher.InvokeAsync(() =>
+                        GameRoomViewModel.StartWizardResult? startFlow = null;
+                        var ambienceChoices = choices
+                            .Select(c => new GameRoomViewModel.StartWizardAmbienceChoice(c.SoundId, c.Label))
+                            .ToList();
+                        await dispatcher.InvokeAsync(async () =>
                         {
-                            startFlow = TableStartConfigWindow.PickStartFlow(
-                                owner: Application.Current?.MainWindow,
-                                currentSoundId: current,
-                                choices: choices,
-                                gameConfigPrompt: gameConfigPrompt,
-                                soundService: _sounds);
+                            if (vm == null)
+                            {
+                                return;
+                            }
+
+                            startFlow = await vm.OpenStartWizardAsync(
+                                currentAmbienceSoundId: current,
+                                ambienceChoices: ambienceChoices,
+                                initialConfigPrompt: cachedPrompt,
+                                loadConfigPromptAsync: LoadPromptAsync).ConfigureAwait(true);
                         }, DispatcherPriority.Normal);
 
                         if (startFlow == null)
                         {
+                            if (roomStartIssuedByWizard)
+                            {
+                                try { await session.SendCommandAsync("room.reset", payload: null).ConfigureAwait(true); } catch { }
+                            }
                             return;
                         }
 
@@ -1176,11 +1217,11 @@ public sealed class GameTableOpener : IGameTableOpener
                             // ignore (starting should still be possible)
                         }
 
-                        if (gameConfigPrompt != null && preStartGameSession != null)
+                        if (!string.IsNullOrWhiteSpace(startFlow.GameConfigActionType) && preStartGameSession != null)
                         {
                             var payload = startFlow.GameConfigPayload ?? new Dictionary<string, object>(StringComparer.Ordinal);
                             await preStartGameSession.SendActionsAsync(
-                                new[] { new GameClientAction(gameConfigPrompt.ActionType, payload) },
+                                new[] { new GameClientAction(startFlow.GameConfigActionType, payload) },
                                 CancellationToken.None).ConfigureAwait(false);
                         }
                     }
@@ -1193,7 +1234,10 @@ public sealed class GameTableOpener : IGameTableOpener
                     }
                 }
 
-                await session.SendCommandAsync("room.start", payload: null).ConfigureAwait(true);
+                if (!roomStartIssuedByWizard)
+                {
+                    await session.SendCommandAsync("room.start", payload: null).ConfigureAwait(true);
+                }
             }
 
             startHandler = Start;
@@ -1660,26 +1704,34 @@ public sealed class GameTableOpener : IGameTableOpener
         return session.LastState ?? new GameStateDto();
     }
 
-    private static bool TryExtractConfigPrompt(GameStateDto? state, out TableGameConfigWindow.Prompt? prompt)
+    private static async Task<GameRoomViewModel.StartWizardConfigPrompt?> TryFetchPreStartConfigPromptAsync(
+        GameSession session,
+        CancellationToken cancellationToken)
+    {
+        for (var i = 0; i < 10; i++)
+        {
+            var state = await RequestGameStateAsync(session, cancellationToken).ConfigureAwait(false);
+            if (TryExtractConfigPrompt(state, out var prompt) && prompt != null)
+            {
+                return prompt;
+            }
+
+            try
+            {
+                await Task.Delay(220, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool TryExtractConfigPrompt(GameStateDto? state, out GameRoomViewModel.StartWizardConfigPrompt? prompt)
     {
         prompt = null;
-        var pending = state?.Pending;
-        if (pending == null)
-        {
-            return false;
-        }
-
-        var type = (pending.Type ?? string.Empty).Trim();
-        if (!string.Equals(type, "config_prompt", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        if (pending.Data.ValueKind != JsonValueKind.Object)
-        {
-            return false;
-        }
-
         static string? GetString(JsonElement obj, string prop) =>
             obj.TryGetProperty(prop, out var el) && el.ValueKind == JsonValueKind.String
                 ? el.GetString()
@@ -1705,49 +1757,76 @@ public sealed class GameTableOpener : IGameTableOpener
             return el.ValueKind == JsonValueKind.Object ? el : null;
         }
 
-        var data = pending.Data;
-        var actionType = (GetString(data, "actionType") ?? string.Empty).Trim();
-        if (string.IsNullOrWhiteSpace(actionType))
+        static GameRoomViewModel.StartWizardConfigPrompt? BuildPromptFromObject(JsonElement data)
         {
-            return false;
+            var actionType = (GetString(data, "actionType") ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(actionType))
+            {
+                return null;
+            }
+
+            var fieldsEl = GetArray(data, "fields")
+                ?? GetArray(data, "configFields")
+                ?? (GetObject(data, "config") is { } cfg ? GetArray(cfg, "fields") : null);
+            if (fieldsEl == null || fieldsEl.Value.ValueKind != JsonValueKind.Array)
+            {
+                return null;
+            }
+
+            var fields = new List<GameRoomViewModel.StartWizardConfigField>();
+            foreach (var field in fieldsEl.Value.EnumerateArray())
+            {
+                if (field.ValueKind != JsonValueKind.Object) continue;
+                var key = (GetString(field, "key") ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(key)) continue;
+                var min = GetInt(field, "min") ?? GetInt(field, "minValue");
+                var max = GetInt(field, "max") ?? GetInt(field, "maxValue");
+                fields.Add(new GameRoomViewModel.StartWizardConfigField(
+                    Key: key,
+                    Label: (GetString(field, "label") ?? key).Trim(),
+                    Kind: (GetString(field, "kind") ?? "text").Trim(),
+                    Min: min,
+                    Max: max,
+                    InitialText: GetString(field, "initialText") ?? string.Empty));
+            }
+
+            if (fields.Count == 0)
+            {
+                return null;
+            }
+
+            return new GameRoomViewModel.StartWizardConfigPrompt(
+                Title: (GetString(data, "title") ?? "Configuration du jeu").Trim(),
+                ActionType: actionType,
+                CancelActionType: (GetString(data, "cancelActionType") ?? string.Empty).Trim(),
+                Fields: fields);
         }
 
-        var fieldsEl = GetArray(data, "fields")
-            ?? GetArray(data, "configFields")
-            ?? (GetObject(data, "config") is { } cfg ? GetArray(cfg, "fields") : null);
-        if (fieldsEl == null || fieldsEl.Value.ValueKind != JsonValueKind.Array)
+        var pending = state?.Pending;
+        if (pending != null &&
+            string.Equals((pending.Type ?? string.Empty).Trim(), "config_prompt", StringComparison.OrdinalIgnoreCase) &&
+            pending.Data.ValueKind == JsonValueKind.Object)
         {
-            return false;
+            prompt = BuildPromptFromObject(pending.Data);
+            if (prompt != null)
+            {
+                return true;
+            }
         }
 
-        var fields = new List<TableGameConfigWindow.Field>();
-        foreach (var field in fieldsEl.Value.EnumerateArray())
+        // Fallback: certains jeux exposent le prompt dans metadata.prompt avant le pending public.
+        if (state?.Metadata.ValueKind == JsonValueKind.Object &&
+            GetObject(state.Metadata, "prompt") is { } promptObj &&
+            string.Equals((GetString(promptObj, "type") ?? string.Empty).Trim(), "config_prompt", StringComparison.OrdinalIgnoreCase))
         {
-            if (field.ValueKind != JsonValueKind.Object) continue;
-            var key = (GetString(field, "key") ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(key)) continue;
-            var min = GetInt(field, "min") ?? GetInt(field, "minValue");
-            var max = GetInt(field, "max") ?? GetInt(field, "maxValue");
-            fields.Add(new TableGameConfigWindow.Field(
-                Key: key,
-                Label: (GetString(field, "label") ?? key).Trim(),
-                Kind: (GetString(field, "kind") ?? "text").Trim(),
-                Min: min,
-                Max: max,
-                InitialText: GetString(field, "initialText") ?? string.Empty));
+            prompt = BuildPromptFromObject(promptObj);
+            if (prompt != null)
+            {
+                return true;
+            }
         }
 
-        if (fields.Count == 0)
-        {
-            return false;
-        }
-
-        prompt = new TableGameConfigWindow.Prompt(
-            Title: (GetString(data, "title") ?? "Configuration du jeu").Trim(),
-            ActionType: actionType,
-            CancelActionType: (GetString(data, "cancelActionType") ?? string.Empty).Trim(),
-            Fields: fields);
-        return true;
+        return false;
     }
 
     private Task AnnouncePlayersAsync(RoomSession session)
