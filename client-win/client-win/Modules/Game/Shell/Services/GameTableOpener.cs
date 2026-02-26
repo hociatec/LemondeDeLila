@@ -1097,7 +1097,6 @@ public sealed class GameTableOpener : IGameTableOpener
                 var isOwner = selfId > 0 && room?.Owner?.Id == selfId;
                 var alreadyStarted = string.Equals(room?.Status, "started", StringComparison.OrdinalIgnoreCase) ||
                                     !string.IsNullOrWhiteSpace(room?.StartedAt);
-                var roomStartIssuedByWizard = false;
 
                 if (isOwner && !alreadyStarted)
                 {
@@ -1139,14 +1138,54 @@ public sealed class GameTableOpener : IGameTableOpener
 
                     GameSession? preStartGameSession = null;
                     GameRoomViewModel.StartWizardConfigPrompt? cachedPrompt = null;
+                    Task<GameRoomViewModel.StartWizardConfigPrompt?>? prefetchPromptTask = null;
                     try
                     {
                         var gameType = (vm?.Game?.Id ?? placeholderGame.Id ?? string.Empty).Trim();
+                        async Task<GameRoomViewModel.StartWizardConfigPrompt?> PreloadPromptAsync()
+                        {
+                            try
+                            {
+                                if (cachedPrompt != null)
+                                {
+                                    return cachedPrompt;
+                                }
+
+                                if (string.IsNullOrWhiteSpace(gameType))
+                                {
+                                    return null;
+                                }
+
+                                if (preStartGameSession == null)
+                                {
+                                    using var connectTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                                    preStartGameSession = await _games.ConnectAsync(session.RoomId, gameType, connectTimeout.Token).ConfigureAwait(false);
+                                }
+
+                                using var fetchTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                                cachedPrompt = await TryFetchPreStartConfigPromptAsync(preStartGameSession, fetchTimeout.Token).ConfigureAwait(false);
+                                return cachedPrompt;
+                            }
+                            catch
+                            {
+                                return null;
+                            }
+                        }
+
                         async Task<GameRoomViewModel.StartWizardConfigPrompt?> LoadPromptAsync()
                         {
                             if (cachedPrompt != null)
                             {
                                 return cachedPrompt;
+                            }
+
+                            if (prefetchPromptTask != null)
+                            {
+                                cachedPrompt = await prefetchPromptTask.ConfigureAwait(false);
+                                if (cachedPrompt != null)
+                                {
+                                    return cachedPrompt;
+                                }
                             }
 
                             if (string.IsNullOrWhiteSpace(gameType))
@@ -1162,47 +1201,36 @@ public sealed class GameTableOpener : IGameTableOpener
 
                             using var fetchTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
                             cachedPrompt = await TryFetchPreStartConfigPromptAsync(preStartGameSession, fetchTimeout.Token).ConfigureAwait(false);
-                            if (cachedPrompt != null)
-                            {
-                                return cachedPrompt;
-                            }
-
-                            // Certains jeux n'exposent config_prompt qu'apres room.start.
-                            if (!roomStartIssuedByWizard)
-                            {
-                                await session.SendCommandAsync("room.start", payload: null).ConfigureAwait(true);
-                                roomStartIssuedByWizard = true;
-                                using var fetchAfterStartTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-                                cachedPrompt = await TryFetchPreStartConfigPromptAsync(preStartGameSession, fetchAfterStartTimeout.Token).ConfigureAwait(false);
-                            }
-
                             return cachedPrompt;
                         }
+
+                        // Preload game config prompt in background so "Suivant" is fast when prompt is already available.
+                        // This preload never sends room.start; the fallback remains in LoadPromptAsync only.
+                        prefetchPromptTask = PreloadPromptAsync();
 
                         GameRoomViewModel.StartWizardResult? startFlow = null;
                         var ambienceChoices = choices
                             .Select(c => new GameRoomViewModel.StartWizardAmbienceChoice(c.SoundId, c.Label))
                             .ToList();
-                        await dispatcher.InvokeAsync(async () =>
+                        if (vm == null)
                         {
-                            if (vm == null)
-                            {
-                                return;
-                            }
+                            return;
+                        }
 
-                            startFlow = await vm.OpenStartWizardAsync(
-                                currentAmbienceSoundId: current,
-                                ambienceChoices: ambienceChoices,
-                                initialConfigPrompt: cachedPrompt,
-                                loadConfigPromptAsync: LoadPromptAsync).ConfigureAwait(true);
-                        }, DispatcherPriority.Normal);
+                        startFlow = await dispatcher
+                            .InvokeAsync(
+                                () => vm.OpenStartWizardAsync(
+                                    currentAmbienceSoundId: current,
+                                    ambienceChoices: ambienceChoices,
+                                    initialConfigPrompt: cachedPrompt,
+                                    loadConfigPromptAsync: LoadPromptAsync),
+                                DispatcherPriority.Normal)
+                            .Task
+                            .Unwrap()
+                            .ConfigureAwait(true);
 
                         if (startFlow == null)
                         {
-                            if (roomStartIssuedByWizard)
-                            {
-                                try { await session.SendCommandAsync("room.reset", payload: null).ConfigureAwait(true); } catch { }
-                            }
                             return;
                         }
 
@@ -1234,10 +1262,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     }
                 }
 
-                if (!roomStartIssuedByWizard)
-                {
-                    await session.SendCommandAsync("room.start", payload: null).ConfigureAwait(true);
-                }
+                await session.SendCommandAsync("room.start", payload: null).ConfigureAwait(true);
             }
 
             startHandler = Start;

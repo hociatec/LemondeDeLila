@@ -113,7 +113,8 @@
 
         <room:GameRoomStatusBarView Grid.Row="2" />
 
-        <Border Grid.RowSpan="3"
+        <Border x:Name="StartWizardOverlay"
+                Grid.RowSpan="3"
                 Background="#80000000"
                 Visibility="{Binding IsStartWizardOpen, Converter={StaticResource BoolToVis}}"
                 KeyboardNavigation.TabNavigation="Cycle"
@@ -154,21 +155,33 @@
                             <ListBox x:Name="StartWizardChoicesList"
                                      ItemsSource="{Binding StartWizardAmbienceChoices}"
                                      SelectedItem="{Binding StartWizardSelectedAmbience}"
-                                     DisplayMemberPath="Label"
                                      Background="#12263C"
                                      BorderThickness="0"
                                      Foreground="#C3D2EA"
-                                     FontSize="13" />
+                                     FontSize="13">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Label}" TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="AutomationProperties.Name" Value="{Binding Label}" />
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+                            </ListBox>
                         </Border>
 
                         <ScrollViewer VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled"
                                       Visibility="{Binding IsStartWizardConfigStep, Converter={StaticResource BoolToVis}}">
-                            <ItemsControl ItemsSource="{Binding StartWizardConfigFields}">
+                            <ItemsControl x:Name="StartWizardConfigItems"
+                                          ItemsSource="{Binding StartWizardConfigFields}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="0 6 0 6">
-                                            <TextBlock Text="{Binding Label}"
+                                            <TextBlock x:Name="StartWizardConfigFieldLabel"
+                                                       Text="{Binding Label}"
                                                        Foreground="White"
                                                        Margin="0 0 0 4">
                                                 <TextBlock.Style>
@@ -184,7 +197,9 @@
                                             </TextBlock>
 
                                             <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                     MinWidth="560">
+                                                     MinWidth="560"
+                                                     AutomationProperties.Name="{Binding Label}"
+                                                     AutomationProperties.LabeledBy="{Binding ElementName=StartWizardConfigFieldLabel}">
                                                 <TextBox.Style>
                                                     <Style TargetType="TextBox">
                                                         <Setter Property="Visibility" Value="Visible" />
@@ -199,7 +214,8 @@
 
                                             <CheckBox Content="{Binding Label}"
                                                       Foreground="White"
-                                                      IsChecked="{Binding BoolValue, Mode=TwoWay}">
+                                                      IsChecked="{Binding BoolValue, Mode=TwoWay}"
+                                                      AutomationProperties.Name="{Binding Label}">
                                                 <CheckBox.Style>
                                                     <Style TargetType="CheckBox">
                                                         <Setter Property="Visibility" Value="Collapsed" />
@@ -222,7 +238,7 @@
                                 Orientation="Horizontal"
                                 HorizontalAlignment="Right"
                                 Margin="0 12 0 0">
-                        <Button Content="Precedent"
+                        <Button Content="Précédent"
                                 Width="120"
                                 Margin="0 0 8 0"
                                 Click="OnStartWizardPreviousClick">
@@ -237,7 +253,8 @@
                                 </Style>
                             </Button.Style>
                         </Button>
-                        <Button Content="Suivant"
+                        <Button x:Name="StartWizardNextButton"
+                                Content="Suivant"
                                 Width="120"
                                 Margin="0 0 8 0"
                                 Click="OnStartWizardNextClick">
@@ -256,7 +273,8 @@
                                 Width="120"
                                 Margin="0 0 8 0"
                                 Click="OnStartWizardCancelClick" />
-                        <Button Content="Demarrer"
+                        <Button x:Name="StartWizardStartButton"
+                                Content="Démarrer"
                                 Width="140"
                                 Click="OnStartWizardStartClick">
                             <Button.Style>

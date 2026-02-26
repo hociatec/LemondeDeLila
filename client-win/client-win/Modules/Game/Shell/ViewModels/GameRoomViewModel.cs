@@ -137,8 +137,8 @@ public sealed class GameRoomViewModel : ObservableObject
     public string StartWizardTitle => IsStartWizardAmbienceStep ? "Configuration de la table" : _startWizardGameTitle;
 
     public string StartWizardDescription => IsStartWizardAmbienceStep
-        ? "Avant de demarrer, choisissez l'ambiance de la table."
-        : (HasStartWizardConfig ? "Ajustez la configuration du jeu, puis demarrez." : "Aucune configuration de jeu requise. Vous pouvez demarrer.");
+        ? "Avant de démarrer, choisissez l'ambiance de la table."
+        : (HasStartWizardConfig ? "Ajustez la configuration du jeu, puis démarrez." : "Aucune configuration de jeu requise. Vous pouvez démarrer.");
 
     public async Task<StartWizardResult?> OpenStartWizardAsync(
         string currentAmbienceSoundId,
@@ -271,7 +271,7 @@ public sealed class GameRoomViewModel : ObservableObject
 
             if (!int.TryParse(text, out var value))
             {
-                Status = $"Configuration: {field.Label} doit etre un nombre.";
+                Status = $"Configuration: {field.Label} doit être un nombre.";
                 return null;
             }
             if (field.Min.HasValue && value < field.Min.Value)
@@ -325,8 +325,15 @@ public sealed class GameRoomViewModel : ObservableObject
         OnPropertyChanged(nameof(StartWizardDescription));
     }
 
-    public sealed record StartWizardAmbienceChoice(string SoundId, string Label);
-    public sealed record StartWizardConfigField(string Key, string Label, string Kind, int? Min, int? Max, string InitialText);
+    public sealed record StartWizardAmbienceChoice(string SoundId, string Label)
+    {
+        public override string ToString() => Label ?? string.Empty;
+    }
+
+    public sealed record StartWizardConfigField(string Key, string Label, string Kind, int? Min, int? Max, string InitialText)
+    {
+        public override string ToString() => Label ?? Key ?? string.Empty;
+    }
     public sealed record StartWizardConfigPrompt(string Title, string ActionType, string? CancelActionType, IReadOnlyList<StartWizardConfigField> Fields);
     public sealed record StartWizardResult(string AmbienceSoundId, string GameConfigActionType, Dictionary<string, object>? GameConfigPayload);
 
@@ -373,5 +380,7 @@ public sealed class GameRoomViewModel : ObservableObject
             var v = (text ?? string.Empty).Trim().ToLowerInvariant();
             return v is "true" or "1" or "oui" or "yes" or "on";
         }
+
+        public override string ToString() => Label ?? Key ?? string.Empty;
     }
 }
