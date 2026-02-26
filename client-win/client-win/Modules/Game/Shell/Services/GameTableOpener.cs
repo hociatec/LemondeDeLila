@@ -13,7 +13,9 @@ using client_win.Modules.Config;
 using client_win.Modules.Catalog.Models;
 using client_win.Modules.Game.History.Services;
 using client_win.Modules.Game.Play.GamePlay.ViewModels;
+using client_win.Modules.Game.Play.Actions.Dtos;
 using client_win.Modules.Game.Play.Session.Services;
+using client_win.Modules.Game.Play.State.Dtos;
 using client_win.Modules.Game.Room.Services;
 using client_win.Modules.Game.Shell.Views;
 using client_win.Modules.Game.Shell.ViewModels;
@@ -1134,26 +1136,60 @@ public sealed class GameTableOpener : IGameTableOpener
                         }
                     }
 
-                    var selected = TableStartConfigWindow.Pick(
-                        owner: Application.Current?.MainWindow,
-                        currentSoundId: current,
-                        choices: choices,
-                        soundService: _sounds);
-
-                    if (selected == null)
-                    {
-                        return;
-                    }
-
-                    // Apply ambience choice first (best-effort), then start the room.
+                    GameSession? preStartGameSession = null;
                     try
                     {
-                        await session.SendCommandAsync("room.set-ambience", payload: new { soundId = selected })
-                            .ConfigureAwait(true);
+                        TableGameConfigWindow.Prompt? gameConfigPrompt = null;
+                        var gameType = (vm?.Game?.Id ?? placeholderGame.Id ?? string.Empty).Trim();
+                        if (!string.IsNullOrWhiteSpace(gameType))
+                        {
+                            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                            preStartGameSession = await _games.ConnectAsync(session.RoomId, gameType, timeout.Token).ConfigureAwait(false);
+                            var state = await RequestGameStateAsync(preStartGameSession, timeout.Token).ConfigureAwait(false);
+                            _ = TryExtractConfigPrompt(state, out gameConfigPrompt);
+                        }
+
+                        TableStartConfigWindow.StartFlowResult? startFlow = null;
+                        await dispatcher.InvokeAsync(() =>
+                        {
+                            startFlow = TableStartConfigWindow.PickStartFlow(
+                                owner: Application.Current?.MainWindow,
+                                currentSoundId: current,
+                                choices: choices,
+                                gameConfigPrompt: gameConfigPrompt,
+                                soundService: _sounds);
+                        }, DispatcherPriority.Normal);
+
+                        if (startFlow == null)
+                        {
+                            return;
+                        }
+
+                        // Apply ambience choice first (best-effort), then game config, then start.
+                        try
+                        {
+                            await session.SendCommandAsync("room.set-ambience", payload: new { soundId = startFlow.AmbienceSoundId })
+                                .ConfigureAwait(true);
+                        }
+                        catch
+                        {
+                            // ignore (starting should still be possible)
+                        }
+
+                        if (gameConfigPrompt != null && preStartGameSession != null)
+                        {
+                            var payload = startFlow.GameConfigPayload ?? new Dictionary<string, object>(StringComparer.Ordinal);
+                            await preStartGameSession.SendActionsAsync(
+                                new[] { new GameClientAction(gameConfigPrompt.ActionType, payload) },
+                                CancellationToken.None).ConfigureAwait(false);
+                        }
                     }
-                    catch
+                    finally
                     {
-                        // ignore (starting should still be possible)
+                        if (preStartGameSession != null)
+                        {
+                            try { await preStartGameSession.DisposeAsync().ConfigureAwait(false); } catch { }
+                        }
                     }
                 }
 
@@ -1599,6 +1635,119 @@ public sealed class GameTableOpener : IGameTableOpener
             dialogs: _dialogs,
             textPrompts: _textPrompts,
             sounds: _sounds);
+    }
+
+    private static async Task<GameStateDto> RequestGameStateAsync(GameSession session, CancellationToken cancellationToken)
+    {
+        var tcs = new TaskCompletionSource<GameStateDto>(TaskCreationOptions.RunContinuationsAsynchronously);
+        void OnState(GameStateDto s) => tcs.TrySetResult(s);
+        session.StateUpdated += OnState;
+        try
+        {
+            await session.RequestStateAsync(cancellationToken).ConfigureAwait(false);
+            var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(4), cancellationToken))
+                .ConfigureAwait(false);
+            if (completed == tcs.Task)
+            {
+                return await tcs.Task.ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            session.StateUpdated -= OnState;
+        }
+
+        return session.LastState ?? new GameStateDto();
+    }
+
+    private static bool TryExtractConfigPrompt(GameStateDto? state, out TableGameConfigWindow.Prompt? prompt)
+    {
+        prompt = null;
+        var pending = state?.Pending;
+        if (pending == null)
+        {
+            return false;
+        }
+
+        var type = (pending.Type ?? string.Empty).Trim();
+        if (!string.Equals(type, "config_prompt", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (pending.Data.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        static string? GetString(JsonElement obj, string prop) =>
+            obj.TryGetProperty(prop, out var el) && el.ValueKind == JsonValueKind.String
+                ? el.GetString()
+                : null;
+
+        static int? GetInt(JsonElement obj, string prop)
+        {
+            if (!obj.TryGetProperty(prop, out var el)) return null;
+            if (el.ValueKind == JsonValueKind.Number && el.TryGetInt32(out var i)) return i;
+            if (el.ValueKind == JsonValueKind.String && int.TryParse(el.GetString(), out var s)) return s;
+            return null;
+        }
+
+        static JsonElement? GetArray(JsonElement obj, string prop)
+        {
+            if (!obj.TryGetProperty(prop, out var el)) return null;
+            return el.ValueKind == JsonValueKind.Array ? el : null;
+        }
+
+        static JsonElement? GetObject(JsonElement obj, string prop)
+        {
+            if (!obj.TryGetProperty(prop, out var el)) return null;
+            return el.ValueKind == JsonValueKind.Object ? el : null;
+        }
+
+        var data = pending.Data;
+        var actionType = (GetString(data, "actionType") ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(actionType))
+        {
+            return false;
+        }
+
+        var fieldsEl = GetArray(data, "fields")
+            ?? GetArray(data, "configFields")
+            ?? (GetObject(data, "config") is { } cfg ? GetArray(cfg, "fields") : null);
+        if (fieldsEl == null || fieldsEl.Value.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        var fields = new List<TableGameConfigWindow.Field>();
+        foreach (var field in fieldsEl.Value.EnumerateArray())
+        {
+            if (field.ValueKind != JsonValueKind.Object) continue;
+            var key = (GetString(field, "key") ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(key)) continue;
+            var min = GetInt(field, "min") ?? GetInt(field, "minValue");
+            var max = GetInt(field, "max") ?? GetInt(field, "maxValue");
+            fields.Add(new TableGameConfigWindow.Field(
+                Key: key,
+                Label: (GetString(field, "label") ?? key).Trim(),
+                Kind: (GetString(field, "kind") ?? "text").Trim(),
+                Min: min,
+                Max: max,
+                InitialText: GetString(field, "initialText") ?? string.Empty));
+        }
+
+        if (fields.Count == 0)
+        {
+            return false;
+        }
+
+        prompt = new TableGameConfigWindow.Prompt(
+            Title: (GetString(data, "title") ?? "Configuration du jeu").Trim(),
+            ActionType: actionType,
+            CancelActionType: (GetString(data, "cancelActionType") ?? string.Empty).Trim(),
+            Fields: fields);
+        return true;
     }
 
     private Task AnnouncePlayersAsync(RoomSession session)

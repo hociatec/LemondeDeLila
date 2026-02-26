@@ -1,11 +1,16 @@
-<Window x:Class="client_win.Modules.Game.Shell.Views.TableStartConfigWindow"
+﻿<Window x:Class="client_win.Modules.Game.Shell.Views.TableStartConfigWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Configuration de la table"
-        Width="720"
-        Height="560"
+        Width="760"
+        Height="620"
         Background="#0F1D2D"
-        WindowStartupLocation="CenterOwner">
+        WindowStartupLocation="CenterOwner"
+        PreviewKeyDown="OnWindowPreviewKeyDown">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </Window.Resources>
+
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -14,22 +19,22 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Configuration de la table"
+        <TextBlock Text="{Binding StepTitle}"
                    Foreground="White"
                    FontSize="18"
                    Margin="0 0 0 8" />
 
         <TextBlock Grid.Row="1"
-                   Text="Avant de démarrer, choisissez l'ambiance de la table (diffusée en boucle pendant la partie)."
+                   Text="{Binding StepDescription}"
                    Foreground="#C3D2EA"
                    TextWrapping="Wrap"
                    Margin="0 0 0 12" />
 
-        <GroupBox Grid.Row="2"
-                  Header="Ambiance de table"
-                  Foreground="White"
-                  BorderBrush="#2B3A55">
-            <Grid Margin="8">
+        <Grid Grid.Row="2">
+            <Border Background="#12263C"
+                    CornerRadius="8"
+                    Padding="10"
+                    Visibility="{Binding IsAmbienceStep, Converter={StaticResource BoolToVis}}">
                 <ListBox x:Name="ChoicesList"
                          ItemsSource="{Binding Choices}"
                          SelectedItem="{Binding SelectedChoice}"
@@ -42,12 +47,43 @@
                          Foreground="#C3D2EA"
                          FontSize="13"
                          AutomationProperties.Name="Ambiance de table" />
-            </Grid>
-        </GroupBox>
+            </Border>
 
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 12 0 0">
-            <Button Content="Annuler" Width="120" Height="32" Margin="0 0 8 0" Click="OnCancelClicked" />
-            <Button Content="Démarrer" Width="140" Height="32" Click="OnStartClicked" />
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Visibility="{Binding IsGameConfigStep, Converter={StaticResource BoolToVis}}">
+                <StackPanel x:Name="ConfigFieldsHost" />
+            </ScrollViewer>
+        </Grid>
+
+        <StackPanel Grid.Row="3"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0 12 0 0">
+            <Button x:Name="PreviousButton"
+                    Content="Précédent"
+                    Width="120"
+                    Height="32"
+                    Margin="0 0 8 0"
+                    Click="OnPreviousClicked" />
+            <Button x:Name="NextButton"
+                    Content="Suivant"
+                    Width="120"
+                    Height="32"
+                    Margin="0 0 8 0"
+                    Click="OnNextClicked" />
+            <Button Content="Annuler"
+                    Width="120"
+                    Height="32"
+                    Margin="0 0 8 0"
+                    Click="OnCancelClicked"
+                    IsCancel="True" />
+            <Button x:Name="StartButton"
+                    Content="Démarrer"
+                    Width="140"
+                    Height="32"
+                    Click="OnStartClicked"
+                    IsDefault="True" />
         </StackPanel>
     </Grid>
 </Window>
