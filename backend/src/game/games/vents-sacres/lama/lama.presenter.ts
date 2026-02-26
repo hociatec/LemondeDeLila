@@ -52,7 +52,13 @@ export class LamaPresenter extends BasePresenterService {
   }
 
   private isSetup(state: GameStateEntity): boolean {
-    return String(state?.status ?? '').toLowerCase() === 'setup';
+    const status = String(state?.status ?? '')
+      .toLowerCase()
+      .trim();
+    const phase = String(state?.phase ?? '')
+      .toLowerCase()
+      .trim();
+    return status === 'setup' || phase === 'setup';
   }
 
   protected buildCatalog(): { phases: string[]; victory: any } {
@@ -66,7 +72,7 @@ export class LamaPresenter extends BasePresenterService {
     const meta = (state.metadata ?? {}) as LamaMetadata;
 
     if (this.isSetup(state) || (meta.step ?? '') === 'setup_config') {
-      const ownerId = meta.ownerPlayerId ?? null;
+      const ownerId = this.resolveSetupOwnerId(state, meta);
       if (ownerId == null || userId !== ownerId) return [];
       return [{ type: 'lama_set_config', payload: {} }];
     }
@@ -197,7 +203,7 @@ export class LamaPresenter extends BasePresenterService {
     currentPlayerId: number | null,
   ): any {
     if (this.isSetup(state) || (metadata.step ?? '') === 'setup_config') {
-      const ownerId = metadata.ownerPlayerId ?? null;
+      const ownerId = this.resolveSetupOwnerId(state, metadata);
       if (ownerId == null || userId !== ownerId) return null;
       return {
         type: 'config_prompt',
@@ -561,5 +567,38 @@ export class LamaPresenter extends BasePresenterService {
 
       return { ...entry, message: `${actorLabel} pioche une carte.` };
     });
+  }
+
+  private resolveSetupOwnerId(
+    state: GameStateEntity,
+    metadata: LamaMetadata,
+  ): number | null {
+    const players = Array.isArray(state?.players) ? state.players : [];
+    const playerExists = (id: unknown): id is number =>
+      typeof id === 'number' && players.some((p) => Number(p?.id) === id);
+    const isBot = (id: number): boolean =>
+      players.some((p) => Number(p?.id) === id && p?.isBot === true);
+
+    const metaOwner = metadata?.ownerPlayerId ?? null;
+    if (playerExists(metaOwner) && !isBot(metaOwner)) {
+      return metaOwner;
+    }
+
+    const pendingOwner = Number((state?.pending as any)?.playerId ?? NaN);
+    if (Number.isFinite(pendingOwner) && playerExists(pendingOwner) && !isBot(pendingOwner)) {
+      return pendingOwner;
+    }
+
+    const turnOwner = state?.turn?.currentPlayerId ?? null;
+    if (playerExists(turnOwner) && !isBot(turnOwner)) {
+      return turnOwner;
+    }
+
+    const firstHuman = players.find((p) => p?.id != null && p?.isBot !== true);
+    if (typeof firstHuman?.id === 'number') {
+      return firstHuman.id;
+    }
+
+    return typeof players[0]?.id === 'number' ? players[0].id : null;
   }
 }

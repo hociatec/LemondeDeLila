@@ -55,13 +55,45 @@ public partial class TableStartConfigWindow : Window
         IReadOnlyList<TableAmbiencePickerWindow.Choice> choices,
         ISoundService? soundService = null)
     {
-        var w = new TableStartConfigWindow(choices, currentSoundId, soundService) { Owner = owner };
+        var safeOwner = ResolveSafeOwner(owner);
+        var w = new TableStartConfigWindow(choices, currentSoundId, soundService)
+        {
+            Owner = safeOwner,
+            WindowStartupLocation = safeOwner != null
+                ? WindowStartupLocation.CenterOwner
+                : WindowStartupLocation.CenterScreen,
+        };
         var previousFocus = Keyboard.FocusedElement;
-        FocusParking.Park(owner);
-        NvdaDialogFocus.Configure(w, owner, focusTargetFactory: () => w.ChoicesList);
+        FocusParking.Park(safeOwner);
+        NvdaDialogFocus.Configure(w, safeOwner, focusTargetFactory: () => w.ChoicesList);
         var ok = w.ShowDialog();
-        DialogFocusRestorer.Restore(owner, previousFocus);
+        DialogFocusRestorer.Restore(safeOwner, previousFocus);
         return ok == true ? (w._vm.SelectedChoice?.SoundId ?? string.Empty) : null;
+    }
+
+    private static Window? ResolveSafeOwner(Window? owner)
+    {
+        var candidate = owner ?? Application.Current?.MainWindow;
+        if (!IsUsableOwner(candidate))
+        {
+            candidate = Application.Current?.MainWindow;
+        }
+        return IsUsableOwner(candidate) ? candidate : null;
+    }
+
+    private static bool IsUsableOwner(Window? window)
+    {
+        if (window == null) return false;
+        if (!window.IsVisible) return false;
+        if (window.WindowState == WindowState.Minimized) return false;
+
+        var bounds = window.RestoreBounds;
+        var virtualScreen = new Rect(
+            SystemParameters.VirtualScreenLeft,
+            SystemParameters.VirtualScreenTop,
+            SystemParameters.VirtualScreenWidth,
+            SystemParameters.VirtualScreenHeight);
+        return bounds.IntersectsWith(virtualScreen);
     }
 
     private void OnChoicesListPreviewKeyDown(object sender, KeyEventArgs e)

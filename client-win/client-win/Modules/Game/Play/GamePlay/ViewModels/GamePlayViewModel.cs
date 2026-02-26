@@ -219,6 +219,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
         RebuildDisplayChoices();
         InitializeHandSupport();
+        InlinePromptFields.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasInlinePrompt));
     }
 
     public ObservableCollection<string> PendingChoices => _choices.PendingChoices;
@@ -715,7 +716,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private void UpdatePendingConfigPrompt(GameStateDto state)
     {
         var pending = state.Pending;
-        if (pending == null || !string.Equals(pending.Type?.Trim(), "config_prompt", StringComparison.OrdinalIgnoreCase))
+        if (pending == null)
         {
             _pendingConfigPrompt = null;
             return;
@@ -728,7 +729,26 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             return;
         }
 
-        if (pending.Data.ValueKind != System.Text.Json.JsonValueKind.Object)
+        static System.Text.Json.JsonElement? GetObjectProperty(
+            System.Text.Json.JsonElement obj,
+            string prop)
+        {
+            if (!obj.TryGetProperty(prop, out var el)) return null;
+            return el.ValueKind == System.Text.Json.JsonValueKind.Object ? el : null;
+        }
+
+        static System.Text.Json.JsonElement? GetArrayProperty(
+            System.Text.Json.JsonElement obj,
+            string prop)
+        {
+            if (!obj.TryGetProperty(prop, out var el)) return null;
+            return el.ValueKind == System.Text.Json.JsonValueKind.Array ? el : null;
+        }
+
+        var pendingType = (pending.Type ?? string.Empty).Trim();
+        var isConfigPrompt = string.Equals(pendingType, "config_prompt", StringComparison.OrdinalIgnoreCase);
+        var hasObjectData = pending.Data.ValueKind == System.Text.Json.JsonValueKind.Object;
+        if (!isConfigPrompt && !hasObjectData)
         {
             _pendingConfigPrompt = null;
             return;
@@ -747,25 +767,55 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             return null;
         }
 
-        var data = pending.Data;
-        var actionType = (GetString(data, "actionType") ?? string.Empty).Trim();
+        var data = hasObjectData ? pending.Data : default;
+        var actionType = hasObjectData
+            ? (GetString(data, "actionType") ?? string.Empty).Trim()
+            : string.Empty;
+
+        // Fallback compatibility: some flows expose only pending.type or an available *_set_config action.
+        if (string.IsNullOrWhiteSpace(actionType))
+        {
+            if (HasAction(state, pendingType))
+            {
+                actionType = pendingType;
+            }
+            else
+            {
+                actionType = state.Actions?
+                    .Select(a => (a?.Type ?? string.Empty).Trim())
+                    .FirstOrDefault(t =>
+                        !string.IsNullOrWhiteSpace(t) &&
+                        t.Contains("set_config", StringComparison.OrdinalIgnoreCase))
+                    ?? string.Empty;
+            }
+        }
+
         if (string.IsNullOrWhiteSpace(actionType))
         {
             _pendingConfigPrompt = null;
             return;
         }
 
-        var cancelActionType = (GetString(data, "cancelActionType") ?? string.Empty).Trim();
+        var cancelActionType = hasObjectData
+            ? (GetString(data, "cancelActionType") ?? string.Empty).Trim()
+            : string.Empty;
 
-        if (!data.TryGetProperty("fields", out var fieldsEl) ||
-            fieldsEl.ValueKind != System.Text.Json.JsonValueKind.Array)
+        var fieldsEl = hasObjectData
+            ? GetArrayProperty(data, "fields")
+                ?? GetArrayProperty(data, "configFields")
+                ?? (GetObjectProperty(data, "config") is { } cfgObj
+                    ? GetArrayProperty(cfgObj, "fields")
+                    : null)
+            : null;
+
+        if (fieldsEl == null || fieldsEl.Value.ValueKind != System.Text.Json.JsonValueKind.Array)
         {
             _pendingConfigPrompt = null;
             return;
         }
 
         var fields = new System.Collections.Generic.List<PendingConfigField>();
-        foreach (var field in fieldsEl.EnumerateArray())
+        foreach (var field in fieldsEl.Value.EnumerateArray())
         {
             if (field.ValueKind != System.Text.Json.JsonValueKind.Object) continue;
             var key = (GetString(field, "key") ?? string.Empty).Trim();
@@ -789,7 +839,9 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         }
 
         _pendingConfigPrompt = new PendingConfigPrompt(
-            Title: (GetString(data, "title") ?? "Configuration").Trim(),
+            Title: hasObjectData
+                ? (GetString(data, "title") ?? "Configuration").Trim()
+                : "Configuration",
             ActionType: actionType,
             CancelActionType: cancelActionType,
             Fields: fields);
