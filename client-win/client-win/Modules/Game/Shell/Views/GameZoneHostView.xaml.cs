@@ -51,9 +51,7 @@ public partial class GameZoneHostView : UserControl
                     return GameFocusAttemptResult.Interactive;
                 }
 
-                QueueDeferredFocusAttempt(existingFocusRequestId, DispatcherPriority.Input);
                 QueueDeferredFocusAttempt(existingFocusRequestId, DispatcherPriority.Loaded);
-                QueueDeferredFocusAttempt(existingFocusRequestId, DispatcherPriority.ApplicationIdle);
                 return GameFocusAttemptResult.Anchor;
             }
 
@@ -93,11 +91,9 @@ public partial class GameZoneHostView : UserControl
         }
 
         // Content is set but the visual tree may still be materializing via DataTemplate.
-        // Keep a stable anchor immediately, then retry on upcoming dispatcher passes.
+        // Keep a stable anchor immediately, then retry when layout has finished.
         FocusGameZoneAnchor();
-        QueueDeferredFocusAttempt(requestId, DispatcherPriority.Input);
         QueueDeferredFocusAttempt(requestId, DispatcherPriority.Loaded);
-        QueueDeferredFocusAttempt(requestId, DispatcherPriority.ApplicationIdle);
         return GameFocusAttemptResult.Anchor;
     }
 
@@ -359,9 +355,7 @@ public partial class GameZoneHostView : UserControl
                 return;
             }
 
-            QueueDeferredFocusAttempt(requestId, DispatcherPriority.Input);
             QueueDeferredFocusAttempt(requestId, DispatcherPriority.Loaded);
-            QueueDeferredFocusAttempt(requestId, DispatcherPriority.ApplicationIdle);
             return;
         }
 
@@ -400,7 +394,6 @@ public partial class GameZoneHostView : UserControl
             }
 
             QueueDeferredFocusAttempt(requestId, DispatcherPriority.Loaded);
-            QueueDeferredFocusAttempt(requestId, DispatcherPriority.ApplicationIdle);
         }));
     }
 }

@@ -22,7 +22,7 @@ public sealed class RoomPrivacyCommands : IRoomPrivacyCommands
         await _session.SendCommandAwaitAckAsync(
                 "room.toggle-privacy",
                 payload: null,
-                ackTimeout: TimeSpan.FromSeconds(1.2),
+                ackTimeout: TimeSpan.FromMilliseconds(350),
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }

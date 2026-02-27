@@ -404,7 +404,7 @@ public sealed class GameTableOpener : IGameTableOpener
             await session.SendCommandAwaitAckAsync(
                     "bot.remove",
                     payload: new { botId = target.Id },
-                    ackTimeout: TimeSpan.FromSeconds(1.2))
+                    ackTimeout: TimeSpan.FromMilliseconds(350))
                 .ConfigureAwait(true);
             return;
         }
@@ -412,7 +412,7 @@ public sealed class GameTableOpener : IGameTableOpener
         await session.SendCommandAwaitAckAsync(
                 ban ? "room.ban" : "room.kick",
                 payload: new { userId = target.Id },
-                ackTimeout: TimeSpan.FromSeconds(1.2))
+                ackTimeout: TimeSpan.FromMilliseconds(350))
             .ConfigureAwait(true);
     }
 
@@ -463,7 +463,7 @@ public sealed class GameTableOpener : IGameTableOpener
         await session.SendCommandAwaitAckAsync(
                 "room.set-owner",
                 payload: new { userId = target.Id },
-                ackTimeout: TimeSpan.FromSeconds(1.2))
+                ackTimeout: TimeSpan.FromMilliseconds(350))
             .ConfigureAwait(true);
     }
 
@@ -1067,7 +1067,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 await session.SendCommandAwaitAckAsync(
                         "room.set-ambience",
                         payload: new { soundId = selected },
-                        ackTimeout: TimeSpan.FromSeconds(1.2))
+                        ackTimeout: TimeSpan.FromMilliseconds(350))
                     .ConfigureAwait(true);
             }
             catch
@@ -1308,7 +1308,7 @@ public sealed class GameTableOpener : IGameTableOpener
                             await session.SendCommandAwaitAckAsync(
                                     "room.set-ambience",
                                     payload: new { soundId = startFlow.AmbienceSoundId },
-                                    ackTimeout: TimeSpan.FromSeconds(1.2))
+                                    ackTimeout: TimeSpan.FromMilliseconds(350))
                                 .ConfigureAwait(true);
                         }
                         catch
@@ -1344,7 +1344,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     await session.SendCommandAwaitAckAsync(
                             "room.start",
                             payload: null,
-                            ackTimeout: TimeSpan.FromSeconds(1.2))
+                            ackTimeout: TimeSpan.FromMilliseconds(350))
                         .ConfigureAwait(true);
                 }
                 finally
@@ -1403,7 +1403,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 await session.SendCommandAwaitAckAsync(
                         "room.reset",
                         payload: null,
-                        ackTimeout: TimeSpan.FromSeconds(1.2))
+                        ackTimeout: TimeSpan.FromMilliseconds(350))
                     .ConfigureAwait(true);
             }
             Task SendChat(string message) =>
@@ -1632,7 +1632,7 @@ public sealed class GameTableOpener : IGameTableOpener
                                 await session.SendCommandAwaitAckAsync(
                                         "room.start",
                                         payload: null,
-                                        ackTimeout: TimeSpan.FromSeconds(1.2))
+                                        ackTimeout: TimeSpan.FromMilliseconds(350))
                                     .ConfigureAwait(true);
                             }
 
@@ -1650,7 +1650,7 @@ public sealed class GameTableOpener : IGameTableOpener
                                 await session.SendCommandAwaitAckAsync(
                                         "room.reset",
                                         payload: null,
-                                        ackTimeout: TimeSpan.FromSeconds(1.2))
+                                        ackTimeout: TimeSpan.FromMilliseconds(350))
                                     .ConfigureAwait(true);
                             },
                             onQuit: QuitRoom,

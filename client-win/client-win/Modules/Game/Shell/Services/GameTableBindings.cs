@@ -64,7 +64,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private bool _lastRoomStarted;
     private StartFlowState _startFlowState = StartFlowState.Idle;
     private int _startFocusRecoveryRequestId;
-    private int _startStateKickoffRequestId;
     private bool _awaitingStartReadyAnnouncement;
     private int _startFlowVersion;
     private int _awaitingStartReadyVersion;
@@ -688,8 +687,14 @@ internal sealed class GameTableBindings : IAsyncDisposable
             _awaitingStartReadyVersion = _startFlowVersion;
             _awaitingStartReadyAnnouncement = true;
             ScheduleStartFocusRecovery(GameFocusReason.TableStarted, _awaitingStartReadyVersion);
-            ScheduleStartStateKickoff(_awaitingStartReadyVersion);
             _ = TryRequestTurnAnnouncementIfReadyAsync(_awaitingStartReadyVersion);
+            if (fromGameStatus)
+            {
+                _awaitingStartReadyAnnouncement = false;
+                _ = _dispatcher.InvokeAsync(
+                    async () => await RequestTurnAnnouncementAsync().ConfigureAwait(true),
+                    DispatcherPriority.Background);
+            }
         }
 
         Log.Debug("StartFlow -> {State} ({Source}) [v={Version}]", _startFlowState, source, _startFlowVersion);
@@ -703,7 +708,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
         Interlocked.Increment(ref _startFlowVersion);
         _awaitingStartReadyVersion = _startFlowVersion;
         Interlocked.Increment(ref _startFocusRecoveryRequestId);
-        Interlocked.Increment(ref _startStateKickoffRequestId);
         if (previous != StartFlowState.Idle)
         {
             Log.Debug("StartFlow -> {State} ({Source}) [v={Version}]", _startFlowState, source, _startFlowVersion);
@@ -723,7 +727,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _awaitingStartReadyVersion = version;
         _awaitingStartReadyAnnouncement = true;
         ScheduleStartFocusRecovery(GameFocusReason.TableStarted, version);
-        ScheduleStartStateKickoff(version);
         _ = TryRequestTurnAnnouncementIfReadyAsync(version);
     }
 
@@ -738,62 +741,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _tableVm.GameZone.RequestFocus(reason);
 
         return requestId;
-    }
-
-    private void ScheduleStartStateKickoff(int version)
-    {
-        if (version != _awaitingStartReadyVersion)
-        {
-            return;
-        }
-
-        var requestId = Interlocked.Increment(ref _startStateKickoffRequestId);
-        _ = Task.Run(async () =>
-        {
-            // Non-polling fallback: a couple of short kickoff attempts right after room.start.
-            // This covers engines that don't expose lifecycle.startReady immediately.
-            foreach (var delayMs in new[] { 180, 700 })
-            {
-                try
-                {
-                    await Task.Delay(delayMs).ConfigureAwait(false);
-                }
-                catch
-                {
-                    return;
-                }
-
-                if (requestId != Volatile.Read(ref _startStateKickoffRequestId) ||
-                    version != Volatile.Read(ref _awaitingStartReadyVersion))
-                {
-                    return;
-                }
-
-                bool shouldKickoff = false;
-                await _dispatcher.InvokeAsync(
-                    () =>
-                    {
-                        shouldKickoff = _awaitingStartReadyAnnouncement && _tableVm.GameZone.IsStarted;
-                    },
-                    DispatcherPriority.Background);
-
-                if (!shouldKickoff)
-                {
-                    return;
-                }
-
-                try
-                {
-                    await _dispatcher.InvokeAsync(
-                        async () => await RequestTurnAnnouncementAsync().ConfigureAwait(true),
-                        DispatcherPriority.Background);
-                }
-                catch
-                {
-                    // best-effort
-                }
-            }
-        });
     }
 
     private async Task TryRequestTurnAnnouncementIfReadyAsync(int version)
@@ -1005,10 +952,28 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 // Otherwise, early requests right after room.start can be dropped silently.
                 await _gamePlayVm.InitializeAsync(CancellationToken.None).ConfigureAwait(true);
 
-                // Some engines do not push a fresh game.state right after room.start.
-                // Request state first so hand/board are visible immediately after config validation.
-                await _gamePlayVm.RequestStateInfoAsync().ConfigureAwait(true);
-                await _gamePlayVm.RequestTurnInfoAsync().ConfigureAwait(true);
+                var vm = _gamePlayVm;
+                if (vm == null)
+                {
+                    return;
+                }
+
+                await vm.RequestTurnInfoAsync().ConfigureAwait(true);
+
+                // Keep state refresh best-effort and non-blocking so turn announcement stays reactive.
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await _dispatcher.InvokeAsync(
+                            async () => await vm.RequestStateInfoAsync().ConfigureAwait(true),
+                            DispatcherPriority.Background);
+                    }
+                    catch
+                    {
+                        // best-effort
+                    }
+                });
             }
             catch (Exception ex)
             {

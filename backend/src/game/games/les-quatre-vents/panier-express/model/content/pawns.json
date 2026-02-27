@@ -4,22 +4,22 @@
     {
       "id": "panier-osier",
       "name": "panier en osier",
-      "description": "Un panier classique et solide pour demarrer les courses."
+      "description": "Un panier classique et solide pour démarrer les courses."
     },
     {
       "id": "sac-toile",
       "name": "sac en toile",
-      "description": "Un sac leger et pratique, ideal pour les petits achats."
+      "description": "Un sac léger et pratique, idéal pour les petits achats."
     },
     {
       "id": "chariot-roulettes",
-      "name": "chariot a roulettes",
-      "description": "Un chariot maniable qui suit facilement chaque deplacement."
+      "name": "chariot à roulettes",
+      "description": "Un chariot maniable qui suit facilement chaque déplacement."
     },
     {
       "id": "cagette-bois",
       "name": "cagette en bois",
-      "description": "Une cagette robuste pour transporter fruits et legumes."
+      "description": "Une cagette robuste pour transporter fruits et légumes."
     },
     {
       "id": "cabas-pliable",
@@ -33,4 +33,3 @@
     }
   ]
 }
-

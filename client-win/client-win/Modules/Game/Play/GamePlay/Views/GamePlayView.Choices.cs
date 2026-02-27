@@ -19,8 +19,6 @@ public partial class GamePlayView
     private int _restoreChoiceFocusIndex;
     private bool _restoreHandFocusAfterSubmit;
     private int _restoreHandFocusIndex;
-    private int _restoreChoiceFocusMisses;
-    private int _restoreHandFocusMisses;
     private bool _preferredInteractiveFocusForceFromOutside = true;
 
     public void FocusPreferredInteractiveElement()
@@ -39,9 +37,7 @@ public partial class GamePlayView
         _preferredInteractiveFocusForceFromOutside = forceFromOutsideTextInput;
         var requestId = Interlocked.Increment(ref _preferredInteractiveFocusRequestId);
         RunPreferredInteractiveFocusPass(requestId);
-        QueuePreferredInteractiveFocusPass(requestId, DispatcherPriority.Input);
         QueuePreferredInteractiveFocusPass(requestId, DispatcherPriority.Loaded);
-        QueuePreferredInteractiveFocusPass(requestId, DispatcherPriority.ApplicationIdle);
     }
 
     private void QueuePreferredInteractiveFocusPass(int requestId, DispatcherPriority priority)
@@ -63,7 +59,6 @@ public partial class GamePlayView
     {
         _restoreChoiceFocusAfterSubmit = true;
         _restoreChoiceFocusIndex = ChoicesList?.SelectedIndex ?? -1;
-        _restoreChoiceFocusMisses = 0;
         RequestPostSubmitInteractiveFocus();
     }
 
@@ -77,9 +72,8 @@ public partial class GamePlayView
         }
 
         var requestId = Interlocked.Increment(ref _postPawnSubmitFocusRequestId);
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => RunPostPawnSubmitFocusRecovery(requestId)));
+        RunPostPawnSubmitFocusRecovery(requestId);
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => RunPostPawnSubmitFocusRecovery(requestId)));
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => RunPostPawnSubmitFocusRecovery(requestId)));
     }
 
     private void RunPostPawnSubmitFocusRecovery(int requestId)
@@ -109,22 +103,13 @@ public partial class GamePlayView
     {
         _restoreHandFocusAfterSubmit = true;
         _restoreHandFocusIndex = HandList?.SelectedIndex ?? -1;
-        _restoreHandFocusMisses = 0;
         RequestPostSubmitInteractiveFocus();
     }
 
     private void RequestPostSubmitInteractiveFocus()
     {
         _pendingInitialInteractiveFocus = true;
-        _ = Dispatcher.BeginInvoke(
-            DispatcherPriority.Input,
-            new Action(() => FocusPreferredInteractiveElement(forceFromOutsideTextInput: true)));
-        _ = Dispatcher.BeginInvoke(
-            DispatcherPriority.Loaded,
-            new Action(() => FocusPreferredInteractiveElement(forceFromOutsideTextInput: true)));
-        _ = Dispatcher.BeginInvoke(
-            DispatcherPriority.ApplicationIdle,
-            new Action(() => FocusPreferredInteractiveElement(forceFromOutsideTextInput: true)));
+        FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
     }
 
     private void HookChoiceAutoFocus(GamePlayViewModel? vm)
@@ -206,20 +191,12 @@ public partial class GamePlayView
                     {
                         if (!HandList.IsVisible || HandList.Items.Count <= 0)
                         {
-                            // Keep pending restore for a few refresh ticks, then stop silently.
-                            _restoreHandFocusMisses++;
-                            if (_restoreHandFocusMisses >= 6)
-                            {
-                                _restoreHandFocusAfterSubmit = false;
-                                _restoreHandFocusMisses = 0;
-                            }
                             return;
                         }
 
                         var count = HandList.Items.Count;
                         var idx = _restoreHandFocusIndex;
                         _restoreHandFocusAfterSubmit = false;
-                        _restoreHandFocusMisses = 0;
 
                         if (idx < 0) idx = 0;
                         if (idx >= count) idx = count - 1;
@@ -246,18 +223,10 @@ public partial class GamePlayView
                     {
                         if (!ChoicesList.IsVisible || ChoicesList.Items.Count <= 0)
                         {
-                            // Keep pending restore for a few refresh ticks, then stop silently.
-                            _restoreChoiceFocusMisses++;
-                            if (_restoreChoiceFocusMisses >= 6)
-                            {
-                                _restoreChoiceFocusAfterSubmit = false;
-                                _restoreChoiceFocusMisses = 0;
-                            }
                             return;
                         }
 
                         _restoreChoiceFocusAfterSubmit = false;
-                        _restoreChoiceFocusMisses = 0;
 
                         var count = ChoicesList.Items.Count;
                         var idx = _restoreChoiceFocusIndex;
@@ -399,7 +368,7 @@ public partial class GamePlayView
     private void RequestGameZoneFocusFromVm(GameFocusReason reason)
     {
         var requestId = Interlocked.Increment(ref _gameZoneFocusRequestId);
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => RunGameZoneFocusRequest(requestId, reason)));
+        RunGameZoneFocusRequest(requestId, reason);
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => RunGameZoneFocusRequest(requestId, reason)));
     }
 
@@ -699,20 +668,12 @@ public partial class GamePlayView
                 {
                     if (!HandList.IsVisible || HandList.Items.Count <= 0)
                     {
-                        // Keep pending restore for a few refresh ticks, then stop silently.
-                        _restoreHandFocusMisses++;
-                        if (_restoreHandFocusMisses >= 6)
-                        {
-                            _restoreHandFocusAfterSubmit = false;
-                            _restoreHandFocusMisses = 0;
-                        }
                         return;
                     }
 
                     var count = HandList.Items.Count;
                     var idx = _restoreHandFocusIndex;
                     _restoreHandFocusAfterSubmit = false;
-                    _restoreHandFocusMisses = 0;
 
                     if (idx < 0) idx = 0;
                     if (idx >= count) idx = count - 1;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -116,7 +116,7 @@ public sealed class RoomSession : IAsyncDisposable
         CancellationToken cancellationToken = default)
     {
         var traceId = await SendCommandWithTraceAsync(type, payload, cancellationToken).ConfigureAwait(false);
-        var timeout = ackTimeout.GetValueOrDefault(TimeSpan.FromSeconds(1.2));
+        var timeout = ackTimeout.GetValueOrDefault(TimeSpan.FromMilliseconds(350));
         if (timeout <= TimeSpan.Zero)
         {
             return false;
@@ -201,7 +201,6 @@ public sealed class RoomSession : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         try { _lifetimeCts.Cancel(); } catch { }
-
         if (_keepAliveLoop != null)
         {
             try { await _keepAliveLoop.ConfigureAwait(false); } catch { }
@@ -232,7 +231,7 @@ public sealed class RoomSession : IAsyncDisposable
         }
         catch
         {
-            // Best-effort (ne pas casser la boucle WS si un handler client échoue).
+            // Best-effort (ne pas casser la boucle WS si un handler client Ã©choue).
         }
 
         if (_reconnectAsync == null)
@@ -249,7 +248,7 @@ public sealed class RoomSession : IAsyncDisposable
             _reconnectAttempt = 0;
             _lastPongUtc = DateTime.UtcNow;
 
-            // Après reconnexion, il faut se rattacher à la table.
+            // AprÃ¨s reconnexion, il faut se rattacher Ã  la table.
             _ = Task.Run(() => EnsureJoinedAsync(CancellationToken.None));
         }
     }
@@ -285,7 +284,7 @@ public sealed class RoomSession : IAsyncDisposable
             if (string.Equals(type, "room.left", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(type, "room.deleted", StringComparison.OrdinalIgnoreCase))
             {
-                // Sortie imposée (kick/ban/delete) OU table supprimée. La navigation est gérée par l'UI.
+                // Sortie imposÃ©e (kick/ban/delete) OU table supprimÃ©e. La navigation est gÃ©rÃ©e par l'UI.
                 Left?.Invoke(type);
                 return;
             }
@@ -304,9 +303,7 @@ public sealed class RoomSession : IAsyncDisposable
 
             if (string.Equals(type, "state-updated", StringComparison.OrdinalIgnoreCase))
             {
-                // Some server updates broadcast a lightweight "state-updated" message first.
-                // If the subsequent room.updated broadcast is missed (disconnect/race), force a refresh.
-                _ = RequestStateRefreshCoreAsync();
+                // Lightweight hint-only event. Real state updates are handled via room.updated.
                 return;
             }
 
@@ -605,7 +602,7 @@ public sealed class RoomSession : IAsyncDisposable
 
             if (!force && _state == WebSocketState.Connected)
             {
-                // Déjà connecté, rien à faire (sauf si force).
+                // DÃ©jÃ  connectÃ©, rien Ã  faire (sauf si force).
                 return;
             }
 
@@ -732,7 +729,7 @@ public sealed class RoomSession : IAsyncDisposable
                 var age = DateTime.UtcNow - _lastPongUtc;
                 if (_lastPongUtc != DateTime.MinValue && age > TimeSpan.FromSeconds(60))
                 {
-                    // Socket "fantôme" probable: forcer une reconnexion.
+                    // Socket "fantÃ´me" probable: forcer une reconnexion.
                     RequestReconnect(force: true);
                     continue;
                 }
@@ -752,7 +749,7 @@ public sealed class RoomSession : IAsyncDisposable
             }
             catch
             {
-                // Best-effort: la reconnexion sera déclenchée par StateChanged ou par le watchdog.
+                // Best-effort: la reconnexion sera dÃ©clenchÃ©e par StateChanged ou par le watchdog.
             }
         }
     }
@@ -770,7 +767,7 @@ public sealed class RoomSession : IAsyncDisposable
             _ => 30,
         };
 
-        // Jitter +/-20% pour éviter que tout le monde reconnecte en même temps.
+        // Jitter +/-20% pour Ã©viter que tout le monde reconnecte en mÃªme temps.
         var jitter = 0.8 + (Random.Shared.NextDouble() * 0.4);
         return TimeSpan.FromMilliseconds(Math.Max(250, seconds * 1000 * jitter));
     }
@@ -808,3 +805,4 @@ public sealed class RoomSession : IAsyncDisposable
         }
     }
 }
+

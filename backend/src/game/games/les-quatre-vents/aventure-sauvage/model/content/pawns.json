@@ -8,18 +8,18 @@
     },
     {
       "id": "elephant",
-      "name": "L'Elephant",
-      "description": "Imposant et calme, il progresse a grands pas reguliers."
+      "name": "L'Éléphant",
+      "description": "Imposant et calme, il progresse à grands pas réguliers."
     },
     {
       "id": "girafe",
       "name": "La Girafe",
-      "description": "Elegante et curieuse, elle observe tout du haut de son long cou."
+      "description": "Élégante et curieuse, elle observe tout du haut de son long cou."
     },
     {
       "id": "zebre",
-      "name": "Le Zebre",
-      "description": "Rapide et vif, il zigzague avec une energie imprevisible."
+      "name": "Le Zèbre",
+      "description": "Rapide et vif, il zigzague avec une énergie imprévisible."
     },
     {
       "id": "crocodile",
@@ -29,8 +29,7 @@
     {
       "id": "autruche",
       "name": "L'Autruche",
-      "description": "Dynamique et drole, elle alterne acceleration et pauses soudaines."
+      "description": "Dynamique et drôle, elle alterne accélération et pauses soudaines."
     }
   ]
 }
-
