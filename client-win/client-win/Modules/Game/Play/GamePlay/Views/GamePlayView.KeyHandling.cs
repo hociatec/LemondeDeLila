@@ -465,7 +465,7 @@ public partial class GamePlayView
             }
 
             e.Handled = true;
-            ForceFocusGameZone();
+            FocusPreferredInteractiveElement(forceFromOutsideTextInput: false);
             return;
         }
 

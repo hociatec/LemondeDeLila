@@ -38,7 +38,7 @@
                     Padding="20"
                     Focusable="False"
                     AutomationProperties.Name="Salle de jeu"
-                    AutomationProperties.HelpText="Panneau Salle de jeu. Contient la zone de jeu et ses informations.">
+                    AutomationProperties.HelpText="Panneau Salle de jeu. Contient la table et ses informations.">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />

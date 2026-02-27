@@ -12,7 +12,7 @@
               IsTabStop="True"
               KeyboardNavigation.TabNavigation="Cycle"
               KeyboardNavigation.DirectionalNavigation="Contained"
-              AutomationProperties.Name="Zone de jeu"
+              AutomationProperties.Name=""
               PreviewKeyDown="OnRootPreviewKeyDown"
               Loaded="OnLoaded">
     <UserControl.Resources>

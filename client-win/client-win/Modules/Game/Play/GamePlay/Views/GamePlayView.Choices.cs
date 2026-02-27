@@ -387,8 +387,6 @@ public partial class GamePlayView
 
         return false;
     }
-    private void ForceFocusGameZone() => ForceFocusGameZoneCore(forceFromOutsideTextInput: false);
-
     private void RequestGameZoneFocusFromVm(GameFocusReason reason)
     {
         var requestId = Interlocked.Increment(ref _gameZoneFocusRequestId);
@@ -411,7 +409,7 @@ public partial class GamePlayView
 
         // "GamePlayReady" is emitted on frequent state transitions (turn/action updates).
         // Keep focus stable if the user is currently reading chat/history to avoid
-        // repetitive "Zone de jeu" announcements from screen readers.
+        // repetitive root re-announcements from screen readers.
         if (reason == GameFocusReason.GamePlayReady)
         {
             FocusPreferredInteractiveElement(forceFromOutsideTextInput: false);
@@ -478,7 +476,7 @@ public partial class GamePlayView
         // - choose_pawn: garder le focus sur la liste de pions
         // - sinon, si une grille est visible: ancrer sur la grille (jeux type Corridor)
         // - sinon, si une liste de choix est visible: ancrer sur cette liste (ex: LAMA = main)
-        // - sinon: ancrer sur la vue racine
+        // - sinon: attendre qu'un élément interactif soit prêt
         if (DataContext is GamePlayViewModel vm && vm.Grid.IsVisible)
         {
             if ((GridBoard?.IsKeyboardFocusWithin ?? false) || (GridItems?.IsKeyboardFocusWithin ?? false))
@@ -486,8 +484,6 @@ public partial class GamePlayView
                 _pendingInitialInteractiveFocus = false;
                 return;
             }
-            Focus();
-            Keyboard.Focus(this);
             TryFocusPreferredGridCell();
             _pendingInitialInteractiveFocus = false;
             return;
@@ -536,16 +532,9 @@ public partial class GamePlayView
         }
 
         // Lors d'une demande explicite de retour au jeu (ex: Tab depuis chat/historique),
-        // garder un ancrage clavier sur la zone de jeu même s'il n'y a pas encore
-        // d'élément interactif prêt (tour bot, état transitoire, etc.).
+        // ne pas ancrer sur la racine "zone de jeu": attendre la prochaine cible interactive.
         if (forceFromOutsideTextInput)
         {
-            if (IsKeyboardFocusWithin)
-            {
-                return;
-            }
-            Focus();
-            Keyboard.Focus(this);
             _pendingInitialInteractiveFocus = true;
         }
     }
