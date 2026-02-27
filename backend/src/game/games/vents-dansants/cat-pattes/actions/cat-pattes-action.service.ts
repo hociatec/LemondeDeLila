@@ -383,6 +383,7 @@ export class CatPattesActionService {
     let updatedMeta = this.removeCardFromHand(meta, currentId, cardId);
     updatedMeta = this.addCardToDiscard(updatedMeta, cardId);
     let next = this.setMeta(state, updatedMeta);
+    next = this.appendPlayedCardNarration(next, currentId, definition);
 
     if (definition.type === 'pattes') {
       next = this.playPattes(next, currentId, definition);
@@ -491,7 +492,7 @@ export class CatPattesActionService {
 
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} joue ${card.name} et avance de ${delta} pattes (total ${nextPosition}/${goalPattes}).`,
+      `${resolvePlayerNameFromState(next, playerId)} avance de ${delta} pattes (total ${nextPosition}/${goalPattes}).`,
     );
 
     if (nextPosition === goalPattes) {
@@ -659,6 +660,26 @@ export class CatPattesActionService {
         next,
         `${resolvePlayerNameFromState(next, playerId)} : ${effect}`,
       );
+    }
+    return next;
+  }
+
+  private appendPlayedCardNarration(
+    state: GameStateEntity,
+    playerId: number,
+    card: CatPattesCardDefinition,
+  ): GameStateEntity {
+    let next = this.core.appendLog(
+      state,
+      `${resolvePlayerNameFromState(state, playerId)} joue ${card.name}.`,
+    );
+    const description = String(card.description ?? '').trim();
+    if (description) {
+      next = this.core.appendLog(next, description);
+    }
+    const effect = String(card.effect ?? '').trim();
+    if (effect) {
+      next = this.core.appendLog(next, effect);
     }
     return next;
   }

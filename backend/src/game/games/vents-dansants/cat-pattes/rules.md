@@ -1,32 +1,59 @@
 # Cat Pattes !
 
 ## But du jeu
-Parcourez 1 000 pattes avant vos adversaires en enchaînant les cartes Pattes, en évitant ou en éliminant les obstacles et en tirant avantage des cartes Parades ou Pouvoirs.
+Atteindre 1 000 pattes avant vos adversaires.
 
-## Contenu
-- Cartes Pattes (Petites foulées, Sprint du matin, Course-poursuite, Chasse à la souris, Turbo-chat) qui permettent d’avancer lorsque le soleil est présent et qu’aucun obstacle ne vous bloque.
-- Cartes Obstacles (Gamelle vide, Pluie torrentielle, Chien enragé, Coussin piégé, Sol ciré) : un seul obstacle actif peut vous ralentir à la fois.
-- Cartes Parades (Croquettes, Rayon de soleil, Dodo réparateur, Nouveau coussin, Saut agile) : elles annulent les obstacles ou offrent des bonus immédiats.
-- Pouvoirs (Réserve secrète, Chat Ninja, Patte blindée, Passage de Star) : talents permanents, souvent des protections ou des exemptions de certaines contraintes.
+## Contenu du paquet (112 cartes)
+
+### Cartes Pattes (52)
+- Pas feutré (x6) : avancez de 10 pattes.
+- Petite foulée (x10) : avancez de 20 pattes.
+- Sprint du matin (x10) : avancez de 50 pattes.
+- Course-poursuite (x10) : avancez de 80 pattes.
+- Chasse à la souris (x12) : avancez de 130 pattes.
+- Turbochat (x4) : avancez de 150 pattes.
+
+### Cartes Obstacles (18)
+- Gamelle vide (x3)
+- Pluie torrentielle (x5)
+- Chien enragé (x3)
+- Coussin piégé (x3)
+- Sol ciré (x4)
+
+Effet commun : bloque les cartes Pattes tant que l'obstacle n'est pas retiré.
+
+### Cartes Parades (38)
+- Croquettes (x6) : retire Gamelle vide.
+- Rayon de soleil (x14) : active le soleil et retire Pluie torrentielle.
+- Dodo réparateur (x6) : retire Chien enragé.
+- Nouveau coussin (x6) : retire Coussin piégé.
+- Saut agile (x6) : retire Sol ciré.
+
+### Cartes Pouvoirs (4)
+- Réserve secrète (x1) : ignore Gamelle vide.
+- Chat Ninja (x1) : ignore Chien enragé.
+- Patte blindée (x1) : ignore Coussin piégé.
+- Passage de star (x1) : ignore Pluie torrentielle et Sol ciré, et permet de jouer sans soleil.
 
 ## Mise en place
-1. Mélangez le paquet et distribuez 6 cartes à chaque joueur.
-2. Placez la pioche au centre et le reste des cartes face cachée.
-3. Le joueur ayant le plus de moustaches commence.
+1. Mélangez le paquet.
+2. Distribuez 6 cartes à chaque joueur.
+3. Placez le reste en pioche.
 
-## Déroulement d’un tour
-1. Piochez une carte. Si elle dépasse votre limite, une défausse peut se produire plus tard.
-2. Jouez une carte :
-   - Carte Pattes : nécessite un Rayon de soleil actif et l’absence d’obstacle bloquant.
-   - Carte Parade : supprime l’obstacle en cours ou vous donne un effet de récupération.
-   - Carte Obstacle : place un obstacle devant un adversaire (maximum un obstacle actif par chat).
-   - Carte Pouvoir : active un talent permanent (protection, bonus de pioche, exemption, etc.).
-3. Vous pouvez aussi passer pour conserver vos cartes.
+## Déroulement d'un tour
+1. Piochez une carte.
+2. Jouez une carte, ou passez/défaussez selon les actions disponibles.
 
-## Conditions de déplacement
-- Les cartes Pattes demandent un Rayon de soleil actif (gagné via une Parade).
-- Un obstacle bloque toutes les cartes Pattes tant qu’il n’est pas éliminé (sauf Pouvoirs spécifiques).
-- Les Pouvoirs restent actifs jusqu’à la fin de la partie et leurs effets peuvent se cumuler.
+## Règles clés
+- Les cartes Pattes demandent un soleil actif, sauf effet Pouvoir qui l'ignore.
+- Un obstacle actif bloque les cartes Pattes jusqu'à retrait (ou contournement par un Pouvoir).
+- Les Pouvoirs restent actifs.
+
+## Journal de partie
+Quand une carte est jouée, l'historique affiche :
+1. le nom de la carte,
+2. sa description,
+3. son effet.
 
 ## Fin de partie
-Le premier joueur à atteindre 1 000 pattes remporte la course. La partie s’arrête immédiatement.
+Le premier joueur qui atteint 1 000 pattes remporte la manche.
