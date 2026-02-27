@@ -105,9 +105,8 @@ export class GameRegistryService {
       ? withOverrides
       : withOverrides.filter((d) => d.enabled !== false);
     return filtered.map((entry): GameDefinition => {
-      const { enabled, status, ...rest } = entry;
+      const { enabled, ...rest } = entry;
       void enabled;
-      void status;
       return rest;
     });
   }

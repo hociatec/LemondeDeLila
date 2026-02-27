@@ -94,6 +94,15 @@ public sealed partial class GamePlayViewModel
 
         if (card.Disabled && !hasActionForCard)
         {
+            // Some games (e.g. LAMA) expose playable cards through pending choices,
+            // not via select_card/play_card actions tied to a hand cardId.
+            // Let the view fallback submit the selected pending choice without announcing
+            // a misleading "must draw first" message.
+            if ((state.Pending?.Choices?.Count ?? 0) > 0)
+            {
+                return false;
+            }
+
             MessageReceived?.Invoke(new GamePlayHistoryMessage(
                 BuildHandPlayBlockedMessage(actions, card)));
             return false;
@@ -126,6 +135,11 @@ public sealed partial class GamePlayViewModel
                     card.Label,
                     msg => MessageReceived?.Invoke(new GamePlayHistoryMessage(msg)));
                 return started;
+            }
+
+            if ((state.Pending?.Choices?.Count ?? 0) > 0)
+            {
+                return false;
             }
 
             MessageReceived?.Invoke(new GamePlayHistoryMessage(

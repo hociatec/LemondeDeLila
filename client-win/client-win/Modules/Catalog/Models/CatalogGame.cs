@@ -53,12 +53,17 @@ public sealed class CatalogGame
         {
             var name = Name ?? string.Empty;
             var status = (Status ?? string.Empty).Trim().ToLowerInvariant();
-            return status switch
+            var statusLabel = status switch
             {
-                "beta" => $"{name} (Bêta)",
-                "construction" => $"{name} (En construction)",
-                _ => name
+                "beta" => "Bêta",
+                "construction" => "En construction",
+                "finished" => "Terminé",
+                _ => string.Empty
             };
+
+            return string.IsNullOrWhiteSpace(statusLabel)
+                ? name
+                : $"{name} ({statusLabel})";
         }
     }
 

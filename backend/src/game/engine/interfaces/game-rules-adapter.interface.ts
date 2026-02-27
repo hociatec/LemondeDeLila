@@ -391,6 +391,14 @@ export type GameDefinition = {
   chatSoundsEnabled?: boolean;
 
   /**
+   * Statut catalogue du jeu.
+   * - construction : visible admins uniquement
+   * - beta : visible admins + utilisateurs ayant activé l'option bêta
+   * - finished : visible pour tous
+   */
+  status?: 'construction' | 'beta' | 'finished';
+
+  /**
    * Chemin vers le fichier manifest.json du jeu.
    */
   manifestPath?: string;

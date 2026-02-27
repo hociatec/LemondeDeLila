@@ -267,7 +267,6 @@ public partial class GamePlayView
             }
 
             if (_pendingInitialInteractiveFocus &&
-                IsFocusInsideThisGameView() &&
                 ChoicesList.IsVisible &&
                 ChoicesList.Items.Count > 0)
             {
@@ -643,7 +642,6 @@ public partial class GamePlayView
         _handCardsChanged = (_, __) =>
         {
             if (_pendingInitialInteractiveFocus &&
-                IsFocusInsideThisGameView() &&
                 HandList.IsVisible &&
                 HandList.Items.Count > 0)
             {

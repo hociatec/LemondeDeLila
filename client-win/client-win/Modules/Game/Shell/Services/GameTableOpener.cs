@@ -274,7 +274,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
         if (candidates.Count == 0)
         {
-            await _dialogs.ShowInfo("Invitation", "Aucun joueur connect� � inviter.").ConfigureAwait(true);
+            await _dialogs.ShowInfo("Invitation", "Aucun joueur connecté à inviter.").ConfigureAwait(true);
             return;
         }
 
@@ -302,7 +302,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
         var picked = await _dialogs.Pick(
                 "Invitation",
-                "Choisir un joueur connect� :",
+                "Choisir un joueur connecté :",
                 labels,
                 okText: "Inviter",
                 cancelText: "Annuler")
@@ -357,7 +357,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
         if (roster.Count == 0)
         {
-            await _dialogs.ShowInfo("Table", "Aucun joueur � exclure/bannir.").ConfigureAwait(true);
+            await _dialogs.ShowInfo("Table", "Aucun joueur à exclure/bannir.").ConfigureAwait(true);
             return;
         }
 
@@ -712,7 +712,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
                 object BuildTavernFallback()
                 {
-                    // Apr�s une sortie de table, la taverne est un "hub" et ne doit pas servir de back-stack vers
+                    // Après une sortie de table, la taverne est un "hub" et ne doit pas servir de back-stack vers
                     // des vues modales (ex: Mon coffre fort). Fermer la taverne doit ramener au menu principal.
                     var safeReturn = returnContent is MainMenuViewModel ? returnContent : null;
                     var homeContent = _homeAccessor.HomeContent;
@@ -807,8 +807,8 @@ public sealed class GameTableOpener : IGameTableOpener
                     }
                     catch
                     {
-                        // Fallback de s�curit� : si le retour vers l'�cran pr�c�dent est impossible,
-                        // ouvrir la liste des tables publiques plut�t que de laisser un "�cran vide".
+                        // Fallback de sécurité : si le retour vers l'écran précédent est impossible,
+                        // ouvrir la liste des tables publiques plutôt que de laisser un "écran vide".
                         _navigation.Show(BuildTavernFallback());
                     }
                 }
@@ -834,7 +834,7 @@ public sealed class GameTableOpener : IGameTableOpener
             }
             finally
             {
-                // R�active l'ambiance/musique si on revient vers un �cran qui en a une.
+                // Réactive l'ambiance/musique si on revient vers un écran qui en a une.
                 try
                 {
                     // Background handled by NavigationAudioSync (based on the shown view).
@@ -869,7 +869,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 boundSnapshotId = await _vault.SaveAsync(current.RoomId, boundSnapshotId).ConfigureAwait(true);
                 TryPersistTableAmbiencePrefsForSnapshot(boundSnapshotId);
                 _announcementService.Enqueue(
-                    "Table sauvegard�e dans Mon coffre fort. Retour � la taverne.",
+                    "Table sauvegardée dans Mon coffre fort. Retour à la taverne.",
                     AnnouncementPriority.Polite);
                 await ExitAsync(null, forceTavern: true).ConfigureAwait(true);
             }
@@ -891,11 +891,11 @@ public sealed class GameTableOpener : IGameTableOpener
                 }
                 catch
                 {
-                    // best-effort: si �a �choue, on quitte quand m�me.
+                    // best-effort: si ça échoue, on quitte quand même.
                 }
             }
 
-            // Quitter une table depuis l'UI doit toujours ramener � la taverne (m�me si on vient d'une autre vue).
+            // Quitter une table depuis l'UI doit toujours ramener à la taverne (même si on vient d'une autre vue).
             await ExitAsync(forceTavern: true).ConfigureAwait(true);
         }
 
@@ -909,7 +909,7 @@ public sealed class GameTableOpener : IGameTableOpener
         {
             if (session == null)
             {
-                try { await _dialogs.ShowInfo("R�gles", "Connexion � la table…").ConfigureAwait(true); } catch { }
+                try { await _dialogs.ShowInfo("Règles", "Connexion à la table...").ConfigureAwait(true); } catch { }
                 return;
             }
 
@@ -956,7 +956,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         .ConfigureAwait(false);
                     if (completed != tcs.Task)
                     {
-                        throw new TimeoutException("R�gles : d�lai d�pass�.");
+                        throw new TimeoutException("Règles : délai dépassé.");
                     }
 
                     var rules = await tcs.Task.ConfigureAwait(false);
@@ -964,7 +964,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     {
                         GameRulesWindow.Show(
                             owner: Application.Current?.MainWindow,
-                            title: $"R�gles - {gameName}",
+                            title: $"Règles - {gameName}",
                             rules: rules);
                     }, DispatcherPriority.Normal).Task.ConfigureAwait(false);
                 }
@@ -977,7 +977,7 @@ public sealed class GameTableOpener : IGameTableOpener
             catch (Exception ex)
             {
                 var detail = string.IsNullOrWhiteSpace(errorDetail) ? ex.Message : errorDetail;
-                try { await _dialogs.ShowInfo("R�gles", $"Impossible de charger les r�gles.\nD�tail: {detail}").ConfigureAwait(true); } catch { }
+                try { await _dialogs.ShowInfo("Règles", $"Impossible de charger les règles.\nDétail: {detail}").ConfigureAwait(true); } catch { }
             }
             finally
             {
@@ -992,7 +992,7 @@ public sealed class GameTableOpener : IGameTableOpener
         {
             if (session == null)
             {
-                try { await _dialogs.ShowInfo("Ambiance", "Connexion � la table…").ConfigureAwait(true); } catch { }
+                try { await _dialogs.ShowInfo("Ambiance", "Connexion à la table...").ConfigureAwait(true); } catch { }
                 return;
             }
 
@@ -1023,12 +1023,12 @@ public sealed class GameTableOpener : IGameTableOpener
                                      _remoteSounds.TryGetPath(sound) != null;
                     choices.Add(new TableAmbiencePickerWindow.Choice(
                         id,
-                        configured ? name : $"{name} (non configur�e)"));
+                        configured ? name : $"{name} (non configurée)"));
                 }
             }
             else
             {
-                // Compat: si le serveur ne supporte pas encore les ambiances nomm�es.
+                // Compat: si le serveur ne supporte pas encore les ambiances nommées.
                 for (var i = 1; i <= 0; i++)
                 {
                     var id = $"TableAmbience{i}";
@@ -1036,7 +1036,7 @@ public sealed class GameTableOpener : IGameTableOpener
                                      _remoteSounds.TryGetPath(sound) != null;
                     choices.Add(new TableAmbiencePickerWindow.Choice(
                         id,
-                        configured ? $"Ambiance {i} (configur�e)" : $"Ambiance {i} (non configur�e)"));
+                        configured ? $"Ambiance {i} (configurée)" : $"Ambiance {i} (non configurée)"));
                 }
             }
 
@@ -1059,7 +1059,7 @@ public sealed class GameTableOpener : IGameTableOpener
             }
             catch
             {
-                try { await _dialogs.ShowError("Ambiance", "Impossible de mettre � jour l'ambiance.").ConfigureAwait(true); } catch { }
+                try { await _dialogs.ShowError("Ambiance", "Impossible de mettre à jour l'ambiance.").ConfigureAwait(true); } catch { }
             }
         }
 
@@ -1148,7 +1148,7 @@ public sealed class GameTableOpener : IGameTableOpener
                                  _remoteSounds.TryGetPath(sound) != null;
                 result.Add(new TableAmbiencePickerWindow.Choice(
                     id,
-                    configured ? name : $"{name} (non configur�e)"));
+                    configured ? name : $"{name} (non configurée)"));
             }
 
             return result;
@@ -1333,7 +1333,7 @@ public sealed class GameTableOpener : IGameTableOpener
             {
                 if (session == null)
                 {
-                    try { await _dialogs.ShowInfo("R�gles", "Connexion � la table…").ConfigureAwait(true); } catch { }
+                    try { await _dialogs.ShowInfo("Règles", "Connexion à la table...").ConfigureAwait(true); } catch { }
                     return;
                 }
 
@@ -1380,7 +1380,7 @@ public sealed class GameTableOpener : IGameTableOpener
                             .ConfigureAwait(false);
                         if (completed != tcs.Task)
                         {
-                            throw new TimeoutException("R�gles : d�lai d�pass�.");
+                            throw new TimeoutException("Règles : délai dépassé.");
                         }
 
                         var rules = await tcs.Task.ConfigureAwait(false);
@@ -1388,7 +1388,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         {
                             GameRulesWindow.Show(
                                 owner: Application.Current?.MainWindow,
-                                title: $"R�gles - {gameName}",
+                                title: $"Règles - {gameName}",
                                 rules: rules);
                         }, DispatcherPriority.Normal).Task.ConfigureAwait(false);
                     }
@@ -1401,7 +1401,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 catch (Exception ex)
                 {
                     var detail = string.IsNullOrWhiteSpace(errorDetail) ? ex.Message : errorDetail;
-                    try { await _dialogs.ShowInfo("R�gles", $"Impossible de charger les r�gles.\nD�tail: {detail}").ConfigureAwait(true); } catch { }
+                    try { await _dialogs.ShowInfo("Règles", $"Impossible de charger les règles.\nDétail: {detail}").ConfigureAwait(true); } catch { }
                 }
                 finally
                 {
@@ -1449,7 +1449,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 focusCoordinator: _focus,
                 screenReader: _screenReader,
                 announcements: _announcementService);
-            vm.Status = "Connexion � la table…";
+            vm.Status = "Connexion à la table...";
             vm.IsReconnecting = true;
             vm.GameZone.IsConnected = false;
             vm.Chat.IsConnected = false;
@@ -1471,7 +1471,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 session = connected;
                 var game = buildGameFromSession(session);
 
-                // Audio warm-up (best-effort): �vite les latences (premier d�, bonne/mauvaise r�ponse, ambiance de table).
+                // Audio warm-up (best-effort): évite les latences (premier dé, bonne/mauvaise réponse, ambiance de table).
                 // Ne bloque pas l'ouverture de la table.
                 _ = Task.Run(async () =>
                 {
@@ -1497,7 +1497,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     }
                 });
 
-                // Mettre � jour la pr�sence (best-effort).
+                // Mettre à jour la présence (best-effort).
                 try
                 {
                     var roomName = session.LastRoomState?.Room?.Name;
@@ -1516,7 +1516,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         return;
                     }
 
-                    // Si on a ouvert une table existante, remplacer le DataContext par un VM complet bas� sur le manifest.
+                    // Si on a ouvert une table existante, remplacer le DataContext par un VM complet basé sur le manifest.
                     if (!ReferenceEquals(placeholderGame, game))
                     {
                             var start = startHandler ?? (() => session.SendCommandAsync("room.start", payload: null));
@@ -1544,7 +1544,7 @@ public sealed class GameTableOpener : IGameTableOpener
 	                            focusCoordinator: _focus,
 	                            screenReader: _screenReader,
 	                            announcements: _announcementService);
-	                        newVm.Status = "Connexion � la table…";
+	                        newVm.Status = "Connexion à la table...";
 	                        newVm.IsReconnecting = true;
 	                        newVm.GameZone.IsConnected = false;
 	                        newVm.Chat.IsConnected = false;
@@ -1593,7 +1593,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     }
 
                     var createdMessage = isNew
-                        ? $"Table de {game.Name} cr��e. Ajoutez des bots et commencez � jouer."
+                        ? $"Table de {game.Name} créée. Ajoutez des bots et commencez à jouer."
                         : $"Table rejointe : {game.Name}.";
                     new GameHistorySink(dispatcher, vm.History, _announcementService).Add(createdMessage);
 
@@ -1681,8 +1681,8 @@ public sealed class GameTableOpener : IGameTableOpener
                     bindings.Attach();
                     bindings.InitializeFromLastState();
 
-                    // Pr�charge les sons de jeu d�s l'ouverture de la table pour �viter la latence
-                    // (MediaOpened / cache distant) lors du premier d�clenchement.
+                    // Précharge les sons de jeu dès l'ouverture de la table pour éviter la latence
+                    // (MediaOpened / cache distant) lors du premier déclenchement.
                     try
                     {
                         // Already preloaded above (best-effort).
@@ -1692,7 +1692,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         // best-effort
                     }
 
-                    vm.Status = "Table pr�te.";
+                    vm.Status = "Table prête.";
                     vm.IsReconnecting = false;
                     vm.GameZone.IsConnected = true;
                     vm.Chat.IsConnected = true;
@@ -1715,8 +1715,8 @@ public sealed class GameTableOpener : IGameTableOpener
                           }
                         else
                         {
-                            // room.left: quitter (ou �tre �ject�) doit toujours ramener � la taverne.
-                            _ = ExitAsync("Vous avez quitt� la table.", forceTavern: true);
+                            // room.left: quitter (ou être éjecté) doit toujours ramener à la taverne.
+                            _ = ExitAsync("Vous avez quitté la table.", forceTavern: true);
                         }
                     };
                     session.Left += onSessionLeft;
@@ -1730,14 +1730,14 @@ public sealed class GameTableOpener : IGameTableOpener
 
                         if (state == client_win.Modules.Network.WebSockets.WebSocketState.Connecting)
                         {
-                            vm.Status = "Connexion � la table…";
+                            vm.Status = "Connexion à la table...";
                             vm.IsReconnecting = true;
                             vm.GameZone.IsConnected = false;
                             vm.Chat.IsConnected = false;
                         }
                         else if (state == client_win.Modules.Network.WebSockets.WebSocketState.Connected)
                         {
-                            vm.Status = "Table pr�te.";
+                            vm.Status = "Table prête.";
                             vm.IsReconnecting = false;
                             vm.GameZone.IsConnected = true;
                             vm.Chat.IsConnected = true;
@@ -2025,4 +2025,5 @@ public sealed class GameTableOpener : IGameTableOpener
         return Task.CompletedTask;
     }
 }
+
 
