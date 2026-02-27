@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
@@ -63,18 +63,18 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             var startedAt = DateTime.UtcNow;
             try
             {
-                Log.Information("WS room.warmup: connexion à {Endpoint}", uri);
+                Log.Information("WS room.warmup: connexion Ã  {Endpoint}", uri);
                 await socket.ConnectAsync(uri, token: token, headers: headers, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
                 _warmSocket = socket;
                 _warmConnectedAtUtc = DateTime.UtcNow;
                 Log.Information(
-                    "WS room.warmup: connecté en {ElapsedMs}ms",
+                    "WS room.warmup: connectÃ© en {ElapsedMs}ms",
                     (DateTime.UtcNow - startedAt).TotalMilliseconds);
             }
             catch (Exception ex)
             {
-                Log.Warning(ex, "WS room.warmup: échec connexion.");
+                Log.Warning(ex, "WS room.warmup: Ã©chec connexion.");
                 try { await socket.CloseAsync().ConfigureAwait(false); } catch { }
                 try { await socket.DisposeAsync().ConfigureAwait(false); } catch { }
                 _warmSocket = null;
@@ -104,51 +104,69 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45));
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
 
-        var (socket, reusedWarm) = await TakeOrCreateSocketAsync(token, linked.Token).ConfigureAwait(false);
-        try
+        const int maxAttempts = 2;
+        Exception? lastError = null;
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
-            if (!reusedWarm)
+            var (socket, reusedWarm) = await TakeOrCreateSocketAsync(token, linked.Token).ConfigureAwait(false);
+            try
             {
-                Log.Information("WS room.create: socket cold (handshake requis)");
-            }
-            else
-            {
-                Log.Information("WS room.create: socket warm réutilisé");
-            }
+                if (!reusedWarm)
+                {
+                    Log.Information("WS room.create: socket cold (handshake requis)");
+                }
+                else
+                {
+                    Log.Information("WS room.create: socket warm réutilisé");
+                }
 
-            var created = await WaitRoomCreatedAsync(socket, gameType, linked.Token).ConfigureAwait(false);
-            var roomId = created.RoomId;
-            if (roomId <= 0)
-            {
-                await socket.CloseAsync().ConfigureAwait(false);
-                await socket.DisposeAsync().ConfigureAwait(false);
-                throw new InvalidOperationException("Création de table échouée (roomId invalide).");
-            }
+                var created = await WaitRoomCreatedAsync(socket, gameType, linked.Token).ConfigureAwait(false);
+                var roomId = created.RoomId;
+                if (roomId <= 0)
+                {
+                    await socket.CloseAsync().ConfigureAwait(false);
+                    await socket.DisposeAsync().ConfigureAwait(false);
+                    throw new InvalidOperationException("Création de table échouée (roomId invalide).");
+                }
 
-            Log.Information("Connexion à la room WS (réutilisation socket) roomId={RoomId}", roomId);
-            var session = new RoomSession(
-                roomId,
-                gameType,
-                socket,
-                returnSocketAsync: ReturnWarmSocketAsync,
-                reconnectAsync: ReconnectBaseAsync,
-                spectator: false,
-                silent: false);
-            session.LastRoomState = created.Payload;
-            Log.Information(
-                "WS room.create: create+connect total {ElapsedMs}ms (roomId={RoomId})",
-                (DateTime.UtcNow - startedAt).TotalMilliseconds,
-                roomId);
-            return session;
+                Log.Information("Connexion à la room WS (réutilisation socket) roomId={RoomId}", roomId);
+                var session = new RoomSession(
+                    roomId,
+                    gameType,
+                    socket,
+                    returnSocketAsync: ReturnWarmSocketAsync,
+                    reconnectAsync: ReconnectBaseAsync,
+                    spectator: false,
+                    silent: false);
+                session.LastRoomState = created.Payload;
+                Log.Information(
+                    "WS room.create: create+connect total {ElapsedMs}ms (roomId={RoomId})",
+                    (DateTime.UtcNow - startedAt).TotalMilliseconds,
+                    roomId);
+                return session;
+            }
+            catch (Exception ex)
+            {
+                lastError = ex;
+                await ReturnWarmSocketAsync(socket).ConfigureAwait(false);
+
+                var shouldRetry =
+                    attempt < maxAttempts &&
+                    !linked.IsCancellationRequested &&
+                    IsTransientCreateFailure(ex);
+                if (!shouldRetry)
+                {
+                    throw;
+                }
+
+                Log.Warning(ex, "WS room.create: échec transitoire (tentative {Attempt}/{MaxAttempts}), retry", attempt, maxAttempts);
+                await Task.Delay(TimeSpan.FromMilliseconds(350), linked.Token).ConfigureAwait(false);
+            }
         }
-        catch
-        {
-            await ReturnWarmSocketAsync(socket).ConfigureAwait(false);
-            throw;
-        }
+
+        throw lastError ?? new InvalidOperationException("Création de table échouée.");
     }
-
-    public async Task<RoomSession> ConnectAsync(int roomId, CancellationToken cancellationToken = default)
+public async Task<RoomSession> ConnectAsync(int roomId, CancellationToken cancellationToken = default)
     {
         return await ConnectAsync(roomId, spectator: false, cancellationToken).ConfigureAwait(false);
     }
@@ -164,7 +182,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         var token = user?.Token;
         if (string.IsNullOrWhiteSpace(token))
         {
-            throw new InvalidOperationException("Utilisateur non authentifié.");
+            throw new InvalidOperationException("Utilisateur non authentifiÃ©.");
         }
         if (roomId <= 0)
         {
@@ -264,7 +282,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
                     // Fallback: connect directly with query params.
                     var uri = BuildRoomUri(_config.RealtimeGatewayWs, roomId, spectator, silent);
                     var headers = await BuildHeadersAsync(linked.Token).ConfigureAwait(false);
-                    Log.Information("WS room.connect: connexion à {Endpoint}", uri);
+                    Log.Information("WS room.connect: connexion Ã  {Endpoint}", uri);
                     await socket.ConnectAsync(uri, token: token, headers: headers, cancellationToken: linked.Token).ConfigureAwait(false);
                 }
 
@@ -281,7 +299,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
                 {
                     await socket.CloseAsync().ConfigureAwait(false);
                     await socket.DisposeAsync().ConfigureAwait(false);
-                    throw new InvalidOperationException("Connexion table échouée (état manquant).");
+                    throw new InvalidOperationException("Connexion table Ã©chouÃ©e (Ã©tat manquant).");
                 }
 
                 var gameType = payload.Room.GameType;
@@ -342,7 +360,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             return;
         }
 
-        Log.Warning("WS room: socket supplémentaire retourné; fermeture pour éviter une fuite.");
+        Log.Warning("WS room: socket supplÃ©mentaire retournÃ©; fermeture pour Ã©viter une fuite.");
         try { await socket.CloseAsync().ConfigureAwait(false); } catch { }
         try { await socket.DisposeAsync().ConfigureAwait(false); } catch { }
     }
@@ -353,7 +371,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         var token = user?.Token;
         if (string.IsNullOrWhiteSpace(token))
         {
-            throw new InvalidOperationException("Utilisateur non authentifié.");
+            throw new InvalidOperationException("Utilisateur non authentifiÃ©.");
         }
 
         var uri = BuildRoomUri(_config.RealtimeGatewayWs, roomId: 0);
@@ -406,7 +424,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             (DateTime.UtcNow - headersStartedAt).TotalMilliseconds);
 
         var connectStartedAt = DateTime.UtcNow;
-        Log.Information("WS room.connect: connexion à {Endpoint}", uri);
+        Log.Information("WS room.connect: connexion Ã  {Endpoint}", uri);
         await socket.ConnectAsync(uri, token: token, headers: headers, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
         Log.Information(
@@ -463,7 +481,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
                     }
 
                     tcs.TrySetException(new InvalidOperationException(
-                        string.IsNullOrWhiteSpace(message) ? "Erreur création de table." : message));
+                        string.IsNullOrWhiteSpace(message) ? "Erreur crÃ©ation de table." : message));
                 }
             }
             catch
@@ -485,7 +503,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             if (state is WebSocketState.Error or WebSocketState.Disconnected)
             {
                 tcs.TrySetException(new InvalidOperationException(
-                    "Connexion WebSocket fermée pendant la création de table. Vérifiez la connectivité WS."));
+                    "Connexion WebSocket fermÃ©e pendant la crÃ©ation de table. VÃ©rifiez la connectivitÃ© WS."));
             }
         }
 
@@ -507,12 +525,12 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45));
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
             var res = await tcs.Task.WaitAsync(linked.Token).ConfigureAwait(false);
-            Log.Information("WS room.create: réponse reçue en {ElapsedMs}ms (roomId={RoomId})", (DateTime.UtcNow - startedAt).TotalMilliseconds, res.RoomId);
+            Log.Information("WS room.create: rÃ©ponse reÃ§ue en {ElapsedMs}ms (roomId={RoomId})", (DateTime.UtcNow - startedAt).TotalMilliseconds, res.RoomId);
             return res;
         }
         catch (OperationCanceledException)
         {
-            throw new InvalidOperationException("Timeout création de table.");
+            throw new InvalidOperationException("Timeout crÃ©ation de table.");
         }
         finally
         {
@@ -591,7 +609,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             if (state is WebSocketState.Error or WebSocketState.Disconnected)
             {
                 tcs.TrySetException(new InvalidOperationException(
-                    "Connexion WebSocket fermée pendant la connexion à la table. Vérifiez la connectivité WS."));
+                    "Connexion WebSocket fermÃ©e pendant la connexion Ã  la table. VÃ©rifiez la connectivitÃ© WS."));
             }
         }
 
@@ -606,7 +624,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45));
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
             var res = await tcs.Task.WaitAsync(linked.Token).ConfigureAwait(false);
-            Log.Information("WS room.connect: état reçu en {ElapsedMs}ms (roomId={RoomId})", (DateTime.UtcNow - startedAt).TotalMilliseconds, res.RoomId);
+            Log.Information("WS room.connect: Ã©tat reÃ§u en {ElapsedMs}ms (roomId={RoomId})", (DateTime.UtcNow - startedAt).TotalMilliseconds, res.RoomId);
             return res;
         }
         catch (OperationCanceledException)
@@ -619,6 +637,24 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             socket.Error -= OnError;
             socket.StateChanged -= OnStateChanged;
         }
+    }
+
+    private static bool IsTransientCreateFailure(Exception ex)
+    {
+        if (ex is OperationCanceledException)
+        {
+            return false;
+        }
+
+        var message = (ex.Message ?? string.Empty).Trim();
+        if (message.Length == 0)
+        {
+            return false;
+        }
+
+        return message.Contains("WebSocket ferm", StringComparison.OrdinalIgnoreCase) ||
+               message.Contains("Timeout cr", StringComparison.OrdinalIgnoreCase) ||
+               message.Contains("Connexion table", StringComparison.OrdinalIgnoreCase);
     }
 
     private static Uri BuildRoomUri(Uri baseWs, int roomId, bool spectator = false, bool silent = false)
@@ -693,7 +729,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         }
         catch
         {
-            // Best-effort: si le ping échoue ou timeout, on continue quand même.
+            // Best-effort: si le ping Ã©choue ou timeout, on continue quand mÃªme.
         }
         finally
         {
@@ -749,3 +785,4 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         };
     }
 }
+

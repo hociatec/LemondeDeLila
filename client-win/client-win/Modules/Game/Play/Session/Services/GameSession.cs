@@ -26,6 +26,10 @@ public sealed class GameSession : IAsyncDisposable
     private string? _lastActionKey;
     private DateTime _lastActionAtUtc;
     private static readonly TimeSpan ActionDedupeWindow = TimeSpan.FromMilliseconds(250);
+    private readonly object _keyDedupeLock = new();
+    private string? _lastKeySent;
+    private DateTime _lastKeyAtUtc;
+    private static readonly TimeSpan KeyDedupeWindow = TimeSpan.FromMilliseconds(350);
 
     // NOTE: GameSession est créé après ConnectAsync côté GameGatewayClient (souvent socket déjà connecté).
     // L'état initial est lu depuis IWebSocketConnection.State.
@@ -278,12 +282,39 @@ public sealed class GameSession : IAsyncDisposable
         {
             return;
         }
+        if (IsDuplicateKey(normalized))
+        {
+            return;
+        }
 
         var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
         var msg = JsonSerializer.Serialize(
             new { type = "game.key", payload = new { roomId = RoomId, gameType = GameType, key = normalized, _trace = trace } },
             _json);
         await TrySendAsync(msg, cancellationToken).ConfigureAwait(false);
+    }
+
+    private bool IsDuplicateKey(string normalizedKey)
+    {
+        if (string.IsNullOrWhiteSpace(normalizedKey))
+        {
+            return true;
+        }
+
+        var now = DateTime.UtcNow;
+        lock (_keyDedupeLock)
+        {
+            if (_lastKeySent != null &&
+                string.Equals(_lastKeySent, normalizedKey, StringComparison.Ordinal) &&
+                now - _lastKeyAtUtc < KeyDedupeWindow)
+            {
+                return true;
+            }
+
+            _lastKeySent = normalizedKey;
+            _lastKeyAtUtc = now;
+            return false;
+        }
     }
 
     public async ValueTask DisposeAsync()
