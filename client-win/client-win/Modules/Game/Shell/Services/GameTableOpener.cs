@@ -1342,6 +1342,20 @@ public sealed class GameTableOpener : IGameTableOpener
                                     preStartGameSession = await _games.ConnectAsync(session.RoomId, gameType, connectTimeout.Token).ConfigureAwait(false);
                                 }
 
+                                try
+                                {
+                                    using var promptReadyTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                                    await WaitForConfigPromptReadyAsync(
+                                            preStartGameSession,
+                                            postStartConfigActionType,
+                                            promptReadyTimeout.Token)
+                                        .ConfigureAwait(false);
+                                }
+                                catch
+                                {
+                                    // best-effort: keep legacy behavior if readiness probing fails.
+                                }
+
                                 var sent = false;
                                 for (var attempt = 0; attempt < 4 && !sent; attempt++)
                                 {
@@ -1956,6 +1970,30 @@ public sealed class GameTableOpener : IGameTableOpener
         }
 
         return null;
+    }
+
+    private static async Task<bool> WaitForConfigPromptReadyAsync(
+        GameSession session,
+        string expectedActionType,
+        CancellationToken cancellationToken)
+    {
+        var expected = (expectedActionType ?? string.Empty).Trim();
+        for (var i = 0; i < 18; i++)
+        {
+            var state = await RequestGameStateAsync(session, cancellationToken).ConfigureAwait(false);
+            if (TryExtractConfigPrompt(state, out var prompt) && prompt != null)
+            {
+                if (string.IsNullOrWhiteSpace(expected) ||
+                    string.Equals(prompt.ActionType, expected, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            await Task.Delay(120, cancellationToken).ConfigureAwait(false);
+        }
+
+        return false;
     }
 
     private static bool TryExtractConfigPrompt(GameStateDto? state, out GameRoomViewModel.StartWizardConfigPrompt? prompt)
