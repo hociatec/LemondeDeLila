@@ -12,7 +12,6 @@ namespace client_win.Modules.Vault.Views;
 public partial class VaultView : UserControl, IInitialFocusTarget, IFocusReady
 {
     private Window? _hostWindow;
-    private int _focusRequestId;
     private bool _isFocusReady;
     private bool _containersHooked;
 
@@ -151,34 +150,15 @@ public partial class VaultView : UserControl, IInitialFocusTarget, IFocusReady
         }
 
         var safeIndex = Math.Max(0, Math.Min(index, ItemsList.Items.Count - 1));
-        var requestId = unchecked(++_focusRequestId);
-        FocusSavedTableWithRetry(requestId, safeIndex, attemptsRemaining: 8);
-        return true;
-    }
-
-    private void FocusSavedTableWithRetry(int requestId, int index, int attemptsRemaining)
-    {
-        if (ItemsList == null || ItemsList.Items.Count == 0)
-        {
-            return;
-        }
-
-        var safeIndex = Math.Max(0, Math.Min(index, ItemsList.Items.Count - 1));
         ItemsList.ScrollIntoView(ItemsList.Items[safeIndex]);
 
         if (ItemsList.ItemContainerGenerator.ContainerFromIndex(safeIndex) is ListBoxItem container)
         {
             container.Focus();
-            return;
+            return true;
         }
 
-        if (attemptsRemaining > 0 && requestId == _focusRequestId)
-        {
-            _ = Dispatcher.BeginInvoke(
-                DispatcherPriority.Loaded,
-                new Action(() => FocusSavedTableWithRetry(requestId, safeIndex, attemptsRemaining - 1)));
-            return;
-        }
+        return false;
     }
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)

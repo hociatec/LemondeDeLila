@@ -184,6 +184,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 	            requestFocus: RequestGameZoneFocusForCurrentState,
 	            refreshCanExecute: RefreshCanExecute,
 	            onGameStatusChanged: OnGameStatusChanged,
+	            onStartReadyChanged: OnStartReadyChanged,
 	            setIsBotThinking: v => IsBotThinking = v,
 	            setStateSummary: v => StateSummary = v,
 	            setPendingText: v => PendingText = v,
@@ -230,9 +231,10 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public ObservableCollection<ShortcutDefinition> Shortcuts => _shortcuts.Shortcuts;
 
-    public event Action<GamePlayHistoryMessage>? MessageReceived;
-    public event Action<GameFocusReason>? GameZoneFocusRequested;
-    public event Action<string, string>? GameStatusChanged;
+	    public event Action<GamePlayHistoryMessage>? MessageReceived;
+	    public event Action<GameFocusReason>? GameZoneFocusRequested;
+	    public event Action<string, string>? GameStatusChanged;
+        public event Action<bool>? StartReadyChanged;
 
     private void RequestGameZoneFocusForCurrentState()
     {
@@ -1408,14 +1410,19 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
  	    public Task RequestTurnInfoAsync() => RequestTurnAsync();
         public Task RequestStateInfoAsync() => RequestStateAsync();
 
-	    private void OnGameStatusChanged(string previousStatus, string nextStatus)
-	    {
-	        if (string.IsNullOrWhiteSpace(nextStatus))
-	        {
-	            return;
-	        }
-	        GameStatusChanged?.Invoke(previousStatus ?? string.Empty, nextStatus);
-	    }
+		    private void OnGameStatusChanged(string previousStatus, string nextStatus)
+		    {
+		        if (string.IsNullOrWhiteSpace(nextStatus))
+		        {
+		            return;
+		        }
+		        GameStatusChanged?.Invoke(previousStatus ?? string.Empty, nextStatus);
+		    }
+
+        private void OnStartReadyChanged(bool ready)
+        {
+            StartReadyChanged?.Invoke(ready);
+        }
 
 	    public async ValueTask DisposeAsync()
 	    {

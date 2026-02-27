@@ -17,14 +17,14 @@ namespace client_win.Modules.Shell.Services;
 /// </summary>
 public sealed class NavigationFocusManager : INavigationFocusManager
 {
-    private const int FocusRetryMaxAttempts = 16;
-    private static readonly TimeSpan FocusRetryInterval = TimeSpan.FromMilliseconds(80);
-
     private readonly Dispatcher _dispatcher;
-    private DispatcherTimer? _retryTimer;
-    private int _retryRemaining;
     private int _navId;
     private int _navToken;
+    private Window? _observedWindow;
+    private EventHandler? _windowActivatedHandler;
+    private FrameworkElement? _observedRoot;
+    private RoutedEventHandler? _rootLoadedHandler;
+    private EventHandler? _rootLayoutUpdatedHandler;
 
     public NavigationFocusManager(Dispatcher dispatcher)
     {
@@ -41,6 +41,8 @@ public sealed class NavigationFocusManager : INavigationFocusManager
 
         try
         {
+            DetachFocusObservers();
+            try { NavigationTransaction.End(_navToken); } catch { /* ignore */ }
             _navToken = NavigationTransaction.Begin();
 
             var window = Application.Current?.MainWindow;
@@ -76,13 +78,12 @@ public sealed class NavigationFocusManager : INavigationFocusManager
         try
         {
             _navId = unchecked(_navId + 1);
-            _retryRemaining = FocusRetryMaxAttempts;
+            DetachFocusObservers();
 
             // Fast attempts around layout/render boundaries.
             _dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => TryEnsureInitialFocus(_navId)));
             _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => TryEnsureInitialFocus(_navId)));
-
-            EnsureRetryTimer();
+            AttachFocusObservers(_navId);
         }
         catch
         {
@@ -90,38 +91,41 @@ public sealed class NavigationFocusManager : INavigationFocusManager
         }
     }
 
-    private void EnsureRetryTimer()
+    private void AttachFocusObservers(int navId)
     {
-        if (_retryTimer == null)
+        try
         {
-            _retryTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle, _dispatcher)
+            var window = Application.Current?.MainWindow;
+            if (window != null)
             {
-                Interval = FocusRetryInterval
-            };
-            _retryTimer.Tick += (_, _) =>
-            {
-                try
+                _observedWindow = window;
+                _windowActivatedHandler = (_, _) =>
                 {
-                    if (_retryRemaining <= 0)
-                    {
-                        _retryTimer.Stop();
-                        TryForceFallbackFocus();
-                        NavigationTransaction.End(_navToken);
-                        return;
-                    }
+                    try { TryEnsureInitialFocus(navId); } catch { /* ignore */ }
+                };
+                window.Activated += _windowActivatedHandler;
+            }
 
-                    _retryRemaining--;
-                    TryEnsureInitialFocus(_navId);
-                }
-                catch
+            var root = window != null ? TryGetCurrentContentRoot(window) : null;
+            if (root is FrameworkElement fe)
+            {
+                _observedRoot = fe;
+                _rootLoadedHandler = (_, _) =>
                 {
-                    // ignore
-                }
-            };
+                    try { TryEnsureInitialFocus(navId); } catch { /* ignore */ }
+                };
+                _rootLayoutUpdatedHandler = (_, _) =>
+                {
+                    try { TryEnsureInitialFocus(navId); } catch { /* ignore */ }
+                };
+                fe.Loaded += _rootLoadedHandler;
+                fe.LayoutUpdated += _rootLayoutUpdatedHandler;
+            }
         }
-
-        _retryTimer.Interval = FocusRetryInterval;
-        _retryTimer.Start();
+        catch
+        {
+            // best-effort
+        }
     }
 
     private void TryEnsureInitialFocus(int navId)
@@ -149,7 +153,7 @@ public sealed class NavigationFocusManager : INavigationFocusManager
             if (IsFocusWithin(root))
             {
                 SyncAutomationToCurrentFocus();
-                StopRetryTimer();
+                CompleteFocusPass();
                 return;
             }
 
@@ -162,7 +166,7 @@ public sealed class NavigationFocusManager : INavigationFocusManager
             if (IsFocusWithin(root))
             {
                 SyncAutomationToCurrentFocus();
-                StopRetryTimer();
+                CompleteFocusPass();
                 return;
             }
 
@@ -173,9 +177,32 @@ public sealed class NavigationFocusManager : INavigationFocusManager
                 if (IsFocusWithin(root))
                 {
                     TrySetAutomationFocus(target);
-                    StopRetryTimer();
+                    CompleteFocusPass();
+                    return;
                 }
             }
+
+            if (root is FrameworkElement fe &&
+                (_observedRoot == null || !ReferenceEquals(_observedRoot, fe)))
+            {
+                DetachRootObservers();
+                _observedRoot = fe;
+                _rootLoadedHandler = (_, _) =>
+                {
+                    try { TryEnsureInitialFocus(navId); } catch { /* ignore */ }
+                };
+                _rootLayoutUpdatedHandler = (_, _) =>
+                {
+                    try { TryEnsureInitialFocus(navId); } catch { /* ignore */ }
+                };
+                fe.Loaded += _rootLoadedHandler;
+                fe.LayoutUpdated += _rootLayoutUpdatedHandler;
+                return;
+            }
+
+            // If we cannot observe the root and cannot focus inside content, keep focus stable and close the pass.
+            TryForceFallbackFocus();
+            CompleteFocusPass();
         }
         catch (Exception ex)
         {
@@ -249,10 +276,61 @@ public sealed class NavigationFocusManager : INavigationFocusManager
         }
     }
 
-    private void StopRetryTimer()
+    private void CompleteFocusPass()
     {
-        try { _retryTimer?.Stop(); } catch { /* ignore */ }
+        DetachFocusObservers();
         try { NavigationTransaction.End(_navToken); } catch { /* ignore */ }
+    }
+
+    private void DetachFocusObservers()
+    {
+        DetachRootObservers();
+
+        try
+        {
+            if (_observedWindow != null && _windowActivatedHandler != null)
+            {
+                _observedWindow.Activated -= _windowActivatedHandler;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+        finally
+        {
+            _observedWindow = null;
+            _windowActivatedHandler = null;
+        }
+    }
+
+    private void DetachRootObservers()
+    {
+        try
+        {
+            if (_observedRoot != null)
+            {
+                if (_rootLoadedHandler != null)
+                {
+                    _observedRoot.Loaded -= _rootLoadedHandler;
+                }
+
+                if (_rootLayoutUpdatedHandler != null)
+                {
+                    _observedRoot.LayoutUpdated -= _rootLayoutUpdatedHandler;
+                }
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+        finally
+        {
+            _observedRoot = null;
+            _rootLoadedHandler = null;
+            _rootLayoutUpdatedHandler = null;
+        }
     }
 
     private static UIElement? TryGetRootHost(Window window)

@@ -16,7 +16,6 @@ namespace client_win.Modules.Messaging.Views;
 
 public partial class MessagingView : UserControl, IInitialFocusTarget
 {
-    private int _focusRequestId;
     private enum MessagingScreen
     {
         Menu,
@@ -338,33 +337,11 @@ public partial class MessagingView : UserControl, IInitialFocusTarget
 
         var index = listBox.SelectedIndex >= 0 ? listBox.SelectedIndex : 0;
         listBox.ScrollIntoView(listBox.Items[index]);
-        var requestId = unchecked(++_focusRequestId);
-        FocusListItemWithRetry(requestId, listBox, index, attemptsRemaining: 8);
-    }
-
-    private void FocusListItemWithRetry(int requestId, ListBox listBox, int index, int attemptsRemaining)
-    {
-        if (listBox.Items.Count == 0)
-        {
-            listBox.Focus();
-            Keyboard.Focus(listBox);
-            return;
-        }
-
         var safeIndex = Math.Max(0, Math.Min(index, listBox.Items.Count - 1));
-        listBox.ScrollIntoView(listBox.Items[safeIndex]);
         if (listBox.ItemContainerGenerator.ContainerFromIndex(safeIndex) is ListBoxItem container)
         {
             container.Focus();
             Keyboard.Focus(container);
-            return;
-        }
-
-        if (attemptsRemaining > 0 && requestId == _focusRequestId)
-        {
-            _ = Dispatcher.BeginInvoke(
-                DispatcherPriority.Loaded,
-                new Action(() => FocusListItemWithRetry(requestId, listBox, safeIndex, attemptsRemaining - 1)));
             return;
         }
 

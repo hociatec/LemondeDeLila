@@ -27,6 +27,9 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
     private IScreenReaderAnnouncer? _screenReader;
     private IAnnouncementService? _announcements;
     private int _startWizardConfigFocusRequestId;
+    private EventHandler? _startWizardAmbienceGeneratorStatusChanged;
+    private EventHandler? _startWizardAmbienceLayoutUpdated;
+    private EventHandler? _startWizardConfigLayoutUpdated;
 
     public GameRoomView()
     {
@@ -65,6 +68,8 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
     {
         HookFocusRequests(null);
         UnhookTabCapture();
+        UnhookStartWizardAmbienceFocusObservers();
+        UnhookStartWizardConfigFocusObserver();
         if (StartWizardOverlay != null)
         {
             StartWizardOverlay.IsVisibleChanged -= OnStartWizardOverlayIsVisibleChanged;
@@ -73,8 +78,15 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
 
     private void OnStartWizardOverlayIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
-        if (e.NewValue is not bool isVisible || !isVisible)
+        if (e.NewValue is not bool isVisible)
         {
+            return;
+        }
+
+        if (!isVisible)
+        {
+            UnhookStartWizardAmbienceFocusObservers();
+            UnhookStartWizardConfigFocusObserver();
             return;
         }
 
@@ -746,14 +758,23 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         var requestId = unchecked(++_startWizardConfigFocusRequestId);
         _ = Dispatcher.BeginInvoke(
             DispatcherPriority.Render,
-            new Action(() => FocusStartWizardAmbienceFirstWithRetry(requestId, remainingAttempts: 20)));
+            new Action(() =>
+            {
+                if (TryFocusStartWizardAmbienceFirstNow(requestId))
+                {
+                    UnhookStartWizardAmbienceFocusObservers();
+                    return;
+                }
+
+                HookStartWizardAmbienceFocusObservers(requestId);
+            }));
     }
 
-    private void FocusStartWizardAmbienceFirstWithRetry(int requestId, int remainingAttempts)
+    private bool TryFocusStartWizardAmbienceFirstNow(int requestId)
     {
         if (requestId != _startWizardConfigFocusRequestId)
         {
-            return;
+            return false;
         }
 
         if (DataContext is not GameRoomViewModel vm ||
@@ -762,7 +783,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
             StartWizardChoicesList == null ||
             StartWizardChoicesList.Visibility != Visibility.Visible)
         {
-            return;
+            return false;
         }
 
         if (StartWizardChoicesList.SelectedIndex < 0 && StartWizardChoicesList.Items.Count > 0)
@@ -780,20 +801,57 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
             {
                 item.Focus();
                 Keyboard.Focus(item);
-                return;
+                return true;
             }
         }
 
-        if (remainingAttempts <= 0)
+        return false;
+    }
+
+    private void HookStartWizardAmbienceFocusObservers(int requestId)
+    {
+        if (StartWizardChoicesList == null)
         {
-            StartWizardChoicesList.Focus();
-            Keyboard.Focus(StartWizardChoicesList);
             return;
         }
 
-        _ = Dispatcher.BeginInvoke(
-            DispatcherPriority.Render,
-            new Action(() => FocusStartWizardAmbienceFirstWithRetry(requestId, remainingAttempts - 1)));
+        UnhookStartWizardAmbienceFocusObservers();
+        _startWizardAmbienceGeneratorStatusChanged = (_, _) =>
+        {
+            if (requestId != _startWizardConfigFocusRequestId)
+            {
+                UnhookStartWizardAmbienceFocusObservers();
+                return;
+            }
+
+            if (TryFocusStartWizardAmbienceFirstNow(requestId))
+            {
+                UnhookStartWizardAmbienceFocusObservers();
+            }
+        };
+        _startWizardAmbienceLayoutUpdated = (_, _) =>
+        {
+            if (requestId != _startWizardConfigFocusRequestId)
+            {
+                UnhookStartWizardAmbienceFocusObservers();
+                return;
+            }
+
+            if (TryFocusStartWizardAmbienceFirstNow(requestId))
+            {
+                UnhookStartWizardAmbienceFocusObservers();
+                return;
+            }
+
+            if (StartWizardChoicesList.ItemContainerGenerator.Status == GeneratorStatus.ContainersGenerated)
+            {
+                StartWizardChoicesList.Focus();
+                Keyboard.Focus(StartWizardChoicesList);
+                UnhookStartWizardAmbienceFocusObservers();
+            }
+        };
+        StartWizardChoicesList.ItemContainerGenerator.StatusChanged += _startWizardAmbienceGeneratorStatusChanged;
+        StartWizardChoicesList.LayoutUpdated += _startWizardAmbienceLayoutUpdated;
     }
 
     private void RequestFocusStartWizardConfigFirst()
@@ -801,14 +859,23 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         var requestId = unchecked(++_startWizardConfigFocusRequestId);
         _ = Dispatcher.BeginInvoke(
             DispatcherPriority.Loaded,
-            new Action(() => FocusStartWizardConfigFirstWithRetry(requestId, remainingAttempts: 10)));
+            new Action(() =>
+            {
+                if (TryFocusStartWizardConfigFirstNow(requestId))
+                {
+                    UnhookStartWizardConfigFocusObserver();
+                    return;
+                }
+
+                HookStartWizardConfigFocusObserver(requestId);
+            }));
     }
 
-    private void FocusStartWizardConfigFirstWithRetry(int requestId, int remainingAttempts)
+    private bool TryFocusStartWizardConfigFirstNow(int requestId)
     {
         if (requestId != _startWizardConfigFocusRequestId)
         {
-            return;
+            return false;
         }
 
         if (DataContext is not GameRoomViewModel vm ||
@@ -817,24 +884,98 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
             StartWizardOverlay == null ||
             StartWizardOverlay.Visibility != Visibility.Visible)
         {
-            return;
+            return false;
         }
 
         if (TryFocusFirstConfigControlNow())
         {
+            return true;
+        }
+
+        return false;
+    }
+
+    private void HookStartWizardConfigFocusObserver(int requestId)
+    {
+        if (StartWizardOverlay == null)
+        {
             return;
         }
 
-        if (remainingAttempts <= 0)
+        UnhookStartWizardConfigFocusObserver();
+        _startWizardConfigLayoutUpdated = (_, _) =>
         {
+            if (requestId != _startWizardConfigFocusRequestId)
+            {
+                UnhookStartWizardConfigFocusObserver();
+                return;
+            }
+
+            if (TryFocusStartWizardConfigFirstNow(requestId))
+            {
+                UnhookStartWizardConfigFocusObserver();
+                return;
+            }
+
             StartWizardOverlay.Focus();
             Keyboard.Focus(StartWizardOverlay);
+            UnhookStartWizardConfigFocusObserver();
+        };
+        StartWizardOverlay.LayoutUpdated += _startWizardConfigLayoutUpdated;
+    }
+
+    private void UnhookStartWizardAmbienceFocusObservers()
+    {
+        if (StartWizardChoicesList == null)
+        {
             return;
         }
 
-        _ = Dispatcher.BeginInvoke(
-            DispatcherPriority.Loaded,
-            new Action(() => FocusStartWizardConfigFirstWithRetry(requestId, remainingAttempts - 1)));
+        try
+        {
+            if (_startWizardAmbienceGeneratorStatusChanged != null)
+            {
+                StartWizardChoicesList.ItemContainerGenerator.StatusChanged -= _startWizardAmbienceGeneratorStatusChanged;
+            }
+
+            if (_startWizardAmbienceLayoutUpdated != null)
+            {
+                StartWizardChoicesList.LayoutUpdated -= _startWizardAmbienceLayoutUpdated;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+        finally
+        {
+            _startWizardAmbienceGeneratorStatusChanged = null;
+            _startWizardAmbienceLayoutUpdated = null;
+        }
+    }
+
+    private void UnhookStartWizardConfigFocusObserver()
+    {
+        if (StartWizardOverlay == null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (_startWizardConfigLayoutUpdated != null)
+            {
+                StartWizardOverlay.LayoutUpdated -= _startWizardConfigLayoutUpdated;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+        finally
+        {
+            _startWizardConfigLayoutUpdated = null;
+        }
     }
 
     private bool TryFocusFirstConfigControlNow()

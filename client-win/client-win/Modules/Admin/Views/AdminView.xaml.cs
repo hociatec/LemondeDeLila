@@ -15,7 +15,6 @@ public partial class AdminView : UserControl, IInitialFocusTarget
     private AdminViewModel? _vm;
     private bool _inputsFocusTrackingAttached;
     private InputFocusSlot _lastInputFocus = InputFocusSlot.None;
-    private int _focusRequestId;
     private int _scheduledUiFocusRequestId;
 
     private enum InputFocusSlot
@@ -492,28 +491,6 @@ public partial class AdminView : UserControl, IInitialFocusTarget
             ItemsList.ScrollIntoView(selected);
         }
 
-        var requestId = unchecked(++_focusRequestId);
-        FocusSelectedItemWithRetry(requestId, attemptsRemaining: 8);
-    }
-
-    private void FocusSelectedItemWithRetry(int requestId, int attemptsRemaining)
-    {
-        if (ItemsList == null)
-        {
-            return;
-        }
-
-        if (ItemsList.Items.Count == 0)
-        {
-            ItemsList.Focus();
-            return;
-        }
-
-        if (ItemsList.SelectedIndex < 0)
-        {
-            ItemsList.SelectedIndex = 0;
-        }
-
         var index = ItemsList.SelectedIndex;
         if (index >= 0 && index < ItemsList.Items.Count)
         {
@@ -524,14 +501,6 @@ public partial class AdminView : UserControl, IInitialFocusTarget
         {
             item.Focus();
             Keyboard.Focus(item);
-            return;
-        }
-
-        if (attemptsRemaining > 0 && requestId == _focusRequestId)
-        {
-            _ = Dispatcher.BeginInvoke(
-                DispatcherPriority.Loaded,
-                new Action(() => FocusSelectedItemWithRetry(requestId, attemptsRemaining - 1)));
             return;
         }
 

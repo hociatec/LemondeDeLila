@@ -14,7 +14,6 @@ namespace client_win.Modules.MainMenu.Views;
 public partial class MainMenuView : UserControl, IInitialFocusTarget
 {
     private long _lastAutoFocusTicks;
-    private int _focusRequestId;
 
     public MainMenuView()
     {
@@ -127,23 +126,6 @@ public partial class MainMenuView : UserControl, IInitialFocusTarget
             ItemsList.SelectedIndex = 0;
         }
 
-        var id = unchecked(++_focusRequestId);
-        FocusSelectedItemWithRetry(id, attemptsRemaining: 8);
-    }
-
-    private void FocusSelectedItemWithRetry(int requestId, int attemptsRemaining)
-    {
-        if (ItemsList == null || ItemsList.Items.Count == 0)
-        {
-            ItemsList?.Focus();
-            return;
-        }
-
-        if (ItemsList.SelectedIndex < 0)
-        {
-            ItemsList.SelectedIndex = 0;
-        }
-
         var index = ItemsList.SelectedIndex;
         if (index >= 0 && index < ItemsList.Items.Count)
         {
@@ -154,14 +136,6 @@ public partial class MainMenuView : UserControl, IInitialFocusTarget
         {
             item.Focus();
             Keyboard.Focus(item);
-            return;
-        }
-
-        if (attemptsRemaining > 0 && requestId == _focusRequestId)
-        {
-            _ = Dispatcher.BeginInvoke(
-                DispatcherPriority.Loaded,
-                new Action(() => FocusSelectedItemWithRetry(requestId, attemptsRemaining - 1)));
             return;
         }
 

@@ -37,6 +37,10 @@ public partial class GamePlayView
         HookChoiceAutoFocus(null);
         HookHandAutoFocus(null);
         HookInlinePromptAutoFocus(null);
+        UnhookChoicesListFocusObservers();
+        UnhookHandListFocusObservers();
+        UnhookGridFocusObservers();
+        UnhookInlinePromptFocusObserver();
         CancelInitialization();
         UnhookGridGenerator();
     }

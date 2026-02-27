@@ -30,18 +30,14 @@ public partial class StableContentHost : UserControl
             typeof(StableContentHost),
             new PropertyMetadata(null));
 
-    // Navigation focus retries are used to wait for async-populated views to become focusable.
-    // This used to allow up to ~3s of "previous view still alive" time; keep it short to reduce perceived latency.
-    private const int FocusRetryMaxAttempts = 16;
-    private static readonly TimeSpan FocusRetryInterval = TimeSpan.FromMilliseconds(80);
-
-    private DispatcherTimer? _retryTimer;
-    private int _retryRemaining;
     private int _transitionId;
     private DateTime _transitionStartedUtc;
     private bool _isTransitioning;
     private IFocusReady? _currentFocusReady;
     private int _currentFocusReadyHookedForTransitionId;
+    private FrameworkElement? _observedCurrentRoot;
+    private RoutedEventHandler? _observedCurrentRootLoadedHandler;
+    private EventHandler? _observedCurrentRootLayoutUpdatedHandler;
 
     public StableContentHost()
     {
@@ -51,6 +47,7 @@ public partial class StableContentHost : UserControl
             // If CurrentContent is set before load, run an initial focus pass once the control is ready.
             BeginFocusPass();
         };
+        Unloaded += (_, _) => DetachCurrentRootObservers();
     }
 
     public object? CurrentContent
@@ -89,6 +86,7 @@ public partial class StableContentHost : UserControl
             try { _currentFocusReady.FocusReadyChanged -= OnCurrentFocusReadyChanged; } catch { /* ignore */ }
             _currentFocusReady = null;
         }
+        DetachCurrentRootObservers();
         _currentFocusReadyHookedForTransitionId = 0;
 
         // Keep the old view alive behind the new one until focus successfully lands in the new view.
@@ -107,7 +105,6 @@ public partial class StableContentHost : UserControl
             return;
         }
 
-        _retryRemaining = FocusRetryMaxAttempts;
         ApplyPresenterZOrder();
 
         // Park focus on a stable element before anything is removed.
@@ -136,47 +133,12 @@ public partial class StableContentHost : UserControl
         // finalize immediately without waiting for dispatcher/timer ticks.
         if (TryFocusAndMaybeFinalize())
         {
-            try { _retryTimer?.Stop(); } catch { /* ignore */ }
             return;
         }
 
         Dispatcher.BeginInvoke((Action)(() => TryFocusAndMaybeFinalize()), DispatcherPriority.Loaded);
         Dispatcher.BeginInvoke((Action)(() => TryFocusAndMaybeFinalize()), DispatcherPriority.ApplicationIdle);
-
-        EnsureRetryTimer();
-    }
-
-    private void EnsureRetryTimer()
-    {
-        if (_retryTimer == null)
-        {
-            _retryTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle, Dispatcher)
-            {
-                Interval = FocusRetryInterval
-            };
-            _retryTimer.Tick += (_, _) => Retry();
-        }
-
-        _retryTimer.Interval = FocusRetryInterval;
-        _retryTimer.Start();
-    }
-
-    private void Retry()
-    {
-        if (_retryRemaining <= 0)
-        {
-            try { _retryTimer?.Stop(); } catch { /* ignore */ }
-            // As a last resort, remove the previous view while keeping focus on something stable.
-            // This avoids leaving the old view permanently alive.
-            TryForceFinalizeAfterTimeout();
-            return;
-        }
-
-        _retryRemaining--;
-        if (TryFocusAndMaybeFinalize())
-        {
-            try { _retryTimer?.Stop(); } catch { /* ignore */ }
-        }
+        HookCurrentRootObservers();
     }
 
     private bool TryFocusAndMaybeFinalize()
@@ -193,10 +155,18 @@ public partial class StableContentHost : UserControl
             if (TryFocusCurrent())
             {
                 FinalizeTransitionIfSafe();
+                if (PreviousContent == null)
+                {
+                    DetachCurrentRootObservers();
+                }
                 return true;
             }
 
             FinalizeTransitionIfSafe();
+            if (PreviousContent == null)
+            {
+                DetachCurrentRootObservers();
+            }
             return false;
         }
         catch
@@ -224,34 +194,6 @@ public partial class StableContentHost : UserControl
         // If focus is not in the previous view anymore, we can drop it.
         var previousRoot = TryGetPresenterRoot(PreviousPresenter);
         if (previousRoot == null || !IsFocusWithin(previousRoot))
-        {
-            _isTransitioning = false;
-            ApplyPresenterZOrder();
-            PreviousContent = null;
-        }
-    }
-
-    private void TryForceFinalizeAfterTimeout()
-    {
-        if (PreviousContent == null)
-        {
-            return;
-        }
-
-        try
-        {
-            // If focus is still within the previous view, park it to the window before removing it.
-            var previousRoot = TryGetPresenterRoot(PreviousPresenter);
-            if (previousRoot != null && IsFocusWithin(previousRoot))
-            {
-                try { FocusParking.ForcePark(Window.GetWindow(this) ?? Application.Current?.MainWindow); } catch { /* ignore */ }
-            }
-        }
-        catch
-        {
-            // ignore
-        }
-        finally
         {
             _isTransitioning = false;
             ApplyPresenterZOrder();
@@ -373,13 +315,70 @@ public partial class StableContentHost : UserControl
 
                 if (TryFocusAndMaybeFinalize())
                 {
-                    try { _retryTimer?.Stop(); } catch { /* ignore */ }
+                    DetachCurrentRootObservers();
                 }
             }));
         }
         catch
         {
             // ignore
+        }
+    }
+
+    private void HookCurrentRootObservers()
+    {
+        try
+        {
+            var root = TryGetPresenterRoot(CurrentPresenter) as FrameworkElement;
+            if (root == null)
+            {
+                return;
+            }
+
+            if (ReferenceEquals(_observedCurrentRoot, root))
+            {
+                return;
+            }
+
+            DetachCurrentRootObservers();
+            _observedCurrentRoot = root;
+            _observedCurrentRootLoadedHandler = (_, _) => TryFocusAndMaybeFinalize();
+            _observedCurrentRootLayoutUpdatedHandler = (_, _) => TryFocusAndMaybeFinalize();
+            root.Loaded += _observedCurrentRootLoadedHandler;
+            root.LayoutUpdated += _observedCurrentRootLayoutUpdatedHandler;
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void DetachCurrentRootObservers()
+    {
+        try
+        {
+            if (_observedCurrentRoot != null)
+            {
+                if (_observedCurrentRootLoadedHandler != null)
+                {
+                    _observedCurrentRoot.Loaded -= _observedCurrentRootLoadedHandler;
+                }
+
+                if (_observedCurrentRootLayoutUpdatedHandler != null)
+                {
+                    _observedCurrentRoot.LayoutUpdated -= _observedCurrentRootLayoutUpdatedHandler;
+                }
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+        finally
+        {
+            _observedCurrentRoot = null;
+            _observedCurrentRootLoadedHandler = null;
+            _observedCurrentRootLayoutUpdatedHandler = null;
         }
     }
 

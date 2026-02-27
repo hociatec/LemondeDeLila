@@ -14,7 +14,6 @@ namespace client_win.Modules.Presence.Views;
 public partial class PresenceView : UserControl, IInitialFocusTarget
 {
     private PresenceViewModel? _viewModel;
-    private int _focusRequestId;
     private long _lastListAutoFocusTicks;
 
     public PresenceView()
@@ -183,9 +182,8 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
 
     private void RequestFocusSelectedOrFirstItem()
     {
-        var id = ++_focusRequestId;
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => FocusSelectedOrFirstItemWithRetry(requestId: id, attemptsRemaining: 12)));
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => FocusSelectedOrFirstItemWithRetry(requestId: id, attemptsRemaining: 12)));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusSelectedOrFirstItemNow));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(FocusSelectedOrFirstItemNow));
 
         // Si la virtualisation retarde la génération des containers, on retente au moment opportun.
         if (ItemsList?.ItemContainerGenerator != null &&
@@ -207,7 +205,7 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
                 ItemsList.ItemContainerGenerator.StatusChanged -= handler;
                 _ = Dispatcher.BeginInvoke(
                     DispatcherPriority.Loaded,
-                    new Action(() => FocusSelectedOrFirstItemWithRetry(requestId: id, attemptsRemaining: 12)));
+                    new Action(FocusSelectedOrFirstItemNow));
             };
             ItemsList.ItemContainerGenerator.StatusChanged += handler;
         }
@@ -245,7 +243,7 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
         }
     }
 
-    private void FocusSelectedOrFirstItemWithRetry(int requestId, int attemptsRemaining)
+    private void FocusSelectedOrFirstItemNow()
     {
         if (ItemsList == null || ItemsList.Items.Count == 0)
         {
@@ -275,14 +273,6 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
             try { Keyboard.Focus(item); } catch { /* ignore */ }
             item.BringIntoView();
             RaiseAutomationFocusChanged(item);
-            return;
-        }
-
-        if (attemptsRemaining > 0 && requestId == _focusRequestId)
-        {
-            _ = Dispatcher.BeginInvoke(
-                DispatcherPriority.ApplicationIdle,
-                new Action(() => FocusSelectedOrFirstItemWithRetry(requestId, attemptsRemaining - 1)));
             return;
         }
 

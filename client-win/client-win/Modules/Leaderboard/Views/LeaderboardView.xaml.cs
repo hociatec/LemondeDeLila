@@ -12,7 +12,6 @@ namespace client_win.Modules.Leaderboard.Views;
 public partial class LeaderboardView : UserControl, IInitialFocusTarget, IFocusReady
 {
     private bool _containersHooked;
-    private int _focusRequestId;
     private bool _isFocusReady;
 
     public LeaderboardView()
@@ -136,11 +135,10 @@ public partial class LeaderboardView : UserControl, IInitialFocusTarget, IFocusR
 
     private void FocusFirstItem()
     {
-        var id = unchecked(++_focusRequestId);
-        FocusSelectedOrFirstItemWithRetry(id, attemptsRemaining: 8);
+        FocusSelectedOrFirstItem();
     }
 
-    private void FocusSelectedOrFirstItemWithRetry(int requestId, int attemptsRemaining)
+    private void FocusSelectedOrFirstItem()
     {
         if (ItemsList == null || ItemsList.Items.Count == 0)
         {
@@ -162,14 +160,6 @@ public partial class LeaderboardView : UserControl, IInitialFocusTarget, IFocusR
         if (index >= 0 && ItemsList.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)
         {
             item.Focus();
-            return;
-        }
-
-        if (attemptsRemaining > 0 && requestId == _focusRequestId)
-        {
-            _ = Dispatcher.BeginInvoke(
-                DispatcherPriority.Loaded,
-                new Action(() => FocusSelectedOrFirstItemWithRetry(requestId, attemptsRemaining - 1)));
             return;
         }
 

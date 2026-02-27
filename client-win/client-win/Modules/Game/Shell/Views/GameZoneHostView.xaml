@@ -32,7 +32,7 @@
             <Grid Grid.Row="1">
                 <!-- Ancre de focus permanente pour garder la navigation "dans la zone de jeu"
                      mÃªme si la surface de jeu n'a pas d'Ã©lÃ©ment focusable Ã  l'instant T. -->
-	                <local:GameZoneFocusAnchor x:Name="GameZoneFocusAnchor"
+		                <local:GameZoneFocusAnchor x:Name="GameZoneFocusAnchor"
                                            Focusable="True"
                                            IsTabStop="True"
                                            KeyboardNavigation.TabIndex="0"
@@ -40,13 +40,13 @@
                                            BorderThickness="0"
                                            Padding="0"
                                            Opacity="0"
-                                           Width="1"
-                                           Height="1"
-	                                           HorizontalAlignment="Left"
-	                                           VerticalAlignment="Top"
-	                                           AutomationProperties.Name=""
-	                                           AutomationProperties.IsOffscreenBehavior="Onscreen"
-	                                           PreviewKeyDown="OnAnchorPreviewKeyDown" />
+		                                           Width="1"
+		                                           Height="1"
+		                                           HorizontalAlignment="Left"
+		                                           VerticalAlignment="Top"
+		                                           AutomationProperties.Name="{Binding Title, FallbackValue=Table de jeu, TargetNullValue=Table de jeu}"
+		                                           AutomationProperties.IsOffscreenBehavior="Onscreen"
+		                                           PreviewKeyDown="OnAnchorPreviewKeyDown" />
 
 	                <local:GameZoneFocusAnchor x:Name="GameZoneEmptyAnchor"
                                            Focusable="True"

@@ -194,77 +194,128 @@ public partial class GamePlayView
         var requestId = ++_gridFocusRequestId;
         Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
         {
-            TryFocusGridCellIndexWithRetry(index, requestId, remainingAttempts: 8);
+            if (TryFocusGridCellIndexNow(index, requestId))
+            {
+                UnhookGridFocusObservers();
+                return;
+            }
+
+            HookGridFocusObservers(index, requestId);
         }));
 
         return true;
     }
 
-    private void TryFocusGridCellIndexWithRetry(int index, int requestId, int remainingAttempts)
+    private bool TryFocusGridCellIndexNow(int index, int requestId)
     {
         if (requestId != _gridFocusRequestId)
         {
-            return;
+            return false;
         }
 
         if (GridItems == null || GridItems.Visibility != Visibility.Visible)
         {
-            return;
+            return false;
         }
 
         if (DataContext is not GamePlayViewModel vm || !vm.Grid.IsVisible || vm.Grid.Size <= 0 || vm.Grid.Cells.Count == 0)
         {
-            return;
+            return false;
         }
 
         index = Math.Clamp(index, 0, vm.Grid.Cells.Count - 1);
 
         if (GridItems.ItemContainerGenerator.Status != GeneratorStatus.ContainersGenerated)
         {
-            if (remainingAttempts <= 0)
-            {
-                return;
-            }
-
-            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
-            {
-                TryFocusGridCellIndexWithRetry(index, requestId, remainingAttempts - 1);
-            }));
-            return;
+            return false;
         }
 
         var container = GridItems.ItemContainerGenerator.ContainerFromIndex(index) as DependencyObject;
         if (container == null)
         {
-            if (remainingAttempts <= 0)
-            {
-                return;
-            }
-
-            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
-            {
-                TryFocusGridCellIndexWithRetry(index, requestId, remainingAttempts - 1);
-            }));
-            return;
+            return false;
         }
 
         var button = FindVisualChild<Button>(container) ?? container as Button;
         if (button == null)
         {
-            if (remainingAttempts <= 0)
-            {
-                return;
-            }
-
-            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
-            {
-                TryFocusGridCellIndexWithRetry(index, requestId, remainingAttempts - 1);
-            }));
-            return;
+            return false;
         }
 
         button.Focus();
         Keyboard.Focus(button);
+        return true;
+    }
+
+    private void HookGridFocusObservers(int index, int requestId)
+    {
+        if (GridItems == null)
+        {
+            return;
+        }
+
+        UnhookGridFocusObservers();
+
+        _gridFocusGeneratorStatusChanged = (_, _) =>
+        {
+            if (requestId != _gridFocusRequestId)
+            {
+                UnhookGridFocusObservers();
+                return;
+            }
+
+            if (TryFocusGridCellIndexNow(index, requestId))
+            {
+                UnhookGridFocusObservers();
+            }
+        };
+
+        _gridFocusLayoutUpdated = (_, _) =>
+        {
+            if (requestId != _gridFocusRequestId)
+            {
+                UnhookGridFocusObservers();
+                return;
+            }
+
+            if (TryFocusGridCellIndexNow(index, requestId))
+            {
+                UnhookGridFocusObservers();
+            }
+        };
+
+        GridItems.ItemContainerGenerator.StatusChanged += _gridFocusGeneratorStatusChanged;
+        GridItems.LayoutUpdated += _gridFocusLayoutUpdated;
+    }
+
+    private void UnhookGridFocusObservers()
+    {
+        if (GridItems == null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (_gridFocusGeneratorStatusChanged != null)
+            {
+                GridItems.ItemContainerGenerator.StatusChanged -= _gridFocusGeneratorStatusChanged;
+            }
+
+            if (_gridFocusLayoutUpdated != null)
+            {
+                GridItems.LayoutUpdated -= _gridFocusLayoutUpdated;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+        finally
+        {
+            _gridFocusGeneratorStatusChanged = null;
+            _gridFocusLayoutUpdated = null;
+        }
     }
 
     private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject

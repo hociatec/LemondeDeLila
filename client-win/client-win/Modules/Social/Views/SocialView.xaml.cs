@@ -21,7 +21,6 @@ public partial class SocialView : UserControl, IInitialFocusTarget
 
     private SocialScreen _currentScreen = SocialScreen.Menu;
     private int _lastMenuIndex = -1;
-    private int _focusRequestId;
     private SocialViewModel? _focusVm;
     private Action? _profileFocusHandler;
     private Action? _returnToMenuHandler;
@@ -220,20 +219,8 @@ public partial class SocialView : UserControl, IInitialFocusTarget
 
     private async Task FocusSectionWhenReadyAsync(SocialSection section)
     {
-        if (DataContext is not SocialViewModel vm)
-        {
-            FocusSection(section);
-            return;
-        }
-
-        // Évite de mettre le focus sur les textes "Aucun ..." pendant le chargement (les listes sont vidées puis remplies).
-        var start = DateTime.UtcNow;
-        while (vm.IsBusy && (DateTime.UtcNow - start).TotalMilliseconds < 4000)
-        {
-            await Task.Delay(25).ConfigureAwait(true);
-        }
-
         FocusSection(section);
+        await Task.CompletedTask.ConfigureAwait(true);
     }
 
     private void SetScreen(SocialScreen screen)
@@ -302,8 +289,7 @@ public partial class SocialView : UserControl, IInitialFocusTarget
 
     private void FocusMenu()
     {
-        var requestId = unchecked(++_focusRequestId);
-        FocusListWithRetry(requestId, MenuList, fallback: MenuList, attemptsRemaining: 8);
+        FocusListOrFallback(MenuList, MenuList);
     }
 
     private void OnMenuSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -383,11 +369,10 @@ public partial class SocialView : UserControl, IInitialFocusTarget
             return;
         }
 
-        var requestId = unchecked(++_focusRequestId);
-        FocusListWithRetry(requestId, listBox, fallback: emptyText, attemptsRemaining: 8);
+        FocusListOrFallback(listBox, emptyText);
     }
 
-    private void FocusListWithRetry(int requestId, ListBox listBox, UIElement fallback, int attemptsRemaining)
+    private void FocusListOrFallback(ListBox listBox, UIElement fallback)
     {
         if (listBox.Items.Count == 0)
         {
@@ -409,14 +394,6 @@ public partial class SocialView : UserControl, IInitialFocusTarget
         if (index >= 0 && listBox.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)
         {
             item.Focus();
-            return;
-        }
-
-        if (attemptsRemaining > 0 && requestId == _focusRequestId)
-        {
-            _ = Dispatcher.BeginInvoke(
-                DispatcherPriority.Loaded,
-                new Action(() => FocusListWithRetry(requestId, listBox, fallback, attemptsRemaining - 1)));
             return;
         }
 

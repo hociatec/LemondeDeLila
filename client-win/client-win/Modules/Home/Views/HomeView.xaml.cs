@@ -23,12 +23,9 @@ public partial class HomeView : UserControl, IInitialFocusTarget
     private HomeViewModel? _viewModel;
     private Window? _hostWindow;
     private EventHandler? _hostWindowActivatedHandler;
-    private const int InitialFocusMaxAttempts = 12;
-    private static readonly TimeSpan InitialFocusRetryInterval = TimeSpan.FromMilliseconds(120);
-    private int _initialFocusRemaining;
-    private bool _initialFocusScheduled;
-    private DispatcherTimer? _initialFocusTimer;
-    private DispatcherTimer? _loginFocusTimer;
+    private bool _initialFocusPending;
+    private bool _loginFocusPending;
+    private bool _focusPassScheduled;
 
     public HomeView()
     {
@@ -39,15 +36,18 @@ public partial class HomeView : UserControl, IInitialFocusTarget
     {
         AttachViewModel();
         AttachHostWindowFocusRetry();
+        LayoutUpdated += OnLayoutUpdated;
         EnsureInitialFocus();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
-        StopInitialFocusTimer();
+        LayoutUpdated -= OnLayoutUpdated;
         DetachHostWindowFocusRetry();
         DetachViewModel();
-        EnsureLoginFocusTimerStopped();
+        _initialFocusPending = false;
+        _loginFocusPending = false;
+        _focusPassScheduled = false;
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -96,8 +96,16 @@ public partial class HomeView : UserControl, IInitialFocusTarget
             }
             else
             {
-                EnsureLoginFocusTimerStopped();
+                _loginFocusPending = false;
             }
+        }
+    }
+
+    private void OnLayoutUpdated(object? sender, EventArgs e)
+    {
+        if (_initialFocusPending || _loginFocusPending)
+        {
+            ScheduleFocusPass();
         }
     }
 
@@ -306,87 +314,9 @@ public partial class HomeView : UserControl, IInitialFocusTarget
 
     private void EnsureInitialFocus()
     {
-        _initialFocusRemaining = InitialFocusMaxAttempts;
-        StartInitialFocusTimer();
-        QueueInitialFocusAttempt();
+        _initialFocusPending = true;
         FocusFirstField(immediate: true);
-    }
-
-    private void StartInitialFocusTimer()
-    {
-        if (_initialFocusTimer == null)
-        {
-            _initialFocusTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle, Dispatcher);
-            _initialFocusTimer.Tick += OnInitialFocusTimerTick;
-        }
-
-        _initialFocusTimer.Interval = InitialFocusRetryInterval;
-        _initialFocusTimer.Start();
-    }
-
-    private void StopInitialFocusTimer()
-    {
-        if (_initialFocusTimer == null)
-        {
-            return;
-        }
-
-        _initialFocusTimer.Stop();
-    }
-
-    private void OnInitialFocusTimerTick(object? sender, EventArgs e)
-    {
-        InitialFocusAttempt();
-    }
-
-    private void QueueInitialFocusAttempt()
-    {
-        if (_initialFocusRemaining <= 0 || _initialFocusScheduled)
-        {
-            return;
-        }
-
-        _initialFocusScheduled = true;
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(InitialFocusAttempt));
-    }
-
-    private void InitialFocusAttempt()
-    {
-        _initialFocusScheduled = false;
-
-        if (_initialFocusRemaining <= 0)
-        {
-            StopInitialFocusTimer();
-            return;
-        }
-
-        if (!IsLoaded || !IsVisible)
-        {
-            return;
-        }
-
-        if (IsFocusWithinView())
-        {
-            _initialFocusRemaining = 0;
-            StopInitialFocusTimer();
-            return;
-        }
-
-        if (TryFocusFirstFieldCore(allowInactiveHost: true))
-        {
-            _initialFocusRemaining = 0;
-            StopInitialFocusTimer();
-            return;
-        }
-
-        _initialFocusRemaining--;
-        if (_initialFocusRemaining <= 0)
-        {
-            StopInitialFocusTimer();
-            return;
-        }
-
-        QueueInitialFocusAttempt();
+        ScheduleFocusPass();
     }
 
     private bool FocusLandingButton()
@@ -654,42 +584,9 @@ public partial class HomeView : UserControl, IInitialFocusTarget
 
     public void ForceLoginFocus()
     {
+        _loginFocusPending = true;
         TryFocusLoginUsernameAsync();
-        StartLoginFocusTimer();
-    }
-
-    private void EnsureLoginFocusTimerStopped()
-    {
-        try
-        {
-            _loginFocusTimer?.Stop();
-            _loginFocusTimer = null;
-        }
-        catch
-        {
-            // best-effort
-        }
-    }
-
-    private void StartLoginFocusTimer()
-    {
-        EnsureLoginFocusTimerStopped();
-
-        _loginFocusTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
-        {
-            Interval = TimeSpan.FromMilliseconds(200),
-        };
-        _loginFocusTimer.Tick += (_, _) =>
-        {
-            if (IsLoginFocusActive())
-            {
-                EnsureLoginFocusTimerStopped();
-                return;
-            }
-
-            TryFocusLoginUsernameAsync();
-        };
-        _loginFocusTimer.Start();
+        ScheduleFocusPass();
     }
 
     private bool IsLoginFocusActive()
@@ -746,6 +643,47 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         catch (Exception ex)
         {
             Log.Warning(ex, "TryFocusLoginUsernameAsync failed");
+        }
+    }
+
+    private void ScheduleFocusPass()
+    {
+        if (_focusPassScheduled)
+        {
+            return;
+        }
+
+        _focusPassScheduled = true;
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(RunFocusPass));
+    }
+
+    private void RunFocusPass()
+    {
+        _focusPassScheduled = false;
+
+        if (!IsLoaded || !IsVisible)
+        {
+            return;
+        }
+
+        if (_initialFocusPending)
+        {
+            if (IsFocusWithinView() || TryFocusFirstFieldCore(allowInactiveHost: true))
+            {
+                _initialFocusPending = false;
+            }
+        }
+
+        if (_loginFocusPending)
+        {
+            if (IsLoginFocusActive())
+            {
+                _loginFocusPending = false;
+            }
+            else
+            {
+                TryFocusLoginUsernameAsync();
+            }
         }
     }
 

@@ -27,6 +27,7 @@ public partial class GamePlayView
 
         if (_promptVm == null)
         {
+            UnhookInlinePromptFocusObserver();
             return;
         }
 
@@ -81,13 +82,20 @@ public partial class GamePlayView
         {
             if (InlinePromptOverlay == null || InlinePromptOverlay.Visibility != Visibility.Visible)
             {
+                UnhookInlinePromptFocusObserver();
                 return;
             }
 
             var requestId = ++_inlinePromptFocusRequestId;
             Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
             {
-                TryFocusFirstInlinePromptFieldWithRetry(requestId, remainingAttempts: 8);
+                if (TryFocusFirstInlinePromptFieldNow(requestId))
+                {
+                    UnhookInlinePromptFocusObserver();
+                    return;
+                }
+
+                HookInlinePromptFocusObserver(requestId);
             }));
         }
         catch
@@ -96,36 +104,89 @@ public partial class GamePlayView
         }
     }
 
-    private void TryFocusFirstInlinePromptFieldWithRetry(int requestId, int remainingAttempts)
+    private bool TryFocusFirstInlinePromptFieldNow(int requestId)
     {
         if (requestId != _inlinePromptFocusRequestId)
         {
-            return;
+            return false;
         }
 
         if (InlinePromptOverlay == null || InlinePromptOverlay.Visibility != Visibility.Visible)
         {
-            return;
+            return false;
         }
 
         if (FindFirstFocusable(InlinePromptOverlay) is IInputElement el)
         {
             Keyboard.Focus(el);
             (el as UIElement)?.Focus();
+            return true;
+        }
+
+        return false;
+    }
+
+    private void HookInlinePromptFocusObserver(int requestId)
+    {
+        if (InlinePromptOverlay == null)
+        {
             return;
         }
 
-        if (remainingAttempts <= 0)
+        UnhookInlinePromptFocusObserver();
+        _inlinePromptLayoutUpdated = (_, _) =>
         {
-            InlinePromptOverlay.Focus();
-            Keyboard.Focus(InlinePromptOverlay);
+            if (requestId != _inlinePromptFocusRequestId)
+            {
+                UnhookInlinePromptFocusObserver();
+                return;
+            }
+
+            if (InlinePromptOverlay == null || InlinePromptOverlay.Visibility != Visibility.Visible)
+            {
+                UnhookInlinePromptFocusObserver();
+                return;
+            }
+
+            if (TryFocusFirstInlinePromptFieldNow(requestId))
+            {
+                UnhookInlinePromptFocusObserver();
+                return;
+            }
+
+            if (FindFirstFocusable(InlinePromptOverlay) == null)
+            {
+                InlinePromptOverlay.Focus();
+                Keyboard.Focus(InlinePromptOverlay);
+                UnhookInlinePromptFocusObserver();
+            }
+        };
+
+        InlinePromptOverlay.LayoutUpdated += _inlinePromptLayoutUpdated;
+    }
+
+    private void UnhookInlinePromptFocusObserver()
+    {
+        if (InlinePromptOverlay == null)
+        {
             return;
         }
 
-        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+        try
         {
-            TryFocusFirstInlinePromptFieldWithRetry(requestId, remainingAttempts - 1);
-        }));
+            if (_inlinePromptLayoutUpdated != null)
+            {
+                InlinePromptOverlay.LayoutUpdated -= _inlinePromptLayoutUpdated;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+        finally
+        {
+            _inlinePromptLayoutUpdated = null;
+        }
     }
 
     private static DependencyObject? FindFirstFocusable(DependencyObject root)

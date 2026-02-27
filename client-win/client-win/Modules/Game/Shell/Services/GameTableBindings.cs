@@ -58,13 +58,13 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	    private Action<string>? _onSessionError;
     private Action<GamePlayHistoryMessage>? _onGameMessage;
 	    private Action<string, string>? _onGameStatusChanged;
+    private Action<bool>? _onStartReadyChanged;
     private bool _roomStopConfirmationPending;
-    private CancellationTokenSource? _roomStopGraceCts;
-    private static readonly TimeSpan RoomStopGraceDelay = TimeSpan.FromMilliseconds(650);
 
     private bool _lastRoomStarted;
     private StartFlowState _startFlowState = StartFlowState.Idle;
     private int _startFocusRecoveryRequestId;
+    private bool _awaitingStartReadyAnnouncement;
     private Dictionary<int, (string Username, bool Spectator)> _participants = new();
     private Dictionary<int, string> _botsById = new();
     private int _ownerId = 0;
@@ -326,12 +326,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
                         SyncTableAmbience(payload, started: false);
 
                         SetRoomShortcutsForStarted(started: false);
-                        CancelRoomStopGraceDelay();
-                        var stopCts = new CancellationTokenSource();
-                        _roomStopGraceCts = stopCts;
 
-                        // Best-effort: ask an explicit refresh, then keep a short grace period so
-                        // gameplay can consume late end-state events before unloading the zone.
+                        // Best-effort: ask an explicit refresh before unloading.
                         try
                         {
                             _ = _session.RequestStateRefreshAsync(force: true);
@@ -341,27 +337,17 @@ internal sealed class GameTableBindings : IAsyncDisposable
                             // best-effort
                         }
 
-                        try
-                        {
-                            await Task.Delay(RoomStopGraceDelay, stopCts.Token).ConfigureAwait(true);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            return;
-                        }
-
-                        if (!ReferenceEquals(_roomStopGraceCts, stopCts))
-                        {
-                            return;
-                        }
-
                         if (IsRoomStarted(_session.LastRoomState?.Room))
                         {
                             return;
                         }
 
-                        _tableVm.GameZone.Content = null;
-                        await UnloadGamePlayVmAsync().ConfigureAwait(true);
+                        if (_tableVm.GameZone.Content != null || _gamePlayVm != null)
+                        {
+                            FocusParking.Park();
+                            _tableVm.GameZone.Content = null;
+                            await UnloadGamePlayVmAsync().ConfigureAwait(true);
+                        }
 
                         var gameName = (payload.Manifest?.Name ?? _game.Name ?? string.Empty).Trim();
                         if (string.IsNullOrWhiteSpace(gameName))
@@ -666,7 +652,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
     private void EnterStartedFlow(string source, bool fromGameStatus, bool announceIfFirst)
     {
-        CancelRoomStopGraceDelay();
         SetRoomShortcutsForStarted(started: true);
         EnsureGamePlayLoaded();
         SyncGameplayShortcuts();
@@ -692,8 +677,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
         if (firstStartTransition || reachedGameplayReady)
         {
-            var requestId = ScheduleStartFocusRecovery(GameFocusReason.TableStarted);
-            _ = WaitForStartedAndRequestTurnAsync(requestId);
+            _awaitingStartReadyAnnouncement = true;
+            ScheduleStartFocusRecovery(GameFocusReason.TableStarted);
+            _ = TryRequestTurnAnnouncementIfReadyAsync();
         }
 
         Log.Debug("StartFlow -> {State} ({Source})", _startFlowState, source);
@@ -703,6 +689,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     {
         var previous = _startFlowState;
         _startFlowState = StartFlowState.Idle;
+        _awaitingStartReadyAnnouncement = false;
         Interlocked.Increment(ref _startFocusRecoveryRequestId);
         if (previous != StartFlowState.Idle)
         {
@@ -718,8 +705,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
             Log.Debug("StartFlow -> {State} ({Source})", _startFlowState, "wizard.start");
         }
 
-        var requestId = ScheduleStartFocusRecovery(GameFocusReason.TableStarted);
-        _ = WaitForStartedAndRequestTurnAsync(requestId);
+        _awaitingStartReadyAnnouncement = true;
+        ScheduleStartFocusRecovery(GameFocusReason.TableStarted);
+        _ = TryRequestTurnAnnouncementIfReadyAsync();
     }
 
     private int ScheduleStartFocusRecovery(GameFocusReason reason)
@@ -730,52 +718,29 @@ internal sealed class GameTableBindings : IAsyncDisposable
         return requestId;
     }
 
-    private async Task WaitForStartedAndRequestTurnAsync(int requestId)
+    private async Task TryRequestTurnAnnouncementIfReadyAsync()
     {
         try
         {
-            var sawStarted = false;
-            for (var attempt = 0; attempt < 8; attempt++)
+            if (!_awaitingStartReadyAnnouncement)
             {
-                if (requestId != _startFocusRecoveryRequestId)
-                {
-                    return;
-                }
-
-                var started = false;
-                var startReady = false;
-                await _dispatcher.InvokeAsync(
-                    () =>
-                    {
-                        started = _tableVm.GameZone.IsStarted ||
-                                  _lastRoomStarted ||
-                                  _startFlowState is StartFlowState.RoomStarted or StartFlowState.GameStarted;
-                        startReady = IsGameplayStartReadyFromLastState();
-                    },
-                    DispatcherPriority.Background);
-
-                if (started)
-                {
-                    sawStarted = true;
-                }
-
-                if (started && startReady)
-                {
-                    await _dispatcher.InvokeAsync(
-                        async () => await RequestTurnAnnouncementAsync().ConfigureAwait(true),
-                        DispatcherPriority.Background);
-                    return;
-                }
-
-                await Task.Delay(120).ConfigureAwait(false);
+                return;
             }
 
-            if (sawStarted && requestId == _startFocusRecoveryRequestId)
+            var ready = false;
+            await _dispatcher.InvokeAsync(
+                () => ready = IsGameplayStartReadyFromLastState(),
+                DispatcherPriority.Background);
+
+            if (!ready)
             {
-                await _dispatcher.InvokeAsync(
-                    async () => await RequestTurnAnnouncementAsync().ConfigureAwait(true),
-                    DispatcherPriority.Background);
+                return;
             }
+
+            _awaitingStartReadyAnnouncement = false;
+            await _dispatcher.InvokeAsync(
+                async () => await RequestTurnAnnouncementAsync().ConfigureAwait(true),
+                DispatcherPriority.Background);
         }
         catch
         {
@@ -948,6 +913,10 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     return;
                 }
 
+                // Ensure the game session is ready before issuing explicit state/turn requests.
+                // Otherwise, early requests right after room.start can be dropped silently.
+                await _gamePlayVm.InitializeAsync(CancellationToken.None).ConfigureAwait(true);
+
                 // Some engines do not push a fresh game.state right after room.start.
                 // Request state first so hand/board are visible immediately after config validation.
                 await _gamePlayVm.RequestStateInfoAsync().ConfigureAwait(true);
@@ -988,6 +957,19 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     }
                 }, DispatcherPriority.Background);
             _gamePlayVm.GameStatusChanged += _onGameStatusChanged;
+
+            _onStartReadyChanged = ready =>
+            {
+                if (!ready)
+                {
+                    return;
+                }
+
+                _ = _dispatcher.InvokeAsync(
+                    async () => await TryRequestTurnAnnouncementIfReadyAsync().ConfigureAwait(true),
+                    DispatcherPriority.Background);
+            };
+            _gamePlayVm.StartReadyChanged += _onStartReadyChanged;
 
             if (_gamePlayVm.Shortcuts is INotifyCollectionChanged notify)
             {
@@ -1040,7 +1022,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
         if (hasGamePlayLoaded)
         {
-            CancelRoomStopGraceDelay();
             // IMPORTANT (NVDA):
             // Si le controle actuellement focuse (dans la zone de jeu) disparait, NVDA annonce souvent "indisponible".
             // On park donc le focus sur un element stable avant de decharger le contenu.
@@ -1073,6 +1054,11 @@ internal sealed class GameTableBindings : IAsyncDisposable
 		            _gamePlayVm.GameStatusChanged -= _onGameStatusChanged;
 		            _onGameStatusChanged = null;
 		        }
+                if (_onStartReadyChanged != null)
+                {
+                    _gamePlayVm.StartReadyChanged -= _onStartReadyChanged;
+                    _onStartReadyChanged = null;
+                }
 		        if (_onGameplayShortcutsChanged != null &&
 		            _gamePlayVm.Shortcuts is System.Collections.Specialized.INotifyCollectionChanged notify)
 		        {
@@ -1083,23 +1069,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	        await _gamePlayVm.DisposeAsync().ConfigureAwait(true);
 	        _gamePlayVm = null;
 	    }
-
-    private void CancelRoomStopGraceDelay()
-    {
-        try
-        {
-            _roomStopGraceCts?.Cancel();
-        }
-        catch
-        {
-            // best-effort
-        }
-        finally
-        {
-            _roomStopGraceCts?.Dispose();
-            _roomStopGraceCts = null;
-        }
-    }
 
     private void ApplySpectatorState()
     {
@@ -1291,11 +1260,10 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	        return $"Chat — {user} : {text}";
 	    }
 
-	    public async ValueTask DisposeAsync()
-	    {
-	        try
-	        {
-            CancelRoomStopGraceDelay();
+		    public async ValueTask DisposeAsync()
+		    {
+		        try
+		        {
             _tableVm.Chat.LocalEcho = null;
             if (_onAnnounced != null)
             {

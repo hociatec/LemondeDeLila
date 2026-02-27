@@ -23,6 +23,13 @@ public partial class GamePlayView
     private int _handFocusRequestId;
     private int _gridFocusRequestId;
     private int _inlinePromptFocusRequestId;
+    private EventHandler? _choicesListGeneratorStatusChanged;
+    private EventHandler? _choicesListLayoutUpdated;
+    private EventHandler? _handListGeneratorStatusChanged;
+    private EventHandler? _handListLayoutUpdated;
+    private EventHandler? _gridFocusGeneratorStatusChanged;
+    private EventHandler? _gridFocusLayoutUpdated;
+    private EventHandler? _inlinePromptLayoutUpdated;
     private int _preferredInteractiveFocusRequestId;
     private int _gameZoneFocusRequestId;
     private int _postPawnSubmitFocusRequestId;

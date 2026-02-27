@@ -35,6 +35,7 @@ internal sealed class GamePlayRealtimeController
     private readonly Action _requestFocus;
     private readonly Action _refreshCanExecute;
     private readonly Action<string, string> _onGameStatusChanged;
+    private readonly Action<bool> _onStartReadyChanged;
     private readonly Action<bool> _setIsBotThinking;
     private readonly Action<string> _setStateSummary;
     private readonly Action<string> _setPendingText;
@@ -77,6 +78,7 @@ internal sealed class GamePlayRealtimeController
         Action requestFocus,
         Action refreshCanExecute,
         Action<string, string> onGameStatusChanged,
+        Action<bool> onStartReadyChanged,
         Action<bool> setIsBotThinking,
         Action<string> setStateSummary,
         Action<string> setPendingText,
@@ -99,6 +101,7 @@ internal sealed class GamePlayRealtimeController
         _requestFocus = requestFocus ?? throw new ArgumentNullException(nameof(requestFocus));
         _refreshCanExecute = refreshCanExecute ?? throw new ArgumentNullException(nameof(refreshCanExecute));
         _onGameStatusChanged = onGameStatusChanged ?? throw new ArgumentNullException(nameof(onGameStatusChanged));
+        _onStartReadyChanged = onStartReadyChanged ?? throw new ArgumentNullException(nameof(onStartReadyChanged));
         _setIsBotThinking = setIsBotThinking ?? throw new ArgumentNullException(nameof(setIsBotThinking));
         _setStateSummary = setStateSummary ?? throw new ArgumentNullException(nameof(setStateSummary));
         _setPendingText = setPendingText ?? throw new ArgumentNullException(nameof(setPendingText));
@@ -368,6 +371,10 @@ internal sealed class GamePlayRealtimeController
         if (!string.Equals(previousStatus, nextStatus, StringComparison.OrdinalIgnoreCase))
         {
             _onGameStatusChanged(previousStatus, nextStatus);
+        }
+        if (startReady != previousStartReady)
+        {
+            _onStartReadyChanged(startReady);
         }
         if (string.Equals(nextStatus, "finished", StringComparison.OrdinalIgnoreCase))
         {

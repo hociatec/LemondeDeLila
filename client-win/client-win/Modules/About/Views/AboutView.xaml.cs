@@ -11,7 +11,6 @@ namespace client_win.Modules.About.Views;
 
 public partial class AboutView : UserControl, IInitialFocusTarget
 {
-    private int _focusRequestId;
     public AboutView()
     {
         InitializeComponent();
@@ -133,23 +132,6 @@ public partial class AboutView : UserControl, IInitialFocusTarget
             ItemsList.SelectedIndex = 0;
         }
 
-        var requestId = unchecked(++_focusRequestId);
-        FocusSelectedOrFirstItemWithRetry(requestId, attemptsRemaining: 8);
-    }
-
-    private void FocusSelectedOrFirstItemWithRetry(int requestId, int attemptsRemaining)
-    {
-        if (ItemsList == null || ItemsList.Items.Count == 0)
-        {
-            ItemsList?.Focus();
-            return;
-        }
-
-        if (ItemsList.SelectedIndex < 0)
-        {
-            ItemsList.SelectedIndex = 0;
-        }
-
         var index = ItemsList.SelectedIndex;
         if (index >= 0 && index < ItemsList.Items.Count)
         {
@@ -159,14 +141,6 @@ public partial class AboutView : UserControl, IInitialFocusTarget
         if (index >= 0 && ItemsList.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)
         {
             item.Focus();
-            return;
-        }
-
-        if (attemptsRemaining > 0 && requestId == _focusRequestId)
-        {
-            _ = Dispatcher.BeginInvoke(
-                DispatcherPriority.Loaded,
-                new Action(() => FocusSelectedOrFirstItemWithRetry(requestId, attemptsRemaining - 1)));
             return;
         }
 

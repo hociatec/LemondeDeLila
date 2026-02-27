@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -12,8 +12,8 @@ using client_win.Modules.Shell.Services;
 namespace client_win.Modules.Shell.Views;
 
 /// <summary>
-/// Déplace le focus clavier dans la nouvelle vue lorsqu'un ContentControl change de contenu.
-/// Évite les annonces NVDA "indisponible" provoquées par la disparition de l'élément focalisé.
+/// Deplace le focus clavier dans la nouvelle vue lorsqu'un ContentControl change de contenu.
+/// Evite les annonces NVDA "indisponible" provoquees par la disparition de l'element focalise.
 /// </summary>
 public static class ContentHostFocusBehavior
 {
@@ -39,15 +39,16 @@ public static class ContentHostFocusBehavior
     private sealed class HandlerSet
     {
         public EventHandler? ContentChanged { get; init; }
-        public DispatcherTimer? RetryTimer { get; set; }
-        public int RetryRemaining { get; set; }
         public bool SkipInitialFocus { get; init; }
         public bool InitialFocusSkipped { get; set; }
+        public Window? ObservedWindow { get; set; }
+        public EventHandler? WindowActivated { get; set; }
+        public FrameworkElement? ObservedRoot { get; set; }
+        public RoutedEventHandler? RootLoaded { get; set; }
+        public EventHandler? RootLayoutUpdated { get; set; }
     }
 
     private static readonly ConditionalWeakTable<ContentControl, HandlerSet> HandlersByHost = new();
-    private const int FocusRetryMaxAttempts = 24;
-    private static readonly TimeSpan FocusRetryInterval = TimeSpan.FromMilliseconds(125);
 
     public static void SetEnable(DependencyObject element, bool value) =>
         element.SetValue(EnableProperty, value);
@@ -119,15 +120,7 @@ public static class ContentHostFocusBehavior
             // best-effort
         }
 
-        try
-        {
-            handlers.RetryTimer?.Stop();
-        }
-        catch
-        {
-            // best-effort
-        }
-
+        DetachRuntimeObservers(handlers);
         HandlersByHost.Remove(host);
     }
 
@@ -135,32 +128,30 @@ public static class ContentHostFocusBehavior
     {
         try
         {
-            if (HandlersByHost.TryGetValue(host, out var handlers) &&
-                handlers.SkipInitialFocus &&
-                !handlers.InitialFocusSkipped)
+            if (!HandlersByHost.TryGetValue(host, out var handlers))
+            {
+                return;
+            }
+
+            if (handlers.SkipInitialFocus && !handlers.InitialFocusSkipped)
             {
                 handlers.InitialFocusSkipped = true;
                 return;
             }
 
-            // Ne jamais déplacer le focus dans une fenêtre non active : sur certains démarrages (notamment ClickOnce),
-            // Windows refuse le foreground. Si on focus quand même, NVDA peut annoncer un champ mais le clavier reste
-            // sur l'appli précédente, donnant l'impression que l'UI "ne répond pas" jusqu'à un alt-tab.
             var window = Window.GetWindow(host) ?? Application.Current?.MainWindow;
             if (window != null && !window.IsActive)
             {
-                StartRetryTimer(host);
+                HookWindowActivation(host, handlers, window);
                 return;
             }
 
             // NVDA: park focus on a stable element before trying to focus inside the new content.
-            // This avoids "indisponible" when the previously focused element disappears during navigation.
-            try { FocusParking.ParkIfNeeded(Window.GetWindow(host) ?? Application.Current?.MainWindow); } catch { }
+            try { FocusParking.ParkIfNeeded(window); } catch { }
 
-            // Essai rapide dès que la vue est chargée + essai tardif une fois idle.
             host.Dispatcher.BeginInvoke((Action)(() => TryFocus(host, allowFallback: false)), DispatcherPriority.Loaded);
             host.Dispatcher.BeginInvoke((Action)(() => TryFocus(host, allowFallback: true)), DispatcherPriority.ApplicationIdle);
-            StartRetryTimer(host);
+            HookContentRootObservers(host, handlers);
         }
         catch
         {
@@ -168,56 +159,20 @@ public static class ContentHostFocusBehavior
         }
     }
 
-    private static void StartRetryTimer(ContentControl host)
-    {
-        if (!HandlersByHost.TryGetValue(host, out var handlers))
-        {
-            return;
-        }
-
-        handlers.RetryRemaining = FocusRetryMaxAttempts;
-        if (handlers.RetryTimer == null)
-        {
-            handlers.RetryTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle, host.Dispatcher);
-            handlers.RetryTimer.Tick += (_, _) => RetryFocus(host);
-        }
-
-        handlers.RetryTimer.Interval = FocusRetryInterval;
-        handlers.RetryTimer.Start();
-    }
-
-    private static void RetryFocus(ContentControl host)
-    {
-        if (!HandlersByHost.TryGetValue(host, out var handlers))
-        {
-            return;
-        }
-
-        if (handlers.RetryRemaining <= 0)
-        {
-            try { FocusParking.ParkIfNeeded(Window.GetWindow(host) ?? Application.Current?.MainWindow); } catch { }
-            try { handlers.RetryTimer?.Stop(); } catch { }
-            return;
-        }
-
-        handlers.RetryRemaining--;
-        if (TryFocus(host, allowFallback: true))
-        {
-            try { handlers.RetryTimer?.Stop(); } catch { }
-        }
-    }
-
     private static bool TryFocus(ContentControl host, bool allowFallback)
     {
         try
         {
+            if (!HandlersByHost.TryGetValue(host, out var handlers))
+            {
+                return false;
+            }
+
             if (TryGetContentRoot(host) is not DependencyObject root)
             {
                 return false;
             }
 
-            // Ne pas tenter de focaliser une vue pas encore attachée à une PresentationSource
-            // (Visual3D n'est pas un Visual -> utiliser FromDependencyObject pour couvrir les deux).
             if (PresentationSource.FromDependencyObject(root) == null)
             {
                 return false;
@@ -232,6 +187,7 @@ public static class ContentHostFocusBehavior
 
                 if (IsFocusWithin(root))
                 {
+                    DetachRuntimeObservers(handlers);
                     return true;
                 }
             }
@@ -240,13 +196,16 @@ public static class ContentHostFocusBehavior
             {
                 if (TrySetKeyboardFocus(target, root))
                 {
+                    DetachRuntimeObservers(handlers);
                     return true;
                 }
             }
 
-            // Fallback: do not MoveFocus from the host.
-            // It can land on transient/unloaded elements during template swaps, which is a common trigger for
-            // NVDA "indisponible". If we couldn't find a focus target, keep focus parked and let retries handle it.
+            if (allowFallback)
+            {
+                HookContentRootObservers(host, handlers);
+            }
+
             return false;
         }
         catch
@@ -255,6 +214,136 @@ public static class ContentHostFocusBehavior
         }
 
         return false;
+    }
+
+    private static void HookWindowActivation(ContentControl host, HandlerSet handlers, Window window)
+    {
+        if (ReferenceEquals(handlers.ObservedWindow, window) && handlers.WindowActivated != null)
+        {
+            return;
+        }
+
+        DetachRuntimeObservers(handlers);
+        handlers.ObservedWindow = window;
+        handlers.WindowActivated = (_, _) =>
+        {
+            try
+            {
+                if (TryFocus(host, allowFallback: true))
+                {
+                    DetachRuntimeObservers(handlers);
+                }
+                else
+                {
+                    HookContentRootObservers(host, handlers);
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+        };
+
+        try { window.Activated += handlers.WindowActivated; } catch { /* ignore */ }
+    }
+
+    private static void HookContentRootObservers(ContentControl host, HandlerSet handlers)
+    {
+        var root = TryGetContentRoot(host) as FrameworkElement;
+        if (root == null)
+        {
+            return;
+        }
+
+        if (ReferenceEquals(handlers.ObservedRoot, root))
+        {
+            return;
+        }
+
+        DetachRootObservers(handlers);
+        handlers.ObservedRoot = root;
+        handlers.RootLoaded = (_, _) =>
+        {
+            try
+            {
+                if (TryFocus(host, allowFallback: true))
+                {
+                    DetachRuntimeObservers(handlers);
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+        };
+        handlers.RootLayoutUpdated = (_, _) =>
+        {
+            try
+            {
+                if (TryFocus(host, allowFallback: true))
+                {
+                    DetachRuntimeObservers(handlers);
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+        };
+
+        try { root.Loaded += handlers.RootLoaded; } catch { /* ignore */ }
+        try { root.LayoutUpdated += handlers.RootLayoutUpdated; } catch { /* ignore */ }
+    }
+
+    private static void DetachRuntimeObservers(HandlerSet handlers)
+    {
+        try
+        {
+            if (handlers.ObservedWindow != null && handlers.WindowActivated != null)
+            {
+                handlers.ObservedWindow.Activated -= handlers.WindowActivated;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+        finally
+        {
+            handlers.ObservedWindow = null;
+            handlers.WindowActivated = null;
+        }
+
+        DetachRootObservers(handlers);
+    }
+
+    private static void DetachRootObservers(HandlerSet handlers)
+    {
+        try
+        {
+            if (handlers.ObservedRoot != null)
+            {
+                if (handlers.RootLoaded != null)
+                {
+                    handlers.ObservedRoot.Loaded -= handlers.RootLoaded;
+                }
+
+                if (handlers.RootLayoutUpdated != null)
+                {
+                    handlers.ObservedRoot.LayoutUpdated -= handlers.RootLayoutUpdated;
+                }
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+        finally
+        {
+            handlers.ObservedRoot = null;
+            handlers.RootLoaded = null;
+            handlers.RootLayoutUpdated = null;
+        }
     }
 
     private static bool TrySetKeyboardFocus(IInputElement target, DependencyObject expectedRoot)

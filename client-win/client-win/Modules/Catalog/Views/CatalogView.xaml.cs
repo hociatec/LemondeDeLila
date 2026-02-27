@@ -24,6 +24,9 @@ public partial class CatalogView : UserControl, IInitialFocusTarget, IFocusReady
     private CatalogLayoutMode _layoutMode = CatalogLayoutMode.Wide;
     private int _enterFromCategoriesRequestId;
     private bool _isFocusReady;
+    private EventHandler? _focusNextFromCategoriesSubStatusChanged;
+    private EventHandler? _focusNextFromCategoriesGamesStatusChanged;
+    private EventHandler? _focusNextFromCategoriesLayoutUpdated;
 
     public CatalogView()
     {
@@ -32,6 +35,7 @@ public partial class CatalogView : UserControl, IInitialFocusTarget, IFocusReady
         // With CachedContentHost, views can be hidden/shown without being unloaded/reloaded.
         // Ensure we restore a usable keyboard focus when the tavern becomes visible again (e.g. after Vault/JoinGame).
         IsVisibleChanged += OnIsVisibleChanged;
+        Unloaded += (_, _) => UnhookFocusNextFromCategoriesObservers();
     }
 
     public bool IsFocusReady => _isFocusReady;
@@ -213,47 +217,12 @@ public partial class CatalogView : UserControl, IInitialFocusTarget, IFocusReady
         }
 
         // Force propagation vers sous-catégories ou jeux.
-        // If the user presses Enter quickly after changing selection, subcategories/games may not be populated yet
-        // (they are updated on the dispatcher). Retry briefly so Enter doesn't feel like a no-op.
+        // If the user presses Enter quickly after changing selection, subcategories/games may not be populated yet.
+        // Wait for UI updates using event hooks instead of delay/polling loops.
         if (SubCategoriesList?.HasItems != true && GamesList?.HasItems != true)
         {
             e.Handled = true;
-            var requestId = unchecked(++_enterFromCategoriesRequestId);
-
-            void TryFocusNext(int attemptsRemaining)
-            {
-                if (requestId != _enterFromCategoriesRequestId)
-                {
-                    return;
-                }
-
-                if (SubCategoriesList?.HasItems == true)
-                {
-                    SubCategoriesList.SelectedIndex = SubCategoriesList.SelectedIndex >= 0 ? SubCategoriesList.SelectedIndex : 0;
-                    vm.SelectedSubShelf = SubCategoriesList.SelectedItem as Modules.Catalog.Models.CatalogCategory;
-                    FocusFirstItem(SubCategoriesList);
-                    return;
-                }
-
-                if (GamesList?.HasItems == true)
-                {
-                    GamesList.SelectedIndex = GamesList.SelectedIndex >= 0 ? GamesList.SelectedIndex : 0;
-                    vm.SelectedGame = GamesList.SelectedItem as Modules.Catalog.Models.CatalogGame;
-                    FocusFirstItem(GamesList);
-                    return;
-                }
-
-                if (attemptsRemaining <= 0)
-                {
-                    return;
-                }
-
-                _ = Dispatcher.BeginInvoke(
-                    DispatcherPriority.Background,
-                    new Action(() => TryFocusNext(attemptsRemaining - 1)));
-            }
-
-            TryFocusNext(attemptsRemaining: 10);
+            RequestFocusNextFromCategoriesWhenReady(vm);
             return;
         }
 
@@ -270,6 +239,133 @@ public partial class CatalogView : UserControl, IInitialFocusTarget, IFocusReady
             FocusFirstItem(GamesList);
         }
         e.Handled = true;
+    }
+
+    private void RequestFocusNextFromCategoriesWhenReady(CatalogViewModel vm)
+    {
+        var requestId = unchecked(++_enterFromCategoriesRequestId);
+        if (TryFocusNextFromCategoriesNow(vm))
+        {
+            UnhookFocusNextFromCategoriesObservers();
+            return;
+        }
+
+        UnhookFocusNextFromCategoriesObservers();
+        _focusNextFromCategoriesSubStatusChanged = (_, _) =>
+        {
+            if (requestId != _enterFromCategoriesRequestId)
+            {
+                UnhookFocusNextFromCategoriesObservers();
+                return;
+            }
+
+            if (TryFocusNextFromCategoriesNow(vm))
+            {
+                UnhookFocusNextFromCategoriesObservers();
+            }
+        };
+
+        _focusNextFromCategoriesGamesStatusChanged = (_, _) =>
+        {
+            if (requestId != _enterFromCategoriesRequestId)
+            {
+                UnhookFocusNextFromCategoriesObservers();
+                return;
+            }
+
+            if (TryFocusNextFromCategoriesNow(vm))
+            {
+                UnhookFocusNextFromCategoriesObservers();
+            }
+        };
+
+        _focusNextFromCategoriesLayoutUpdated = (_, _) =>
+        {
+            if (requestId != _enterFromCategoriesRequestId)
+            {
+                UnhookFocusNextFromCategoriesObservers();
+                return;
+            }
+
+            if (TryFocusNextFromCategoriesNow(vm))
+            {
+                UnhookFocusNextFromCategoriesObservers();
+            }
+        };
+
+        try
+        {
+            if (SubCategoriesList != null)
+            {
+                SubCategoriesList.ItemContainerGenerator.StatusChanged += _focusNextFromCategoriesSubStatusChanged;
+            }
+        }
+        catch { /* ignore */ }
+        try
+        {
+            if (GamesList != null)
+            {
+                GamesList.ItemContainerGenerator.StatusChanged += _focusNextFromCategoriesGamesStatusChanged;
+            }
+        }
+        catch { /* ignore */ }
+        LayoutUpdated += _focusNextFromCategoriesLayoutUpdated;
+    }
+
+    private bool TryFocusNextFromCategoriesNow(CatalogViewModel vm)
+    {
+        if (SubCategoriesList?.HasItems == true)
+        {
+            SubCategoriesList.SelectedIndex = SubCategoriesList.SelectedIndex >= 0 ? SubCategoriesList.SelectedIndex : 0;
+            vm.SelectedSubShelf = SubCategoriesList.SelectedItem as Modules.Catalog.Models.CatalogCategory;
+            FocusWhenContainersGenerated(SubCategoriesList);
+            return true;
+        }
+
+        if (GamesList?.HasItems == true)
+        {
+            GamesList.SelectedIndex = GamesList.SelectedIndex >= 0 ? GamesList.SelectedIndex : 0;
+            vm.SelectedGame = GamesList.SelectedItem as Modules.Catalog.Models.CatalogGame;
+            FocusWhenContainersGenerated(GamesList);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void UnhookFocusNextFromCategoriesObservers()
+    {
+        try
+        {
+            if (_focusNextFromCategoriesSubStatusChanged != null)
+            {
+                if (SubCategoriesList != null)
+                {
+                    SubCategoriesList.ItemContainerGenerator.StatusChanged -= _focusNextFromCategoriesSubStatusChanged;
+                }
+            }
+            if (_focusNextFromCategoriesGamesStatusChanged != null)
+            {
+                if (GamesList != null)
+                {
+                    GamesList.ItemContainerGenerator.StatusChanged -= _focusNextFromCategoriesGamesStatusChanged;
+                }
+            }
+            if (_focusNextFromCategoriesLayoutUpdated != null)
+            {
+                LayoutUpdated -= _focusNextFromCategoriesLayoutUpdated;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+        finally
+        {
+            _focusNextFromCategoriesSubStatusChanged = null;
+            _focusNextFromCategoriesGamesStatusChanged = null;
+            _focusNextFromCategoriesLayoutUpdated = null;
+        }
     }
 
     private void OnSubCategoriesKeyDown(object sender, KeyEventArgs e)

@@ -39,7 +39,13 @@ public partial class GamePlayView
         var requestId = ++_choicesFocusRequestId;
         Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
         {
-            TryFocusListBoxIndexWithRetry(ChoicesList, index, requestId, isHandList: false, remainingAttempts: 6);
+            if (TryFocusListBoxIndexNow(ChoicesList, index))
+            {
+                UnhookChoicesListFocusObservers();
+                return;
+            }
+
+            HookListFocusObservers(ChoicesList, index, requestId, isHandList: false);
         }));
     }
 
@@ -53,7 +59,13 @@ public partial class GamePlayView
         var requestId = ++_handFocusRequestId;
         Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
         {
-            TryFocusListBoxIndexWithRetry(HandList, index, requestId, isHandList: true, remainingAttempts: 6);
+            if (TryFocusListBoxIndexNow(HandList, index))
+            {
+                UnhookHandListFocusObservers();
+                return;
+            }
+
+            HookListFocusObservers(HandList, index, requestId, isHandList: true);
         }));
     }
 
@@ -85,39 +97,143 @@ public partial class GamePlayView
         return false;
     }
 
-    private void TryFocusListBoxIndexWithRetry(ListBox list, int index, int requestId, bool isHandList, int remainingAttempts)
+    private void HookListFocusObservers(ListBox list, int index, int requestId, bool isHandList)
     {
+        if (!IsListRequestCurrent(requestId, isHandList))
+        {
+            return;
+        }
+
         if (isHandList)
         {
-            if (requestId != _handFocusRequestId)
-            {
-                return;
-            }
+            UnhookHandListFocusObservers();
         }
         else
         {
-            if (requestId != _choicesFocusRequestId)
+            UnhookChoicesListFocusObservers();
+        }
+
+        EventHandler statusChanged = (_, _) =>
+        {
+            if (!IsListRequestCurrent(requestId, isHandList))
             {
+                if (isHandList) UnhookHandListFocusObservers();
+                else UnhookChoicesListFocusObservers();
                 return;
             }
+
+            if (TryFocusListBoxIndexNow(list, index))
+            {
+                if (isHandList) UnhookHandListFocusObservers();
+                else UnhookChoicesListFocusObservers();
+            }
+        };
+
+        EventHandler layoutUpdated = (_, _) =>
+        {
+            if (!IsListRequestCurrent(requestId, isHandList))
+            {
+                if (isHandList) UnhookHandListFocusObservers();
+                else UnhookChoicesListFocusObservers();
+                return;
+            }
+
+            if (TryFocusListBoxIndexNow(list, index))
+            {
+                if (isHandList) UnhookHandListFocusObservers();
+                else UnhookChoicesListFocusObservers();
+                return;
+            }
+
+            if (list.ItemContainerGenerator.Status == GeneratorStatus.ContainersGenerated)
+            {
+                list.Focus();
+                Keyboard.Focus(list);
+                if (isHandList) UnhookHandListFocusObservers();
+                else UnhookChoicesListFocusObservers();
+            }
+        };
+
+        if (isHandList)
+        {
+            _handListGeneratorStatusChanged = statusChanged;
+            _handListLayoutUpdated = layoutUpdated;
+        }
+        else
+        {
+            _choicesListGeneratorStatusChanged = statusChanged;
+            _choicesListLayoutUpdated = layoutUpdated;
         }
 
-        if (TryFocusListBoxIndexNow(list, index))
+        list.ItemContainerGenerator.StatusChanged += statusChanged;
+        list.LayoutUpdated += layoutUpdated;
+    }
+
+    private bool IsListRequestCurrent(int requestId, bool isHandList)
+    {
+        return isHandList
+            ? requestId == _handFocusRequestId
+            : requestId == _choicesFocusRequestId;
+    }
+
+    private void UnhookChoicesListFocusObservers()
+    {
+        if (ChoicesList == null)
         {
             return;
         }
 
-        if (remainingAttempts <= 0)
+        try
         {
-            list.Focus();
-            Keyboard.Focus(list);
+            if (_choicesListGeneratorStatusChanged != null)
+            {
+                ChoicesList.ItemContainerGenerator.StatusChanged -= _choicesListGeneratorStatusChanged;
+            }
+
+            if (_choicesListLayoutUpdated != null)
+            {
+                ChoicesList.LayoutUpdated -= _choicesListLayoutUpdated;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+        finally
+        {
+            _choicesListGeneratorStatusChanged = null;
+            _choicesListLayoutUpdated = null;
+        }
+    }
+
+    private void UnhookHandListFocusObservers()
+    {
+        if (HandList == null)
+        {
             return;
         }
 
-        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+        try
         {
-            TryFocusListBoxIndexWithRetry(list, index, requestId, isHandList, remainingAttempts - 1);
-        }));
+            if (_handListGeneratorStatusChanged != null)
+            {
+                HandList.ItemContainerGenerator.StatusChanged -= _handListGeneratorStatusChanged;
+            }
+
+            if (_handListLayoutUpdated != null)
+            {
+                HandList.LayoutUpdated -= _handListLayoutUpdated;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+        finally
+        {
+            _handListGeneratorStatusChanged = null;
+            _handListLayoutUpdated = null;
+        }
     }
 }
 
