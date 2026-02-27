@@ -20,7 +20,9 @@
     "gameType": "lama",
     "roomId": 1,
     "lifecycle": {
-      "startReady": false
+      "startReady": false,
+      "viewerTurnActionable": false,
+      "viewerMustChoosePawn": false
     }
   },
   "extras": {

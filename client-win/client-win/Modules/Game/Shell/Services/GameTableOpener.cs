@@ -1502,7 +1502,35 @@ public sealed class GameTableOpener : IGameTableOpener
                 dialogs: _dialogs,
                 focusCoordinator: _focus,
                 screenReader: _screenReader,
-                announcements: _announcementService);
+                announcements: _announcementService,
+                onPreviewStartWizardAmbience: soundId =>
+                {
+                    try
+                    {
+                        var raw = (soundId ?? string.Empty).Trim();
+                        if (string.IsNullOrWhiteSpace(raw))
+                        {
+                            _sounds.StopPreview();
+                            return;
+                        }
+
+                        if (Enum.TryParse<SoundId>(raw, ignoreCase: true, out var sound))
+                        {
+                            _sounds.PlayPreview(sound);
+                            return;
+                        }
+
+                        _sounds.StopPreview();
+                    }
+                    catch
+                    {
+                        // best-effort
+                    }
+                },
+                onStopStartWizardAmbiencePreview: () =>
+                {
+                    try { _sounds.StopPreview(); } catch { }
+                });
             vm.Status = "Connexion à la table...";
             vm.IsReconnecting = true;
             vm.GameZone.IsConnected = false;
@@ -1597,7 +1625,35 @@ public sealed class GameTableOpener : IGameTableOpener
 	                            dialogs: _dialogs,
 	                            focusCoordinator: _focus,
 	                            screenReader: _screenReader,
-	                            announcements: _announcementService);
+	                            announcements: _announcementService,
+                                onPreviewStartWizardAmbience: soundId =>
+                                {
+                                    try
+                                    {
+                                        var raw = (soundId ?? string.Empty).Trim();
+                                        if (string.IsNullOrWhiteSpace(raw))
+                                        {
+                                            _sounds.StopPreview();
+                                            return;
+                                        }
+
+                                        if (Enum.TryParse<SoundId>(raw, ignoreCase: true, out var sound))
+                                        {
+                                            _sounds.PlayPreview(sound);
+                                            return;
+                                        }
+
+                                        _sounds.StopPreview();
+                                    }
+                                    catch
+                                    {
+                                        // best-effort
+                                    }
+                                },
+                                onStopStartWizardAmbiencePreview: () =>
+                                {
+                                    try { _sounds.StopPreview(); } catch { }
+                                });
 	                        newVm.Status = "Connexion à la table...";
 	                        newVm.IsReconnecting = true;
 	                        newVm.GameZone.IsConnected = false;

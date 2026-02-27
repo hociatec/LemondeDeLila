@@ -10,6 +10,20 @@ namespace client_win.Modules.Game.Play.GamePlay.ViewModels;
 
 public sealed partial class GamePlayViewModel
 {
+    private async Task RequestStateAsync()
+    {
+        var session = _session;
+        if (session == null) return;
+        try
+        {
+            await session.RequestStateAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Erreur lors de la demande de game.state");
+        }
+    }
+
     private async Task RequestTurnAsync()
     {
         var session = _session;
@@ -63,4 +77,3 @@ public sealed partial class GamePlayViewModel
 
     private bool CanSendActionNow(GameSession session) => session.IsConnected && !_isSpectator;
 }
-

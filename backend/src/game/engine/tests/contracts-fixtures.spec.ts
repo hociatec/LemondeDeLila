@@ -92,6 +92,8 @@ describe('Contract fixtures', () => {
         expect(isJsonObject(lifecycle)).toBe(true);
         if (isJsonObject(lifecycle)) {
           expectBoolean(lifecycle.startReady);
+          expectBoolean(lifecycle.viewerTurnActionable);
+          expectBoolean(lifecycle.viewerMustChoosePawn);
         }
       }
     }
@@ -111,6 +113,10 @@ describe('Contract fixtures', () => {
       : undefined;
     expect(setupLifecycle?.startReady).toBe(false);
     expect(startedLifecycle?.startReady).toBe(true);
+    expect(setupLifecycle?.viewerTurnActionable).toBe(false);
+    expect(setupLifecycle?.viewerMustChoosePawn).toBe(false);
+    expect(startedLifecycle?.viewerTurnActionable).toBe(true);
+    expect(startedLifecycle?.viewerMustChoosePawn).toBe(false);
   });
 
   it('parses room.payload fixture and contains expected keys', () => {

@@ -241,6 +241,25 @@ public sealed partial class GamePlayViewModel
 
     private void UpdateHandCards(IReadOnlyList<GamePlayExtrasParser.HandCardInfo> cards)
     {
+        cards ??= Array.Empty<GamePlayExtrasParser.HandCardInfo>();
+
+        // Keep the visual tree stable when hand content did not change.
+        // Rebuilding the ListBox on every state update makes screen readers re-announce
+        // the currently focused card ("x sur y") even during opponent turns.
+        if (IsHandContentSame(cards))
+        {
+            if (SelectedHandIndex >= HandCards.Count)
+            {
+                SelectedHandIndex = HandCards.Count > 0 ? HandCards.Count - 1 : -1;
+            }
+            else if (HandCards.Count == 0 && SelectedHandIndex != -1)
+            {
+                SelectedHandIndex = -1;
+            }
+
+            return;
+        }
+
         var previousCardId = GetSelectedHandCard()?.CardId;
         HandCards.Clear();
 
@@ -268,6 +287,51 @@ public sealed partial class GamePlayViewModel
         }
 
         SelectedHandIndex = HandCards.Count > 0 ? 0 : -1;
+    }
+
+    private bool IsHandContentSame(IReadOnlyList<GamePlayExtrasParser.HandCardInfo> cards)
+    {
+        if (cards == null)
+        {
+            return HandCards.Count == 0;
+        }
+
+        if (HandCards.Count != cards.Count)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < cards.Count; i++)
+        {
+            var next = cards[i];
+            var current = HandCards[i];
+            if (!string.Equals(current.CardId, next.CardId, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            if (!string.Equals(current.Label, next.Label, StringComparison.Ordinal))
+            {
+                return false;
+            }
+            if (current.Disabled != next.Disabled)
+            {
+                return false;
+            }
+            if (!string.Equals(current.Color ?? string.Empty, next.Color ?? string.Empty, StringComparison.Ordinal))
+            {
+                return false;
+            }
+            if (!string.Equals(current.Family ?? string.Empty, next.Family ?? string.Empty, StringComparison.Ordinal))
+            {
+                return false;
+            }
+            if (current.Order != next.Index)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static string BuildWaitingLabel(IReadOnlyList<int> waitingPlayers)

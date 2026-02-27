@@ -948,6 +948,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     return;
                 }
 
+                // Some engines do not push a fresh game.state right after room.start.
+                // Request state first so hand/board are visible immediately after config validation.
+                await _gamePlayVm.RequestStateInfoAsync().ConfigureAwait(true);
                 await _gamePlayVm.RequestTurnInfoAsync().ConfigureAwait(true);
             }
             catch (Exception ex)

@@ -51,6 +51,8 @@ internal sealed class GamePlayRealtimeController
     private bool _endgameFeedbackEmitted;
     private bool _finishedStatusEnforced;
     private bool _lastStartReady;
+    private bool _lastViewerTurnActionable;
+    private bool _lastViewerMustChoosePawn;
     private int _pendingForcedTurnAnnouncements;
     private Dictionary<string, int>? _lastViewerHandCounts;
     private string? _lastDrawActionToken;
@@ -117,6 +119,8 @@ internal sealed class GamePlayRealtimeController
         _endgameFeedbackEmitted = false;
         _finishedStatusEnforced = false;
         _lastStartReady = false;
+        _lastViewerTurnActionable = false;
+        _lastViewerMustChoosePawn = false;
         _lastViewerHandCounts = null;
         lock (_statePumpLock)
         {
@@ -351,10 +355,16 @@ internal sealed class GamePlayRealtimeController
         var previousStatus = _lastGameStatus ?? string.Empty;
         var previousPhase = _lastGamePhase ?? string.Empty;
         var previousStartReady = _lastStartReady;
+        var previousViewerTurnActionable = _lastViewerTurnActionable;
+        var previousViewerMustChoosePawn = _lastViewerMustChoosePawn;
         _lastGameStatus = nextStatus;
         _lastGamePhase = nextPhase;
         var startReady = IsStartReadyFromState(state);
+        var viewerTurnActionable = IsViewerTurnActionableFromState(state);
+        var viewerMustChoosePawn = IsViewerMustChoosePawnFromState(state);
         _lastStartReady = startReady;
+        _lastViewerTurnActionable = viewerTurnActionable;
+        _lastViewerMustChoosePawn = viewerMustChoosePawn;
         if (!string.Equals(previousStatus, nextStatus, StringComparison.OrdinalIgnoreCase))
         {
             _onGameStatusChanged(previousStatus, nextStatus);
@@ -397,16 +407,15 @@ internal sealed class GamePlayRealtimeController
             }
         }
 
-        // Robustesse focus: après une config de démarrage (phase setup), certains flux UI
-        // peuvent laisser le focus hors zone de jeu. On recentre explicitement au passage setup->round.
-        if (string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(nextPhase, "round", StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(previousPhase, "round", StringComparison.OrdinalIgnoreCase))
+        if (startReady && !previousStartReady)
         {
             _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
         }
-
-        if (startReady && !previousStartReady)
+        if (viewerTurnActionable && !previousViewerTurnActionable)
+        {
+            _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
+        }
+        if (viewerMustChoosePawn && !previousViewerMustChoosePawn)
         {
             _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
         }
@@ -445,66 +454,11 @@ internal sealed class GamePlayRealtimeController
         _syncShortcuts(state);
         _grid.SyncFromState(state, _viewerPlayerId);
 
-        TryRefocusWhenViewerTurnBecomesActionable(
-            state,
-            viewerId,
-            previousTurnPlayerId,
-            previousPendingType,
-            previousBotThinking);
-
         _lastPendingType = PawnPendingTypes.Normalize(state.Pending?.Type);
         _lastBotThinking = state.BotThinking;
         _lastViewerHandCounts = currentHandCounts;
         _refreshCanExecute();
         TryAnnounceTurnFromState(state);
-    }
-
-    private void TryRefocusWhenViewerTurnBecomesActionable(
-        GameStateDto state,
-        int? viewerId,
-        int? previousTurnPlayerId,
-        string previousPendingType,
-        bool previousBotThinking)
-    {
-        if (state == null)
-        {
-            return;
-        }
-
-        if (!string.Equals(state.Status, "started", StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        if (viewerId == null)
-        {
-            return;
-        }
-
-        var currentPlayerId = state.Turn?.CurrentPlayerId;
-        if (currentPlayerId == null || currentPlayerId.Value != viewerId.Value)
-        {
-            return;
-        }
-
-        var hasActions = (state.Actions?.Count ?? 0) > 0;
-        if (!hasActions)
-        {
-            return;
-        }
-
-        var viewerTurnGained = previousTurnPlayerId != currentPlayerId.Value;
-        var wasPawnPending = PawnPendingTypes.IsPawnPendingType(previousPendingType);
-        var isPawnPending = PawnPendingTypes.IsPawnPendingType(state.Pending?.Type);
-        var pawnSelectionJustResolved = wasPawnPending && !isPawnPending;
-        var botThinkingJustStopped = previousBotThinking && !state.BotThinking;
-
-        if (!viewerTurnGained && !pawnSelectionJustResolved && !botThinkingJustStopped)
-        {
-            return;
-        }
-
-        _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
     }
 
     private void TryPlayDrawSoundFromState(GameStateDto state)
@@ -611,6 +565,50 @@ internal sealed class GamePlayRealtimeController
         }
 
         return false;
+    }
+
+    private static bool IsViewerTurnActionableFromState(GameStateDto state)
+    {
+        return ReadLifecycleBoolean(state, "viewerTurnActionable");
+    }
+
+    private static bool IsViewerMustChoosePawnFromState(GameStateDto state)
+    {
+        return ReadLifecycleBoolean(state, "viewerMustChoosePawn");
+    }
+
+    private static bool ReadLifecycleBoolean(GameStateDto state, string key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            return false;
+        }
+
+        try
+        {
+            var metadata = state.Metadata;
+            if (metadata.ValueKind != System.Text.Json.JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            if (!metadata.TryGetProperty("lifecycle", out var lifecycle) ||
+                lifecycle.ValueKind != System.Text.Json.JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            if (!lifecycle.TryGetProperty(key, out var value))
+            {
+                return false;
+            }
+
+            return value.ValueKind == System.Text.Json.JsonValueKind.True;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static bool IsEndgameLogMessage(string message)

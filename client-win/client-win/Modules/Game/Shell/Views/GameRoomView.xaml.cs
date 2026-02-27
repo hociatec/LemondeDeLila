@@ -253,6 +253,16 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
                 return;
             }
 
+            if (key == Key.Space &&
+                wizardVm.IsStartWizardAmbienceStep &&
+                StartWizardChoicesList != null &&
+                IsFocusWithinElement(StartWizardChoicesList))
+            {
+                e.Handled = true;
+                wizardVm.PreviewSelectedStartWizardAmbience();
+                return;
+            }
+
             if (key is Key.Enter or Key.Return)
             {
                 if (e.IsRepeat)
@@ -1000,6 +1010,23 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
 
         return LogicalTreeHelper.GetParent(current);
     }
+
+    private static bool IsFocusWithinElement(DependencyObject root)
+    {
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        while (focused != null)
+        {
+            if (ReferenceEquals(focused, root))
+            {
+                return true;
+            }
+
+            focused = GetVisualOrLogicalParent(focused);
+        }
+
+        return false;
+    }
+
     private static bool IsNavigationKey(Key key)
     {
         return key is Key.Left

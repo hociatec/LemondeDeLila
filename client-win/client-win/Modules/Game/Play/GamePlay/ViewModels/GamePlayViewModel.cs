@@ -1406,6 +1406,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     }
 
  	    public Task RequestTurnInfoAsync() => RequestTurnAsync();
+        public Task RequestStateInfoAsync() => RequestStateAsync();
 
 	    private void OnGameStatusChanged(string previousStatus, string nextStatus)
 	    {

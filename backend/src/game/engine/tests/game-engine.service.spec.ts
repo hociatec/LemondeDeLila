@@ -826,6 +826,8 @@ describe('GameEngineService', () => {
 
     const exposed = (engine as any).exposeState(state, 'lama');
     expect(exposed?.metadata?.lifecycle?.startReady).toBe(false);
+    expect(exposed?.metadata?.lifecycle?.viewerTurnActionable).toBe(false);
+    expect(exposed?.metadata?.lifecycle?.viewerMustChoosePawn).toBe(false);
   });
 
   it('sets metadata.lifecycle.startReady to true once started state has no config prompt', () => {
@@ -859,5 +861,78 @@ describe('GameEngineService', () => {
 
     const exposed = (engine as any).exposeState(state, 'lama');
     expect(exposed?.metadata?.lifecycle?.startReady).toBe(true);
+    expect(exposed?.metadata?.lifecycle?.viewerTurnActionable).toBe(false);
+    expect(exposed?.metadata?.lifecycle?.viewerMustChoosePawn).toBe(false);
+  });
+
+  it('sets metadata.lifecycle.viewerTurnActionable for the requesting user', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      { getHandler: jest.fn(() => null) } as any,
+      { compute: jest.fn(() => null) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      { attachGridRenderDescriptors: jest.fn((s: any) => s) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const state: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 2,
+      botThinking: false,
+      players: [{ id: 1, username: 'Lila', isBot: false }],
+      turn: { currentPlayerId: 1, direction: 1 },
+      actions: [{ type: 'lama_play', payload: {} }],
+      pending: null,
+      metadata: { gameType: 'lama', roomId: 1 },
+      extras: {},
+      log: [],
+    };
+
+    const exposed = (engine as any).exposeStateForUser(state, 'lama', 1);
+    expect(exposed?.metadata?.lifecycle?.startReady).toBe(true);
+    expect(exposed?.metadata?.lifecycle?.viewerTurnActionable).toBe(true);
+    expect(exposed?.metadata?.lifecycle?.viewerMustChoosePawn).toBe(false);
+  });
+
+  it('sets metadata.lifecycle.viewerMustChoosePawn for pawn selection pending', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      { getHandler: jest.fn(() => null) } as any,
+      { compute: jest.fn(() => null) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      { attachGridRenderDescriptors: jest.fn((s: any) => s) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const state: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 3,
+      botThinking: false,
+      players: [{ id: 1, username: 'Lila', isBot: false }],
+      turn: { currentPlayerId: 1, direction: 1 },
+      actions: [{ type: 'choose_pawn', payload: {} }],
+      pending: { type: 'choose_pawn', playerId: 1, blocking: true },
+      metadata: { gameType: 'corridor', roomId: 1 },
+      extras: {},
+      log: [],
+    };
+
+    const exposed = (engine as any).exposeStateForUser(state, 'corridor', 1);
+    expect(exposed?.metadata?.lifecycle?.viewerMustChoosePawn).toBe(true);
+    expect(exposed?.metadata?.lifecycle?.viewerTurnActionable).toBe(false);
   });
 });

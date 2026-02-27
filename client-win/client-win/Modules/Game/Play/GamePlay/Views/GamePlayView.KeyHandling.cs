@@ -56,12 +56,20 @@ public partial class GamePlayView
 
         if (sender is ListBox list && ReferenceEquals(list, HandList) && HandList.IsVisible && HandList.Items.Count > 0)
         {
+            // Enter on hand must never bubble to default ListBox behavior or global shortcuts.
+            e.Handled = true;
             try
             {
+                var selectedHandCard = HandList.SelectedItem as GamePlayViewModel.HandCardLine;
+                if (selectedHandCard?.Disabled == true)
+                {
+                    // Silent ignore for unplayable cards.
+                    return;
+                }
+
                 var sent = await vm.SubmitSelectedHandCardAsync(CancellationToken.None).ConfigureAwait(true);
                 if (sent)
                 {
-                    e.Handled = true;
                     NoteHandSubmittedForFocusRestore();
                     return;
                 }
@@ -365,12 +373,20 @@ public partial class GamePlayView
             HandList.Items.Count > 0 &&
             !vm.Grid.IsVisible)
         {
+            // Enter on hand is local-only: consume it even when no action is sent.
+            e.Handled = true;
             try
             {
+                var selectedHandCard = HandList.SelectedItem as GamePlayViewModel.HandCardLine;
+                if (selectedHandCard?.Disabled == true)
+                {
+                    // Silent ignore for unplayable cards.
+                    return;
+                }
+
                 var sent = await vm.SubmitSelectedHandCardAsync(CancellationToken.None).ConfigureAwait(true);
                 if (sent)
                 {
-                    e.Handled = true;
                     NoteHandSubmittedForFocusRestore();
                     return;
                 }
@@ -400,8 +416,8 @@ public partial class GamePlayView
             {
                 // ignore
             }
-            // No local hand/choice action was sent: keep ENTER available for server shortcuts
-            // (ex: room restart on finished games).
+            // No local hand/choice action was sent: keep it as silent no-op.
+            return;
         }
 
         // UX clavier (ex: LAMA) : si la liste de main/choix est affichÃ©e, EntrÃ©e valide le choix sÃ©lectionnÃ©

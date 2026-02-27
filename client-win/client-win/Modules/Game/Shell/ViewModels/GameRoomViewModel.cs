@@ -25,6 +25,8 @@ public sealed class GameRoomViewModel : ObservableObject
     private StartWizardConfigPrompt? _startWizardPrompt;
     private TaskCompletionSource<StartWizardResult?>? _startWizardTcs;
     private int _startWizardSessionId;
+    private readonly Action<string?>? _onPreviewStartWizardAmbience;
+    private readonly Action? _onStopStartWizardAmbiencePreview;
 
     public GameRoomViewModel(
         CatalogGame game,
@@ -49,7 +51,9 @@ public sealed class GameRoomViewModel : ObservableObject
         IDialogService dialogs,
         IGameFocusCoordinator focusCoordinator,
         IScreenReaderAnnouncer screenReader,
-        IAnnouncementService announcements)
+        IAnnouncementService announcements,
+        Action<string?>? onPreviewStartWizardAmbience = null,
+        Action? onStopStartWizardAmbiencePreview = null)
     {
         Game = game ?? throw new ArgumentNullException(nameof(game));
         ScreenReader = screenReader ?? throw new ArgumentNullException(nameof(screenReader));
@@ -82,6 +86,8 @@ public sealed class GameRoomViewModel : ObservableObject
 
         Chat = new GameRoomChatViewModel(game.ChatEnabled, onSendChat);
         Chat.IsSoundsEnabled = game.ChatSoundsEnabled;
+        _onPreviewStartWizardAmbience = onPreviewStartWizardAmbience;
+        _onStopStartWizardAmbiencePreview = onStopStartWizardAmbiencePreview;
     }
 
     public CatalogGame Game { get; }
@@ -270,6 +276,7 @@ public sealed class GameRoomViewModel : ObservableObject
         }
 
         unchecked { _startWizardSessionId++; }
+        try { _onStopStartWizardAmbiencePreview?.Invoke(); } catch { }
         IsStartWizardOpen = false;
         _startWizardLoadConfigPrompt = null;
         _startWizardConfigPromptLoadTask = null;
@@ -306,6 +313,7 @@ public sealed class GameRoomViewModel : ObservableObject
                 GameConfigPayload: new Dictionary<string, object>(StringComparer.Ordinal));
 
             unchecked { _startWizardSessionId++; }
+            try { _onStopStartWizardAmbiencePreview?.Invoke(); } catch { }
             IsStartWizardOpen = false;
             _startWizardLoadConfigPrompt = null;
             _startWizardConfigPromptLoadTask = null;
@@ -334,6 +342,7 @@ public sealed class GameRoomViewModel : ObservableObject
             GameConfigPayload: payload);
 
         unchecked { _startWizardSessionId++; }
+        try { _onStopStartWizardAmbiencePreview?.Invoke(); } catch { }
         IsStartWizardOpen = false;
         _startWizardLoadConfigPrompt = null;
         _startWizardConfigPromptLoadTask = null;
@@ -341,6 +350,16 @@ public sealed class GameRoomViewModel : ObservableObject
         _startWizardPrompt = null;
         _startWizardTcs?.TrySetResult(result);
         _startWizardTcs = null;
+    }
+
+    public void PreviewSelectedStartWizardAmbience()
+    {
+        if (!IsStartWizardOpen || !IsStartWizardAmbienceStep)
+        {
+            return;
+        }
+
+        try { _onPreviewStartWizardAmbience?.Invoke(StartWizardSelectedAmbience?.SoundId); } catch { }
     }
 
     private async Task EnsureStartWizardPromptLoadedAsync()
