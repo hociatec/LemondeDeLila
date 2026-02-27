@@ -1960,13 +1960,13 @@ public sealed class GameTableOpener : IGameTableOpener
                 CancelActionType: "mnemo_prompt_cancel",
                 Fields: new[]
                 {
-                    new GameRoomViewModel.StartWizardConfigField("correctSoloPoints", "Points si un seul joueur r�pond correctement", "number", null, null, "2"),
-                    new GameRoomViewModel.StartWizardConfigField("correctMultiPoints", "Points par joueur en cas de bonnes r�ponses multiples", "number", null, null, "1"),
-                    new GameRoomViewModel.StartWizardConfigField("wrongPoints", "Points appliqu�s en cas de mauvaise r�ponse", "number", null, null, "0"),
-                    new GameRoomViewModel.StartWizardConfigField("timeoutPoints", "Points appliqu�s sans r�ponse (timeout)", "number", null, null, "-1"),
+                    new GameRoomViewModel.StartWizardConfigField("correctSoloPoints", "Points si un seul joueur répond correctement", "number", null, null, "2"),
+                    new GameRoomViewModel.StartWizardConfigField("correctMultiPoints", "Points par joueur en cas de bonnes réponses multiples", "number", null, null, "1"),
+                    new GameRoomViewModel.StartWizardConfigField("wrongPoints", "Points appliqués en cas de mauvaise réponse", "number", null, null, "0"),
+                    new GameRoomViewModel.StartWizardConfigField("timeoutPoints", "Points appliqués sans réponse (timeout)", "number", null, null, "-1"),
                     new GameRoomViewModel.StartWizardConfigField("targetPoints", "Score cible pour gagner", "number", null, null, "20"),
                     new GameRoomViewModel.StartWizardConfigField("useTimer", "Activer le chrono par question", "boolean", null, null, "oui"),
-                    new GameRoomViewModel.StartWizardConfigField("timerSeconds", "Dur�e du chrono par question (secondes)", "number", null, null, "30"),
+                    new GameRoomViewModel.StartWizardConfigField("timerSeconds", "Durée du chrono par question (secondes)", "number", null, null, "30"),
                     new GameRoomViewModel.StartWizardConfigField("interQuestionSeconds", "Pause entre les questions (secondes)", "number", null, null, "15"),
                 });
         }
@@ -1982,11 +1982,11 @@ public sealed class GameTableOpener : IGameTableOpener
             CancelActionType: null,
             Fields: new[]
             {
-                new GameRoomViewModel.StartWizardConfigField("loseAtScore", "Score de d�faite (jetons)", "number", 5, 200, "40"),
+                new GameRoomViewModel.StartWizardConfigField("loseAtScore", "Score de défaite (jetons)", "number", 5, 200, "40"),
                 new GameRoomViewModel.StartWizardConfigField("roundPauseSeconds", "Pause entre manches (secondes)", "number", 0, 120, "2"),
-                new GameRoomViewModel.StartWizardConfigField("allowPlayAfterDraw", "Autoriser de rejouer apr�s une pioche", "boolean", null, null, "non"),
-                new GameRoomViewModel.StartWizardConfigField("allowDrawAfterFirstQuit", "Autoriser la pioche apr�s qu�un joueur s�est retir� (dans la manche)", "boolean", null, null, "non"),
-                new GameRoomViewModel.StartWizardConfigField("returnTokenFromRound", "Manche � partir de laquelle un jeton peut �tre rendu", "number", 1, 50, "2"),
+                new GameRoomViewModel.StartWizardConfigField("allowPlayAfterDraw", "Autoriser de rejouer après une pioche", "boolean", null, null, "non"),
+                new GameRoomViewModel.StartWizardConfigField("allowDrawAfterFirstQuit", "Autoriser la pioche après qu'un joueur s'est retiré (dans la manche)", "boolean", null, null, "non"),
+                new GameRoomViewModel.StartWizardConfigField("returnTokenFromRound", "Manche à partir de laquelle un jeton peut être rendu", "number", 1, 50, "2"),
             });
     }
 

@@ -38,6 +38,25 @@ public partial class GameZoneHostView : UserControl
                 return GameFocusAttemptResult.Anchor;
             }
 
+            if (IsFocusInside(GameZoneFocusAnchor) || IsFocusInside(GameZoneEmptyAnchor))
+            {
+                if (GameZoneHost?.Content == null)
+                {
+                    return GameFocusAttemptResult.Anchor;
+                }
+
+                var existingFocusRequestId = Interlocked.Increment(ref _focusRequestId);
+                if (TryFocusInteractiveGameContent())
+                {
+                    return GameFocusAttemptResult.Interactive;
+                }
+
+                QueueDeferredFocusAttempt(existingFocusRequestId, DispatcherPriority.Input);
+                QueueDeferredFocusAttempt(existingFocusRequestId, DispatcherPriority.Loaded);
+                QueueDeferredFocusAttempt(existingFocusRequestId, DispatcherPriority.ApplicationIdle);
+                return GameFocusAttemptResult.Anchor;
+            }
+
             return GameZoneHost?.Content == null
                 ? GameFocusAttemptResult.Anchor
                 : GameFocusAttemptResult.Interactive;

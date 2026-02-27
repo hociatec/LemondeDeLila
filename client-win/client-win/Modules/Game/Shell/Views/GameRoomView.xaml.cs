@@ -567,7 +567,8 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
             return false;
         }
 
-        if (Keyboard.FocusedElement is not DependencyObject focused)
+        DependencyObject? focused = Keyboard.FocusedElement as DependencyObject;
+        if (focused == null)
         {
             return false;
         }
@@ -579,7 +580,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
                 return true;
             }
 
-            focused = VisualTreeHelper.GetParent(focused);
+            focused = GetVisualOrLogicalParent(focused);
         }
 
         return false;
@@ -918,7 +919,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
                 return control;
             }
 
-            current = VisualTreeHelper.GetParent(current);
+            current = GetVisualOrLogicalParent(current);
         }
 
         return null;
@@ -939,7 +940,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
                 return true;
             }
 
-            focused = VisualTreeHelper.GetParent(focused);
+            focused = GetVisualOrLogicalParent(focused);
         }
 
         return false;
@@ -971,12 +972,34 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
                 return true;
             }
 
-            focused = VisualTreeHelper.GetParent(focused);
+            focused = GetVisualOrLogicalParent(focused);
         }
 
         return false;
     }
 
+
+    private static DependencyObject? GetVisualOrLogicalParent(DependencyObject current)
+    {
+        try
+        {
+            if (current is Visual || current is System.Windows.Media.Media3D.Visual3D)
+            {
+                return VisualTreeHelper.GetParent(current);
+            }
+        }
+        catch
+        {
+            // Ignore visual tree access issues and fallback to logical parent.
+        }
+
+        if (current is FrameworkElement fe)
+        {
+            return fe.Parent ?? fe.TemplatedParent;
+        }
+
+        return LogicalTreeHelper.GetParent(current);
+    }
     private static bool IsNavigationKey(Key key)
     {
         return key is Key.Left

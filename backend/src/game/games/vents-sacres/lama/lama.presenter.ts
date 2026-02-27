@@ -232,7 +232,7 @@ export class LamaPresenter extends BasePresenterService {
             },
             {
               key: 'allowPlayAfterDraw',
-              label: 'Autoriser de rejouer aprÃ¨s une pioche (oui/non)',
+              label: 'Autoriser de rejouer après une pioche (oui/non)',
               kind: 'boolean',
               initialText: metadata.allowPlayAfterDraw ? 'oui' : 'non',
             },
