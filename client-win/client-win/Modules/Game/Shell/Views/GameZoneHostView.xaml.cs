@@ -347,7 +347,21 @@ public partial class GameZoneHostView : UserControl
         if (key is Key.Enter or Key.Return)
         {
             e.Handled = true;
-            StartRequested?.Invoke(this, EventArgs.Empty);
+            if (ShouldPreferStartAnchor())
+            {
+                StartRequested?.Invoke(this, EventArgs.Empty);
+                return;
+            }
+
+            var requestId = Interlocked.Increment(ref _focusRequestId);
+            if (TryFocusInteractiveGameContent())
+            {
+                return;
+            }
+
+            QueueDeferredFocusAttempt(requestId, DispatcherPriority.Input);
+            QueueDeferredFocusAttempt(requestId, DispatcherPriority.Loaded);
+            QueueDeferredFocusAttempt(requestId, DispatcherPriority.ApplicationIdle);
             return;
         }
 
@@ -363,5 +377,30 @@ public partial class GameZoneHostView : UserControl
             // Ne pas pieger Tab/Maj+Tab sur l'ancre: laisser la navigation sortir vers chat/historique.
             return;
         }
+    }
+
+    private void OnAnchorGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+    {
+        if (ShouldPreferStartAnchor() || GameZoneHost?.Content == null)
+        {
+            return;
+        }
+
+        var requestId = Interlocked.Increment(ref _focusRequestId);
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            if (requestId != _focusRequestId)
+            {
+                return;
+            }
+
+            if (TryFocusInteractiveGameContent())
+            {
+                return;
+            }
+
+            QueueDeferredFocusAttempt(requestId, DispatcherPriority.Loaded);
+            QueueDeferredFocusAttempt(requestId, DispatcherPriority.ApplicationIdle);
+        }));
     }
 }

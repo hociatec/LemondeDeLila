@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,12 +12,20 @@ namespace client_win.Modules.Game.Room.Services;
 
 public sealed class RoomSession : IAsyncDisposable
 {
+    public sealed record RoomCommandAck(
+        string Action,
+        string TraceId,
+        long? ReceivedAtMs,
+        long? ClientToServerMs);
+
     private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
     private readonly IWebSocketConnection _socket;
     private readonly Func<IWebSocketConnection, Task>? _returnSocketAsync;
     private readonly Func<IWebSocketConnection, CancellationToken, Task>? _reconnectAsync;
     private readonly bool _spectator;
     private readonly bool _silent;
+    private readonly object _ackGate = new();
+    private readonly Dictionary<string, DateTime> _recentAcks = new(StringComparer.Ordinal);
 
     private readonly CancellationTokenSource _lifetimeCts = new();
     private Task? _keepAliveLoop;
@@ -66,6 +75,7 @@ public sealed class RoomSession : IAsyncDisposable
     public event Action<string>? ErrorReceived;
     public event Action<string>? Left;
     public event Action<WebSocketState>? ConnectionStateChanged;
+    public event Action<RoomCommandAck>? CommandAckReceived;
 
     public Task RequestStateRefreshAsync(bool force = false)
     {
@@ -78,15 +88,101 @@ public sealed class RoomSession : IAsyncDisposable
 
     public async Task SendCommandAsync(string type, object? payload = null, CancellationToken cancellationToken = default)
     {
+        _ = await SendCommandWithTraceAsync(type, payload, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<string> SendCommandWithTraceAsync(
+        string type,
+        object? payload = null,
+        CancellationToken cancellationToken = default)
+    {
         if (string.IsNullOrWhiteSpace(type)) throw new ArgumentException("type requis", nameof(type));
+        var traceId = Guid.NewGuid().ToString("N");
         var merged = ToDictionary(payload);
         merged["_trace"] = new
         {
-            id = Guid.NewGuid().ToString("N"),
+            id = traceId,
             sentAtMs = ServerClock.NowServerMs()
         };
         var msg = JsonSerializer.Serialize(new { type, payload = merged }, _json);
         await _socket.SendAsync(msg, cancellationToken).ConfigureAwait(false);
+        return traceId;
+    }
+
+    public async Task<bool> SendCommandAwaitAckAsync(
+        string type,
+        object? payload = null,
+        TimeSpan? ackTimeout = null,
+        CancellationToken cancellationToken = default)
+    {
+        var traceId = await SendCommandWithTraceAsync(type, payload, cancellationToken).ConfigureAwait(false);
+        var timeout = ackTimeout.GetValueOrDefault(TimeSpan.FromSeconds(1.2));
+        if (timeout <= TimeSpan.Zero)
+        {
+            return false;
+        }
+
+        using var timeoutCts = new CancellationTokenSource(timeout);
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+        return await WaitForCommandAckAsync(type, traceId, linked.Token).ConfigureAwait(false);
+    }
+
+    public async Task<bool> WaitForCommandAckAsync(
+        string action,
+        string traceId,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedAction = (action ?? string.Empty).Trim();
+        var normalizedTraceId = (traceId ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(normalizedAction) || string.IsNullOrWhiteSpace(normalizedTraceId))
+        {
+            return false;
+        }
+
+        if (TryConsumeRecentAck(normalizedAction, normalizedTraceId))
+        {
+            return true;
+        }
+
+        var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        void OnAck(RoomCommandAck ack)
+        {
+            if (ack == null)
+            {
+                return;
+            }
+
+            if (!string.Equals((ack.Action ?? string.Empty).Trim(), normalizedAction, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (!string.Equals((ack.TraceId ?? string.Empty).Trim(), normalizedTraceId, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            tcs.TrySetResult(true);
+        }
+
+        CommandAckReceived += OnAck;
+        try
+        {
+            if (TryConsumeRecentAck(normalizedAction, normalizedTraceId))
+            {
+                return true;
+            }
+
+            var completed = await Task.WhenAny(
+                    tcs.Task,
+                    Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken))
+                .ConfigureAwait(false);
+            return completed == tcs.Task && await tcs.Task.ConfigureAwait(false);
+        }
+        finally
+        {
+            CommandAckReceived -= OnAck;
+        }
     }
 
     public async Task LeaveAsync(CancellationToken cancellationToken = default)
@@ -200,6 +296,12 @@ public sealed class RoomSession : IAsyncDisposable
                 return;
             }
 
+            if (string.Equals(type, "room.ack", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleCommandAck(root);
+                return;
+            }
+
             if (string.Equals(type, "state-updated", StringComparison.OrdinalIgnoreCase))
             {
                 // Some server updates broadcast a lightweight "state-updated" message first.
@@ -287,6 +389,102 @@ public sealed class RoomSession : IAsyncDisposable
         catch
         {
             // ignore
+        }
+    }
+
+    private void HandleCommandAck(JsonElement root)
+    {
+        try
+        {
+            if (!root.TryGetProperty("payload", out var payload) ||
+                payload.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            var action =
+                payload.TryGetProperty("action", out var actionProp) &&
+                actionProp.ValueKind == JsonValueKind.String
+                    ? (actionProp.GetString() ?? string.Empty).Trim()
+                    : string.Empty;
+            if (string.IsNullOrWhiteSpace(action))
+            {
+                return;
+            }
+
+            var traceId =
+                payload.TryGetProperty("traceId", out var traceProp) &&
+                traceProp.ValueKind == JsonValueKind.String
+                    ? (traceProp.GetString() ?? string.Empty).Trim()
+                    : string.Empty;
+
+            long? receivedAtMs = null;
+            if (payload.TryGetProperty("receivedAtMs", out var receivedProp) &&
+                receivedProp.ValueKind == JsonValueKind.Number &&
+                receivedProp.TryGetInt64(out var receivedVal))
+            {
+                receivedAtMs = receivedVal;
+            }
+
+            long? clientToServerMs = null;
+            if (payload.TryGetProperty("clientToServerMs", out var c2sProp) &&
+                c2sProp.ValueKind == JsonValueKind.Number &&
+                c2sProp.TryGetInt64(out var c2sVal))
+            {
+                clientToServerMs = c2sVal;
+            }
+
+            RememberAck(action, traceId);
+            CommandAckReceived?.Invoke(new RoomCommandAck(action, traceId, receivedAtMs, clientToServerMs));
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private static string BuildAckKey(string action, string traceId)
+    {
+        return $"{action.Trim().ToLowerInvariant()}|{traceId.Trim().ToLowerInvariant()}";
+    }
+
+    private void RememberAck(string action, string traceId)
+    {
+        if (string.IsNullOrWhiteSpace(action) || string.IsNullOrWhiteSpace(traceId))
+        {
+            return;
+        }
+
+        lock (_ackGate)
+        {
+            CleanupRecentAcksUnsafe();
+            _recentAcks[BuildAckKey(action, traceId)] = DateTime.UtcNow;
+        }
+    }
+
+    private bool TryConsumeRecentAck(string action, string traceId)
+    {
+        lock (_ackGate)
+        {
+            CleanupRecentAcksUnsafe();
+            return _recentAcks.Remove(BuildAckKey(action, traceId));
+        }
+    }
+
+    private void CleanupRecentAcksUnsafe()
+    {
+        if (_recentAcks.Count == 0)
+        {
+            return;
+        }
+
+        var cutoff = DateTime.UtcNow - TimeSpan.FromSeconds(30);
+        foreach (var key in _recentAcks
+                     .Where(kv => kv.Value < cutoff)
+                     .Select(kv => kv.Key)
+                     .ToArray())
+        {
+            _recentAcks.Remove(key);
         }
     }
 

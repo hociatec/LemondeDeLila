@@ -401,12 +401,18 @@ public sealed class GameTableOpener : IGameTableOpener
 
         if (target.Kind == RosterEntryKind.Bot)
         {
-            await session.SendCommandAsync("bot.remove", payload: new { botId = target.Id })
+            await session.SendCommandAwaitAckAsync(
+                    "bot.remove",
+                    payload: new { botId = target.Id },
+                    ackTimeout: TimeSpan.FromSeconds(1.2))
                 .ConfigureAwait(true);
             return;
         }
 
-        await session.SendCommandAsync(ban ? "room.ban" : "room.kick", payload: new { userId = target.Id })
+        await session.SendCommandAwaitAckAsync(
+                ban ? "room.ban" : "room.kick",
+                payload: new { userId = target.Id },
+                ackTimeout: TimeSpan.FromSeconds(1.2))
             .ConfigureAwait(true);
     }
 
@@ -454,7 +460,11 @@ public sealed class GameTableOpener : IGameTableOpener
             return;
         }
 
-        await session.SendCommandAsync("room.set-owner", payload: new { userId = target.Id }).ConfigureAwait(true);
+        await session.SendCommandAwaitAckAsync(
+                "room.set-owner",
+                payload: new { userId = target.Id },
+                ackTimeout: TimeSpan.FromSeconds(1.2))
+            .ConfigureAwait(true);
     }
 
     public async Task OpenExistingAsync(int roomId, object returnContent, bool spectator)
@@ -1054,7 +1064,10 @@ public sealed class GameTableOpener : IGameTableOpener
             try
             {
                 // Convention: empty string clears the ambience (silence).
-                await session.SendCommandAsync("room.set-ambience", payload: new { soundId = selected })
+                await session.SendCommandAwaitAckAsync(
+                        "room.set-ambience",
+                        payload: new { soundId = selected },
+                        ackTimeout: TimeSpan.FromSeconds(1.2))
                     .ConfigureAwait(true);
             }
             catch
@@ -1292,7 +1305,10 @@ public sealed class GameTableOpener : IGameTableOpener
                         // Apply ambience choice first (best-effort), then game config, then start.
                         try
                         {
-                            await session.SendCommandAsync("room.set-ambience", payload: new { soundId = startFlow.AmbienceSoundId })
+                            await session.SendCommandAwaitAckAsync(
+                                    "room.set-ambience",
+                                    payload: new { soundId = startFlow.AmbienceSoundId },
+                                    ackTimeout: TimeSpan.FromSeconds(1.2))
                                 .ConfigureAwait(true);
                         }
                         catch
@@ -1325,7 +1341,11 @@ public sealed class GameTableOpener : IGameTableOpener
                 try
                 {
                     try { bindings?.NotifyStartRequestedFromWizard(); } catch { }
-                    await session.SendCommandAsync("room.start", payload: null).ConfigureAwait(true);
+                    await session.SendCommandAwaitAckAsync(
+                            "room.start",
+                            payload: null,
+                            ackTimeout: TimeSpan.FromSeconds(1.2))
+                        .ConfigureAwait(true);
                 }
                 finally
                 {
@@ -1376,7 +1396,19 @@ public sealed class GameTableOpener : IGameTableOpener
             }
 
             startHandler = Start;
-            Task Reset() => session?.SendCommandAsync("room.reset", payload: null) ?? Task.CompletedTask;
+            async Task Reset()
+            {
+                if (session == null)
+                {
+                    return;
+                }
+
+                await session.SendCommandAwaitAckAsync(
+                        "room.reset",
+                        payload: null,
+                        ackTimeout: TimeSpan.FromSeconds(1.2))
+                    .ConfigureAwait(true);
+            }
             Task SendChat(string message) =>
                 session?.SendCommandAsync("room.chat.send", payload: new { message }) ?? Task.CompletedTask;
 
@@ -1598,7 +1630,16 @@ public sealed class GameTableOpener : IGameTableOpener
                     // Si on a ouvert une table existante, remplacer le DataContext par un VM complet basé sur le manifest.
                     if (!ReferenceEquals(placeholderGame, game))
                     {
-                            var start = startHandler ?? (() => session.SendCommandAsync("room.start", payload: null));
+                            async Task StartFromFallbackAsync()
+                            {
+                                await session.SendCommandAwaitAckAsync(
+                                        "room.start",
+                                        payload: null,
+                                        ackTimeout: TimeSpan.FromSeconds(1.2))
+                                    .ConfigureAwait(true);
+                            }
+
+                            var start = startHandler ?? StartFromFallbackAsync;
 	                        var newVm = new GameRoomViewModel(
 	                            game,
                             onSendChat: msg => session.SendCommandAsync("room.chat.send", payload: new { message = msg }),
@@ -1607,7 +1648,14 @@ public sealed class GameTableOpener : IGameTableOpener
                             onConfigureTableAmbienceVolume: ConfigureTableAmbienceVolumeAsync,
                             onStart: start,
                             onSaveSnapshot: SaveSnapshot,
-                            onReset: () => session.SendCommandAsync("room.reset", payload: null),
+                            onReset: async () =>
+                            {
+                                await session.SendCommandAwaitAckAsync(
+                                        "room.reset",
+                                        payload: null,
+                                        ackTimeout: TimeSpan.FromSeconds(1.2))
+                                    .ConfigureAwait(true);
+                            },
                             onQuit: QuitRoom,
                             onAddBot: () => bindings?.AddBotAsync() ?? Task.CompletedTask,
                             onRemoveBot: () => bindings?.RemoveBotAsync() ?? Task.CompletedTask,

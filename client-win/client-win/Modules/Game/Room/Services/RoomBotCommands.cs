@@ -19,11 +19,25 @@ public sealed class RoomBotCommands : IRoomBotCommands
     public event Action<string>? BotAdded;
     public event Action<string>? BotRemoved;
 
-    public Task AddBotAsync(CancellationToken cancellationToken = default) =>
-        _session.SendCommandAsync("bot.add", payload: null, cancellationToken);
+    public async Task AddBotAsync(CancellationToken cancellationToken = default)
+    {
+        await _session.SendCommandAwaitAckAsync(
+                "bot.add",
+                payload: null,
+                ackTimeout: TimeSpan.FromSeconds(1.2),
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+    }
 
-    public Task RemoveLastBotAsync(CancellationToken cancellationToken = default) =>
-        _session.SendCommandAsync("bot.remove", payload: null, cancellationToken);
+    public async Task RemoveLastBotAsync(CancellationToken cancellationToken = default)
+    {
+        await _session.SendCommandAwaitAckAsync(
+                "bot.remove",
+                payload: null,
+                ackTimeout: TimeSpan.FromSeconds(1.2),
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+    }
 
     public void Dispose()
     {

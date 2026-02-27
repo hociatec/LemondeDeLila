@@ -65,6 +65,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private StartFlowState _startFlowState = StartFlowState.Idle;
     private int _startFocusRecoveryRequestId;
     private bool _awaitingStartReadyAnnouncement;
+    private int _startFlowVersion;
+    private int _awaitingStartReadyVersion;
     private Dictionary<int, (string Username, bool Spectator)> _participants = new();
     private Dictionary<int, string> _botsById = new();
     private int _ownerId = 0;
@@ -677,12 +679,17 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
         if (firstStartTransition || reachedGameplayReady)
         {
+            if (_startFlowVersion <= 0)
+            {
+                _startFlowVersion = 1;
+            }
+            _awaitingStartReadyVersion = _startFlowVersion;
             _awaitingStartReadyAnnouncement = true;
-            ScheduleStartFocusRecovery(GameFocusReason.TableStarted);
-            _ = TryRequestTurnAnnouncementIfReadyAsync();
+            ScheduleStartFocusRecovery(GameFocusReason.TableStarted, _awaitingStartReadyVersion);
+            _ = TryRequestTurnAnnouncementIfReadyAsync(_awaitingStartReadyVersion);
         }
 
-        Log.Debug("StartFlow -> {State} ({Source})", _startFlowState, source);
+        Log.Debug("StartFlow -> {State} ({Source}) [v={Version}]", _startFlowState, source, _startFlowVersion);
     }
 
     private void ResetStartFlow(string source)
@@ -690,38 +697,53 @@ internal sealed class GameTableBindings : IAsyncDisposable
         var previous = _startFlowState;
         _startFlowState = StartFlowState.Idle;
         _awaitingStartReadyAnnouncement = false;
+        Interlocked.Increment(ref _startFlowVersion);
+        _awaitingStartReadyVersion = _startFlowVersion;
         Interlocked.Increment(ref _startFocusRecoveryRequestId);
         if (previous != StartFlowState.Idle)
         {
-            Log.Debug("StartFlow -> {State} ({Source})", _startFlowState, source);
+            Log.Debug("StartFlow -> {State} ({Source}) [v={Version}]", _startFlowState, source, _startFlowVersion);
         }
     }
 
     public void NotifyStartRequestedFromWizard()
     {
+        var version = Interlocked.Increment(ref _startFlowVersion);
+
         if (_startFlowState == StartFlowState.Idle)
         {
             _startFlowState = StartFlowState.StartRequested;
-            Log.Debug("StartFlow -> {State} ({Source})", _startFlowState, "wizard.start");
+            Log.Debug("StartFlow -> {State} ({Source}) [v={Version}]", _startFlowState, "wizard.start", version);
         }
 
+        _awaitingStartReadyVersion = version;
         _awaitingStartReadyAnnouncement = true;
-        ScheduleStartFocusRecovery(GameFocusReason.TableStarted);
-        _ = TryRequestTurnAnnouncementIfReadyAsync();
+        ScheduleStartFocusRecovery(GameFocusReason.TableStarted, version);
+        _ = TryRequestTurnAnnouncementIfReadyAsync(version);
     }
 
-    private int ScheduleStartFocusRecovery(GameFocusReason reason)
+    private int ScheduleStartFocusRecovery(GameFocusReason reason, int version)
     {
+        if (version != _awaitingStartReadyVersion)
+        {
+            return _startFocusRecoveryRequestId;
+        }
+
         var requestId = Interlocked.Increment(ref _startFocusRecoveryRequestId);
         _tableVm.GameZone.RequestFocus(reason);
 
         return requestId;
     }
 
-    private async Task TryRequestTurnAnnouncementIfReadyAsync()
+    private async Task TryRequestTurnAnnouncementIfReadyAsync(int version)
     {
         try
         {
+            if (version != _awaitingStartReadyVersion)
+            {
+                return;
+            }
+
             if (!_awaitingStartReadyAnnouncement)
             {
                 return;
@@ -733,6 +755,11 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 DispatcherPriority.Background);
 
             if (!ready)
+            {
+                return;
+            }
+
+            if (version != _awaitingStartReadyVersion)
             {
                 return;
             }
@@ -965,8 +992,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     return;
                 }
 
+                var version = _awaitingStartReadyVersion;
                 _ = _dispatcher.InvokeAsync(
-                    async () => await TryRequestTurnAnnouncementIfReadyAsync().ConfigureAwait(true),
+                    async () => await TryRequestTurnAnnouncementIfReadyAsync(version).ConfigureAwait(true),
                     DispatcherPriority.Background);
             };
             _gamePlayVm.StartReadyChanged += _onStartReadyChanged;

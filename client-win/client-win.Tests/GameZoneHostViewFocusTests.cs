@@ -218,6 +218,7 @@ public sealed class GameZoneHostViewFocusTests
     {
         public IDisposable AttachHost(IGameFocusHost host) => new NoopDisposable();
         public void RequestGameZone(GameFocusReason reason = GameFocusReason.Default) { }
+        public void CancelPendingRequests() { }
 
         private sealed class NoopDisposable : IDisposable
         {

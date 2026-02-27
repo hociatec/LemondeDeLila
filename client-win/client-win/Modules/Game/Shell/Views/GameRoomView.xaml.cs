@@ -460,6 +460,8 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
 
     private void FocusHistory()
     {
+        _vm?.GameZone.FocusCoordinator.CancelPendingRequests();
+
         if (HistoryHost == null)
         {
             return;
@@ -486,6 +488,8 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
 
     private void FocusChatInput()
     {
+        _vm?.GameZone.FocusCoordinator.CancelPendingRequests();
+
         if (ChatInput != null && ChatInput.IsEnabled && ChatHost?.Visibility == Visibility.Visible)
         {
             ChatInput.Focus();
@@ -568,6 +572,11 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
 
     private void FocusOnRegion(FocusRegionKind region)
     {
+        if (region is FocusRegionKind.Chat or FocusRegionKind.History)
+        {
+            _vm?.GameZone.FocusCoordinator.CancelPendingRequests();
+        }
+
         switch (region)
         {
             case FocusRegionKind.Chat:

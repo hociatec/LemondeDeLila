@@ -47,6 +47,13 @@ public sealed class GameFocusCoordinator : IGameFocusCoordinator
         }
     }
 
+    public void CancelPendingRequests()
+    {
+        var requestId = Interlocked.Increment(ref _requestId);
+        Interlocked.Exchange(ref _completedRequestId, requestId);
+        TryLogDebug("focus.cancel id={RequestId}", requestId);
+    }
+
     private void QueueCriticalRetries(int requestId, GameFocusReason reason)
     {
         _ = Task.Run(async () =>
