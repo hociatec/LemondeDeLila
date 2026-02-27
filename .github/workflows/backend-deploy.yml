@@ -40,4 +40,11 @@ jobs:
             sudo rm -f "$LOCK"
           fi
       - name: Deploy on server
-        run: sudo --preserve-env=PATH /usr/local/sbin/deploy-lemonde-prod
+        run: |
+          set -euo pipefail
+          NODE_BIN="$(command -v node)"
+          NPM_BIN="$(command -v npm)"
+          # sudoers may forbid preserving PATH; expose node/npm in secure_path instead.
+          sudo ln -sfn "$NODE_BIN" /usr/local/bin/node
+          sudo ln -sfn "$NPM_BIN" /usr/local/bin/npm
+          sudo /usr/local/sbin/deploy-lemonde-prod
