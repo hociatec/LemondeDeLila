@@ -123,6 +123,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _roomStopConfirmationPending = false;
         SeedParticipants(last?.Room);
         _selfIsSpectator = ComputeSelfSpectator();
+        UpdateStartEligibility(last);
         SyncChatEnabled(last?.Manifest);
 
         // Local echo: ensures the sender hears/sees their own chat immediately.
@@ -283,6 +284,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     TrackBots(payload.Room);
                     TrackOwner(payload.Room);
                     ApplySpectatorState();
+                    UpdateStartEligibility(payload);
 
                     var wasStarted = _lastRoomStarted;
                     var nowStarted = IsRoomStarted(payload.Room);
@@ -462,6 +464,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
             {
                 SyncTableAmbience(last, started: isStarted);
             }
+            UpdateStartEligibility(last);
         }
         catch (Exception ex)
         {
@@ -663,6 +666,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private void SetRoomShortcutsForStarted(bool started)
     {
         _tableVm.GameZone.IsStarted = started;
+        UpdateStartEligibility(_session.LastRoomState);
         _tableVm.GameZone.Shortcuts.Clear();
 
         var selfIsSpectator = ComputeSelfSpectator();
@@ -960,8 +964,55 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private void ApplySpectatorState()
     {
         _selfIsSpectator = ComputeSelfSpectator();
+        UpdateStartEligibility(_session.LastRoomState);
         _gamePlayVm?.SetSpectator(_selfIsSpectator);
         SyncGameplayShortcuts();
+    }
+
+    private void UpdateStartEligibility(RoomPayloadDto? payload)
+    {
+        try
+        {
+            var room = payload?.Room ?? _session.LastRoomState?.Room;
+            var manifest = payload?.Manifest ?? _session.LastRoomState?.Manifest;
+            if (room == null)
+            {
+                _tableVm.GameZone.CanStart = false;
+                return;
+            }
+
+            if (IsRoomStarted(room))
+            {
+                _tableVm.GameZone.CanStart = false;
+                return;
+            }
+
+            var selfId = TryGetSelfParticipantId();
+            var isOwner = selfId > 0 && _ownerId > 0 && selfId == _ownerId;
+            if (!isOwner || _selfIsSpectator)
+            {
+                _tableVm.GameZone.CanStart = false;
+                return;
+            }
+
+            var players = room.Players?.Count ?? 0;
+            var bots = room.Bots?.Count ?? 0;
+            var seatedCount = players + bots;
+            var minPlayers = manifest?.MinPlayers ?? _game.MinPlayers;
+            if (minPlayers <= 0)
+            {
+                minPlayers = 1;
+            }
+            // UX table: don't allow opening start wizard with only one seated participant.
+            // Even if a game advertises min=1, table start flow is expected to require at least 2.
+            minPlayers = Math.Max(2, minPlayers);
+
+            _tableVm.GameZone.CanStart = seatedCount >= minPlayers;
+        }
+        catch
+        {
+            _tableVm.GameZone.CanStart = false;
+        }
     }
 
     private bool ComputeSelfSpectator()

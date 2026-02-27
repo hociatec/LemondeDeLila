@@ -216,7 +216,7 @@ export class LamaPresenter extends BasePresenterService {
           fields: [
             {
               key: 'loseAtScore',
-              label: 'Jetons de défaite',
+              label: 'Score de défaite (jetons)',
               kind: 'number',
               min: 5,
               max: 200,
@@ -238,7 +238,7 @@ export class LamaPresenter extends BasePresenterService {
             },
             {
               key: 'startingHandSize',
-              label: 'Cartes distribuées au départ',
+              label: 'Nombre de cartes distribuées au départ',
               kind: 'number',
               min: 1,
               max: 20,
@@ -246,7 +246,7 @@ export class LamaPresenter extends BasePresenterService {
             },
             {
               key: 'copiesPerCardValue',
-              label: 'Copies par valeur (1-6 + LAMA)',
+              label: "Nombre d'exemplaires par carte (1-6 et LAMA)",
               kind: 'number',
               min: 1,
               max: 20,
@@ -254,13 +254,14 @@ export class LamaPresenter extends BasePresenterService {
             },
             {
               key: 'allowDrawAfterFirstQuit',
-              label: 'Autoriser la pioche après le premier retrait (oui/non)',
+              label:
+                "Autoriser la pioche après qu’un joueur s’est retiré (dans la manche) (oui/non)",
               kind: 'boolean',
               initialText: metadata.allowDrawAfterFirstQuit ? 'oui' : 'non',
             },
             {
               key: 'returnTokenFromRound',
-              label: 'Rendu de jetons à partir de la manche',
+              label: 'Manche à partir de laquelle un jeton peut être rendu',
               kind: 'number',
               min: 1,
               max: 50,

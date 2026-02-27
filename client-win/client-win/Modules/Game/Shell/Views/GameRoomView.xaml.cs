@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,6 +23,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
     private IDisposable? _focusHostLease;
     private bool _didHookTabCapture;
     private KeyEventHandler? _tabCaptureHandler;
+    private PropertyChangedEventHandler? _vmPropertyChangedHandler;
     private IScreenReaderAnnouncer? _screenReader;
     private IAnnouncementService? _announcements;
     private int _startWizardConfigFocusRequestId;
@@ -31,6 +33,10 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
         Unloaded += OnUnloaded;
+        if (StartWizardOverlay != null)
+        {
+            StartWizardOverlay.IsVisibleChanged += OnStartWizardOverlayIsVisibleChanged;
+        }
         HookGameZoneTabDelegation();
     }
 
@@ -39,6 +45,11 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
     private void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
     {
         HookTabCapture();
+        if (StartWizardOverlay != null)
+        {
+            StartWizardOverlay.IsVisibleChanged -= OnStartWizardOverlayIsVisibleChanged;
+            StartWizardOverlay.IsVisibleChanged += OnStartWizardOverlayIsVisibleChanged;
+        }
         HookGameZoneTabDelegation();
         HookFocusRequests(DataContext as ViewModels.GameRoomViewModel);
 
@@ -54,6 +65,22 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
     {
         HookFocusRequests(null);
         UnhookTabCapture();
+        if (StartWizardOverlay != null)
+        {
+            StartWizardOverlay.IsVisibleChanged -= OnStartWizardOverlayIsVisibleChanged;
+        }
+    }
+
+    private void OnStartWizardOverlayIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (e.NewValue is not bool isVisible || !isVisible)
+        {
+            return;
+        }
+
+        _ = Dispatcher.BeginInvoke(
+            DispatcherPriority.Input,
+            new Action(FocusStartWizardPrimary));
     }
 
     private void HookTabCapture()
@@ -84,6 +111,11 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
     {
         _focusHostLease?.Dispose();
         _focusHostLease = null;
+        if (_vm != null && _vmPropertyChangedHandler != null)
+        {
+            _vm.PropertyChanged -= _vmPropertyChangedHandler;
+            _vmPropertyChangedHandler = null;
+        }
 
         _vm = vm;
 
@@ -99,6 +131,56 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         _announcements = _vm.Announcements;
         HistoryHost?.SetScreenReader(_screenReader);
         _focusHostLease = _vm.GameZone.FocusCoordinator.AttachHost(this);
+        _vmPropertyChangedHandler = OnViewModelPropertyChanged;
+        _vm.PropertyChanged += _vmPropertyChangedHandler;
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (sender is not GameRoomViewModel vm)
+        {
+            return;
+        }
+
+        if (string.Equals(e.PropertyName, nameof(GameRoomViewModel.IsStartWizardConfigLoading), StringComparison.Ordinal) &&
+            vm.IsStartWizardOpen &&
+            vm.IsStartWizardConfigStep &&
+            !vm.IsStartWizardConfigLoading)
+        {
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.Input,
+                new Action(RequestFocusStartWizardConfigFirst));
+            return;
+        }
+
+        if (string.Equals(e.PropertyName, nameof(GameRoomViewModel.IsStartWizardOpen), StringComparison.Ordinal) &&
+            vm.IsStartWizardOpen)
+        {
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.Input,
+                new Action(FocusStartWizardPrimary));
+            return;
+        }
+
+        if (string.Equals(e.PropertyName, nameof(GameRoomViewModel.IsStartWizardAmbienceStep), StringComparison.Ordinal) &&
+            vm.IsStartWizardOpen &&
+            vm.IsStartWizardAmbienceStep)
+        {
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.Input,
+                new Action(FocusStartWizardPrimary));
+            return;
+        }
+
+        if (string.Equals(e.PropertyName, nameof(GameRoomViewModel.HasStartWizardConfig), StringComparison.Ordinal) &&
+            vm.IsStartWizardOpen &&
+            vm.IsStartWizardConfigStep &&
+            vm.HasStartWizardConfig)
+        {
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.Input,
+                new Action(RequestFocusStartWizardConfigFirst));
+        }
     }
 
     private void HookGameZoneTabDelegation()
@@ -127,9 +209,10 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
 
 	    private void OnPreviewKeyDown(object sender, KeyEventArgs e)
 	    {
+        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+
 	        if (!e.IsRepeat)
 	        {
-            var key = e.Key == Key.System ? e.SystemKey : e.Key;
             if (key is not (Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin))
             {
                 HistoryHost?.NotifyUserInteraction();
@@ -156,14 +239,13 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
                     new Action(FocusStartWizardPrimary));
             }
 
-            if (e.Key == Key.Escape)
+            if (key == Key.Escape)
             {
                 e.Handled = true;
-                wizardVm.CancelStartWizard();
                 return;
             }
 
-            if (e.Key == Key.Tab)
+            if (key == Key.Tab)
             {
                 e.Handled = true;
                 var backwards = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
@@ -171,18 +253,50 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
                 return;
             }
 
-            if ((e.Key == Key.Enter || e.Key == Key.Return) &&
-                !IsTextInputFocused())
+            if (key is Key.Enter or Key.Return)
             {
+                if (e.IsRepeat)
+                {
+                    e.Handled = true;
+                    return;
+                }
+
                 e.Handled = true;
-                if (wizardVm.IsStartWizardAmbienceStep)
+                if (TryGetFocusedStartWizardFooterButton(out var focusedButton))
                 {
-                    _ = GoNextStartWizardStepAndFocusAsync(wizardVm);
+                    if (ReferenceEquals(focusedButton, StartWizardPreviousButton))
+                    {
+                        wizardVm.GoPreviousStartWizardStep();
+                        _ = Dispatcher.BeginInvoke(
+                            DispatcherPriority.Input,
+                            new Action(FocusStartWizardPrimary));
+                        return;
+                    }
+
+                    if (ReferenceEquals(focusedButton, StartWizardCancelButton))
+                    {
+                        wizardVm.CancelStartWizard();
+                        _ = Dispatcher.BeginInvoke(
+                            DispatcherPriority.Input,
+                            new Action(() => RequestFocusGameZoneInternal(GameFocusReason.AfterDialog)));
+                        return;
+                    }
+
+                    if (ReferenceEquals(focusedButton, StartWizardNextButton))
+                    {
+                        _ = GoNextStartWizardStepAndFocusAsync(wizardVm);
+                        return;
+                    }
+
+                    if (ReferenceEquals(focusedButton, StartWizardStartButton))
+                    {
+                        _ = wizardVm.ConfirmStartWizardAsync();
+                        return;
+                    }
                 }
-                else
-                {
-                    _ = wizardVm.ConfirmStartWizardAsync();
-                }
+
+                // Enter has no global wizard action: only footer buttons can validate navigation/actions.
+                return;
             }
             return;
         }
@@ -244,16 +358,22 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
 
 	        // Démarrage table (accessibilité): Entrée doit fonctionner même si le focus n'est pas exactement sur l'ancre
 	        // (après ajout de bot / annonces / navigation SR, WPF peut déplacer le focus).
-	        if ((e.Key == Key.Enter || e.Key == Key.Return) &&
+	        if (!e.Handled &&
+                key is Key.Enter or Key.Return &&
 	            DataContext is ViewModels.GameRoomViewModel startVm &&
 	            !IsTextInputFocused() &&
                 !startVm.IsStartWizardOpen &&
 	            startVm.GameZone.IsStarted == false &&
 	            startVm.GameZone.StartCommand.CanExecute(null))
 	        {
+                if (e.IsRepeat)
+                {
+                    e.Handled = true;
+                    return;
+                }
+
 	            e.Handled = true;
 	            startVm.GameZone.StartCommand.Execute(null);
-	            RequestFocusGameZoneInternal(GameFocusReason.TableStarted);
 	            return;
 	        }
 
@@ -270,6 +390,14 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
     {
         if (_vm != null)
         {
+            if (_vm.IsStartWizardOpen)
+            {
+                _ = Dispatcher.BeginInvoke(
+                    DispatcherPriority.Input,
+                    new Action(FocusStartWizardPrimary));
+                return;
+            }
+
             _vm.GameZone.FocusCoordinator.RequestGameZone(reason);
             return;
         }
@@ -292,6 +420,14 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
 
     public GameFocusAttemptResult FocusGameZone(GameFocusReason reason)
     {
+        if (_vm?.IsStartWizardOpen == true)
+        {
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.Input,
+                new Action(FocusStartWizardPrimary));
+            return GameFocusAttemptResult.None;
+        }
+
         if (GameZoneHost is GameZoneHostView zone)
         {
             return zone.FocusGameZone(reason);
@@ -464,8 +600,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
             {
                 StartWizardChoicesList.SelectedIndex = 0;
             }
-            StartWizardChoicesList.Focus();
-            Keyboard.Focus(StartWizardChoicesList);
+            RequestFocusStartWizardAmbienceFirst();
             return;
         }
 
@@ -496,8 +631,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
             return;
         }
 
-        var focusables = new List<Control>();
-        CollectFocusableControls(StartWizardOverlay, focusables);
+        var focusables = BuildStartWizardFocusOrder();
         if (focusables.Count == 0)
         {
             FocusStartWizardPrimary();
@@ -514,6 +648,63 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         var target = focusables[nextIdx];
         target.Focus();
         Keyboard.Focus(target);
+    }
+
+    private List<Control> BuildStartWizardFocusOrder()
+    {
+        var ordered = new List<Control>();
+
+        if (DataContext is not GameRoomViewModel vm ||
+            StartWizardOverlay == null ||
+            StartWizardOverlay.Visibility != Visibility.Visible)
+        {
+            return ordered;
+        }
+
+        if (vm.IsStartWizardAmbienceStep)
+        {
+            AddFocusable(ordered, StartWizardNextButton);
+            AddFocusable(ordered, StartWizardStartButton);
+            AddFocusable(ordered, StartWizardCancelButton);
+            return ordered;
+        }
+
+        if (vm.IsStartWizardConfigStep)
+        {
+            if (!vm.IsStartWizardConfigLoading)
+            {
+                var configFocusables = new List<Control>();
+                if (StartWizardConfigItems != null)
+                {
+                    CollectFocusableControls(StartWizardConfigItems, configFocusables);
+                    foreach (var c in configFocusables)
+                    {
+                        AddFocusable(ordered, c);
+                    }
+                }
+            }
+
+            AddFocusable(ordered, StartWizardPreviousButton);
+            AddFocusable(ordered, StartWizardCancelButton);
+            AddFocusable(ordered, StartWizardStartButton);
+        }
+
+        return ordered;
+    }
+
+    private static void AddFocusable(ICollection<Control> target, Control? control)
+    {
+        if (control == null || !control.IsVisible || !control.IsEnabled)
+        {
+            return;
+        }
+
+        if (!KeyboardNavigation.GetIsTabStop(control))
+        {
+            return;
+        }
+
+        target.Add(control);
     }
 
     private async System.Threading.Tasks.Task GoNextStartWizardStepAndFocusAsync(GameRoomViewModel vm)
@@ -537,6 +728,61 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
                 DispatcherPriority.Input,
                 new Action(FocusStartWizardPrimary));
         }
+    }
+
+    private void RequestFocusStartWizardAmbienceFirst()
+    {
+        var requestId = unchecked(++_startWizardConfigFocusRequestId);
+        _ = Dispatcher.BeginInvoke(
+            DispatcherPriority.Render,
+            new Action(() => FocusStartWizardAmbienceFirstWithRetry(requestId, remainingAttempts: 20)));
+    }
+
+    private void FocusStartWizardAmbienceFirstWithRetry(int requestId, int remainingAttempts)
+    {
+        if (requestId != _startWizardConfigFocusRequestId)
+        {
+            return;
+        }
+
+        if (DataContext is not GameRoomViewModel vm ||
+            !vm.IsStartWizardOpen ||
+            !vm.IsStartWizardAmbienceStep ||
+            StartWizardChoicesList == null ||
+            StartWizardChoicesList.Visibility != Visibility.Visible)
+        {
+            return;
+        }
+
+        if (StartWizardChoicesList.SelectedIndex < 0 && StartWizardChoicesList.Items.Count > 0)
+        {
+            StartWizardChoicesList.SelectedIndex = 0;
+        }
+
+        try { StartWizardChoicesList.UpdateLayout(); } catch { }
+
+        var index = StartWizardChoicesList.SelectedIndex;
+        if (index >= 0)
+        {
+            StartWizardChoicesList.ScrollIntoView(StartWizardChoicesList.Items[index]);
+            if (StartWizardChoicesList.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)
+            {
+                item.Focus();
+                Keyboard.Focus(item);
+                return;
+            }
+        }
+
+        if (remainingAttempts <= 0)
+        {
+            StartWizardChoicesList.Focus();
+            Keyboard.Focus(StartWizardChoicesList);
+            return;
+        }
+
+        _ = Dispatcher.BeginInvoke(
+            DispatcherPriority.Render,
+            new Action(() => FocusStartWizardAmbienceFirstWithRetry(requestId, remainingAttempts - 1)));
     }
 
     private void RequestFocusStartWizardConfigFirst()
@@ -582,6 +828,16 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
 
     private bool TryFocusFirstConfigControlNow()
     {
+        if (DataContext is GameRoomViewModel vmLoading &&
+            vmLoading.IsStartWizardConfigLoading &&
+            StartWizardConfigLoadingText != null &&
+            StartWizardConfigLoadingText.Visibility == Visibility.Visible)
+        {
+            StartWizardConfigLoadingText.Focus();
+            Keyboard.Focus(StartWizardConfigLoadingText);
+            return true;
+        }
+
         if (StartWizardConfigItems == null || StartWizardConfigItems.Visibility != Visibility.Visible)
         {
             return false;
@@ -597,12 +853,41 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
             return true;
         }
 
+        // No config field available (or not yet focusable): land on a footer action.
+        if (StartWizardStartButton != null && StartWizardStartButton.IsVisible && StartWizardStartButton.IsEnabled)
+        {
+            StartWizardStartButton.Focus();
+            Keyboard.Focus(StartWizardStartButton);
+            return true;
+        }
+
+        if (StartWizardPreviousButton != null && StartWizardPreviousButton.IsVisible && StartWizardPreviousButton.IsEnabled)
+        {
+            StartWizardPreviousButton.Focus();
+            Keyboard.Focus(StartWizardPreviousButton);
+            return true;
+        }
+
+        if (StartWizardCancelButton != null && StartWizardCancelButton.IsVisible && StartWizardCancelButton.IsEnabled)
+        {
+            StartWizardCancelButton.Focus();
+            Keyboard.Focus(StartWizardCancelButton);
+            return true;
+        }
+
         return false;
     }
 
     private static void CollectFocusableControls(DependencyObject root, ICollection<Control> output)
     {
+        if (root is ListBoxItem)
+        {
+            return;
+        }
+
+        // Ignore generic items containers (read by SR as "liste vide") and focus real inputs instead.
         if (root is Control c &&
+            root is not ItemsControl &&
             c.IsVisible &&
             c.IsEnabled &&
             KeyboardNavigation.GetIsTabStop(c))
@@ -651,6 +936,38 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         {
             if (focused is TextBoxBase || focused is PasswordBox)
             {
+                return true;
+            }
+
+            focused = VisualTreeHelper.GetParent(focused);
+        }
+
+        return false;
+    }
+
+    private bool IsStartWizardTextInputFocused()
+    {
+        if (!IsFocusWithinStartWizard())
+        {
+            return false;
+        }
+
+        return IsTextInputFocused();
+    }
+
+    private bool TryGetFocusedStartWizardFooterButton(out Button? button)
+    {
+        button = null;
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        while (focused != null)
+        {
+            if (focused is Button b &&
+                (ReferenceEquals(b, StartWizardPreviousButton) ||
+                 ReferenceEquals(b, StartWizardNextButton) ||
+                 ReferenceEquals(b, StartWizardCancelButton) ||
+                 ReferenceEquals(b, StartWizardStartButton)))
+            {
+                button = b;
                 return true;
             }
 
@@ -728,6 +1045,9 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         }
 
         vm.CancelStartWizard();
+        _ = Dispatcher.BeginInvoke(
+            DispatcherPriority.Input,
+            new Action(() => RequestFocusGameZoneInternal(GameFocusReason.AfterDialog)));
     }
 
     private async void OnStartWizardStartClick(object sender, RoutedEventArgs e)

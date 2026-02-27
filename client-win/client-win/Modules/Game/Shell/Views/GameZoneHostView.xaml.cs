@@ -33,6 +33,11 @@ public partial class GameZoneHostView : UserControl
         // if focus is already within this host, keep it stable.
         if (IsFocusInside(this))
         {
+            if (ShouldPreferStartAnchor())
+            {
+                return GameFocusAttemptResult.Anchor;
+            }
+
             return GameZoneHost?.Content == null
                 ? GameFocusAttemptResult.Anchor
                 : GameFocusAttemptResult.Interactive;
@@ -53,6 +58,12 @@ public partial class GameZoneHostView : UserControl
 
             GameZoneEmptyAnchor?.Focus();
             Keyboard.Focus(GameZoneEmptyAnchor);
+            return GameFocusAttemptResult.Anchor;
+        }
+
+        if (ShouldPreferStartAnchor())
+        {
+            FocusGameZoneAnchor();
             return GameFocusAttemptResult.Anchor;
         }
 
@@ -206,6 +217,15 @@ public partial class GameZoneHostView : UserControl
             return;
         }
 
+        if (ShouldPreferStartAnchor())
+        {
+            if (GameZoneEmptyAnchor?.Focus() == true)
+            {
+                Keyboard.Focus(GameZoneEmptyAnchor);
+                return;
+            }
+        }
+
         if (GameZoneFocusAnchor?.Focus() == true)
         {
             Keyboard.Focus(GameZoneFocusAnchor);
@@ -219,6 +239,11 @@ public partial class GameZoneHostView : UserControl
         }
 
         Keyboard.Focus(GameZoneHost);
+    }
+
+    private bool ShouldPreferStartAnchor()
+    {
+        return DataContext is ViewModels.GameZoneHostViewModel vm && !vm.IsStarted;
     }
 
     private static FrameworkElement? FindFocusablePresentedRoot(DependencyObject root, object viewModel)
@@ -298,7 +323,9 @@ public partial class GameZoneHostView : UserControl
 
     private void OnAnchorPreviewKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key == Key.Enter)
+        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+
+        if (key is Key.Enter or Key.Return)
         {
             e.Handled = true;
             StartRequested?.Invoke(this, EventArgs.Empty);
@@ -306,13 +333,13 @@ public partial class GameZoneHostView : UserControl
         }
 
         // Les fleches ne doivent pas deplacer le focus depuis l'ancre: la navigation est geree ailleurs.
-        if (e.Key is Key.Left or Key.Right or Key.Up or Key.Down)
+        if (key is Key.Left or Key.Right or Key.Up or Key.Down)
         {
             e.Handled = true;
             return;
         }
 
-        if (e.Key == Key.Tab)
+        if (key == Key.Tab)
         {
             // Ne pas pieger Tab/Maj+Tab sur l'ancre: laisser la navigation sortir vers chat/historique.
             return;

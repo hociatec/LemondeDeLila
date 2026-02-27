@@ -35,6 +35,7 @@ public sealed class GameZoneHostViewModel : ObservableObject
     private string _title = "Zone de jeu";
     private bool _isStarted;
     private bool _isConnected = true;
+    private bool _canStart = false;
 
     public GameZoneHostViewModel(
         string title,
@@ -79,7 +80,7 @@ public sealed class GameZoneHostViewModel : ObservableObject
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _focus = focus ?? throw new ArgumentNullException(nameof(focus));
 
-        StartCommand = new AsyncRelayCommand(StartAsync, () => IsConnected && !_isStarted);
+        StartCommand = new AsyncRelayCommand(StartAsync, () => IsConnected && !_isStarted && _canStart);
         SaveSnapshotCommand = new AsyncRelayCommand(SaveSnapshotAsync, () => IsConnected && _isStarted);
         ResetCommand = new AsyncRelayCommand(ResetAsync, () => IsConnected);
         AddBotCommand = new AsyncRelayCommand(AddBotAsync, () => IsConnected);
@@ -169,6 +170,18 @@ public sealed class GameZoneHostViewModel : ObservableObject
         set
         {
             if (SetProperty(ref _isConnected, value))
+            {
+                RaiseCommandsCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool CanStart
+    {
+        get => _canStart;
+        set
+        {
+            if (SetProperty(ref _canStart, value))
             {
                 RaiseCommandsCanExecuteChanged();
             }

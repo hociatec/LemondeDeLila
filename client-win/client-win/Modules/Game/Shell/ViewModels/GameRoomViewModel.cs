@@ -18,8 +18,10 @@ public sealed class GameRoomViewModel : ObservableObject
 
     private bool _isStartWizardOpen;
     private bool _isStartWizardAmbienceStep = true;
+    private bool _isStartWizardConfigLoading;
     private string _startWizardGameTitle = "Configuration du jeu";
     private Func<Task<StartWizardConfigPrompt?>>? _startWizardLoadConfigPrompt;
+    private Task<StartWizardConfigPrompt?>? _startWizardConfigPromptLoadTask;
     private StartWizardConfigPrompt? _startWizardPrompt;
     private TaskCompletionSource<StartWizardResult?>? _startWizardTcs;
 
@@ -134,11 +136,25 @@ public sealed class GameRoomViewModel : ObservableObject
 
     public bool HasStartWizardConfig => StartWizardConfigFields.Count > 0;
 
+    public bool IsStartWizardConfigLoading
+    {
+        get => _isStartWizardConfigLoading;
+        private set
+        {
+            if (SetProperty(ref _isStartWizardConfigLoading, value))
+            {
+                OnPropertyChanged(nameof(StartWizardDescription));
+            }
+        }
+    }
+
     public string StartWizardTitle => IsStartWizardAmbienceStep ? "Configuration de la table" : _startWizardGameTitle;
 
     public string StartWizardDescription => IsStartWizardAmbienceStep
         ? "Avant de démarrer, choisissez l'ambiance de la table."
-        : (HasStartWizardConfig ? "Ajustez la configuration du jeu, puis démarrez." : "Aucune configuration de jeu requise. Vous pouvez démarrer.");
+        : (IsStartWizardConfigLoading
+            ? "Chargement de la configuration du jeu..."
+            : (HasStartWizardConfig ? "Ajustez la configuration du jeu, puis démarrez." : "Aucune configuration de jeu requise. Vous pouvez démarrer."));
 
     public async Task<StartWizardResult?> OpenStartWizardAsync(
         string currentAmbienceSoundId,
@@ -147,7 +163,9 @@ public sealed class GameRoomViewModel : ObservableObject
         Func<Task<StartWizardConfigPrompt?>>? loadConfigPromptAsync)
     {
         _startWizardLoadConfigPrompt = loadConfigPromptAsync;
+        _startWizardConfigPromptLoadTask = null;
         _startWizardPrompt = null;
+        IsStartWizardConfigLoading = false;
 
         StartWizardAmbienceChoices.Clear();
         foreach (var c in ambienceChoices ?? Array.Empty<StartWizardAmbienceChoice>())
@@ -163,6 +181,11 @@ public sealed class GameRoomViewModel : ObservableObject
         BindStartWizardConfigPrompt(initialConfigPrompt);
         IsStartWizardAmbienceStep = true;
         IsStartWizardOpen = true;
+        if (initialConfigPrompt == null && _startWizardLoadConfigPrompt != null)
+        {
+            _startWizardConfigPromptLoadTask = _startWizardLoadConfigPrompt();
+            IsStartWizardConfigLoading = true;
+        }
 
         _startWizardTcs = new TaskCompletionSource<StartWizardResult?>(TaskCreationOptions.RunContinuationsAsynchronously);
         return await _startWizardTcs.Task.ConfigureAwait(true);
@@ -175,13 +198,22 @@ public sealed class GameRoomViewModel : ObservableObject
             return;
         }
 
-        if (IsStartWizardAmbienceStep && StartWizardConfigFields.Count == 0 && _startWizardLoadConfigPrompt != null)
+        if (IsStartWizardAmbienceStep)
         {
-            var prompt = await _startWizardLoadConfigPrompt().ConfigureAwait(true);
-            BindStartWizardConfigPrompt(prompt);
-        }
+            if (StartWizardConfigFields.Count == 0 &&
+                (_startWizardConfigPromptLoadTask != null || _startWizardLoadConfigPrompt != null))
+            {
+                await EnsureStartWizardPromptLoadedAsync().ConfigureAwait(true);
+            }
 
-        IsStartWizardAmbienceStep = false;
+            if (StartWizardConfigFields.Count == 0)
+            {
+                // No game-specific configuration: keep single-step flow.
+                return;
+            }
+
+            IsStartWizardAmbienceStep = false;
+        }
     }
 
     public void GoPreviousStartWizardStep()
@@ -203,6 +235,8 @@ public sealed class GameRoomViewModel : ObservableObject
 
         IsStartWizardOpen = false;
         _startWizardLoadConfigPrompt = null;
+        _startWizardConfigPromptLoadTask = null;
+        IsStartWizardConfigLoading = false;
         _startWizardPrompt = null;
         _startWizardTcs?.TrySetResult(null);
         _startWizardTcs = null;
@@ -217,7 +251,36 @@ public sealed class GameRoomViewModel : ObservableObject
 
         if (IsStartWizardAmbienceStep)
         {
-            await GoNextStartWizardStepAsync().ConfigureAwait(true);
+            if (StartWizardConfigFields.Count == 0 &&
+                (_startWizardConfigPromptLoadTask != null || _startWizardLoadConfigPrompt != null))
+            {
+                await EnsureStartWizardPromptLoadedAsync().ConfigureAwait(true);
+            }
+
+            if (StartWizardConfigFields.Count > 0)
+            {
+                await GoNextStartWizardStepAsync().ConfigureAwait(true);
+                return;
+            }
+
+            var singleStepResult = new StartWizardResult(
+                AmbienceSoundId: StartWizardSelectedAmbience?.SoundId ?? string.Empty,
+                GameConfigActionType: string.Empty,
+                GameConfigPayload: new Dictionary<string, object>(StringComparer.Ordinal));
+
+            IsStartWizardOpen = false;
+            _startWizardLoadConfigPrompt = null;
+            _startWizardConfigPromptLoadTask = null;
+            IsStartWizardConfigLoading = false;
+            _startWizardPrompt = null;
+            _startWizardTcs?.TrySetResult(singleStepResult);
+            _startWizardTcs = null;
+            return;
+        }
+
+        if (IsStartWizardConfigLoading)
+        {
+            Status = "Configuration: chargement en cours...";
             return;
         }
 
@@ -234,9 +297,49 @@ public sealed class GameRoomViewModel : ObservableObject
 
         IsStartWizardOpen = false;
         _startWizardLoadConfigPrompt = null;
+        _startWizardConfigPromptLoadTask = null;
+        IsStartWizardConfigLoading = false;
         _startWizardPrompt = null;
         _startWizardTcs?.TrySetResult(result);
         _startWizardTcs = null;
+    }
+
+    private async Task EnsureStartWizardPromptLoadedAsync()
+    {
+        if (!IsStartWizardOpen)
+        {
+            return;
+        }
+
+        if (StartWizardConfigFields.Count > 0)
+        {
+            IsStartWizardConfigLoading = false;
+            return;
+        }
+
+        if (_startWizardLoadConfigPrompt == null && _startWizardConfigPromptLoadTask == null)
+        {
+            IsStartWizardConfigLoading = false;
+            return;
+        }
+
+        try
+        {
+            IsStartWizardConfigLoading = true;
+            _startWizardConfigPromptLoadTask ??= _startWizardLoadConfigPrompt?.Invoke();
+            var prompt = _startWizardConfigPromptLoadTask != null
+                ? await _startWizardConfigPromptLoadTask.ConfigureAwait(true)
+                : null;
+            BindStartWizardConfigPrompt(prompt);
+        }
+        catch
+        {
+            BindStartWizardConfigPrompt(null);
+        }
+        finally
+        {
+            IsStartWizardConfigLoading = false;
+        }
     }
 
     private Dictionary<string, object>? BuildStartWizardConfigPayload()
