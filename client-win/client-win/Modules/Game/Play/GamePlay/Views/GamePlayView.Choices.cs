@@ -437,6 +437,13 @@ public partial class GamePlayView
             return;
         }
 
+        // Passive refreshes (state updates from other players/bots) must not move focus
+        // when the user is already reading/interacting inside the game view.
+        if (!forceFromOutsideTextInput && IsFocusInsideThisGameView())
+        {
+            return;
+        }
+
         // Never steal focus from chat/history or other areas on background state refreshes.
         if (!forceFromOutsideTextInput && !IsFocusInsideThisGameView())
         {

@@ -100,6 +100,58 @@ public sealed class GamePlayViewFocusTests
         });
     }
 
+    [Fact]
+    public void FocusPreferredInteractiveElement_NonForced_KeepsCurrentInGameFocus()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            EnsureTestApplicationResources();
+            var view = new GamePlayView();
+            var window = CreateHostWindow(view);
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var handPanel = Assert.IsType<StackPanel>(view.FindName("HandPanel"));
+                var handList = Assert.IsType<ListBox>(view.FindName("HandList"));
+                var choicesList = Assert.IsType<ListBox>(view.FindName("ChoicesList"));
+
+                handPanel.Visibility = Visibility.Visible;
+                handList.Visibility = Visibility.Visible;
+                choicesList.Visibility = Visibility.Visible;
+
+                handList.ItemsSource = new ObservableCollection<HandCardItem>
+                {
+                    new("Rouge 1"),
+                    new("Jaune 6"),
+                };
+                choicesList.ItemsSource = new ObservableCollection<ChoiceItem>
+                {
+                    new("Jouer carte"),
+                    new("Piocher"),
+                };
+
+                view.UpdateLayout();
+                choicesList.SelectedIndex = 0;
+                choicesList.Focus();
+                Keyboard.Focus(choicesList);
+                Assert.True(IsFocusWithin(choicesList));
+
+                view.FocusPreferredInteractiveElement(forceFromOutsideTextInput: false);
+
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 1200));
+                Assert.False(IsFocusWithin(handList));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
     private static Window CreateHostWindow(GamePlayView view)
     {
         return new Window
