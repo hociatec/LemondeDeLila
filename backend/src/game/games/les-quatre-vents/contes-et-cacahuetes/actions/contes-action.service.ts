@@ -1642,10 +1642,11 @@ export class ContesActionService {
       Number.isFinite(previous.turn.currentPlayerId)
         ? previous.turn.currentPlayerId
         : null;
+    const previousPending = previous.pending as ContesPending | null;
     const pendingPlayerId =
-      typeof (previous.pending as ContesPending)?.playerId === 'number' &&
-      Number.isFinite((previous.pending as ContesPending).playerId)
-        ? (previous.pending as ContesPending).playerId
+      typeof previousPending?.playerId === 'number' &&
+      Number.isFinite(previousPending.playerId)
+        ? previousPending.playerId
         : null;
     const playerId = currentTurnPlayerId ?? pendingPlayerId;
     if (playerId == null) return next;
