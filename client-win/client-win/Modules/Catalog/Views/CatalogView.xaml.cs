@@ -180,6 +180,25 @@ public partial class CatalogView : UserControl, IInitialFocusTarget, IFocusReady
         }));
     }
 
+    private void OnListPreviewGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+    {
+        if (sender is not ListBox list || e.NewFocus is not DependencyObject focused)
+        {
+            return;
+        }
+
+        var container = ItemsControl.ContainerFromElement(list, focused) as ListBoxItem;
+        if (container?.DataContext == null)
+        {
+            return;
+        }
+
+        if (!ReferenceEquals(list.SelectedItem, container.DataContext))
+        {
+            list.SelectedItem = container.DataContext;
+        }
+    }
+
     private void OnCategoriesKeyDown(object sender, KeyEventArgs e)
     {
         if ((e.Key != Key.Enter && e.Key != Key.Return) || DataContext is not CatalogViewModel vm)

@@ -110,6 +110,7 @@
                                  ScrollViewer.CanContentScroll="True"
                                  KeyboardNavigation.TabNavigation="None"
                                  IsTabStop="False"
+                                 PreviewGotKeyboardFocus="OnListPreviewGotKeyboardFocus"
                                  KeyDown="OnCategoriesKeyDown">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
@@ -133,6 +134,7 @@
                                  ScrollViewer.CanContentScroll="True"
                                  KeyboardNavigation.TabNavigation="None"
                                  IsTabStop="False"
+                                 PreviewGotKeyboardFocus="OnListPreviewGotKeyboardFocus"
                                  KeyDown="OnSubCategoriesKeyDown">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
@@ -155,6 +157,7 @@
                                  ScrollViewer.CanContentScroll="True"
                                  KeyboardNavigation.TabNavigation="None"
                                  IsTabStop="False"
+                                 PreviewGotKeyboardFocus="OnListPreviewGotKeyboardFocus"
                                  PreviewKeyDown="OnGamesPreviewKeyDown"
                                  KeyDown="OnGamesKeyDown"
                                  MouseDoubleClick="OnGamesDoubleClick">

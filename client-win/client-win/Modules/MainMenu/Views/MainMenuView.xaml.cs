@@ -190,6 +190,25 @@ public partial class MainMenuView : UserControl, IInitialFocusTarget
         }
     }
 
+    private void OnListPreviewGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+    {
+        if (ItemsList == null || e.NewFocus is not DependencyObject focused)
+        {
+            return;
+        }
+
+        var container = ItemsControl.ContainerFromElement(ItemsList, focused) as ListBoxItem;
+        if (container?.DataContext == null)
+        {
+            return;
+        }
+
+        if (!ReferenceEquals(ItemsList.SelectedItem, container.DataContext))
+        {
+            ItemsList.SelectedItem = container.DataContext;
+        }
+    }
+
     private void FocusWhenContainersGenerated()
     {
         if (ItemsList == null)

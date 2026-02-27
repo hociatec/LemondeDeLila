@@ -86,6 +86,7 @@
  	                         VirtualizingStackPanel.VirtualizationMode="Recycling"
  	                         ScrollViewer.CanContentScroll="True"
  	                         GotKeyboardFocus="OnListGotKeyboardFocus"
+	                         PreviewGotKeyboardFocus="OnListPreviewGotKeyboardFocus"
  	                         PreviewKeyDown="OnListPreviewKeyDown"
  	                         AutomationProperties.LabeledBy="{Binding ElementName=TitleText}" />
             </Grid>
