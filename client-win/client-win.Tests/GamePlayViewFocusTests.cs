@@ -152,6 +152,42 @@ public sealed class GamePlayViewFocusTests
         });
     }
 
+    [Fact]
+    public void FocusPreferredInteractiveElement_WhenNoInteractiveTarget_FocusesGameRoot()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            EnsureTestApplicationResources();
+            var view = new GamePlayView();
+            var window = CreateHostWindow(view);
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var handPanel = Assert.IsType<StackPanel>(view.FindName("HandPanel"));
+                var handList = Assert.IsType<ListBox>(view.FindName("HandList"));
+                var choicesList = Assert.IsType<ListBox>(view.FindName("ChoicesList"));
+
+                handPanel.Visibility = Visibility.Collapsed;
+                handList.ItemsSource = new ObservableCollection<HandCardItem>();
+                choicesList.ItemsSource = new ObservableCollection<ChoiceItem>();
+                choicesList.Visibility = Visibility.Collapsed;
+
+                view.UpdateLayout();
+                view.FocusPreferredInteractiveElement();
+
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(view), dispatcher, 2200));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
     private static Window CreateHostWindow(GamePlayView view)
     {
         return new Window

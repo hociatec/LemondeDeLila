@@ -18,7 +18,10 @@ public partial class GamePlayView
         HookGridGenerator();
         Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
         {
-            TryFocusPreferredGridCell();
+            if (TryFocusPreferredGridCell())
+            {
+                _pendingInitialInteractiveFocus = false;
+            }
         }));
     }
 
@@ -34,7 +37,10 @@ public partial class GamePlayView
 
             Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
             {
-                TryFocusPreferredGridCell();
+                if (TryFocusPreferredGridCell())
+                {
+                    _pendingInitialInteractiveFocus = false;
+                }
             }));
         };
         GridItems.ItemContainerGenerator.StatusChanged += _gridGeneratorStatusChanged;

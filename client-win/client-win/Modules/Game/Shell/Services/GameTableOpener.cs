@@ -1349,48 +1349,45 @@ public sealed class GameTableOpener : IGameTableOpener
                 }
                 finally
                 {
+                    if (preStartGameSession != null)
+                    {
+                        try { await preStartGameSession.DisposeAsync().ConfigureAwait(false); } catch { }
+                        preStartGameSession = null;
+                    }
+
+                    // Do not block game UI startup on post-start config replay.
+                    // Run it in background with its own short-lived game session.
                     if (!string.IsNullOrWhiteSpace(postStartConfigActionType) && postStartConfigPayload != null)
                     {
                         var gameType = (vm?.Game?.Id ?? placeholderGame.Id ?? string.Empty).Trim();
                         if (!string.IsNullOrWhiteSpace(gameType))
                         {
-                            try
+                            _ = Task.Run(async () =>
                             {
-                                if (preStartGameSession == null)
-                                {
-                                    using var connectTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
-                                    preStartGameSession = await _games.ConnectAsync(session.RoomId, gameType, connectTimeout.Token).ConfigureAwait(false);
-                                }
-
+                                GameSession? replaySession = null;
                                 try
                                 {
-                                    using var promptReadyTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-                                    await WaitForConfigPromptReadyAsync(
-                                            preStartGameSession,
-                                            postStartConfigActionType,
-                                            promptReadyTimeout.Token)
+                                    using var connectTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(4));
+                                    replaySession = await _games.ConnectAsync(session.RoomId, gameType, connectTimeout.Token).ConfigureAwait(false);
+
+                                    await replaySession.SendActionsAsync(
+                                            new[] { new GameClientAction(postStartConfigActionType, postStartConfigPayload) },
+                                            CancellationToken.None)
                                         .ConfigureAwait(false);
                                 }
                                 catch
                                 {
-                                    // best-effort: keep legacy behavior if readiness probing fails.
+                                    // best-effort
                                 }
-
-                                await preStartGameSession.SendActionsAsync(
-                                        new[] { new GameClientAction(postStartConfigActionType, postStartConfigPayload) },
-                                        CancellationToken.None)
-                                    .ConfigureAwait(false);
-                            }
-                            catch
-                            {
-                                // best-effort
-                            }
+                                finally
+                                {
+                                    if (replaySession != null)
+                                    {
+                                        try { await replaySession.DisposeAsync().ConfigureAwait(false); } catch { }
+                                    }
+                                }
+                            });
                         }
-                    }
-
-                    if (preStartGameSession != null)
-                    {
-                        try { await preStartGameSession.DisposeAsync().ConfigureAwait(false); } catch { }
                     }
                 }
             }

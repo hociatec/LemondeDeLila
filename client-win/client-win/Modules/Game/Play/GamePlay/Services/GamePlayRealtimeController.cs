@@ -426,6 +426,12 @@ internal sealed class GamePlayRealtimeController
         {
             _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
         }
+        if (!viewerMustChoosePawn && previousViewerMustChoosePawn)
+        {
+            // End of pawn selection: move focus back to the next actionable gameplay target
+            // (board cell / roll shortcut context) instead of leaving it on the old choice list.
+            _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
+        }
 
         if (extractedViewerId != null && extractedViewerId.Value > 0)
         {

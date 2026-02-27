@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using client_win.Core.Text;
 using client_win.Modules.Game.Play.Actions.Dtos;
 using client_win.Modules.Game.Play.Choices.Services;
 using client_win.Modules.Game.Play.Common;
@@ -213,6 +214,7 @@ internal sealed class GamePlayChoicesStateSynchronizer
                 var label = !string.IsNullOrWhiteSpace(pawnLabel)
                     ? pawnLabel.Trim()
                     : pawnId;
+                label = MojibakeTextRepair.Fix(label);
                 var key = ChoiceLabelUniquifier.MakeUniqueChoiceLabel(choices, label);
                 choices[key] = new GameClientAction("choose_pawn", new { pawnId });
             }
@@ -284,7 +286,7 @@ internal sealed class GamePlayChoicesStateSynchronizer
                 continue;
             }
 
-            choices.Add(label.Trim());
+            choices.Add(MojibakeTextRepair.Fix(label).Trim());
         }
 
         return choices.Count > 0 ? choices : new List<string>();

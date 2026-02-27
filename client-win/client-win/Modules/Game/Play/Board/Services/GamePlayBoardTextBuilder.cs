@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using client_win.Core.Text;
 using client_win.Modules.Game.Play.State.Dtos;
 
 namespace client_win.Modules.Game.Play.Board.Services;
@@ -114,11 +115,11 @@ internal static class GamePlayBoardTextBuilder
             {
                 if (!string.IsNullOrWhiteSpace(tileLabel))
                 {
-                    sb.Append(". ").Append(tileLabel.Trim());
+                    sb.Append(". ").Append(MojibakeTextRepair.Fix(tileLabel).Trim());
                 }
                 if (!string.IsNullOrWhiteSpace(tileDescription))
                 {
-                    sb.AppendLine().Append("   ").Append(tileDescription.Trim());
+                    sb.AppendLine().Append("   ").Append(MojibakeTextRepair.Fix(tileDescription).Trim());
                 }
             }
 

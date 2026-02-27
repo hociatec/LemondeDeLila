@@ -148,19 +148,53 @@ internal sealed class GamePlayShortcutsViewModel
             return true;
         }
 
-        // Zig et Zag: allow SPACE for draw_card (server-side shortcut).
-        // We keep this narrow to avoid conflicting with GamePlayView root key forwarding for common keys
-        // (Enter/Space) in other games/views (grid/buttons, choices lists, etc.).
-        if (string.Equals(hint.Type, "action", StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(hint.ActionType, "draw_card", StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(s, "SPACE", StringComparison.OrdinalIgnoreCase))
+        if (s.Length == 1 && char.IsDigit(s[0]))
         {
-            gesture = new KeyGesture(Key.Space);
-            normalizedKey = "SPACE";
+            keyChar = s[0];
+            normalizedKey = s[0].ToString();
+            return true;
+        }
+
+        if (TryMapSpecialGesture(s, out var mappedGesture, out var mappedKey))
+        {
+            gesture = mappedGesture;
+            normalizedKey = mappedKey;
             return true;
         }
 
         return false;
+    }
+
+    private static bool TryMapSpecialGesture(string raw, out KeyGesture? gesture, out string normalizedKey)
+    {
+        gesture = null;
+        normalizedKey = string.Empty;
+
+        var value = (raw ?? string.Empty).Trim().ToUpperInvariant();
+        if (value.Length == 0)
+        {
+            return false;
+        }
+
+        switch (value)
+        {
+            case "SPACE":
+                gesture = new KeyGesture(Key.Space);
+                normalizedKey = "SPACE";
+                return true;
+            case "ENTER":
+            case "RETURN":
+                gesture = new KeyGesture(Key.Enter);
+                normalizedKey = "ENTER";
+                return true;
+            case "BACK":
+            case "BACKSPACE":
+                gesture = new KeyGesture(Key.Back);
+                normalizedKey = "BACK";
+                return true;
+            default:
+                return false;
+        }
     }
 
     private void SyncGenericTurnShortcut(bool hasServerTurnShortcut)

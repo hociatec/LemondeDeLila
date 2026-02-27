@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using client_win.Core.Text;
 using client_win.Modules.Game.Play.State.Dtos;
 
 namespace client_win.Modules.Game.Play.Choices.Services;
@@ -22,12 +23,12 @@ internal static class PendingChoicesReader
 
         if (!string.IsNullOrWhiteSpace(pending.Label))
         {
-            return pending.Label.Trim();
+            return MojibakeTextRepair.Fix(pending.Label).Trim();
         }
 
         if (!string.IsNullOrWhiteSpace(pending.Question))
         {
-            return pending.Question.Trim();
+            return MojibakeTextRepair.Fix(pending.Question).Trim();
         }
 
         if (string.Equals(type, "quiz", StringComparison.OrdinalIgnoreCase))
@@ -47,7 +48,7 @@ internal static class PendingChoicesReader
 
         var choices = raw
             .Where(c => !string.IsNullOrWhiteSpace(c))
-            .Select(c => c.Trim())
+            .Select(c => MojibakeTextRepair.Fix(c).Trim())
             .ToList();
 
         // Accessibility: if multiple rows share the same text ("3", "3", "3"),

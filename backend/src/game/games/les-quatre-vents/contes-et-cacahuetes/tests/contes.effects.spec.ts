@@ -165,4 +165,88 @@ describe('Contes effects', () => {
     const finalMeta = asRecord(state.metadata);
     expect(Number(finalMeta.winnerId ?? 0)).toBe(2);
   });
+
+  it('ends the turn after resolving a draw pending with no follow-up pending', async () => {
+    const advanceTurn = jest.fn((state: GameStateEntity): GameStateEntity => ({
+      ...state,
+      turnIndex: 1,
+      turn: { ...(state.turn ?? { direction: 1 }), currentPlayerId: 2 },
+    }));
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        GameCoreService,
+        RandomService,
+        SetupFlowService,
+        DeckPoliciesService,
+        ContesCacahuetesSetupService,
+        {
+          provide: 'TurnFlowService',
+          useValue: { advanceTurn },
+        },
+        {
+          provide: ContesActionService,
+          useFactory: (
+            core: GameCoreService,
+            random: RandomService,
+            turns: TurnFlowService,
+            setupFlow: SetupFlowService,
+            deckPolicies: DeckPoliciesService,
+          ) =>
+            new ContesActionService(
+              core,
+              random,
+              turns,
+              setupFlow,
+              deckPolicies,
+            ),
+          inject: [
+            GameCoreService,
+            RandomService,
+            'TurnFlowService',
+            SetupFlowService,
+            DeckPoliciesService,
+          ],
+        },
+      ],
+    }).compile();
+
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    const metadata = asRecord(state.metadata);
+    const decks = asRecord(metadata.decks);
+    const bonusDeck = Array.isArray(decks.bonus) ? decks.bonus : [];
+    const parch = bonusDeck.find(
+      (card) => Number(asRecord(card).id ?? 0) === 2,
+    ) as unknown;
+    expect(parch).toBeTruthy();
+
+    state = {
+      ...state,
+      turn: { ...(state.turn ?? { direction: 1 }), currentPlayerId: 1 },
+      pending: {
+        type: 'draw',
+        label: 'Piocher une carte BONUS (Espace).',
+        playerId: 1,
+        blocking: true,
+        data: { context: 'draw_and_apply', cardType: 'bonus', depth: 0 },
+      },
+      metadata: {
+        ...(state.metadata ?? {}),
+        decks: {
+          ...decks,
+          bonus: [parch],
+          discardBonus: [],
+        },
+      },
+    };
+
+    state = actionsService.applyActions(state, [{ type: 'draw', payload: {} }]);
+
+    expect(advanceTurn).toHaveBeenCalledTimes(1);
+    expect(state.pending ?? null).toBeNull();
+    expect(Number(state.turn?.currentPlayerId ?? 0)).toBe(2);
+  });
 });

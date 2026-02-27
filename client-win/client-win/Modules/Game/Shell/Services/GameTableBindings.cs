@@ -650,7 +650,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
         }
 
         return code.StartsWith("game.", StringComparison.OrdinalIgnoreCase) ||
-               code.StartsWith("ui.", StringComparison.OrdinalIgnoreCase);
+               code.StartsWith("ui.", StringComparison.OrdinalIgnoreCase) ||
+               code.StartsWith("server.key.", StringComparison.OrdinalIgnoreCase);
     }
 
     private void EnterStartedFlow(string source, bool fromGameStatus, bool announceIfFirst)

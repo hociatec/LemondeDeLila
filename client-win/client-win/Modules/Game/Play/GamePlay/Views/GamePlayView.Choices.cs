@@ -484,8 +484,12 @@ public partial class GamePlayView
                 _pendingInitialInteractiveFocus = false;
                 return;
             }
-            TryFocusPreferredGridCell();
-            _pendingInitialInteractiveFocus = false;
+            var focusedGrid = TryFocusPreferredGridCell();
+            _pendingInitialInteractiveFocus = !focusedGrid;
+            if (!focusedGrid && forceFromOutsideTextInput)
+            {
+                TryFocusGameViewRoot();
+            }
             return;
         }
 
@@ -536,6 +540,25 @@ public partial class GamePlayView
         if (forceFromOutsideTextInput)
         {
             _pendingInitialInteractiveFocus = true;
+            TryFocusGameViewRoot();
+        }
+    }
+
+    private void TryFocusGameViewRoot()
+    {
+        try
+        {
+            if (IsFocusInsideThisGameView())
+            {
+                return;
+            }
+
+            Focus();
+            Keyboard.Focus(this);
+        }
+        catch
+        {
+            // best-effort
         }
     }
 

@@ -61,23 +61,33 @@ export class ContesActionService {
             return next;
           },
           choose_target: () => {
+            const before = next;
             next = this.handleChooseTarget(next, action);
+            next = this.finalizePendingResolution(before, next);
             return next;
           },
           choose_number: () => {
+            const before = next;
             next = this.handleChooseNumber(next, action);
+            next = this.finalizePendingResolution(before, next);
             return next;
           },
           choose_option: () => {
+            const before = next;
             next = this.handleChooseOption(next, action);
+            next = this.finalizePendingResolution(before, next);
             return next;
           },
           draw: () => {
+            const before = next;
             next = this.handleDraw(next);
+            next = this.finalizePendingResolution(before, next);
             return next;
           },
           choose_card: () => {
+            const before = next;
             next = this.handleChooseCard(next, action);
+            next = this.finalizePendingResolution(before, next);
             return next;
           },
         },
@@ -1617,6 +1627,30 @@ export class ContesActionService {
     const advanced = this.turns.advanceTurn(next);
     const swapped = this.applyTurnSwapIfNeeded(advanced);
     return this.appendTurnAnnouncement(swapped, swapped.turn?.currentPlayerId);
+  }
+
+  private finalizePendingResolution(
+    previous: GameStateEntity,
+    next: GameStateEntity,
+  ): GameStateEntity {
+    if (!previous?.pending) return next;
+    if (next?.pending) return next;
+    if (String(next?.status ?? '').toLowerCase() === 'finished') return next;
+
+    const currentTurnPlayerId =
+      typeof previous?.turn?.currentPlayerId === 'number' &&
+      Number.isFinite(previous.turn.currentPlayerId)
+        ? previous.turn.currentPlayerId
+        : null;
+    const pendingPlayerId =
+      typeof (previous.pending as ContesPending)?.playerId === 'number' &&
+      Number.isFinite((previous.pending as ContesPending).playerId)
+        ? (previous.pending as ContesPending).playerId
+        : null;
+    const playerId = currentTurnPlayerId ?? pendingPlayerId;
+    if (playerId == null) return next;
+
+    return this.endTurn(next, playerId);
   }
 
   private applyTurnSwapIfNeeded(state: GameStateEntity): GameStateEntity {
