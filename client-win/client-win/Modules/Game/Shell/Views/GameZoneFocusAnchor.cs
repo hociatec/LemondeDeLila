@@ -18,7 +18,7 @@ public sealed class GameZoneFocusAnchor : Button
         // la navigation. On expose un type neutre pour que NVDA lise surtout le nom (si présent) ou le moins possible.
         protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;
 
-        protected override string GetLocalizedControlTypeCore() => string.Empty;
+        protected override string GetLocalizedControlTypeCore() => "zone de jeu";
 
         protected override string GetClassNameCore() => nameof(GameZoneFocusAnchor);
     }

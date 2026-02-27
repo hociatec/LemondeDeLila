@@ -64,6 +64,7 @@ public partial class GamePlayView
         _restoreChoiceFocusAfterSubmit = true;
         _restoreChoiceFocusIndex = ChoicesList?.SelectedIndex ?? -1;
         _restoreChoiceFocusMisses = 0;
+        RequestPostSubmitInteractiveFocus();
     }
 
     private void NoteChoiceSubmittedForFocusRestore(GamePlayViewModel vm)
@@ -109,6 +110,21 @@ public partial class GamePlayView
         _restoreHandFocusAfterSubmit = true;
         _restoreHandFocusIndex = HandList?.SelectedIndex ?? -1;
         _restoreHandFocusMisses = 0;
+        RequestPostSubmitInteractiveFocus();
+    }
+
+    private void RequestPostSubmitInteractiveFocus()
+    {
+        _pendingInitialInteractiveFocus = true;
+        _ = Dispatcher.BeginInvoke(
+            DispatcherPriority.Input,
+            new Action(() => FocusPreferredInteractiveElement(forceFromOutsideTextInput: true)));
+        _ = Dispatcher.BeginInvoke(
+            DispatcherPriority.Loaded,
+            new Action(() => FocusPreferredInteractiveElement(forceFromOutsideTextInput: true)));
+        _ = Dispatcher.BeginInvoke(
+            DispatcherPriority.ApplicationIdle,
+            new Action(() => FocusPreferredInteractiveElement(forceFromOutsideTextInput: true)));
     }
 
     private void HookChoiceAutoFocus(GamePlayViewModel? vm)
@@ -333,14 +349,7 @@ public partial class GamePlayView
         {
             // Fallback: give the list an explicit name even if server did not provide one.
             // This keeps list announcements stable for screen readers.
-            if (isQuiz)
-            {
-                AutomationProperties.SetName(ChoicesList, "Réponses");
-            }
-            else
-            {
-                ChoicesList.ClearValue(AutomationProperties.NameProperty);
-            }
+            AutomationProperties.SetName(ChoicesList, isQuiz ? "Réponses" : "Choix");
         }
         else
         {

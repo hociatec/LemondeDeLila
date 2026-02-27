@@ -2085,7 +2085,9 @@ export class GameEngineService {
       Number.isFinite(pendingPlayerId) &&
       pendingPlayerId === botActorId &&
       (pendingType === 'draw' ||
+        pendingType === 'choose_pawn' ||
         pendingType === 'pick_pawn' ||
+        pendingType === 'swap' ||
         pendingType === 'choose_target');
     const isQuizPending =
       gameType === 'arche-de-mnemosyne' && pending?.type === 'quiz';
@@ -2174,6 +2176,7 @@ export class GameEngineService {
               latestBotActorId,
             },
           });
+          await this.scheduleBotTurn(roomId, gameType, latest);
           return;
         }
         await this.playBotTurn(roomId, gameType);

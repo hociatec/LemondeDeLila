@@ -12,7 +12,7 @@
               IsTabStop="True"
               KeyboardNavigation.TabNavigation="Cycle"
               KeyboardNavigation.DirectionalNavigation="Contained"
-              AutomationProperties.Name=""
+              AutomationProperties.Name="{Binding RelativeSource={RelativeSource AncestorType={x:Type shell:GameZoneHostView}}, Path=DataContext.Title, FallbackValue=Zone de jeu, TargetNullValue=Zone de jeu}"
               PreviewKeyDown="OnRootPreviewKeyDown"
               Loaded="OnLoaded">
     <UserControl.Resources>
@@ -51,7 +51,7 @@
 	                Padding="10"
 	                Margin="0 0 0 10"
 	                Visibility="{Binding Grid.IsVisible, Converter={StaticResource BoolToVis}}"
-	                AutomationProperties.Name=""
+	                AutomationProperties.Name="Grille"
 	                x:Name="GridBoard"
 	                KeyboardNavigation.DirectionalNavigation="Contained"
 	                KeyboardNavigation.TabNavigation="Once"
@@ -72,7 +72,7 @@
 	                              ItemsSource="{Binding Cells}"
 	                              KeyboardNavigation.DirectionalNavigation="Contained"
 	                              KeyboardNavigation.TabNavigation="Once"
-	                              AutomationProperties.Name=""
+	                              AutomationProperties.Name="Grille"
 	                              Loaded="OnGridLoaded">
 	                    <!--
 	                        Accessibilité NVDA (Corridor) :
@@ -306,7 +306,7 @@
                              FontSize="12"
                              MaxHeight="160"
                              Margin="0 0 0 4"
-                             AutomationProperties.Name="">
+                             AutomationProperties.Name="Main">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
@@ -413,7 +413,7 @@
                          Foreground="White"
                          FontSize="12"
                          MaxHeight="160"
-                         AutomationProperties.Name="{Binding ChoicesA11yName}"
+                         AutomationProperties.Name="{Binding ChoicesA11yName, FallbackValue=Choix, TargetNullValue=Choix}"
                          AutomationProperties.LabeledBy="{Binding ElementName=ChoicesLabelText}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>

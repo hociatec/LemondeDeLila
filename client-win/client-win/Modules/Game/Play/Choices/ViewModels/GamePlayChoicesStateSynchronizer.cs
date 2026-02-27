@@ -126,6 +126,12 @@ internal sealed class GamePlayChoicesStateSynchronizer
 
     private static bool ShouldHidePendingChoices(GameStateDto state, int? viewerPlayerId)
     {
+        var pending = state.Pending;
+        if (pending == null)
+        {
+            return false;
+        }
+
         var pendingPlayerId = state.Pending?.PlayerId;
         var pendingType = (state.Pending?.Type ?? string.Empty).Trim();
         var isQuiz = string.Equals(pendingType, "quiz", StringComparison.OrdinalIgnoreCase);
@@ -144,12 +150,174 @@ internal sealed class GamePlayChoicesStateSynchronizer
             return true;
         }
 
+        // Défensif: certains moteurs n'envoient pas pending.playerId sur les phases bot.
+        // Dans ce cas, ne montrer la liste que si l'état indique explicitement
+        // que le viewer peut agir (lifecycle/actions compatibles).
+        if (pendingPlayerId == null &&
+            !IsViewerPendingActionable(state, pendingType, canAnswerQuiz))
+        {
+            return true;
+        }
+
         if (isQuiz && !canAnswerQuiz)
         {
             return true;
         }
 
         return false;
+    }
+
+    private static bool IsViewerPendingActionable(GameStateDto state, string pendingType, bool canAnswerQuiz)
+    {
+        if (ReadLifecycleBoolean(state, "viewerTurnActionable"))
+        {
+            return true;
+        }
+
+        if (PawnPendingTypes.IsPawnPendingType(pendingType) &&
+            ReadLifecycleBoolean(state, "viewerMustChoosePawn"))
+        {
+            return true;
+        }
+
+        if (string.Equals(pendingType, "quiz", StringComparison.OrdinalIgnoreCase) && canAnswerQuiz)
+        {
+            return true;
+        }
+
+        if (PawnPendingTypes.IsPawnPendingType(pendingType) && HasChoosePawnData(state.Pending))
+        {
+            return true;
+        }
+
+        return HasCompatiblePendingAction(state, pendingType);
+    }
+
+    private static bool HasCompatiblePendingAction(GameStateDto state, string pendingType)
+    {
+        var actions = state.Actions;
+        if (actions == null || actions.Count == 0)
+        {
+            return false;
+        }
+
+        var normalized = (pendingType ?? string.Empty).Trim().ToLowerInvariant();
+        foreach (var action in actions)
+        {
+            var type = (action?.Type ?? string.Empty).Trim();
+            if (type.Length == 0)
+            {
+                continue;
+            }
+
+            if (string.Equals(type, "roll", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(type, "roll_dice", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (normalized == "quiz" &&
+                string.Equals(type, "answer_quiz", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (normalized == "exchange" &&
+                (string.Equals(type, "exchange_choose_target", StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(type, "exchange_choose_give", StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+
+            if (PawnPendingTypes.IsPawnPendingType(normalized) &&
+                (PawnPendingTypes.IsPawnPendingType(type) ||
+                 string.Equals(type, "move_pawn", StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+
+            if (normalized == "lama_turn" &&
+                string.Equals(type, "lama_play", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (normalized == "lama_hand" &&
+                string.Equals(type, "lama_preview", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (normalized == "lama_return" &&
+                string.Equals(type, "lama_return", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (normalized == "lama_setup" &&
+                string.Equals(type, "lama_set_target", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (normalized.Length == 0)
+            {
+                return true;
+            }
+
+            if (type.Contains(normalized, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool ReadLifecycleBoolean(GameStateDto state, string key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            return false;
+        }
+
+        try
+        {
+            var metadata = state.Metadata;
+            if (metadata.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            if (!metadata.TryGetProperty("lifecycle", out var lifecycle) ||
+                lifecycle.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            if (!lifecycle.TryGetProperty(key, out var value))
+            {
+                return false;
+            }
+
+            return value.ValueKind == JsonValueKind.True;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool HasChoosePawnData(GamePendingDto? pending)
+    {
+        if (pending == null || pending.Data.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        return pending.Data.TryGetProperty("pawns", out var pawns) &&
+               pawns.ValueKind == JsonValueKind.Array &&
+               pawns.GetArrayLength() > 0;
     }
 
     private void ApplyLocalChoices(string mode, Dictionary<string, GameClientAction> choices, Action<string> setLabel)

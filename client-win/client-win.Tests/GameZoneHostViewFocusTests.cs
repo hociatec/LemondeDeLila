@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using System.Windows.Automation;
 using client_win.Modules.Game.Play.GamePlay.Views;
 using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Game.Shell.ViewModels;
@@ -18,6 +19,48 @@ namespace client_win.Tests;
 
 public sealed class GameZoneHostViewFocusTests
 {
+    [Fact]
+    public void GameZoneAnchors_ExposeGameTitleForAccessibility()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            var vm = CreateZoneVm();
+            vm.Title = "Etagere des Quatre Vents";
+            vm.IsStarted = false;
+            vm.Content = null;
+
+            var host = new GameZoneHostView { DataContext = vm };
+            var window = new Window
+            {
+                Width = 700,
+                Height = 450,
+                Content = host,
+                ShowInTaskbar = false,
+                WindowStyle = WindowStyle.None,
+            };
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var focusAnchor = Assert.IsType<GameZoneFocusAnchor>(host.FindName("GameZoneFocusAnchor"));
+                var emptyAnchor = Assert.IsType<GameZoneFocusAnchor>(host.FindName("GameZoneEmptyAnchor"));
+
+                var focusName = AutomationProperties.GetName(focusAnchor);
+                var emptyName = AutomationProperties.GetName(emptyAnchor);
+
+                Assert.Contains(vm.Title, focusName, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains(vm.Title, emptyName, StringComparison.OrdinalIgnoreCase);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
     [Fact]
     public void FocusGameZone_WithGameContent_FocusesInteractiveElement()
     {
