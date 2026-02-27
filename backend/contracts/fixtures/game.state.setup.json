@@ -1,0 +1,33 @@
+﻿{
+  "status": "setup",
+  "phase": "setup",
+  "round": 0,
+  "turnIndex": 0,
+  "lastRoll": null,
+  "log": [],
+  "botThinking": false,
+  "actions": [],
+  "pending": null,
+  "turn": {
+    "currentPlayerId": null,
+    "direction": 1,
+    "label": "Partie non démarrée."
+  },
+  "players": [
+    { "id": 1, "username": "Lila", "isBot": false }
+  ],
+  "metadata": {
+    "gameType": "lama",
+    "roomId": 1,
+    "lifecycle": {
+      "startReady": false
+    }
+  },
+  "extras": {
+    "playerViews": [],
+    "players": [
+      { "id": 1, "username": "Lila" }
+    ],
+    "shortcuts": []
+  }
+}

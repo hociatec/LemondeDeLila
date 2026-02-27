@@ -313,6 +313,7 @@
                                             <MultiDataTrigger.Conditions>
                                                 <Condition Binding="{Binding IsStartWizardAmbienceStep}" Value="True" />
                                                 <Condition Binding="{Binding HasStartWizardConfig}" Value="True" />
+                                                <Condition Binding="{Binding IsStartWizardConfigLoading}" Value="False" />
                                             </MultiDataTrigger.Conditions>
                                             <Setter Property="Visibility" Value="Visible" />
                                         </MultiDataTrigger>
@@ -341,6 +342,7 @@
                                             <MultiDataTrigger.Conditions>
                                                 <Condition Binding="{Binding IsStartWizardAmbienceStep}" Value="True" />
                                                 <Condition Binding="{Binding HasStartWizardConfig}" Value="False" />
+                                                <Condition Binding="{Binding IsStartWizardConfigLoading}" Value="False" />
                                             </MultiDataTrigger.Conditions>
                                             <Setter Property="Visibility" Value="Visible" />
                                         </MultiDataTrigger>

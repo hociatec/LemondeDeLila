@@ -1,0 +1,39 @@
+﻿{
+  "status": "started",
+  "phase": "round",
+  "round": 1,
+  "turnIndex": 1,
+  "lastRoll": null,
+  "log": [],
+  "botThinking": false,
+  "actions": [
+    { "type": "lama_play", "label": "Jouer une carte", "payload": {} }
+  ],
+  "pending": null,
+  "turn": {
+    "currentPlayerId": 1,
+    "direction": 1,
+    "label": "À toi de jouer."
+  },
+  "players": [
+    { "id": 1, "username": "Lila", "isBot": false },
+    { "id": -1, "username": "Bot", "isBot": true }
+  ],
+  "metadata": {
+    "gameType": "lama",
+    "roomId": 1,
+    "lifecycle": {
+      "startReady": true
+    }
+  },
+  "extras": {
+    "playerViews": [],
+    "players": [
+      { "id": 1, "username": "Lila" },
+      { "id": -1, "username": "Bot" }
+    ],
+    "shortcuts": [
+      { "key": "SPACE", "type": "action", "actionType": "draw" }
+    ]
+  }
+}

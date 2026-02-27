@@ -224,8 +224,9 @@ export class GameEngineService {
       ),
     );
     const withShortcuts = this.attachShortcuts(withDescriptors, handler);
+    const withLifecycle = this.attachStartLifecycle(withShortcuts);
     const finalState = fixMojibakeDeep(
-      this.stripBoardAndGridIfNotStarted(withShortcuts),
+      this.stripBoardAndGridIfNotStarted(withLifecycle),
     );
     if (byState) {
       byState.set(cacheKey, finalState);
@@ -2791,7 +2792,8 @@ export class GameEngineService {
         this.attachCurrentPlayerView(withLabel),
       ),
     );
-    return fixMojibakeDeep(this.stripBoardAndGridIfNotStarted(withDescriptors));
+    const withLifecycle = this.attachStartLifecycle(withDescriptors);
+    return fixMojibakeDeep(this.stripBoardAndGridIfNotStarted(withLifecycle));
   }
 
   private stripBoardAndGridIfNotStarted(
@@ -3239,6 +3241,48 @@ export class GameEngineService {
       extras: {
         ...extrasAfter,
         ui,
+      },
+    };
+  }
+
+  private attachStartLifecycle(
+    state: GameStateWithActions,
+  ): GameStateWithActions {
+    const status = String(state?.status ?? '')
+      .toLowerCase()
+      .trim();
+    const pendingType = String(state?.pending?.type ?? '')
+      .toLowerCase()
+      .trim();
+
+    const started = status === 'started';
+    const hasConfigPrompt =
+      pendingType === 'config_prompt' ||
+      pendingType.endsWith('_set_config');
+    const startReady = started && !hasConfigPrompt;
+
+    const metadataRaw =
+      state?.metadata && typeof state.metadata === 'object'
+        ? (state.metadata as Record<string, unknown>)
+        : ({} as Record<string, unknown>);
+    const lifecycleRaw =
+      metadataRaw['lifecycle'] && typeof metadataRaw['lifecycle'] === 'object'
+        ? (metadataRaw['lifecycle'] as Record<string, unknown>)
+        : ({} as Record<string, unknown>);
+
+    const current = lifecycleRaw['startReady'];
+    if (typeof current === 'boolean' && current === startReady) {
+      return state;
+    }
+
+    return {
+      ...state,
+      metadata: {
+        ...metadataRaw,
+        lifecycle: {
+          ...lifecycleRaw,
+          startReady,
+        },
       },
     };
   }

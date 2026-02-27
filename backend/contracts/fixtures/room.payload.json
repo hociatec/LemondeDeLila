@@ -1,0 +1,9 @@
+﻿{
+  "room": {
+    "id": 1,
+    "gameType": "lama",
+    "players": [
+      { "id": 1, "username": "Lila" }
+    ]
+  }
+}

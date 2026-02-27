@@ -1163,6 +1163,9 @@ public sealed class GameTableOpener : IGameTableOpener
                     return;
                 }
 
+                GameSession? preStartGameSession = null;
+                var postStartConfigActionType = string.Empty;
+                Dictionary<string, object>? postStartConfigPayload = null;
                 var room = session.LastRoomState?.Room;
                 var selfId = _sessionService.CurrentUser?.UserId ?? 0;
                 var isOwner = selfId > 0 && room?.Owner?.Id == selfId;
@@ -1178,7 +1181,6 @@ public sealed class GameTableOpener : IGameTableOpener
                         ? await preloadedAmbienceChoicesTask.ConfigureAwait(true)
                         : await BuildStartWizardAmbienceChoicesAsync(CancellationToken.None).ConfigureAwait(true);
 
-                    GameSession? preStartGameSession = null;
                     GameRoomViewModel.StartWizardConfigPrompt? cachedPrompt = null;
                     Task<GameRoomViewModel.StartWizardConfigPrompt?>? prefetchPromptTask = null;
                     try
@@ -1307,21 +1309,73 @@ public sealed class GameTableOpener : IGameTableOpener
                             }
 
                             var payload = startFlow.GameConfigPayload ?? new Dictionary<string, object>(StringComparer.Ordinal);
+                            postStartConfigActionType = startFlow.GameConfigActionType;
+                            postStartConfigPayload = new Dictionary<string, object>(payload, StringComparer.Ordinal);
                             await preStartGameSession.SendActionsAsync(
                                 new[] { new GameClientAction(startFlow.GameConfigActionType, payload) },
                                 CancellationToken.None).ConfigureAwait(false);
                         }
                     }
-                    finally
+                    catch
                     {
-                        if (preStartGameSession != null)
-                        {
-                            try { await preStartGameSession.DisposeAsync().ConfigureAwait(false); } catch { }
-                        }
+                        // best-effort: room.start remains available even if pre-start config fails.
                     }
                 }
 
-                await session.SendCommandAsync("room.start", payload: null).ConfigureAwait(true);
+                try
+                {
+                    try { bindings?.NotifyStartRequestedFromWizard(); } catch { }
+                    await session.SendCommandAsync("room.start", payload: null).ConfigureAwait(true);
+                }
+                finally
+                {
+                    if (!string.IsNullOrWhiteSpace(postStartConfigActionType) && postStartConfigPayload != null)
+                    {
+                        var gameType = (vm?.Game?.Id ?? placeholderGame.Id ?? string.Empty).Trim();
+                        if (!string.IsNullOrWhiteSpace(gameType))
+                        {
+                            try
+                            {
+                                if (preStartGameSession == null)
+                                {
+                                    using var connectTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                                    preStartGameSession = await _games.ConnectAsync(session.RoomId, gameType, connectTimeout.Token).ConfigureAwait(false);
+                                }
+
+                                var sent = false;
+                                for (var attempt = 0; attempt < 4 && !sent; attempt++)
+                                {
+                                    try
+                                    {
+                                        await preStartGameSession.SendActionsAsync(
+                                                new[] { new GameClientAction(postStartConfigActionType, postStartConfigPayload) },
+                                                CancellationToken.None)
+                                            .ConfigureAwait(false);
+                                        sent = true;
+                                    }
+                                    catch
+                                    {
+                                        if (attempt >= 3)
+                                        {
+                                            break;
+                                        }
+
+                                        await Task.Delay(120).ConfigureAwait(false);
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                                // best-effort
+                            }
+                        }
+                    }
+
+                    if (preStartGameSession != null)
+                    {
+                        try { await preStartGameSession.DisposeAsync().ConfigureAwait(false); } catch { }
+                    }
+                }
             }
 
             startHandler = Start;
@@ -2025,5 +2079,3 @@ public sealed class GameTableOpener : IGameTableOpener
         return Task.CompletedTask;
     }
 }
-
-

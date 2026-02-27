@@ -50,6 +50,7 @@ internal sealed class GamePlayRealtimeController
     private bool _lastBotThinking;
     private bool _endgameFeedbackEmitted;
     private bool _finishedStatusEnforced;
+    private bool _lastStartReady;
     private int _pendingForcedTurnAnnouncements;
     private Dictionary<string, int>? _lastViewerHandCounts;
     private string? _lastDrawActionToken;
@@ -115,6 +116,7 @@ internal sealed class GamePlayRealtimeController
         _lastBotThinking = false;
         _endgameFeedbackEmitted = false;
         _finishedStatusEnforced = false;
+        _lastStartReady = false;
         _lastViewerHandCounts = null;
         lock (_statePumpLock)
         {
@@ -348,8 +350,11 @@ internal sealed class GamePlayRealtimeController
         var nextPhase = (state.Phase ?? string.Empty).Trim();
         var previousStatus = _lastGameStatus ?? string.Empty;
         var previousPhase = _lastGamePhase ?? string.Empty;
+        var previousStartReady = _lastStartReady;
         _lastGameStatus = nextStatus;
         _lastGamePhase = nextPhase;
+        var startReady = IsStartReadyFromState(state);
+        _lastStartReady = startReady;
         if (!string.Equals(previousStatus, nextStatus, StringComparison.OrdinalIgnoreCase))
         {
             _onGameStatusChanged(previousStatus, nextStatus);
@@ -397,6 +402,11 @@ internal sealed class GamePlayRealtimeController
         if (string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase) &&
             string.Equals(nextPhase, "round", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(previousPhase, "round", StringComparison.OrdinalIgnoreCase))
+        {
+            _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
+        }
+
+        if (startReady && !previousStartReady)
         {
             _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
         }
@@ -557,6 +567,50 @@ internal sealed class GamePlayRealtimeController
         }
 
         return status;
+    }
+
+    private static bool IsStartReadyFromState(GameStateDto state)
+    {
+        if (!string.Equals(state.Status, "started", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        try
+        {
+            var metadata = state.Metadata;
+            if (metadata.ValueKind != System.Text.Json.JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            if (!metadata.TryGetProperty("lifecycle", out var lifecycle) ||
+                lifecycle.ValueKind != System.Text.Json.JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            if (!lifecycle.TryGetProperty("startReady", out var ready))
+            {
+                return false;
+            }
+
+            if (ready.ValueKind == System.Text.Json.JsonValueKind.True)
+            {
+                return true;
+            }
+
+            if (ready.ValueKind == System.Text.Json.JsonValueKind.False)
+            {
+                return false;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        return false;
     }
 
     private static bool IsEndgameLogMessage(string message)

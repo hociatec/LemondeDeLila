@@ -68,6 +68,58 @@ public sealed class GameFocusCoordinatorTests
     }
 
     [Fact]
+    public void TableStarted_RetriesUntilInteractive()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            var coordinator = new GameFocusCoordinator(dispatcher);
+            var host = new FakeHost(
+                GameFocusAttemptResult.Anchor,
+                GameFocusAttemptResult.Anchor,
+                GameFocusAttemptResult.Anchor,
+                GameFocusAttemptResult.Anchor,
+                GameFocusAttemptResult.Interactive);
+            using var _ = coordinator.AttachHost(host);
+
+            coordinator.RequestGameZone(GameFocusReason.TableStarted);
+
+            Assert.True(StaDispatcherHarness.WaitUntil(() => host.CallCount >= 5, dispatcher, 3500));
+            StaDispatcherHarness.Drain(dispatcher);
+
+            Assert.Equal(GameFocusReason.TableStarted, host.LastReason);
+            Assert.Equal(1, host.ActivateCount);
+            Assert.InRange(host.CallCount, 5, 6);
+        });
+    }
+
+    [Fact]
+    public void GamePlayReady_DoesNotUseCriticalRetries()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            var coordinator = new GameFocusCoordinator(dispatcher);
+            var host = new FakeHost(
+                GameFocusAttemptResult.None,
+                GameFocusAttemptResult.None,
+                GameFocusAttemptResult.None,
+                GameFocusAttemptResult.None,
+                GameFocusAttemptResult.None);
+            using var _ = coordinator.AttachHost(host);
+
+            coordinator.RequestGameZone(GameFocusReason.GamePlayReady);
+
+            Assert.True(StaDispatcherHarness.WaitUntil(() => host.CallCount >= 3, dispatcher, 1000));
+            StaDispatcherHarness.Drain(dispatcher);
+            var countAfterInitialPasses = host.CallCount;
+
+            Assert.True(StaDispatcherHarness.WaitForStableCallCount(host, dispatcher, 1300));
+            Assert.Equal(countAfterInitialPasses, host.CallCount);
+            Assert.Equal(3, host.CallCount);
+            Assert.Equal(GameFocusReason.GamePlayReady, host.LastReason);
+        });
+    }
+
+    [Fact]
     public void NewRequest_CancelsPreviousPendingPasses()
     {
         StaDispatcherHarness.Run(dispatcher =>
@@ -84,6 +136,33 @@ public sealed class GameFocusCoordinatorTests
 
             Assert.Equal(1, host.CallCount);
             Assert.InRange(host.ActivateCount, 0, 1);
+        });
+    }
+
+    [Fact]
+    public void NewRequest_CancelsPreviousCriticalRetries()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            var coordinator = new GameFocusCoordinator(dispatcher);
+            var host = new FakeHost(
+                GameFocusAttemptResult.None,
+                GameFocusAttemptResult.None,
+                GameFocusAttemptResult.None,
+                GameFocusAttemptResult.Anchor);
+            using var _ = coordinator.AttachHost(host);
+
+            coordinator.RequestGameZone(GameFocusReason.InitialLoad);
+            Assert.True(StaDispatcherHarness.WaitUntil(() => host.CallCount >= 3, dispatcher, 1000));
+
+            coordinator.RequestGameZone(GameFocusReason.AfterDialog);
+            Assert.True(StaDispatcherHarness.WaitUntil(() => host.LastReason == GameFocusReason.AfterDialog, dispatcher, 1200));
+            StaDispatcherHarness.Drain(dispatcher);
+
+            var countAfterSecondRequest = host.CallCount;
+            Assert.True(StaDispatcherHarness.WaitForStableCallCount(host, dispatcher, 1300));
+            Assert.Equal(countAfterSecondRequest, host.CallCount);
+            Assert.Equal(GameFocusReason.AfterDialog, host.LastReason);
         });
     }
 
@@ -172,6 +251,24 @@ public sealed class GameFocusCoordinatorTests
             {
                 PumpOnce(dispatcher);
             }
+        }
+
+        public static bool WaitForStableCallCount(FakeHost host, Dispatcher dispatcher, int durationMs)
+        {
+            var baseline = host.CallCount;
+            var sw = Stopwatch.StartNew();
+            while (sw.ElapsedMilliseconds < durationMs)
+            {
+                PumpOnce(dispatcher);
+                Thread.Sleep(20);
+                if (host.CallCount != baseline)
+                {
+                    return false;
+                }
+            }
+
+            PumpOnce(dispatcher);
+            return host.CallCount == baseline;
         }
 
         private static void PumpOnce(Dispatcher dispatcher)

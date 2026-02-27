@@ -84,6 +84,16 @@ describe('Contract fixtures', () => {
         expectArray(extras.players);
         expectArray(extras.shortcuts);
       }
+
+      const metadata = state.metadata;
+      expect(isJsonObject(metadata)).toBe(true);
+      if (isJsonObject(metadata)) {
+        const lifecycle = metadata.lifecycle;
+        expect(isJsonObject(lifecycle)).toBe(true);
+        if (isJsonObject(lifecycle)) {
+          expectBoolean(lifecycle.startReady);
+        }
+      }
     }
 
     const setupStatus =
@@ -92,6 +102,15 @@ describe('Contract fixtures', () => {
       typeof started.status === 'string' ? started.status.toLowerCase() : '';
     expect(setupStatus).toBe('setup');
     expect(startedStatus).toBe('started');
+
+    const setupLifecycle = isJsonObject(setup.metadata)
+      ? (setup.metadata.lifecycle as Record<string, unknown> | undefined)
+      : undefined;
+    const startedLifecycle = isJsonObject(started.metadata)
+      ? (started.metadata.lifecycle as Record<string, unknown> | undefined)
+      : undefined;
+    expect(setupLifecycle?.startReady).toBe(false);
+    expect(startedLifecycle?.startReady).toBe(true);
   });
 
   it('parses room.payload fixture and contains expected keys', () => {

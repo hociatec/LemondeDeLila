@@ -24,6 +24,14 @@ namespace client_win.Modules.Game.Shell.Services;
 
 internal sealed class GameTableBindings : IAsyncDisposable
 {
+    private enum StartFlowState
+    {
+        Idle,
+        StartRequested,
+        RoomStarted,
+        GameStarted
+    }
+
     private readonly Dispatcher _dispatcher;
     private readonly CatalogGame _game;
     private readonly RoomSession _session;
@@ -55,6 +63,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private static readonly TimeSpan RoomStopGraceDelay = TimeSpan.FromMilliseconds(650);
 
     private bool _lastRoomStarted;
+    private StartFlowState _startFlowState = StartFlowState.Idle;
+    private int _startFocusRecoveryRequestId;
     private Dictionary<int, (string Username, bool Spectator)> _participants = new();
     private Dictionary<int, string> _botsById = new();
     private int _ownerId = 0;
@@ -120,6 +130,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     {
         var last = _session.LastRoomState;
         _lastRoomStarted = IsRoomStarted(last?.Room);
+        _startFlowState = _lastRoomStarted ? StartFlowState.RoomStarted : StartFlowState.Idle;
         _roomStopConfirmationPending = false;
         SeedParticipants(last?.Room);
         _selfIsSpectator = ComputeSelfSpectator();
@@ -299,24 +310,13 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
                     if (!wasStarted && nowStarted)
                     {
-                        CancelRoomStopGraceDelay();
-                        SetRoomShortcutsForStarted(started: true);
-                        EnsureGamePlayLoaded();
-                        SyncGameplayShortcuts();
-
-                        _announcements.TableInfo("Table démarrée.");
-                        try { _sounds.Play(SoundId.TableStarted); } catch { }
-                        _ = RequestTurnAnnouncementAsync();
-
-                        // Forcer le focus sur la zone de jeu.
-                        _ = _dispatcher.BeginInvoke(
-                            DispatcherPriority.ApplicationIdle,
-                            new Action(() => _tableVm.GameZone.RequestFocus(GameFocusReason.TableStarted)));
+                        EnterStartedFlow(source: "room.updated", fromGameStatus: false, announceIfFirst: true);
                         return;
                     }
 
                     if (wasStarted && !nowStarted)
                     {
+                        ResetStartFlow(source: "room.updated.stop");
                         if (ShouldConfirmRoomStopTransition())
                         {
                             return;
@@ -453,6 +453,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
             var isStarted = IsRoomStarted(last?.Room);
             _lastRoomStarted = isStarted;
+            _startFlowState = isStarted ? StartFlowState.RoomStarted : StartFlowState.Idle;
             SetRoomShortcutsForStarted(isStarted);
             if (isStarted)
             {
@@ -663,6 +664,160 @@ internal sealed class GameTableBindings : IAsyncDisposable
                code.StartsWith("ui.", StringComparison.OrdinalIgnoreCase);
     }
 
+    private void EnterStartedFlow(string source, bool fromGameStatus, bool announceIfFirst)
+    {
+        CancelRoomStopGraceDelay();
+        SetRoomShortcutsForStarted(started: true);
+        EnsureGamePlayLoaded();
+        SyncGameplayShortcuts();
+
+        var previousState = _startFlowState;
+        if (fromGameStatus)
+        {
+            _startFlowState = StartFlowState.GameStarted;
+        }
+        else if (_startFlowState is StartFlowState.Idle or StartFlowState.StartRequested)
+        {
+            _startFlowState = StartFlowState.RoomStarted;
+        }
+
+        var firstStartTransition = previousState is StartFlowState.Idle or StartFlowState.StartRequested;
+        var reachedGameplayReady = fromGameStatus && previousState != StartFlowState.GameStarted;
+
+        if (announceIfFirst && firstStartTransition)
+        {
+            _announcements.TableInfo("Table démarrée.");
+            try { _sounds.Play(SoundId.TableStarted); } catch { }
+        }
+
+        if (firstStartTransition || reachedGameplayReady)
+        {
+            var requestId = ScheduleStartFocusRecovery(GameFocusReason.TableStarted);
+            _ = WaitForStartedAndRequestTurnAsync(requestId);
+        }
+
+        Log.Debug("StartFlow -> {State} ({Source})", _startFlowState, source);
+    }
+
+    private void ResetStartFlow(string source)
+    {
+        var previous = _startFlowState;
+        _startFlowState = StartFlowState.Idle;
+        Interlocked.Increment(ref _startFocusRecoveryRequestId);
+        if (previous != StartFlowState.Idle)
+        {
+            Log.Debug("StartFlow -> {State} ({Source})", _startFlowState, source);
+        }
+    }
+
+    public void NotifyStartRequestedFromWizard()
+    {
+        if (_startFlowState == StartFlowState.Idle)
+        {
+            _startFlowState = StartFlowState.StartRequested;
+            Log.Debug("StartFlow -> {State} ({Source})", _startFlowState, "wizard.start");
+        }
+
+        var requestId = ScheduleStartFocusRecovery(GameFocusReason.TableStarted);
+        _ = WaitForStartedAndRequestTurnAsync(requestId);
+    }
+
+    private int ScheduleStartFocusRecovery(GameFocusReason reason)
+    {
+        var requestId = Interlocked.Increment(ref _startFocusRecoveryRequestId);
+        _tableVm.GameZone.RequestFocus(reason);
+
+        return requestId;
+    }
+
+    private async Task WaitForStartedAndRequestTurnAsync(int requestId)
+    {
+        try
+        {
+            var sawStarted = false;
+            for (var attempt = 0; attempt < 8; attempt++)
+            {
+                if (requestId != _startFocusRecoveryRequestId)
+                {
+                    return;
+                }
+
+                var started = false;
+                var startReady = false;
+                await _dispatcher.InvokeAsync(
+                    () =>
+                    {
+                        started = _tableVm.GameZone.IsStarted ||
+                                  _lastRoomStarted ||
+                                  _startFlowState is StartFlowState.RoomStarted or StartFlowState.GameStarted;
+                        startReady = IsGameplayStartReadyFromLastState();
+                    },
+                    DispatcherPriority.Background);
+
+                if (started)
+                {
+                    sawStarted = true;
+                }
+
+                if (started && startReady)
+                {
+                    await _dispatcher.InvokeAsync(
+                        async () => await RequestTurnAnnouncementAsync().ConfigureAwait(true),
+                        DispatcherPriority.Background);
+                    return;
+                }
+
+                await Task.Delay(120).ConfigureAwait(false);
+            }
+
+            if (sawStarted && requestId == _startFocusRecoveryRequestId)
+            {
+                await _dispatcher.InvokeAsync(
+                    async () => await RequestTurnAnnouncementAsync().ConfigureAwait(true),
+                    DispatcherPriority.Background);
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    private bool IsGameplayStartReadyFromLastState()
+    {
+        try
+        {
+            var state = _gamePlayVm?.Session?.LastState;
+            if (state == null || !string.Equals(state.Status, "started", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var metadata = state.Metadata;
+            if (metadata.ValueKind != System.Text.Json.JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            if (!metadata.TryGetProperty("lifecycle", out var lifecycle) ||
+                lifecycle.ValueKind != System.Text.Json.JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            if (!lifecycle.TryGetProperty("startReady", out var ready))
+            {
+                return false;
+            }
+
+            return ready.ValueKind == System.Text.Json.JsonValueKind.True;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private void SetRoomShortcutsForStarted(bool started)
     {
         _tableVm.GameZone.IsStarted = started;
@@ -839,84 +994,66 @@ internal sealed class GameTableBindings : IAsyncDisposable
             }
         }
 
-	    private async System.Threading.Tasks.Task HandleGameStatusChangedAsync(string previousStatus, string nextStatus)
-	    {
-	        var wasStarted = string.Equals(previousStatus, "started", StringComparison.OrdinalIgnoreCase);
-	        var nowStarted = string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase);
+    private async System.Threading.Tasks.Task HandleGameStatusChangedAsync(string previousStatus, string nextStatus)
+    {
+        var nowStarted = string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase);
 
-	        // Synchronisation idempotente (évite les races room.status vs game.status) :
-	        // on garantit que (IsStarted, Content, raccourcis) correspondent au statut du jeu.
-	        var hasGamePlayLoaded = _tableVm.GameZone.Content != null || _gamePlayVm != null;
+        // Synchronisation idempotente (evite les races room.status vs game.status) :
+        // on garantit que (IsStarted, Content, raccourcis) correspondent au statut du jeu.
+        var hasGamePlayLoaded = _tableVm.GameZone.Content != null || _gamePlayVm != null;
 
-	        if (nowStarted)
-	        {
-                CancelRoomStopGraceDelay();
-	            if (!_tableVm.GameZone.IsStarted)
-	            {
-	                SetRoomShortcutsForStarted(started: true);
-	                _announcements.TableInfo("Table démarrée.");
-	                try { _sounds.Play(SoundId.TableStarted); } catch { }
-	                _ = RequestTurnAnnouncementAsync();
-	            }
-	            else
-	            {
-	                // S'assure que les raccourcis room.* sont cohérents (owner/spectateur).
-	                SetRoomShortcutsForStarted(started: true);
-	            }
+        if (nowStarted)
+        {
+            EnterStartedFlow(source: "game.status", fromGameStatus: true, announceIfFirst: true);
+            return;
+        }
 
-	            if (!hasGamePlayLoaded)
-	            {
-	                EnsureGamePlayLoaded();
-	            }
+        ResetStartFlow(source: "game.status.stop");
 
-	            SyncGameplayShortcuts();
-	            return;
-	        }
+        // Fin de partie : le serveur remet la table en "setup" (reset systeme).
+        // En cas de race/deconnexion courte, forcer un refresh explicite de l'etat de table
+        // pour reactiver ajout/retrait de bots et relance via Entree.
+        try
+        {
+            _ = _session.RequestStateRefreshAsync(force: true);
+        }
+        catch
+        {
+            // best-effort
+        }
 
-            // Fin de partie : le serveur remet la table en "setup" (reset système).
-            // En cas de race/déconnexion courte, forcer un refresh explicite de l'état de table
-            // pour réactiver ajout/retrait de bots et relance via Entrée.
-            try
-            {
-                _ = _session.RequestStateRefreshAsync(force: true);
-            }
-            catch
-            {
-                // best-effort
-            }
+        // Le jeu n'est plus en "started" : on doit pouvoir relancer via Entree (room.start),
+        // donc on decharge la zone de jeu et on refocus l'ancre.
+        if (_tableVm.GameZone.IsStarted)
+        {
+            SetRoomShortcutsForStarted(started: false);
+        }
+        else
+        {
+            // Meme si IsStarted est deja faux (ex: room.updated recu avant),
+            // on force un resync des raccourcis pour eviter un etat incoherent.
+            SetRoomShortcutsForStarted(started: false);
+        }
 
-	        // Le jeu n'est plus en "started" : on doit pouvoir relancer via Entrée (room.start),
-	        // donc on décharge la zone de jeu et on refocus l'ancre.
-	        if (_tableVm.GameZone.IsStarted)
-	        {
-	            SetRoomShortcutsForStarted(started: false);
-	        }
-	        else
-	        {
-	            // Même si IsStarted est déjà faux (ex: room.updated reçu avant),
-	            // on force un resync des raccourcis pour éviter un état incohérent.
-	            SetRoomShortcutsForStarted(started: false);
-	        }
+        if (hasGamePlayLoaded)
+        {
+            CancelRoomStopGraceDelay();
+            // IMPORTANT (NVDA):
+            // Si le controle actuellement focuse (dans la zone de jeu) disparait, NVDA annonce souvent "indisponible".
+            // On park donc le focus sur un element stable avant de decharger le contenu.
+            FocusParking.Park();
 
-	        if (hasGamePlayLoaded)
-	        {
-                CancelRoomStopGraceDelay();
-	            // IMPORTANT (NVDA):
-	            // Si le contrôle actuellement focusé (dans la zone de jeu) disparaît, NVDA annonce souvent "indisponible".
-	            // On park donc le focus sur un élément stable avant de décharger le contenu.
-	            FocusParking.Park();
+            _tableVm.GameZone.Content = null;
+            await UnloadGamePlayVmAsync().ConfigureAwait(true);
+        }
 
-	            _tableVm.GameZone.Content = null;
-	            await UnloadGamePlayVmAsync().ConfigureAwait(true);
-	        }
+        // Le contenu a ete decharge, refocus sur l'ancre pour permettre Entree (room.start).
+        _ = _dispatcher.BeginInvoke(
+            DispatcherPriority.ApplicationIdle,
+            new Action(() => _tableVm.GameZone.RequestFocus(GameFocusReason.AfterDialog)));
+    }
 
-	        // Le contenu a été déchargé, refocus sur l'ancre pour permettre Entrée (room.start).
-	        _ = _dispatcher.BeginInvoke(
-	            DispatcherPriority.ApplicationIdle,
-	            new Action(() => _tableVm.GameZone.RequestFocus(GameFocusReason.AfterDialog)));
-	    }
-
-	    private async System.Threading.Tasks.Task UnloadGamePlayVmAsync()
+    private async System.Threading.Tasks.Task UnloadGamePlayVmAsync()
 	    {
 		        if (_gamePlayVm == null)
 		        {
@@ -1203,3 +1340,5 @@ internal sealed class GameTableBindings : IAsyncDisposable
         }
     }
 }
+
+

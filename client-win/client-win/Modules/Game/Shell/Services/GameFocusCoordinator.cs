@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Threading;
 using Serilog;
 
@@ -8,6 +9,7 @@ namespace client_win.Modules.Game.Shell.Services;
 public sealed class GameFocusCoordinator : IGameFocusCoordinator
 {
     private static readonly bool TraceEnabled = IsTraceEnabled();
+    private static readonly int[] CriticalRetryDelaysMs = { 90, 180, 320, 500, 750, 1050 };
 
     private readonly Dispatcher _dispatcher;
     private readonly object _gate = new();
@@ -39,6 +41,35 @@ public sealed class GameFocusCoordinator : IGameFocusCoordinator
         QueueAttempt(requestId, reason, DispatcherPriority.Input, activate: true);
         QueueAttempt(requestId, reason, DispatcherPriority.Loaded, activate: false);
         QueueAttempt(requestId, reason, DispatcherPriority.ApplicationIdle, activate: false);
+        if (IsCriticalReason(reason))
+        {
+            QueueCriticalRetries(requestId, reason);
+        }
+    }
+
+    private void QueueCriticalRetries(int requestId, GameFocusReason reason)
+    {
+        _ = Task.Run(async () =>
+        {
+            foreach (var delayMs in CriticalRetryDelaysMs)
+            {
+                try
+                {
+                    await Task.Delay(delayMs).ConfigureAwait(false);
+                }
+                catch
+                {
+                    return;
+                }
+
+                if (requestId <= Volatile.Read(ref _completedRequestId) || requestId != _requestId)
+                {
+                    return;
+                }
+
+                QueueAttempt(requestId, reason, DispatcherPriority.ApplicationIdle, activate: false);
+            }
+        });
     }
 
     private void QueueAttempt(int requestId, GameFocusReason reason, DispatcherPriority priority, bool activate)
@@ -104,6 +135,13 @@ public sealed class GameFocusCoordinator : IGameFocusCoordinator
         }
 
         return true;
+    }
+
+    private static bool IsCriticalReason(GameFocusReason reason)
+    {
+        return reason is GameFocusReason.InitialLoad
+            or GameFocusReason.TableStarted
+            or GameFocusReason.ChoosePawn;
     }
 
     private static bool IsTraceEnabled()

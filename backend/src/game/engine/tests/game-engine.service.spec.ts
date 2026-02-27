@@ -794,4 +794,70 @@ describe('GameEngineService', () => {
     expect(bot?.isBot).toBe(true);
     expect(next.turn?.currentPlayerId).toBe(-11);
   });
+
+  it('sets metadata.lifecycle.startReady to false while config prompt is pending', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      { getHandler: jest.fn(() => null) } as any,
+      { compute: jest.fn(() => null) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      { attachGridRenderDescriptors: jest.fn((s: any) => s) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const state: any = {
+      status: 'started',
+      phase: 'setup',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      players: [{ id: 1, username: 'Lila', isBot: false }],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: { type: 'config_prompt', playerId: 1, blocking: true },
+      metadata: { gameType: 'lama', roomId: 1 },
+      extras: {},
+      log: [],
+    };
+
+    const exposed = (engine as any).exposeState(state, 'lama');
+    expect(exposed?.metadata?.lifecycle?.startReady).toBe(false);
+  });
+
+  it('sets metadata.lifecycle.startReady to true once started state has no config prompt', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      { getHandler: jest.fn(() => null) } as any,
+      { compute: jest.fn(() => null) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      { attachGridRenderDescriptors: jest.fn((s: any) => s) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const state: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 1,
+      lastRoll: null,
+      players: [{ id: 1, username: 'Lila', isBot: false }],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: null,
+      metadata: { gameType: 'lama', roomId: 1 },
+      extras: {},
+      log: [],
+    };
+
+    const exposed = (engine as any).exposeState(state, 'lama');
+    expect(exposed?.metadata?.lifecycle?.startReady).toBe(true);
+  });
 });
