@@ -237,22 +237,6 @@ export class LamaPresenter extends BasePresenterService {
               initialText: metadata.allowPlayAfterDraw ? 'oui' : 'non',
             },
             {
-              key: 'startingHandSize',
-              label: 'Nombre de cartes distribuées au départ',
-              kind: 'number',
-              min: 1,
-              max: 20,
-              initialText: String(metadata.startingHandSize ?? 6),
-            },
-            {
-              key: 'copiesPerCardValue',
-              label: "Nombre d'exemplaires par carte (1-6 et LAMA)",
-              kind: 'number',
-              min: 1,
-              max: 20,
-              initialText: String(metadata.copiesPerCardValue ?? 8),
-            },
-            {
               key: 'allowDrawAfterFirstQuit',
               label:
                 "Autoriser la pioche après qu’un joueur s’est retiré (dans la manche) (oui/non)",

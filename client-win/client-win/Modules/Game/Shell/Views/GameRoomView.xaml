@@ -344,9 +344,13 @@
                                             </MultiDataTrigger.Conditions>
                                             <Setter Property="Visibility" Value="Visible" />
                                         </MultiDataTrigger>
-                                        <DataTrigger Binding="{Binding IsStartWizardConfigLoading}" Value="True">
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding IsStartWizardConfigStep}" Value="True" />
+                                                <Condition Binding="{Binding IsStartWizardConfigLoading}" Value="True" />
+                                            </MultiDataTrigger.Conditions>
                                             <Setter Property="IsEnabled" Value="False" />
-                                        </DataTrigger>
+                                        </MultiDataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Button.Style>

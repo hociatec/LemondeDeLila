@@ -274,7 +274,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
         if (candidates.Count == 0)
         {
-            await _dialogs.ShowInfo("Invitation", "Aucun joueur connecté à inviter.").ConfigureAwait(true);
+            await _dialogs.ShowInfo("Invitation", "Aucun joueur connectï¿½ ï¿½ inviter.").ConfigureAwait(true);
             return;
         }
 
@@ -302,7 +302,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
         var picked = await _dialogs.Pick(
                 "Invitation",
-                "Choisir un joueur connecté :",
+                "Choisir un joueur connectï¿½ :",
                 labels,
                 okText: "Inviter",
                 cancelText: "Annuler")
@@ -357,7 +357,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
         if (roster.Count == 0)
         {
-            await _dialogs.ShowInfo("Table", "Aucun joueur à exclure/bannir.").ConfigureAwait(true);
+            await _dialogs.ShowInfo("Table", "Aucun joueur ï¿½ exclure/bannir.").ConfigureAwait(true);
             return;
         }
 
@@ -712,7 +712,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
                 object BuildTavernFallback()
                 {
-                    // Après une sortie de table, la taverne est un "hub" et ne doit pas servir de back-stack vers
+                    // Aprï¿½s une sortie de table, la taverne est un "hub" et ne doit pas servir de back-stack vers
                     // des vues modales (ex: Mon coffre fort). Fermer la taverne doit ramener au menu principal.
                     var safeReturn = returnContent is MainMenuViewModel ? returnContent : null;
                     var homeContent = _homeAccessor.HomeContent;
@@ -807,8 +807,8 @@ public sealed class GameTableOpener : IGameTableOpener
                     }
                     catch
                     {
-                        // Fallback de sécurité : si le retour vers l'écran précédent est impossible,
-                        // ouvrir la liste des tables publiques plutôt que de laisser un "écran vide".
+                        // Fallback de sï¿½curitï¿½ : si le retour vers l'ï¿½cran prï¿½cï¿½dent est impossible,
+                        // ouvrir la liste des tables publiques plutï¿½t que de laisser un "ï¿½cran vide".
                         _navigation.Show(BuildTavernFallback());
                     }
                 }
@@ -834,7 +834,7 @@ public sealed class GameTableOpener : IGameTableOpener
             }
             finally
             {
-                // Réactive l'ambiance/musique si on revient vers un écran qui en a une.
+                // Rï¿½active l'ambiance/musique si on revient vers un ï¿½cran qui en a une.
                 try
                 {
                     // Background handled by NavigationAudioSync (based on the shown view).
@@ -869,7 +869,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 boundSnapshotId = await _vault.SaveAsync(current.RoomId, boundSnapshotId).ConfigureAwait(true);
                 TryPersistTableAmbiencePrefsForSnapshot(boundSnapshotId);
                 _announcementService.Enqueue(
-                    "Table sauvegardée dans Mon coffre fort. Retour à la taverne.",
+                    "Table sauvegardï¿½e dans Mon coffre fort. Retour ï¿½ la taverne.",
                     AnnouncementPriority.Polite);
                 await ExitAsync(null, forceTavern: true).ConfigureAwait(true);
             }
@@ -891,11 +891,11 @@ public sealed class GameTableOpener : IGameTableOpener
                 }
                 catch
                 {
-                    // best-effort: si ça échoue, on quitte quand même.
+                    // best-effort: si ï¿½a ï¿½choue, on quitte quand mï¿½me.
                 }
             }
 
-            // Quitter une table depuis l'UI doit toujours ramener à la taverne (même si on vient d'une autre vue).
+            // Quitter une table depuis l'UI doit toujours ramener ï¿½ la taverne (mï¿½me si on vient d'une autre vue).
             await ExitAsync(forceTavern: true).ConfigureAwait(true);
         }
 
@@ -909,7 +909,7 @@ public sealed class GameTableOpener : IGameTableOpener
         {
             if (session == null)
             {
-                try { await _dialogs.ShowInfo("Règles", "Connexion à la tableâ€¦").ConfigureAwait(true); } catch { }
+                try { await _dialogs.ShowInfo("Rï¿½gles", "Connexion ï¿½ la tableâ€¦").ConfigureAwait(true); } catch { }
                 return;
             }
 
@@ -956,7 +956,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         .ConfigureAwait(false);
                     if (completed != tcs.Task)
                     {
-                        throw new TimeoutException("Règles : délai dépassé.");
+                        throw new TimeoutException("Rï¿½gles : dï¿½lai dï¿½passï¿½.");
                     }
 
                     var rules = await tcs.Task.ConfigureAwait(false);
@@ -964,7 +964,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     {
                         GameRulesWindow.Show(
                             owner: Application.Current?.MainWindow,
-                            title: $"Règles - {gameName}",
+                            title: $"Rï¿½gles - {gameName}",
                             rules: rules);
                     }, DispatcherPriority.Normal).Task.ConfigureAwait(false);
                 }
@@ -977,7 +977,7 @@ public sealed class GameTableOpener : IGameTableOpener
             catch (Exception ex)
             {
                 var detail = string.IsNullOrWhiteSpace(errorDetail) ? ex.Message : errorDetail;
-                try { await _dialogs.ShowInfo("Règles", $"Impossible de charger les règles.\nDétail: {detail}").ConfigureAwait(true); } catch { }
+                try { await _dialogs.ShowInfo("Rï¿½gles", $"Impossible de charger les rï¿½gles.\nDï¿½tail: {detail}").ConfigureAwait(true); } catch { }
             }
             finally
             {
@@ -992,7 +992,7 @@ public sealed class GameTableOpener : IGameTableOpener
         {
             if (session == null)
             {
-                try { await _dialogs.ShowInfo("Ambiance", "Connexion à la tableâ€¦").ConfigureAwait(true); } catch { }
+                try { await _dialogs.ShowInfo("Ambiance", "Connexion ï¿½ la tableâ€¦").ConfigureAwait(true); } catch { }
                 return;
             }
 
@@ -1023,12 +1023,12 @@ public sealed class GameTableOpener : IGameTableOpener
                                      _remoteSounds.TryGetPath(sound) != null;
                     choices.Add(new TableAmbiencePickerWindow.Choice(
                         id,
-                        configured ? name : $"{name} (non configurée)"));
+                        configured ? name : $"{name} (non configurï¿½e)"));
                 }
             }
             else
             {
-                // Compat: si le serveur ne supporte pas encore les ambiances nommées.
+                // Compat: si le serveur ne supporte pas encore les ambiances nommï¿½es.
                 for (var i = 1; i <= 0; i++)
                 {
                     var id = $"TableAmbience{i}";
@@ -1036,7 +1036,7 @@ public sealed class GameTableOpener : IGameTableOpener
                                      _remoteSounds.TryGetPath(sound) != null;
                     choices.Add(new TableAmbiencePickerWindow.Choice(
                         id,
-                        configured ? $"Ambiance {i} (configurée)" : $"Ambiance {i} (non configurée)"));
+                        configured ? $"Ambiance {i} (configurï¿½e)" : $"Ambiance {i} (non configurï¿½e)"));
                 }
             }
 
@@ -1059,7 +1059,7 @@ public sealed class GameTableOpener : IGameTableOpener
             }
             catch
             {
-                try { await _dialogs.ShowError("Ambiance", "Impossible de mettre à jour l'ambiance.").ConfigureAwait(true); } catch { }
+                try { await _dialogs.ShowError("Ambiance", "Impossible de mettre ï¿½ jour l'ambiance.").ConfigureAwait(true); } catch { }
             }
         }
 
@@ -1148,7 +1148,7 @@ public sealed class GameTableOpener : IGameTableOpener
                                  _remoteSounds.TryGetPath(sound) != null;
                 result.Add(new TableAmbiencePickerWindow.Choice(
                     id,
-                    configured ? name : $"{name} (non configurée)"));
+                    configured ? name : $"{name} (non configurï¿½e)"));
             }
 
             return result;
@@ -1333,7 +1333,7 @@ public sealed class GameTableOpener : IGameTableOpener
             {
                 if (session == null)
                 {
-                    try { await _dialogs.ShowInfo("Règles", "Connexion à la tableâ€¦").ConfigureAwait(true); } catch { }
+                    try { await _dialogs.ShowInfo("Rï¿½gles", "Connexion ï¿½ la tableâ€¦").ConfigureAwait(true); } catch { }
                     return;
                 }
 
@@ -1380,7 +1380,7 @@ public sealed class GameTableOpener : IGameTableOpener
                             .ConfigureAwait(false);
                         if (completed != tcs.Task)
                         {
-                            throw new TimeoutException("Règles : délai dépassé.");
+                            throw new TimeoutException("Rï¿½gles : dï¿½lai dï¿½passï¿½.");
                         }
 
                         var rules = await tcs.Task.ConfigureAwait(false);
@@ -1388,7 +1388,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         {
                             GameRulesWindow.Show(
                                 owner: Application.Current?.MainWindow,
-                                title: $"Règles - {gameName}",
+                                title: $"Rï¿½gles - {gameName}",
                                 rules: rules);
                         }, DispatcherPriority.Normal).Task.ConfigureAwait(false);
                     }
@@ -1401,7 +1401,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 catch (Exception ex)
                 {
                     var detail = string.IsNullOrWhiteSpace(errorDetail) ? ex.Message : errorDetail;
-                    try { await _dialogs.ShowInfo("Règles", $"Impossible de charger les règles.\nDétail: {detail}").ConfigureAwait(true); } catch { }
+                    try { await _dialogs.ShowInfo("Rï¿½gles", $"Impossible de charger les rï¿½gles.\nDï¿½tail: {detail}").ConfigureAwait(true); } catch { }
                 }
                 finally
                 {
@@ -1449,7 +1449,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 focusCoordinator: _focus,
                 screenReader: _screenReader,
                 announcements: _announcementService);
-            vm.Status = "Connexion à la tableâ€¦";
+            vm.Status = "Connexion ï¿½ la tableâ€¦";
             vm.IsReconnecting = true;
             vm.GameZone.IsConnected = false;
             vm.Chat.IsConnected = false;
@@ -1471,7 +1471,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 session = connected;
                 var game = buildGameFromSession(session);
 
-                // Audio warm-up (best-effort): évite les latences (premier dé, bonne/mauvaise réponse, ambiance de table).
+                // Audio warm-up (best-effort): ï¿½vite les latences (premier dï¿½, bonne/mauvaise rï¿½ponse, ambiance de table).
                 // Ne bloque pas l'ouverture de la table.
                 _ = Task.Run(async () =>
                 {
@@ -1497,7 +1497,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     }
                 });
 
-                // Mettre à jour la présence (best-effort).
+                // Mettre ï¿½ jour la prï¿½sence (best-effort).
                 try
                 {
                     var roomName = session.LastRoomState?.Room?.Name;
@@ -1516,7 +1516,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         return;
                     }
 
-                    // Si on a ouvert une table existante, remplacer le DataContext par un VM complet basé sur le manifest.
+                    // Si on a ouvert une table existante, remplacer le DataContext par un VM complet basï¿½ sur le manifest.
                     if (!ReferenceEquals(placeholderGame, game))
                     {
                             var start = startHandler ?? (() => session.SendCommandAsync("room.start", payload: null));
@@ -1544,7 +1544,7 @@ public sealed class GameTableOpener : IGameTableOpener
 	                            focusCoordinator: _focus,
 	                            screenReader: _screenReader,
 	                            announcements: _announcementService);
-	                        newVm.Status = "Connexion à la tableâ€¦";
+	                        newVm.Status = "Connexion ï¿½ la tableâ€¦";
 	                        newVm.IsReconnecting = true;
 	                        newVm.GameZone.IsConnected = false;
 	                        newVm.Chat.IsConnected = false;
@@ -1593,7 +1593,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     }
 
                     var createdMessage = isNew
-                        ? $"Table de {game.Name} créée. Ajoutez des bots et commencez à jouer."
+                        ? $"Table de {game.Name} crï¿½ï¿½e. Ajoutez des bots et commencez ï¿½ jouer."
                         : $"Table rejointe : {game.Name}.";
                     new GameHistorySink(dispatcher, vm.History, _announcementService).Add(createdMessage);
 
@@ -1681,8 +1681,8 @@ public sealed class GameTableOpener : IGameTableOpener
                     bindings.Attach();
                     bindings.InitializeFromLastState();
 
-                    // Précharge les sons de jeu dès l'ouverture de la table pour éviter la latence
-                    // (MediaOpened / cache distant) lors du premier déclenchement.
+                    // Prï¿½charge les sons de jeu dï¿½s l'ouverture de la table pour ï¿½viter la latence
+                    // (MediaOpened / cache distant) lors du premier dï¿½clenchement.
                     try
                     {
                         // Already preloaded above (best-effort).
@@ -1692,7 +1692,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         // best-effort
                     }
 
-                    vm.Status = "Table prête.";
+                    vm.Status = "Table prï¿½te.";
                     vm.IsReconnecting = false;
                     vm.GameZone.IsConnected = true;
                     vm.Chat.IsConnected = true;
@@ -1715,8 +1715,8 @@ public sealed class GameTableOpener : IGameTableOpener
                           }
                         else
                         {
-                            // room.left: quitter (ou être éjecté) doit toujours ramener à la taverne.
-                            _ = ExitAsync("Vous avez quitté la table.", forceTavern: true);
+                            // room.left: quitter (ou ï¿½tre ï¿½jectï¿½) doit toujours ramener ï¿½ la taverne.
+                            _ = ExitAsync("Vous avez quittï¿½ la table.", forceTavern: true);
                         }
                     };
                     session.Left += onSessionLeft;
@@ -1730,14 +1730,14 @@ public sealed class GameTableOpener : IGameTableOpener
 
                         if (state == client_win.Modules.Network.WebSockets.WebSocketState.Connecting)
                         {
-                            vm.Status = "Connexion à la tableâ€¦";
+                            vm.Status = "Connexion ï¿½ la tableâ€¦";
                             vm.IsReconnecting = true;
                             vm.GameZone.IsConnected = false;
                             vm.Chat.IsConnected = false;
                         }
                         else if (state == client_win.Modules.Network.WebSockets.WebSocketState.Connected)
                         {
-                            vm.Status = "Table prête.";
+                            vm.Status = "Table prï¿½te.";
                             vm.IsReconnecting = false;
                             vm.GameZone.IsConnected = true;
                             vm.Chat.IsConnected = true;
@@ -1960,13 +1960,13 @@ public sealed class GameTableOpener : IGameTableOpener
                 CancelActionType: "mnemo_prompt_cancel",
                 Fields: new[]
                 {
-                    new GameRoomViewModel.StartWizardConfigField("correctSoloPoints", "Points si un seul joueur répond correctement", "number", null, null, "2"),
-                    new GameRoomViewModel.StartWizardConfigField("correctMultiPoints", "Points par joueur en cas de bonnes réponses multiples", "number", null, null, "1"),
-                    new GameRoomViewModel.StartWizardConfigField("wrongPoints", "Points appliqués en cas de mauvaise réponse", "number", null, null, "0"),
-                    new GameRoomViewModel.StartWizardConfigField("timeoutPoints", "Points appliqués sans réponse (timeout)", "number", null, null, "-1"),
+                    new GameRoomViewModel.StartWizardConfigField("correctSoloPoints", "Points si un seul joueur rï¿½pond correctement", "number", null, null, "2"),
+                    new GameRoomViewModel.StartWizardConfigField("correctMultiPoints", "Points par joueur en cas de bonnes rï¿½ponses multiples", "number", null, null, "1"),
+                    new GameRoomViewModel.StartWizardConfigField("wrongPoints", "Points appliquï¿½s en cas de mauvaise rï¿½ponse", "number", null, null, "0"),
+                    new GameRoomViewModel.StartWizardConfigField("timeoutPoints", "Points appliquï¿½s sans rï¿½ponse (timeout)", "number", null, null, "-1"),
                     new GameRoomViewModel.StartWizardConfigField("targetPoints", "Score cible pour gagner", "number", null, null, "20"),
                     new GameRoomViewModel.StartWizardConfigField("useTimer", "Activer le chrono par question", "boolean", null, null, "oui"),
-                    new GameRoomViewModel.StartWizardConfigField("timerSeconds", "Durée du chrono par question (secondes)", "number", null, null, "30"),
+                    new GameRoomViewModel.StartWizardConfigField("timerSeconds", "Durï¿½e du chrono par question (secondes)", "number", null, null, "30"),
                     new GameRoomViewModel.StartWizardConfigField("interQuestionSeconds", "Pause entre les questions (secondes)", "number", null, null, "15"),
                 });
         }
@@ -1982,13 +1982,11 @@ public sealed class GameTableOpener : IGameTableOpener
             CancelActionType: null,
             Fields: new[]
             {
-                new GameRoomViewModel.StartWizardConfigField("loseAtScore", "Score de défaite (jetons)", "number", 5, 200, "40"),
+                new GameRoomViewModel.StartWizardConfigField("loseAtScore", "Score de dï¿½faite (jetons)", "number", 5, 200, "40"),
                 new GameRoomViewModel.StartWizardConfigField("roundPauseSeconds", "Pause entre manches (secondes)", "number", 0, 120, "2"),
-                new GameRoomViewModel.StartWizardConfigField("allowPlayAfterDraw", "Autoriser de rejouer après une pioche", "boolean", null, null, "non"),
-                new GameRoomViewModel.StartWizardConfigField("startingHandSize", "Nombre de cartes distribuées au départ", "number", 1, 20, "6"),
-                new GameRoomViewModel.StartWizardConfigField("copiesPerCardValue", "Nombre d'exemplaires par carte (1-6 et LAMA)", "number", 1, 20, "8"),
-                new GameRoomViewModel.StartWizardConfigField("allowDrawAfterFirstQuit", "Autoriser la pioche après qu’un joueur s’est retiré (dans la manche)", "boolean", null, null, "non"),
-                new GameRoomViewModel.StartWizardConfigField("returnTokenFromRound", "Manche à partir de laquelle un jeton peut être rendu", "number", 1, 50, "2"),
+                new GameRoomViewModel.StartWizardConfigField("allowPlayAfterDraw", "Autoriser de rejouer aprï¿½s une pioche", "boolean", null, null, "non"),
+                new GameRoomViewModel.StartWizardConfigField("allowDrawAfterFirstQuit", "Autoriser la pioche aprï¿½s quï¿½un joueur sï¿½est retirï¿½ (dans la manche)", "boolean", null, null, "non"),
+                new GameRoomViewModel.StartWizardConfigField("returnTokenFromRound", "Manche ï¿½ partir de laquelle un jeton peut ï¿½tre rendu", "number", 1, 50, "2"),
             });
     }
 

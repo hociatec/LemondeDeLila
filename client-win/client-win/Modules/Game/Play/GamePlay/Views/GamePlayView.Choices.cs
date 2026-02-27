@@ -266,6 +266,19 @@ public partial class GamePlayView
                 return;
             }
 
+            if (_pendingInitialInteractiveFocus &&
+                IsFocusInsideThisGameView() &&
+                ChoicesList.IsVisible &&
+                ChoicesList.Items.Count > 0)
+            {
+                _pendingInitialInteractiveFocus = false;
+                Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+                {
+                    FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
+                }));
+                return;
+            }
+
             // Ne pas voler le focus si l'utilisateur est dans une zone de saisie/lecture (ex: historique).
             if (IsTextInputFocused())
             {
@@ -413,6 +426,7 @@ public partial class GamePlayView
     {
         if (DataContext is GamePlayViewModel vmPrompt && vmPrompt.HasInlinePrompt)
         {
+            _pendingInitialInteractiveFocus = false;
             FocusFirstInlinePromptField();
             return;
         }
@@ -437,6 +451,7 @@ public partial class GamePlayView
         {
             if (IsFocusWithinChoicesList())
             {
+                _pendingInitialInteractiveFocus = false;
                 return;
             }
             if (ChoicesList.SelectedIndex < 0)
@@ -449,6 +464,7 @@ public partial class GamePlayView
             ChoicesList.SelectedIndex = idx;
             ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
             TryFocusChoiceIndex(ChoicesList, idx);
+            _pendingInitialInteractiveFocus = false;
             return;
         }
 
@@ -461,11 +477,13 @@ public partial class GamePlayView
         {
             if ((GridBoard?.IsKeyboardFocusWithin ?? false) || (GridItems?.IsKeyboardFocusWithin ?? false))
             {
+                _pendingInitialInteractiveFocus = false;
                 return;
             }
             Focus();
             Keyboard.Focus(this);
             TryFocusPreferredGridCell();
+            _pendingInitialInteractiveFocus = false;
             return;
         }
 
@@ -473,6 +491,7 @@ public partial class GamePlayView
         {
             if (IsFocusWithinHandList())
             {
+                _pendingInitialInteractiveFocus = false;
                 return;
             }
             if (HandList.SelectedIndex < 0)
@@ -485,6 +504,7 @@ public partial class GamePlayView
             HandList.SelectedIndex = idx;
             HandList.ScrollIntoView(HandList.SelectedItem);
             TryFocusChoiceIndex(HandList, idx);
+            _pendingInitialInteractiveFocus = false;
             return;
         }
 
@@ -492,6 +512,7 @@ public partial class GamePlayView
         {
             if (IsFocusWithinChoicesList())
             {
+                _pendingInitialInteractiveFocus = false;
                 return;
             }
             if (ChoicesList.SelectedIndex < 0)
@@ -504,6 +525,7 @@ public partial class GamePlayView
             ChoicesList.SelectedIndex = idx;
             ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
             TryFocusChoiceIndex(ChoicesList, idx);
+            _pendingInitialInteractiveFocus = false;
             return;
         }
 
@@ -518,6 +540,7 @@ public partial class GamePlayView
             }
             Focus();
             Keyboard.Focus(this);
+            _pendingInitialInteractiveFocus = true;
         }
     }
 
@@ -619,6 +642,19 @@ public partial class GamePlayView
         _handCardsCollection = handNotify;
         _handCardsChanged = (_, __) =>
         {
+            if (_pendingInitialInteractiveFocus &&
+                IsFocusInsideThisGameView() &&
+                HandList.IsVisible &&
+                HandList.Items.Count > 0)
+            {
+                _pendingInitialInteractiveFocus = false;
+                Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+                {
+                    FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
+                }));
+                return;
+            }
+
             if (IsTextInputFocused())
             {
                 return;

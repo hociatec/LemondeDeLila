@@ -117,6 +117,51 @@ describe('LamaService', () => {
     expect((started.metadata?.discard ?? []).length).toBeGreaterThan(0);
   });
 
+  it('rejects conflicting setup when deck is too small for players and starting hand', async () => {
+    const { service } = createLamaServiceForTest();
+
+    const state: any = service.hydrateInitialState({
+      status: 'started',
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [
+        { id: 1, username: 'Owner' },
+        { id: 2, username: 'B' },
+        { id: 3, username: 'C' },
+        { id: 4, username: 'D' },
+      ],
+      log: [],
+      metadata: {},
+    } as any);
+
+    const after: any = service.applyActions(state, [
+      {
+        type: 'lama_set_config',
+        payload: {
+          loseAtScore: 40,
+          roundPauseSeconds: 2,
+          allowPlayAfterDraw: 'true',
+          startingHandSize: 6,
+          copiesPerCardValue: 3,
+          allowDrawAfterFirstQuit: 'false',
+          returnTokenFromRound: 2,
+        },
+        meta: { actorId: 1 },
+      } as any,
+    ]);
+
+    // 4 players * 6 cards + 1 discard > 7 * 3 deck cards => invalid combo, stay in setup.
+    expect(String(after.phase)).toBe('setup');
+    expect(String(after.metadata?.step ?? '')).toBe('setup_config');
+    const messages = (after.log ?? []).map((l: any) =>
+      String(l?.message ?? ''),
+    );
+    expect(
+      messages.some((m: string) =>
+        m.includes('configuration invalide'),
+      ),
+    ).toBe(true);
+  });
+
   it('suggests a bot action on its turn', async () => {
     const { service } = createLamaServiceForTest();
 

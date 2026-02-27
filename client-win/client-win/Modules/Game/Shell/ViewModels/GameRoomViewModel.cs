@@ -24,6 +24,7 @@ public sealed class GameRoomViewModel : ObservableObject
     private Task<StartWizardConfigPrompt?>? _startWizardConfigPromptLoadTask;
     private StartWizardConfigPrompt? _startWizardPrompt;
     private TaskCompletionSource<StartWizardResult?>? _startWizardTcs;
+    private int _startWizardSessionId;
 
     public GameRoomViewModel(
         CatalogGame game,
@@ -162,6 +163,7 @@ public sealed class GameRoomViewModel : ObservableObject
         StartWizardConfigPrompt? initialConfigPrompt,
         Func<Task<StartWizardConfigPrompt?>>? loadConfigPromptAsync)
     {
+        var sessionId = unchecked(++_startWizardSessionId);
         _startWizardLoadConfigPrompt = loadConfigPromptAsync;
         _startWizardConfigPromptLoadTask = null;
         _startWizardPrompt = null;
@@ -185,10 +187,44 @@ public sealed class GameRoomViewModel : ObservableObject
         {
             _startWizardConfigPromptLoadTask = _startWizardLoadConfigPrompt();
             IsStartWizardConfigLoading = true;
+            _ = PrefetchStartWizardPromptAsync(sessionId);
         }
 
         _startWizardTcs = new TaskCompletionSource<StartWizardResult?>(TaskCreationOptions.RunContinuationsAsynchronously);
         return await _startWizardTcs.Task.ConfigureAwait(true);
+    }
+
+    private async Task PrefetchStartWizardPromptAsync(int sessionId)
+    {
+        if (_startWizardConfigPromptLoadTask == null)
+        {
+            return;
+        }
+
+        try
+        {
+            var prompt = await _startWizardConfigPromptLoadTask.ConfigureAwait(true);
+            if (!IsStartWizardOpen || sessionId != _startWizardSessionId)
+            {
+                return;
+            }
+
+            BindStartWizardConfigPrompt(prompt);
+        }
+        catch
+        {
+            if (IsStartWizardOpen && sessionId == _startWizardSessionId && StartWizardConfigFields.Count == 0)
+            {
+                BindStartWizardConfigPrompt(null);
+            }
+        }
+        finally
+        {
+            if (IsStartWizardOpen && sessionId == _startWizardSessionId)
+            {
+                IsStartWizardConfigLoading = false;
+            }
+        }
     }
 
     public async Task GoNextStartWizardStepAsync()
@@ -233,6 +269,7 @@ public sealed class GameRoomViewModel : ObservableObject
             return;
         }
 
+        unchecked { _startWizardSessionId++; }
         IsStartWizardOpen = false;
         _startWizardLoadConfigPrompt = null;
         _startWizardConfigPromptLoadTask = null;
@@ -268,6 +305,7 @@ public sealed class GameRoomViewModel : ObservableObject
                 GameConfigActionType: string.Empty,
                 GameConfigPayload: new Dictionary<string, object>(StringComparer.Ordinal));
 
+            unchecked { _startWizardSessionId++; }
             IsStartWizardOpen = false;
             _startWizardLoadConfigPrompt = null;
             _startWizardConfigPromptLoadTask = null;
@@ -295,6 +333,7 @@ public sealed class GameRoomViewModel : ObservableObject
             GameConfigActionType: (_startWizardPrompt?.ActionType ?? string.Empty).Trim(),
             GameConfigPayload: payload);
 
+        unchecked { _startWizardSessionId++; }
         IsStartWizardOpen = false;
         _startWizardLoadConfigPrompt = null;
         _startWizardConfigPromptLoadTask = null;

@@ -237,7 +237,17 @@ export class LamaSetupService {
     const activePlayers = players.filter((p) => p?.id).length;
     const deckSize = 7 * copiesPerCardValue;
     if (activePlayers * startingHandSize + 1 > deckSize) {
-      return state;
+      const maxHandSize =
+        activePlayers > 0 ? Math.floor((deckSize - 1) / activePlayers) : 0;
+      const name = this.shared.playerLabel(players as any[], actorId);
+      const nextLog = this.logger.append(
+        state.log,
+        `${name} propose une configuration invalide: ${startingHandSize} cartes de départ avec ${activePlayers} joueurs et ${copiesPerCardValue} exemplaires par carte. Maximum autorisé: ${Math.max(maxHandSize, 1)} cartes.`,
+      );
+      return {
+        ...state,
+        log: nextLog,
+      };
     }
 
     const updatedMeta: LamaMetadata = {
