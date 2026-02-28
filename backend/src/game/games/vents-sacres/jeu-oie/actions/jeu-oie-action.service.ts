@@ -98,7 +98,7 @@ export class JeuOieActionService {
     };
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} choisit le pion : ${String(chosen.label ?? 'pion').trim()}.`,
+      `${resolvePlayerNameFromState(next, playerId)} a choisi le pion : ${String(chosen.label ?? 'pion').trim()}.`,
     );
 
     const playersForPending = Array.isArray(next.players) ? next.players : [];
@@ -505,3 +505,4 @@ export class JeuOieActionService {
     return this.turnPolicies ?? new TurnPoliciesService(this.core);
   }
 }
+

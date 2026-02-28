@@ -115,7 +115,7 @@ export class FrousseActionService {
     const label = chosen.label ?? chosen.id ?? 'pion';
     const withLog = this.core.appendLog(
       next,
-      `[Frousse Party] ${resolvePlayerNameFromState(next, playerId)} choisit le pion: ${label}.`,
+      `[Frousse Party] ${resolvePlayerNameFromState(next, playerId)} a choisi le pion: ${label}.`,
     );
     return this.finalizeStarterAfterPawnSelection(withLog);
   }
@@ -1549,3 +1549,4 @@ function normalizeForContains(value: string): string {
     .replace(/\s+/g, ' ')
     .trim();
 }
+

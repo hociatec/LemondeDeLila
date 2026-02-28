@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { MinuitActionService } from '../actions/minuit-action.service';
@@ -100,7 +100,7 @@ describe('MinuitActionService', () => {
         positions: { 1: 0, 2: 0 },
         statuses: { skipTurn: {}, keepTurn: {} },
         tiles: [
-          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
+          { n: 1, title: 'Case dÃ©part', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 3, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 4, title: 'Case neutre', type: 'neutral', description: '' },
@@ -153,7 +153,7 @@ describe('MinuitActionService', () => {
         positions: { 1: 0, 2: 0 },
         statuses: { skipTurn: {}, keepTurn: {} },
         tiles: [
-          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
+          { n: 1, title: 'Case dÃ©part', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
         ],
         decks: { cards: [], discard: [] },
@@ -201,7 +201,7 @@ describe('MinuitActionService', () => {
         type: 'pick_pawn',
         playerId: -1,
         blocking: true,
-        choices: ['Le Lutin', 'Le Renne', 'Le Père Noël'],
+        choices: ['Le Lutin', 'Le Renne', 'Le PÃ¨re NoÃ«l'],
         data: {
           pawns: [
             { id: 'Le Lutin', label: 'Le Lutin' },
@@ -258,11 +258,11 @@ describe('MinuitActionService', () => {
         type: 'pick_pawn',
         playerId: '-101',
         blocking: true,
-        choices: ['Le Bonhomme de Neige', 'La Fée des Flocons'],
+        choices: ['Le Bonhomme de Neige', 'La FÃ©e des Flocons'],
         data: {
           pawns: [
             { id: 'Le Bonhomme de Neige', label: 'Le Bonhomme de Neige' },
-            { id: 'La Fée des Flocons', label: 'La Fée des Flocons' },
+            { id: 'La FÃ©e des Flocons', label: 'La FÃ©e des Flocons' },
           ],
         },
       } as any,
@@ -304,10 +304,10 @@ describe('MinuitActionService', () => {
         type: 'pick_pawn',
         playerId: 1,
         blocking: true,
-        choices: ['La Fée des Flocons', 'Le Bonhomme de Neige'],
+        choices: ['La FÃ©e des Flocons', 'Le Bonhomme de Neige'],
         data: {
           pawns: [
-            { id: 'La Fée des Flocons', label: 'La Fée des Flocons' },
+            { id: 'La FÃ©e des Flocons', label: 'La FÃ©e des Flocons' },
             { id: 'Le Bonhomme de Neige', label: 'Le Bonhomme de Neige' },
           ],
         },
@@ -317,7 +317,7 @@ describe('MinuitActionService', () => {
     } as any;
 
     const next = service.applyActions(state, [
-      { type: 'pick_pawn', payload: { pawnId: 'La Fée des Flocons' } } as any,
+      { type: 'pick_pawn', payload: { pawnId: 'La FÃ©e des Flocons' } } as any,
     ]);
 
     expect(next.pending).toBeNull();
@@ -352,7 +352,7 @@ describe('MinuitActionService', () => {
         pawnChoices: [
           {
             id: 'fee-des-flocons',
-            name: 'La Fée des Flocons',
+            name: 'La FÃ©e des Flocons',
             description: 'Agile',
           },
           { id: 'lutin', name: 'Le Lutin', description: 'Rapide' },
@@ -362,10 +362,10 @@ describe('MinuitActionService', () => {
         type: 'pick_pawn',
         playerId: 1,
         blocking: true,
-        choices: ['La Fée des Flocons: Agile', 'Le Lutin: Rapide'],
+        choices: ['La FÃ©e des Flocons: Agile', 'Le Lutin: Rapide'],
         data: {
           pawns: [
-            { id: 'fee-des-flocons', label: 'La Fée des Flocons: Agile' },
+            { id: 'fee-des-flocons', label: 'La FÃ©e des Flocons: Agile' },
             { id: 'lutin', label: 'Le Lutin: Rapide' },
           ],
         },
@@ -380,7 +380,7 @@ describe('MinuitActionService', () => {
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
     expect(
       messages.some((m) =>
-        m.includes('Lilas choisit le pion: La Fée des Flocons.'),
+        m.includes('Lilas a choisi le pion: La FÃ©e des Flocons.'),
       ),
     ).toBe(true);
     expect(messages.some((m) => m.includes('fee-des-flocons'))).toBe(false);
@@ -413,7 +413,7 @@ describe('MinuitActionService', () => {
         pawnChoices: [
           {
             id: 'bonhomme-pain-epices',
-            name: "Le Petit Bonhomme en Pain d'Épices",
+            name: "Le Petit Bonhomme en Pain d'Ã‰pices",
             description: '',
           },
           { id: 'lutin', name: 'Le Lutin', description: '' },
@@ -423,12 +423,12 @@ describe('MinuitActionService', () => {
         type: 'pick_pawn',
         playerId: 1,
         blocking: true,
-        choices: ["Le Petit Bonhomme en Pain d'Épices", 'Le Lutin'],
+        choices: ["Le Petit Bonhomme en Pain d'Ã‰pices", 'Le Lutin'],
         data: {
           pawns: [
             {
               id: 'bonhomme-pain-epices',
-              label: "Le Petit Bonhomme en Pain d'Épices",
+              label: "Le Petit Bonhomme en Pain d'Ã‰pices",
             },
             { id: 'lutin', label: 'Le Lutin' },
           ],
@@ -442,9 +442,9 @@ describe('MinuitActionService', () => {
       { type: 'pick_pawn', payload: { pawnId: 'bonhomme-pain-epices' } } as any,
     ]);
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
-    const chooseLogs = messages.filter((m) => m.includes('choisit le pion:'));
+    const chooseLogs = messages.filter((m) => m.includes('a choisi le pion:'));
     expect(chooseLogs.length).toBeGreaterThan(0);
-    expect(chooseLogs[0]).toContain('Lilas choisit le pion:');
+    expect(chooseLogs[0]).toContain('Lilas a choisi le pion:');
   });
 
   it('logs quiz result in a single concise sentence', () => {
@@ -478,7 +478,7 @@ describe('MinuitActionService', () => {
           failureDelta: 0,
         },
         tiles: [
-          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
+          { n: 1, title: 'Case dÃ©part', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
         ],
         decks: { cards: [], discard: [] },
@@ -524,7 +524,7 @@ describe('MinuitActionService', () => {
         positions: { 1: 1, 2: 0 },
         statuses: { skipTurn: {}, keepTurn: {} },
         tiles: [
-          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
+          { n: 1, title: 'Case dÃ©part', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 3, title: 'Case carte', type: 'card', description: 'Piochez.' },
           { n: 4, title: 'Case neutre', type: 'neutral', description: '' },
@@ -537,7 +537,7 @@ describe('MinuitActionService', () => {
               title: 'Luge de vitesse',
               category: 'Surprises',
               kind: 'Surprise',
-              lines: ['Avancez jusquà la prochaine Carte Noël.'],
+              lines: ['Avancez jusquÃ  la prochaine Carte NoÃ«l.'],
             },
           ],
           discard: [],
@@ -587,7 +587,7 @@ describe('MinuitActionService', () => {
         positions: { 1: 2, 2: 5 },
         statuses: { skipTurn: {}, keepTurn: {} },
         tiles: [
-          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
+          { n: 1, title: 'Case dÃ©part', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 3, title: 'Case neutre', type: 'neutral', description: '' },
           {
@@ -621,7 +621,7 @@ describe('MinuitActionService', () => {
     expect(
       messages.some((m) =>
         m.includes(
-          'Enchaînement de cases interrompu pour éviter une boucle infinie.',
+          'EnchaÃ®nement de cases interrompu pour Ã©viter une boucle infinie.',
         ),
       ),
     ).toBe(true);
@@ -674,3 +674,4 @@ describe('Minuit Rulebook compat', () => {
     });
   });
 });
+

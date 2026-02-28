@@ -279,36 +279,7 @@ export class PanierExpressService extends AbstractGameService {
         positions,
       },
     };
-    // Journaliser la liste attribuée à chaque joueur dès le lancement.
-    let withLogs: GameStateEntity = initial;
-    hydratedPlayers.forEach((p, idx) => {
-      const originalPlayer = (baseState.players ?? [])[idx];
-      const hadPawn = this.getPawnText(originalPlayer).length > 0;
-      const hadList =
-        Array.isArray(originalPlayer?.shoppingList) &&
-        originalPlayer.shoppingList.length > 0;
-      if (hadList) {
-        return; // ne pas relogger une liste déjà attribuée (évite l'impression de réinitialisation).
-      }
-      const list = Array.isArray(p.shoppingList) ? p.shoppingList : [];
-      const listLabel = this.utils.formatCourseLabels(list);
-      const label = (p.username ?? '').trim() || 'Joueur ' + p.id;
-      withLogs = this.core.appendLog(
-        withLogs,
-        '[Panier Express] ' +
-          label +
-          ' re\u00e7oit une liste de courses: ' +
-          listLabel.join(', '),
-      );
-      const pawn = this.getPawnText(p);
-      if (!hadPawn && pawn) {
-        withLogs = this.core.appendLog(
-          withLogs,
-          '[Panier Express] ' + label + ' choisit le pion: ' + pawn,
-        );
-      }
-    });
-    return this.queuePawnSelection(withLogs);
+    return this.queuePawnSelection(initial);
   }
 
   applyActions(
@@ -653,7 +624,7 @@ export class PanierExpressService extends AbstractGameService {
     assignedBots.forEach((bot) => {
       next = this.core.appendLog(
         next,
-        `[Panier Express] ${this.utils.playerName(next, bot.id)} choisit le pion: ${bot.pawn}.`,
+        `[Panier Express] ${this.utils.playerName(next, bot.id)} a choisi le pion: ${bot.pawn}.`,
       );
     });
     return next;
@@ -752,19 +723,18 @@ export class PanierExpressService extends AbstractGameService {
     const readyPlayers = withBots.players ?? [];
     const meta = this.getMetadata(withBots);
     let withLogs: GameStateEntity = withBots;
+    let metaAfterLogs = meta;
     if (!meta.pawnAnnouncementsDone) {
       readyPlayers.forEach((p) => {
         const pawn = this.getPawnText(p);
         if (!pawn) return;
         withLogs = this.core.appendLog(
           withLogs,
-          `[Panier Express] ${this.utils.playerName(withLogs, p.id)} choisit le pion: ${pawn}.`,
+          `[Panier Express] ${this.utils.playerName(withLogs, p.id)} a choisi le pion: ${pawn}.`,
         );
       });
-      withLogs = {
-        ...withLogs,
-        metadata: { ...meta, pawnAnnouncementsDone: true },
-      };
+      metaAfterLogs = { ...metaAfterLogs, pawnAnnouncementsDone: true };
+      withLogs = { ...withLogs, metadata: metaAfterLogs };
     }
     const started: GameStateEntity = {
       ...withLogs,
@@ -818,6 +788,30 @@ export class PanierExpressService extends AbstractGameService {
         next,
         `[Panier Express] D\u00e9but de partie : ${this.utils.playerName(next, starter.id)} commence.`,
       );
+    }
+    const metaNow = this.getMetadata(next);
+    if (!metaNow.shoppingListAnnouncementsDone) {
+      const readyPlayers = next.players ?? [];
+      let withLogs = next;
+      readyPlayers.forEach((p) => {
+        const list = Array.isArray((p as PanierExpressPlayer).shoppingList)
+          ? (p as PanierExpressPlayer).shoppingList
+          : [];
+        if (!list.length) return;
+        const listLabel = this.utils.formatCourseLabels(list);
+        const label = (p.username ?? '').trim() || 'Joueur ' + p.id;
+        withLogs = this.core.appendLog(
+          withLogs,
+          '[Panier Express] ' +
+            label +
+            ' re\u00e7oit une liste de courses: ' +
+            listLabel.join(', '),
+        );
+      });
+      next = {
+        ...withLogs,
+        metadata: { ...metaNow, shoppingListAnnouncementsDone: true },
+      };
     }
     return next;
   }
@@ -2949,7 +2943,7 @@ export class PanierExpressService extends AbstractGameService {
     };
     next = this.core.appendLog(
       next,
-      `[Panier Express] ${this.utils.playerName(state, resolved.playerId)} choisit le pion: ${chosen}.`,
+      `[Panier Express] ${this.utils.playerName(state, resolved.playerId)} a choisi le pion: ${chosen}.`,
     );
 
     const statusNow = String(state.status ?? '').toLowerCase();

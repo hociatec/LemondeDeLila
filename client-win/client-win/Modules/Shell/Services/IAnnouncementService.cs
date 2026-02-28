@@ -15,5 +15,6 @@ public interface IAnnouncementService
     void EnqueueMany(IEnumerable<string> messages, AnnouncementPriority priority = AnnouncementPriority.Polite);
     void CancelPending(bool cancelSpeech = false);
     void NotifyUserInteraction();
+    void SetGameplayUltraReactive(bool enabled);
 }
 

@@ -183,7 +183,7 @@ export class CatPattesActionService {
 
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} choisit le pion : ${chosen.label}.`,
+      `${resolvePlayerNameFromState(next, playerId)} a choisi le pion : ${chosen.label}.`,
     );
 
     const playersForPending = Array.isArray(next.players) ? next.players : [];
@@ -877,7 +877,7 @@ export class CatPattesActionService {
       changed = true;
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, player.id)} choisit le pion : ${nextPawn}.`,
+        `${resolvePlayerNameFromState(next, player.id)} a choisi le pion : ${nextPawn}.`,
       );
     }
 
@@ -1008,3 +1008,4 @@ export class CatPattesActionService {
     );
   }
 }
+

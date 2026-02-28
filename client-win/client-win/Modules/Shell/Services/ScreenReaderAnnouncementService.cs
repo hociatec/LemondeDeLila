@@ -12,7 +12,6 @@ namespace client_win.Modules.Shell.Services;
 public sealed class ScreenReaderAnnouncementService : IAnnouncementService
 {
     private readonly IScreenReaderAnnouncer _announcer;
-    private readonly Dispatcher _dispatcher;
     private readonly ILogger<ScreenReaderAnnouncementService> _logger;
     private readonly object _gate = new();
     private readonly Queue<(string Message, AnnouncementPriority Priority)> _queue = new();
@@ -20,9 +19,10 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
     private int _runId;
     private int _forceAssertive;
     private (string Message, long Ticks)? _lastSpoken;
+    private bool _gameplayUltraReactive;
 
-    private static readonly TimeSpan PoliteSpacing = TimeSpan.FromMilliseconds(120);
-    private static readonly TimeSpan AssertiveSpacing = TimeSpan.FromMilliseconds(50);
+    private static readonly TimeSpan PoliteSpacing = TimeSpan.FromMilliseconds(60);
+    private static readonly TimeSpan AssertiveSpacing = TimeSpan.Zero;
     private static readonly long DedupWindowTicks = Stopwatch.Frequency; // ~1s
 
     public ScreenReaderAnnouncementService(
@@ -31,7 +31,7 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
         ILogger<ScreenReaderAnnouncementService> logger)
     {
         _announcer = announcer ?? throw new ArgumentNullException(nameof(announcer));
-        _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+        _ = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -42,6 +42,18 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
         lock (_gate)
         {
             _forceAssertive = Math.Min(_forceAssertive + 1, 3);
+        }
+    }
+
+    public void SetGameplayUltraReactive(bool enabled)
+    {
+        lock (_gate)
+        {
+            _gameplayUltraReactive = enabled;
+            if (enabled)
+            {
+                _forceAssertive = Math.Max(_forceAssertive, 3);
+            }
         }
     }
 
@@ -121,14 +133,7 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
             _runId++;
             var runId = _runId;
 
-            if (_dispatcher.CheckAccess())
-            {
-                _ = RunAsync(runId);
-            }
-            else
-            {
-                _ = _dispatcher.BeginInvoke(new Func<Task>(() => RunAsync(runId)), DispatcherPriority.Input);
-            }
+            _ = Task.Run(() => RunAsync(runId));
         }
     }
 
@@ -166,7 +171,10 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
             }
 
             var (msg, prio) = next.Value;
-            var effective = forceAssertive > 0 ? AnnouncementPriority.Assertive : prio;
+            var ultraReactive = IsGameplayUltraReactive();
+            var effective = (ultraReactive || forceAssertive > 0)
+                ? AnnouncementPriority.Assertive
+                : prio;
             try
             {
                 if (!_announcer.IsRunning)
@@ -196,15 +204,36 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
                 _logger.LogDebug(ex, "Annonce NVDA échouée");
             }
 
-            try
+            var spacing = ultraReactive
+                ? TimeSpan.Zero
+                : (effective == AnnouncementPriority.Assertive ? AssertiveSpacing : PoliteSpacing);
+            if (spacing > TimeSpan.Zero && HasPendingMessages())
             {
-                var spacing = effective == AnnouncementPriority.Assertive ? AssertiveSpacing : PoliteSpacing;
-                await Task.Delay(spacing).ConfigureAwait(true);
+                try
+                {
+                    await Task.Delay(spacing).ConfigureAwait(false);
+                }
+                catch
+                {
+                    // ignore
+                }
             }
-            catch
-            {
-                // ignore
-            }
+        }
+    }
+
+    private bool HasPendingMessages()
+    {
+        lock (_gate)
+        {
+            return _queue.Count > 0;
+        }
+    }
+
+    private bool IsGameplayUltraReactive()
+    {
+        lock (_gate)
+        {
+            return _gameplayUltraReactive;
         }
     }
 

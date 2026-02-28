@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Threading;
+using System.Windows.Media;
 using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Game.Play.GamePlay.ViewModels;
 
@@ -260,36 +261,48 @@ public partial class GamePlayView
             // This avoids ending up stuck on "zone de jeu" between player/bot turns (e.g. LAMA).
             if (_restoreChoiceFocusAfterSubmit)
             {
-                Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+                if (ChoicesList.IsVisible && ChoicesList.Items.Count > 0)
                 {
-                    try
+                    Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
                     {
-                        if (!ChoicesList.IsVisible || ChoicesList.Items.Count <= 0)
+                        try
                         {
-                            return;
+                            if (!ChoicesList.IsVisible || ChoicesList.Items.Count <= 0)
+                            {
+                                return;
+                            }
+
+                            _restoreChoiceFocusAfterSubmit = false;
+
+                            var count = ChoicesList.Items.Count;
+                            var idx = _restoreChoiceFocusIndex;
+                            if (idx < 0) idx = 0;
+                            if (idx >= count) idx = count - 1;
+
+                            ChoicesList.SelectedIndex = idx;
+                            ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+                            // Silent restore: keep selection stable without forcing keyboard focus.
                         }
+                        catch
+                        {
+                            // ignore
+                        }
+                    }));
+                    return;
+                }
 
-                        _restoreChoiceFocusAfterSubmit = false;
-
-                        var count = ChoicesList.Items.Count;
-                        var idx = _restoreChoiceFocusIndex;
-                        if (idx < 0) idx = 0;
-                        if (idx >= count) idx = count - 1;
-
-                        ChoicesList.SelectedIndex = idx;
-                        ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
-                        // Silent restore: keep selection stable without forcing keyboard focus.
-                    }
-                    catch
-                    {
-                        // ignore
-                    }
-                }));
-                return;
+                _restoreChoiceFocusAfterSubmit = false;
             }
 
             if (_vm.PendingChoices.Count <= 0)
             {
+                if (ShouldRecoverBrokenFocus())
+                {
+                    Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+                    {
+                        FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
+                    }));
+                }
                 // Strict mode: never force root/game-zone focus when player choices collapse.
                 return;
             }
@@ -457,14 +470,17 @@ public partial class GamePlayView
         }
 
         // Passive refreshes (state updates from other players/bots) must not move focus
-        // when the user is already reading/interacting inside the game view.
-        if (!forceFromOutsideTextInput && IsFocusInsideThisGameView())
+        // when the user is already reading/interacting inside the game view, unless
+        // the current focus became invalid (collapsed/disabled).
+        if (!forceFromOutsideTextInput && IsFocusInsideThisGameView() && !ShouldRecoverBrokenFocus())
         {
             return;
         }
 
         // Never steal focus from chat/history or other areas on background state refreshes.
-        if (!forceFromOutsideTextInput && !IsFocusInsideThisGameView())
+        if (!forceFromOutsideTextInput &&
+            !IsFocusInsideThisGameView() &&
+            !ShouldRecoverBrokenFocus())
         {
             return;
         }
@@ -558,7 +574,7 @@ public partial class GamePlayView
 
         // Lors d'une demande explicite de retour au jeu (ex: Tab depuis chat/historique),
         // ne pas ancrer sur la racine "zone de jeu": attendre la prochaine cible interactive.
-        if (forceFromOutsideTextInput)
+        if (forceFromOutsideTextInput || ShouldRecoverBrokenFocus())
         {
             _pendingInitialInteractiveFocus = true;
             TryFocusGameViewRoot();
@@ -636,6 +652,37 @@ public partial class GamePlayView
             }
 
             focused = GetVisualOrLogicalParent(focused);
+        }
+
+        return false;
+    }
+
+    private bool ShouldRecoverBrokenFocus()
+    {
+        var window = Window.GetWindow(this);
+        if (window != null && !window.IsActive && !window.IsKeyboardFocusWithin)
+        {
+            return false;
+        }
+
+        if (Keyboard.FocusedElement is not DependencyObject focused)
+        {
+            return true;
+        }
+
+        if (PresentationSource.FromDependencyObject(focused) == null)
+        {
+            return true;
+        }
+
+        if (focused is UIElement ui)
+        {
+            return !ui.IsVisible || !ui.IsEnabled;
+        }
+
+        if (focused is FrameworkElement fe)
+        {
+            return !fe.IsVisible || !fe.IsEnabled;
         }
 
         return false;

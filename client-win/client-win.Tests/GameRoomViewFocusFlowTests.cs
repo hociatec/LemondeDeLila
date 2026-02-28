@@ -289,6 +289,7 @@ public sealed class GameRoomViewFocusFlowTests
         public void EnqueueMany(IEnumerable<string> messages, AnnouncementPriority priority = AnnouncementPriority.Polite) { }
         public void CancelPending(bool cancelSpeech = false) { }
         public void NotifyUserInteraction() { }
+        public void SetGameplayUltraReactive(bool enabled) { }
     }
 
     private static class StaDispatcherHarness

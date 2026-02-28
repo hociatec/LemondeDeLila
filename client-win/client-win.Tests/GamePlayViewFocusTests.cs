@@ -153,6 +153,35 @@ public sealed class GamePlayViewFocusTests
     }
 
     [Fact]
+    public void FocusPreferredInteractiveElement_NonForced_RecoversWhenFocusIsLost()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            EnsureTestApplicationResources();
+            var view = new GamePlayView();
+            var window = CreateHostWindow(view);
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                Keyboard.ClearFocus();
+                Assert.Null(Keyboard.FocusedElement);
+
+                view.FocusPreferredInteractiveElement(forceFromOutsideTextInput: false);
+
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(view), dispatcher, 2200));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void FocusPreferredInteractiveElement_WhenNoInteractiveTarget_FocusesGameRoot()
     {
         StaDispatcherHarness.Run(dispatcher =>

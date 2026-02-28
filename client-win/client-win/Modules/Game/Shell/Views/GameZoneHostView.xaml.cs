@@ -29,9 +29,13 @@ public partial class GameZoneHostView : UserControl
 
     public GameFocusAttemptResult FocusGameZone(GameFocusReason reason)
     {
+        var focusInsideHost = IsFocusInside(this);
+        var focusIsHealthy = focusInsideHost && IsCurrentHostFocusHealthy();
+        var passiveReason = reason == GameFocusReason.GamePlayReady;
+
         // Avoid re-focusing the same game zone on frequent state updates:
         // if focus is already within this host, keep it stable.
-        if (IsFocusInside(this))
+        if (focusInsideHost && focusIsHealthy)
         {
             if (ShouldPreferStartAnchor())
             {
@@ -85,9 +89,23 @@ public partial class GameZoneHostView : UserControl
         }
 
         var requestId = Interlocked.Increment(ref _focusRequestId);
-        if (TryFocusInteractiveGameContent())
+        if (TryFocusInteractiveGameContent(forceFromOutsideTextInput: !passiveReason))
         {
             return GameFocusAttemptResult.Interactive;
+        }
+
+        if (passiveReason)
+        {
+            if (ShouldRecoverBrokenFocus())
+            {
+                // Passive update + broken focus: recover to a stable game anchor, then retry.
+                FocusGameZoneAnchor();
+                QueueDeferredFocusAttempt(requestId, DispatcherPriority.Loaded);
+                return GameFocusAttemptResult.Anchor;
+            }
+
+            // Passive state updates must never steal focus from chat/history.
+            return GameFocusAttemptResult.None;
         }
 
         // Content is set but the visual tree may still be materializing via DataTemplate.
@@ -120,7 +138,7 @@ public partial class GameZoneHostView : UserControl
         }));
     }
 
-    private bool TryFocusInteractiveGameContent()
+    private bool TryFocusInteractiveGameContent(bool forceFromOutsideTextInput = true)
     {
         var content = GameZoneHost?.Content;
         if (content == null || GameZoneHost == null)
@@ -145,13 +163,13 @@ public partial class GameZoneHostView : UserControl
 
                 if (viewRoot is GamePlayView gamePlayView)
                 {
-                    gamePlayView.FocusPreferredInteractiveElement();
+                    gamePlayView.FocusPreferredInteractiveElement(forceFromOutsideTextInput);
                     return IsFocusInside(gamePlayView);
                 }
 
                 if (FindDescendant<GamePlayView>(viewRoot) is GamePlayView nestedGamePlayView)
                 {
-                    nestedGamePlayView.FocusPreferredInteractiveElement();
+                    nestedGamePlayView.FocusPreferredInteractiveElement(forceFromOutsideTextInput);
                     return IsFocusInside(nestedGamePlayView);
                 }
 
@@ -179,8 +197,69 @@ public partial class GameZoneHostView : UserControl
 
         if (FindDescendant<GamePlayView>(GameZoneHost) is GamePlayView fallbackPlayView)
         {
-            fallbackPlayView.FocusPreferredInteractiveElement();
+            fallbackPlayView.FocusPreferredInteractiveElement(forceFromOutsideTextInput);
             return IsFocusInside(fallbackPlayView);
+        }
+
+        return false;
+    }
+
+    private bool IsCurrentHostFocusHealthy()
+    {
+        if (Keyboard.FocusedElement is not DependencyObject focused)
+        {
+            return false;
+        }
+
+        if (!IsFocusInside(this))
+        {
+            return false;
+        }
+
+        if (PresentationSource.FromDependencyObject(focused) == null)
+        {
+            return false;
+        }
+
+        if (focused is UIElement ui)
+        {
+            return ui.IsVisible && ui.IsEnabled;
+        }
+
+        if (focused is FrameworkElement fe)
+        {
+            return fe.IsVisible && fe.IsEnabled;
+        }
+
+        return true;
+    }
+
+    private bool ShouldRecoverBrokenFocus()
+    {
+        var window = Window.GetWindow(this);
+        if (window != null && !window.IsActive && !window.IsKeyboardFocusWithin)
+        {
+            return false;
+        }
+
+        if (Keyboard.FocusedElement is not DependencyObject focused)
+        {
+            return true;
+        }
+
+        if (PresentationSource.FromDependencyObject(focused) == null)
+        {
+            return true;
+        }
+
+        if (focused is UIElement ui)
+        {
+            return !ui.IsVisible || !ui.IsEnabled;
+        }
+
+        if (focused is FrameworkElement fe)
+        {
+            return !fe.IsVisible || !fe.IsEnabled;
         }
 
         return false;

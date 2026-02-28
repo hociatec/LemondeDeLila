@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using client_win.Modules.Game.Play.State.Dtos;
 
 namespace client_win.Modules.Game.Play.State.Services;
@@ -225,6 +226,14 @@ internal sealed class GameLogCursor
             return log.Count - 1;
         }
 
+        // Generic pawn-selection support across games:
+        // if protocol-level context indicates choose/pick pawn, replay a short tail
+        // so recent "pawn chosen" events are not lost on initial prime.
+        if (ShouldReplayPawnSelectionContext(state))
+        {
+            return Math.Max(0, log.Count - 6);
+        }
+
         if (!ShouldReplayPendingChoicePrompt(state))
         {
             return -1;
@@ -240,6 +249,34 @@ internal sealed class GameLogCursor
         }
 
         return -1;
+    }
+
+    private static bool ShouldReplayPawnSelectionContext(GameStateDto? state)
+    {
+        if (state == null)
+        {
+            return false;
+        }
+
+        if (IsPawnPendingType(state.Pending?.Type))
+        {
+            return true;
+        }
+
+        var actions = state.Actions;
+        if (actions == null || actions.Count == 0)
+        {
+            return false;
+        }
+
+        return actions.Any(a => IsPawnPendingType(a?.Type));
+    }
+
+    private static bool IsPawnPendingType(string? type)
+    {
+        var normalized = (type ?? string.Empty).Trim();
+        return string.Equals(normalized, "choose_pawn", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(normalized, "pick_pawn", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool ShouldReplayPendingChoicePrompt(GameStateDto? state)

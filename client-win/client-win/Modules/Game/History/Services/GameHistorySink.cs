@@ -88,7 +88,7 @@ public sealed class GameHistorySink : IGameHistorySink
         }
         else
         {
-            _dispatcher.InvokeAsync(AddNow, DispatcherPriority.Background);
+            _dispatcher.InvokeAsync(AddNow, DispatcherPriority.Input);
         }
     }
 
@@ -113,7 +113,7 @@ public sealed class GameHistorySink : IGameHistorySink
         }
         else
         {
-            _dispatcher.InvokeAsync(AddNow, DispatcherPriority.Background);
+            _dispatcher.InvokeAsync(AddNow, DispatcherPriority.Input);
         }
     }
 

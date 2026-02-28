@@ -45,15 +45,21 @@ internal sealed class GamePlayChoicesStateSynchronizer
         if (hasPawnChoicesFromPendingData)
         {
             _localChoices.Clear();
-            setLabel(PendingChoicesReader.BuildServerChoicesLabel(state.Pending));
-            _list.Apply(pawnChoicesFromPendingData, autoSelectFirst: true);
+            setLabel("Votre pion.");
+            _list.Apply(MakeA11yDistinct(pawnChoicesFromPendingData), autoSelectFirst: true);
             return;
         }
 
         if (hasServerPendingChoices)
         {
             _localChoices.Clear();
-            setLabel(PendingChoicesReader.BuildServerChoicesLabel(state.Pending));
+            var label = PendingChoicesReader.BuildServerChoicesLabel(state.Pending);
+            var pendingType = (state.Pending?.Type ?? string.Empty).Trim();
+            if (PawnPendingTypes.IsPawnPendingType(pendingType))
+            {
+                label = "Votre pion.";
+            }
+            setLabel(label);
             var type = (state.Pending?.Type ?? string.Empty).Trim();
             var isQuiz = string.Equals(type, "quiz", StringComparison.OrdinalIgnoreCase);
             _list.Apply(serverChoices, autoSelectFirst: !isQuiz);
@@ -64,7 +70,7 @@ internal sealed class GamePlayChoicesStateSynchronizer
         {
             ApplyLocalChoices("choose_pawn_fallback", pawnChoices, setLabel);
             var pendingLabel = PendingChoicesReader.BuildServerChoicesLabel(state.Pending);
-            setLabel(string.IsNullOrWhiteSpace(pendingLabel) ? "Choisissez votre pion." : pendingLabel);
+            setLabel(string.IsNullOrWhiteSpace(pendingLabel) ? "Votre pion." : pendingLabel);
             return;
         }
 
@@ -457,7 +463,44 @@ internal sealed class GamePlayChoicesStateSynchronizer
             choices.Add(MojibakeTextRepair.Fix(label).Trim());
         }
 
-        return choices.Count > 0 ? choices : new List<string>();
+        return choices.Count > 0 ? MakeA11yDistinct(choices) : new List<string>();
+    }
+
+    private static List<string> MakeA11yDistinct(List<string> choices)
+    {
+        if (choices == null || choices.Count <= 1)
+        {
+            return choices ?? new List<string>();
+        }
+
+        var counts = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (var c in choices)
+        {
+            counts[c] = (counts.TryGetValue(c, out var n) ? n : 0) + 1;
+        }
+
+        var hasDuplicates = counts.Values.Any(v => v > 1);
+        if (!hasDuplicates)
+        {
+            return choices;
+        }
+
+        var seen = new Dictionary<string, int>(StringComparer.Ordinal);
+        var outList = new List<string>(choices.Count);
+        foreach (var c in choices)
+        {
+            if (!counts.TryGetValue(c, out var total) || total <= 1)
+            {
+                outList.Add(c);
+                continue;
+            }
+
+            var index = (seen.TryGetValue(c, out var n) ? n : 0) + 1;
+            seen[c] = index;
+            outList.Add(c + new string('\u2060', index));
+        }
+
+        return outList;
     }
 
 }

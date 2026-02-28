@@ -143,6 +143,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
     public void Attach()
     {
+        try { _announcementService?.SetGameplayUltraReactive(true); } catch { }
         var last = _session.LastRoomState;
         _lastRoomStarted = IsRoomStarted(last?.Room);
         _startFlowState = _lastRoomStarted ? StartFlowState.RoomStarted : StartFlowState.Idle;
@@ -1376,7 +1377,12 @@ internal sealed class GameTableBindings : IAsyncDisposable
         {
             // Best-effort; le backend ferme la table quand la derniére connexion sort.
         }
+        finally
+        {
+            try { _announcementService?.SetGameplayUltraReactive(false); } catch { }
+        }
     }
 }
+
 
 

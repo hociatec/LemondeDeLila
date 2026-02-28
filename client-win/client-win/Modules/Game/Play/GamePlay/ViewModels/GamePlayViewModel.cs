@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Collections.Generic;
@@ -83,7 +83,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private string _inlinePromptSignature = string.Empty;
 
     private string _connectionStatus = "Connexion au moteur de jeu...";
-    private string _stateSummary = "En attente d'un état de jeu (game.state)...";
+    private string _stateSummary = "En attente d'un Ã©tat de jeu (game.state)...";
     private string _pendingText = string.Empty;
     private string _actionsText = string.Empty;
     private string _boardText = string.Empty;
@@ -92,6 +92,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private string _quizQuestionText = string.Empty;
     private string _lastQuizQuestionForSelectionReset = string.Empty;
     private string _lastAnnouncedServerPendingLabel = string.Empty;
+    private string _lastAnnouncedPawnPendingLabel = string.Empty;
     private int _selectedDisplayIndex = -1;
     private readonly object _postStateUiLock = new();
     private GameStateDto? _postStateUiPendingState;
@@ -126,7 +127,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             if (string.Equals(e.PropertyName, nameof(GamePlayChoicesViewModel.ChoicesLabel), StringComparison.Ordinal))
             {
                 OnPropertyChanged(nameof(ChoicesLabel));
-                MaybeAnnounceServerPendingChoicesLabel();
+                MaybeAnnouncePendingChoicesLabel();
             }
         };
         _choices.PropertyChanged += _choicesPropertyChangedHandler;
@@ -238,7 +239,12 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     private void RequestGameZoneFocusForCurrentState()
     {
-        RequestGameZoneFocus(IsChoosePawnPending ? GameFocusReason.ChoosePawn : GameFocusReason.GamePlayReady);
+        // Use latest server state first to avoid races where PendingType property
+        // has not been synchronized yet (e.g. just after choose_pawn resolution).
+        var pendingType = (_session?.LastState?.Pending?.Type ?? string.Empty).Trim();
+        var choosePawnFromState = IsPawnSelectionPendingType(pendingType);
+        var choosePawn = choosePawnFromState || IsChoosePawnPending;
+        RequestGameZoneFocus(choosePawn ? GameFocusReason.ChoosePawn : GameFocusReason.GamePlayReady);
     }
 
     private void RequestGameZoneFocus(GameFocusReason reason)
@@ -269,11 +275,11 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
         var label = (choiceLabel ?? string.Empty).Trim();
         var message = string.IsNullOrWhiteSpace(label)
-            ? "Défausser cette carte ?"
-            : $"Défausser {label} ?";
+            ? "DÃ©fausser cette carte ?"
+            : $"DÃ©fausser {label} ?";
 
         var confirmed = await _dialogs.Confirm(
-            title: "Défausser",
+            title: "DÃ©fausser",
             message: message,
             okText: "Oui",
             cancelText: "Non").ConfigureAwait(true);
@@ -312,6 +318,15 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             if (!wasChoosePawnPending && IsChoosePawnPending)
             {
                 RequestGameZoneFocus(GameFocusReason.ChoosePawn);
+                return;
+            }
+            if (wasChoosePawnPending && !IsChoosePawnPending)
+            {
+                var hasActions = (_session?.LastState?.Actions?.Count ?? 0) > 0;
+                if (hasActions)
+                {
+                    RequestGameZoneFocus(GameFocusReason.TableStarted);
+                }
             }
         }
     }
@@ -329,25 +344,55 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                string.Equals(normalized, "pick_pawn", StringComparison.OrdinalIgnoreCase);
     }
 
-    private void MaybeAnnounceServerPendingChoicesLabel()
+    private void MaybeAnnouncePendingChoicesLabel()
     {
         var state = _session?.LastState;
-        var hasServerPendingChoices = (state?.Pending?.Choices?.Count ?? 0) > 0;
-        if (!hasServerPendingChoices)
+        if (state == null)
         {
             _lastAnnouncedServerPendingLabel = string.Empty;
+            _lastAnnouncedPawnPendingLabel = string.Empty;
+            return;
+        }
+
+        var pendingType = (state.Pending?.Type ?? string.Empty).Trim();
+        var isPawnPending = IsPawnSelectionPendingType(pendingType);
+        var hasServerPendingChoices = (state.Pending?.Choices?.Count ?? 0) > 0;
+        if (!isPawnPending)
+        {
+            _lastAnnouncedPawnPendingLabel = string.Empty;
+        }
+
+        if (!isPawnPending && !hasServerPendingChoices)
+        {
+            _lastAnnouncedServerPendingLabel = string.Empty;
+            _lastAnnouncedPawnPendingLabel = string.Empty;
             return;
         }
 
         var label = (ChoicesLabel ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(label))
         {
+            if (isPawnPending)
+            {
+                _lastAnnouncedPawnPendingLabel = string.Empty;
+            }
+            if (hasServerPendingChoices)
+            {
+                _lastAnnouncedServerPendingLabel = string.Empty;
+            }
+            return;
+        }
+
+        if (!isPawnPending && hasServerPendingChoices &&
+            string.Equals(label, "RÃ©ponses possibles", StringComparison.OrdinalIgnoreCase))
+        {
             _lastAnnouncedServerPendingLabel = string.Empty;
             return;
         }
-        if (string.Equals(label, "Réponses possibles", StringComparison.OrdinalIgnoreCase))
+
+        if (isPawnPending)
         {
-            _lastAnnouncedServerPendingLabel = string.Empty;
+            _lastAnnouncedPawnPendingLabel = label;
             return;
         }
 
@@ -410,8 +455,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public async Task<bool> TryOpenPendingTextPromptAsync(CancellationToken cancellationToken = default)
     {
-        // Les prompts de jeu ne doivent plus ouvrir de fenêtre modale (ils sont affichés inline dans la vue).
-        // Cette méthode est conservée pour compatibilité, mais devient un no-op.
+        // Les prompts de jeu ne doivent plus ouvrir de fenÃªtre modale (ils sont affichÃ©s inline dans la vue).
+        // Cette mÃ©thode est conservÃ©e pour compatibilitÃ©, mais devient un no-op.
         await Task.CompletedTask;
         return false;
     }
@@ -1307,7 +1352,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         var pressed = normalizedKey.Trim().ToUpperInvariant();
         var hints = GamePlayExtrasParser.ExtractShortcutHints(state);
 
-        // Priorité aux actions serveur: si la touche correspond à une action actuellement jouable,
+        // PrioritÃ© aux actions serveur: si la touche correspond Ã  une action actuellement jouable,
         // ne pas la "manger" localement comme panneau d'interface (ex: P = pass, pas position).
         var hasAvailableActionOnPressedKey = hints.Any(hint =>
         {
@@ -1441,3 +1486,4 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     partial void InitializeHandSupport();
 }
+

@@ -310,7 +310,7 @@ export class AFondLesBallonsActionService {
 
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} choisit le pion : ${String(
+      `${resolvePlayerNameFromState(next, playerId)} a choisi le pion : ${String(
         pawn.label ?? 'pion',
       ).trim()}.`,
     );
@@ -1248,3 +1248,4 @@ function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
   ];
 }
+

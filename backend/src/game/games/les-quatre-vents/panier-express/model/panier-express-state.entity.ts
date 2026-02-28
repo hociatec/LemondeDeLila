@@ -108,6 +108,7 @@ export type PanierExpressMetadata = {
   movementDirection?: 1 | -1;
   movementDirectionOwnerId?: number | null;
   pawnAnnouncementsDone?: boolean;
+  shoppingListAnnouncementsDone?: boolean;
   starterChosenAfterPawnSelection?: boolean;
   lastObtainedCourse?: Record<number, string | null>;
   discards?: {

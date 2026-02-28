@@ -432,6 +432,14 @@ internal sealed class GamePlayRealtimeController
             // (board cell / roll shortcut context) instead of leaving it on the old choice list.
             _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
         }
+        if (PawnPendingTypes.IsPawnPendingType(previousPendingType) &&
+            !PawnPendingTypes.IsPawnPendingType(state.Pending?.Type) &&
+            (state.Actions?.Count ?? 0) > 0)
+        {
+            // Some engines do not flag viewerMustChoosePawn or viewerTurnActionable.
+            // When pawn selection ends and actions are available (ex: roll), re-anchor focus.
+            _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
+        }
 
         if (extractedViewerId != null && extractedViewerId.Value > 0)
         {

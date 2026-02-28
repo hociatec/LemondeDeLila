@@ -112,6 +112,183 @@ public sealed class GameZoneHostViewFocusTests
     }
 
     [Fact]
+    public void FocusGameZone_WhenFocusInsideButInvalid_RecoversToGameContent()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            EnsureTestApplicationResources();
+
+            var gameplay = new GamePlayView();
+            var handPanel = Assert.IsType<StackPanel>(gameplay.FindName("HandPanel"));
+            var handList = Assert.IsType<ListBox>(gameplay.FindName("HandList"));
+            var choicesList = Assert.IsType<ListBox>(gameplay.FindName("ChoicesList"));
+            handPanel.Visibility = Visibility.Collapsed;
+            handList.Visibility = Visibility.Collapsed;
+            choicesList.Visibility = Visibility.Visible;
+            choicesList.ItemsSource = new ObservableCollection<ChoiceItem>
+            {
+                new("Choix 1"),
+                new("Choix 2"),
+            };
+
+            var vm = CreateZoneVm();
+            vm.IsStarted = true;
+            vm.Content = gameplay;
+
+            var host = new GameZoneHostView { DataContext = vm };
+            var window = new Window
+            {
+                Width = 1000,
+                Height = 700,
+                Content = host,
+                ShowInTaskbar = false,
+                WindowStyle = WindowStyle.None,
+            };
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                choicesList.Focus();
+                Keyboard.Focus(choicesList);
+                Assert.True(IsFocusWithin(choicesList));
+
+                // Simule la fin d'une phase (ex: choose_pawn) où le contrôle focused disparaît.
+                choicesList.Visibility = Visibility.Collapsed;
+                choicesList.ItemsSource = new ObservableCollection<ChoiceItem>();
+                gameplay.UpdateLayout();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var result = host.FocusGameZone(GameFocusReason.TableStarted);
+
+                Assert.Equal(GameFocusAttemptResult.Interactive, result);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(gameplay), dispatcher, 2200));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void FocusGameZone_GamePlayReady_DoesNotStealExternalFocus()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            EnsureTestApplicationResources();
+
+            var gameplay = new GamePlayView();
+            var handPanel = Assert.IsType<StackPanel>(gameplay.FindName("HandPanel"));
+            var handList = Assert.IsType<ListBox>(gameplay.FindName("HandList"));
+            handPanel.Visibility = Visibility.Visible;
+            handList.Visibility = Visibility.Visible;
+            handList.ItemsSource = new ObservableCollection<HandCardItem>
+            {
+                new("Carte 1"),
+            };
+
+            var vm = CreateZoneVm();
+            vm.IsStarted = true;
+            vm.Content = gameplay;
+
+            var host = new GameZoneHostView { DataContext = vm };
+            var outside = new TextBox { Width = 200, Height = 28, Text = "outside" };
+            var layout = new Grid();
+            layout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) });
+            layout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) });
+            Grid.SetColumn(outside, 0);
+            Grid.SetColumn(host, 1);
+            layout.Children.Add(outside);
+            layout.Children.Add(host);
+
+            var window = new Window
+            {
+                Width = 1000,
+                Height = 700,
+                Content = layout,
+                ShowInTaskbar = false,
+                WindowStyle = WindowStyle.None,
+            };
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                outside.Focus();
+                Keyboard.Focus(outside);
+                Assert.True(IsFocusWithin(outside));
+
+                var result = host.FocusGameZone(GameFocusReason.GamePlayReady);
+
+                Assert.Equal(GameFocusAttemptResult.None, result);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(outside), dispatcher, 1200));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void FocusGameZone_GamePlayReady_RecoversWhenGlobalFocusIsLost()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            EnsureTestApplicationResources();
+
+            var gameplay = new GamePlayView();
+            var handPanel = Assert.IsType<StackPanel>(gameplay.FindName("HandPanel"));
+            var handList = Assert.IsType<ListBox>(gameplay.FindName("HandList"));
+            handPanel.Visibility = Visibility.Visible;
+            handList.Visibility = Visibility.Visible;
+            handList.ItemsSource = new ObservableCollection<HandCardItem>
+            {
+                new("Carte 1"),
+                new("Carte 2"),
+            };
+
+            var vm = CreateZoneVm();
+            vm.IsStarted = true;
+            vm.Content = gameplay;
+
+            var host = new GameZoneHostView { DataContext = vm };
+            var window = new Window
+            {
+                Width = 1000,
+                Height = 700,
+                Content = host,
+                ShowInTaskbar = false,
+                WindowStyle = WindowStyle.None,
+            };
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                Keyboard.ClearFocus();
+                Assert.Null(Keyboard.FocusedElement);
+
+                var result = host.FocusGameZone(GameFocusReason.GamePlayReady);
+
+                Assert.True(result is GameFocusAttemptResult.Anchor or GameFocusAttemptResult.Interactive);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(gameplay), dispatcher, 2200));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void EnterOnEmptyAnchor_RaisesStartRequested()
     {
         StaDispatcherHarness.Run(dispatcher =>
@@ -244,6 +421,7 @@ public sealed class GameZoneHostViewFocusTests
     }
 
     private sealed record HandCardItem(string Label);
+    private sealed record ChoiceItem(string Text);
 
     private sealed class NoopDialogService : IDialogService
     {

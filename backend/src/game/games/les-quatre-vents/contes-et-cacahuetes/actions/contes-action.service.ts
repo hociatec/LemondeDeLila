@@ -130,7 +130,7 @@ export class ContesActionService {
     };
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} choisit le pion : ${chosen.label}.`,
+      `${resolvePlayerNameFromState(next, playerId)} a choisi le pion : ${chosen.label}.`,
     );
 
     const starterId =
@@ -1943,3 +1943,4 @@ function toContesCardArray(value: unknown): ContesCard[] {
     })
     .filter((entry): entry is ContesCard => entry !== null);
 }
+
