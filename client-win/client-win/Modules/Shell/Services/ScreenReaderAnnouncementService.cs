@@ -21,7 +21,8 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
     private int _forceAssertive;
     private (string Message, long Ticks)? _lastSpoken;
 
-    private static readonly TimeSpan Spacing = TimeSpan.FromMilliseconds(200);
+    private static readonly TimeSpan PoliteSpacing = TimeSpan.FromMilliseconds(120);
+    private static readonly TimeSpan AssertiveSpacing = TimeSpan.FromMilliseconds(50);
     private static readonly long DedupWindowTicks = Stopwatch.Frequency; // ~1s
 
     public ScreenReaderAnnouncementService(
@@ -126,7 +127,7 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
             }
             else
             {
-                _ = _dispatcher.BeginInvoke(new Func<Task>(() => RunAsync(runId)), DispatcherPriority.Background);
+                _ = _dispatcher.BeginInvoke(new Func<Task>(() => RunAsync(runId)), DispatcherPriority.Input);
             }
         }
     }
@@ -165,6 +166,7 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
             }
 
             var (msg, prio) = next.Value;
+            var effective = forceAssertive > 0 ? AnnouncementPriority.Assertive : prio;
             try
             {
                 if (!_announcer.IsRunning)
@@ -173,7 +175,6 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
                     return;
                 }
 
-                var effective = forceAssertive > 0 ? AnnouncementPriority.Assertive : prio;
                 if (ShouldDedup(msg, effective))
                 {
                     continue;
@@ -197,7 +198,8 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
 
             try
             {
-                await Task.Delay(Spacing).ConfigureAwait(true);
+                var spacing = effective == AnnouncementPriority.Assertive ? AssertiveSpacing : PoliteSpacing;
+                await Task.Delay(spacing).ConfigureAwait(true);
             }
             catch
             {

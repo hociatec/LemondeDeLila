@@ -229,6 +229,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
             {
                 HistoryHost?.NotifyUserInteraction();
                 HistoryHost?.CancelPendingAnnouncementsFromHost();
+                _announcements?.NotifyUserInteraction();
 
                 // Ne pas couper la lecture du lecteur d'écran quand l'utilisateur lit l'historique
                 // (mot par mot / flèches) ou saisit dans un champ texte.

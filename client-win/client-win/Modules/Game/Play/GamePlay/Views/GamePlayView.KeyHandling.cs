@@ -183,6 +183,36 @@ public partial class GamePlayView
         return true;
     }
 
+    private void OnInteractiveListGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+    {
+        if (sender is not ListBox list || list.Items.Count <= 0 || !list.IsVisible)
+        {
+            return;
+        }
+
+        // Tab/Maj+Tab peut d'abord poser le focus sur la ListBox elle-même.
+        // Dans ce cas, ancrer immédiatement sur l'item sélectionné (ou le premier).
+        if (ReferenceEquals(e.OriginalSource, list))
+        {
+            var idx = ReferenceEquals(list, HandList)
+                ? 0
+                : list.SelectedIndex;
+
+            if (idx < 0)
+            {
+                idx = 0;
+            }
+            if (idx >= list.Items.Count)
+            {
+                idx = list.Items.Count - 1;
+            }
+
+            list.SelectedIndex = idx;
+            list.ScrollIntoView(list.Items[idx]);
+            TryFocusChoiceIndex(list, idx);
+        }
+    }
+
     private void TryFocusChoiceIndex(ListBox list, int index)
     {
         if (list == null || !list.IsVisible || list.Items.Count <= 0)

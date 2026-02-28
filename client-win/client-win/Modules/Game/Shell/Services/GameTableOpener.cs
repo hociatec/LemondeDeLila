@@ -2279,6 +2279,19 @@ public sealed class GameTableOpener : IGameTableOpener
                 });
         }
 
+        if (string.Equals(normalized, "cat-pattes", StringComparison.Ordinal))
+        {
+            return new GameRoomViewModel.StartWizardConfigPrompt(
+                Title: "Cat Pattes !",
+                ActionType: "cat_pattes_set_config",
+                CancelActionType: null,
+                Fields: new[]
+                {
+                    new GameRoomViewModel.StartWizardConfigField("goalPattes", "Objectif pattes", "number", 600, 1500, "1000"),
+                    new GameRoomViewModel.StartWizardConfigField("pointsToWin", "Points pour gagner", "number", 1000, 20000, "4000"),
+                });
+        }
+
         if (!string.Equals(normalized, "lama", StringComparison.Ordinal))
         {
             return null;

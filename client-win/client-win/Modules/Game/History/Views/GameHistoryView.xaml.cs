@@ -20,7 +20,7 @@ public partial class GameHistoryView : UserControl
 {
     private GameHistoryViewModel? _viewModel;
     private bool _pendingRebuild;
-    private const int AnnouncementSpacingMs = 200;
+    private const int AnnouncementSpacingMs = 120;
     private readonly Queue<string> _pendingAnnouncements = new();
     private bool _announceScheduled;
     private int _announceRunId;

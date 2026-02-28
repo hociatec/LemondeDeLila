@@ -106,11 +106,24 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _chat = new RoomChatCommands(_session);
     }
 
-    public Task AddBotAsync() => _bots.AddBotAsync();
-    public Task RemoveBotAsync() => _bots.RemoveLastBotAsync();
+    public Task AddBotAsync()
+    {
+        _announcementService?.NotifyUserInteraction();
+        return _bots.AddBotAsync();
+    }
+
+    public Task RemoveBotAsync()
+    {
+        _announcementService?.NotifyUserInteraction();
+        return _bots.RemoveLastBotAsync();
+    }
     public Task TogglePrivacyAsync() => _privacy.TogglePrivacyAsync();
     public Task ToggleRoleAsync() => _role.ToggleRoleAsync(ComputeSelfSpectator());
-    public Task RequestInfoAsync() => _info.RequestInfoAsync();
+    public Task RequestInfoAsync()
+    {
+        _announcementService?.NotifyUserInteraction();
+        return _info.RequestInfoAsync();
+    }
     public void EnsurePreStartGameUiLoaded() => EnsureGamePlayLoaded();
 
     private static bool IsRoomStarted(RoomDto? room)
