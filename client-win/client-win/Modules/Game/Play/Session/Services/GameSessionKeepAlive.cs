@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using client_win.Modules.Game.Common;
 
 namespace client_win.Modules.Game.Play.Session.Services;
 
@@ -19,10 +20,10 @@ internal sealed class GameSessionKeepAlive : IAsyncDisposable
 
     internal void Start(TimeSpan? interval = null)
     {
-        var tick = interval ?? TimeSpan.FromSeconds(20);
-        if (tick < TimeSpan.FromSeconds(5))
+        var tick = interval ?? GameTiming.Game.KeepAliveDefaultTick;
+        if (tick < GameTiming.Game.KeepAliveMinTick)
         {
-            tick = TimeSpan.FromSeconds(5);
+            tick = GameTiming.Game.KeepAliveMinTick;
         }
 
         if (_loop != null && !_loop.IsCompleted)
@@ -117,4 +118,3 @@ internal sealed class GameSessionKeepAlive : IAsyncDisposable
         }
     }
 }
-

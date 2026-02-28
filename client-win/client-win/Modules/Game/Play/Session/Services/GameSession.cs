@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Game.Play.Actions.Dtos;
+using client_win.Modules.Game.Common;
 using client_win.Modules.Game.Play.Session.Dtos;
 using client_win.Modules.Game.Play.State.Dtos;
 using client_win.Modules.Network.Services;
@@ -22,14 +23,10 @@ public sealed class GameSession : IAsyncDisposable
     private readonly CancellationTokenSource _lifetimeCts = new();
     private Task? _watchdogLoop;
     private DateTime _lastPongUtc = DateTime.MinValue;
-    private readonly object _actionDedupeLock = new();
-    private string? _lastActionKey;
-    private DateTime _lastActionAtUtc;
-    private static readonly TimeSpan ActionDedupeWindow = TimeSpan.FromMilliseconds(250);
-    private readonly object _keyDedupeLock = new();
-    private string? _lastKeySent;
-    private DateTime _lastKeyAtUtc;
-    private static readonly TimeSpan KeyDedupeWindow = TimeSpan.FromMilliseconds(350);
+    private readonly object _actionSendGate = new();
+    private readonly HashSet<string> _actionsInFlight = new(StringComparer.Ordinal);
+    private readonly object _keySendGate = new();
+    private readonly HashSet<string> _keysInFlight = new(StringComparer.Ordinal);
 
     // NOTE: GameSession est créé après ConnectAsync côté GameGatewayClient (souvent socket déjà connecté).
     // L'état initial est lu depuis IWebSocketConnection.State.
@@ -51,11 +48,13 @@ public sealed class GameSession : IAsyncDisposable
             _json,
             emitState: s =>
             {
+                ClearAllInFlightKeys();
                 LastState = s;
                 StateUpdated?.Invoke(s);
             },
             emitTurn: t =>
             {
+                ClearAllInFlightKeys();
                 LastTurnInfo = t;
                 TurnUpdated?.Invoke(t);
             },
@@ -67,8 +66,10 @@ public sealed class GameSession : IAsyncDisposable
             emitError: msg => ErrorReceived?.Invoke(msg),
             emitCommandAck: msg => CommandAckReceived?.Invoke(msg),
             emitUiMessage: msg => UiMessageReceived?.Invoke(msg),
+            emitKeyAck: key => EndKeySend(key),
             emitStatePatch: raw =>
             {
+                ClearAllInFlightKeys();
                 if (TryApplyStatePatch(raw, out var patched) && patched != null)
                 {
                     LastState = patched;
@@ -188,59 +189,40 @@ public sealed class GameSession : IAsyncDisposable
             return;
         }
 
-        if (IsDuplicateAction(actions))
+        var actionKey = BuildActionKey(actions);
+        if (string.IsNullOrWhiteSpace(actionKey))
+        {
+            actionKey = "__empty__";
+        }
+
+        if (!TryBeginActionSend(actionKey))
         {
             return;
         }
 
-        var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
-        actions ??= Array.Empty<GameClientAction>();
-        var msg = JsonSerializer.Serialize(
-            new
-            {
-                type = "game.actions",
-                payload = new
-                {
-                    roomId = RoomId,
-                    gameType = GameType,
-                    actions,
-                    _trace = trace
-                }
-            },
-            _json);
-        await TrySendAsync(msg, cancellationToken).ConfigureAwait(false);
-    }
-
-    private bool IsDuplicateAction(IReadOnlyList<GameClientAction> actions)
-    {
         try
         {
-            var key = BuildActionKey(actions);
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                return false;
-            }
-
-            var now = DateTime.UtcNow;
-            lock (_actionDedupeLock)
-            {
-                if (_lastActionKey != null &&
-                    string.Equals(_lastActionKey, key, StringComparison.Ordinal) &&
-                    now - _lastActionAtUtc < ActionDedupeWindow)
+            var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
+            actions ??= Array.Empty<GameClientAction>();
+            var msg = JsonSerializer.Serialize(
+                new
                 {
-                    return true;
-                }
-
-                _lastActionKey = key;
-                _lastActionAtUtc = now;
-            }
+                    type = "game.actions",
+                    payload = new
+                    {
+                        roomId = RoomId,
+                        gameType = GameType,
+                        actions,
+                        _trace = trace
+                    }
+                },
+                _json);
+            await TrySendAsync(msg, cancellationToken).ConfigureAwait(false);
         }
-        catch
+        finally
         {
-            // best-effort: ne pas bloquer l'envoi si la déduplication échoue.
+            EndActionSend(actionKey);
         }
-
-        return false;
     }
 
     private static string BuildActionKey(IReadOnlyList<GameClientAction> actions)
@@ -282,7 +264,7 @@ public sealed class GameSession : IAsyncDisposable
         {
             return;
         }
-        if (IsDuplicateKey(normalized))
+        if (!TryBeginKeySend(normalized))
         {
             return;
         }
@@ -294,26 +276,55 @@ public sealed class GameSession : IAsyncDisposable
         await TrySendAsync(msg, cancellationToken).ConfigureAwait(false);
     }
 
-    private bool IsDuplicateKey(string normalizedKey)
+    private bool TryBeginActionSend(string key)
     {
-        if (string.IsNullOrWhiteSpace(normalizedKey))
+        lock (_actionSendGate)
         {
-            return true;
-        }
-
-        var now = DateTime.UtcNow;
-        lock (_keyDedupeLock)
-        {
-            if (_lastKeySent != null &&
-                string.Equals(_lastKeySent, normalizedKey, StringComparison.Ordinal) &&
-                now - _lastKeyAtUtc < KeyDedupeWindow)
+            if (_actionsInFlight.Contains(key))
             {
-                return true;
+                return false;
             }
 
-            _lastKeySent = normalizedKey;
-            _lastKeyAtUtc = now;
-            return false;
+            _actionsInFlight.Add(key);
+            return true;
+        }
+    }
+
+    private void EndActionSend(string key)
+    {
+        lock (_actionSendGate)
+        {
+            _actionsInFlight.Remove(key);
+        }
+    }
+
+    private bool TryBeginKeySend(string key)
+    {
+        lock (_keySendGate)
+        {
+            if (_keysInFlight.Contains(key))
+            {
+                return false;
+            }
+
+            _keysInFlight.Add(key);
+            return true;
+        }
+    }
+
+    private void EndKeySend(string key)
+    {
+        lock (_keySendGate)
+        {
+            _keysInFlight.Remove(key);
+        }
+    }
+
+    private void ClearAllInFlightKeys()
+    {
+        lock (_keySendGate)
+        {
+            _keysInFlight.Clear();
         }
     }
 
@@ -350,6 +361,7 @@ public sealed class GameSession : IAsyncDisposable
             previous == WebSocketState.Connected &&
             state is WebSocketState.Disconnected or WebSocketState.Error)
         {
+            ClearAllInFlightKeys();
             ErrorReceived?.Invoke("Connexion jeu perdue.");
         }
     }
@@ -360,6 +372,7 @@ public sealed class GameSession : IAsyncDisposable
         {
             return;
         }
+        ClearAllInFlightKeys();
         ErrorReceived?.Invoke(message.Trim());
     }
 
@@ -372,11 +385,13 @@ public sealed class GameSession : IAsyncDisposable
         catch (InvalidOperationException ex)
         {
             Log.Debug(ex, "GameSession: send ignored (socket not connected)");
+            ClearAllInFlightKeys();
             ErrorReceived?.Invoke("Connexion jeu perdue.");
         }
         catch (Exception ex)
         {
             Log.Debug(ex, "GameSession: send ignored");
+            ClearAllInFlightKeys();
             ErrorReceived?.Invoke(ex.Message);
         }
     }
@@ -469,7 +484,7 @@ public sealed class GameSession : IAsyncDisposable
 
     private async Task WatchdogLoopAsync(CancellationToken cancellationToken)
     {
-        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+        using var timer = new PeriodicTimer(GameTiming.Game.WatchdogTick);
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -494,7 +509,7 @@ public sealed class GameSession : IAsyncDisposable
             }
 
             var age = DateTime.UtcNow - _lastPongUtc;
-            if (age <= TimeSpan.FromSeconds(60))
+            if (age <= GameTiming.Game.GhostConnectionThreshold)
             {
                 continue;
             }

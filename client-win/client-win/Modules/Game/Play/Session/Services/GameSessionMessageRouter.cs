@@ -16,6 +16,7 @@ internal sealed class GameSessionMessageRouter
     private readonly Action<string> _emitError;
     private readonly Action<string> _emitCommandAck;
     private readonly Action<string> _emitUiMessage;
+    private readonly Action<string>? _emitKeyAck;
     private readonly Action<string> _emitStatePatch;
     private readonly Action<GameEndedDto> _emitEnded;
     private readonly Action<string> _emitRaw;
@@ -29,6 +30,7 @@ internal sealed class GameSessionMessageRouter
         Action<string> emitError,
         Action<string> emitCommandAck,
         Action<string> emitUiMessage,
+        Action<string>? emitKeyAck,
         Action<string> emitStatePatch,
         Action<GameEndedDto> emitEnded,
         Action<string> emitRaw,
@@ -41,6 +43,7 @@ internal sealed class GameSessionMessageRouter
         _emitError = emitError ?? throw new ArgumentNullException(nameof(emitError));
         _emitCommandAck = emitCommandAck ?? throw new ArgumentNullException(nameof(emitCommandAck));
         _emitUiMessage = emitUiMessage ?? throw new ArgumentNullException(nameof(emitUiMessage));
+        _emitKeyAck = emitKeyAck;
         _emitStatePatch = emitStatePatch ?? throw new ArgumentNullException(nameof(emitStatePatch));
         _emitEnded = emitEnded ?? throw new ArgumentNullException(nameof(emitEnded));
         _emitRaw = emitRaw ?? throw new ArgumentNullException(nameof(emitRaw));
@@ -150,6 +153,10 @@ internal sealed class GameSessionMessageRouter
                 var key = payload.TryGetProperty("key", out var keyProp) && keyProp.ValueKind == JsonValueKind.String
                     ? (keyProp.GetString() ?? string.Empty).Trim().ToUpperInvariant()
                     : string.Empty;
+                if (!string.IsNullOrWhiteSpace(key))
+                {
+                    _emitKeyAck?.Invoke(key);
+                }
 
                 var message = payload.TryGetProperty("message", out var messageProp) &&
                               messageProp.ValueKind == JsonValueKind.String

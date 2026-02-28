@@ -1,4 +1,5 @@
 using System;
+using client_win.Modules.Game.Common;
 using client_win.Modules.Game.Play.State.Dtos;
 
 namespace client_win.Modules.Game.Play.Announcements.Services;
@@ -27,7 +28,7 @@ internal sealed class GamePlayAnnouncementRouter
         var now = DateTime.UtcNow;
         if (!force &&
             string.Equals(_lastTurnAnnouncement, msg, StringComparison.Ordinal) &&
-            (now - _lastTurnAnnouncementAtUtc) < TimeSpan.FromSeconds(1))
+            (now - _lastTurnAnnouncementAtUtc) < GameTiming.Announcement.TurnAnnouncementDedupeWindow)
         {
             return false;
         }

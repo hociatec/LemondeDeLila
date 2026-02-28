@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using client_win.Modules.Game.Common;
 using client_win.Modules.Network.Services;
 using client_win.Modules.Network.WebSockets;
 using Serilog;
@@ -26,6 +27,9 @@ public sealed class RoomSession : IAsyncDisposable
     private readonly bool _silent;
     private readonly object _ackGate = new();
     private readonly Dictionary<string, DateTime> _recentAcks = new(StringComparer.Ordinal);
+    private readonly object _ackLatencyGate = new();
+    private double _ackLatencyEwmaMs = 120;
+    private const double AckLatencyAlpha = 0.25;
 
     private readonly CancellationTokenSource _lifetimeCts = new();
     private Task? _keepAliveLoop;
@@ -116,7 +120,7 @@ public sealed class RoomSession : IAsyncDisposable
         CancellationToken cancellationToken = default)
     {
         var traceId = await SendCommandWithTraceAsync(type, payload, cancellationToken).ConfigureAwait(false);
-        var timeout = ackTimeout.GetValueOrDefault(TimeSpan.FromMilliseconds(350));
+        var timeout = ackTimeout ?? ComputeAdaptiveAckTimeout();
         if (timeout <= TimeSpan.Zero)
         {
             return false;
@@ -431,6 +435,11 @@ public sealed class RoomSession : IAsyncDisposable
                 clientToServerMs = c2sVal;
             }
 
+            if (clientToServerMs is long oneWayMs && oneWayMs > 0)
+            {
+                RememberAckLatencySample(oneWayMs);
+            }
+
             RememberAck(action, traceId);
             CommandAckReceived?.Invoke(new RoomCommandAck(action, traceId, receivedAtMs, clientToServerMs));
         }
@@ -475,13 +484,33 @@ public sealed class RoomSession : IAsyncDisposable
             return;
         }
 
-        var cutoff = DateTime.UtcNow - TimeSpan.FromSeconds(30);
+        var cutoff = DateTime.UtcNow - GameTiming.Room.RecentAckRetention;
         foreach (var key in _recentAcks
                      .Where(kv => kv.Value < cutoff)
                      .Select(kv => kv.Key)
                      .ToArray())
         {
             _recentAcks.Remove(key);
+        }
+    }
+
+    private void RememberAckLatencySample(long clientToServerMs)
+    {
+        // Server reports one-way estimate; derive a conservative round-trip budget.
+        var sampleMs = Math.Clamp((clientToServerMs * 2.0) + 40.0, 80.0, 1800.0);
+        lock (_ackLatencyGate)
+        {
+            _ackLatencyEwmaMs = (_ackLatencyEwmaMs * (1.0 - AckLatencyAlpha)) + (sampleMs * AckLatencyAlpha);
+        }
+    }
+
+    private TimeSpan ComputeAdaptiveAckTimeout()
+    {
+        lock (_ackLatencyGate)
+        {
+            // Auto-timeout tracks network quality without hardcoding per-command magic numbers.
+            var timeoutMs = Math.Clamp((_ackLatencyEwmaMs * 2.2) + 40.0, 120.0, 1200.0);
+            return TimeSpan.FromMilliseconds(timeoutMs);
         }
     }
 
@@ -510,7 +539,7 @@ public sealed class RoomSession : IAsyncDisposable
 
         // Throttle to avoid spamming join messages on bursts.
         var now = DateTime.UtcNow;
-        if (_lastStateRefreshUtc != DateTime.MinValue && now - _lastStateRefreshUtc < TimeSpan.FromSeconds(1))
+        if (_lastStateRefreshUtc != DateTime.MinValue && now - _lastStateRefreshUtc < GameTiming.Room.StateRefreshThrottle)
         {
             return;
         }
@@ -619,7 +648,7 @@ public sealed class RoomSession : IAsyncDisposable
 
             try
             {
-                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(12));
+                using var timeout = new CancellationTokenSource(GameTiming.Room.ReconnectAttemptTimeout);
                 using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
 
                 await _reconnectAsync!(_socket, linked.Token).ConfigureAwait(false);
@@ -694,7 +723,7 @@ public sealed class RoomSession : IAsyncDisposable
         RoomUpdated += OnUpdate;
         try
         {
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            using var timeout = new CancellationTokenSource(GameTiming.Room.EnsureJoinedTimeout);
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
             await tcs.Task.WaitAsync(linked.Token).ConfigureAwait(false);
         }
@@ -710,7 +739,7 @@ public sealed class RoomSession : IAsyncDisposable
 
     private async Task KeepAliveLoopAsync(CancellationToken cancellationToken)
     {
-        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(20));
+        using var timer = new PeriodicTimer(GameTiming.Room.KeepAliveTick);
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -727,7 +756,7 @@ public sealed class RoomSession : IAsyncDisposable
             if (_reconnectAsync != null && _state == WebSocketState.Connected)
             {
                 var age = DateTime.UtcNow - _lastPongUtc;
-                if (_lastPongUtc != DateTime.MinValue && age > TimeSpan.FromSeconds(60))
+                if (_lastPongUtc != DateTime.MinValue && age > GameTiming.Room.GhostConnectionThreshold)
                 {
                     // Socket "fantÃ´me" probable: forcer une reconnexion.
                     RequestReconnect(force: true);
@@ -768,8 +797,7 @@ public sealed class RoomSession : IAsyncDisposable
         };
 
         // Jitter +/-20% pour Ã©viter que tout le monde reconnecte en mÃªme temps.
-        var jitter = 0.8 + (Random.Shared.NextDouble() * 0.4);
-        return TimeSpan.FromMilliseconds(Math.Max(250, seconds * 1000 * jitter));
+        return GameTiming.ComputeJitterBackoff(seconds);
     }
 
     private static Dictionary<string, object?> ToDictionary(object? payload)

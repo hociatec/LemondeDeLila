@@ -2,6 +2,7 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -38,11 +39,34 @@ public partial class GamePlayView
         var requestId = Interlocked.Increment(ref _preferredInteractiveFocusRequestId);
         RunPreferredInteractiveFocusPass(requestId);
         QueuePreferredInteractiveFocusPass(requestId, DispatcherPriority.Loaded);
+        QueuePreferredInteractiveFocusPass(requestId, DispatcherPriority.ApplicationIdle);
+        QueuePreferredInteractiveFocusDelayedPass(requestId, 120);
+        QueuePreferredInteractiveFocusDelayedPass(requestId, 280);
+        QueuePreferredInteractiveFocusDelayedPass(requestId, 520);
     }
 
     private void QueuePreferredInteractiveFocusPass(int requestId, DispatcherPriority priority)
     {
         _ = Dispatcher.BeginInvoke(priority, new Action(() => RunPreferredInteractiveFocusPass(requestId)));
+    }
+
+    private void QueuePreferredInteractiveFocusDelayedPass(int requestId, int delayMs)
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(delayMs).ConfigureAwait(false);
+            }
+            catch
+            {
+                return;
+            }
+
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.ApplicationIdle,
+                new Action(() => RunPreferredInteractiveFocusPass(requestId)));
+        });
     }
 
     private void RunPreferredInteractiveFocusPass(int requestId)
@@ -137,14 +161,33 @@ public partial class GamePlayView
         _lastChoicesA11yWasQuiz = false;
         _lastChoicesA11yUsedLabeledBy = false;
         _lastChoicesA11yLabel = string.Empty;
+        _lastObservedChoosePawnPending = false;
 
         if (_vm != null)
         {
+            _lastObservedChoosePawnPending = _vm.IsChoosePawnPending;
             _focusRequestedHandler = RequestGameZoneFocusFromVm;
             _vm.GameZoneFocusRequested += _focusRequestedHandler;
 
             _vmPropertyChangedHandler = (_, e) =>
             {
+                if (string.Equals(e.PropertyName, nameof(GamePlayViewModel.IsChoosePawnPending), StringComparison.Ordinal) ||
+                    string.Equals(e.PropertyName, nameof(GamePlayViewModel.PendingType), StringComparison.Ordinal))
+                {
+                    var isChoosePawnPending = _vm.IsChoosePawnPending;
+                    var justExitedChoosePawn = _lastObservedChoosePawnPending && !isChoosePawnPending;
+                    _lastObservedChoosePawnPending = isChoosePawnPending;
+
+                    if (justExitedChoosePawn)
+                    {
+                        _pendingInitialInteractiveFocus = true;
+                        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+                        {
+                            FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
+                        }));
+                    }
+                }
+
                 // When quiz question state changes, refresh accessibility labels immediately.
                 if (!string.Equals(e.PropertyName, nameof(GamePlayViewModel.QuizQuestionText), StringComparison.Ordinal) &&
                     !string.Equals(e.PropertyName, nameof(GamePlayViewModel.PendingType), StringComparison.Ordinal) &&
@@ -446,7 +489,7 @@ public partial class GamePlayView
             ChoicesList.SelectedIndex = idx;
             ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
             TryFocusChoiceIndex(ChoicesList, idx);
-            _pendingInitialInteractiveFocus = false;
+            _pendingInitialInteractiveFocus = !IsFocusWithinChoicesList();
             return;
         }
 
@@ -462,9 +505,9 @@ public partial class GamePlayView
                 _pendingInitialInteractiveFocus = false;
                 return;
             }
-            var focusedGrid = TryFocusPreferredGridCell();
-            _pendingInitialInteractiveFocus = !focusedGrid;
-            if (!focusedGrid && forceFromOutsideTextInput)
+            var focusRequested = TryFocusPreferredGridCell();
+            _pendingInitialInteractiveFocus = !IsFocusWithinGrid();
+            if (!focusRequested && forceFromOutsideTextInput)
             {
                 TryFocusGameViewRoot();
             }
@@ -488,7 +531,7 @@ public partial class GamePlayView
             HandList.SelectedIndex = idx;
             HandList.ScrollIntoView(HandList.SelectedItem);
             TryFocusChoiceIndex(HandList, idx);
-            _pendingInitialInteractiveFocus = false;
+            _pendingInitialInteractiveFocus = !IsFocusWithinHandList();
             return;
         }
 
@@ -509,7 +552,7 @@ public partial class GamePlayView
             ChoicesList.SelectedIndex = idx;
             ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
             TryFocusChoiceIndex(ChoicesList, idx);
-            _pendingInitialInteractiveFocus = false;
+            _pendingInitialInteractiveFocus = !IsFocusWithinChoicesList();
             return;
         }
 

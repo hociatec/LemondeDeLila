@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using client_win.Modules.Game.Common;
 using Serilog;
 
 namespace client_win.Modules.Game.Shell.Services;
@@ -9,7 +10,7 @@ namespace client_win.Modules.Game.Shell.Services;
 public sealed class GameFocusCoordinator : IGameFocusCoordinator
 {
     private static readonly bool TraceEnabled = IsTraceEnabled();
-    private static readonly int[] CriticalRetryDelaysMs = { 90, 180, 320, 500, 750, 1050 };
+    private static readonly int[] CriticalRetryDelaysMs = GameTiming.Focus.CriticalRetryDelaysMs;
 
     private readonly Dispatcher _dispatcher;
     private readonly object _gate = new();

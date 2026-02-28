@@ -24,7 +24,6 @@ public sealed class RoomBotCommands : IRoomBotCommands
         await _session.SendCommandAwaitAckAsync(
                 "bot.add",
                 payload: null,
-                ackTimeout: TimeSpan.FromMilliseconds(350),
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
@@ -34,7 +33,6 @@ public sealed class RoomBotCommands : IRoomBotCommands
         await _session.SendCommandAwaitAckAsync(
                 "bot.remove",
                 payload: null,
-                ackTimeout: TimeSpan.FromMilliseconds(350),
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }

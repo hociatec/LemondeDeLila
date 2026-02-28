@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Threading;
+using client_win.Modules.Game.Common;
 using client_win.Core.Text;
 using client_win.Modules.Game.History.ViewModels;
 using client_win.Modules.Shell.Services;
@@ -18,7 +19,7 @@ public sealed class GameHistorySink : IGameHistorySink
     private string? _lastTurnMessageKey;
     private DateTime _lastTurnMessageAtUtc;
     private readonly List<(string Key, DateTime AtUtc)> _recentDedupe = new();
-    private static readonly TimeSpan RecentDedupeWindow = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan RecentDedupeWindow = GameTiming.History.RecentDedupeWindow;
 
     public GameHistorySink(Dispatcher dispatcher, GameHistoryViewModel history, IAnnouncementService? announcements = null)
     {
@@ -238,7 +239,7 @@ public sealed class GameHistorySink : IGameHistorySink
         {
             if (_lastTurnMessageKey != null &&
                 string.Equals(_lastTurnMessageKey, turnKey, StringComparison.Ordinal) &&
-                now - _lastTurnMessageAtUtc < TimeSpan.FromSeconds(3))
+                now - _lastTurnMessageAtUtc < GameTiming.History.TurnDedupeWindow)
             {
                 return true;
             }
@@ -260,7 +261,7 @@ public sealed class GameHistorySink : IGameHistorySink
 
         if (_lastMessage != null &&
             string.Equals(_lastMessage, cleaned, StringComparison.Ordinal) &&
-            now - _lastMessageAtUtc < TimeSpan.FromSeconds(2))
+            now - _lastMessageAtUtc < GameTiming.History.MessageDedupeWindow)
         {
             return true;
         }

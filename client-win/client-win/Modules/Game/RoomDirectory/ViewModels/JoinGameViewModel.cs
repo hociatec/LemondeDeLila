@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Core;
+using client_win.Modules.Game.Common;
 using client_win.Modules.Game.RoomDirectory.Services;
 using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Shell.Services;
@@ -242,7 +243,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
             {
                 try
                 {
-                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                    using var cts = new CancellationTokenSource(GameTiming.Table.RoomDirectoryUnsubscribeTimeout);
                     await _rooms.PublicUnsubscribeAsync(cts.Token).ConfigureAwait(false);
                 }
                 catch
@@ -269,7 +270,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
         {
             try
             {
-                await Task.Delay(350, token).ConfigureAwait(false);
+                await Task.Delay(GameTiming.Table.RoomDirectoryRefreshDebounce, token).ConfigureAwait(false);
                 if (token.IsCancellationRequested) return;
 
                 await _dispatcher.BeginInvoke(

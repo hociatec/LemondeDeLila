@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using client_win.Modules.Game.Common;
 using client_win.Modules.Game.Play.Session.Services;
 using client_win.Modules.Game.Play.State.Dtos;
 
@@ -33,7 +34,7 @@ internal sealed class GamePlayFreshStateRequester
 
             _panelRequestCts?.Cancel();
             _panelRequestCts?.Dispose();
-            cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+            cts = new CancellationTokenSource(GameTiming.Game.FreshStateTimeout);
             _panelRequestCts = cts;
 
             tcs = new TaskCompletionSource<GameStateDto>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -76,4 +77,3 @@ internal sealed class GamePlayFreshStateRequester
         }
     }
 }
-

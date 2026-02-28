@@ -799,8 +799,11 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         {
             StartWizardChoicesList.SelectedIndex = 0;
         }
-
-        try { StartWizardChoicesList.UpdateLayout(); } catch { }
+        // Perf: avoid forcing a synchronous layout pass here.
+        if (StartWizardChoicesList.ItemContainerGenerator.Status != GeneratorStatus.ContainersGenerated)
+        {
+            return false;
+        }
 
         var index = StartWizardChoicesList.SelectedIndex;
         if (index >= 0)

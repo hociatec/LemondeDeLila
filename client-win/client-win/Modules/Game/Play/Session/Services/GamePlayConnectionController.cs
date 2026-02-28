@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using client_win.Modules.Game.Common;
 using Serilog;
 
 namespace client_win.Modules.Game.Play.Session.Services;
@@ -187,7 +188,7 @@ internal sealed class GamePlayConnectionController : IAsyncDisposable
                 }
 
                 using var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                connectCts.CancelAfter(TimeSpan.FromSeconds(10));
+                connectCts.CancelAfter(GameTiming.Game.ReconnectConnectTimeout);
 
                 var session = await _connect(connectCts.Token).ConfigureAwait(false);
                 _bindSession(session);
@@ -254,7 +255,6 @@ internal sealed class GamePlayConnectionController : IAsyncDisposable
             _ => 30,
         };
 
-        var jitter = 0.8 + (Random.Shared.NextDouble() * 0.4);
-        return TimeSpan.FromMilliseconds(Math.Max(250, seconds * 1000 * jitter));
+        return GameTiming.ComputeJitterBackoff(seconds);
     }
 }

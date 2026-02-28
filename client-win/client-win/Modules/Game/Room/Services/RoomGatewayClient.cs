@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Config;
+using client_win.Modules.Game.Common;
 using client_win.Modules.Network.Services;
 using client_win.Modules.Network.WebSockets;
 using client_win.Modules.User.Services;
@@ -101,7 +102,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         }
 
         var startedAt = DateTime.UtcNow;
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45));
+        using var timeout = new CancellationTokenSource(GameTiming.Room.GatewayConnectTimeout);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
 
         const int maxAttempts = 2;
@@ -160,7 +161,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
                 }
 
                 Log.Warning(ex, "WS room.create: échec transitoire (tentative {Attempt}/{MaxAttempts}), retry", attempt, maxAttempts);
-                await Task.Delay(TimeSpan.FromMilliseconds(350), linked.Token).ConfigureAwait(false);
+                await Task.Delay(GameTiming.Room.GatewayRetryDelay, linked.Token).ConfigureAwait(false);
             }
         }
 
@@ -189,7 +190,7 @@ public async Task<RoomSession> ConnectAsync(int roomId, CancellationToken cancel
             throw new ArgumentException("roomId invalide", nameof(roomId));
         }
 
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45));
+        using var timeout = new CancellationTokenSource(GameTiming.Room.GatewayConnectTimeout);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
 
         var (socket, reusedWarm) = await TakeOrCreateSocketAsync(token, linked.Token).ConfigureAwait(false);
@@ -522,7 +523,7 @@ public async Task<RoomSession> ConnectAsync(int roomId, CancellationToken cancel
             await socket.SendAsync(create, cancellationToken).ConfigureAwait(false);
             connected = true;
 
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45));
+            using var timeout = new CancellationTokenSource(GameTiming.Room.GatewayConnectTimeout);
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
             var res = await tcs.Task.WaitAsync(linked.Token).ConfigureAwait(false);
             Log.Information("WS room.create: rÃ©ponse reÃ§ue en {ElapsedMs}ms (roomId={RoomId})", (DateTime.UtcNow - startedAt).TotalMilliseconds, res.RoomId);
@@ -621,7 +622,7 @@ public async Task<RoomSession> ConnectAsync(int roomId, CancellationToken cancel
         {
             connected = true;
 
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45));
+            using var timeout = new CancellationTokenSource(GameTiming.Room.GatewayConnectTimeout);
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
             var res = await tcs.Task.WaitAsync(linked.Token).ConfigureAwait(false);
             Log.Information("WS room.connect: Ã©tat reÃ§u en {ElapsedMs}ms (roomId={RoomId})", (DateTime.UtcNow - startedAt).TotalMilliseconds, res.RoomId);
@@ -723,7 +724,7 @@ public async Task<RoomSession> ConnectAsync(int roomId, CancellationToken cancel
                 _json);
             await socket.SendAsync(ping, cancellationToken).ConfigureAwait(false);
 
-            using var timeout = new CancellationTokenSource(TimeSpan.FromMilliseconds(1200));
+            using var timeout = new CancellationTokenSource(GameTiming.Room.ClockSyncTimeout);
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
             await tcs.Task.WaitAsync(linked.Token).ConfigureAwait(false);
         }

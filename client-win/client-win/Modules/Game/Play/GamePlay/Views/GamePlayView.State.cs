@@ -37,4 +37,5 @@ public partial class GamePlayView
     private bool _lastChoicesA11yWasQuiz;
     private bool _lastChoicesA11yUsedLabeledBy;
     private string _lastChoicesA11yLabel = string.Empty;
+    private bool _lastObservedChoosePawnPending;
 }

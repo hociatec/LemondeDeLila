@@ -1,6 +1,7 @@
 using System;
 using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
+using client_win.Modules.Game.Common;
 
 namespace client_win.Modules.Game.Play.GamePlay.Services;
 
@@ -8,7 +9,7 @@ internal sealed class GamePlayLogSoundPlayer
 {
     private readonly ISoundService _sounds;
     private DateTime _lastDrawSoundUtc = DateTime.MinValue;
-    private static readonly TimeSpan DrawSoundCooldown = TimeSpan.FromMilliseconds(350);
+    private static readonly TimeSpan DrawSoundCooldown = GameTiming.Audio.DrawSoundCooldown;
 
     internal GamePlayLogSoundPlayer(ISoundService sounds)
     {
