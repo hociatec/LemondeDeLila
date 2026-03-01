@@ -82,6 +82,21 @@ public partial class GameZoneHostView : UserControl
             return GameFocusAttemptResult.Anchor;
         }
 
+        if (passiveReason && !focusInsideHost)
+        {
+            if (ShouldRecoverBrokenFocus())
+            {
+                // Passive update + broken focus: recover to a stable game anchor, then retry.
+                var recoverRequestId = Interlocked.Increment(ref _focusRequestId);
+                FocusGameZoneAnchor();
+                QueueDeferredFocusAttempt(recoverRequestId, DispatcherPriority.Loaded);
+                return GameFocusAttemptResult.Anchor;
+            }
+
+            // Passive state updates must never steal focus from chat/history.
+            return GameFocusAttemptResult.None;
+        }
+
         if (ShouldPreferStartAnchor())
         {
             FocusGameZoneAnchor();
