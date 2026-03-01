@@ -41,6 +41,8 @@ export class CatPattesSetupService {
     const obstacles: Record<number, CatPattesObstacleType | null> = {};
     const bots: Record<number, CatPattesBotType[]> = {};
     const hasSun: Record<number, boolean> = {};
+    const sunReady: Record<number, boolean> = {};
+    const obstacleLock: Record<number, boolean> = {};
     const turboPlayed: Record<number, number> = {};
     const pawnByPlayerId: Record<number, string> = {};
 
@@ -51,6 +53,8 @@ export class CatPattesSetupService {
       obstacles[player.id] = null;
       bots[player.id] = [];
       hasSun[player.id] = false;
+      sunReady[player.id] = true;
+      obstacleLock[player.id] = false;
       turboPlayed[player.id] = 0;
       const hand: string[] = [];
       for (let i = 0; i < 6; i += 1) {
@@ -81,6 +85,8 @@ export class CatPattesSetupService {
       bots,
       turboPlayed,
       hasSun,
+      sunReady,
+      obstacleLock,
       pawns: [...CAT_PATTES_PAWNS],
       pawnByPlayerId,
       setupStep: 'setup_config',

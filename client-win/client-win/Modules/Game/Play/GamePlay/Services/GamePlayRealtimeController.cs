@@ -52,6 +52,7 @@ internal sealed class GamePlayRealtimeController
     private bool _endgameFeedbackEmitted;
     private bool _finishedStatusEnforced;
     private bool _lastStartReady;
+    private bool _lastStartReadyKnown;
     private bool _lastViewerTurnActionable;
     private bool _lastViewerMustChoosePawn;
     private int _pendingForcedTurnAnnouncements;
@@ -122,6 +123,7 @@ internal sealed class GamePlayRealtimeController
         _endgameFeedbackEmitted = false;
         _finishedStatusEnforced = false;
         _lastStartReady = false;
+        _lastStartReadyKnown = false;
         _lastViewerTurnActionable = false;
         _lastViewerMustChoosePawn = false;
         _lastViewerHandCounts = null;
@@ -146,7 +148,9 @@ internal sealed class GamePlayRealtimeController
             if (force) _pendingForcedTurnAnnouncements = Math.Max(0, _pendingForcedTurnAnnouncements - 1);
             // Évite le spam : les tours sont déjà annoncés via l'historique serveur.
             // Garder seulement les annonces "forcées" (ex: demande manuelle de game.turn).
-            if (force)
+            if (force &&
+                string.Equals(_lastGameStatus, "started", StringComparison.OrdinalIgnoreCase) &&
+                (_lastStartReady || !_lastStartReadyKnown))
             {
         _announcementRouter.TryHandleTurnUpdate(info, msg => _emitMessage(new GamePlayHistoryMessage(msg)), force: true);
             }
@@ -362,10 +366,12 @@ internal sealed class GamePlayRealtimeController
         var previousViewerMustChoosePawn = _lastViewerMustChoosePawn;
         _lastGameStatus = nextStatus;
         _lastGamePhase = nextPhase;
+        var startReadyKnown = HasStartReadyFlag(state);
         var startReady = IsStartReadyFromState(state);
         var viewerTurnActionable = IsViewerTurnActionableFromState(state);
         var viewerMustChoosePawn = IsViewerMustChoosePawnFromState(state);
         _lastStartReady = startReady;
+        _lastStartReadyKnown = startReadyKnown;
         _lastViewerTurnActionable = viewerTurnActionable;
         _lastViewerMustChoosePawn = viewerMustChoosePawn;
         if (!string.Equals(previousStatus, nextStatus, StringComparison.OrdinalIgnoreCase))
@@ -392,7 +398,8 @@ internal sealed class GamePlayRealtimeController
             _finishedStatusEnforced = false;
             // During pawn selection setup, the pending label is the authoritative prompt.
             // Avoid adding a redundant "C'est au tour de ...".
-            if (!PawnPendingTypes.IsPawnPendingType(state.Pending?.Type))
+            if (!PawnPendingTypes.IsPawnPendingType(state.Pending?.Type) &&
+                (startReady || !startReadyKnown))
             {
                 var currentPlayerId = state.Turn?.CurrentPlayerId;
                 var currentPlayerUsername = currentPlayerId != null
@@ -586,6 +593,35 @@ internal sealed class GamePlayRealtimeController
         }
 
         return false;
+    }
+
+    private static bool HasStartReadyFlag(GameStateDto state)
+    {
+        if (!string.Equals(state.Status, "started", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        try
+        {
+            var metadata = state.Metadata;
+            if (metadata.ValueKind != System.Text.Json.JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            if (!metadata.TryGetProperty("lifecycle", out var lifecycle) ||
+                lifecycle.ValueKind != System.Text.Json.JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            return lifecycle.TryGetProperty("startReady", out _);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static bool IsViewerTurnActionableFromState(GameStateDto state)

@@ -322,11 +322,9 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             }
             if (wasChoosePawnPending && !IsChoosePawnPending)
             {
-                var hasActions = (_session?.LastState?.Actions?.Count ?? 0) > 0;
-                if (hasActions)
-                {
-                    RequestGameZoneFocus(GameFocusReason.TableStarted);
-                }
+                // Force a strong focus recovery after pawn selection ends,
+                // even if the next actionable state is not yet fully materialized.
+                RequestGameZoneFocus(GameFocusReason.TableStarted);
             }
         }
     }

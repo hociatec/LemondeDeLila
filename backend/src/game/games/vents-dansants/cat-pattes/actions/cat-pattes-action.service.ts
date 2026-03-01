@@ -29,6 +29,9 @@ import { CAT_PATTES_POINTS_TO_WIN } from '../model/cat-pattes-state.entity';
 import {
   CAT_PATTES_OBSTACLE_TO_PARADE,
   canPlayPattes,
+  canPlayParade,
+  canPlayBot,
+  isBlockedByObstacle,
   playerCanReceiveObstacle,
 } from '../rulebook/rulebook';
 
@@ -360,6 +363,15 @@ export class CatPattesActionService {
 
     if (!hand.includes(cardId)) return state;
 
+    const blockedByObstacle = isBlockedByObstacle(meta, currentId);
+    if (
+      blockedByObstacle &&
+      definition.type !== 'parade' &&
+      definition.type !== 'bot'
+    ) {
+      return state;
+    }
+
     if (definition.type === 'pattes') {
       if (!canPlayPattes(meta, currentId, definition)) return state;
       const currentPos = Number(meta.positions?.[currentId] ?? 0);
@@ -378,8 +390,13 @@ export class CatPattesActionService {
       if (!playerCanReceiveObstacle(meta, targetId, definition.obstacle!))
         return state;
     }
+    if (definition.type === 'parade') {
+      if (!canPlayParade(meta, currentId, definition)) return state;
+    }
+    if (definition.type === 'bot') {
+      if (!canPlayBot(meta, currentId, definition)) return state;
+    }
 
-    const hadObstacle = Boolean(meta.obstacles?.[currentId]);
     let updatedMeta = this.removeCardFromHand(meta, currentId, cardId);
     updatedMeta = this.addCardToDiscard(updatedMeta, cardId);
     let next = this.setMeta(state, updatedMeta);
@@ -409,9 +426,8 @@ export class CatPattesActionService {
       return next;
     }
 
-    // Règle: si un Pouvoir est joué en réponse à un obstacle, le joueur rejoue immédiatement.
-    // Interprétation: si un obstacle est actif au moment où le Pouvoir est joué, on conserve le tour.
-    if (definition.type === 'bot' && hadObstacle) {
+    // Règle: un Pouvoir rejoue immédiatement.
+    if (definition.type === 'bot') {
       const withLog = this.core.appendLog(
         next,
         `${resolvePlayerNameFromState(next, currentId)} rejoue immédiatement grâce au Pouvoir.`,
@@ -589,14 +605,16 @@ export class CatPattesActionService {
   ): GameStateEntity {
     let next = state;
     let meta = this.getMeta(next);
+    const parade = card.parade ?? null;
+    if (!parade) return state;
+
     const obstacles = { ...(meta.obstacles ?? {}) };
     const currentObstacle = obstacles[playerId] ?? null;
-    const parade = card.parade ?? null;
-    if (
+    const removesObstacle =
       currentObstacle &&
-      parade &&
-      CAT_PATTES_OBSTACLE_TO_PARADE[currentObstacle] === parade
-    ) {
+      CAT_PATTES_OBSTACLE_TO_PARADE[currentObstacle] === parade;
+
+    if (removesObstacle) {
       const obstacleLabel = OBSTACLE_LABELS[currentObstacle] ?? currentObstacle;
       obstacles[playerId] = null;
       meta = { ...meta, obstacles };
@@ -606,30 +624,35 @@ export class CatPattesActionService {
         `${resolvePlayerNameFromState(next, playerId)} neutralise ${obstacleLabel} avec ${card.name}.`,
       );
       meta = this.getMeta(next);
-    } else if (currentObstacle) {
-      const obstacleLabel = OBSTACLE_LABELS[currentObstacle] ?? currentObstacle;
-      const paradeLabel = parade ? PARADE_LABELS[parade] ?? parade : card.name;
-      next = this.core.appendLog(
-        next,
-        `${resolvePlayerNameFromState(next, playerId)} joue ${paradeLabel} mais ne retire pas l'obstacle (${obstacleLabel}).`,
-      );
+    } else if (!currentObstacle && parade === 'rayon') {
+      // Rayon autorisé sans obstacle (début de manche / après parade).
     } else {
-      next = this.core.appendLog(
-        next,
-        `${resolvePlayerNameFromState(next, playerId)} joue ${card.name} mais n'a aucun obstacle à retirer.`,
-      );
+      return state;
     }
 
     if (parade === 'rayon') {
       const hasSun = { ...(meta.hasSun ?? {}) };
       const alreadyActive = Boolean(hasSun[playerId]);
       hasSun[playerId] = true;
-      meta = { ...meta, hasSun };
+      const sunReady = { ...(meta.sunReady ?? {}) };
+      sunReady[playerId] = false;
+      const obstacleLock = { ...(meta.obstacleLock ?? {}) };
+      obstacleLock[playerId] = false;
+      meta = { ...meta, hasSun, sunReady, obstacleLock };
       next = this.setMeta(next, meta);
       next = this.core.appendLog(
         next,
         `${resolvePlayerNameFromState(next, playerId)} ${alreadyActive ? 'a déjà le soleil actif.' : 'active le soleil.'}`,
       );
+      return next;
+    }
+
+    if (removesObstacle) {
+      const sunReady = { ...(meta.sunReady ?? {}) };
+      sunReady[playerId] = true;
+      const obstacleLock = { ...(meta.obstacleLock ?? {}) };
+      obstacleLock[playerId] = true;
+      next = this.setMeta(next, { ...meta, sunReady, obstacleLock });
     }
 
     return next;
@@ -650,10 +673,10 @@ export class CatPattesActionService {
     }
     bots[playerId] = playerBots;
     let next = this.setMeta(state, { ...meta, bots });
-      next = this.core.appendLog(
-        next,
-        `${resolvePlayerNameFromState(next, playerId)} active ${card.name} (Pouvoir).`,
-      );
+    next = this.core.appendLog(
+      next,
+      `${resolvePlayerNameFromState(next, playerId)} active ${card.name} (Pouvoir).`,
+    );
     const effect = BOT_EFFECTS[bot];
     if (effect) {
       next = this.core.appendLog(
@@ -661,6 +684,31 @@ export class CatPattesActionService {
         `${resolvePlayerNameFromState(next, playerId)} : ${effect}`,
       );
     }
+
+    const currentObstacle = meta.obstacles?.[playerId] ?? null;
+    if (
+      currentObstacle &&
+      ((bot === 'reserve' && currentObstacle === 'gamelle') ||
+        (bot === 'chat-ninja' && currentObstacle === 'chien') ||
+        (bot === 'patte-blindee' && currentObstacle === 'coussin') ||
+        (bot === 'passage-star' &&
+          (currentObstacle === 'pluie' || currentObstacle === 'sol')))
+    ) {
+      const obstacles = { ...(meta.obstacles ?? {}) };
+      obstacles[playerId] = null;
+      const sunReady = { ...(meta.sunReady ?? {}) };
+      sunReady[playerId] = true;
+      const obstacleLock = { ...(meta.obstacleLock ?? {}) };
+      obstacleLock[playerId] = bot === 'passage-star' ? false : true;
+      next = this.setMeta(next, {
+        ...meta,
+        bots,
+        obstacles,
+        sunReady,
+        obstacleLock,
+      });
+    }
+
     return next;
   }
 
@@ -950,6 +998,8 @@ export class CatPattesActionService {
     const obstacles: Record<number, CatPattesObstacleType | null> = {};
     const bots: Record<number, CatPattesBotType[]> = {};
     const hasSun: Record<number, boolean> = {};
+    const sunReady: Record<number, boolean> = {};
+    const obstacleLock: Record<number, boolean> = {};
     const turboPlayed: Record<number, number> = {};
 
     for (const playerId of playerIds) {
@@ -957,6 +1007,8 @@ export class CatPattesActionService {
       obstacles[playerId] = null;
       bots[playerId] = [];
       hasSun[playerId] = false;
+      sunReady[playerId] = true;
+      obstacleLock[playerId] = false;
       turboPlayed[playerId] = 0;
       const hand: string[] = [];
       for (let i = 0; i < 6; i += 1) {
@@ -980,6 +1032,8 @@ export class CatPattesActionService {
       obstacles,
       bots,
       hasSun,
+      sunReady,
+      obstacleLock,
       turboPlayed,
       setupStep: 'playing',
       setupStarterId: starterId,

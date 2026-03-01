@@ -110,7 +110,6 @@ export class CatPattesPresenterService {
     const extras = {
       hand,
       handIds,
-      hands: meta.hands,
       positions: meta.positions,
       points: meta.points,
       pointsToWin,

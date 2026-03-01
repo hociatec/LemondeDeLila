@@ -3,6 +3,7 @@ import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto
 import {
   CAT_PATTES_CARD_BY_ID,
   CatPattesCardDefinition,
+  CatPattesBotType,
   CatPattesObstacleType,
   CatPattesParadeType,
 } from '../model/cat-pattes-cards';
@@ -58,11 +59,51 @@ export const CAT_PATTES_OBSTACLE_TO_PARADE: Record<
   sol: 'saut',
 };
 
+const PARADE_DISABLED_BY_BOT: Record<CatPattesBotType, CatPattesParadeType[]> = {
+  reserve: ['croquettes'],
+  'chat-ninja': ['dodo'],
+  'patte-blindee': ['coussin'],
+  'passage-star': ['rayon', 'saut'],
+};
+
 function hasBot(
   bots: CatPattesMetadata['bots'][number],
   type: string,
 ): boolean {
   return Array.isArray(bots) && bots.includes(type as any);
+}
+
+function getBots(meta: CatPattesMetadata, playerId: number): CatPattesBotType[] {
+  return Array.isArray(meta.bots?.[playerId]) ? meta.bots[playerId] : [];
+}
+
+function getSunReady(meta: CatPattesMetadata, playerId: number): boolean {
+  if (meta.sunReady?.[playerId] == null) return true;
+  return Boolean(meta.sunReady[playerId]);
+}
+
+function obstacleLocked(meta: CatPattesMetadata, playerId: number): boolean {
+  if (meta.obstacleLock?.[playerId] == null) return false;
+  return Boolean(meta.obstacleLock[playerId]);
+}
+
+function botCountersObstacle(
+  bot: CatPattesBotType,
+  obstacle: CatPattesObstacleType,
+): boolean {
+  if (bot === 'reserve') return obstacle === 'gamelle';
+  if (bot === 'chat-ninja') return obstacle === 'chien';
+  if (bot === 'patte-blindee') return obstacle === 'coussin';
+  if (bot === 'passage-star') return obstacle === 'pluie' || obstacle === 'sol';
+  return false;
+}
+
+function isParadeDisabledByBots(
+  bots: CatPattesBotType[],
+  parade: CatPattesParadeType | null | undefined,
+): boolean {
+  if (!parade) return false;
+  return bots.some((bot) => PARADE_DISABLED_BY_BOT[bot]?.includes(parade));
 }
 
 function obstacleIsIgnoredByBots(
@@ -85,6 +126,16 @@ function obstacleIsIgnoredByBots(
     return true;
   }
   return false;
+}
+
+export function isBlockedByObstacle(
+  meta: CatPattesMetadata,
+  playerId: number,
+): boolean {
+  const obstacle = meta.obstacles?.[playerId] ?? null;
+  if (!obstacle) return false;
+  const bots = getBots(meta, playerId);
+  return !obstacleIsIgnoredByBots(obstacle, bots);
 }
 
 function samePlayerId(a: unknown, b: unknown): boolean {
@@ -123,7 +174,44 @@ export function playerCanReceiveObstacle(
   if (obstacleIsIgnoredByBots(obstacle, bots)) {
     return false;
   }
+  if (obstacleLocked(meta, playerId) && !hasBot(bots, 'passage-star')) {
+    return false;
+  }
   return !meta.obstacles?.[playerId];
+}
+
+export function canPlayParade(
+  meta: CatPattesMetadata,
+  playerId: number,
+  card: CatPattesCardDefinition,
+): boolean {
+  const parade = card.parade ?? null;
+  if (!parade) return false;
+  const bots = getBots(meta, playerId);
+  if (isParadeDisabledByBots(bots, parade)) return false;
+
+  const obstacle = meta.obstacles?.[playerId] ?? null;
+  if (obstacle && CAT_PATTES_OBSTACLE_TO_PARADE[obstacle] === parade) {
+    return true;
+  }
+
+  if (!obstacle && parade === 'rayon') {
+    return getSunReady(meta, playerId);
+  }
+
+  return false;
+}
+
+export function canPlayBot(
+  meta: CatPattesMetadata,
+  playerId: number,
+  card: CatPattesCardDefinition,
+): boolean {
+  const bot = card.bot;
+  if (!bot) return false;
+  const obstacle = meta.obstacles?.[playerId] ?? null;
+  if (!obstacle) return true;
+  return botCountersObstacle(bot, obstacle);
 }
 
 function normalizePawnKey(value: unknown): string {
@@ -173,20 +261,38 @@ export function getAvailableActions(
     ? [...meta.hands[playerId]]
     : [];
   const actions: GameSingleActionDto[] = [];
+  const blockedByObstacle = isBlockedByObstacle(meta, playerId);
   const opponents = (Array.isArray(state.players) ? state.players : [])
     .filter((p) => p?.id != null && p.id !== playerId)
     .map((p) => p.id);
 
+  const counterActions: GameSingleActionDto[] = [];
+
   for (const cardId of hand) {
     const definition = CAT_PATTES_CARD_BY_ID[cardId];
     if (!definition) continue;
-    if (
-      definition.type === 'pattes' &&
-      !canPlayPattes(meta, playerId, definition)
-    ) {
+    if (definition.type === 'pattes') {
+      if (blockedByObstacle) {
+        continue;
+      }
+      if (!canPlayPattes(meta, playerId, definition)) {
+        continue;
+      }
+      actions.push({
+        type: 'play_card',
+        payload: { cardId },
+      });
+      actions.push({
+        type: 'discard_card',
+        payload: { cardId },
+      });
       continue;
     }
+
     if (definition.type === 'obstacle') {
+      if (blockedByObstacle) {
+        continue;
+      }
       for (const target of opponents) {
         if (!playerCanReceiveObstacle(meta, target, definition.obstacle!)) {
           continue;
@@ -196,16 +302,51 @@ export function getAvailableActions(
           payload: { cardId, targetPlayerId: target },
         });
       }
-    } else {
       actions.push({
-        type: 'play_card',
+        type: 'discard_card',
+        payload: { cardId },
+      });
+      continue;
+    }
+
+    if (definition.type === 'parade') {
+      if (canPlayParade(meta, playerId, definition)) {
+        const play = {
+          type: 'play_card',
+          payload: { cardId },
+        };
+        actions.push(play);
+        if (blockedByObstacle) {
+          counterActions.push(play);
+        }
+      }
+      actions.push({
+        type: 'discard_card',
+        payload: { cardId },
+      });
+      continue;
+    }
+
+    if (definition.type === 'bot') {
+      if (canPlayBot(meta, playerId, definition)) {
+        const play = {
+          type: 'play_card',
+          payload: { cardId },
+        };
+        actions.push(play);
+        if (blockedByObstacle) {
+          counterActions.push(play);
+        }
+      }
+      actions.push({
+        type: 'discard_card',
         payload: { cardId },
       });
     }
-    actions.push({
-      type: 'discard_card',
-      payload: { cardId },
-    });
+  }
+
+  if (blockedByObstacle && counterActions.length > 0) {
+    return counterActions;
   }
 
   if (actions.length === 0) {
@@ -324,8 +465,23 @@ export function validateAction(
     throw new Error('Carte introuvable.');
   }
   const hand = Array.isArray(meta.hands?.[actorId]) ? meta.hands[actorId] : [];
+  const blockedByObstacle = isBlockedByObstacle(meta, actorId);
+  const hasCounterInHand = (): boolean => {
+    for (const id of hand) {
+      const def = CAT_PATTES_CARD_BY_ID[id];
+      if (!def) continue;
+      if (def.type === 'parade' && canPlayParade(meta, actorId, def)) return true;
+      if (def.type === 'bot' && canPlayBot(meta, actorId, def)) return true;
+    }
+    return false;
+  };
 
   if (type === 'discard_card') {
+    if (blockedByObstacle && hasCounterInHand()) {
+      throw new Error(
+        'Un obstacle actif vous bloque: vous devez contrer avec une Parade ou un Pouvoir.',
+      );
+    }
     if (!cardId) {
       return { type: 'discard_card', payload: {} };
     }
@@ -340,6 +496,12 @@ export function validateAction(
   const definition = CAT_PATTES_CARD_BY_ID[cardId];
   if (!definition) {
     throw new Error('Carte invalide.');
+  }
+
+  if (blockedByObstacle && definition.type !== 'parade' && definition.type !== 'bot') {
+    throw new Error(
+      'Un obstacle actif vous bloque: jouez une Parade ou un Pouvoir.',
+    );
   }
 
   if (
@@ -371,6 +533,11 @@ export function validateAction(
   }
 
   if (definition.type === 'obstacle') {
+    if (blockedByObstacle) {
+      throw new Error(
+        'Un obstacle actif vous bloque: vous ne pouvez pas jouer une carte Obstacle.',
+      );
+    }
     const targetId =
       typeof payload.targetPlayerId === 'number'
         ? payload.targetPlayerId
@@ -389,6 +556,22 @@ export function validateAction(
     if (!playerCanReceiveObstacle(meta, targetId, definition.obstacle!)) {
       throw new Error(
         "La cible ne peut pas recevoir cet obstacle (deja protegee ou deja un obstacle).",
+      );
+    }
+  }
+
+  if (definition.type === 'parade') {
+    if (!canPlayParade(meta, actorId, definition)) {
+      throw new Error(
+        "Impossible de jouer cette Parade: aucun obstacle correspondant ou soleil non autorisé.",
+      );
+    }
+  }
+
+  if (definition.type === 'bot') {
+    if (!canPlayBot(meta, actorId, definition)) {
+      throw new Error(
+        'Un obstacle actif vous bloque: ce Pouvoir ne le contre pas.',
       );
     }
   }

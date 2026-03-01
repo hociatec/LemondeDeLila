@@ -15,6 +15,8 @@ export interface CatPattesMetadata {
   bots: Record<number, CatPattesBotType[]>;
   turboPlayed: Record<number, number>;
   hasSun: Record<number, boolean>;
+  sunReady?: Record<number, boolean>;
+  obstacleLock?: Record<number, boolean>;
   pawns: CatPattesPawn[];
   pawnByPlayerId: Record<number, string>;
   setupStep?: 'setup_config' | 'choose_pawn' | 'playing';

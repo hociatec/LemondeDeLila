@@ -172,9 +172,13 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
 
             var (msg, prio) = next.Value;
             var ultraReactive = IsGameplayUltraReactive();
-            var effective = (ultraReactive || forceAssertive > 0)
-                ? AnnouncementPriority.Assertive
-                : prio;
+            // Keep the original priority; forcing assertive on gameplay bursts cuts announcements.
+            var effective = prio;
+            if (effective == AnnouncementPriority.Assertive && HasPendingMessages())
+            {
+                // In bursts, avoid interrupting the current speech: keep the queue readable.
+                effective = AnnouncementPriority.Polite;
+            }
             try
             {
                 if (!_announcer.IsRunning)
@@ -207,6 +211,18 @@ public sealed class ScreenReaderAnnouncementService : IAnnouncementService
             var spacing = ultraReactive
                 ? TimeSpan.Zero
                 : (effective == AnnouncementPriority.Assertive ? AssertiveSpacing : PoliteSpacing);
+            if (ultraReactive && HasPendingMessages())
+            {
+                // Ultra reactive mode can fire too fast for some screen readers.
+                // Keep a small gap so consecutive action logs are not skipped.
+                spacing = TimeSpan.FromMilliseconds(120);
+            }
+            if (HasPendingMessages() &&
+                msg.Contains("liste de courses", StringComparison.OrdinalIgnoreCase))
+            {
+                // Give screen readers a moment to speak sequential list announcements.
+                spacing = TimeSpan.FromMilliseconds(200);
+            }
             if (spacing > TimeSpan.Zero && HasPendingMessages())
             {
                 try

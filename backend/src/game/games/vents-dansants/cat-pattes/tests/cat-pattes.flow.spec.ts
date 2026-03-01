@@ -556,4 +556,141 @@ describe('CatPattes flow', () => {
     expect(logsLilas).toContain('Hacene pioche une carte.');
     expect(logsLilas).not.toContain('Hacene pioche un poney.');
   });
+
+  it('does not expose opponents hands in presenter extras', async () => {
+    const presenter = new CatPattesPresenterService();
+    const state: any = {
+      ...baseState(),
+      metadata: {
+        ...baseState().metadata,
+        hands: { 1: ['pattes-10-1'], 2: ['parade-rayon-1'] },
+        positions: { 1: 0, 2: 0 },
+        points: { 1: 0, 2: 0 },
+        obstacles: { 1: null, 2: null },
+        bots: { 1: [], 2: [] },
+        hasSun: { 1: false, 2: false },
+      },
+    };
+
+    const exposed: any = presenter.exposeStateForUser(state, 1);
+    expect(exposed.extras?.hands).toBeUndefined();
+    expect(Array.isArray(exposed.extras?.hand)).toBe(true);
+  });
+
+  it('requires matching parade (and sun-ready for rayon)', async () => {
+    const state: any = {
+      ...baseState(),
+      metadata: {
+        ...baseState().metadata,
+        hands: { 1: ['parade-croquettes-1', 'parade-rayon-1'], 2: [] },
+        positions: { 1: 0, 2: 0 },
+        points: { 1: 0, 2: 0 },
+        obstacles: { 1: null, 2: null },
+        bots: { 1: [], 2: [] },
+        hasSun: { 1: false, 2: false },
+        sunReady: { 1: false, 2: true },
+        obstacleLock: { 1: false, 2: false },
+        drawnPlayerId: 1,
+      },
+      turn: { currentPlayerId: 1, direction: 1 },
+      turnIndex: 0,
+    };
+
+    const actions = Rulebook.getAvailableActions(state, 1);
+    expect(actions.some((a: any) => a.type === 'play_card')).toBe(false);
+    expect(actions.filter((a: any) => a.type === 'discard_card').length).toBe(2);
+  });
+
+  it('limits actions to counters when an obstacle is active', async () => {
+    const state: any = {
+      ...baseState(),
+      metadata: {
+        ...baseState().metadata,
+        hands: { 1: ['parade-croquettes-1', 'pattes-10-1'], 2: [] },
+        positions: { 1: 0, 2: 0 },
+        points: { 1: 0, 2: 0 },
+        obstacles: { 1: 'gamelle', 2: null },
+        bots: { 1: [], 2: [] },
+        hasSun: { 1: false, 2: false },
+        sunReady: { 1: false, 2: true },
+        obstacleLock: { 1: false, 2: false },
+        drawnPlayerId: 1,
+      },
+      turn: { currentPlayerId: 1, direction: 1 },
+      turnIndex: 0,
+    };
+
+    const actions = Rulebook.getAvailableActions(state, 1);
+    expect(actions).toEqual([
+      { type: 'play_card', payload: { cardId: 'parade-croquettes-1' } },
+    ]);
+  });
+
+  it('lets a player replay after playing a power', async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        GameCoreService,
+        RandomService,
+        SetupFlowService,
+        DeckPoliciesService,
+        CatPattesSetupService,
+        {
+          provide: 'TurnFlowService',
+          useValue: {
+            advanceTurn: (state: any) => state,
+          },
+        },
+        {
+          provide: CatPattesActionService,
+          useFactory: (
+            core: GameCoreService,
+            turns: any,
+            setupFlow: SetupFlowService,
+            deckPolicies: DeckPoliciesService,
+            random: RandomService,
+          ) =>
+            new CatPattesActionService(
+              core,
+              turns,
+              setupFlow,
+              deckPolicies,
+              random,
+            ),
+          inject: [
+            GameCoreService,
+            'TurnFlowService',
+            SetupFlowService,
+            DeckPoliciesService,
+            RandomService,
+          ],
+        },
+      ],
+    }).compile();
+
+    const actionsService = moduleRef.get(CatPattesActionService);
+    const state: any = {
+      ...baseState(),
+      metadata: {
+        ...baseState().metadata,
+        hands: { 1: ['bot-reserve'], 2: [] },
+        positions: { 1: 0, 2: 0 },
+        points: { 1: 0, 2: 0 },
+        obstacles: { 1: null, 2: null },
+        bots: { 1: [], 2: [] },
+        hasSun: { 1: false, 2: false },
+        sunReady: { 1: true, 2: true },
+        obstacleLock: { 1: false, 2: false },
+        drawnPlayerId: 1,
+      },
+      turn: { currentPlayerId: 1, direction: 1 },
+      turnIndex: 0,
+    };
+
+    const next = actionsService.applyActions(state, [
+      { type: 'play_card', payload: { cardId: 'bot-reserve' } } as any,
+    ]);
+
+    expect(next.turn?.currentPlayerId).toBe(1);
+    expect((next.metadata as any)?.drawnPlayerId ?? null).toBeNull();
+  });
 });

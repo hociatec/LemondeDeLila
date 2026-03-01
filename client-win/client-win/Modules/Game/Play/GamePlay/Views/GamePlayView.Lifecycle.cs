@@ -10,6 +10,7 @@ public partial class GamePlayView
 {
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        LayoutUpdated += OnLayoutUpdated;
         UpdateChoicesAccessibility();
         var vm = DataContext as GamePlayViewModel;
         HookChoiceAutoFocus(vm);
@@ -34,6 +35,7 @@ public partial class GamePlayView
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
+        LayoutUpdated -= OnLayoutUpdated;
         HookChoiceAutoFocus(null);
         HookHandAutoFocus(null);
         HookInlinePromptAutoFocus(null);
@@ -43,6 +45,11 @@ public partial class GamePlayView
         UnhookInlinePromptFocusObserver();
         CancelInitialization();
         UnhookGridGenerator();
+    }
+
+    private void OnLayoutUpdated(object? sender, EventArgs e)
+    {
+        TryRecoverPostPawnSelectionFocusFromLayout();
     }
 
     private void TryStartInitialization(GamePlayViewModel? vm)

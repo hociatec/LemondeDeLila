@@ -22,6 +22,8 @@ public partial class GamePlayView
     private bool _restoreHandFocusAfterSubmit;
     private int _restoreHandFocusIndex;
     private bool _preferredInteractiveFocusForceFromOutside = true;
+    private DateTime _postPawnSelectionRecoveryUntilUtc;
+    private int _postPawnSelectionRecoveryRequestId;
 
     public void FocusPreferredInteractiveElement()
     {
@@ -182,6 +184,7 @@ public partial class GamePlayView
                     if (justExitedChoosePawn)
                     {
                         _pendingInitialInteractiveFocus = true;
+                        StartPostPawnSelectionRecoveryWindow();
                         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
                         {
                             FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
@@ -426,6 +429,78 @@ public partial class GamePlayView
         var requestId = Interlocked.Increment(ref _gameZoneFocusRequestId);
         RunGameZoneFocusRequest(requestId, reason);
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => RunGameZoneFocusRequest(requestId, reason)));
+    }
+
+    private void StartPostPawnSelectionRecoveryWindow()
+    {
+        _postPawnSelectionRecoveryUntilUtc = DateTime.UtcNow.AddSeconds(2);
+        RequestPostPawnSelectionFocusRecovery();
+    }
+
+    private void RequestPostPawnSelectionFocusRecovery()
+    {
+        var requestId = Interlocked.Increment(ref _postPawnSelectionRecoveryRequestId);
+        RunPostPawnSelectionRecovery(requestId);
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => RunPostPawnSelectionRecovery(requestId)));
+        QueuePostPawnSelectionRecoveryDelayedPass(requestId, 120);
+        QueuePostPawnSelectionRecoveryDelayedPass(requestId, 280);
+        QueuePostPawnSelectionRecoveryDelayedPass(requestId, 520);
+    }
+
+    private void QueuePostPawnSelectionRecoveryDelayedPass(int requestId, int delayMs)
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(delayMs).ConfigureAwait(false);
+            }
+            catch
+            {
+                return;
+            }
+
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.ApplicationIdle,
+                new Action(() => RunPostPawnSelectionRecovery(requestId)));
+        });
+    }
+
+    private void RunPostPawnSelectionRecovery(int requestId)
+    {
+        if (requestId != _postPawnSelectionRecoveryRequestId)
+        {
+            return;
+        }
+
+        if (_postPawnSelectionRecoveryUntilUtc == default ||
+            DateTime.UtcNow > _postPawnSelectionRecoveryUntilUtc)
+        {
+            return;
+        }
+
+        if (IsTextInputFocused())
+        {
+            return;
+        }
+
+        if (!ShouldRecoverBrokenFocus() && IsFocusInsideThisGameView())
+        {
+            return;
+        }
+
+        FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
+    }
+
+    private void TryRecoverPostPawnSelectionFocusFromLayout()
+    {
+        if (_postPawnSelectionRecoveryUntilUtc == default ||
+            DateTime.UtcNow > _postPawnSelectionRecoveryUntilUtc)
+        {
+            return;
+        }
+
+        RunPostPawnSelectionRecovery(_postPawnSelectionRecoveryRequestId);
     }
 
     private void RunGameZoneFocusRequest(int requestId, GameFocusReason reason)
