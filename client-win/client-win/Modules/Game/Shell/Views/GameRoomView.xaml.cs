@@ -33,6 +33,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
     private void OnLoaded(object? sender, RoutedEventArgs e)
     {
         EnsureFocusPolicy();
+        HookGameZoneHostEvents(attach: true);
         HookFocusRequests(DataContext as GameRoomViewModel);
         HookHistoryUpdates();
         RequestFocusGameZoneInternal(GameFocusReason.InitialLoad);
@@ -40,6 +41,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
 
     private void OnUnloaded(object? sender, RoutedEventArgs e)
     {
+        HookGameZoneHostEvents(attach: false);
         HookFocusRequests(null);
         UnhookHistoryUpdates();
         _focusPolicy?.Detach();
@@ -63,6 +65,35 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         {
             zone.AllowAnchorAutoFocus = _focusPolicy.AnchorAutoFocusEvaluator;
         }
+    }
+
+    private void HookGameZoneHostEvents(bool attach)
+    {
+        if (GameZoneHost is not GameZoneHostView zone)
+        {
+            return;
+        }
+
+        zone.StartRequested -= OnGameZoneStartRequested;
+        if (attach)
+        {
+            zone.StartRequested += OnGameZoneStartRequested;
+        }
+    }
+
+    private void OnGameZoneStartRequested(object? sender, EventArgs e)
+    {
+        if (DataContext is not GameRoomViewModel vm)
+        {
+            return;
+        }
+
+        if (!vm.GameZone.StartCommand.CanExecute(null))
+        {
+            return;
+        }
+
+        vm.GameZone.StartCommand.Execute(null);
     }
 
     private void HookFocusRequests(GameRoomViewModel? vm)
@@ -256,6 +287,12 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
     }
 
     public void RequestInitialFocus() => RequestFocusGameZoneInternal(GameFocusReason.InitialLoad);
+
+    private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+        _focusPolicy?.NotifyUserKeyDown(key);
+    }
 
     private void OnChatInputPreviewKeyDown(object sender, KeyEventArgs e)
     {

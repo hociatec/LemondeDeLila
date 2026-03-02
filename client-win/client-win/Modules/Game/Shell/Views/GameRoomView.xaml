@@ -14,6 +14,7 @@
     <Grid x:Name="Root"
           Background="#0F1D2D"
           Loaded="OnLoaded"
+          PreviewKeyDown="OnPreviewKeyDown"
           behaviors:ShortcutBindingsBehavior.Shortcuts="{Binding GameZone.Shortcuts}"
           behaviors:ShortcutBindingsBehavior.RefocusAfterExecute="False"
           KeyboardNavigation.TabNavigation="Cycle"
@@ -99,6 +100,7 @@
                                  FontSize="13"
                                  AcceptsReturn="False"
                                  TextWrapping="NoWrap"
+                                 KeyboardNavigation.TabIndex="1"
                                  PreviewKeyDown="OnChatInputPreviewKeyDown"
                         AutomationProperties.Name="Message"
                         AutomationProperties.HelpText="Saisissez un message puis appuyez sur Entrée." />

@@ -31,9 +31,8 @@
             <Grid Grid.Row="1">
                 <!-- Ancre de focus permanente pour garder la navigation "dans la zone de jeu"
                      mÃªme si la surface de jeu n'a pas d'Ã©lÃ©ment focusable Ã  l'instant T. -->
-		                <local:GameZoneFocusAnchor x:Name="GameZoneFocusAnchor"
+			                <local:GameZoneFocusAnchor x:Name="GameZoneFocusAnchor"
                                            Focusable="True"
-                                           IsTabStop="True"
                                            KeyboardNavigation.TabIndex="0"
                                            Background="Transparent"
                                            BorderThickness="0"
@@ -43,14 +42,27 @@
 		                                           Height="1"
 		                                           HorizontalAlignment="Left"
 		                                           VerticalAlignment="Top"
-		                                           AutomationProperties.Name="{Binding Title, FallbackValue=Zone de jeu, TargetNullValue=Zone de jeu}"
-		                                           AutomationProperties.IsOffscreenBehavior="Onscreen"
-		                                           GotKeyboardFocus="OnAnchorGotKeyboardFocus"
-		                                           PreviewKeyDown="OnAnchorPreviewKeyDown" />
+			                                           AutomationProperties.Name="{Binding Title, FallbackValue=Zone de jeu, TargetNullValue=Zone de jeu}"
+			                                           AutomationProperties.IsOffscreenBehavior="Onscreen"
+			                                           GotKeyboardFocus="OnAnchorGotKeyboardFocus"
+			                                           PreviewKeyDown="OnAnchorPreviewKeyDown">
+                    <local:GameZoneFocusAnchor.Style>
+                        <Style TargetType="{x:Type local:GameZoneFocusAnchor}">
+                            <Setter Property="IsTabStop" Value="True" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Content}" Value="{x:Null}">
+                                    <Setter Property="IsTabStop" Value="False" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsStarted}" Value="False">
+                                    <Setter Property="IsTabStop" Value="False" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </local:GameZoneFocusAnchor.Style>
+                </local:GameZoneFocusAnchor>
 
-	                <local:GameZoneFocusAnchor x:Name="GameZoneEmptyAnchor"
+		                <local:GameZoneFocusAnchor x:Name="GameZoneEmptyAnchor"
                                            Focusable="True"
-                                           IsTabStop="True"
                                            KeyboardNavigation.TabIndex="0"
                                            Background="Transparent"
                                            BorderThickness="0"
@@ -59,24 +71,27 @@
 	                                           PreviewKeyDown="OnAnchorPreviewKeyDown"
 	                                           AutomationProperties.Name="{Binding Title, FallbackValue=Zone de jeu, TargetNullValue=Zone de jeu}"
 	                                           AutomationProperties.IsOffscreenBehavior="Onscreen">
-                    <local:GameZoneFocusAnchor.Style>
-                        <Style TargetType="{x:Type local:GameZoneFocusAnchor}">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                            <Setter Property="IsHitTestVisible" Value="False" />
-                            <Setter Property="HorizontalAlignment" Value="Left" />
-                            <Setter Property="VerticalAlignment" Value="Top" />
+	                    <local:GameZoneFocusAnchor.Style>
+	                        <Style TargetType="{x:Type local:GameZoneFocusAnchor}">
+                            <Setter Property="IsTabStop" Value="False" />
+	                            <Setter Property="Visibility" Value="Collapsed" />
+	                            <Setter Property="IsHitTestVisible" Value="False" />
+	                            <Setter Property="HorizontalAlignment" Value="Left" />
+	                            <Setter Property="VerticalAlignment" Value="Top" />
                             <Setter Property="Width" Value="1" />
                             <Setter Property="Height" Value="1" />
                             <Setter Property="Opacity" Value="0" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Content}" Value="{x:Null}">
-                                    <Setter Property="Visibility" Value="Visible" />
-                                    <Setter Property="IsHitTestVisible" Value="True" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding IsStarted}" Value="False">
-                                    <Setter Property="Visibility" Value="Visible" />
-                                    <Setter Property="IsHitTestVisible" Value="True" />
-                                </DataTrigger>
+	                            <Style.Triggers>
+	                                <DataTrigger Binding="{Binding Content}" Value="{x:Null}">
+                                    <Setter Property="IsTabStop" Value="True" />
+	                                    <Setter Property="Visibility" Value="Visible" />
+	                                    <Setter Property="IsHitTestVisible" Value="True" />
+	                                </DataTrigger>
+	                                <DataTrigger Binding="{Binding IsStarted}" Value="False">
+                                    <Setter Property="IsTabStop" Value="True" />
+	                                    <Setter Property="Visibility" Value="Visible" />
+	                                    <Setter Property="IsHitTestVisible" Value="True" />
+	                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </local:GameZoneFocusAnchor.Style>
@@ -96,4 +111,3 @@
         </Grid>
     </Border>
 </UserControl>
-

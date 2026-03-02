@@ -5,8 +5,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="360"
-             Focusable="True"
-             IsTabStop="True">
+             Focusable="False"
+             IsTabStop="False">
 	    <Border Background="#12263C"
 	            CornerRadius="12"
 	            Padding="20"
@@ -43,7 +43,7 @@
 	    HorizontalScrollBarVisibility="Disabled"
 	    Focusable="True"
 	    IsTabStop="True"
-	    KeyboardNavigation.TabIndex="1"
+	    KeyboardNavigation.TabIndex="2"
 	    AutomationProperties.LabeledBy="{Binding ElementName=HistoryTitle}"
 	    AutomationProperties.Name="Historique"
 	    AutomationProperties.HelpText="Historique en lecture seule. Naviguez avec les flèches comme dans un document." />
@@ -61,4 +61,3 @@
 	        </Grid>
 	    </Border>
 	</UserControl>
-

@@ -14,9 +14,9 @@ public sealed class GameZoneFocusAnchor : Button
         {
         }
 
-        // NVDA annonce "volet" quand le ControlType est Pane. Or cette ancre de focus est invisible et ne doit pas polluer
-        // la navigation. On expose un type neutre pour que NVDA lise surtout le nom (si présent) ou le moins possible.
-        protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;
+        // Pane est annoncé comme "volet" (bruit), Custom comme "inconnu" selon le lecteur d'écran.
+        // Group reste neutre tout en évitant l'annonce "inconnu".
+        protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Group;
 
         protected override string GetLocalizedControlTypeCore() => "zone de jeu";
 
