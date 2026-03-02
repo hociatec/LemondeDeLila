@@ -18,7 +18,7 @@ public partial class AboutView : UserControl, IInitialFocusTarget
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        FocusCurrentPage();
+        FocusCurrentPage(FocusPolicyReason.InitialLoad);
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)
@@ -47,7 +47,7 @@ public partial class AboutView : UserControl, IInitialFocusTarget
                         IsVisible &&
                         ReferenceEquals(DataContext, vm))
                     {
-                        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusCurrentPage));
+                        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => FocusCurrentPage(FocusPolicyReason.UserRequest)));
                     }
                 }
                 catch
@@ -78,7 +78,7 @@ public partial class AboutView : UserControl, IInitialFocusTarget
                 await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
                 if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
                 {
-                    _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusCurrentPage));
+                    _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => FocusCurrentPage(FocusPolicyReason.UserRequest)));
                 }
             }
             catch
@@ -96,11 +96,16 @@ public partial class AboutView : UserControl, IInitialFocusTarget
         }
     }
 
-    private void FocusCurrentPage()
+    private void FocusCurrentPage(FocusPolicyReason reason)
     {
+        if (!FocusPolicy.CanFocus(this, reason))
+        {
+            return;
+        }
+
         if (ItemsList != null && ItemsList.IsVisible)
         {
-            FocusWhenContainersGenerated();
+            FocusWhenContainersGenerated(reason);
             return;
         }
 
@@ -119,8 +124,13 @@ public partial class AboutView : UserControl, IInitialFocusTarget
         Focus();
     }
 
-    private void FocusFirstItem()
+    private void FocusFirstItem(FocusPolicyReason reason)
     {
+        if (!FocusPolicy.CanFocus(this, reason))
+        {
+            return;
+        }
+
         if (ItemsList == null || ItemsList.Items.Count == 0)
         {
             ItemsList?.Focus();
@@ -147,9 +157,14 @@ public partial class AboutView : UserControl, IInitialFocusTarget
         ItemsList.Focus();
     }
 
-    private void FocusWhenContainersGenerated()
+    private void FocusWhenContainersGenerated(FocusPolicyReason reason)
     {
         if (ItemsList == null)
+        {
+            return;
+        }
+
+        if (!FocusPolicy.CanFocus(this, reason))
         {
             return;
         }
@@ -157,7 +172,7 @@ public partial class AboutView : UserControl, IInitialFocusTarget
         if (ItemsList.HasItems &&
             ItemsList.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
         {
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => FocusFirstItem(reason)));
             return;
         }
 
@@ -170,13 +185,13 @@ public partial class AboutView : UserControl, IInitialFocusTarget
             }
 
             ItemsList.ItemContainerGenerator.StatusChanged -= handler;
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => FocusFirstItem(reason)));
         };
         ItemsList.ItemContainerGenerator.StatusChanged += handler;
     }
 
     public void RequestInitialFocus()
     {
-        FocusCurrentPage();
+        FocusCurrentPage(FocusPolicyReason.InitialLoad);
     }
 }

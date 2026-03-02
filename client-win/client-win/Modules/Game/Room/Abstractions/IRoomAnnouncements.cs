@@ -3,6 +3,8 @@ namespace client_win.Modules.Game.Room.Services;
 public interface IRoomAnnouncements
 {
     event System.Action<RoomAnnouncement>? Announced;
+
+    void Publish(RoomAnnouncement announcement);
     void BotJoined(string botName);
     void BotLeft(string botName);
     void PlayerJoined(string username, bool spectator);

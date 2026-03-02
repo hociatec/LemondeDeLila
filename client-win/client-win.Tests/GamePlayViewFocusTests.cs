@@ -217,6 +217,66 @@ public sealed class GamePlayViewFocusTests
         });
     }
 
+    [Fact]
+    public void FocusPreferredInteractiveElement_Forced_PreservesExternalTextInputUnlessExplicitlyAllowed()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            EnsureTestApplicationResources();
+            var view = new GamePlayView();
+            var outside = new RichTextBox { Width = 320, Height = 120 };
+            var layout = new Grid();
+            layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            layout.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            Grid.SetRow(outside, 0);
+            Grid.SetRow(view, 1);
+            layout.Children.Add(outside);
+            layout.Children.Add(view);
+
+            var window = new Window
+            {
+                Width = 1000,
+                Height = 700,
+                Content = layout,
+                ShowInTaskbar = false,
+                WindowStyle = WindowStyle.None,
+            };
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var handPanel = Assert.IsType<StackPanel>(view.FindName("HandPanel"));
+                var handList = Assert.IsType<ListBox>(view.FindName("HandList"));
+                handPanel.Visibility = Visibility.Visible;
+                handList.Visibility = Visibility.Visible;
+                handList.ItemsSource = new ObservableCollection<HandCardItem>
+                {
+                    new("Bleu 2"),
+                    new("Vert 4"),
+                };
+
+                outside.Focus();
+                Keyboard.Focus(outside);
+                Assert.True(IsFocusWithin(outside));
+
+                view.FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(outside), dispatcher, 1200));
+
+                view.FocusPreferredInteractiveElement(
+                    forceFromOutsideTextInput: true,
+                    allowExternalTextInputSteal: true);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(handList), dispatcher, 2200));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
     private static Window CreateHostWindow(GamePlayView view)
     {
         return new Window

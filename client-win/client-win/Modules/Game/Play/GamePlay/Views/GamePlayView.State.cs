@@ -31,6 +31,7 @@ public partial class GamePlayView
     private EventHandler? _gridFocusLayoutUpdated;
     private EventHandler? _inlinePromptLayoutUpdated;
     private int _preferredInteractiveFocusRequestId;
+    private bool _preferredInteractiveAllowExternalTextInputSteal;
     private int _gameZoneFocusRequestId;
     private int _postPawnSubmitFocusRequestId;
     private bool _pendingInitialInteractiveFocus;

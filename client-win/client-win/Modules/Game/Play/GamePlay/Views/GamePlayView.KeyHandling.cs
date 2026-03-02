@@ -293,6 +293,52 @@ public partial class GamePlayView
 
         return false;
     }
+
+    private bool IsFocusWithinGamePlay()
+    {
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        return focused != null && IsDescendantOrSelf(focused, this);
+    }
+
+    private static bool IsDescendantOrSelf(DependencyObject node, DependencyObject ancestor)
+    {
+        for (var current = node; current != null; current = GetVisualParent(current))
+        {
+            if (ReferenceEquals(current, ancestor))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static DependencyObject? GetVisualParent(DependencyObject current)
+    {
+        if (current == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            if (current is Visual || current is System.Windows.Media.Media3D.Visual3D)
+            {
+                return VisualTreeHelper.GetParent(current);
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        if (current is FrameworkElement fe)
+        {
+            return fe.Parent ?? fe.TemplatedParent;
+        }
+
+        return LogicalTreeHelper.GetParent(current);
+    }
     private async void OnRootPreviewKeyDown(object sender, KeyEventArgs e)
     {
         // Routed events: si une couche plus haute (ex: ShortcutBindingsBehavior) a dÃ©jÃ  consommÃ© la touche,
@@ -377,7 +423,8 @@ public partial class GamePlayView
             !vm.Grid.IsVisible &&
             HandList.IsVisible &&
             HandList.Items.Count > 0 &&
-            string.Equals(vm.GameId, "cat-pattes", StringComparison.OrdinalIgnoreCase))
+            string.Equals(vm.GameId, "cat-pattes", StringComparison.OrdinalIgnoreCase) &&
+            IsFocusWithinGamePlay())
         {
             try
             {

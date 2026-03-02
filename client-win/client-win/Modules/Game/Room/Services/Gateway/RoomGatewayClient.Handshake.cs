@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Game.Common;
+using client_win.Modules.Network.Services;
 using client_win.Modules.Network.WebSockets;
 using Serilog;
 using client_win.Modules.Game.Room.Services;
@@ -364,3 +365,4 @@ public sealed partial class RoomGatewayClient
         };
     }
 }
+

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -12,7 +12,7 @@ using client_win.Modules.Game.Room.Services;
 
 namespace client_win.Modules.Game.Room.Services;
 
-public sealed class RoomSession : IAsyncDisposable
+public sealed partial class RoomSession : IRoomSession
 {
     private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
     private readonly IWebSocketConnection _socket;
@@ -21,6 +21,10 @@ public sealed class RoomSession : IAsyncDisposable
     private readonly bool _spectator;
     private readonly bool _silent;
     private readonly RoomConnectionSupervisor _supervisor;
+    private readonly RoomReconnectController _reconnectController;
+    private DateTime _lastPongUtc = DateTime.MinValue;
+    private DateTime _lastStateRefreshUtc = DateTime.MinValue;
+    private int _stateRefreshInFlight;
 
     private readonly CancellationTokenSource _lifetimeCts = new();
     private WebSocketState _state = WebSocketState.Connected;
@@ -46,6 +50,7 @@ public sealed class RoomSession : IAsyncDisposable
         _socket.StateChanged += OnStateChanged;
         _socket.Error += _ => { };
 
+        _reconnectController = new RoomReconnectController(this);
         _supervisor = new RoomConnectionSupervisor(this);
     }
 
@@ -61,7 +66,6 @@ public sealed class RoomSession : IAsyncDisposable
     public event Action<string>? ErrorReceived;
     public event Action<string>? Left;
     public event Action<WebSocketState>? ConnectionStateChanged;
-    public event Action<RoomCommandAck>? CommandAckReceived;
 
     public Task RequestStateRefreshAsync(bool force = false) =>
         _supervisor.RequestStateRefreshAsync(force);
@@ -132,7 +136,7 @@ public sealed class RoomSession : IAsyncDisposable
         }
         catch
         {
-            // Best-effort (ne pas casser la boucle WS si un handler client Ã©choue).
+            // Best-effort (ne pas casser la boucle WS si un handler client échoue).
         }
 
         _supervisor.HandleStateChanged(state);
@@ -169,7 +173,7 @@ public sealed class RoomSession : IAsyncDisposable
             if (string.Equals(type, "room.left", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(type, "room.deleted", StringComparison.OrdinalIgnoreCase))
             {
-                // Sortie imposÃ©e (kick/ban/delete) OU table supprimÃ©e. La navigation est gÃ©rÃ©e par l'UI.
+                // Sortie imposée (kick/ban/delete) OU table supprimée. La navigation est gérée par l'UI.
                 Left?.Invoke(type);
                 return;
             }
@@ -247,15 +251,15 @@ public sealed class RoomSession : IAsyncDisposable
         {
             return true;
         }
-        if (normalized.Contains("n'êtes pas dans une table") ||
-            normalized.Contains("n’êtes pas dans une table"))
+        if (normalized.Contains("n'�tes pas dans une table") ||
+            normalized.Contains("n��tes pas dans une table"))
         {
             return true;
         }
         return false;
     }
 
-    private async Task RequestStateRefreshCoreAsync()
+    private async Task RequestStateRefreshCoreAsync(bool force)
     {
         if (_state != WebSocketState.Connected)
         {
@@ -264,7 +268,7 @@ public sealed class RoomSession : IAsyncDisposable
 
         // Throttle to avoid spamming join messages on bursts.
         var now = DateTime.UtcNow;
-        if (_lastStateRefreshUtc != DateTime.MinValue && now - _lastStateRefreshUtc < GameTiming.Room.StateRefreshThrottle)
+        if (!force && _lastStateRefreshUtc != DateTime.MinValue && now - _lastStateRefreshUtc < GameTiming.Room.StateRefreshThrottle)
         {
             return;
         }
@@ -407,7 +411,7 @@ public sealed class RoomSession : IAsyncDisposable
                 var age = DateTime.UtcNow - _lastPongUtc;
                 if (_lastPongUtc != DateTime.MinValue && age > GameTiming.Room.GhostConnectionThreshold)
                 {
-                    // Socket "fantÃ´me" probable: forcer une reconnexion.
+                    // Socket "fantôme" probable: forcer une reconnexion.
                     RequestReconnect(force: true);
                     continue;
                 }
@@ -427,7 +431,7 @@ public sealed class RoomSession : IAsyncDisposable
             }
             catch
             {
-                // Best-effort: la reconnexion sera dÃ©clenchÃ©e par StateChanged ou par le watchdog.
+                // Best-effort: la reconnexion sera déclenchée par StateChanged ou par le watchdog.
             }
         }
     }
@@ -445,7 +449,7 @@ public sealed class RoomSession : IAsyncDisposable
             _ => 30,
         };
 
-        // Jitter +/-20% pour Ã©viter que tout le monde reconnecte en mÃªme temps.
+        // Jitter +/-20% pour éviter que tout le monde reconnecte en même temps.
         return GameTiming.ComputeJitterBackoff(seconds);
     }
 
@@ -481,5 +485,162 @@ public sealed class RoomSession : IAsyncDisposable
             return new Dictionary<string, object?>();
         }
     }
+    private sealed class RoomConnectionSupervisor : IAsyncDisposable
+    {
+        private readonly RoomSession _session;
+        private readonly RoomAckTracker _ackTracker = new();
+        private readonly Dictionary<string, TaskCompletionSource<RoomCommandAck?>> _pending = new(StringComparer.Ordinal);
+        private bool _disposed;
+
+        public RoomConnectionSupervisor(RoomSession session)
+        {
+            _session = session ?? throw new ArgumentNullException(nameof(session));
+        }
+
+        public Task RequestStateRefreshAsync(bool force) => _session.RequestStateRefreshCoreAsync(force);
+
+        public async Task<bool> SendCommandAwaitAckAsync(string type, object? payload, TimeSpan? ackTimeout, CancellationToken cancellationToken)
+        {
+            if (_disposed)
+            {
+                return false;
+            }
+
+            var traceId = await _session.SendCommandWithTraceAsync(type, payload, cancellationToken).ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(traceId))
+            {
+                return false;
+            }
+
+            TaskCompletionSource<RoomCommandAck?> tcs;
+            lock (_pending)
+            {
+                tcs = new TaskCompletionSource<RoomCommandAck?>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _pending[traceId] = tcs;
+            }
+
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            linked.CancelAfter(ackTimeout ?? _ackTracker.ComputeAdaptiveTimeout());
+
+            try
+            {
+                var ack = await tcs.Task.WaitAsync(linked.Token).ConfigureAwait(false);
+                if (ack != null)
+                {
+                    _ackTracker.RecordLatency(ack.ClientToServerMs);
+                    return true;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            finally
+            {
+                lock (_pending)
+                {
+                    _pending.Remove(traceId);
+                }
+            }
+
+            return false;
+        }
+
+        public void HandleStateChanged(WebSocketState state)
+        {
+            if (state == WebSocketState.Error || state == WebSocketState.Disconnected)
+            {
+                _session.RequestReconnect(force: state == WebSocketState.Error);
+            }
+        }
+
+        public void HandlePong(JsonElement root)
+        {
+            if (root.TryGetProperty("payload", out var payload) &&
+                payload.ValueKind == JsonValueKind.Object &&
+                payload.TryGetProperty("clientSentAtMs", out var _))
+            {
+                _session._lastPongUtc = DateTime.UtcNow;
+            }
+        }
+
+        public void HandleCommandAck(JsonElement root)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (!root.TryGetProperty("payload", out var payload) ||
+                payload.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            if (!payload.TryGetProperty("traceId", out var traceIdProp) ||
+                traceIdProp.ValueKind != JsonValueKind.String)
+            {
+                return;
+            }
+
+            var traceId = (traceIdProp.GetString() ?? string.Empty).Trim();
+            if (traceId.Length == 0)
+            {
+                return;
+            }
+
+            var ack = new RoomCommandAck(
+                payload.TryGetProperty("action", out var actionProp) && actionProp.ValueKind == JsonValueKind.String
+                    ? actionProp.GetString() ?? string.Empty
+                    : string.Empty,
+                traceId,
+                payload.TryGetProperty("receivedAtMs", out var receivedProp) && receivedProp.TryGetInt64(out var received)
+                    ? received
+                    : 0,
+                payload.TryGetProperty("clientToServerMs", out var latencyProp) && latencyProp.TryGetInt64(out var latency)
+                    ? latency
+                    : 0);
+
+            TaskCompletionSource<RoomCommandAck?>? tcs = null;
+            lock (_pending)
+            {
+                if (_pending.TryGetValue(traceId, out var waiting))
+                {
+                    tcs = waiting;
+                    _pending.Remove(traceId);
+                }
+            }
+
+            if (tcs != null)
+            {
+                tcs.TrySetResult(ack);
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+
+            List<TaskCompletionSource<RoomCommandAck?>> pending;
+            lock (_pending)
+            {
+                pending = new List<TaskCompletionSource<RoomCommandAck?>>(_pending.Values);
+                _pending.Clear();
+            }
+
+            foreach (var tcs in pending)
+            {
+                tcs.TrySetCanceled();
+            }
+
+            await Task.CompletedTask;
+        }
+    }
 }
+
+
 

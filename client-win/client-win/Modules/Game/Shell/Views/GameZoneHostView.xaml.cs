@@ -14,6 +14,7 @@ namespace client_win.Modules.Game.Shell.Views;
 public partial class GameZoneHostView : UserControl
 {
     private int _focusRequestId;
+    public Func<KeyboardFocusChangedEventArgs, bool>? AllowAnchorAutoFocus { get; set; }
 
     public GameZoneHostView()
     {
@@ -178,13 +179,17 @@ public partial class GameZoneHostView : UserControl
 
                 if (viewRoot is GamePlayView gamePlayView)
                 {
-                    gamePlayView.FocusPreferredInteractiveElement(forceFromOutsideTextInput);
+                    gamePlayView.FocusPreferredInteractiveElement(
+                        forceFromOutsideTextInput,
+                        allowExternalTextInputSteal: true);
                     return IsFocusInside(gamePlayView);
                 }
 
                 if (FindDescendant<GamePlayView>(viewRoot) is GamePlayView nestedGamePlayView)
                 {
-                    nestedGamePlayView.FocusPreferredInteractiveElement(forceFromOutsideTextInput);
+                    nestedGamePlayView.FocusPreferredInteractiveElement(
+                        forceFromOutsideTextInput,
+                        allowExternalTextInputSteal: true);
                     return IsFocusInside(nestedGamePlayView);
                 }
 
@@ -212,7 +217,9 @@ public partial class GameZoneHostView : UserControl
 
         if (FindDescendant<GamePlayView>(GameZoneHost) is GamePlayView fallbackPlayView)
         {
-            fallbackPlayView.FocusPreferredInteractiveElement(forceFromOutsideTextInput);
+            fallbackPlayView.FocusPreferredInteractiveElement(
+                forceFromOutsideTextInput,
+                allowExternalTextInputSteal: true);
             return IsFocusInside(fallbackPlayView);
         }
 
@@ -470,6 +477,11 @@ public partial class GameZoneHostView : UserControl
     private void OnAnchorGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
     {
         if (ShouldPreferStartAnchor() || GameZoneHost?.Content == null)
+        {
+            return;
+        }
+
+        if (AllowAnchorAutoFocus != null && !AllowAnchorAutoFocus(e))
         {
             return;
         }

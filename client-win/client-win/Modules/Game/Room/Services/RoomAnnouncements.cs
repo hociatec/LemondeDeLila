@@ -7,6 +7,12 @@ public sealed class RoomAnnouncements : IRoomAnnouncements
 {
     public event Action<RoomAnnouncement>? Announced;
 
+    public void Publish(RoomAnnouncement announcement)
+    {
+        if (announcement == null) return;
+        Announced?.Invoke(announcement);
+    }
+
     public void BotJoined(string botName)
     {
         if (string.IsNullOrWhiteSpace(botName)) return;

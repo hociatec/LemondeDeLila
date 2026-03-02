@@ -77,6 +77,9 @@ public sealed class RoomDto
 
     [JsonPropertyName("bots")]
     public List<RoomBotDto> Bots { get; set; } = new();
+
+    [JsonPropertyName("allowedActions")]
+    public List<string> AllowedActions { get; set; } = new();
 }
 
 public sealed class RoomCountsDto

@@ -41,7 +41,7 @@ public partial class StatsView : UserControl, IInitialFocusTarget, IFocusReady
                     return;
                 }
 
-                FocusWhenContainersGenerated();
+                FocusWhenContainersGenerated(FocusPolicyReason.InitialLoad);
             }
             catch
             {
@@ -66,7 +66,7 @@ public partial class StatsView : UserControl, IInitialFocusTarget, IFocusReady
         }
 
         UpdateFocusReady();
-        FocusWhenContainersGenerated();
+        FocusWhenContainersGenerated(FocusPolicyReason.InitialLoad);
 
         // Defer network calls until the view is visible (UI first).
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
@@ -79,7 +79,7 @@ public partial class StatsView : UserControl, IInitialFocusTarget, IFocusReady
                     if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
                     {
                         UpdateFocusReady();
-                        FocusWhenContainersGenerated();
+                        FocusWhenContainersGenerated(FocusPolicyReason.Update);
                     }
                 }
             }
@@ -111,7 +111,7 @@ public partial class StatsView : UserControl, IInitialFocusTarget, IFocusReady
                         IsVisible &&
                         ReferenceEquals(DataContext, vm))
                     {
-                        FocusWhenContainersGenerated();
+                        FocusWhenContainersGenerated(FocusPolicyReason.UserRequest);
                     }
                 }
                 catch
@@ -142,7 +142,7 @@ public partial class StatsView : UserControl, IInitialFocusTarget, IFocusReady
                 await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
                 if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
                 {
-                    FocusWhenContainersGenerated();
+                    FocusWhenContainersGenerated(FocusPolicyReason.UserRequest);
                 }
             }
             catch
@@ -160,8 +160,13 @@ public partial class StatsView : UserControl, IInitialFocusTarget, IFocusReady
         }
     }
 
-    private void FocusFirstItem()
+    private void FocusFirstItem(FocusPolicyReason reason)
     {
+        if (!FocusPolicy.CanFocus(this, reason))
+        {
+            return;
+        }
+
         FocusSelectedOrFirstItem();
     }
 
@@ -194,9 +199,14 @@ public partial class StatsView : UserControl, IInitialFocusTarget, IFocusReady
         ItemsList.Focus();
     }
 
-    private void FocusWhenContainersGenerated()
+    private void FocusWhenContainersGenerated(FocusPolicyReason reason)
     {
         if (ItemsList == null)
+        {
+            return;
+        }
+
+        if (!FocusPolicy.CanFocus(this, reason))
         {
             return;
         }
@@ -204,7 +214,7 @@ public partial class StatsView : UserControl, IInitialFocusTarget, IFocusReady
         if (ItemsList.HasItems &&
             ItemsList.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
         {
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => FocusFirstItem(reason)));
             return;
         }
 
@@ -217,14 +227,14 @@ public partial class StatsView : UserControl, IInitialFocusTarget, IFocusReady
             }
 
             ItemsList.ItemContainerGenerator.StatusChanged -= handler;
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => FocusFirstItem(reason)));
         };
         ItemsList.ItemContainerGenerator.StatusChanged += handler;
     }
 
     public void RequestInitialFocus()
     {
-        FocusWhenContainersGenerated();
+        FocusWhenContainersGenerated(FocusPolicyReason.InitialLoad);
     }
 
     private void OnItemsContainersStatusChanged(object? sender, EventArgs e)

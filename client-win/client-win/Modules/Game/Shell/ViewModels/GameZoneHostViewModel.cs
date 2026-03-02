@@ -5,6 +5,7 @@ using System.Windows.Input;
 using client_win.Core;
 using client_win.Core.Input;
 using client_win.Modules.Game.Room.Input;
+using client_win.Modules.Game.Room.Services;
 using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Shell.Services;
 
@@ -337,3 +338,4 @@ public sealed class GameZoneHostViewModel : ObservableObject
         await _onQuit().ConfigureAwait(true);
     }
 }
+

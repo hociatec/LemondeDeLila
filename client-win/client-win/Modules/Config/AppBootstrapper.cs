@@ -574,3 +574,4 @@ public sealed class AppHost : IAsyncDisposable
         LoggingConfiguration.CloseLogger();
     }
 }
+

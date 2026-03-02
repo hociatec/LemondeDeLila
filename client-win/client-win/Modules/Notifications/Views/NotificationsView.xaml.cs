@@ -28,7 +28,7 @@ public partial class NotificationsView : UserControl, IInitialFocusTarget
             HookVm(vm);
             _ = InitializeVmAsync(vm);
         }
-        FocusFirstItem();
+        FocusFirstItem(FocusPolicyReason.InitialLoad);
     }
 
     private static async Task InitializeVmAsync(NotificationsViewModel vm)
@@ -69,7 +69,7 @@ public partial class NotificationsView : UserControl, IInitialFocusTarget
         }
 
         _focusHandler = (_, __) =>
-            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => FocusFirstItem(FocusPolicyReason.Update)));
         _vm.FocusFirstItemRequested += _focusHandler;
     }
 
@@ -88,7 +88,7 @@ public partial class NotificationsView : UserControl, IInitialFocusTarget
                         IsVisible &&
                         ReferenceEquals(DataContext, vm))
                     {
-                        FocusFirstItem();
+                        FocusFirstItem(FocusPolicyReason.UserRequest);
                     }
                 }
                 catch
@@ -133,9 +133,14 @@ public partial class NotificationsView : UserControl, IInitialFocusTarget
         }
     }
 
-    private void FocusFirstItem()
+    private void FocusFirstItem(FocusPolicyReason reason)
     {
         if (ItemsList == null)
+        {
+            return;
+        }
+
+        if (!FocusPolicy.CanFocus(this, reason))
         {
             return;
         }
@@ -168,7 +173,7 @@ public partial class NotificationsView : UserControl, IInitialFocusTarget
 
     private void OnItemsLoaded(object sender, RoutedEventArgs e)
     {
-        FocusFirstItem();
+        FocusFirstItem(FocusPolicyReason.InitialLoad);
     }
 
     private void FocusReplyBox()
@@ -199,6 +204,6 @@ public partial class NotificationsView : UserControl, IInitialFocusTarget
 
     public void RequestInitialFocus()
     {
-        FocusFirstItem();
+        FocusFirstItem(FocusPolicyReason.InitialLoad);
     }
 }

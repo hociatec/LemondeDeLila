@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,13 +39,13 @@ public sealed partial class RoomGatewayClient : IRoomGatewayClient
         await _socketPool.WarmUpAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<RoomSession> CreateAndConnectAsync(string gameType, CancellationToken cancellationToken = default)
+    public async Task<IRoomSession> CreateAndConnectAsync(string gameType, CancellationToken cancellationToken = default)
     {
         var user = _session.CurrentUser;
         var token = user?.Token;
         if (string.IsNullOrWhiteSpace(token))
         {
-            throw new InvalidOperationException("Utilisateur non authentifié.");
+            throw new InvalidOperationException("Utilisateur non authentifi�.");
         }
         if (string.IsNullOrWhiteSpace(gameType))
         {
@@ -69,7 +69,7 @@ public sealed partial class RoomGatewayClient : IRoomGatewayClient
                 }
                 else
                 {
-                    Log.Information("WS room.create: socket warm réutilisé");
+                    Log.Information("WS room.create: socket warm r�utilis�");
                 }
 
                 var created = await WaitRoomCreatedAsync(socket, gameType, linked.Token).ConfigureAwait(false);
@@ -78,10 +78,10 @@ public sealed partial class RoomGatewayClient : IRoomGatewayClient
                 {
                     await socket.CloseAsync().ConfigureAwait(false);
                     await socket.DisposeAsync().ConfigureAwait(false);
-                    throw new InvalidOperationException("Création de table échouée (roomId invalide).");
+                    throw new InvalidOperationException("Cr�ation de table �chou�e (roomId invalide).");
                 }
 
-                Log.Information("Connexion à la room WS (réutilisation socket) roomId={RoomId}", roomId);
+                Log.Information("Connexion � la room WS (r�utilisation socket) roomId={RoomId}", roomId);
                 var session = new RoomSession(
                     roomId,
                     gameType,
@@ -111,30 +111,30 @@ public sealed partial class RoomGatewayClient : IRoomGatewayClient
                     throw;
                 }
 
-                Log.Warning(ex, "WS room.create: échec transitoire (tentative {Attempt}/{MaxAttempts}), retry", attempt, maxAttempts);
+                Log.Warning(ex, "WS room.create: �chec transitoire (tentative {Attempt}/{MaxAttempts}), retry", attempt, maxAttempts);
                 await Task.Delay(GameTiming.Room.GatewayRetryDelay, linked.Token).ConfigureAwait(false);
             }
         }
 
-        throw lastError ?? new InvalidOperationException("Création de table échouée.");
+        throw lastError ?? new InvalidOperationException("Cr�ation de table �chou�e.");
     }
-public async Task<RoomSession> ConnectAsync(int roomId, CancellationToken cancellationToken = default)
+public async Task<IRoomSession> ConnectAsync(int roomId, CancellationToken cancellationToken = default)
     {
         return await ConnectAsync(roomId, spectator: false, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<RoomSession> ConnectAsync(int roomId, bool spectator, CancellationToken cancellationToken = default)
+    public async Task<IRoomSession> ConnectAsync(int roomId, bool spectator, CancellationToken cancellationToken = default)
     {
         return await ConnectAsync(roomId, spectator, silent: false, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<RoomSession> ConnectAsync(int roomId, bool spectator, bool silent, CancellationToken cancellationToken = default)
+    public async Task<IRoomSession> ConnectAsync(int roomId, bool spectator, bool silent, CancellationToken cancellationToken = default)
     {
         var user = _session.CurrentUser;
         var token = user?.Token;
         if (string.IsNullOrWhiteSpace(token))
         {
-            throw new InvalidOperationException("Utilisateur non authentifiÃ©.");
+            throw new InvalidOperationException("Utilisateur non authentifié.");
         }
         if (roomId <= 0)
         {
@@ -234,7 +234,7 @@ public async Task<RoomSession> ConnectAsync(int roomId, CancellationToken cancel
                     // Fallback: connect directly with query params.
                     var uri = BuildRoomUri(_config.RealtimeGatewayWs, roomId, spectator, silent);
                     var headers = await BuildHeadersAsync(linked.Token).ConfigureAwait(false);
-                    Log.Information("WS room.connect: connexion Ã  {Endpoint}", uri);
+                    Log.Information("WS room.connect: connexion à {Endpoint}", uri);
                     await socket.ConnectAsync(uri, token: token, headers: headers, cancellationToken: linked.Token).ConfigureAwait(false);
                 }
 
@@ -251,7 +251,7 @@ public async Task<RoomSession> ConnectAsync(int roomId, CancellationToken cancel
                 {
                     await socket.CloseAsync().ConfigureAwait(false);
                     await socket.DisposeAsync().ConfigureAwait(false);
-                    throw new InvalidOperationException("Connexion table Ã©chouÃ©e (Ã©tat manquant).");
+                    throw new InvalidOperationException("Connexion table échouée (état manquant).");
                 }
 
                 var gameType = payload.Room.GameType;
@@ -288,7 +288,7 @@ public async Task<RoomSession> ConnectAsync(int roomId, CancellationToken cancel
         var token = user?.Token;
         if (string.IsNullOrWhiteSpace(token))
         {
-            throw new InvalidOperationException("Utilisateur non authentifiÃ©.");
+            throw new InvalidOperationException("Utilisateur non authentifié.");
         }
 
         var uri = BuildRoomUri(_config.RealtimeGatewayWs, roomId: 0);
@@ -297,3 +297,5 @@ public async Task<RoomSession> ConnectAsync(int roomId, CancellationToken cancel
 
         await TrySyncClockAsync(socket, cancellationToken).ConfigureAwait(false);
     }
+}
+

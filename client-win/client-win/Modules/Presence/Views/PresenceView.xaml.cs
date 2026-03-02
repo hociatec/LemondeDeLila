@@ -39,7 +39,7 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        FocusCurrentPage();
+        FocusCurrentPage(FocusPolicyReason.InitialLoad);
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -63,6 +63,11 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
     {
         RunOnUi(() =>
         {
+            if (!FocusPolicy.CanFocus(this, FocusPolicyReason.Update))
+            {
+                return;
+            }
+
             if (ItemsList != null && ItemsList.Items.Count > 0)
             {
                 // Forcer un changement de sélection pour déclencher l'annonce SR
@@ -71,13 +76,13 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
                 ItemsList.SelectedIndex = 0;
                 ItemsList.ScrollIntoView(ItemsList.Items[0]);
             }
-            RequestFocusSelectedOrFirstItem();
+            RequestFocusSelectedOrFirstItem(FocusPolicyReason.Update);
         });
     }
 
     private void OnFocusSelectedItemRequested()
     {
-        RunOnUi(RequestFocusSelectedOrFirstItem);
+        RunOnUi(() => RequestFocusSelectedOrFirstItem(FocusPolicyReason.Update));
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)
@@ -98,7 +103,7 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
                     vm.HandleEscape();
                     if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
                     {
-                        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusCurrentPage));
+                        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => FocusCurrentPage(FocusPolicyReason.UserRequest)));
                     }
                 }
                 catch
@@ -121,7 +126,7 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
                     vmEsc.HandleEscape();
                     if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vmEsc))
                     {
-                        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusCurrentPage));
+                        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => FocusCurrentPage(FocusPolicyReason.UserRequest)));
                     }
                 }
                 catch
@@ -151,7 +156,7 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
                 await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
                 if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
                 {
-                    RequestFocusSelectedOrFirstItem();
+                    RequestFocusSelectedOrFirstItem(FocusPolicyReason.UserRequest);
                 }
             }
             catch
@@ -169,19 +174,29 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
         }
     }
 
-    private void FocusCurrentPage()
+    private void FocusCurrentPage(FocusPolicyReason reason)
     {
+        if (!FocusPolicy.CanFocus(this, reason))
+        {
+            return;
+        }
+
         if (ItemsList != null && ItemsList.IsVisible)
         {
-            RequestFocusSelectedOrFirstItem();
+            RequestFocusSelectedOrFirstItem(reason);
             return;
         }
 
         Focus();
     }
 
-    private void RequestFocusSelectedOrFirstItem()
+    private void RequestFocusSelectedOrFirstItem(FocusPolicyReason reason)
     {
+        if (!FocusPolicy.CanFocus(this, reason))
+        {
+            return;
+        }
+
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusSelectedOrFirstItemNow));
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(FocusSelectedOrFirstItemNow));
 
@@ -235,7 +250,7 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
             }
             _lastListAutoFocusTicks = now;
 
-            RequestFocusSelectedOrFirstItem();
+            RequestFocusSelectedOrFirstItem(FocusPolicyReason.Update);
         }
         catch
         {
@@ -294,7 +309,7 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
 
     public void RequestInitialFocus()
     {
-        FocusCurrentPage();
+        FocusCurrentPage(FocusPolicyReason.InitialLoad);
     }
 
     private void RunOnUi(Action action)

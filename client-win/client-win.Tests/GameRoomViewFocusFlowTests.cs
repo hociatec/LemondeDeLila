@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using client_win.Modules.Catalog.Models;
+using client_win.Modules.Game.History.Views;
 using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Game.Shell.ViewModels;
 using client_win.Modules.Game.Shell.Views;
@@ -155,6 +156,46 @@ public sealed class GameRoomViewFocusFlowTests
             finally
             {
                 vm.CancelStartWizard();
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void TableStartedFocusRequest_DoesNotStealFocusFromHistory()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            var focusCoordinator = new GameFocusCoordinator(dispatcher);
+            var vm = CreateViewModel(focusCoordinator, onStart: () => Task.CompletedTask);
+            var view = new GameRoomView { DataContext = vm };
+            var window = new Window
+            {
+                Width = 1000,
+                Height = 700,
+                Content = view,
+                ShowInTaskbar = false,
+                WindowStyle = WindowStyle.None,
+            };
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var history = Assert.IsType<GameHistoryView>(view.FindName("HistoryHost"));
+                var historyTarget = Assert.IsAssignableFrom<FrameworkElement>(history.FocusTarget);
+                historyTarget.Focus();
+                Keyboard.Focus(historyTarget);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(historyTarget), dispatcher, 1200));
+
+                vm.GameZone.RequestFocus(GameFocusReason.TableStarted);
+
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(historyTarget), dispatcher, 1200));
+            }
+            finally
+            {
                 window.Close();
             }
         });

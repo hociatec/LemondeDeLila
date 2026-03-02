@@ -42,7 +42,7 @@ public partial class LeaderboardView : UserControl, IInitialFocusTarget, IFocusR
                     return;
                 }
 
-                FocusWhenContainersGenerated();
+                FocusWhenContainersGenerated(FocusPolicyReason.Update);
             }
             catch
             {
@@ -59,7 +59,7 @@ public partial class LeaderboardView : UserControl, IInitialFocusTarget, IFocusR
             ItemsList.ItemContainerGenerator.StatusChanged += OnContainersStatusChanged;
         }
         UpdateFocusReady();
-        FocusWhenContainersGenerated();
+        FocusWhenContainersGenerated(FocusPolicyReason.InitialLoad);
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)
@@ -84,7 +84,7 @@ public partial class LeaderboardView : UserControl, IInitialFocusTarget, IFocusR
                         ReferenceEquals(DataContext, vm))
                     {
                         ItemsList?.Focus();
-                        FocusWhenContainersGenerated();
+                        FocusWhenContainersGenerated(FocusPolicyReason.UserRequest);
                     }
                 }
                 catch
@@ -115,7 +115,7 @@ public partial class LeaderboardView : UserControl, IInitialFocusTarget, IFocusR
                 await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
                 if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
                 {
-                    FocusWhenContainersGenerated();
+                    FocusWhenContainersGenerated(FocusPolicyReason.UserRequest);
                 }
             }
             catch
@@ -133,8 +133,13 @@ public partial class LeaderboardView : UserControl, IInitialFocusTarget, IFocusR
         }
     }
 
-    private void FocusFirstItem()
+    private void FocusFirstItem(FocusPolicyReason reason)
     {
+        if (!FocusPolicy.CanFocus(this, reason))
+        {
+            return;
+        }
+
         FocusSelectedOrFirstItem();
     }
 
@@ -181,12 +186,17 @@ public partial class LeaderboardView : UserControl, IInitialFocusTarget, IFocusR
         }
 
         // Force le focus sur le premier élément après un rechargement (ex: Échap depuis le top 10).
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => FocusFirstItem(FocusPolicyReason.Update)));
     }
 
-    private void FocusWhenContainersGenerated()
+    private void FocusWhenContainersGenerated(FocusPolicyReason reason)
     {
         if (ItemsList == null)
+        {
+            return;
+        }
+
+        if (!FocusPolicy.CanFocus(this, reason))
         {
             return;
         }
@@ -194,7 +204,7 @@ public partial class LeaderboardView : UserControl, IInitialFocusTarget, IFocusR
         if (ItemsList.HasItems &&
             ItemsList.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
         {
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => FocusFirstItem(reason)));
             return;
         }
 
@@ -207,14 +217,14 @@ public partial class LeaderboardView : UserControl, IInitialFocusTarget, IFocusR
             }
 
             ItemsList.ItemContainerGenerator.StatusChanged -= handler;
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => FocusFirstItem(reason)));
         };
         ItemsList.ItemContainerGenerator.StatusChanged += handler;
     }
 
     public void RequestInitialFocus()
     {
-        FocusWhenContainersGenerated();
+        FocusWhenContainersGenerated(FocusPolicyReason.InitialLoad);
     }
 
     private void UpdateFocusReady()

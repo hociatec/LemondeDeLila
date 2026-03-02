@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using client_win.Modules.Game.Shell.Views;
 
 namespace client_win.Modules.Game.Shell.Services;
 

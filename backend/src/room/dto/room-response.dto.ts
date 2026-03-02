@@ -29,6 +29,7 @@ export type RoomPayload = {
     players: RoomPlayer[];
     spectators: RoomPlayer[];
     bots: RoomBotState[];
+    allowedActions?: string[];
   };
   generatedAt: string;
 };

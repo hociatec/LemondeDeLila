@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Threading;
 using client_win.Core;
 using client_win.Modules.Catalog.Models;
+using client_win.Modules.Game.History.Services;
 
 namespace client_win.Modules.Game.History.ViewModels;
 
@@ -67,4 +68,6 @@ public sealed class GameHistoryViewModel : ObservableObject
             }
         }));
     }
+
+    public IGameHistoryAnnouncer? Announcer { get; set; }
 }

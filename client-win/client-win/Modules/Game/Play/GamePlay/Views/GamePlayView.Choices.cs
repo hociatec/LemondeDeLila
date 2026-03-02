@@ -30,7 +30,7 @@ public partial class GamePlayView
         FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
     }
 
-    public void FocusPreferredInteractiveElement(bool forceFromOutsideTextInput)
+    public void FocusPreferredInteractiveElement(bool forceFromOutsideTextInput, bool allowExternalTextInputSteal = false)
     {
         if (DataContext is GamePlayViewModel vmNow && vmNow.HasInlinePrompt)
         {
@@ -39,6 +39,7 @@ public partial class GamePlayView
         }
 
         _preferredInteractiveFocusForceFromOutside = forceFromOutsideTextInput;
+        _preferredInteractiveAllowExternalTextInputSteal = allowExternalTextInputSteal;
         var requestId = Interlocked.Increment(ref _preferredInteractiveFocusRequestId);
         RunPreferredInteractiveFocusPass(requestId);
         QueuePreferredInteractiveFocusPass(requestId, DispatcherPriority.Loaded);
@@ -79,7 +80,9 @@ public partial class GamePlayView
             return;
         }
 
-        ForceFocusGameZoneCore(forceFromOutsideTextInput: _preferredInteractiveFocusForceFromOutside);
+        ForceFocusGameZoneCore(
+            forceFromOutsideTextInput: _preferredInteractiveFocusForceFromOutside,
+            allowExternalTextInputSteal: _preferredInteractiveAllowExternalTextInputSteal);
     }
 
     private void NoteChoiceSubmittedForFocusRestore()
@@ -528,7 +531,7 @@ public partial class GamePlayView
         FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
     }
 
-    private void ForceFocusGameZoneCore(bool forceFromOutsideTextInput)
+    private void ForceFocusGameZoneCore(bool forceFromOutsideTextInput, bool allowExternalTextInputSteal = false)
     {
         if (DataContext is GamePlayViewModel vmPrompt && vmPrompt.HasInlinePrompt)
         {
@@ -540,6 +543,16 @@ public partial class GamePlayView
         // Table reset can break focus (focused element destroyed/collapsed),
         // then Tab/Shift+Tab becomes painful. Keep a stable focus anchor in game zone.
         if (!forceFromOutsideTextInput && IsTextInputFocused())
+        {
+            return;
+        }
+
+        // Preserve reading/typing context in chat/history on passive or VM-driven focus nudges.
+        // Explicit host-driven focus requests can opt-in to bypass this guard.
+        if (!allowExternalTextInputSteal &&
+            !IsFocusInsideThisGameView() &&
+            IsTextInputFocused() &&
+            !ShouldRecoverBrokenFocus())
         {
             return;
         }

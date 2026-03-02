@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using client_win.Core;
 using client_win.Modules.Catalog.Models;
 using client_win.Modules.Game.History.ViewModels;
+using client_win.Modules.Game.Shell.Models;
 using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Shell.Services;
 
@@ -101,6 +102,29 @@ public sealed class GameRoomViewModel : ObservableObject
     public GameZoneHostViewModel GameZone { get; }
 
     public GameRoomChatViewModel Chat { get; }
+
+    public event Action<ServerFocusIntent>? ServerFocusIntentRequested;
+
+    internal void EnqueueServerFocusIntent(ServerFocusIntent intent)
+    {
+        ServerFocusIntentRequested?.Invoke(intent);
+    }
+
+    public event Action<RoomStartWizardIntent>? ServerStartWizardIntentRequested;
+
+    internal void EnqueueServerStartWizardIntent(RoomStartWizardIntent intent)
+    {
+        if (intent == null)
+        {
+            return;
+        }
+
+        ServerStartWizardIntentRequested?.Invoke(intent);
+        if (!string.IsNullOrWhiteSpace(intent.Message))
+        {
+            Status = intent.Message.Trim();
+        }
+    }
 
     public string Status
     {

@@ -43,7 +43,7 @@ public partial class VaultView : UserControl, IInitialFocusTarget, IFocusReady
                     return;
                 }
 
-                RequestInitialFocus();
+                RequestInitialFocus(FocusPolicyReason.InitialLoad);
             }
             catch
             {
@@ -70,7 +70,7 @@ public partial class VaultView : UserControl, IInitialFocusTarget, IFocusReady
         }
 
         UpdateFocusReady();
-        RequestInitialFocus();
+        RequestInitialFocus(FocusPolicyReason.InitialLoad);
 
         // Defer network calls until the view is visible (UI first).
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
@@ -83,7 +83,7 @@ public partial class VaultView : UserControl, IInitialFocusTarget, IFocusReady
                     if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
                     {
                         UpdateFocusReady();
-                        RequestInitialFocus();
+                        RequestInitialFocus(FocusPolicyReason.Update);
                     }
                 }
             }
@@ -113,6 +113,16 @@ public partial class VaultView : UserControl, IInitialFocusTarget, IFocusReady
 
     public void RequestInitialFocus()
     {
+        RequestInitialFocus(FocusPolicyReason.InitialLoad);
+    }
+
+    private void RequestInitialFocus(FocusPolicyReason reason)
+    {
+        if (!FocusPolicy.CanFocus(this, reason))
+        {
+            return;
+        }
+
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
             try

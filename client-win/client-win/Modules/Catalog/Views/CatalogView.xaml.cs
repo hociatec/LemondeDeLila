@@ -66,7 +66,7 @@ public partial class CatalogView : UserControl, IInitialFocusTarget, IFocusReady
                     return;
                 }
 
-                FocusWhenContainersGenerated(CategoriesList);
+                FocusWhenContainersGenerated(CategoriesList, FocusPolicyReason.InitialLoad);
             }
             catch
             {
@@ -94,7 +94,7 @@ public partial class CatalogView : UserControl, IInitialFocusTarget, IFocusReady
 
         UpdateFocusReady();
         // À l'entrée dans la taverne, le focus doit être sur la liste principale (actions + catégories).
-        Dispatcher.BeginInvoke(DispatcherPriority.Input, () => FocusWhenContainersGenerated(CategoriesList));
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, () => FocusWhenContainersGenerated(CategoriesList, FocusPolicyReason.InitialLoad));
     }
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -486,22 +486,27 @@ public partial class CatalogView : UserControl, IInitialFocusTarget, IFocusReady
         switch (result)
         {
             case CatalogEscapeResult.ToSubCategory:
-                FocusFirstItem(SubCategoriesList);
+                FocusFirstItem(SubCategoriesList, FocusPolicyReason.UserRequest);
                 break;
             case CatalogEscapeResult.ToCategory:
-                FocusFirstItem(CategoriesList);
+                FocusFirstItem(CategoriesList, FocusPolicyReason.UserRequest);
                 break;
             case CatalogEscapeResult.Closed:
                 return;
             default:
-                FocusFirstItem(CategoriesList);
+                FocusFirstItem(CategoriesList, FocusPolicyReason.UserRequest);
                 break;
         }
     }
 
-    private void FocusFirstItem(ListBox? listBox)
+    private void FocusFirstItem(ListBox? listBox, FocusPolicyReason reason = FocusPolicyReason.Update)
     {
         if (listBox == null || listBox.Items.Count == 0)
+        {
+            return;
+        }
+
+        if (!FocusPolicy.CanFocus(this, reason))
         {
             return;
         }
@@ -522,16 +527,21 @@ public partial class CatalogView : UserControl, IInitialFocusTarget, IFocusReady
         }
     }
 
-    private void FocusWhenContainersGenerated(ListBox? listBox)
+    private void FocusWhenContainersGenerated(ListBox? listBox, FocusPolicyReason reason = FocusPolicyReason.Update)
     {
         if (listBox == null)
         {
             return;
         }
 
+        if (!FocusPolicy.CanFocus(this, reason))
+        {
+            return;
+        }
+
         if (listBox.HasItems && listBox.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
         {
-            FocusFirstItem(listBox);
+            FocusFirstItem(listBox, reason);
             return;
         }
 
@@ -550,7 +560,7 @@ public partial class CatalogView : UserControl, IInitialFocusTarget, IFocusReady
             {
                 if (listBox.HasItems)
                 {
-                    FocusFirstItem(listBox);
+            FocusFirstItem(listBox, reason);
                 }
             }));
         };
@@ -561,7 +571,7 @@ public partial class CatalogView : UserControl, IInitialFocusTarget, IFocusReady
     {
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
-            FocusWhenContainersGenerated(CategoriesList);
+            FocusWhenContainersGenerated(CategoriesList, FocusPolicyReason.InitialLoad);
         }));
     }
 

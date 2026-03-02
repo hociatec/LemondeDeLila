@@ -1,0 +1,231 @@
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
+using client_win.Modules.Game.History.Services;
+using client_win.Modules.Game.Room.Services;
+using client_win.Modules.Game.Shell.Models;
+using client_win.Modules.Game.Shell.ViewModels;
+
+namespace client_win.Modules.Game.Shell.Services;
+
+internal sealed class RoomIntentDispatcher
+{
+    private readonly GameRoomViewModel _roomVm;
+    private readonly IGameHistorySink _history;
+    private readonly IRoomAnnouncements _announcements;
+
+    public RoomIntentDispatcher(
+        GameRoomViewModel roomVm,
+        IGameHistorySink history,
+        IRoomAnnouncements announcements)
+    {
+        _roomVm = roomVm ?? throw new ArgumentNullException(nameof(roomVm));
+        _history = history ?? throw new ArgumentNullException(nameof(history));
+        _announcements = announcements ?? throw new ArgumentNullException(nameof(announcements));
+    }
+
+    public void HandleIntent(JsonElement payload)
+    {
+        if (!TryReadIntent(payload, out var type, out var intentPayload))
+        {
+            return;
+        }
+
+        switch (type)
+        {
+            case "focus":
+                HandleFocusIntent(intentPayload);
+                break;
+            case "history":
+                HandleHistoryIntent(intentPayload);
+                break;
+
+            case "announcement":
+                HandleAnnouncementIntent(intentPayload);
+                break;
+
+            case "start-wizard":
+                HandleStartWizardIntent(intentPayload);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private static bool TryReadIntent(JsonElement element, out string type, out JsonElement payload)
+    {
+        type = string.Empty;
+        payload = default;
+        if (element.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        if (!element.TryGetProperty("type", out var typeProp) ||
+            typeProp.ValueKind != JsonValueKind.String)
+        {
+            return false;
+        }
+
+        type = (typeProp.GetString() ?? string.Empty).Trim().ToLowerInvariant();
+        if (type.Length == 0)
+        {
+            return false;
+        }
+
+        if (!element.TryGetProperty("payload", out payload))
+        {
+            payload = default;
+        }
+
+        return true;
+    }
+
+    private void HandleAnnouncementIntent(JsonElement payload)
+    {
+        if (!payload.TryGetProperty("message", out var messageProp) ||
+            messageProp.ValueKind != JsonValueKind.String)
+        {
+            return;
+        }
+
+        var message = messageProp.GetString();
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return;
+        }
+
+        var priority = RoomAnnouncementKind.Polite;
+        if (payload.TryGetProperty("priority", out var priorityProp) &&
+            priorityProp.ValueKind == JsonValueKind.String &&
+            string.Equals(priorityProp.GetString(), "assertive", StringComparison.OrdinalIgnoreCase))
+        {
+            priority = RoomAnnouncementKind.Assertive;
+        }
+
+        _announcements.Publish(new RoomAnnouncement(priority, message));
+    }
+
+    private void HandleStartWizardIntent(JsonElement payload)
+    {
+        if (!TryParseStartWizardIntent(payload, out var intent))
+        {
+            return;
+        }
+
+        _roomVm.EnqueueServerStartWizardIntent(intent);
+    }
+
+    private static bool TryParseStartWizardIntent(
+        JsonElement payload,
+        out RoomStartWizardIntent intent)
+    {
+        intent = default!;
+        if (payload.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        var ownerId = payload.TryGetProperty("ownerId", out var ownerProp) &&
+                      ownerProp.ValueKind == JsonValueKind.Number
+            ? ownerProp.GetInt32()
+            : (int?)null;
+        var title = payload.TryGetProperty("title", out var titleProp) &&
+                    titleProp.ValueKind == JsonValueKind.String
+            ? titleProp.GetString() ?? string.Empty
+            : string.Empty;
+        var description = payload.TryGetProperty("description", out var descProp) &&
+                          descProp.ValueKind == JsonValueKind.String
+            ? descProp.GetString() ?? string.Empty
+            : string.Empty;
+        var message = payload.TryGetProperty("message", out var messageProp) &&
+                      messageProp.ValueKind == JsonValueKind.String
+            ? messageProp.GetString()
+            : null;
+
+        if (string.IsNullOrWhiteSpace(title) && string.IsNullOrWhiteSpace(description))
+        {
+            return false;
+        }
+
+        intent = new RoomStartWizardIntent(ownerId, title, description, message);
+        return true;
+    }
+
+    private void HandleFocusIntent(JsonElement payload)
+    {
+        if (!TryParseFocusIntent(payload, out var intent))
+        {
+            return;
+        }
+        _roomVm.EnqueueServerFocusIntent(intent);
+    }
+
+    private static bool TryParseFocusIntent(JsonElement payload, out ServerFocusIntent intent)
+    {
+        intent = default!;
+        if (payload.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        if (!payload.TryGetProperty("region", out var regionProp) ||
+            regionProp.ValueKind != JsonValueKind.String)
+        {
+            return false;
+        }
+
+        var region = MapRegion(regionProp.GetString());
+        if (!region.HasValue)
+        {
+            return false;
+        }
+
+        var reason = payload.TryGetProperty("reason", out var reasonProp) &&
+                     reasonProp.ValueKind == JsonValueKind.String
+            ? reasonProp.GetString()
+            : null;
+
+        var priority = ServerFocusPriority.Default;
+        if (payload.TryGetProperty("priority", out var priorityProp) &&
+            priorityProp.ValueKind == JsonValueKind.String &&
+            string.Equals(priorityProp.GetString(), "assertive", StringComparison.OrdinalIgnoreCase))
+        {
+            priority = ServerFocusPriority.Assertive;
+        }
+
+        intent = new ServerFocusIntent(region.Value, reason, priority);
+        return true;
+    }
+
+    private static ServerFocusRegion? MapRegion(string? raw)
+    {
+        return (raw ?? string.Empty).Trim().ToLowerInvariant() switch
+        {
+            "game" => ServerFocusRegion.GameZone,
+            "history" => ServerFocusRegion.History,
+            "chat" => ServerFocusRegion.Chat,
+            _ => null,
+        };
+    }
+
+    private void HandleHistoryIntent(JsonElement payload)
+    {
+        if (!payload.TryGetProperty("entries", out var entries) ||
+            entries.ValueKind != JsonValueKind.Array)
+        {
+            return;
+        }
+
+        foreach (var entry in entries.EnumerateArray())
+        {
+            var line = entry.GetString();
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
+            _history.Add(line);
+        }
+    }
+}

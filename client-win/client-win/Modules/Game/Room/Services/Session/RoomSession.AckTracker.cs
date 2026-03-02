@@ -90,3 +90,4 @@ public sealed partial class RoomSession
         }
     }
 }
+

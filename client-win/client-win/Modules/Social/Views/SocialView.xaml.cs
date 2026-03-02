@@ -34,7 +34,7 @@ public partial class SocialView : UserControl, IInitialFocusTarget
 
     private void ReturnToMenu()
     {
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => SetScreen(SocialScreen.Menu)));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => SetScreen(SocialScreen.Menu, FocusPolicyReason.UserRequest)));
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -45,7 +45,7 @@ public partial class SocialView : UserControl, IInitialFocusTarget
         {
             // UX: en arrivant dans Social, le focus doit être sur le 1er item (Messagerie).
             _lastMenuIndex = 0;
-            SetScreen(SocialScreen.Menu);
+            SetScreen(SocialScreen.Menu, FocusPolicyReason.InitialLoad);
         }, DispatcherPriority.Input);
 
         if (DataContext is SocialViewModel vm)
@@ -101,8 +101,8 @@ public partial class SocialView : UserControl, IInitialFocusTarget
         {
             Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
             {
-                SetScreen(SocialScreen.Section);
-                FocusSection(SocialSection.Profile);
+                SetScreen(SocialScreen.Section, FocusPolicyReason.UserRequest);
+                FocusSection(SocialSection.Profile, FocusPolicyReason.UserRequest);
             }));
         };
 
@@ -135,11 +135,11 @@ public partial class SocialView : UserControl, IInitialFocusTarget
                     if (vm.SelectedSection == SocialSection.Profile && vm.TryExitProfile(out var returnSection))
                     {
                         vm.SelectedSection = returnSection;
-                        FocusSection(returnSection);
+                        FocusSection(returnSection, FocusPolicyReason.UserRequest);
                         return;
                     }
 
-                    SetScreen(SocialScreen.Menu);
+                    SetScreen(SocialScreen.Menu, FocusPolicyReason.UserRequest);
                     return;
                 }
 
@@ -185,45 +185,45 @@ public partial class SocialView : UserControl, IInitialFocusTarget
                 break;
             case "friends":
                 vm.SelectedSection = SocialSection.Friends;
-                SetScreen(SocialScreen.Section);
+                SetScreen(SocialScreen.Section, FocusPolicyReason.UserRequest);
                 await FocusSectionWhenReadyAsync(vm.SelectedSection).ConfigureAwait(true);
                 break;
             case "incoming":
                 vm.SelectedSection = SocialSection.IncomingRequests;
-                SetScreen(SocialScreen.Section);
+                SetScreen(SocialScreen.Section, FocusPolicyReason.UserRequest);
                 await FocusSectionWhenReadyAsync(vm.SelectedSection).ConfigureAwait(true);
                 break;
             case "outgoing":
                 vm.SelectedSection = SocialSection.OutgoingRequests;
-                SetScreen(SocialScreen.Section);
+                SetScreen(SocialScreen.Section, FocusPolicyReason.UserRequest);
                 await FocusSectionWhenReadyAsync(vm.SelectedSection).ConfigureAwait(true);
                 break;
             case "blocked":
                 vm.SelectedSection = SocialSection.Blocked;
-                SetScreen(SocialScreen.Section);
+                SetScreen(SocialScreen.Section, FocusPolicyReason.UserRequest);
                 await FocusSectionWhenReadyAsync(vm.SelectedSection).ConfigureAwait(true);
                 break;
             case "search":
                 vm.SelectedSection = SocialSection.Search;
-                SetScreen(SocialScreen.Section);
-                FocusSection(vm.SelectedSection);
+                SetScreen(SocialScreen.Section, FocusPolicyReason.UserRequest);
+                FocusSection(vm.SelectedSection, FocusPolicyReason.UserRequest);
                 break;
             case "profile":
                 vm.EnterOwnProfile();
                 vm.SelectedSection = SocialSection.Profile;
-                SetScreen(SocialScreen.Section);
-                FocusSection(vm.SelectedSection);
+                SetScreen(SocialScreen.Section, FocusPolicyReason.UserRequest);
+                FocusSection(vm.SelectedSection, FocusPolicyReason.UserRequest);
                 break;
         }
     }
 
     private async Task FocusSectionWhenReadyAsync(SocialSection section)
     {
-        FocusSection(section);
+        FocusSection(section, FocusPolicyReason.UserRequest);
         await Task.CompletedTask.ConfigureAwait(true);
     }
 
-    private void SetScreen(SocialScreen screen)
+    private void SetScreen(SocialScreen screen, FocusPolicyReason reason)
     {
         _currentScreen = screen;
         if (screen == SocialScreen.Menu)
@@ -244,27 +244,32 @@ public partial class SocialView : UserControl, IInitialFocusTarget
             {
                 MenuList.SelectedIndex = 0;
             }
-            FocusMenu();
+            FocusMenu(reason);
         }
     }
 
-    private void FocusSection(SocialSection section)
+    private void FocusSection(SocialSection section, FocusPolicyReason reason)
     {
+        if (!FocusPolicy.CanFocus(this, reason))
+        {
+            return;
+        }
+
         _ = Dispatcher.InvokeAsync(() =>
         {
             switch (section)
             {
                 case SocialSection.Friends:
-                    FocusListOrEmpty(FriendsList, EmptyFriendsText);
+                    FocusListOrEmpty(FriendsList, EmptyFriendsText, reason);
                     break;
                 case SocialSection.IncomingRequests:
-                    FocusListOrEmpty(IncomingList, EmptyIncomingText);
+                    FocusListOrEmpty(IncomingList, EmptyIncomingText, reason);
                     break;
                 case SocialSection.OutgoingRequests:
-                    FocusListOrEmpty(OutgoingList, EmptyOutgoingText);
+                    FocusListOrEmpty(OutgoingList, EmptyOutgoingText, reason);
                     break;
                 case SocialSection.Blocked:
-                    FocusListOrEmpty(BlockedList, EmptyBlockedText);
+                    FocusListOrEmpty(BlockedList, EmptyBlockedText, reason);
                     break;
                 case SocialSection.Search:
                     SearchBox.Focus();
@@ -287,9 +292,14 @@ public partial class SocialView : UserControl, IInitialFocusTarget
         }, DispatcherPriority.Input);
     }
 
-    private void FocusMenu()
+    private void FocusMenu(FocusPolicyReason reason)
     {
-        FocusListOrFallback(MenuList, MenuList);
+        if (!FocusPolicy.CanFocus(this, reason))
+        {
+            return;
+        }
+
+        FocusListOrFallback(MenuList, MenuList, reason);
     }
 
     private void OnMenuSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -361,19 +371,29 @@ public partial class SocialView : UserControl, IInitialFocusTarget
         return false;
     }
 
-    private void FocusListOrEmpty(ListBox listBox, TextBlock emptyText)
+    private void FocusListOrEmpty(ListBox listBox, TextBlock emptyText, FocusPolicyReason reason)
     {
+        if (!FocusPolicy.CanFocus(this, reason))
+        {
+            return;
+        }
+
         if (listBox.Items.Count == 0)
         {
             emptyText.Focus();
             return;
         }
 
-        FocusListOrFallback(listBox, emptyText);
+        FocusListOrFallback(listBox, emptyText, reason);
     }
 
-    private void FocusListOrFallback(ListBox listBox, UIElement fallback)
+    private void FocusListOrFallback(ListBox listBox, UIElement fallback, FocusPolicyReason reason)
     {
+        if (!FocusPolicy.CanFocus(this, reason))
+        {
+            return;
+        }
+
         if (listBox.Items.Count == 0)
         {
             fallback.Focus();
@@ -405,7 +425,7 @@ public partial class SocialView : UserControl, IInitialFocusTarget
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
             _lastMenuIndex = 0;
-            SetScreen(SocialScreen.Menu);
+            SetScreen(SocialScreen.Menu, FocusPolicyReason.InitialLoad);
         }));
     }
 }

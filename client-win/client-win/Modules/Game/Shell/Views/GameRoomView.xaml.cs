@@ -5,8 +5,10 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Game.Shell.Models;
+using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Game.Shell.ViewModels;
 using client_win.Modules.Shell.Services;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Game.Shell.Views;
 
@@ -139,7 +141,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         _historyFocusedUpdateHandler = null;
     }
 
-    private void FocusHistory()
+    internal void FocusHistory()
     {
         _vm?.GameZone.FocusCoordinator.CancelPendingRequests();
 
@@ -171,7 +173,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         HistoryHost.FocusToBottom();
     }
 
-    private void FocusChatInput()
+    internal void FocusChatInput()
     {
         _vm?.GameZone.FocusCoordinator.CancelPendingRequests();
 
@@ -197,7 +199,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
 
     public void RequestFocusGameZone(GameFocusReason reason = GameFocusReason.Default) => RequestFocusGameZoneInternal(reason);
 
-    private void RequestFocusGameZoneInternal(GameFocusReason reason)
+    internal void RequestFocusGameZoneInternal(GameFocusReason reason)
     {
         if (_vm?.IsStartWizardOpen == true)
         {

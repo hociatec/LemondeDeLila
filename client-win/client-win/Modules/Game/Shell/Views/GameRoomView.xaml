@@ -100,8 +100,8 @@
                                  AcceptsReturn="False"
                                  TextWrapping="NoWrap"
                                  PreviewKeyDown="OnChatInputPreviewKeyDown"
-                                 AutomationProperties.Name="Message"
-                                 AutomationProperties.HelpText="Saisissez un message puis appuyez sur Entree." />
+                        AutomationProperties.Name="Message"
+                        AutomationProperties.HelpText="Saisissez un message puis appuyez sur Entrée." />
                     </StackPanel>
                 </Border>
 

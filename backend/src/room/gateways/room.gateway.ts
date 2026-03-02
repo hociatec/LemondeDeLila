@@ -10,7 +10,12 @@ import { RoomService } from '../services/room.service';
 import { BotService } from '../../bot/services/bot.service';
 import { Inject, Logger, forwardRef } from '@nestjs/common';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
-import type { RoomPayload, RoomPlayer } from '../dto/room-response.dto';
+import type { RoomPayload, RoomPlayer, RoomBotState } from '../dto/room-response.dto';
+import type { RoomFocusIntent } from '../dto/room-focus-intent.dto';
+import type {
+  RoomIntent,
+  RoomStartWizardIntent,
+} from '../dto/room-intent.dto';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { PerfMetricsService } from '../../common/services/perf-metrics.service';
 import { RoomInviteService } from '../services/room-invite.service';
@@ -48,6 +53,15 @@ type RoomChatMessage = {
   createdAt: string;
 };
 
+type RoomSnapshot = {
+  players: Map<number, string>;
+  spectators: Map<number, string>;
+  bots: Map<number, string>;
+  ownerId: number | null;
+  ownerName: string;
+  isPrivate: boolean;
+};
+
 @WebSocketGateway({ path: '/ws' })
 export class RoomGateway
   implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket>
@@ -76,6 +90,7 @@ export class RoomGateway
   private readonly chatCooldownMs = 350;
   private readonly chatMaxLength = 300;
   private readonly lastRoomStatusByRoomId = new Map<number, string>();
+  private readonly lastRoomSnapshotByRoomId = new Map<number, RoomSnapshot>();
   private readonly participantDisconnectGraceMs = 60_000;
   private readonly pendingParticipantLeaves = new Map<
     string,
@@ -541,7 +556,7 @@ export class RoomGateway
       this.lastRoomStatusByRoomId.set(roomId, nextStatus);
 
       this.applySpectators(roomId, payload);
-      await this.broadcast(roomId, 'room.updated', payload);
+      await this.broadcastRoomUpdated(roomId, payload);
     } catch {
       /* la table a peut-être été supprimée, on ignore */
     }
@@ -582,12 +597,215 @@ export class RoomGateway
     }
   }
 
+  private buildAllowedActionsForClient(
+    meta: ClientMeta,
+    payload: RoomPayload,
+  ): string[] {
+    const room = payload.room;
+    const started =
+      (room.status || '').toLowerCase() === 'started' || Boolean(room.startedAt);
+    const isOwner = room.owner?.id === meta.userId;
+    const isParticipant = room.players?.some((p) => p?.id === meta.userId) ?? false;
+    const canToggleRole =
+      !started && (!room.isPrivate || isOwner || isParticipant);
+
+    const actions = new Set<string>([
+      'room.rules',
+      'room.info',
+      'room.players',
+      'room.leave',
+      'room.tableAmbienceVolume',
+    ]);
+
+    if (canToggleRole) {
+      actions.add('room.set-role');
+    }
+
+    if (isOwner) {
+      actions.add('room.start');
+      actions.add('room.reset');
+      actions.add('room.toggle-privacy');
+      actions.add('bot.add');
+      actions.add('bot.remove');
+      actions.add('room.kick');
+      actions.add('room.ban');
+      actions.add('room.set-owner');
+      actions.add('room.set-ambience');
+      actions.add('room.tableAmbience');
+      actions.add('room.snapshot.save');
+    }
+
+    return Array.from(actions);
+  }
+
+  private withAllowedActionsForClient(
+    payload: RoomPayload,
+    meta: ClientMeta,
+  ): RoomPayload {
+    return {
+      ...payload,
+      room: {
+        ...payload.room,
+        allowedActions: this.buildAllowedActionsForClient(meta, payload),
+      },
+    };
+  }
+
+  private async broadcastRoomUpdated(
+    roomId: number,
+    payload: RoomPayload,
+  ): Promise<void> {
+    const targets = this.rooms.get(roomId);
+    const silentTargets = this.silentRooms.get(roomId);
+
+    const sendToSet = (set?: Set<WebSocket>) => {
+      if (!set) return;
+      for (const socket of Array.from(set)) {
+        const meta = this.clients.get(socket);
+        if (!meta || socket.readyState !== WebSocket.OPEN) {
+          set.delete(socket);
+          continue;
+        }
+        try {
+          const payloadForClient = this.withAllowedActionsForClient(payload, meta);
+          socket.send(
+            JSON.stringify({
+              type: 'room.updated',
+              roomId,
+              payload: payloadForClient,
+            }),
+          );
+        } catch {
+          set.delete(socket);
+          try {
+            socket.close();
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+      if (set.size === 0) {
+        if (set === targets) this.rooms.delete(roomId);
+        if (set === silentTargets) this.silentRooms.delete(roomId);
+      }
+    };
+
+    sendToSet(targets);
+    sendToSet(silentTargets);
+  }
+
+  private async broadcastRoomIntent(roomId: number, intent: RoomIntent): Promise<void> {
+    await this.broadcast(roomId, 'room.intent', intent);
+  }
+
+  private buildStartWizardIntent(
+    payload: RoomPayload,
+    previousStatus: string,
+    nextStatus: string,
+  ): RoomStartWizardIntent | null {
+    if (
+      previousStatus.length === 0 &&
+      nextStatus.length > 0 &&
+      nextStatus !== 'started'
+    ) {
+      return {
+        ownerId: payload.room.owner?.id ?? null,
+        title: 'Configuration de la table',
+        description: 'Le serveur vous invite à préparer la partie.',
+        message: 'Choisissez rapidement l’ambiance et la configuration.',
+      };
+    }
+
+    return null;
+  }
+
+  private computeStatusFocusIntent(
+    roomId: number,
+    payload: RoomPayload,
+  ): RoomFocusIntent | null {
+    const previousStatus = (this.lastRoomStatusByRoomId.get(roomId) ?? '')
+      .toLowerCase()
+      .trim();
+    const nextStatus = String(payload.room.status ?? '')
+      .toLowerCase()
+      .trim();
+
+    if (previousStatus !== 'started' && nextStatus === 'started') {
+      return {
+        region: 'game',
+        reason: 'room.started',
+        priority: 'assertive',
+      };
+    }
+
+    return null;
+  }
+
   private async broadcastRoomPayload(
     roomId: number,
     payload: RoomPayload,
   ): Promise<void> {
+    const previousStatus = (this.lastRoomStatusByRoomId.get(roomId) ?? '')
+      .toLowerCase()
+      .trim();
+    const nextStatus = String(payload.room.status ?? '')
+      .toLowerCase()
+      .trim();
+
     this.applySpectators(roomId, payload);
-    await this.broadcast(roomId, 'room.updated', payload);
+    const focusIntent = this.computeStatusFocusIntent(roomId, payload);
+    await this.broadcastRoomUpdated(roomId, payload);
+    if (focusIntent)
+    {
+        await this.broadcast(roomId, 'room.focus', focusIntent);
+        await this.broadcastRoomIntent(roomId, {
+          type: 'focus',
+          payload: focusIntent,
+        } satisfies RoomIntent);
+        await this.broadcastRoomIntent(roomId, {
+          type: 'announcement',
+          payload: {
+            message:
+              focusIntent.reason === 'room.started'
+                ? 'La table commence !'
+                : 'Mise à jour de la table en cours.',
+            priority: focusIntent.priority === 'assertive' ? 'assertive' : 'polite',
+          },
+        } satisfies RoomIntent);
+    }
+
+    const previousSnapshot = this.lastRoomSnapshotByRoomId.get(roomId);
+    const nextSnapshot = this.buildRoomSnapshot(payload);
+    await this.emitRoomAnnouncementsFromDiff(roomId, previousSnapshot, nextSnapshot);
+    this.lastRoomSnapshotByRoomId.set(roomId, nextSnapshot);
+
+    const startWizardIntent = this.buildStartWizardIntent(
+      payload,
+      previousStatus,
+      nextStatus,
+    );
+    if (startWizardIntent) {
+      await this.broadcastRoomIntent(roomId, {
+        type: 'start-wizard',
+        payload: startWizardIntent,
+      } satisfies RoomIntent);
+      const gameName = (
+        payload.manifest?.name ??
+        payload.room.gameType ??
+        ''
+      ).trim();
+      const creationMessage =
+        gameName.length === 0
+          ? 'Table créée. Ajoutez des bots et commencez à jouer (Entrée).'
+          : `Table de ${gameName} créée. Ajoutez des bots et commencez à jouer (Entrée).`;
+      await this.broadcastRoomIntent(roomId, {
+        type: 'announcement',
+        payload: {
+          message: creationMessage,
+        },
+      } satisfies RoomIntent);
+    }
+    this.lastRoomStatusByRoomId.set(roomId, nextStatus);
   }
 
   private async tryUpdateRoomPayload(
@@ -628,7 +846,60 @@ export class RoomGateway
         payload.room.players = mergePlayers(payload.room.players, connected);
         payload.room.counts.players = payload.room.players.length;
       }
-      this.safeSend(client, { type: 'room.updated', roomId, payload });
+      const previousStatus = (this.lastRoomStatusByRoomId.get(roomId) ?? '')
+        .toLowerCase()
+        .trim();
+      const nextStatus = String(payload.room.status ?? '')
+        .toLowerCase()
+        .trim();
+
+      const focusIntent = this.computeStatusFocusIntent(roomId, payload);
+      const meta = this.clients.get(client);
+      const payloadForClient =
+        meta != null ? this.withAllowedActionsForClient(payload, meta) : payload;
+      this.safeSend(client, { type: 'room.updated', roomId, payload: payloadForClient });
+      if (focusIntent) {
+        this.safeSend(client, { type: 'room.focus', roomId, payload: focusIntent });
+        this.safeSend(client, {
+          type: 'room.intent',
+          roomId,
+          payload: {
+            type: 'focus',
+            payload: focusIntent,
+          } satisfies RoomIntent,
+        });
+        this.safeSend(client, {
+          type: 'room.intent',
+          roomId,
+          payload: {
+            type: 'announcement',
+            payload: {
+              message:
+                focusIntent.reason == 'room.started'
+                  ? 'La table commence !'
+                  : 'Mise à jour de la table en cours.',
+              priority: focusIntent.priority == 'assertive' ? 'assertive' : 'polite',
+            },
+          } satisfies RoomIntent,
+        });
+      }
+      const startWizardIntent = this.buildStartWizardIntent(
+        payload,
+        previousStatus,
+        nextStatus,
+      );
+      if (startWizardIntent) {
+        this.safeSend(client, {
+          type: 'room.intent',
+          roomId,
+          payload: {
+            type: 'start-wizard',
+            payload: startWizardIntent,
+          },
+        });
+      }
+      this.lastRoomSnapshotByRoomId.set(roomId, this.buildRoomSnapshot(payload));
+      this.lastRoomStatusByRoomId.set(roomId, nextStatus);
     } catch (err) {
       await this.sendError(client, (err as Error).message || 'Erreur table');
       try {
@@ -980,6 +1251,184 @@ export class RoomGateway
     });
   }
 
+  private buildRoomSnapshot(payload: RoomPayload): RoomSnapshot {
+    const room = payload.room;
+    return {
+      players: RoomGateway.buildPlayerMap(room.players),
+      spectators: RoomGateway.buildPlayerMap(room.spectators),
+      bots: RoomGateway.buildBotMap(room.bots),
+      ownerId: room.owner?.id ?? null,
+      ownerName: (room.owner?.username ?? '').trim(),
+      isPrivate: Boolean(room.isPrivate),
+    };
+  }
+
+  private static buildPlayerMap(players?: RoomPlayer[]): Map<number, string> {
+    const map = new Map<number, string>();
+    if (!players) {
+      return map;
+    }
+
+    for (const player of players) {
+      if (!player || !Number.isFinite(player.id) || player.id <= 0) {
+        continue;
+      }
+      map.set(player.id, (player.username ?? '').trim());
+    }
+
+    return map;
+  }
+
+  private static buildBotMap(bots?: RoomBotState[]): Map<number, string> {
+    const map = new Map<number, string>();
+    if (!bots) {
+      return map;
+    }
+
+    for (const bot of bots) {
+      if (!bot || !Number.isFinite(bot.id) || bot.id <= 0) {
+        continue;
+      }
+      map.set(bot.id, (bot.name ?? '').trim());
+    }
+
+    return map;
+  }
+
+  private async emitRoomAnnouncementsFromDiff(
+    roomId: number,
+    previous: RoomSnapshot | undefined,
+    next: RoomSnapshot,
+  ): Promise<void> {
+    if (!previous) {
+      return;
+    }
+
+    const roleSwitchIds = new Set<number>();
+    for (const id of previous.players.keys()) {
+      if (next.spectators.has(id)) {
+        roleSwitchIds.add(id);
+      }
+    }
+    for (const id of previous.spectators.keys()) {
+      if (next.players.has(id)) {
+        roleSwitchIds.add(id);
+      }
+    }
+
+    await this.emitPlayerDiff(roomId, previous.players, next.players, false, roleSwitchIds);
+    await this.emitPlayerDiff(roomId, previous.spectators, next.spectators, true, roleSwitchIds);
+    await this.emitBotDiff(roomId, previous.bots, next.bots);
+
+    if (previous.ownerId !== next.ownerId || previous.ownerName !== next.ownerName) {
+      const message =
+        next.ownerName.length === 0
+          ? 'Propriétaire : aucun.'
+          : `Nouveau propriétaire : ${next.ownerName}.`;
+      await this.broadcastRoomAnnouncement(roomId, message);
+    }
+
+    if (previous.isPrivate !== next.isPrivate) {
+      const message = next.isPrivate ? 'Table privée.' : 'Table publique.';
+      await this.broadcastRoomAnnouncement(roomId, message);
+    }
+  }
+
+  private async emitPlayerDiff(
+    roomId: number,
+    previous: Map<number, string>,
+    next: Map<number, string>,
+    spectator: boolean,
+    roleSwitchIds: Set<number>,
+  ): Promise<void> {
+    for (const [id, username] of next.entries()) {
+      if (roleSwitchIds.has(id)) {
+        continue;
+      }
+      if (!previous.has(id)) {
+        await this.broadcastRoomAnnouncement(
+          roomId,
+          RoomGateway.buildPlayerJoinedMessage(username, spectator),
+        );
+      }
+    }
+
+    for (const [id, username] of previous.entries()) {
+      if (roleSwitchIds.has(id)) {
+        continue;
+      }
+      if (!next.has(id)) {
+        await this.broadcastRoomAnnouncement(
+          roomId,
+          RoomGateway.buildPlayerLeftMessage(username, spectator),
+        );
+      }
+    }
+  }
+
+  private async emitBotDiff(
+    roomId: number,
+    previous: Map<number, string>,
+    next: Map<number, string>,
+  ): Promise<void> {
+    for (const [id, name] of next.entries()) {
+      if (!previous.has(id)) {
+        await this.broadcastRoomAnnouncement(roomId, RoomGateway.buildBotJoinedMessage(name));
+      }
+    }
+
+    for (const [id, name] of previous.entries()) {
+      if (!next.has(id)) {
+        await this.broadcastRoomAnnouncement(roomId, RoomGateway.buildBotLeftMessage(name));
+      }
+    }
+  }
+
+  private async broadcastRoomAnnouncement(
+    roomId: number,
+    message: string,
+    priority: 'polite' | 'assertive' = 'polite',
+  ): Promise<void> {
+    const normalized = (message ?? '').trim();
+    if (normalized.length === 0) {
+      return;
+    }
+
+    await this.broadcastRoomIntent(roomId, {
+      type: 'announcement',
+      payload: {
+        message: normalized,
+        priority,
+      },
+    } satisfies RoomIntent);
+  }
+
+  private static buildPlayerJoinedMessage(name: string, spectator: boolean): string {
+    return `${RoomGateway.formatPlayerName(name)}${spectator ? ' (spectateur)' : ''} a rejoint la table.`;
+  }
+
+  private static buildPlayerLeftMessage(name: string, spectator: boolean): string {
+    return `${RoomGateway.formatPlayerName(name)}${spectator ? ' (spectateur)' : ''} a quitté la table.`;
+  }
+
+  private static buildBotJoinedMessage(name: string): string {
+    return `${RoomGateway.formatBotName(name)} a rejoint la table.`;
+  }
+
+  private static buildBotLeftMessage(name: string): string {
+    return `${RoomGateway.formatBotName(name)} a quitté la table.`;
+  }
+
+  private static formatPlayerName(name: string): string {
+    const trimmed = (name ?? '').trim();
+    return trimmed.length > 0 ? trimmed : 'Un joueur';
+  }
+
+  private static formatBotName(name: string): string {
+    const trimmed = (name ?? '').trim();
+    return trimmed.length > 0 ? trimmed : 'Un bot';
+  }
+
   private async handleRoomLeave(client: WebSocket, meta: ClientMeta) {
     const roomId = meta.roomId;
     if (!Number.isFinite(roomId) || roomId <= 0) {
@@ -1215,6 +1664,12 @@ export class RoomGateway
           isPrivate: state.room.isPrivate,
           room: state.room,
         });
+        await this.broadcastRoomIntent(meta.roomId, {
+          type: 'announcement',
+          payload: {
+            message: state.room.isPrivate ? 'Table privée.' : 'Table publique.',
+          },
+        } satisfies RoomIntent);
       },
       { roomId: meta.roomId, userId: meta.userId, ...trace },
     );
@@ -1378,6 +1833,12 @@ export class RoomGateway
           : 'Mode spectateur désactivé.',
       },
     });
+    await this.broadcastRoomIntent(meta.roomId, {
+      type: 'announcement',
+      payload: {
+        message: spectator ? 'Mode spectateur.' : 'Mode joueur.',
+      },
+    } satisfies RoomIntent);
 
     await this.sendRoomState(meta.roomId);
   }

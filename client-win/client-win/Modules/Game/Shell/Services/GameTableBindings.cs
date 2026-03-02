@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Collections.Specialized;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -27,8 +28,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 {
     private readonly Dispatcher _dispatcher;
     private readonly CatalogGame _game;
-    private readonly RoomSession _session;
-    private readonly RoomClient _room;
+    private readonly IRoomFacade _room;
     private readonly GameRoomViewModel _tableVm;
     private readonly IRoomAnnouncements _announcements;
     private readonly IGameHistorySink _history;
@@ -52,7 +52,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private Action<bool>? _onStartReadyChanged;
     private Action<IReadOnlyList<RoomChatMessageDto>>? _onChatHistory;
     private Action<RoomChatMessageDto>? _onChatMessage;
-    private Action<RoomMessageRouter.RoomMessageContext>? _onIntentReceived;
+    private Action<JsonElement>? _onIntentReceived;
     private Action<bool>? _onRoleChangedHandler;
     private bool _roomStopConfirmationPending;
 
@@ -67,9 +67,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
     public GameTableBindings(
         Dispatcher dispatcher,
         CatalogGame game,
-        RoomSession session,
         GameRoomViewModel tableVm,
         IRoomAnnouncements announcements,
+        IRoomFacade room,
         ISoundService sounds,
         IOptionsService? options,
         IAnnouncementService? announcementService,
@@ -78,9 +78,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
     {
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _game = game ?? throw new ArgumentNullException(nameof(game));
-        _session = session ?? throw new ArgumentNullException(nameof(session));
         _tableVm = tableVm ?? throw new ArgumentNullException(nameof(tableVm));
         _announcements = announcements ?? throw new ArgumentNullException(nameof(announcements));
+        _room = room ?? throw new ArgumentNullException(nameof(room));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _options = options;
         _announcementService = announcementService;
@@ -88,8 +88,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _selfUsername = (selfUsername ?? string.Empty).Trim();
         _history = new GameHistorySink(_dispatcher, _tableVm.History, _announcementService);
         _intentDispatcher = new RoomIntentDispatcher(_tableVm, _history, _announcements);
-
-        _room = new RoomClient(_session, _announcements);
         _lifecycle = new GameTableLifecycleCoordinator(
             dispatcher: _dispatcher,
             requestFocus: reason => _tableVm.GameZone.RequestFocus(reason),
@@ -139,7 +137,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     public void Attach()
     {
         try { _announcementService?.SetGameplayUltraReactive(true); } catch { }
-        var last = _session.LastRoomState;
+        var last = _room.CurrentPayload;
         _lastRoomStarted = IsRoomStarted(last?.Room);
         _lifecycle.InitializeState(_lastRoomStarted);
         _roomStopConfirmationPending = false;
@@ -188,7 +186,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
             }, DispatcherPriority.Background);
         };
 
-        _onIntentReceived = context => _intentDispatcher.HandleIntent(context.Payload);
+        _onIntentReceived = payload => _intentDispatcher.HandleIntent(payload);
         _room.IntentReceived += _onIntentReceived;
 
         _onSessionError = message =>
@@ -326,14 +324,14 @@ internal sealed class GameTableBindings : IAsyncDisposable
                         // Best-effort: ask an explicit refresh before unloading.
                         try
                         {
-                            _ = _session.RequestStateRefreshAsync(force: true);
+                            _ = _room.RequestStateRefreshAsync(force: true);
                         }
                         catch
                         {
                             // best-effort
                         }
 
-                        if (IsRoomStarted(_session.LastRoomState?.Room))
+                        if (IsRoomStarted(_room.CurrentPayload?.Room))
                         {
                             return;
                         }
@@ -384,7 +382,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _roomStopConfirmationPending = true;
         try
         {
-            _ = _session.RequestStateRefreshAsync(force: true);
+            _ = _room.RequestStateRefreshAsync(force: true);
         }
         catch
         {
@@ -399,7 +397,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         {
             try
             {
-                var last = _session.LastRoomState;
+                var last = _room.CurrentPayload;
                 if (last != null)
                 {
                     var isStarted = _lastRoomStarted;
@@ -417,7 +415,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     {
         try
         {
-            var last = _session.LastRoomState;
+            var last = _room.CurrentPayload;
             if (last != null)
             {
                 UpdateGameTitle(last);
@@ -632,12 +630,13 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private void SetRoomShortcutsForStarted(bool started)
     {
         _tableVm.GameZone.IsStarted = started;
-        UpdateStartEligibility(_session.LastRoomState);
+        UpdateStartEligibility(_room.CurrentPayload);
         _tableVm.GameZone.Shortcuts.Clear();
 
         var selfIsSpectator = ComputeSelfSpectator();
         var selfId = TryGetSelfParticipantId();
         var isOwner = selfId > 0 && _ownerId > 0 && selfId == _ownerId;
+        var allowedShortcutCodes = BuildAllowedShortcutCodesFromServer(_room.CurrentPayload?.Room);
 
         var shortcuts = RoomShortcuts.Create(
             rulesCommand: _tableVm.GameZone.RulesCommand,
@@ -659,39 +658,92 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
         foreach (var shortcut in started ? shortcuts.Where(s => s.AvailableInGame) : shortcuts)
         {
-            // "x" reset : raccourci propriétaire (disponible aussi hors partie pour rattraper un état bloqué).
-            if (string.Equals(shortcut.Code, RoomShortcutCodes.Reset, StringComparison.OrdinalIgnoreCase) &&
-                !isOwner)
+            // Server-side permissions are the source of truth when present.
+            if (allowedShortcutCodes != null)
             {
-                continue;
+                if (string.IsNullOrWhiteSpace(shortcut.Code) || !allowedShortcutCodes.Contains(shortcut.Code))
+                {
+                    continue;
+                }
             }
-
-            static bool IsOwnerOnlyRoomShortcut(ShortcutDefinition s) =>
-                string.Equals(s.Code, RoomShortcutCodes.Reset, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(s.Code, RoomShortcutCodes.SaveSnapshot, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(s.Code, RoomShortcutCodes.TogglePrivacy, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(s.Code, RoomShortcutCodes.AddBot, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(s.Code, RoomShortcutCodes.RemoveBot, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(s.Code, RoomShortcutCodes.Invite, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(s.Code, RoomShortcutCodes.Kick, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(s.Code, RoomShortcutCodes.Ban, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(s.Code, RoomShortcutCodes.TransferOwner, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(s.Code, RoomShortcutCodes.TableAmbience, StringComparison.OrdinalIgnoreCase);
-
-            // Spectateur : ne propose pas d'actions admin de table (mais garde w/q/i/ctrl+m).
-            if (selfIsSpectator && IsOwnerOnlyRoomShortcut(shortcut))
-            {
-                continue;
-            }
-
-            // Actions propriétaire : uniquement si je suis propriétaire.
-            if (!isOwner && IsOwnerOnlyRoomShortcut(shortcut))
+            else if (IsOwnerOnlyRoomShortcut(shortcut.Code) && (selfIsSpectator || !isOwner))
             {
                 continue;
             }
 
             _tableVm.GameZone.Shortcuts.Add(shortcut);
         }
+    }
+
+    private static HashSet<string>? BuildAllowedShortcutCodesFromServer(RoomDto? room)
+    {
+        if (room?.AllowedActions == null || room.AllowedActions.Count == 0)
+        {
+            return null;
+        }
+
+        var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var action in room.AllowedActions)
+        {
+            var code = MapServerActionToShortcutCode(action);
+            if (!string.IsNullOrWhiteSpace(code))
+            {
+                allowed.Add(code);
+            }
+        }
+
+        return allowed.Count == 0 ? null : allowed;
+    }
+
+    private static string? MapServerActionToShortcutCode(string? action)
+    {
+        var key = (action ?? string.Empty).Trim();
+        if (key.Length == 0)
+        {
+            return null;
+        }
+
+        return key.ToLowerInvariant() switch
+        {
+            "room.rules" => RoomShortcutCodes.Rules,
+            "room.tableambience" => RoomShortcutCodes.TableAmbience,
+            "room.tableambiencevolume" => RoomShortcutCodes.TableAmbienceVolume,
+            "room.savesnapshot" => RoomShortcutCodes.SaveSnapshot,
+            "room.snapshot.save" => RoomShortcutCodes.SaveSnapshot,
+            "room.reset" => RoomShortcutCodes.Reset,
+            "room.info" => RoomShortcutCodes.Info,
+            "room.togglerole" => RoomShortcutCodes.ToggleRole,
+            "room.set-role" => RoomShortcutCodes.ToggleRole,
+            "room.toggleprivacy" => RoomShortcutCodes.TogglePrivacy,
+            "room.toggle-privacy" => RoomShortcutCodes.TogglePrivacy,
+            "room.players" => RoomShortcutCodes.Players,
+            "room.addbot" => RoomShortcutCodes.AddBot,
+            "bot.add" => RoomShortcutCodes.AddBot,
+            "room.removebot" => RoomShortcutCodes.RemoveBot,
+            "bot.remove" => RoomShortcutCodes.RemoveBot,
+            "room.invite" => RoomShortcutCodes.Invite,
+            "room.kick" => RoomShortcutCodes.Kick,
+            "room.ban" => RoomShortcutCodes.Ban,
+            "room.transferowner" => RoomShortcutCodes.TransferOwner,
+            "room.set-owner" => RoomShortcutCodes.TransferOwner,
+            "room.quit" => RoomShortcutCodes.Quit,
+            "room.leave" => RoomShortcutCodes.Quit,
+            _ => key,
+        };
+    }
+
+    private static bool IsOwnerOnlyRoomShortcut(string? code)
+    {
+        return string.Equals(code, RoomShortcutCodes.Reset, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(code, RoomShortcutCodes.SaveSnapshot, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(code, RoomShortcutCodes.TogglePrivacy, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(code, RoomShortcutCodes.AddBot, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(code, RoomShortcutCodes.RemoveBot, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(code, RoomShortcutCodes.Invite, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(code, RoomShortcutCodes.Kick, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(code, RoomShortcutCodes.Ban, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(code, RoomShortcutCodes.TransferOwner, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(code, RoomShortcutCodes.TableAmbience, StringComparison.OrdinalIgnoreCase);
     }
 
     private void RemoveGameplayShortcuts()
@@ -862,7 +914,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         // pour reactiver ajout/retrait de bots et relance via Entree.
         try
         {
-            _ = _session.RequestStateRefreshAsync(force: true);
+            _ = _room.RequestStateRefreshAsync(force: true);
         }
         catch
         {
@@ -935,7 +987,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private void ApplySpectatorState()
     {
         _selfIsSpectator = ComputeSelfSpectator();
-        UpdateStartEligibility(_session.LastRoomState);
+        UpdateStartEligibility(_room.CurrentPayload);
         _gamePlayVm?.SetSpectator(_selfIsSpectator);
         SyncGameplayShortcuts();
     }
@@ -944,8 +996,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
     {
         try
         {
-            var room = payload?.Room ?? _session.LastRoomState?.Room;
-            var manifest = payload?.Manifest ?? _session.LastRoomState?.Manifest;
+            var room = payload?.Room ?? _room.CurrentPayload?.Room;
+            var manifest = payload?.Manifest ?? _room.CurrentPayload?.Manifest;
             if (room == null)
             {
                 _tableVm.GameZone.CanStart = false;
@@ -1167,12 +1219,12 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 _onRoleChangedHandler = null;
             }
 
-	            if (_gamePlayVm != null)
-	            {
-	                await UnloadGamePlayVmAsync().ConfigureAwait(true);
-	            }
+            if (_gamePlayVm != null)
+            {
+                await UnloadGamePlayVmAsync().ConfigureAwait(true);
+            }
 
-            await _room.Session.LeaveAsync().ConfigureAwait(true);
+            await _room.LeaveAsync().ConfigureAwait(true);
             await _room.DisposeAsync().ConfigureAwait(true);
 
             if (_activeTableAmbienceSound.HasValue)
@@ -1180,9 +1232,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 try { _sounds.StopLoop(_activeTableAmbienceSound.Value); } catch { }
                 _activeTableAmbienceSound = null;
             }
-
-            await _session.LeaveAsync().ConfigureAwait(true);
-            await _session.DisposeAsync().ConfigureAwait(true);
         }
         catch
         {
@@ -1194,6 +1243,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
         }
     }
 }
+
+
+
 
 
 
