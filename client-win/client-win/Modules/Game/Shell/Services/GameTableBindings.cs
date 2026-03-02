@@ -28,6 +28,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private readonly Dispatcher _dispatcher;
     private readonly CatalogGame _game;
     private readonly RoomSession _session;
+    private readonly RoomClient _room;
     private readonly GameRoomViewModel _tableVm;
     private readonly IRoomAnnouncements _announcements;
     private readonly IGameHistorySink _history;
@@ -38,12 +39,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private readonly string _selfUsername;
     private readonly GameTableLifecycleCoordinator _lifecycle;
 
-    private readonly RoomMessageRouter _router;
-    private readonly RoomBotCommands _bots;
-    private readonly RoomPrivacyCommands _privacy;
-    private readonly RoomRoleCommands _role;
-    private readonly RoomInfoCommands _info;
-    private readonly RoomChatCommands _chat;
 
     private readonly Func<GamePlayViewModel> _createGamePlayVm;
     private GamePlayViewModel? _gamePlayVm;
@@ -55,7 +50,10 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private Action<GamePlayHistoryMessage>? _onGameMessage;
     private Action<string, string>? _onGameStatusChanged;
     private Action<bool>? _onStartReadyChanged;
-    private IDisposable? _roomIntentSubscription;
+    private Action<IReadOnlyList<RoomChatMessageDto>>? _onChatHistory;
+    private Action<RoomChatMessageDto>? _onChatMessage;
+    private Action<RoomMessageRouter.RoomMessageContext>? _onIntentReceived;
+    private Action<bool>? _onRoleChangedHandler;
     private bool _roomStopConfirmationPending;
 
     private bool _lastRoomStarted;
@@ -91,12 +89,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _history = new GameHistorySink(_dispatcher, _tableVm.History, _announcementService);
         _intentDispatcher = new RoomIntentDispatcher(_tableVm, _history, _announcements);
 
-        _router = new RoomMessageRouter(_session);
-        _bots = new RoomBotCommands(_session, _router);
-        _privacy = new RoomPrivacyCommands(_session, _router);
-        _role = new RoomRoleCommands(_session, _router);
-        _info = new RoomInfoCommands(_session, _router);
-        _chat = new RoomChatCommands(_session, _router);
+        _room = new RoomClient(_session, _announcements);
         _lifecycle = new GameTableLifecycleCoordinator(
             dispatcher: _dispatcher,
             requestFocus: reason => _tableVm.GameZone.RequestFocus(reason),
@@ -111,20 +104,20 @@ internal sealed class GameTableBindings : IAsyncDisposable
     public Task AddBotAsync()
     {
         _announcementService?.NotifyUserInteraction();
-        return _bots.AddBotAsync();
+        return _room.AddBotAsync();
     }
 
     public Task RemoveBotAsync()
     {
         _announcementService?.NotifyUserInteraction();
-        return _bots.RemoveLastBotAsync();
+        return _room.RemoveBotAsync();
     }
-    public Task TogglePrivacyAsync() => _privacy.TogglePrivacyAsync();
-    public Task ToggleRoleAsync() => _role.ToggleRoleAsync(ComputeSelfSpectator());
+    public Task TogglePrivacyAsync() => _room.TogglePrivacyAsync();
+    public Task ToggleRoleAsync() => _room.ToggleRoleAsync();
     public Task RequestInfoAsync()
     {
         _announcementService?.NotifyUserInteraction();
-        return _info.RequestInfoAsync();
+        return _room.RequestInfoAsync();
     }
     public void EnsurePreStartGameUiLoaded() => EnsureGamePlayLoaded();
 
@@ -187,7 +180,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         };
         _announcements.Announced += _onAnnounced;
 
-        _info.InfoReceived += message =>
+        _room.InfoReceived += message =>
         {
             _ = _dispatcher.InvokeAsync(() =>
             {
@@ -195,8 +188,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
             }, DispatcherPriority.Background);
         };
 
-        _roomIntentSubscription =
-            _router.Subscribe("room.intent", context => _intentDispatcher.HandleIntent(context.Payload));
+        _onIntentReceived = context => _intentDispatcher.HandleIntent(context.Payload);
+        _room.IntentReceived += _onIntentReceived;
 
         _onSessionError = message =>
         {
@@ -205,9 +198,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 try { _announcements.Error(message); } catch { }
             }, DispatcherPriority.Background);
         };
-        _session.ErrorReceived += _onSessionError;
+        _room.ErrorReceived += _onSessionError;
 
-        _chat.HistoryReceived += messages =>
+        _onChatHistory = messages =>
         {
             _ = _dispatcher.InvokeAsync(() =>
             {
@@ -239,8 +232,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 }
             }, DispatcherPriority.Background);
         };
+        _room.ChatHistoryReceived += _onChatHistory;
 
-        _chat.MessageReceived += msg =>
+        _onChatMessage = msg =>
         {
             _ = _dispatcher.InvokeAsync(() =>
             {
@@ -263,12 +257,13 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 }
             }, DispatcherPriority.Background);
         };
+        _room.ChatMessageReceived += _onChatMessage;
 
         // IMPORTANT:
         // Les ajouts/retraits de bots sont déjà reflétés par `room.updated`.
         // On laisse TrackBots() gérer l'annonce pour éviter les doublons dans l'historique.
 
-        _role.RoleChanged += isSpectator =>
+        _onRoleChangedHandler = isSpectator =>
         {
             _ = _dispatcher.InvokeAsync(() =>
             {
@@ -283,6 +278,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 }
             }, DispatcherPriority.Background);
         };
+        _room.RoleChanged += _onRoleChangedHandler;
 
         _onRoomUpdated = payload =>
         {
@@ -362,7 +358,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 }
             }, DispatcherPriority.Background);
         };
-        _session.RoomUpdated += _onRoomUpdated;
+        _room.RoomUpdated += _onRoomUpdated;
 
         if (_options != null)
         {
@@ -994,7 +990,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     {
         if (string.IsNullOrWhiteSpace(_selfUsername))
         {
-            return _role.IsSpectator;
+            return _room.IsSpectator;
         }
 
         var self = (_selfUsername ?? string.Empty).Trim();
@@ -1009,7 +1005,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         }
 
         // Fallback: état local (reçu via room.role) si la room ne nous expose pas dans le roster.
-        return _role.IsSpectator;
+        return _room.IsSpectator;
     }
 
     private int TryGetSelfParticipantId()
@@ -1142,13 +1138,33 @@ internal sealed class GameTableBindings : IAsyncDisposable
             }
             if (_onRoomUpdated != null)
             {
-                _session.RoomUpdated -= _onRoomUpdated;
+                _room.RoomUpdated -= _onRoomUpdated;
                 _onRoomUpdated = null;
             }
             if (_onSessionError != null)
             {
-                _session.ErrorReceived -= _onSessionError;
+                _room.ErrorReceived -= _onSessionError;
                 _onSessionError = null;
+            }
+            if (_onChatHistory != null)
+            {
+                _room.ChatHistoryReceived -= _onChatHistory;
+                _onChatHistory = null;
+            }
+            if (_onChatMessage != null)
+            {
+                _room.ChatMessageReceived -= _onChatMessage;
+                _onChatMessage = null;
+            }
+            if (_onIntentReceived != null)
+            {
+                _room.IntentReceived -= _onIntentReceived;
+                _onIntentReceived = null;
+            }
+            if (_onRoleChangedHandler != null)
+            {
+                _room.RoleChanged -= _onRoleChangedHandler;
+                _onRoleChangedHandler = null;
             }
 
 	            if (_gamePlayVm != null)
@@ -1156,14 +1172,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	                await UnloadGamePlayVmAsync().ConfigureAwait(true);
 	            }
 
-            _bots.Dispose();
-            _privacy.Dispose();
-            _role.Dispose();
-            _info.Dispose();
-            _chat.Dispose();
-            _roomIntentSubscription?.Dispose();
-            _roomIntentSubscription = null;
-            _router.Dispose();
+            await _room.Session.LeaveAsync().ConfigureAwait(true);
+            await _room.DisposeAsync().ConfigureAwait(true);
 
             if (_activeTableAmbienceSound.HasValue)
             {
