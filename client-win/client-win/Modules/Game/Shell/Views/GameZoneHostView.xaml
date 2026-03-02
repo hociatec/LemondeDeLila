@@ -48,15 +48,8 @@
 			                                           PreviewKeyDown="OnAnchorPreviewKeyDown">
                     <local:GameZoneFocusAnchor.Style>
                         <Style TargetType="{x:Type local:GameZoneFocusAnchor}">
-                            <Setter Property="IsTabStop" Value="True" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Content}" Value="{x:Null}">
-                                    <Setter Property="IsTabStop" Value="False" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding IsStarted}" Value="False">
-                                    <Setter Property="IsTabStop" Value="False" />
-                                </DataTrigger>
-                            </Style.Triggers>
+                            <!-- Ancre interne uniquement: focus programmatique autorisé, pas de stop clavier Tab. -->
+                            <Setter Property="IsTabStop" Value="False" />
                         </Style>
                     </local:GameZoneFocusAnchor.Style>
                 </local:GameZoneFocusAnchor>
