@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using client_win.Modules.Game.Common;
 
-namespace client_win.Modules.Game.Shell.Room;
+namespace client_win.Modules.Game.Room.Services;
 
 public sealed partial class RoomSession
 {

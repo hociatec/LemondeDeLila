@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using client_win.Modules.Game.Room.Services;
 
-namespace client_win.Modules.Game.Shell.Room;
+namespace client_win.Modules.Game.Room.Services;
 
 public sealed class RoomMessageRouter : IDisposable
 {

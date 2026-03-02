@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using client_win.Modules.Game.Common;
 using client_win.Modules.Network.WebSockets;
 
-namespace client_win.Modules.Game.Shell.Room;
+namespace client_win.Modules.Game.Room.Services;
 
 public sealed partial class RoomSession
 {

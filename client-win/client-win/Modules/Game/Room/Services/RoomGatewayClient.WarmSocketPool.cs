@@ -8,7 +8,7 @@ using client_win.Modules.User.Services;
 using Serilog;
 using client_win.Modules.Game.Room.Services;
 
-namespace client_win.Modules.Game.Shell.Room;
+namespace client_win.Modules.Game.Room.Services;
 
 public sealed partial class RoomGatewayClient
 {

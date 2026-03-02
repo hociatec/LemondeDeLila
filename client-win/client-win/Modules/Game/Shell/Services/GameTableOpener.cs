@@ -18,7 +18,6 @@ using client_win.Modules.Game.Play.Actions.Dtos;
 using client_win.Modules.Game.Play.Session.Services;
 using client_win.Modules.Game.Play.State.Dtos;
 using client_win.Modules.Game.Room.Services;
-using client_win.Modules.Game.Shell.Room;
 using client_win.Modules.Game.Shell.Views;
 using client_win.Modules.Game.Shell.ViewModels;
 using client_win.Modules.Audio.Models;

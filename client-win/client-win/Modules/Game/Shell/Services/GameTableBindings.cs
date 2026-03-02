@@ -13,7 +13,6 @@ using client_win.Modules.Game.History.Services;
 using client_win.Modules.Game.Play.GamePlay.ViewModels;
 using client_win.Modules.Game.Room.Input;
 using client_win.Modules.Game.Room.Services;
-using client_win.Modules.Game.Shell.Room;
 using client_win.Modules.Game.Shell.Models;
 using client_win.Modules.Game.Shell.ViewModels;
 using client_win.Modules.Audio.Models;

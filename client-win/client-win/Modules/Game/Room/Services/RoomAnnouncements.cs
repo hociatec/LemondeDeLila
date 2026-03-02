@@ -1,7 +1,7 @@
 using System;
 using client_win.Modules.Game.Room.Services;
 
-namespace client_win.Modules.Game.Shell.Room;
+namespace client_win.Modules.Game.Room.Services;
 
 public sealed class RoomAnnouncements : IRoomAnnouncements
 {
