@@ -973,14 +973,13 @@ public sealed class GameTableOpener : IGameTableOpener
             try
             {
                 var roomNow = currentSession.LastRoomState?.Room;
-                var selfNow = _sessionService.CurrentUser?.UserId ?? 0;
-                var isOwnerNow = selfNow > 0 && roomNow?.Owner?.Id == selfNow;
+                var canStartNow = RoomAllowedActions.Contains(roomNow, "room.start");
                 var alreadyStartedNow =
                     string.Equals(roomNow?.Status, "started", StringComparison.OrdinalIgnoreCase) ||
                     !string.IsNullOrWhiteSpace(roomNow?.StartedAt);
                 var gameTypeNow = (currentGame?.Id ?? string.Empty).Trim();
 
-                if (isOwnerNow && !alreadyStartedNow && !string.IsNullOrWhiteSpace(gameTypeNow))
+                if (canStartNow && !alreadyStartedNow && !string.IsNullOrWhiteSpace(gameTypeNow))
                 {
                     preloadedWizardPromptGameType = gameTypeNow;
                     preloadedWizardPromptTask = PreloadWizardPromptAtTableOpenAsync(
@@ -1281,12 +1280,11 @@ public sealed class GameTableOpener : IGameTableOpener
                 var postStartConfigActionType = string.Empty;
                 Dictionary<string, object>? postStartConfigPayload = null;
                 var room = session.LastRoomState?.Room;
-                var selfId = _sessionService.CurrentUser?.UserId ?? 0;
-                var isOwner = selfId > 0 && room?.Owner?.Id == selfId;
+                var canStart = RoomAllowedActions.Contains(room, "room.start");
                 var alreadyStarted = string.Equals(room?.Status, "started", StringComparison.OrdinalIgnoreCase) ||
                                     !string.IsNullOrWhiteSpace(room?.StartedAt);
 
-                if (isOwner && !alreadyStarted)
+                if (canStart && !alreadyStarted)
                 {
                     try { bindings?.EnsurePreStartGameUiLoaded(); } catch { }
 
@@ -2347,6 +2345,3 @@ public sealed class GameTableOpener : IGameTableOpener
         return Task.CompletedTask;
     }
 }
-
-
-

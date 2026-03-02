@@ -633,10 +633,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         UpdateStartEligibility(_room.CurrentPayload);
         _tableVm.GameZone.Shortcuts.Clear();
 
-        var selfIsSpectator = ComputeSelfSpectator();
-        var selfId = TryGetSelfParticipantId();
-        var isOwner = selfId > 0 && _ownerId > 0 && selfId == _ownerId;
-        var allowedShortcutCodes = BuildAllowedShortcutCodesFromServer(_room.CurrentPayload?.Room);
+        var allowedShortcutCodes = RoomAllowedActions.ToShortcutCodeSet(_room.CurrentPayload?.Room);
 
         var shortcuts = RoomShortcuts.Create(
             rulesCommand: _tableVm.GameZone.RulesCommand,
@@ -658,92 +655,14 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
         foreach (var shortcut in started ? shortcuts.Where(s => s.AvailableInGame) : shortcuts)
         {
-            // Server-side permissions are the source of truth when present.
-            if (allowedShortcutCodes != null)
-            {
-                if (string.IsNullOrWhiteSpace(shortcut.Code) || !allowedShortcutCodes.Contains(shortcut.Code))
-                {
-                    continue;
-                }
-            }
-            else if (IsOwnerOnlyRoomShortcut(shortcut.Code) && (selfIsSpectator || !isOwner))
+            // Source de verite: permissions serveur uniquement.
+            if (string.IsNullOrWhiteSpace(shortcut.Code) || !allowedShortcutCodes.Contains(shortcut.Code))
             {
                 continue;
             }
 
             _tableVm.GameZone.Shortcuts.Add(shortcut);
         }
-    }
-
-    private static HashSet<string>? BuildAllowedShortcutCodesFromServer(RoomDto? room)
-    {
-        if (room?.AllowedActions == null || room.AllowedActions.Count == 0)
-        {
-            return null;
-        }
-
-        var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var action in room.AllowedActions)
-        {
-            var code = MapServerActionToShortcutCode(action);
-            if (!string.IsNullOrWhiteSpace(code))
-            {
-                allowed.Add(code);
-            }
-        }
-
-        return allowed.Count == 0 ? null : allowed;
-    }
-
-    private static string? MapServerActionToShortcutCode(string? action)
-    {
-        var key = (action ?? string.Empty).Trim();
-        if (key.Length == 0)
-        {
-            return null;
-        }
-
-        return key.ToLowerInvariant() switch
-        {
-            "room.rules" => RoomShortcutCodes.Rules,
-            "room.tableambience" => RoomShortcutCodes.TableAmbience,
-            "room.tableambiencevolume" => RoomShortcutCodes.TableAmbienceVolume,
-            "room.savesnapshot" => RoomShortcutCodes.SaveSnapshot,
-            "room.snapshot.save" => RoomShortcutCodes.SaveSnapshot,
-            "room.reset" => RoomShortcutCodes.Reset,
-            "room.info" => RoomShortcutCodes.Info,
-            "room.togglerole" => RoomShortcutCodes.ToggleRole,
-            "room.set-role" => RoomShortcutCodes.ToggleRole,
-            "room.toggleprivacy" => RoomShortcutCodes.TogglePrivacy,
-            "room.toggle-privacy" => RoomShortcutCodes.TogglePrivacy,
-            "room.players" => RoomShortcutCodes.Players,
-            "room.addbot" => RoomShortcutCodes.AddBot,
-            "bot.add" => RoomShortcutCodes.AddBot,
-            "room.removebot" => RoomShortcutCodes.RemoveBot,
-            "bot.remove" => RoomShortcutCodes.RemoveBot,
-            "room.invite" => RoomShortcutCodes.Invite,
-            "room.kick" => RoomShortcutCodes.Kick,
-            "room.ban" => RoomShortcutCodes.Ban,
-            "room.transferowner" => RoomShortcutCodes.TransferOwner,
-            "room.set-owner" => RoomShortcutCodes.TransferOwner,
-            "room.quit" => RoomShortcutCodes.Quit,
-            "room.leave" => RoomShortcutCodes.Quit,
-            _ => key,
-        };
-    }
-
-    private static bool IsOwnerOnlyRoomShortcut(string? code)
-    {
-        return string.Equals(code, RoomShortcutCodes.Reset, StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(code, RoomShortcutCodes.SaveSnapshot, StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(code, RoomShortcutCodes.TogglePrivacy, StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(code, RoomShortcutCodes.AddBot, StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(code, RoomShortcutCodes.RemoveBot, StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(code, RoomShortcutCodes.Invite, StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(code, RoomShortcutCodes.Kick, StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(code, RoomShortcutCodes.Ban, StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(code, RoomShortcutCodes.TransferOwner, StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(code, RoomShortcutCodes.TableAmbience, StringComparison.OrdinalIgnoreCase);
     }
 
     private void RemoveGameplayShortcuts()
@@ -997,40 +916,15 @@ internal sealed class GameTableBindings : IAsyncDisposable
         try
         {
             var room = payload?.Room ?? _room.CurrentPayload?.Room;
-            var manifest = payload?.Manifest ?? _room.CurrentPayload?.Manifest;
             if (room == null)
             {
                 _tableVm.GameZone.CanStart = false;
                 return;
             }
 
-            if (IsRoomStarted(room))
-            {
-                _tableVm.GameZone.CanStart = false;
-                return;
-            }
-
-            var selfId = TryGetSelfParticipantId();
-            var isOwner = selfId > 0 && _ownerId > 0 && selfId == _ownerId;
-            if (!isOwner || _selfIsSpectator)
-            {
-                _tableVm.GameZone.CanStart = false;
-                return;
-            }
-
-            var players = room.Players?.Count ?? 0;
-            var bots = room.Bots?.Count ?? 0;
-            var seatedCount = players + bots;
-            var minPlayers = manifest?.MinPlayers ?? _game.MinPlayers;
-            if (minPlayers <= 0)
-            {
-                minPlayers = 1;
-            }
-            // UX table: don't allow opening start wizard with only one seated participant.
-            // Even if a game advertises min=1, table start flow is expected to require at least 2.
-            minPlayers = Math.Max(2, minPlayers);
-
-            _tableVm.GameZone.CanStart = seatedCount >= minPlayers;
+            // Source de vérité: l'autorisation serveur.
+            // Aucun fallback local (owner/spectator/minPlayers) pour éviter les décisions côté client.
+            _tableVm.GameZone.CanStart = RoomAllowedActions.Contains(room, "room.start");
         }
         catch
         {
@@ -1243,9 +1137,5 @@ internal sealed class GameTableBindings : IAsyncDisposable
         }
     }
 }
-
-
-
-
 
 
