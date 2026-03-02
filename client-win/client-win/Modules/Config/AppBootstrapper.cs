@@ -36,6 +36,7 @@ using client_win.Modules.Admin.Services;
 using client_win.Modules.Leaderboard.Services;
 using client_win.Modules.Game.Play.Session.Services;
 using client_win.Modules.Game.Room.Services;
+using client_win.Modules.Game.Shell.Room;
 using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Updates;
 using client_win.Modules.Updates.Services;

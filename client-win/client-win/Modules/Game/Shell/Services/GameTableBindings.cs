@@ -13,6 +13,8 @@ using client_win.Modules.Game.History.Services;
 using client_win.Modules.Game.Play.GamePlay.ViewModels;
 using client_win.Modules.Game.Room.Input;
 using client_win.Modules.Game.Room.Services;
+using client_win.Modules.Game.Shell.Room;
+using client_win.Modules.Game.Shell.Models;
 using client_win.Modules.Game.Shell.ViewModels;
 using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
@@ -24,25 +26,20 @@ namespace client_win.Modules.Game.Shell.Services;
 
 internal sealed class GameTableBindings : IAsyncDisposable
 {
-    private enum StartFlowState
-    {
-        Idle,
-        StartRequested,
-        RoomStarted,
-        GameStarted
-    }
-
     private readonly Dispatcher _dispatcher;
     private readonly CatalogGame _game;
     private readonly RoomSession _session;
     private readonly GameRoomViewModel _tableVm;
     private readonly IRoomAnnouncements _announcements;
     private readonly IGameHistorySink _history;
+    private readonly RoomIntentDispatcher _intentDispatcher;
     private readonly ISoundService _sounds;
     private readonly IOptionsService? _options;
     private readonly IAnnouncementService? _announcementService;
     private readonly string _selfUsername;
+    private readonly GameTableLifecycleCoordinator _lifecycle;
 
+    private readonly RoomMessageRouter _router;
     private readonly RoomBotCommands _bots;
     private readonly RoomPrivacyCommands _privacy;
     private readonly RoomRoleCommands _role;
@@ -53,22 +50,17 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private GamePlayViewModel? _gamePlayVm;
     private NotifyCollectionChangedEventHandler? _onGameplayShortcutsChanged;
 
-	    private Action<RoomPayloadDto>? _onRoomUpdated;
-	    private Action<RoomAnnouncement>? _onAnnounced;
-	    private Action<string>? _onSessionError;
+    private Action<RoomPayloadDto>? _onRoomUpdated;
+    private Action<RoomAnnouncement>? _onAnnounced;
+    private Action<string>? _onSessionError;
     private Action<GamePlayHistoryMessage>? _onGameMessage;
-	    private Action<string, string>? _onGameStatusChanged;
+    private Action<string, string>? _onGameStatusChanged;
     private Action<bool>? _onStartReadyChanged;
+    private IDisposable? _roomIntentSubscription;
     private bool _roomStopConfirmationPending;
 
     private bool _lastRoomStarted;
-    private StartFlowState _startFlowState = StartFlowState.Idle;
-    private int _startFocusRecoveryRequestId;
-    private bool _awaitingStartReadyAnnouncement;
-    private int _startFlowVersion;
-    private int _awaitingStartReadyVersion;
     private Dictionary<int, (string Username, bool Spectator)> _participants = new();
-    private Dictionary<int, string> _botsById = new();
     private int _ownerId = 0;
     private bool _selfIsSpectator;
     private Modules.Audio.Models.SoundId? _activeTableAmbienceSound;
@@ -98,12 +90,23 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _createGamePlayVm = createGamePlayVm ?? throw new ArgumentNullException(nameof(createGamePlayVm));
         _selfUsername = (selfUsername ?? string.Empty).Trim();
         _history = new GameHistorySink(_dispatcher, _tableVm.History, _announcementService);
+        _intentDispatcher = new RoomIntentDispatcher(_tableVm, _history, _announcements);
 
-        _bots = new RoomBotCommands(_session);
-        _privacy = new RoomPrivacyCommands(_session);
-        _role = new RoomRoleCommands(_session);
-        _info = new RoomInfoCommands(_session);
-        _chat = new RoomChatCommands(_session);
+        _router = new RoomMessageRouter(_session);
+        _bots = new RoomBotCommands(_session, _router);
+        _privacy = new RoomPrivacyCommands(_session, _router);
+        _role = new RoomRoleCommands(_session, _router);
+        _info = new RoomInfoCommands(_session, _router);
+        _chat = new RoomChatCommands(_session, _router);
+        _lifecycle = new GameTableLifecycleCoordinator(
+            dispatcher: _dispatcher,
+            requestFocus: reason => _tableVm.GameZone.RequestFocus(reason),
+            isGameplayStartReady: IsGameplayStartReadyFromLastState,
+            requestTurnAnnouncementAsync: RequestTurnAnnouncementAsync,
+            log: (state, source, version) =>
+            {
+                Log.Debug("StartFlow -> {State} ({Source}) [v={Version}]", state, source, version);
+            });
     }
 
     public Task AddBotAsync()
@@ -146,7 +149,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         try { _announcementService?.SetGameplayUltraReactive(true); } catch { }
         var last = _session.LastRoomState;
         _lastRoomStarted = IsRoomStarted(last?.Room);
-        _startFlowState = _lastRoomStarted ? StartFlowState.RoomStarted : StartFlowState.Idle;
+        _lifecycle.InitializeState(_lastRoomStarted);
         _roomStopConfirmationPending = false;
         SeedParticipants(last?.Room);
         _selfIsSpectator = ComputeSelfSpectator();
@@ -192,6 +195,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 try { _announcements.TableInfo(message); } catch { }
             }, DispatcherPriority.Background);
         };
+
+        _roomIntentSubscription =
+            _router.Subscribe("room.intent", context => _intentDispatcher.HandleIntent(context.Payload));
 
         _onSessionError = message =>
         {
@@ -263,35 +269,15 @@ internal sealed class GameTableBindings : IAsyncDisposable
         // Les ajouts/retraits de bots sont déjà reflétés par `room.updated`.
         // On laisse TrackBots() gérer l'annonce pour éviter les doublons dans l'historique.
 
-        _privacy.PrivacyChanged += isPrivate =>
-        {
-            _ = _dispatcher.InvokeAsync(() =>
-            {
-                try
-                {
-                    // L'annonce passe via IRoomAnnouncements -> Announced -> historique (puis SR).
-                    // Ne pas dupliquer via _history.Add / Status (sinon double lecture).
-                    _announcements.VisibilityChanged(isPrivate);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "Erreur lors du changement de confidentialité");
-                }
-            }, DispatcherPriority.Background);
-        };
-
         _role.RoleChanged += isSpectator =>
         {
             _ = _dispatcher.InvokeAsync(() =>
             {
-                try
-                {
-                    // L'annonce passe via IRoomAnnouncements -> Announced -> historique (puis SR).
-                    // Ne pas dupliquer via _history.Add / Status (sinon double lecture).
-                    _announcements.RoleChanged(isSpectator);
-                    _selfIsSpectator = isSpectator;
-                    ApplySpectatorState();
-                }
+                    try
+                    {
+                        _selfIsSpectator = isSpectator;
+                        ApplySpectatorState();
+                    }
                 catch (Exception ex)
                 {
                     Log.Error(ex, "Erreur lors du changement de rôle");
@@ -308,8 +294,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     UpdateGameTitle(payload);
                     SyncChatEnabled(payload.Manifest);
                     TrackParticipants(payload.Room);
-                    TrackBots(payload.Room);
-                    TrackOwner(payload.Room);
+                    _ownerId = payload.Room?.Owner?.Id ?? 0;
                     ApplySpectatorState();
                     UpdateStartEligibility(payload);
 
@@ -366,15 +351,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
                         }
 
                         var gameName = (payload.Manifest?.Name ?? _game.Name ?? string.Empty).Trim();
-                        if (string.IsNullOrWhiteSpace(gameName))
-                        {
-                            _announcements.TableInfo("Table créée. Ajoutez des bots et commencez à jouer (Entrée).");
-                        }
-                        else
-                        {
-                            _announcements.TableInfo($"Table de {gameName} créée. Ajoutez des bots et commencez à jouer (Entrée).");
-                        }
-
                         // Forcer le focus sur la zone de jeu (le contenu a été déchargé).
                         _ = _dispatcher.BeginInvoke(
                             DispatcherPriority.ApplicationIdle,
@@ -387,7 +363,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 }
             }, DispatcherPriority.Background);
         };
-	        _session.RoomUpdated += _onRoomUpdated;
+        _session.RoomUpdated += _onRoomUpdated;
 
         if (_options != null)
         {
@@ -455,7 +431,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
             var isStarted = IsRoomStarted(last?.Room);
             _lastRoomStarted = isStarted;
-            _startFlowState = isStarted ? StartFlowState.RoomStarted : StartFlowState.Idle;
+            _lifecycle.InitializeState(isStarted);
             SetRoomShortcutsForStarted(isStarted);
             if (isStarted)
             {
@@ -534,7 +510,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private void SeedParticipants(RoomDto? room)
     {
         _participants = BuildParticipants(room);
-        _botsById = BuildBots(room);
         _ownerId = room?.Owner?.Id ?? 0;
     }
 
@@ -550,7 +525,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 continue;
             }
 
-            _announcements.PlayerJoined(info.Username, info.Spectator);
             // Son quand un joueur rejoint la table.
             _sounds.Play(SoundId.RoomJoined);
         }
@@ -562,7 +536,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 continue;
             }
 
-            _announcements.PlayerLeft(info.Username, info.Spectator);
             try { _sounds.Play(SoundId.RoomExit); } catch { }
         }
 
@@ -596,64 +569,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
         return output;
     }
 
-    private void TrackBots(RoomDto? room)
-    {
-        if (room == null) return;
-        var next = BuildBots(room);
-
-        foreach (var (id, name) in next)
-        {
-            if (_botsById.ContainsKey(id))
-            {
-                continue;
-            }
-            _announcements.BotJoined(name);
-        }
-
-        foreach (var (id, name) in _botsById)
-        {
-            if (next.ContainsKey(id))
-            {
-                continue;
-            }
-            _announcements.BotLeft(name);
-        }
-
-        _botsById = next;
-    }
-
-    private void TrackOwner(RoomDto? room)
-    {
-        if (room == null) return;
-        var nextOwnerId = room.Owner?.Id ?? 0;
-        if (nextOwnerId == _ownerId)
-        {
-            return;
-        }
-
-        _ownerId = nextOwnerId;
-        _announcements.OwnerChanged(room.Owner?.Username ?? string.Empty);
-    }
-
-    private static Dictionary<int, string> BuildBots(RoomDto? room)
-    {
-        var output = new Dictionary<int, string>();
-        if (room == null)
-        {
-            return output;
-        }
-
-        foreach (var b in room.Bots ?? new List<RoomBotDto>())
-        {
-            if (b == null || b.Id <= 0) continue;
-            var name = (b.Name ?? string.Empty).Trim();
-            if (name.Length == 0) continue;
-            output[b.Id] = name;
-        }
-
-        return output;
-    }
-
     private static bool IsGameplayShortcut(ShortcutDefinition shortcut)
     {
         var code = shortcut.Code;
@@ -673,129 +588,16 @@ internal sealed class GameTableBindings : IAsyncDisposable
         EnsureGamePlayLoaded();
         SyncGameplayShortcuts();
 
-        var previousState = _startFlowState;
-        if (fromGameStatus)
+        var result = _lifecycle.NotifyStarted(source, fromGameStatus);
+        if (announceIfFirst && result.IsFirstStartTransition)
         {
-            _startFlowState = StartFlowState.GameStarted;
-        }
-        else if (_startFlowState is StartFlowState.Idle or StartFlowState.StartRequested)
-        {
-            _startFlowState = StartFlowState.RoomStarted;
-        }
-
-        var firstStartTransition = previousState is StartFlowState.Idle or StartFlowState.StartRequested;
-        var reachedGameplayReady = fromGameStatus && previousState != StartFlowState.GameStarted;
-
-        if (announceIfFirst && firstStartTransition)
-        {
-            _announcements.TableInfo("Table démarrée.");
             try { _sounds.Play(SoundId.TableStarted); } catch { }
         }
-
-        if (firstStartTransition || reachedGameplayReady)
-        {
-            if (_startFlowVersion <= 0)
-            {
-                _startFlowVersion = 1;
-            }
-            _awaitingStartReadyVersion = _startFlowVersion;
-            _awaitingStartReadyAnnouncement = true;
-            ScheduleStartFocusRecovery(GameFocusReason.TableStarted, _awaitingStartReadyVersion);
-            _ = TryRequestTurnAnnouncementIfReadyAsync(_awaitingStartReadyVersion);
-            if (fromGameStatus)
-            {
-                _awaitingStartReadyAnnouncement = false;
-                _ = _dispatcher.InvokeAsync(
-                    async () => await RequestTurnAnnouncementAsync().ConfigureAwait(true),
-                    DispatcherPriority.Background);
-            }
-        }
-
-        Log.Debug("StartFlow -> {State} ({Source}) [v={Version}]", _startFlowState, source, _startFlowVersion);
     }
 
-    private void ResetStartFlow(string source)
-    {
-        var previous = _startFlowState;
-        _startFlowState = StartFlowState.Idle;
-        _awaitingStartReadyAnnouncement = false;
-        Interlocked.Increment(ref _startFlowVersion);
-        _awaitingStartReadyVersion = _startFlowVersion;
-        Interlocked.Increment(ref _startFocusRecoveryRequestId);
-        if (previous != StartFlowState.Idle)
-        {
-            Log.Debug("StartFlow -> {State} ({Source}) [v={Version}]", _startFlowState, source, _startFlowVersion);
-        }
-    }
+    private void ResetStartFlow(string source) => _lifecycle.Reset(source);
 
-    public void NotifyStartRequestedFromWizard()
-    {
-        var version = Interlocked.Increment(ref _startFlowVersion);
-
-        if (_startFlowState == StartFlowState.Idle)
-        {
-            _startFlowState = StartFlowState.StartRequested;
-            Log.Debug("StartFlow -> {State} ({Source}) [v={Version}]", _startFlowState, "wizard.start", version);
-        }
-
-        _awaitingStartReadyVersion = version;
-        _awaitingStartReadyAnnouncement = true;
-        ScheduleStartFocusRecovery(GameFocusReason.TableStarted, version);
-        _ = TryRequestTurnAnnouncementIfReadyAsync(version);
-    }
-
-    private int ScheduleStartFocusRecovery(GameFocusReason reason, int version)
-    {
-        if (version != _awaitingStartReadyVersion)
-        {
-            return _startFocusRecoveryRequestId;
-        }
-
-        var requestId = Interlocked.Increment(ref _startFocusRecoveryRequestId);
-        _tableVm.GameZone.RequestFocus(reason);
-
-        return requestId;
-    }
-
-    private async Task TryRequestTurnAnnouncementIfReadyAsync(int version)
-    {
-        try
-        {
-            if (version != _awaitingStartReadyVersion)
-            {
-                return;
-            }
-
-            if (!_awaitingStartReadyAnnouncement)
-            {
-                return;
-            }
-
-            var ready = false;
-            await _dispatcher.InvokeAsync(
-                () => ready = IsGameplayStartReadyFromLastState(),
-                DispatcherPriority.Background);
-
-            if (!ready)
-            {
-                return;
-            }
-
-            if (version != _awaitingStartReadyVersion)
-            {
-                return;
-            }
-
-            _awaitingStartReadyAnnouncement = false;
-            await _dispatcher.InvokeAsync(
-                async () => await RequestTurnAnnouncementAsync().ConfigureAwait(true),
-                DispatcherPriority.Background);
-        }
-        catch
-        {
-            // best-effort
-        }
-    }
+    public void NotifyStartRequestedFromWizard() => _lifecycle.NotifyWizardStartRequested();
 
     private bool IsGameplayStartReadyFromLastState()
     {
@@ -1032,10 +834,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     return;
                 }
 
-                var version = _awaitingStartReadyVersion;
-                _ = _dispatcher.InvokeAsync(
-                    async () => await TryRequestTurnAnnouncementIfReadyAsync(version).ConfigureAwait(true),
-                    DispatcherPriority.Background);
+                _lifecycle.NotifyStartReady();
             };
             _gamePlayVm.StartReadyChanged += _onStartReadyChanged;
 
@@ -1317,7 +1116,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	        _sounds.Play(fromSelf ? SoundId.TableChatMessageSent : SoundId.TableChatMessageReceived);
 	    }
 
-	    private static string FormatChatLine(RoomChatMessageDto msg)
+    private static string FormatChatLine(RoomChatMessageDto msg)
 	    {
 	        var user = (msg.Username ?? string.Empty).Trim();
 	        var text = (msg.Message ?? string.Empty).Trim();
@@ -1363,6 +1162,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
             _role.Dispose();
             _info.Dispose();
             _chat.Dispose();
+            _roomIntentSubscription?.Dispose();
+            _roomIntentSubscription = null;
+            _router.Dispose();
 
             if (_activeTableAmbienceSound.HasValue)
             {

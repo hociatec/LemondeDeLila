@@ -2,18 +2,23 @@ using System;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using client_win.Modules.Game.Room.Services;
 
-namespace client_win.Modules.Game.Room.Services;
+namespace client_win.Modules.Game.Shell.Room;
 
-public sealed class RoomBotCommands : IRoomBotCommands
+public sealed class RoomBotCommands : IRoomBotCommands, IDisposable
 {
     private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
     private readonly RoomSession _session;
+    private readonly IDisposable _botAddedSubscription;
+    private readonly IDisposable _botRemovedSubscription;
 
-    public RoomBotCommands(RoomSession session)
+    public RoomBotCommands(RoomSession session, RoomMessageRouter router)
     {
         _session = session ?? throw new ArgumentNullException(nameof(session));
-        _session.RawMessageReceived += OnRawMessage;
+        if (router == null) throw new ArgumentNullException(nameof(router));
+        _botAddedSubscription = router.Subscribe("bot.added", ctx => HandleBotEvent(ctx.Payload, BotAdded));
+        _botRemovedSubscription = router.Subscribe("bot.removed", ctx => HandleBotEvent(ctx.Payload, BotRemoved));
     }
 
     public event Action<string>? BotAdded;
@@ -39,51 +44,22 @@ public sealed class RoomBotCommands : IRoomBotCommands
 
     public void Dispose()
     {
-        _session.RawMessageReceived -= OnRawMessage;
+        _botAddedSubscription.Dispose();
+        _botRemovedSubscription.Dispose();
     }
-
-    private void OnRawMessage(string raw)
+    private static void HandleBotEvent(JsonElement payload, Action<string>? callback)
     {
-        try
+        if (payload.ValueKind != JsonValueKind.Object)
         {
-            using var doc = JsonDocument.Parse(raw);
-            var root = doc.RootElement;
-            if (root.ValueKind != JsonValueKind.Object) return;
-
-            if (!root.TryGetProperty("type", out var typeProp)) return;
-            var type = typeProp.GetString() ?? string.Empty;
-
-            if (string.Equals(type, "bot.added", StringComparison.OrdinalIgnoreCase))
-            {
-                if (root.TryGetProperty("payload", out var payloadEl))
-                {
-                    var name = TryReadBotName(payloadEl);
-                    if (!string.IsNullOrWhiteSpace(name))
-                    {
-                        BotAdded?.Invoke(name);
-                    }
-                }
-                return;
-            }
-
-            if (string.Equals(type, "bot.removed", StringComparison.OrdinalIgnoreCase))
-            {
-                if (root.TryGetProperty("payload", out var payloadEl))
-                {
-                    var name = TryReadBotName(payloadEl);
-                    if (!string.IsNullOrWhiteSpace(name))
-                    {
-                        BotRemoved?.Invoke(name);
-                    }
-                }
-            }
+            return;
         }
-        catch
+
+        var name = TryReadBotName(payload);
+        if (!string.IsNullOrWhiteSpace(name))
         {
-            // ignore
+            callback?.Invoke(name);
         }
     }
-
     private static string? TryReadBotName(JsonElement element)
     {
         try
