@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using client_win.Core;
-using client_win.Modules.Game.RoomDirectory.Services;
+using client_win.Modules.Game.Room.Lobby.Services;
 using client_win.Modules.Messaging.Services;
 using client_win.Modules.Presence.Models;
 using client_win.Modules.Presence.Services;
@@ -26,7 +26,7 @@ internal enum PresencePage
 public sealed class PresenceViewModel : ObservableObject
 {
     private readonly IPresenceMonitor _presence;
-    private readonly IRoomDirectoryClient _rooms;
+    private readonly IRoomLobbyClient _rooms;
     private readonly IMessagingService _messaging;
     private readonly ISocialService _social;
     private readonly ITextPromptService _prompts;
@@ -66,7 +66,7 @@ public sealed class PresenceViewModel : ObservableObject
 
     public PresenceViewModel(
         IPresenceMonitor presence,
-        IRoomDirectoryClient rooms,
+        IRoomLobbyClient rooms,
         IMessagingService messaging,
         ISocialService social,
         ITextPromptService prompts,

@@ -302,6 +302,17 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     // Keep table ambience loop in sync with room settings (start/stop/change).
                     SyncTableAmbience(payload, started: nowStarted);
 
+                    // Rebuild room shortcuts on every room.updated, even without a started/setup transition.
+                    // This keeps shortcut availability aligned with server-provided allowedActions.
+                    if (wasStarted == nowStarted)
+                    {
+                        SetRoomShortcutsForStarted(started: nowStarted);
+                        if (nowStarted)
+                        {
+                            SyncGameplayShortcuts();
+                        }
+                    }
+
                     if (!wasStarted && nowStarted)
                     {
                         EnterStartedFlow(source: "room.updated", fromGameStatus: false, announceIfFirst: true);
@@ -437,6 +448,13 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 SyncTableAmbience(last, started: isStarted);
             }
             UpdateStartEligibility(last);
+
+            // room.created may occasionally arrive before the first room.updated.
+            // If allowedActions are missing in the initial payload, request a fresh state.
+            if ((last?.Room?.AllowedActions?.Count ?? 0) == 0)
+            {
+                _ = _room.RequestStateRefreshAsync(force: true);
+            }
         }
         catch (Exception ex)
         {
@@ -1137,5 +1155,4 @@ internal sealed class GameTableBindings : IAsyncDisposable
         }
     }
 }
-
 

@@ -167,11 +167,13 @@ describe('Contes effects', () => {
   });
 
   it('ends the turn after resolving a draw pending with no follow-up pending', async () => {
-    const advanceTurn = jest.fn((state: GameStateEntity): GameStateEntity => ({
-      ...state,
-      turnIndex: 1,
-      turn: { ...(state.turn ?? { direction: 1 }), currentPlayerId: 2 },
-    }));
+    const advanceTurn = jest.fn(
+      (state: GameStateEntity): GameStateEntity => ({
+        ...state,
+        turnIndex: 1,
+        turn: { ...(state.turn ?? { direction: 1 }), currentPlayerId: 2 },
+      }),
+    );
 
     const moduleRef = await Test.createTestingModule({
       providers: [

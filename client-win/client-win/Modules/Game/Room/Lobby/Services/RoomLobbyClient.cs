@@ -9,16 +9,16 @@ using client_win.Modules.Audio.Services;
 using client_win.Modules.Network;
 using client_win.Modules.User.Services;
 
-namespace client_win.Modules.Game.RoomDirectory.Services;
+namespace client_win.Modules.Game.Room.Lobby.Services;
 
-public sealed class RoomDirectoryClient : IRoomDirectoryClient
+public sealed class RoomLobbyClient : IRoomLobbyClient
 {
     private readonly WsRequestClient _ws;
     private readonly ISessionService _session;
     private readonly ISoundService _sounds;
     private readonly Modules.Network.PersistentWsClient _transport;
 
-    public RoomDirectoryClient(WsRequestClient ws, ISessionService session, ISoundService sounds, Modules.Network.PersistentWsClient transport)
+    public RoomLobbyClient(WsRequestClient ws, ISessionService session, ISoundService sounds, Modules.Network.PersistentWsClient transport)
     {
         _ws = ws ?? throw new ArgumentNullException(nameof(ws));
         _session = session ?? throw new ArgumentNullException(nameof(session));
@@ -29,8 +29,9 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
     public async Task<string> InviteSendAsync(int roomId, int userId, CancellationToken cancellationToken = default)
     {
         var token = _session.CurrentUser?.Token;
-        var res = await _ws.RequestAsync<InviteSendPayload>(
+        var res = await RequestWithLegacyFallbackAsync<InviteSendPayload>(
             WsMessageTypes.Rooms.InviteSend,
+            WsMessageTypes.Rooms.LegacyInviteSend,
             new { roomId, userId },
             token,
             cancellationToken).ConfigureAwait(false);
@@ -63,8 +64,9 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
     public async Task<InvitePresenceListResult> InvitePresenceListAsync(int roomId, CancellationToken cancellationToken = default)
     {
         var token = _session.CurrentUser?.Token;
-        var res = await _ws.RequestAsync<InvitePresenceListedPayload>(
+        var res = await RequestWithLegacyFallbackAsync<InvitePresenceListedPayload>(
             WsMessageTypes.Rooms.InvitePresenceList,
+            WsMessageTypes.Rooms.LegacyInvitePresenceList,
             new { roomId },
             token,
             cancellationToken).ConfigureAwait(false);
@@ -91,8 +93,9 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
     public async Task<RoomInviteRespondResult> InviteRespondAsync(string invitationId, bool accept, CancellationToken cancellationToken = default)
     {
         var token = _session.CurrentUser?.Token;
-        var res = await _ws.RequestAsync<InviteRespondPayload>(
+        var res = await RequestWithLegacyFallbackAsync<InviteRespondPayload>(
             WsMessageTypes.Rooms.InviteRespond,
+            WsMessageTypes.Rooms.LegacyInviteRespond,
             new { invitationId, accept },
             token,
             cancellationToken).ConfigureAwait(false);
@@ -102,7 +105,8 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
             return new RoomInviteRespondResult(accepted: false, expired: false, roomId: null, spectator: false);
         }
 
-        if (string.Equals(res.Type, "rooms.invite.accepted", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(res.Type, "rooms.invite.accepted", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(res.Type, "room.lobby.invite.accepted", StringComparison.OrdinalIgnoreCase))
         {
             return new RoomInviteRespondResult(
                 accepted: true,
@@ -173,8 +177,9 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
     public async Task<PublicRoomsListedResult> PublicListAsync(string? gameType = null, CancellationToken cancellationToken = default)
     {
         var token = _session.CurrentUser?.Token;
-        var res = await _ws.RequestAsync<PublicRoomsListedPayload>(
+        var res = await RequestWithLegacyFallbackAsync<PublicRoomsListedPayload>(
             WsMessageTypes.Rooms.PublicList,
+            WsMessageTypes.Rooms.LegacyPublicList,
             string.IsNullOrWhiteSpace(gameType) ? new { } : new { gameType },
             token,
             cancellationToken).ConfigureAwait(false);
@@ -206,8 +211,9 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
     public async Task<PublicRoomsListedResult> PublicSubscribeAsync(string? gameType = null, CancellationToken cancellationToken = default)
     {
         var token = _session.CurrentUser?.Token;
-        var res = await _ws.RequestAsync<PublicRoomsListedPayload>(
+        var res = await RequestWithLegacyFallbackAsync<PublicRoomsListedPayload>(
             WsMessageTypes.Rooms.PublicSubscribe,
+            WsMessageTypes.Rooms.LegacyPublicSubscribe,
             string.IsNullOrWhiteSpace(gameType) ? new { } : new { gameType },
             token,
             cancellationToken).ConfigureAwait(false);
@@ -239,8 +245,9 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
     public async Task<bool> PublicUnsubscribeAsync(CancellationToken cancellationToken = default)
     {
         var token = _session.CurrentUser?.Token;
-        var res = await _ws.RequestAsync<OkPayload>(
+        var res = await RequestWithLegacyFallbackAsync<OkPayload>(
             WsMessageTypes.Rooms.PublicUnsubscribe,
+            WsMessageTypes.Rooms.LegacyPublicUnsubscribe,
             new { },
             token,
             cancellationToken).ConfigureAwait(false);
@@ -261,7 +268,8 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
                     return;
                 }
                 var type = typeProp.GetString() ?? string.Empty;
-                if (!string.Equals(type, "rooms.public.refresh", StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(type, "rooms.public.refresh", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(type, "room.lobby.refresh", StringComparison.OrdinalIgnoreCase))
                 {
                     return;
                 }
@@ -294,6 +302,45 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
 
         _transport.Connected += Handler;
         return new Unsubscriber(() => _transport.Connected -= Handler);
+    }
+
+    private async Task<WsResponse<TPayload>> RequestWithLegacyFallbackAsync<TPayload>(
+        string lobbyType,
+        string legacyType,
+        object payload,
+        string? token,
+        CancellationToken cancellationToken)
+    {
+        var primary = await _ws.RequestAsync<TPayload>(
+                lobbyType,
+                payload,
+                token,
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        if (primary.Success || !IsUnknownTypeError(primary.Error))
+        {
+            return primary;
+        }
+
+        return await _ws.RequestAsync<TPayload>(
+                legacyType,
+                payload,
+                token,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private static bool IsUnknownTypeError(string? message)
+    {
+        var msg = (message ?? string.Empty).Trim();
+        if (msg.Length == 0)
+        {
+            return false;
+        }
+
+        return msg.Contains("Type de message inconnu", StringComparison.OrdinalIgnoreCase) ||
+               msg.Contains("message inconnu", StringComparison.OrdinalIgnoreCase);
     }
 
     private sealed class PublicRoomsListedPayload

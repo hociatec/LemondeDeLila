@@ -8,15 +8,15 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Core;
 using client_win.Modules.Game.Common;
-using client_win.Modules.Game.RoomDirectory.Services;
+using client_win.Modules.Game.Room.Lobby.Services;
 using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Shell.Services;
 
-namespace client_win.Modules.Game.RoomDirectory.ViewModels;
+namespace client_win.Modules.Game.Room.Lobby.ViewModels;
 
 public sealed class JoinGameViewModel : ObservableObject, IDisposable
 {
-    private readonly IRoomDirectoryClient _rooms;
+    private readonly IRoomLobbyClient _rooms;
     private readonly IGameTableOpener _tables;
     private readonly IAnnouncementService _announcements;
     private readonly Action _close;
@@ -35,7 +35,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
     private bool _lastEmptyAnnounced;
 
     public JoinGameViewModel(
-        IRoomDirectoryClient rooms,
+        IRoomLobbyClient rooms,
         IGameTableOpener tables,
         IAnnouncementService announcements,
         Func<object?> returnContent,
@@ -123,7 +123,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
                         msg.Contains("message inconnu", StringComparison.OrdinalIgnoreCase))
                     {
                         _subscriptionSupported = false;
-                        Status = "Serveur non à jour (rooms.public.subscribe indisponible). Rafraîchissement manuel.";
+                        Status = "Serveur non à jour (room.lobby.subscribe indisponible). Rafraîchissement manuel.";
                     }
                     else
                     {
@@ -243,7 +243,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
             {
                 try
                 {
-                    using var cts = new CancellationTokenSource(GameTiming.Table.RoomDirectoryUnsubscribeTimeout);
+                    using var cts = new CancellationTokenSource(GameTiming.Table.RoomLobbyUnsubscribeTimeout);
                     await _rooms.PublicUnsubscribeAsync(cts.Token).ConfigureAwait(false);
                 }
                 catch
@@ -270,7 +270,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
         {
             try
             {
-                await Task.Delay(GameTiming.Table.RoomDirectoryRefreshDebounce, token).ConfigureAwait(false);
+                await Task.Delay(GameTiming.Table.RoomLobbyRefreshDebounce, token).ConfigureAwait(false);
                 if (token.IsCancellationRequested) return;
 
                 await _dispatcher.BeginInvoke(

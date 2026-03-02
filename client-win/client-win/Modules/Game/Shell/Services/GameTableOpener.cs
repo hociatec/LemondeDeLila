@@ -29,8 +29,8 @@ using client_win.Modules.Settings.Services;
 using client_win.Modules.User.Services;
 using client_win.Modules.TextPrompts.Services;
 using client_win.Modules.Shell.Services;
-using client_win.Modules.Game.RoomDirectory.Services;
-using client_win.Modules.Game.RoomDirectory.ViewModels;
+using client_win.Modules.Game.Room.Lobby.Services;
+using client_win.Modules.Game.Room.Lobby.ViewModels;
 using client_win.Modules.Vault.Services;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.Catalog.ViewModels;
@@ -56,7 +56,7 @@ public sealed class GameTableOpener : IGameTableOpener
     private readonly IRemoteSoundCache _remoteSounds;
     private readonly IOptionsService _options;
     private readonly ISessionService _sessionService;
-    private readonly IRoomDirectoryClient _directory;
+    private readonly IRoomLobbyClient _directory;
     private readonly ISocialService _social;
     private readonly ITextPromptService _textPrompts;
     private readonly IVaultClient _vault;
@@ -85,7 +85,7 @@ public sealed class GameTableOpener : IGameTableOpener
         IRemoteSoundCache remoteSounds,
         IOptionsService options,
         ISessionService sessionService,
-        IRoomDirectoryClient directory,
+        IRoomLobbyClient directory,
         ISocialService social,
         ITextPromptService textPrompts,
         IVaultClient vault,

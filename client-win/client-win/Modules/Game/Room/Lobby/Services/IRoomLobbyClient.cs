@@ -2,9 +2,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace client_win.Modules.Game.RoomDirectory.Services;
+namespace client_win.Modules.Game.Room.Lobby.Services;
 
-public interface IRoomDirectoryClient
+public interface IRoomLobbyClient
 {
     Task<string> InviteSendAsync(int roomId, int userId, CancellationToken cancellationToken = default);
     Task<InvitePresenceListResult> InvitePresenceListAsync(int roomId, CancellationToken cancellationToken = default);

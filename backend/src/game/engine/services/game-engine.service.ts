@@ -3262,7 +3262,8 @@ export class GameEngineService {
       typeof state?.turn?.currentPlayerId === 'number'
         ? state.turn.currentPlayerId
         : null;
-    const hasActions = Array.isArray(state?.actions) && state.actions.length > 0;
+    const hasActions =
+      Array.isArray(state?.actions) && state.actions.length > 0;
     const botThinking = state?.botThinking === true;
 
     const pendingPlayerIdRaw = state?.pending?.playerId;
@@ -3282,8 +3283,7 @@ export class GameEngineService {
 
     const started = status === 'started';
     const hasConfigPrompt =
-      pendingType === 'config_prompt' ||
-      pendingType.endsWith('_set_config');
+      pendingType === 'config_prompt' || pendingType.endsWith('_set_config');
     const startReady = started && !hasConfigPrompt;
     const viewerMustChoosePawn =
       userId != null &&

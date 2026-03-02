@@ -238,8 +238,8 @@ public static class AppBootstrapper
                 () => sp.GetRequiredService<IWebSocketConnection>(),
                 sp.GetRequiredService<Modules.Network.Services.IWsTicketProvider>()));
 
-        services.AddSingleton<Modules.Game.RoomDirectory.Services.IRoomDirectoryClient>(sp =>
-            new Modules.Game.RoomDirectory.Services.RoomDirectoryClient(
+        services.AddSingleton<Modules.Game.Room.Lobby.Services.IRoomLobbyClient>(sp =>
+            new Modules.Game.Room.Lobby.Services.RoomLobbyClient(
                 sp.GetRequiredService<WsRequestClient>(),
                 sp.GetRequiredService<ISessionService>(),
                 sp.GetRequiredService<ISoundService>(),
@@ -330,7 +330,7 @@ public static class AppBootstrapper
                 sp.GetRequiredService<IAnnouncementService>(),
                 sp.GetRequiredService<Modules.Catalog.Services.ICatalogService>(),
                 sp.GetRequiredService<IDialogService>(),
-                sp.GetRequiredService<Modules.Game.RoomDirectory.Services.IRoomDirectoryClient>(),
+                sp.GetRequiredService<Modules.Game.Room.Lobby.Services.IRoomLobbyClient>(),
                 sp.GetRequiredService<Modules.Game.Shell.Services.IGameTableOpener>(),
                 sp.GetRequiredService<INavigationService>(),
                 sp.GetRequiredService<ISoundService>(),

@@ -23,21 +23,23 @@ import {
 import { RoomService } from '../services/room.service';
 import { RoomInviteService } from '../services/room-invite.service';
 import { OPEN_ROOM_STATUSES } from '../constants/room-status.constants';
-import { buildPublicRoomList } from '../utils/room-directory.utils';
+import { buildPublicRoomList } from '../utils/room-lobby.utils';
 import { CatalogService } from '../../catalog/services/catalog.service';
-import { PublicRoomDirectoryService } from '../services/public-room-directory.service';
+import { RoomLobbyRefreshService } from '../services/room-lobby-refresh.service';
 import { RoomRealtimeTrackerService } from '../services/room-realtime-tracker.service';
 import { PresenceService } from '../../presence/services/presence.service';
 
+type LobbyWsVariant = 'legacy' | 'lobby';
+
 @Injectable()
-export class RoomDirectoryWsHandler {
+export class RoomLobbyWsHandler {
   constructor(
     private readonly validator: PayloadValidationService,
     private readonly rooms: RoomService,
     private readonly invites: RoomInviteService,
     private readonly notifications: NotificationService,
     private readonly catalog: CatalogService,
-    private readonly directory: PublicRoomDirectoryService,
+    private readonly lobbyRefresh: RoomLobbyRefreshService,
     private readonly realtimeTracker: RoomRealtimeTrackerService,
     private readonly presence: PresenceService,
     @InjectRepository(Room) private readonly roomRepo: Repository<Room>,
@@ -45,7 +47,19 @@ export class RoomDirectoryWsHandler {
     private readonly participantRepo: Repository<RoomParticipant>,
   ) {}
 
-  async listPublic(session: WsSession, payload: any) {
+  private mapType(
+    variant: LobbyWsVariant,
+    legacyType: string,
+    lobbyType: string,
+  ): string {
+    return variant === 'lobby' ? lobbyType : legacyType;
+  }
+
+  async listPublic(
+    session: WsSession,
+    payload: any,
+    variant: LobbyWsVariant = 'legacy',
+  ) {
     const user = requireUser(session);
     const dto = this.validator.validate(RoomsPublicListDto, payload);
     const isAdmin = Array.isArray(user.roles)
@@ -61,7 +75,7 @@ export class RoomDirectoryWsHandler {
     const allowed = new Set(allowedGames.map((g) => g.id));
     if (dto.gameType && !allowed.has(dto.gameType)) {
       return {
-        type: 'rooms.public.listed',
+        type: this.mapType(variant, 'rooms.public.listed', 'room.lobby.listed'),
         payload: { items: [], groups: [] },
       };
     }
@@ -99,10 +113,17 @@ export class RoomDirectoryWsHandler {
       ...g,
       rooms: g.rooms.map((it) => ({ ...it, banned: isBanned(it.id) })),
     }));
-    return { type: 'rooms.public.listed', payload: built };
+    return {
+      type: this.mapType(variant, 'rooms.public.listed', 'room.lobby.listed'),
+      payload: built,
+    };
   }
 
-  async joinPublic(session: WsSession, payload: any) {
+  async joinPublic(
+    session: WsSession,
+    payload: any,
+    variant: LobbyWsVariant = 'legacy',
+  ) {
     const user = requireUser(session);
     const dto = this.validator.validate(RoomsPublicJoinDto, payload);
     if (this.rooms.isBanned(dto.roomId, user.id)) {
@@ -111,29 +132,37 @@ export class RoomDirectoryWsHandler {
     await this.rooms.joinRoom(dto.roomId, user.id);
     const state = await this.rooms.getRoomPayload(dto.roomId);
     return {
-      type: 'rooms.public.joined',
+      type: this.mapType(variant, 'rooms.public.joined', 'room.lobby.joined'),
       payload: { roomId: dto.roomId, room: state.room },
     };
   }
 
-  async leavePublic(session: WsSession, payload: any) {
+  async leavePublic(
+    session: WsSession,
+    payload: any,
+    variant: LobbyWsVariant = 'legacy',
+  ) {
     const user = requireUser(session);
     const dto = this.validator.validate(RoomsPublicJoinDto, payload);
     const room = await this.rooms.leaveRoom(dto.roomId, user.id);
     if (!room) {
       return {
-        type: 'rooms.public.left',
+        type: this.mapType(variant, 'rooms.public.left', 'room.lobby.left'),
         payload: { roomId: dto.roomId, deleted: true },
       };
     }
     const state = await this.rooms.getRoomPayload(dto.roomId);
     return {
-      type: 'rooms.public.left',
+      type: this.mapType(variant, 'rooms.public.left', 'room.lobby.left'),
       payload: { roomId: dto.roomId, room: state.room },
     };
   }
 
-  async spectatePublic(session: WsSession, payload: any) {
+  async spectatePublic(
+    session: WsSession,
+    payload: any,
+    variant: LobbyWsVariant = 'legacy',
+  ) {
     requireUser(session);
     const dto = this.validator.validate(RoomsPublicJoinDto, payload);
     const state = await this.rooms.getRoomPayload(dto.roomId);
@@ -143,26 +172,59 @@ export class RoomDirectoryWsHandler {
       );
     }
     return {
-      type: 'rooms.public.spectated',
+      type: this.mapType(
+        variant,
+        'rooms.public.spectated',
+        'room.lobby.spectated',
+      ),
       payload: { roomId: dto.roomId, room: state.room },
     };
   }
 
-  async subscribePublic(session: WsSession, payload: any) {
+  async subscribePublic(
+    session: WsSession,
+    payload: any,
+    variant: LobbyWsVariant = 'legacy',
+  ) {
     requireUser(session);
     const dto = this.validator.validate(RoomsPublicListDto, payload);
-    this.directory.subscribe(session.connectionId, dto.gameType ?? null);
-    const listed = await this.listPublic(session, payload);
-    return { type: 'rooms.public.subscribed', payload: listed.payload };
+    this.lobbyRefresh.subscribe(
+      session.connectionId,
+      dto.gameType ?? null,
+      variant,
+    );
+    const listed = await this.listPublic(session, payload, variant);
+    return {
+      type: this.mapType(
+        variant,
+        'rooms.public.subscribed',
+        'room.lobby.subscribed',
+      ),
+      payload: listed.payload,
+    };
   }
 
-  async unsubscribePublic(session: WsSession) {
+  async unsubscribePublic(
+    session: WsSession,
+    variant: LobbyWsVariant = 'legacy',
+  ) {
     requireUser(session);
-    this.directory.unsubscribe(session.connectionId);
-    return { type: 'rooms.public.unsubscribed', payload: { ok: true } };
+    this.lobbyRefresh.unsubscribe(session.connectionId);
+    return {
+      type: this.mapType(
+        variant,
+        'rooms.public.unsubscribed',
+        'room.lobby.unsubscribed',
+      ),
+      payload: { ok: true },
+    };
   }
 
-  async inviteSend(session: WsSession, payload: any) {
+  async inviteSend(
+    session: WsSession,
+    payload: any,
+    variant: LobbyWsVariant = 'legacy',
+  ) {
     const user = requireUser(session);
     const dto = this.validator.validate(RoomInviteSendDto, payload);
     const room = await this.roomRepo.findOne({
@@ -184,7 +246,11 @@ export class RoomDirectoryWsHandler {
     });
     if (existingParticipant) {
       return {
-        type: 'rooms.invite.sent',
+        type: this.mapType(
+          variant,
+          'rooms.invite.sent',
+          'room.lobby.invite.sent',
+        ),
         payload: { roomId: room.id, userId: dto.userId, alreadyInRoom: true },
       };
     }
@@ -192,7 +258,11 @@ export class RoomDirectoryWsHandler {
     if (existingInvite) {
       // Une invitation est déjà en attente pour ce joueur : éviter les doublons (notification + spam).
       return {
-        type: 'rooms.invite.sent',
+        type: this.mapType(
+          variant,
+          'rooms.invite.sent',
+          'room.lobby.invite.sent',
+        ),
         payload: {
           invitationId: existingInvite.id,
           roomId: room.id,
@@ -217,12 +287,20 @@ export class RoomDirectoryWsHandler {
       expiresAt: invite.expiresAt,
     });
     return {
-      type: 'rooms.invite.sent',
+      type: this.mapType(
+        variant,
+        'rooms.invite.sent',
+        'room.lobby.invite.sent',
+      ),
       payload: { invitationId: invite.id, roomId: room.id, userId: dto.userId },
     };
   }
 
-  async invitePresenceList(session: WsSession, payload: any) {
+  async invitePresenceList(
+    session: WsSession,
+    payload: any,
+    variant: LobbyWsVariant = 'legacy',
+  ) {
     const user = requireUser(session);
     const dto = this.validator.validate(
       RoomInvitePresenceListDto,
@@ -273,18 +351,30 @@ export class RoomDirectoryWsHandler {
       );
 
     return {
-      type: 'rooms.invite.presence.listed',
+      type: this.mapType(
+        variant,
+        'rooms.invite.presence.listed',
+        'room.lobby.invite.presence.listed',
+      ),
       payload: { roomId: dto.roomId, players },
     };
   }
 
-  async inviteRespond(session: WsSession, payload: any) {
+  async inviteRespond(
+    session: WsSession,
+    payload: any,
+    variant: LobbyWsVariant = 'legacy',
+  ) {
     const user = requireUser(session);
     const dto = this.validator.validate(RoomInviteRespondDto, payload);
     const invite = this.invites.get(dto.invitationId);
     if (!invite) {
       return {
-        type: 'rooms.invite.responded',
+        type: this.mapType(
+          variant,
+          'rooms.invite.responded',
+          'room.lobby.invite.responded',
+        ),
         payload: {
           invitationId: dto.invitationId,
           accepted: false,
@@ -308,7 +398,11 @@ export class RoomDirectoryWsHandler {
         },
       );
       return {
-        type: 'rooms.invite.responded',
+        type: this.mapType(
+          variant,
+          'rooms.invite.responded',
+          'room.lobby.invite.responded',
+        ),
         payload: { invitationId: dto.invitationId, accepted: false },
       };
     }
@@ -337,7 +431,11 @@ export class RoomDirectoryWsHandler {
         },
       );
       return {
-        type: 'rooms.invite.accepted',
+        type: this.mapType(
+          variant,
+          'rooms.invite.accepted',
+          'room.lobby.invite.accepted',
+        ),
         payload: { roomId: invite.roomId, room: current.room, spectator: true },
       };
     }
@@ -374,7 +472,11 @@ export class RoomDirectoryWsHandler {
           },
         );
         return {
-          type: 'rooms.invite.accepted',
+          type: this.mapType(
+            variant,
+            'rooms.invite.accepted',
+            'room.lobby.invite.accepted',
+          ),
           payload: { roomId: invite.roomId, room: state.room, spectator: true },
         };
       }
@@ -393,7 +495,11 @@ export class RoomDirectoryWsHandler {
       },
     );
     return {
-      type: 'rooms.invite.accepted',
+      type: this.mapType(
+        variant,
+        'rooms.invite.accepted',
+        'room.lobby.invite.accepted',
+      ),
       payload: { roomId: invite.roomId, room: state.room, spectator: false },
     };
   }

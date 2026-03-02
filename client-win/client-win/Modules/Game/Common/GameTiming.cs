@@ -32,8 +32,8 @@ internal static class GameTiming
     {
         internal static readonly TimeSpan PresenceReplayDelay = TimeSpan.FromMilliseconds(500);
         internal static readonly TimeSpan OpenSoundDelay = TimeSpan.FromMilliseconds(50);
-        internal static readonly TimeSpan RoomDirectoryUnsubscribeTimeout = TimeSpan.FromSeconds(2);
-        internal static readonly TimeSpan RoomDirectoryRefreshDebounce = TimeSpan.FromMilliseconds(350);
+        internal static readonly TimeSpan RoomLobbyUnsubscribeTimeout = TimeSpan.FromSeconds(2);
+        internal static readonly TimeSpan RoomLobbyRefreshDebounce = TimeSpan.FromMilliseconds(350);
         internal static readonly TimeSpan RulesConnectTimeout = TimeSpan.FromSeconds(8);
         internal static readonly TimeSpan RulesResponseTimeout = TimeSpan.FromSeconds(5);
         internal static readonly TimeSpan WizardPromptConnectTimeout = TimeSpan.FromSeconds(8);

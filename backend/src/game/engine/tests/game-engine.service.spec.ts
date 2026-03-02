@@ -151,8 +151,13 @@ describe('GameEngineService', () => {
     const core = {
       buildBaseState: jest.fn((payload: any, gameType: string) => ({
         status: String(payload?.room?.status ?? 'started'),
-        players: Array.isArray(payload?.room?.players) ? payload.room.players : [],
-        turn: { currentPlayerId: payload?.room?.players?.[0]?.id ?? null, direction: 1 },
+        players: Array.isArray(payload?.room?.players)
+          ? payload.room.players
+          : [],
+        turn: {
+          currentPlayerId: payload?.room?.players?.[0]?.id ?? null,
+          direction: 1,
+        },
         turnIndex: 0,
         metadata: {
           gameType,

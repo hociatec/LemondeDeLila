@@ -99,40 +99,35 @@ const deck: CatPattesCardDefinition[] = [
     type: 'obstacle',
     name: 'Gamelle vide',
     description: "Impossible d'avancer le ventre vide.",
-    effect:
-      "Bloque les cartes Pattes tant que l'obstacle n'est pas retire.",
+    effect: "Bloque les cartes Pattes tant que l'obstacle n'est pas retire.",
     obstacle: 'gamelle',
   }),
   ...createCopies('obstacle-pluie', 5, {
     type: 'obstacle',
     name: 'Pluie torrentielle',
     description: 'Tout est mouillé, glissant, et franchement désagréable.',
-    effect:
-      "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+    effect: "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
     obstacle: 'pluie',
   }),
   ...createCopies('obstacle-chien', 3, {
     type: 'obstacle',
     name: 'Chien enragé',
     description: 'Beaucoup trop enthousiaste. Beaucoup trop proche.',
-    effect:
-      "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+    effect: "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
     obstacle: 'chien',
   }),
   ...createCopies('obstacle-coussin', 3, {
     type: 'obstacle',
     name: 'Coussin piégé',
     description: "Il avait l'air confortable, erreur fatale.",
-    effect:
-      "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+    effect: "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
     obstacle: 'coussin',
   }),
   ...createCopies('obstacle-sol', 4, {
     type: 'obstacle',
     name: 'Sol ciré',
     description: 'Vos pattes partent toutes seules, mais pas dans le bon sens.',
-    effect:
-      "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+    effect: "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
     obstacle: 'sol',
   }),
   ...createCopies('parade-croquettes', 6, {

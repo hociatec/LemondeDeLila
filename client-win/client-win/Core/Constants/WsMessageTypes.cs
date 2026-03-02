@@ -203,12 +203,21 @@ public static class WsMessageTypes
 
     public static class Rooms
     {
-        public const string InviteSend = "rooms.invite.send";
-        public const string InvitePresenceList = "rooms.invite.presence.list";
-        public const string InviteRespond = "rooms.invite.respond";
-        public const string PublicList = "rooms.public.list";
-        public const string PublicSubscribe = "rooms.public.subscribe";
-        public const string PublicUnsubscribe = "rooms.public.unsubscribe";
+        // Canonical lobby routes
+        public const string InviteSend = "room.lobby.invite.send";
+        public const string InvitePresenceList = "room.lobby.invite.presence.list";
+        public const string InviteRespond = "room.lobby.invite.respond";
+        public const string PublicList = "room.lobby.list";
+        public const string PublicSubscribe = "room.lobby.subscribe";
+        public const string PublicUnsubscribe = "room.lobby.unsubscribe";
+
+        // Backward compatibility
+        public const string LegacyInviteSend = "rooms.invite.send";
+        public const string LegacyInvitePresenceList = "rooms.invite.presence.list";
+        public const string LegacyInviteRespond = "rooms.invite.respond";
+        public const string LegacyPublicList = "rooms.public.list";
+        public const string LegacyPublicSubscribe = "rooms.public.subscribe";
+        public const string LegacyPublicUnsubscribe = "rooms.public.unsubscribe";
     }
 
     public static class Vault

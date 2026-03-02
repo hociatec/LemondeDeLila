@@ -31,9 +31,9 @@ using client_win.Modules.About.Views;
 using client_win.Modules.Updates;
 using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
-using client_win.Modules.Game.RoomDirectory.Services;
-using client_win.Modules.Game.RoomDirectory.ViewModels;
-using client_win.Modules.Game.RoomDirectory.Views;
+using client_win.Modules.Game.Room.Lobby.Services;
+using client_win.Modules.Game.Room.Lobby.ViewModels;
+using client_win.Modules.Game.Room.Lobby.Views;
 using client_win.Modules.User.Services;
 using client_win.Modules.Network.Services;
 using client_win.Modules.MainMenu.Views;
@@ -60,7 +60,7 @@ public sealed class MenuRouter : IMenuRouter
     private readonly IMessagingService _messaging;
     private readonly ISocialService _social;
     private readonly IGameTableOpener _tables;
-    private readonly IRoomDirectoryClient _roomDirectory;
+    private readonly IRoomLobbyClient _roomLobby;
     private readonly IStatsService _stats;
     private readonly ILeaderboardService _leaderboard;
     private readonly IAdminService _admin;
@@ -132,7 +132,7 @@ public sealed class MenuRouter : IMenuRouter
         IMessagingService messaging,
         ISocialService social,
         IGameTableOpener tables,
-        IRoomDirectoryClient roomDirectory,
+        IRoomLobbyClient roomLobby,
         IStatsService stats,
         ILeaderboardService leaderboard,
         IAdminService admin,
@@ -163,7 +163,7 @@ public sealed class MenuRouter : IMenuRouter
         _messaging = messaging;
         _social = social;
         _tables = tables;
-        _roomDirectory = roomDirectory;
+        _roomLobby = roomLobby;
         _stats = stats;
         _leaderboard = leaderboard;
         _admin = admin;
@@ -378,7 +378,7 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentContent;
         JoinGameViewModel? vm = null;
         vm = new JoinGameViewModel(
-            rooms: _roomDirectory,
+            rooms: _roomLobby,
             tables: _tables,
             announcements: _announcements,
             // Quitter une table via raccourci (Q) doit revenir Ã  la taverne (menu prÃ©cÃ©dent),
@@ -552,7 +552,7 @@ public sealed class MenuRouter : IMenuRouter
                 _adminMaintenance,
                 _maintenanceTokenStore,
                 _secretPrompts,
-                _roomDirectory,
+                _roomLobby,
                 _apiCapabilities,
                 _config,
                 _publisher,
@@ -891,4 +891,3 @@ public sealed class MenuRouter : IMenuRouter
     }
 
 }
-

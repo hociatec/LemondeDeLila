@@ -1549,4 +1549,3 @@ function normalizeForContains(value: string): string {
     .replace(/\s+/g, ' ')
     .trim();
 }
-

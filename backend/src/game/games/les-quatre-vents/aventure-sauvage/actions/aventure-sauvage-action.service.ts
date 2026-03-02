@@ -887,4 +887,3 @@ function defaultPatteDeck(): AventureSauvageCard[] {
   ];
   return deck;
 }
-

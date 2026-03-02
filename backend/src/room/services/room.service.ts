@@ -26,7 +26,7 @@ import { RedisClientFactory } from '../../common/redis/redis-client.factory';
 @Injectable()
 export class RoomService {
   private realtimeNotifier?: (roomId: number) => Promise<void> | void;
-  private directoryNotifier?: (
+  private lobbyNotifier?: (
     roomId: number,
     reason: string,
   ) => Promise<void> | void;
@@ -61,12 +61,12 @@ export class RoomService {
   }
 
   /**
-   * Hook optionnel pour notifier la "liste des tables publiques" (set par PublicRoomDirectoryBinder).
+   * Hook optionnel pour notifier la "liste du lobby public" (set par RoomLobbyRefreshBinder).
    */
-  setDirectoryNotifier(
+  setLobbyNotifier(
     fn: (roomId: number, reason: string) => Promise<void> | void,
   ): void {
-    this.directoryNotifier = fn;
+    this.lobbyNotifier = fn;
   }
 
   async notifyRoomStateUpdated(roomId: number): Promise<void> {
@@ -111,7 +111,7 @@ export class RoomService {
     await this.rooms.delete(id);
     this.roomBans.delete(id);
     await this.invalidateRoomPayloadCache(id);
-    this.notifyDirectoryChanged(id, 'deleted');
+    this.notifyLobbyChanged(id, 'deleted');
     this.presenceService.broadcastPresence();
     return { ok: true, roomId: id };
   }
@@ -171,7 +171,7 @@ export class RoomService {
     room.owner = user;
     await this.rooms.save(room);
     await this.invalidateRoomPayloadCache(room.id);
-    this.notifyDirectoryChanged(room.id, 'owner');
+    this.notifyLobbyChanged(room.id, 'owner');
     this.presenceService.broadcastPresence();
     return room;
   }
@@ -194,7 +194,7 @@ export class RoomService {
   async saveRoom(room: Room): Promise<Room> {
     const saved = await this.rooms.save(room);
     await this.invalidateRoomPayloadCache(saved.id);
-    this.notifyDirectoryChanged(saved.id, 'updated');
+    this.notifyLobbyChanged(saved.id, 'updated');
     return saved;
   }
 
@@ -280,7 +280,7 @@ export class RoomService {
 
   /**
    * Admin: deletes rooms matching criteria (use with caution).
-   * Intended to purge stale "open" rooms that still appear in the public directory.
+   * Intended to purge stale "open" rooms that still appear in the public lobby.
    */
   async adminCleanupRooms(opts?: {
     includePrivate?: boolean;
@@ -355,7 +355,7 @@ export class RoomService {
     await this.rooms.delete(filteredRoomIds);
     for (const id of filteredRoomIds) {
       await this.invalidateRoomPayloadCache(id);
-      this.notifyDirectoryChanged(id, 'deleted');
+      this.notifyLobbyChanged(id, 'deleted');
     }
     this.presenceService.broadcastPresence();
 
@@ -366,9 +366,9 @@ export class RoomService {
     };
   }
 
-  private notifyDirectoryChanged(roomId: number, reason: string) {
+  private notifyLobbyChanged(roomId: number, reason: string) {
     try {
-      void this.directoryNotifier?.(roomId, reason);
+      void this.lobbyNotifier?.(roomId, reason);
     } catch {
       // best effort
     }
@@ -389,22 +389,22 @@ export class RoomService {
     private readonly realtimeTracker: RoomRealtimeTrackerService,
     private readonly config: ConfigService,
     private readonly redisFactory: RedisClientFactory,
-    ) {
-      const ttlCandidate = Number(
-        this.config.get('ROOM_PAYLOAD_CACHE_TTL_SECONDS') ?? 15,
-      );
-      const ttl =
-        Number.isFinite(ttlCandidate) && ttlCandidate >= 1 ? ttlCandidate : 15;
-      this.roomPayloadTtlSeconds = Math.min(ttl, 3600);
+  ) {
+    const ttlCandidate = Number(
+      this.config.get('ROOM_PAYLOAD_CACHE_TTL_SECONDS') ?? 15,
+    );
+    const ttl =
+      Number.isFinite(ttlCandidate) && ttlCandidate >= 1 ? ttlCandidate : 15;
+    this.roomPayloadTtlSeconds = Math.min(ttl, 3600);
 
-      const restoredGraceCandidate = Number(
-        this.config.get('RESTORED_ROOM_GRACE_MS') ?? 180_000,
-      );
-      this.restoredRoomGraceMs =
-        Number.isFinite(restoredGraceCandidate) && restoredGraceCandidate >= 0
-          ? restoredGraceCandidate
-          : 180_000;
-    }
+    const restoredGraceCandidate = Number(
+      this.config.get('RESTORED_ROOM_GRACE_MS') ?? 180_000,
+    );
+    this.restoredRoomGraceMs =
+      Number.isFinite(restoredGraceCandidate) && restoredGraceCandidate >= 0
+        ? restoredGraceCandidate
+        : 180_000;
+  }
 
   async primeRoomPayloadCache(
     roomId: number,
@@ -511,7 +511,7 @@ export class RoomService {
     if (invalidateCache) {
       await this.invalidateRoomPayloadCache(room.id);
     }
-    this.notifyDirectoryChanged(room.id, 'created');
+    this.notifyLobbyChanged(room.id, 'created');
     const elapsedMs = Date.now() - startedAt;
     if (elapsedMs >= 1500) {
       const now = Date.now();
@@ -561,7 +561,7 @@ export class RoomService {
         await this.leaveAllRoomsForUser(userId, { exceptRoomId: room.id });
         await this.invalidateRoomPayloadCache(room.id);
         this.presenceService.broadcastPresence();
-        this.notifyDirectoryChanged(room.id, 'joined');
+        this.notifyLobbyChanged(room.id, 'joined');
         return room;
       }
       throw new BadRequestException('Table déjà démarrée');
@@ -595,7 +595,7 @@ export class RoomService {
 
     // Broadcast la mise à jour de présence en temps réel
     this.presenceService.broadcastPresence();
-    this.notifyDirectoryChanged(room.id, 'joined');
+    this.notifyLobbyChanged(room.id, 'joined');
 
     return room;
   }
@@ -727,11 +727,11 @@ export class RoomService {
       }
     }
 
-      if (opts?.preserveRoom || preserveRestoredRoom) {
-        this.presenceService.broadcastPresence();
-        this.notifyDirectoryChanged(room.id, 'left');
-        return room;
-      }
+    if (opts?.preserveRoom || preserveRestoredRoom) {
+      this.presenceService.broadcastPresence();
+      this.notifyLobbyChanged(room.id, 'left');
+      return room;
+    }
 
     let activeHumans = await this.countActiveHumans(room.id);
     if (activeHumans === 0) {
@@ -741,15 +741,15 @@ export class RoomService {
     activeHumans = await this.countActiveHumans(room.id);
     const bots = await this.countBots(room.id);
     const remaining = activeHumans + bots;
-      if (remaining === 0) {
-        this.logger.log('Room deleted (empty)', {
-          roomId: room.id,
-          userId,
-          disconnectOnly: opts?.disconnectOnly === true,
-          preserveRoom: opts?.preserveRoom === true,
-          activeHumans,
-          bots,
-        });
+    if (remaining === 0) {
+      this.logger.log('Room deleted (empty)', {
+        roomId: room.id,
+        userId,
+        disconnectOnly: opts?.disconnectOnly === true,
+        preserveRoom: opts?.preserveRoom === true,
+        activeHumans,
+        bots,
+      });
       for (const notify of this.ensureRoomDeletedNotifiers()) {
         try {
           await notify(room.id);
@@ -762,14 +762,14 @@ export class RoomService {
       await this.invalidateRoomPayloadCache(room.id);
       // Broadcast la mise à jour de présence en temps réel
       this.presenceService.broadcastPresence();
-      this.notifyDirectoryChanged(room.id, 'deleted');
+      this.notifyLobbyChanged(room.id, 'deleted');
       return null;
     }
     // (Le transfert de propriétaire est géré plus haut, avant preserveRoom.)
 
     // Broadcast la mise à jour de présence en temps réel
     this.presenceService.broadcastPresence();
-    this.notifyDirectoryChanged(room.id, 'left');
+    this.notifyLobbyChanged(room.id, 'left');
 
     return room;
   }
@@ -808,7 +808,7 @@ export class RoomService {
 
     // Broadcast la mise à jour de présence en temps réel
     this.presenceService.broadcastPresence();
-    this.notifyDirectoryChanged(room.id, 'left');
+    this.notifyLobbyChanged(room.id, 'left');
   }
 
   async togglePrivacy(
@@ -823,7 +823,7 @@ export class RoomService {
     if (invalidateCache) {
       await this.invalidateRoomPayloadCache(room.id);
     }
-    this.notifyDirectoryChanged(room.id, 'privacy');
+    this.notifyLobbyChanged(room.id, 'privacy');
     return room;
   }
 
@@ -850,7 +850,7 @@ export class RoomService {
     if (invalidateCache) {
       await this.invalidateRoomPayloadCache(room.id);
     }
-    this.notifyDirectoryChanged(room.id, 'started');
+    this.notifyLobbyChanged(room.id, 'started');
 
     try {
       const activeParticipants = await this.participants.find({
@@ -900,7 +900,7 @@ export class RoomService {
     if (invalidateCache) {
       await this.invalidateRoomPayloadCache(room.id);
     }
-    this.notifyDirectoryChanged(room.id, 'reset');
+    this.notifyLobbyChanged(room.id, 'reset');
     return room;
   }
 
@@ -923,7 +923,7 @@ export class RoomService {
 
     const room = await this.requireRoom(existing.id);
     await this.invalidateRoomPayloadCache(room.id);
-    this.notifyDirectoryChanged(room.id, 'reset');
+    this.notifyLobbyChanged(room.id, 'reset');
     return room;
   }
 

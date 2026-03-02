@@ -25,7 +25,7 @@ using client_win.Modules.Notifications.Services;
 using client_win.Modules.MainMenu.Services;
 using client_win.Modules.Notifications.Views;
 using client_win.Modules.Messaging.Views;
-using client_win.Modules.Game.RoomDirectory.Services;
+using client_win.Modules.Game.Room.Lobby.Services;
 using client_win.Modules.Game.Shell.Services;
 using Serilog;
 
@@ -41,7 +41,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
     private readonly IAnnouncementService _announcements;
     private readonly ICatalogService _catalog;
     private readonly IDialogService _dialogs;
-    private readonly IRoomDirectoryClient _rooms;
+    private readonly IRoomLobbyClient _rooms;
     private readonly IGameTableOpener _tables;
     private readonly INavigationService _navigation;
     private readonly ISoundService _sounds;
@@ -80,7 +80,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
         IAnnouncementService announcements,
         ICatalogService catalog,
         IDialogService dialogs,
-        IRoomDirectoryClient rooms,
+        IRoomLobbyClient rooms,
         IGameTableOpener tables,
         INavigationService navigation,
         ISoundService sounds,
@@ -553,13 +553,15 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 return;
             }
 
-            if (string.Equals(type, "rooms.invite.received", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, "rooms.invite.received", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(type, "room.lobby.invite.received", StringComparison.OrdinalIgnoreCase))
             {
                 _ = HandleRoomInviteReceivedAsync(root);
                 return;
             }
 
-            if (string.Equals(type, "rooms.invite.responded", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, "rooms.invite.responded", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(type, "room.lobby.invite.responded", StringComparison.OrdinalIgnoreCase))
             {
                 HandleRoomInviteResponded(root);
                 return;

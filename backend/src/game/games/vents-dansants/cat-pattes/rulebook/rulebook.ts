@@ -59,12 +59,13 @@ export const CAT_PATTES_OBSTACLE_TO_PARADE: Record<
   sol: 'saut',
 };
 
-const PARADE_DISABLED_BY_BOT: Record<CatPattesBotType, CatPattesParadeType[]> = {
-  reserve: ['croquettes'],
-  'chat-ninja': ['dodo'],
-  'patte-blindee': ['coussin'],
-  'passage-star': ['rayon', 'saut'],
-};
+const PARADE_DISABLED_BY_BOT: Record<CatPattesBotType, CatPattesParadeType[]> =
+  {
+    reserve: ['croquettes'],
+    'chat-ninja': ['dodo'],
+    'patte-blindee': ['coussin'],
+    'passage-star': ['rayon', 'saut'],
+  };
 
 function hasBot(
   bots: CatPattesMetadata['bots'][number],
@@ -73,7 +74,10 @@ function hasBot(
   return Array.isArray(bots) && bots.includes(type as any);
 }
 
-function getBots(meta: CatPattesMetadata, playerId: number): CatPattesBotType[] {
+function getBots(
+  meta: CatPattesMetadata,
+  playerId: number,
+): CatPattesBotType[] {
   return Array.isArray(meta.bots?.[playerId]) ? meta.bots[playerId] : [];
 }
 
@@ -231,7 +235,10 @@ export function getAvailableActions(
 
   const meta = getMeta(state);
   if ((meta.setupStep ?? '') === 'setup_config') {
-    if (meta.ownerPlayerId != null && samePlayerId(meta.ownerPlayerId, playerId)) {
+    if (
+      meta.ownerPlayerId != null &&
+      samePlayerId(meta.ownerPlayerId, playerId)
+    ) {
       return [{ type: 'cat_pattes_set_config', payload: {} }];
     }
     return [];
@@ -387,7 +394,7 @@ export function validateAction(
       throw new Error('Configuration requise avant de commencer.');
     }
     if (!samePlayerId(meta.ownerPlayerId, actorId)) {
-      throw new Error("Seul le propriétaire de la table peut configurer.");
+      throw new Error('Seul le propriétaire de la table peut configurer.');
     }
     const goal = Number(payload.goalPattes ?? payload.value ?? null);
     if (!Number.isFinite(goal)) {
@@ -470,7 +477,8 @@ export function validateAction(
     for (const id of hand) {
       const def = CAT_PATTES_CARD_BY_ID[id];
       if (!def) continue;
-      if (def.type === 'parade' && canPlayParade(meta, actorId, def)) return true;
+      if (def.type === 'parade' && canPlayParade(meta, actorId, def))
+        return true;
       if (def.type === 'bot' && canPlayBot(meta, actorId, def)) return true;
     }
     return false;
@@ -498,7 +506,11 @@ export function validateAction(
     throw new Error('Carte invalide.');
   }
 
-  if (blockedByObstacle && definition.type !== 'parade' && definition.type !== 'bot') {
+  if (
+    blockedByObstacle &&
+    definition.type !== 'parade' &&
+    definition.type !== 'bot'
+  ) {
     throw new Error(
       'Un obstacle actif vous bloque: jouez une Parade ou un Pouvoir.',
     );
@@ -514,13 +526,11 @@ export function validateAction(
     const obstacle = meta.obstacles?.[actorId] ?? null;
     if (!hasSun && !passageStar) {
       throw new Error(
-        "Impossible de jouer Pattes: aucun Rayon de soleil actif.",
+        'Impossible de jouer Pattes: aucun Rayon de soleil actif.',
       );
     }
     if (obstacle && !obstacleIsIgnoredByBots(obstacle, bots)) {
-      throw new Error(
-        'Impossible de jouer Pattes: un obstacle vous bloque.',
-      );
+      throw new Error('Impossible de jouer Pattes: un obstacle vous bloque.');
     }
     const currentPos = Number(meta.positions?.[actorId] ?? 0);
     const delta = Number(definition.value ?? 0);
@@ -555,7 +565,7 @@ export function validateAction(
     }
     if (!playerCanReceiveObstacle(meta, targetId, definition.obstacle!)) {
       throw new Error(
-        "La cible ne peut pas recevoir cet obstacle (deja protegee ou deja un obstacle).",
+        'La cible ne peut pas recevoir cet obstacle (deja protegee ou deja un obstacle).',
       );
     }
   }
@@ -563,7 +573,7 @@ export function validateAction(
   if (definition.type === 'parade') {
     if (!canPlayParade(meta, actorId, definition)) {
       throw new Error(
-        "Impossible de jouer cette Parade: aucun obstacle correspondant ou soleil non autorisé.",
+        'Impossible de jouer cette Parade: aucun obstacle correspondant ou soleil non autorisé.',
       );
     }
   }

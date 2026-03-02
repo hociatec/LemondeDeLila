@@ -136,7 +136,7 @@ export class MinuitActionService {
 
     let meta = meta0;
 
-    // "Piochez Ã  nouveau une carte au lieu de lancer le dÃ©" (tour suivant).
+    // "Piochez a nouveau une carte au lieu de lancer le de" (tour suivant).
     if (meta.statuses?.forceDrawNextTurn?.[currentId] === true) {
       meta = {
         ...meta,
@@ -156,7 +156,7 @@ export class MinuitActionService {
       };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} pioche une carte au lieu de lancer le dÃ©.`,
+        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} pioche une carte au lieu de lancer le de.`,
       );
       return {
         ...next,
@@ -164,7 +164,7 @@ export class MinuitActionService {
           type: 'draw',
           playerId: currentId,
           blocking: true,
-          label: 'Piocher une carte NoÃ«l (Espace).',
+          label: 'Piocher une carte Noel (Espace).',
           data: { context: 'force_draw' },
         },
       };
@@ -266,7 +266,10 @@ export class MinuitActionService {
         next = this.move(next, currentId, delta);
       }
     } else {
-      next = this.core.appendLog(next, `${who} a validÃ© la mauvaise rÃ©ponse.`);
+      next = this.core.appendLog(
+        next,
+        `${who} a validÃ© la mauvaise rÃ©ponse.`,
+      );
       const failDelta =
         typeof pending.failureDelta === 'number' ? pending.failureDelta : 0;
       if (failDelta !== 0) {
@@ -340,7 +343,7 @@ export class MinuitActionService {
       };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} offre un cadeau Ã  ${resolvePlayerNameFromState(next, targetPlayerId, MINUIT_PLAYER_NAME_OPTIONS)}.`,
+        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} offre un cadeau a ${resolvePlayerNameFromState(next, targetPlayerId, MINUIT_PLAYER_NAME_OPTIONS)}.`,
       );
       next = this.move(next, targetPlayerId, 1);
       next = this.move(next, currentId, 2);
@@ -815,7 +818,7 @@ export class MinuitActionService {
       };
     }
 
-    if (/vous offrez un cadeau Ã  un autre joueur/i.test(text)) {
+    if (/vous offrez un cadeau a un autre joueur/i.test(text)) {
       const targets = this.otherPlayers(next, playerId);
       const pending: PendingState = {
         type: 'choose_target',
@@ -884,8 +887,8 @@ export class MinuitActionService {
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
-    // Force pioche au prochain tour (au lieu de lancer le dÃ©).
-    if (/Piochez Ã  nouveau une carte au lieu de lancer le dÃ©/i.test(text)) {
+    // Force pioche au prochain tour (au lieu de lancer le de).
+    if (/Piochez a nouveau une carte au lieu de lancer le de/i.test(text)) {
       meta = {
         ...meta,
         statuses: {
@@ -899,18 +902,18 @@ export class MinuitActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       return this.core.appendLog(
         next,
-        'Au prochain tour, piochez une carte Ã  la place du dÃ©.',
+        'Au prochain tour, piochez une carte a la place du de.',
       );
     }
 
-    // Aller Ã  la case neutre la plus proche derriÃ¨re.
+    // Aller a la case neutre la plus proche derriere.
     if (/case neutre la plus proche derriÃ¨re/i.test(text)) {
       const pos = meta.positions[playerId] ?? 0;
       const prevPos = findPrev(meta.tiles, pos, (t) => t.type === 'neutral');
       if (prevPos != null) {
         next = this.core.appendLog(
           next,
-          'Retour Ã  la case neutre la plus proche derriÃ¨re.',
+          'Retour a la case neutre la plus proche derriere.',
         );
         next = this.setPos(next, playerId, prevPos);
         return this.applyLanding(next, playerId);
@@ -937,7 +940,7 @@ export class MinuitActionService {
       );
     }
 
-    if (/jusqu['â€™]Ã  la prochaine Carte NoÃ«l/i.test(text)) {
+    if (/jusqu'a la prochaine Carte Noel/i.test(text)) {
       const nextPos = findNext(
         meta.tiles,
         meta.positions[playerId] ?? 0,
@@ -949,7 +952,7 @@ export class MinuitActionService {
       }
     }
 
-    if (/jusqu['â€™]Ã  la case prÃ©cÃ©dente Carte NoÃ«l/i.test(text)) {
+    if (/jusqu'a la case precedente Carte Noel/i.test(text)) {
       const prevPos = findPrev(
         meta.tiles,
         meta.positions[playerId] ?? 0,
@@ -958,7 +961,7 @@ export class MinuitActionService {
       if (prevPos != null) {
         next = this.core.appendLog(
           next,
-          "Recule jusqu'Ã  la prÃ©cÃ©dente Carte NoÃ«l.",
+          "Recule jusqu'a la precedente Carte Noel.",
         );
         next = this.setPos(next, playerId, prevPos);
         return this.applyLanding(next, playerId);
@@ -1461,4 +1464,3 @@ function toText(value: unknown): string {
   }
   return '';
 }
-

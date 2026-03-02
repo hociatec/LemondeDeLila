@@ -4,11 +4,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using client_win.Modules.Game.RoomDirectory.ViewModels;
+using client_win.Modules.Game.Room.Lobby.ViewModels;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 
-namespace client_win.Modules.Game.RoomDirectory.Views;
+namespace client_win.Modules.Game.Room.Lobby.Views;
 
 public partial class JoinGameView : UserControl, IInitialFocusTarget, IFocusReady
 {

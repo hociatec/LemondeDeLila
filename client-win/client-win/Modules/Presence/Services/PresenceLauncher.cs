@@ -41,7 +41,7 @@ public sealed class PresenceLauncher : IPresenceLauncher
             {
                 _viewModel = new PresenceViewModel(
                     presence: _services.GetRequiredService<IPresenceMonitor>(),
-                    rooms: _services.GetRequiredService<Modules.Game.RoomDirectory.Services.IRoomDirectoryClient>(),
+                    rooms: _services.GetRequiredService<Modules.Game.Room.Lobby.Services.IRoomLobbyClient>(),
                     messaging: _services.GetRequiredService<Modules.Messaging.Services.IMessagingService>(),
                     social: _services.GetRequiredService<Modules.Social.Services.ISocialService>(),
                     prompts: _services.GetRequiredService<Modules.TextPrompts.Services.ITextPromptService>(),

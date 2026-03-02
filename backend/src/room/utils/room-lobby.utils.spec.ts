@@ -1,4 +1,4 @@
-import { buildPublicRoomList } from './room-directory.utils';
+import { buildPublicRoomList } from './room-lobby.utils';
 import { Room } from '../entities/room.entity';
 import { RoomBot } from '../entities/room-bot.entity';
 import { RoomParticipant } from '../entities/room-participant.entity';

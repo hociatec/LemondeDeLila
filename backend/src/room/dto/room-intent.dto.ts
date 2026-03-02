@@ -1,6 +1,10 @@
 import type { RoomFocusIntent } from './room-focus-intent.dto';
 
-export type RoomIntentType = 'focus' | 'history' | 'announcement' | 'start-wizard';
+export type RoomIntentType =
+  | 'focus'
+  | 'history'
+  | 'announcement'
+  | 'start-wizard';
 
 export type RoomIntent = {
   type: RoomIntentType;

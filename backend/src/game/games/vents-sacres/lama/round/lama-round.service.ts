@@ -33,7 +33,9 @@ export class LamaRoundService {
       return state;
     }
 
-    const startingHandSize = this.resolveStartingHandSize(meta.startingHandSize);
+    const startingHandSize = this.resolveStartingHandSize(
+      meta.startingHandSize,
+    );
     const copiesPerCardValue = this.resolveCopiesPerCardValue(
       meta.copiesPerCardValue,
     );
@@ -158,8 +160,7 @@ export class LamaRoundService {
           roundNumber,
           winnerScore,
           meta.returnTokenFromRound,
-        ) &&
-        winnerPlayerId != null
+        ) && winnerPlayerId != null
           ? [winnerPlayerId]
           : [];
 
@@ -238,8 +239,7 @@ export class LamaRoundService {
         roundNumber,
         winnerScore,
         meta.returnTokenFromRound,
-      ) &&
-      winnerPlayerId != null
+      ) && winnerPlayerId != null
         ? [winnerPlayerId]
         : [];
     if (winnerName && eligible.length === 0) {
@@ -482,7 +482,9 @@ export class LamaRoundService {
     returnTokenFromRound: number | null | undefined,
   ): boolean {
     if (winnerScore < 1) return false;
-    return roundNumber >= this.resolveReturnTokenFromRound(returnTokenFromRound);
+    return (
+      roundNumber >= this.resolveReturnTokenFromRound(returnTokenFromRound)
+    );
   }
 
   private resolveStartingHandSize(value: number | null | undefined): number {

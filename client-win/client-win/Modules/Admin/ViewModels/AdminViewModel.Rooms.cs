@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using client_win.Modules.Admin.Dtos;
-using client_win.Modules.Game.RoomDirectory.Services;
+using client_win.Modules.Game.Room.Lobby.Services;
 
 namespace client_win.Modules.Admin.ViewModels;
 
@@ -84,7 +84,7 @@ public sealed partial class AdminViewModel
             if (!caps.SupportsAdminRoomsList)
             {
                 // Compat / feature gating: éviter d'envoyer un message WS non supporté.
-                var fallback = await _roomDirectory.PublicListAsync().ConfigureAwait(true);
+                var fallback = await _roomLobby.PublicListAsync().ConfigureAwait(true);
                 _roomsForAdmin = (fallback.Items ?? Array.Empty<PublicRoomListItem>())
                     .Select(r => new AdminRoomListItemDto
                     {
@@ -117,7 +117,7 @@ public sealed partial class AdminViewModel
                 // (Les tables privées ne sont pas accessibles sans support serveur.)
                 try
                 {
-                    var fallback = await _roomDirectory.PublicListAsync().ConfigureAwait(true);
+                    var fallback = await _roomLobby.PublicListAsync().ConfigureAwait(true);
                     _roomsForAdmin = (fallback.Items ?? Array.Empty<PublicRoomListItem>())
                         .Select(r => new AdminRoomListItemDto
                         {
@@ -168,7 +168,7 @@ public sealed partial class AdminViewModel
             var caps = await _apiCapabilities.GetAsync().ConfigureAwait(true);
             if (!caps.SupportsAdminRoomsList)
             {
-                var fallback = await _roomDirectory.PublicListAsync().ConfigureAwait(true);
+                var fallback = await _roomLobby.PublicListAsync().ConfigureAwait(true);
                 _roomsForAdmin = (fallback.Items ?? Array.Empty<PublicRoomListItem>())
                     .Select(r => new AdminRoomListItemDto
                     {

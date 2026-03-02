@@ -239,7 +239,7 @@ export class LamaPresenter extends BasePresenterService {
             {
               key: 'allowDrawAfterFirstQuit',
               label:
-                "Autoriser la pioche après qu’un joueur s’est retiré (dans la manche) (oui/non)",
+                'Autoriser la pioche après qu’un joueur s’est retiré (dans la manche) (oui/non)',
               kind: 'boolean',
               initialText: metadata.allowDrawAfterFirstQuit ? 'oui' : 'non',
             },
@@ -570,7 +570,11 @@ export class LamaPresenter extends BasePresenterService {
     }
 
     const pendingOwner = Number((state?.pending as any)?.playerId ?? NaN);
-    if (Number.isFinite(pendingOwner) && playerExists(pendingOwner) && !isBot(pendingOwner)) {
+    if (
+      Number.isFinite(pendingOwner) &&
+      playerExists(pendingOwner) &&
+      !isBot(pendingOwner)
+    ) {
       return pendingOwner;
     }
 

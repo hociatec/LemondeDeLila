@@ -188,7 +188,7 @@ describe('VaultRoomSnapshotsService', () => {
     expect(firstSnapshotRaw).toBeTruthy();
     const firstSnapshot = JSON.parse(
       String(firstSnapshotRaw?.snapshotJson ?? '{}'),
-    ) as any;
+    );
     expect(firstSnapshot.game?.state?.metadata?.roomId).toBe(10);
     expect(firstSnapshot.game?.state?.turn?.currentPlayerId).toBe(-7);
 
@@ -220,7 +220,7 @@ describe('VaultRoomSnapshotsService', () => {
     expect(overwrittenRaw).toBeTruthy();
     const overwritten = JSON.parse(
       String(overwrittenRaw?.snapshotJson ?? '{}'),
-    ) as any;
+    );
     expect(overwritten.game?.state?.metadata?.roomId).toBe(20);
     expect(overwritten.game?.state?.turn?.currentPlayerId).toBe(-99);
     expect(overwritten.room?.name).toContain('restored');

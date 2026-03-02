@@ -17,7 +17,7 @@ using client_win.Modules.Shell.Services;
 using client_win.Modules.Updates;
 using client_win.Modules.User.Services;
 using client_win.Modules.Game.Shell.Services;
-using client_win.Modules.Game.RoomDirectory.Services;
+using client_win.Modules.Game.Room.Lobby.Services;
 using client_win.Modules.Network.Services;
 using client_win.Modules.TextPrompts.Services;
 using Serilog;
@@ -124,7 +124,7 @@ public sealed partial class AdminViewModel : ObservableObject
     private readonly ISessionService _session;
     private readonly IRemoteSoundCache _remoteSounds;
     private readonly IGameTableOpener _tables;
-    private readonly IRoomDirectoryClient _roomDirectory;
+    private readonly IRoomLobbyClient _roomLobby;
     private readonly IApiCapabilitiesService _apiCapabilities;
     private readonly Func<object?> _returnContent;
     private readonly Func<Task<string>>? _openNotifications;
@@ -138,7 +138,7 @@ public sealed partial class AdminViewModel : ObservableObject
         IAdminMaintenanceHttpService maintenance,
         IAdminMaintenanceTokenStore maintenanceTokenStore,
         ISecretPromptService secretPrompts,
-        IRoomDirectoryClient roomDirectory,
+        IRoomLobbyClient roomLobby,
         IApiCapabilitiesService apiCapabilities,
         ClientConfiguration config,
         IClientUpdatePublisher publisher,
@@ -158,7 +158,7 @@ public sealed partial class AdminViewModel : ObservableObject
         _maintenance = maintenance ?? throw new ArgumentNullException(nameof(maintenance));
         _maintenanceTokenStore = maintenanceTokenStore ?? throw new ArgumentNullException(nameof(maintenanceTokenStore));
         _secretPrompts = secretPrompts ?? throw new ArgumentNullException(nameof(secretPrompts));
-        _roomDirectory = roomDirectory ?? throw new ArgumentNullException(nameof(roomDirectory));
+        _roomLobby = roomLobby ?? throw new ArgumentNullException(nameof(roomLobby));
         _apiCapabilities = apiCapabilities ?? throw new ArgumentNullException(nameof(apiCapabilities));
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));

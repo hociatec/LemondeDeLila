@@ -53,7 +53,7 @@ const OBSTACLE_LABELS: Record<CatPattesObstacleType, string> = {
   sol: 'Sol ciré',
 };
 
-const PARADE_LABELS: Record<CatPattesParadeType, string> = {
+const _PARADE_LABELS: Record<CatPattesParadeType, string> = {
   croquettes: 'Croquettes',
   rayon: 'Rayon de soleil',
   dodo: 'Dodo réparateur',
@@ -376,7 +376,10 @@ export class CatPattesActionService {
       if (!canPlayPattes(meta, currentId, definition)) return state;
       const currentPos = Number(meta.positions?.[currentId] ?? 0);
       const delta = Number(definition.value ?? 0);
-      if (!Number.isFinite(delta) || currentPos + delta > this.getGoalPattes(meta))
+      if (
+        !Number.isFinite(delta) ||
+        currentPos + delta > this.getGoalPattes(meta)
+      )
         return state;
     }
 
@@ -450,7 +453,10 @@ export class CatPattesActionService {
     if ((meta.setupStep ?? '') !== 'setup_config') return state;
 
     const currentId = this.toPlayerId(state.turn?.currentPlayerId ?? null);
-    if (currentId == null || !this.samePlayerId(meta.ownerPlayerId, currentId)) {
+    if (
+      currentId == null ||
+      !this.samePlayerId(meta.ownerPlayerId, currentId)
+    ) {
       return state;
     }
 
@@ -830,7 +836,9 @@ export class CatPattesActionService {
     const missingHumans = players.filter((player) => needsPawn(player));
     if (!missingHumans.length) {
       const clearedState =
-        state.pending?.type === 'choose_pawn' ? { ...state, pending: null } : state;
+        state.pending?.type === 'choose_pawn'
+          ? { ...state, pending: null }
+          : state;
       if ((meta.setupStep ?? '') !== 'playing') {
         return this.setMeta(clearedState, {
           ...this.getMeta(clearedState),
@@ -992,7 +1000,9 @@ export class CatPattesActionService {
     const playerIds = players.map((p: any) => Number(p.id));
     const deck = Object.keys(CAT_PATTES_CARD_BY_ID);
     const shuffled = this.random.shuffle(meta as any, deck);
-    const remainingDeck = Array.isArray(shuffled.values) ? [...shuffled.values] : [];
+    const remainingDeck = Array.isArray(shuffled.values)
+      ? [...shuffled.values]
+      : [];
     const hands: Record<number, string[]> = {};
     const positions: Record<number, number> = {};
     const obstacles: Record<number, CatPattesObstacleType | null> = {};
@@ -1021,7 +1031,9 @@ export class CatPattesActionService {
     const starterId = playerIds.includes(roundWinnerId)
       ? roundWinnerId
       : (playerIds[0] ?? roundWinnerId);
-    const starterIndex = players.findIndex((p: any) => Number(p?.id) === starterId);
+    const starterIndex = players.findIndex(
+      (p: any) => Number(p?.id) === starterId,
+    );
     let next = this.setMeta(state, {
       ...meta,
       rng: shuffled.meta?.rng ?? meta.rng,
@@ -1062,4 +1074,3 @@ export class CatPattesActionService {
     );
   }
 }
-

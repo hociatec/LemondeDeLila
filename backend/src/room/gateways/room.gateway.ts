@@ -10,12 +10,13 @@ import { RoomService } from '../services/room.service';
 import { BotService } from '../../bot/services/bot.service';
 import { Inject, Logger, forwardRef } from '@nestjs/common';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
-import type { RoomPayload, RoomPlayer, RoomBotState } from '../dto/room-response.dto';
-import type { RoomFocusIntent } from '../dto/room-focus-intent.dto';
 import type {
-  RoomIntent,
-  RoomStartWizardIntent,
-} from '../dto/room-intent.dto';
+  RoomPayload,
+  RoomPlayer,
+  RoomBotState,
+} from '../dto/room-response.dto';
+import type { RoomFocusIntent } from '../dto/room-focus-intent.dto';
+import type { RoomIntent, RoomStartWizardIntent } from '../dto/room-intent.dto';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { PerfMetricsService } from '../../common/services/perf-metrics.service';
 import { RoomInviteService } from '../services/room-invite.service';
@@ -603,9 +604,11 @@ export class RoomGateway
   ): string[] {
     const room = payload.room;
     const started =
-      (room.status || '').toLowerCase() === 'started' || Boolean(room.startedAt);
+      (room.status || '').toLowerCase() === 'started' ||
+      Boolean(room.startedAt);
     const isOwner = room.owner?.id === meta.userId;
-    const isParticipant = room.players?.some((p) => p?.id === meta.userId) ?? false;
+    const isParticipant =
+      room.players?.some((p) => p?.id === meta.userId) ?? false;
     const canToggleRole =
       !started && (!room.isPrivate || isOwner || isParticipant);
 
@@ -667,7 +670,10 @@ export class RoomGateway
           continue;
         }
         try {
-          const payloadForClient = this.withAllowedActionsForClient(payload, meta);
+          const payloadForClient = this.withAllowedActionsForClient(
+            payload,
+            meta,
+          );
           socket.send(
             JSON.stringify({
               type: 'room.updated',
@@ -694,7 +700,10 @@ export class RoomGateway
     sendToSet(silentTargets);
   }
 
-  private async broadcastRoomIntent(roomId: number, intent: RoomIntent): Promise<void> {
+  private async broadcastRoomIntent(
+    roomId: number,
+    intent: RoomIntent,
+  ): Promise<void> {
     await this.broadcast(roomId, 'room.intent', intent);
   }
 
@@ -755,28 +764,32 @@ export class RoomGateway
     this.applySpectators(roomId, payload);
     const focusIntent = this.computeStatusFocusIntent(roomId, payload);
     await this.broadcastRoomUpdated(roomId, payload);
-    if (focusIntent)
-    {
-        await this.broadcast(roomId, 'room.focus', focusIntent);
-        await this.broadcastRoomIntent(roomId, {
-          type: 'focus',
-          payload: focusIntent,
-        } satisfies RoomIntent);
-        await this.broadcastRoomIntent(roomId, {
-          type: 'announcement',
-          payload: {
-            message:
-              focusIntent.reason === 'room.started'
-                ? 'La table commence !'
-                : 'Mise à jour de la table en cours.',
-            priority: focusIntent.priority === 'assertive' ? 'assertive' : 'polite',
-          },
-        } satisfies RoomIntent);
+    if (focusIntent) {
+      await this.broadcast(roomId, 'room.focus', focusIntent);
+      await this.broadcastRoomIntent(roomId, {
+        type: 'focus',
+        payload: focusIntent,
+      } satisfies RoomIntent);
+      await this.broadcastRoomIntent(roomId, {
+        type: 'announcement',
+        payload: {
+          message:
+            focusIntent.reason === 'room.started'
+              ? 'La table commence !'
+              : 'Mise à jour de la table en cours.',
+          priority:
+            focusIntent.priority === 'assertive' ? 'assertive' : 'polite',
+        },
+      } satisfies RoomIntent);
     }
 
     const previousSnapshot = this.lastRoomSnapshotByRoomId.get(roomId);
     const nextSnapshot = this.buildRoomSnapshot(payload);
-    await this.emitRoomAnnouncementsFromDiff(roomId, previousSnapshot, nextSnapshot);
+    await this.emitRoomAnnouncementsFromDiff(
+      roomId,
+      previousSnapshot,
+      nextSnapshot,
+    );
     this.lastRoomSnapshotByRoomId.set(roomId, nextSnapshot);
 
     const startWizardIntent = this.buildStartWizardIntent(
@@ -856,10 +869,20 @@ export class RoomGateway
       const focusIntent = this.computeStatusFocusIntent(roomId, payload);
       const meta = this.clients.get(client);
       const payloadForClient =
-        meta != null ? this.withAllowedActionsForClient(payload, meta) : payload;
-      this.safeSend(client, { type: 'room.updated', roomId, payload: payloadForClient });
+        meta != null
+          ? this.withAllowedActionsForClient(payload, meta)
+          : payload;
+      this.safeSend(client, {
+        type: 'room.updated',
+        roomId,
+        payload: payloadForClient,
+      });
       if (focusIntent) {
-        this.safeSend(client, { type: 'room.focus', roomId, payload: focusIntent });
+        this.safeSend(client, {
+          type: 'room.focus',
+          roomId,
+          payload: focusIntent,
+        });
         this.safeSend(client, {
           type: 'room.intent',
           roomId,
@@ -878,7 +901,8 @@ export class RoomGateway
                 focusIntent.reason == 'room.started'
                   ? 'La table commence !'
                   : 'Mise à jour de la table en cours.',
-              priority: focusIntent.priority == 'assertive' ? 'assertive' : 'polite',
+              priority:
+                focusIntent.priority == 'assertive' ? 'assertive' : 'polite',
             },
           } satisfies RoomIntent,
         });
@@ -898,7 +922,10 @@ export class RoomGateway
           },
         });
       }
-      this.lastRoomSnapshotByRoomId.set(roomId, this.buildRoomSnapshot(payload));
+      this.lastRoomSnapshotByRoomId.set(
+        roomId,
+        this.buildRoomSnapshot(payload),
+      );
       this.lastRoomStatusByRoomId.set(roomId, nextStatus);
     } catch (err) {
       await this.sendError(client, (err as Error).message || 'Erreur table');
@@ -1002,11 +1029,101 @@ export class RoomGateway
     const type = payload?.type;
     const data = payload?.payload ?? {};
     const receivedAtMs = Date.now();
-    const trace = this.extractTraceMeta(data, receivedAtMs);
 
-    // ACK immédiat (réduit la latence perçue côté client : "commande reçue")
-    // Les erreurs éventuelles seront envoyées ensuite via `error`.
+    if (type === 'room.intent.execute') {
+      await this.handleRoomIntentExecute(client, meta, data, receivedAtMs);
+      return;
+    }
+
+    this.sendImmediateAckIfNeeded(client, meta, type, data, receivedAtMs);
+    await this.executeLegacyRoomCommand(client, meta, type, data, receivedAtMs);
+  }
+
+  private async handleRoomIntentExecute(
+    client: WebSocket,
+    meta: ClientMeta,
+    payload: any,
+    receivedAtMs: number,
+  ): Promise<void> {
+    const envelope =
+      payload != null && typeof payload === 'object' ? payload : {};
+    const intentIdRaw =
+      typeof envelope.intentId === 'string'
+        ? envelope.intentId
+        : typeof envelope.action === 'string'
+          ? envelope.action
+          : typeof envelope.type === 'string'
+            ? envelope.type
+            : '';
+    const intentId = intentIdRaw.trim().toLowerCase();
+    if (intentId.length === 0) {
+      throw new Error('intentId requis');
+    }
+
+    const legacyType = RoomGateway.mapIntentToLegacyCommand(intentId);
+    if (!legacyType) {
+      throw new Error(`Intent inconnu: ${intentId}`);
+    }
+
+    const payloadSource = Object.prototype.hasOwnProperty.call(envelope, 'data')
+      ? envelope.data
+      : envelope.payload;
+    const legacyPayload: Record<string, unknown> =
+      payloadSource != null && typeof payloadSource === 'object'
+        ? { ...(payloadSource as Record<string, unknown>) }
+        : {};
+
+    // Compat trace: accepte _trace dans l'enveloppe si absent dans data.
     if (
+      !Object.prototype.hasOwnProperty.call(legacyPayload, '_trace') &&
+      envelope._trace != null &&
+      typeof envelope._trace === 'object'
+    ) {
+      legacyPayload._trace = envelope._trace;
+    }
+
+    this.sendImmediateAckIfNeeded(
+      client,
+      meta,
+      legacyType,
+      legacyPayload,
+      receivedAtMs,
+    );
+    await this.executeLegacyRoomCommand(
+      client,
+      meta,
+      legacyType,
+      legacyPayload,
+      receivedAtMs,
+    );
+  }
+
+  private sendImmediateAckIfNeeded(
+    client: WebSocket,
+    meta: ClientMeta,
+    type: string | undefined,
+    payload: any,
+    receivedAtMs: number,
+  ): void {
+    if (!RoomGateway.isImmediateAckAction(type)) {
+      return;
+    }
+
+    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    this.safeSend(client, {
+      type: 'room.ack',
+      roomId: meta.roomId,
+      payload: {
+        action: type,
+        traceId: trace.traceId,
+        receivedAtMs,
+        clientToServerMs: trace.clientToServerMs,
+      },
+    });
+  }
+
+  private static isImmediateAckAction(type: string | undefined): boolean {
+    return (
       type === 'room.start' ||
       type === 'room.reset' ||
       type === 'bot.add' ||
@@ -1016,18 +1133,44 @@ export class RoomGateway
       type === 'room.ban' ||
       type === 'room.set-owner' ||
       type === 'room.set-ambience'
-    ) {
-      this.safeSend(client, {
-        type: 'room.ack',
-        roomId: meta.roomId,
-        payload: {
-          action: type,
-          traceId: trace.traceId,
-          receivedAtMs,
-          clientToServerMs: trace.clientToServerMs,
-        },
-      });
+    );
+  }
+
+  private static mapIntentToLegacyCommand(intentId: string): string {
+    switch (intentId) {
+      case 'room.leave':
+      case 'room.chat.send':
+      case 'room.chat.history':
+      case 'room.start':
+      case 'room.reset':
+      case 'room.set-role':
+      case 'room.kick':
+      case 'room.ban':
+      case 'room.set-owner':
+      case 'room.set-ambience':
+      case 'room.toggle-privacy':
+      case 'room.info':
+      case 'room.ping':
+      case 'bot.add':
+      case 'bot.remove':
+      case 'room.create':
+      case 'room.join':
+        return intentId;
+      case 'room.toggle-role':
+      case 'room.role.toggle':
+        return 'room.set-role';
+      default:
+        return '';
     }
+  }
+
+  private async executeLegacyRoomCommand(
+    client: WebSocket,
+    meta: ClientMeta,
+    type: string | undefined,
+    data: any,
+    receivedAtMs: number,
+  ): Promise<void> {
     switch (type) {
       case 'room.leave':
         await this.handleRoomLeave(client, meta);
@@ -1316,11 +1459,26 @@ export class RoomGateway
       }
     }
 
-    await this.emitPlayerDiff(roomId, previous.players, next.players, false, roleSwitchIds);
-    await this.emitPlayerDiff(roomId, previous.spectators, next.spectators, true, roleSwitchIds);
+    await this.emitPlayerDiff(
+      roomId,
+      previous.players,
+      next.players,
+      false,
+      roleSwitchIds,
+    );
+    await this.emitPlayerDiff(
+      roomId,
+      previous.spectators,
+      next.spectators,
+      true,
+      roleSwitchIds,
+    );
     await this.emitBotDiff(roomId, previous.bots, next.bots);
 
-    if (previous.ownerId !== next.ownerId || previous.ownerName !== next.ownerName) {
+    if (
+      previous.ownerId !== next.ownerId ||
+      previous.ownerName !== next.ownerName
+    ) {
       const message =
         next.ownerName.length === 0
           ? 'Propriétaire : aucun.'
@@ -1373,13 +1531,19 @@ export class RoomGateway
   ): Promise<void> {
     for (const [id, name] of next.entries()) {
       if (!previous.has(id)) {
-        await this.broadcastRoomAnnouncement(roomId, RoomGateway.buildBotJoinedMessage(name));
+        await this.broadcastRoomAnnouncement(
+          roomId,
+          RoomGateway.buildBotJoinedMessage(name),
+        );
       }
     }
 
     for (const [id, name] of previous.entries()) {
       if (!next.has(id)) {
-        await this.broadcastRoomAnnouncement(roomId, RoomGateway.buildBotLeftMessage(name));
+        await this.broadcastRoomAnnouncement(
+          roomId,
+          RoomGateway.buildBotLeftMessage(name),
+        );
       }
     }
   }
@@ -1403,11 +1567,17 @@ export class RoomGateway
     } satisfies RoomIntent);
   }
 
-  private static buildPlayerJoinedMessage(name: string, spectator: boolean): string {
+  private static buildPlayerJoinedMessage(
+    name: string,
+    spectator: boolean,
+  ): string {
     return `${RoomGateway.formatPlayerName(name)}${spectator ? ' (spectateur)' : ''} a rejoint la table.`;
   }
 
-  private static buildPlayerLeftMessage(name: string, spectator: boolean): string {
+  private static buildPlayerLeftMessage(
+    name: string,
+    spectator: boolean,
+  ): string {
     return `${RoomGateway.formatPlayerName(name)}${spectator ? ' (spectateur)' : ''} a quitté la table.`;
   }
 
@@ -1776,14 +1946,19 @@ export class RoomGateway
     }
     const isOwner = state.room.owner?.id === meta.userId;
 
+    const hasSpectatorFlag =
+      payload != null &&
+      typeof payload === 'object' &&
+      Object.prototype.hasOwnProperty.call(payload, 'spectator');
     const spectatorRaw = payload?.spectator;
-    const spectator =
-      spectatorRaw === true ||
-      spectatorRaw === 1 ||
-      spectatorRaw === '1' ||
-      spectatorRaw === 'true' ||
-      spectatorRaw === 'yes' ||
-      spectatorRaw === 'y';
+    const spectator = hasSpectatorFlag
+      ? spectatorRaw === true ||
+        spectatorRaw === 1 ||
+        spectatorRaw === '1' ||
+        spectatorRaw === 'true' ||
+        spectatorRaw === 'yes' ||
+        spectatorRaw === 'y'
+      : meta.role !== 'spectator';
 
     if (spectator) {
       // On se retire des participants (sans fermer la connexion) pour ne pas être compté comme joueur.
@@ -1929,7 +2104,7 @@ export class RoomGateway
         const message = {
           type: 'room.created',
           roomId: room.id,
-          payload: state,
+          payload: this.withAllowedActionsForClient(state, meta),
         };
         if (previousRoomId > 0) {
           await this.broadcast(

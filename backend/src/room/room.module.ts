@@ -11,13 +11,13 @@ import { BotModule } from '../bot/bot.module';
 import { PresenceModule } from '../presence/presence.module';
 import { NotificationModule } from '../notification/notification.module';
 import { RoomInviteService } from './services/room-invite.service';
-import { RoomDirectoryWsHandler } from './gateways/room-directory-ws.handler';
+import { RoomLobbyWsHandler } from './gateways/room-lobby-ws.handler';
 import { RoomWsRegistrar } from './gateways/room-ws.registrar';
 import { CatalogModule } from '../catalog/catalog.module';
 import { StatsModule } from '../stats/stats.module';
 import { ClientUpdatesModule } from '../client-updates/client-updates.module';
-import { PublicRoomDirectoryService } from './services/public-room-directory.service';
-import { PublicRoomDirectoryBinder } from './services/public-room-directory.binder';
+import { RoomLobbyRefreshService } from './services/room-lobby-refresh.service';
+import { RoomLobbyRefreshBinder } from './services/room-lobby-refresh.binder';
 import { RoomRealtimeTrackerService } from './services/room-realtime-tracker.service';
 import { RoomAutoCleanupService } from './services/room-auto-cleanup.service';
 import { RoomMaintenanceSettingsService } from './services/room-maintenance-settings.service';
@@ -45,12 +45,12 @@ import { VaultRoomSnapshotEntity } from '../vault/entities/vault-room-snapshot.e
     RoomService,
     RoomGateway,
     RoomInviteService,
-    PublicRoomDirectoryService,
-    PublicRoomDirectoryBinder,
+    RoomLobbyRefreshService,
+    RoomLobbyRefreshBinder,
     RoomRealtimeTrackerService,
     RoomMaintenanceSettingsService,
     RoomAutoCleanupService,
-    RoomDirectoryWsHandler,
+    RoomLobbyWsHandler,
     RoomWsRegistrar,
   ],
   exports: [RoomService, RoomMaintenanceSettingsService],

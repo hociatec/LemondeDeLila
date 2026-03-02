@@ -598,7 +598,9 @@ describe('CatPattes flow', () => {
 
     const actions = Rulebook.getAvailableActions(state, 1);
     expect(actions.some((a: any) => a.type === 'play_card')).toBe(false);
-    expect(actions.filter((a: any) => a.type === 'discard_card').length).toBe(2);
+    expect(actions.filter((a: any) => a.type === 'discard_card').length).toBe(
+      2,
+    );
   });
 
   it('limits actions to counters when an obstacle is active', async () => {

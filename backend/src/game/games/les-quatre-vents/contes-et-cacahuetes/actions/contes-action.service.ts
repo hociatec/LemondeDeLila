@@ -1943,4 +1943,3 @@ function toContesCardArray(value: unknown): ContesCard[] {
     })
     .filter((entry): entry is ContesCard => entry !== null);
 }
-

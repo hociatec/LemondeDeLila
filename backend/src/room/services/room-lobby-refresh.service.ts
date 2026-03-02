@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { WsApiHubService } from '../../common/ws/ws-api-hub.service';
 
-type Subscription = { gameType: string | null };
+type Subscription = {
+  gameType: string | null;
+  refreshType: 'legacy' | 'lobby';
+};
 
 @Injectable()
-export class PublicRoomDirectoryService {
+export class RoomLobbyRefreshService {
   private readonly subscriptions = new Map<string, Subscription>();
   private pending: { roomId: number | null; reason: string | null } | null =
     null;
@@ -13,10 +16,17 @@ export class PublicRoomDirectoryService {
 
   constructor(private readonly hub: WsApiHubService) {}
 
-  subscribe(connectionId: string, gameType?: string | null) {
+  subscribe(
+    connectionId: string,
+    gameType?: string | null,
+    refreshType: 'legacy' | 'lobby' = 'legacy',
+  ) {
     if (!connectionId || !connectionId.trim()) return;
     const normalized = typeof gameType === 'string' ? gameType.trim() : '';
-    this.subscriptions.set(connectionId, { gameType: normalized || null });
+    this.subscriptions.set(connectionId, {
+      gameType: normalized || null,
+      refreshType,
+    });
   }
 
   unsubscribe(connectionId: string) {
@@ -46,16 +56,16 @@ export class PublicRoomDirectoryService {
     const payload = this.pending;
     this.pending = null;
 
-    const connectionIds = Array.from(this.subscriptions.keys());
-    if (connectionIds.length === 0) return;
+    const entries = Array.from(this.subscriptions.entries());
+    if (entries.length === 0) return;
 
-    const message = {
-      type: 'rooms.public.refresh',
-      requestId: 'push',
-      payload: payload ?? { roomId: null, reason: null },
-    };
-
-    for (const connectionId of connectionIds) {
+    const body = payload ?? { roomId: null, reason: null };
+    for (const [connectionId, sub] of entries) {
+      const type =
+        sub?.refreshType === 'lobby'
+          ? 'room.lobby.refresh'
+          : 'rooms.public.refresh';
+      const message = { type, requestId: 'push', payload: body };
       // For now we ignore per-gameType filtering and let clients request with filters.
       const ok = this.hub.send(connectionId, message);
       if (!ok) {

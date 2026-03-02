@@ -156,9 +156,7 @@ describe('LamaService', () => {
       String(l?.message ?? ''),
     );
     expect(
-      messages.some((m: string) =>
-        m.includes('configuration invalide'),
-      ),
+      messages.some((m: string) => m.includes('configuration invalide')),
     ).toBe(true);
   });
 

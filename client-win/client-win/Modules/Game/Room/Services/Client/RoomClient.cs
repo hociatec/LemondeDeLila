@@ -54,7 +54,8 @@ public sealed class RoomClient : IRoomFacade
         _session.SendCommandAwaitAckAsync("room.toggle-privacy", payload: null, cancellationToken: cancellationToken);
 
     public Task ToggleRoleAsync(CancellationToken cancellationToken = default) =>
-        _session.SendCommandAwaitAckAsync("room.set-role", payload: new { spectator = !_isSpectator }, cancellationToken: cancellationToken);
+        // Le serveur decide du role cible (toggle) si `spectator` n'est pas fourni.
+        _session.SendCommandAwaitAckAsync("room.set-role", payload: null, cancellationToken: cancellationToken);
 
     public Task RequestInfoAsync(CancellationToken cancellationToken = default) =>
         _session.SendCommandAsync("room.info", payload: null, cancellationToken: cancellationToken);
@@ -363,4 +364,3 @@ public sealed class RoomClient : IRoomFacade
         }
     }
 }
-
