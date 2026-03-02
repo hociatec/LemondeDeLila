@@ -100,7 +100,11 @@ public sealed partial class RoomGatewayClient : IRoomGatewayClient
             catch (Exception ex)
             {
                 lastError = ex;
-                await ReturnWarmSocketAsync(socket).ConfigureAwait(false);
+
+                // Do not return a failed create socket to the warm pool.
+                // A socket that already produced an application-level error can be in a bad state.
+                try { await socket.CloseAsync().ConfigureAwait(false); } catch { }
+                try { await socket.DisposeAsync().ConfigureAwait(false); } catch { }
 
                 var shouldRetry =
                     attempt < maxAttempts &&

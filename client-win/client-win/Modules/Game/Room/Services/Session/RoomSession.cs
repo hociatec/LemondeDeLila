@@ -309,6 +309,21 @@ public sealed partial class RoomSession : IRoomSession
     {
         try
         {
+            if (root.TryGetProperty("roomId", out var roomIdProp))
+            {
+                var envelopeRoomId =
+                    roomIdProp.ValueKind == JsonValueKind.Number && roomIdProp.TryGetInt32(out var roomIdNumber)
+                        ? roomIdNumber
+                        : roomIdProp.ValueKind == JsonValueKind.String && int.TryParse(roomIdProp.GetString(), out var roomIdText)
+                            ? roomIdText
+                            : 0;
+                if (envelopeRoomId > 0 && envelopeRoomId != RoomId)
+                {
+                    // Ignore room state from another table.
+                    return;
+                }
+            }
+
             if (!root.TryGetProperty("payload", out var payloadProp) ||
                 payloadProp.ValueKind == JsonValueKind.Undefined ||
                 payloadProp.ValueKind == JsonValueKind.Null)

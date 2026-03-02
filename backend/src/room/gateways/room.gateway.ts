@@ -2106,14 +2106,6 @@ export class RoomGateway
           roomId: room.id,
           payload: this.withAllowedActionsForClient(state, meta),
         };
-        if (previousRoomId > 0) {
-          await this.broadcast(
-            previousRoomId,
-            message.type,
-            message.payload ?? state,
-            room.id,
-          );
-        }
         if (previousRoomId > 0 && previousRoomId !== room.id) {
           await this.leavePreviousRoomOnSwitch(
             previousRoomId,

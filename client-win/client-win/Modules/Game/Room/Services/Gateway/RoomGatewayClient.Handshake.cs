@@ -234,7 +234,11 @@ public sealed partial class RoomGatewayClient
 
         return message.Contains("WebSocket ferm", StringComparison.OrdinalIgnoreCase) ||
                message.Contains("Timeout cr", StringComparison.OrdinalIgnoreCase) ||
-               message.Contains("Connexion table", StringComparison.OrdinalIgnoreCase);
+               message.Contains("Connexion table", StringComparison.OrdinalIgnoreCase) ||
+               message.Contains("NOAUTH", StringComparison.OrdinalIgnoreCase) ||
+               message.Contains("Authentication required", StringComparison.OrdinalIgnoreCase) ||
+               message.Contains("Authentification requise", StringComparison.OrdinalIgnoreCase) ||
+               message.Contains("auth required", StringComparison.OrdinalIgnoreCase);
     }
 
     private static Uri BuildRoomUri(Uri baseWs, int roomId, bool spectator = false, bool silent = false)
@@ -365,4 +369,3 @@ public sealed partial class RoomGatewayClient
         };
     }
 }
-
