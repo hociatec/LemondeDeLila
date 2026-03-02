@@ -416,17 +416,13 @@ export class RoomGateway
     // Si l'état de la table est indéterminé (ex: DB temporairement indisponible),
     // on traite la déconnexion comme un simple disconnect (disconnectOnly=true),
     // ce qui évite de marquer le joueur comme parti et de déclencher une suppression.
-    let roomStarted: boolean | null = false;
     let ownerId: number | null = null;
     if (meta && meta.roomId > 0) {
       try {
         const state = await this.roomsService.getRoomPayload(meta.roomId);
         ownerId = state?.room?.owner?.id ?? null;
-        roomStarted =
-          (state?.room?.status || '').toLowerCase() === 'started' ||
-          Boolean(state?.room?.startedAt);
       } catch {
-        roomStarted = null;
+        ownerId = null;
       }
     }
     if (meta) {
@@ -474,9 +470,10 @@ export class RoomGateway
             })
             .catch(() => {});
 
-          if (roomStarted === true) {
-            this.scheduleDelayedParticipantLeave(meta.roomId, meta.userId);
-          }
+          // Toujours planifier un leave réel après la fenêtre de grâce:
+          // - évite les participants fantômes en setup
+          // - évite les rooms démarrées sans humain (zombies) qui restent actives
+          this.scheduleDelayedParticipantLeave(meta.roomId, meta.userId);
         }
       } else {
         if (!userStillConnected && ownerId === meta.userId) {
@@ -2578,7 +2575,9 @@ export class RoomGateway
 
       this.roomsService
         .leaveRoom(roomId, userId, {
-          preserveRoom: true,
+          // Après expiration de la grâce, on applique un leave normal.
+          // Si la room devient vide, elle est supprimée (sinon conservée).
+          preserveRoom: false,
           disconnectOnly: false,
         })
         .then(() => this.sendRoomState(roomId))

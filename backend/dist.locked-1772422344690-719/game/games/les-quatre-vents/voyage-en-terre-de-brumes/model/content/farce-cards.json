@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "cards": [
+    {
+      "id": 1,
+      "title": "La chèvre du comté de Kerry",
+      "description": "Une chèvre facétieuse a subtilisé le pain royal et l’a caché derrière un menhir en riant sous cape.",
+      "effect": "Vous perdez votre prochain tour."
+    },
+    {
+      "id": 2,
+      "title": "L’écho de la falaise moqueuse",
+      "description": "La falaise moqueuse transforme vos mots en petites farces : rien ne sort tout à fait comme prévu !",
+      "effect": "Les points obtenus sur votre prochaine carte FARCE sont divisés par deux."
+    },
+    {
+      "id": 3,
+      "title": "Le tonneau de cidre qui explose",
+      "description": "Un farfadet malin a glissé un piment magique dans le tonneau… et hop, surprise !",
+      "effect": "Vous devez défausser une carte FARCE au hasard."
+    },
+    {
+      "id": 4,
+      "title": "Le haricot géant de Glendalough",
+      "description": "En croquant le haricot géant, vous poussez d’un coup comme par magie… attention à ne pas vous taper la tête dans un nuage !",
+      "effect": "Vous piochez une carte supplémentaire, mais vous devez en défausser une autre de votre choix."
+    },
+    {
+      "id": 5,
+      "title": "Le mouton bavard du Connemara",
+      "description": "Le mouton bavard du Connemara s’est amusé à répandre une rumeur farfelue sur les autres aventuriers… qui sait ce qui est vrai ?",
+      "effect": "Vous choisissez un joueur et lui échangez une carte de votre main."
+    },
+    {
+      "id": 6,
+      "title": "Le farceur invisible",
+      "description": "Un farfadet invisible a chipé vos cartes et les a remaniées à sa guise… surprise garantie !",
+      "effect": "Mélangez toutes vos cartes FARCE dans votre main et en piochez une nouvelle."
+    },
+    {
+      "id": 7,
+      "title": "Le chaudron qui éternue",
+      "description": "Le chaudron éternuant projette de douces malices à chaque « atchoum » : préparez-vous à rire (ou à grogner) !",
+      "effect": "Le prochain joueur doit défausser une carte FARCE."
+    },
+    {
+      "id": 8,
+      "title": "Le leprechaun qui confond la gauche et la droite",
+      "description": "Le leprechaun farceur vous a entraîné dans un drôle de détour… est-ce à gauche ou à droite ? Mystère !",
+      "effect": "Choisissez une carte FARCE dans votre main : son effet se déclenche deux fois ce tour-ci !"
+    },
+    {
+      "id": 9,
+      "title": "Le poisson qui parle",
+      "description": "Le poisson bavard vous a lancé une énigme farfelue… et vous voilà perplexe comme un elfe en hiver !",
+      "effect": "Choisissez un joueur. Ce dernier doit vous donner une carte au hasard depuis sa main."
+    },
+    {
+      "id": 10,
+      "title": "Le corbeau copieur",
+      "description": "Le corbeau copieur se régale : il répète vos mots (et vos bêtises) comme un petit miroir espiègle.",
+      "effect": "Le prochain joueur copie l’effet de votre dernière carte FARCE."
+    },
+    {
+      "id": 11,
+      "title": "La soupe aux champignons dansante",
+      "description": "Une bouchée de soupe dansante et la magie s’empare de vous… attention aux élans imaginaires !",
+      "effect": "Piochez une carte TRÉSOR CULTUREL et défaussez une carte FARCE."
+    },
+    {
+      "id": 12,
+      "title": "L’âne sorcier du Mayo",
+      "description": "L’âne sorcier a lu dans vos pensées et devine votre prochain geste… mais pas sûr que ça vous aide !",
+      "effect": "Choisissez une carte dans votre main et échangez-la avec celle d’un autre joueur."
+    },
+    {
+      "id": 13,
+      "title": "La pluie qui parle en vers",
+      "description": "Une pluie de vers s’abat sur vous : rimes et rythmes farfelus au programme !",
+      "effect": "Votre prochain point gagné sur une carte FARCE est doublé."
+    },
+    {
+      "id": 14,
+      "title": "Le barde farceur",
+      "description": "Le barde espiègle a troqué votre récit contre une devinette qui n’a ni queue ni tête… saurez-vous la résoudre ?",
+      "effect": "Piochez une carte FARCE et donnez-en une à un autre joueur."
+    },
+    {
+      "id": 15,
+      "title": "La poule en or… en toc !",
+      "description": "Une fausse poule étincelante gambade devant vous, promettant un trésor… qui s’avère être une farce dorée !",
+      "effect": "Toutes vos cartes FARCE ne rapportent que la moitié des points ce tour-ci."
+    },
+    {
+      "id": 16,
+      "title": "Le trèfle en papier mâché",
+      "description": "Vous l’avez délicatement cueilli, mais ce trèfle de pacotille ne porte chance à personne… même pas aux lutins !",
+      "effect": "Vous ne pouvez pas gagner de carte TRÉSOR CULTUREL ce tour-ci."
+    },
+    {
+      "id": 17,
+      "title": "L’elfe qui rote des bulles",
+      "description": "Vous avez réveillé un elfe farceur en plein rêve… et il se met à rototer des bulles magiques en riant !",
+      "effect": "Défaussez une carte FARCE et piochez-en une nouvelle."
+    },
+    {
+      "id": 18,
+      "title": "Le fantôme du tambour fâché",
+      "description": "Un tambour spectral bat la mesure dans votre tête, entraînant tous les joueurs dans une danse improbable !",
+      "effect": "Tous les joueurs échangent une carte de leur main avec celle d’un autre joueur au hasard."
+    },
+    {
+      "id": 19,
+      "title": "La mouette collectionneuse de cartes",
+      "description": "Une mouette malicieuse a subtilisé une de vos carte au passage, tournoyant avec son butin au-dessus de votre tête !",
+      "effect": "Choisissez un joueur et piochez une carte trésor culpturel dans sa main."
+    },
+    {
+      "id": 20,
+      "title": "Le vieux druide distrait",
+      "description": "Le druide a lancé une incantation… mais entre bénédiction et malédiction, personne ne sait ce qui va se passer !",
+      "effect": "Contraignez un autre joueur à piocher une carte FARCE et à en subir immédiatement l’effet."
+    }
+  ]
+}

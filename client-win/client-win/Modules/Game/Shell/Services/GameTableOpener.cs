@@ -965,10 +965,10 @@ public sealed class GameTableOpener : IGameTableOpener
 
         GameRoomViewModel? vm = null;
         Func<Task>? startHandler = null;
-        Task<GameRoomViewModel.StartWizardConfigPrompt?>? preloadedWizardPromptTask = null;
-        string preloadedWizardPromptGameType = string.Empty;
+        Task<TableGameConfigWindow.Prompt?>? preloadedStartConfigPromptTask = null;
+        string preloadedStartConfigPromptGameType = string.Empty;
         Task<System.Collections.Generic.List<TableAmbiencePickerWindow.Choice>>? preloadedAmbienceChoicesTask = null;
-        void TryStartWizardPreloads(IRoomSession currentSession, CatalogGame currentGame)
+        void TryStartConfigPreloads(IRoomSession currentSession, CatalogGame currentGame)
         {
             try
             {
@@ -981,8 +981,8 @@ public sealed class GameTableOpener : IGameTableOpener
 
                 if (canStartNow && !alreadyStartedNow && !string.IsNullOrWhiteSpace(gameTypeNow))
                 {
-                    preloadedWizardPromptGameType = gameTypeNow;
-                    preloadedWizardPromptTask = PreloadWizardPromptAtTableOpenAsync(
+                    preloadedStartConfigPromptGameType = gameTypeNow;
+                    preloadedStartConfigPromptTask = PreloadStartConfigPromptAtTableOpenAsync(
                         currentSession.RoomId,
                         gameTypeNow,
                         cts.Token);
@@ -990,24 +990,24 @@ public sealed class GameTableOpener : IGameTableOpener
                         preloadedAmbienceChoicesTask.IsCanceled ||
                         preloadedAmbienceChoicesTask.IsFaulted)
                     {
-                        preloadedAmbienceChoicesTask = BuildStartWizardAmbienceChoicesAsync(cts.Token);
+                        preloadedAmbienceChoicesTask = BuildStartConfigAmbienceChoicesAsync(cts.Token);
                     }
                 }
                 else
                 {
-                    preloadedWizardPromptTask = null;
-                    preloadedWizardPromptGameType = string.Empty;
+                    preloadedStartConfigPromptTask = null;
+                    preloadedStartConfigPromptGameType = string.Empty;
                 }
             }
             catch
             {
-                preloadedWizardPromptTask = null;
-                preloadedWizardPromptGameType = string.Empty;
+                preloadedStartConfigPromptTask = null;
+                preloadedStartConfigPromptGameType = string.Empty;
                 if (preloadedAmbienceChoicesTask == null ||
                     preloadedAmbienceChoicesTask.IsCanceled ||
                     preloadedAmbienceChoicesTask.IsFaulted)
                 {
-                    preloadedAmbienceChoicesTask = BuildStartWizardAmbienceChoicesAsync(cts.Token);
+                    preloadedAmbienceChoicesTask = BuildStartConfigAmbienceChoicesAsync(cts.Token);
                 }
             }
         }
@@ -1195,7 +1195,7 @@ public sealed class GameTableOpener : IGameTableOpener
             return Task.CompletedTask;
         }
 
-        async Task<GameRoomViewModel.StartWizardConfigPrompt?> PreloadWizardPromptAtTableOpenAsync(
+        async Task<TableGameConfigWindow.Prompt?> PreloadStartConfigPromptAtTableOpenAsync(
             int roomId,
             string gameType,
             CancellationToken cancellationToken)
@@ -1209,17 +1209,17 @@ public sealed class GameTableOpener : IGameTableOpener
             try
             {
                 using var connectTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                connectTimeout.CancelAfter(GameTiming.Table.WizardPromptConnectTimeout);
+                connectTimeout.CancelAfter(GameTiming.Table.StartConfigPromptConnectTimeout);
                 probe = await _games.ConnectAsync(roomId, gameType, connectTimeout.Token).ConfigureAwait(false);
 
                 using var fetchTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                fetchTimeout.CancelAfter(GameTiming.Table.WizardPromptFetchTimeout);
+                fetchTimeout.CancelAfter(GameTiming.Table.StartConfigPromptFetchTimeout);
                 var prompt = await TryFetchPreStartConfigPromptAsync(probe, fetchTimeout.Token).ConfigureAwait(false);
-                return prompt ?? BuildFallbackWizardPrompt(gameType);
+                return prompt ?? BuildFallbackStartConfigPrompt(gameType);
             }
             catch
             {
-                return BuildFallbackWizardPrompt(gameType);
+                return BuildFallbackStartConfigPrompt(gameType);
             }
             finally
             {
@@ -1230,7 +1230,7 @@ public sealed class GameTableOpener : IGameTableOpener
             }
         }
 
-        async Task<System.Collections.Generic.List<TableAmbiencePickerWindow.Choice>> BuildStartWizardAmbienceChoicesAsync(
+        async Task<System.Collections.Generic.List<TableAmbiencePickerWindow.Choice>> BuildStartConfigAmbienceChoicesAsync(
             CancellationToken cancellationToken)
         {
             var result = new System.Collections.Generic.List<TableAmbiencePickerWindow.Choice>
@@ -1238,7 +1238,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 new(string.Empty, "Silence (aucune ambiance)")
             };
 
-            // Keep wizard opening responsive: refresh remote sounds in background.
+            // Keep start-config dialog opening responsive: refresh remote sounds in background.
             _ = Task.Run(async () =>
             {
                 try { await _remoteSounds.RefreshAsync(force: false).ConfigureAwait(false); } catch { }
@@ -1291,14 +1291,14 @@ public sealed class GameTableOpener : IGameTableOpener
                     var current = (room?.TableAmbienceSoundId ?? string.Empty).Trim();
                     var choices = preloadedAmbienceChoicesTask != null
                         ? await preloadedAmbienceChoicesTask.ConfigureAwait(true)
-                        : await BuildStartWizardAmbienceChoicesAsync(CancellationToken.None).ConfigureAwait(true);
+                        : await BuildStartConfigAmbienceChoicesAsync(CancellationToken.None).ConfigureAwait(true);
 
-                    GameRoomViewModel.StartWizardConfigPrompt? cachedPrompt = null;
-                    Task<GameRoomViewModel.StartWizardConfigPrompt?>? prefetchPromptTask = null;
+                    TableGameConfigWindow.Prompt? cachedPrompt = null;
+                    Task<TableGameConfigWindow.Prompt?>? prefetchPromptTask = null;
                     try
                     {
                         var gameType = (vm?.Game?.Id ?? placeholderGame.Id ?? string.Empty).Trim();
-                        async Task<GameRoomViewModel.StartWizardConfigPrompt?> PreloadPromptAsync()
+                        async Task<TableGameConfigWindow.Prompt?> PreloadPromptAsync()
                         {
                             try
                             {
@@ -1314,22 +1314,22 @@ public sealed class GameTableOpener : IGameTableOpener
 
                                 if (preStartGameSession == null)
                                 {
-                                    using var connectTimeout = new CancellationTokenSource(GameTiming.Table.WizardPromptConnectTimeout);
+                                    using var connectTimeout = new CancellationTokenSource(GameTiming.Table.StartConfigPromptConnectTimeout);
                                     preStartGameSession = await _games.ConnectAsync(session.RoomId, gameType, connectTimeout.Token).ConfigureAwait(false);
                                 }
 
-                                using var fetchTimeout = new CancellationTokenSource(GameTiming.Table.WizardPromptFetchTimeout);
+                                using var fetchTimeout = new CancellationTokenSource(GameTiming.Table.StartConfigPromptFetchTimeout);
                                 cachedPrompt = await TryFetchPreStartConfigPromptAsync(preStartGameSession, fetchTimeout.Token).ConfigureAwait(false)
-                                    ?? BuildFallbackWizardPrompt(gameType);
+                                    ?? BuildFallbackStartConfigPrompt(gameType);
                                 return cachedPrompt;
                             }
                             catch
                             {
-                                return BuildFallbackWizardPrompt(gameType);
+                                return BuildFallbackStartConfigPrompt(gameType);
                             }
                         }
 
-                        async Task<GameRoomViewModel.StartWizardConfigPrompt?> LoadPromptAsync()
+                        async Task<TableGameConfigWindow.Prompt?> LoadPromptAsync()
                         {
                             if (cachedPrompt != null)
                             {
@@ -1339,12 +1339,12 @@ public sealed class GameTableOpener : IGameTableOpener
                             if (prefetchPromptTask != null)
                             {
                                 var completed = await Task
-                                    .WhenAny(prefetchPromptTask, Task.Delay(GameTiming.Table.WizardPromptSoftWait))
+                                    .WhenAny(prefetchPromptTask, Task.Delay(GameTiming.Table.StartConfigPromptSoftWait))
                                     .ConfigureAwait(false);
                                 if (!ReferenceEquals(completed, prefetchPromptTask))
                                 {
                                     // Keep interaction snappy: use fallback immediately if preload is still pending.
-                                    return BuildFallbackWizardPrompt(gameType);
+                                    return BuildFallbackStartConfigPrompt(gameType);
                                 }
 
                                 cachedPrompt = await prefetchPromptTask.ConfigureAwait(false);
@@ -1361,48 +1361,57 @@ public sealed class GameTableOpener : IGameTableOpener
 
                             if (preStartGameSession == null)
                             {
-                                using var connectTimeout = new CancellationTokenSource(GameTiming.Table.WizardPromptConnectTimeout);
+                                using var connectTimeout = new CancellationTokenSource(GameTiming.Table.StartConfigPromptConnectTimeout);
                                 preStartGameSession = await _games.ConnectAsync(session.RoomId, gameType, connectTimeout.Token).ConfigureAwait(false);
                             }
 
-                            using var fetchTimeout = new CancellationTokenSource(GameTiming.Table.WizardPromptFetchTimeout);
+                            using var fetchTimeout = new CancellationTokenSource(GameTiming.Table.StartConfigPromptFetchTimeout);
                             cachedPrompt = await TryFetchPreStartConfigPromptAsync(preStartGameSession, fetchTimeout.Token).ConfigureAwait(false)
-                                ?? BuildFallbackWizardPrompt(gameType);
+                                ?? BuildFallbackStartConfigPrompt(gameType);
                             return cachedPrompt;
                         }
 
                         // Priority:
                         // 1) preload started at table opening
-                        // 2) local preload at wizard opening
-                        if (preloadedWizardPromptTask != null &&
-                            string.Equals(preloadedWizardPromptGameType, gameType, StringComparison.OrdinalIgnoreCase))
+                        // 2) local preload when opening the start-config dialog
+                        if (preloadedStartConfigPromptTask != null &&
+                            string.Equals(preloadedStartConfigPromptGameType, gameType, StringComparison.OrdinalIgnoreCase))
                         {
-                            prefetchPromptTask = preloadedWizardPromptTask;
+                            prefetchPromptTask = preloadedStartConfigPromptTask;
                         }
                         else
                         {
                             prefetchPromptTask = PreloadPromptAsync();
                         }
 
-                        GameRoomViewModel.StartWizardResult? startFlow = null;
-                        var ambienceChoices = choices
-                            .Select(c => new GameRoomViewModel.StartWizardAmbienceChoice(c.SoundId, c.Label))
-                            .ToList();
-                        if (vm == null)
+                        async Task<TableGameConfigWindow.Prompt?> LoadDialogPromptAsync()
                         {
-                            return;
+                            return await LoadPromptAsync().ConfigureAwait(true);
                         }
 
-                        startFlow = await dispatcher
+                        if (cachedPrompt == null && prefetchPromptTask != null)
+                        {
+                            var completed = await Task
+                                .WhenAny(prefetchPromptTask, Task.Delay(GameTiming.Table.StartConfigPromptSoftWait))
+                                .ConfigureAwait(false);
+                            if (ReferenceEquals(completed, prefetchPromptTask))
+                            {
+                                cachedPrompt = await prefetchPromptTask.ConfigureAwait(false);
+                            }
+                        }
+
+                        var initialDialogPrompt = cachedPrompt;
+                        var startFlow = await dispatcher
                             .InvokeAsync(
-                                () => vm.OpenStartWizardAsync(
-                                    currentAmbienceSoundId: current,
-                                    ambienceChoices: ambienceChoices,
-                                    initialConfigPrompt: cachedPrompt,
-                                    loadConfigPromptAsync: LoadPromptAsync),
+                                () => TableStartConfigWindow.PickStartFlow(
+                                    owner: Application.Current?.MainWindow,
+                                    currentSoundId: current,
+                                    choices: choices,
+                                    gameConfigPrompt: initialDialogPrompt,
+                                    loadGameConfigPromptAsync: LoadDialogPromptAsync,
+                                    soundService: _sounds),
                                 DispatcherPriority.Normal)
                             .Task
-                            .Unwrap()
                             .ConfigureAwait(true);
 
                         if (startFlow == null)
@@ -1427,7 +1436,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         {
                             if (preStartGameSession == null)
                             {
-                                using var connectTimeout = new CancellationTokenSource(GameTiming.Table.WizardPromptConnectTimeout);
+                                using var connectTimeout = new CancellationTokenSource(GameTiming.Table.StartConfigPromptConnectTimeout);
                                 preStartGameSession = await _games.ConnectAsync(session.RoomId, gameType, connectTimeout.Token).ConfigureAwait(false);
                             }
 
@@ -1447,7 +1456,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
                 try
                 {
-                    try { bindings?.NotifyStartRequestedFromWizard(); } catch { }
+                    try { bindings?.NotifyStartRequestedFromStartConfig(); } catch { }
                     await session.SendCommandAwaitAckAsync(
                             "room.start",
                             payload: null)
@@ -1633,35 +1642,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 dialogs: _dialogs,
                 focusCoordinator: _focus,
                 screenReader: _screenReader,
-                announcements: _announcementService,
-                onPreviewStartWizardAmbience: soundId =>
-                {
-                    try
-                    {
-                        var raw = (soundId ?? string.Empty).Trim();
-                        if (string.IsNullOrWhiteSpace(raw))
-                        {
-                            _sounds.StopPreview();
-                            return;
-                        }
-
-                        if (Enum.TryParse<SoundId>(raw, ignoreCase: true, out var sound))
-                        {
-                            _sounds.PlayPreview(sound);
-                            return;
-                        }
-
-                        _sounds.StopPreview();
-                    }
-                    catch
-                    {
-                        // best-effort
-                    }
-                },
-                onStopStartWizardAmbiencePreview: () =>
-                {
-                    try { _sounds.StopPreview(); } catch { }
-                });
+                announcements: _announcementService);
             vm.Status = "Connexion à la table...";
             vm.IsReconnecting = true;
             vm.GameZone.IsConnected = false;
@@ -1677,7 +1658,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 // Start ambience choices preload immediately (independent from room connection).
                 if (preloadedAmbienceChoicesTask == null)
                 {
-                    preloadedAmbienceChoicesTask = BuildStartWizardAmbienceChoicesAsync(cts.Token);
+                    preloadedAmbienceChoicesTask = BuildStartConfigAmbienceChoicesAsync(cts.Token);
                 }
 
                 var connected = await connect(cts.Token).ConfigureAwait(false);
@@ -1689,8 +1670,8 @@ public sealed class GameTableOpener : IGameTableOpener
 
                 session = connected;
                 var game = buildGameFromSession(session);
-                // Start wizard preloads as early as possible to reduce "first Enter" latency.
-                TryStartWizardPreloads(session, game);
+                // Start config preloads as early as possible to reduce "first Enter" latency.
+                TryStartConfigPreloads(session, game);
 
                 // Audio warm-up (best-effort): évite les latences (premier dé, bonne/mauvaise réponse, ambiance de table).
                 // Ne bloque pas l'ouverture de la table.
@@ -1778,35 +1759,7 @@ public sealed class GameTableOpener : IGameTableOpener
 	                            dialogs: _dialogs,
 	                            focusCoordinator: _focus,
 	                            screenReader: _screenReader,
-	                            announcements: _announcementService,
-                                onPreviewStartWizardAmbience: soundId =>
-                                {
-                                    try
-                                    {
-                                        var raw = (soundId ?? string.Empty).Trim();
-                                        if (string.IsNullOrWhiteSpace(raw))
-                                        {
-                                            _sounds.StopPreview();
-                                            return;
-                                        }
-
-                                        if (Enum.TryParse<SoundId>(raw, ignoreCase: true, out var sound))
-                                        {
-                                            _sounds.PlayPreview(sound);
-                                            return;
-                                        }
-
-                                        _sounds.StopPreview();
-                                    }
-                                    catch
-                                    {
-                                        // best-effort
-                                    }
-                                },
-                                onStopStartWizardAmbiencePreview: () =>
-                                {
-                                    try { _sounds.StopPreview(); } catch { }
-                                });
+	                            announcements: _announcementService);
 	                        newVm.Status = "Connexion à la table...";
 	                        newVm.IsReconnecting = true;
 	                        newVm.GameZone.IsConnected = false;
@@ -1820,11 +1773,11 @@ public sealed class GameTableOpener : IGameTableOpener
                         return;
                     }
 
-                    // Preload start-wizard config as soon as the table opens (owner + not started).
+                    // Preload start-config data as soon as the table opens (owner + not started).
                     // This runs before the user presses Enter/Suivant.
-                    if (preloadedWizardPromptTask == null || preloadedAmbienceChoicesTask == null)
+                    if (preloadedStartConfigPromptTask == null || preloadedAmbienceChoicesTask == null)
                     {
-                        TryStartWizardPreloads(session, vm.Game);
+                        TryStartConfigPreloads(session, vm.Game);
                     }
 
                     var createdMessage = isNew
@@ -2059,7 +2012,7 @@ public sealed class GameTableOpener : IGameTableOpener
         return session.LastState ?? new GameStateDto();
     }
 
-    private static async Task<GameRoomViewModel.StartWizardConfigPrompt?> TryFetchPreStartConfigPromptAsync(
+    private static async Task<TableGameConfigWindow.Prompt?> TryFetchPreStartConfigPromptAsync(
         GameSession session,
         CancellationToken cancellationToken)
     {
@@ -2085,7 +2038,7 @@ public sealed class GameTableOpener : IGameTableOpener
         return prompt != null;
     }
 
-    private static async Task<GameRoomViewModel.StartWizardConfigPrompt?> WaitForConfigPromptAsync(
+    private static async Task<TableGameConfigWindow.Prompt?> WaitForConfigPromptAsync(
         GameSession session,
         string? expectedActionType,
         TimeSpan timeout,
@@ -2093,7 +2046,7 @@ public sealed class GameTableOpener : IGameTableOpener
     {
         var expected = (expectedActionType ?? string.Empty).Trim();
 
-        GameRoomViewModel.StartWizardConfigPrompt? TryMatchPrompt(GameStateDto? state)
+        TableGameConfigWindow.Prompt? TryMatchPrompt(GameStateDto? state)
         {
             if (!TryExtractConfigPrompt(state, out var prompt) || prompt == null)
             {
@@ -2119,7 +2072,7 @@ public sealed class GameTableOpener : IGameTableOpener
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         linked.CancelAfter(timeout);
 
-        var tcs = new TaskCompletionSource<GameRoomViewModel.StartWizardConfigPrompt?>(
+        var tcs = new TaskCompletionSource<TableGameConfigWindow.Prompt?>(
             TaskCreationOptions.RunContinuationsAsynchronously);
         void OnState(GameStateDto s)
         {
@@ -2155,7 +2108,7 @@ public sealed class GameTableOpener : IGameTableOpener
         }
     }
 
-    private static bool TryExtractConfigPrompt(GameStateDto? state, out GameRoomViewModel.StartWizardConfigPrompt? prompt)
+    private static bool TryExtractConfigPrompt(GameStateDto? state, out TableGameConfigWindow.Prompt? prompt)
     {
         prompt = null;
         static string? GetString(JsonElement obj, string prop) =>
@@ -2183,7 +2136,7 @@ public sealed class GameTableOpener : IGameTableOpener
             return el.ValueKind == JsonValueKind.Object ? el : null;
         }
 
-        static GameRoomViewModel.StartWizardConfigPrompt? BuildPromptFromObject(JsonElement data)
+        static TableGameConfigWindow.Prompt? BuildPromptFromObject(JsonElement data)
         {
             var actionType = (GetString(data, "actionType") ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(actionType))
@@ -2199,7 +2152,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 return null;
             }
 
-            var fields = new List<GameRoomViewModel.StartWizardConfigField>();
+            var fields = new List<TableGameConfigWindow.Field>();
             foreach (var field in fieldsEl.Value.EnumerateArray())
             {
                 if (field.ValueKind != JsonValueKind.Object) continue;
@@ -2207,7 +2160,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 if (string.IsNullOrWhiteSpace(key)) continue;
                 var min = GetInt(field, "min") ?? GetInt(field, "minValue");
                 var max = GetInt(field, "max") ?? GetInt(field, "maxValue");
-                fields.Add(new GameRoomViewModel.StartWizardConfigField(
+                fields.Add(new TableGameConfigWindow.Field(
                     Key: key,
                     Label: (GetString(field, "label") ?? key).Trim(),
                     Kind: (GetString(field, "kind") ?? "text").Trim(),
@@ -2221,7 +2174,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 return null;
             }
 
-            return new GameRoomViewModel.StartWizardConfigPrompt(
+            return new TableGameConfigWindow.Prompt(
                 Title: (GetString(data, "title") ?? "Configuration du jeu").Trim(),
                 ActionType: actionType,
                 CancelActionType: (GetString(data, "cancelActionType") ?? string.Empty).Trim(),
@@ -2255,39 +2208,39 @@ public sealed class GameTableOpener : IGameTableOpener
         return false;
     }
 
-    private static GameRoomViewModel.StartWizardConfigPrompt? BuildFallbackWizardPrompt(string? gameType)
+    private static TableGameConfigWindow.Prompt? BuildFallbackStartConfigPrompt(string? gameType)
     {
         var normalized = (gameType ?? string.Empty).Trim().ToLowerInvariant();
         if (string.Equals(normalized, "arche-de-mnemosyne", StringComparison.Ordinal) ||
             string.Equals(normalized, "arche-de-nemosyne", StringComparison.Ordinal))
         {
-            return new GameRoomViewModel.StartWizardConfigPrompt(
+            return new TableGameConfigWindow.Prompt(
                 Title: "Configuration - Arche de Mnemosyne",
                 ActionType: "mnemo_set_config",
                 CancelActionType: "mnemo_prompt_cancel",
                 Fields: new[]
                 {
-                    new GameRoomViewModel.StartWizardConfigField("correctSoloPoints", "Points si un seul joueur répond correctement", "number", null, null, "2"),
-                    new GameRoomViewModel.StartWizardConfigField("correctMultiPoints", "Points par joueur en cas de bonnes réponses multiples", "number", null, null, "1"),
-                    new GameRoomViewModel.StartWizardConfigField("wrongPoints", "Points appliqués en cas de mauvaise réponse", "number", null, null, "0"),
-                    new GameRoomViewModel.StartWizardConfigField("timeoutPoints", "Points appliqués sans réponse (timeout)", "number", null, null, "-1"),
-                    new GameRoomViewModel.StartWizardConfigField("targetPoints", "Score cible pour gagner", "number", null, null, "20"),
-                    new GameRoomViewModel.StartWizardConfigField("useTimer", "Activer le chrono par question", "boolean", null, null, "oui"),
-                    new GameRoomViewModel.StartWizardConfigField("timerSeconds", "Durée du chrono par question (secondes)", "number", null, null, "30"),
-                    new GameRoomViewModel.StartWizardConfigField("interQuestionSeconds", "Pause entre les questions (secondes)", "number", null, null, "15"),
+                    new TableGameConfigWindow.Field("correctSoloPoints", "Points si un seul joueur répond correctement", "number", null, null, "2"),
+                    new TableGameConfigWindow.Field("correctMultiPoints", "Points par joueur en cas de bonnes réponses multiples", "number", null, null, "1"),
+                    new TableGameConfigWindow.Field("wrongPoints", "Points appliqués en cas de mauvaise réponse", "number", null, null, "0"),
+                    new TableGameConfigWindow.Field("timeoutPoints", "Points appliqués sans réponse (timeout)", "number", null, null, "-1"),
+                    new TableGameConfigWindow.Field("targetPoints", "Score cible pour gagner", "number", null, null, "20"),
+                    new TableGameConfigWindow.Field("useTimer", "Activer le chrono par question", "boolean", null, null, "oui"),
+                    new TableGameConfigWindow.Field("timerSeconds", "Durée du chrono par question (secondes)", "number", null, null, "30"),
+                    new TableGameConfigWindow.Field("interQuestionSeconds", "Pause entre les questions (secondes)", "number", null, null, "15"),
                 });
         }
 
         if (string.Equals(normalized, "cat-pattes", StringComparison.Ordinal))
         {
-            return new GameRoomViewModel.StartWizardConfigPrompt(
+            return new TableGameConfigWindow.Prompt(
                 Title: "Cat Pattes !",
                 ActionType: "cat_pattes_set_config",
                 CancelActionType: null,
                 Fields: new[]
                 {
-                    new GameRoomViewModel.StartWizardConfigField("goalPattes", "Objectif pattes", "number", 600, 1500, "1000"),
-                    new GameRoomViewModel.StartWizardConfigField("pointsToWin", "Points pour gagner", "number", 1000, 20000, "4000"),
+                    new TableGameConfigWindow.Field("goalPattes", "Objectif pattes", "number", 600, 1500, "1000"),
+                    new TableGameConfigWindow.Field("pointsToWin", "Points pour gagner", "number", 1000, 20000, "4000"),
                 });
         }
 
@@ -2296,17 +2249,17 @@ public sealed class GameTableOpener : IGameTableOpener
             return null;
         }
 
-        return new GameRoomViewModel.StartWizardConfigPrompt(
+        return new TableGameConfigWindow.Prompt(
             Title: "LAMA",
             ActionType: "lama_set_config",
             CancelActionType: null,
             Fields: new[]
             {
-                new GameRoomViewModel.StartWizardConfigField("loseAtScore", "Score de défaite (jetons)", "number", 5, 200, "40"),
-                new GameRoomViewModel.StartWizardConfigField("roundPauseSeconds", "Pause entre manches (secondes)", "number", 0, 120, "2"),
-                new GameRoomViewModel.StartWizardConfigField("allowPlayAfterDraw", "Autoriser de rejouer après une pioche", "boolean", null, null, "non"),
-                new GameRoomViewModel.StartWizardConfigField("allowDrawAfterFirstQuit", "Autoriser la pioche après qu'un joueur s'est retiré (dans la manche)", "boolean", null, null, "non"),
-                new GameRoomViewModel.StartWizardConfigField("returnTokenFromRound", "Manche à partir de laquelle un jeton peut être rendu", "number", 1, 50, "2"),
+                new TableGameConfigWindow.Field("loseAtScore", "Score de défaite (jetons)", "number", 5, 200, "40"),
+                new TableGameConfigWindow.Field("roundPauseSeconds", "Pause entre manches (secondes)", "number", 0, 120, "2"),
+                new TableGameConfigWindow.Field("allowPlayAfterDraw", "Autoriser de rejouer après une pioche", "boolean", null, null, "non"),
+                new TableGameConfigWindow.Field("allowDrawAfterFirstQuit", "Autoriser la pioche après qu'un joueur s'est retiré (dans la manche)", "boolean", null, null, "non"),
+                new TableGameConfigWindow.Field("returnTokenFromRound", "Manche à partir de laquelle un jeton peut être rendu", "number", 1, 50, "2"),
             });
     }
 

@@ -108,11 +108,6 @@ internal sealed class GameRoomFocusPolicy
 
     public bool ShouldAllowGameZoneRequest(GameFocusReason reason)
     {
-        if (_view.IsStartWizardOpen)
-        {
-            return false;
-        }
-
         if (IsHistoryHoldActive())
         {
             return false;
@@ -138,11 +133,6 @@ internal sealed class GameRoomFocusPolicy
 
     public bool AllowAnchorAutoFocus(KeyboardFocusChangedEventArgs e)
     {
-        if (_view.IsStartWizardOpen)
-        {
-            return false;
-        }
-
         if (IsHistoryHoldActive())
         {
             return false;
@@ -201,13 +191,6 @@ internal sealed class GameRoomFocusPolicy
 
     private FocusRegionKind? GetRegionForFocus(DependencyObject focused)
     {
-        if (_view.StartWizardOverlay != null &&
-            _view.StartWizardOverlay.Visibility == Visibility.Visible &&
-            IsFocusWithinElement(_view.StartWizardOverlay, focused))
-        {
-            return null;
-        }
-
         if (_view.ChatHost != null && IsFocusWithinElement(_view.ChatHost, focused))
         {
             return FocusRegionKind.Chat;

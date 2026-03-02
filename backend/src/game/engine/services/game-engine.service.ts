@@ -2076,19 +2076,6 @@ export class GameEngineService {
       typeof pending?.type === 'string'
         ? pending.type.trim().toLowerCase()
         : '';
-    const pendingPlayerIdRaw = pending?.playerId;
-    const pendingPlayerId =
-      typeof pendingPlayerIdRaw === 'number'
-        ? pendingPlayerIdRaw
-        : Number(pendingPlayerIdRaw);
-    const fastPendingBotAction =
-      Number.isFinite(pendingPlayerId) &&
-      pendingPlayerId === botActorId &&
-      (pendingType === 'draw' ||
-        pendingType === 'choose_pawn' ||
-        pendingType === 'pick_pawn' ||
-        pendingType === 'swap' ||
-        pendingType === 'choose_target');
     const isQuizPending =
       gameType === 'arche-de-mnemosyne' && pending?.type === 'quiz';
     const configMeta = this.getMetadataObject(meta, 'config');
@@ -2107,8 +2094,6 @@ export class GameEngineService {
       delayMs = initialDelayMs;
     } else if (pendingType === 'draw') {
       delayMs = drawDelayMs;
-    } else if (fastPendingBotAction) {
-      delayMs = 0;
     }
     if (isQuizPending && quizTimerMs != null) {
       delayMs = Math.min(delayMs, quizTimerMs);

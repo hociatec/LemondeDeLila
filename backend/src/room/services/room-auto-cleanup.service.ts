@@ -51,7 +51,9 @@ export class RoomAutoCleanupService implements OnModuleInit, OnModuleDestroy {
 
     const res = await this.rooms.adminCleanupRooms({
       includePrivate: false,
-      includeStarted: false,
+      // Inclure aussi les rooms démarrées pour purger les parties "zombies"
+      // (sans joueurs actifs) accumulées après des déconnexions prolongées.
+      includeStarted: true,
       olderThanMinutes: s.autoCleanupOlderThanMinutes,
       limit: s.autoCleanupLimit,
       dryRun: false,

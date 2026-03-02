@@ -1,0 +1,8 @@
+{
+  "code": "primalis",
+  "name": "Primalis",
+  "minPlayers": 2,
+  "maxPlayers": 6,
+  "engine": "primalis",
+  "summary": "Survivez à la comète en construisant votre tribu de dinosaures et en accumulant de la nourriture."
+}

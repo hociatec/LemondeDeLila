@@ -32,6 +32,7 @@ export class RoomService {
   ) => Promise<void> | void;
   private readonly logger = new Logger(RoomService.name);
   private redis: Redis | null = null;
+  private roomPayloadRedisDisabled = false;
   private readonly roomPayloadRedisPrefix = 'room:payload:';
   private readonly roomPayloadTtlSeconds: number;
   private readonly restoredRoomGraceMs: number;
@@ -420,8 +421,11 @@ export class RoomService {
     if (!this.redis) return;
     try {
       await this.redis.del(this.roomPayloadKey(roomId));
-    } catch {
-      // best effort
+    } catch (error) {
+      this.disableRoomPayloadRedis(
+        'invalidation cache room impossible (fallback mémoire)',
+        error,
+      );
     }
   }
 
@@ -445,7 +449,11 @@ export class RoomService {
       }
       await this.persistRoomPayload(roomId, next);
       return next;
-    } catch {
+    } catch (error) {
+      this.disableRoomPayloadRedis(
+        'mise à jour cache room impossible (fallback mémoire)',
+        error,
+      );
       return null;
     }
   }
@@ -1120,6 +1128,7 @@ export class RoomService {
 
   private ensureRedisInitialized(): void {
     if (this.redis) return;
+    if (this.roomPayloadRedisDisabled) return;
     const redisUrl =
       this.config.get<string>('ROOM_PAYLOAD_REDIS_URL') ??
       this.config.get<string>('SESSION_STORE_REDIS_URL') ??
@@ -1127,8 +1136,20 @@ export class RoomService {
     if (!redisUrl) return;
     try {
       this.redis = this.redisFactory.create(redisUrl, 'room-payload-cache');
-    } catch {
-      this.redis = null;
+      this.redis.on('error', (error: Error) => {
+        if (!this.isFatalRedisError(error)) {
+          return;
+        }
+        this.disableRoomPayloadRedis(
+          'erreur Redis fatale cache room (fallback mémoire)',
+          error,
+        );
+      });
+    } catch (error) {
+      this.disableRoomPayloadRedis(
+        'initialisation cache room Redis impossible (fallback mémoire)',
+        error,
+      );
     }
   }
 
@@ -1143,7 +1164,11 @@ export class RoomService {
       const raw = await this.redis.get(this.roomPayloadKey(roomId));
       if (!raw) return null;
       return JSON.parse(raw) as RoomPayload;
-    } catch {
+    } catch (error) {
+      this.disableRoomPayloadRedis(
+        'lecture cache room Redis impossible (fallback mémoire)',
+        error,
+      );
       return null;
     }
   }
@@ -1163,8 +1188,46 @@ export class RoomService {
         'EX',
         this.roomPayloadTtlSeconds,
       );
+    } catch (error) {
+      this.disableRoomPayloadRedis(
+        'écriture cache room Redis impossible (fallback mémoire)',
+        error,
+      );
+    }
+  }
+
+  private disableRoomPayloadRedis(reason: string, error?: unknown): void {
+    const details = this.extractErrorMessage(error);
+    if (!this.roomPayloadRedisDisabled) {
+      this.logger.warn(details ? `${reason}: ${details}` : reason);
+    }
+    this.roomPayloadRedisDisabled = true;
+    if (!this.redis) {
+      return;
+    }
+    try {
+      this.redis.disconnect();
     } catch {
       // best effort
     }
+    this.redis = null;
+  }
+
+  private isFatalRedisError(error: unknown): boolean {
+    const message = this.extractErrorMessage(error) ?? '';
+    const normalized = message.toLowerCase();
+    return (
+      normalized.includes('noauth') ||
+      normalized.includes('wrongpass') ||
+      normalized.includes('authentication') ||
+      normalized.includes('connection is closed')
+    );
+  }
+
+  private extractErrorMessage(error: unknown): string | null {
+    if (error instanceof Error) {
+      return error.message;
+    }
+    return typeof error === 'string' ? error : null;
   }
 }

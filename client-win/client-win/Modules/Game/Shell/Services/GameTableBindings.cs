@@ -608,7 +608,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
     private void ResetStartFlow(string source) => _lifecycle.Reset(source);
 
-    public void NotifyStartRequestedFromWizard() => _lifecycle.NotifyWizardStartRequested();
+    public void NotifyStartRequestedFromStartConfig() => _lifecycle.NotifyStartConfigRequested();
 
     private bool IsGameplayStartReadyFromLastState()
     {

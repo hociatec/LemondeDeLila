@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -27,8 +26,6 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         Unloaded += OnUnloaded;
         DataContextChanged += OnDataContextChanged;
     }
-
-    internal bool IsStartWizardOpen => _vm?.IsStartWizardOpen == true;
 
     private void OnLoaded(object? sender, RoutedEventArgs e)
     {
@@ -232,11 +229,6 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
 
     internal void RequestFocusGameZoneInternal(GameFocusReason reason)
     {
-        if (_vm?.IsStartWizardOpen == true)
-        {
-            return;
-        }
-
         if (_focusPolicy != null && !_focusPolicy.ShouldAllowGameZoneRequest(reason))
         {
             return;
@@ -314,44 +306,4 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         }
     }
 
-    private void OnStartWizardPreviousClick(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is not GameRoomViewModel vm)
-        {
-            return;
-        }
-
-        vm.GoPreviousStartWizardStep();
-    }
-
-    private async void OnStartWizardNextClick(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is not GameRoomViewModel vm)
-        {
-            return;
-        }
-
-        await vm.GoNextStartWizardStepAsync().ConfigureAwait(true);
-    }
-
-    private void OnStartWizardCancelClick(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is not GameRoomViewModel vm)
-        {
-            return;
-        }
-
-        vm.CancelStartWizard();
-        RequestFocusGameZoneInternal(GameFocusReason.AfterDialog);
-    }
-
-    private async void OnStartWizardStartClick(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is not GameRoomViewModel vm)
-        {
-            return;
-        }
-
-        await vm.ConfirmStartWizardAsync().ConfigureAwait(true);
-    }
 }

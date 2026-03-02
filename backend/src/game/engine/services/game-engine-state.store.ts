@@ -10,6 +10,7 @@ export class GameEngineStateStore {
   private readonly states = new Map<string, GameStateEntity>();
   private readonly persistQueue = new Map<string, Promise<void>>();
   private redis: Redis | null = null;
+  private redisDisabled = false;
   private readonly logger = new Logger(GameEngineStateStore.name);
   private readonly redisPrefix = 'game:state:';
 
@@ -57,9 +58,10 @@ export class GameEngineStateStore {
       this.states.set(key, parsed);
       return parsed;
     } catch (error) {
-      this.logger.error('Impossible de restaurer un état depuis Redis', error, {
-        key,
-      });
+      this.disableRedis(
+        'lecture impossible depuis Redis (fallback mémoire)',
+        error,
+      );
       return undefined;
     }
   }
@@ -86,9 +88,10 @@ export class GameEngineStateStore {
       try {
         await this.redis.del(this.redisKey(key));
       } catch (error) {
-        this.logger.error('Impossible de supprimer un état Redis', error, {
-          key,
-        });
+        this.disableRedis(
+          'suppression impossible dans Redis (fallback mémoire)',
+          error,
+        );
       }
     }
   }
@@ -121,15 +124,23 @@ export class GameEngineStateStore {
       this.redis = null;
       return;
     }
+    if (this.redisDisabled) {
+      return;
+    }
     try {
       this.redis = this.redisFactory.create(url, 'game-engine-state-store');
+      this.redis.on('error', (error: Error) => {
+        if (!this.isFatalRedisError(error)) {
+          return;
+        }
+        this.disableRedis('erreur Redis fatale (fallback mémoire)', error);
+      });
       this.logger.log('GameEngineStateStore connecté à Redis.');
     } catch (error) {
-      this.logger.error(
-        "Impossible d'initialiser Redis pour GameEngineStateStore",
-        error instanceof Error ? error.stack : String(error),
+      this.disableRedis(
+        'initialisation Redis impossible (fallback mémoire)',
+        error,
       );
-      this.redis = null;
     }
   }
 
@@ -150,10 +161,46 @@ export class GameEngineStateStore {
         60 * 60 * 24,
       );
     } catch (error) {
-      this.logger.error('Impossible de persister un état Redis', error, {
-        key,
-      });
+      this.disableRedis(
+        'écriture impossible dans Redis (fallback mémoire)',
+        error,
+      );
     }
+  }
+
+  private disableRedis(reason: string, error?: unknown): void {
+    const details = this.extractErrorMessage(error);
+    if (!this.redisDisabled) {
+      this.logger.warn(details ? `${reason}: ${details}` : reason);
+    }
+    this.redisDisabled = true;
+    if (!this.redis) {
+      return;
+    }
+    try {
+      this.redis.disconnect();
+    } catch {
+      // best effort
+    }
+    this.redis = null;
+  }
+
+  private isFatalRedisError(error: unknown): boolean {
+    const message = this.extractErrorMessage(error) ?? '';
+    const normalized = message.toLowerCase();
+    return (
+      normalized.includes('noauth') ||
+      normalized.includes('wrongpass') ||
+      normalized.includes('authentication') ||
+      normalized.includes('connection is closed')
+    );
+  }
+
+  private extractErrorMessage(error: unknown): string | null {
+    if (error instanceof Error) {
+      return error.message;
+    }
+    return typeof error === 'string' ? error : null;
   }
 
   private enqueuePersist(key: string, state: GameStateEntity): void {

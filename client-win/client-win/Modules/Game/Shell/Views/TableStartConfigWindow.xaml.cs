@@ -16,7 +16,10 @@ namespace client_win.Modules.Game.Shell.Views;
 
 public partial class TableStartConfigWindow : Window
 {
-    public sealed record StartFlowResult(string AmbienceSoundId, Dictionary<string, object>? GameConfigPayload);
+    public sealed record StartFlowResult(
+        string AmbienceSoundId,
+        string GameConfigActionType,
+        Dictionary<string, object>? GameConfigPayload);
 
     private sealed class Vm : INotifyPropertyChanged
     {
@@ -102,6 +105,7 @@ public partial class TableStartConfigWindow : Window
     private readonly ISoundService? _sounds;
     private readonly Func<Task<TableGameConfigWindow.Prompt?>>? _loadGameConfigPromptAsync;
     private StartFlowResult? _result;
+    private string _gameConfigActionType = string.Empty;
 
     private TableStartConfigWindow(
         IReadOnlyList<TableAmbiencePickerWindow.Choice> choices,
@@ -163,6 +167,7 @@ public partial class TableStartConfigWindow : Window
 
     private void BindGameConfig(TableGameConfigWindow.Prompt? prompt)
     {
+        _gameConfigActionType = (prompt?.ActionType ?? string.Empty).Trim();
         _vm.ConfigFields.Clear();
         if (prompt == null || prompt.Fields == null || prompt.Fields.Count == 0)
         {
@@ -346,6 +351,7 @@ public partial class TableStartConfigWindow : Window
         StopPreview();
         _result = new StartFlowResult(
             AmbienceSoundId: _vm.SelectedChoice?.SoundId ?? string.Empty,
+            GameConfigActionType: _vm.HasGameConfig ? _gameConfigActionType : string.Empty,
             GameConfigPayload: payload);
         DialogResult = true;
         Close();

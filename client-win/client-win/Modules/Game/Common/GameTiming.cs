@@ -36,9 +36,9 @@ internal static class GameTiming
         internal static readonly TimeSpan RoomLobbyRefreshDebounce = TimeSpan.FromMilliseconds(350);
         internal static readonly TimeSpan RulesConnectTimeout = TimeSpan.FromSeconds(8);
         internal static readonly TimeSpan RulesResponseTimeout = TimeSpan.FromSeconds(5);
-        internal static readonly TimeSpan WizardPromptConnectTimeout = TimeSpan.FromSeconds(8);
-        internal static readonly TimeSpan WizardPromptFetchTimeout = TimeSpan.FromSeconds(8);
-        internal static readonly TimeSpan WizardPromptSoftWait = TimeSpan.FromMilliseconds(220);
+        internal static readonly TimeSpan StartConfigPromptConnectTimeout = TimeSpan.FromSeconds(8);
+        internal static readonly TimeSpan StartConfigPromptFetchTimeout = TimeSpan.FromSeconds(8);
+        internal static readonly TimeSpan StartConfigPromptSoftWait = TimeSpan.FromMilliseconds(220);
         internal static readonly TimeSpan PostStartReplayConnectTimeout = TimeSpan.FromSeconds(4);
         internal static readonly TimeSpan PromptFastTimeout = TimeSpan.FromSeconds(2.2);
         internal static readonly TimeSpan PromptSlowTimeout = TimeSpan.FromSeconds(3);

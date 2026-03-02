@@ -1,0 +1,7 @@
+sudo tee /etc/systemd/system/lila-backend.service.d/zz-redis-auth.conf >/dev/null <<'EOF'
+[Service]
+Environment=GAME_ENGINE_STATE_REDIS_URL=redis://:fbccb0a9e3b7d0bd0b4b19481982dad653793bc30c4417a7525f37bf14b24daf@127.0.0.1:6379/0
+Environment=SESSION_STORE_REDIS_URL=redis://:fbccb0a9e3b7d0bd0b4b19481982dad653793bc30c4417a7525f37bf14b24daf@127.0.0.1:6379/1
+Environment=NOTIFICATION_REDIS_URL=redis://:fbccb0a9e3b7d0bd0b4b19481982dad653793bc30c4417a7525f37bf14b24daf@127.0.0.1:6379/1
+Environment=PRESENCE_REDIS_URL=redis://:fbccb0a9e3b7d0bd0b4b19481982dad653793bc30c4417a7525f37bf14b24daf@127.0.0.1:6379/1
+EOF

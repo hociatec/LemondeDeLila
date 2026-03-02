@@ -95,13 +95,13 @@ internal sealed class GameTableLifecycleCoordinator
         _log?.Invoke(_state.ToString(), source, _startFlowVersion);
     }
 
-    public void NotifyWizardStartRequested()
+    public void NotifyStartConfigRequested()
     {
         var version = Interlocked.Increment(ref _startFlowVersion);
         if (_state == StartFlowState.Idle)
         {
             _state = StartFlowState.StartRequested;
-            _log?.Invoke(_state.ToString(), "wizard.start", version);
+            _log?.Invoke(_state.ToString(), "start-config.requested", version);
         }
 
         _awaitingStartReadyVersion = version;

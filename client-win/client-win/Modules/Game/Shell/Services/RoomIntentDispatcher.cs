@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using client_win.Modules.Game.History.Services;
 using client_win.Modules.Game.Room.Services;
@@ -45,7 +44,7 @@ internal sealed class RoomIntentDispatcher
                 break;
 
             case "start-wizard":
-                HandleStartWizardIntent(intentPayload);
+                HandleStartConfigIntent(intentPayload);
                 break;
             default:
                 break;
@@ -106,50 +105,47 @@ internal sealed class RoomIntentDispatcher
         _announcements.Publish(new RoomAnnouncement(priority, message));
     }
 
-    private void HandleStartWizardIntent(JsonElement payload)
+    private void HandleStartConfigIntent(JsonElement payload)
     {
-        if (!TryParseStartWizardIntent(payload, out var intent))
+        if (payload.ValueKind != JsonValueKind.Object)
         {
             return;
         }
 
-        _roomVm.EnqueueServerStartWizardIntent(intent);
-    }
-
-    private static bool TryParseStartWizardIntent(
-        JsonElement payload,
-        out RoomStartWizardIntent intent)
-    {
-        intent = default!;
-        if (payload.ValueKind != JsonValueKind.Object)
-        {
-            return false;
-        }
-
-        var ownerId = payload.TryGetProperty("ownerId", out var ownerProp) &&
-                      ownerProp.ValueKind == JsonValueKind.Number
-            ? ownerProp.GetInt32()
-            : (int?)null;
-        var title = payload.TryGetProperty("title", out var titleProp) &&
-                    titleProp.ValueKind == JsonValueKind.String
-            ? titleProp.GetString() ?? string.Empty
-            : string.Empty;
-        var description = payload.TryGetProperty("description", out var descProp) &&
-                          descProp.ValueKind == JsonValueKind.String
-            ? descProp.GetString() ?? string.Empty
-            : string.Empty;
         var message = payload.TryGetProperty("message", out var messageProp) &&
                       messageProp.ValueKind == JsonValueKind.String
             ? messageProp.GetString()
             : null;
 
-        if (string.IsNullOrWhiteSpace(title) && string.IsNullOrWhiteSpace(description))
+        if (string.IsNullOrWhiteSpace(message))
         {
-            return false;
+            var title = payload.TryGetProperty("title", out var titleProp) &&
+                        titleProp.ValueKind == JsonValueKind.String
+                ? titleProp.GetString()
+                : null;
+            var description = payload.TryGetProperty("description", out var descProp) &&
+                              descProp.ValueKind == JsonValueKind.String
+                ? descProp.GetString()
+                : null;
+
+            if (!string.IsNullOrWhiteSpace(title) && !string.IsNullOrWhiteSpace(description))
+            {
+                message = $"{title.Trim()}. {description.Trim()}";
+            }
+            else if (!string.IsNullOrWhiteSpace(title))
+            {
+                message = title;
+            }
+            else if (!string.IsNullOrWhiteSpace(description))
+            {
+                message = description;
+            }
         }
 
-        intent = new RoomStartWizardIntent(ownerId, title, description, message);
-        return true;
+        if (!string.IsNullOrWhiteSpace(message))
+        {
+            _roomVm.Status = message.Trim();
+        }
     }
 
     private void HandleFocusIntent(JsonElement payload)

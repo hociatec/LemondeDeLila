@@ -126,10 +126,6 @@ export class AFondLesBallonsSetupService {
       next,
       'Objectif : atteindre exactement la case 40 (la Grosse Noix Dorée). Si vous dépassez, vous reculez du surplus.',
     );
-    next = this.core.appendLog(next, 'Pions disponibles :');
-    for (const pawn of pawns) {
-      next = this.core.appendLog(next, `- ${pawn.label}`);
-    }
     return next;
   }
 }

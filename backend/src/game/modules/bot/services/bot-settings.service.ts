@@ -18,11 +18,11 @@ type BotSettingsRoot = {
 @Injectable()
 export class BotSettingsService implements OnModuleInit {
   private readonly logger = new Logger(BotSettingsService.name);
-  private cache: BotSettingsRoot | null = null;
+  private static sharedCache: BotSettingsRoot | null = null;
 
-  private static readonly DEFAULT_TURN_DELAY_MS = 4000;
-  private static readonly DEFAULT_START_DELAY_MS = 4000;
-  private static readonly DEFAULT_DRAW_DELAY_MS = 4000;
+  private static readonly DEFAULT_TURN_DELAY_MS = 600;
+  private static readonly DEFAULT_START_DELAY_MS = 250;
+  private static readonly DEFAULT_DRAW_DELAY_MS = 250;
   private static readonly MIN_DELAY_MS = 0;
   private static readonly MAX_DELAY_MS = 60000;
 
@@ -80,19 +80,11 @@ export class BotSettingsService implements OnModuleInit {
       botStartDelayMs: root.botStartDelayMs,
       botDrawDelayMs: root.botDrawDelayMs,
     });
-    if (!this.cache) {
-      this.cache = {
-        botTurnDelayMs: root.botTurnDelayMs,
-        botStartDelayMs: root.botStartDelayMs,
-        botDrawDelayMs: root.botDrawDelayMs,
-      };
-    } else {
-      this.cache = {
-        botTurnDelayMs: root.botTurnDelayMs,
-        botStartDelayMs: root.botStartDelayMs,
-        botDrawDelayMs: root.botDrawDelayMs,
-      };
-    }
+    BotSettingsService.sharedCache = {
+      botTurnDelayMs: root.botTurnDelayMs,
+      botStartDelayMs: root.botStartDelayMs,
+      botDrawDelayMs: root.botDrawDelayMs,
+    };
     return {
       botTurnDelayMs: root.botTurnDelayMs,
       botStartDelayMs: root.botStartDelayMs,
@@ -116,8 +108,8 @@ export class BotSettingsService implements OnModuleInit {
   }
 
   private getRoot(): BotSettingsRoot {
-    if (this.cache) {
-      return this.cache;
+    if (BotSettingsService.sharedCache) {
+      return BotSettingsService.sharedCache;
     }
     return {
       botTurnDelayMs: BotSettingsService.DEFAULT_TURN_DELAY_MS,
@@ -127,12 +119,12 @@ export class BotSettingsService implements OnModuleInit {
   }
 
   private async ensureSeeded(): Promise<void> {
-    if (this.cache) return;
+    if (BotSettingsService.sharedCache) return;
 
     try {
       const existing = await this.repo.findOne({ where: { id: 1 } });
       if (existing) {
-        this.cache = {
+        BotSettingsService.sharedCache = {
           botTurnDelayMs: this.clampDelay(existing.botTurnDelayMs),
           botStartDelayMs: this.clampDelay(existing.botStartDelayMs),
           botDrawDelayMs: this.clampDelay(existing.botDrawDelayMs),
@@ -149,7 +141,7 @@ export class BotSettingsService implements OnModuleInit {
         botStartDelayMs: startDelay,
         botDrawDelayMs: drawDelay,
       });
-      this.cache = {
+      BotSettingsService.sharedCache = {
         botTurnDelayMs: delay,
         botStartDelayMs: startDelay,
         botDrawDelayMs: drawDelay,
@@ -158,7 +150,7 @@ export class BotSettingsService implements OnModuleInit {
       this.logger.warn(
         `Impossible de charger/initialiser bot_settings: ${(error as Error).message}`,
       );
-      this.cache = {
+      BotSettingsService.sharedCache = {
         botTurnDelayMs: BotSettingsService.DEFAULT_TURN_DELAY_MS,
         botStartDelayMs: BotSettingsService.DEFAULT_START_DELAY_MS,
         botDrawDelayMs: BotSettingsService.DEFAULT_DRAW_DELAY_MS,
