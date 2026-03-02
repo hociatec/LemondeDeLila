@@ -122,7 +122,7 @@ public partial class StatsView : UserControl, IInitialFocusTarget, IFocusReady
         }
     }
 
-    private async void OnListPreviewKeyDown(object sender, KeyEventArgs e)
+    private void OnListPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key != Key.Enter && e.Key != Key.Return)
         {

@@ -466,11 +466,11 @@ public sealed class SocialViewModel : ObservableObject
         }.Where(s => !string.IsNullOrWhiteSpace(s)));
     }
 
-    private async Task ViewProfileAsync(SocialUser? user)
+    private Task ViewProfileAsync(SocialUser? user)
     {
         if (user == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (SelectedSection != SocialSection.Profile)
@@ -480,6 +480,7 @@ public sealed class SocialViewModel : ObservableObject
         SetProfileTargetUserId(user.Id);
         SelectedSection = SocialSection.Profile;
         ProfileFocusRequested?.Invoke();
+        return Task.CompletedTask;
     }
 
     private async Task OpenStoryBookAsync()

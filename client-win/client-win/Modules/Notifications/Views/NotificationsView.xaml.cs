@@ -21,7 +21,7 @@ public partial class NotificationsView : UserControl, IInitialFocusTarget
         Unloaded += OnUnloaded;
     }
 
-    private async void OnLoaded(object sender, RoutedEventArgs e)
+    private void OnLoaded(object sender, RoutedEventArgs e)
     {
         if (DataContext is NotificationsViewModel vm)
         {

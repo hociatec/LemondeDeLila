@@ -114,7 +114,7 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
         }
     }
 
-    private async void OnListPreviewKeyDown(object sender, KeyEventArgs e)
+    private void OnListPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Escape && DataContext is PresenceViewModel vmEsc)
         {

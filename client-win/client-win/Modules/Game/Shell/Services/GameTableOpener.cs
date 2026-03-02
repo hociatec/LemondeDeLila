@@ -810,9 +810,9 @@ public sealed class GameTableOpener : IGameTableOpener
                             if (catalogVm == null) return;
                             await OpenAsync(game, catalogVm).ConfigureAwait(true);
                         },
-                        joinGame: async () =>
+                        joinGame: () =>
                         {
-                            if (catalogVm == null) return "Impossible d'ouvrir Rejoindre une table.";
+                            if (catalogVm == null) return Task.FromResult("Impossible d'ouvrir Rejoindre une table.");
 
                             JoinGameViewModel? tavernVm = null;
                             tavernVm = new JoinGameViewModel(
@@ -826,11 +826,11 @@ public sealed class GameTableOpener : IGameTableOpener
                                     try { _navigation.Show(catalogVm); } catch { /* ignore */ }
                                 });
                             _navigation.Show(tavernVm);
-                            return "Rejoindre une table ouvert.";
+                            return Task.FromResult("Rejoindre une table ouvert.");
                         },
-                        openVault: async () =>
+                        openVault: () =>
                         {
-                            if (catalogVm == null) return "Impossible d'ouvrir Mon coffre fort.";
+                            if (catalogVm == null) return Task.FromResult("Impossible d'ouvrir Mon coffre fort.");
 
                             VaultViewModel? vaultVm = null;
                             vaultVm = new VaultViewModel(
@@ -846,7 +846,7 @@ public sealed class GameTableOpener : IGameTableOpener
                                 });
 
                             _navigation.Show(vaultVm);
-                            return "Mon coffre fort ouvert.";
+                            return Task.FromResult("Mon coffre fort ouvert.");
                         });
 
                     return catalogVm;
@@ -1267,7 +1267,7 @@ public sealed class GameTableOpener : IGameTableOpener
             return result;
         }
 
-        await dispatcher.InvokeAsync(async () =>
+        await dispatcher.InvokeAsync(() =>
         {
             async Task Start()
             {
@@ -1730,7 +1730,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     // ignore
                 }
 
-                await dispatcher.InvokeAsync(async () =>
+                await dispatcher.InvokeAsync(() =>
                 {
                     if (cts.IsCancellationRequested || Interlocked.CompareExchange(ref isExiting, 0, 0) == 1)
                     {

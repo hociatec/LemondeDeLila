@@ -1319,23 +1319,23 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         return false;
     }
 
-    public async Task<bool> TryHandleInterfaceShortcutLocallyAsync(
+    public Task<bool> TryHandleInterfaceShortcutLocallyAsync(
         string normalizedKey,
         CancellationToken cancellationToken = default)
     {
         var session = _session;
         if (session == null)
         {
-            return false;
+            return Task.FromResult(false);
         }
 
         if (string.IsNullOrWhiteSpace(normalizedKey))
         {
-            return false;
+            return Task.FromResult(false);
         }
         if (cancellationToken.IsCancellationRequested)
         {
-            return false;
+            return Task.FromResult(false);
         }
 
         // Use the last known state: requesting a fresh game.state on every key press can cause
@@ -1344,7 +1344,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         var state = session.LastState;
         if (state == null)
         {
-            return false;
+            return Task.FromResult(false);
         }
 
         var pressed = normalizedKey.Trim().ToUpperInvariant();
@@ -1376,7 +1376,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         });
         if (hasAvailableActionOnPressedKey)
         {
-            return false;
+            return Task.FromResult(false);
         }
 
         foreach (var hint in hints)
@@ -1408,7 +1408,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             if (!string.IsNullOrWhiteSpace(message))
             {
                 EmitUiShortcutMessage(message);
-                return true;
+                return Task.FromResult(true);
             }
         }
 
@@ -1420,7 +1420,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             if (!string.IsNullOrWhiteSpace(scoreMessage))
             {
                 EmitUiShortcutMessage(scoreMessage);
-                return true;
+                return Task.FromResult(true);
             }
         }
 
@@ -1430,11 +1430,11 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             if (!string.IsNullOrWhiteSpace(positionMessage))
             {
                 EmitUiShortcutMessage(positionMessage);
-                return true;
+                return Task.FromResult(true);
             }
         }
 
-        return false;
+        return Task.FromResult(false);
     }
 
     private void EmitUiShortcutMessage(string message)
@@ -1484,4 +1484,3 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     partial void InitializeHandSupport();
 }
-

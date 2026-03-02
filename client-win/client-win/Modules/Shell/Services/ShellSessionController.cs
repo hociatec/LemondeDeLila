@@ -70,7 +70,7 @@ public sealed class ShellSessionController
         }
     }
 
-    public async Task NavigateToMainMenuAsync(AuthenticatedUser user, Action onLogoutRequested)
+    public Task NavigateToMainMenuAsync(AuthenticatedUser user, Action onLogoutRequested)
     {
         _navigation.SetUser(new UserContext(user.Username, user.Token));
         _host.Session.SetUser(user);
@@ -164,6 +164,8 @@ public sealed class ShellSessionController
         {
             // ignore
         }
+
+        return Task.CompletedTask;
     }
 
     public void LogoutToHome(object homeContent)

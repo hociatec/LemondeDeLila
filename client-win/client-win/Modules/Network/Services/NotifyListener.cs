@@ -426,7 +426,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 		        }
 		    }
 
-		    private async Task HandleDisconnectAsync(string reason)
+		    private Task HandleDisconnectAsync(string reason)
 		    {
 	        try
 	        {
@@ -450,6 +450,8 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 		        {
 		            // ignore
 		        }
+
+                return Task.CompletedTask;
 		    }
 
         private void HandleMessageOnUi(string type, JsonElement root)

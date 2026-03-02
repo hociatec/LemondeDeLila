@@ -393,7 +393,7 @@ public partial class CatalogView : UserControl, IInitialFocusTarget, IFocusReady
         }
     }
 
-	    private async void OnGamesKeyDown(object sender, KeyEventArgs e)
+	    private void OnGamesKeyDown(object sender, KeyEventArgs e)
 	    {
 	        if ((e.Key != Key.Enter && e.Key != Key.Return) || DataContext is not CatalogViewModel vm)
 	        {
@@ -423,7 +423,7 @@ public partial class CatalogView : UserControl, IInitialFocusTarget, IFocusReady
 	        }));
 	    }
 
-	    private async void OnGamesPreviewKeyDown(object sender, KeyEventArgs e)
+	    private void OnGamesPreviewKeyDown(object sender, KeyEventArgs e)
 	    {
         if (e.Key != Key.Enter && e.Key != Key.Return)
         {

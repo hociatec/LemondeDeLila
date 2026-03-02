@@ -58,7 +58,7 @@ public partial class AboutView : UserControl, IInitialFocusTarget
         }
     }
 
-    private async void OnListPreviewKeyDown(object sender, KeyEventArgs e)
+    private void OnListPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key != Key.Enter && e.Key != Key.Return)
         {

@@ -66,13 +66,13 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
     public int? CurrentRoomId => _currentRoomId;
     public string? CurrentRoomName => _currentRoomName;
 
-    public async Task StartAsync(CancellationToken cancellationToken = default)
+    public Task StartAsync(CancellationToken cancellationToken = default)
     {
-        if (_started) return;
+        if (_started) return Task.CompletedTask;
         var token = _session.CurrentUser?.Token;
         if (string.IsNullOrWhiteSpace(token))
         {
-            return;
+            return Task.CompletedTask;
         }
 
         _started = true;
@@ -81,6 +81,7 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
 
         // Boucle de reconnexion best-effort (ex: ticket endpoint temporairement KO, coupure réseau).
         _reconnectLoop = Task.Run(() => ReconnectLoopAsync(_reconnectCts.Token), _reconnectCts.Token);
+        return Task.CompletedTask;
     }
 
     public async Task StopAsync(CancellationToken cancellationToken = default)
