@@ -398,7 +398,9 @@ public static class ClientUpdateInstaller
             var html = await http.GetStringAsync(baseUrl, cts.Token).ConfigureAwait(false);
 
             // href="LeMondeDeLila.application" (ou autre)
-            var rx = new Regex("href\\s*=\\s*\"(?<href>[^\"]+\\.application)\"", RegexOptions.IgnoreCase);
+            var rx = new Regex(
+                "href\\s*=\\s*([\"'])(?<href>[^\"']+\\.application(?:\\?[^\"']*)?)\\1",
+                RegexOptions.IgnoreCase);
             var m = rx.Match(html);
             if (m.Success)
             {

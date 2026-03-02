@@ -45,7 +45,9 @@ export class AdminSoundsController {
 
   @Get('table-ambiences')
   async listTableAmbiences() {
-    return this.sounds.listTableAmbiences();
+    return this.sounds.listTableAmbiencesWithFilter({
+      includeDisabled: true,
+    });
   }
 
   @Post('table-ambiences')
@@ -64,6 +66,17 @@ export class AdminSoundsController {
   @Delete('table-ambiences/:soundId')
   async deleteTableAmbience(@Param('soundId') soundId: string) {
     return this.sounds.deleteTableAmbience(soundId);
+  }
+
+  @Put('table-ambiences/:soundId/enabled')
+  async setTableAmbienceEnabled(
+    @Param('soundId') soundId: string,
+    @Body() body: any,
+  ) {
+    if (typeof body?.enabled !== 'boolean') {
+      throw new BadRequestException('Champ "enabled" booléen requis.');
+    }
+    return this.sounds.setTableAmbienceEnabled(soundId, body.enabled === true);
   }
 
   @Post(':soundId')

@@ -80,6 +80,7 @@ export type TableAmbienceSoundKey = Extract<SoundKey, `TableAmbience${number}`>;
 export type TableAmbienceDefinition = {
   soundId: TableAmbienceSoundKey;
   name: string;
+  enabled: boolean;
 };
 
 export type TableAmbienceDefinitionsFile = {

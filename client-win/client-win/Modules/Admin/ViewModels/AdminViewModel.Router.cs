@@ -623,6 +623,12 @@ public sealed partial class AdminViewModel
                     return;
                 }
 
+                if (tableAmbienceAction == "tableAmbience.toggle")
+                {
+                    await ToggleTableAmbienceEnabledAsync(selected).ConfigureAwait(true);
+                    return;
+                }
+
                 if (tableAmbienceAction == "tableAmbience.sound")
                 {
                     if (Enum.TryParse<Modules.Audio.Models.SoundId>(selected.SoundId ?? string.Empty, ignoreCase: true, out var sid))
@@ -1302,4 +1308,3 @@ public sealed partial class AdminViewModel
         }
     }
 }
-

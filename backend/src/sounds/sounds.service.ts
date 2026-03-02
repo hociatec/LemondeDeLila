@@ -8,7 +8,7 @@
 import { spawn } from 'child_process';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
-import { tmpdir } from 'os';
+import { homedir, tmpdir } from 'os';
 import * as path from 'path';
 import ffmpegStatic from 'ffmpeg-static';
 import ffprobeStatic from 'ffprobe-static';
@@ -26,19 +26,71 @@ import { NotificationService } from '../notification/services/notification.servi
 @Injectable()
 export class SoundsService {
   private readonly logger = new Logger(SoundsService.name);
+  private readonly storageRoot: string;
 
-  constructor(private readonly notifications: NotificationService) {}
+  constructor(private readonly notifications: NotificationService) {
+    this.storageRoot = this.resolveDataRoot();
+  }
 
-  private dataRoot() {
-    // IMPORTANT:
-    // - Using process.cwd() makes the storage path depend on how the service is launched (systemd WorkingDirectory,
-    //   deploy scripts, manual runs...). That can make admin-uploaded sounds appear to "disappear" after a restart
-    //   because the server starts reading a different folder.
-    // - Default to a stable path relative to the backend project root (works in both src/ and dist/).
-    // - Allow overriding via env for prod setups.
+  private hasDirectoryEntries(dir: string): boolean {
+    try {
+      return fs.readdirSync(dir).length > 0;
+    } catch {
+      return false;
+    }
+  }
+
+  private bootstrapPersistentStorage(
+    legacyRoot: string,
+    persistentRoot: string,
+  ): void {
+    if (path.resolve(legacyRoot) === path.resolve(persistentRoot)) {
+      return;
+    }
+
+    try {
+      if (
+        this.hasDirectoryEntries(legacyRoot) &&
+        !this.hasDirectoryEntries(persistentRoot)
+      ) {
+        fs.mkdirSync(path.dirname(persistentRoot), { recursive: true });
+        fs.cpSync(legacyRoot, persistentRoot, {
+          recursive: true,
+          force: false,
+          errorOnExist: false,
+        });
+      }
+    } catch {
+      // best-effort bootstrap
+    }
+  }
+
+  private resolveDataRoot(): string {
     const override = String(process.env.LMDL_SOUNDS_DIR ?? '').trim();
     if (override) return path.resolve(override);
-    return path.resolve(__dirname, '..', '..', 'data', 'sounds');
+
+    const legacyRoot = path.resolve(__dirname, '..', '..', 'data', 'sounds');
+    const nodeEnv = String(process.env.NODE_ENV ?? '')
+      .trim()
+      .toLowerCase();
+
+    if (nodeEnv !== 'production') {
+      return legacyRoot;
+    }
+
+    const persistentRoot = path.join(
+      homedir(),
+      '.local',
+      'share',
+      'lemonde-de-lila',
+      'sounds',
+    );
+    this.bootstrapPersistentStorage(legacyRoot, persistentRoot);
+    return persistentRoot;
+  }
+
+  private dataRoot() {
+    return this.storageRoot;
   }
 
   private getFfmpegPath(): string {
@@ -277,6 +329,10 @@ export class SoundsService {
         .map((it: any) => ({
           soundId: this.normalizeTableAmbienceKey(String(it?.soundId ?? '')),
           name: String(it?.name ?? '').trim(),
+          enabled:
+            typeof it?.enabled === 'boolean'
+              ? it.enabled
+              : true,
         }))
         .filter((it: TableAmbienceDefinition) => it.soundId && it.name);
 
@@ -312,7 +368,21 @@ export class SoundsService {
   }
 
   async listTableAmbiences(): Promise<TableAmbienceDefinitionsFile> {
-    return this.readTableAmbiences();
+    return this.listTableAmbiencesWithFilter();
+  }
+
+  async listTableAmbiencesWithFilter(
+    options?: { includeDisabled?: boolean },
+  ): Promise<TableAmbienceDefinitionsFile> {
+    const current = await this.readTableAmbiences();
+    if (options?.includeDisabled === true) {
+      return current;
+    }
+
+    return {
+      ...current,
+      items: current.items.filter((it) => it.enabled !== false),
+    };
   }
 
   async createTableAmbience(nameRaw: string): Promise<TableAmbienceDefinition> {
@@ -334,7 +404,11 @@ export class SoundsService {
       );
     }
 
-    const created: TableAmbienceDefinition = { soundId: available, name };
+    const created: TableAmbienceDefinition = {
+      soundId: available,
+      name,
+      enabled: true,
+    };
     const next: TableAmbienceDefinitionsFile = {
       updatedAt: new Date().toISOString(),
       items: [...current.items, created],
@@ -367,7 +441,11 @@ export class SoundsService {
     }
 
     const nextItems = [...current.items];
-    nextItems[idx] = { soundId: soundId, name };
+    nextItems[idx] = {
+      soundId: soundId,
+      name,
+      enabled: nextItems[idx]?.enabled !== false,
+    };
     const next: TableAmbienceDefinitionsFile = {
       updatedAt: new Date().toISOString(),
       items: nextItems,
@@ -402,6 +480,37 @@ export class SoundsService {
     });
 
     return { ok: true };
+  }
+
+  async setTableAmbienceEnabled(
+    soundIdRaw: string,
+    enabled: boolean,
+  ): Promise<TableAmbienceDefinition> {
+    const soundId = this.normalizeTableAmbienceKey(soundIdRaw);
+    const current = await this.readTableAmbiences();
+    const idx = current.items.findIndex(
+      (i) => i.soundId.toLowerCase() === soundId.toLowerCase(),
+    );
+    if (idx < 0) {
+      throw new NotFoundException('Ambiance de table introuvable.');
+    }
+
+    const nextItems = [...current.items];
+    nextItems[idx] = {
+      ...nextItems[idx],
+      enabled: enabled === true,
+    };
+    const next: TableAmbienceDefinitionsFile = {
+      updatedAt: new Date().toISOString(),
+      items: nextItems,
+    };
+    await this.writeTableAmbiences(next);
+
+    await this.notifications.notifyAll('sounds.tableAmbiences.updated', {
+      updatedAt: next.updatedAt,
+    });
+
+    return nextItems[idx];
   }
 
   async getPublicManifest(origin?: string | null): Promise<SoundManifest> {
@@ -440,9 +549,9 @@ export class SoundsService {
     }
 
     const ext = path.extname(originalName || tempFilePath).toLowerCase();
-    if (ext !== '.mp3' && ext !== '.wav') {
+    if (ext !== '.mp3' && ext !== '.wav' && ext !== '.wave') {
       throw new BadRequestException(
-        'Seuls les fichiers .mp3 ou .wav sont acceptés.',
+        'Seuls les fichiers .mp3, .wav ou .wave sont acceptés.',
       );
     }
 

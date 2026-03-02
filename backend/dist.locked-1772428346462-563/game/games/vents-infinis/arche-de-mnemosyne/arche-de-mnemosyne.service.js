@@ -1,0 +1,1936 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "ArcheDeMnemosyneService", {
+    enumerable: true,
+    get: function() {
+        return ArcheDeMnemosyneService;
+    }
+});
+const _common = require("@nestjs/common");
+const _gameregistryservice = require("../../../engine/services/game-registry.service");
+const _abstractgameservice = require("../../../engine/abstract/abstract-game.service");
+const _gamecoreservice = require("../../../core/services/game-core.service");
+const _turnflowservice = require("../../../modules/turn/services/turn-flow.service");
+const _randomservice = require("../../../modules/random/services/random.service");
+const _shortcututils = require("../../../engine/shortcuts/shortcut-utils");
+const _mnemoquizstoreservice = require("./store/mnemo-quiz-store.service");
+const _actionservicehelper = require("../../../actions/action-service.helper");
+const _actionspresenterhelper = require("../../../presenters/actions-presenter.helper");
+const _playernamehelper = require("../../../modules/turn-policies/player-name.helper");
+const _stringvalueutils = require("../../../../common/utils/string-value.utils");
+function _ts_decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+function _ts_metadata(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+const ARCHE_PLAYER_NAME_OPTIONS = {
+    collapseWhitespace: true,
+    unwrapDoubleQuotes: true
+};
+let ArcheDeMnemosyneService = class ArcheDeMnemosyneService extends _abstractgameservice.AbstractGameService {
+    hydrateInitialState(baseState) {
+        const players = Array.isArray(baseState.players) ? baseState.players : [];
+        const initialFirstId = players[0]?.id ?? null;
+        const baseMeta = baseState.metadata ?? {};
+        const ownerPlayerId = (()=>{
+            // Le moteur (GameCoreService) expose généralement le propriétaire de table via `roomOwnerId`.
+            // IMPORTANT: ne pas déduire depuis players[0] (peut être un bot) sinon les prompts de config
+            // sont "assignés" au bot et invisibles pour le vrai propriétaire.
+            if (typeof baseMeta.roomOwnerId === 'number') return baseMeta.roomOwnerId;
+            if (typeof baseMeta.ownerPlayerId === 'number') return baseMeta.ownerPlayerId;
+            const firstHumanId = players.find((p)=>p && !p.isBot)?.id ?? null;
+            return firstHumanId ?? initialFirstId;
+        })();
+        const config = {
+            targetPoints: 20,
+            useTimer: true,
+            timerSeconds: 30,
+            interQuestionSeconds: 15,
+            correctSoloPoints: 2,
+            correctMultiPoints: 1,
+            wrongPoints: 0,
+            timeoutPoints: -1
+        };
+        const meta = {
+            rng: typeof baseState.metadata === 'object' && baseState.metadata ? baseState.metadata.rng : undefined,
+            ownerPlayerId,
+            config,
+            selectedCategoryId: null,
+            scoresByPlayerId: Object.fromEntries(players.map((p)=>[
+                    p.id,
+                    0
+                ])),
+            usedQuestionIds: [],
+            currentQuestion: null,
+            quizAnswersByPlayerId: {},
+            quizDeadlineAtMs: null,
+            adminView: {
+                page: 'setup'
+            },
+            prompt: this.buildConfigPrompt(config),
+            promptOwnerId: ownerPlayerId,
+            winnerId: null
+        };
+        const firstId = players.find((p)=>p?.id === ownerPlayerId)?.id ?? initialFirstId;
+        const state = {
+            ...baseState,
+            status: 'started',
+            phase: 'setup',
+            round: baseState.round ?? 1,
+            turnIndex: baseState.turnIndex ?? 0,
+            turn: {
+                currentPlayerId: firstId,
+                direction: 1
+            },
+            pending: null,
+            metadata: meta,
+            log: Array.isArray(baseState.log) ? baseState.log : []
+        };
+        return this.core.appendLog(state, 'Quiz : choisissez une catégorie (ou Mélange) pour démarrer.');
+    }
+    getAvailableActions(state, playerId) {
+        return this.buildActionsForUser(state, playerId);
+    }
+    validateAction(state, action, actorId) {
+        const type = (0, _actionservicehelper.normalizeActionType)(action);
+        if (!type) {
+            throw new Error('Action invalide');
+        }
+        const adminActions = new Set([
+            'mnemo_open_admin',
+            'mnemo_back',
+            'mnemo_open_all_questions',
+            'mnemo_open_add_category',
+            'mnemo_add_category',
+            'mnemo_open_rename_category',
+            'mnemo_rename_category',
+            'mnemo_delete_category',
+            'mnemo_open_category',
+            'mnemo_open_add_question',
+            'mnemo_add_question',
+            'mnemo_open_questions',
+            'mnemo_open_question',
+            'mnemo_set_question_status',
+            'mnemo_open_edit_question',
+            'mnemo_edit_question'
+        ]);
+        const meta = this.getMeta(state);
+        const actor = String(action?.meta?.actor ?? '').trim().toLowerCase();
+        const isSystem = actor === 'system';
+        if (type === 'mnemo_timeout') {
+            if (!isSystem) {
+                throw new Error('Action invalide.');
+            }
+            return {
+                ...action,
+                type,
+                payload: action.payload ?? {}
+            };
+        }
+        if (adminActions.has(type)) {
+            throw new Error('Administration désactivée pour ce jeu.');
+        }
+        if (type === 'mnemo_start') {
+            if (String(state.phase ?? '').toLowerCase().trim() === 'setup' && meta.prompt) {
+                throw new Error('Veuillez terminer la configuration.');
+            }
+            return {
+                ...action,
+                type,
+                payload: action.payload ?? {}
+            };
+        }
+        if (type === 'draw') {
+            const currentId = state.turn?.currentPlayerId ?? null;
+            if (actorId == null) {
+                throw new Error('Acteur requis.');
+            }
+            if (currentId != null && actorId !== currentId) {
+                throw new Error("Ce n'est pas votre tour.");
+            }
+            if (meta.currentQuestion) {
+                throw new Error('Une question est déjà en cours.');
+            }
+            return {
+                ...action,
+                type,
+                payload: action.payload ?? {}
+            };
+        }
+        if (type === 'answer_quiz') {
+            if (actorId == null) {
+                throw new Error('Acteur requis.');
+            }
+            const players = Array.isArray(state.players) ? state.players : [];
+            if (!players.some((p)=>p?.id === actorId)) {
+                throw new Error('Joueur invalide.');
+            }
+            if (!meta.currentQuestion) {
+                throw new Error('Aucune question en cours.');
+            }
+            const deadline = typeof meta.quizDeadlineAtMs === 'number' ? meta.quizDeadlineAtMs : null;
+            if (deadline != null && Date.now() > deadline) {
+                throw new Error('Trop tard.');
+            }
+            if (meta.quizAnswersByPlayerId?.[actorId] != null) {
+                throw new Error('Vous avez déjà répondu.');
+            }
+            const idx = Number(action.payload?.answerIndex);
+            if (!Number.isFinite(idx) || idx < 0 || idx >= 4) {
+                throw new Error('Réponse invalide.');
+            }
+            return {
+                ...action,
+                type,
+                payload: {
+                    answerIndex: idx
+                }
+            };
+        }
+        // Admin / configuration.
+        if (type.startsWith('mnemo_')) {
+            if (isSystem) {
+                return {
+                    ...action,
+                    type,
+                    payload: action.payload ?? {}
+                };
+            }
+            if (this.isOwner(state, actorId)) {
+                return {
+                    ...action,
+                    type,
+                    payload: action.payload ?? {}
+                };
+            }
+            // Autoriser le joueur courant à configurer la partie pendant le setup.
+            if (type === 'mnemo_open_config') {
+                if (this.canConfigure(state, actorId)) {
+                    return {
+                        ...action,
+                        type,
+                        payload: action.payload ?? {}
+                    };
+                }
+                throw new Error('Configuration refusée.');
+            }
+            // Les prompts (config) sont visibles uniquement pour leur propriétaire.
+            if (type === 'mnemo_set_config' || type === 'mnemo_prompt_cancel') {
+                const ownerId = typeof meta.promptOwnerId === 'number' ? meta.promptOwnerId : null;
+                if (actorId != null && ownerId != null && actorId === ownerId) {
+                    return {
+                        ...action,
+                        type,
+                        payload: action.payload ?? {}
+                    };
+                }
+                throw new Error('Action invalide.');
+            }
+            throw new Error('Action réservée à Lila.');
+        }
+        return {
+            ...action,
+            type,
+            payload: action.payload ?? {}
+        };
+    }
+    applyActions(state, actions) {
+        const next = (0, _actionservicehelper.applyActionsSequentially)(state, actions, (current, action)=>this.applyOne(current, action));
+        return this.syncBotPending(this.resolveQuizIfReady(next));
+    }
+    getShortcuts(ctx) {
+        const started = Boolean(ctx?.started);
+        if (!started) {
+            return [];
+        }
+        // "S" : afficher le score (panneau UI géré côté client).
+        return [
+            (0, _shortcututils.interfaceShortcut)('S', 'score'),
+            (0, _shortcututils.actionShortcut)('SPACE', 'draw')
+        ];
+    }
+    exposeStateForUser(state, userId) {
+        const meta = this.getMeta(state);
+        const { quizAnswersByPlayerId: _quizAnswersByPlayerId, ...metaRest } = meta ?? {};
+        const built = this.buildPendingForUser(state, userId);
+        const actions = this.buildActionsForUser(state, userId);
+        const players = Array.isArray(state.players) ? state.players : [];
+        const scoreByPlayerId = meta?.scoresByPlayerId ?? {};
+        const scoreLines = players.filter((p)=>p && Number.isFinite(Number(p.id))).map((p)=>({
+                id: Number(p.id),
+                name: String(p.username ?? `#${p.id}`),
+                score: Number(scoreByPlayerId[Number(p.id)] ?? 0)
+            })).sort((a, b)=>b.score - a.score || a.name.localeCompare(b.name, 'fr'));
+        const scoreMessage = scoreLines.length ? `Score: ${scoreLines.map((s)=>`${s.name}: ${s.score}`).join(', ')}` : 'Score: indisponible.';
+        const safeMeta = {
+            ...metaRest,
+            currentQuestion: meta.currentQuestion ? {
+                id: meta.currentQuestion.id,
+                categoryId: meta.currentQuestion.categoryId,
+                question: meta.currentQuestion.question,
+                choices: meta.currentQuestion.choices
+            } : null
+        };
+        if (!this.isOwner(state, userId)) {
+            // Ne pas exposer la navigation admin aux joueurs.
+            safeMeta.adminView = {
+                page: 'setup'
+            };
+            safeMeta.prompt = null;
+            safeMeta.promptOwnerId = null;
+        }
+        return {
+            ...state,
+            metadata: safeMeta,
+            actions: (0, _actionspresenterhelper.formatPresenterActions)(actions),
+            pending: built,
+            extras: {
+                ...state.extras ?? {},
+                ui: {
+                    ...(state.extras ?? {})?.ui ?? {},
+                    panels: {
+                        ...(state.extras ?? {})?.ui?.panels ?? {},
+                        score: {
+                            title: 'Score',
+                            message: scoreMessage
+                        }
+                    }
+                }
+            }
+        };
+    }
+    applyOne(state, action) {
+        const type = (0, _actionservicehelper.normalizeActionType)(action);
+        const payload = action.payload ?? {};
+        const meta = this.getMeta(state);
+        if (type === 'mnemo_timeout') {
+            const q = meta.currentQuestion;
+            const deadline = typeof meta.quizDeadlineAtMs === 'number' ? meta.quizDeadlineAtMs : null;
+            if (!q || deadline == null) {
+                const until = typeof meta.interQuestionUntilMs === 'number' ? meta.interQuestionUntilMs : null;
+                if (until == null) return state;
+                if (Date.now() < until) return state;
+                const clearedMeta = {
+                    ...meta,
+                    interQuestionUntilMs: null
+                };
+                return {
+                    ...state,
+                    metadata: clearedMeta
+                };
+            }
+            if (Date.now() < deadline) return state;
+            const players = Array.isArray(state.players) ? state.players : [];
+            const playerIds = players.map((p)=>Number(p?.id)).filter((id)=>Number.isFinite(id));
+            const answers = meta.quizAnswersByPlayerId ?? {};
+            const timedOutIds = playerIds.filter((id)=>answers[id] == null);
+            return this.syncBotPending(this.resolveQuizIfReady(state, true, timedOutIds));
+        }
+        if (type === 'mnemo_prompt_cancel') {
+            const cleared = {
+                ...state,
+                metadata: {
+                    ...meta,
+                    prompt: null,
+                    promptOwnerId: null
+                }
+            };
+            return this.core.appendLog(cleared, 'Configuration fermée.');
+        }
+        if (type === 'mnemo_open_config') {
+            const actorId = action?.meta?.actorId ?? null;
+            if (!this.canConfigure(state, actorId)) {
+                return state;
+            }
+            const prompt = this.buildConfigPrompt(meta.config);
+            return {
+                ...state,
+                metadata: {
+                    ...meta,
+                    prompt,
+                    promptOwnerId: actorId
+                }
+            };
+        }
+        if (type === 'mnemo_set_config') {
+            const actorId = action?.meta?.actorId ?? null;
+            const ownerId = typeof meta.promptOwnerId === 'number' ? meta.promptOwnerId : null;
+            if (actorId == null || ownerId == null || actorId !== ownerId) {
+                return state;
+            }
+            const correctSoloPoints = this.clampInt(payload.correctSoloPoints, -50, 50, Number(meta.config.correctSoloPoints ?? 2));
+            const correctMultiPoints = this.clampInt(payload.correctMultiPoints, -50, 50, Number(meta.config.correctMultiPoints ?? 1));
+            const wrongPoints = this.clampInt(payload.wrongPoints, -50, 50, Number(meta.config.wrongPoints ?? 0));
+            const timeoutPoints = this.clampInt(payload.timeoutPoints, -50, 50, Number(meta.config.timeoutPoints ?? -1));
+            const targetPoints = Math.max(1, Math.min(200, Number(payload.targetPoints ?? 20)));
+            const timerSeconds = Math.max(5, Math.min(300, Number(payload.timerSeconds ?? 30)));
+            const useTimer = this.parseBool(payload.useTimer, false);
+            const config = {
+                targetPoints,
+                useTimer,
+                timerSeconds,
+                interQuestionSeconds: this.clampInt(payload.interQuestionSeconds, 1, 60, Number(meta.config.interQuestionSeconds ?? 15)),
+                correctSoloPoints,
+                correctMultiPoints,
+                wrongPoints,
+                timeoutPoints
+            };
+            const next = {
+                ...state,
+                metadata: {
+                    ...meta,
+                    config,
+                    prompt: null,
+                    promptOwnerId: null
+                }
+            };
+            return this.core.appendLog(next, 'Configuration enregistrée.');
+        }
+        if (type === 'mnemo_start') {
+            if (String(state.phase ?? '').toLowerCase().trim() !== 'setup') {
+                return state;
+            }
+            const categoryId = typeof payload.categoryId === 'string' ? payload.categoryId.trim() : null;
+            const selected = categoryId && categoryId.length ? categoryId : null;
+            const categories = this.store.listCategories();
+            const actorId = action?.meta?.actorId ?? null;
+            const withSelection = {
+                ...meta,
+                selectedCategoryId: selected,
+                adminView: {
+                    page: 'setup'
+                },
+                prompt: null,
+                promptOwnerId: null
+            };
+            let started = {
+                ...state,
+                phase: 'play',
+                metadata: withSelection
+            };
+            if (actorId != null) {
+                const label = selected ? categories.find((c)=>c.id === selected)?.name ?? selected : 'Mélange (toutes catégories)';
+                started = this.core.appendLog(started, `${(0, _playernamehelper.resolvePlayerNameFromState)(started, actorId, ARCHE_PLAYER_NAME_OPTIONS)} choisit la catégorie : ${label}.`);
+            }
+            return this.core.appendLog(started, 'Quiz : appuyez sur Espace pour piocher la première question.');
+        }
+        if (type === 'draw') {
+            const actorId = action?.meta?.actorId ?? null;
+            if (actorId == null) return state;
+            const interUntilMs = typeof meta.interQuestionUntilMs === 'number' ? meta.interQuestionUntilMs : null;
+            if (interUntilMs != null && Date.now() < interUntilMs) return state;
+            if (meta.currentQuestion) return state;
+            const currentId = state.turn?.currentPlayerId ?? null;
+            if (currentId != null && actorId !== currentId) return state;
+            if (interUntilMs != null) {
+                const clearedMeta = {
+                    ...meta,
+                    interQuestionUntilMs: null
+                };
+                const clearedState = {
+                    ...state,
+                    metadata: clearedMeta
+                };
+                return this.syncBotPending(this.drawNextQuestionOrStay(clearedState));
+            }
+            return this.syncBotPending(this.drawNextQuestionOrStay(state));
+        }
+        // Quiz gameplay: any player can answer (not owner-only).
+        // NOTE: The owner-only guard below is for admin pages; quiz answering must remain open to everyone.
+        if (type === 'answer_quiz') {
+            const actorId = action?.meta?.actorId ?? null;
+            const question = meta.currentQuestion;
+            const answerIndex = Number(payload.answerIndex);
+            if (actorId == null || !question) return state;
+            const answers = {
+                ...meta.quizAnswersByPlayerId ?? {}
+            };
+            if (answers[actorId] != null) return state;
+            answers[actorId] = answerIndex;
+            // Ne pas annoncer les réponses/état des autres joueurs pendant la question (évite l'effet "triche").
+            // Les résultats sont annoncés à la fin (quand tout le monde a répondu / temps écoulé).
+            return {
+                ...state,
+                metadata: {
+                    ...meta,
+                    quizAnswersByPlayerId: answers
+                }
+            };
+        }
+        if (!this.isOwner(state, action?.meta?.actorId ?? null)) {
+            // Sécurité: aucune action admin si pas owner.
+            return state;
+        }
+        if (type === 'mnemo_open_admin') {
+            return {
+                ...state,
+                metadata: {
+                    ...meta,
+                    adminView: {
+                        page: 'categories'
+                    },
+                    prompt: null
+                }
+            };
+        }
+        if (type === 'mnemo_open_all_questions') {
+            const raw = String(payload.status ?? 'all').trim();
+            const status = raw === 'validated' || raw === 'pending' || raw === 'to_edit' || raw === 'trash' ? raw : 'all';
+            return {
+                ...state,
+                metadata: {
+                    ...meta,
+                    adminView: {
+                        page: 'all_questions',
+                        status
+                    },
+                    prompt: null
+                }
+            };
+        }
+        if (type === 'mnemo_back') {
+            const back = this.back(meta.adminView);
+            return {
+                ...state,
+                metadata: {
+                    ...meta,
+                    adminView: back,
+                    prompt: null
+                }
+            };
+        }
+        if (type === 'mnemo_open_add_category') {
+            const prompt = {
+                type: 'text_prompt',
+                title: 'Ajouter une catégorie',
+                label: 'Nom de catégorie',
+                actionType: 'mnemo_add_category',
+                payloadKey: 'name',
+                cancelActionType: 'mnemo_prompt_cancel'
+            };
+            return {
+                ...state,
+                metadata: {
+                    ...meta,
+                    prompt
+                }
+            };
+        }
+        if (type === 'mnemo_add_category') {
+            try {
+                this.store.createCategory(String(payload.name ?? ''));
+                return this.core.appendLog({
+                    ...state,
+                    metadata: {
+                        ...meta,
+                        prompt: null
+                    }
+                }, 'Catégorie ajoutée.');
+            } catch (err) {
+                return this.core.appendLog({
+                    ...state,
+                    metadata: {
+                        ...meta,
+                        prompt: null
+                    }
+                }, `Erreur: ${err.message}`);
+            }
+        }
+        if (type === 'mnemo_open_rename_category') {
+            const categoryId = String(payload.categoryId ?? '').trim();
+            const cat = this.store.listCategories().find((c)=>c.id === categoryId);
+            if (!cat) return state;
+            const prompt = {
+                type: 'text_prompt',
+                title: 'Renommer une catégorie',
+                label: 'Nouveau nom',
+                actionType: 'mnemo_rename_category',
+                payloadKey: 'name',
+                initialText: cat.name,
+                cancelActionType: 'mnemo_prompt_cancel'
+            };
+            return {
+                ...state,
+                metadata: {
+                    ...meta,
+                    prompt,
+                    adminView: {
+                        page: 'category',
+                        categoryId
+                    }
+                }
+            };
+        }
+        if (type === 'mnemo_rename_category') {
+            const view = meta.adminView;
+            if (view.page !== 'category') return state;
+            try {
+                this.store.renameCategory(view.categoryId, String(payload.name ?? ''));
+                return this.core.appendLog({
+                    ...state,
+                    metadata: {
+                        ...meta,
+                        prompt: null
+                    }
+                }, 'Catégorie renommée.');
+            } catch (err) {
+                return this.core.appendLog({
+                    ...state,
+                    metadata: {
+                        ...meta,
+                        prompt: null
+                    }
+                }, `Erreur: ${err.message}`);
+            }
+        }
+        if (type === 'mnemo_delete_category') {
+            const categoryId = String(payload.categoryId ?? '').trim();
+            try {
+                this.store.deleteCategory(categoryId);
+                const nextView = {
+                    page: 'categories'
+                };
+                return this.core.appendLog({
+                    ...state,
+                    metadata: {
+                        ...meta,
+                        adminView: nextView,
+                        prompt: null
+                    }
+                }, 'Catégorie supprimée (questions mises à la corbeille).');
+            } catch (err) {
+                return this.core.appendLog({
+                    ...state,
+                    metadata: {
+                        ...meta,
+                        prompt: null
+                    }
+                }, `Erreur: ${err.message}`);
+            }
+        }
+        if (type === 'mnemo_open_category') {
+            const categoryId = String(payload.categoryId ?? '').trim();
+            if (!this.store.listCategories().some((c)=>c.id === categoryId)) return state;
+            return {
+                ...state,
+                metadata: {
+                    ...meta,
+                    adminView: {
+                        page: 'category',
+                        categoryId
+                    },
+                    prompt: null
+                }
+            };
+        }
+        if (type === 'mnemo_open_add_question') {
+            const categoryId = String(payload.categoryId ?? '').trim();
+            const cat = this.store.listCategories().find((c)=>c.id === categoryId);
+            if (!cat) return state;
+            const prompt = {
+                type: 'config_prompt',
+                title: `Ajouter une question (${cat.name})`,
+                actionType: 'mnemo_add_question',
+                cancelActionType: 'mnemo_prompt_cancel',
+                fields: [
+                    {
+                        key: 'question',
+                        label: 'Question',
+                        kind: 'text',
+                        initialText: ''
+                    },
+                    {
+                        key: 'correct',
+                        label: 'Bonne réponse',
+                        kind: 'text',
+                        initialText: ''
+                    },
+                    {
+                        key: 'wrong1',
+                        label: 'Mauvaise réponse 1',
+                        kind: 'text',
+                        initialText: ''
+                    },
+                    {
+                        key: 'wrong2',
+                        label: 'Mauvaise réponse 2',
+                        kind: 'text',
+                        initialText: ''
+                    },
+                    {
+                        key: 'wrong3',
+                        label: 'Mauvaise réponse 3',
+                        kind: 'text',
+                        initialText: ''
+                    }
+                ]
+            };
+            return {
+                ...state,
+                metadata: {
+                    ...meta,
+                    prompt,
+                    adminView: {
+                        page: 'category',
+                        categoryId
+                    }
+                }
+            };
+        }
+        if (type === 'mnemo_add_question') {
+            const view = meta.adminView;
+            if (view.page !== 'category') return state;
+            try {
+                this.store.createQuestion({
+                    categoryId: view.categoryId,
+                    question: payload.question,
+                    correct: payload.correct,
+                    wrong1: payload.wrong1,
+                    wrong2: payload.wrong2,
+                    wrong3: payload.wrong3,
+                    status: 'validated'
+                });
+                return this.core.appendLog({
+                    ...state,
+                    metadata: {
+                        ...meta,
+                        prompt: null
+                    }
+                }, 'Question ajoutée.');
+            } catch (err) {
+                return this.core.appendLog({
+                    ...state,
+                    metadata: {
+                        ...meta,
+                        prompt: null
+                    }
+                }, `Erreur: ${err.message}`);
+            }
+        }
+        if (type === 'mnemo_open_questions') {
+            const categoryId = String(payload.categoryId ?? '').trim();
+            const status = this.normalizeStatus(payload.status);
+            return {
+                ...state,
+                metadata: {
+                    ...meta,
+                    adminView: {
+                        page: 'questions',
+                        categoryId,
+                        status
+                    },
+                    prompt: null
+                }
+            };
+        }
+        if (type === 'mnemo_open_question') {
+            const questionId = String(payload.questionId ?? '').trim();
+            const categoryId = String(payload.categoryId ?? '').trim();
+            return {
+                ...state,
+                metadata: {
+                    ...meta,
+                    adminView: {
+                        page: 'question',
+                        categoryId,
+                        questionId
+                    },
+                    prompt: null
+                }
+            };
+        }
+        if (type === 'mnemo_set_question_status') {
+            const questionId = String(payload.questionId ?? '').trim();
+            const status = this.normalizeStatus(payload.status);
+            try {
+                this.store.updateQuestion(questionId, {
+                    status
+                });
+                return this.core.appendLog({
+                    ...state,
+                    metadata: {
+                        ...meta,
+                        prompt: null
+                    }
+                }, `Statut mis à jour (${this.statusLabel(status)}).`);
+            } catch (err) {
+                return this.core.appendLog({
+                    ...state,
+                    metadata: {
+                        ...meta,
+                        prompt: null
+                    }
+                }, `Erreur: ${err.message}`);
+            }
+        }
+        if (type === 'mnemo_open_edit_question') {
+            const questionId = String(payload.questionId ?? '').trim();
+            const q = this.store.listQuestions().find((x)=>x.id === questionId);
+            if (!q) return state;
+            const prompt = {
+                type: 'config_prompt',
+                title: 'Modifier la question',
+                actionType: 'mnemo_edit_question',
+                cancelActionType: 'mnemo_prompt_cancel',
+                fields: [
+                    {
+                        key: 'questionId',
+                        label: 'Id (ne pas modifier)',
+                        kind: 'text',
+                        initialText: q.id
+                    },
+                    {
+                        key: 'question',
+                        label: 'Question',
+                        kind: 'text',
+                        initialText: q.question
+                    },
+                    {
+                        key: 'correct',
+                        label: 'Bonne réponse',
+                        kind: 'text',
+                        initialText: q.correct
+                    },
+                    {
+                        key: 'wrong1',
+                        label: 'Mauvaise réponse 1',
+                        kind: 'text',
+                        initialText: q.wrong1
+                    },
+                    {
+                        key: 'wrong2',
+                        label: 'Mauvaise réponse 2',
+                        kind: 'text',
+                        initialText: q.wrong2
+                    },
+                    {
+                        key: 'wrong3',
+                        label: 'Mauvaise réponse 3',
+                        kind: 'text',
+                        initialText: q.wrong3
+                    }
+                ]
+            };
+            return {
+                ...state,
+                metadata: {
+                    ...meta,
+                    prompt
+                }
+            };
+        }
+        if (type === 'mnemo_edit_question') {
+            const questionId = String(payload.questionId ?? '').trim();
+            try {
+                this.store.updateQuestion(questionId, {
+                    question: payload.question,
+                    correct: payload.correct,
+                    wrong1: payload.wrong1,
+                    wrong2: payload.wrong2,
+                    wrong3: payload.wrong3
+                });
+                return this.core.appendLog({
+                    ...state,
+                    metadata: {
+                        ...meta,
+                        prompt: null
+                    }
+                }, 'Question modifiée.');
+            } catch (err) {
+                return this.core.appendLog({
+                    ...state,
+                    metadata: {
+                        ...meta,
+                        prompt: null
+                    }
+                }, `Erreur: ${err.message}`);
+            }
+        }
+        if (type === 'answer_quiz') {
+            const actorId = action?.meta?.actorId ?? null;
+            const question = meta.currentQuestion;
+            const answerIndex = Number(payload.answerIndex);
+            if (actorId == null || !question) return state;
+            const answers = {
+                ...meta.quizAnswersByPlayerId ?? {}
+            };
+            if (answers[actorId] != null) return state; // safety (should be blocked by validateAction)
+            answers[actorId] = answerIndex;
+            return {
+                ...state,
+                metadata: {
+                    ...meta,
+                    quizAnswersByPlayerId: answers
+                }
+            };
+        /* const currentId = state.turn?.currentPlayerId ?? null;
+      const idx = Number(payload.answerIndex);
+      const q = meta.currentQuestion;
+      if (currentId == null || !q) return state;
+
+      const choice = q.choices[idx] ?? '';
+      const correct = choice === q.correctChoice;
+      const who = resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS);
+
+      let next = state;
+      if (correct) {
+        const nextScores = { ...(meta.scoresByPlayerId ?? {}) };
+        nextScores[currentId] = (nextScores[currentId] ?? 0) + 1;
+        next = this.core.appendLog(next, `${who} répond : ${choice}. Bonne réponse (+1).`);
+        next = { ...next, metadata: { ...meta, scoresByPlayerId: nextScores } };
+      } else {
+        next = this.core.appendLog(next, `${who} répond : ${choice}. Mauvaise réponse.`);
+      }
+
+      const afterMeta = this.getMeta(next);
+      const score = afterMeta.scoresByPlayerId?.[currentId] ?? 0;
+      if (score >= (afterMeta.config?.targetPoints ?? 20)) {
+        const finished = this.core.appendLog(next, `${who} a gagné !`);
+        return {
+          ...finished,
+          status: 'finished',
+          metadata: { ...afterMeta, winnerId: currentId, currentQuestion: null },
+        };
+      }
+
+      const cleared: GameStateEntity = {
+        ...next,
+        metadata: {
+          ...afterMeta,
+          currentQuestion: null,
+        },
+      };
+      const advanced = this.turns.advanceTurn(cleared);
+      return this.drawNextQuestionOrStay(advanced);
+      */ }
+        return state;
+    }
+    resolveQuizIfReady(state, force = false, timedOutPlayerIds = []) {
+        const meta = this.getMeta(state);
+        const q = meta.currentQuestion;
+        if (!q) return state;
+        const currentRoundRaw = Number(state?.round ?? 1);
+        const currentRound = Number.isFinite(currentRoundRaw) && currentRoundRaw > 0 ? Math.trunc(currentRoundRaw) : 1;
+        const players = Array.isArray(state.players) ? state.players : [];
+        const playerIds = players.map((p)=>Number(p?.id)).filter((id)=>Number.isFinite(id));
+        if (!playerIds.length) return state;
+        const answers = meta.quizAnswersByPlayerId ?? {};
+        const allAnswered = playerIds.every((id)=>answers[id] != null);
+        if (!force && !allAnswered) {
+            return state;
+        }
+        // If everyone answered, end the question immediately (stop the timer) and use the same
+        // 5s inter-question pause as the timeout path.
+        const endedBecauseAllAnswered = !force && allAnswered;
+        const correctIds = playerIds.filter((id)=>{
+            const idx = Number(answers[id]);
+            if (!Number.isFinite(idx)) return false;
+            const choice = q.choices[idx] ?? '';
+            return choice === q.correctChoice;
+        });
+        const answeredIds = playerIds.filter((id)=>answers[id] != null);
+        const wrongAnsweredIds = answeredIds.filter((id)=>!correctIds.includes(id));
+        const correctSoloPoints = this.clampInt(meta.config?.correctSoloPoints, -50, 50, 2);
+        const correctMultiPoints = this.clampInt(meta.config?.correctMultiPoints, -50, 50, 1);
+        const wrongPoints = this.clampInt(meta.config?.wrongPoints, -50, 50, 0);
+        const timeoutPoints = this.clampInt(meta.config?.timeoutPoints, -50, 50, -1);
+        const nextScores = {
+            ...meta.scoresByPlayerId ?? {}
+        };
+        let next = state;
+        if (correctIds.length === 0) {
+            next = this.core.appendLog(next, `Personne n'a trouvé la bonne réponse.`);
+        } else if (correctIds.length === 1) {
+            const id = correctIds[0];
+            nextScores[id] = (nextScores[id] ?? 0) + correctSoloPoints;
+            const msg = correctSoloPoints === 0 ? `${(0, _playernamehelper.resolvePlayerNameFromState)(state, id, ARCHE_PLAYER_NAME_OPTIONS)} ne marque aucun point.` : correctSoloPoints > 0 ? `${(0, _playernamehelper.resolvePlayerNameFromState)(state, id, ARCHE_PLAYER_NAME_OPTIONS)} gagne +${correctSoloPoints} points.` : `${(0, _playernamehelper.resolvePlayerNameFromState)(state, id, ARCHE_PLAYER_NAME_OPTIONS)} perd ${Math.abs(correctSoloPoints)} points.`;
+            next = this.core.appendLog(next, msg);
+        } else {
+            for (const id of correctIds){
+                nextScores[id] = (nextScores[id] ?? 0) + correctMultiPoints;
+            }
+            const labels = correctIds.map((id)=>(0, _playernamehelper.resolvePlayerNameFromState)(state, id, ARCHE_PLAYER_NAME_OPTIONS)).join(', ');
+            const msg = correctMultiPoints === 0 ? `Plusieurs bonnes réponses (${labels}) : aucun point.` : correctMultiPoints > 0 ? `Plusieurs bonnes réponses (${labels}) : +${correctMultiPoints} points chacun.` : `Plusieurs bonnes réponses (${labels}) : -${Math.abs(correctMultiPoints)} points chacun.`;
+            next = this.core.appendLog(next, msg);
+        }
+        if (wrongAnsweredIds.length && wrongPoints !== 0) {
+            for (const id of wrongAnsweredIds){
+                nextScores[id] = (nextScores[id] ?? 0) + wrongPoints;
+            }
+        }
+        if (force) {
+            const timedOut = (Array.isArray(timedOutPlayerIds) ? timedOutPlayerIds : []).map((id)=>Number(id)).filter((id)=>Number.isFinite(id));
+            const unique = [
+                ...new Set(timedOut)
+            ].filter((id)=>playerIds.includes(id)).filter((id)=>answers[id] == null);
+            if (unique.length) {
+                for (const id of unique){
+                    nextScores[id] = (nextScores[id] ?? 0) + timeoutPoints;
+                }
+                const labels = unique.map((id)=>(0, _playernamehelper.resolvePlayerNameFromState)(state, id, ARCHE_PLAYER_NAME_OPTIONS)).join(', ');
+                const msg = timeoutPoints === 0 ? `Temps écoulé: ${labels} ne marque aucun point.` : timeoutPoints > 0 ? `Temps écoulé: ${labels} gagne +${timeoutPoints} points.` : `Temps écoulé: ${labels} perd ${Math.abs(timeoutPoints)} points.`;
+                next = this.core.appendLog(next, msg);
+            }
+        }
+        const target = meta.config?.targetPoints ?? 20;
+        const willFinish = playerIds.some((id)=>Number(nextScores[id] ?? 0) >= target);
+        if (force || endedBecauseAllAnswered) {
+            for (const id of playerIds){
+                const idx = answers[id];
+                const who = (0, _playernamehelper.resolvePlayerNameFromState)(state, id, ARCHE_PLAYER_NAME_OPTIONS);
+                if (idx == null) {
+                    next = this.core.appendLog(next, `${who} répond : Temps écoulé.`);
+                    continue;
+                }
+                const choice = q.choices[Number(idx)] ?? '';
+                const correct = choice === q.correctChoice;
+                next = this.core.appendLog(next, correct ? `${who} répond : Bonne réponse.` : `${who} répond : Mauvaise réponse.`);
+            }
+            if (wrongAnsweredIds.length && correctIds.length > 0) {
+                next = this.core.appendLog(next, `La bonne réponse était : ${q.correctChoice}.`);
+            }
+            next = this.core.appendLog(next, `Fin de la manche ${currentRound}.`);
+            if (!willFinish) {
+                const interSeconds = this.clampInt(meta.config?.interQuestionSeconds, 1, 60, 15);
+                next = this.core.appendLog(next, `Prochaine question dans ${interSeconds} secondes. Appuyez sur Espace.`);
+            }
+        }
+        const interQuestionSeconds = this.clampInt(meta.config?.interQuestionSeconds, 1, 60, 15);
+        const afterMeta = {
+            ...meta,
+            scoresByPlayerId: nextScores,
+            currentQuestion: null,
+            quizAnswersByPlayerId: {},
+            quizDeadlineAtMs: null,
+            interQuestionUntilMs: willFinish ? null : Date.now() + Math.max(1, interQuestionSeconds) * 1000
+        };
+        const reached = playerIds.map((id)=>({
+                id,
+                score: Number(afterMeta.scoresByPlayerId?.[id] ?? 0)
+            })).filter((x)=>x.score >= target);
+        if (reached.length) {
+            reached.sort((a, b)=>b.score - a.score || a.id - b.id);
+            const winnerId = reached[0].id;
+            const finished = this.core.appendLog(next, `${(0, _playernamehelper.resolvePlayerNameFromState)(next, winnerId, ARCHE_PLAYER_NAME_OPTIONS)} a gagné !`);
+            return {
+                ...finished,
+                status: 'finished',
+                round: currentRound,
+                metadata: {
+                    ...afterMeta,
+                    winnerId
+                }
+            };
+        }
+        const cleared = {
+            ...next,
+            metadata: afterMeta
+        };
+        const advanced = this.turns.advanceTurn(cleared);
+        if (force || endedBecauseAllAnswered) {
+            return {
+                ...advanced,
+                round: currentRound + 1,
+                metadata: afterMeta,
+                pending: null
+            };
+        }
+        return advanced;
+    }
+    drawNextQuestionOrStay(state) {
+        const meta = this.getMeta(state);
+        const categories = this.store.listCategories();
+        const all = this.store.listQuestions().filter((q)=>String(q.status ?? '') !== 'trash');
+        const selected = meta.selectedCategoryId && categories.some((c)=>c.id === meta.selectedCategoryId) ? meta.selectedCategoryId : null;
+        const pool = all.filter((q)=>selected ? q.categoryId === selected : true);
+        if (categories.length === 0) {
+            return this.core.appendLog(state, 'Aucune catégorie : utilisez Administration > Ajouter une catégorie.');
+        }
+        if (all.length === 0) {
+            return this.core.appendLog(state, 'Aucune question disponible : utilisez Administration > Ajouter une question.');
+        }
+        if (pool.length === 0 && selected) {
+            // Catégorie sélectionnée mais vide : annuler la sélection pour permettre de jouer quand même.
+            return this.drawNextQuestionOrStay({
+                ...state,
+                metadata: {
+                    ...meta,
+                    selectedCategoryId: null
+                }
+            });
+        }
+        const used = new Set(meta.usedQuestionIds ?? []);
+        const remaining = pool.filter((q)=>!used.has(q.id));
+        const pickFrom = remaining.length ? remaining : pool;
+        const pick = this.random.pickIndex(meta, pickFrom.length);
+        const picked = pickFrom[pick.index];
+        let rngMeta = pick.meta;
+        // Auto-"validate" questions that are played (legacy data may still be pending/to_edit).
+        // This ensures the game doesn't get stuck on "validated only" semantics and matches the simplified admin UX.
+        try {
+            if (picked.status !== 'validated') {
+                this.store.updateQuestion(picked.id, {
+                    status: 'validated'
+                });
+            }
+        } catch  {
+        // ignore (best-effort)
+        }
+        const normalizeKey = (value)=>(0, _stringvalueutils.stringOrEmpty)(value).trim().toLocaleLowerCase('fr');
+        const rawChoices = [
+            picked.correct,
+            picked.wrong1,
+            picked.wrong2,
+            picked.wrong3
+        ].map((s)=>(0, _stringvalueutils.stringOrEmpty)(s).trim());
+        // Éviter les doublons de libellés (certaines UIs dédoublonnent ou utilisent le libellé comme clé).
+        // Remplir si besoin avec des distracteurs provenant d'autres questions de la même catégorie (puis global).
+        const unique = [];
+        const seen = new Set();
+        for (const c of rawChoices){
+            const key = normalizeKey(c);
+            if (!key) continue;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            unique.push(c);
+        }
+        if (unique.length < 4) {
+            const candidateQuestions = [
+                ...all.filter((q)=>q.categoryId === picked.categoryId),
+                ...all
+            ];
+            const candidatesRaw = candidateQuestions.flatMap((q)=>[
+                    q.correct,
+                    q.wrong1,
+                    q.wrong2,
+                    q.wrong3
+                ]).map((s)=>(0, _stringvalueutils.stringOrEmpty)(s).trim()).filter((s)=>s.length > 0);
+            const candidatesShuffled = this.random.shuffle(rngMeta, candidatesRaw);
+            rngMeta = candidatesShuffled.meta;
+            for (const c of candidatesShuffled.values){
+                if (unique.length >= 4) break;
+                const key = normalizeKey(c);
+                if (!key) continue;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                unique.push(c);
+            }
+        }
+        // Fallback: conserver 4 choix même s'il reste des doublons (data pauvre).
+        while(unique.length < 4 && rawChoices[unique.length]){
+            unique.push(rawChoices[unique.length]);
+        }
+        const shuffled = this.random.shuffle(rngMeta, unique.length ? unique : rawChoices);
+        rngMeta = shuffled.meta;
+        const choices = shuffled.values;
+        const currentQuestion = {
+            id: picked.id,
+            categoryId: picked.categoryId,
+            question: picked.question,
+            choices,
+            correctChoice: String(picked.correct ?? '').trim()
+        };
+        const nextUsed = remaining.length ? [
+            ...used,
+            picked.id
+        ] : [
+            picked.id
+        ];
+        const timerSeconds = Number(rngMeta.config?.timerSeconds ?? 30);
+        const useTimer = Boolean(rngMeta.config?.useTimer);
+        const quizDeadlineAtMs = useTimer ? Date.now() + Math.max(1, timerSeconds) * 1000 : null;
+        return {
+            ...state,
+            metadata: {
+                ...rngMeta,
+                usedQuestionIds: nextUsed,
+                currentQuestion,
+                quizAnswersByPlayerId: {},
+                quizDeadlineAtMs
+            }
+        };
+    }
+    getBotActions(state, botPlayerId) {
+        const meta = this.getMeta(state);
+        const phase = String(state.phase ?? '').toLowerCase().trim();
+        const currentId = state.turn?.currentPlayerId ?? null;
+        if (currentId !== botPlayerId) return null;
+        if (phase === 'setup') {
+            if (meta.prompt) {
+                const ownerId = typeof meta.promptOwnerId === 'number' ? meta.promptOwnerId : null;
+                if (ownerId === botPlayerId) {
+                    return [
+                        {
+                            type: 'mnemo_set_config',
+                            payload: {}
+                        }
+                    ];
+                }
+                return null;
+            }
+            const categories = this.store.listCategories();
+            const categoryIds = categories.map((c)=>c.id);
+            const choices = [
+                ...categoryIds,
+                null
+            ];
+            const pickIndex = Math.floor(Math.random() * choices.length);
+            const chosen = choices[pickIndex] ?? null;
+            return [
+                {
+                    type: 'mnemo_start',
+                    payload: {
+                        categoryId: chosen
+                    }
+                }
+            ];
+        }
+        const q = meta.currentQuestion;
+        if (!q) {
+            return [
+                {
+                    type: 'draw',
+                    payload: {}
+                }
+            ];
+        }
+        const players = Array.isArray(state.players) ? state.players : [];
+        const bot = players.find((p)=>p?.id === botPlayerId);
+        if (!bot?.isBot) return null;
+        const answers = meta.quizAnswersByPlayerId ?? {};
+        if (answers[botPlayerId] != null) return null;
+        // Le jeu expose toujours 4 choix, mais on reste robuste.
+        const choicesLen = Math.min(4, Math.max(0, q.choices?.length ?? 0));
+        if (choicesLen <= 0) return null;
+        // Bot simple: réponse aléatoire.
+        const answerIndex = Math.floor(Math.random() * choicesLen);
+        return [
+            {
+                type: 'answer_quiz',
+                payload: {
+                    answerIndex
+                }
+            }
+        ];
+    }
+    parseBool(value, defaultValue = false) {
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'number') return value !== 0;
+        const t = String(value ?? '').trim().toLowerCase();
+        if (!t) return defaultValue;
+        if (t === '1' || t === 'true' || t === 'oui' || t === 'yes' || t === 'on') return true;
+        if (t === '0' || t === 'false' || t === 'non' || t === 'no' || t === 'off') return false;
+        return defaultValue;
+    }
+    syncBotPending(state) {
+        try {
+            if (!state || String(state.status ?? '').toLowerCase().trim() === 'finished') {
+                return state;
+            }
+            const meta = this.getMeta(state);
+            const players = Array.isArray(state.players) ? state.players : [];
+            const phase = String(state.phase ?? '').toLowerCase().trim();
+            const promptOwnerId = typeof meta.promptOwnerId === 'number' ? meta.promptOwnerId : null;
+            if (phase === 'setup') {
+                if (meta.prompt && typeof promptOwnerId === 'number') {
+                    const promptOwner = players.find((p)=>p?.id === promptOwnerId) ?? null;
+                    if (!state.pending && promptOwner?.isBot) {
+                        return {
+                            ...state,
+                            pending: {
+                                type: 'mnemo_set_config',
+                                playerId: promptOwnerId,
+                                blocking: true
+                            }
+                        };
+                    }
+                    return state.pending ? {
+                        ...state,
+                        pending: null
+                    } : state;
+                }
+                const currentId = state.turn?.currentPlayerId ?? null;
+                const currentPlayer = players.find((p)=>p?.id === currentId) ?? null;
+                if (!state.pending && currentPlayer?.isBot && typeof currentId === 'number') {
+                    return {
+                        ...state,
+                        pending: {
+                            type: 'mnemo_start',
+                            playerId: currentId,
+                            blocking: true
+                        }
+                    };
+                }
+                return state.pending ? {
+                    ...state,
+                    pending: null
+                } : state;
+            }
+            if (!meta.currentQuestion) {
+                const currentId = state.turn?.currentPlayerId ?? null;
+                const currentPlayer = players.find((p)=>p?.id === currentId) ?? null;
+                const interUntilMs = typeof meta.interQuestionUntilMs === 'number' ? meta.interQuestionUntilMs : null;
+                if (interUntilMs != null && Date.now() < interUntilMs) {
+                    return state.pending ? {
+                        ...state,
+                        pending: null
+                    } : state;
+                }
+                if (!state.pending && currentPlayer?.isBot && typeof currentId === 'number') {
+                    return {
+                        ...state,
+                        pending: {
+                            type: 'draw',
+                            playerId: currentId,
+                            blocking: true
+                        }
+                    };
+                }
+                return state.pending ? {
+                    ...state,
+                    pending: null
+                } : state;
+            }
+            const answers = meta.quizAnswersByPlayerId ?? {};
+            const bots = players.filter((p)=>p?.isBot).map((p)=>Number(p?.id)).filter((id)=>Number.isFinite(id)).sort((a, b)=>a - b);
+            const nextBot = bots.find((id)=>answers[id] == null) ?? null;
+            if (nextBot == null) {
+                return state.pending ? {
+                    ...state,
+                    pending: null
+                } : state;
+            }
+            return {
+                ...state,
+                pending: {
+                    type: 'quiz',
+                    playerId: nextBot,
+                    blocking: true
+                }
+            };
+        } catch  {
+            return state;
+        }
+    }
+    buildPendingForUser(state, userId) {
+        const meta = this.getMeta(state);
+        const currentId = state.turn?.currentPlayerId ?? null;
+        const pendingState = state.pending;
+        const interUntilMs = typeof meta.interQuestionUntilMs === 'number' ? meta.interQuestionUntilMs : null;
+        if (interUntilMs != null && Date.now() < interUntilMs) {
+            return null;
+        }
+        if (!meta.currentQuestion && pendingState?.type === 'draw' && pendingState.playerId === userId) {
+            return {
+                type: 'draw',
+                playerId: userId,
+                label: 'Piochez une question (Espace).'
+            };
+        }
+        const promptOwnerId = typeof meta.promptOwnerId === 'number' ? meta.promptOwnerId : null;
+        const canSeePrompt = Boolean(meta.prompt) && (promptOwnerId === userId || promptOwnerId == null && this.isOwner(state, userId));
+        if (canSeePrompt && meta.prompt) {
+            const prompt = meta.prompt;
+            if (prompt.type === 'text_prompt') {
+                return {
+                    type: 'text_prompt',
+                    playerId: userId,
+                    label: prompt.label,
+                    data: {
+                        title: prompt.title,
+                        actionType: prompt.actionType,
+                        payloadKey: prompt.payloadKey,
+                        initialText: prompt.initialText ?? '',
+                        cancelActionType: prompt.cancelActionType ?? 'mnemo_prompt_cancel'
+                    }
+                };
+            }
+            if (prompt.type === 'config_prompt') {
+                return {
+                    type: 'config_prompt',
+                    playerId: userId,
+                    label: prompt.title,
+                    choices: [],
+                    data: {
+                        title: prompt.title,
+                        actionType: prompt.actionType,
+                        cancelActionType: prompt.cancelActionType ?? 'mnemo_prompt_cancel',
+                        fields: prompt.fields.map((f)=>({
+                                key: f.key,
+                                label: f.label,
+                                kind: f.kind ?? 'text',
+                                initialText: f.initialText ?? ''
+                            }))
+                    }
+                };
+            }
+        }
+        if (meta.currentQuestion && meta.quizAnswersByPlayerId?.[userId] == null) {
+            return {
+                type: 'quiz',
+                label: 'Réponses possibles',
+                playerId: userId,
+                question: meta.currentQuestion.question,
+                choices: meta.currentQuestion.choices,
+                deadlineAtMs: typeof meta.quizDeadlineAtMs === 'number' ? meta.quizDeadlineAtMs : null
+            };
+        }
+        // Menus (setup/admin) : visibles uniquement à Lila (admin) + au joueur courant pour démarrer.
+        const isCurrent = currentId === userId;
+        const isOwner = this.isOwner(state, userId);
+        if (meta.adminView.page !== 'setup' && !this.isOwner(state, userId)) {
+            return null;
+        }
+        if (meta.adminView.page === 'setup') {
+            if (String(state.phase ?? '').toLowerCase().trim() !== 'setup') {
+                return null;
+            }
+            const categories = this.store.listCategories();
+            const choices = [];
+            if (isCurrent || isOwner) {
+                for (const c of categories){
+                    choices.push(c.name);
+                }
+                choices.push('Mélange (toutes catégories)');
+            }
+            if (choices.length === 0) return null;
+            return {
+                type: 'mnemo_setup',
+                label: "L'Arche de Mnémosyne",
+                playerId: userId,
+                choices
+            };
+        }
+        const view = meta.adminView;
+        if (view.page === 'categories') {
+            const categories = this.store.listCategories();
+            const choices = [
+                'Voir toutes les questions',
+                ...categories.map((c)=>`Catégorie: ${c.name}`),
+                'Ajouter une catégorie',
+                'Retour'
+            ];
+            return {
+                type: 'mnemo_admin',
+                label: 'Administration - Catégories',
+                playerId: userId,
+                choices
+            };
+        }
+        if (view.page === 'all_questions') {
+            const categories = this.store.listCategories();
+            const categoryNameById = Object.fromEntries(categories.map((c)=>[
+                    c.id,
+                    c.name
+                ]));
+            const statusFilter = view.status ?? 'all';
+            const all = this.store.listQuestions();
+            const list = statusFilter === 'all' ? all : all.filter((q)=>String(q.status ?? 'pending') === String(statusFilter));
+            const choices = [
+                ...list.map((q)=>{
+                    const cat = categoryNameById[q.categoryId] ?? q.categoryId;
+                    const status = String(q.status ?? 'pending');
+                    return `[${this.statusLabel(status)}] ${cat}: ${this.compactQuestionLabel(q.question)}`;
+                }),
+                'Filtrer: toutes',
+                'Filtrer: validées',
+                'Filtrer: en attente',
+                'Filtrer: à modifier',
+                'Filtrer: corbeille',
+                'Retour'
+            ];
+            return {
+                type: 'mnemo_admin',
+                label: `Administration - Questions (${this.statusLabel(statusFilter)})`,
+                playerId: userId,
+                choices
+            };
+        }
+        if (view.page === 'category') {
+            const cat = this.store.listCategories().find((c)=>c.id === view.categoryId);
+            const name = cat?.name ?? view.categoryId;
+            return {
+                type: 'mnemo_admin',
+                label: `Catégorie - ${name}`,
+                playerId: userId,
+                choices: [
+                    'Ajouter une question',
+                    'Lister: Validées',
+                    'Lister: En attente',
+                    'Lister: À modifier',
+                    'Lister: Corbeille',
+                    'Renommer la catégorie',
+                    'Supprimer la catégorie',
+                    'Retour'
+                ]
+            };
+        }
+        if (view.page === 'questions') {
+            const list = this.store.listQuestions({
+                categoryId: view.categoryId,
+                status: view.status
+            });
+            const choices = [
+                ...list.map((q)=>this.compactQuestionLabel(q.question)),
+                'Retour'
+            ];
+            return {
+                type: 'mnemo_admin',
+                label: `Questions - ${this.statusLabel(view.status)}`,
+                playerId: userId,
+                choices
+            };
+        }
+        if (view.page === 'question') {
+            return {
+                type: 'mnemo_admin',
+                label: 'Question',
+                playerId: userId,
+                choices: [
+                    'Passer en: validée',
+                    'Passer en: en attente',
+                    'Passer en: à modifier',
+                    'Passer en: corbeille',
+                    'Modifier contenu',
+                    'Retour'
+                ]
+            };
+        }
+        return null;
+    }
+    buildActionsForUser(state, userId) {
+        const meta = this.getMeta(state);
+        const currentId = state.turn?.currentPlayerId ?? null;
+        const phase = String(state.phase ?? '').toLowerCase().trim();
+        const actions = [];
+        const promptOwnerId = typeof meta.promptOwnerId === 'number' ? meta.promptOwnerId : null;
+        const canSeePrompt = Boolean(meta.prompt) && (promptOwnerId === userId || promptOwnerId == null && this.isOwner(state, userId));
+        if (canSeePrompt && meta.prompt) {
+            // IMPORTANT: le moteur filtre les actions par "allowedTypes".
+            // Si on n'expose pas aussi `prompt.actionType`, le client ne peut pas soumettre le prompt.
+            const promptActionType = String(meta.prompt?.actionType ?? '').trim().toLowerCase();
+            if (promptActionType) {
+                actions.push({
+                    type: promptActionType,
+                    payload: {}
+                });
+            }
+            const cancelType = String(meta.prompt?.cancelActionType ?? 'mnemo_prompt_cancel').trim().toLowerCase();
+            actions.push({
+                type: cancelType || 'mnemo_prompt_cancel',
+                payload: {}
+            });
+            return actions;
+        }
+        if (meta.currentQuestion && meta.quizAnswersByPlayerId?.[userId] == null) {
+            for(let i = 0; i < 4; i++){
+                actions.push({
+                    type: 'answer_quiz',
+                    payload: {
+                        answerIndex: i
+                    }
+                });
+            }
+            return actions;
+        }
+        const isCurrent = currentId === userId;
+        const isOwner = this.isOwner(state, userId);
+        if (phase === 'setup') {
+            // Tant que la configuration n'est pas validée (prompt présent), aucun autre acteur ne doit pouvoir démarrer.
+            // Cela évite qu'un bot premier joueur tente mnemo_start et se fasse rejeter en boucle.
+            if (meta.prompt) {
+                return [];
+            }
+            if (isCurrent || isOwner) {
+                for (const c of this.store.listCategories()){
+                    actions.push({
+                        type: 'mnemo_start',
+                        payload: {
+                            categoryId: c.id
+                        }
+                    });
+                }
+                actions.push({
+                    type: 'mnemo_start',
+                    payload: {
+                        categoryId: null
+                    }
+                });
+            }
+            return actions;
+        }
+        if (!meta.currentQuestion && isCurrent) {
+            actions.push({
+                type: 'draw',
+                payload: {}
+            });
+            return actions;
+        }
+        if (!this.isOwner(state, userId)) {
+            return [];
+        }
+        const view = meta.adminView;
+        if (view.page === 'categories') {
+            actions.push({
+                type: 'mnemo_open_all_questions',
+                payload: {
+                    status: 'all'
+                }
+            });
+            const categories = this.store.listCategories();
+            for (const c of categories){
+                actions.push({
+                    type: 'mnemo_open_category',
+                    payload: {
+                        categoryId: c.id
+                    }
+                });
+            }
+            actions.push({
+                type: 'mnemo_open_add_category',
+                payload: {}
+            });
+            actions.push({
+                type: 'mnemo_back',
+                payload: {}
+            });
+            return actions;
+        }
+        if (view.page === 'all_questions') {
+            const statusFilter = view.status ?? 'all';
+            const all = this.store.listQuestions();
+            const list = statusFilter === 'all' ? all : all.filter((q)=>String(q.status ?? 'pending') === String(statusFilter));
+            for (const q of list){
+                actions.push({
+                    type: 'mnemo_open_question',
+                    payload: {
+                        categoryId: q.categoryId,
+                        questionId: q.id
+                    }
+                });
+            }
+            actions.push({
+                type: 'mnemo_open_all_questions',
+                payload: {
+                    status: 'all'
+                }
+            });
+            actions.push({
+                type: 'mnemo_open_all_questions',
+                payload: {
+                    status: 'validated'
+                }
+            });
+            actions.push({
+                type: 'mnemo_open_all_questions',
+                payload: {
+                    status: 'pending'
+                }
+            });
+            actions.push({
+                type: 'mnemo_open_all_questions',
+                payload: {
+                    status: 'to_edit'
+                }
+            });
+            actions.push({
+                type: 'mnemo_open_all_questions',
+                payload: {
+                    status: 'trash'
+                }
+            });
+            actions.push({
+                type: 'mnemo_back',
+                payload: {}
+            });
+            return actions;
+        }
+        if (view.page === 'category') {
+            const categoryId = view.categoryId;
+            actions.push({
+                type: 'mnemo_open_add_question',
+                payload: {
+                    categoryId
+                }
+            });
+            actions.push({
+                type: 'mnemo_open_questions',
+                payload: {
+                    categoryId,
+                    status: 'validated'
+                }
+            });
+            actions.push({
+                type: 'mnemo_open_questions',
+                payload: {
+                    categoryId,
+                    status: 'pending'
+                }
+            });
+            actions.push({
+                type: 'mnemo_open_questions',
+                payload: {
+                    categoryId,
+                    status: 'to_edit'
+                }
+            });
+            actions.push({
+                type: 'mnemo_open_questions',
+                payload: {
+                    categoryId,
+                    status: 'trash'
+                }
+            });
+            actions.push({
+                type: 'mnemo_open_rename_category',
+                payload: {
+                    categoryId
+                }
+            });
+            actions.push({
+                type: 'mnemo_delete_category',
+                payload: {
+                    categoryId
+                }
+            });
+            actions.push({
+                type: 'mnemo_back',
+                payload: {}
+            });
+            return actions;
+        }
+        if (view.page === 'questions') {
+            const list = this.store.listQuestions({
+                categoryId: view.categoryId,
+                status: view.status
+            });
+            for (const q of list){
+                actions.push({
+                    type: 'mnemo_open_question',
+                    payload: {
+                        categoryId: view.categoryId,
+                        questionId: q.id
+                    }
+                });
+            }
+            actions.push({
+                type: 'mnemo_back',
+                payload: {}
+            });
+            return actions;
+        }
+        if (view.page === 'question') {
+            const questionId = view.questionId;
+            actions.push({
+                type: 'mnemo_set_question_status',
+                payload: {
+                    questionId,
+                    status: 'validated'
+                }
+            });
+            actions.push({
+                type: 'mnemo_set_question_status',
+                payload: {
+                    questionId,
+                    status: 'pending'
+                }
+            });
+            actions.push({
+                type: 'mnemo_set_question_status',
+                payload: {
+                    questionId,
+                    status: 'to_edit'
+                }
+            });
+            actions.push({
+                type: 'mnemo_set_question_status',
+                payload: {
+                    questionId,
+                    status: 'trash'
+                }
+            });
+            actions.push({
+                type: 'mnemo_open_edit_question',
+                payload: {
+                    questionId
+                }
+            });
+            actions.push({
+                type: 'mnemo_back',
+                payload: {}
+            });
+            return actions;
+        }
+        return actions;
+    }
+    back(view) {
+        if (view.page === 'categories') return {
+            page: 'setup'
+        };
+        if (view.page === 'all_questions') return {
+            page: 'categories'
+        };
+        if (view.page === 'category') return {
+            page: 'categories'
+        };
+        if (view.page === 'questions') return {
+            page: 'category',
+            categoryId: view.categoryId
+        };
+        if (view.page === 'question') return {
+            page: 'questions',
+            categoryId: view.categoryId,
+            status: 'pending'
+        };
+        return {
+            page: 'setup'
+        };
+    }
+    normalizeStatus(value) {
+        const raw = String(value ?? '').trim().toLowerCase();
+        if (raw === 'validated') return 'validated';
+        if (raw === 'to_edit') return 'to_edit';
+        if (raw === 'trash') return 'trash';
+        return 'pending';
+    }
+    statusLabel(value) {
+        const raw = String(value ?? '').trim().toLowerCase();
+        if (raw === 'all') return 'toutes';
+        if (raw === 'validated') return 'validée';
+        if (raw === 'pending') return 'en attente';
+        if (raw === 'to_edit') return 'à modifier';
+        if (raw === 'trash') return 'corbeille';
+        return String(value ?? '').trim() || raw || 'en attente';
+    }
+    buildConfigPrompt(config) {
+        return {
+            type: 'config_prompt',
+            title: 'Configuration - Arche de Mnémosyne',
+            actionType: 'mnemo_set_config',
+            cancelActionType: 'mnemo_prompt_cancel',
+            fields: [
+                {
+                    key: 'correctSoloPoints',
+                    label: 'Points accordés si un seul joueur répond correctement',
+                    kind: 'number',
+                    initialText: String(config?.correctSoloPoints ?? 2)
+                },
+                {
+                    key: 'correctMultiPoints',
+                    label: 'Points accordés par joueur en cas de bonnes réponses multiples',
+                    kind: 'number',
+                    initialText: String(config?.correctMultiPoints ?? 1)
+                },
+                {
+                    key: 'wrongPoints',
+                    label: 'Points appliqués en cas de mauvaise réponse',
+                    kind: 'number',
+                    initialText: String(config?.wrongPoints ?? 0)
+                },
+                {
+                    key: 'timeoutPoints',
+                    label: 'Points appliqués si le joueur ne répond pas à temps',
+                    kind: 'number',
+                    initialText: String(config?.timeoutPoints ?? -1)
+                },
+                {
+                    key: 'targetPoints',
+                    label: 'Score cible pour gagner la partie',
+                    kind: 'number',
+                    initialText: String(config?.targetPoints ?? 20)
+                },
+                {
+                    key: 'useTimer',
+                    label: 'Activer le chrono par question (oui/non)',
+                    kind: 'boolean',
+                    initialText: config?.useTimer ? 'oui' : 'non'
+                },
+                {
+                    key: 'timerSeconds',
+                    label: 'Durée du chrono par question (secondes)',
+                    kind: 'number',
+                    initialText: String(config?.timerSeconds ?? 30)
+                },
+                {
+                    key: 'interQuestionSeconds',
+                    label: 'Délai avant la question suivante (secondes)',
+                    kind: 'number',
+                    initialText: String(config?.interQuestionSeconds ?? 15)
+                }
+            ]
+        };
+    }
+    clampInt(value, min, max, fallback) {
+        const candidate = Number(value);
+        if (!Number.isFinite(candidate)) return this.clampInt(fallback, min, max, 0);
+        const rounded = Math.round(candidate);
+        if (rounded < min) return min;
+        if (rounded > max) return max;
+        return rounded;
+    }
+    compactQuestionLabel(value) {
+        const trimmed = String(value ?? '').replace(/\s+/g, ' ').trim();
+        if (trimmed.length <= 80) return trimmed;
+        return trimmed.slice(0, 77) + '...';
+    }
+    isOwner(state, playerId) {
+        if (playerId == null) return false;
+        const meta = this.getMeta(state);
+        const ownerId = typeof meta?.ownerPlayerId === 'number' ? meta.ownerPlayerId : null;
+        if (ownerId == null) return false;
+        return ownerId === playerId;
+    }
+    canConfigure(state, actorId) {
+        if (actorId == null) return false;
+        if (this.isOwner(state, actorId)) return true;
+        // Autoriser le joueur courant à configurer la partie pendant le setup.
+        if (String(state.phase ?? '').toLowerCase().trim() !== 'setup') return false;
+        const currentId = state.turn?.currentPlayerId ?? null;
+        return currentId === actorId;
+    }
+    getMeta(state) {
+        const raw = state.metadata ?? {};
+        // Robustesse: certaines vieilles sauvegardes/états peuvent ne pas contenir `adminView`.
+        // Sans ça, des accès directs `meta.adminView.page` font planter le jeu côté serveur
+        // et le client reçoit "Cannot read properties of undefined (reading 'page')".
+        const adminView = raw?.adminView && typeof raw.adminView === 'object' && typeof raw.adminView.page === 'string' ? raw.adminView : {
+            page: 'setup'
+        };
+        // Config par défaut (évite des undefined cascades).
+        const config = raw?.config && typeof raw.config === 'object' ? raw.config : {
+            targetPoints: 20,
+            useTimer: true,
+            timerSeconds: 30,
+            interQuestionSeconds: 15,
+            correctSoloPoints: 2,
+            correctMultiPoints: 1,
+            wrongPoints: 0,
+            timeoutPoints: -1
+        };
+        return {
+            ...raw,
+            adminView,
+            config
+        };
+    }
+    constructor(registry, core, turns, store, random){
+        super(registry), this.core = core, this.turns = turns, this.store = store, this.random = random, this.gameType = 'arche-de-mnemosyne', this.category = 'Quiz', this.subcategory = 'VentsInfinis', this.displayName = "L'Arche de Mnémosyne", this.description = 'Quiz à catégories (questions aléatoires).', this.minPlayers = 1, this.maxPlayers = 8;
+    }
+};
+ArcheDeMnemosyneService = _ts_decorate([
+    (0, _common.Injectable)(),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _gameregistryservice.GameRegistryService === "undefined" ? Object : _gameregistryservice.GameRegistryService,
+        typeof _gamecoreservice.GameCoreService === "undefined" ? Object : _gamecoreservice.GameCoreService,
+        typeof _turnflowservice.TurnFlowService === "undefined" ? Object : _turnflowservice.TurnFlowService,
+        typeof _mnemoquizstoreservice.MnemoQuizStoreService === "undefined" ? Object : _mnemoquizstoreservice.MnemoQuizStoreService,
+        typeof _randomservice.RandomService === "undefined" ? Object : _randomservice.RandomService
+    ])
+], ArcheDeMnemosyneService);

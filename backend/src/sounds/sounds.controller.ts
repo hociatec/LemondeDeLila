@@ -27,7 +27,9 @@ export class SoundsController {
 
   @Get('table-ambiences')
   async tableAmbiences() {
-    return this.sounds.listTableAmbiences();
+    return this.sounds.listTableAmbiencesWithFilter({
+      includeDisabled: false,
+    });
   }
 
   @Get(':soundId/:sha.mp3')

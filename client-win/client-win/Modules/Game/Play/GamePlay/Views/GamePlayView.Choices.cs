@@ -492,7 +492,9 @@ public partial class GamePlayView
             return;
         }
 
-        FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
+        FocusPreferredInteractiveElement(
+            forceFromOutsideTextInput: true,
+            allowExternalTextInputSteal: true);
     }
 
     private void TryRecoverPostPawnSelectionFocusFromLayout()
@@ -515,7 +517,9 @@ public partial class GamePlayView
 
         if (reason == GameFocusReason.ChoosePawn)
         {
-            ForceFocusGameZoneCore(forceFromOutsideTextInput: true);
+            ForceFocusGameZoneCore(
+                forceFromOutsideTextInput: true,
+                allowExternalTextInputSteal: true);
             return;
         }
 

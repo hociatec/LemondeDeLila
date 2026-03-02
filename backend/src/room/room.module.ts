@@ -23,6 +23,7 @@ import { RoomAutoCleanupService } from './services/room-auto-cleanup.service';
 import { RoomMaintenanceSettingsService } from './services/room-maintenance-settings.service';
 import { RoomMaintenanceSettingsEntity } from './entities/room-maintenance-settings.entity';
 import { VaultRoomSnapshotEntity } from '../vault/entities/vault-room-snapshot.entity';
+import { SoundsModule } from '../sounds/sounds.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { VaultRoomSnapshotEntity } from '../vault/entities/vault-room-snapshot.e
     forwardRef(() => PresenceModule),
     NotificationModule,
     ClientUpdatesModule,
+    SoundsModule,
     CatalogModule,
     StatsModule,
   ],

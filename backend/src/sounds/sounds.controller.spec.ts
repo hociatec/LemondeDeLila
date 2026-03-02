@@ -1,6 +1,24 @@
 import { SoundsController } from './sounds.controller';
 
 describe('SoundsController', () => {
+  it('returns only enabled table ambiences on public endpoint', async () => {
+    const sounds: any = {
+      listTableAmbiencesWithFilter: jest.fn().mockResolvedValue({
+        updatedAt: '2026-03-02T00:00:00.000Z',
+        items: [{ soundId: 'TableAmbience1', name: 'Ambiance 1', enabled: true }],
+      }),
+    };
+    const controller = new SoundsController(sounds);
+
+    const out = await controller.tableAmbiences();
+
+    expect(sounds.listTableAmbiencesWithFilter).toHaveBeenCalledWith({
+      includeDisabled: false,
+    });
+    expect(out.items).toHaveLength(1);
+    expect(out.items[0].soundId).toBe('TableAmbience1');
+  });
+
   it('allows cross-origin media loading for mp3 sounds', async () => {
     const sounds: any = {
       resolveSoundFile: jest.fn().mockResolvedValue({

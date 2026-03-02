@@ -25,6 +25,7 @@ import { isVersionLower } from '../../common/utils/version.utils';
 import { WsTicketAuthService } from '../../common/ws/ws-ticket-auth.service';
 import { RoomRealtimeTrackerService } from '../services/room-realtime-tracker.service';
 import { extractRoomWsParams } from './room-ws-params';
+import { SoundsService } from '../../sounds/sounds.service';
 import {
   addHiddenSelf,
   listConnectedPlayers,
@@ -109,6 +110,7 @@ export class RoomGateway
     private readonly clientUpdates: ClientUpdatesService,
     private readonly wsTickets: WsTicketAuthService,
     private readonly realtimeTracker: RoomRealtimeTrackerService,
+    private readonly sounds: SoundsService,
   ) {
     // Permet au backend (ex: moteur de jeu) de notifier les clients room sans dépendre du Gateway.
     this.roomsService.setRealtimeNotifier(async (roomId: number) => {
@@ -2527,6 +2529,22 @@ export class RoomGateway
         if (soundId != null && !allowed.has(soundId)) {
           await this.sendError(client, `Ambiance invalide: ${soundId}`);
           return;
+        }
+
+        if (soundId != null) {
+          const activeAmbiences =
+            await this.sounds.listTableAmbiencesWithFilter();
+          const selectable = new Set(
+            (activeAmbiences.items ?? []).map((a) =>
+              String(a?.soundId ?? '')
+                .trim()
+                .toLowerCase(),
+            ),
+          );
+          if (!selectable.has(soundId.toLowerCase())) {
+            await this.sendError(client, `Ambiance indisponible: ${soundId}`);
+            return;
+          }
         }
 
         const room = await this.roomsService.requireRoomForOwnerAction(

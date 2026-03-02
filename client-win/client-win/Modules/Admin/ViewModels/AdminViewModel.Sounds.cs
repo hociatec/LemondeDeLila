@@ -370,7 +370,7 @@ public sealed partial class AdminViewModel
         {
             _page = AdminPage.SoundsTableAmbience;
             Title = "Administration - Table - Ambiances";
-            Details = "Créer, renommer, supprimer des ambiances de table, et associer un son (.wav).";
+            Details = "Créer, activer/désactiver, renommer, supprimer des ambiances de table, et associer un son (.wav/.mp3).";
             PreferDetailsFocus = false;
             IsTextInputVisible = false;
             IsSecondaryInputVisible = false;
@@ -387,8 +387,9 @@ public sealed partial class AdminViewModel
                     configured = _remoteSounds.TryGetPath(sid) != null;
                 }
 
-                var status = configured ? " (configurée)" : " (sans son)";
-                Items.Add(new AdminMenuItem($"{a.Name}{status}", tag: a));
+                var enabledState = a.Enabled ? "active" : "inactive";
+                var soundState = configured ? "configurée" : "sans son";
+                Items.Add(new AdminMenuItem($"{a.Name} ({enabledState}, {soundState})", tag: a));
             }
 
             SelectedItem = Items.FirstOrDefault(i => i.Tag is AdminTableAmbienceDto) ?? Items.FirstOrDefault();
@@ -411,8 +412,11 @@ public sealed partial class AdminViewModel
             IsSecondaryInputVisible = false;
             IsAdditionalPermissionsVisible = false;
             Items.Clear();
+            Items.Add(new AdminMenuItem(
+                ambience?.Enabled == false ? "Activer" : "Désactiver",
+                tag: "tableAmbience.toggle"));
             Items.Add(new AdminMenuItem("Renommer", tag: "tableAmbience.rename"));
-            Items.Add(new AdminMenuItem("Changer le son (.wav)", tag: "tableAmbience.sound"));
+            Items.Add(new AdminMenuItem("Changer le son (.wav/.mp3)", tag: "tableAmbience.sound"));
             Items.Add(new AdminMenuItem("Supprimer", tag: "tableAmbience.delete"));
             SelectedItem = Items.FirstOrDefault();
             Status = "Entrée : action. Échap : retour.";
@@ -509,7 +513,7 @@ public sealed partial class AdminViewModel
             IsSecondaryInputVisible = false;
             IsAdditionalPermissionsVisible = false;
             Details = string.Equals(mode, "tableAmbience.create", StringComparison.OrdinalIgnoreCase)
-                ? "Donnez un nom à l'ambiance. Le fichier .wav se choisit ensuite via \"Changer le son (.wav)\"."
+                ? "Donnez un nom à l'ambiance. Le fichier audio (.wav/.mp3) se choisit ensuite via \"Changer le son (.wav/.mp3)\"."
                 : string.Empty;
             Status = "Saisissez puis Entrée pour valider. Échap : retour.";
             UpdateFilterVisibility();
@@ -704,6 +708,57 @@ public sealed partial class AdminViewModel
                 BuildSoundsTableAmbience();
                 NavigationChanged?.Invoke();
                 await _dialogs.ShowInfo("Ambiances", "Ambiance supprimée.").ConfigureAwait(true);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        private async Task ToggleTableAmbienceEnabledAsync(AdminTableAmbienceDto ambience)
+        {
+            var jwt = _session.CurrentUser?.Token;
+            if (string.IsNullOrWhiteSpace(jwt))
+            {
+                await _dialogs.ShowError("Ambiances", "Connexion requise.").ConfigureAwait(true);
+                return;
+            }
+
+            if (ambience == null || string.IsNullOrWhiteSpace(ambience.SoundId))
+            {
+                await _dialogs.ShowError("Ambiances", "Ambiance introuvable.").ConfigureAwait(true);
+                return;
+            }
+
+            var nextEnabled = ambience.Enabled != true;
+            IsBusy = true;
+            try
+            {
+                var endpoint = new Uri(_config.HttpBase, $"admin/sounds/table-ambiences/{Uri.EscapeDataString(ambience.SoundId)}/enabled");
+                using var req = new HttpRequestMessage(HttpMethod.Put, endpoint);
+                req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+                req.Content = new StringContent(
+                    JsonSerializer.Serialize(new { enabled = nextEnabled }),
+                    System.Text.Encoding.UTF8,
+                    "application/json");
+                using var resp = await HttpClientProvider.Shared.SendAsync(req).ConfigureAwait(true);
+                var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
+                if (!resp.IsSuccessStatusCode)
+                {
+                    var message = ApiErrorParser.TryExtractMessage(body) ?? body;
+                    await _dialogs.ShowError(
+                            "Ambiances",
+                            $"Mise à jour échouée ({(int)resp.StatusCode}) : {message}")
+                        .ConfigureAwait(true);
+                    return;
+                }
+
+                ambience.Enabled = nextEnabled;
+                await RefreshTableAmbiencesAsync(force: true).ConfigureAwait(true);
+                var refreshed = (_tableAmbiences ?? Array.Empty<AdminTableAmbienceDto>()).FirstOrDefault(a =>
+                    string.Equals(a.SoundId?.Trim(), ambience.SoundId?.Trim(), StringComparison.OrdinalIgnoreCase));
+                BuildSoundsTableAmbienceActions(refreshed ?? ambience);
+                NavigationChanged?.Invoke();
             }
             finally
             {
@@ -940,7 +995,7 @@ public sealed partial class AdminViewModel
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Aperçu (Entrée pour écouter)", tag: "sound.preview"));
-        Items.Add(new AdminMenuItem("Changer (Entrée pour choisir un fichier .wav)", tag: "sound.change"));
+        Items.Add(new AdminMenuItem("Changer (Entrée pour choisir un fichier .wav/.mp3)", tag: "sound.change"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Tab/Entrée : action. Échap : retour.";
         UpdateFilterVisibility();
@@ -960,8 +1015,8 @@ public sealed partial class AdminViewModel
 
         var dialog = new OpenFileDialog
         {
-            Title = "Choisir un son (.wav ou .mp3)",
-            Filter = "Fichiers audio (*.wav;*.mp3)|*.wav;*.mp3",
+            Title = "Choisir un son (.wav/.wave ou .mp3)",
+            Filter = "Fichiers audio (*.wav;*.wave;*.mp3)|*.wav;*.wave;*.mp3",
             Multiselect = false,
             CheckFileExists = true,
             CheckPathExists = true
@@ -1018,7 +1073,7 @@ public sealed partial class AdminViewModel
         using var form = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent(bytes);
         var ext = Path.GetExtension(filePath ?? string.Empty).ToLowerInvariant();
-        var mime = ext == ".wav"
+        var mime = ext == ".wav" || ext == ".wave"
             ? "audio/wav"
             : ext == ".mp3"
                 ? "audio/mpeg"

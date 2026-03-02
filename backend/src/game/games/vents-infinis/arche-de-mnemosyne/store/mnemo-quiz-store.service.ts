@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 import type {
@@ -16,10 +17,60 @@ export class MnemoQuizStoreService implements OnModuleInit {
   private data: MnemoQuizStoreData = { categories: [], questions: [] };
 
   constructor() {
-    const envPath = process.env.MNEMO_QUIZ_PATH;
-    this.filePath = envPath
-      ? path.resolve(envPath)
-      : path.resolve(process.cwd(), 'data', 'arche-de-mnemosyne', 'quiz.json');
+    this.filePath = this.resolveStoragePath();
+  }
+
+  private resolveStoragePath(): string {
+    const envPath = String(process.env.MNEMO_QUIZ_PATH ?? '').trim();
+    if (envPath) {
+      return path.resolve(envPath);
+    }
+
+    const legacyPath = path.resolve(
+      process.cwd(),
+      'data',
+      'arche-de-mnemosyne',
+      'quiz.json',
+    );
+    const nodeEnv = String(process.env.NODE_ENV ?? '')
+      .trim()
+      .toLowerCase();
+
+    if (nodeEnv !== 'production') {
+      return legacyPath;
+    }
+
+    const persistentPath = path.join(
+      os.homedir(),
+      '.local',
+      'share',
+      'lemonde-de-lila',
+      'arche-de-mnemosyne',
+      'quiz.json',
+    );
+    this.bootstrapPersistentStorage(legacyPath, persistentPath);
+    return persistentPath;
+  }
+
+  private bootstrapPersistentStorage(
+    legacyPath: string,
+    persistentPath: string,
+  ): void {
+    if (path.resolve(legacyPath) === path.resolve(persistentPath)) {
+      return;
+    }
+
+    try {
+      if (!fs.existsSync(legacyPath) || fs.existsSync(persistentPath)) {
+        return;
+      }
+
+      fs.mkdirSync(path.dirname(persistentPath), { recursive: true });
+      fs.copyFileSync(legacyPath, persistentPath);
+    } catch {
+      // best-effort: if bootstrap fails, we continue with the persistent path;
+      // admin can re-enter content without blocking startup.
+    }
   }
 
   onModuleInit(): void {

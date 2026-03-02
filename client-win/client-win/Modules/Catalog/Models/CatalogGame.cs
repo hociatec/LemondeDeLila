@@ -57,7 +57,6 @@ public sealed class CatalogGame
             {
                 "beta" => "Bêta",
                 "construction" => "En construction",
-                "finished" => "Terminé",
                 _ => string.Empty
             };
 

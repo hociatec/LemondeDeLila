@@ -12,7 +12,7 @@ public sealed class OptionsState
 
     public bool MuteAll { get; set; } = false;
     public bool ConfirmExit { get; set; } = false;
-    public bool RepairBrokenAccents { get; set; } = false;
+    public bool RepairBrokenAccents { get; set; } = true;
 
     // Allow browsing/playing games marked as "beta" in the catalog (local-only setting).
     public bool EnableBetaGames { get; set; } = false;

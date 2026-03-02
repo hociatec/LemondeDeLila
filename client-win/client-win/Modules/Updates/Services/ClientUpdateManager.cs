@@ -342,7 +342,7 @@ public static class ClientUpdateManager
 
     private static string? ResolveUpdateUrl(ClientConfiguration config, string? serverUrl)
     {
-        var direct = (serverUrl ?? string.Empty).Trim();
+        var direct = TryNormalizeUpdateUrl(config, serverUrl);
         if (!string.IsNullOrWhiteSpace(direct))
         {
             return direct;
@@ -350,10 +350,10 @@ public static class ClientUpdateManager
 
         try
         {
-            var fromCheck = new Uri(config.UpdatesCheckUrl, "../updates/client-win/").ToString();
-            if (!string.IsNullOrWhiteSpace(fromCheck))
+            var fromCheck = new Uri(config.UpdatesCheckUrl, "../updates/client-win/");
+            if (IsSupportedUpdateUrl(fromCheck))
             {
-                return fromCheck;
+                return fromCheck.ToString();
             }
         }
         catch
@@ -363,12 +363,49 @@ public static class ClientUpdateManager
 
         try
         {
-            return new Uri(config.HttpBase, "../updates/client-win/").ToString();
+            var fallback = new Uri(config.HttpBase, "../updates/client-win/");
+            return IsSupportedUpdateUrl(fallback) ? fallback.ToString() : null;
         }
         catch
         {
             return null;
         }
+    }
+
+    private static string? TryNormalizeUpdateUrl(ClientConfiguration config, string? raw)
+    {
+        var candidate = (raw ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(candidate))
+        {
+            return null;
+        }
+
+        if (Uri.TryCreate(candidate, UriKind.Absolute, out var absolute))
+        {
+            return IsSupportedUpdateUrl(absolute) ? absolute.ToString() : null;
+        }
+
+        try
+        {
+            var relative = new Uri(config.HttpBase, candidate);
+            return IsSupportedUpdateUrl(relative) ? relative.ToString() : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static bool IsSupportedUpdateUrl(Uri? uri)
+    {
+        if (uri == null || !uri.IsAbsoluteUri)
+        {
+            return false;
+        }
+
+        var scheme = (uri.Scheme ?? string.Empty).Trim();
+        return string.Equals(scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
     }
 
 }

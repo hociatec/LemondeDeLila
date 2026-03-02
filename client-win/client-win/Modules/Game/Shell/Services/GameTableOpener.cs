@@ -128,6 +128,7 @@ public sealed class GameTableOpener : IGameTableOpener
     {
         public string? SoundId { get; set; }
         public string? Name { get; set; }
+        public bool? Enabled { get; set; }
     }
 
     private async Task<Dictionary<string, string>> FetchTableAmbienceLabelsAsync(CancellationToken cancellationToken)
@@ -206,6 +207,10 @@ public sealed class GameTableOpener : IGameTableOpener
             var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var it in items)
             {
+                if (it?.Enabled == false)
+                {
+                    continue;
+                }
                 var id = (it?.SoundId ?? string.Empty).Trim();
                 var name = (it?.Name ?? string.Empty).Trim();
                 if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(name))

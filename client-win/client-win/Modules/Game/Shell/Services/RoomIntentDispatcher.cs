@@ -144,7 +144,9 @@ internal sealed class RoomIntentDispatcher
 
         if (!string.IsNullOrWhiteSpace(message))
         {
-            _roomVm.Status = message.Trim();
+            var normalized = message.Trim();
+            _roomVm.Status = normalized;
+            _history.Add(normalized);
         }
     }
 
