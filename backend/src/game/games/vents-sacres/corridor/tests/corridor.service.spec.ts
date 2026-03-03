@@ -70,11 +70,15 @@ describe('Corridor', () => {
       pending: null,
     } as any);
 
-    const exposed = svc.exposeStateForUser(started as any, 1);
-    const types = new Set((exposed.actions ?? []).map((a: any) => a.type));
-    expect(types.has('choose_pawn')).toBe(true);
-    expect(types.has('corridor_move')).toBe(false);
-    expect(types.has('corridor_place_wall')).toBe(false);
+    const exposed1 = svc.exposeStateForUser(started as any, 1);
+    const exposed2 = svc.exposeStateForUser(started as any, 2);
+    const types1 = new Set((exposed1.actions ?? []).map((a: any) => a.type));
+    const types2 = new Set((exposed2.actions ?? []).map((a: any) => a.type));
+    expect(types1.has('choose_pawn') || types2.has('choose_pawn')).toBe(true);
+    expect(types1.has('corridor_move')).toBe(false);
+    expect(types1.has('corridor_place_wall')).toBe(false);
+    expect(types2.has('corridor_move')).toBe(false);
+    expect(types2.has('corridor_place_wall')).toBe(false);
   });
 
   it('exposes choose_pawn pending only to the targeted human player', async () => {
@@ -124,8 +128,12 @@ describe('Corridor', () => {
     };
 
     const started = svc.hydrateInitialState(base);
-    const afterChoose1 = choosePawnForUser(svc, started, 1);
-    const ready = choosePawnForUser(svc, afterChoose1, 2);
+    // Pawn choice order is randomized; attempt for both players until pending clears.
+    let ready: any = started;
+    ready = choosePawnForUser(svc, ready, 1);
+    ready = choosePawnForUser(svc, ready, 2);
+    ready = choosePawnForUser(svc, ready, 1);
+    ready = choosePawnForUser(svc, ready, 2);
 
     const exposed = svc.exposeStateForUser(ready as any, 1);
     expect(exposed.status).toBe('started');
@@ -279,8 +287,12 @@ describe('Corridor', () => {
       pending: null,
     };
 
-    const afterChoose1 = choosePawnForUser(svc, svc.hydrateInitialState(base), 1);
-    const ready = choosePawnForUser(svc, afterChoose1, 2);
+    // Pawn choice order is randomized; attempt for both players until pending clears.
+    let ready: any = svc.hydrateInitialState(base);
+    ready = choosePawnForUser(svc, ready, 1);
+    ready = choosePawnForUser(svc, ready, 2);
+    ready = choosePawnForUser(svc, ready, 1);
+    ready = choosePawnForUser(svc, ready, 2);
     const exposed = svc.exposeStateForUser(ready as any, 1);
     const wall = (exposed.actions ?? []).find(
       (a: any) => a.type === 'corridor_place_wall',

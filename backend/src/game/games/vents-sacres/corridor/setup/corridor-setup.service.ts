@@ -3,6 +3,7 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import { CORRIDOR_GAME } from '../definitions/game.definition';
 import { CORRIDOR_PAWNS } from '../definitions/corridor.pawns';
 import type { CorridorMetadata } from '../model/corridor.model';
+import { nextRngInt } from '../../../../../common/utils/seeded-rng';
 
 @Injectable()
 export class CorridorSetupService {
@@ -36,6 +37,11 @@ export class CorridorSetupService {
       label: p.label,
       description: p.description,
     }));
+
+    const baseMeta =
+      baseState.metadata && typeof baseState.metadata === 'object'
+        ? (baseState.metadata as Record<string, unknown>)
+        : {};
     const pawnByPlayerId: Record<string, string> = {};
     const usedPawnIds = new Set<string>();
     for (const bot of players.filter((p) => p?.isBot === true)) {
@@ -45,10 +51,17 @@ export class CorridorSetupService {
       usedPawnIds.add(pick.id);
     }
 
+    const eligible = players.filter(
+      (p) => p?.isBot !== true && !pawnByPlayerId[String(p?.id ?? '')],
+    );
+    const pick = eligible.length > 1 ? nextRngInt(baseMeta, eligible.length) : null;
     const pendingPlayerId =
-      players.find(
-        (p) => p?.isBot !== true && !pawnByPlayerId[String(p?.id ?? '')],
-      )?.id ?? null;
+      eligible.length <= 0
+        ? null
+        : eligible.length === 1
+          ? eligible[0]!.id ?? null
+          : (eligible[pick!.value]?.id ?? eligible[0]!.id ?? null);
+    const metaAfterPick = pick?.meta ?? baseMeta;
 
     const metadata: CorridorMetadata = {
       size,
@@ -86,7 +99,7 @@ export class CorridorSetupService {
       round: 1,
       turnIndex: 0,
       lastRoll: null,
-      metadata: { ...(baseState.metadata ?? {}), ...(metadata as any) },
+      metadata: { ...metaAfterPick, ...(metadata as any) },
       pending:
         pendingPlayerId != null
           ? {
