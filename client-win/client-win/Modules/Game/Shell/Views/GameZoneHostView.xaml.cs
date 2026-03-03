@@ -486,6 +486,8 @@ public partial class GameZoneHostView : UserControl
             return;
         }
 
+        // If focus came from Tab navigation, do not auto-jump inside the game content.
+        // This keeps the Tab order stable (avoid "stuck" focus that forces Shift+Tab).
         var requestId = Interlocked.Increment(ref _focusRequestId);
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {

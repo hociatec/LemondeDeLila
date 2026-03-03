@@ -13,19 +13,19 @@
     </UserControl.Resources>
     <Grid x:Name="Root"
           Background="#0F1D2D"
-          Loaded="OnLoaded"
-          PreviewKeyDown="OnPreviewKeyDown"
           behaviors:ShortcutBindingsBehavior.Shortcuts="{Binding GameZone.Shortcuts}"
           behaviors:ShortcutBindingsBehavior.RefocusAfterExecute="False"
+          FocusManager.IsFocusScope="True"
           KeyboardNavigation.TabNavigation="Cycle"
-          KeyboardNavigation.ControlTabNavigation="Cycle">
+          KeyboardNavigation.ControlTabNavigation="Cycle"
+          KeyboardNavigation.DirectionalNavigation="Contained">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <room:GameRoomHeaderView Grid.Row="0" />
+        <room:GameRoomHeaderView x:Name="HeaderHost" Grid.Row="0" />
 
         <Grid Grid.Row="1" Margin="20">
             <Grid.ColumnDefinitions>

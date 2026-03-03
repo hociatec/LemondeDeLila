@@ -150,8 +150,12 @@ export class MorpionPresenter extends BasePresenterService {
     return out;
   }
 
-  protected buildPendingState(): any {
-    return null;
+  protected buildPendingState(
+    state: GameStateEntity,
+    _metadata: Record<string, unknown>,
+    _currentPlayerId: number | null,
+  ): any {
+    return (state.pending ?? null) as any;
   }
 
   protected buildExtras(

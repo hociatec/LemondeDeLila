@@ -50,6 +50,8 @@ public sealed partial class GamePlayViewModel
     private void OnHandCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         OnPropertyChanged(nameof(HasHand));
+        OnPropertyChanged(nameof(HasInteractiveSurface));
+        OnPropertyChanged(nameof(InteractiveZoneLabel));
     }
 
     internal void SyncHandFromState(GameStateDto state)

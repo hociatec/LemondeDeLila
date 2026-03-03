@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -107,6 +108,36 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public bool ShowLegacyActionsPanel => !ShowGridSurface;
 
+    public bool HasInteractiveSurface =>
+        ShowGridSurface ||
+        (HasHand && !IsChoosePawnPending) ||
+        DisplayChoices.Count > 0;
+
+    public string InteractiveZoneLabel
+    {
+        get
+        {
+            if (IsChoosePawnPending)
+            {
+                var label = (ChoicesLabel ?? string.Empty).Trim();
+                return string.IsNullOrWhiteSpace(label) ? "Votre pion" : label;
+            }
+
+            if (HasHand && !ShowGridSurface)
+            {
+                return "Votre main";
+            }
+
+            if (DisplayChoices.Count > 0)
+            {
+                var label = (ChoicesLabel ?? string.Empty).Trim();
+                return string.IsNullOrWhiteSpace(label) ? "Choix" : label;
+            }
+
+            return string.Empty;
+        }
+    }
+
     public GamePlayViewModel(
         string gameId,
         Func<CancellationToken, Task<GameSession>> connect,
@@ -129,6 +160,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             if (string.Equals(e.PropertyName, nameof(GamePlayChoicesViewModel.ChoicesLabel), StringComparison.Ordinal))
             {
                 OnPropertyChanged(nameof(ChoicesLabel));
+                OnPropertyChanged(nameof(InteractiveZoneLabel));
                 MaybeAnnouncePendingChoicesLabel();
             }
         };
@@ -156,6 +188,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             {
                 OnPropertyChanged(nameof(ShowGridSurface));
                 OnPropertyChanged(nameof(ShowLegacyActionsPanel));
+                OnPropertyChanged(nameof(HasInteractiveSurface));
+                OnPropertyChanged(nameof(InteractiveZoneLabel));
                 RefreshCanExecute();
             }
         };
@@ -320,6 +354,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             OnPropertyChanged(nameof(IsChoosePawnPending));
             OnPropertyChanged(nameof(ShowGridSurface));
             OnPropertyChanged(nameof(ShowLegacyActionsPanel));
+            OnPropertyChanged(nameof(HasInteractiveSurface));
+            OnPropertyChanged(nameof(InteractiveZoneLabel));
             RequestDisplayChoicesRefresh();
             if (!wasChoosePawnPending && IsChoosePawnPending)
             {
@@ -339,13 +375,75 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         string.Equals((_pendingType ?? string.Empty).Trim(), "quiz", StringComparison.OrdinalIgnoreCase);
 
     public bool IsChoosePawnPending =>
-        IsPawnSelectionPendingType(_pendingType);
+        IsPawnSelectionPendingType(_pendingType) || HasChoosePawnPendingFromState();
 
     private static bool IsPawnSelectionPendingType(string? pendingType)
     {
         var normalized = (pendingType ?? string.Empty).Trim();
         return string.Equals(normalized, "choose_pawn", StringComparison.OrdinalIgnoreCase) ||
                string.Equals(normalized, "pick_pawn", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool HasChoosePawnPendingFromState()
+    {
+        var state = _session?.LastState;
+        if (state == null)
+        {
+            return false;
+        }
+
+        if (ReadLifecycleBoolean(state, "viewerMustChoosePawn"))
+        {
+            return true;
+        }
+
+        return HasChoosePawnData(state.Pending);
+    }
+
+    private static bool ReadLifecycleBoolean(GameStateDto state, string key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            return false;
+        }
+
+        try
+        {
+            var metadata = state.Metadata;
+            if (metadata.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            if (!metadata.TryGetProperty("lifecycle", out var lifecycle) ||
+                lifecycle.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            if (!lifecycle.TryGetProperty(key, out var value))
+            {
+                return false;
+            }
+
+            return value.ValueKind == JsonValueKind.True;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool HasChoosePawnData(GamePendingDto? pending)
+    {
+        if (pending == null || pending.Data.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        return pending.Data.TryGetProperty("pawns", out var pawns) &&
+               pawns.ValueKind == JsonValueKind.Array &&
+               pawns.GetArrayLength() > 0;
     }
 
     private void MaybeAnnouncePendingChoicesLabel()
@@ -524,6 +622,11 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
                 SyncHandFromState(next);
                 PendingType = (next.Pending?.Type ?? string.Empty).Trim();
+                OnPropertyChanged(nameof(IsChoosePawnPending));
+                OnPropertyChanged(nameof(ShowGridSurface));
+                OnPropertyChanged(nameof(ShowLegacyActionsPanel));
+                OnPropertyChanged(nameof(HasInteractiveSurface));
+                OnPropertyChanged(nameof(InteractiveZoneLabel));
                 var question = ExtractQuizQuestion(next);
                 QuizQuestionText = question;
                 ResetQuizSelectionIfNewQuestion(question);
@@ -615,6 +718,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
         ApplyDisplayChoicesDiff(target);
         SyncSelectedDisplayFromChoice();
+        OnPropertyChanged(nameof(HasInteractiveSurface));
+        OnPropertyChanged(nameof(InteractiveZoneLabel));
     }
 
     private void ApplyDisplayChoicesDiff(IReadOnlyList<ChoiceLine> target)

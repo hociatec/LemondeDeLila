@@ -8,10 +8,20 @@
              Focusable="False"
              IsTabStop="False">
     <StackPanel Orientation="Horizontal" Margin="20" VerticalAlignment="Center">
-        <TextBlock Text="{Binding Game.Name}"
+        <TextBlock x:Name="GameNameEntry"
+                   Text="{Binding Game.Name}"
+                   Foreground="White"
                    FontSize="26"
                    FontWeight="SemiBold"
-                   Foreground="White" />
+                   Focusable="True"
+                   KeyboardNavigation.IsTabStop="True"
+                   KeyboardNavigation.TabIndex="0"
+                   AutomationProperties.Name="{Binding Game.Name}">
+            <TextBlock.InputBindings>
+                <KeyBinding Key="Enter" Command="{Binding GameZone.StartCommand}" />
+                <KeyBinding Key="Return" Command="{Binding GameZone.StartCommand}" />
+            </TextBlock.InputBindings>
+        </TextBlock>
         <Border Background="#F2C14E"
                 CornerRadius="8"
                 Padding="10 6"

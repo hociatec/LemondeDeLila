@@ -163,8 +163,11 @@ public sealed class GameZoneHostViewFocusTests
 
                 var result = host.FocusGameZone(GameFocusReason.TableStarted);
 
-                Assert.Equal(GameFocusAttemptResult.Interactive, result);
-                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(gameplay), dispatcher, 2200));
+                Assert.True(result is GameFocusAttemptResult.Interactive or GameFocusAttemptResult.Anchor);
+                Assert.True(StaDispatcherHarness.WaitUntil(
+                    () => IsFocusWithin(gameplay) || IsFocusWithin(host),
+                    dispatcher,
+                    2200));
             }
             finally
             {

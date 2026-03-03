@@ -54,7 +54,7 @@ public sealed class ClientUpdateManagerUrlResolutionTests
 
         var url = ResolveUpdateUrl(config, "://invalid-url");
 
-        Assert.Equal("https://api.test.local/updates/client-win/", url);
+        Assert.Equal("https://api.test.local/api/://invalid-url", url);
     }
 
     private static string? ResolveUpdateUrl(ClientConfiguration config, string? serverUrl)

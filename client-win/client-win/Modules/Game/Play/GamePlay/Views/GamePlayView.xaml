@@ -12,7 +12,7 @@
               IsTabStop="False"
               KeyboardNavigation.TabNavigation="Continue"
               KeyboardNavigation.DirectionalNavigation="Contained"
-              AutomationProperties.Name="{Binding RelativeSource={RelativeSource AncestorType={x:Type shell:GameZoneHostView}}, Path=DataContext.Title, FallbackValue=Zone de jeu, TargetNullValue=Zone de jeu}"
+              AutomationProperties.Name=""
               PreviewKeyDown="OnRootPreviewKeyDown"
               Loaded="OnLoaded">
     <UserControl.Resources>
@@ -51,7 +51,7 @@
 	                Padding="10"
 	                Margin="0 0 0 10"
 	                Visibility="{Binding ShowGridSurface, Converter={StaticResource BoolToVis}}"
-	                AutomationProperties.Name=""
+	                AutomationProperties.Name="{Binding RelativeSource={RelativeSource AncestorType={x:Type shell:GameZoneHostView}}, Path=DataContext.Title, FallbackValue=Grille, TargetNullValue=Grille}"
 	                x:Name="GridBoard"
 	                KeyboardNavigation.DirectionalNavigation="Contained"
 	                KeyboardNavigation.TabNavigation="Once"
@@ -72,7 +72,7 @@
 	                              ItemsSource="{Binding Cells}"
 	                              KeyboardNavigation.DirectionalNavigation="Contained"
 	                              KeyboardNavigation.TabNavigation="Once"
-	                              AutomationProperties.Name=""
+	                              AutomationProperties.Name="{Binding RelativeSource={RelativeSource AncestorType={x:Type shell:GameZoneHostView}}, Path=DataContext.Title, FallbackValue=Grille, TargetNullValue=Grille}"
 	                              Loaded="OnGridLoaded">
 	                    <!--
 	                        Accessibilité NVDA (Corridor) :
@@ -147,10 +147,34 @@
                 Padding="10"
                 Margin="0 0 0 10"
                 Visibility="{Binding ShowLegacyActionsPanel, Converter={StaticResource BoolToVis}}">
-            <!-- Scroll to keep the hand visible on narrow/vertical layouts. -->
-            <ScrollViewer VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled">
-                <StackPanel>
+            <Grid>
+                <!-- Fallback focus anchor when there is no interactive surface. -->
+                <Button x:Name="GameZoneFallbackAnchor"
+                        Focusable="True"
+                        IsTabStop="False"
+                        Width="1"
+                        Height="1"
+                        Opacity="0"
+                        BorderThickness="0"
+                        Background="Transparent"
+                        AutomationProperties.Name="{Binding RelativeSource={RelativeSource AncestorType={x:Type shell:GameZoneHostView}}, Path=DataContext.Title, FallbackValue=Zone de jeu, TargetNullValue=Zone de jeu}">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Setter Property="IsTabStop" Value="False" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasInteractiveSurface}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Setter Property="IsTabStop" Value="True" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <!-- Scroll to keep the hand visible on narrow/vertical layouts. -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel>
                 <TextBlock Text="{Binding BoardText}"
                            Foreground="#C3D2EA"
                            FontFamily="Consolas"
@@ -307,7 +331,7 @@
                              FontSize="12"
                              MaxHeight="160"
                              Margin="0 0 0 4"
-                             AutomationProperties.Name="Cartes en main">
+                             AutomationProperties.Name="Votre main">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
@@ -468,8 +492,9 @@
                         </Style>
                     </ListBox.Style>
                 </ListBox>
-            </StackPanel>
-            </ScrollViewer>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
         </Border>
 
         <!-- Prompt inline (remplace les fenêtres modales de configuration/saisie) -->

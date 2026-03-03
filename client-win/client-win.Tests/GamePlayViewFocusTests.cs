@@ -310,8 +310,8 @@ public sealed class GamePlayViewFocusTests
                 view.UpdateLayout();
                 StaDispatcherHarness.Drain(dispatcher);
 
-                Assert.Equal(string.Empty, AutomationProperties.GetName(gridBoard));
-                Assert.Equal(string.Empty, AutomationProperties.GetName(gridItems));
+                Assert.Equal("Grille", AutomationProperties.GetName(gridBoard));
+                Assert.Equal("Grille", AutomationProperties.GetName(gridItems));
 
                 var firstCell = gridItems.ItemContainerGenerator.ContainerFromIndex(0) as A11yGridCell;
                 Assert.NotNull(firstCell);

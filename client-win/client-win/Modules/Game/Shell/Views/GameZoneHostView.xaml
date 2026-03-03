@@ -31,7 +31,7 @@
             <Grid Grid.Row="1">
                 <!-- Ancre de focus permanente pour garder la navigation "dans la zone de jeu"
                      mÃªme si la surface de jeu n'a pas d'Ã©lÃ©ment focusable Ã  l'instant T. -->
-			                <local:GameZoneFocusAnchor x:Name="GameZoneFocusAnchor"
+                <local:GameZoneFocusAnchor x:Name="GameZoneFocusAnchor"
                                            Focusable="True"
                                            KeyboardNavigation.TabIndex="0"
                                            Background="Transparent"
@@ -49,12 +49,12 @@
                     <local:GameZoneFocusAnchor.Style>
                         <Style TargetType="{x:Type local:GameZoneFocusAnchor}">
                             <!-- Ancre interne uniquement: focus programmatique autorisé, pas de stop clavier Tab. -->
-                            <Setter Property="IsTabStop" Value="False" />
+                                            <Setter Property="IsTabStop" Value="False" />
                         </Style>
                     </local:GameZoneFocusAnchor.Style>
                 </local:GameZoneFocusAnchor>
 
-		                <local:GameZoneFocusAnchor x:Name="GameZoneEmptyAnchor"
+                <local:GameZoneFocusAnchor x:Name="GameZoneEmptyAnchor"
                                            Focusable="True"
                                            KeyboardNavigation.TabIndex="0"
                                            Background="Transparent"
@@ -76,12 +76,10 @@
                             <Setter Property="Opacity" Value="0" />
 	                            <Style.Triggers>
 	                                <DataTrigger Binding="{Binding Content}" Value="{x:Null}">
-                                    <Setter Property="IsTabStop" Value="True" />
 	                                    <Setter Property="Visibility" Value="Visible" />
 	                                    <Setter Property="IsHitTestVisible" Value="True" />
 	                                </DataTrigger>
 	                                <DataTrigger Binding="{Binding IsStarted}" Value="False">
-                                    <Setter Property="IsTabStop" Value="True" />
 	                                    <Setter Property="Visibility" Value="Visible" />
 	                                    <Setter Property="IsHitTestVisible" Value="True" />
 	                                </DataTrigger>

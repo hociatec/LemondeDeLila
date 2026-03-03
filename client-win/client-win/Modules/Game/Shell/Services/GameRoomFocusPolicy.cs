@@ -115,6 +115,12 @@ internal sealed class GameRoomFocusPolicy
             return true;
         }
 
+        if (reason is GameFocusReason.TabCycle)
+        {
+            // User-driven Tab navigation must always be allowed, even when history hold is active.
+            return true;
+        }
+
         if (IsHistoryHoldActive())
         {
             return false;
@@ -126,8 +132,7 @@ internal sealed class GameRoomFocusPolicy
             return true;
         }
 
-        return reason is GameFocusReason.TabCycle
-            or GameFocusReason.AfterDialog;
+        return reason is GameFocusReason.AfterDialog;
     }
 
     public void NotifyHistoryUpdated()
