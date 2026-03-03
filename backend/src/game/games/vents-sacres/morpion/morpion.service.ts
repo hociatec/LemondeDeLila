@@ -32,6 +32,10 @@ export class MorpionService extends AbstractGameService {
   readonly description = 'Alignez 3 symboles sur une grille 3×3.';
   readonly minPlayers = 2;
   readonly maxPlayers = 2;
+  private static readonly PawnChoices = [
+    { id: 'X', label: 'Croix (X)' },
+    { id: 'O', label: 'Rond (O)' },
+  ] as const;
 
   constructor(
     registry: GameRegistryService,
@@ -45,9 +49,13 @@ export class MorpionService extends AbstractGameService {
     const metadata: MorpionMetadata = {
       size: 3,
       board: Array.from({ length: 9 }, () => 0),
+      glyphByPlayerId: {},
       winnerId: null,
       draw: false,
     };
+    const pending = firstPlayerId
+      ? this.buildChoosePawnPending(players, firstPlayerId, {})
+      : null;
 
     return {
       ...baseState,
@@ -57,14 +65,17 @@ export class MorpionService extends AbstractGameService {
       turnIndex: baseState.turnIndex ?? 0,
       lastRoll: null,
       metadata,
-      pending: null,
+      pending,
       turn: {
         ...(baseState.turn ?? { direction: 1 }),
         currentPlayerId: firstPlayerId,
         direction: 1,
-        label: firstPlayerId
-          ? `Tour de ${players.find((p) => p?.id === firstPlayerId)?.username ?? `#${firstPlayerId}`}`
-          : undefined,
+        label:
+          firstPlayerId && pending
+            ? `Choix du pion - ${players.find((p) => p?.id === firstPlayerId)?.username ?? `#${firstPlayerId}`}`
+            : firstPlayerId
+              ? `Tour de ${players.find((p) => p?.id === firstPlayerId)?.username ?? `#${firstPlayerId}`}`
+              : undefined,
       },
       log: Array.isArray(baseState.log) ? baseState.log : [],
     };
@@ -86,6 +97,15 @@ export class MorpionService extends AbstractGameService {
     const current = state.turn?.currentPlayerId ?? null;
     if (current !== botPlayerId) return [];
     if (String(state.status ?? '').toLowerCase() !== 'started') return [];
+
+    const choosePawnPending = this.asChoosePawnPending(state.pending);
+    if (choosePawnPending && choosePawnPending.playerId === botPlayerId) {
+      const available = this.availablePawnIdsFromPending(choosePawnPending);
+      if (available.length > 0) {
+        return [{ type: 'choose_pawn', payload: { pawnId: available[0] } }];
+      }
+      return [];
+    }
 
     const meta = (state.metadata ?? {}) as MorpionMetadata;
     const size = meta.size ?? 3;
@@ -156,7 +176,15 @@ export class MorpionService extends AbstractGameService {
     }
 
     const type = normalizeActionType(action);
+    if (type === 'choose_pawn') {
+      return this.applyChoosePawn(state, action);
+    }
+
     if (type !== 'morpion_play') {
+      return state;
+    }
+
+    if (this.asChoosePawnPending(state.pending) != null) {
       return state;
     }
 
@@ -211,7 +239,7 @@ export class MorpionService extends AbstractGameService {
     const opponentId = opponent?.id ?? null;
     const opponentName =
       opponent?.username ?? (opponentId != null ? `#${opponentId}` : null);
-    const glyph = this.glyphForOwner(actorId, players);
+    const glyph = this.glyphForOwner(actorId, players, meta);
     const cellRef = this.toCellRef({ x, y }, size);
     let log = this.appendLog(
       state.log,
@@ -339,11 +367,181 @@ export class MorpionService extends AbstractGameService {
     return `${col}${row}`;
   }
 
-  private glyphForOwner(ownerId: number, players: any[]): string {
+  private glyphForOwner(
+    ownerId: number,
+    players: any[],
+    meta?: MorpionMetadata,
+  ): string {
+    const mapped = (meta?.glyphByPlayerId ?? {})[String(ownerId)];
+    if (mapped === 'X' || mapped === 'O') {
+      return mapped;
+    }
     const player0 = players[0]?.id ?? 1;
     const player1 = players[1]?.id ?? 2;
     if (ownerId === player0) return 'X';
     if (ownerId === player1) return 'O';
     return '@';
+  }
+
+  private applyChoosePawn(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    const pending = this.asChoosePawnPending(state.pending);
+    if (!pending) {
+      return state;
+    }
+
+    const actorId =
+      typeof (action as any)?.meta?.actorId === 'number'
+        ? (action as any).meta.actorId
+        : (state.turn?.currentPlayerId ?? null);
+    if (!actorId || actorId !== pending.playerId) {
+      return state;
+    }
+
+    const pawnId = this.normalizePawnChoice(
+      (action.payload as any)?.pawnId ??
+        (action.payload as any)?.pawn ??
+        (action.payload as any)?.value,
+    );
+    if (!pawnId) {
+      return state;
+    }
+
+    const available = this.availablePawnIdsFromPending(pending);
+    if (!available.includes(pawnId)) {
+      return state;
+    }
+
+    const players = Array.isArray(state.players) ? state.players : [];
+    const meta = { ...(state.metadata ?? {}) } as MorpionMetadata;
+    const glyphByPlayerId = { ...(meta.glyphByPlayerId ?? {}) };
+    glyphByPlayerId[String(actorId)] = pawnId;
+
+    const log = this.appendLog(
+      state.log,
+      `${players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`} choisit le pion ${pawnId}.`,
+    );
+
+    const nextPlayerId = players
+      .map((p) => p?.id)
+      .find(
+        (pid) =>
+          typeof pid === 'number' &&
+          Number.isFinite(pid) &&
+          !glyphByPlayerId[String(pid)],
+      );
+
+    if (typeof nextPlayerId === 'number') {
+      return {
+        ...state,
+        metadata: { ...meta, glyphByPlayerId } as any,
+        pending: this.buildChoosePawnPending(
+          players,
+          nextPlayerId,
+          glyphByPlayerId,
+        ),
+        turn: {
+          ...(state.turn ?? { direction: 1 }),
+          currentPlayerId: nextPlayerId,
+          direction: 1,
+          label: `Choix du pion - ${players.find((p) => p?.id === nextPlayerId)?.username ?? `#${nextPlayerId}`}`,
+        },
+        log,
+      };
+    }
+
+    const startPlayerId = players[0]?.id ?? null;
+    return {
+      ...state,
+      metadata: { ...meta, glyphByPlayerId } as any,
+      pending: null,
+      turn: {
+        ...(state.turn ?? { direction: 1 }),
+        currentPlayerId: startPlayerId,
+        direction: 1,
+        label: startPlayerId
+          ? `Tour de ${players.find((p) => p?.id === startPlayerId)?.username ?? `#${startPlayerId}`}`
+          : undefined,
+      },
+      log,
+    };
+  }
+
+  private buildChoosePawnPending(
+    players: any[],
+    playerId: number,
+    assigned: Record<string, string>,
+  ) {
+    const taken = new Set(
+      Object.values(assigned ?? {}).filter((v) => v === 'X' || v === 'O'),
+    );
+    const available = MorpionService.PawnChoices.filter(
+      (c) => !taken.has(c.id),
+    );
+    return {
+      type: 'choose_pawn',
+      playerId,
+      blocking: true,
+      label: `Choisissez votre pion (${available.map((c) => c.id).join(' / ')}).`,
+      choices: available.map((c) => c.label),
+      data: {
+        pawns: available.map((c) => ({ id: c.id, label: c.label })),
+      },
+    } as any;
+  }
+
+  private asChoosePawnPending(
+    pending: unknown,
+  ): { playerId: number; data?: Record<string, unknown> } | null {
+    if (!pending || typeof pending !== 'object') {
+      return null;
+    }
+
+    const type = String((pending as any).type ?? '')
+      .trim()
+      .toLowerCase();
+    if (type !== 'choose_pawn') {
+      return null;
+    }
+
+    const playerId = Number((pending as any).playerId);
+    if (!Number.isFinite(playerId)) {
+      return null;
+    }
+
+    const data =
+      (pending as any).data && typeof (pending as any).data === 'object'
+        ? ((pending as any).data as Record<string, unknown>)
+        : undefined;
+
+    return { playerId, data };
+  }
+
+  private availablePawnIdsFromPending(pending: {
+    playerId: number;
+    data?: Record<string, unknown>;
+  }): string[] {
+    const pawns = pending.data?.pawns;
+    if (!Array.isArray(pawns)) {
+      return [];
+    }
+
+    return pawns
+      .map((entry) => this.normalizePawnChoice(entry?.id))
+      .filter((entry): entry is string => entry === 'X' || entry === 'O');
+  }
+
+  private normalizePawnChoice(value: unknown): 'X' | 'O' | null {
+    let normalized = '';
+    if (typeof value === 'string') {
+      normalized = value.trim().toUpperCase();
+    } else if (typeof value === 'number' && Number.isFinite(value)) {
+      normalized = String(value).trim().toUpperCase();
+    }
+    if (normalized === 'X') return 'X';
+    if (normalized === 'O') return 'O';
+    return null;
   }
 }

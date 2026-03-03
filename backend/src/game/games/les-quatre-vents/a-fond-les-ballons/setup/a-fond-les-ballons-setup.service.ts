@@ -108,7 +108,7 @@ export class AFondLesBallonsSetupService {
         ? pendingInfo.playerId
         : (setupStarterId ?? baseState.turn?.currentPlayerId ?? null);
 
-    let next: GameStateEntity = {
+    const next: GameStateEntity = {
       ...baseState,
       phase: 'playing',
       pending: pendingInfo?.pending ?? null,
@@ -121,11 +121,6 @@ export class AFondLesBallonsSetupService {
       metadata: { ...metaSeed, ...shuffledDeck.meta, ...metaBase },
     };
 
-    next = this.core.appendLog(next, '=== A fond les ballons ! ===');
-    next = this.core.appendLog(
-      next,
-      'Objectif : atteindre exactement la case 40 (la Grosse Noix Dorée). Si vous dépassez, vous reculez du surplus.',
-    );
     return next;
   }
 }

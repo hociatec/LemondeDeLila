@@ -6,6 +6,8 @@ public sealed class SocialProfile
 {
     public SocialUser User { get; set; } = new();
     public string Bio { get; set; } = string.Empty;
+    public string VictoryMessage { get; set; } = string.Empty;
+    public string DefeatMessage { get; set; } = string.Empty;
     public string Visibility { get; set; } = "public";
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

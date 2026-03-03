@@ -14,6 +14,9 @@ public sealed class RoomClient : IRoomFacade
     private readonly IRoomSession _session;
     private readonly IRoomAnnouncements _announcements;
     private bool _isSpectator;
+    private bool? _lastPrivacy;
+    private string? _lastInfoMessage;
+    private DateTime _lastInfoAtUtc = DateTime.MinValue;
 
     public RoomClient(IRoomSession session, IRoomAnnouncements announcements)
     {
@@ -161,8 +164,12 @@ public sealed class RoomClient : IRoomFacade
                 case "room.privacy":
                     if (TryReadBoolean(payload, "isPrivate", out var visibility))
                     {
-                        _announcements.VisibilityChanged(visibility);
-                        PrivacyChanged?.Invoke(visibility);
+                        if (!_lastPrivacy.HasValue || _lastPrivacy.Value != visibility)
+                        {
+                            _lastPrivacy = visibility;
+                            _announcements.VisibilityChanged(visibility);
+                            PrivacyChanged?.Invoke(visibility);
+                        }
                     }
                     break;
                 case "room.role":
@@ -179,6 +186,11 @@ public sealed class RoomClient : IRoomFacade
                 case "room.info":
                     if (TryReadString(payload, "message", out var info))
                     {
+                        if (ShouldSkipInfoRepeat(info))
+                        {
+                            break;
+                        }
+
                         _announcements.TableInfo(info);
                         InfoReceived?.Invoke(info);
                     }
@@ -362,5 +374,26 @@ public sealed class RoomClient : IRoomFacade
         {
             return null;
         }
+    }
+
+    private bool ShouldSkipInfoRepeat(string message)
+    {
+        var normalized = (message ?? string.Empty).Trim();
+        if (normalized.Length == 0)
+        {
+            return true;
+        }
+
+        var now = DateTime.UtcNow;
+        if (_lastInfoMessage != null &&
+            string.Equals(_lastInfoMessage, normalized, StringComparison.OrdinalIgnoreCase) &&
+            now - _lastInfoAtUtc < TimeSpan.FromSeconds(2))
+        {
+            return true;
+        }
+
+        _lastInfoMessage = normalized;
+        _lastInfoAtUtc = now;
+        return false;
     }
 }

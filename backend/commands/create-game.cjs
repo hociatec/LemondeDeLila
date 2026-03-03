@@ -55,7 +55,7 @@ async function main() {
     console.log('Usage:');
     console.log('  npm run create:game');
     console.log('');
-    console.log('Crée un nouveau jeu sous `src/game/games/<type>/<monde>/<code>/`');
+    console.log('Crée un nouveau jeu sous `src/game/games/<monde>/<code>/`');
     return;
   }
 
@@ -98,21 +98,6 @@ async function main() {
       (await rl.question('Nom affiché (ex: Foulées Fantastiques !) : ')).trim() ||
       kebabToPascal(code);
 
-    console.log('\nType de jeu :');
-    console.log('1) actions');
-    console.log('2) jeux-de-cartes');
-    console.log('3) jeux-de-plateaux');
-    const familyChoice = (await rl.question('Choix (1/2/3) : ')).trim();
-    const family =
-      familyChoice === '1'
-        ? 'actions'
-        : familyChoice === '2'
-          ? 'jeux-de-cartes'
-          : familyChoice === '3'
-            ? 'jeux-de-plateaux'
-            : null;
-    if (!family) throw new Error('Choix invalide (attendu 1/2/3).');
-
     const world = (await rl.question(
       'Monde/sous-catalogue (kebab-case, ex: vents-dansants) : ',
     ))
@@ -131,12 +116,7 @@ async function main() {
     const summary =
       (await rl.question('Résumé court (1 phrase) : ')).trim() || 'Jeu (WIP).';
 
-    const defaultCategory =
-      family === 'actions'
-        ? 'Actions'
-        : family === 'jeux-de-cartes'
-          ? 'JeuxDeCartes'
-          : 'JeuxDePlateaux';
+    const defaultCategory = 'JeuxDePlateaux';
     const defaultSubcategory = kebabToPascal(world);
     const category =
       (await rl.question(`Category handler (défaut: ${defaultCategory}) : `)).trim() ||
@@ -159,7 +139,7 @@ async function main() {
         .filter(Boolean),
     );
 
-    const relGameDir = path.join('src', 'game', 'games', family, world, code);
+    const relGameDir = path.join('src', 'game', 'games', world, code);
     const absGameDir = path.resolve(cwd, relGameDir);
 
     console.log('\nRésumé :');

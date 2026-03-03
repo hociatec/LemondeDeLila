@@ -165,11 +165,16 @@ public sealed class SocialService : ISocialService
         return MapProfile(response.Payload.Profile);
     }
 
-    public async Task<SocialProfile?> UpdateProfileAsync(string? bio, string? visibility, CancellationToken cancellationToken = default)
+    public async Task<SocialProfile?> UpdateProfileAsync(
+        string? bio,
+        string? victoryMessage,
+        string? defeatMessage,
+        string? visibility,
+        CancellationToken cancellationToken = default)
     {
         var response = await _ws.RequestAsync<ProfilePayload>(
             WsMessageTypes.Social.ProfileUpdate,
-            new { bio, visibility },
+            new { bio, victoryMessage, defeatMessage, visibility },
             _session.CurrentUser?.Token,
             cancellationToken).ConfigureAwait(false);
 
@@ -241,6 +246,8 @@ public sealed class SocialService : ISocialService
         {
             User = MapUser(dto.User ?? new UserDto()),
             Bio = dto.Bio ?? string.Empty,
+            VictoryMessage = dto.VictoryMessage ?? string.Empty,
+            DefeatMessage = dto.DefeatMessage ?? string.Empty,
             Visibility = dto.Visibility ?? "public",
             CreatedAt = dto.CreatedAt,
             UpdatedAt = dto.UpdatedAt,
@@ -302,6 +309,8 @@ public sealed class SocialService : ISocialService
     {
         public UserDto? User { get; set; }
         public string? Bio { get; set; }
+        public string? VictoryMessage { get; set; }
+        public string? DefeatMessage { get; set; }
         public string? Visibility { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

@@ -329,10 +329,7 @@ export class SoundsService {
         .map((it: any) => ({
           soundId: this.normalizeTableAmbienceKey(String(it?.soundId ?? '')),
           name: String(it?.name ?? '').trim(),
-          enabled:
-            typeof it?.enabled === 'boolean'
-              ? it.enabled
-              : true,
+          enabled: typeof it?.enabled === 'boolean' ? it.enabled : true,
         }))
         .filter((it: TableAmbienceDefinition) => it.soundId && it.name);
 
@@ -371,9 +368,9 @@ export class SoundsService {
     return this.listTableAmbiencesWithFilter();
   }
 
-  async listTableAmbiencesWithFilter(
-    options?: { includeDisabled?: boolean },
-  ): Promise<TableAmbienceDefinitionsFile> {
+  async listTableAmbiencesWithFilter(options?: {
+    includeDisabled?: boolean;
+  }): Promise<TableAmbienceDefinitionsFile> {
     const current = await this.readTableAmbiences();
     if (options?.includeDisabled === true) {
       return current;

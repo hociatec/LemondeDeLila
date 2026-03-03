@@ -16,7 +16,6 @@ import {
   CatPattesBotType,
   CatPattesCardDefinition,
   CatPattesObstacleType,
-  CatPattesParadeType,
 } from '../model/cat-pattes-cards';
 import {
   applyActionsSequentially,
@@ -24,8 +23,10 @@ import {
   normalizeActionType,
 } from '../../../../actions/action-service.helper';
 import type { CatPattesMetadata } from '../model/cat-pattes-state.entity';
-import { CAT_PATTES_GOAL } from '../model/cat-pattes-state.entity';
-import { CAT_PATTES_POINTS_TO_WIN } from '../model/cat-pattes-state.entity';
+import {
+  CAT_PATTES_DEFAULT_ROUNDS,
+  CAT_PATTES_GOAL,
+} from '../model/cat-pattes-state.entity';
 import {
   CAT_PATTES_OBSTACLE_TO_PARADE,
   canPlayPattes,
@@ -41,44 +42,7 @@ type CatPattesActionPayload = {
   pawnId?: string | null;
   pawn?: string | null;
   value?: string | null;
-  goalPattes?: number | null;
-  pointsToWin?: number | null;
-};
-
-const OBSTACLE_LABELS: Record<CatPattesObstacleType, string> = {
-  gamelle: 'Gamelle vide',
-  pluie: 'Pluie torrentielle',
-  chien: 'Chien enragé',
-  coussin: 'Coussin piégé',
-  sol: 'Sol ciré',
-};
-
-const _PARADE_LABELS: Record<CatPattesParadeType, string> = {
-  croquettes: 'Croquettes',
-  rayon: 'Rayon de soleil',
-  dodo: 'Dodo réparateur',
-  coussin: 'Nouveau coussin',
-  saut: 'Saut agile',
-};
-
-const BOT_EFFECTS: Record<CatPattesBotType, string> = {
-  reserve: 'Ignore Gamelle vide.',
-  'chat-ninja': 'Ignore Chien enragé.',
-  'patte-blindee': 'Ignore Coussin piégé.',
-  'passage-star':
-    'Ignore Pluie torrentielle et Sol ciré, et permet de jouer sans soleil.',
-};
-
-const OBSTACLE_IMPACTS: Record<CatPattesObstacleType, string> = {
-  gamelle:
-    "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retiré",
-  pluie:
-    "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retiré",
-  chien:
-    "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retiré",
-  coussin:
-    "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retiré",
-  sol: "ne peut plus jouer de cartes Pattes tant que l'obstacle n'est pas retiré",
+  roundsToPlay?: number | null;
 };
 
 @Injectable()
@@ -431,11 +395,7 @@ export class CatPattesActionService {
 
     // Règle: un Pouvoir rejoue immédiatement.
     if (definition.type === 'bot') {
-      const withLog = this.core.appendLog(
-        next,
-        `${resolvePlayerNameFromState(next, currentId)} rejoue immédiatement grâce au Pouvoir.`,
-      );
-      return this.clearDrawn(withLog);
+      return this.clearDrawn(next);
     }
 
     next = this.clearDrawn(next);
@@ -461,22 +421,17 @@ export class CatPattesActionService {
     }
 
     const payload = (action.payload ?? {}) as CatPattesActionPayload;
-    const rawGoal = Number(payload.goalPattes ?? payload.value ?? null);
-    if (!Number.isFinite(rawGoal)) return state;
-    const goalPattes = Math.round(rawGoal);
-    if (goalPattes < 600 || goalPattes > 1500) return state;
-    const hasPointsToWin = payload.pointsToWin != null;
-    const rawPointsToWin = hasPointsToWin ? Number(payload.pointsToWin) : NaN;
-    const pointsToWin = Number.isFinite(rawPointsToWin)
-      ? Math.round(rawPointsToWin)
-      : this.getPointsToWin(meta);
-    if (pointsToWin < 1000 || pointsToWin > 20000) return state;
+    const rawRounds = Number(payload.roundsToPlay ?? payload.value ?? null);
+    if (!Number.isFinite(rawRounds)) return state;
+    const roundsToPlay = Math.round(rawRounds);
+    if (roundsToPlay < 1 || roundsToPlay > 20) return state;
 
     let next = this.setMeta(state, {
       ...meta,
       setupStep: 'choose_pawn',
-      goalPattes,
-      pointsToWin,
+      goalPattes: CAT_PATTES_GOAL,
+      roundsToPlay,
+      completedRounds: 0,
     });
     next = {
       ...next,
@@ -484,7 +439,7 @@ export class CatPattesActionService {
     };
     return this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} fixe l'objectif à ${goalPattes} pattes et ${pointsToWin} points pour gagner la partie.`,
+      `${resolvePlayerNameFromState(next, currentId)} fixe la partie à ${roundsToPlay} manche(s), objectif ${CAT_PATTES_GOAL} pattes par manche.`,
     );
   }
 
@@ -512,37 +467,42 @@ export class CatPattesActionService {
       turboPlayed,
     });
 
-    next = this.core.appendLog(
-      next,
-      `${resolvePlayerNameFromState(next, playerId)} avance de ${delta} pattes (total ${nextPosition}/${goalPattes}).`,
-    );
-
     if (nextPosition === goalPattes) {
       const finalMeta = this.getMeta(next);
-      const roundPoints = this.computeRoundPoints(
-        next,
-        playerId,
-        finalMeta,
-        goalPattes,
-      );
       const points = { ...(finalMeta.points ?? {}) };
-      const totalPoints = (points[playerId] ?? 0) + roundPoints;
-      points[playerId] = totalPoints;
-      const pointsToWin = this.getPointsToWin(finalMeta);
+      for (const [pidRaw, pattesRaw] of Object.entries(finalMeta.positions ?? {})) {
+        const pid = Number(pidRaw);
+        if (!Number.isFinite(pid)) continue;
+        const pattes = Number(pattesRaw ?? 0);
+        points[pid] = (points[pid] ?? 0) + (Number.isFinite(pattes) ? pattes : 0);
+      }
+      const completedRounds = Number(finalMeta.completedRounds ?? 0) + 1;
+      const roundsToPlay = this.getRoundsToPlay(finalMeta);
       next = this.setMeta(next, {
         ...finalMeta,
         points,
-        winnerId: totalPoints >= pointsToWin ? playerId : null,
+        completedRounds,
+        winnerId: null,
         drawnPlayerId: null,
       });
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} atteint ${goalPattes} pattes et remporte la manche (${roundPoints} points).`,
+        `${resolvePlayerNameFromState(next, playerId)} atteint ${goalPattes} pattes et remporte la manche.`,
       );
-      if (totalPoints >= pointsToWin) {
+      if (completedRounds >= roundsToPlay) {
+        const winnerId = this.resolveWinnerByTotalPattes(next);
+        const winnerName =
+          winnerId != null ? resolvePlayerNameFromState(next, winnerId) : null;
+        next = this.setMeta(next, {
+          ...this.getMeta(next),
+          winnerId,
+          drawnPlayerId: null,
+        });
         next = this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, playerId)} totalise ${totalPoints} points et remporte la partie.`,
+          winnerName
+            ? `${winnerName} remporte la partie avec le plus de pattes cumulées.`
+            : 'Partie terminée.',
         );
         return { ...next, status: 'finished' };
       }
@@ -552,34 +512,9 @@ export class CatPattesActionService {
     return next;
   }
 
-  private computeRoundPoints(
-    state: GameStateEntity,
-    winnerId: number,
-    meta: CatPattesMetadata,
-    goalPattes: number,
-  ): number {
-    let points = goalPattes;
-
-    const turboCount = Number(meta.turboPlayed?.[winnerId] ?? 0);
-    if (turboCount >= 4) points += 200;
-
-    const players = (state.players ?? []).filter((p: any) => p?.id != null);
-    const othersBlocked = players
-      .filter((p: any) => p.id !== winnerId)
-      .every((p: any) => Boolean(meta.obstacles?.[p.id]));
-    if (othersBlocked && players.length > 1) points += 100;
-
-    const botCount = Array.isArray(meta.bots?.[winnerId])
-      ? meta.bots[winnerId].length
-      : 0;
-    if (botCount >= 4) points += 300;
-
-    return points;
-  }
-
   private playObstacle(
     state: GameStateEntity,
-    playerId: number,
+    _playerId: number,
     targetId: number,
     card: CatPattesCardDefinition,
   ): GameStateEntity {
@@ -593,15 +528,7 @@ export class CatPattesActionService {
 
     const obstacles = { ...(meta.obstacles ?? {}) };
     obstacles[targetId] = obstacle;
-    let next = this.setMeta(state, { ...meta, obstacles });
-    next = this.core.appendLog(
-      next,
-      `${resolvePlayerNameFromState(next, playerId)} inflige ${card.name} à ${resolvePlayerNameFromState(next, targetId)}.`,
-    );
-    const targetName = resolvePlayerNameFromState(next, targetId);
-    const impact = OBSTACLE_IMPACTS[obstacle];
-    next = this.core.appendLog(next, `${targetName} ${impact}.`);
-    return next;
+    return this.setMeta(state, { ...meta, obstacles });
   }
 
   private playParade(
@@ -621,14 +548,9 @@ export class CatPattesActionService {
       CAT_PATTES_OBSTACLE_TO_PARADE[currentObstacle] === parade;
 
     if (removesObstacle) {
-      const obstacleLabel = OBSTACLE_LABELS[currentObstacle] ?? currentObstacle;
       obstacles[playerId] = null;
       meta = { ...meta, obstacles };
       next = this.setMeta(next, meta);
-      next = this.core.appendLog(
-        next,
-        `${resolvePlayerNameFromState(next, playerId)} neutralise ${obstacleLabel} avec ${card.name}.`,
-      );
       meta = this.getMeta(next);
     } else if (!currentObstacle && parade === 'rayon') {
       // Rayon autorisé sans obstacle (début de manche / après parade).
@@ -638,19 +560,13 @@ export class CatPattesActionService {
 
     if (parade === 'rayon') {
       const hasSun = { ...(meta.hasSun ?? {}) };
-      const alreadyActive = Boolean(hasSun[playerId]);
       hasSun[playerId] = true;
       const sunReady = { ...(meta.sunReady ?? {}) };
       sunReady[playerId] = false;
       const obstacleLock = { ...(meta.obstacleLock ?? {}) };
       obstacleLock[playerId] = false;
       meta = { ...meta, hasSun, sunReady, obstacleLock };
-      next = this.setMeta(next, meta);
-      next = this.core.appendLog(
-        next,
-        `${resolvePlayerNameFromState(next, playerId)} ${alreadyActive ? 'a déjà le soleil actif.' : 'active le soleil.'}`,
-      );
-      return next;
+      return this.setMeta(next, meta);
     }
 
     if (removesObstacle) {
@@ -679,17 +595,6 @@ export class CatPattesActionService {
     }
     bots[playerId] = playerBots;
     let next = this.setMeta(state, { ...meta, bots });
-    next = this.core.appendLog(
-      next,
-      `${resolvePlayerNameFromState(next, playerId)} active ${card.name} (Pouvoir).`,
-    );
-    const effect = BOT_EFFECTS[bot];
-    if (effect) {
-      next = this.core.appendLog(
-        next,
-        `${resolvePlayerNameFromState(next, playerId)} : ${effect}`,
-      );
-    }
 
     const currentObstacle = meta.obstacles?.[playerId] ?? null;
     if (
@@ -723,19 +628,10 @@ export class CatPattesActionService {
     playerId: number,
     card: CatPattesCardDefinition,
   ): GameStateEntity {
-    let next = this.core.appendLog(
+    return this.core.appendLog(
       state,
       `${resolvePlayerNameFromState(state, playerId)} joue ${card.name}.`,
     );
-    const description = String(card.description ?? '').trim();
-    if (description) {
-      next = this.core.appendLog(next, description);
-    }
-    const effect = String(card.effect ?? '').trim();
-    if (effect) {
-      next = this.core.appendLog(next, effect);
-    }
-    return next;
   }
 
   private clearDrawn(state: GameStateEntity): GameStateEntity {
@@ -977,16 +873,34 @@ export class CatPattesActionService {
     const parsed = Number(meta.goalPattes ?? CAT_PATTES_GOAL);
     if (!Number.isFinite(parsed)) return CAT_PATTES_GOAL;
     const rounded = Math.round(parsed);
-    if (rounded < 600 || rounded > 1500) return CAT_PATTES_GOAL;
+    if (rounded <= 0) return CAT_PATTES_GOAL;
     return rounded;
   }
 
-  private getPointsToWin(meta: CatPattesMetadata): number {
-    const parsed = Number(meta.pointsToWin ?? CAT_PATTES_POINTS_TO_WIN);
-    if (!Number.isFinite(parsed)) return CAT_PATTES_POINTS_TO_WIN;
+  private getRoundsToPlay(meta: CatPattesMetadata): number {
+    const parsed = Number(meta.roundsToPlay ?? CAT_PATTES_DEFAULT_ROUNDS);
+    if (!Number.isFinite(parsed)) return CAT_PATTES_DEFAULT_ROUNDS;
     const rounded = Math.round(parsed);
-    if (rounded < 1000 || rounded > 20000) return CAT_PATTES_POINTS_TO_WIN;
+    if (rounded < 1 || rounded > 20) return CAT_PATTES_DEFAULT_ROUNDS;
     return rounded;
+  }
+
+  private resolveWinnerByTotalPattes(state: GameStateEntity): number | null {
+    const meta = this.getMeta(state);
+    const players = Array.isArray(state.players) ? state.players : [];
+    if (players.length === 0) return null;
+    let winnerId: number | null = null;
+    let bestScore = Number.NEGATIVE_INFINITY;
+    for (const player of players) {
+      if (typeof player?.id !== 'number') continue;
+      const score = Number(meta.points?.[player.id] ?? 0);
+      const safeScore = Number.isFinite(score) ? score : 0;
+      if (winnerId == null || safeScore > bestScore) {
+        winnerId = player.id;
+        bestScore = safeScore;
+      }
+    }
+    return winnerId;
   }
 
   private startNextRound(

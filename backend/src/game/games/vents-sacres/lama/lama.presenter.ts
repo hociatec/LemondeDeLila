@@ -375,27 +375,25 @@ export class LamaPresenter extends BasePresenterService {
           this.sanitizePlayerName(p.username) || `Joueur ${pid}`,
         );
       });
-    const scoreLines: string[] = [];
-    const seenIds = new Set<number>();
+    const orderedPlayerIds = players
+      .map((p) => (typeof p?.id === 'number' ? p.id : null))
+      .filter((pid): pid is number => pid != null);
+    const knownPlayerIdSet = new Set(orderedPlayerIds);
+    const orphanScores = Object.entries(scoreBy)
+      .filter(([pid]) => !knownPlayerIdSet.has(Number(pid)))
+      .map(([, score]) => Number(score))
+      .filter((score) => Number.isFinite(score));
 
-    const pushScoreLine = (pid: number) => {
-      if (!Number.isFinite(pid) || seenIds.has(pid)) {
-        return;
-      }
-      seenIds.add(pid);
+    const scoreLines: string[] = orderedPlayerIds.map((pid) => {
       const name = namesById.get(pid) || `Joueur ${pid}`;
-      const scoreValue = Number(scoreBy[String(pid)] ?? 0);
-      scoreLines.push(`${name}: ${scoreValue}`);
-    };
-
-    players
-      .filter((p) => typeof p?.id === 'number')
-      .forEach((p) => pushScoreLine(p.id));
-    Object.keys(scoreBy)
-      .map((key) => Number(key))
-      .filter((pid) => Number.isFinite(pid) && !seenIds.has(pid))
-      .sort((a, b) => a - b)
-      .forEach((pid) => pushScoreLine(pid));
+      const direct = Number(scoreBy[String(pid)]);
+      const scoreValue = Number.isFinite(direct)
+        ? direct
+        : orphanScores.length > 0
+          ? Number(orphanScores.shift())
+          : 0;
+      return `${name}: ${scoreValue}`;
+    });
 
     const discard = Array.isArray(metadata.discard) ? metadata.discard : [];
     const top = discard.length ? discard[discard.length - 1] : null;

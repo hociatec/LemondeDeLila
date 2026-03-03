@@ -3,13 +3,13 @@ import { MorpionPresenter } from '../morpion.presenter';
 import { GridCellActionsService } from '../../../../modules/grid/services/grid-cell-actions.service';
 
 describe('MorpionService', () => {
-  it('exposes playable cells only for current player', async () => {
+  it('requires pawn selection before exposing playable cells', async () => {
     const service = new MorpionService(
       { register: () => {} } as any,
       new MorpionPresenter(new GridCellActionsService()),
     );
 
-    const state: any = service.hydrateInitialState({
+    let state: any = service.hydrateInitialState({
       status: 'started',
       turn: { currentPlayerId: 1, direction: 1 },
       players: [
@@ -23,8 +23,17 @@ describe('MorpionService', () => {
     const exposedA: any = service.exposeStateForUser(state, 1);
     const exposedB: any = service.exposeStateForUser(state, 2);
 
-    expect((exposedA.actions ?? []).length).toBe(9);
+    expect((exposedA.actions ?? []).length).toBe(2);
     expect((exposedB.actions ?? []).length).toBe(0);
+
+    const choose = (actorId: number, pawnId: string) =>
+      ({ type: 'choose_pawn', payload: { pawnId }, meta: { actorId } }) as any;
+
+    state = service.applyActions(state, [choose(1, 'X')]);
+    state = service.applyActions(state, [choose(2, 'O')]);
+
+    const exposedAfterSetup: any = service.exposeStateForUser(state, 1);
+    expect((exposedAfterSetup.actions ?? []).length).toBe(9);
   });
 
   it('detects a winner', async () => {
@@ -46,6 +55,11 @@ describe('MorpionService', () => {
 
     const play = (actorId: number, x: number, y: number) =>
       ({ type: 'morpion_play', payload: { x, y }, meta: { actorId } }) as any;
+    const choose = (actorId: number, pawnId: string) =>
+      ({ type: 'choose_pawn', payload: { pawnId }, meta: { actorId } }) as any;
+
+    state = service.applyActions(state, [choose(1, 'X')]);
+    state = service.applyActions(state, [choose(2, 'O')]);
 
     state = service.applyActions(state, [play(1, 0, 0)]);
     state = service.applyActions(state, [play(2, 0, 1)]);
@@ -65,7 +79,7 @@ describe('MorpionService', () => {
 
     const state: any = service.hydrateInitialState({
       status: 'started',
-      turn: { currentPlayerId: 2, direction: 1 },
+      turn: { currentPlayerId: 1, direction: 1 },
       players: [
         { id: 1, username: 'Human' },
         { id: 2, username: 'Bot', isBot: true },
@@ -74,10 +88,15 @@ describe('MorpionService', () => {
       metadata: {},
     } as any);
 
-    // hydrateInitialState forces the first player as current; override for this bot-turn test.
-    state.turn.currentPlayerId = 2;
+    const choose = (actorId: number, pawnId: string) =>
+      ({ type: 'choose_pawn', payload: { pawnId }, meta: { actorId } }) as any;
 
-    const actions = service.getBotActions(state, 2);
+    // Finish pawn selection, then force bot turn for move suggestion.
+    let next = service.applyActions(state, [choose(1, 'X')]) as any;
+    next = service.applyActions(next, [choose(2, 'O')]) as any;
+    next.turn.currentPlayerId = 2;
+
+    const actions = service.getBotActions(next, 2);
     expect(actions.length).toBeGreaterThan(0);
     expect(actions[0].type).toBe('morpion_play');
   });
@@ -99,7 +118,12 @@ describe('MorpionService', () => {
       metadata: {},
     } as any);
 
-    const exposed: any = service.exposeStateForUser(state, 1);
+    const choose = (actorId: number, pawnId: string) =>
+      ({ type: 'choose_pawn', payload: { pawnId }, meta: { actorId } }) as any;
+    let configured: any = service.applyActions(state, [choose(1, 'X')]);
+    configured = service.applyActions(configured, [choose(2, 'O')]);
+
+    const exposed: any = service.exposeStateForUser(configured, 1);
     expect(exposed?.extras?.ui?.panels?.position?.message).toContain('Plateau');
     expect(exposed?.extras?.ui?.panels?.play?.message).toContain(
       'Cases libres',

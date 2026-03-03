@@ -13,7 +13,10 @@ import type {
   CatPattesObstacleType,
 } from '../model/cat-pattes-cards';
 import type { CatPattesMetadata } from '../model/cat-pattes-state.entity';
-import { CAT_PATTES_POINTS_TO_WIN } from '../model/cat-pattes-state.entity';
+import {
+  CAT_PATTES_DEFAULT_ROUNDS,
+  CAT_PATTES_GOAL,
+} from '../model/cat-pattes-state.entity';
 
 @Injectable()
 export class CatPattesSetupService {
@@ -71,8 +74,7 @@ export class CatPattesSetupService {
     const ownerPlayerId =
       this.resolveOwnerPlayerId(players, baseState.metadata ?? {}) ??
       setupStarterId;
-    const goalPattes = this.resolveGoalPattes(metaSeed?.goalPattes);
-    const pointsToWin = this.resolvePointsToWin(metaSeed?.pointsToWin);
+    const roundsToPlay = this.resolveRoundsToPlay(metaSeed?.roundsToPlay);
 
     const metadata: CatPattesMetadata = {
       rng: updatedRng,
@@ -91,8 +93,9 @@ export class CatPattesSetupService {
       pawnByPlayerId,
       setupStep: 'setup_config',
       ownerPlayerId,
-      goalPattes,
-      pointsToWin,
+      goalPattes: CAT_PATTES_GOAL,
+      roundsToPlay,
+      completedRounds: 0,
       setupStarterId,
       drawnPlayerId: null,
       winnerId: null,
@@ -111,20 +114,12 @@ export class CatPattesSetupService {
           actionType: 'cat_pattes_set_config',
           fields: [
             {
-              key: 'goalPattes',
-              label: 'Objectif pattes',
+              key: 'roundsToPlay',
+              label: 'Nombre de manches',
               kind: 'number',
-              min: 600,
-              max: 1500,
-              initialText: String(goalPattes),
-            },
-            {
-              key: 'pointsToWin',
-              label: 'Points pour gagner',
-              kind: 'number',
-              min: 1000,
-              max: 20000,
-              initialText: String(pointsToWin),
+              min: 1,
+              max: 20,
+              initialText: String(roundsToPlay),
             },
           ],
         },
@@ -213,19 +208,11 @@ export class CatPattesSetupService {
     return pickFirstHuman() ?? players[0]?.id ?? null;
   }
 
-  private resolveGoalPattes(value: unknown): number {
+  private resolveRoundsToPlay(value: unknown): number {
     const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return 1000;
+    if (!Number.isFinite(parsed)) return CAT_PATTES_DEFAULT_ROUNDS;
     const rounded = Math.round(parsed);
-    if (rounded < 600 || rounded > 1500) return 1000;
-    return rounded;
-  }
-
-  private resolvePointsToWin(value: unknown): number {
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return CAT_PATTES_POINTS_TO_WIN;
-    const rounded = Math.round(parsed);
-    if (rounded < 1000 || rounded > 20000) return CAT_PATTES_POINTS_TO_WIN;
+    if (rounded < 1 || rounded > 20) return CAT_PATTES_DEFAULT_ROUNDS;
     return rounded;
   }
 }

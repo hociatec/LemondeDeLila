@@ -5,7 +5,9 @@ describe('SoundsController', () => {
     const sounds: any = {
       listTableAmbiencesWithFilter: jest.fn().mockResolvedValue({
         updatedAt: '2026-03-02T00:00:00.000Z',
-        items: [{ soundId: 'TableAmbience1', name: 'Ambiance 1', enabled: true }],
+        items: [
+          { soundId: 'TableAmbience1', name: 'Ambiance 1', enabled: true },
+        ],
       }),
     };
     const controller = new SoundsController(sounds);

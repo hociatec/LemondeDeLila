@@ -59,6 +59,7 @@ internal static class GamePlayPanelHistoryMessageBuilder
         var ordered = positions
             .OrderBy(kv => TryParsePlayerId(kv.Key, out var id) ? id : int.MaxValue)
             .ThenBy(kv => kv.Key, StringComparer.Ordinal);
+        var gridSize = TryGetGridSize(state);
 
         var sb = new StringBuilder("Positions. ");
         var first = true;
@@ -71,11 +72,83 @@ internal static class GamePlayPanelHistoryMessageBuilder
 
             first = false;
             var label = ResolvePlayerLabel(playerKey, playersById);
-            var caseNumber = Math.Max(1, rawPos + 1);
-            sb.Append(label).Append(" case ").Append(caseNumber);
+            sb.Append(label).Append(' ').Append(FormatPosition(rawPos, gridSize));
         }
 
         return sb.ToString().Trim();
+    }
+
+    private static string FormatPosition(int rawPos, int gridSize)
+    {
+        if (gridSize > 0)
+        {
+            var safe = Math.Max(0, rawPos);
+            var x = safe % gridSize;
+            var y = safe / gridSize;
+            return ToGridCellRef(x, y, gridSize).ToLowerInvariant();
+        }
+
+        var caseNumber = Math.Max(1, rawPos + 1);
+        return $"case {caseNumber}";
+    }
+
+    private static int TryGetGridSize(GameStateDto state)
+    {
+        try
+        {
+            if (state.Extras.ValueKind != System.Text.Json.JsonValueKind.Object ||
+                !state.Extras.TryGetProperty("grid", out var grid) ||
+                grid.ValueKind != System.Text.Json.JsonValueKind.Object ||
+                !grid.TryGetProperty("size", out var sizeNode))
+            {
+                return 0;
+            }
+
+            if (sizeNode.ValueKind == System.Text.Json.JsonValueKind.Number &&
+                sizeNode.TryGetInt32(out var size) &&
+                size > 0)
+            {
+                return size;
+            }
+
+            if (sizeNode.ValueKind == System.Text.Json.JsonValueKind.String &&
+                int.TryParse(sizeNode.GetString(), out var parsed) &&
+                parsed > 0)
+            {
+                return parsed;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        return 0;
+    }
+
+    private static string ToGridCellRef(int x, int y, int size)
+    {
+        if (size <= 0)
+        {
+            return $"{x},{y}";
+        }
+
+        var col = ToColumnLetters(x + 1);
+        var row = Math.Max(1, size - y);
+        return $"{col}{row}";
+    }
+
+    private static string ToColumnLetters(int column)
+    {
+        var n = Math.Max(1, column);
+        var letters = string.Empty;
+        while (n > 0)
+        {
+            n--;
+            letters = $"{(char)('A' + (n % 26))}{letters}";
+            n /= 26;
+        }
+        return letters;
     }
 
     private static string ResolvePlayerLabel(string key, Dictionary<int, string> playersById)

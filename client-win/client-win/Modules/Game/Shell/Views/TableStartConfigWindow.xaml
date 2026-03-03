@@ -35,18 +35,27 @@
                     CornerRadius="8"
                     Padding="10"
                     Visibility="{Binding IsAmbienceStep, Converter={StaticResource BoolToVis}}">
-                <ListBox x:Name="ChoicesList"
-                         ItemsSource="{Binding Choices}"
-                         SelectedItem="{Binding SelectedChoice}"
-                         DisplayMemberPath="Label"
-                         PreviewKeyDown="OnChoicesListPreviewKeyDown"
-                         SelectionChanged="OnChoicesListSelectionChanged"
-                         LostKeyboardFocus="OnChoicesListLostKeyboardFocus"
-                         Background="#12263C"
-                         BorderThickness="0"
-                         Foreground="#C3D2EA"
-                         FontSize="13"
-                         AutomationProperties.Name="Ambiance de table" />
+                <StackPanel>
+                    <ListBox x:Name="ChoicesList"
+                             ItemsSource="{Binding Choices}"
+                             SelectedItem="{Binding SelectedChoice}"
+                             IsEnabled="{Binding IsNotSilentAmbience}"
+                             DisplayMemberPath="Label"
+                             PreviewKeyDown="OnChoicesListPreviewKeyDown"
+                             SelectionChanged="OnChoicesListSelectionChanged"
+                             LostKeyboardFocus="OnChoicesListLostKeyboardFocus"
+                             Background="#12263C"
+                             BorderThickness="0"
+                             Foreground="#C3D2EA"
+                             FontSize="13"
+                             AutomationProperties.Name="Ambiance de table" />
+                    <CheckBox x:Name="SilentCheckBox"
+                              Content="Silence (aucune ambiance)"
+                              IsChecked="{Binding IsSilentAmbience, Mode=TwoWay}"
+                              Foreground="#C3D2EA"
+                              Margin="0 12 0 0"
+                              AutomationProperties.Name="Activer le silence (aucune ambiance)" />
+                </StackPanel>
             </Border>
 
             <ScrollViewer VerticalScrollBarVisibility="Auto"

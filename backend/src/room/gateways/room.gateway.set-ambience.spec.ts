@@ -12,7 +12,9 @@ function createGateway() {
   const auth: any = {};
   const catalog: any = {};
   const perf: any = {
-    measure: jest.fn().mockImplementation(async (_name: string, fn: any) => fn()),
+    measure: jest
+      .fn()
+      .mockImplementation(async (_name: string, fn: any) => fn()),
   };
   const invites: any = {};
   const clientUpdates: any = {};
@@ -117,4 +119,3 @@ describe('RoomGateway.handleSetAmbience', () => {
     expect(gateway.sendError).not.toHaveBeenCalled();
   });
 });
-

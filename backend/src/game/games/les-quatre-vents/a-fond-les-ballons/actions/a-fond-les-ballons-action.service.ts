@@ -63,6 +63,10 @@ export class AFondLesBallonsActionService {
             next = this.handleSwapChooseTarget(next, action);
             return next;
           },
+          swap_decline: () => {
+            next = this.handleSwapDecline(next);
+            return next;
+          },
         },
         () => next,
       );
@@ -157,6 +161,24 @@ export class AFondLesBallonsActionService {
     next = this.core.appendLog(
       next,
       `${resolvePlayerNameFromState(next, currentId)} échange sa place avec ${resolvePlayerNameFromState(next, targetPlayerId)}.`,
+    );
+
+    next = this.decrementTrapImmunity(next, currentId);
+    return this.advanceTurnWithSkipLogs(next);
+  }
+
+  private handleSwapDecline(state: GameStateEntity): GameStateEntity {
+    const status = String(state.status ?? '').toLowerCase();
+    if (status !== 'started') return state;
+
+    const pending = asPendingSwap(state.pending);
+    if (!pending || pending.type !== 'swap') return state;
+
+    const currentId = pending.playerId;
+    let next: GameStateEntity = { ...state, pending: null };
+    next = this.core.appendLog(
+      next,
+      `${resolvePlayerNameFromState(next, currentId)} refuse l'échange de place.`,
     );
 
     next = this.decrementTrapImmunity(next, currentId);
@@ -779,7 +801,7 @@ export class AFondLesBallonsActionService {
       label,
       playerId,
       blocking: true,
-      choices: targets.map((t) => t.targetUsername),
+      choices: [...targets.map((t) => t.targetUsername), 'Ne pas échanger'],
       data: { targets },
     };
     return { ...state, pending };

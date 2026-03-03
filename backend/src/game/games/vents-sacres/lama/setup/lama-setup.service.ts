@@ -180,10 +180,9 @@ export class LamaSetupService {
       try {
         return optionalInt(action.payload ?? {}, 'startingHandSize');
       } catch {
-        return Number.NaN;
+        return undefined;
       }
     })();
-    if (Number.isNaN(startingHandSizeRaw)) return state;
     const startingHandSize = Number(
       startingHandSizeRaw ?? meta.startingHandSize ?? 6,
     );
@@ -199,10 +198,9 @@ export class LamaSetupService {
       try {
         return optionalInt(action.payload ?? {}, 'copiesPerCardValue');
       } catch {
-        return Number.NaN;
+        return undefined;
       }
     })();
-    if (Number.isNaN(copiesPerCardValueRaw)) return state;
     const copiesPerCardValue = Number(
       copiesPerCardValueRaw ?? meta.copiesPerCardValue ?? 8,
     );
@@ -218,10 +216,9 @@ export class LamaSetupService {
       try {
         return optionalInt(action.payload ?? {}, 'returnTokenFromRound');
       } catch {
-        return Number.NaN;
+        return undefined;
       }
     })();
-    if (Number.isNaN(returnTokenFromRoundRaw)) return state;
     const returnTokenFromRound = Number(
       returnTokenFromRoundRaw ?? meta.returnTokenFromRound ?? 2,
     );

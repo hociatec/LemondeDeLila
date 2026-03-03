@@ -41,10 +41,13 @@ export function getAvailableActions(
     }
     if (pending.type === 'swap' && Number(pending.playerId) === playerId) {
       const targets = normalizeTargets(pending?.data?.targets);
-      return targets.map((t) => ({
-        type: 'swap_choose_target',
-        payload: { targetPlayerId: t.targetPlayerId },
-      }));
+      return [
+        ...targets.map((t) => ({
+          type: 'swap_choose_target',
+          payload: { targetPlayerId: t.targetPlayerId },
+        })),
+        { type: 'swap_decline', payload: {} },
+      ];
     }
     return [];
   }
@@ -65,6 +68,7 @@ export function validateAction(
     !isRoll &&
     type !== 'choose_pawn' &&
     type !== 'swap_choose_target' &&
+    type !== 'swap_decline' &&
     type !== 'draw'
   ) {
     throw new GameValidationError(`Action inconnue: ${type}`, {
@@ -129,7 +133,7 @@ export function validateAction(
     return pawnValidation.action;
   }
 
-  if (type === 'swap_choose_target') {
+  if (type === 'swap_choose_target' || type === 'swap_decline') {
     const pending = asPendingRecord(state.pending);
     if (
       !pending ||
@@ -140,6 +144,11 @@ export function validateAction(
         gameType: GAME_TYPE,
       });
     }
+
+    if (type === 'swap_decline') {
+      return { type: 'swap_decline', payload: {} };
+    }
+
     const targets = normalizeTargets(pending?.data?.targets);
     const targetPlayerId = (() => {
       try {

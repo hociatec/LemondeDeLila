@@ -940,4 +940,83 @@ describe('GameEngineService', () => {
     expect(exposed?.metadata?.lifecycle?.viewerMustChoosePawn).toBe(true);
     expect(exposed?.metadata?.lifecycle?.viewerTurnActionable).toBe(false);
   });
+
+  it('builds ended payload with profile endgame messages for human players', async () => {
+    const socialProfiles = {
+      find: jest.fn().mockResolvedValue([
+        { userId: 1, victoryMessage: 'Bravo toi !', defeatMessage: null },
+        { userId: 2, victoryMessage: null, defeatMessage: 'On recommence.' },
+      ]),
+    };
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      { getHandler: jest.fn(() => null) } as any,
+      { compute: jest.fn(() => null) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      { attachGridRenderDescriptors: jest.fn((s: any) => s) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      socialProfiles as any,
+    );
+
+    const state: any = {
+      status: 'finished',
+      turnIndex: 8,
+      players: [
+        { id: 1, username: 'Lila', isBot: false },
+        { id: 2, username: 'Milo', isBot: false },
+        { id: 99, username: 'Bot', isBot: true },
+      ],
+      metadata: {
+        winnerId: 1,
+        outcomesByPlayerId: { '1': 'won', '2': 'lost' },
+      },
+    };
+
+    const payload = await (engine as any).buildEndedPayload(
+      7,
+      'morpion',
+      state,
+    );
+
+    expect(payload.winnerPlayerId).toBe(1);
+    expect(payload.endgameMessagesByPlayerId).toEqual({
+      '1': { victoryMessage: 'Bravo toi !', defeatMessage: null },
+      '2': { victoryMessage: null, defeatMessage: 'On recommence.' },
+    });
+    expect(socialProfiles.find).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores profile message lookup failures when building ended payload', async () => {
+    const socialProfiles = {
+      find: jest.fn().mockRejectedValue(new Error('db down')),
+    };
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      { getHandler: jest.fn(() => null) } as any,
+      { compute: jest.fn(() => null) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      { attachGridRenderDescriptors: jest.fn((s: any) => s) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      socialProfiles as any,
+    );
+
+    const payload = await (engine as any).buildEndedPayload(1, 'lama', {
+      status: 'finished',
+      turnIndex: 1,
+      players: [{ id: 1, username: 'Lila', isBot: false }],
+      metadata: { winnerId: 1, outcomesByPlayerId: { '1': 'won' } },
+    });
+
+    expect(payload.endgameMessagesByPlayerId).toEqual({});
+  });
 });

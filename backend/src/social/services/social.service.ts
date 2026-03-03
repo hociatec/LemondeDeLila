@@ -15,6 +15,7 @@ const PROFILE_VISIBILITY: SocialProfileVisibility[] = [
   'friends',
   'private',
 ];
+const PROFILE_ENDGAME_MESSAGE_MAX_LENGTH = 280;
 
 @Injectable()
 export class SocialService {
@@ -322,6 +323,8 @@ export class SocialService {
         avatar: profile.user.avatar ?? null,
       },
       bio: canView ? (profile.bio ?? '') : '',
+      victoryMessage: canView ? (profile.victoryMessage ?? '') : '',
+      defeatMessage: canView ? (profile.defeatMessage ?? '') : '',
       visibility: profile.visibility,
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
@@ -330,7 +333,13 @@ export class SocialService {
     };
   }
 
-  async updateProfile(userId: number, bio?: string, visibility?: string) {
+  async updateProfile(
+    userId: number,
+    bio?: string,
+    victoryMessage?: string,
+    defeatMessage?: string,
+    visibility?: string,
+  ) {
     const profile = await this.ensureProfile(userId);
     if (typeof bio === 'string') {
       const trimmed = bio.trim();
@@ -343,6 +352,26 @@ export class SocialService {
         );
       }
       profile.bio = trimmed;
+    }
+    if (typeof victoryMessage === 'string') {
+      const trimmed = victoryMessage.trim();
+      if (trimmed.length > PROFILE_ENDGAME_MESSAGE_MAX_LENGTH) {
+        throw new HttpException(
+          `Message de victoire invalide (maximum ${PROFILE_ENDGAME_MESSAGE_MAX_LENGTH} caractères).`,
+          400,
+        );
+      }
+      profile.victoryMessage = trimmed.length > 0 ? trimmed : null;
+    }
+    if (typeof defeatMessage === 'string') {
+      const trimmed = defeatMessage.trim();
+      if (trimmed.length > PROFILE_ENDGAME_MESSAGE_MAX_LENGTH) {
+        throw new HttpException(
+          `Message de défaite invalide (maximum ${PROFILE_ENDGAME_MESSAGE_MAX_LENGTH} caractères).`,
+          400,
+        );
+      }
+      profile.defeatMessage = trimmed.length > 0 ? trimmed : null;
     }
     if (typeof visibility === 'string') {
       const normalized = visibility
@@ -430,6 +459,8 @@ export class SocialService {
       userId,
       user,
       bio: '',
+      victoryMessage: null,
+      defeatMessage: null,
       visibility: 'public',
     });
     return this.profiles.save(profile);

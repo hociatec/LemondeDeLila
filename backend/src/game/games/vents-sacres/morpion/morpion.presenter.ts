@@ -30,6 +30,7 @@ export class MorpionPresenter extends BasePresenterService {
     const players = state.players ?? [];
     const player0 = players[0]?.id ?? 1;
     const player1 = players[1]?.id ?? 2;
+    const glyphByPlayerId = (meta as any)?.glyphByPlayerId ?? {};
 
     const entities: Array<any> = [];
     for (let y = 0; y < size; y++) {
@@ -37,8 +38,17 @@ export class MorpionPresenter extends BasePresenterService {
         const idx = y * size + x;
         const ownerId = board[idx] ?? 0;
         if (!ownerId) continue;
+        const mapped = String(glyphByPlayerId?.[String(ownerId)] ?? '')
+          .trim()
+          .toUpperCase();
         const glyph =
-          ownerId === player0 ? 'X' : ownerId === player1 ? 'O' : '@';
+          mapped === 'X' || mapped === 'O'
+            ? mapped
+            : ownerId === player0
+              ? 'X'
+              : ownerId === player1
+                ? 'O'
+                : '@';
         entities.push({
           id: `mark:${idx}`,
           type: 'mark',
@@ -99,6 +109,31 @@ export class MorpionPresenter extends BasePresenterService {
     userId: number,
   ): GameSingleActionDto[] {
     if (!this.isStarted(state)) return [];
+
+    const pending = state.pending as any;
+    const pendingType = String(pending?.type ?? '')
+      .trim()
+      .toLowerCase();
+    if (pendingType === 'choose_pawn') {
+      if (Number(pending?.playerId) !== userId) {
+        return [];
+      }
+      const pawns = Array.isArray(pending?.data?.pawns)
+        ? pending.data.pawns
+        : [];
+      return pawns
+        .map((pawn: any) =>
+          String(pawn?.id ?? '')
+            .trim()
+            .toUpperCase(),
+        )
+        .filter((id: string) => id === 'X' || id === 'O')
+        .map((pawnId: string) => ({
+          type: 'choose_pawn',
+          payload: { pawnId },
+        }));
+    }
+
     if (state.turn?.currentPlayerId !== userId) return [];
     const meta = (state.metadata ?? {}) as MorpionMetadata;
     const size = meta.size ?? 3;
@@ -141,8 +176,13 @@ export class MorpionPresenter extends BasePresenterService {
     const size = meta.size ?? 3;
     const board = Array.isArray(meta.board) ? meta.board : [];
     const players = Array.isArray(state.players) ? state.players : [];
+    const glyphByPlayerId = (meta as any)?.glyphByPlayerId ?? {};
 
     const glyphForOwner = (ownerId: number): string => {
+      const mapped = String(glyphByPlayerId?.[String(ownerId)] ?? '')
+        .trim()
+        .toUpperCase();
+      if (mapped === 'X' || mapped === 'O') return mapped;
       const player0 = players[0]?.id ?? 1;
       const player1 = players[1]?.id ?? 2;
       if (ownerId === player0) return 'X';

@@ -57,7 +57,6 @@ internal sealed class GamePlayRealtimeController
     private bool _lastViewerMustChoosePawn;
     private int _pendingForcedTurnAnnouncements;
     private Dictionary<string, int>? _lastViewerHandCounts;
-    private string? _lastDrawActionToken;
     private readonly object _statePumpLock = new();
     private readonly List<GameStateDto> _pendingStates = new();
     private int _statePumpRunning;
@@ -253,6 +252,7 @@ internal sealed class GamePlayRealtimeController
 
                 _endgameFeedbackEmitted = true;
                 _endgameSounds.TryPlayEndgameSound(ended, _viewerPlayerId);
+                TryEmitViewerEndgameMessage(ended);
                 TryEmitGenericEndgameSummary(ended);
             }
             MaybeEnforceFinishedStatus();
@@ -477,8 +477,6 @@ internal sealed class GamePlayRealtimeController
         _setActionsText(presented.actionsText);
         _setBoardText(GamePlayBoardTextBuilder.Build(state));
 
-        TryPlayDrawSoundFromState(state);
-
         _syncShortcuts(state);
         _grid.SyncFromState(state, _viewerPlayerId);
 
@@ -487,20 +485,6 @@ internal sealed class GamePlayRealtimeController
         _lastViewerHandCounts = currentHandCounts;
         _refreshCanExecute();
         TryAnnounceTurnFromState(state);
-    }
-
-    private void TryPlayDrawSoundFromState(GameStateDto state)
-    {
-        if (state == null) return;
-        var draw = state.LastDraw;
-        if (draw == null) return;
-        var token = $"draw|{draw.At}|{draw.PlayerId}";
-        if (string.Equals(_lastDrawActionToken, token, StringComparison.Ordinal))
-        {
-            return;
-        }
-        _lastDrawActionToken = token;
-        _logSounds.TryPlayDrawSound();
     }
 
     private static string NormalizeStatus(GameStateDto state)
@@ -867,6 +851,22 @@ internal sealed class GamePlayRealtimeController
         _emitMessage(new GamePlayHistoryMessage("Partie terminée."));
     }
 
+    private void TryEmitViewerEndgameMessage(GameEndedDto ended)
+    {
+        if (ended == null)
+        {
+            return;
+        }
+
+        var message = (ended.ViewerEndgameMessage ?? string.Empty).Trim();
+        if (message.Length == 0)
+        {
+            return;
+        }
+
+        _emitMessage(new GamePlayHistoryMessage(message));
+    }
+
     private static bool TryReadOutcomesByPlayerId(GameStateDto state, out Dictionary<int, string> outcomes)
     {
         outcomes = new Dictionary<int, string>();
@@ -1051,6 +1051,3 @@ internal sealed class GamePlayRealtimeController
         return msg;
     }
 }
-
-
-

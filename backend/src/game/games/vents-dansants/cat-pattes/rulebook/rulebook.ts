@@ -9,7 +9,6 @@ import {
 } from '../model/cat-pattes-cards';
 import type { CatPattesMetadata } from '../model/cat-pattes-state.entity';
 import { CAT_PATTES_GOAL } from '../model/cat-pattes-state.entity';
-import { CAT_PATTES_POINTS_TO_WIN } from '../model/cat-pattes-state.entity';
 import { normalizeActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import {
@@ -24,8 +23,7 @@ type CatPattesActionPayload = {
   pawnId?: string | null;
   pawn?: string | null;
   value?: string | null;
-  goalPattes?: number | null;
-  pointsToWin?: number | null;
+  roundsToPlay?: number | null;
 };
 
 function getMeta(state: GameStateEntity): CatPattesMetadata {
@@ -36,15 +34,7 @@ function getGoalPattes(meta: CatPattesMetadata): number {
   const parsed = Number(meta.goalPattes ?? CAT_PATTES_GOAL);
   if (!Number.isFinite(parsed)) return CAT_PATTES_GOAL;
   const rounded = Math.round(parsed);
-  if (rounded < 600 || rounded > 1500) return CAT_PATTES_GOAL;
-  return rounded;
-}
-
-function getPointsToWin(meta: CatPattesMetadata): number {
-  const parsed = Number(meta.pointsToWin ?? CAT_PATTES_POINTS_TO_WIN);
-  if (!Number.isFinite(parsed)) return CAT_PATTES_POINTS_TO_WIN;
-  const rounded = Math.round(parsed);
-  if (rounded < 1000 || rounded > 20000) return CAT_PATTES_POINTS_TO_WIN;
+  if (rounded <= 0) return CAT_PATTES_GOAL;
   return rounded;
 }
 
@@ -396,27 +386,18 @@ export function validateAction(
     if (!samePlayerId(meta.ownerPlayerId, actorId)) {
       throw new Error('Seul le propriétaire de la table peut configurer.');
     }
-    const goal = Number(payload.goalPattes ?? payload.value ?? null);
-    if (!Number.isFinite(goal)) {
-      throw new Error('Objectif de pattes invalide.');
+    const roundsRaw = Number(payload.roundsToPlay ?? payload.value ?? null);
+    if (!Number.isFinite(roundsRaw)) {
+      throw new Error('Nombre de manches invalide.');
     }
-    const roundedGoal = Math.round(goal);
-    if (roundedGoal < 600 || roundedGoal > 1500) {
-      throw new Error('Objectif de pattes hors limites (600-1500).');
-    }
-    const hasPointsToWin = payload.pointsToWin != null;
-    const rawPointsToWin = hasPointsToWin ? Number(payload.pointsToWin) : NaN;
-    const roundedPointsToWin = Number.isFinite(rawPointsToWin)
-      ? Math.round(rawPointsToWin)
-      : getPointsToWin(meta);
-    if (roundedPointsToWin < 1000 || roundedPointsToWin > 20000) {
-      throw new Error('Objectif de points hors limites (1000-20000).');
+    const roundsToPlay = Math.round(roundsRaw);
+    if (roundsToPlay < 1 || roundsToPlay > 20) {
+      throw new Error('Nombre de manches hors limites (1-20).');
     }
     return {
       type: 'cat_pattes_set_config',
       payload: {
-        goalPattes: roundedGoal,
-        pointsToWin: roundedPointsToWin,
+        roundsToPlay,
       },
     };
   }

@@ -41,7 +41,7 @@ describe('MnemoQuizStoreService persistence path', () => {
     }
   });
 
-  it('bootstraps from legacy path to persistent path in production', () => {
+  it('bootstraps from legacy path to persistent path in production', async () => {
     const legacyPath = path.join(
       tempRoot,
       'data',
@@ -58,7 +58,7 @@ describe('MnemoQuizStoreService persistence path', () => {
       'utf-8',
     );
 
-    const service = createServiceWithHome(tempHome);
+    const service = await createServiceWithHome(tempHome);
     service.onModuleInit();
 
     const persistentPath = path.join(
@@ -83,22 +83,22 @@ describe('MnemoQuizStoreService persistence path', () => {
     );
   });
 
-  it('uses MNEMO_QUIZ_PATH override when provided', () => {
+  it('uses MNEMO_QUIZ_PATH override when provided', async () => {
     const customPath = path.join(tempRoot, 'custom-data', 'quiz.json');
     process.env.MNEMO_QUIZ_PATH = customPath;
 
-    const service = createServiceWithHome(tempHome);
+    const service = await createServiceWithHome(tempHome);
     service.onModuleInit();
     service.createCategory('Categorie personnalisee');
 
     expect(fs.existsSync(customPath)).toBe(true);
     const data = JSON.parse(fs.readFileSync(customPath, 'utf-8'));
-    expect(data.categories.some((c: any) => c.name === 'Categorie personnalisee')).toBe(
-      true,
-    );
+    expect(
+      data.categories.some((c: any) => c.name === 'Categorie personnalisee'),
+    ).toBe(true);
   });
 
-  function createServiceWithHome(homePath: string): any {
+  async function createServiceWithHome(homePath: string): Promise<any> {
     jest.resetModules();
     jest.doMock('os', () => {
       const actual = jest.requireActual('os');
@@ -108,8 +108,7 @@ describe('MnemoQuizStoreService persistence path', () => {
       };
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const mod = require('../store/mnemo-quiz-store.service') as {
+    const mod = (await import('../store/mnemo-quiz-store.service')) as {
       MnemoQuizStoreService: new () => any;
     };
     return new mod.MnemoQuizStoreService();

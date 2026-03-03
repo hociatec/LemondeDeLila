@@ -88,7 +88,7 @@ describe('CatPattes flow', () => {
     expect((state.pending as any)?.playerId).toBe(1);
 
     state = actionSvc.applyActions(state, [
-      { type: 'cat_pattes_set_config', payload: { goalPattes: 1000 } } as any,
+      { type: 'cat_pattes_set_config', payload: { roundsToPlay: 3 } } as any,
     ]);
     state = actionSvc.applyActions(state, [
       { type: 'choose_pawn', payload: { pawnId: 'Maine Coon' } } as any,
@@ -166,7 +166,7 @@ describe('CatPattes flow', () => {
     ).toBe(true);
 
     state = actionsService.applyActions(state, [
-      { type: 'cat_pattes_set_config', payload: { goalPattes: 1000 } } as any,
+      { type: 'cat_pattes_set_config', payload: { roundsToPlay: 3 } } as any,
     ]);
     state = actionsService.applyActions(state, [
       { type: 'choose_pawn', payload: { pawnId: 'Maine Coon' } } as any,
@@ -248,7 +248,7 @@ describe('CatPattes flow', () => {
 
     let state = setup.hydrateInitialState(baseState());
     state = actionsService.applyActions(state, [
-      { type: 'cat_pattes_set_config', payload: { goalPattes: 1000 } } as any,
+      { type: 'cat_pattes_set_config', payload: { roundsToPlay: 3 } } as any,
     ]);
     state = actionsService.applyActions(state, [
       { type: 'choose_pawn', payload: { pawnId: 'Maine Coon' } } as any,
@@ -273,10 +273,12 @@ describe('CatPattes flow', () => {
     expect(drawnCount).toBe(7);
 
     const available = Rulebook.getAvailableActions(state as any, 1);
-    const play = available.find((a: any) => a.type === 'play_card');
-    expect(play).toBeDefined();
+    const playOrDiscard =
+      available.find((a: any) => a.type === 'play_card') ??
+      available.find((a: any) => a.type === 'discard_card');
+    expect(playOrDiscard).toBeDefined();
 
-    state = actionsService.applyActions(state, [play as any]);
+    state = actionsService.applyActions(state, [playOrDiscard as any]);
     const meta2: any = state.metadata ?? {};
     const afterPlayCount = Array.isArray(meta2.hands?.[1])
       ? meta2.hands[1].length
@@ -345,7 +347,7 @@ describe('CatPattes flow', () => {
 
     let state = setup.hydrateInitialState(baseState());
     state = actionsService.applyActions(state, [
-      { type: 'cat_pattes_set_config', payload: { goalPattes: 1000 } } as any,
+      { type: 'cat_pattes_set_config', payload: { roundsToPlay: 3 } } as any,
     ]);
     state = actionsService.applyActions(state, [
       { type: 'choose_pawn', payload: { pawnId: 'Maine Coon' } } as any,
@@ -416,8 +418,7 @@ describe('CatPattes flow', () => {
       ? exposed.pending.data.fields
       : [];
     const fieldKeys = fields.map((f: any) => String(f?.key ?? ''));
-    expect(fieldKeys).toContain('goalPattes');
-    expect(fieldKeys).toContain('pointsToWin');
+    expect(fieldKeys).toContain('roundsToPlay');
 
     const actions = Array.isArray(exposed.actions) ? exposed.actions : [];
     expect(actions.length).toBeGreaterThan(0);
@@ -476,7 +477,7 @@ describe('CatPattes flow', () => {
     state = actionsService.applyActions(state, [
       {
         type: 'cat_pattes_set_config',
-        payload: { goalPattes: 1000, pointsToWin: 10000 },
+        payload: { roundsToPlay: 2 },
       } as any,
     ]);
     state = actionsService.applyActions(state, [

@@ -29,6 +29,9 @@ public sealed class GameEndedDto
     [JsonPropertyName("viewerOutcome")]
     public string? ViewerOutcome { get; set; }
 
+    [JsonPropertyName("viewerEndgameMessage")]
+    public string? ViewerEndgameMessage { get; set; }
+
     [JsonPropertyName("outcomesByPlayerId")]
     public Dictionary<string, string> OutcomesByPlayerId { get; set; } = new();
 

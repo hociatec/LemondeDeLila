@@ -31,6 +31,8 @@ public sealed class SocialViewModel : ObservableObject
     private bool _isBusy;
     private string _searchQuery = string.Empty;
     private string _profileBio = string.Empty;
+    private string _profileVictoryMessage = string.Empty;
+    private string _profileDefeatMessage = string.Empty;
     private string _profileVisibility = "public";
     private SocialProfile? _profile;
     private int? _profileTargetUserId;
@@ -146,6 +148,18 @@ public sealed class SocialViewModel : ObservableObject
     {
         get => _profileBio;
         set => SetProperty(ref _profileBio, value);
+    }
+
+    public string ProfileVictoryMessage
+    {
+        get => _profileVictoryMessage;
+        set => SetProperty(ref _profileVictoryMessage, value);
+    }
+
+    public string ProfileDefeatMessage
+    {
+        get => _profileDefeatMessage;
+        set => SetProperty(ref _profileDefeatMessage, value);
     }
 
     public string ProfileVisibility
@@ -416,6 +430,8 @@ public sealed class SocialViewModel : ObservableObject
         if (Profile != null)
         {
             ProfileBio = Profile.Bio;
+            ProfileVictoryMessage = Profile.VictoryMessage;
+            ProfileDefeatMessage = Profile.DefeatMessage;
             ProfileVisibility = Profile.Visibility;
             ProfileTitle = Profile.IsOwner ? "Mon profil" : Profile.User.Username;
             ProfileInfoText = BuildProfileInfoText(Profile);
@@ -456,13 +472,21 @@ public sealed class SocialViewModel : ObservableObject
         var bioLine = canView
             ? $"Bio : {(string.IsNullOrWhiteSpace(profile.Bio) ? "(vide)" : profile.Bio.Trim())}"
             : null;
+        var victoryLine = canView
+            ? $"Message victoire : {(string.IsNullOrWhiteSpace(profile.VictoryMessage) ? "(vide)" : profile.VictoryMessage.Trim())}"
+            : null;
+        var defeatLine = canView
+            ? $"Message défaite : {(string.IsNullOrWhiteSpace(profile.DefeatMessage) ? "(vide)" : profile.DefeatMessage.Trim())}"
+            : null;
 
         return string.Join(Environment.NewLine, new[]
         {
             $"Visibilité : {visibility}",
             string.IsNullOrWhiteSpace(created) ? null : $"Créé : {created}",
             string.IsNullOrWhiteSpace(updated) ? null : $"Mis à jour : {updated}",
-            bioLine
+            bioLine,
+            victoryLine,
+            defeatLine
         }.Where(s => !string.IsNullOrWhiteSpace(s)));
     }
 
@@ -659,7 +683,11 @@ public sealed class SocialViewModel : ObservableObject
 
     private async Task UpdateProfileAsync()
     {
-        var updated = await _service.UpdateProfileAsync(ProfileBio, ProfileVisibility).ConfigureAwait(true);
+        var updated = await _service.UpdateProfileAsync(
+            ProfileBio,
+            ProfileVictoryMessage,
+            ProfileDefeatMessage,
+            ProfileVisibility).ConfigureAwait(true);
         if (updated != null)
         {
             Profile = updated;

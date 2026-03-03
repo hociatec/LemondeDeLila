@@ -22,11 +22,12 @@ export interface CatPattesMetadata {
   setupStep?: 'setup_config' | 'choose_pawn' | 'playing';
   ownerPlayerId?: number | null;
   goalPattes?: number;
-  pointsToWin?: number;
+  roundsToPlay?: number;
+  completedRounds?: number;
   setupStarterId?: number | null;
   drawnPlayerId?: number | null;
   winnerId?: number | null;
 }
 
 export const CAT_PATTES_GOAL = 1000;
-export const CAT_PATTES_POINTS_TO_WIN = 5000;
+export const CAT_PATTES_DEFAULT_ROUNDS = 3;

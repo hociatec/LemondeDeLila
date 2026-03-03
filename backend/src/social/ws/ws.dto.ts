@@ -35,6 +35,16 @@ export class SocialProfileUpdateDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(280)
+  victoryMessage?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(280)
+  defeatMessage?: string;
+
+  @IsOptional()
+  @IsString()
   @IsIn(['public', 'friends', 'private'])
   visibility?: string;
 }

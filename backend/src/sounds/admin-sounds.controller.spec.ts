@@ -52,4 +52,3 @@ describe('AdminSoundsController', () => {
     expect(out.enabled).toBe(false);
   });
 });
-

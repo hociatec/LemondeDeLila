@@ -21,6 +21,7 @@ public sealed partial class GridBoardViewModel : ObservableObject
     private readonly Func<GameSession?> _getSession;
     private readonly Func<bool> _canInteract;
     private readonly Action<string> _announce;
+    private readonly string _gameId;
     private readonly AsyncRelayCommand<GridCellViewModel> _cellCommand;
 
     private int? _viewerPlayerId;
@@ -43,12 +44,14 @@ public sealed partial class GridBoardViewModel : ObservableObject
         ISoundService sounds,
         Func<GameSession?> getSession,
         Func<bool> canInteract,
+        string gameId,
         Action<string> announce)
     {
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _getSession = getSession ?? throw new ArgumentNullException(nameof(getSession));
         _canInteract = canInteract ?? throw new ArgumentNullException(nameof(canInteract));
+        _gameId = (gameId ?? string.Empty).Trim();
         _announce = announce ?? throw new ArgumentNullException(nameof(announce));
 
         _cellCommand = new AsyncRelayCommand<GridCellViewModel>(

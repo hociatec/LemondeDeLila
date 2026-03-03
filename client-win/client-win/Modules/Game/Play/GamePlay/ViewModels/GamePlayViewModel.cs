@@ -146,6 +146,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             sounds: sounds ?? throw new ArgumentNullException(nameof(sounds)),
             getSession: () => _session,
             canInteract: () => !_isSpectator,
+            gameId: GameId,
             announce: msg => MessageReceived?.Invoke(new GamePlayHistoryMessage(msg)));
         Grid.PropertyChanged += (_, e) =>
         {

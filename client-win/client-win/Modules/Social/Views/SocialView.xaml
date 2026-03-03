@@ -726,6 +726,10 @@
 	                            <RowDefinition Height="Auto" />
 	                            <RowDefinition Height="Auto" />
 	                            <RowDefinition Height="Auto" />
+	                            <RowDefinition Height="Auto" />
+	                            <RowDefinition Height="Auto" />
+	                            <RowDefinition Height="Auto" />
+	                            <RowDefinition Height="Auto" />
 	                        </Grid.RowDefinitions>
 
 			                        <TextBlock x:Name="ProfileHeader"
@@ -828,7 +832,97 @@
 		                            </TextBox.Style>
 		                        </TextBox>
 
-	                        <StackPanel Grid.Row="5" Orientation="Horizontal" VerticalAlignment="Center">
+	                        <TextBlock Grid.Row="5" Text="Message de victoire" Foreground="{StaticResource TextMuted}" FontSize="12">
+	                            <TextBlock.Style>
+	                                <Style TargetType="TextBlock">
+	                                    <Setter Property="Visibility" Value="Visible" />
+	                                    <Style.Triggers>
+	                                        <MultiDataTrigger>
+	                                            <MultiDataTrigger.Conditions>
+	                                                <Condition Binding="{Binding Profile.IsOwner}" Value="False" />
+	                                                <Condition Binding="{Binding Profile.CanView}" Value="False" />
+	                                            </MultiDataTrigger.Conditions>
+	                                            <Setter Property="Visibility" Value="Collapsed" />
+	                                        </MultiDataTrigger>
+	                                    </Style.Triggers>
+	                                </Style>
+	                            </TextBlock.Style>
+	                        </TextBlock>
+	                        <TextBox x:Name="ProfileVictoryMessageBox"
+	                                 Grid.Row="6"
+	                                 Text="{Binding ProfileVictoryMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+	                                 Height="72"
+	                                 MaxLength="280"
+	                                 TextWrapping="Wrap"
+	                                 AcceptsReturn="True"
+	                                 Margin="0 6 0 12"
+	                                 AutomationProperties.Name="Message de victoire du profil">
+	                            <TextBox.Style>
+	                                <Style TargetType="TextBox" BasedOn="{StaticResource InputTextBox}">
+	                                    <Setter Property="IsReadOnly" Value="False" />
+	                                    <Setter Property="Visibility" Value="Visible" />
+	                                    <Style.Triggers>
+	                                        <DataTrigger Binding="{Binding Profile.IsOwner}" Value="False">
+	                                            <Setter Property="IsReadOnly" Value="True" />
+	                                        </DataTrigger>
+	                                        <MultiDataTrigger>
+	                                            <MultiDataTrigger.Conditions>
+	                                                <Condition Binding="{Binding Profile.IsOwner}" Value="False" />
+	                                                <Condition Binding="{Binding Profile.CanView}" Value="False" />
+	                                            </MultiDataTrigger.Conditions>
+	                                            <Setter Property="Visibility" Value="Collapsed" />
+	                                        </MultiDataTrigger>
+	                                    </Style.Triggers>
+	                                </Style>
+	                            </TextBox.Style>
+	                        </TextBox>
+
+	                        <TextBlock Grid.Row="7" Text="Message de défaite" Foreground="{StaticResource TextMuted}" FontSize="12">
+	                            <TextBlock.Style>
+	                                <Style TargetType="TextBlock">
+	                                    <Setter Property="Visibility" Value="Visible" />
+	                                    <Style.Triggers>
+	                                        <MultiDataTrigger>
+	                                            <MultiDataTrigger.Conditions>
+	                                                <Condition Binding="{Binding Profile.IsOwner}" Value="False" />
+	                                                <Condition Binding="{Binding Profile.CanView}" Value="False" />
+	                                            </MultiDataTrigger.Conditions>
+	                                            <Setter Property="Visibility" Value="Collapsed" />
+	                                        </MultiDataTrigger>
+	                                    </Style.Triggers>
+	                                </Style>
+	                            </TextBlock.Style>
+	                        </TextBlock>
+	                        <TextBox x:Name="ProfileDefeatMessageBox"
+	                                 Grid.Row="8"
+	                                 Text="{Binding ProfileDefeatMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+	                                 Height="72"
+	                                 MaxLength="280"
+	                                 TextWrapping="Wrap"
+	                                 AcceptsReturn="True"
+	                                 Margin="0 6 0 12"
+	                                 AutomationProperties.Name="Message de défaite du profil">
+	                            <TextBox.Style>
+	                                <Style TargetType="TextBox" BasedOn="{StaticResource InputTextBox}">
+	                                    <Setter Property="IsReadOnly" Value="False" />
+	                                    <Setter Property="Visibility" Value="Visible" />
+	                                    <Style.Triggers>
+	                                        <DataTrigger Binding="{Binding Profile.IsOwner}" Value="False">
+	                                            <Setter Property="IsReadOnly" Value="True" />
+	                                        </DataTrigger>
+	                                        <MultiDataTrigger>
+	                                            <MultiDataTrigger.Conditions>
+	                                                <Condition Binding="{Binding Profile.IsOwner}" Value="False" />
+	                                                <Condition Binding="{Binding Profile.CanView}" Value="False" />
+	                                            </MultiDataTrigger.Conditions>
+	                                            <Setter Property="Visibility" Value="Collapsed" />
+	                                        </MultiDataTrigger>
+	                                    </Style.Triggers>
+	                                </Style>
+	                            </TextBox.Style>
+	                        </TextBox>
+
+	                        <StackPanel Grid.Row="9" Orientation="Horizontal" VerticalAlignment="Center">
 	                            <StackPanel Orientation="Vertical" Margin="0 0 16 0">
 	                                <TextBlock Text="Visibilité" Foreground="{StaticResource TextMuted}" FontSize="12" />
 		                                <ComboBox x:Name="VisibilityBox"

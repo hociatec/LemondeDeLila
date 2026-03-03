@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows.Automation;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -24,6 +25,7 @@ public partial class TableStartConfigWindow : Window
     private sealed class Vm : INotifyPropertyChanged
     {
         private bool _isAmbienceStep = true;
+        private bool _isSilentAmbience;
 
         public ObservableCollection<TableAmbiencePickerWindow.Choice> Choices { get; } = new();
         public TableAmbiencePickerWindow.Choice? SelectedChoice { get; set; }
@@ -47,6 +49,20 @@ public partial class TableStartConfigWindow : Window
         }
 
         public bool IsGameConfigStep => !IsAmbienceStep;
+
+        public bool IsSilentAmbience
+        {
+            get => _isSilentAmbience;
+            set
+            {
+                if (_isSilentAmbience == value) return;
+                _isSilentAmbience = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsNotSilentAmbience));
+            }
+        }
+
+        public bool IsNotSilentAmbience => !_isSilentAmbience;
 
         public string StepTitle => IsAmbienceStep ? "Configuration de la table" : GameConfigTitle;
 
@@ -125,8 +141,14 @@ public partial class TableStartConfigWindow : Window
         }
 
         var current = (currentSoundId ?? string.Empty).Trim();
+        if (!string.IsNullOrWhiteSpace(current) &&
+            !_vm.Choices.Any(c => string.Equals(c.SoundId, current, StringComparison.OrdinalIgnoreCase)))
+        {
+            _vm.Choices.Insert(0, new TableAmbiencePickerWindow.Choice(current, $"Ambiance actuelle ({current})"));
+        }
         _vm.SelectedChoice = _vm.Choices.FirstOrDefault(c => string.Equals(c.SoundId, current, StringComparison.OrdinalIgnoreCase))
                              ?? _vm.Choices.FirstOrDefault();
+        _vm.IsSilentAmbience = string.IsNullOrWhiteSpace(current);
 
         BindGameConfig(gameConfigPrompt);
         BuildConfigFieldsUi();
@@ -134,7 +156,27 @@ public partial class TableStartConfigWindow : Window
 
         Loaded += (_, _) =>
         {
-            try { ChoicesList.Focus(); } catch { }
+            try
+            {
+                if (_vm.IsSilentAmbience)
+                {
+                    SilentCheckBox.Focus();
+                }
+                else
+                {
+                    ChoicesList.Focus();
+                }
+            }
+            catch { }
+        };
+
+        _vm.PropertyChanged += (_, e) =>
+        {
+            if (string.Equals(e.PropertyName, nameof(Vm.IsSilentAmbience), StringComparison.Ordinal) &&
+                _vm.IsSilentAmbience)
+            {
+                StopPreview();
+            }
         };
 
         Deactivated += (_, _) => StopPreview();
@@ -218,13 +260,22 @@ public partial class TableStartConfigWindow : Window
                 var cb = new CheckBox { Content = field.Label, IsChecked = field.BoolValue, Foreground = System.Windows.Media.Brushes.White };
                 cb.Checked += (_, _) => field.BoolValue = true;
                 cb.Unchecked += (_, _) => field.BoolValue = false;
+                AutomationProperties.SetName(cb, field.Label);
                 block.Children.Add(cb);
                 continue;
             }
 
-            block.Children.Add(new TextBlock { Text = field.Label, Foreground = System.Windows.Media.Brushes.White, Margin = new Thickness(0, 0, 0, 4) });
+            var labelBlock = new TextBlock
+            {
+                Text = field.Label,
+                Foreground = System.Windows.Media.Brushes.White,
+                Margin = new Thickness(0, 0, 0, 4),
+            };
+            block.Children.Add(labelBlock);
             var tb = new TextBox { Text = field.Text ?? string.Empty, MinWidth = 560 };
             tb.TextChanged += (_, _) => field.Text = tb.Text ?? string.Empty;
+            AutomationProperties.SetName(tb, field.Label);
+            AutomationProperties.SetLabeledBy(tb, labelBlock);
             block.Children.Add(tb);
         }
     }
@@ -307,7 +358,18 @@ public partial class TableStartConfigWindow : Window
     {
         _vm.IsAmbienceStep = true;
         UpdateFooterButtons();
-        try { ChoicesList.Focus(); } catch { }
+        try
+        {
+            if (_vm.IsSilentAmbience)
+            {
+                SilentCheckBox.Focus();
+            }
+            else
+            {
+                ChoicesList.Focus();
+            }
+        }
+        catch { }
     }
 
     private async void OnNextClicked(object sender, RoutedEventArgs e)
@@ -329,6 +391,12 @@ public partial class TableStartConfigWindow : Window
             }
         }
 
+        if (_vm.ConfigFields.Count == 0)
+        {
+            CompleteFlowAndClose(payload: null);
+            return;
+        }
+
         _vm.IsAmbienceStep = false;
         UpdateFooterButtons();
         FocusFirstConfigInput();
@@ -348,13 +416,7 @@ public partial class TableStartConfigWindow : Window
             return;
         }
 
-        StopPreview();
-        _result = new StartFlowResult(
-            AmbienceSoundId: _vm.SelectedChoice?.SoundId ?? string.Empty,
-            GameConfigActionType: _vm.HasGameConfig ? _gameConfigActionType : string.Empty,
-            GameConfigPayload: payload);
-        DialogResult = true;
-        Close();
+        CompleteFlowAndClose(payload);
     }
 
     private Dictionary<string, object>? BuildConfigPayloadOrShowError()
@@ -441,6 +503,12 @@ public partial class TableStartConfigWindow : Window
 
     private void PreviewSelected()
     {
+        if (_vm.IsSilentAmbience)
+        {
+            StopPreview();
+            return;
+        }
+
         var selected = ChoicesList.SelectedItem as TableAmbiencePickerWindow.Choice ?? _vm.SelectedChoice;
         var soundId = (selected?.SoundId ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(soundId))
@@ -461,6 +529,17 @@ public partial class TableStartConfigWindow : Window
     private void StopPreview()
     {
         try { _sounds?.StopPreview(); } catch { }
+    }
+
+    private void CompleteFlowAndClose(Dictionary<string, object>? payload)
+    {
+        StopPreview();
+        _result = new StartFlowResult(
+            AmbienceSoundId: _vm.IsSilentAmbience ? string.Empty : (_vm.SelectedChoice?.SoundId ?? string.Empty),
+            GameConfigActionType: _vm.HasGameConfig ? _gameConfigActionType : string.Empty,
+            GameConfigPayload: _vm.HasGameConfig ? payload : null);
+        DialogResult = true;
+        Close();
     }
 
     private void OnCancelClicked(object sender, RoutedEventArgs e)

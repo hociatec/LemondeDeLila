@@ -18,6 +18,11 @@ public interface ISocialService
     Task<bool> BlockUserAsync(int userId, CancellationToken cancellationToken = default);
     Task<bool> UnblockUserAsync(int userId, CancellationToken cancellationToken = default);
     Task<SocialProfile?> GetProfileAsync(int? userId = null, CancellationToken cancellationToken = default);
-    Task<SocialProfile?> UpdateProfileAsync(string? bio, string? visibility, CancellationToken cancellationToken = default);
+    Task<SocialProfile?> UpdateProfileAsync(
+        string? bio,
+        string? victoryMessage,
+        string? defeatMessage,
+        string? visibility,
+        CancellationToken cancellationToken = default);
     Task<IReadOnlyList<SocialUser>> SearchUsersAsync(string query, CancellationToken cancellationToken = default);
 }

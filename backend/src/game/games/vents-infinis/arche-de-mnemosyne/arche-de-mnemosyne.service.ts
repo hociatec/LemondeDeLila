@@ -324,9 +324,14 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       }))
       .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, 'fr'));
 
+    const targetPoints = Number(meta?.config?.targetPoints ?? 20);
+    const safeTargetPoints =
+      Number.isFinite(targetPoints) && targetPoints > 0
+        ? Math.trunc(targetPoints)
+        : 20;
     const scoreMessage = scoreLines.length
-      ? `Score: ${scoreLines.map((s) => `${s.name}: ${s.score}`).join(', ')}`
-      : 'Score: indisponible.';
+      ? `Score: ${scoreLines.map((s) => `${s.name}: ${s.score}`).join(', ')}. Objectif: ${safeTargetPoints} point(s).`
+      : `Score: indisponible. Objectif: ${safeTargetPoints} point(s).`;
 
     const safeMeta: any = {
       ...metaRest,

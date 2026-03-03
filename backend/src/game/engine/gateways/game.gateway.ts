@@ -763,13 +763,43 @@ export class GameGateway
         }
         return null;
       })();
+      const endgameMessagesByPlayerId =
+        payload.endgameMessagesByPlayerId &&
+        typeof payload.endgameMessagesByPlayerId === 'object'
+          ? (payload.endgameMessagesByPlayerId as Record<
+              string,
+              {
+                victoryMessage?: unknown;
+                defeatMessage?: unknown;
+              }
+            >)
+          : {};
+      const viewerEndgameMessage = (() => {
+        if (viewerPlayerId == null || !viewerOutcome) return null;
+        const byPlayer = endgameMessagesByPlayerId[String(viewerPlayerId)];
+        if (!byPlayer || typeof byPlayer !== 'object') return null;
+        const raw =
+          viewerOutcome.toLowerCase() === 'won'
+            ? byPlayer.victoryMessage
+            : viewerOutcome.toLowerCase() === 'lost'
+              ? byPlayer.defeatMessage
+              : null;
+        if (typeof raw !== 'string') return null;
+        const text = raw.trim();
+        return text.length > 0 ? text : null;
+      })();
+      const {
+        endgameMessagesByPlayerId: _hiddenMessagesByPlayerId,
+        ...publicPayload
+      } = payload;
 
       this.safeSend(socket, {
         type: 'game.ended',
         payload: {
-          ...payload,
+          ...publicPayload,
           viewerPlayerId,
           viewerOutcome,
+          viewerEndgameMessage,
         },
       });
     }

@@ -96,7 +96,7 @@ export class PiratesEnVadrouilleSetupService {
     return loadV1Content<PiratesEnVadrouilleBoardJsonV1>(this.contentLoader, {
       gameType: 'pirates-en-vadrouille',
       baseDir: __dirname,
-      filename: '../model/content/board.json',
+      filename: 'board.json',
       arrayField: 'tiles',
       minItems: 1,
     });
@@ -106,7 +106,7 @@ export class PiratesEnVadrouilleSetupService {
     return loadV1Content<PiratesEnVadrouilleCardsJsonV1>(this.contentLoader, {
       gameType: 'pirates-en-vadrouille',
       baseDir: __dirname,
-      filename: '../model/content/cards.json',
+      filename: 'cards.json',
       extraValidators: [
         this.contentLoader.validators.arrayField('treasure', 1),
         this.contentLoader.validators.arrayField('obstacle', 1),

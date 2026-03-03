@@ -18,11 +18,13 @@ export class CerclesSacresPresenterService {
     userId: number,
   ): GameStateWithActions {
     const meta = (state.metadata ?? {}) as CerclesSacresMetadata;
+    const hands =
+      meta.hands && typeof meta.hands === 'object' ? meta.hands : {};
+    const deck = Array.isArray(meta.deck) ? meta.deck : [];
+    const discard = Array.isArray(meta.discard) ? meta.discard : [];
     const actions = Rulebook.getAvailableActions(state, userId);
-    const hand = Array.isArray(meta.hands?.[userId])
-      ? [...meta.hands[userId]]
-      : [];
-    const handCounts = summarizeHandCounts(meta.hands);
+    const hand = Array.isArray(hands?.[userId]) ? [...hands[userId]] : [];
+    const handCounts = summarizeHandCounts(hands);
     const panels = buildLamaLikePanels({
       hand,
       handCounts,
@@ -31,10 +33,10 @@ export class CerclesSacresPresenterService {
     });
     const extras = {
       hand,
-      hands: meta.hands,
+      hands,
       circles: meta.circles,
-      deckCount: meta.deck.length,
-      discardCount: meta.discard.length,
+      deckCount: deck.length,
+      discardCount: discard.length,
       ui: { panels },
     };
 

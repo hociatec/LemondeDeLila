@@ -36,13 +36,6 @@ export class CorridorPresenterService extends BasePresenterService {
       return exposed;
     }
 
-    const positions: Record<string, number> = {};
-    for (const [pid, pos] of Object.entries(meta?.pawnsByPlayerId ?? {})) {
-      if (!pos) continue;
-      const idx = pos.y * size + pos.x;
-      positions[String(pid)] = idx;
-    }
-
     const currentPlayerId = state.turn?.currentPlayerId ?? null;
     const viewerIsTurn = currentPlayerId === userId;
 
@@ -56,7 +49,7 @@ export class CorridorPresenterService extends BasePresenterService {
             ? String(payload.o).trim().toLowerCase()
             : '';
 
-        if (type === 'corridor_move') return 'DÇ¸placer ici';
+        if (type === 'corridor_move') return 'Déplacer ici';
         if (type === 'corridor_place_wall' && o === 'h')
           return 'Mur horizontal ici';
         if (type === 'corridor_place_wall' && o === 'v')
@@ -72,11 +65,33 @@ export class CorridorPresenterService extends BasePresenterService {
       meta?.walls,
     );
     const cellTags = this.buildGridCellTags(state, userId, size);
+    const exposedExtras =
+      exposed.extras && typeof exposed.extras === 'object'
+        ? (exposed.extras as Record<string, any>)
+        : {};
+    const existingUi =
+      exposedExtras.ui && typeof exposedExtras.ui === 'object'
+        ? (exposedExtras.ui as Record<string, any>)
+        : {};
+    const existingPanels =
+      existingUi.panels && typeof existingUi.panels === 'object'
+        ? (existingUi.panels as Record<string, any>)
+        : {};
 
     return {
       ...exposed,
       extras: {
         ...(exposed.extras ?? {}),
+        ui: {
+          ...existingUi,
+          panels: {
+            ...existingPanels,
+            position: {
+              title: 'Positions',
+              message: this.buildPositionPanelMessage(state, size),
+            },
+          },
+        },
         grid: {
           kind: 'grid',
           size,
@@ -94,19 +109,63 @@ export class CorridorPresenterService extends BasePresenterService {
           cellActions,
           cellTags,
           statusLines: [
-            viewerIsTurn ? 'Ç? vous de jouer.' : "Tour de l'adversaire.",
+            viewerIsTurn ? 'À vous de jouer.' : "Tour de l'adversaire.",
             `Murs restants : ${(meta?.wallsRemainingByPlayerId ?? {})[String(userId)] ?? 0}`,
           ],
         },
       },
-      board: {
-        tiles: Array.from({ length: size * size }, (_, i) => ({
-          x: i % size,
-          y: Math.floor(i / size),
-        })),
-        positions,
-      },
     } as any;
+  }
+
+  private buildPositionPanelMessage(
+    state: GameStateEntity,
+    size: number,
+  ): string {
+    const players = Array.isArray(state.players) ? state.players : [];
+    const byId = new Map<number, string>();
+    for (const p of players) {
+      if (!p || typeof p.id !== 'number') continue;
+      const name = String(p.username ?? '').trim();
+      byId.set(p.id, name.length > 0 ? name : `Joueur ${p.id}`);
+    }
+
+    const meta = (state.metadata ?? {}) as CorridorMetadata;
+    const positions = meta?.pawnsByPlayerId ?? {};
+    const entries: string[] = [];
+
+    for (const [pidRaw, pos] of Object.entries(positions)) {
+      if (!pos) continue;
+      const pid = Number(pidRaw);
+      const name = Number.isFinite(pid)
+        ? (byId.get(pid) ?? `Joueur ${pid}`)
+        : `Joueur ${pidRaw}`;
+      entries.push(
+        `${name} ${this.toCellRef(pos.x ?? 0, pos.y ?? 0, size).toLowerCase()}`,
+      );
+    }
+
+    if (entries.length === 0) {
+      return 'Positions inconnues.';
+    }
+
+    return `Positions. ${entries.join('. ')}.`;
+  }
+
+  private toCellRef(x: number, y: number, size: number): string {
+    const safeSize = Number.isFinite(size) && size > 0 ? Math.trunc(size) : 0;
+    if (safeSize <= 0) {
+      return `${x},${y}`;
+    }
+
+    let n = Math.max(1, Math.trunc(Number(x) + 1));
+    let col = '';
+    while (n > 0) {
+      n -= 1;
+      col = String.fromCharCode(65 + (n % 26)) + col;
+      n = Math.floor(n / 26);
+    }
+    const row = Math.max(1, safeSize - Math.trunc(Number(y)));
+    return `${col}${row}`;
   }
 
   private buildGridCellTags(

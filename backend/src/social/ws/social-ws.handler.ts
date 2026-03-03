@@ -104,6 +104,8 @@ export class SocialWsHandler {
     const result = await this.social.updateProfile(
       user.id,
       dto.bio,
+      dto.victoryMessage,
+      dto.defeatMessage,
       dto.visibility,
     );
     return { type: 'social.profile.update', payload: { profile: result } };

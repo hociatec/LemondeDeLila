@@ -7,8 +7,10 @@ import * as Rulebook from '../rulebook/rulebook';
 import { CAT_PATTES_GAME } from '../definitions/game.definition';
 import type { CatPattesMetadata } from '../model/cat-pattes-state.entity';
 import { CAT_PATTES_CARD_BY_ID } from '../model/cat-pattes-cards';
-import { CAT_PATTES_GOAL } from '../model/cat-pattes-state.entity';
-import { CAT_PATTES_POINTS_TO_WIN } from '../model/cat-pattes-state.entity';
+import {
+  CAT_PATTES_DEFAULT_ROUNDS,
+  CAT_PATTES_GOAL,
+} from '../model/cat-pattes-state.entity';
 import { stringOrEmpty } from '@common/utils/string-value.utils';
 
 @Injectable()
@@ -26,16 +28,21 @@ export class CatPattesPresenterService {
       const parsed = Number(meta.goalPattes ?? CAT_PATTES_GOAL);
       if (!Number.isFinite(parsed)) return CAT_PATTES_GOAL;
       const rounded = Math.round(parsed);
-      if (rounded < 600 || rounded > 1500) return CAT_PATTES_GOAL;
+      if (rounded <= 0) return CAT_PATTES_GOAL;
       return rounded;
     })();
     const actions = Rulebook.getAvailableActions(state, userId);
-    const pointsToWin = (() => {
-      const parsed = Number(meta.pointsToWin ?? CAT_PATTES_POINTS_TO_WIN);
-      if (!Number.isFinite(parsed)) return CAT_PATTES_POINTS_TO_WIN;
+    const roundsToPlay = (() => {
+      const parsed = Number(meta.roundsToPlay ?? CAT_PATTES_DEFAULT_ROUNDS);
+      if (!Number.isFinite(parsed)) return CAT_PATTES_DEFAULT_ROUNDS;
       const rounded = Math.round(parsed);
-      if (rounded < 1000 || rounded > 20000) return CAT_PATTES_POINTS_TO_WIN;
+      if (rounded < 1 || rounded > 20) return CAT_PATTES_DEFAULT_ROUNDS;
       return rounded;
+    })();
+    const completedRounds = (() => {
+      const parsed = Number(meta.completedRounds ?? 0);
+      if (!Number.isFinite(parsed)) return 0;
+      return Math.max(0, Math.trunc(parsed));
     })();
     const basePending = state.pending as any;
     const pendingForUser =
@@ -63,7 +70,7 @@ export class CatPattesPresenterService {
       const pid = p?.id;
       const name = nameById[pid] ?? `Joueur ${pid}`;
       const points = Number(meta.points?.[pid] ?? 0);
-      return `${name} : ${points} points.`;
+      return `${name} : ${points} pattes`;
     });
     const progressionLines = players.map((p) => {
       const pid = p?.id;
@@ -88,17 +95,16 @@ export class CatPattesPresenterService {
     const effectLines = players.map((p) => {
       const pid = p?.id;
       const name = nameById[pid] ?? `Joueur ${pid}`;
-      const hasSun = Boolean(meta.hasSun?.[pid]);
       const obstacle = meta.obstacles?.[pid] ?? null;
-      const obstacleLabel = obstacle ? obstacleLabels[obstacle] : 'Aucun';
+      const obstacleLabel = obstacle ? obstacleLabels[obstacle] : null;
       const bots = Array.isArray(meta.bots?.[pid]) ? meta.bots[pid] : [];
       const botNames = bots.map((b) => botLabels[b] ?? String(b));
-      const botLabel = botNames.length ? botNames.join(', ') : 'Aucun';
-      return `${name} : Soleil ${hasSun ? 'actif' : 'absent'}, Obstacle ${obstacleLabel}, Pouvoirs ${botLabel}.`;
+      const status = obstacleLabel ? `arrêté par ${obstacleLabel}` : 'libre';
+      const immunities = botNames.length
+        ? `, immunités ${botNames.join(', ')}`
+        : '';
+      return `${name} : ${status}${immunities}.`;
     });
-    const viewerName = nameById[userId] ?? `Joueur ${userId}`;
-    const viewerPattes = Number(meta.positions?.[userId] ?? 0);
-    const infoHeader = `${viewerName} : ${viewerPattes} pattes / ${goalPattes}.`;
 
     const handCounts = Object.entries(meta.hands ?? {})
       .map(
@@ -106,13 +112,21 @@ export class CatPattesPresenterService {
           `Joueur ${id}: ${Array.isArray(cards) ? cards.length : 0}`,
       )
       .join(' • ');
+    const lastDiscardId = Array.isArray(meta.discard)
+      ? meta.discard[meta.discard.length - 1] ?? null
+      : null;
+    const lastDiscardName =
+      lastDiscardId && CAT_PATTES_CARD_BY_ID[lastDiscardId]
+        ? CAT_PATTES_CARD_BY_ID[lastDiscardId].name
+        : null;
 
     const extras = {
       hand,
       handIds,
       positions: meta.positions,
       points: meta.points,
-      pointsToWin,
+      roundsToPlay,
+      completedRounds,
       obstacles: meta.obstacles,
       bots: meta.bots,
       hasSun: meta.hasSun,
@@ -135,21 +149,27 @@ export class CatPattesPresenterService {
           play: {
             title: 'À jouer',
             message:
-              '(↑/↓ choisir, Entrée jouer, Espace piocher, D défausser, S score, P progression, I infos)',
+              '(↑/↓ choisir, Entrée jouer, Espace piocher, D défausser, C dernière carte, S score, P progression, I infos)',
           },
           score: {
             title: 'Score',
-            message: `${scoreLines.join(' ')} Objectif partie: ${pointsToWin} points.`,
+            message: `${scoreLines.join(', ')}. Manches: ${Math.min(completedRounds, roundsToPlay)}/${roundsToPlay}.`,
           },
           position: {
             title: 'Progression',
             message: progressionLines.join(' '),
           },
+          discard: {
+            title: 'Dernière carte',
+            message: lastDiscardName
+              ? `Dernière carte jouée : ${lastDiscardName}.`
+              : 'Dernière carte jouée : (aucune).',
+          },
           info: {
             title: 'Effets en cours',
             message: effectLines.length
-              ? `${infoHeader}\n${effectLines.join('\n')}`
-              : `${infoHeader}\nAucun effet actif.`,
+              ? effectLines.join('\n')
+              : 'Aucun effet actif.',
           },
         },
       },

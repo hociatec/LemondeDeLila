@@ -43,7 +43,11 @@ describe('SoundsService table ambiences', () => {
         updatedAt: '2026-03-01T00:00:00.000Z',
         items: [
           { soundId: 'TableAmbience1', name: 'Ambiance legacy sans flag' },
-          { soundId: 'TableAmbience2', name: 'Ambiance inactive', enabled: false },
+          {
+            soundId: 'TableAmbience2',
+            name: 'Ambiance inactive',
+            enabled: false,
+          },
         ],
       }),
       'utf-8',
@@ -126,4 +130,3 @@ describe('SoundsService table ambiences', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 });
-

@@ -411,8 +411,12 @@ public sealed class PresenceViewModel : ObservableObject
         }
 
         var myRoomId = _presence.CurrentRoomId;
-        var canInvite = myRoomId.HasValue && myRoomId.Value > 0 && player.CurrentRoomId != myRoomId;
-        var canJoin = (!myRoomId.HasValue || myRoomId.Value <= 0) && player.CurrentRoomId.HasValue && player.CurrentRoomId.Value > 0;
+        var targetRoomId = player.CurrentRoomId;
+        var canInvite = myRoomId.HasValue && myRoomId.Value > 0 && targetRoomId != myRoomId;
+        var canJoin =
+            targetRoomId.HasValue &&
+            targetRoomId.Value > 0 &&
+            (!myRoomId.HasValue || myRoomId.Value <= 0 || myRoomId.Value != targetRoomId.Value);
 
         Items.Add(_isBlocked == true
             ? new PresenceMenuItem("Débloquer", tag: TagUnblock)

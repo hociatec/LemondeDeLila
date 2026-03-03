@@ -2,8 +2,11 @@
   BadRequestException,
   Injectable,
   NotFoundException,
+  Optional,
   UnauthorizedException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 import { RoomService } from '../../../room/services/room.service';
 import {
   RoomPayload,
@@ -44,6 +47,7 @@ import {
   fixMojibakeDeep,
   fixMojibakeString,
 } from '../../../common/utils/mojibake';
+import { SocialProfile } from '../../../social/entities/social-profile.entity';
 
 type GameEndedOutcome = 'won' | 'lost' | 'draw' | 'unknown';
 
@@ -55,6 +59,13 @@ type GameEndedPayload = {
   winnerPlayerId: number | null;
   outcomesByPlayerId: Record<string, GameEndedOutcome>;
   playersById: Record<string, string>;
+  endgameMessagesByPlayerId: Record<
+    string,
+    {
+      victoryMessage: string | null;
+      defeatMessage: string | null;
+    }
+  >;
   turnIndex: number | null;
 };
 
@@ -108,6 +119,9 @@ export class GameEngineService {
     private readonly store: GameEngineStateStore,
     private readonly gameLogger: GameLoggerService,
     private readonly stats: GameStatsService,
+    @Optional()
+    @InjectRepository(SocialProfile)
+    private readonly socialProfiles?: Repository<SocialProfile>,
   ) {}
 
   /**
@@ -1007,7 +1021,11 @@ export class GameEngineService {
       }
 
       try {
-        const endedPayload = this.buildEndedPayload(roomId, gameType, marked);
+        const endedPayload = await this.buildEndedPayload(
+          roomId,
+          gameType,
+          marked,
+        );
         this.endedBroadcaster?.(gameType, roomId, marked, endedPayload);
       } catch (err) {
         this.gameLogger.error(
@@ -1317,11 +1335,11 @@ export class GameEngineService {
     return { winnerId, outcomesByPlayerId };
   }
 
-  private buildEndedPayload(
+  private async buildEndedPayload(
     roomId: number,
     gameType: string,
     state: GameStateWithActions,
-  ): GameEndedPayload {
+  ): Promise<GameEndedPayload> {
     const metadata = this.toMetadata(state);
     const { winnerId, outcomesByPlayerId } = this.deriveFinishedOutcomes(state);
     const players = state.players ?? [];
@@ -1368,6 +1386,8 @@ export class GameEngineService {
       typeof state?.turnIndex === 'number' && Number.isFinite(state.turnIndex)
         ? state.turnIndex
         : null;
+    const endgameMessagesByPlayerId =
+      await this.buildEndgameMessagesByPlayerId(players);
 
     return {
       roomId,
@@ -1377,8 +1397,85 @@ export class GameEngineService {
       winnerPlayerId: winnerId ?? null,
       outcomesByPlayerId: outcomes,
       playersById,
+      endgameMessagesByPlayerId,
       turnIndex,
     };
+  }
+
+  private async buildEndgameMessagesByPlayerId(
+    players: PlayerStateEntity[],
+  ): Promise<GameEndedPayload['endgameMessagesByPlayerId']> {
+    if (!this.socialProfiles) {
+      return {};
+    }
+
+    const playerIds = Array.from(
+      new Set(
+        (players ?? [])
+          .filter((p) => p && p.isBot !== true)
+          .map((p) => (typeof p?.id === 'number' ? p.id : null))
+          .filter((id): id is number => id != null && Number.isFinite(id)),
+      ),
+    );
+
+    if (playerIds.length === 0) {
+      return {};
+    }
+
+    try {
+      const rows = await this.socialProfiles.find({
+        select: {
+          userId: true,
+          victoryMessage: true,
+          defeatMessage: true,
+        },
+        where: {
+          userId: In(playerIds),
+        },
+      });
+
+      const out: GameEndedPayload['endgameMessagesByPlayerId'] = {};
+      for (const row of rows) {
+        const userId =
+          typeof row?.userId === 'number' && Number.isFinite(row.userId)
+            ? row.userId
+            : null;
+        if (userId == null) {
+          continue;
+        }
+
+        const victoryMessage = this.normalizeProfileEndgameMessage(
+          row.victoryMessage,
+        );
+        const defeatMessage = this.normalizeProfileEndgameMessage(
+          row.defeatMessage,
+        );
+        if (!victoryMessage && !defeatMessage) {
+          continue;
+        }
+
+        out[String(userId)] = {
+          victoryMessage,
+          defeatMessage,
+        };
+      }
+
+      return out;
+    } catch {
+      // Ne pas bloquer la fin de partie si la lecture de profil échoue.
+      return {};
+    }
+  }
+
+  private normalizeProfileEndgameMessage(value: unknown): string | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+    const text = fixMojibakeString(value).trim();
+    if (!text) {
+      return null;
+    }
+    return text.slice(0, 280);
   }
 
   private tryReadWinnerId(meta: Record<string, unknown>): number | null {

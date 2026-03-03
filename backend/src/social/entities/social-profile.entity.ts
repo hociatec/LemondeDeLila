@@ -23,6 +23,22 @@ export class SocialProfile {
   @Column({ type: 'longtext', nullable: true })
   bio?: string | null;
 
+  @Column({
+    name: 'victory_message',
+    type: 'varchar',
+    length: 280,
+    nullable: true,
+  })
+  victoryMessage?: string | null;
+
+  @Column({
+    name: 'defeat_message',
+    type: 'varchar',
+    length: 280,
+    nullable: true,
+  })
+  defeatMessage?: string | null;
+
   @Column({ type: 'varchar', length: 20, default: 'public' })
   visibility!: SocialProfileVisibility;
 

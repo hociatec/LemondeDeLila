@@ -57,7 +57,7 @@ export class PrimalisSetupService {
     return loadV1Content<PrimalisBoardJsonV1>(this.contentLoader, {
       gameType: 'primalis',
       baseDir: __dirname,
-      filename: '../model/content/board.json',
+      filename: 'board.json',
       arrayField: 'tiles',
       minItems: 1,
     });

@@ -1238,10 +1238,7 @@ public sealed class GameTableOpener : IGameTableOpener
         async Task<System.Collections.Generic.List<TableAmbiencePickerWindow.Choice>> BuildStartConfigAmbienceChoicesAsync(
             CancellationToken cancellationToken)
         {
-            var result = new System.Collections.Generic.List<TableAmbiencePickerWindow.Choice>
-            {
-                new(string.Empty, "Silence (aucune ambiance)")
-            };
+            var result = new System.Collections.Generic.List<TableAmbiencePickerWindow.Choice>();
 
             // Keep start-config dialog opening responsive: refresh remote sounds in background.
             _ = Task.Run(async () =>

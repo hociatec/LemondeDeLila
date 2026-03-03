@@ -552,6 +552,11 @@ public sealed partial class GridBoardViewModel
         List<(int PlayerId, (int X, int Y) From, (int X, int Y) To)> moves,
         Dictionary<int, string> playerNameById)
     {
+        if (ShouldSuppressGridHistoryAnnouncements())
+        {
+            return;
+        }
+
         if (moves == null || moves.Count == 0 || _viewerPlayerId is not > 0 || !_pawnPositionsPrimed)
         {
             return;
@@ -578,6 +583,13 @@ public sealed partial class GridBoardViewModel
         int? actorId)
     {
         var (horizontal, vertical) = ExtractWallSets(metadata);
+        if (ShouldSuppressGridHistoryAnnouncements())
+        {
+            _previousHorizontalWalls = horizontal;
+            _previousVerticalWalls = vertical;
+            return;
+        }
+
         var newHorizontals = horizontal.Except(_previousHorizontalWalls).ToList();
         var newVerticals = vertical.Except(_previousVerticalWalls).ToList();
 
@@ -604,6 +616,11 @@ public sealed partial class GridBoardViewModel
 
         _previousHorizontalWalls = horizontal;
         _previousVerticalWalls = vertical;
+    }
+
+    private bool ShouldSuppressGridHistoryAnnouncements()
+    {
+        return string.Equals(_gameId, "corridor", StringComparison.OrdinalIgnoreCase);
     }
 
     private static (HashSet<string> Horizontal, HashSet<string> Vertical) ExtractWallSets(JsonElement metadata)
