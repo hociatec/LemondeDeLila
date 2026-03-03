@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Linq;
@@ -158,6 +159,7 @@ public sealed class WpfDialogService : IDialogService
         FocusParking.Park(owner);
         NvdaDialogFocus.Configure(dialog, owner, focusTargetFactory: () => ok);
         dialog.ShowDialog();
+        DialogInputSuppressor.Arm(TimeSpan.FromMilliseconds(250));
         RestoreFocusAfterDialog(owner, previousFocus);
         return result;
     }
@@ -278,6 +280,7 @@ public sealed class WpfDialogService : IDialogService
         FocusParking.Park(owner);
         NvdaDialogFocus.Configure(dialog, owner, focusTargetFactory: () => primary);
         dialog.ShowDialog();
+        DialogInputSuppressor.Arm(TimeSpan.FromMilliseconds(250));
         RestoreFocusAfterDialog(owner, previousFocus);
         return result;
     }
@@ -302,6 +305,7 @@ public sealed class WpfDialogService : IDialogService
         var result = owner != null
             ? MessageBox.Show(owner, message, title, buttons, icon)
             : MessageBox.Show(message, title, buttons, icon);
+        DialogInputSuppressor.Arm(TimeSpan.FromMilliseconds(250));
         RestoreFocusAfterDialog(owner, previousFocus);
         return result;
     }
@@ -400,6 +404,7 @@ public sealed class WpfDialogService : IDialogService
         FocusParking.Park(owner);
         NvdaDialogFocus.Configure(dialog, owner, focusTargetFactory: () => text);
         dialog.ShowDialog();
+        DialogInputSuppressor.Arm(TimeSpan.FromMilliseconds(250));
         RestoreFocusAfterDialog(owner, previousFocus);
     }
 
@@ -539,6 +544,7 @@ public sealed class WpfDialogService : IDialogService
         FocusParking.Park(owner);
         NvdaDialogFocus.Configure(dialog, owner, focusTargetFactory: () => list);
         dialog.ShowDialog();
+        DialogInputSuppressor.Arm(TimeSpan.FromMilliseconds(250));
         RestoreFocusAfterDialog(owner, previousFocus);
         return result;
     }

@@ -9,7 +9,7 @@
              d:DesignHeight="320"
              d:DesignWidth="900"
               Focusable="True"
-              IsTabStop="True"
+              IsTabStop="False"
               KeyboardNavigation.TabNavigation="Continue"
               KeyboardNavigation.DirectionalNavigation="Contained"
               AutomationProperties.Name="{Binding RelativeSource={RelativeSource AncestorType={x:Type shell:GameZoneHostView}}, Path=DataContext.Title, FallbackValue=Zone de jeu, TargetNullValue=Zone de jeu}"

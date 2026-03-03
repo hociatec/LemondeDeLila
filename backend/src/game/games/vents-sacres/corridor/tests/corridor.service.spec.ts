@@ -77,6 +77,33 @@ describe('Corridor', () => {
     expect(types.has('corridor_place_wall')).toBe(false);
   });
 
+  it('exposes choose_pawn pending only to the targeted human player', async () => {
+    const svc = createSvc();
+    const started = svc.hydrateInitialState({
+      status: 'started',
+      phase: 'setup',
+      round: 0,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: -1, username: 'Bot', isBot: true },
+        { id: 1, username: 'Human', isBot: false },
+      ],
+      turn: { currentPlayerId: -1, direction: 1 },
+      metadata: {},
+      pending: null,
+    } as any);
+
+    const forHuman = svc.exposeStateForUser(started as any, 1);
+    expect(forHuman.pending?.type).toBe('choose_pawn');
+    expect(forHuman.pending?.playerId).toBe(1);
+    expect(((forHuman.pending as any)?.data?.pawns ?? []).length).toBeGreaterThan(0);
+
+    const forBot = svc.exposeStateForUser(started as any, -1);
+    expect(forBot.pending).toBeNull();
+  });
+
   it('allows a legal move and switches turn after pawn choices', async () => {
     const svc = createSvc();
 

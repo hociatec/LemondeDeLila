@@ -242,7 +242,18 @@ export class CorridorPresenterService extends BasePresenterService {
   }
 
   protected buildPendingState(): any {
-    return null;
+    return null as any;
+  }
+
+  protected buildPendingStateForUser(
+    state: GameStateEntity,
+    _metadata: Record<string, unknown>,
+    userId: number,
+    _currentPlayerId: number | null,
+  ): any {
+    // Keep the real pending phase (e.g. choose_pawn) for the targeted player.
+    // Base filter hides it automatically for other players when playerId differs.
+    return this.filterPendingForUser((state.pending as any) ?? null, userId);
   }
 
   protected buildExtras(

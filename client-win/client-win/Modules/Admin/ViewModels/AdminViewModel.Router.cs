@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using client_win.Modules.Admin.Dtos;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Admin.ViewModels;
 
@@ -9,6 +10,7 @@ public sealed partial class AdminViewModel
     private async Task ActivateSelectedAsync()
     {
         if (IsBusy) return;
+        if (DialogInputSuppressor.IsArmed) return;
         var tag = SelectedItem?.Tag;
         if (tag == null) return;
 

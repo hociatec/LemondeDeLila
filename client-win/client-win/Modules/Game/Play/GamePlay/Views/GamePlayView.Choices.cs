@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using System.Windows.Media;
 using client_win.Modules.Game.Shell.Services;
+using client_win.Modules.Game.Shell.Views;
 using client_win.Modules.Game.Play.GamePlay.ViewModels;
 
 namespace client_win.Modules.Game.Play.GamePlay.Views;
@@ -691,8 +692,19 @@ public partial class GamePlayView
                 return;
             }
 
-            Focus();
-            Keyboard.Focus(this);
+            // Keep focus on the host game-zone anchor (single announced zone),
+            // instead of focusing this UserControl root which can be announced as "inconnu".
+            var parent = GetVisualOrLogicalParent(this);
+            while (parent != null)
+            {
+                if (parent is GameZoneHostView host)
+                {
+                    host.FocusGameZone(GameFocusReason.Default);
+                    return;
+                }
+
+                parent = GetVisualOrLogicalParent(parent);
+            }
         }
         catch
         {

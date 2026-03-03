@@ -185,6 +185,11 @@ public sealed partial class AdminViewModel : ObservableObject
         ClientUpdatesScheduleCommand = new AsyncRelayCommand(ScheduleClientUpdateAsync, () => !IsBusy);
         EscapeCommand = new RelayCommand(() =>
         {
+            if (DialogInputSuppressor.IsArmed)
+            {
+                return;
+            }
+
             var result = HandleEscape();
             if (result != AdminNavResult.Closed)
             {

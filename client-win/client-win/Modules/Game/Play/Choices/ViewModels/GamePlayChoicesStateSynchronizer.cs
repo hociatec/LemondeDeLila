@@ -44,6 +44,15 @@ internal sealed class GamePlayChoicesStateSynchronizer
 
         if (hasPawnChoicesFromPendingData)
         {
+            if (TryBuildChoosePawnFallbackChoices(state, out var pawnActions))
+            {
+                // Corridor (et jeux similaires) expose parfois les pions via pending.data.pawns
+                // sans pending.choices. On doit quand même lier chaque ligne à une action.
+                ApplyLocalChoices("choose_pawn_pending_data", pawnActions, setLabel);
+                setLabel("Votre pion.");
+                return;
+            }
+
             _localChoices.Clear();
             setLabel("Votre pion.");
             _list.Apply(MakeA11yDistinct(pawnChoicesFromPendingData), autoSelectFirst: true);
