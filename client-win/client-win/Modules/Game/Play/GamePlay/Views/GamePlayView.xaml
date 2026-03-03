@@ -51,7 +51,7 @@
 	                Padding="10"
 	                Margin="0 0 0 10"
 	                Visibility="{Binding ShowGridSurface, Converter={StaticResource BoolToVis}}"
-	                AutomationProperties.Name="Grille"
+	                AutomationProperties.Name=""
 	                x:Name="GridBoard"
 	                KeyboardNavigation.DirectionalNavigation="Contained"
 	                KeyboardNavigation.TabNavigation="Once"
@@ -72,7 +72,7 @@
 	                              ItemsSource="{Binding Cells}"
 	                              KeyboardNavigation.DirectionalNavigation="Contained"
 	                              KeyboardNavigation.TabNavigation="Once"
-	                              AutomationProperties.Name="Grille"
+	                              AutomationProperties.Name=""
 	                              Loaded="OnGridLoaded">
 	                    <!--
 	                        Accessibilité NVDA (Corridor) :

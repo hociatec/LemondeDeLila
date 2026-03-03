@@ -23,14 +23,14 @@ describe('MorpionService', () => {
     const exposedA: any = service.exposeStateForUser(state, 1);
     const exposedB: any = service.exposeStateForUser(state, 2);
 
-    expect((exposedA.actions ?? []).length).toBe(2);
+    expect((exposedA.actions ?? []).length).toBe(4);
     expect((exposedB.actions ?? []).length).toBe(0);
 
     const choose = (actorId: number, pawnId: string) =>
       ({ type: 'choose_pawn', payload: { pawnId }, meta: { actorId } }) as any;
 
-    state = service.applyActions(state, [choose(1, 'X')]);
-    state = service.applyActions(state, [choose(2, 'O')]);
+    state = service.applyActions(state, [choose(1, 'vent')]);
+    state = service.applyActions(state, [choose(2, 'eau')]);
 
     const exposedAfterSetup: any = service.exposeStateForUser(state, 1);
     expect((exposedAfterSetup.actions ?? []).length).toBe(9);
@@ -58,8 +58,8 @@ describe('MorpionService', () => {
     const choose = (actorId: number, pawnId: string) =>
       ({ type: 'choose_pawn', payload: { pawnId }, meta: { actorId } }) as any;
 
-    state = service.applyActions(state, [choose(1, 'X')]);
-    state = service.applyActions(state, [choose(2, 'O')]);
+    state = service.applyActions(state, [choose(1, 'vent')]);
+    state = service.applyActions(state, [choose(2, 'eau')]);
 
     state = service.applyActions(state, [play(1, 0, 0)]);
     state = service.applyActions(state, [play(2, 0, 1)]);
@@ -92,8 +92,8 @@ describe('MorpionService', () => {
       ({ type: 'choose_pawn', payload: { pawnId }, meta: { actorId } }) as any;
 
     // Finish pawn selection, then force bot turn for move suggestion.
-    let next = service.applyActions(state, [choose(1, 'X')]) as any;
-    next = service.applyActions(next, [choose(2, 'O')]) as any;
+    let next = service.applyActions(state, [choose(1, 'vent')]) as any;
+    next = service.applyActions(next, [choose(2, 'eau')]) as any;
     next.turn.currentPlayerId = 2;
 
     const actions = service.getBotActions(next, 2);
@@ -120,8 +120,8 @@ describe('MorpionService', () => {
 
     const choose = (actorId: number, pawnId: string) =>
       ({ type: 'choose_pawn', payload: { pawnId }, meta: { actorId } }) as any;
-    let configured: any = service.applyActions(state, [choose(1, 'X')]);
-    configured = service.applyActions(configured, [choose(2, 'O')]);
+    let configured: any = service.applyActions(state, [choose(1, 'vent')]);
+    configured = service.applyActions(configured, [choose(2, 'eau')]);
 
     const exposed: any = service.exposeStateForUser(configured, 1);
     expect(exposed?.extras?.ui?.panels?.position?.message).toContain('Plateau');

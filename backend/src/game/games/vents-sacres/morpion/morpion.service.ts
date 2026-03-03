@@ -22,6 +22,7 @@ import {
   victoryAnnouncement,
 } from '../../../core/helpers/game-log-text.helper';
 import { normalizeGameLogMessage } from '../../../core/helpers/log-style.helper';
+import { MORPION_PAWNS } from './definitions/morpion.pawns';
 
 @Injectable()
 export class MorpionService extends AbstractGameService {
@@ -32,10 +33,7 @@ export class MorpionService extends AbstractGameService {
   readonly description = 'Alignez 3 symboles sur une grille 3×3.';
   readonly minPlayers = 2;
   readonly maxPlayers = 2;
-  private static readonly PawnChoices = [
-    { id: 'X', label: 'Croix (X)' },
-    { id: 'O', label: 'Rond (O)' },
-  ] as const;
+  private static readonly PawnChoices = MORPION_PAWNS;
 
   constructor(
     registry: GameRegistryService,
@@ -372,14 +370,17 @@ export class MorpionService extends AbstractGameService {
     players: any[],
     meta?: MorpionMetadata,
   ): string {
-    const mapped = (meta?.glyphByPlayerId ?? {})[String(ownerId)];
-    if (mapped === 'X' || mapped === 'O') {
-      return mapped;
+    const mapped = String((meta?.glyphByPlayerId ?? {})[String(ownerId)] ?? '')
+      .trim()
+      .toLowerCase();
+    const mappedPawn = MorpionService.PawnChoices.find((pawn) => pawn.id === mapped);
+    if (mappedPawn?.glyph) {
+      return mappedPawn.glyph;
     }
     const player0 = players[0]?.id ?? 1;
     const player1 = players[1]?.id ?? 2;
-    if (ownerId === player0) return 'X';
-    if (ownerId === player1) return 'O';
+    if (ownerId === player0) return MorpionService.PawnChoices[0]?.glyph ?? 'V';
+    if (ownerId === player1) return MorpionService.PawnChoices[1]?.glyph ?? 'E';
     return '@';
   }
 
@@ -419,9 +420,12 @@ export class MorpionService extends AbstractGameService {
     const glyphByPlayerId = { ...(meta.glyphByPlayerId ?? {}) };
     glyphByPlayerId[String(actorId)] = pawnId;
 
+    const pawnLabel =
+      MorpionService.PawnChoices.find((pawn) => pawn.id === pawnId)?.label ??
+      pawnId;
     const log = this.appendLog(
       state.log,
-      `${players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`} choisit le pion ${pawnId}.`,
+      `${players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`} choisit le pion ${pawnLabel}.`,
     );
 
     const nextPlayerId = players
@@ -475,19 +479,27 @@ export class MorpionService extends AbstractGameService {
     assigned: Record<string, string>,
   ) {
     const taken = new Set(
-      Object.values(assigned ?? {}).filter((v) => v === 'X' || v === 'O'),
+      Object.values(assigned ?? {})
+        .map((v) => this.normalizePawnChoice(v))
+        .filter((v): v is string => v != null),
     );
     const available = MorpionService.PawnChoices.filter(
       (c) => !taken.has(c.id),
     );
+    const availableLabels = available.map((c) => c.label);
     return {
       type: 'choose_pawn',
       playerId,
       blocking: true,
-      label: `Choisissez votre pion (${available.map((c) => c.id).join(' / ')}).`,
-      choices: available.map((c) => c.label),
+      label: `Choisissez votre pion (${availableLabels.join(' / ')}).`,
+      choices: available.map((c) => `${c.label} - ${c.description}`),
       data: {
-        pawns: available.map((c) => ({ id: c.id, label: c.label })),
+        pawns: available.map((c) => ({
+          id: c.id,
+          label: c.label,
+          description: c.description,
+          glyph: c.glyph,
+        })),
       },
     } as any;
   }
@@ -530,18 +542,30 @@ export class MorpionService extends AbstractGameService {
 
     return pawns
       .map((entry) => this.normalizePawnChoice(entry?.id))
-      .filter((entry): entry is string => entry === 'X' || entry === 'O');
+      .filter((entry): entry is string => entry != null);
   }
 
-  private normalizePawnChoice(value: unknown): 'X' | 'O' | null {
+  private normalizePawnChoice(value: unknown): string | null {
     let normalized = '';
     if (typeof value === 'string') {
-      normalized = value.trim().toUpperCase();
+      normalized = value.trim().toLowerCase();
     } else if (typeof value === 'number' && Number.isFinite(value)) {
-      normalized = String(value).trim().toUpperCase();
+      normalized = String(value).trim().toLowerCase();
     }
-    if (normalized === 'X') return 'X';
-    if (normalized === 'O') return 'O';
+
+    // Backward compatibility with legacy X/O clients.
+    if (normalized === 'x') {
+      return MorpionService.PawnChoices[0]?.id ?? null;
+    }
+    if (normalized === 'o') {
+      return MorpionService.PawnChoices[1]?.id ?? null;
+    }
+
+    const matched = MorpionService.PawnChoices.find((pawn) => pawn.id === normalized);
+    if (matched) {
+      return matched.id;
+    }
+
     return null;
   }
 }

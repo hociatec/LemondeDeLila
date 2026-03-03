@@ -99,7 +99,7 @@ export class CorridorSetupService {
               },
             }
           : null,
-      log: [...(baseState.log ?? []), { message: 'Le Corridor demarre.' }],
+      log: [...(baseState.log ?? [])],
       turn: {
         currentPlayerId: pendingPlayerId ?? p1.id,
         direction: 1,

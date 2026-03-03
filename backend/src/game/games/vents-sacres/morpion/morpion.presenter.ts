@@ -7,6 +7,7 @@ import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import { BasePresenterService } from '../../../engine/abstract/base-presenter.service';
 import { GridCellActionsService } from '../../../modules/grid/services/grid-cell-actions.service';
 import type { MorpionMetadata } from './model/morpion.model';
+import { MORPION_PAWNS } from './definitions/morpion.pawns';
 
 @Injectable()
 export class MorpionPresenter extends BasePresenterService {
@@ -40,15 +41,15 @@ export class MorpionPresenter extends BasePresenterService {
         if (!ownerId) continue;
         const mapped = String(glyphByPlayerId?.[String(ownerId)] ?? '')
           .trim()
-          .toUpperCase();
-        const glyph =
-          mapped === 'X' || mapped === 'O'
-            ? mapped
-            : ownerId === player0
-              ? 'X'
-              : ownerId === player1
-                ? 'O'
-                : '@';
+          .toLowerCase();
+        const mappedPawn = MORPION_PAWNS.find((pawn) => pawn.id === mapped);
+        const glyph = mappedPawn?.glyph
+          ? mappedPawn.glyph
+          : ownerId === player0
+            ? (MORPION_PAWNS[0]?.glyph ?? 'V')
+            : ownerId === player1
+              ? (MORPION_PAWNS[1]?.glyph ?? 'E')
+              : '@';
         entities.push({
           id: `mark:${idx}`,
           type: 'mark',
@@ -122,12 +123,8 @@ export class MorpionPresenter extends BasePresenterService {
         ? pending.data.pawns
         : [];
       return pawns
-        .map((pawn: any) =>
-          String(pawn?.id ?? '')
-            .trim()
-            .toUpperCase(),
-        )
-        .filter((id: string) => id === 'X' || id === 'O')
+        .map((pawn: any) => this.normalizePawnId(pawn?.id))
+        .filter((id: string | null): id is string => id != null)
         .map((pawnId: string) => ({
           type: 'choose_pawn',
           payload: { pawnId },
@@ -181,12 +178,13 @@ export class MorpionPresenter extends BasePresenterService {
     const glyphForOwner = (ownerId: number): string => {
       const mapped = String(glyphByPlayerId?.[String(ownerId)] ?? '')
         .trim()
-        .toUpperCase();
-      if (mapped === 'X' || mapped === 'O') return mapped;
+        .toLowerCase();
+      const mappedPawn = MORPION_PAWNS.find((pawn) => pawn.id === mapped);
+      if (mappedPawn?.glyph) return mappedPawn.glyph;
       const player0 = players[0]?.id ?? 1;
       const player1 = players[1]?.id ?? 2;
-      if (ownerId === player0) return 'X';
-      if (ownerId === player1) return 'O';
+      if (ownerId === player0) return MORPION_PAWNS[0]?.glyph ?? 'V';
+      if (ownerId === player1) return MORPION_PAWNS[1]?.glyph ?? 'E';
       return '@';
     };
 
@@ -234,5 +232,19 @@ export class MorpionPresenter extends BasePresenterService {
         },
       },
     };
+  }
+
+  private normalizePawnId(value: unknown): string | null {
+    const normalized = String(value ?? '')
+      .trim()
+      .toLowerCase();
+    if (!normalized) return null;
+
+    if (normalized === 'x') return MORPION_PAWNS[0]?.id ?? null;
+    if (normalized === 'o') return MORPION_PAWNS[1]?.id ?? null;
+
+    return MORPION_PAWNS.some((pawn) => pawn.id === normalized)
+      ? normalized
+      : null;
   }
 }

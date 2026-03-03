@@ -379,6 +379,7 @@ internal sealed class GamePlayChoicesStateSynchronizer
 
                 var pawnId = PawnPayloadReader.TryReadPawnId(pawn);
                 var pawnLabel = JsonPayloadReader.TryReadString(pawn, "label");
+                var pawnDescription = JsonPayloadReader.TryReadString(pawn, "description");
                 if (string.IsNullOrWhiteSpace(pawnId))
                 {
                     continue;
@@ -388,6 +389,10 @@ internal sealed class GamePlayChoicesStateSynchronizer
                 var label = !string.IsNullOrWhiteSpace(pawnLabel)
                     ? pawnLabel.Trim()
                     : pawnId;
+                if (!string.IsNullOrWhiteSpace(pawnDescription))
+                {
+                    label = $"{label} - {pawnDescription.Trim()}";
+                }
                 label = MojibakeTextRepair.Fix(label);
                 var key = ChoiceLabelUniquifier.MakeUniqueChoiceLabel(choices, label);
                 choices[key] = new GameClientAction("choose_pawn", new { pawnId });
@@ -455,12 +460,18 @@ internal sealed class GamePlayChoicesStateSynchronizer
 
             var label = JsonPayloadReader.TryReadString(pawn, "label")
                         ?? PawnPayloadReader.TryReadPawnId(pawn);
+            var description = JsonPayloadReader.TryReadString(pawn, "description");
             if (string.IsNullOrWhiteSpace(label))
             {
                 continue;
             }
 
-            choices.Add(MojibakeTextRepair.Fix(label).Trim());
+            var text = MojibakeTextRepair.Fix(label).Trim();
+            if (!string.IsNullOrWhiteSpace(description))
+            {
+                text = $"{text} - {MojibakeTextRepair.Fix(description).Trim()}";
+            }
+            choices.Add(text);
         }
 
         return choices.Count > 0 ? MakeA11yDistinct(choices) : new List<string>();

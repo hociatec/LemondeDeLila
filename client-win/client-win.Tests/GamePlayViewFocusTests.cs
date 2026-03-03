@@ -2,11 +2,14 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using client_win.Modules.Game.Play.GamePlay.Views;
+using client_win.Modules.Game.Play.Grid.ViewModels;
+using client_win.Modules.Game.Play.Grid.Views;
 using Xunit;
 
 namespace client_win.Tests;
@@ -277,6 +280,113 @@ public sealed class GamePlayViewFocusTests
         });
     }
 
+    [Fact]
+    public void GridSurface_CellsAreNotTabStops_AndGridLabelsAreSilent()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            EnsureTestApplicationResources();
+            var view = new GamePlayView();
+            var window = CreateHostWindow(view);
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var gridBoard = Assert.IsType<Border>(view.FindName("GridBoard"));
+                var gridItems = Assert.IsType<GridCellsControl>(view.FindName("GridItems"));
+
+                gridBoard.Visibility = Visibility.Visible;
+                gridItems.Visibility = Visibility.Visible;
+                gridItems.DataContext = new FakeGridVm(3, new ObservableCollection<GridCellViewModel>
+                {
+                    new(0, 0, 0),
+                    new(1, 0, 1),
+                    new(2, 0, 2),
+                });
+
+                view.UpdateLayout();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                Assert.Equal(string.Empty, AutomationProperties.GetName(gridBoard));
+                Assert.Equal(string.Empty, AutomationProperties.GetName(gridItems));
+
+                var firstCell = gridItems.ItemContainerGenerator.ContainerFromIndex(0) as A11yGridCell;
+                Assert.NotNull(firstCell);
+                Assert.False(firstCell!.IsTabStop);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void TabLikeNavigation_DoesNotLandOnGridCell()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            EnsureTestApplicationResources();
+            var view = new GamePlayView();
+            var outside = new TextBox { Width = 320, Height = 30, Text = "outside" };
+            var layout = new Grid();
+            layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            layout.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            Grid.SetRow(outside, 0);
+            Grid.SetRow(view, 1);
+            layout.Children.Add(outside);
+            layout.Children.Add(view);
+
+            var window = new Window
+            {
+                Width = 1000,
+                Height = 700,
+                Content = layout,
+                ShowInTaskbar = false,
+                WindowStyle = WindowStyle.None,
+            };
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var gridBoard = Assert.IsType<Border>(view.FindName("GridBoard"));
+                var gridItems = Assert.IsType<GridCellsControl>(view.FindName("GridItems"));
+                gridBoard.Visibility = Visibility.Visible;
+                gridItems.Visibility = Visibility.Visible;
+                gridItems.DataContext = new FakeGridVm(3, new ObservableCollection<GridCellViewModel>
+                {
+                    new(0, 0, 0),
+                    new(1, 0, 1),
+                    new(2, 0, 2),
+                });
+
+                view.UpdateLayout();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                outside.Focus();
+                Keyboard.Focus(outside);
+                Assert.True(IsFocusWithin(outside));
+
+                outside.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var focused = Keyboard.FocusedElement as DependencyObject;
+                Assert.NotNull(focused);
+                Assert.False(IsOrHasAncestor<A11yGridCell>(focused!));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
     private static Window CreateHostWindow(GamePlayView view)
     {
         return new Window
@@ -342,6 +452,32 @@ public sealed class GamePlayViewFocusTests
         }
 
         return LogicalTreeHelper.GetParent(current);
+    }
+
+    private static bool IsOrHasAncestor<T>(DependencyObject current) where T : DependencyObject
+    {
+        for (var node = current; node != null; node = GetVisualOrLogicalParent(node))
+        {
+            if (node is T)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private sealed class FakeGridVm
+    {
+        public FakeGridVm(int size, ObservableCollection<GridCellViewModel> cells)
+        {
+            Size = size;
+            Cells = cells;
+        }
+
+        public int Size { get; }
+        public ObservableCollection<GridCellViewModel> Cells { get; }
+        public string Status => string.Empty;
     }
 
     private sealed record HandCardItem(string Label);

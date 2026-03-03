@@ -34,6 +34,7 @@ public sealed class GridCellsControl : ItemsControl
         cell.ContentTemplateSelector = null;
 
         cell.FocusVisualStyle = null;
+        cell.IsTabStop = false;
         cell.CommandParameter = item;
         cell.FontSize = 16;
         cell.FontWeight = FontWeights.SemiBold;
