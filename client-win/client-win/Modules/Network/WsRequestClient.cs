@@ -31,7 +31,12 @@ public sealed class WsRequestClient
         _errorBus = errorBus;
     }
 
-    public async Task<WsResponse<TPayload>> RequestAsync<TPayload>(string type, object payload, string? token, CancellationToken cancellationToken = default)
+    public async Task<WsResponse<TPayload>> RequestAsync<TPayload>(
+        string type,
+        object payload,
+        string? token,
+        CancellationToken cancellationToken = default,
+        bool suppressUserError = false)
     {
         UiThreadGuard.WarnIfOnUiThread("ws.request", type);
 
@@ -46,20 +51,29 @@ public sealed class WsRequestClient
         catch (InvalidOperationException ioex) when (string.Equals(ioex.Message, "ws.ticket.missing", StringComparison.Ordinal))
         {
             var message = $"Impossible d'obtenir un ticket WebSocket (requete '{type}'). Reessayez dans quelques secondes.";
-            _errorBus?.Publish(new Modules.Error.AppError(message, Modules.Error.ErrorSeverity.Error, context: type, detail: "ticket_missing"));
+            if (!suppressUserError)
+            {
+                _errorBus?.Publish(new Modules.Error.AppError(message, Modules.Error.ErrorSeverity.Error, context: type, detail: "ticket_missing"));
+            }
             Log.Warning("WS ticket missing for request: {Type}", type);
             return WsResponse<TPayload>.Fail(type, message);
         }
         catch (TaskCanceledException tex)
         {
             var message = $"La requête temps réel '{type}' a expiré.";
-            _errorBus?.Publish(new Modules.Error.AppError(message, Modules.Error.ErrorSeverity.Error, context: type, detail: tex.Message));
+            if (!suppressUserError)
+            {
+                _errorBus?.Publish(new Modules.Error.AppError(message, Modules.Error.ErrorSeverity.Error, context: type, detail: tex.Message));
+            }
             Log.Warning(tex, "WS timeout: {Type}", type);
             return WsResponse<TPayload>.Fail(type, message);
         }
         catch (Exception ex)
         {
-            _errorBus?.Publish(new Modules.Error.AppError("Requête temps réel échouée.", Modules.Error.ErrorSeverity.Error, context: type, detail: ex.Message));
+            if (!suppressUserError)
+            {
+                _errorBus?.Publish(new Modules.Error.AppError("Requête temps réel échouée.", Modules.Error.ErrorSeverity.Error, context: type, detail: ex.Message));
+            }
             Log.Warning(ex, "WS error: {Type}", type);
             return WsResponse<TPayload>.Fail(type, ex.Message);
         }
@@ -84,7 +98,10 @@ public sealed class WsRequestClient
             {
                 detail = null;
             }
-            _errorBus?.Publish(new Modules.Error.AppError(message, Modules.Error.ErrorSeverity.Error, context: type, detail: detail));
+            if (!suppressUserError)
+            {
+                _errorBus?.Publish(new Modules.Error.AppError(message, Modules.Error.ErrorSeverity.Error, context: type, detail: detail));
+            }
             // On conserve le type demandé pour faciliter le diagnostic côté appelant.
             return WsResponse<TPayload>.Fail(type, message);
         }

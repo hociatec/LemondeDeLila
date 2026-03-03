@@ -250,7 +250,8 @@ public sealed class RoomLobbyClient : IRoomLobbyClient
             WsMessageTypes.Rooms.LegacyPublicUnsubscribe,
             new { },
             token,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken,
+            suppressUserError: true).ConfigureAwait(false);
         return res.Success && res.Payload?.Ok == true;
     }
 
@@ -309,13 +310,15 @@ public sealed class RoomLobbyClient : IRoomLobbyClient
         string legacyType,
         object payload,
         string? token,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool suppressUserError = false)
     {
         var primary = await _ws.RequestAsync<TPayload>(
                 lobbyType,
                 payload,
                 token,
-                cancellationToken)
+                cancellationToken,
+                suppressUserError)
             .ConfigureAwait(false);
 
         if (primary.Success || !IsUnknownTypeError(primary.Error))
@@ -327,7 +330,8 @@ public sealed class RoomLobbyClient : IRoomLobbyClient
                 legacyType,
                 payload,
                 token,
-                cancellationToken)
+                cancellationToken,
+                suppressUserError)
             .ConfigureAwait(false);
     }
 

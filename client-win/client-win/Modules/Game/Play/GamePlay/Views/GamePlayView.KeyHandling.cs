@@ -44,7 +44,8 @@ public partial class GamePlayView
             return;
         }
 
-        if (DataContext is not GamePlayViewModel vm || vm.Grid.IsVisible)
+        if (DataContext is not GamePlayViewModel vm ||
+            (vm.Grid.IsVisible && !vm.IsChoosePawnPending))
         {
             return;
         }
@@ -128,7 +129,9 @@ public partial class GamePlayView
             return false;
         }
 
-        if (DataContext is GamePlayViewModel vm && vm.Grid.IsVisible)
+        if (DataContext is GamePlayViewModel vm &&
+            vm.Grid.IsVisible &&
+            !vm.IsChoosePawnPending)
         {
             return false;
         }
@@ -405,16 +408,20 @@ public partial class GamePlayView
             return;
         }
 
-        HandleGridArrowKey(e);
+        if (DataContext is not GamePlayViewModel vm)
+        {
+            return;
+        }
+
+        if (!(vm.IsChoosePawnPending && ChoicesList.IsVisible && ChoicesList.Items.Count > 0))
+        {
+            HandleGridArrowKey(e);
+        }
         if (e.Handled)
         {
             return;
         }
 
-        if (DataContext is not GamePlayViewModel vm)
-        {
-            return;
-        }
         var isFinishedState = IsGameFinished(vm);
 
         if (!isFinishedState &&
@@ -448,7 +455,7 @@ public partial class GamePlayView
             !vm.IsChoosePawnPending &&
             HandList.IsVisible &&
             HandList.Items.Count > 0 &&
-            !vm.Grid.IsVisible)
+            (!vm.Grid.IsVisible || vm.IsChoosePawnPending))
         {
             // Enter on hand is local-only: consume it even when no action is sent.
             e.Handled = true;
@@ -503,7 +510,7 @@ public partial class GamePlayView
             !isFinishedState &&
             ChoicesList.IsVisible &&
             ChoicesList.Items.Count > 0 &&
-            !vm.Grid.IsVisible)
+            (!vm.Grid.IsVisible || vm.IsChoosePawnPending))
         {
             try
             {

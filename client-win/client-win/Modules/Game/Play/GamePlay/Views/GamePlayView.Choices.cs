@@ -693,18 +693,27 @@ public partial class GamePlayView
             }
 
             // Keep focus on the host game-zone anchor (single announced zone),
-            // instead of focusing this UserControl root which can be announced as "inconnu".
+            // without calling host.FocusGameZone() here to avoid re-entrant focus loops.
             var parent = GetVisualOrLogicalParent(this);
             while (parent != null)
             {
                 if (parent is GameZoneHostView host)
                 {
-                    host.FocusGameZone(GameFocusReason.Default);
-                    return;
+                    if (host.FindName("GameZoneFocusAnchor") is IInputElement anchor)
+                    {
+                        Keyboard.Focus(anchor);
+                        (anchor as UIElement)?.Focus();
+                        return;
+                    }
+                    break;
                 }
 
                 parent = GetVisualOrLogicalParent(parent);
             }
+
+            // Fallback best-effort when the host anchor is not reachable.
+            Focus();
+            Keyboard.Focus(this);
         }
         catch
         {
