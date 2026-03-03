@@ -575,6 +575,16 @@ export class RoomService {
       throw new BadRequestException('Table déjà démarrée');
     }
 
+    // Room ouverte: un participant déjà présent doit pouvoir "rejoindre" sa table
+    // sans être bloqué par le contrôle de capacité (utile après reconnect/reload).
+    if (existing) {
+      await this.leaveAllRoomsForUser(userId, { exceptRoomId: room.id });
+      await this.invalidateRoomPayloadCache(room.id);
+      this.presenceService.broadcastPresence();
+      this.notifyLobbyChanged(room.id, 'joined');
+      return room;
+    }
+
     const activeHumans = await this.countActiveHumans(room.id);
     const bots = await this.countBots(room.id);
     if (activeHumans + bots >= room.maxPlayers) {
@@ -880,6 +890,28 @@ export class RoomService {
     } catch {
       // best effort
     }
+    return room;
+  }
+
+  /**
+   * Démarrage système: utilisé par les raccourcis clavier côté moteur.
+   * Ne dépend pas du propriétaire.
+   */
+  async startRoomSystem(roomId: number): Promise<Room> {
+    const room = await this.requireRoom(roomId);
+    const humans = await this.countActiveHumans(room.id);
+    const bots = await this.countBots(room.id);
+    if (humans + bots < 2) {
+      throw new BadRequestException('Au moins deux participants sont requis');
+    }
+    room.status = 'started';
+    if (!room.startedAt) {
+      room.runId = Math.max(0, Number(room.runId ?? 0)) + 1;
+      room.startedAt = new Date(Math.floor(Date.now() / 1000) * 1000);
+    }
+    await this.rooms.save(room);
+    await this.invalidateRoomPayloadCache(room.id);
+    this.notifyLobbyChanged(room.id, 'started');
     return room;
   }
 

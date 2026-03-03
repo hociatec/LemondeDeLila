@@ -198,15 +198,29 @@ export function isWinningPos(
   playerId: number,
   pos: CorridorPos,
 ): boolean {
+  const goalY = getGoalYForPlayer(state, playerId);
+  if (goalY == null) return false;
+  return pos.y === goalY;
+}
+
+export function getGoalYForPlayer(
+  state: GameStateEntity,
+  playerId: number,
+): number | null {
   const meta = getMetadata(state);
   const size = meta?.size ?? 0;
-  if (!size) return false;
+  if (!size) return null;
 
+  const mappedGoal = meta?.goalYByPlayerId?.[String(playerId)];
+  if (Number.isFinite(mappedGoal)) {
+    return Math.trunc(Number(mappedGoal));
+  }
+
+  // Backward compatibility for legacy states without explicit goals.
   const players = state.players ?? [];
   const idx = players.findIndex((p) => p?.id === playerId);
-  if (idx < 0) return false;
-  const goalY = idx === 0 ? size - 1 : 0;
-  return pos.y === goalY;
+  if (idx < 0) return null;
+  return idx === 0 ? size - 1 : 0;
 }
 
 export function isWallPlacementInBounds(
@@ -322,8 +336,11 @@ export function wouldBlockAllPaths(
   const tmp: CorridorMetadata = applyWall(meta, wall);
   const p1pos = getPawnPos(tmp, p1.id);
   const p2pos = getPawnPos(tmp, p2.id);
-  const ok1 = hasPathToGoal(tmp, p1pos, size - 1);
-  const ok2 = hasPathToGoal(tmp, p2pos, 0);
+  const p1Goal = getGoalYForPlayer(state, p1.id);
+  const p2Goal = getGoalYForPlayer(state, p2.id);
+  if (p1Goal == null || p2Goal == null) return true;
+  const ok1 = hasPathToGoal(tmp, p1pos, p1Goal);
+  const ok2 = hasPathToGoal(tmp, p2pos, p2Goal);
   return !(ok1 && ok2);
 }
 

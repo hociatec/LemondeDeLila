@@ -37,4 +37,7 @@ public sealed class GameEndedDto
 
     [JsonPropertyName("playersById")]
     public Dictionary<string, string> PlayersById { get; set; } = new();
+
+    [JsonPropertyName("publicEndgameMessagesByPlayerId")]
+    public Dictionary<string, string> PublicEndgameMessagesByPlayerId { get; set; } = new();
 }

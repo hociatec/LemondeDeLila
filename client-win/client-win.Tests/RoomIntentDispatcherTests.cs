@@ -53,6 +53,21 @@ public sealed class RoomIntentDispatcherTests
             history.Messages);
     }
 
+    [Fact]
+    public void AnnouncementIntent_Ignores_TablePleineNoise()
+    {
+        var vm = CreateViewModel();
+        var history = new MemoryHistorySink();
+        var roomAnnouncements = new RecordingRoomAnnouncements();
+        var dispatcher = CreateDispatcher(vm, history, roomAnnouncements);
+
+        using var doc = JsonDocument.Parse(
+            "{\"type\":\"announcement\",\"payload\":{\"message\":\"Table pleine\",\"priority\":\"polite\"}}");
+        HandleIntent(dispatcher, doc.RootElement);
+
+        Assert.Empty(roomAnnouncements.Messages);
+    }
+
     private static object CreateDispatcher(
         GameRoomViewModel vm,
         IGameHistorySink history,
@@ -145,6 +160,35 @@ public sealed class RoomIntentDispatcherTests
         public void Publish(RoomAnnouncement announcement)
         {
             Announced?.Invoke(announcement);
+        }
+
+        public void BotJoined(string botName) { }
+        public void BotLeft(string botName) { }
+        public void PlayerJoined(string username, bool spectator) { }
+        public void PlayerLeft(string username, bool spectator) { }
+        public void OwnerChanged(string username) { }
+        public void PlayersList(string message) { }
+        public void TableInfo(string message) { }
+        public void VisibilityChanged(bool isPrivate) { }
+        public void RoleChanged(bool isSpectator) { }
+        public void Error(string message) { }
+    }
+
+    private sealed class RecordingRoomAnnouncements : IRoomAnnouncements
+    {
+        public event Action<RoomAnnouncement>? Announced;
+        public List<string> Messages { get; } = new();
+
+        public void Publish(RoomAnnouncement announcement)
+        {
+            if (announcement?.Message is { Length: > 0 } msg)
+            {
+                Messages.Add(msg);
+            }
+            if (announcement != null)
+            {
+                Announced?.Invoke(announcement);
+            }
         }
 
         public void BotJoined(string botName) { }

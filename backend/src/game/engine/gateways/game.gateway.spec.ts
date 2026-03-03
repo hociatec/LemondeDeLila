@@ -69,5 +69,8 @@ describe('GameGateway', () => {
     expect(frame.payload.viewerOutcome).toBe('won');
     expect(frame.payload.viewerEndgameMessage).toBe('Bravo, victoire perso !');
     expect(frame.payload.endgameMessagesByPlayerId).toBeUndefined();
+    expect(frame.payload.publicEndgameMessagesByPlayerId).toEqual({
+      '1': 'Bravo, victoire perso !',
+    });
   });
 });

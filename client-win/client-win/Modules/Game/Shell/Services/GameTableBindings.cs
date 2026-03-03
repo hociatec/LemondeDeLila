@@ -134,6 +134,18 @@ internal sealed class GameTableBindings : IAsyncDisposable
         return string.Equals(room.Status, "started", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static bool ShouldIgnoreRoomAnnouncement(string? message)
+    {
+        var text = (message ?? string.Empty).Trim();
+        if (text.Length == 0)
+        {
+            return true;
+        }
+
+        // Noise from failed implicit joins (spectator promotion, full table, etc.).
+        return string.Equals(text, "Table pleine", StringComparison.OrdinalIgnoreCase);
+    }
+
     public void Attach()
     {
         try { _announcementService?.SetGameplayUltraReactive(true); } catch { }
@@ -174,6 +186,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _onAnnounced = announcement =>
         {
             if (announcement == null || string.IsNullOrWhiteSpace(announcement.Message)) return;
+            if (ShouldIgnoreRoomAnnouncement(announcement.Message)) return;
             _history.Add(announcement.Message);
         };
         _announcements.Announced += _onAnnounced;

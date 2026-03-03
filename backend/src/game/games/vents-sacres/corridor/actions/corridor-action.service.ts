@@ -1,10 +1,8 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-
 import type { CorridorMetadata } from '../model/corridor.model';
 import * as CorridorRulebook from '../rulebook/rulebook';
-
 import {
   applyActionPipeline,
   applyActionsSequentially,
@@ -12,8 +10,27 @@ import {
   harmonizeActionStateReturn,
   normalizeLowerActionType,
 } from '../../../../actions/action-service.helper';
+
 @Injectable()
 export class CorridorActionService {
+  private appendUniqueLogMessages(
+    state: GameStateEntity,
+    messages: string[],
+  ): GameStateEntity {
+    let out = state;
+    for (const raw of messages) {
+      const message = String(raw ?? '').trim();
+      if (!message) continue;
+      const last = out.log?.[out.log.length - 1]?.message;
+      if (String(last ?? '').trim() === message) continue;
+      out = {
+        ...out,
+        log: [...(out.log ?? []), { message }],
+      };
+    }
+    return out;
+  }
+
   private toCellRef(pos: { x: number; y: number }, size: number): string {
     const col = CorridorActionService.toColumnLetters((pos?.x ?? 0) + 1);
     const row = Math.max(1, size - (pos?.y ?? 0));
@@ -52,14 +69,124 @@ export class CorridorActionService {
 
     const actorId = state.turn?.currentPlayerId ?? null;
     const type = normalizeLowerActionType(action);
+    const pendingType = String(state.pending?.type ?? '')
+      .trim()
+      .toLowerCase();
+    if (pendingType === 'choose_pawn' && type !== 'choose_pawn') {
+      return state;
+    }
     return dispatchByActionType(
       type,
       {
+        choose_pawn: () => this.applyChoosePawn(state, action, actorId),
         corridor_move: () => this.applyMove(state, action, actorId),
         corridor_place_wall: () => this.applyWall(state, action, actorId),
       },
       () => state,
     );
+  }
+
+  private applyChoosePawn(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+    actorId: number | null,
+  ): GameStateEntity {
+    if (actorId == null) return state;
+    if (String(state.pending?.type ?? '').trim().toLowerCase() !== 'choose_pawn') {
+      return state;
+    }
+    const pendingPlayerId = state.pending?.playerId ?? null;
+    if (pendingPlayerId !== actorId) {
+      return state;
+    }
+
+    const pawnId = String(
+      (action.payload as any)?.pawnId ??
+        (action.payload as any)?.pawn ??
+        (action.payload as any)?.id ??
+        '',
+    ).trim();
+    if (!pawnId) return state;
+
+    const meta = (state.metadata ?? {}) as CorridorMetadata;
+    const allPawns = Array.isArray(meta?.pawns) ? meta.pawns : [];
+    const pawnByPlayerId = { ...(meta?.pawnByPlayerId ?? {}) };
+    if (pawnByPlayerId[String(actorId)]) return state;
+    if (Object.values(pawnByPlayerId).includes(pawnId)) return state;
+    const chosen = allPawns.find((p) => String(p?.id ?? '').trim() === pawnId);
+    if (!chosen) return state;
+
+    pawnByPlayerId[String(actorId)] = pawnId;
+    const withBotsAssigned = this.autoAssignBotPawns(state.players ?? [], allPawns, pawnByPlayerId);
+    const nextPendingPlayer = (state.players ?? []).find(
+      (p) => p?.isBot !== true && !withBotsAssigned[String(p.id)],
+    )?.id;
+    const starterId =
+      typeof meta.setupStarterId === 'number'
+        ? meta.setupStarterId
+        : (state.players?.[0]?.id ?? actorId);
+    const starter = (state.players ?? []).find((p) => p?.id === starterId) ?? null;
+    const nextTurnPlayerId = nextPendingPlayer ?? starterId;
+
+    const nextMeta: CorridorMetadata = {
+      ...meta,
+      pawnByPlayerId: withBotsAssigned,
+    };
+
+    const actorName =
+      (state.players ?? []).find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
+    const nextWithLog = this.appendUniqueLogMessages(state, [
+      `${actorName} choisit ${chosen.label}.`,
+    ]);
+
+    return {
+      ...nextWithLog,
+      metadata: { ...(nextWithLog.metadata ?? {}), ...(nextMeta as any) },
+      pending:
+        nextPendingPlayer != null
+          ? {
+              type: 'choose_pawn',
+              label: 'Votre pion.',
+              playerId: nextPendingPlayer,
+              blocking: true,
+              data: {
+                pawns: allPawns
+                  .filter((p) => !Object.values(withBotsAssigned).includes(String(p.id)))
+                  .map((p) => ({
+                    id: p.id,
+                    label: `${p.label} - ${String(p.description ?? '').trim()}`,
+                    description: p.description,
+                  })),
+              },
+            }
+          : null,
+      turn: {
+        ...(nextWithLog.turn ?? { direction: 1 }),
+        currentPlayerId: nextTurnPlayerId,
+        direction: 1,
+        label:
+          nextPendingPlayer != null
+            ? 'Choix du pion'
+            : `Tour de ${starter?.username ?? 'joueur'}`,
+      },
+    };
+  }
+
+  private autoAssignBotPawns(
+    players: Array<{ id: number; isBot?: boolean }>,
+    pawns: Array<{ id: string }>,
+    pawnByPlayerId: Record<string, string>,
+  ): Record<string, string> {
+    const out = { ...pawnByPlayerId };
+    const used = new Set(Object.values(out));
+    for (const bot of players.filter((p) => p?.isBot === true)) {
+      if (out[String(bot.id)]) continue;
+      const pick = pawns.find((p) => !used.has(String(p.id)));
+      if (!pick) break;
+      out[String(bot.id)] = String(pick.id);
+      used.add(String(pick.id));
+    }
+    return out;
   }
 
   private applyMove(
@@ -88,7 +215,7 @@ export class CorridorActionService {
         return {
           actorId: validatedActor,
           metadata: nextMeta,
-          moveMessage: `se déplace de ${this.toCellRef(from, size)} à ${this.toCellRef(to, size)}`,
+          moveMessage: `se deplace de ${this.toCellRef(from, size)} a ${this.toCellRef(to, size)}`,
           maybeWinnerPos: to,
         };
       },
@@ -172,33 +299,44 @@ export class CorridorActionService {
         ? CorridorRulebook.isWinningPos(state, actorId, options.maybeWinnerPos)
         : false;
 
-    const status = won ? 'finished' : state.status;
+    const safeMeta: CorridorMetadata & Record<string, unknown> = {
+      ...(nextMeta as any),
+    };
     if (won) {
-      nextMeta.winnerPlayerId = actorId;
-      (nextMeta as any).winnerId = actorId;
+      safeMeta.winnerPlayerId = actorId;
+      safeMeta.winnerId = actorId;
+    } else {
+      safeMeta.winnerPlayerId = null;
+      safeMeta.winnerId = null;
+      delete safeMeta.finishedAt;
+      delete safeMeta.outcomesByPlayerId;
     }
+
+    const status = won ? 'finished' : state.status;
 
     const actorName = actor?.username ?? `#${actorId}`;
     const moveMsg = `${actorName} ${options.moveMessage}.`;
     const winMsg = won ? `Victoire de ${actorName}.` : null;
+    const nextWithLogs = this.appendUniqueLogMessages(state, [
+      moveMsg,
+      ...(winMsg ? [winMsg] : []),
+    ]);
 
     return {
-      ...state,
+      ...nextWithLogs,
       status,
-      metadata: nextMeta as any,
+      metadata: safeMeta as any,
       turnIndex: (state.turnIndex ?? 0) + 1,
-      log: [
-        ...(state.log ?? []),
-        { message: moveMsg },
-        ...(winMsg ? [{ message: winMsg }] : []),
-      ],
       turn: won
         ? {
-            ...(state.turn ?? { currentPlayerId: null, direction: 1 }),
+            ...(nextWithLogs.turn ?? { currentPlayerId: null, direction: 1 }),
             currentPlayerId: null,
           }
         : {
-            ...(state.turn ?? { currentPlayerId: nextPlayerId, direction: 1 }),
+            ...(nextWithLogs.turn ?? {
+              currentPlayerId: nextPlayerId,
+              direction: 1,
+            }),
             currentPlayerId: nextPlayerId,
             label: `Tour de ${other?.username ?? 'joueur'}`,
           },

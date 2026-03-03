@@ -2,6 +2,7 @@ import {
   IsIn,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -9,11 +10,13 @@ import {
 export class AdminBugReportCreateWsDto {
   @IsString()
   @MinLength(1)
+  @Matches(/\S/, { message: 'subject must not be blank' })
   @MaxLength(200)
   subject!: string;
 
   @IsString()
   @MinLength(1)
+  @Matches(/\S/, { message: 'content must not be blank' })
   @MaxLength(50000)
   content!: string;
 }
@@ -21,6 +24,7 @@ export class AdminBugReportCreateWsDto {
 export class AdminBugReportIdWsDto {
   @IsString()
   @MinLength(1)
+  @Matches(/\S/, { message: 'id must not be blank' })
   @MaxLength(64)
   id!: string;
 }
@@ -35,12 +39,14 @@ export class AdminBugReportUpdateWsDto extends AdminBugReportIdWsDto {
   @IsOptional()
   @IsString()
   @MinLength(1)
+  @Matches(/\S/, { message: 'subject must not be blank' })
   @MaxLength(200)
   subject?: string;
 
   @IsOptional()
   @IsString()
   @MinLength(1)
+  @Matches(/\S/, { message: 'content must not be blank' })
   @MaxLength(50000)
   content?: string;
 }

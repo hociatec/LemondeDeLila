@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -38,13 +38,13 @@ public sealed partial class AdminViewModel
 	        Items.Add(new AdminMenuItem("Jeux", tag: "sounds.games"));
 	        Items.Add(new AdminMenuItem("Amis", tag: "sounds.invitations"));
         Items.Add(new AdminMenuItem("Tchat", tag: "sounds.chat"));
-        Items.Add(new AdminMenuItem("Messages privés", tag: "sounds.private"));
+        Items.Add(new AdminMenuItem("Messages privÃ©s", tag: "sounds.private"));
         Items.Add(new AdminMenuItem("Contact admin", tag: "sounds.adminContact"));
-        Items.Add(new AdminMenuItem("Nettoyer les sons inutilisés", tag: "sounds.cleanup"));
-        Items.Add(new AdminMenuItem("Ré-encoder tous les sons (batch)", tag: "sounds.reencode"));
-        Items.Add(new AdminMenuItem("Ré-encoder sons invalides/manquants", tag: "sounds.reencode.invalid"));
+        Items.Add(new AdminMenuItem("Nettoyer les sons inutilisÃ©s", tag: "sounds.cleanup"));
+        Items.Add(new AdminMenuItem("RÃ©-encoder tous les sons (batch)", tag: "sounds.reencode"));
+        Items.Add(new AdminMenuItem("RÃ©-encoder sons invalides/manquants", tag: "sounds.reencode.invalid"));
         SelectedItem = Items.FirstOrDefault();
-        Status = "Entrée : sélectionner. Échap : retour.";
+        Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
         UpdateFilterVisibility();
         RestoreFocusIfAny();
     }
@@ -60,7 +60,7 @@ public sealed partial class AdminViewModel
 
         var confirm = await _dialogs.Confirm(
                 "Sons",
-                "Supprimer les sons (fichiers) qui ne sont plus utilisés ?",
+                "Supprimer les sons (fichiers) qui ne sont plus utilisÃ©s ?",
                 okText: "Nettoyer",
                 cancelText: "Annuler")
             .ConfigureAwait(true);
@@ -89,7 +89,7 @@ public sealed partial class AdminViewModel
         {
             var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
             var message = ApiErrorParser.TryExtractMessage(body) ?? body;
-            await _dialogs.ShowError("Sons", $"Nettoyage échoué ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
+            await _dialogs.ShowError("Sons", $"Nettoyage Ã©chouÃ© ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
             return;
         }
 
@@ -105,11 +105,11 @@ public sealed partial class AdminViewModel
             var deletedDirs = root.TryGetProperty("deletedDirs", out var dd) && dd.ValueKind == JsonValueKind.Number
                 ? dd.GetInt32()
                 : 0;
-            info = $"Nettoyage terminé. Fichiers supprimés : {deletedFiles}. Dossiers supprimés : {deletedDirs}.";
+            info = $"Nettoyage terminÃ©. Fichiers supprimÃ©s : {deletedFiles}. Dossiers supprimÃ©s : {deletedDirs}.";
         }
         catch
         {
-            info = "Nettoyage terminé.";
+            info = "Nettoyage terminÃ©.";
         }
 
         await _dialogs.ShowInfo("Sons", info).ConfigureAwait(true);
@@ -127,8 +127,8 @@ public sealed partial class AdminViewModel
 
         var confirm = await _dialogs.Confirm(
                 "Sons",
-                "Ré-encoder tous les sons du serveur ? (peut prendre plusieurs secondes)",
-                okText: "Ré-encoder",
+                "RÃ©-encoder tous les sons du serveur ? (peut prendre plusieurs secondes)",
+                okText: "RÃ©-encoder",
                 cancelText: "Annuler")
             .ConfigureAwait(true);
         if (confirm != true)
@@ -148,7 +148,7 @@ public sealed partial class AdminViewModel
         }
         catch (Exception ex)
         {
-            await _dialogs.ShowError("Sons", $"Ré-encodage impossible : {ex.Message}").ConfigureAwait(true);
+            await _dialogs.ShowError("Sons", $"RÃ©-encodage impossible : {ex.Message}").ConfigureAwait(true);
             return;
         }
 
@@ -156,7 +156,7 @@ public sealed partial class AdminViewModel
         {
             var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
             var message = ApiErrorParser.TryExtractMessage(body) ?? body;
-            await _dialogs.ShowError("Sons", $"Ré-encodage échoué ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
+            await _dialogs.ShowError("Sons", $"RÃ©-encodage Ã©chouÃ© ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
             return;
         }
 
@@ -168,7 +168,7 @@ public sealed partial class AdminViewModel
         }
         catch
         {
-            info = "Ré-encodage terminé.";
+            info = "RÃ©-encodage terminÃ©.";
         }
 
         await _dialogs.ShowInfo("Sons", info).ConfigureAwait(true);
@@ -186,8 +186,8 @@ public sealed partial class AdminViewModel
 
         var confirm = await _dialogs.Confirm(
                 "Sons",
-                "Ré-encoder uniquement les sons invalides/manquants ?",
-                okText: "Ré-encoder",
+                "RÃ©-encoder uniquement les sons invalides/manquants ?",
+                okText: "RÃ©-encoder",
                 cancelText: "Annuler")
             .ConfigureAwait(true);
         if (confirm != true)
@@ -207,7 +207,7 @@ public sealed partial class AdminViewModel
         }
         catch (Exception ex)
         {
-            await _dialogs.ShowError("Sons", $"Ré-encodage impossible : {ex.Message}").ConfigureAwait(true);
+            await _dialogs.ShowError("Sons", $"RÃ©-encodage impossible : {ex.Message}").ConfigureAwait(true);
             return;
         }
 
@@ -215,7 +215,7 @@ public sealed partial class AdminViewModel
         {
             var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
             var message = ApiErrorParser.TryExtractMessage(body) ?? body;
-            await _dialogs.ShowError("Sons", $"Ré-encodage échoué ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
+            await _dialogs.ShowError("Sons", $"RÃ©-encodage Ã©chouÃ© ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
             return;
         }
 
@@ -227,7 +227,7 @@ public sealed partial class AdminViewModel
         }
         catch
         {
-            info = "Ré-encodage terminé.";
+            info = "RÃ©-encodage terminÃ©.";
         }
 
         await _dialogs.ShowInfo("Sons", info).ConfigureAwait(true);
@@ -245,7 +245,7 @@ public sealed partial class AdminViewModel
         var errors = root.TryGetProperty("errors", out var e) && e.ValueKind == JsonValueKind.Number ? e.GetInt32() : 0;
         var invalid = root.TryGetProperty("invalid", out var inv) && inv.ValueKind == JsonValueKind.Number ? inv.GetInt32() : 0;
 
-        var info = $"Ré-encodage terminé. Modifiés : {updated}. Inchangés : {skipped}. Manquants : {missing}. Invalides : {invalid}. Erreurs : {errors}.";
+        var info = $"RÃ©-encodage terminÃ©. ModifiÃ©s : {updated}. InchangÃ©s : {skipped}. Manquants : {missing}. Invalides : {invalid}. Erreurs : {errors}.";
 
         if (root.TryGetProperty("details", out var details) && details.ValueKind == JsonValueKind.Object)
         {
@@ -286,7 +286,7 @@ public sealed partial class AdminViewModel
     {
         _page = AdminPage.SoundsAmbience;
         Title = "Administration - Sons - Ambiance";
-        Details = "Choisir un son d'ambiance (boucles) et un son à l'ouverture de la taverne.";
+        Details = "Choisir un son d'ambiance (boucles) et un son Ã  l'ouverture de la taverne.";
         PreferDetailsFocus = false;
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
@@ -296,7 +296,7 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Ouverture de la taverne", tag: "sounds.ambience.tavern.opened"));
         Items.Add(new AdminMenuItem("Ambiance de la taverne", tag: "sounds.ambience.tavern"));
         SelectedItem = Items.FirstOrDefault();
-        Status = "Entrée : sélectionner. Échap : retour.";
+        Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
         UpdateFilterVisibility();
         RestoreFocusIfAny();
     }
@@ -305,7 +305,7 @@ public sealed partial class AdminViewModel
     {
         _page = AdminPage.SoundsConnection;
         Title = "Administration - Sons - Connexion";
-        Details = "Choisir un son lié au démarrage et à la connexion au serveur.";
+        Details = "Choisir un son liÃ© au dÃ©marrage et Ã  la connexion au serveur.";
         PreferDetailsFocus = false;
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
@@ -314,9 +314,9 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Ouverture du client", tag: "sounds.client.opened"));
         Items.Add(new AdminMenuItem("Fermeture du client", tag: "sounds.client.closing"));
         Items.Add(new AdminMenuItem("Connexion au serveur", tag: "sounds.client.connected"));
-        Items.Add(new AdminMenuItem("Déconnexion du serveur", tag: "sounds.client.disconnected"));
+        Items.Add(new AdminMenuItem("DÃ©connexion du serveur", tag: "sounds.client.disconnected"));
         SelectedItem = Items.FirstOrDefault();
-        Status = "Entrée : sélectionner. Échap : retour.";
+        Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
         UpdateFilterVisibility();
         RestoreFocusIfAny();
     }
@@ -325,18 +325,18 @@ public sealed partial class AdminViewModel
     {
         _page = AdminPage.SoundsInvitations;
         Title = "Administration - Sons - Amis";
-        Details = "Choisir un son lié aux amis (présence, demandes).";
+        Details = "Choisir un son liÃ© aux amis (prÃ©sence, demandes).";
         PreferDetailsFocus = false;
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
-        Items.Add(new AdminMenuItem("Ami connecté", tag: "sounds.friend.connected"));
-        Items.Add(new AdminMenuItem("Ami déconnecté", tag: "sounds.friend.disconnected"));
-        Items.Add(new AdminMenuItem("Demande d'ami envoyée", tag: "sounds.friend.invite.sent"));
-        Items.Add(new AdminMenuItem("Demande d'ami reçue", tag: "sounds.friend.invite.received"));
+        Items.Add(new AdminMenuItem("Ami connectÃ©", tag: "sounds.friend.connected"));
+        Items.Add(new AdminMenuItem("Ami dÃ©connectÃ©", tag: "sounds.friend.disconnected"));
+        Items.Add(new AdminMenuItem("Demande d'ami envoyÃ©e", tag: "sounds.friend.invite.sent"));
+        Items.Add(new AdminMenuItem("Demande d'ami reÃ§ue", tag: "sounds.friend.invite.received"));
         SelectedItem = Items.FirstOrDefault();
-        Status = "Entrée : sélectionner. Échap : retour.";
+        Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
         UpdateFilterVisibility();
         RestoreFocusIfAny();
     }
@@ -345,23 +345,23 @@ public sealed partial class AdminViewModel
 	    {
 	        _page = AdminPage.SoundsTable;
 	        Title = "Administration - Sons - Table";
-	        Details = "Choisir un son lié aux tables (entrée/sortie, invitations, fin de partie).";
+	        Details = "Choisir un son liÃ© aux tables (entrÃ©e/sortie, invitations, fin de partie).";
             PreferDetailsFocus = false;
 	        IsTextInputVisible = false;
 	        IsSecondaryInputVisible = false;
 	        IsAdditionalPermissionsVisible = false;
 	        Items.Clear();
 	        Items.Add(new AdminMenuItem("Victoire (fin de partie)", tag: "sounds.game.victory"));
-	        Items.Add(new AdminMenuItem("Défaite (fin de partie)", tag: "sounds.game.defeat"));
+	        Items.Add(new AdminMenuItem("DÃ©faite (fin de partie)", tag: "sounds.game.defeat"));
 	        Items.Add(new AdminMenuItem("Ambiances de table", tag: "sounds.table.ambience"));
 	        Items.Add(new AdminMenuItem("Entrer dans une table", tag: "sounds.table.enter"));
 	        Items.Add(new AdminMenuItem("Rejoindre une table", tag: "sounds.table.join"));
         Items.Add(new AdminMenuItem("Quitter une table", tag: "sounds.table.exit"));
-        Items.Add(new AdminMenuItem("Démarrage d'une partie", tag: "sounds.table.started"));
-	        Items.Add(new AdminMenuItem("Invitation à une table envoyée", tag: "sounds.table.invite.sent"));
-	        Items.Add(new AdminMenuItem("Invitation à une table reçue", tag: "sounds.table.invite.received"));
+        Items.Add(new AdminMenuItem("DÃ©marrage d'une partie", tag: "sounds.table.started"));
+	        Items.Add(new AdminMenuItem("Invitation Ã  une table envoyÃ©e", tag: "sounds.table.invite.sent"));
+	        Items.Add(new AdminMenuItem("Invitation Ã  une table reÃ§ue", tag: "sounds.table.invite.received"));
 	        SelectedItem = Items.FirstOrDefault();
-	        Status = "Entrée : sélectionner. Échap : retour.";
+	        Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
 	        UpdateFilterVisibility();
 	        RestoreFocusIfAny();
 	    }
@@ -370,7 +370,7 @@ public sealed partial class AdminViewModel
         {
             _page = AdminPage.SoundsTableAmbience;
             Title = "Administration - Table - Ambiances";
-            Details = "Créer, activer/désactiver, renommer, supprimer des ambiances de table, et associer un son (.wav/.mp3).";
+            Details = "CrÃ©er, activer/dÃ©sactiver, renommer, supprimer des ambiances de table, et associer un son (.wav/.mp3).";
             PreferDetailsFocus = false;
             IsTextInputVisible = false;
             IsSecondaryInputVisible = false;
@@ -388,16 +388,16 @@ public sealed partial class AdminViewModel
                 }
 
                 var enabledState = a.Enabled ? "active" : "inactive";
-                var soundState = configured ? "configurée" : "sans son";
+                var soundState = configured ? "configurÃ©e" : "sans son";
                 Items.Add(new AdminMenuItem($"{a.Name} ({enabledState}, {soundState})", tag: a));
             }
 
             SelectedItem = Items.FirstOrDefault(i => i.Tag is AdminTableAmbienceDto) ?? Items.FirstOrDefault();
-            Status = "Entrée : sélectionner. Échap : retour.";
+            Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
             UpdateFilterVisibility();
             RestoreFocusIfAny();
 
-            // Rafraîchit en arrière-plan (best effort) pour afficher les dernières ambiances.
+            // RafraÃ®chit en arriÃ¨re-plan (best effort) pour afficher les derniÃ¨res ambiances.
             _ = RefreshTableAmbiencesAsync();
         }
 
@@ -413,13 +413,13 @@ public sealed partial class AdminViewModel
             IsAdditionalPermissionsVisible = false;
             Items.Clear();
             Items.Add(new AdminMenuItem(
-                ambience?.Enabled == false ? "Activer" : "Désactiver",
+                ambience?.Enabled == false ? "Activer" : "DÃ©sactiver",
                 tag: "tableAmbience.toggle"));
             Items.Add(new AdminMenuItem("Renommer", tag: "tableAmbience.rename"));
             Items.Add(new AdminMenuItem("Changer le son (.wav/.mp3)", tag: "tableAmbience.sound"));
             Items.Add(new AdminMenuItem("Supprimer", tag: "tableAmbience.delete"));
             SelectedItem = Items.FirstOrDefault();
-            Status = "Entrée : action. Échap : retour.";
+            Status = "EntrÃ©e : action. Ã‰chap : retour.";
             UpdateFilterVisibility();
             RestoreFocusIfAny();
         }
@@ -462,12 +462,12 @@ public sealed partial class AdminViewModel
                     {
                         var message = ApiErrorParser.TryExtractMessage(body) ?? body;
                         Status = string.IsNullOrWhiteSpace(message)
-                            ? $"Chargement des ambiances échoué ({(int)resp.StatusCode})."
-                            : $"Chargement des ambiances échoué ({(int)resp.StatusCode}) : {message}";
+                            ? $"Chargement des ambiances Ã©chouÃ© ({(int)resp.StatusCode})."
+                            : $"Chargement des ambiances Ã©chouÃ© ({(int)resp.StatusCode}) : {message}";
                     }
                     catch
                     {
-                        Status = $"Chargement des ambiances échoué ({(int)resp.StatusCode}).";
+                        Status = $"Chargement des ambiances Ã©chouÃ© ({(int)resp.StatusCode}).";
                     }
                     return;
                 }
@@ -513,9 +513,9 @@ public sealed partial class AdminViewModel
             IsSecondaryInputVisible = false;
             IsAdditionalPermissionsVisible = false;
             Details = string.Equals(mode, "tableAmbience.create", StringComparison.OrdinalIgnoreCase)
-                ? "Donnez un nom à l'ambiance. Le fichier audio (.wav/.mp3) se choisit ensuite via \"Changer le son (.wav/.mp3)\"."
+                ? "Donnez un nom Ã  l'ambiance. Le fichier audio (.wav/.mp3) se choisit ensuite via \"Changer le son (.wav/.mp3)\"."
                 : string.Empty;
-            Status = "Saisissez puis Entrée pour valider. Échap : retour.";
+            Status = "Saisissez puis EntrÃ©e pour valider. Ã‰chap : retour.";
             UpdateFilterVisibility();
             RestoreFocusIfAny();
         }
@@ -543,8 +543,8 @@ public sealed partial class AdminViewModel
             {
                 if (string.Equals(mode, "tableAmbience.create", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Pré-check (UX): si les 20 slots sont déjà pris, ne pas lancer un POST voué à échouer.
-                    // Ne pas appeler RefreshTableAmbiencesAsync ici (IsBusy est déjà géré par SubmitTableAmbienceAsync).
+                    // PrÃ©-check (UX): si les 20 slots sont dÃ©jÃ  pris, ne pas lancer un POST vouÃ© Ã  Ã©chouer.
+                    // Ne pas appeler RefreshTableAmbiencesAsync ici (IsBusy est dÃ©jÃ  gÃ©rÃ© par SubmitTableAmbienceAsync).
                     try
                     {
                         var checkEndpoint = new Uri(_config.HttpBase, "admin/sounds/table-ambiences");
@@ -563,7 +563,7 @@ public sealed partial class AdminViewModel
                             {
                                 await _dialogs.ShowError(
                                         "Ambiances",
-                                        "Nombre maximum atteint (20 ambiances de table). Supprimez une ambiance existante pour libérer un slot.")
+                                        "Nombre maximum atteint (20 ambiances de table). Supprimez une ambiance existante pour libÃ©rer un slot.")
                                     .ConfigureAwait(true);
                                 return;
                             }
@@ -585,9 +585,9 @@ public sealed partial class AdminViewModel
                         var message = ApiErrorParser.TryExtractMessage(body) ?? body;
                         if (message.Contains("Nombre maximum atteint", StringComparison.OrdinalIgnoreCase))
                         {
-                            message += " (Supprimez une ambiance existante pour libérer un slot.)";
+                            message += " (Supprimez une ambiance existante pour libÃ©rer un slot.)";
                         }
-                        await _dialogs.ShowError("Ambiances", $"Création échouée ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
+                        await _dialogs.ShowError("Ambiances", $"CrÃ©ation Ã©chouÃ©e ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
                         return;
                     }
 
@@ -621,7 +621,7 @@ public sealed partial class AdminViewModel
                         BuildSoundsTableAmbience();
                     }
                     NavigationChanged?.Invoke();
-                    await _dialogs.ShowInfo("Ambiances", "Ambiance créée.").ConfigureAwait(true);
+                    await _dialogs.ShowInfo("Ambiances", "Ambiance crÃ©Ã©e.").ConfigureAwait(true);
                     return;
                 }
 
@@ -643,7 +643,7 @@ public sealed partial class AdminViewModel
                     if (!resp.IsSuccessStatusCode)
                     {
                         var message = ApiErrorParser.TryExtractMessage(body) ?? body;
-                        await _dialogs.ShowError("Ambiances", $"Renommage échoué ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
+                        await _dialogs.ShowError("Ambiances", $"Renommage Ã©chouÃ© ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
                         return;
                     }
 
@@ -651,7 +651,7 @@ public sealed partial class AdminViewModel
                     await RefreshTableAmbiencesAsync(force: true).ConfigureAwait(true);
                     BuildSoundsTableAmbienceActions(selected);
                     NavigationChanged?.Invoke();
-                    await _dialogs.ShowInfo("Ambiances", "Ambiance renommée.").ConfigureAwait(true);
+                    await _dialogs.ShowInfo("Ambiances", "Ambiance renommÃ©e.").ConfigureAwait(true);
                     return;
                 }
             }
@@ -678,7 +678,7 @@ public sealed partial class AdminViewModel
 
             var confirm = await _dialogs.Confirm(
                     "Ambiances",
-                    $"Supprimer l'ambiance \"{ambience.Name}\" ? (Le son associé sera aussi supprimé.)",
+                    $"Supprimer l'ambiance \"{ambience.Name}\" ? (Le son associÃ© sera aussi supprimÃ©.)",
                     okText: "Supprimer",
                     cancelText: "Annuler")
                 .ConfigureAwait(true);
@@ -699,7 +699,7 @@ public sealed partial class AdminViewModel
                 if (!resp.IsSuccessStatusCode)
                 {
                     var message = ApiErrorParser.TryExtractMessage(body) ?? body;
-                    await _dialogs.ShowError("Ambiances", $"Suppression échouée ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
+                    await _dialogs.ShowError("Ambiances", $"Suppression Ã©chouÃ©e ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
                     return;
                 }
 
@@ -707,7 +707,7 @@ public sealed partial class AdminViewModel
                 await RefreshTableAmbiencesAsync(force: true).ConfigureAwait(true);
                 BuildSoundsTableAmbience();
                 NavigationChanged?.Invoke();
-                await _dialogs.ShowInfo("Ambiances", "Ambiance supprimée.").ConfigureAwait(true);
+                await _dialogs.ShowInfo("Ambiances", "Ambiance supprimÃ©e.").ConfigureAwait(true);
             }
             finally
             {
@@ -748,7 +748,7 @@ public sealed partial class AdminViewModel
                     var message = ApiErrorParser.TryExtractMessage(body) ?? body;
                     await _dialogs.ShowError(
                             "Ambiances",
-                            $"Mise à jour échouée ({(int)resp.StatusCode}) : {message}")
+                            $"Mise Ã  jour Ã©chouÃ©e ({(int)resp.StatusCode}) : {message}")
                         .ConfigureAwait(true);
                     return;
                 }
@@ -770,16 +770,16 @@ public sealed partial class AdminViewModel
 	    {
 	        _page = AdminPage.SoundsGames;
 	        Title = "Administration - Sons - Jeux";
-	        Details = "Choisir un son lié aux actions en jeu (pion, mur, dé, quiz, pioche).";
+	        Details = "Choisir un son liÃ© aux actions en jeu (pion, mur, dÃ©, quiz, pioche).";
             PreferDetailsFocus = false;
 	        IsTextInputVisible = false;
 	        IsSecondaryInputVisible = false;
 	        IsAdditionalPermissionsVisible = false;
 	        Items.Clear();
-	        Items.Add(new AdminMenuItem("Dé : lancer", tag: "sounds.games.dice.rolled"));
+	        Items.Add(new AdminMenuItem("DÃ© : lancer", tag: "sounds.games.dice.rolled"));
 	        Items.Add(new AdminMenuItem("Pioche", tag: "sounds.games.draw"));
-            Items.Add(new AdminMenuItem("Quiz : bonne réponse", tag: "sounds.games.quiz.correct"));
-            Items.Add(new AdminMenuItem("Quiz : mauvaise réponse", tag: "sounds.games.quiz.wrong"));
+            Items.Add(new AdminMenuItem("Quiz : bonne rÃ©ponse", tag: "sounds.games.quiz.correct"));
+            Items.Add(new AdminMenuItem("Quiz : mauvaise rÃ©ponse", tag: "sounds.games.quiz.wrong"));
             Items.Add(new AdminMenuItem("Fin de manche", tag: "sounds.games.round.ended"));
 	        Items.Add(new AdminMenuItem("Pion : prendre (vous)", tag: "sounds.games.pawn.picked"));
 	        Items.Add(new AdminMenuItem("Pion : poser (vous)", tag: "sounds.games.pawn.placed.self"));
@@ -787,7 +787,7 @@ public sealed partial class AdminViewModel
 	        Items.Add(new AdminMenuItem("Mur : poser (vous)", tag: "sounds.games.wall.placed.self"));
 	        Items.Add(new AdminMenuItem("Mur : poser (adversaire)", tag: "sounds.games.wall.placed.opponent"));
 	        SelectedItem = Items.FirstOrDefault();
-	        Status = "Entrée : sélectionner. Échap : retour.";
+	        Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
 	        UpdateFilterVisibility();
 	        RestoreFocusIfAny();
 	    }
@@ -802,10 +802,10 @@ public sealed partial class AdminViewModel
 	        IsSecondaryInputVisible = false;
 	        IsAdditionalPermissionsVisible = false;
 	        Items.Clear();
-	        Items.Add(new AdminMenuItem("Tchat général", tag: "sounds.chat.general"));
+	        Items.Add(new AdminMenuItem("Tchat gÃ©nÃ©ral", tag: "sounds.chat.general"));
 	        Items.Add(new AdminMenuItem("Tchat de table", tag: "sounds.chat.table"));
 	        SelectedItem = Items.FirstOrDefault();
-	        Status = "Entrée : sélectionner. Échap : retour.";
+	        Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
 	        UpdateFilterVisibility();
 	        RestoreFocusIfAny();
 	    }
@@ -813,17 +813,17 @@ public sealed partial class AdminViewModel
 	    private void BuildSoundsChatGeneral()
 	    {
 	        _page = AdminPage.SoundsChatGeneral;
-	        Title = "Administration - Sons - Tchat - Général";
-	        Details = "Choisir un son lié au tchat général.";
+	        Title = "Administration - Sons - Tchat - GÃ©nÃ©ral";
+	        Details = "Choisir un son liÃ© au tchat gÃ©nÃ©ral.";
             PreferDetailsFocus = false;
 	        IsTextInputVisible = false;
 	        IsSecondaryInputVisible = false;
 	        IsAdditionalPermissionsVisible = false;
 	        Items.Clear();
 	        Items.Add(new AdminMenuItem("Envoi d'un message", tag: "sounds.chat.general.sent"));
-	        Items.Add(new AdminMenuItem("Réception d'un message", tag: "sounds.chat.general.received"));
+	        Items.Add(new AdminMenuItem("RÃ©ception d'un message", tag: "sounds.chat.general.received"));
 	        SelectedItem = Items.FirstOrDefault();
-	        Status = "Entrée : sélectionner. Échap : retour.";
+	        Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
 	        UpdateFilterVisibility();
 	        RestoreFocusIfAny();
 	    }
@@ -832,16 +832,16 @@ public sealed partial class AdminViewModel
 	    {
 	        _page = AdminPage.SoundsChatTable;
 	        Title = "Administration - Sons - Tchat - Table";
-	        Details = "Choisir un son lié au tchat de table.";
+	        Details = "Choisir un son liÃ© au tchat de table.";
             PreferDetailsFocus = false;
 	        IsTextInputVisible = false;
 	        IsSecondaryInputVisible = false;
 	        IsAdditionalPermissionsVisible = false;
 	        Items.Clear();
 	        Items.Add(new AdminMenuItem("Envoi d'un message", tag: "sounds.chat.table.sent"));
-	        Items.Add(new AdminMenuItem("Réception d'un message", tag: "sounds.chat.table.received"));
+	        Items.Add(new AdminMenuItem("RÃ©ception d'un message", tag: "sounds.chat.table.received"));
 	        SelectedItem = Items.FirstOrDefault();
-	        Status = "Entrée : sélectionner. Échap : retour.";
+	        Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
 	        UpdateFilterVisibility();
 	        RestoreFocusIfAny();
 	    }
@@ -849,17 +849,17 @@ public sealed partial class AdminViewModel
     private void BuildSoundsPrivateMessages()
     {
         _page = AdminPage.SoundsPrivateMessages;
-        Title = "Administration - Sons - Messages privés";
-        Details = "Choisir un son lié aux messages privés.";
+        Title = "Administration - Sons - Messages privÃ©s";
+        Details = "Choisir un son liÃ© aux messages privÃ©s.";
         PreferDetailsFocus = false;
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
-        Items.Add(new AdminMenuItem("Envoi d'un message privé", tag: "sounds.private.sent"));
-        Items.Add(new AdminMenuItem("Réception d'un message privé", tag: "sounds.private.received"));
+        Items.Add(new AdminMenuItem("Envoi d'un message privÃ©", tag: "sounds.private.sent"));
+        Items.Add(new AdminMenuItem("RÃ©ception d'un message privÃ©", tag: "sounds.private.received"));
         SelectedItem = Items.FirstOrDefault();
-        Status = "Entrée : sélectionner. Échap : retour.";
+        Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
         UpdateFilterVisibility();
         RestoreFocusIfAny();
     }
@@ -868,16 +868,16 @@ public sealed partial class AdminViewModel
     {
         _page = AdminPage.SoundsAdminContact;
         Title = "Administration - Sons - Contact admin";
-        Details = "Choisir un son lié aux messages de contact admin.";
+        Details = "Choisir un son liÃ© aux messages de contact admin.";
         PreferDetailsFocus = false;
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Envoi d'un contact admin", tag: "sounds.adminContact.sent"));
-        Items.Add(new AdminMenuItem("Réception d'un contact admin", tag: "sounds.adminContact.received"));
+        Items.Add(new AdminMenuItem("RÃ©ception d'un contact admin", tag: "sounds.adminContact.received"));
         SelectedItem = Items.FirstOrDefault();
-        Status = "Entrée : sélectionner. Échap : retour.";
+        Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
         UpdateFilterVisibility();
         RestoreFocusIfAny();
     }
@@ -888,7 +888,7 @@ public sealed partial class AdminViewModel
         string? groupOverride = null,
         string? titleOverride = null)
     {
-        // Assure qu'on ne superpose pas plusieurs sons d'aperçu quand on passe d'un son à un autre.
+        // Assure qu'on ne superpose pas plusieurs sons d'aperÃ§u quand on passe d'un son Ã  un autre.
         _sounds.StopPreview();
 
         _page = AdminPage.SoundDetails;
@@ -914,12 +914,12 @@ public sealed partial class AdminViewModel
             SoundId.ClientOpened => ("Connexion", "Ouverture du client", _options.Current.SoundClientOpenedPath),
             SoundId.ClientClosing => ("Connexion", "Fermeture du client", _options.Current.SoundClientClosingPath),
             SoundId.ClientConnected => ("Connexion", "Connexion au serveur", _options.Current.SoundClientConnectedPath),
-            SoundId.ClientDisconnected => ("Connexion", "Déconnexion du serveur", _options.Current.SoundClientDisconnectedPath),
+            SoundId.ClientDisconnected => ("Connexion", "DÃ©connexion du serveur", _options.Current.SoundClientDisconnectedPath),
             SoundId.MainMenuMusic => ("Ambiance", "Musique du menu principal", null),
             SoundId.TavernOpened => ("Ambiance", "Ouverture de la taverne", null),
             SoundId.TavernAmbience => ("Ambiance", "Ambiance de la taverne", null),
             SoundId.GameVictory => ("Table", "Victoire (fin de partie)", _options.Current.SoundGameVictoryPath),
-            SoundId.GameDefeat => ("Table", "Défaite (fin de partie)", _options.Current.SoundGameDefeatPath),
+            SoundId.GameDefeat => ("Table", "DÃ©faite (fin de partie)", _options.Current.SoundGameDefeatPath),
             SoundId.TableAmbience1 => ("Table", "Ambiance de table 1", null),
             SoundId.TableAmbience2 => ("Table", "Ambiance de table 2", null),
             SoundId.TableAmbience3 => ("Table", "Ambiance de table 3", null),
@@ -943,31 +943,31 @@ public sealed partial class AdminViewModel
             SoundId.RoomOpened => ("Table", "Entrer dans une table", _options.Current.SoundRoomOpenedPath),
             SoundId.RoomJoined => ("Table", "Rejoindre une table", _options.Current.SoundRoomJoinedPath),
             SoundId.RoomExit => ("Table", "Quitter une table", _options.Current.SoundRoomExitPath),
-            SoundId.TableStarted => ("Table", "Démarrage d'une partie", null),
-            SoundId.InvitationSent => ("Table", "Invitation à une table envoyée", _options.Current.SoundInvitationSentPath),
-            SoundId.InvitationReceived => ("Table", "Invitation à une table reçue", _options.Current.SoundInvitationReceivedPath),
-            SoundId.FriendConnected => ("Amis", "Ami connecté", _options.Current.SoundFriendConnectedPath),
-            SoundId.FriendDisconnected => ("Amis", "Ami déconnecté", _options.Current.SoundFriendDisconnectedPath),
-            SoundId.FriendInvitationSent => ("Amis", "Demande d'ami envoyée", _options.Current.SoundFriendInvitationSentPath),
-            SoundId.FriendInvitationReceived => ("Amis", "Demande d'ami reçue", _options.Current.SoundFriendInvitationReceivedPath),
+            SoundId.TableStarted => ("Table", "DÃ©marrage d'une partie", null),
+            SoundId.InvitationSent => ("Table", "Invitation Ã  une table envoyÃ©e", _options.Current.SoundInvitationSentPath),
+            SoundId.InvitationReceived => ("Table", "Invitation Ã  une table reÃ§ue", _options.Current.SoundInvitationReceivedPath),
+            SoundId.FriendConnected => ("Amis", "Ami connectÃ©", _options.Current.SoundFriendConnectedPath),
+            SoundId.FriendDisconnected => ("Amis", "Ami dÃ©connectÃ©", _options.Current.SoundFriendDisconnectedPath),
+            SoundId.FriendInvitationSent => ("Amis", "Demande d'ami envoyÃ©e", _options.Current.SoundFriendInvitationSentPath),
+            SoundId.FriendInvitationReceived => ("Amis", "Demande d'ami reÃ§ue", _options.Current.SoundFriendInvitationReceivedPath),
 	            SoundId.ChatMessageSent => ("Tchat", "Envoi d'un message", _options.Current.SoundChatMessageSentPath),
-	            SoundId.ChatMessageReceived => ("Tchat", "Réception d'un message", _options.Current.SoundChatMessageReceivedPath),
+	            SoundId.ChatMessageReceived => ("Tchat", "RÃ©ception d'un message", _options.Current.SoundChatMessageReceivedPath),
 	            SoundId.TableChatMessageSent => ("Tchat", "Tchat de table - Envoi d'un message", _options.Current.SoundTableChatMessageSentPath ?? _options.Current.SoundChatMessageSentPath),
-	            SoundId.TableChatMessageReceived => ("Tchat", "Tchat de table - Réception d'un message", _options.Current.SoundTableChatMessageReceivedPath ?? _options.Current.SoundChatMessageReceivedPath),
-	            SoundId.PrivateMessageSent => ("Messages privés", "Envoi d'un message privé", _options.Current.SoundPrivateMessageSentPath),
-	            SoundId.PrivateMessageReceived => ("Messages privés", "Réception d'un message privé", _options.Current.SoundPrivateMessageReceivedPath),
+	            SoundId.TableChatMessageReceived => ("Tchat", "Tchat de table - RÃ©ception d'un message", _options.Current.SoundTableChatMessageReceivedPath ?? _options.Current.SoundChatMessageReceivedPath),
+	            SoundId.PrivateMessageSent => ("Messages privÃ©s", "Envoi d'un message privÃ©", _options.Current.SoundPrivateMessageSentPath),
+	            SoundId.PrivateMessageReceived => ("Messages privÃ©s", "RÃ©ception d'un message privÃ©", _options.Current.SoundPrivateMessageReceivedPath),
             SoundId.AdminContactSent => ("Contact admin", "Envoi d'un contact admin", null),
-	            SoundId.DiceRolled => ("Jeux", "Dé - Lancer", null),
+	            SoundId.DiceRolled => ("Jeux", "DÃ© - Lancer", null),
 	            SoundId.DrawCard => ("Jeux", "Pioche", null),
-                SoundId.QuizCorrect => ("Jeux", "Quiz - Bonne réponse", null),
-                SoundId.QuizWrong => ("Jeux", "Quiz - Mauvaise réponse", null),
+                SoundId.QuizCorrect => ("Jeux", "Quiz - Bonne rÃ©ponse", null),
+                SoundId.QuizWrong => ("Jeux", "Quiz - Mauvaise rÃ©ponse", null),
                 SoundId.RoundEnded => ("Jeux", "Fin de manche", null),
 	            SoundId.PawnPicked => ("Jeux", "Pion - Prendre (vous)", _options.Current.SoundPawnPickedPath),
 	            SoundId.PawnPlacedSelf => ("Jeux", "Pion - Poser (vous)", _options.Current.SoundPawnPlacedSelfPath),
 	            SoundId.PawnPlacedOpponent => ("Jeux", "Pion - Poser (adversaire)", _options.Current.SoundPawnPlacedOpponentPath),
 	            SoundId.WallPlacedSelf => ("Jeux", "Mur - Poser (vous)", _options.Current.SoundWallPlacedSelfPath),
 	            SoundId.WallPlacedOpponent => ("Jeux", "Mur - Poser (adversaire)", _options.Current.SoundWallPlacedOpponentPath),
-	            SoundId.AdminContactReceived => ("Contact admin", "Réception d'un contact admin", null),
+	            SoundId.AdminContactReceived => ("Contact admin", "RÃ©ception d'un contact admin", null),
 	            _ => ("Sons", sound.ToString(), null)
 	        };
 
@@ -987,20 +987,20 @@ public sealed partial class AdminViewModel
         Details = !string.IsNullOrWhiteSpace(remote)
             ? $"Son global (serveur) : {Path.GetFileName(remote)}"
             : string.IsNullOrWhiteSpace(current)
-                ? "Son par défaut (Assets)."
+                ? "Son par dÃ©faut (Assets)."
                 : $"Son local (options) : {current}";
 
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
-        Items.Add(new AdminMenuItem("Aperçu (Entrée pour écouter)", tag: "sound.preview"));
-        Items.Add(new AdminMenuItem("Changer (Entrée pour choisir un fichier .wav/.mp3)", tag: "sound.change"));
+        Items.Add(new AdminMenuItem("AperÃ§u (EntrÃ©e pour Ã©couter)", tag: "sound.preview"));
+        Items.Add(new AdminMenuItem("Changer (EntrÃ©e pour choisir un fichier .wav/.mp3)", tag: "sound.change"));
         SelectedItem = Items.FirstOrDefault();
-        Status = "Tab/Entrée : action. Échap : retour.";
+        Status = "Tab/EntrÃ©e : action. Ã‰chap : retour.";
         UpdateFilterVisibility();
 
-        // Aperçu immédiat quand on entre dans le son (comme demandé).
+        // AperÃ§u immÃ©diat quand on entre dans le son (comme demandÃ©).
         _sounds.PlayPreview(sound);
     }
 
@@ -1034,10 +1034,23 @@ public sealed partial class AdminViewModel
             await _dialogs.ShowError("Sons", "Fichier introuvable.").ConfigureAwait(true);
             return;
         }
-        await UploadSoundToServerAsync(sound, src).ConfigureAwait(true);
-        await _remoteSounds.RefreshAsync(force: true).ConfigureAwait(true);
+        var uploaded = await UploadSoundToServerAsync(sound, src).ConfigureAwait(true);
+        if (!uploaded)
+        {
+            return;
+        }
 
-        // Purge tout lecteur/loop en mémoire pour éviter de réentendre un ancien fichier.
+        // Ensure cache + active ambience loops are refreshed immediately (not only via WS notify).
+        try
+        {
+            await _audio.RefreshRemoteSoundsAsync(force: true, reapplyBackground: true).ConfigureAwait(true);
+        }
+        catch
+        {
+            await _remoteSounds.RefreshAsync(force: true).ConfigureAwait(true);
+        }
+
+        // Purge tout lecteur/loop en mÃ©moire pour Ã©viter de rÃ©entendre un ancien fichier.
         try { _sounds.Stop(sound); } catch { /* ignore */ }
         try { _sounds.StopLoop(sound); } catch { /* ignore */ }
 
@@ -1046,15 +1059,26 @@ public sealed partial class AdminViewModel
             ? $"Son global (serveur) : {Path.GetFileName(remote)}"
             : "Son global (serveur).";
         _sounds.PlayPreview(sound);
+
+        if (string.IsNullOrWhiteSpace(remote))
+        {
+            await _dialogs.ShowError(
+                    "Sons",
+                    "Upload accepte, mais le son n'est pas encore disponible. Reessayez dans quelques secondes.")
+                .ConfigureAwait(true);
+            return;
+        }
+
+        await _dialogs.ShowInfo("Sons", "Son global mis a jour (serveur).").ConfigureAwait(true);
     }
 
-    private async Task UploadSoundToServerAsync(SoundId sound, string filePath)
+    private async Task<bool> UploadSoundToServerAsync(SoundId sound, string filePath)
     {
         var jwt = _session.CurrentUser?.Token;
         if (string.IsNullOrWhiteSpace(jwt))
         {
             await _dialogs.ShowError("Sons", "Connexion requise.").ConfigureAwait(true);
-            return;
+            return false;
         }
 
         var endpoint = new Uri(_config.HttpBase, $"admin/sounds/{Uri.EscapeDataString(sound.ToString())}");
@@ -1067,7 +1091,7 @@ public sealed partial class AdminViewModel
         catch (Exception ex)
         {
             await _dialogs.ShowError("Sons", $"Impossible de lire le fichier : {ex.Message}").ConfigureAwait(true);
-            return;
+            return false;
         }
 
         using var form = new MultipartFormDataContent();
@@ -1092,18 +1116,18 @@ public sealed partial class AdminViewModel
         catch (Exception ex)
         {
             await _dialogs.ShowError("Sons", $"Upload impossible : {ex.Message}").ConfigureAwait(true);
-            return;
+            return false;
         }
 
         if (!resp.IsSuccessStatusCode)
         {
             var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
             var message = ApiErrorParser.TryExtractMessage(body) ?? body;
-            await _dialogs.ShowError("Sons", $"Upload échoué ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
-            return;
+            await _dialogs.ShowError("Sons", $"Upload Ã©chouÃ© ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
+            return false;
         }
 
-        await _dialogs.ShowInfo("Sons", "Son global mis à jour (serveur).").ConfigureAwait(true);
+        return true;
     }
 
 }

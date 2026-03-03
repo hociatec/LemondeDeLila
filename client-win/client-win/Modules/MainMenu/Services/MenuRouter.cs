@@ -559,6 +559,7 @@ public sealed class MenuRouter : IMenuRouter
                 _dialogs,
                 _options,
                 _sounds,
+                _audio,
                 _session,
                 _remoteSounds,
                 _tables,

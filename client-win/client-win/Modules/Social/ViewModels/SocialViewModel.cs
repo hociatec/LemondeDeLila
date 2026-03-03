@@ -20,6 +20,15 @@ public enum SocialSection
     Profile
 }
 
+public enum ProfileEditorMode
+{
+    Menu,
+    Bio,
+    VictoryMessage,
+    DefeatMessage,
+    Visibility
+}
+
 public sealed class SocialViewModel : ObservableObject
 {
     private readonly ISocialService _service;
@@ -39,6 +48,7 @@ public sealed class SocialViewModel : ObservableObject
     private string _profileTitle = "Mon profil";
     private string _profileInfoText = string.Empty;
     private SocialSection? _returnSectionFromProfile;
+    private ProfileEditorMode _activeProfileEditor = ProfileEditorMode.Menu;
 
     public event Action? ProfileFocusRequested;
     public event Action? ReturnToMenuRequested;
@@ -76,6 +86,10 @@ public sealed class SocialViewModel : ObservableObject
         SendRequestCommand = new AsyncRelayCommand(SendRequestAsync, () => SelectedSearchUser != null && !IsBusy);
         SearchCommand = new AsyncRelayCommand(SearchAsync, () => !IsBusy);
         UpdateProfileCommand = new AsyncRelayCommand(UpdateProfileAsync, () => !IsBusy);
+        SaveProfileBioCommand = new AsyncRelayCommand(SaveProfileBioAsync, CanEditProfile);
+        SaveProfileVictoryCommand = new AsyncRelayCommand(SaveProfileVictoryAsync, CanEditProfile);
+        SaveProfileDefeatCommand = new AsyncRelayCommand(SaveProfileDefeatAsync, CanEditProfile);
+        SaveProfileVisibilityCommand = new AsyncRelayCommand(SaveProfileVisibilityAsync, CanEditProfile);
         ViewProfileCommand = new AsyncRelayCommand<SocialUser>(ViewProfileAsync, user => user != null && !IsBusy);
         OpenStoryBookCommand = new AsyncRelayCommand(OpenStoryBookAsync, () => Profile != null && !IsBusy);
         OpenMessagingCommand = new AsyncRelayCommand(OpenMessagingAsync, () => _openMessaging != null && !IsBusy);
@@ -102,6 +116,10 @@ public sealed class SocialViewModel : ObservableObject
     public ICommand SendRequestCommand { get; }
     public ICommand SearchCommand { get; }
     public ICommand UpdateProfileCommand { get; }
+    public ICommand SaveProfileBioCommand { get; }
+    public ICommand SaveProfileVictoryCommand { get; }
+    public ICommand SaveProfileDefeatCommand { get; }
+    public ICommand SaveProfileVisibilityCommand { get; }
     public AsyncRelayCommand<SocialUser> ViewProfileCommand { get; }
     public ICommand OpenStoryBookCommand { get; }
     public ICommand OpenMessagingCommand { get; }
@@ -192,16 +210,56 @@ public sealed class SocialViewModel : ObservableObject
         private set => SetProperty(ref _profileInfoText, value);
     }
 
+    public ProfileEditorMode ActiveProfileEditor
+    {
+        get => _activeProfileEditor;
+        private set
+        {
+            if (SetProperty(ref _activeProfileEditor, value))
+            {
+                OnPropertyChanged(nameof(IsProfileEditorMenuVisible));
+                OnPropertyChanged(nameof(IsProfileBioEditorVisible));
+                OnPropertyChanged(nameof(IsProfileVictoryEditorVisible));
+                OnPropertyChanged(nameof(IsProfileDefeatEditorVisible));
+                OnPropertyChanged(nameof(IsProfileVisibilityEditorVisible));
+            }
+        }
+    }
+
+    public bool IsProfileEditorMenuVisible => ActiveProfileEditor == ProfileEditorMode.Menu;
+    public bool IsProfileBioEditorVisible => ActiveProfileEditor == ProfileEditorMode.Bio;
+    public bool IsProfileVictoryEditorVisible => ActiveProfileEditor == ProfileEditorMode.VictoryMessage;
+    public bool IsProfileDefeatEditorVisible => ActiveProfileEditor == ProfileEditorMode.DefeatMessage;
+    public bool IsProfileVisibilityEditorVisible => ActiveProfileEditor == ProfileEditorMode.Visibility;
+
     public void SetProfileTargetUserId(int? userId) => _profileTargetUserId = userId;
 
     public void EnterOwnProfile()
     {
         _returnSectionFromProfile = null;
         _profileTargetUserId = null;
+        ActiveProfileEditor = ProfileEditorMode.Menu;
+    }
+
+    public void OpenProfileEditor(ProfileEditorMode mode)
+    {
+        if (!CanEditProfile())
+        {
+            return;
+        }
+
+        ActiveProfileEditor = mode;
     }
 
     public bool TryExitProfile(out SocialSection returnSection)
     {
+        if (ActiveProfileEditor != ProfileEditorMode.Menu)
+        {
+            ActiveProfileEditor = ProfileEditorMode.Menu;
+            returnSection = SocialSection.Profile;
+            return true;
+        }
+
         if (_returnSectionFromProfile.HasValue)
         {
             returnSection = _returnSectionFromProfile.Value;
@@ -427,6 +485,7 @@ public sealed class SocialViewModel : ObservableObject
     private async Task LoadProfileAsync()
     {
         Profile = await _service.GetProfileAsync(_profileTargetUserId).ConfigureAwait(true);
+        ActiveProfileEditor = ProfileEditorMode.Menu;
         if (Profile != null)
         {
             ProfileBio = Profile.Bio;
@@ -502,6 +561,7 @@ public sealed class SocialViewModel : ObservableObject
             _returnSectionFromProfile = SelectedSection;
         }
         SetProfileTargetUserId(user.Id);
+        ActiveProfileEditor = ProfileEditorMode.Menu;
         SelectedSection = SocialSection.Profile;
         ProfileFocusRequested?.Invoke();
         return Task.CompletedTask;
@@ -683,6 +743,34 @@ public sealed class SocialViewModel : ObservableObject
 
     private async Task UpdateProfileAsync()
     {
+        await PersistProfileAsync("Profil mis a jour.", "Votre profil a ete mis a jour.").ConfigureAwait(true);
+    }
+    private async Task SaveProfileBioAsync()
+    {
+        await PersistProfileAsync("Bio mise a jour.", "Votre bio a ete mise a jour.").ConfigureAwait(true);
+        ActiveProfileEditor = ProfileEditorMode.Menu;
+    }
+
+    private async Task SaveProfileVictoryAsync()
+    {
+        await PersistProfileAsync("Message de victoire mis a jour.", "Votre message de victoire a ete mis a jour.").ConfigureAwait(true);
+        ActiveProfileEditor = ProfileEditorMode.Menu;
+    }
+
+    private async Task SaveProfileDefeatAsync()
+    {
+        await PersistProfileAsync("Message de defaite mis a jour.", "Votre message de defaite a ete mis a jour.").ConfigureAwait(true);
+        ActiveProfileEditor = ProfileEditorMode.Menu;
+    }
+
+    private async Task SaveProfileVisibilityAsync()
+    {
+        await PersistProfileAsync("Visibilite mise a jour.", "La visibilite de votre profil a ete mise a jour.").ConfigureAwait(true);
+        ActiveProfileEditor = ProfileEditorMode.Menu;
+    }
+
+    private async Task PersistProfileAsync(string statusText, string dialogText)
+    {
         var updated = await _service.UpdateProfileAsync(
             ProfileBio,
             ProfileVictoryMessage,
@@ -691,12 +779,12 @@ public sealed class SocialViewModel : ObservableObject
         if (updated != null)
         {
             Profile = updated;
-            Status = "Profil mis à jour.";
+            Status = statusText;
             var owner = Application.Current?.MainWindow;
             var previousFocus = Keyboard.FocusedElement;
             MessageBox.Show(
-                "Votre profil a été mis à jour.",
-                "Profil enregistré",
+                dialogText,
+                "Profil enregistre",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
             DialogFocusRestorer.Restore(owner, previousFocus);
@@ -748,6 +836,10 @@ public sealed class SocialViewModel : ObservableObject
         (SendRequestCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (SearchCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (UpdateProfileCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        (SaveProfileBioCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        (SaveProfileVictoryCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        (SaveProfileDefeatCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        (SaveProfileVisibilityCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         ViewProfileCommand?.RaiseCanExecuteChanged();
         (OpenStoryBookCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (RefreshCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
@@ -756,5 +848,10 @@ public sealed class SocialViewModel : ObservableObject
     private void HandleClose()
     {
         _onClose?.Invoke();
+    }
+
+    private bool CanEditProfile()
+    {
+        return !IsBusy && (Profile?.IsOwner ?? false);
     }
 }

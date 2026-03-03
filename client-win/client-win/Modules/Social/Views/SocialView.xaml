@@ -718,266 +718,255 @@
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
-	                    <Grid>
-	                        <Grid.RowDefinitions>
-	                            <RowDefinition Height="Auto" />
-	                            <RowDefinition Height="Auto" />
-	                            <RowDefinition Height="Auto" />
-	                            <RowDefinition Height="Auto" />
-	                            <RowDefinition Height="Auto" />
-	                            <RowDefinition Height="Auto" />
-	                            <RowDefinition Height="Auto" />
-	                            <RowDefinition Height="Auto" />
-	                            <RowDefinition Height="Auto" />
-	                            <RowDefinition Height="Auto" />
-	                        </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
-			                        <TextBlock x:Name="ProfileHeader"
-			                                   Text="{Binding ProfileTitle}"
-			                                   Foreground="{StaticResource HighlightBrush}"
-			                                   FontSize="16"
-			                                   FontWeight="Bold"
-			                                   Margin="0 0 0 12"
-			                                   AutomationProperties.Name="{Binding ProfileTitle}" />
+                        <TextBlock x:Name="ProfileHeader"
+                                   Text="{Binding ProfileTitle}"
+                                   Foreground="{StaticResource HighlightBrush}"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Margin="0 0 0 12"
+                                   AutomationProperties.Name="{Binding ProfileTitle}" />
 
-		                        <TextBlock Grid.Row="1"
-		                                   Text="{Binding Profile.User.Username, TargetNullValue=Profil}"
-		                                   Foreground="White"
-		                                   FontSize="16"
-		                                   FontWeight="SemiBold"
-		                                   Margin="0 0 0 12"
-		                                   AutomationProperties.Name="{Binding Profile.User.Username, StringFormat=Utilisateur {0}}" />
+                        <TextBlock Grid.Row="1"
+                                   Text="{Binding Profile.User.Username, TargetNullValue=Profil}"
+                                   Foreground="White"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Margin="0 0 0 12"
+                                   AutomationProperties.Name="{Binding Profile.User.Username, StringFormat=Utilisateur {0}}" />
 
-	                        <StackPanel Grid.Row="2" Orientation="Vertical" Margin="0 0 0 12">
-	                            <TextBlock x:Name="ProfileInfoLabel" Text="Informations" Foreground="{StaticResource TextMuted}" FontSize="12" />
-	                            <TextBox x:Name="ProfileInfoBox"
-	                                     Text="{Binding ProfileInfoText, Mode=OneWay}"
-	                                     Margin="0 6 0 0"
-	                                     Height="120"
-	                                     TextWrapping="Wrap"
-	                                     AcceptsReturn="True"
-	                                     IsReadOnly="True"
-	                                     IsReadOnlyCaretVisible="True"
-	                                     SpellCheck.IsEnabled="False"
-	                                     TextBoxBase.IsUndoEnabled="False"
-	                                     VerticalScrollBarVisibility="Auto"
-	                                     HorizontalScrollBarVisibility="Disabled"
-	                                     Style="{StaticResource InputTextBox}"
-	                                     AutomationProperties.LabeledBy="{Binding ElementName=ProfileInfoLabel}"
-	                                     AutomationProperties.Name="Informations du profil" />
-	                        </StackPanel>
+                        <StackPanel Grid.Row="2" Orientation="Vertical" Margin="0 0 0 12">
+                            <TextBlock x:Name="ProfileInfoLabel" Text="Informations" Foreground="{StaticResource TextMuted}" FontSize="12" />
+                            <TextBox x:Name="ProfileInfoBox"
+                                     Text="{Binding ProfileInfoText, Mode=OneWay}"
+                                     Margin="0 6 0 0"
+                                     Height="120"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     IsReadOnly="True"
+                                     IsReadOnlyCaretVisible="True"
+                                     SpellCheck.IsEnabled="False"
+                                     TextBoxBase.IsUndoEnabled="False"
+                                     VerticalScrollBarVisibility="Auto"
+                                     HorizontalScrollBarVisibility="Disabled"
+                                     Style="{StaticResource InputTextBox}"
+                                     AutomationProperties.LabeledBy="{Binding ElementName=ProfileInfoLabel}"
+                                     AutomationProperties.Name="Informations du profil" />
+                        </StackPanel>
 
-	                        <TextBlock Grid.Row="3"
-	                                   Text="Ce profil est privé."
-	                                   Foreground="{StaticResource HighlightBrush}"
-	                                   FontSize="13"
-	                                   Margin="0 0 0 12">
-	                            <TextBlock.Style>
-	                                <Style TargetType="TextBlock">
-	                                    <Setter Property="Visibility" Value="Collapsed" />
-	                                    <Style.Triggers>
-	                                        <MultiDataTrigger>
-	                                            <MultiDataTrigger.Conditions>
-	                                                <Condition Binding="{Binding Profile.IsOwner}" Value="False" />
-	                                                <Condition Binding="{Binding Profile.CanView}" Value="False" />
-	                                            </MultiDataTrigger.Conditions>
-	                                            <Setter Property="Visibility" Value="Visible" />
-	                                        </MultiDataTrigger>
-	                                    </Style.Triggers>
-	                                </Style>
-	                            </TextBlock.Style>
-	                        </TextBlock>
+                        <TextBlock Grid.Row="3"
+                                   Text="Ce profil est privé."
+                                   Foreground="{StaticResource HighlightBrush}"
+                                   FontSize="13"
+                                   Margin="0 0 0 12">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding Profile.IsOwner}" Value="False" />
+                                                <Condition Binding="{Binding Profile.CanView}" Value="False" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
 
-	                        <TextBlock Grid.Row="3" Text="Bio" Foreground="{StaticResource TextMuted}" FontSize="12">
-	                            <TextBlock.Style>
-	                                <Style TargetType="TextBlock">
-	                                    <Setter Property="Visibility" Value="Visible" />
-	                                    <Style.Triggers>
-	                                        <MultiDataTrigger>
-	                                            <MultiDataTrigger.Conditions>
-	                                                <Condition Binding="{Binding Profile.IsOwner}" Value="False" />
-	                                                <Condition Binding="{Binding Profile.CanView}" Value="False" />
-	                                            </MultiDataTrigger.Conditions>
-	                                            <Setter Property="Visibility" Value="Collapsed" />
-	                                        </MultiDataTrigger>
-	                                    </Style.Triggers>
-	                                </Style>
-	                            </TextBlock.Style>
-	                        </TextBlock>
-		                        <TextBox x:Name="ProfileBioBox"
-		                                 Grid.Row="4"
-		                                 Text="{Binding ProfileBio, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-		                                 Height="120"
-		                                 TextWrapping="Wrap"
-		                                 AcceptsReturn="True"
-		                                 Margin="0 6 0 12"
-		                                 AutomationProperties.Name="Bio du profil">
-		                            <TextBox.Style>
-		                                <Style TargetType="TextBox" BasedOn="{StaticResource InputTextBox}">
-		                                    <Setter Property="IsReadOnly" Value="False" />
-		                                    <Setter Property="Visibility" Value="Visible" />
-		                                    <Style.Triggers>
-		                                        <DataTrigger Binding="{Binding Profile.IsOwner}" Value="False">
-		                                            <Setter Property="IsReadOnly" Value="True" />
-		                                        </DataTrigger>
-		                                        <MultiDataTrigger>
-		                                            <MultiDataTrigger.Conditions>
-		                                                <Condition Binding="{Binding Profile.IsOwner}" Value="False" />
-		                                                <Condition Binding="{Binding Profile.CanView}" Value="False" />
-		                                            </MultiDataTrigger.Conditions>
-		                                            <Setter Property="Visibility" Value="Collapsed" />
-		                                        </MultiDataTrigger>
-		                                    </Style.Triggers>
-		                                </Style>
-		                            </TextBox.Style>
-		                        </TextBox>
+                        <StackPanel Grid.Row="4" Margin="0 0 0 12">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding Profile.IsOwner}" Value="True" />
+                                                <Condition Binding="{Binding IsProfileEditorMenuVisible}" Value="True" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
 
-	                        <TextBlock Grid.Row="5" Text="Message de victoire" Foreground="{StaticResource TextMuted}" FontSize="12">
-	                            <TextBlock.Style>
-	                                <Style TargetType="TextBlock">
-	                                    <Setter Property="Visibility" Value="Visible" />
-	                                    <Style.Triggers>
-	                                        <MultiDataTrigger>
-	                                            <MultiDataTrigger.Conditions>
-	                                                <Condition Binding="{Binding Profile.IsOwner}" Value="False" />
-	                                                <Condition Binding="{Binding Profile.CanView}" Value="False" />
-	                                            </MultiDataTrigger.Conditions>
-	                                            <Setter Property="Visibility" Value="Collapsed" />
-	                                        </MultiDataTrigger>
-	                                    </Style.Triggers>
-	                                </Style>
-	                            </TextBlock.Style>
-	                        </TextBlock>
-	                        <TextBox x:Name="ProfileVictoryMessageBox"
-	                                 Grid.Row="6"
-	                                 Text="{Binding ProfileVictoryMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-	                                 Height="72"
-	                                 MaxLength="280"
-	                                 TextWrapping="Wrap"
-	                                 AcceptsReturn="True"
-	                                 Margin="0 6 0 12"
-	                                 AutomationProperties.Name="Message de victoire du profil">
-	                            <TextBox.Style>
-	                                <Style TargetType="TextBox" BasedOn="{StaticResource InputTextBox}">
-	                                    <Setter Property="IsReadOnly" Value="False" />
-	                                    <Setter Property="Visibility" Value="Visible" />
-	                                    <Style.Triggers>
-	                                        <DataTrigger Binding="{Binding Profile.IsOwner}" Value="False">
-	                                            <Setter Property="IsReadOnly" Value="True" />
-	                                        </DataTrigger>
-	                                        <MultiDataTrigger>
-	                                            <MultiDataTrigger.Conditions>
-	                                                <Condition Binding="{Binding Profile.IsOwner}" Value="False" />
-	                                                <Condition Binding="{Binding Profile.CanView}" Value="False" />
-	                                            </MultiDataTrigger.Conditions>
-	                                            <Setter Property="Visibility" Value="Collapsed" />
-	                                        </MultiDataTrigger>
-	                                    </Style.Triggers>
-	                                </Style>
-	                            </TextBox.Style>
-	                        </TextBox>
+                            <TextBlock Text="Configuration du profil" Foreground="{StaticResource HighlightBrush}" FontSize="14" FontWeight="Bold" Margin="0 0 0 8" />
+                            <TextBlock Text="Entrée pour modifier, Échap pour revenir" Foreground="{StaticResource TextMuted}" FontSize="12" Margin="0 0 0 8" />
+                            <ListBox x:Name="ProfileConfigMenu"
+                                     Style="{StaticResource MenuListBox}"
+                                     ItemContainerStyle="{StaticResource MenuListItem}"
+                                     KeyDown="OnProfileConfigMenuKeyDown"
+                                     PreviewMouseLeftButtonUp="OnProfileConfigMenuClick"
+                                     AutomationProperties.Name="Sous menu profil">
+                                <ListBoxItem Tag="bio">
+                                    <TextBlock Text="Bio" />
+                                </ListBoxItem>
+                                <ListBoxItem Tag="victory">
+                                    <TextBlock Text="Message de victoire" />
+                                </ListBoxItem>
+                                <ListBoxItem Tag="defeat">
+                                    <TextBlock Text="Message de défaite" />
+                                </ListBoxItem>
+                                <ListBoxItem Tag="visibility">
+                                    <TextBlock Text="Visibilité" />
+                                </ListBoxItem>
+                            </ListBox>
+                        </StackPanel>
 
-	                        <TextBlock Grid.Row="7" Text="Message de défaite" Foreground="{StaticResource TextMuted}" FontSize="12">
-	                            <TextBlock.Style>
-	                                <Style TargetType="TextBlock">
-	                                    <Setter Property="Visibility" Value="Visible" />
-	                                    <Style.Triggers>
-	                                        <MultiDataTrigger>
-	                                            <MultiDataTrigger.Conditions>
-	                                                <Condition Binding="{Binding Profile.IsOwner}" Value="False" />
-	                                                <Condition Binding="{Binding Profile.CanView}" Value="False" />
-	                                            </MultiDataTrigger.Conditions>
-	                                            <Setter Property="Visibility" Value="Collapsed" />
-	                                        </MultiDataTrigger>
-	                                    </Style.Triggers>
-	                                </Style>
-	                            </TextBlock.Style>
-	                        </TextBlock>
-	                        <TextBox x:Name="ProfileDefeatMessageBox"
-	                                 Grid.Row="8"
-	                                 Text="{Binding ProfileDefeatMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-	                                 Height="72"
-	                                 MaxLength="280"
-	                                 TextWrapping="Wrap"
-	                                 AcceptsReturn="True"
-	                                 Margin="0 6 0 12"
-	                                 AutomationProperties.Name="Message de défaite du profil">
-	                            <TextBox.Style>
-	                                <Style TargetType="TextBox" BasedOn="{StaticResource InputTextBox}">
-	                                    <Setter Property="IsReadOnly" Value="False" />
-	                                    <Setter Property="Visibility" Value="Visible" />
-	                                    <Style.Triggers>
-	                                        <DataTrigger Binding="{Binding Profile.IsOwner}" Value="False">
-	                                            <Setter Property="IsReadOnly" Value="True" />
-	                                        </DataTrigger>
-	                                        <MultiDataTrigger>
-	                                            <MultiDataTrigger.Conditions>
-	                                                <Condition Binding="{Binding Profile.IsOwner}" Value="False" />
-	                                                <Condition Binding="{Binding Profile.CanView}" Value="False" />
-	                                            </MultiDataTrigger.Conditions>
-	                                            <Setter Property="Visibility" Value="Collapsed" />
-	                                        </MultiDataTrigger>
-	                                    </Style.Triggers>
-	                                </Style>
-	                            </TextBox.Style>
-	                        </TextBox>
+                        <StackPanel Grid.Row="4" Margin="0 0 0 12">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding Profile.IsOwner}" Value="True" />
+                                                <Condition Binding="{Binding IsProfileBioEditorVisible}" Value="True" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock Text="Bio" Foreground="{StaticResource TextMuted}" FontSize="12" />
+                            <TextBox x:Name="ProfileBioBox"
+                                     Text="{Binding ProfileBio, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Height="120"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     Margin="0 6 0 12"
+                                     Style="{StaticResource InputTextBox}"
+                                     AutomationProperties.Name="Bio du profil" />
+                            <Button Content="Enregistrer la bio"
+                                    Command="{Binding SaveProfileBioCommand}"
+                                    Style="{StaticResource PrimaryButton}"
+                                    AutomationProperties.Name="Enregistrer la bio" />
+                        </StackPanel>
 
-	                        <StackPanel Grid.Row="9" Orientation="Horizontal" VerticalAlignment="Center">
-	                            <StackPanel Orientation="Vertical" Margin="0 0 16 0">
-	                                <TextBlock Text="Visibilité" Foreground="{StaticResource TextMuted}" FontSize="12" />
-		                                <ComboBox x:Name="VisibilityBox"
-	                                          Width="160"
-	                                          ItemsSource="{Binding VisibilityOptions}"
-	                                          DisplayMemberPath="Label"
-	                                          SelectedValuePath="Value"
-	                                          SelectedValue="{Binding ProfileVisibility, Mode=TwoWay}"
-	                                          AutomationProperties.Name="Visibilité du profil">
-	                                    <ComboBox.Style>
-	                                        <Style TargetType="ComboBox" BasedOn="{StaticResource InputComboBox}">
-	                                            <Setter Property="IsEnabled" Value="True" />
-	                                            <Style.Triggers>
-	                                                <DataTrigger Binding="{Binding Profile.IsOwner}" Value="False">
-	                                                    <Setter Property="IsEnabled" Value="False" />
-	                                                </DataTrigger>
-	                                            </Style.Triggers>
-	                                        </Style>
-	                                    </ComboBox.Style>
-	                                </ComboBox>
-		                            </StackPanel>
-		                            <Button Content="Livre des contes"
-		                                    Command="{Binding OpenStoryBookCommand}"
-		                                    Margin="0 0 12 0"
-		                                    AutomationProperties.Name="Consulter le livre des contes">
-		                                <Button.Style>
-		                                    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-	                                        <Setter Property="Visibility" Value="Visible" />
-	                                        <Style.Triggers>
-	                                            <MultiDataTrigger>
-	                                                <MultiDataTrigger.Conditions>
-	                                                    <Condition Binding="{Binding Profile.IsOwner}" Value="False" />
-	                                                    <Condition Binding="{Binding Profile.CanView}" Value="False" />
-	                                                </MultiDataTrigger.Conditions>
-	                                                <Setter Property="Visibility" Value="Collapsed" />
-	                                            </MultiDataTrigger>
-	                                        </Style.Triggers>
-	                                    </Style>
-	                                </Button.Style>
-	                            </Button>
-		                            <Button Content="Enregistrer"
-		                                    Command="{Binding UpdateProfileCommand}"
-		                                    AutomationProperties.Name="Mettre a jour le profil">
-	                                <Button.Style>
-	                                    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-	                                        <Setter Property="Visibility" Value="Visible" />
-	                                        <Style.Triggers>
-	                                            <DataTrigger Binding="{Binding Profile.IsOwner}" Value="False">
-	                                                <Setter Property="Visibility" Value="Collapsed" />
-	                                            </DataTrigger>
-	                                        </Style.Triggers>
-	                                    </Style>
-	                                </Button.Style>
-	                            </Button>
-	                        </StackPanel>
+                        <StackPanel Grid.Row="4" Margin="0 0 0 12">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding Profile.IsOwner}" Value="True" />
+                                                <Condition Binding="{Binding IsProfileVictoryEditorVisible}" Value="True" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock Text="Message de victoire" Foreground="{StaticResource TextMuted}" FontSize="12" />
+                            <TextBox x:Name="ProfileVictoryMessageBox"
+                                     Text="{Binding ProfileVictoryMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Height="96"
+                                     MaxLength="280"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     Margin="0 6 0 12"
+                                     Style="{StaticResource InputTextBox}"
+                                     AutomationProperties.Name="Message de victoire du profil" />
+                            <Button Content="Enregistrer le message"
+                                    Command="{Binding SaveProfileVictoryCommand}"
+                                    Style="{StaticResource PrimaryButton}"
+                                    AutomationProperties.Name="Enregistrer message de victoire" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="4" Margin="0 0 0 12">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding Profile.IsOwner}" Value="True" />
+                                                <Condition Binding="{Binding IsProfileDefeatEditorVisible}" Value="True" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock Text="Message de défaite" Foreground="{StaticResource TextMuted}" FontSize="12" />
+                            <TextBox x:Name="ProfileDefeatMessageBox"
+                                     Text="{Binding ProfileDefeatMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Height="96"
+                                     MaxLength="280"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     Margin="0 6 0 12"
+                                     Style="{StaticResource InputTextBox}"
+                                     AutomationProperties.Name="Message de défaite du profil" />
+                            <Button Content="Enregistrer le message"
+                                    Command="{Binding SaveProfileDefeatCommand}"
+                                    Style="{StaticResource PrimaryButton}"
+                                    AutomationProperties.Name="Enregistrer message de défaite" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="4" Margin="0 0 0 12">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding Profile.IsOwner}" Value="True" />
+                                                <Condition Binding="{Binding IsProfileVisibilityEditorVisible}" Value="True" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock Text="Visibilité" Foreground="{StaticResource TextMuted}" FontSize="12" />
+                            <ComboBox x:Name="VisibilityBox"
+                                      Width="160"
+                                      ItemsSource="{Binding VisibilityOptions}"
+                                      DisplayMemberPath="Label"
+                                      SelectedValuePath="Value"
+                                      SelectedValue="{Binding ProfileVisibility, Mode=TwoWay}"
+                                      Style="{StaticResource InputComboBox}"
+                                      AutomationProperties.Name="Visibilité du profil" />
+                            <Button Content="Enregistrer la visibilité"
+                                    Command="{Binding SaveProfileVisibilityCommand}"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Margin="0 12 0 0"
+                                    AutomationProperties.Name="Enregistrer la visibilité" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="5" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button Content="Livre des contes"
+                                    Command="{Binding OpenStoryBookCommand}"
+                                    Margin="0 0 12 0"
+                                    AutomationProperties.Name="Consulter le livre des contes">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Style.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding Profile.IsOwner}" Value="False" />
+                                                    <Condition Binding="{Binding Profile.CanView}" Value="False" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </MultiDataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
                     </Grid>
                 </Border>
             </Grid>

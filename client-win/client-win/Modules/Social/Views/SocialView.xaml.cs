@@ -166,6 +166,20 @@ public partial class SocialView : UserControl, IInitialFocusTarget
         _ = ActivateMenuSelectionAsync();
     }
 
+    private void OnProfileConfigMenuKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            ActivateProfileConfigSelection();
+            e.Handled = true;
+        }
+    }
+
+    private void OnProfileConfigMenuClick(object sender, MouseButtonEventArgs e)
+    {
+        ActivateProfileConfigSelection();
+    }
+
     private async Task ActivateMenuSelectionAsync()
     {
         if (DataContext is not SocialViewModel vm || MenuList.SelectedItem is not ListBoxItem item)
@@ -223,6 +237,35 @@ public partial class SocialView : UserControl, IInitialFocusTarget
         await Task.CompletedTask.ConfigureAwait(true);
     }
 
+    private void ActivateProfileConfigSelection()
+    {
+        if (DataContext is not SocialViewModel vm || ProfileConfigMenu.SelectedItem is not ListBoxItem item)
+        {
+            return;
+        }
+
+        var tag = item.Tag as string ?? string.Empty;
+        switch (tag)
+        {
+            case "bio":
+                vm.OpenProfileEditor(ProfileEditorMode.Bio);
+                break;
+            case "victory":
+                vm.OpenProfileEditor(ProfileEditorMode.VictoryMessage);
+                break;
+            case "defeat":
+                vm.OpenProfileEditor(ProfileEditorMode.DefeatMessage);
+                break;
+            case "visibility":
+                vm.OpenProfileEditor(ProfileEditorMode.Visibility);
+                break;
+            default:
+                return;
+        }
+
+        FocusSection(SocialSection.Profile, FocusPolicyReason.UserRequest);
+    }
+
     private void SetScreen(SocialScreen screen, FocusPolicyReason reason)
     {
         _currentScreen = screen;
@@ -275,6 +318,39 @@ public partial class SocialView : UserControl, IInitialFocusTarget
                     SearchBox.Focus();
                     break;
                 case SocialSection.Profile:
+                    if (DataContext is SocialViewModel profileVm)
+                    {
+                        if (profileVm.IsProfileEditorMenuVisible && ProfileConfigMenu.IsVisible && ProfileConfigMenu.IsEnabled)
+                        {
+                            FocusListOrFallback(ProfileConfigMenu, ProfileInfoBox, reason);
+                            break;
+                        }
+
+                        if (profileVm.IsProfileBioEditorVisible && ProfileBioBox.IsVisible && ProfileBioBox.IsEnabled)
+                        {
+                            ProfileBioBox.Focus();
+                            break;
+                        }
+
+                        if (profileVm.IsProfileVictoryEditorVisible && ProfileVictoryMessageBox.IsVisible && ProfileVictoryMessageBox.IsEnabled)
+                        {
+                            ProfileVictoryMessageBox.Focus();
+                            break;
+                        }
+
+                        if (profileVm.IsProfileDefeatEditorVisible && ProfileDefeatMessageBox.IsVisible && ProfileDefeatMessageBox.IsEnabled)
+                        {
+                            ProfileDefeatMessageBox.Focus();
+                            break;
+                        }
+
+                        if (profileVm.IsProfileVisibilityEditorVisible && VisibilityBox.IsVisible && VisibilityBox.IsEnabled)
+                        {
+                            VisibilityBox.Focus();
+                            break;
+                        }
+                    }
+
                     if (ProfileInfoBox.IsVisible && ProfileInfoBox.IsEnabled)
                     {
                         ProfileInfoBox.Focus();

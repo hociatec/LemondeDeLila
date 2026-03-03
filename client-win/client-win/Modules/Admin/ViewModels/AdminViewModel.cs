@@ -121,6 +121,7 @@ public sealed partial class AdminViewModel : ObservableObject
     private readonly IClientUpdatePublisher _publisher;
     private readonly IOptionsService _options;
     private readonly ISoundService _sounds;
+    private readonly IAppAudioCoordinator _audio;
     private readonly ISessionService _session;
     private readonly IRemoteSoundCache _remoteSounds;
     private readonly IGameTableOpener _tables;
@@ -145,6 +146,7 @@ public sealed partial class AdminViewModel : ObservableObject
         IDialogService dialogs,
         IOptionsService options,
         ISoundService sounds,
+        IAppAudioCoordinator audio,
         ISessionService session,
         IRemoteSoundCache remoteSounds,
         IGameTableOpener tables,
@@ -165,6 +167,7 @@ public sealed partial class AdminViewModel : ObservableObject
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
+        _audio = audio ?? throw new ArgumentNullException(nameof(audio));
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _remoteSounds = remoteSounds ?? throw new ArgumentNullException(nameof(remoteSounds));
         _tables = tables ?? throw new ArgumentNullException(nameof(tables));

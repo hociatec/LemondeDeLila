@@ -176,10 +176,9 @@ export class CorridorPresenterService extends BasePresenterService {
     if (!size) return {};
 
     const players = state.players ?? [];
-    const idx = players.findIndex((p) => p?.id === userId);
-    if (idx < 0) return {};
-
-    const goalY = idx === 0 ? size - 1 : 0;
+    if (!players.some((p) => p?.id === userId)) return {};
+    const goalY = CorridorRulebook.getGoalYForPlayer(state, userId);
+    if (goalY == null) return {};
     const tags: Record<string, string[]> = {};
     for (let x = 0; x < size; x++) {
       tags[`${x},${goalY}`] = ['Objectif'];
@@ -196,6 +195,29 @@ export class CorridorPresenterService extends BasePresenterService {
     userId: number,
   ): GameSingleActionDto[] {
     if (!this.isStarted(state)) return [];
+    const pendingType = String(state.pending?.type ?? '')
+      .trim()
+      .toLowerCase();
+    if (pendingType === 'choose_pawn') {
+      if (state.pending?.playerId !== userId) {
+        return [];
+      }
+      const pawns = Array.isArray((state.pending?.data as any)?.pawns)
+        ? ((state.pending?.data as any).pawns as Array<any>)
+        : [];
+      return pawns
+        .map((pawn) => {
+          const id = String(pawn?.id ?? '').trim();
+          const label = String(pawn?.label ?? id).trim();
+          if (!id) return null;
+          return {
+            type: 'choose_pawn',
+            payload: { pawnId: id },
+            label,
+          } as any;
+        })
+        .filter((a): a is GameSingleActionDto => a != null);
+    }
     const current = this.getCurrentPlayerId(state);
     if (current == null || current !== userId) return [];
 

@@ -28,8 +28,9 @@ export class AdminBugReportCommentsWsHandler {
   async add(session: WsSession, payload: any) {
     const user = requireAdmin(session);
     const dto = this.validator.validate(AdminBugReportCommentAddWsDto, payload);
+    const reportId = dto.reportId.trim();
     const comment = await this.comments.add({
-      reportId: dto.reportId,
+      reportId,
       content: dto.content,
       createdByUserId: user.id,
       createdByUsername: user.username,
@@ -37,13 +38,13 @@ export class AdminBugReportCommentsWsHandler {
     if (!comment) {
       throw new BadRequestException('Rapport introuvable');
     }
-    const counts = await this.comments.countByReportIds([dto.reportId]);
+    const counts = await this.comments.countByReportIds([reportId]);
     return {
       type: 'admin.bugReports.comments.add',
       payload: {
         comment,
-        reportId: dto.reportId,
-        commentsCount: counts[dto.reportId] ?? 0,
+        reportId,
+        commentsCount: counts[reportId] ?? 0,
       },
     };
   }

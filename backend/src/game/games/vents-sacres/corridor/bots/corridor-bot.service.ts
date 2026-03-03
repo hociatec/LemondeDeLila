@@ -15,6 +15,18 @@ export class CorridorBotService {
   ): GameSingleActionDto[] {
     const current = state.turn?.currentPlayerId ?? null;
     if (current !== botPlayerId) return [];
+    const pendingType = String(state.pending?.type ?? '')
+      .trim()
+      .toLowerCase();
+    if (pendingType === 'choose_pawn') {
+      const pawns = Array.isArray((state.pending?.data as any)?.pawns)
+        ? ((state.pending?.data as any).pawns as Array<any>)
+        : [];
+      const first = pawns[0];
+      const pawnId = String(first?.id ?? '').trim();
+      if (!pawnId) return [];
+      return [{ type: 'choose_pawn', payload: { pawnId } }];
+    }
 
     const meta = (state.metadata ?? {}) as CorridorMetadata;
     const moveTargets = CorridorRulebook.listLegalPawnMoves(state, botPlayerId);
@@ -37,22 +49,24 @@ export class CorridorBotService {
     }
 
     // - sinon, avancer vers l’objectif (réduit la distance en Y)
-    const size = meta?.size ?? 0;
     const players = state.players ?? [];
-    const myIdx = players.findIndex((p) => p?.id === botPlayerId);
     const oppId = players.find((p) => p?.id !== botPlayerId)?.id ?? null;
-    const myGoalY = myIdx === 0 ? size - 1 : 0;
-    const oppGoalY = myIdx === 0 ? 0 : size - 1;
+    const myGoalY = CorridorRulebook.getGoalYForPlayer(state, botPlayerId);
+    const oppGoalY =
+      oppId != null ? CorridorRulebook.getGoalYForPlayer(state, oppId) : null;
+    if (myGoalY == null || (oppId != null && oppGoalY == null)) {
+      return [];
+    }
     const myPos = CorridorRulebook.getPawnPos(meta, botPlayerId);
     const oppPos =
       oppId != null ? CorridorRulebook.getPawnPos(meta, oppId) : null;
 
     const myDist =
-      size && myPos
+      myPos != null
         ? CorridorRulebook.shortestDistanceToGoal(meta, myPos, myGoalY)
         : null;
     const oppDist =
-      size && oppPos
+      oppPos != null && oppGoalY != null
         ? CorridorRulebook.shortestDistanceToGoal(meta, oppPos, oppGoalY)
         : null;
 

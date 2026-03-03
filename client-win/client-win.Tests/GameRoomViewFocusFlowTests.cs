@@ -21,32 +21,22 @@ namespace client_win.Tests;
 public sealed class GameRoomViewFocusFlowTests
 {
     [Fact]
-    public void EnterOnTable_OpensWizard_AndFocusesFirstAmbienceChoice()
+    public void EnterOnTable_NotStarted_TriggersStartCommand()
     {
         StaDispatcherHarness.Run(dispatcher =>
         {
             var focusCoordinator = new GameFocusCoordinator(dispatcher);
             var startCalls = 0;
-            GameRoomViewModel? vmRef = null;
 
             var vm = CreateViewModel(
                 focusCoordinator,
                 onStart: () =>
                 {
                     startCalls++;
-                    _ = vmRef!.OpenStartWizardAsync(
-                        currentAmbienceSoundId: string.Empty,
-                        ambienceChoices: new[]
-                        {
-                            new GameRoomViewModel.StartWizardAmbienceChoice(string.Empty, "Silence (aucune ambiance)"),
-                            new GameRoomViewModel.StartWizardAmbienceChoice("Rain", "Pluie"),
-                        },
-                        initialConfigPrompt: null,
-                        loadConfigPromptAsync: null);
                     return Task.CompletedTask;
                 });
-            vmRef = vm;
             vm.GameZone.CanStart = true;
+            vm.GameZone.IsStarted = false;
 
             var view = new GameRoomView { DataContext = vm };
             var window = new Window
@@ -63,64 +53,35 @@ public sealed class GameRoomViewFocusFlowTests
                 window.Show();
                 window.Activate();
                 StaDispatcherHarness.Drain(dispatcher);
+                var zone = Assert.IsType<GameZoneHostView>(view.FindName("GameZoneHost"));
 
-                SendPreviewEnter(view);
-
-                Assert.True(StaDispatcherHarness.WaitUntil(() => vm.IsStartWizardOpen, dispatcher, 2000));
+                SendEnterOnZoneAnchor(zone, "GameZoneEmptyAnchor");
                 Assert.Equal(1, startCalls);
-
-                var choices = Assert.IsType<ListBox>(view.FindName("StartWizardChoicesList"));
-                Assert.True(StaDispatcherHarness.WaitUntil(() => choices.SelectedIndex == 0, dispatcher, 2000));
-                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choices), dispatcher, 2000));
             }
             finally
             {
-                vm.CancelStartWizard();
                 window.Close();
             }
         });
     }
 
     [Fact]
-    public void EnterOnWizardNext_GoesToConfigStep_AndFocusesFirstConfigField()
+    public void EnterOnTable_Started_DoesNotTriggerStartAgain()
     {
         StaDispatcherHarness.Run(dispatcher =>
         {
             var focusCoordinator = new GameFocusCoordinator(dispatcher);
             var startCalls = 0;
-            GameRoomViewModel? vmRef = null;
 
             var vm = CreateViewModel(
                 focusCoordinator,
                 onStart: () =>
                 {
                     startCalls++;
-                    _ = vmRef!.OpenStartWizardAsync(
-                        currentAmbienceSoundId: string.Empty,
-                        ambienceChoices: new[]
-                        {
-                            new GameRoomViewModel.StartWizardAmbienceChoice(string.Empty, "Silence (aucune ambiance)"),
-                            new GameRoomViewModel.StartWizardAmbienceChoice("Rain", "Pluie"),
-                        },
-                        initialConfigPrompt: new GameRoomViewModel.StartWizardConfigPrompt(
-                            Title: "Configuration Lama",
-                            ActionType: "lama_set_config",
-                            CancelActionType: null,
-                            Fields: new[]
-                            {
-                                new GameRoomViewModel.StartWizardConfigField(
-                                    Key: "jetons_defaite",
-                                    Label: "Jetons de defaite",
-                                    Kind: "number",
-                                    Min: 1,
-                                    Max: 100,
-                                    InitialText: "10"),
-                            }),
-                        loadConfigPromptAsync: null);
                     return Task.CompletedTask;
                 });
-            vmRef = vm;
             vm.GameZone.CanStart = true;
+            vm.GameZone.IsStarted = true;
 
             var view = new GameRoomView { DataContext = vm };
             var window = new Window
@@ -137,25 +98,14 @@ public sealed class GameRoomViewFocusFlowTests
                 window.Show();
                 window.Activate();
                 StaDispatcherHarness.Drain(dispatcher);
+                var zone = Assert.IsType<GameZoneHostView>(view.FindName("GameZoneHost"));
 
-                SendPreviewEnter(view);
-                Assert.True(StaDispatcherHarness.WaitUntil(() => vm.IsStartWizardOpen, dispatcher, 2000));
-                Assert.Equal(1, startCalls);
-
-                var next = Assert.IsType<Button>(view.FindName("StartWizardNextButton"));
-                Assert.True(StaDispatcherHarness.WaitUntil(() => next.Visibility == Visibility.Visible && next.IsEnabled, dispatcher, 2000));
-                next.Focus();
-                Keyboard.Focus(next);
-
-                SendPreviewEnter(view);
-
-                Assert.True(StaDispatcherHarness.WaitUntil(() => vm.IsStartWizardConfigStep, dispatcher, 2000));
-                var configItems = Assert.IsType<ItemsControl>(view.FindName("StartWizardConfigItems"));
-                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(configItems), dispatcher, 2000));
+                SendEnterOnZoneAnchor(zone, "GameZoneFocusAnchor");
+                Assert.Equal(0, startCalls);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(zone), dispatcher, 1200));
             }
             finally
             {
-                vm.CancelStartWizard();
                 window.Close();
             }
         });
@@ -262,6 +212,28 @@ public sealed class GameRoomViewFocusFlowTests
                 m.GetParameters()[1].ParameterType == typeof(KeyEventArgs));
         Assert.NotNull(method);
         method!.Invoke(view, new object[] { view, args });
+    }
+
+    private static void SendEnterOnZoneAnchor(GameZoneHostView zone, string anchorName)
+    {
+        var anchor = zone.FindName(anchorName) as UIElement;
+        Assert.NotNull(anchor);
+        anchor!.Focus();
+        Keyboard.Focus(anchor);
+
+        var source = PresentationSource.FromVisual(zone);
+        Assert.NotNull(source);
+        var args = new KeyEventArgs(Keyboard.PrimaryDevice, source!, Environment.TickCount, Key.Enter)
+        {
+            RoutedEvent = Keyboard.PreviewKeyDownEvent
+        };
+
+        var method = typeof(GameZoneHostView)
+            .GetMethod(
+                "OnAnchorPreviewKeyDown",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        Assert.NotNull(method);
+        method!.Invoke(zone, new object[] { anchor, args });
     }
 
     private static bool IsFocusWithin(DependencyObject root)

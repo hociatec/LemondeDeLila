@@ -386,6 +386,27 @@ describe('RoomService lifecycle scenarios', () => {
     expect(deps.participants.save).not.toHaveBeenCalled();
   });
 
+  it('joinRoom: allows already-present participant even when room is full', async () => {
+    const { service, deps, usersById, roomsById } = createFixture();
+    usersById.set(2, buildUser(2, 'player'));
+    roomsById.set(10, buildRoom({ maxPlayers: 2 }));
+    deps.participants.findOne.mockResolvedValueOnce({
+      id: 101,
+      room: { id: 10 },
+      user: { id: 2, username: 'player' },
+    });
+    deps.participants.count.mockResolvedValueOnce(2);
+    deps.botService.countBotsForRoom.mockResolvedValueOnce(0);
+    jest.spyOn(service, 'leaveAllRoomsForUser').mockResolvedValue(undefined);
+    jest
+      .spyOn(service, 'invalidateRoomPayloadCache')
+      .mockResolvedValue(undefined);
+
+    await expect(service.joinRoom(10, 2)).resolves.toBeDefined();
+    expect(deps.participants.create).not.toHaveBeenCalled();
+    expect(deps.participants.save).not.toHaveBeenCalled();
+  });
+
   it('joinRoom: blocks construction game for non-admin player', async () => {
     const { service, deps, usersById, roomsById } = createFixture();
     usersById.set(2, buildUser(2, 'player', []));
@@ -470,6 +491,27 @@ describe('RoomService lifecycle scenarios', () => {
 
     expect(started.runId).toBe(5);
     expect(started.startedAt?.toISOString()).toBe('2026-03-01T09:00:00.000Z');
+  });
+
+  it('startRoomSystem: starts room without owner check', async () => {
+    const { service, deps, usersById, roomsById } = createFixture();
+    usersById.set(1, buildUser(1, 'owner'));
+    const room = buildRoom({
+      owner: buildUser(1, 'owner'),
+      runId: 0,
+      startedAt: null,
+    });
+    roomsById.set(10, room);
+    deps.participants.count.mockResolvedValueOnce(1);
+    deps.botService.countBotsForRoom.mockResolvedValueOnce(1);
+    jest
+      .spyOn(service, 'invalidateRoomPayloadCache')
+      .mockResolvedValue(undefined);
+
+    const started = await service.startRoomSystem(10);
+    expect(started.status).toBe('started');
+    expect(started.runId).toBe(1);
+    expect(started.startedAt).toBeInstanceOf(Date);
   });
 
   it('resetRoom: returns room to setup and sends endMatchOnReset for started games', async () => {

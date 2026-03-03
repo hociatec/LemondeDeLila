@@ -587,12 +587,12 @@ export class GameGateway
 
         if (result.kind === 'room') {
           if (result.op === 'reset') {
-            await this.roomService.resetRoom(roomId, meta.userId, true);
+            await this.roomService.resetRoomSystem(roomId);
           } else if (result.op === 'start') {
-            await this.roomService.startRoom(roomId, meta.userId, true);
+            await this.roomService.startRoomSystem(roomId);
           } else if (result.op === 'restart') {
-            await this.roomService.resetRoom(roomId, meta.userId, true);
-            await this.roomService.startRoom(roomId, meta.userId, true);
+            await this.roomService.resetRoomSystem(roomId);
+            await this.roomService.startRoomSystem(roomId);
           }
           await this.engine.refreshAndBroadcast(roomId, gameType);
           this.safeSend(client, {
@@ -788,6 +788,36 @@ export class GameGateway
         const text = raw.trim();
         return text.length > 0 ? text : null;
       })();
+      const publicEndgameMessagesByPlayerId = (() => {
+        const out: Record<string, string> = {};
+        for (const [playerId, rawOutcome] of Object.entries(outcomesByPlayerId)) {
+          const numericPlayerId = Number(playerId);
+          if (!Number.isFinite(numericPlayerId) || numericPlayerId <= 0) {
+            continue;
+          }
+          const outcome = String(rawOutcome ?? '')
+            .trim()
+            .toLowerCase();
+          if (outcome !== 'won' && outcome !== 'lost') {
+            continue;
+          }
+          const byPlayer = endgameMessagesByPlayerId[playerId];
+          if (!byPlayer || typeof byPlayer !== 'object') {
+            continue;
+          }
+          const chosen =
+            outcome === 'won' ? byPlayer.victoryMessage : byPlayer.defeatMessage;
+          if (typeof chosen !== 'string') {
+            continue;
+          }
+          const text = chosen.trim();
+          if (!text) {
+            continue;
+          }
+          out[playerId] = text;
+        }
+        return out;
+      })();
       const {
         endgameMessagesByPlayerId: _hiddenMessagesByPlayerId,
         ...publicPayload
@@ -800,6 +830,7 @@ export class GameGateway
           viewerPlayerId,
           viewerOutcome,
           viewerEndgameMessage,
+          publicEndgameMessagesByPlayerId,
         },
       });
     }

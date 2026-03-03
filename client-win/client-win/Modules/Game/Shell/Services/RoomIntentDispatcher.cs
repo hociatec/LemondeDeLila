@@ -93,6 +93,10 @@ internal sealed class RoomIntentDispatcher
         {
             return;
         }
+        if (ShouldIgnoreAnnouncement(message))
+        {
+            return;
+        }
 
         var priority = RoomAnnouncementKind.Polite;
         if (payload.TryGetProperty("priority", out var priorityProp) &&
@@ -103,6 +107,12 @@ internal sealed class RoomIntentDispatcher
         }
 
         _announcements.Publish(new RoomAnnouncement(priority, message));
+    }
+
+    private static bool ShouldIgnoreAnnouncement(string? message)
+    {
+        var text = (message ?? string.Empty).Trim();
+        return string.Equals(text, "Table pleine", StringComparison.OrdinalIgnoreCase);
     }
 
     private void HandleStartConfigIntent(JsonElement payload)

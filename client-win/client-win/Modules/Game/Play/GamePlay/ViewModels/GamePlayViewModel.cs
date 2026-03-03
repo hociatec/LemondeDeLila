@@ -103,7 +103,9 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public GridBoardViewModel Grid { get; }
 
-    public bool ShowLegacyActionsPanel => !Grid.IsVisible || (PendingChoices?.Count ?? 0) > 0;
+    public bool ShowGridSurface => Grid.IsVisible && !IsChoosePawnPending;
+
+    public bool ShowLegacyActionsPanel => !ShowGridSurface;
 
     public GamePlayViewModel(
         string gameId,
@@ -152,6 +154,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         {
             if (string.Equals(e.PropertyName, nameof(GridBoardViewModel.IsVisible), StringComparison.Ordinal))
             {
+                OnPropertyChanged(nameof(ShowGridSurface));
                 OnPropertyChanged(nameof(ShowLegacyActionsPanel));
                 RefreshCanExecute();
             }
@@ -315,6 +318,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsQuizPending));
             OnPropertyChanged(nameof(IsChoosePawnPending));
+            OnPropertyChanged(nameof(ShowGridSurface));
+            OnPropertyChanged(nameof(ShowLegacyActionsPanel));
             RequestDisplayChoicesRefresh();
             if (!wasChoosePawnPending && IsChoosePawnPending)
             {

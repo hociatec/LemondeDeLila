@@ -252,7 +252,7 @@ internal sealed class GamePlayRealtimeController
 
                 _endgameFeedbackEmitted = true;
                 _endgameSounds.TryPlayEndgameSound(ended, _viewerPlayerId);
-                TryEmitViewerEndgameMessage(ended);
+                TryEmitPublicEndgameMessages(ended);
                 TryEmitGenericEndgameSummary(ended);
             }
             MaybeEnforceFinishedStatus();
@@ -851,20 +851,72 @@ internal sealed class GamePlayRealtimeController
         _emitMessage(new GamePlayHistoryMessage("Partie terminée."));
     }
 
-    private void TryEmitViewerEndgameMessage(GameEndedDto ended)
+    private void TryEmitPublicEndgameMessages(GameEndedDto ended)
     {
         if (ended == null)
         {
             return;
         }
 
-        var message = (ended.ViewerEndgameMessage ?? string.Empty).Trim();
-        if (message.Length == 0)
+        var emittedAny = false;
+        var map = ended.PublicEndgameMessagesByPlayerId ?? new Dictionary<string, string>();
+        foreach (var (playerIdRaw, rawMessage) in map.OrderBy(kv => kv.Key, StringComparer.Ordinal))
+        {
+            if (!int.TryParse(playerIdRaw, out var playerId) || playerId <= 0)
+            {
+                continue;
+            }
+
+            var message = (rawMessage ?? string.Empty).Trim();
+            if (message.Length == 0)
+            {
+                continue;
+            }
+
+            var name = ended.PlayersById != null && ended.PlayersById.TryGetValue(playerIdRaw, out var n)
+                ? (n ?? string.Empty).Trim()
+                : string.Empty;
+            if (name.Length == 0)
+            {
+                name = $"Joueur {playerId}";
+            }
+
+            _emitMessage(new GamePlayHistoryMessage($"{name} dit: {message}"));
+            emittedAny = true;
+        }
+
+        if (emittedAny)
         {
             return;
         }
 
-        _emitMessage(new GamePlayHistoryMessage(message));
+        // Backward compatibility with servers that only send viewerEndgameMessage.
+        var viewerMessage = (ended.ViewerEndgameMessage ?? string.Empty).Trim();
+        if (viewerMessage.Length == 0)
+        {
+            return;
+        }
+
+        var viewerId = ended.ViewerPlayerId;
+        var viewerName = string.Empty;
+        if (viewerId != null && viewerId.Value > 0)
+        {
+            var key = viewerId.Value.ToString();
+            if (ended.PlayersById != null && ended.PlayersById.TryGetValue(key, out var n))
+            {
+                viewerName = (n ?? string.Empty).Trim();
+            }
+            if (viewerName.Length == 0)
+            {
+                viewerName = $"Joueur {viewerId.Value}";
+            }
+        }
+
+        _emitMessage(
+            new GamePlayHistoryMessage(
+                viewerName.Length > 0
+                    ? $"{viewerName} dit: {viewerMessage}"
+                    : viewerMessage));
     }
 
     private static bool TryReadOutcomesByPlayerId(GameStateDto state, out Dictionary<int, string> outcomes)

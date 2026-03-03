@@ -1306,11 +1306,25 @@ export class GameEngineService {
   } {
     const players = state.players ?? [];
     const humans = players.filter((p) => !p.isBot);
+    const humanIdSet = new Set(
+      humans
+        .map((p) => (typeof p?.id === 'number' && Number.isFinite(p.id) ? p.id : null))
+        .filter((id): id is number => id != null),
+    );
 
     const metadata = this.toMetadata(state);
 
     const winnerFromMeta = this.tryReadWinnerId(metadata);
-    const existingOutcomes = this.tryReadOutcomesByPlayerId(metadata);
+    const existingOutcomesRaw = this.tryReadOutcomesByPlayerId(metadata);
+    const existingOutcomes =
+      existingOutcomesRaw && Object.keys(existingOutcomesRaw).length > 0
+        ? Object.fromEntries(
+            Object.entries(existingOutcomesRaw).filter(([key]) => {
+              const id = Number(key);
+              return Number.isFinite(id) && humanIdSet.has(id);
+            }),
+          )
+        : null;
 
     let winnerId = winnerFromMeta;
     if (winnerId == null && existingOutcomes) {
@@ -3210,6 +3224,7 @@ export class GameEngineService {
     const ui = uiExisting ? { ...uiExisting } : {};
     const panelsExisting = GameEngineService.extractPanels(uiExisting);
     const panels = panelsExisting ? { ...panelsExisting } : {};
+    const hasGameDefinedPanels = Object.keys(panels).some((id) => id !== 'turn');
     const currentPlayerView =
       (extrasAfter['currentPlayerView'] as CurrentPlayerView | null) ?? null;
     const metadata =
@@ -3262,7 +3277,11 @@ export class GameEngineService {
       return lines.join(' ');
     };
 
-    if (currentPlayerView && typeof currentPlayerView === 'object') {
+    if (
+      !hasGameDefinedPanels &&
+      currentPlayerView &&
+      typeof currentPlayerView === 'object'
+    ) {
       upsertPanel(
         'shopping',
         'Shopping list',
@@ -3290,17 +3309,19 @@ export class GameEngineService {
       );
     }
 
-    upsertPanel(
-      'score',
-      'Score',
-      buildListMessage('Score', extrasAfter['score']),
-    );
-    upsertPanel('hand', 'Main', buildListMessage('Main', extrasAfter['hand']));
-    upsertPanel(
-      'books',
-      'Familles',
-      buildListMessage('Familles', extrasAfter['books']),
-    );
+    if (!hasGameDefinedPanels) {
+      upsertPanel(
+        'score',
+        'Score',
+        buildListMessage('Score', extrasAfter['score']),
+      );
+      upsertPanel('hand', 'Main', buildListMessage('Main', extrasAfter['hand']));
+      upsertPanel(
+        'books',
+        'Familles',
+        buildListMessage('Familles', extrasAfter['books']),
+      );
+    }
 
     const pollution =
       typeof metadata['pollution'] === 'number' ? metadata['pollution'] : null;
@@ -3309,7 +3330,7 @@ export class GameEngineService {
         ? metadata['maxPollution']
         : null;
 
-    if (pollution !== null || maxPollution !== null) {
+    if (!hasGameDefinedPanels && (pollution !== null || maxPollution !== null)) {
       let message = 'Pollution: inconnue.';
       if (pollution !== null && maxPollution !== null)
         message = `Pollution: ${pollution}/${maxPollution}.`;

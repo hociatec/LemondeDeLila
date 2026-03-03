@@ -50,7 +50,7 @@
 	                CornerRadius="8"
 	                Padding="10"
 	                Margin="0 0 0 10"
-	                Visibility="{Binding Grid.IsVisible, Converter={StaticResource BoolToVis}}"
+	                Visibility="{Binding ShowGridSurface, Converter={StaticResource BoolToVis}}"
 	                AutomationProperties.Name="Grille"
 	                x:Name="GridBoard"
 	                KeyboardNavigation.DirectionalNavigation="Contained"
