@@ -50,6 +50,8 @@ internal sealed class GamePlayRealtimeController
     private string _lastPendingType = string.Empty;
     private bool _lastBotThinking;
     private bool _endgameFeedbackEmitted;
+    private bool _endgamePublicMessagesEmitted;
+    private bool _endgameHeaderEmitted;
     private bool _finishedStatusEnforced;
     private bool _lastStartReady;
     private bool _lastStartReadyKnown;
@@ -120,6 +122,8 @@ internal sealed class GamePlayRealtimeController
         _lastPendingType = string.Empty;
         _lastBotThinking = false;
         _endgameFeedbackEmitted = false;
+        _endgamePublicMessagesEmitted = false;
+        _endgameHeaderEmitted = false;
         _finishedStatusEnforced = false;
         _lastStartReady = false;
         _lastStartReadyKnown = false;
@@ -243,17 +247,30 @@ internal sealed class GamePlayRealtimeController
 
         _dispatcher.InvokeAsync(() =>
         {
+            if (ended.ViewerPlayerId != null && ended.ViewerPlayerId.Value > 0)
+            {
+                _viewerPlayerId = ended.ViewerPlayerId.Value;
+            }
+
+            if (!_endgameHeaderEmitted)
+            {
+                _endgameHeaderEmitted = true;
+                TryEmitGenericEndgameSummary(ended);
+            }
+
+            // Always try to emit per-player endgame phrases (victory/defeat messages from profiles),
+            // even if the endgame was already detected from state/log transitions.
+            if (!_endgamePublicMessagesEmitted)
+            {
+                _endgamePublicMessagesEmitted = true;
+                TryEmitPublicEndgameMessages(ended);
+            }
+
+            // Emit sounds only once.
             if (!_endgameFeedbackEmitted)
             {
-                if (ended.ViewerPlayerId != null && ended.ViewerPlayerId.Value > 0)
-                {
-                    _viewerPlayerId = ended.ViewerPlayerId.Value;
-                }
-
                 _endgameFeedbackEmitted = true;
                 _endgameSounds.TryPlayEndgameSound(ended, _viewerPlayerId);
-                TryEmitPublicEndgameMessages(ended);
-                TryEmitGenericEndgameSummary(ended);
             }
             MaybeEnforceFinishedStatus();
         }, DispatcherPriority.Background);
@@ -343,19 +360,6 @@ internal sealed class GamePlayRealtimeController
         var previousPendingType = _lastPendingType;
         var previousBotThinking = _lastBotThinking;
         var currentHandCounts = BuildHandCounts(GamePlayExtrasParser.ExtractViewerHandLabels(state));
-        var hasEndgameLogEntry = false;
-
-        foreach (var entry in presented.newLogMessages)
-        {
-            var trimmed = entry?.Message ?? string.Empty;
-            _logSounds.TryPlayForLogMessage(trimmed, viewerUsername);
-            if (IsEndgameLogMessage(trimmed))
-            {
-                hasEndgameLogEntry = true;
-            }
-            var rewritten = RewriteLogForViewer(trimmed, viewerUsername, _lastViewerHandCounts, currentHandCounts);
-            _emitMessage(new GamePlayHistoryMessage(rewritten, entry?.Timestamp));
-        }
 
         var nextStatus = NormalizeStatus(state);
         var nextPhase = (state.Phase ?? string.Empty).Trim();
@@ -364,6 +368,39 @@ internal sealed class GamePlayRealtimeController
         var previousStartReady = _lastStartReady;
         var previousViewerTurnActionable = _lastViewerTurnActionable;
         var previousViewerMustChoosePawn = _lastViewerMustChoosePawn;
+        var isEndgameContext =
+            string.Equals(nextStatus, "finished", StringComparison.OrdinalIgnoreCase) ||
+            HasOutcomeData(state);
+
+        foreach (var entry in presented.newLogMessages)
+        {
+            var trimmed = entry?.Message ?? string.Empty;
+            _logSounds.TryPlayForLogMessage(trimmed, viewerUsername);
+            // When the game is finished, the client emits a single standardized endgame header,
+            // so avoid duplicating it with extra summary lines coming from logs.
+            var isRedundantEndgameLine =
+                isEndgameContext &&
+                (trimmed.StartsWith("Partie terminée", StringComparison.OrdinalIgnoreCase) ||
+                 trimmed.StartsWith("Match nul", StringComparison.OrdinalIgnoreCase) ||
+                 trimmed.StartsWith("Fin de la manche", StringComparison.OrdinalIgnoreCase) ||
+                 trimmed.StartsWith("Fin de la partie", StringComparison.OrdinalIgnoreCase) ||
+                 trimmed.StartsWith("Victoire de", StringComparison.OrdinalIgnoreCase) ||
+                 trimmed.StartsWith("Victoire écrasante de", StringComparison.OrdinalIgnoreCase) ||
+                 trimmed.StartsWith("Défaite de", StringComparison.OrdinalIgnoreCase) ||
+                 trimmed.StartsWith("Defaite de", StringComparison.OrdinalIgnoreCase) ||
+                 trimmed.StartsWith("Gagnant :", StringComparison.OrdinalIgnoreCase) ||
+                 trimmed.StartsWith("Gagnants :", StringComparison.OrdinalIgnoreCase) ||
+                 trimmed.StartsWith("Perdant", StringComparison.OrdinalIgnoreCase) ||
+                 trimmed.StartsWith("Perdants", StringComparison.OrdinalIgnoreCase));
+            if (isRedundantEndgameLine)
+            {
+                continue;
+            }
+
+            var rewritten = RewriteLogForViewer(trimmed, viewerUsername, _lastViewerHandCounts, currentHandCounts);
+            _emitMessage(new GamePlayHistoryMessage(rewritten, entry?.Timestamp));
+        }
+
         _lastGameStatus = nextStatus;
         _lastGamePhase = nextPhase;
         var startReadyKnown = HasStartReadyFlag(state);
@@ -395,7 +432,9 @@ internal sealed class GamePlayRealtimeController
             string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase))
         {
             _endgameFeedbackEmitted = false;
+            _endgamePublicMessagesEmitted = false;
             _finishedStatusEnforced = false;
+            _endgameHeaderEmitted = false;
             // During pawn selection setup, the pending label is the authoritative prompt.
             // Avoid adding a redundant "C'est au tour de ...".
             if (!PawnPendingTypes.IsPawnPendingType(state.Pending?.Type) &&
@@ -463,12 +502,15 @@ internal sealed class GamePlayRealtimeController
             string.Equals(previousStatus, "started", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase);
         var endedWithOutcomeData = leftStarted && HasOutcomeData(state);
-        var endedFromLog = leftStarted && hasEndgameLogEntry;
-        if (!_endgameFeedbackEmitted && (becameFinished || endedWithOutcomeData || endedFromLog))
+        if ((becameFinished || endedWithOutcomeData) && !_endgameHeaderEmitted)
+        {
+            _endgameHeaderEmitted = true;
+            TryEmitGenericEndgameSummary(state);
+        }
+        if (!_endgameFeedbackEmitted && (becameFinished || endedWithOutcomeData))
         {
             _endgameFeedbackEmitted = true;
             _endgameSounds.TryPlayEndgameSound(state, viewerId);
-            TryEmitGenericEndgameSummary(state);
         }
 
         _setIsBotThinking(presented.isBotThinking);
@@ -661,6 +703,11 @@ internal sealed class GamePlayRealtimeController
         }
 
         return msg.StartsWith("Partie terminée", StringComparison.OrdinalIgnoreCase) ||
+               msg.StartsWith("Match nul", StringComparison.OrdinalIgnoreCase) ||
+               msg.StartsWith("Fin de la manche", StringComparison.OrdinalIgnoreCase) ||
+               msg.StartsWith("Victoire de", StringComparison.OrdinalIgnoreCase) ||
+               msg.StartsWith("Défaite de", StringComparison.OrdinalIgnoreCase) ||
+               msg.StartsWith("Defaite de", StringComparison.OrdinalIgnoreCase) ||
                msg.StartsWith("Gagnant :", StringComparison.OrdinalIgnoreCase) ||
                msg.StartsWith("Gagnants :", StringComparison.OrdinalIgnoreCase);
     }
@@ -719,24 +766,10 @@ internal sealed class GamePlayRealtimeController
         if (winnerId != null && players.Count > 0)
         {
             var winnerName = GetPlayerName(players, winnerId.Value);
-            var loserNames = players
-                .Where(p => p.Id != winnerId.Value)
-                .Select(p => (p.Username ?? string.Empty).Trim())
-                .Where(n => n.Length > 0)
-                .ToList();
-
             if (!string.IsNullOrWhiteSpace(winnerName))
             {
-                if (loserNames.Count > 0)
-                {
-                    _emitMessage(
-                        new GamePlayHistoryMessage(
-                            $"Partie terminée. Gagnant: {winnerName}. Perdants: {string.Join(", ", loserNames)}."));
-                }
-                else
-                {
-                    _emitMessage(new GamePlayHistoryMessage($"Partie terminée. Gagnant: {winnerName}."));
-                }
+                _emitMessage(new GamePlayHistoryMessage("Fin de la partie."));
+                _emitMessage(new GamePlayHistoryMessage($"Victoire écrasante de {winnerName}!"));
                 return;
             }
         }
@@ -744,7 +777,7 @@ internal sealed class GamePlayRealtimeController
         if (TryReadOutcomesByPlayerId(state, out var outcomes) && outcomes.Count > 0)
         {
             var winners = new List<string>();
-            var losers = new List<string>();
+            var hasDraw = false;
             foreach (var p in players)
             {
                 if (!outcomes.TryGetValue(p.Id, out var outcome))
@@ -762,22 +795,28 @@ internal sealed class GamePlayRealtimeController
                 {
                     winners.Add(name);
                 }
-                else if (string.Equals(outcome, "lost", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(outcome, "draw", StringComparison.OrdinalIgnoreCase))
                 {
-                    losers.Add(name);
+                    hasDraw = true;
                 }
             }
 
-            if (winners.Count > 0 || losers.Count > 0)
+            if (winners.Count > 0)
             {
-                var winnerPart = winners.Count > 0 ? $"Gagnant(s): {string.Join(", ", winners)}." : string.Empty;
-                var loserPart = losers.Count > 0 ? $" Perdant(s): {string.Join(", ", losers)}." : string.Empty;
-                _emitMessage(new GamePlayHistoryMessage($"Partie terminée. {winnerPart}{loserPart}".Trim()));
+                _emitMessage(new GamePlayHistoryMessage("Fin de la partie."));
+                _emitMessage(new GamePlayHistoryMessage($"Victoire écrasante de {string.Join(", ", winners)}!"));
+                return;
+            }
+
+            if (hasDraw)
+            {
+                _emitMessage(new GamePlayHistoryMessage("Fin de la partie."));
+                _emitMessage(new GamePlayHistoryMessage("Match nul."));
                 return;
             }
         }
 
-        _emitMessage(new GamePlayHistoryMessage("Partie terminée."));
+        _emitMessage(new GamePlayHistoryMessage("Fin de la partie."));
     }
 
     private static string GetPlayerName(IReadOnlyList<GamePlayerDto> players, int playerId)
@@ -796,7 +835,7 @@ internal sealed class GamePlayRealtimeController
         }
 
         var winners = new List<string>();
-        var losers = new List<string>();
+        var hasDraw = false;
         var outcomes = ended.OutcomesByPlayerId ?? new Dictionary<string, string>();
         var playersById = ended.PlayersById ?? new Dictionary<string, string>();
 
@@ -820,17 +859,23 @@ internal sealed class GamePlayRealtimeController
             {
                 winners.Add(name);
             }
-            else if (string.Equals(outcome, "lost", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(outcome, "draw", StringComparison.OrdinalIgnoreCase))
             {
-                losers.Add(name);
+                hasDraw = true;
             }
         }
 
-        if (winners.Count > 0 || losers.Count > 0)
+        if (winners.Count > 0)
         {
-            var winnerPart = winners.Count > 0 ? $"Gagnant(s): {string.Join(", ", winners)}." : string.Empty;
-            var loserPart = losers.Count > 0 ? $" Perdant(s): {string.Join(", ", losers)}." : string.Empty;
-            _emitMessage(new GamePlayHistoryMessage($"Partie terminée. {winnerPart}{loserPart}".Trim()));
+            _emitMessage(new GamePlayHistoryMessage("Fin de la partie."));
+            _emitMessage(new GamePlayHistoryMessage($"Victoire écrasante de {string.Join(", ", winners)}!"));
+            return;
+        }
+
+        if (hasDraw)
+        {
+            _emitMessage(new GamePlayHistoryMessage("Fin de la partie."));
+            _emitMessage(new GamePlayHistoryMessage("Match nul."));
             return;
         }
 
@@ -844,11 +889,12 @@ internal sealed class GamePlayRealtimeController
             {
                 winnerName = $"Joueur {ended.WinnerPlayerId.Value}";
             }
-            _emitMessage(new GamePlayHistoryMessage($"Partie terminée. Gagnant: {winnerName}."));
+            _emitMessage(new GamePlayHistoryMessage("Fin de la partie."));
+            _emitMessage(new GamePlayHistoryMessage($"Victoire écrasante de {winnerName}!"));
             return;
         }
 
-        _emitMessage(new GamePlayHistoryMessage("Partie terminée."));
+        _emitMessage(new GamePlayHistoryMessage("Fin de la partie."));
     }
 
     private void TryEmitPublicEndgameMessages(GameEndedDto ended)
@@ -858,7 +904,7 @@ internal sealed class GamePlayRealtimeController
             return;
         }
 
-        var emittedAny = false;
+        var emittedViewer = false;
         var map = ended.PublicEndgameMessagesByPlayerId ?? new Dictionary<string, string>();
         foreach (var (playerIdRaw, rawMessage) in map.OrderBy(kv => kv.Key, StringComparer.Ordinal))
         {
@@ -882,17 +928,15 @@ internal sealed class GamePlayRealtimeController
             }
 
             _emitMessage(new GamePlayHistoryMessage($"{name} dit: {message}"));
-            emittedAny = true;
-        }
-
-        if (emittedAny)
-        {
-            return;
+            if (ended.ViewerPlayerId != null && ended.ViewerPlayerId.Value == playerId)
+            {
+                emittedViewer = true;
+            }
         }
 
         // Backward compatibility with servers that only send viewerEndgameMessage.
         var viewerMessage = (ended.ViewerEndgameMessage ?? string.Empty).Trim();
-        if (viewerMessage.Length == 0)
+        if (viewerMessage.Length == 0 || emittedViewer)
         {
             return;
         }

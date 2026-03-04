@@ -299,7 +299,7 @@ export class MorpionService extends AbstractGameService {
       `${actorName} place ${pawnLabel} en ${cellRef}.`,
     );
     if (winnerId) {
-      log = this.appendLog(log, 'Fin de la manche.');
+      log = this.appendLog(log, 'Fin de la partie.');
       log = this.appendLog(log, victoryAnnouncement(actorName));
       if (opponentName) {
         log = this.appendLog(log, `Défaite de ${opponentName}.`);
@@ -313,7 +313,7 @@ export class MorpionService extends AbstractGameService {
         };
       }
     } else if (isDraw) {
-      log = this.appendLog(log, 'Fin de la manche.');
+      log = this.appendLog(log, 'Fin de la partie.');
       log = this.appendLog(log, 'Match nul.');
       log = this.appendLog(log, 'Partie termin\u00e9e : match nul.');
     }
@@ -411,7 +411,9 @@ export class MorpionService extends AbstractGameService {
     const colIndex = Math.max(0, Math.min(size - 1, Math.floor(pos.x)));
     const rowIndex = Math.max(0, Math.min(size - 1, Math.floor(pos.y)));
     const col = String.fromCharCode(65 + colIndex);
-    const row = rowIndex + 1;
+    // Align with other grid games (ex: Corridor): row numbers go from top (size) to bottom (1).
+    // Internal y grows downward (0 at top), so invert for human-readable coordinates.
+    const row = Math.max(1, size - rowIndex);
     return `${col}${row}`;
   }
 

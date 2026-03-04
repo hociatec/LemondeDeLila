@@ -38,8 +38,9 @@ internal sealed class GamePlayActionDispatcher
         var index = selectedChoiceIndex;
         if (index < 0 || index >= state.Pending.Choices.Count)
         {
+            var wanted = NormalizeChoiceForServer(selectedChoice);
             index = state.Pending.Choices.FindIndex(c =>
-                string.Equals(c?.Trim(), selectedChoice.Trim(), StringComparison.Ordinal));
+                string.Equals(NormalizeChoiceForServer(c ?? string.Empty), wanted, StringComparison.Ordinal));
         }
         if (index < 0)
         {
@@ -55,7 +56,7 @@ internal sealed class GamePlayActionDispatcher
         // On construit l'action depuis `pending.data.moves`, aligné sur `pending.choices`.
         if (PawnPendingTypes.IsPawnPendingType(pendingType))
         {
-            if (TryBuildChoosePawnFromPendingData(state.Pending, index, available, out var choosePawnAction))
+            if (TryBuildChoosePawnFromPendingData(state.Pending, selectedChoice, index, available, out var choosePawnAction))
             {
                 action = choosePawnAction;
                 return true;
@@ -242,13 +243,14 @@ internal sealed class GamePlayActionDispatcher
 
     private static bool TryBuildChoosePawnFromPendingData(
         GamePendingDto pending,
+        string selectedChoice,
         int choiceIndex,
         List<GameAvailableActionDto> available,
         out GameClientAction? action)
     {
         action = null;
 
-        if (choiceIndex < 0)
+        if (choiceIndex < 0 && string.IsNullOrWhiteSpace(selectedChoice))
         {
             return false;
         }
@@ -263,12 +265,58 @@ internal sealed class GamePlayActionDispatcher
             return false;
         }
 
-        if (choiceIndex >= pawns.GetArrayLength())
+        JsonElement pawn;
+        if (choiceIndex >= 0 && choiceIndex < pawns.GetArrayLength())
         {
-            return false;
+            pawn = pawns[choiceIndex];
+        }
+        else
+        {
+            // Defensive: the displayed list may not be a strict 1:1 mirror of raw server `pending.choices`
+            // (a11y distinct, whitespace filtering, etc.). Fall back to matching by label text.
+            var wanted = NormalizeChoiceForServer(selectedChoice);
+            if (wanted.Length == 0)
+            {
+                return false;
+            }
+
+            pawn = default;
+            var found = false;
+            foreach (var entry in pawns.EnumerateArray())
+            {
+                if (entry.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                var label = JsonPayloadReader.TryReadString(entry, "label")
+                            ?? PawnPayloadReader.TryReadPawnId(entry);
+                var description = JsonPayloadReader.TryReadString(entry, "description");
+                if (string.IsNullOrWhiteSpace(label))
+                {
+                    continue;
+                }
+
+                var candidate = label.Trim();
+                if (!string.IsNullOrWhiteSpace(description))
+                {
+                    candidate = $"{candidate} - {description.Trim()}";
+                }
+
+                if (string.Equals(NormalizeChoiceForServer(candidate), wanted, StringComparison.Ordinal))
+                {
+                    pawn = entry;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                return false;
+            }
         }
 
-        var pawn = pawns[choiceIndex];
         if (pawn.ValueKind != JsonValueKind.Object)
         {
             return false;
