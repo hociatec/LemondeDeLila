@@ -20,6 +20,7 @@ public sealed partial class GameHistorySink : IGameHistorySink
     private DateTime _lastTurnMessageAtUtc;
     private readonly List<(string Key, DateTime AtUtc)> _recentDedupe = new();
     private static readonly TimeSpan RecentDedupeWindow = GameTiming.History.RecentDedupeWindow;
+    private static readonly TimeSpan StrongDedupeWindow = TimeSpan.FromMinutes(5);
 
     public GameHistorySink(Dispatcher dispatcher, GameHistoryViewModel history, IAnnouncementService? announcements = null)
     {

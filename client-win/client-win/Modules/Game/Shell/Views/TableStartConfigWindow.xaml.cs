@@ -26,6 +26,7 @@ public partial class TableStartConfigWindow : Window
     {
         private bool _isAmbienceStep = true;
         private bool _isSilentAmbience;
+        private bool _isLoadingGameConfig;
 
         public ObservableCollection<TableAmbiencePickerWindow.Choice> Choices { get; } = new();
         public TableAmbiencePickerWindow.Choice? SelectedChoice { get; set; }
@@ -33,6 +34,18 @@ public partial class TableStartConfigWindow : Window
         public ObservableCollection<ConfigFieldVm> ConfigFields { get; } = new();
         public bool HasGameConfig => ConfigFields.Count > 0;
         public string GameConfigTitle { get; set; } = "Configuration du jeu";
+
+        public bool IsLoadingGameConfig
+        {
+            get => _isLoadingGameConfig;
+            set
+            {
+                if (_isLoadingGameConfig == value) return;
+                _isLoadingGameConfig = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(StepDescription));
+            }
+        }
 
         public bool IsAmbienceStep
         {
@@ -68,7 +81,9 @@ public partial class TableStartConfigWindow : Window
 
         public string StepDescription => IsAmbienceStep
             ? "Avant de démarrer, choisissez l'ambiance de la table."
-            : (HasGameConfig
+            : (IsLoadingGameConfig
+                ? "Chargement de la configuration du jeu..."
+                : HasGameConfig
                 ? "Ajustez la configuration du jeu, puis démarrez."
                 : "Aucune configuration de jeu requise. Vous pouvez démarrer.");
 
@@ -122,6 +137,8 @@ public partial class TableStartConfigWindow : Window
     private readonly Func<Task<TableGameConfigWindow.Prompt?>>? _loadGameConfigPromptAsync;
     private StartFlowResult? _result;
     private string _gameConfigActionType = string.Empty;
+    private Task<TableGameConfigWindow.Prompt?>? _prefetchGameConfigPromptTask;
+    private bool _isClosed;
 
     private TableStartConfigWindow(
         IReadOnlyList<TableAmbiencePickerWindow.Choice> choices,
@@ -168,6 +185,12 @@ public partial class TableStartConfigWindow : Window
                 }
             }
             catch { }
+
+            // Prefetch config prompt as early as possible so "Suivant" feels instant.
+            if (_vm.ConfigFields.Count == 0 && _loadGameConfigPromptAsync != null && _prefetchGameConfigPromptTask == null)
+            {
+                try { _prefetchGameConfigPromptTask = _loadGameConfigPromptAsync(); } catch { }
+            }
         };
 
         _vm.PropertyChanged += (_, e) =>
@@ -180,7 +203,11 @@ public partial class TableStartConfigWindow : Window
         };
 
         Deactivated += (_, _) => StopPreview();
-        Closed += (_, _) => StopPreview();
+        Closed += (_, _) =>
+        {
+            _isClosed = true;
+            StopPreview();
+        };
     }
 
     public static StartFlowResult? PickStartFlow(
@@ -238,6 +265,17 @@ public partial class TableStartConfigWindow : Window
     private void BuildConfigFieldsUi()
     {
         ConfigFieldsHost.Children.Clear();
+
+        if (_vm.IsLoadingGameConfig)
+        {
+            ConfigFieldsHost.Children.Add(new TextBlock
+            {
+                Text = "Chargement...",
+                Foreground = System.Windows.Media.Brushes.White,
+                Margin = new Thickness(0, 8, 0, 0)
+            });
+            return;
+        }
 
         if (_vm.ConfigFields.Count == 0)
         {
@@ -408,31 +446,66 @@ public partial class TableStartConfigWindow : Window
 
     private async void OnNextClicked(object sender, RoutedEventArgs e)
     {
-        if (_vm.ConfigFields.Count == 0 && _loadGameConfigPromptAsync != null)
+        // If there is no game config prompt loader and no fields, start immediately (legacy behavior).
+        if (_vm.ConfigFields.Count == 0 && _loadGameConfigPromptAsync == null)
         {
-            try
-            {
-                var prompt = await _loadGameConfigPromptAsync().ConfigureAwait(true);
-                if (prompt != null)
-                {
-                    BindGameConfig(prompt);
-                    BuildConfigFieldsUi();
-                }
-            }
-            catch
-            {
-                // best-effort
-            }
+            CompleteFlowAndClose(payload: null);
+            return;
         }
 
+        // Switch step immediately for responsiveness; config can load in background.
+        _vm.IsAmbienceStep = false;
+        _vm.IsLoadingGameConfig = _vm.ConfigFields.Count == 0 && _loadGameConfigPromptAsync != null;
+        BuildConfigFieldsUi();
+        UpdateFooterButtons();
+
+        if (!_vm.IsLoadingGameConfig)
+        {
+            FocusFirstConfigInput();
+            return;
+        }
+
+        try
+        {
+            _prefetchGameConfigPromptTask ??= _loadGameConfigPromptAsync?.Invoke();
+            var prompt = _prefetchGameConfigPromptTask != null
+                ? await _prefetchGameConfigPromptTask.ConfigureAwait(true)
+                : null;
+
+            if (_isClosed)
+            {
+                return;
+            }
+
+            if (prompt != null)
+            {
+                BindGameConfig(prompt);
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+        finally
+        {
+            _vm.IsLoadingGameConfig = false;
+        }
+
+        if (_isClosed)
+        {
+            return;
+        }
+
+        BuildConfigFieldsUi();
+        UpdateFooterButtons();
+
+        // Still no fields => no game config required: complete flow now.
         if (_vm.ConfigFields.Count == 0)
         {
             CompleteFlowAndClose(payload: null);
             return;
         }
 
-        _vm.IsAmbienceStep = false;
-        UpdateFooterButtons();
         FocusFirstConfigInput();
     }
 
@@ -527,12 +600,16 @@ public partial class TableStartConfigWindow : Window
             PreviousButton.Visibility = Visibility.Collapsed;
             NextButton.Visibility = Visibility.Visible;
             StartButton.Visibility = Visibility.Collapsed;
+            StartButton.IsEnabled = true;
+            StartButton.Content = "Démarrer";
             return;
         }
 
         PreviousButton.Visibility = Visibility.Visible;
         NextButton.Visibility = Visibility.Collapsed;
         StartButton.Visibility = Visibility.Visible;
+        StartButton.IsEnabled = !_vm.IsLoadingGameConfig;
+        StartButton.Content = _vm.IsLoadingGameConfig ? "Chargement..." : "Démarrer";
     }
 
     private void PreviewSelected()

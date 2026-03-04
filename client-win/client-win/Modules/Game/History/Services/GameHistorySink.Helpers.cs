@@ -104,8 +104,13 @@ public partial class GameHistorySink
         var key = BuildDedupeKey(cleaned);
         if (!string.IsNullOrWhiteSpace(key))
         {
-            _recentDedupe.RemoveAll(e => now - e.AtUtc > RecentDedupeWindow);
-            if (_recentDedupe.Any(e => string.Equals(e.Key, key, StringComparison.Ordinal)))
+            _recentDedupe.RemoveAll(e => now - e.AtUtc > StrongDedupeWindow);
+            var window = key.StartsWith("strong|", StringComparison.Ordinal)
+                ? StrongDedupeWindow
+                : RecentDedupeWindow;
+            if (_recentDedupe.Any(e =>
+                    string.Equals(e.Key, key, StringComparison.Ordinal) &&
+                    now - e.AtUtc < window))
             {
                 return true;
             }
@@ -133,6 +138,21 @@ public partial class GameHistorySink
 
         var normalized = message.Trim();
         var lower = normalized.ToLowerInvariant();
+
+        // Strong-dedupe: these messages should not legitimately repeat during the same game session.
+        // If we receive them again, it's usually due to replay/reconnect/state re-emission.
+        if (lower.StartsWith("positions.", StringComparison.Ordinal) ||
+            lower.Contains(" choisit ", StringComparison.Ordinal) ||
+            lower.Contains(" se deplace de ", StringComparison.Ordinal) ||
+            lower.Contains(" se déplace de ", StringComparison.Ordinal) ||
+            lower.Contains(" place un mur ", StringComparison.Ordinal) ||
+            lower.StartsWith("victoire de ", StringComparison.Ordinal) ||
+            lower.StartsWith("match nul", StringComparison.Ordinal) ||
+            lower.StartsWith("partie termin", StringComparison.Ordinal))
+        {
+            return $"strong|{NormalizeDedupeText(normalized)}";
+        }
+
 
         if (lower.StartsWith("table de ", StringComparison.Ordinal) ||
             lower.StartsWith("table créée", StringComparison.Ordinal) ||

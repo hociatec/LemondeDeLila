@@ -177,58 +177,79 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
 
     internal void FocusHistory()
     {
-        _vm?.GameZone.FocusCoordinator.CancelPendingRequests();
-
-        if (HistoryHost == null)
-        {
-            return;
-        }
-
-        var target = HistoryHost.FocusTarget ?? (HistoryHost as FrameworkElement);
-        if (target == null)
-        {
-            return;
-        }
-
-        if (_focusPolicy != null)
-        {
-            _focusPolicy.RunInternal(() =>
-            {
-                target.Focus();
-                Keyboard.Focus(target);
-            });
-        }
-        else
-        {
-            target.Focus();
-            Keyboard.Focus(target);
-        }
-
-        HistoryHost.FocusToBottom();
+        _ = TryFocusHistoryInternal();
     }
 
     internal void FocusChatInput()
     {
+        _ = TryFocusChatInternal();
+    }
+
+    private bool TryFocusHistoryInternal()
+    {
         _vm?.GameZone.FocusCoordinator.CancelPendingRequests();
 
-        if (ChatInput == null || ChatHost?.Visibility != Visibility.Visible || !ChatInput.IsEnabled)
+        if (HistoryHost == null || !HistoryHost.IsVisible || !HistoryHost.IsEnabled)
         {
-            return;
+            return false;
+        }
+
+        var target = HistoryHost.FocusTarget ?? (HistoryHost as FrameworkElement);
+        if (target == null || !target.IsVisible || !target.IsEnabled)
+        {
+            return false;
+        }
+
+        bool ok = false;
+        void Attempt()
+        {
+            ok = target.Focus();
+            Keyboard.Focus(target);
+            ok = ok || ReferenceEquals(Keyboard.FocusedElement, target) ||
+                 IsFocusWithinElement(target, Keyboard.FocusedElement as DependencyObject) ||
+                 HistoryHost.IsKeyboardFocusWithin;
         }
 
         if (_focusPolicy != null)
         {
-            _focusPolicy.RunInternal(() =>
-            {
-                ChatInput.Focus();
-                Keyboard.Focus(ChatInput);
-            });
+            _focusPolicy.RunInternal(Attempt);
         }
         else
         {
-            ChatInput.Focus();
-            Keyboard.Focus(ChatInput);
+            Attempt();
         }
+
+        HistoryHost.FocusToBottom();
+        return ok;
+    }
+
+    private bool TryFocusChatInternal()
+    {
+        _vm?.GameZone.FocusCoordinator.CancelPendingRequests();
+
+        if (ChatInput == null || ChatHost?.Visibility != Visibility.Visible || !ChatInput.IsEnabled || !ChatInput.IsVisible)
+        {
+            return false;
+        }
+
+        bool ok = false;
+        void Attempt()
+        {
+            ok = ChatInput.Focus();
+            Keyboard.Focus(ChatInput);
+            ok = ok || ChatInput.IsKeyboardFocusWithin || ReferenceEquals(Keyboard.FocusedElement, ChatInput);
+        }
+
+        if (_focusPolicy != null)
+        {
+            _focusPolicy.RunInternal(Attempt);
+        }
+        else
+        {
+            Attempt();
+        }
+
+        return ok;
     }
 
     public void RequestFocusGameZone(GameFocusReason reason = GameFocusReason.Default) => RequestFocusGameZoneInternal(reason);
@@ -374,7 +395,9 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
                       ?? FocusManager.GetFocusedElement(this) as DependencyObject;
         if (focused == null)
         {
-            return false;
+            // Fast Tab/Shift+Tab can temporarily null out Keyboard.FocusedElement during focus transitions
+            // (collapsed targets, async focus recovery, etc.). Recover to a stable circular target.
+            return FocusTabTarget(isShift ? targets[^1] : targets[0]);
         }
 
         // When an inline prompt overlay is visible, TAB belongs to the prompt (do not cycle out of the game).
@@ -397,7 +420,21 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         }
 
         var nextIndex = isShift ? (index - 1 + targets.Count) % targets.Count : (index + 1) % targets.Count;
-        return FocusTabTarget(targets[nextIndex]);
+
+        // Skip any temporarily non-focusable targets (rapid Tab while UI updates) to keep the cycle stable.
+        for (var attempts = 0; attempts < targets.Count; attempts++)
+        {
+            if (FocusTabTarget(targets[nextIndex]))
+            {
+                return true;
+            }
+
+            nextIndex = isShift
+                ? (nextIndex - 1 + targets.Count) % targets.Count
+                : (nextIndex + 1) % targets.Count;
+        }
+
+        return false;
     }
 
     private static bool IsInlinePromptVisible(DependencyObject focused)
@@ -435,9 +472,11 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         }
 
         var historyTarget = HistoryHost?.FocusTarget ?? (HistoryHost as FrameworkElement);
-        if (IsFocusableTarget(historyTarget))
+        // For circular navigation we can focus history programmatically even if the underlying
+        // target isn't a WPF TabStop yet (virtualization/late template). We'll verify success on focus.
+        if (historyTarget != null && HistoryHost != null && HistoryHost.IsVisible && HistoryHost.IsEnabled)
         {
-            targets.Add(TabTarget.History(historyTarget!));
+            targets.Add(TabTarget.History(historyTarget));
         }
 
         return targets;
@@ -488,20 +527,17 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
     {
         if (target.Kind == TabTargetKind.GameZone)
         {
-            RequestFocusGameZoneInternal(GameFocusReason.TabCycle);
-            return true;
+            return FocusGameZone(GameFocusReason.TabCycle) != GameFocusAttemptResult.None;
         }
 
         if (target.Kind == TabTargetKind.Chat)
         {
-            FocusChatInput();
-            return true;
+            return TryFocusChatInternal();
         }
 
         if (target.Kind == TabTargetKind.History)
         {
-            FocusHistory();
-            return true;
+            return TryFocusHistoryInternal();
         }
 
         if (!IsFocusableTarget(target.Element))

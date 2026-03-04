@@ -609,12 +609,23 @@ public partial class GamePlayView
         // - sinon: attendre qu'un élément interactif soit prêt
         if (DataContext is GamePlayViewModel vm && vm.Grid.IsVisible)
         {
-            // When entering the game area via Tab/Shift+Tab, keep focus on the game zone root.
-            // Users can then enter the grid intentionally with arrow keys.
+            // When entering the game area via Tab/Shift+Tab, keep focus inside the game view
+            // (not on the host anchor), otherwise the grid key handlers won't run and screen readers
+            // can't navigate cell-by-cell.
             if (forceFromOutsideTextInput && !IsFocusInsideThisGameView())
             {
                 _pendingInitialInteractiveFocus = true;
-                TryFocusGameViewRoot();
+
+                // Prefer focusing the grid container (not a cell) to avoid accidental activation,
+                // while still enabling arrow keys to "enter" the grid.
+                if (GridItems != null && GridItems.Focus())
+                {
+                    Keyboard.Focus(GridItems);
+                }
+                else
+                {
+                    TryFocusPreferredGridCell();
+                }
                 return;
             }
 
