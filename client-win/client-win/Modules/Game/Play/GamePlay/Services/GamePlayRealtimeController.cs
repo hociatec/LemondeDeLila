@@ -752,6 +752,13 @@ internal sealed class GamePlayRealtimeController
             return;
         }
 
+        // Pawn selection is a setup phase; avoid announcing "C'est au tour de X." before the game actually starts.
+        // The server already prompts with "C'est à X de choisir un pion." during this phase.
+        if (PawnPendingTypes.IsPawnPendingType(state.Pending?.Type))
+        {
+            return;
+        }
+
         var currentPlayerId = state.Turn?.CurrentPlayerId;
         if (currentPlayerId == null)
         {
@@ -775,7 +782,7 @@ internal sealed class GamePlayRealtimeController
                 CurrentPlayerId = currentPlayerId,
                 CurrentPlayerUsername = string.IsNullOrWhiteSpace(username) ? null : username.Trim()
             },
-            emitHistoryMessage: _ => { });
+            emitHistoryMessage: msg => _emitMessage(new GamePlayHistoryMessage(msg)));
     }
 
     private void TryEmitGenericEndgameSummary(GameStateDto state)

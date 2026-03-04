@@ -72,7 +72,7 @@ public sealed partial class GridBoardViewModel
             return;
         }
 
-        if (cell.HasOwnPawn)
+        if (cell.HasOwnPawn && _hasAnyMoveAction)
         {
             _isEntityGrabbed = true;
             _sounds.Play(SoundId.PawnPicked);

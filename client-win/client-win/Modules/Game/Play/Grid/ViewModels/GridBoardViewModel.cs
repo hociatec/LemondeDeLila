@@ -29,6 +29,7 @@ public sealed partial class GridBoardViewModel : ObservableObject
     private int _size = 9;
     private string _status = string.Empty;
     private bool _isEntityGrabbed;
+    private bool _hasAnyMoveAction;
     private bool _pawnPositionsPrimed;
     private readonly Dictionary<int, (int X, int Y)> _lastPawnPosByOwnerId = new();
     private bool _wallLayoutPrimed;
