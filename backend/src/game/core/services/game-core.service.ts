@@ -52,6 +52,47 @@ function extractPawnPromptToken(message: string): string | null {
 
 @Injectable()
 export class GameCoreService {
+  private cloneLogWithStableTimestamps(logRaw: unknown): GameLogEntry[] {
+    const log = Array.isArray(logRaw) ? (logRaw as unknown[]) : [];
+    if (log.length === 0) return [];
+
+    const out: GameLogEntry[] = [];
+    let lastMs: number | null = null;
+
+    for (const entryRaw of log) {
+      // Backward compatibility: old persisted states can contain plain strings.
+      const asEntry: GameLogEntry =
+        typeof entryRaw === 'string'
+          ? { message: entryRaw }
+          : (entryRaw as GameLogEntry);
+
+      const message = String(asEntry?.message ?? '');
+      const tsRaw =
+        typeof (asEntry as any)?.timestamp === 'string'
+          ? String((asEntry as any).timestamp).trim()
+          : '';
+
+      if (tsRaw) {
+        const ms = Date.parse(tsRaw);
+        if (Number.isFinite(ms)) {
+          lastMs = ms;
+          out.push({ message, timestamp: tsRaw });
+          continue;
+        }
+      }
+
+      // Ensure every log entry has a stable timestamp once it is cloned and persisted.
+      // This prevents clients from replaying the whole history when older entries are
+      // re-emitted without a stable id.
+      const nextMs =
+        lastMs != null ? lastMs + 1 : Date.now() - Math.max(0, log.length) * 2;
+      lastMs = nextMs;
+      out.push({ message, timestamp: new Date(nextMs).toISOString() });
+    }
+
+    return out;
+  }
+
   private sanitizePlayerName(raw: unknown): string {
     let name = toPlayerNameText(raw).trim();
     name = name
@@ -128,7 +169,7 @@ export class GameCoreService {
   cloneState(state: GameStateEntity): GameStateEntity {
     return {
       ...state,
-      log: [...(state.log || [])],
+      log: this.cloneLogWithStableTimestamps(state.log),
       players: state.players ? [...state.players] : undefined,
       turn: state.turn ? { ...state.turn } : undefined,
       metadata: state.metadata ? { ...state.metadata } : undefined,

@@ -119,6 +119,7 @@ export class LamaPresenter extends BasePresenterService {
 
     const top = this.topDiscard(meta);
     if (!top) return out;
+    const allowed = new Set<LamaCardValue>([top, nextLamaValue(top)]);
 
     const tracker = meta.turnTracker ?? {
       playerId: current,
@@ -174,10 +175,13 @@ export class LamaPresenter extends BasePresenterService {
     const justDrew = lastDrawIndex != null && lastDrawIndex === turnIndex;
     const alreadyDrew = (isSameTurn && trackerDrawn) || justDrew;
 
-    // One pending choice per card in hand (including duplicates): ENTER plays the selected card (count=1).
-    if (!(isSameTurn && trackerPlayed)) {
-      for (const value of sortedHandValues) {
+    // One action per card in hand (including duplicates), but only expose "play" when legal.
+    // This prevents "blocked" turns where the UI suggests an unplayable card that the server ignores.
+    for (const value of sortedHandValues) {
+      if (!(isSameTurn && trackerPlayed) && allowed.has(value as LamaCardValue)) {
         out.push({ type: 'lama_play', payload: { value, count: 1 } });
+      } else {
+        out.push({ type: 'lama_preview', payload: { value } });
       }
     }
 

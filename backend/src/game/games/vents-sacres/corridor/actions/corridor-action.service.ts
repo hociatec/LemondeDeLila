@@ -25,7 +25,7 @@ export class CorridorActionService {
       if (String(last ?? '').trim() === message) continue;
       out = {
         ...out,
-        log: [...(out.log ?? []), { message }],
+        log: [...(out.log ?? []), { message, timestamp: new Date().toISOString() }],
       };
     }
     return out;

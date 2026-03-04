@@ -20,7 +20,16 @@ public sealed partial class GameHistorySink : IGameHistorySink
     private DateTime _lastTurnMessageAtUtc;
     private readonly List<(string Key, DateTime AtUtc)> _recentDedupe = new();
     private static readonly TimeSpan RecentDedupeWindow = GameTiming.History.RecentDedupeWindow;
-    private static readonly TimeSpan StrongDedupeWindow = TimeSpan.FromMinutes(5);
+
+    // Some message classes (moves, wall placements, pawn choices...) must never be replayed within a session.
+    // We dedupe them "forever" until we detect a new session boundary (table created/started).
+    private const int StrongDedupeMaxKeys = 1200;
+    private readonly Queue<string> _strongDedupeOrder = new();
+    private readonly HashSet<string> _strongDedupeSeen = new(StringComparer.Ordinal);
+
+    private const int TimestampDedupeMaxKeys = 2400;
+    private readonly Queue<string> _timestampDedupeOrder = new();
+    private readonly HashSet<string> _timestampDedupeSeen = new(StringComparer.Ordinal);
 
     public GameHistorySink(Dispatcher dispatcher, GameHistoryViewModel history, IAnnouncementService? announcements = null)
     {
@@ -65,7 +74,7 @@ public sealed partial class GameHistorySink : IGameHistorySink
 
                 // Les raccourcis utilisateur explicites ([ui.shortcut]) doivent toujours être rejoués
                 // même si le texte est identique (ex: spam volontaire de "T" pour réécouter le tour).
-                if (!isUiShortcutTagged && ShouldSkipDuplicate(cleaned))
+                if (!isUiShortcutTagged && ShouldSkipDuplicate(cleaned, timestamp))
                 {
                     continue;
                 }

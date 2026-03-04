@@ -108,8 +108,7 @@ export class MorpionService extends AbstractGameService {
         players.find((p) => p?.id === entry.playerId)?.username ?? `#${entry.playerId}`;
       const pawn = MorpionService.PawnChoices.find((p) => p.id === entry.pawnId) ?? null;
       const pawnLabel = pawn?.label ?? entry.pawnId;
-      const glyph = pawn?.glyph ?? '?';
-      log = this.appendLog(log, `${botName} choisit le pion ${pawnLabel} (${glyph}).`);
+      log = this.appendLog(log, `${botName} choisit le pion ${pawnLabel}.`);
     }
 
     return {
@@ -486,11 +485,9 @@ export class MorpionService extends AbstractGameService {
     const pawnLabel =
       MorpionService.PawnChoices.find((pawn) => pawn.id === pawnId)?.label ??
       pawnId;
-    const pawnGlyph =
-      MorpionService.PawnChoices.find((pawn) => pawn.id === pawnId)?.glyph ?? '?';
     let log = this.appendLog(
       state.log,
-      `${players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`} choisit le pion ${pawnLabel} (${pawnGlyph}).`,
+      `${players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`} choisit le pion ${pawnLabel}.`,
     );
     for (const entry of botAssigned.assignedBots)
     {
@@ -498,8 +495,7 @@ export class MorpionService extends AbstractGameService {
         players.find((p) => p?.id === entry.playerId)?.username ?? `#${entry.playerId}`;
       const pawn = MorpionService.PawnChoices.find((p) => p.id === entry.pawnId) ?? null;
       const label = pawn?.label ?? entry.pawnId;
-      const glyph = pawn?.glyph ?? '?';
-      log = this.appendLog(log, `${botName} choisit le pion ${label} (${glyph}).`);
+      log = this.appendLog(log, `${botName} choisit le pion ${label}.`);
     }
 
     const { playerId: nextPlayerId, meta: metaAfterPick } =

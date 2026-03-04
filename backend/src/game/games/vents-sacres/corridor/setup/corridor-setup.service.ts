@@ -50,7 +50,7 @@ export class CorridorSetupService {
       if (!pick) break;
       pawnByPlayerId[String(bot.id)] = pick.id;
       usedPawnIds.add(pick.id);
-      log.push({ message: `${bot.username} choisit ${pick.label}.` });
+      log.push({ message: `${bot.username} choisit ${pick.label}.`, timestamp: new Date().toISOString() });
     }
 
     const eligible = players.filter(

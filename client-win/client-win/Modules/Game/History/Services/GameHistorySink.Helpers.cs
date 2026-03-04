@@ -80,7 +80,7 @@ public partial class GameHistorySink
             .Trim();
     }
 
-    private bool ShouldSkipDuplicate(string cleaned)
+    private bool ShouldSkipDuplicate(string cleaned, string? timestamp)
     {
         if (string.IsNullOrWhiteSpace(cleaned))
         {
@@ -88,6 +88,26 @@ public partial class GameHistorySink
         }
 
         var now = DateTime.UtcNow;
+
+        // When the server provides a timestamp, it is a stable identifier for that log entry
+        // across full-state replays / reconnects. Dedupe strictly on (timestamp + message).
+        var ts = (timestamp ?? string.Empty).Trim();
+        if (ts.Length > 0)
+        {
+            var tsKey = $"ts|{ts}|{cleaned}";
+            if (_timestampDedupeSeen.Contains(tsKey))
+            {
+                return true;
+            }
+
+            _timestampDedupeSeen.Add(tsKey);
+            _timestampDedupeOrder.Enqueue(tsKey);
+            while (_timestampDedupeOrder.Count > TimestampDedupeMaxKeys)
+            {
+                var old = _timestampDedupeOrder.Dequeue();
+                _timestampDedupeSeen.Remove(old);
+            }
+        }
         if (TryBuildTurnDedupeKey(cleaned, out var turnKey))
         {
             if (_lastTurnMessageKey != null &&
@@ -104,13 +124,34 @@ public partial class GameHistorySink
         var key = BuildDedupeKey(cleaned);
         if (!string.IsNullOrWhiteSpace(key))
         {
-            _recentDedupe.RemoveAll(e => now - e.AtUtc > StrongDedupeWindow);
-            var window = key.StartsWith("strong|", StringComparison.Ordinal)
-                ? StrongDedupeWindow
-                : RecentDedupeWindow;
-            if (_recentDedupe.Any(e =>
-                    string.Equals(e.Key, key, StringComparison.Ordinal) &&
-                    now - e.AtUtc < window))
+            if (key.StartsWith("session|", StringComparison.Ordinal))
+            {
+                // New game/session delimiter: allow "strong" messages again.
+                _strongDedupeSeen.Clear();
+                _strongDedupeOrder.Clear();
+                _timestampDedupeSeen.Clear();
+                _timestampDedupeOrder.Clear();
+                _recentDedupe.Clear();
+            }
+
+            if (key.StartsWith("strong|", StringComparison.Ordinal))
+            {
+                if (_strongDedupeSeen.Contains(key))
+                {
+                    return true;
+                }
+
+                _strongDedupeSeen.Add(key);
+                _strongDedupeOrder.Enqueue(key);
+                while (_strongDedupeOrder.Count > StrongDedupeMaxKeys)
+                {
+                    var old = _strongDedupeOrder.Dequeue();
+                    _strongDedupeSeen.Remove(old);
+                }
+            }
+
+            _recentDedupe.RemoveAll(e => now - e.AtUtc > RecentDedupeWindow);
+            if (_recentDedupe.Any(e => string.Equals(e.Key, key, StringComparison.Ordinal)))
             {
                 return true;
             }
@@ -159,7 +200,8 @@ public partial class GameHistorySink
             lower.StartsWith("table demarree", StringComparison.Ordinal) ||
             lower.StartsWith("table démarrée", StringComparison.Ordinal))
         {
-            return NormalizeDedupeText(normalized);
+            // Session boundary marker (used to reset strong dedupe sets).
+            return $"session|{NormalizeDedupeText(normalized)}";
         }
 
         return null;

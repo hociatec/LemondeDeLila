@@ -323,7 +323,12 @@ internal sealed class GamePlayActionDispatcher
         if (normalized == "lama_turn")
         {
             return actions
-                .Where(a => string.Equals(a.Type, "lama_play", StringComparison.OrdinalIgnoreCase))
+                // LAMA: pending.choices are the hand (including duplicates) and must align by index.
+                // The backend may expose "lama_play" only for playable cards, and "lama_preview" for others,
+                // so include both to keep the 1:1 mapping stable.
+                .Where(a =>
+                    string.Equals(a.Type, "lama_play", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(a.Type, "lama_preview", StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
         if (normalized == "lama_hand")

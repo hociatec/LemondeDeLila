@@ -1177,10 +1177,13 @@ export class GameEngineService {
       const pid =
         typeof player?.id === 'number' ? player.id : Number(player?.id ?? NaN);
       if (!Number.isFinite(pid) || pid === 0) continue;
+      const username = this.normalizeUsernameForLog(player.username);
+      // Some room implementations keep a "ghost" seat after a disconnect/leave (id present, name empty).
+      // In a started game, we must not keep this seat, otherwise the UI shows "Joueur X" alongside bots.
+      if (!username) continue;
       result.push({
         id: pid,
-        username:
-          this.normalizeUsernameForLog(player.username) || `Joueur ${pid}`,
+        username,
         isBot: false,
       });
     }
