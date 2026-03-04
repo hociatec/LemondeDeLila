@@ -995,6 +995,71 @@ export class GameEngineService {
           ...(outcomesByPlayerId ? { outcomesByPlayerId } : {}),
         },
       };
+
+      // Expose victory/defeat profile phrases in the main log so all clients can see them,
+      // even if they don't consume the dedicated game.ended event.
+      try {
+        if (outcomesByPlayerId && Object.keys(outcomesByPlayerId).length > 0) {
+          const endgameMessagesByPlayerId =
+            await this.buildEndgameMessagesByPlayerId(marked.players ?? []);
+          const players = marked.players ?? [];
+          const nameById = new Map<number, string>();
+          for (const p of players) {
+            if (!p || typeof p.id !== 'number') continue;
+            const normalized = this.normalizeUsernameForLog(p.username);
+            nameById.set(p.id, normalized || `Joueur ${p.id}`);
+          }
+
+          const log = Array.isArray(marked.log) ? [...marked.log] : [];
+          const recent = new Set(
+            log.slice(-80).map((e) => String(e?.message ?? '').trim()),
+          );
+          let nextLog = log;
+          for (const [playerIdRaw, outcome] of Object.entries(outcomesByPlayerId)) {
+            const normalizedOutcome = String(outcome ?? '')
+              .trim()
+              .toLowerCase();
+            if (normalizedOutcome !== 'won' && normalizedOutcome !== 'lost') {
+              continue;
+            }
+
+            const byPlayer = endgameMessagesByPlayerId[playerIdRaw];
+            if (!byPlayer || typeof byPlayer !== 'object') {
+              continue;
+            }
+
+            const chosen =
+              normalizedOutcome === 'won'
+                ? byPlayer.victoryMessage
+                : byPlayer.defeatMessage;
+            if (!chosen) {
+              continue;
+            }
+
+            const pid = Number(playerIdRaw);
+            const name =
+              Number.isFinite(pid) && pid > 0
+                ? (nameById.get(pid) ?? `Joueur ${pid}`)
+                : `Joueur ${playerIdRaw}`;
+            const line = `${name} dit: ${chosen}`.trim();
+            if (!line || recent.has(line)) {
+              continue;
+            }
+
+            nextLog = [
+              ...nextLog,
+              { message: line, timestamp: new Date().toISOString() },
+            ];
+            recent.add(line);
+          }
+
+          if (nextLog !== log) {
+            marked = { ...marked, log: nextLog };
+          }
+        }
+      } catch {
+        // Best-effort: endgame phrases must not block state updates.
+      }
     }
 
     // Persiste l'état final post-traité (logs d'arrivée / sauts de tour nettoyés).

@@ -52,6 +52,8 @@ internal sealed class GamePlayRealtimeController
     private bool _endgameFeedbackEmitted;
     private bool _endgamePublicMessagesEmitted;
     private bool _endgameHeaderEmitted;
+    private string _lastEndgameWinnerNameFromLog = string.Empty;
+    private bool _lastEndgameDrawFromLog;
     private bool _finishedStatusEnforced;
     private bool _lastStartReady;
     private bool _lastStartReadyKnown;
@@ -124,6 +126,8 @@ internal sealed class GamePlayRealtimeController
         _endgameFeedbackEmitted = false;
         _endgamePublicMessagesEmitted = false;
         _endgameHeaderEmitted = false;
+        _lastEndgameWinnerNameFromLog = string.Empty;
+        _lastEndgameDrawFromLog = false;
         _finishedStatusEnforced = false;
         _lastStartReady = false;
         _lastStartReadyKnown = false;
@@ -376,6 +380,27 @@ internal sealed class GamePlayRealtimeController
         {
             var trimmed = entry?.Message ?? string.Empty;
             _logSounds.TryPlayForLogMessage(trimmed, viewerUsername);
+
+            // Best-effort fallback: if the server logged the winner/draw, keep it so the client can still
+            // emit a proper endgame header even if winner/outcome metadata is missing.
+            if (isEndgameContext)
+            {
+                var msg = trimmed.Trim();
+                if (msg.StartsWith("Victoire de ", StringComparison.OrdinalIgnoreCase))
+                {
+                    var name = msg.Substring("Victoire de ".Length).Trim();
+                    if (name.EndsWith(".", StringComparison.Ordinal)) name = name.Substring(0, name.Length - 1).Trim();
+                    if (name.Length > 0)
+                    {
+                        _lastEndgameWinnerNameFromLog = name;
+                    }
+                }
+                else if (msg.StartsWith("Match nul", StringComparison.OrdinalIgnoreCase))
+                {
+                    _lastEndgameDrawFromLog = true;
+                }
+            }
+
             // When the game is finished, the client emits a single standardized endgame header,
             // so avoid duplicating it with extra summary lines coming from logs.
             var isRedundantEndgameLine =
@@ -435,6 +460,8 @@ internal sealed class GamePlayRealtimeController
             _endgamePublicMessagesEmitted = false;
             _finishedStatusEnforced = false;
             _endgameHeaderEmitted = false;
+            _lastEndgameWinnerNameFromLog = string.Empty;
+            _lastEndgameDrawFromLog = false;
             // During pawn selection setup, the pending label is the authoritative prompt.
             // Avoid adding a redundant "C'est au tour de ...".
             if (!PawnPendingTypes.IsPawnPendingType(state.Pending?.Type) &&
@@ -816,6 +843,19 @@ internal sealed class GamePlayRealtimeController
             }
         }
 
+        if (!string.IsNullOrWhiteSpace(_lastEndgameWinnerNameFromLog))
+        {
+            _emitMessage(new GamePlayHistoryMessage("Fin de la partie."));
+            _emitMessage(new GamePlayHistoryMessage($"Victoire écrasante de {_lastEndgameWinnerNameFromLog}!"));
+            return;
+        }
+        if (_lastEndgameDrawFromLog)
+        {
+            _emitMessage(new GamePlayHistoryMessage("Fin de la partie."));
+            _emitMessage(new GamePlayHistoryMessage("Match nul."));
+            return;
+        }
+
         _emitMessage(new GamePlayHistoryMessage("Fin de la partie."));
     }
 
@@ -891,6 +931,19 @@ internal sealed class GamePlayRealtimeController
             }
             _emitMessage(new GamePlayHistoryMessage("Fin de la partie."));
             _emitMessage(new GamePlayHistoryMessage($"Victoire écrasante de {winnerName}!"));
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(_lastEndgameWinnerNameFromLog))
+        {
+            _emitMessage(new GamePlayHistoryMessage("Fin de la partie."));
+            _emitMessage(new GamePlayHistoryMessage($"Victoire écrasante de {_lastEndgameWinnerNameFromLog}!"));
+            return;
+        }
+        if (_lastEndgameDrawFromLog)
+        {
+            _emitMessage(new GamePlayHistoryMessage("Fin de la partie."));
+            _emitMessage(new GamePlayHistoryMessage("Match nul."));
             return;
         }
 
