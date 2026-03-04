@@ -4,6 +4,8 @@
         Title="Configuration de la table"
         Width="760"
         Height="620"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
         Background="#0F1D2D"
         WindowStartupLocation="CenterOwner"
         PreviewKeyDown="OnWindowPreviewKeyDown">

@@ -44,11 +44,13 @@ export class CorridorSetupService {
         : {};
     const pawnByPlayerId: Record<string, string> = {};
     const usedPawnIds = new Set<string>();
+    const log = [...(baseState.log ?? [])];
     for (const bot of players.filter((p) => p?.isBot === true)) {
       const pick = pawnChoices.find((pawn) => !usedPawnIds.has(pawn.id));
       if (!pick) break;
       pawnByPlayerId[String(bot.id)] = pick.id;
       usedPawnIds.add(pick.id);
+      log.push({ message: `${bot.username} choisit ${pick.label}.` });
     }
 
     const eligible = players.filter(
@@ -112,7 +114,7 @@ export class CorridorSetupService {
               },
             }
           : null,
-      log: [...(baseState.log ?? [])],
+      log,
       turn: {
         currentPlayerId: pendingPlayerId ?? p1.id,
         direction: 1,

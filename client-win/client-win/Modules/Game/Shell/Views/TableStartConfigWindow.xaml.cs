@@ -282,12 +282,46 @@ public partial class TableStartConfigWindow : Window
 
     private static Window? ResolveSafeOwner(Window? owner)
     {
-        var candidate = owner ?? Application.Current?.MainWindow;
-        if (!IsUsableOwner(candidate))
+        if (IsUsableOwner(owner))
         {
-            candidate = Application.Current?.MainWindow;
+            return owner;
         }
-        return IsUsableOwner(candidate) ? candidate : null;
+
+        try
+        {
+            // Prefer the currently active window (GameRoom / shell) over Application.MainWindow,
+            // which can be null/hidden depending on hosting.
+            var active = Application.Current?.Windows
+                .OfType<Window>()
+                .FirstOrDefault(w => w != null && w.IsActive && IsUsableOwner(w));
+            if (IsUsableOwner(active))
+            {
+                return active;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        var main = Application.Current?.MainWindow;
+        if (IsUsableOwner(main))
+        {
+            return main;
+        }
+
+        try
+        {
+            // Last fallback: any visible window.
+            var any = Application.Current?.Windows
+                .OfType<Window>()
+                .FirstOrDefault(IsUsableOwner);
+            return IsUsableOwner(any) ? any : null;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private static bool IsUsableOwner(Window? window)

@@ -46,8 +46,9 @@ export class MorpionService extends AbstractGameService {
   private autoAssignBotPawns(
     players: Array<{ id: number; isBot?: boolean }>,
     assigned: Record<string, string>,
-  ): Record<string, string> {
+  ): { map: Record<string, string>; assignedBots: Array<{ playerId: number; pawnId: string }> } {
     const out = { ...(assigned ?? {}) };
+    const assignedBots: Array<{ playerId: number; pawnId: string }> = [];
     const used = new Set(Object.values(out));
     for (const bot of (players ?? []).filter((p) => p?.isBot === true)) {
       if (out[String(bot.id)]) continue;
@@ -55,8 +56,9 @@ export class MorpionService extends AbstractGameService {
       if (!pick) break;
       out[String(bot.id)] = pick.id;
       used.add(pick.id);
+      assignedBots.push({ playerId: bot.id, pawnId: pick.id });
     }
-    return out;
+    return { map: out, assignedBots };
   }
 
   private pickRandomHumanNeedingPawn(
@@ -83,7 +85,8 @@ export class MorpionService extends AbstractGameService {
       baseState.metadata && typeof baseState.metadata === 'object'
         ? (baseState.metadata as Record<string, unknown>)
         : {};
-    const assignedBots = this.autoAssignBotPawns(players as any, {});
+    const botAssigned = this.autoAssignBotPawns(players as any, {});
+    const assignedBots = botAssigned.map;
     const { playerId: firstPlayerId, meta: metaAfterPick } =
       this.pickRandomHumanNeedingPawn(players as any, assignedBots, baseMeta);
     const metadata: MorpionMetadata = {
@@ -96,6 +99,18 @@ export class MorpionService extends AbstractGameService {
     const pending = firstPlayerId
       ? this.buildChoosePawnPending(players, firstPlayerId, assignedBots)
       : null;
+
+    // Announce bot pawn picks so humans know what each bot is using.
+    let log = Array.isArray(baseState.log) ? baseState.log : [];
+    for (const entry of botAssigned.assignedBots)
+    {
+      const botName =
+        players.find((p) => p?.id === entry.playerId)?.username ?? `#${entry.playerId}`;
+      const pawn = MorpionService.PawnChoices.find((p) => p.id === entry.pawnId) ?? null;
+      const pawnLabel = pawn?.label ?? entry.pawnId;
+      const glyph = pawn?.glyph ?? '?';
+      log = this.appendLog(log, `${botName} choisit le pion ${pawnLabel} (${glyph}).`);
+    }
 
     return {
       ...baseState,
@@ -117,7 +132,7 @@ export class MorpionService extends AbstractGameService {
               ? `Tour de ${players.find((p) => p?.id === firstPlayerId)?.username ?? `#${firstPlayerId}`}`
               : undefined,
       },
-      log: Array.isArray(baseState.log) ? baseState.log : [],
+      log,
     };
   }
 
@@ -465,15 +480,27 @@ export class MorpionService extends AbstractGameService {
     const meta = { ...(metaAll as any) } as MorpionMetadata;
     const glyphByPlayerId = { ...(meta.glyphByPlayerId ?? {}) };
     glyphByPlayerId[String(actorId)] = pawnId;
-    const withBotsAssigned = this.autoAssignBotPawns(players as any, glyphByPlayerId);
+    const botAssigned = this.autoAssignBotPawns(players as any, glyphByPlayerId);
+    const withBotsAssigned = botAssigned.map;
 
     const pawnLabel =
       MorpionService.PawnChoices.find((pawn) => pawn.id === pawnId)?.label ??
       pawnId;
-    const log = this.appendLog(
+    const pawnGlyph =
+      MorpionService.PawnChoices.find((pawn) => pawn.id === pawnId)?.glyph ?? '?';
+    let log = this.appendLog(
       state.log,
-      `${players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`} choisit le pion ${pawnLabel}.`,
+      `${players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`} choisit le pion ${pawnLabel} (${pawnGlyph}).`,
     );
+    for (const entry of botAssigned.assignedBots)
+    {
+      const botName =
+        players.find((p) => p?.id === entry.playerId)?.username ?? `#${entry.playerId}`;
+      const pawn = MorpionService.PawnChoices.find((p) => p.id === entry.pawnId) ?? null;
+      const label = pawn?.label ?? entry.pawnId;
+      const glyph = pawn?.glyph ?? '?';
+      log = this.appendLog(log, `${botName} choisit le pion ${label} (${glyph}).`);
+    }
 
     const { playerId: nextPlayerId, meta: metaAfterPick } =
       this.pickRandomHumanNeedingPawn(players as any, withBotsAssigned, metaAll);

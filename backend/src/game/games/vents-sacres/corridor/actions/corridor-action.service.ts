@@ -67,7 +67,10 @@ export class CorridorActionService {
       return state;
     }
 
-    const actorId = state.turn?.currentPlayerId ?? null;
+    const actorId =
+      typeof (action as any)?.meta?.actorId === 'number'
+        ? (action as any).meta.actorId
+        : (state.turn?.currentPlayerId ?? null);
     const type = normalizeLowerActionType(action);
     const pendingType = String(state.pending?.type ?? '')
       .trim()
