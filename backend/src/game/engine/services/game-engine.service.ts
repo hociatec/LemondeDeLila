@@ -2471,31 +2471,42 @@ export class GameEngineService {
     ) {
       return state;
     }
-    const pending = state.pending ?? null;
-    const pendingType = String(pending?.type ?? '')
-      .trim()
-      .toLowerCase();
-    if (pendingType === 'pick_pawn') {
-      return state;
-    }
+	    const pending = state.pending ?? null;
+	    const pendingType = String(pending?.type ?? '')
+	      .trim()
+	      .toLowerCase();
+	    if (pendingType === 'pick_pawn') {
+	      return state;
+	    }
 
     const log = Array.isArray(state.log) ? state.log : [];
-    const recentMessages = log.slice(-3).map((entry) =>
-      String(entry?.message ?? '')
-        .trim()
-        .toLowerCase(),
-    );
-    if (recentMessages.some((m) => m.startsWith("c'est au tour de "))) {
-      return state;
-    }
+	    const recentMessages = log.slice(-3).map((entry) =>
+	      String(entry?.message ?? '')
+	        .trim()
+	        .toLowerCase(),
+	    );
+	    if (pendingType === 'choose_pawn') {
+	      if (
+	        recentMessages.some(
+	          (m) => m.includes('de choisir un pion') || m.startsWith("c'est au tour de "),
+	        )
+	      ) {
+	        return state;
+	      }
+	    } else if (recentMessages.some((m) => m.startsWith("c'est au tour de "))) {
+	      return state;
+	    }
 
     const players = Array.isArray(state.players) ? state.players : [];
-    const name =
-      this.normalizeUsernameForLog(
-        players.find((p) => p?.id === currentPlayerId)?.username,
-      ) || `Joueur ${currentPlayerId}`;
-    return this.core.appendLog(state, `C'est au tour de ${name}.`);
-  }
+	    const name =
+	      this.normalizeUsernameForLog(
+	        players.find((p) => p?.id === currentPlayerId)?.username,
+	      ) || `Joueur ${currentPlayerId}`;
+	    if (pendingType === 'choose_pawn') {
+	      return this.core.appendLog(state, `C'est à ${name} de choisir un pion.`);
+	    }
+	    return this.core.appendLog(state, `C'est au tour de ${name}.`);
+	  }
 
   private buildKey(roomId: number, gameType: string): string {
     return this.store.buildKey(roomId, gameType);

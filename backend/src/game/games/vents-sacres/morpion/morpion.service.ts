@@ -18,7 +18,6 @@ import {
   normalizeActionType,
 } from '../../../actions/action-service.helper';
 import {
-  pawnPlacement,
   victoryAnnouncement,
 } from '../../../core/helpers/game-log-text.helper';
 import { normalizeGameLogMessage } from '../../../core/helpers/log-style.helper';
@@ -293,16 +292,11 @@ export class MorpionService extends AbstractGameService {
     const opponentId = opponent?.id ?? null;
     const opponentName =
       opponent?.username ?? (opponentId != null ? `#${opponentId}` : null);
-    const glyph = this.glyphForOwner(actorId, players, meta);
+    const pawnLabel = this.pawnLabelForOwner(actorId, players, meta);
     const cellRef = this.toCellRef({ x, y }, size);
     let log = this.appendLog(
       state.log,
-      pawnPlacement({
-        playerLabel: actorName,
-        pawnLabel: glyph,
-        position: idx,
-        tileLabel: cellRef,
-      }),
+      `${actorName} place ${pawnLabel} en ${cellRef}.`,
     );
     if (winnerId) {
       log = this.appendLog(log, 'Fin de la manche.');
@@ -440,6 +434,20 @@ export class MorpionService extends AbstractGameService {
     return '@';
   }
 
+  private pawnLabelForOwner(
+    ownerId: number,
+    players: any[],
+    meta?: MorpionMetadata,
+  ): string {
+    const pawnId = String((meta?.glyphByPlayerId ?? {})[String(ownerId)] ?? '')
+      .trim()
+      .toLowerCase();
+    const pawn = MorpionService.PawnChoices.find((p) => p.id === pawnId) ?? null;
+    if (pawn?.label) return pawn.label;
+    if (pawnId) return pawnId;
+    return this.glyphForOwner(ownerId, players, meta);
+  }
+
   private applyChoosePawn(
     state: GameStateEntity,
     action: GameSingleActionDto,
@@ -502,6 +510,9 @@ export class MorpionService extends AbstractGameService {
       this.pickRandomHumanNeedingPawn(players as any, withBotsAssigned, metaAll);
 
     if (typeof nextPlayerId === 'number') {
+      const nextName =
+        players.find((p) => p?.id === nextPlayerId)?.username ?? `#${nextPlayerId}`;
+      log = this.appendLog(log, `C'est à ${nextName} de choisir un pion.`);
       return {
         ...state,
         metadata: { ...metaAfterPick, ...meta, glyphByPlayerId: withBotsAssigned } as any,
@@ -521,6 +532,11 @@ export class MorpionService extends AbstractGameService {
     }
 
     const startPlayerId = players[0]?.id ?? null;
+    if (typeof startPlayerId === 'number' && Number.isFinite(startPlayerId)) {
+      const startName =
+        players.find((p) => p?.id === startPlayerId)?.username ?? `#${startPlayerId}`;
+      log = this.appendLog(log, `C'est au tour de ${startName}.`);
+    }
     return {
       ...state,
       metadata: { ...metaAfterPick, ...meta, glyphByPlayerId: withBotsAssigned } as any,

@@ -191,14 +191,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
         };
         _announcements.Announced += _onAnnounced;
 
-        _room.InfoReceived += message =>
-        {
-            _ = _dispatcher.InvokeAsync(() =>
-            {
-                try { _announcements.TableInfo(message); } catch { }
-            }, DispatcherPriority.Background);
-        };
-
         _onIntentReceived = payload => _intentDispatcher.HandleIntent(payload);
         _room.IntentReceived += _onIntentReceived;
 

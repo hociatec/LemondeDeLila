@@ -53,6 +53,16 @@ export class TurnPoliciesService {
       typeof playerNameResolver === 'function'
         ? playerNameResolver(state, playerId)
         : this.playerName(state, playerId);
+
+    const pending = state.pending as any;
+    const pendingType = String(pending?.type ?? '')
+      .trim()
+      .toLowerCase();
+    const pendingPlayerId = Number(pending?.playerId);
+    if (pendingType === 'choose_pawn' && pendingPlayerId === playerId) {
+      return this.core.appendLog(state, `C'est à ${label} de choisir un pion.`);
+    }
+
     return this.core.appendLog(state, turnAnnouncement(label));
   }
 }

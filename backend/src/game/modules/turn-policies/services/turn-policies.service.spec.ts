@@ -35,4 +35,18 @@ describe('TurnPoliciesService non-regression', () => {
     );
     expect(out.log.at(-1)?.message).toBe("C'est au tour de Lila.");
   });
+
+  it('announces pawn selection when a choose_pawn pending is active', () => {
+    const state: any = {
+      players: [{ id: 3, username: 'Lila' }],
+      pending: { type: 'choose_pawn', playerId: 3, blocking: true },
+      log: [],
+    };
+    const out = service.appendTurnAnnouncement(state, 3);
+    expect(core.appendLog).toHaveBeenCalledWith(
+      state,
+      "C'est à Lila de choisir un pion.",
+    );
+    expect(out.log.at(-1)?.message).toBe("C'est à Lila de choisir un pion.");
+  });
 });
