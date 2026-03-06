@@ -4,23 +4,30 @@ import {
   Controller,
   Delete,
   Get,
+  InternalServerErrorException,
+  Logger,
   Param,
   Post,
   Put,
   UploadedFile,
+  UseFilters,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as os from 'os';
+import * as path from 'path';
 import { AdminRoleGuard } from '../common/guards/admin-role.guard';
 import { HttpJwtGuard } from '../common/guards/http-jwt.guard';
 import { SoundsService } from './sounds.service';
+import { MulterErrorFilter } from './multer-error.filter';
 
 @Controller('api/admin/sounds')
 @UseGuards(HttpJwtGuard, AdminRoleGuard)
 export class AdminSoundsController {
+  private readonly logger = new Logger(AdminSoundsController.name);
+
   constructor(private readonly sounds: SoundsService) {}
 
   @Post('cleanup')
@@ -80,12 +87,16 @@ export class AdminSoundsController {
   }
 
   @Post(':soundId')
+  @UseFilters(MulterErrorFilter)
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
         destination: (_req, _file, cb) => cb(null, os.tmpdir()),
         filename: (_req, file, cb) =>
-          cb(null, `lila-sound-${Date.now()}-${file.originalname}`),
+          cb(
+            null,
+            `lila-sound-${Date.now()}-${AdminSoundsController.sanitizeFilename(file.originalname)}`,
+          ),
       }),
       // WAV files are much larger than MP3. Keep this generous; only admins can upload.
       limits: { fileSize: 250 * 1024 * 1024 },
@@ -96,12 +107,22 @@ export class AdminSoundsController {
       throw new BadRequestException('Fichier manquant (champ "file").');
     }
     try {
-      const entry = await this.sounds.setSound(
-        soundId,
-        file.path,
-        file.originalname,
-      );
+      const entry = await this.sounds.setSound(soundId, file.path, file.originalname);
       return { ok: true, sound: entry };
+    } catch (err) {
+      const anyErr = err as any;
+      const message = String(anyErr?.message ?? err);
+      const stack = typeof anyErr?.stack === 'string' ? anyErr.stack : undefined;
+      this.logger.error(`Sound upload failed (${soundId}): ${message}`, stack);
+
+      // Preserve explicit HTTP exceptions (400/404/500 with message) so the client can display them.
+      if (anyErr?.getStatus && typeof anyErr.getStatus === 'function') {
+        throw err;
+      }
+
+      throw new InternalServerErrorException(
+        `Upload son échoué: ${message}`.trim(),
+      );
     } finally {
       try {
         // best-effort cleanup of temp file
@@ -116,5 +137,14 @@ export class AdminSoundsController {
   @Delete(':soundId')
   async clear(@Param('soundId') soundId: string) {
     return this.sounds.clearSound(soundId);
+  }
+
+  private static sanitizeFilename(originalName: string): string {
+    const base = path.basename(String(originalName || 'sound'));
+    return base
+      .replace(/[\\/:*?"<>|\u0000-\u001F]/g, '_')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 120);
   }
 }

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-02-13T13:54:25.212Z",
+  "updatedAt": "2026-03-06T22:13:43.421Z",
   "sounds": {
     "RoomJoined": {
       "soundId": "RoomJoined",
@@ -206,17 +206,17 @@
     },
     "TableAmbience1": {
       "soundId": "TableAmbience1",
-      "sha256": "8930e141e641d13061feebbe55a902704732e60de6b30ec3c634f143dcadc29c",
-      "bytes": 28090446,
-      "uploadedAt": "2026-02-01T01:01:47.793Z",
-      "url": "/api/sounds/TableAmbience1/8930e141e641d13061feebbe55a902704732e60de6b30ec3c634f143dcadc29c.wav"
+      "sha256": "311ca04cb75d06df9c5a9c8bd584efde5afdb0df4ad0068dc522317e88f84b39",
+      "bytes": 212234,
+      "uploadedAt": "2026-03-06T22:10:37.444Z",
+      "url": "/api/sounds/TableAmbience1/311ca04cb75d06df9c5a9c8bd584efde5afdb0df4ad0068dc522317e88f84b39.wav"
     },
     "TableAmbience2": {
       "soundId": "TableAmbience2",
-      "sha256": "3e3343054557f8fa4a3451cc2bc0f6f51a855622e41c175af3b53200ea0a505e",
-      "bytes": 34421838,
-      "uploadedAt": "2026-02-01T01:01:50.698Z",
-      "url": "/api/sounds/TableAmbience2/3e3343054557f8fa4a3451cc2bc0f6f51a855622e41c175af3b53200ea0a505e.wav"
+      "sha256": "311ca04cb75d06df9c5a9c8bd584efde5afdb0df4ad0068dc522317e88f84b39",
+      "bytes": 212234,
+      "uploadedAt": "2026-03-06T22:13:43.420Z",
+      "url": "/api/sounds/TableAmbience2/311ca04cb75d06df9c5a9c8bd584efde5afdb0df4ad0068dc522317e88f84b39.wav"
     },
     "TableAmbience3": {
       "soundId": "TableAmbience3",

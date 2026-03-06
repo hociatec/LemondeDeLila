@@ -121,6 +121,22 @@ export class SoundsService {
     return this.storageRoot;
   }
 
+  private storageIoError(
+    action: string,
+    err: unknown,
+  ): InternalServerErrorException {
+    const anyErr = err as any;
+    const code = anyErr?.code ? ` (${String(anyErr.code)})` : '';
+    const details = anyErr?.message ? `: ${String(anyErr.message)}` : '';
+    const stack = typeof anyErr?.stack === 'string' ? anyErr.stack : undefined;
+
+    this.logger.error(`Sound storage error during ${action}${code}${details}`, stack);
+
+    return new InternalServerErrorException(
+      `Erreur stockage sons pendant ${action}${code}${details}. Vérifiez les permissions du dossier de données.`.trim(),
+    );
+  }
+
   private getFfmpegPath(): string {
     const candidate = (ffmpegStatic as unknown as string) || '';
     if (!candidate) {
@@ -525,12 +541,16 @@ export class SoundsService {
 
   private async writeManifest(next: SoundManifest): Promise<void> {
     const root = this.dataRoot();
-    await fs.promises.mkdir(root, { recursive: true });
-    await fs.promises.writeFile(
-      this.manifestPath(),
-      JSON.stringify(next, null, 2),
-      'utf-8',
-    );
+    try {
+      await fs.promises.mkdir(root, { recursive: true });
+      await fs.promises.writeFile(
+        this.manifestPath(),
+        JSON.stringify(next, null, 2),
+        'utf-8',
+      );
+    } catch (err) {
+      throw this.storageIoError('écriture manifest.json', err);
+    }
   }
 
   private async readTableAmbiences(): Promise<TableAmbienceDefinitionsFile> {
@@ -570,12 +590,16 @@ export class SoundsService {
 
   private async writeTableAmbiences(next: TableAmbienceDefinitionsFile) {
     const root = this.dataRoot();
-    await fs.promises.mkdir(root, { recursive: true });
-    await fs.promises.writeFile(
-      this.tableAmbiencesPath(),
-      JSON.stringify(next, null, 2),
-      'utf-8',
-    );
+    try {
+      await fs.promises.mkdir(root, { recursive: true });
+      await fs.promises.writeFile(
+        this.tableAmbiencesPath(),
+        JSON.stringify(next, null, 2),
+        'utf-8',
+      );
+    } catch (err) {
+      throw this.storageIoError('écriture table-ambiences.json', err);
+    }
   }
 
   async listTableAmbiences(): Promise<TableAmbienceDefinitionsFile> {
@@ -846,11 +870,19 @@ export class SoundsService {
 
     const root = this.dataRoot();
     const soundDir = path.join(root, soundId);
-    await fs.promises.mkdir(soundDir, { recursive: true });
+    try {
+      await fs.promises.mkdir(soundDir, { recursive: true });
+    } catch (err) {
+      throw this.storageIoError(`création dossier son (${soundId})`, err);
+    }
 
     const destName = `${sha256}.wav`;
     const destPath = path.join(soundDir, destName);
-    await fs.promises.writeFile(destPath, bytes);
+    try {
+      await fs.promises.writeFile(destPath, bytes);
+    } catch (err) {
+      throw this.storageIoError(`écriture fichier son (${soundId})`, err);
+    }
 
     const entry: SoundManifestEntry = {
       soundId,

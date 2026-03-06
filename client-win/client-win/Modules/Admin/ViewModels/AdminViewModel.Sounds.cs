@@ -1123,12 +1123,39 @@ public sealed partial class AdminViewModel
             return false;
         }
 
-        if (!resp.IsSuccessStatusCode)
+        using (resp)
         {
-            var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
-            var message = ApiErrorParser.TryExtractMessage(body) ?? body;
-            await _dialogs.ShowError("Sons", $"Upload échoué ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
-            return false;
+            if (!resp.IsSuccessStatusCode)
+            {
+                var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
+                var message = ApiErrorParser.TryExtractMessage(body);
+
+                if (string.IsNullOrWhiteSpace(message))
+                {
+                    var trimmed = (body ?? string.Empty).Trim();
+                    if (trimmed.Contains("<html", StringComparison.OrdinalIgnoreCase) ||
+                        trimmed.Contains("<!doctype", StringComparison.OrdinalIgnoreCase))
+                    {
+                        message = resp.ReasonPhrase ?? "Erreur serveur (réponse HTML).";
+                    }
+                    else
+                    {
+                        message = !string.IsNullOrWhiteSpace(trimmed)
+                            ? trimmed
+                            : resp.ReasonPhrase ?? "Erreur API";
+                    }
+                }
+
+                if (string.Equals(message, "Internal server error", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(message, "Internal Server Error", StringComparison.OrdinalIgnoreCase))
+                {
+                    message =
+                        "Erreur serveur interne. Vérifiez les logs du backend (upload sons) et les permissions du dossier des sons. Astuce : essayez un fichier .wav si le .mp3 échoue.";
+                }
+
+                await _dialogs.ShowError("Sons", $"Upload échoué ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
+                return false;
+            }
         }
 
         return true;
