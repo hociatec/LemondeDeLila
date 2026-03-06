@@ -33,6 +33,7 @@ public partial class GameZoneHostView : UserControl
         var focusInsideHost = IsFocusInside(this);
         var focusIsHealthy = focusInsideHost && IsCurrentHostFocusHealthy();
         var passiveReason = reason == GameFocusReason.GamePlayReady;
+        var allowExternalTextInputSteal = reason != GameFocusReason.GamePlayReady;
 
         // Avoid re-focusing the same game zone on frequent state updates:
         // if focus is already within this host, keep it stable.
@@ -43,7 +44,7 @@ public partial class GameZoneHostView : UserControl
                 return GameFocusAttemptResult.Anchor;
             }
 
-            if (IsFocusInside(GameZoneFocusAnchor) || IsFocusInside(GameZoneEmptyAnchor))
+            if (IsFocusInside(GameZoneFocusAnchor))
             {
                 if (GameZoneHost?.Content == null)
                 {
@@ -51,12 +52,12 @@ public partial class GameZoneHostView : UserControl
                 }
 
                 var existingFocusRequestId = Interlocked.Increment(ref _focusRequestId);
-                if (TryFocusInteractiveGameContent())
+                if (TryFocusInteractiveGameContent(allowExternalTextInputSteal: allowExternalTextInputSteal))
                 {
                     return GameFocusAttemptResult.Interactive;
                 }
 
-                QueueDeferredFocusAttempt(existingFocusRequestId, DispatcherPriority.Loaded);
+                QueueDeferredFocusAttempt(existingFocusRequestId, DispatcherPriority.Loaded, allowExternalTextInputSteal);
                 return GameFocusAttemptResult.Anchor;
             }
 
@@ -67,19 +68,13 @@ public partial class GameZoneHostView : UserControl
 
         if (GameZoneHost?.Content == null)
         {
-            if (ReferenceEquals(Keyboard.FocusedElement, GameZoneEmptyAnchor))
+            if (ReferenceEquals(Keyboard.FocusedElement, GameZoneFocusAnchor))
             {
                 return GameFocusAttemptResult.Anchor;
             }
 
-            if (GameZoneEmptyAnchor?.Focus() == true)
-            {
-                Keyboard.Focus(GameZoneEmptyAnchor);
-                return GameFocusAttemptResult.Anchor;
-            }
-
-            GameZoneEmptyAnchor?.Focus();
-            Keyboard.Focus(GameZoneEmptyAnchor);
+            GameZoneFocusAnchor?.Focus();
+            Keyboard.Focus(GameZoneFocusAnchor);
             return GameFocusAttemptResult.Anchor;
         }
 
@@ -90,7 +85,7 @@ public partial class GameZoneHostView : UserControl
                 // Passive update + broken focus: recover to a stable game anchor, then retry.
                 var recoverRequestId = Interlocked.Increment(ref _focusRequestId);
                 FocusGameZoneAnchor();
-                QueueDeferredFocusAttempt(recoverRequestId, DispatcherPriority.Loaded);
+                QueueDeferredFocusAttempt(recoverRequestId, DispatcherPriority.Loaded, allowExternalTextInputSteal: false);
                 return GameFocusAttemptResult.Anchor;
             }
 
@@ -105,7 +100,9 @@ public partial class GameZoneHostView : UserControl
         }
 
         var requestId = Interlocked.Increment(ref _focusRequestId);
-        if (TryFocusInteractiveGameContent(forceFromOutsideTextInput: !passiveReason))
+        if (TryFocusInteractiveGameContent(
+            forceFromOutsideTextInput: !passiveReason,
+            allowExternalTextInputSteal: allowExternalTextInputSteal))
         {
             return GameFocusAttemptResult.Interactive;
         }
@@ -116,7 +113,7 @@ public partial class GameZoneHostView : UserControl
             {
                 // Passive update + broken focus: recover to a stable game anchor, then retry.
                 FocusGameZoneAnchor();
-                QueueDeferredFocusAttempt(requestId, DispatcherPriority.Loaded);
+                QueueDeferredFocusAttempt(requestId, DispatcherPriority.Loaded, allowExternalTextInputSteal: false);
                 return GameFocusAttemptResult.Anchor;
             }
 
@@ -127,11 +124,11 @@ public partial class GameZoneHostView : UserControl
         // Content is set but the visual tree may still be materializing via DataTemplate.
         // Keep a stable anchor immediately, then retry when layout has finished.
         FocusGameZoneAnchor();
-        QueueDeferredFocusAttempt(requestId, DispatcherPriority.Loaded);
+        QueueDeferredFocusAttempt(requestId, DispatcherPriority.Loaded, allowExternalTextInputSteal);
         return GameFocusAttemptResult.Anchor;
     }
 
-    private void QueueDeferredFocusAttempt(int requestId, DispatcherPriority priority)
+    private void QueueDeferredFocusAttempt(int requestId, DispatcherPriority priority, bool allowExternalTextInputSteal)
     {
         _ = Dispatcher.BeginInvoke(priority, new Action(() =>
         {
@@ -145,7 +142,7 @@ public partial class GameZoneHostView : UserControl
                 return;
             }
 
-            if (TryFocusInteractiveGameContent())
+            if (TryFocusInteractiveGameContent(allowExternalTextInputSteal: allowExternalTextInputSteal))
             {
                 return;
             }
@@ -154,7 +151,9 @@ public partial class GameZoneHostView : UserControl
         }));
     }
 
-    private bool TryFocusInteractiveGameContent(bool forceFromOutsideTextInput = true)
+    private bool TryFocusInteractiveGameContent(
+        bool forceFromOutsideTextInput = true,
+        bool allowExternalTextInputSteal = false)
     {
         var content = GameZoneHost?.Content;
         if (content == null || GameZoneHost == null)
@@ -181,7 +180,7 @@ public partial class GameZoneHostView : UserControl
                 {
                     gamePlayView.FocusPreferredInteractiveElement(
                         forceFromOutsideTextInput,
-                        allowExternalTextInputSteal: true);
+                        allowExternalTextInputSteal: allowExternalTextInputSteal);
                     return IsFocusInside(gamePlayView);
                 }
 
@@ -189,7 +188,7 @@ public partial class GameZoneHostView : UserControl
                 {
                     nestedGamePlayView.FocusPreferredInteractiveElement(
                         forceFromOutsideTextInput,
-                        allowExternalTextInputSteal: true);
+                        allowExternalTextInputSteal: allowExternalTextInputSteal);
                     return IsFocusInside(nestedGamePlayView);
                 }
 
@@ -219,7 +218,7 @@ public partial class GameZoneHostView : UserControl
         {
             fallbackPlayView.FocusPreferredInteractiveElement(
                 forceFromOutsideTextInput,
-                allowExternalTextInputSteal: true);
+                allowExternalTextInputSteal: allowExternalTextInputSteal);
             return IsFocusInside(fallbackPlayView);
         }
 
@@ -327,30 +326,14 @@ public partial class GameZoneHostView : UserControl
 
     private void FocusGameZoneAnchor()
     {
-        if (ReferenceEquals(Keyboard.FocusedElement, GameZoneFocusAnchor) ||
-            ReferenceEquals(Keyboard.FocusedElement, GameZoneEmptyAnchor))
+        if (ReferenceEquals(Keyboard.FocusedElement, GameZoneFocusAnchor))
         {
             return;
-        }
-
-        if (ShouldPreferStartAnchor())
-        {
-            if (GameZoneEmptyAnchor?.Focus() == true)
-            {
-                Keyboard.Focus(GameZoneEmptyAnchor);
-                return;
-            }
         }
 
         if (GameZoneFocusAnchor?.Focus() == true)
         {
             Keyboard.Focus(GameZoneFocusAnchor);
-            return;
-        }
-
-        if (GameZoneEmptyAnchor?.Focus() == true)
-        {
-            Keyboard.Focus(GameZoneEmptyAnchor);
             return;
         }
 
@@ -451,12 +434,12 @@ public partial class GameZoneHostView : UserControl
             }
 
             var requestId = Interlocked.Increment(ref _focusRequestId);
-            if (TryFocusInteractiveGameContent())
+            if (TryFocusInteractiveGameContent(allowExternalTextInputSteal: true))
             {
                 return;
             }
 
-            QueueDeferredFocusAttempt(requestId, DispatcherPriority.Loaded);
+            QueueDeferredFocusAttempt(requestId, DispatcherPriority.Loaded, allowExternalTextInputSteal: true);
             return;
         }
 
@@ -496,12 +479,12 @@ public partial class GameZoneHostView : UserControl
                 return;
             }
 
-            if (TryFocusInteractiveGameContent())
+            if (TryFocusInteractiveGameContent(allowExternalTextInputSteal: true))
             {
                 return;
             }
 
-            QueueDeferredFocusAttempt(requestId, DispatcherPriority.Loaded);
+            QueueDeferredFocusAttempt(requestId, DispatcherPriority.Loaded, allowExternalTextInputSteal: true);
         }));
     }
 }

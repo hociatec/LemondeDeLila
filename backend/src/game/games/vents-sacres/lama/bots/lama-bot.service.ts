@@ -57,11 +57,7 @@ export class LamaBotService {
     const discard = Array.isArray(meta.discard) ? meta.discard : [];
     const top = discard.length ? discard[discard.length - 1] : null;
     if (!top) return [];
-    const drawLocked =
-      !meta.allowDrawAfterFirstQuit &&
-      Object.values(meta.droppedOutByPlayerId ?? {}).some((isOut) =>
-        Boolean(isOut),
-      );
+    const drawLocked = this.shared.isDrawLocked(meta);
 
     const canPlayValues = new Set<LamaCardValue>([top, nextLamaValue(top)]);
 
@@ -83,6 +79,9 @@ export class LamaBotService {
     }
 
     if (alreadyDrew && !trackerPlayed) {
+      if (Boolean(meta.allowPlayAfterDraw)) {
+        return [{ type: 'lama_pass', payload: {} }];
+      }
       return [{ type: 'lama_quit', payload: {} }];
     }
 

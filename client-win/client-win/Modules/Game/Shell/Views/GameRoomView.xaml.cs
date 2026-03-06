@@ -321,6 +321,35 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         var key = e.Key == Key.System ? e.SystemKey : e.Key;
         _focusPolicy?.NotifyUserKeyDown(key);
 
+        if (key is Key.Enter or Key.Return)
+        {
+            if (DataContext is GameRoomViewModel vm &&
+                vm.GameZone is { IsStarted: false } &&
+                vm.GameZone.StartCommand.CanExecute(null))
+            {
+                var focused = Keyboard.FocusedElement as DependencyObject ?? e.OriginalSource as DependencyObject;
+
+                // Never override chat Enter (send message).
+                if (ChatInput != null &&
+                    (ChatInput.IsKeyboardFocusWithin ||
+                     ReferenceEquals(Keyboard.FocusedElement, ChatInput) ||
+                     (focused != null && IsFocusWithinElement(ChatInput, focused))))
+                {
+                    return;
+                }
+
+                // When an inline prompt overlay is visible, Enter belongs to the prompt.
+                if (focused != null && IsInlinePromptVisible(focused))
+                {
+                    return;
+                }
+
+                e.Handled = true;
+                vm.GameZone.StartCommand.Execute(null);
+                return;
+            }
+        }
+
         if (key == Key.Tab)
         {
             var isShift = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;

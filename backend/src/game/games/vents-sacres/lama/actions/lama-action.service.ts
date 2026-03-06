@@ -22,7 +22,7 @@ export class LamaActionService {
   constructor(
     private readonly shared: LamaSharedService,
     private readonly drawService: LamaDrawService,
-    _passService: LamaPassService,
+    private readonly passService: LamaPassService,
     private readonly playService: LamaPlayService,
     private readonly quitService: LamaQuitService,
     private readonly returnService: LamaReturnService,
@@ -174,8 +174,20 @@ export class LamaActionService {
     }
 
     if (type === 'lama_pass') {
-      // Official LAMA rule: "pass" means leaving the round.
-      // Keep backward compatibility for older clients still sending lama_pass.
+      const allowPlayAfterDraw = this.shared.asBoolean(
+        (metaForTurn as any)?.allowPlayAfterDraw,
+      );
+      const tracker = metaForTurn.turnTracker ?? null;
+      const trackerDrawn = this.shared.asBoolean((tracker as any)?.drawn);
+      const trackerPlayed = this.shared.asBoolean((tracker as any)?.played);
+
+      // Backward compatibility:
+      // - Older clients used `lama_pass` to mean "leave the round" (official rule).
+      // - When `allowPlayAfterDraw` is enabled, `lama_pass` means "end the turn" *after drawing*.
+      if (allowPlayAfterDraw && trackerDrawn && !trackerPlayed) {
+        return this.passService.applyPass(state, metaForTurn, actorId);
+      }
+
       return this.quitService.applyQuit(state, metaForTurn, actorId);
     }
 

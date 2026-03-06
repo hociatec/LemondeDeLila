@@ -85,7 +85,6 @@ export class LamaPresenter extends BasePresenterService {
 
     const out: GameSingleActionDto[] = [
       { type: 'lama_peek_discard', payload: {} },
-      { type: 'lama_quit', payload: {} },
     ];
 
     const handValues = (
@@ -187,6 +186,11 @@ export class LamaPresenter extends BasePresenterService {
 
     if (!drawLocked && (meta.deck ?? []).length > 0 && !alreadyDrew) {
       out.push({ type: 'draw', payload: {} });
+    }
+
+    const allowPlayAfterDraw = Boolean(meta.allowPlayAfterDraw);
+    if (allowPlayAfterDraw && alreadyDrew && !trackerPlayed) {
+      out.push({ type: 'lama_pass', payload: {} });
     }
     out.push({ type: 'lama_quit', payload: {} });
     return out;
@@ -336,8 +340,8 @@ export class LamaPresenter extends BasePresenterService {
     if (actionType === 'lama_play') return 'Jouer';
     if (actionType === 'draw') return 'Piocher';
     if (actionType === 'lama_set_config') return 'Configuration';
-    if (actionType === 'lama_quit') return 'Passer (se retirer de la manche)';
-    if (actionType === 'lama_pass') return 'Passer (se retirer de la manche)';
+    if (actionType === 'lama_quit') return 'Se retirer de la manche';
+    if (actionType === 'lama_pass') return 'Passer (fin du tour)';
     if (actionType === 'lama_return') return 'Rendre jetons';
     if (actionType === 'lama_peek_discard') return 'Voir défausse';
     if (actionType === 'lama_preview') return 'Voir carte';
@@ -506,9 +510,13 @@ export class LamaPresenter extends BasePresenterService {
 
   private isDrawLocked(meta: LamaMetadata): boolean {
     if (meta.allowDrawAfterFirstQuit) return false;
-    return Object.values(meta.droppedOutByPlayerId ?? {}).some((isOut) =>
-      Boolean(isOut),
-    );
+
+    const dropped = meta.droppedOutByPlayerId ?? {};
+    const hands = meta.handsByPlayerId ?? {};
+
+    // Only consider players actually in the round (handsByPlayerId keys).
+    // Eliminated players may remain flagged as dropped and must not lock draws.
+    return Object.keys(hands).some((pid) => Boolean(dropped[pid]));
   }
 
   private redactDrawLogForUser(

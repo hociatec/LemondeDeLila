@@ -53,7 +53,7 @@ export class BoardPayloadService {
   }): string {
     const playerId = params.playerId;
     if (typeof playerId !== 'number' || !Number.isFinite(playerId)) {
-      return 'Position: inconnue.';
+      return 'Positions: inconnues.';
     }
 
     const board = this.buildTilesPositionsLaps(
@@ -65,14 +65,36 @@ export class BoardPayloadService {
     const totalTiles = board.tiles.length;
     const pos = board.positions[String(playerId)];
     if (!Number.isFinite(pos) || totalTiles <= 0) {
-      return 'Position: inconnue.';
+      return 'Positions: inconnues.';
     }
 
-    const caseNumber = Math.max(1, Math.trunc(pos) + 1);
-    const lap = board.laps?.[String(playerId)];
-    const tourPlateau = Number.isFinite(lap)
-      ? String(Math.trunc(lap as number))
-      : '?';
-    return `Tour plateau ${tourPlateau}, case ${caseNumber}/${totalTiles}.`;
+    const formatLine = (id: string, position: number): string => {
+      const caseNumber = Math.max(1, Math.trunc(position) + 1);
+      const lap = board.laps?.[id];
+      const tourPlateau = Number.isFinite(lap)
+        ? String(Math.trunc(lap as number))
+        : '?';
+      return `Tour plateau ${tourPlateau}, case ${caseNumber}/${totalTiles}.`;
+    };
+
+    const meLine = `Vous : ${formatLine(String(playerId), pos)}`;
+
+    const others: Array<{ id: number; line: string }> = [];
+    for (const [rawId, rawPos] of Object.entries(board.positions)) {
+      if (rawId === String(playerId)) continue;
+      const pid = Number.parseInt(rawId, 10);
+      if (!Number.isFinite(pid) || pid <= 0) continue;
+      if (!Number.isFinite(rawPos)) continue;
+      others.push({ id: pid, line: `Joueur ${pid} : ${formatLine(rawId, rawPos)}` });
+    }
+    others.sort((a, b) => a.id - b.id);
+
+    if (others.length === 0) {
+      // Backward-compatible single-line output (common case: solo / positions incomplete).
+      return formatLine(String(playerId), pos);
+    }
+
+    // Multi-joueurs: inclure toutes les positions (utile pour le raccourci "P").
+    return [meLine, ...others.map((o) => o.line)].join('\n');
   }
 }

@@ -11,7 +11,7 @@ import { LamaSharedService } from '../shared/lama-shared.service';
 
 @Injectable()
 export class LamaShortcutsService {
-  constructor(_shared: LamaSharedService) {}
+  constructor(private readonly shared: LamaSharedService) {}
 
   getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
     if (!ctx?.started) return [];
@@ -23,9 +23,7 @@ export class LamaShortcutsService {
       typeof meta.droppedOutByPlayerId === 'object'
         ? meta.droppedOutByPlayerId
         : {};
-    const drawLocked = Object.values(droppedOutByPlayerId).some((isOut) =>
-      Boolean(isOut),
-    );
+    const drawLocked = this.shared.isDrawLocked(meta);
     const currentPlayerDropped =
       currentPlayerId != null &&
       Boolean(droppedOutByPlayerId[String(currentPlayerId)]);
@@ -41,6 +39,10 @@ export class LamaShortcutsService {
       tracker?.drawn === true ||
       tracker?.drawn === 1 ||
       String(tracker?.drawn ?? '').toLowerCase() === 'true';
+    const trackerPlayed =
+      tracker?.played === true ||
+      tracker?.played === 1 ||
+      String(tracker?.played ?? '').toLowerCase() === 'true';
     const isSameTurn = trackerPlayerId === currentPlayerId;
     const canDraw =
       isSameTurn &&
@@ -49,12 +51,18 @@ export class LamaShortcutsService {
       deckCount > 0 &&
       !trackerDrawn;
 
+    const allowPlayAfterDraw =
+      meta?.allowPlayAfterDraw === true ||
+      meta?.allowPlayAfterDraw === 1 ||
+      String(meta?.allowPlayAfterDraw ?? '').toLowerCase() === 'true';
+    const canPassTurn = allowPlayAfterDraw && isSameTurn && trackerDrawn && !trackerPlayed;
+
     return [
       ...(canDraw ? [actionShortcut('SPACE', 'draw')] : []),
       interfaceShortcut('C', 'discard'),
       interfaceShortcut('E', 'hands'),
       interfaceShortcut('S', 'score'),
-      actionShortcut('P', 'lama_quit'),
+      actionShortcut('P', canPassTurn ? 'lama_pass' : 'lama_quit'),
       actionShortcut('Q', 'lama_quit'),
     ];
   }

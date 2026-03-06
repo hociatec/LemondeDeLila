@@ -529,10 +529,16 @@ public partial class GamePlayView
             // No local choice action sent: allow ENTER fallback to server shortcut handling.
         }
 
-        // Grille: laisser EntrÃ©e/Espace activer la case (Button.Command) au lieu de renvoyer une touche "ENTER" au serveur.
-        // Sinon Corridor (prendre le pion / dÃ©placement / pose de mur) devient inutilisable.
-        if (!isFinishedState &&
+        var status = (vm.Session?.LastState?.Status ?? string.Empty).Trim();
+        var isStartedState = string.Equals(status, "started", StringComparison.OrdinalIgnoreCase);
+
+        // Grille (jeu démarré): laisser Entrée/Espace activer la case (Button.Command) au lieu de renvoyer une touche "ENTER" au serveur.
+        // Sinon Corridor (prendre le pion / déplacement / pose de mur) devient inutilisable.
+        // En setup/config: ne pas "manger" Entrée, elle doit pouvoir relancer la config/démarrage côté serveur.
+        if (isStartedState &&
+            !isFinishedState &&
             vm.Grid.IsVisible &&
+            vm.Grid.HasAnyGridAction &&
             IsFocusWithinGrid() &&
             (e.Key == Key.Enter || e.Key == Key.Return || e.Key == Key.Space))
         {

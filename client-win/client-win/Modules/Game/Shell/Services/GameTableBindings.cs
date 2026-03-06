@@ -838,6 +838,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private async System.Threading.Tasks.Task HandleGameStatusChangedAsync(string previousStatus, string nextStatus)
     {
         var nowStarted = string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase);
+        var nowFinished = string.Equals(nextStatus, "finished", StringComparison.OrdinalIgnoreCase);
 
         // Synchronisation idempotente (evite les races room.status vs game.status) :
         // on garantit que (IsStarted, Content, raccourcis) correspondent au statut du jeu.
@@ -846,6 +847,18 @@ internal sealed class GameTableBindings : IAsyncDisposable
         if (nowStarted)
         {
             EnterStartedFlow(source: "game.status", fromGameStatus: true, announceIfFirst: true);
+            return;
+        }
+
+        // Fin de partie (statut "finished"): garder la zone de jeu chargée.
+        // Raison: le serveur supporte ENTER (restart) et X (reset) via /ws/game.key en fin de partie.
+        // Si on décharge la zone trop tôt, les joueurs se retrouvent bloqués (Enter/Reset non fonctionnels)
+        // jusqu'au reset système, et la relance peut être impossible si room.start n'est pas autorisé.
+        if (nowFinished)
+        {
+            SetRoomShortcutsForStarted(started: true);
+            EnsureGamePlayLoaded();
+            SyncGameplayShortcuts();
             return;
         }
 

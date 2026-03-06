@@ -56,7 +56,7 @@ public sealed class GameRoomViewFocusFlowTests
                 StaDispatcherHarness.Drain(dispatcher);
                 var zone = Assert.IsType<GameZoneHostView>(view.FindName("GameZoneHost"));
 
-                SendEnterOnZoneAnchor(zone, "GameZoneEmptyAnchor");
+                SendEnterOnZoneAnchor(zone, "GameZoneFocusAnchor");
                 Assert.Equal(1, startCalls);
             }
             finally
@@ -104,6 +104,56 @@ public sealed class GameRoomViewFocusFlowTests
                 SendEnterOnZoneAnchor(zone, "GameZoneFocusAnchor");
                 Assert.Equal(0, startCalls);
                 Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(zone), dispatcher, 1200));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void Enter_WhenTableNotStarted_StartsEvenIfFocusNotOnHeaderOrAnchor()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            var focusCoordinator = new GameFocusCoordinator(dispatcher);
+            var startCalls = 0;
+
+            var vm = CreateViewModel(
+                focusCoordinator,
+                onStart: () =>
+                {
+                    startCalls++;
+                    return Task.CompletedTask;
+                });
+            vm.GameZone.CanStart = true;
+            vm.GameZone.IsStarted = false;
+
+            var view = new GameRoomView { DataContext = vm };
+            var window = new Window
+            {
+                Width = 1000,
+                Height = 700,
+                Content = view,
+                ShowInTaskbar = false,
+                WindowStyle = WindowStyle.None,
+            };
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var history = Assert.IsType<GameHistoryView>(view.FindName("HistoryHost"));
+                var historyTarget = Assert.IsAssignableFrom<FrameworkElement>(history.FocusTarget);
+                historyTarget.Focus();
+                Keyboard.Focus(historyTarget);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(historyTarget), dispatcher, 1200));
+
+                SendPreviewEnter(view);
+                Assert.Equal(1, startCalls);
             }
             finally
             {

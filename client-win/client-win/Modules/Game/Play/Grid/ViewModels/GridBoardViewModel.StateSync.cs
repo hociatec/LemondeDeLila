@@ -24,6 +24,7 @@ public sealed partial class GridBoardViewModel
             Status = string.Empty;
             _lastCellSyncByKey.Clear();
             _hasAnyMoveAction = false;
+            HasAnyGridAction = false;
             _pawnPositionsPrimed = false;
             _lastPawnPosByOwnerId.Clear();
             _wallLayoutPrimed = false;
@@ -50,6 +51,7 @@ public sealed partial class GridBoardViewModel
             Status = string.Empty;
             _lastCellSyncByKey.Clear();
             _hasAnyMoveAction = false;
+            HasAnyGridAction = false;
             _pawnPositionsPrimed = false;
             _lastPawnPosByOwnerId.Clear();
             _wallLayoutPrimed = false;
@@ -76,6 +78,7 @@ public sealed partial class GridBoardViewModel
         var renderByKey = TryReadGridRenderCells(state);
         BuildGridActionsIndex(state);
         _hasAnyMoveAction = _gridActionsByCellKey.Values.Any(list => list != null && list.Any(a => HasUiKind(a.Payload, "move")));
+        HasAnyGridAction = _gridActionsByCellKey.Values.Any(list => list != null && list.Count > 0);
         _isEntityGrabbed = false;
 
         for (var i = 0; i < Cells.Count; i++)

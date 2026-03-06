@@ -78,15 +78,43 @@ export class SoundsService {
       return legacyRoot;
     }
 
-    const persistentRoot = path.join(
-      homedir(),
-      '.local',
-      'share',
-      'lemonde-de-lila',
-      'sounds',
-    );
+    const persistentRoot =
+      process.platform === 'win32'
+        ? path.join(
+            String(
+              process.env.PROGRAMDATA ??
+                path.join(homedir(), 'AppData', 'Local'),
+            ),
+            'lemonde-de-lila',
+            'sounds',
+          )
+        : path.join(
+            homedir(),
+            '.local',
+            'share',
+            'lemonde-de-lila',
+            'sounds',
+          );
+
     this.bootstrapPersistentStorage(legacyRoot, persistentRoot);
-    return persistentRoot;
+
+    try {
+      fs.mkdirSync(persistentRoot, { recursive: true });
+      const testFile = path.join(
+        persistentRoot,
+        `.write-test-${process.pid}-${Date.now()}`,
+      );
+      fs.writeFileSync(testFile, 'ok', 'utf-8');
+      fs.rmSync(testFile, { force: true });
+      return persistentRoot;
+    } catch (err) {
+      this.logger.warn(
+        `Persistent sounds dir not writable (${persistentRoot}); falling back to legacy (${legacyRoot}): ${String(
+          (err as any)?.message ?? err,
+        )}`,
+      );
+      return legacyRoot;
+    }
   }
 
   private dataRoot() {
@@ -157,21 +185,186 @@ export class SoundsService {
     });
   }
 
-  private async probeDurationSeconds(filePath: string): Promise<number> {
-    const ffprobePath = this.getFfprobePath();
-    const res = await this.runProcess(
-      ffprobePath,
-      [
-        '-v',
-        'error',
-        '-show_entries',
-        'format=duration',
-        '-of',
-        'default=nw=1:nk=1',
-        filePath,
-      ],
-      10000,
+  private isSpawnExecutionError(err: unknown): boolean {
+    const anyErr = err as any;
+    const code = String(anyErr?.code ?? '').toUpperCase();
+    return code === 'ENOENT' || code === 'EACCES' || code === 'EPERM';
+  }
+
+  private audioToolExecutionError(
+    tool: 'ffmpeg' | 'ffprobe',
+    err: unknown,
+    hint?: string,
+  ): InternalServerErrorException {
+    const anyErr = err as any;
+    const code = anyErr?.code ? ` (${String(anyErr.code)})` : '';
+    const details = anyErr?.message ? `: ${String(anyErr.message)}` : '';
+    const extra = hint ? ` ${hint}` : '';
+    return new InternalServerErrorException(
+      `Impossible d'exécuter ${tool}${code}${details}.${extra}`.trim(),
     );
+  }
+
+  private async readWavMeta(filePath: string): Promise<{
+    durationSeconds: number;
+    dataOffset: number;
+    dataSize: number;
+    bitsPerSample: number;
+    audioFormat: number;
+    byteRate: number;
+  }> {
+    const fh = await fs.promises.open(filePath, 'r');
+    try {
+      const headerSize = 256 * 1024;
+      const buf = Buffer.allocUnsafe(headerSize);
+      const { bytesRead } = await fh.read(buf, 0, headerSize, 0);
+      const b = buf.subarray(0, bytesRead);
+
+      if (b.length < 44) {
+        throw new BadRequestException('Fichier WAV invalide (entête).');
+      }
+      if (
+        b.toString('ascii', 0, 4) !== 'RIFF' ||
+        b.toString('ascii', 8, 12) !== 'WAVE'
+      ) {
+        throw new BadRequestException('Fichier WAV invalide (RIFF/WAVE).');
+      }
+
+      let pos = 12;
+      let audioFormat = 0;
+      let bitsPerSample = 0;
+      let byteRate = 0;
+      let dataOffset = -1;
+      let dataSize = 0;
+
+      while (pos + 8 <= b.length) {
+        const chunkId = b.toString('ascii', pos, pos + 4);
+        const chunkSize = b.readUInt32LE(pos + 4);
+        pos += 8;
+
+        if (chunkId === 'fmt ') {
+          if (pos + 16 > b.length) {
+            throw new BadRequestException('Fichier WAV invalide (fmt).');
+          }
+          audioFormat = b.readUInt16LE(pos + 0);
+          const numChannels = b.readUInt16LE(pos + 2);
+          const sampleRate = b.readUInt32LE(pos + 4);
+          byteRate = b.readUInt32LE(pos + 8);
+          bitsPerSample = b.readUInt16LE(pos + 14);
+
+          if (!numChannels || !sampleRate || !byteRate || !bitsPerSample) {
+            throw new BadRequestException('Fichier WAV invalide (fmt).');
+          }
+          if (audioFormat !== 1 && audioFormat !== 3) {
+            throw new BadRequestException(
+              'Format WAV non supporté (seulement PCM/Float).',
+            );
+          }
+        } else if (chunkId === 'data') {
+          dataOffset = pos;
+          dataSize = chunkSize;
+        }
+
+        // Chunk sizes are padded to word boundary.
+        pos += chunkSize + (chunkSize % 2);
+
+        if (audioFormat && dataOffset >= 0) break;
+      }
+
+      if (!audioFormat || dataOffset < 0 || dataSize <= 0 || !byteRate) {
+        throw new BadRequestException('Fichier WAV invalide (données).');
+      }
+
+      const durationSeconds = dataSize / byteRate;
+      if (!Number.isFinite(durationSeconds) || durationSeconds <= 0) {
+        throw new BadRequestException('Fichier WAV invalide (durée nulle).');
+      }
+
+      return {
+        durationSeconds,
+        dataOffset,
+        dataSize,
+        bitsPerSample,
+        audioFormat,
+        byteRate,
+      };
+    } finally {
+      await fh.close().catch(() => undefined);
+    }
+  }
+
+  private async isWavSilent(filePath: string): Promise<boolean> {
+    const meta = await this.readWavMeta(filePath);
+    const silenceByte =
+      meta.bitsPerSample === 8 && meta.audioFormat === 1 ? 0x80 : 0x00;
+    const segmentSize = Math.min(64 * 1024, meta.dataSize);
+    const offsets = [
+      meta.dataOffset,
+      meta.dataOffset +
+        Math.max(
+          0,
+          Math.floor(meta.dataSize / 2) - Math.floor(segmentSize / 2),
+        ),
+      meta.dataOffset + Math.max(0, meta.dataSize - segmentSize),
+    ];
+
+    const fh = await fs.promises.open(filePath, 'r');
+    try {
+      const buf = Buffer.allocUnsafe(segmentSize);
+      for (const off of offsets) {
+        const { bytesRead } = await fh.read(buf, 0, segmentSize, off);
+        if (bytesRead <= 0) {
+          throw new BadRequestException('Fichier WAV invalide (lecture).');
+        }
+        const slice = buf.subarray(0, bytesRead);
+        for (let i = 0; i < slice.length; i++) {
+          if (slice[i] !== silenceByte) {
+            return false;
+          }
+        }
+      }
+      return true;
+    } finally {
+      await fh.close().catch(() => undefined);
+    }
+  }
+
+  private async probeDurationSeconds(filePath: string): Promise<number> {
+    const ext = path.extname(filePath).toLowerCase();
+    let ffprobePath: string;
+    try {
+      ffprobePath = this.getFfprobePath();
+    } catch (err) {
+      if (ext === '.wav' || ext === '.wave') {
+        return (await this.readWavMeta(filePath)).durationSeconds;
+      }
+      throw err;
+    }
+    let res: { code: number; stdout: string; stderr: string };
+    try {
+      res = await this.runProcess(
+        ffprobePath,
+        [
+          '-v',
+          'error',
+          '-show_entries',
+          'format=duration',
+          '-of',
+          'default=nw=1:nk=1',
+          filePath,
+        ],
+        10000,
+      );
+    } catch (err) {
+      if (this.isSpawnExecutionError(err) && (ext === '.wav' || ext === '.wave')) {
+        return (await this.readWavMeta(filePath)).durationSeconds;
+      }
+      throw this.audioToolExecutionError(
+        'ffprobe',
+        err,
+        "Utilisez un fichier .wav si ffprobe est bloqué sur ce serveur.",
+      );
+    }
     if (res.code !== 0) {
       this.logger.warn(`ffprobe failed: ${res.stderr || res.stdout}`);
       throw new BadRequestException(
@@ -186,21 +379,42 @@ export class SoundsService {
   }
 
   private async detectSilence(filePath: string): Promise<boolean> {
-    const ffmpegPath = this.getFfmpegPath();
-    const res = await this.runProcess(
-      ffmpegPath,
-      [
-        '-hide_banner',
-        '-i',
-        filePath,
-        '-af',
-        'volumedetect',
-        '-f',
-        'null',
-        '-',
-      ],
-      20000,
-    );
+    const ext = path.extname(filePath).toLowerCase();
+    let ffmpegPath: string;
+    try {
+      ffmpegPath = this.getFfmpegPath();
+    } catch (err) {
+      if (ext === '.wav' || ext === '.wave') {
+        return await this.isWavSilent(filePath);
+      }
+      throw err;
+    }
+    let res: { code: number; stdout: string; stderr: string };
+    try {
+      res = await this.runProcess(
+        ffmpegPath,
+        [
+          '-hide_banner',
+          '-i',
+          filePath,
+          '-af',
+          'volumedetect',
+          '-f',
+          'null',
+          '-',
+        ],
+        20000,
+      );
+    } catch (err) {
+      if (this.isSpawnExecutionError(err) && (ext === '.wav' || ext === '.wave')) {
+        return await this.isWavSilent(filePath);
+      }
+      throw this.audioToolExecutionError(
+        'ffmpeg',
+        err,
+        "Utilisez un fichier .wav si ffmpeg est bloqué sur ce serveur.",
+      );
+    }
     const output = `${res.stderr}\n${res.stdout}`;
     const match = output.match(/max_volume:\s*([-\\w.]+)\s*dB/i);
     if (!match) {
@@ -551,6 +765,7 @@ export class SoundsService {
         'Seuls les fichiers .mp3, .wav ou .wave sont acceptés.',
       );
     }
+    const isWavInput = ext === '.wav' || ext === '.wave';
 
     const stat = await fs.promises.stat(tempFilePath);
     // Safety: keep reasonably small. Can be tuned.
@@ -575,9 +790,29 @@ export class SoundsService {
     let tempDir: string | null = null;
     let outputPath = tempFilePath;
     try {
-      const transcoded = await this.transcodeToStableWav(tempFilePath);
-      outputPath = transcoded.outputPath;
-      tempDir = transcoded.tempDir;
+      try {
+        const transcoded = await this.transcodeToStableWav(tempFilePath);
+        outputPath = transcoded.outputPath;
+        tempDir = transcoded.tempDir;
+      } catch (err) {
+        // Fallback: allow WAV upload even if ffmpeg is blocked/unavailable on the host.
+        if (
+          isWavInput &&
+          (this.isSpawnExecutionError(err) ||
+            err instanceof InternalServerErrorException)
+        ) {
+          outputPath = tempFilePath;
+          tempDir = null;
+        } else if (this.isSpawnExecutionError(err)) {
+          throw this.audioToolExecutionError(
+            'ffmpeg',
+            err,
+            "Utilisez un fichier .wav si ffmpeg est bloqué sur ce serveur.",
+          );
+        } else {
+          throw err;
+        }
+      }
 
       const encodedStat = await fs.promises.stat(outputPath);
       if (encodedStat.size <= 0 || encodedStat.size > maxBytes) {

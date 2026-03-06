@@ -262,7 +262,7 @@ describe('LamaService', () => {
     // Le bot ne doit pas re-piocher indéfiniment : il doit se retirer de la manche après avoir déjà pioché.
     const actions = service.getBotActions(state, 2);
     expect(actions.length).toBe(1);
-    expect(actions[0].type).toBe('lama_quit');
+    expect(actions[0].type).toBe('lama_pass');
   });
 
   it('prevents multiple consecutive draws even if turnTracker becomes desynced', async () => {
@@ -448,7 +448,7 @@ describe('LamaService', () => {
       .map((l: any) => String(l?.message ?? ''));
     expect(peekMessages.some((m: string) => m.includes('défausse'))).toBe(true);
 
-    // pass alias (official rule = leave round)
+    // pass (end of turn after draw when allowPlayAfterDraw is enabled)
     const passState: any = {
       ...base,
       metadata: {
@@ -464,9 +464,11 @@ describe('LamaService', () => {
     const passMessages = afterPass.log
       .slice(passState.log.length)
       .map((l: any) => String(l?.message ?? ''));
-    expect(passMessages.some((m: string) => m.includes('se retire'))).toBe(
-      true,
+    expect(passMessages.some((m: string) => m.includes('passe'))).toBe(true);
+    expect(Boolean(afterPass.metadata?.droppedOutByPlayerId?.['1'])).toBe(
+      false,
     );
+    expect(Number(afterPass.turn?.currentPlayerId ?? 0)).toBe(2);
 
     // return token (requires return_token step)
     const returnState: any = {
@@ -937,7 +939,56 @@ describe('LamaService', () => {
     // Turn is kept by the same player: draw is blocked, play/quit stay available.
     expect(actionTypes).not.toContain('draw');
     expect(actionTypes).toContain('lama_play');
+    expect(actionTypes).toContain('lama_pass');
     expect(actionTypes).toContain('lama_quit');
+  });
+
+  it('does not lock draw because of eliminated players', async () => {
+    const { service } = createLamaServiceForTest();
+
+    const state: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+        { id: 3, username: 'C' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: { step: 'turn_choice', playerId: 1 },
+      metadata: {
+        roundNumber: 1,
+        roundStarterIndex: 0,
+        allowDrawAfterFirstQuit: false,
+        allowPlayAfterDraw: false,
+        deck: [6, 5],
+        discard: [1],
+        handsByPlayerId: { '1': [3], '2': [4] }, // player 3 eliminated: not in round hands
+        droppedOutByPlayerId: { '1': false, '2': false, '3': true },
+        eliminatedByPlayerId: { '3': true },
+        scoresByPlayerId: { '1': 0, '2': 0, '3': 0 },
+        step: 'turn_choice',
+        pendingReturnQueue: [],
+        pendingReturnPlayerId: null,
+        winnerId: null,
+      },
+    };
+
+    const exposed: any = service.exposeStateForUser(state, 1);
+    const actionTypes = (exposed?.actions ?? []).map((a: any) =>
+      String(a?.type ?? '').toLowerCase(),
+    );
+    expect(actionTypes).toContain('draw');
+
+    const after: any = service.applyActions(state, [
+      { type: 'draw', payload: {}, meta: { actorId: 1 } } as any,
+    ]);
+    expect((after.metadata?.deck ?? []).length).toBe(1);
+    expect((after.metadata?.handsByPlayerId?.['1'] ?? []).length).toBe(2);
   });
 
   it('does not allow multiple draws in a single message from the same actor', async () => {

@@ -19,6 +19,8 @@ namespace client_win.Modules.Game.Play.GamePlay.Services;
 
 internal sealed class GamePlayRealtimeController
 {
+    private const int RecentHistoryLinesMax = 200;
+
     private readonly Dispatcher _dispatcher;
     private readonly GamePlayPanelRequester _panels;
     private readonly GamePlayStateProjector _projector;
@@ -64,6 +66,8 @@ internal sealed class GamePlayRealtimeController
     private readonly object _statePumpLock = new();
     private readonly List<GameStateDto> _pendingStates = new();
     private int _statePumpRunning;
+    private readonly Queue<string> _recentHistoryLines = new();
+    private readonly HashSet<string> _recentHistoryLineSet = new(StringComparer.Ordinal);
 
     internal GamePlayRealtimeController(
         Dispatcher dispatcher,
@@ -140,6 +144,52 @@ internal sealed class GamePlayRealtimeController
         }
         Interlocked.Exchange(ref _statePumpRunning, 0);
         _diceSounds.Reset();
+        _recentHistoryLines.Clear();
+        _recentHistoryLineSet.Clear();
+    }
+
+    private void TrackRecentHistoryLine(string message)
+    {
+        var trimmed = (message ?? string.Empty).Trim();
+        if (trimmed.Length == 0)
+        {
+            return;
+        }
+
+        if (_recentHistoryLineSet.Contains(trimmed))
+        {
+            return;
+        }
+
+        _recentHistoryLines.Enqueue(trimmed);
+        _recentHistoryLineSet.Add(trimmed);
+        while (_recentHistoryLines.Count > RecentHistoryLinesMax)
+        {
+            var removed = _recentHistoryLines.Dequeue();
+            _recentHistoryLineSet.Remove(removed);
+        }
+    }
+
+    private bool WasRecentlyEmitted(string message)
+    {
+        var trimmed = (message ?? string.Empty).Trim();
+        if (trimmed.Length == 0)
+        {
+            return false;
+        }
+        return _recentHistoryLineSet.Contains(trimmed);
+    }
+
+    private static bool LooksLikePublicEndgameLine(string message)
+    {
+        var trimmed = (message ?? string.Empty).Trim();
+        if (trimmed.Length == 0)
+        {
+            return false;
+        }
+        // Typical format: "{name} dit: {phrase}"
+        var idx = trimmed.IndexOf(" dit:", StringComparison.OrdinalIgnoreCase);
+        return idx > 0 && idx < trimmed.Length - 5;
     }
 
     internal void NoteForcedTurnRequest()
@@ -423,6 +473,13 @@ internal sealed class GamePlayRealtimeController
             }
 
             var rewritten = RewriteLogForViewer(trimmed, viewerUsername, _lastViewerHandCounts, currentHandCounts);
+            // Endgame phrases can be emitted via the dedicated game.ended payload AND via logs.
+            // Prevent visible duplicates by skipping already-emitted "X dit: ..." lines in endgame context.
+            if (isEndgameContext && LooksLikePublicEndgameLine(rewritten) && WasRecentlyEmitted(rewritten))
+            {
+                continue;
+            }
+            TrackRecentHistoryLine(rewritten);
             _emitMessage(new GamePlayHistoryMessage(rewritten, entry?.Timestamp));
         }
 
@@ -462,6 +519,8 @@ internal sealed class GamePlayRealtimeController
             _endgameHeaderEmitted = false;
             _lastEndgameWinnerNameFromLog = string.Empty;
             _lastEndgameDrawFromLog = false;
+            _recentHistoryLines.Clear();
+            _recentHistoryLineSet.Clear();
             // During pawn selection setup, the pending label is the authoritative prompt.
             // Avoid adding a redundant "C'est au tour de ...".
             if (!PawnPendingTypes.IsPawnPendingType(state.Pending?.Type) &&
@@ -987,7 +1046,12 @@ internal sealed class GamePlayRealtimeController
                 name = $"Joueur {playerId}";
             }
 
-            _emitMessage(new GamePlayHistoryMessage($"{name} dit: {message}"));
+            var line = $"{name} dit: {message}";
+            if (!WasRecentlyEmitted(line))
+            {
+                TrackRecentHistoryLine(line);
+                _emitMessage(new GamePlayHistoryMessage(line));
+            }
             if (ended.ViewerPlayerId != null && ended.ViewerPlayerId.Value == playerId)
             {
                 emittedViewer = true;
@@ -1016,11 +1080,14 @@ internal sealed class GamePlayRealtimeController
             }
         }
 
-        _emitMessage(
-            new GamePlayHistoryMessage(
-                viewerName.Length > 0
-                    ? $"{viewerName} dit: {viewerMessage}"
-                    : viewerMessage));
+        var viewerLine = viewerName.Length > 0
+            ? $"{viewerName} dit: {viewerMessage}"
+            : viewerMessage;
+        if (!WasRecentlyEmitted(viewerLine))
+        {
+            TrackRecentHistoryLine(viewerLine);
+            _emitMessage(new GamePlayHistoryMessage(viewerLine));
+        }
     }
 
     private static bool TryReadOutcomesByPlayerId(GameStateDto state, out Dictionary<int, string> outcomes)

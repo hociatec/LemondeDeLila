@@ -131,6 +131,16 @@ public sealed class GameTableOpener : IGameTableOpener
         public bool? Enabled { get; set; }
     }
 
+    public void InvalidateTableAmbienceLabelsCache()
+    {
+        lock (_tableAmbienceLabelsCacheGate)
+        {
+            _tableAmbienceLabelsCache = null;
+            _tableAmbienceLabelsCacheUntil = DateTimeOffset.MinValue;
+            _tableAmbienceLabelsInFlight = null;
+        }
+    }
+
     private async Task<Dictionary<string, string>> FetchTableAmbienceLabelsAsync(CancellationToken cancellationToken)
     {
         Dictionary<string, string>? cached = null;
@@ -1794,7 +1804,12 @@ public sealed class GameTableOpener : IGameTableOpener
                         // UX: prioritize immediate feedback. Play the open/join one-shot first, then warm up other sounds.
                         try
                         {
-                            _sounds.Preload(openSound, warmUp: true);
+                            // Do not block the UI thread with decoder/file warm-up during table opening.
+                            // Preload in the background; playback can still happen immediately.
+                            _ = Task.Run(() =>
+                            {
+                                try { _sounds.Preload(openSound, warmUp: false); } catch { /* ignore */ }
+                            }, cts.Token);
                         }
                         catch
                         {
@@ -1817,45 +1832,29 @@ public sealed class GameTableOpener : IGameTableOpener
                         });
                     }
 
-                    // Preload table + common gameplay one-shots early (async/background) so first actions feel snappy.
-                    try
+                    // Preload common gameplay one-shots in the background to avoid UI stalls.
+                    _ = Task.Run(() =>
                     {
-                        _sounds.Preload(SoundId.RoomOpened, warmUp: true);
-                        _sounds.Preload(SoundId.RoomJoined, warmUp: true);
-                        _sounds.Preload(SoundId.DiceRolled, warmUp: true);
-                        _sounds.Preload(SoundId.DrawCard, warmUp: true);
-                        _sounds.Preload(SoundId.QuizCorrect, warmUp: true);
-                        _sounds.Preload(SoundId.QuizWrong, warmUp: true);
-                        _sounds.Preload(SoundId.RoundEnded, warmUp: true);
-                        _sounds.Preload(SoundId.PawnPicked, warmUp: true);
-                        _sounds.Preload(SoundId.PawnPlacedSelf, warmUp: true);
-                        _sounds.Preload(SoundId.PawnPlacedOpponent, warmUp: true);
-                        _sounds.Preload(SoundId.WallPlacedSelf, warmUp: true);
-                        _sounds.Preload(SoundId.WallPlacedOpponent, warmUp: true);
-                    }
-                    catch
-                    {
-                        // best-effort
-                    }
-
-                    var soundsToWarm = new[]
-                    {
-                        SoundId.DiceRolled,
-                        SoundId.DrawCard,
-                        SoundId.QuizCorrect,
-                        SoundId.QuizWrong,
-                        SoundId.RoundEnded,
-                        SoundId.PawnPicked,
-                        SoundId.PawnPlacedSelf,
-                        SoundId.PawnPlacedOpponent,
-                        SoundId.WallPlacedSelf,
-                        SoundId.WallPlacedOpponent,
-                    };
-
-                    foreach (var sound in soundsToWarm)
-                    {
-                        _ = _sounds.WarmUpAsync(sound);
-                    }
+                        try
+                        {
+                            _sounds.Preload(SoundId.RoomOpened, warmUp: false);
+                            _sounds.Preload(SoundId.RoomJoined, warmUp: false);
+                            _sounds.Preload(SoundId.DiceRolled, warmUp: false);
+                            _sounds.Preload(SoundId.DrawCard, warmUp: false);
+                            _sounds.Preload(SoundId.QuizCorrect, warmUp: false);
+                            _sounds.Preload(SoundId.QuizWrong, warmUp: false);
+                            _sounds.Preload(SoundId.RoundEnded, warmUp: false);
+                            _sounds.Preload(SoundId.PawnPicked, warmUp: false);
+                            _sounds.Preload(SoundId.PawnPlacedSelf, warmUp: false);
+                            _sounds.Preload(SoundId.PawnPlacedOpponent, warmUp: false);
+                            _sounds.Preload(SoundId.WallPlacedSelf, warmUp: false);
+                            _sounds.Preload(SoundId.WallPlacedOpponent, warmUp: false);
+                        }
+                        catch
+                        {
+                            // best-effort
+                        }
+                    }, cts.Token);
 
                     var room = new RoomClient(session, _announcements);
                     bindings = new GameTableBindings(

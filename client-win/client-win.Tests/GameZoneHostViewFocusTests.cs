@@ -46,13 +46,10 @@ public sealed class GameZoneHostViewFocusTests
                 StaDispatcherHarness.Drain(dispatcher);
 
                 var focusAnchor = Assert.IsType<GameZoneFocusAnchor>(host.FindName("GameZoneFocusAnchor"));
-                var emptyAnchor = Assert.IsType<GameZoneFocusAnchor>(host.FindName("GameZoneEmptyAnchor"));
 
                 var focusName = AutomationProperties.GetName(focusAnchor);
-                var emptyName = AutomationProperties.GetName(emptyAnchor);
 
                 Assert.Contains(vm.Title, focusName, StringComparison.OrdinalIgnoreCase);
-                Assert.Contains(vm.Title, emptyName, StringComparison.OrdinalIgnoreCase);
             }
             finally
             {
@@ -322,15 +319,15 @@ public sealed class GameZoneHostViewFocusTests
                 var firstResult = host.FocusGameZone(GameFocusReason.Default);
                 Assert.Equal(GameFocusAttemptResult.Anchor, firstResult);
 
-                var emptyAnchor = Assert.IsType<GameZoneFocusAnchor>(host.FindName("GameZoneEmptyAnchor"));
-                var source = PresentationSource.FromVisual(emptyAnchor);
+                var anchor = Assert.IsType<GameZoneFocusAnchor>(host.FindName("GameZoneFocusAnchor"));
+                var source = PresentationSource.FromVisual(anchor);
                 Assert.NotNull(source);
 
                 var args = new KeyEventArgs(Keyboard.PrimaryDevice, source!, Environment.TickCount, Key.Enter)
                 {
                     RoutedEvent = Keyboard.PreviewKeyDownEvent
                 };
-                emptyAnchor.RaiseEvent(args);
+                anchor.RaiseEvent(args);
 
                 Assert.True(StaDispatcherHarness.WaitUntil(() => startRequestedCount == 1, dispatcher, 1200));
             }

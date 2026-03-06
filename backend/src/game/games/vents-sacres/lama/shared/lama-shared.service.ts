@@ -85,4 +85,15 @@ export class LamaSharedService {
       },
     };
   }
+
+  isDrawLocked(meta: LamaMetadata): boolean {
+    if (meta.allowDrawAfterFirstQuit) return false;
+
+    const dropped = meta.droppedOutByPlayerId ?? {};
+    const hands = meta.handsByPlayerId ?? {};
+
+    // Only consider players actually in the round.
+    // Eliminated players are not in `handsByPlayerId`, but may remain flagged as dropped.
+    return Object.keys(hands).some((pid) => Boolean(dropped[pid]));
+  }
 }

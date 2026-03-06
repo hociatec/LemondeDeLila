@@ -602,6 +602,18 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 _ = HandleSoundsUpdatedAsync();
                 return;
             }
+            if (string.Equals(type, "sounds.tableAmbiences.updated", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    _tables.InvalidateTableAmbienceLabelsCache();
+                }
+                catch
+                {
+                    // best-effort
+                }
+                return;
+            }
 
             if (string.Equals(type, "notify.inbox.snapshot", StringComparison.OrdinalIgnoreCase))
             {

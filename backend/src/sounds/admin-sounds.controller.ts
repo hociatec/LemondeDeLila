@@ -1,7 +1,7 @@
 import {
   BadRequestException,
-  Controller,
   Body,
+  Controller,
   Delete,
   Get,
   Param,
@@ -14,8 +14,8 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as os from 'os';
-import { HttpJwtGuard } from '../common/guards/http-jwt.guard';
 import { AdminRoleGuard } from '../common/guards/admin-role.guard';
+import { HttpJwtGuard } from '../common/guards/http-jwt.guard';
 import { SoundsService } from './sounds.service';
 
 @Controller('api/admin/sounds')
