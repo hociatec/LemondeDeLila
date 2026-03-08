@@ -43,12 +43,20 @@ export class NotificationService implements OnModuleDestroy {
 
   async notifyUser(userId: number, type: string, payload: any) {
     const repairedPayload = fixMojibakeDeep(payload);
-    await this.transport.publish({
-      userId,
-      type,
-      payload: repairedPayload,
-      origin: this.instanceId,
-    });
+    try {
+      await this.transport.publish({
+        userId,
+        type,
+        payload: repairedPayload,
+        origin: this.instanceId,
+      });
+    } catch (err) {
+      // Best-effort: do not break API calls if Redis/pubsub is down.
+      this.logger.warn(
+        `Echec publication notification userId=${userId} type=${type}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
     this.dispatchToLocal(userId, type, repairedPayload);
   }
 
@@ -56,12 +64,20 @@ export class NotificationService implements OnModuleDestroy {
   // Implementation detail: userId=0 is treated as a "global" event and dispatched to every socket.
   async notifyAll(type: string, payload: any) {
     const repairedPayload = fixMojibakeDeep(payload);
-    await this.transport.publish({
-      userId: 0,
-      type,
-      payload: repairedPayload,
-      origin: this.instanceId,
-    });
+    try {
+      await this.transport.publish({
+        userId: 0,
+        type,
+        payload: repairedPayload,
+        origin: this.instanceId,
+      });
+    } catch (err) {
+      // Best-effort: do not break API calls if Redis/pubsub is down.
+      this.logger.warn(
+        `Echec publication notification broadcast type=${type}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
     this.dispatchToAllLocal(type, repairedPayload);
   }
 

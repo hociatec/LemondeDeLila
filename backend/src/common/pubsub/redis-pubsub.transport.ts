@@ -16,6 +16,10 @@ export class RedisPubSubTransport<TEvent> {
       const client = new Redis(url, {
         lazyConnect: true,
         connectionName: name,
+        // Pub/sub is best-effort. Fail fast when Redis is down instead of retrying many times
+        // and blocking API requests (default ioredis maxRetriesPerRequest is 20).
+        maxRetriesPerRequest: 1,
+        enableOfflineQueue: false,
       });
       // Important: ioredis emits an 'error' event which will crash the process if unhandled.
       // Default transport is best-effort; dedicated factories can log details.
@@ -39,7 +43,14 @@ export class RedisPubSubTransport<TEvent> {
   }
 
   async publish(event: TEvent): Promise<void> {
-    await this.publisher.publish(this.channel, JSON.stringify(event));
+    try {
+      await this.publisher.publish(this.channel, JSON.stringify(event));
+    } catch (error) {
+      this.logger.warn(
+        `Notification non publiée (Redis indisponible ? channel=${this.channel})`,
+        error instanceof Error ? error.stack : String(error),
+      );
+    }
   }
 
   async subscribe(handler: (event: TEvent) => void): Promise<void> {

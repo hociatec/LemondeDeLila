@@ -26,7 +26,14 @@ export class RedisNotificationTransport extends NotificationTransport {
       url,
       'notifications',
       redisFactory
-        ? (u, name) => redisFactory.create(u, name, { lazyConnect: true })
+        ? (u, name) =>
+            redisFactory.create(u, name, {
+              lazyConnect: true,
+              // Pub/sub notifications should never block API requests when Redis is down.
+              maxRetriesPerRequest: 1,
+              enableOfflineQueue: false,
+              connectionName: name,
+            })
         : undefined,
     );
   }
