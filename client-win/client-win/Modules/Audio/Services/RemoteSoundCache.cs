@@ -427,18 +427,50 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
                 uri = new Uri(_config.HttpBase, ".." + url.Trim());
             }
 
-            using var req = new HttpRequestMessage(HttpMethod.Get, uri);
-            using var res = await HttpClientProvider.Shared
-                .SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-                .ConfigureAwait(false);
-            res.EnsureSuccessStatusCode();
-            await using var response = await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await using (var fs = File.Create(tmpPath))
+            Exception? lastError = null;
+            var retryDelaysMs = new[] { 0, 250, 500, 1000, 2000 };
+            for (var attempt = 0; attempt < retryDelaysMs.Length; attempt++)
             {
-                await response.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (attempt > 0)
+                {
+                    try { if (File.Exists(tmpPath)) File.Delete(tmpPath); } catch { /* ignore */ }
+                    await Task.Delay(retryDelaysMs[attempt], cancellationToken).ConfigureAwait(false);
+                    if (File.Exists(destPath))
+                    {
+                        return destPath;
+                    }
+                }
+
+                try
+                {
+                    using var req = new HttpRequestMessage(HttpMethod.Get, uri);
+                    using var res = await HttpClientProvider.Shared
+                        .SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                        .ConfigureAwait(false);
+                    res.EnsureSuccessStatusCode();
+                    await using var response = await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                    await using (var fs = File.Create(tmpPath))
+                    {
+                        await response.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
+                    }
+                    File.Move(tmpPath, destPath, overwrite: true);
+                    return destPath;
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    lastError = ex;
+                }
             }
-            File.Move(tmpPath, destPath, overwrite: true);
-            return destPath;
+
+            _logger.LogDebug(lastError, "Remote sound download failed ({Sound})", soundId);
+            try { if (File.Exists(tmpPath)) File.Delete(tmpPath); } catch { /* ignore */ }
+            return null;
         }
         catch (Exception ex)
         {

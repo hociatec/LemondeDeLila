@@ -1,0 +1,8 @@
+﻿{
+  "code": "dame-nature",
+  "name": "Dame Nature",
+  "minPlayers": 2,
+  "maxPlayers": 6,
+  "engine": "dame-nature",
+  "summary": "Collectez 4 familles tout en préservant Dame Nature de la pollution."
+}

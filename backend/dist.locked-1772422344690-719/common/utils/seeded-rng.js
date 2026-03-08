@@ -1,0 +1,99 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get ensureSeededRng () {
+        return ensureSeededRng;
+    },
+    get nextRngFloat () {
+        return nextRngFloat;
+    },
+    get nextRngInt () {
+        return nextRngInt;
+    }
+});
+function normalizeSeed(value) {
+    const n = typeof value === 'number' ? value : Number(value);
+    if (!Number.isFinite(n)) return null;
+    return n >>> 0;
+}
+function fnv1a32(input) {
+    let hash = 0x811c9dc5;
+    for(let i = 0; i < input.length; i += 1){
+        hash ^= input.charCodeAt(i);
+        hash = Math.imul(hash, 0x01000193);
+    }
+    return hash >>> 0;
+}
+function toStablePart(value) {
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'bigint') return String(value);
+    if (typeof value === 'boolean') return value ? '1' : '0';
+    return '';
+}
+function deriveSeedFromContext(meta) {
+    const roomId = meta['roomId'];
+    const startedAt = meta['roomStartedAt'];
+    const gameType = meta['gameType'];
+    const runIdRaw = meta['roomRunId'];
+    const runId = typeof runIdRaw === 'number' ? runIdRaw : Number(runIdRaw ?? NaN);
+    if (roomId == null || startedAt == null) return null;
+    const input = `${toStablePart(gameType)}|${toStablePart(roomId)}|${toStablePart(startedAt)}|${Number.isFinite(runId) ? String(runId) : ''}`;
+    return fnv1a32(input);
+}
+function mulberry32(seed) {
+    let a = seed >>> 0;
+    return ()=>{
+        a |= 0;
+        a = a + 0x6d2b79f5 | 0;
+        let t = Math.imul(a ^ a >>> 15, 1 | a);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+}
+function ensureSeededRng(meta) {
+    const current = meta['rng'] && typeof meta['rng'] === 'object' ? meta['rng'] : null;
+    const seed = normalizeSeed(current?.seed) ?? deriveSeedFromContext(meta) ?? Math.floor(Math.random() * 2 ** 32);
+    const counter = Math.max(0, normalizeSeed(current?.counter) ?? 0);
+    return {
+        seed,
+        counter
+    };
+}
+function nextRngFloat(meta) {
+    const rng = ensureSeededRng(meta);
+    const generator = mulberry32(rng.seed + rng.counter >>> 0);
+    const value = generator();
+    const next = {
+        seed: rng.seed,
+        counter: rng.counter + 1
+    };
+    return {
+        value,
+        meta: {
+            ...meta,
+            rng: next
+        }
+    };
+}
+function nextRngInt(meta, maxExclusive) {
+    const max = Math.floor(maxExclusive);
+    if (!Number.isFinite(max) || max <= 0) {
+        return {
+            value: 0,
+            meta
+        };
+    }
+    const { value: f, meta: updated } = nextRngFloat(meta);
+    return {
+        value: Math.floor(f * max),
+        meta: updated
+    };
+}

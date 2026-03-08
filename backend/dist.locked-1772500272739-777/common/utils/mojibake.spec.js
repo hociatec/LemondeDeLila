@@ -1,0 +1,327 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+const _nodefs = /*#__PURE__*/ _interop_require_wildcard(require("node:fs"));
+const _nodepath = /*#__PURE__*/ _interop_require_wildcard(require("node:path"));
+const _nodeos = /*#__PURE__*/ _interop_require_wildcard(require("node:os"));
+const _mojibake = require("./mojibake");
+function _getRequireWildcardCache(nodeInterop) {
+    if (typeof WeakMap !== "function") return null;
+    var cacheBabelInterop = new WeakMap();
+    var cacheNodeInterop = new WeakMap();
+    return (_getRequireWildcardCache = function(nodeInterop) {
+        return nodeInterop ? cacheNodeInterop : cacheBabelInterop;
+    })(nodeInterop);
+}
+function _interop_require_wildcard(obj, nodeInterop) {
+    if (!nodeInterop && obj && obj.__esModule) {
+        return obj;
+    }
+    if (obj === null || typeof obj !== "object" && typeof obj !== "function") {
+        return {
+            default: obj
+        };
+    }
+    var cache = _getRequireWildcardCache(nodeInterop);
+    if (cache && cache.has(obj)) {
+        return cache.get(obj);
+    }
+    var newObj = {
+        __proto__: null
+    };
+    var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor;
+    for(var key in obj){
+        if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) {
+            var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null;
+            if (desc && (desc.get || desc.set)) {
+                Object.defineProperty(newObj, key, desc);
+            } else {
+                newObj[key] = obj[key];
+            }
+        }
+    }
+    newObj.default = obj;
+    if (cache) {
+        cache.set(obj, newObj);
+    }
+    return newObj;
+}
+describe('Mojibake utilities', ()=>{
+    let tempDir;
+    beforeAll(()=>{
+        tempDir = _nodefs.mkdtempSync(_nodepath.join(_nodeos.tmpdir(), 'mojibake-test-'));
+    });
+    afterAll(()=>{
+        // Cleanup temp directory
+        if (_nodefs.existsSync(tempDir)) {
+            _nodefs.readdirSync(tempDir).forEach((file)=>{
+                _nodefs.unlinkSync(_nodepath.join(tempDir, file));
+            });
+            _nodefs.rmdirSync(tempDir);
+        }
+    });
+    describe('fixMojibakeString', ()=>{
+        it('should return unchanged string for clean ASCII', ()=>{
+            const input = 'Hello World';
+            expect((0, _mojibake.fixMojibakeString)(input)).toBe(input);
+        });
+        it('should return unchanged string for clean UTF-8', ()=>{
+            const input = 'Bonjour été';
+            expect((0, _mojibake.fixMojibakeString)(input)).toBe(input);
+        });
+        it('should fix mojibake from Windows-1252 to UTF-8', ()=>{
+            // "Ã©" is how "é" appears when UTF-8 is decoded as Windows-1252
+            const mojibaked = 'Ã©tÃ©';
+            const fixed = (0, _mojibake.fixMojibakeString)(mojibaked);
+            // Should fix to "été" or similar
+            expect(fixed).not.toBe(mojibaked);
+            expect(fixed.includes('Ã')).toBe(false);
+        });
+        it('should handle replacement characters', ()=>{
+            const input = 'Test\uFFFDchar';
+            const result = (0, _mojibake.fixMojibakeString)(input);
+            // Should attempt to fix or return best candidate
+            expect(result).toBeDefined();
+            expect(typeof result).toBe('string');
+        });
+        it('should handle mixed content', ()=>{
+            const input = 'Normal text with Ã© mojibake';
+            const result = (0, _mojibake.fixMojibakeString)(input);
+            expect(result).toContain('é');
+            expect(result.includes('Ã')).toBe(false);
+        });
+        it('should handle empty string', ()=>{
+            expect((0, _mojibake.fixMojibakeString)('')).toBe('');
+        });
+        it('repairs mixed clean + mojibake text without damaging clean accents', ()=>{
+            const input = 'Lancez le dé maintenant. BloquÃ©: lancez un 5 ou un 6 pour vous libÃ©rer.';
+            expect((0, _mojibake.fixMojibakeString)(input)).toBe('Lancez le dé maintenant. Bloqué: lancez un 5 ou un 6 pour vous libérer.');
+        });
+    });
+    describe('fixMojibakeDeep', ()=>{
+        it('should fix strings in nested objects', ()=>{
+            const input = {
+                name: 'Ã©cole',
+                nested: {
+                    value: 'forÃªt'
+                }
+            };
+            const result = (0, _mojibake.fixMojibakeDeep)(input);
+            expect(result.name).not.toBe('Ã©cole');
+            expect(result.nested.value).not.toBe('forÃªt');
+        });
+        it('should fix strings in arrays', ()=>{
+            const input = [
+                'Ã©tÃ©',
+                'normal',
+                'forÃªt'
+            ];
+            const result = (0, _mojibake.fixMojibakeDeep)(input);
+            expect(Array.isArray(result)).toBe(true);
+            expect(result.length).toBe(3);
+            expect(result[0]).not.toBe('Ã©tÃ©');
+        });
+        it('should handle mixed array with objects', ()=>{
+            const input = [
+                {
+                    name: 'Ã©cole'
+                },
+                'normal string',
+                {
+                    nested: {
+                        value: 'forÃªt'
+                    }
+                }
+            ];
+            const result = (0, _mojibake.fixMojibakeDeep)(input);
+            expect(Array.isArray(result)).toBe(true);
+            expect(result.length).toBe(3);
+            const first = result[0];
+            expect(first.name).not.toBe('Ã©cole');
+        });
+        it('should preserve clean strings', ()=>{
+            const input = {
+                name: 'clean',
+                values: [
+                    'test',
+                    'data'
+                ],
+                nested: {
+                    value: 'nested'
+                }
+            };
+            const result = (0, _mojibake.fixMojibakeDeep)(input);
+            expect(result.name).toBe('clean');
+            expect(result.values[0]).toBe('test');
+            expect(result.nested.value).toBe('nested');
+        });
+        it('should handle null and undefined', ()=>{
+            expect((0, _mojibake.fixMojibakeDeep)(null)).toBe(null);
+            expect((0, _mojibake.fixMojibakeDeep)(undefined)).toBe(undefined);
+        });
+        it('should handle numbers', ()=>{
+            expect((0, _mojibake.fixMojibakeDeep)(42)).toBe(42);
+            expect((0, _mojibake.fixMojibakeDeep)(3.14)).toBe(3.14);
+        });
+        it('should handle booleans', ()=>{
+            expect((0, _mojibake.fixMojibakeDeep)(true)).toBe(true);
+            expect((0, _mojibake.fixMojibakeDeep)(false)).toBe(false);
+        });
+        it('should handle circular references without crashing', ()=>{
+            const input = {
+                label: 'ÃƒÂ©cole'
+            };
+            input.self = input;
+            const result = (0, _mojibake.fixMojibakeDeep)(input);
+            expect(result).toBeDefined();
+            expect(result.self).toBe(result);
+            expect(result.label).not.toBe('ÃƒÂ©cole');
+        });
+        it('should preserve shared references', ()=>{
+            const shared = {
+                value: 'forÃƒÂªt'
+            };
+            const input = {
+                a: shared,
+                b: shared
+            };
+            const result = (0, _mojibake.fixMojibakeDeep)(input);
+            expect(result.a).toBe(result.b);
+            expect(result.a.value).not.toBe('forÃƒÂªt');
+        });
+        it('normalizes common missing accents for display keys only', ()=>{
+            const input = {
+                message: 'Mise a jour: delai avant publication a l echeance.',
+                title: 'Parametres',
+                rules: 'Consigne: aller a l etagere puis donner la reponse.',
+                code: 'delai',
+                nested: {
+                    description: 'Aller a l etagere pour voir la reponse.',
+                    key: 'etagere'
+                }
+            };
+            const result = (0, _mojibake.fixMojibakeDeep)(input);
+            expect(result.message).toContain('Mise à jour');
+            expect(result.message).toContain('délai');
+            expect(result.title).toBe('Paramètres');
+            expect(result.rules).toContain('étagère');
+            expect(result.rules).toContain('réponse');
+            expect(result.nested.description).toContain('étagère');
+            expect(result.nested.description).toContain('réponse');
+            expect(result.code).toBe('delai');
+            expect(result.nested.key).toBe('etagere');
+        });
+    });
+    describe('readTextFileWithFallback', ()=>{
+        it('should read clean UTF-8 file', ()=>{
+            const testFile = _nodepath.join(tempDir, 'clean-utf8.txt');
+            const content = 'Hello World\nBonjour été';
+            _nodefs.writeFileSync(testFile, content, 'utf8');
+            const result = (0, _mojibake.readTextFileWithFallback)(testFile);
+            expect(result).toBe(content);
+        });
+        it('should handle BOM in UTF-8', ()=>{
+            const testFile = _nodepath.join(tempDir, 'utf8-bom.txt');
+            const content = 'Test content';
+            _nodefs.writeFileSync(testFile, '\uFEFF' + content, 'utf8');
+            const result = (0, _mojibake.readTextFileWithFallback)(testFile);
+            expect(result).toBe(content); // BOM should be removed
+        });
+        it('should fallback to latin1 when UTF-8 has many replacement chars', ()=>{
+            const testFile = _nodepath.join(tempDir, 'latin1.txt');
+            // Write as latin1 (ISO-8859-1)
+            const buffer = Buffer.from('été', 'latin1');
+            _nodefs.writeFileSync(testFile, buffer);
+            const result = (0, _mojibake.readTextFileWithFallback)(testFile);
+            expect(result).toBeDefined();
+            expect(typeof result).toBe('string');
+        // Should fallback to latin1 and read correctly
+        });
+        it('should throw error for non-existent file', ()=>{
+            const nonExistent = _nodepath.join(tempDir, 'does-not-exist.txt');
+            expect(()=>(0, _mojibake.readTextFileWithFallback)(nonExistent)).toThrow();
+        });
+    });
+    describe('readJsonFileWithFallback', ()=>{
+        it('should read and parse clean JSON', ()=>{
+            const testFile = _nodepath.join(tempDir, 'clean.json');
+            const data = {
+                name: 'test',
+                value: 42,
+                nested: {
+                    array: [
+                        1,
+                        2,
+                        3
+                    ]
+                }
+            };
+            _nodefs.writeFileSync(testFile, JSON.stringify(data), 'utf8');
+            const result = (0, _mojibake.readJsonFileWithFallback)(testFile);
+            expect(result).toEqual(data);
+        });
+        it('should fix mojibake in JSON strings', ()=>{
+            const testFile = _nodepath.join(tempDir, 'mojibake.json');
+            // Simulate mojibake in JSON
+            const data = {
+                name: 'Ã©cole',
+                description: 'forÃªt'
+            };
+            _nodefs.writeFileSync(testFile, JSON.stringify(data), 'utf8');
+            const result = (0, _mojibake.readJsonFileWithFallback)(testFile);
+            expect(result.name).not.toBe('Ã©cole');
+            expect(result.description).not.toBe('forÃªt');
+        });
+        it('should handle JSON with arrays', ()=>{
+            const testFile = _nodepath.join(tempDir, 'array.json');
+            const data = {
+                items: [
+                    'Ã©tÃ©',
+                    'normal',
+                    {
+                        nested: 'forÃªt'
+                    }
+                ]
+            };
+            _nodefs.writeFileSync(testFile, JSON.stringify(data), 'utf8');
+            const result = (0, _mojibake.readJsonFileWithFallback)(testFile);
+            expect(Array.isArray(result.items)).toBe(true);
+            expect(result.items.length).toBe(3);
+        });
+        it('should throw error for invalid JSON', ()=>{
+            const testFile = _nodepath.join(tempDir, 'invalid.json');
+            _nodefs.writeFileSync(testFile, '{ invalid json }', 'utf8');
+            expect(()=>(0, _mojibake.readJsonFileWithFallback)(testFile)).toThrow();
+        });
+        it('should throw error for non-existent file', ()=>{
+            const nonExistent = _nodepath.join(tempDir, 'does-not-exist.json');
+            expect(()=>(0, _mojibake.readJsonFileWithFallback)(nonExistent)).toThrow();
+        });
+        it('should preserve JSON types', ()=>{
+            const testFile = _nodepath.join(tempDir, 'types.json');
+            const data = {
+                string: 'text',
+                number: 42,
+                boolean: true,
+                null: null,
+                array: [
+                    1,
+                    2,
+                    3
+                ],
+                object: {
+                    nested: 'value'
+                }
+            };
+            _nodefs.writeFileSync(testFile, JSON.stringify(data), 'utf8');
+            const result = (0, _mojibake.readJsonFileWithFallback)(testFile);
+            expect(result.string).toBe('text');
+            expect(result.number).toBe(42);
+            expect(result.boolean).toBe(true);
+            expect(result.null).toBe(null);
+            expect(Array.isArray(result.array)).toBe(true);
+            expect(typeof result.object).toBe('object');
+        });
+    });
+});

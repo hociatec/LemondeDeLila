@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "cards": [
+    {
+      "id": 1,
+      "text": "Vous participez à une dégustation de grands crus à Gevrey-Chambertin. Avancez jusqu’à la gare de Gevrey-Chambertin et recevez 200 €."
+    },
+    {
+      "id": 2,
+      "text": "Un vent de succès souffle sur votre moutarde : recevez 150 € pour vos talents culinaires."
+    },
+    {
+      "id": 3,
+      "text": "Vous perdez votre chemin dans les ruelles du Vieux Dijon. Reculez de trois cases pour retrouver votre route."
+    },
+    {
+      "id": 4,
+      "text": "Les cloches de l’église Saint-Michel résonnent pour vous annoncer un heureux évênement : avancez à Quartier Saint-Michel."
+    },
+    {
+      "id": 5,
+      "text": "Votre visite du Palais des Ducs attire l’attention d’un mécène. Recevez 100 €."
+    },
+    {
+      "id": 6,
+      "text": "Vous êtes invité à un bal masqué sur la Place de la Libération. Avancez directement à la place et profitez de la fête."
+    },
+    {
+      "id": 7,
+      "text": "Une exposition imprévue au Musée des Beaux-Arts vous retient plus longtemps que prévu. Passez votre prochain tour."
+    },
+    {
+      "id": 8,
+      "text": "Vous trouvez une carte rare au marché des Halles. Recevez 50 € de récompense."
+    },
+    {
+      "id": 9,
+      "text": "Votre rosalie tombe en panne sur le Parc de la Colombière. Reculez de deux cases pour la réparer."
+    },
+    {
+      "id": 10,
+      "text": "Vous aidez à la rénovation de la Tour Philippe le Bon et gagnez les remerciements de la ville : recevez 100 €."
+    },
+    {
+      "id": 11,
+      "text": "Un tram Divia vous transporte gratuitement jusqu’au Boulevard de l’Ouest. Avancez jusqu’à cette case."
+    },
+    {
+      "id": 12,
+      "text": "Vous participez à la foire annuelle de Dijon. Recevez 150 € pour vos ventes et exploits."
+    },
+    {
+      "id": 13,
+      "text": "Une pluie soudaine vous surprend sur la Rue de la Liberté : retournez à la case Départ pour vous abriter."
+    },
+    {
+      "id": 14,
+      "text": "Vous êtes élu « visiteur d’honneur » à la Place François Rude : recevez 200 €."
+    },
+    {
+      "id": 15,
+      "text": "Vous trouvez un trésor caché dans une cave à vin de Beaune : avancez jusqu’à la Gare de Beaune et recevez 150 €."
+    },
+    {
+      "id": 16,
+      "text": "Un troubadour chante votre louange sur la Place Darcy : avancez jusqu’à cette case et recevez 100 €."
+    },
+    {
+      "id": 17,
+      "text": "Vous êtes choisi pour inaugurer une exposition au Palais des Ducs : recevez 150 €."
+    },
+    {
+      "id": 18,
+      "text": "Votre rosalie vous emmène trop vite et vous heurtez un kiosque : reculez de deux cases."
+    },
+    {
+      "id": 19,
+      "text": "Vous découvrez un vieux parchemin dans la Bibliothèque municipale : recevez 50 €."
+    },
+    {
+      "id": 20,
+      "text": "Un festival de musique vous enchante sur le Boulevard de Brosses : avancez jusqu’à cette case."
+    },
+    {
+      "id": 21,
+      "text": "Vous aidez à organiser le marché de Noël sur la Place de la Libération : recevez 200 €."
+    },
+    {
+      "id": 22,
+      "text": "Une erreur de livraison vous coûte cher : payez 100 €."
+    },
+    {
+      "id": 23,
+      "text": "Vous trouvez une pièce d’or dans le Jardin Darcy : recevez 100 €."
+    },
+    {
+      "id": 24,
+      "text": "Un peintre vous offre un portrait sur la Rue de la Chouette : recevez 50 €."
+    },
+    {
+      "id": 25,
+      "text": "Votre visite guidée au Musée des Beaux-Arts attire des admirateurs : recevez 150 €."
+    },
+    {
+      "id": 26,
+      "text": "Un corbeau vole votre carte postale sur la Rue Jeannin : reculez de trois cases."
+    },
+    {
+      "id": 27,
+      "text": "Vous participez au concours de gastronomie de Dijon : recevez 200 €."
+    },
+    {
+      "id": 28,
+      "text": "Les cloches de la Tour Philippe le Bon sonnent à votre honneur : avancez jusqu’à cette case et recevez 100 €."
+    },
+    {
+      "id": 29,
+      "text": "Votre promenade en rosalie dans le Parc de la Colombière est interrompue par une averse : reculez de deux cases."
+    },
+    {
+      "id": 30,
+      "text": "Une invitation exclusive au Château du Clos de Vougeot vous rapporte 250 €."
+    }
+  ]
+}

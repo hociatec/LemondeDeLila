@@ -1038,31 +1038,25 @@ public sealed partial class AdminViewModel
             await _dialogs.ShowError("Sons", "Fichier introuvable.").ConfigureAwait(true);
             return;
         }
-        var uploaded = await UploadSoundToServerAsync(sound, src).ConfigureAwait(true);
-        if (!uploaded)
+        var upload = await UploadSoundToServerAsync(sound, src).ConfigureAwait(true);
+        if (!upload.Success)
         {
             return;
-        }
-
-        // Ensure cache + active ambience loops are refreshed immediately (not only via WS notify).
-        try
-        {
-            await _audio.RefreshRemoteSoundsAsync(force: true, reapplyBackground: true).ConfigureAwait(true);
-        }
-        catch
-        {
-            await _remoteSounds.RefreshAsync(force: true).ConfigureAwait(true);
         }
 
         // Purge tout lecteur/loop en mémoire pour éviter de réentendre un ancien fichier.
         try { _sounds.Stop(sound); } catch { /* ignore */ }
         try { _sounds.StopLoop(sound); } catch { /* ignore */ }
 
-        var remote = _remoteSounds.TryGetPath(sound);
+        var remote = await WaitForRemoteSoundAsync(sound, upload.Sha256).ConfigureAwait(true);
+        if (!string.IsNullOrWhiteSpace(remote))
+        {
+            await _audio.RefreshRemoteSoundsAsync(force: false, reapplyBackground: true).ConfigureAwait(true);
+        }
+
         Details = !string.IsNullOrWhiteSpace(remote)
             ? $"Son global (serveur) : {Path.GetFileName(remote)}"
-            : "Son global (serveur).";
-        _sounds.PlayPreview(sound);
+            : "Son global (serveur) : synchronisation en cours.";
 
         if (string.IsNullOrWhiteSpace(remote))
         {
@@ -1073,16 +1067,55 @@ public sealed partial class AdminViewModel
             return;
         }
 
+        _sounds.PlayPreview(sound);
         await _dialogs.ShowInfo("Sons", "Son global mis a jour (serveur).").ConfigureAwait(true);
     }
 
-    private async Task<bool> UploadSoundToServerAsync(SoundId sound, string filePath)
+    private async Task<string?> WaitForRemoteSoundAsync(SoundId sound, string? expectedSha256)
+    {
+        var retryDelaysMs = new[] { 0, 250, 500, 1000, 1500, 2000 };
+        for (var attempt = 0; attempt < retryDelaysMs.Length; attempt++)
+        {
+            if (attempt > 0)
+            {
+                await Task.Delay(retryDelaysMs[attempt]).ConfigureAwait(true);
+            }
+
+            await _remoteSounds.RefreshAsync(force: true).ConfigureAwait(true);
+            var remote = _remoteSounds.TryGetPath(sound);
+            if (IsExpectedRemoteSound(remote, expectedSha256))
+            {
+                return remote;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool IsExpectedRemoteSound(string? remotePath, string? expectedSha256)
+    {
+        if (string.IsNullOrWhiteSpace(remotePath))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(expectedSha256))
+        {
+            return true;
+        }
+
+        var fileName = Path.GetFileNameWithoutExtension(remotePath);
+        return !string.IsNullOrWhiteSpace(fileName) &&
+               fileName.EndsWith(expectedSha256, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task<(bool Success, string? Sha256)> UploadSoundToServerAsync(SoundId sound, string filePath)
     {
         var jwt = _session.CurrentUser?.Token;
         if (string.IsNullOrWhiteSpace(jwt))
         {
             await _dialogs.ShowError("Sons", "Connexion requise.").ConfigureAwait(true);
-            return false;
+            return (false, null);
         }
 
         var endpoint = new Uri(_config.HttpBase, $"admin/sounds/{Uri.EscapeDataString(sound.ToString())}");
@@ -1095,7 +1128,7 @@ public sealed partial class AdminViewModel
         catch (Exception ex)
         {
             await _dialogs.ShowError("Sons", $"Impossible de lire le fichier : {ex.Message}").ConfigureAwait(true);
-            return false;
+            return (false, null);
         }
 
         using var form = new MultipartFormDataContent();
@@ -1120,14 +1153,14 @@ public sealed partial class AdminViewModel
         catch (Exception ex)
         {
             await _dialogs.ShowError("Sons", $"Upload impossible : {ex.Message}").ConfigureAwait(true);
-            return false;
+            return (false, null);
         }
 
         using (resp)
         {
+            var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
             if (!resp.IsSuccessStatusCode)
             {
-                var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
                 var message = ApiErrorParser.TryExtractMessage(body);
 
                 if (string.IsNullOrWhiteSpace(message))
@@ -1154,11 +1187,29 @@ public sealed partial class AdminViewModel
                 }
 
                 await _dialogs.ShowError("Sons", $"Upload échoué ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
-                return false;
+                return (false, null);
             }
-        }
 
-        return true;
+            string? sha256 = null;
+            try
+            {
+                using var doc = JsonDocument.Parse(body);
+                if (doc.RootElement.ValueKind == JsonValueKind.Object &&
+                    doc.RootElement.TryGetProperty("sound", out var soundElement) &&
+                    soundElement.ValueKind == JsonValueKind.Object &&
+                    soundElement.TryGetProperty("sha256", out var shaElement) &&
+                    shaElement.ValueKind == JsonValueKind.String)
+                {
+                    sha256 = (shaElement.GetString() ?? string.Empty).Trim();
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+
+            return (true, sha256);
+        }
     }
 
 }

@@ -1,0 +1,267 @@
+{
+  "version": 1,
+  "tiles": [
+    {
+      "n": 1,
+      "title": "Départ",
+      "description": "Vous vous tenez au bord de la Loire, sur le Quai de la Fosse. Les péniches tanguent doucement, les mouettes virevoltent, et vous empochez 200 euros.",
+      "type": "start"
+    },
+    {
+      "n": 2,
+      "title": "Rue Crébillon (beige)",
+      "description": "Une artère commerçante élégante, où vitrines et façades anciennes racontent des siècles d’histoire.",
+      "type": "property",
+      "group": "beige"
+    },
+    {
+      "n": 3,
+      "title": "Rue du Calvaire (beige)",
+      "description": "Petite rue tranquille, parfaite pour flâner parmi les boutiques et cafés cachés.",
+      "type": "property",
+      "group": "beige"
+    },
+    {
+      "n": 4,
+      "title": "Caisse de Communauté",
+      "description": "Sur le quai de la Loire, un marin vous remet un petit paquet scellé : fortune ou mésaventure, laissez le hasard décider.",
+      "type": "community"
+    },
+    {
+      "n": 5,
+      "title": "Taxe de Galette-Saucisse",
+      "description": "Vous payez 200 euros pour soutenir les célèbres traditions gourmandes de Nantes.",
+      "type": "tax"
+    },
+    {
+      "n": 6,
+      "title": "Gare de Nantes",
+      "description": "Sous la verrière, les trains sifflent et le cliquetis des valises vous invite à l’aventure.",
+      "type": "station"
+    },
+    {
+      "n": 7,
+      "title": "Quai Wilson (bleue)",
+      "description": "Un quai animé le long de l’Erdre, où péniches et cafés flottants créent une ambiance vivante et douce, idéale pour observer les passants et le va-et-vient de la ville.",
+      "type": "property",
+      "group": "bleue"
+    },
+    {
+      "n": 8,
+      "title": "Rue Kervégan (bleue)",
+      "description": "Un ruban pavé où le parfum des boulangeries se mêle aux discussions des passants.",
+      "type": "property",
+      "group": "bleue"
+    },
+    {
+      "n": 9,
+      "title": "Passage Pommeraye (bleue)",
+      "description": "Galerie historique, où escalier et boutiques s’entrelacent dans un décor élégant.",
+      "type": "property",
+      "group": "bleue"
+    },
+    {
+      "n": 10,
+      "title": "Chance",
+      "description": "Une brise venant de l’Erdre souffle un mystérieux papier à vos pieds… le sort vous attend.",
+      "type": "chance"
+    },
+    {
+      "n": 11,
+      "title": "Place Graslin (rose)",
+      "description": "La place du théâtre est animée par les terrasses et les promeneurs, centre culturel et festif.",
+      "type": "property",
+      "group": "rose"
+    },
+    {
+      "n": 12,
+      "title": "Place du Commerce (rose)",
+      "description": "Un lieu vivant où les habitants et visiteurs se croisent quotidiennement.",
+      "type": "property",
+      "group": "rose"
+    },
+    {
+      "n": 13,
+      "title": "Compagnie des Transports Nantais (tram et bus)",
+      "description": "Les tramways et bus glissent à travers la ville, reliant quartiers et vies.",
+      "type": "utility"
+    },
+    {
+      "n": 14,
+      "title": "Place de Bretagne (rose)",
+      "description": "Un centre névralgique de Nantes, entouré d’édifices historiques et de cafés animés.",
+      "type": "property",
+      "group": "rose"
+    },
+    {
+      "n": 15,
+      "title": "Gare de Chantenay",
+      "description": "Une gare pittoresque, petite mais pleine de charme, où le temps semble suspendu.",
+      "type": "station"
+    },
+    {
+      "n": 16,
+      "title": "Boulevard de la Prairie-au-Duc (orange)",
+      "description": "Un axe bordé d’arbres et de ponts, idéal pour observer la vie nantaise.",
+      "type": "property",
+      "group": "orange"
+    },
+    {
+      "n": 17,
+      "title": "Boulevard Léon Bureau (orange)",
+      "description": "Un large boulevard qui mêle modernité et traces du passé industriel.",
+      "type": "property",
+      "group": "orange"
+    },
+    {
+      "n": 18,
+      "title": "Boulevard Victor Hugo (orange)",
+      "description": "Lieu animé, ponctué de commerces et d’espaces de flânerie.",
+      "type": "property",
+      "group": "orange"
+    },
+    {
+      "n": 19,
+      "title": "Chance",
+      "description": "Un souffle étrange parcourt les rues de Nantes… quelque chose se prépare, invisible mais décisif.",
+      "type": "chance"
+    },
+    {
+      "n": 20,
+      "title": "Parc Gratuit - Jardin des Plantes",
+      "description": "Un havre de paix botanique, où fleurs et statues vous accueillent gratuitement.",
+      "type": "free"
+    },
+    {
+      "n": 21,
+      "title": "Château des Ducs de Bretagne (rouge)",
+      "description": "L’ancien château domine la ville, témoin des siècles d’histoire nantaise.",
+      "type": "property",
+      "group": "rouge"
+    },
+    {
+      "n": 22,
+      "title": "Tour Lu (rouge)",
+      "description": "La célèbre tour, symbole industriel transformé en lieu artistique, veille sur la ville.",
+      "type": "property",
+      "group": "rouge"
+    },
+    {
+      "n": 23,
+      "title": "Gare de Savenay",
+      "description": "Petite gare au charme tranquille, point de départ pour découvrir la région.",
+      "type": "station"
+    },
+    {
+      "n": 24,
+      "title": "Parc de la Beaujoire (jaune)",
+      "description": "Ses allées vastes et fleuries accueillent promeneurs et sportifs en quête de détente.",
+      "type": "property",
+      "group": "jaune"
+    },
+    {
+      "n": 25,
+      "title": "Jardin des Plantes (jaune)",
+      "description": "Un écrin verdoyant où le murmure de l’eau et le parfum des fleurs vous accompagnent.",
+      "type": "property",
+      "group": "jaune"
+    },
+    {
+      "n": 26,
+      "title": "Les Machines de l’île",
+      "description": "Les créatures mécaniques s’animent et l’éléphant géant parcourt les allées, fusion de l’art et de l’ingénierie.",
+      "type": "neutral"
+    },
+    {
+      "n": 27,
+      "title": "Gare de Clisson",
+      "description": "Au cœur du vignoble nantais, cette gare respire la quiétude et l’histoire locale.",
+      "type": "station"
+    },
+    {
+      "n": 28,
+      "title": "Hangar à Bananes (jaune)",
+      "description": "Ancien quai industriel réinventé en lieu culturel et festif, où l’art contemporain et les terrasses flottantes donnent vie à l’île. Les promeneurs s’y attardent, intrigués par les sculptures et les installations éphémères.",
+      "type": "property",
+      "group": "jaune"
+    },
+    {
+      "n": 29,
+      "title": "Place du Bouffay (vert)",
+      "description": "Place circulaire animée, entourée de maisons anciennes et de ruelles mystérieuses.",
+      "type": "property",
+      "group": "vert"
+    },
+    {
+      "n": 30,
+      "title": "Taxe de Luxe",
+      "description": "Vos achats somptueux vous coûtent 100 euros ; la splendeur a un prix.",
+      "type": "tax"
+    },
+    {
+      "n": 31,
+      "title": "Prison",
+      "description": "Les grilles se referment doucement, mais vous n’êtes ici qu’en visite… pour l’instant.",
+      "type": "jail"
+    },
+    {
+      "n": 32,
+      "title": "Ruelles du Vieux Nantes (vert)",
+      "description": "Un dédale de ruelles médiévales où chaque détour raconte une histoire oubliée.",
+      "type": "property",
+      "group": "vert"
+    },
+    {
+      "n": 33,
+      "title": "Passage Sainte-Croix (vert)",
+      "description": "Un passage discret aux façades colorées et aux boutiques anciennes, où le temps semble s’être arrêté, parfait pour les collectionneurs et les curieux.",
+      "type": "property",
+      "group": "vert"
+    },
+    {
+      "n": 34,
+      "title": "Caisse de Communauté",
+      "description": "Un souffle venu des bords de l’Erdre vous apporte un secret : chance ou contretemps, le sort décidera.",
+      "type": "community"
+    },
+    {
+      "n": 35,
+      "title": "Île Feydeau (violet)",
+      "description": "Ancienne île transformée, ses bâtiments historiques respirent le charme du XVIIe siècle.",
+      "type": "property",
+      "group": "violet"
+    },
+    {
+      "n": 36,
+      "title": "Caisse de Communauté",
+      "description": "Un éclat de lumière surgit derrière les ruelles nantaises… un mystère vous attend, prêt à bouleverser votre destinée.",
+      "type": "community"
+    },
+    {
+      "n": 37,
+      "title": "Allez en Prison",
+      "description": "Les gardiens vous escortent directement derrière les barreaux.",
+      "type": "go_to_jail"
+    },
+    {
+      "n": 38,
+      "title": "Musée d’Arts de Nantes (violet)",
+      "description": "Les trésors artistiques des siècles passés vous contemplent dans le silence des salles.",
+      "type": "property",
+      "group": "violet"
+    },
+    {
+      "n": 39,
+      "title": "Chance",
+      "description": "Un mystère flotte sur les quais de la Loire, prêt à bouleverser votre route.",
+      "type": "chance"
+    },
+    {
+      "n": 40,
+      "title": "Place Royale (violet)",
+      "description": "Grande esplanade en arc, ouverte comme un écrin face aux monuments historiques de Nantes.",
+      "type": "property",
+      "group": "violet"
+    }
+  ]
+}

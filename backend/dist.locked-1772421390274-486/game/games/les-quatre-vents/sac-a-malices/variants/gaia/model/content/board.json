@@ -1,0 +1,267 @@
+{
+  "version": 1,
+  "tiles": [
+    {
+      "n": 1,
+      "title": "Départ – Tu gagnes 200 crédits verts en passant",
+      "description": "Côté 1 (cases 2 à 10) : Projets locaux et urbains écologiques",
+      "type": "start"
+    },
+    {
+      "n": 2,
+      "title": "Piste cyclable (Rue cycliste)",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 1"
+    },
+    {
+      "n": 3,
+      "title": "Carte Chance (ex : “Adopte un arbre”)",
+      "description": "",
+      "type": "chance"
+    },
+    {
+      "n": 4,
+      "title": "Jardin communautaire",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 1"
+    },
+    {
+      "n": 5,
+      "title": "Taxe pollution urbaine (tu payes une amende)",
+      "description": "",
+      "type": "tax"
+    },
+    {
+      "n": 6,
+      "title": "Centre de recyclage",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 1"
+    },
+    {
+      "n": 7,
+      "title": "Éolienne de quartier",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 1"
+    },
+    {
+      "n": 8,
+      "title": "Carte Communauté (ex : “Tri des déchets réussi”)",
+      "description": "",
+      "type": "community"
+    },
+    {
+      "n": 9,
+      "title": "Ferme bio urbaine",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 1"
+    },
+    {
+      "n": 10,
+      "title": "Parc naturel urbain",
+      "description": "Coin 2 : Prison / Visite",
+      "type": "jail"
+    },
+    {
+      "n": 11,
+      "title": "Prison (tu peux être en “détention” si tu perds un tour)",
+      "description": "Côté 2 (cases 12 à 20) : Projets régionaux écologiques",
+      "type": "jail"
+    },
+    {
+      "n": 12,
+      "title": "Réserve naturelle",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 2"
+    },
+    {
+      "n": 13,
+      "title": "Station solaire",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 2"
+    },
+    {
+      "n": 14,
+      "title": "Carte Chance (ex : “Subvention gouvernementale”)",
+      "description": "",
+      "type": "chance"
+    },
+    {
+      "n": 15,
+      "title": "Forêt protégée",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 2"
+    },
+    {
+      "n": 16,
+      "title": "Pénalité sur l’empreinte carbone (tu payes)",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 2"
+    },
+    {
+      "n": 17,
+      "title": "Réseau de transport en commun écologique",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 2"
+    },
+    {
+      "n": 18,
+      "title": "Carte Communauté (ex : “Campagne de sensibilisation”)",
+      "description": "",
+      "type": "community"
+    },
+    {
+      "n": 19,
+      "title": "Rivières nettoyées",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 2"
+    },
+    {
+      "n": 20,
+      "title": "Parc éolien",
+      "description": "Coin 3 : Parking Gratuit",
+      "type": "free"
+    },
+    {
+      "n": 21,
+      "title": "Parking écologique (tu peux souffler ici)",
+      "description": "Côté 3 (cases 22 à 30) : Projets nationaux et innovations",
+      "type": "free"
+    },
+    {
+      "n": 22,
+      "title": "Centrale hydroélectrique",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 3"
+    },
+    {
+      "n": 23,
+      "title": "Carte Chance (ex : “Innovation verte récompensée”)",
+      "description": "",
+      "type": "chance"
+    },
+    {
+      "n": 24,
+      "title": "Usine de compostage",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 3"
+    },
+    {
+      "n": 25,
+      "title": "Taxe sur les énergies fossiles (tu payes)",
+      "description": "",
+      "type": "tax"
+    },
+    {
+      "n": 26,
+      "title": "Jardin botanique",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 3"
+    },
+    {
+      "n": 27,
+      "title": "Projet de reforestation",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 3"
+    },
+    {
+      "n": 28,
+      "title": "Carte Communauté (ex : “Participation à une clean-up”)",
+      "description": "",
+      "type": "community"
+    },
+    {
+      "n": 29,
+      "title": "Parc national",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 3"
+    },
+    {
+      "n": 30,
+      "title": "Ferme solaire",
+      "description": "Coin 4 : Allez en prison",
+      "type": "go_to_jail"
+    },
+    {
+      "n": 31,
+      "title": "Allez en prison (tu dois aller en case 11)",
+      "description": "Côté 4 (cases 32 à 40) : Projets internationaux et responsabilités",
+      "type": "go_to_jail"
+    },
+    {
+      "n": 32,
+      "title": "Programme de protection des océans",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 4"
+    },
+    {
+      "n": 33,
+      "title": "Carte Chance (ex : “Aide internationale pour l’environnement”)",
+      "description": "",
+      "type": "chance"
+    },
+    {
+      "n": 34,
+      "title": "Réseau mondial d’énergie renouvelable",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 4"
+    },
+    {
+      "n": 35,
+      "title": "Taxe carbone mondiale (tu payes)",
+      "description": "",
+      "type": "tax"
+    },
+    {
+      "n": 36,
+      "title": "Réserve de biosphère",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 4"
+    },
+    {
+      "n": 37,
+      "title": "Carte Communauté (ex : “Éducation environnementale”)",
+      "description": "",
+      "type": "community"
+    },
+    {
+      "n": 38,
+      "title": "Projet zéro déchet",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 4"
+    },
+    {
+      "n": 39,
+      "title": "Sanctuaire animalier",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 4"
+    },
+    {
+      "n": 40,
+      "title": "Banque verte (là où tu gagnes des crédits verts)",
+      "description": "",
+      "type": "property",
+      "group": "Groupe 4"
+    }
+  ]
+}

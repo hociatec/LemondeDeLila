@@ -1,0 +1,35 @@
+﻿{
+  "version": 1,
+  "pawns": [
+    {
+      "id": "capitaine-cacahuete",
+      "name": "Capitaine Cacahuète",
+      "description": "Écureuil pirate moustachu qui cherche le trésor de la noix éternelle."
+    },
+    {
+      "id": "professeur-gribouille",
+      "name": "Professeur Gribouille",
+      "description": "Rat inventeur distrait accompagné de fioles bruyantes."
+    },
+    {
+      "id": "miss-froufrou",
+      "name": "Miss Froufrou",
+      "description": "Cochon d'Inde coquette avec un style brillant et un miroir magique."
+    },
+    {
+      "id": "sir-croquou",
+      "name": "Sir Croquou",
+      "description": "Castor très poli au monocle doré et à la valise de biscuits."
+    },
+    {
+      "id": "chinchillator-3000",
+      "name": "Chinchillator 3000",
+      "description": "Chinchilla mi-robot très rapide, parfois un peu buggé."
+    },
+    {
+      "id": "hamstero-dynamite",
+      "name": "Hamstero Dynamite",
+      "description": "Hamster hyperactif qui fonce avec bandana, cape et énergie."
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "code": "jeu-oie",
+  "name": "Jeu de l'oie",
+  "minPlayers": 2,
+  "maxPlayers": 6,
+  "engine": "jeu-oie",
+  "summary": "Course sur 63 cases avec cases spéciales (oie, pont, prison...)"
+}
+
