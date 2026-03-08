@@ -44,7 +44,9 @@ describe('SoundsController', () => {
       'cross-origin',
     );
     expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'audio/mpeg');
-    expect(res.sendFile).toHaveBeenCalledWith('/tmp/sound.mp3');
+    expect(res.sendFile).toHaveBeenCalledWith('/tmp/sound.mp3', {
+      dotfiles: 'allow',
+    });
     expect(res.redirect).not.toHaveBeenCalled();
   });
 
@@ -71,5 +73,27 @@ describe('SoundsController', () => {
       '/api/sounds/RoomJoined/abc.wav',
     );
     expect(res.sendFile).not.toHaveBeenCalled();
+  });
+
+  it('allows serving wav files from storage paths under dot-directories', async () => {
+    const sounds: any = {
+      resolveSoundFile: jest.fn().mockResolvedValue({
+        entry: { sha256: 'abc' },
+        filePath: '/home/ubuntu/.local/share/lemonde-de-lila/sounds/TableAmbience1/abc.wav',
+      }),
+    };
+    const controller = new SoundsController(sounds);
+
+    const res: any = {
+      setHeader: jest.fn(),
+      sendFile: jest.fn(),
+    };
+
+    await controller.getSoundWav('TableAmbience1', 'abc', res);
+
+    expect(res.sendFile).toHaveBeenCalledWith(
+      '/home/ubuntu/.local/share/lemonde-de-lila/sounds/TableAmbience1/abc.wav',
+      { dotfiles: 'allow' },
+    );
   });
 });

@@ -2,6 +2,12 @@ import { Controller, Get, Param, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { SoundsService } from './sounds.service';
 
+const SOUND_FILE_SEND_OPTIONS = {
+  // Production storage lives under ~/.local/share/..., and Express sendFile()
+  // ignores dot-directories by default unless explicitly allowed.
+  dotfiles: 'allow',
+} as const;
+
 @Controller('api/sounds')
 export class SoundsController {
   constructor(private readonly sounds: SoundsService) {}
@@ -61,7 +67,7 @@ export class SoundsController {
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     res.setHeader('ETag', `"${entry.sha256}"`);
-    return res.sendFile(filePath);
+    return res.sendFile(filePath, SOUND_FILE_SEND_OPTIONS);
   }
 
   @Get(':soundId/:sha.wav')
@@ -78,6 +84,6 @@ export class SoundsController {
     res.setHeader('Content-Type', 'audio/wav');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     res.setHeader('ETag', `"${entry.sha256}"`);
-    return res.sendFile(filePath);
+    return res.sendFile(filePath, SOUND_FILE_SEND_OPTIONS);
   }
 }
