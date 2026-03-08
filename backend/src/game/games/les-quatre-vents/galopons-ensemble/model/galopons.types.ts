@@ -10,17 +10,22 @@ export type GaloponsTile = {
   n: number;
   title: string;
   type: GaloponsTileType;
+  description?: string;
   region?: 'prairie' | 'riviere' | 'foret' | 'montagne';
   apples?: number;
   skipTurns?: number;
 };
 
 export type GaloponsCard = { id: number; text: string };
+export type GaloponsPawn = { id: string; name: string; description: string };
 
 export type GaloponsMetadata = {
   tiles: GaloponsTile[];
   positions: Record<number, number>;
   apples: Record<number, number>;
+  pawns: GaloponsPawn[];
+  pawnByPlayerId: Record<number, string>;
+  setupStarterId: number | null;
   ious: Record<number, Record<number, number>>;
   statuses: { skipTurn: Record<number, number> };
   decks: { cards: GaloponsCard[]; discard: GaloponsCard[] };
@@ -40,3 +45,4 @@ export type GaloponsMetadata = {
 
 export type GaloponsCardsJsonV1 = { version: 1; cards: GaloponsCard[] };
 export type GaloponsBoardJsonV1 = { version: 1; tiles: GaloponsTile[] };
+export type GaloponsPawnsJsonV1 = { version: 1; pawns: GaloponsPawn[] };

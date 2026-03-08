@@ -565,7 +565,10 @@ public partial class GamePlayView
         // Passive refreshes (state updates from other players/bots) must not move focus
         // when the user is already reading/interacting inside the game view, unless
         // the current focus became invalid (collapsed/disabled).
-        if (!forceFromOutsideTextInput && IsFocusInsideThisGameView() && !ShouldRecoverBrokenFocus())
+        if (!forceFromOutsideTextInput &&
+            IsFocusInsideThisGameView() &&
+            !ShouldRecoverBrokenFocus() &&
+            IsFocusWithinInteractiveTarget())
         {
             return;
         }
@@ -692,6 +695,14 @@ public partial class GamePlayView
             _pendingInitialInteractiveFocus = true;
             TryFocusGameViewRoot();
         }
+    }
+
+    private bool IsFocusWithinInteractiveTarget()
+    {
+        return IsFocusWithinInlinePrompt() ||
+               IsFocusWithinGrid() ||
+               IsFocusWithinHandList() ||
+               IsFocusWithinChoicesList();
     }
 
     private void TryFocusGameViewRoot()

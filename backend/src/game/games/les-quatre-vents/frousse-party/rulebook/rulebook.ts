@@ -53,7 +53,23 @@ export function getAvailableActions(
         samePlayer: (left, right) => toPlayerId(left) === toPlayerId(right),
       },
     );
-    if (targetActions.length > 0) return targetActions;
+    if (targetActions.length > 0) {
+      if (
+        toText(pending.type) === 'choose_target' &&
+        asRecord(asRecord(pending).data).canDecline === true &&
+        toPlayerId(pending.playerId) === playerId
+      ) {
+        return [...targetActions, { type: 'swap_decline', payload: {} }];
+      }
+      return targetActions;
+    }
+    if (
+      toText(pending.type) === 'choose_target' &&
+      asRecord(asRecord(pending).data).canDecline === true &&
+      toPlayerId(pending.playerId) === playerId
+    ) {
+      return [{ type: 'swap_decline', payload: {} }];
+    }
     return [];
   }
 
@@ -137,6 +153,17 @@ export function validateAction(
         });
       }
       return pawnValidation.action;
+    }
+    if (pendingType === 'choose_target' && type === 'swap_decline') {
+      if (
+        asRecord(asRecord(pending).data).canDecline === true &&
+        toPlayerId(pending.playerId) === actorId
+      ) {
+        return { type: 'swap_decline', payload: {} };
+      }
+      throw new PlayerActionError('Choix invalide.', {
+        gameType: 'frousse-party',
+      });
     }
     const targetValidation = validatePendingChooseTargetActionForActor({
       pending,

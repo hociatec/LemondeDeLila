@@ -42,6 +42,49 @@ function baseState(): GameStateEntity {
 }
 
 describe('Contes effects', () => {
+  it('hydrates the board, decks and pawn choices expected by the pending content report', async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        GameCoreService,
+        RandomService,
+        SetupFlowService,
+        ContesCacahuetesSetupService,
+      ],
+    }).compile();
+
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const state = setup.hydrateInitialState(baseState());
+    const metadata = asRecord(state.metadata);
+    const tiles = Array.isArray(metadata.tiles) ? metadata.tiles : [];
+    const decks = asRecord(metadata.decks);
+    const bonusDeck = Array.isArray(decks.bonus) ? decks.bonus : [];
+    const malusDeck = Array.isArray(decks.malus) ? decks.malus : [];
+    const surpriseDeck = Array.isArray(decks.surprise) ? decks.surprise : [];
+    const conteDeck = Array.isArray(decks.contes) ? decks.contes : [];
+    const pending = asRecord(state.pending);
+    const pendingData = asRecord(pending.data);
+    const pawns = Array.isArray(pendingData.pawns) ? pendingData.pawns : [];
+
+    expect(tiles).toHaveLength(60);
+    expect(toText(asRecord(tiles[0]).label)).toContain('Case Départ');
+    expect(toText(asRecord(tiles[59]).label)).toContain('Case Arrivée');
+
+    expect(bonusDeck).toHaveLength(15);
+    expect(malusDeck).toHaveLength(15);
+    expect(surpriseDeck).toHaveLength(15);
+    expect(conteDeck).toHaveLength(29);
+
+    expect(toText(asRecord(bonusDeck[0]).title)).toBe('Bottes de sept lieues');
+    expect(toText(asRecord(malusDeck[0]).title)).toBe('Sortilège de Sommeil');
+    expect(toText(asRecord(surpriseDeck[0]).title)).toBe('Baguette Malicieuse');
+    expect(toText(asRecord(conteDeck[0]).title)).toBe('Conte - Japon : Momotarō');
+
+    expect(pawns).toHaveLength(6);
+    expect(toText(asRecord(pawns[0]).id)).toBe('Aika - Mongolie');
+    expect(toText(asRecord(pawns[0]).label)).toContain('Aika - Mongolie');
+    expect(toText(asRecord(pawns[0]).description)).not.toHaveLength(0);
+  });
+
   it('keeps Cape d’Invisibilite aligned with malus tile behavior', async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [

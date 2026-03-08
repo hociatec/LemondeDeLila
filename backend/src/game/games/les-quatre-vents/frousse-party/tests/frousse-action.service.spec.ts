@@ -1,8 +1,114 @@
 ﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import { GameCoreService } from '../../../../core/services/game-core.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { BoardEffectsPoliciesService } from '../../../../modules/board-effects-policies/services/board-effects-policies.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
+import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
+import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
+import { TurnService } from '../../../../modules/turn/services/turn.service';
 import { FrousseActionService } from '../actions/frousse-action.service';
+import * as Rulebook from '../rulebook/rulebook';
+
+function buildRealTurnService(randomOverrides: Partial<any> = {}) {
+  const core = new GameCoreService();
+  const random: any = {
+    rollDice: jest.fn(() => ({ roll: 1, meta: {} })),
+    nextInt: jest.fn(() => ({ value: 0, meta: {} })),
+    pickOne: jest.fn(() => ({ value: null, meta: {} })),
+    shuffle: jest.fn((_meta: any, values: any[]) => ({ values, meta: {} })),
+    ...randomOverrides,
+  };
+  const turns = new TurnFlowService(
+    new TurnService(),
+    new TurnPoliciesService(core),
+  );
+  return {
+    random,
+    service: new FrousseActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new BoardEffectsPoliciesService(),
+      new DeckPoliciesService(random),
+    ),
+  };
+}
+
+function buildFrousseMeta(overrides: Record<string, unknown> = {}): any {
+  return {
+    positions: { 1: 0, 2: 0 },
+    statuses: {
+      skipTurn: {},
+      blocked: {},
+      nextMoveCap: {},
+      nextRollIfThreeBackTwo: {},
+      nextRollKeepLowest: {},
+      nextRollMalus: {},
+      nextRollDouble: {},
+      ignoreTrapUntilNextDraw: {},
+      ignoreNextGhost: {},
+      ignoreNextPrank: {},
+      ignoreNextTrap: {},
+    },
+    tiles: [
+      {
+        n: 1,
+        type: 'normal',
+        title: 'Entree du manoir',
+        label: 'case 1. Entree du manoir (case neutre)',
+        description: '',
+      },
+      {
+        n: 2,
+        type: 'normal',
+        title: 'Vestibule',
+        label: 'case 2. Vestibule (case neutre)',
+        description: '',
+      },
+      {
+        n: 3,
+        type: 'normal',
+        title: 'Couloir silencieux',
+        label: 'case 3. Couloir silencieux (case neutre)',
+        description: '',
+      },
+    ],
+    pawns: [
+      { id: 'balai-farceur', name: 'Balai farceur' },
+      { id: 'citrouille-rigolote', name: 'Citrouille rigolote' },
+    ],
+    decks: { cards: [], discard: [] },
+    ...overrides,
+  };
+}
+
+function buildTurnState(overrides: Partial<GameStateEntity> = {}): GameStateEntity {
+  return {
+    status: 'started',
+    turnIndex: 0,
+    turn: { currentPlayerId: 1, direction: 1 },
+    players: [
+      {
+        id: 1,
+        username: 'Lilas',
+        pawn: 'balai-farceur',
+        pawnLabel: 'Un balai farceur',
+      } as any,
+      {
+        id: 2,
+        username: 'Hacene',
+        pawn: 'citrouille-rigolote',
+        pawnLabel: 'Une citrouille rigolote',
+      } as any,
+    ],
+    pending: null,
+    metadata: buildFrousseMeta(),
+    log: [],
+    extras: {},
+    ...overrides,
+  } as GameStateEntity;
+}
 
 describe('FrousseActionService movement effects', () => {
   it('applies combined move effects (advance then back) as a net delta', () => {
@@ -497,5 +603,121 @@ describe('FrousseActionService movement effects', () => {
     expect(messages.some((m) => /gardez le plus petit résultat/i.test(m))).toBe(
       true,
     );
+  });
+
+  it('lets the player refuse a swap card and advances the turn', () => {
+    const { service } = buildRealTurnService();
+    const state = buildTurnState({
+      pending: { type: 'draw', playerId: 1, blocking: true } as any,
+      metadata: buildFrousseMeta({
+        decks: {
+          cards: [
+            {
+              category: 'Farce',
+              localNumber: 3,
+              text: 'Un autre joueur vous joue une farce. Echangez immédiatement vos places.',
+            },
+          ],
+          discard: [],
+        },
+      }),
+    });
+
+    const afterDraw = service.applyActions(state, [
+      { type: 'draw', payload: {} } as any,
+    ]);
+    expect(afterDraw.pending?.type).toBe('choose_target');
+    expect(afterDraw.pending?.choices).toEqual([
+      'Hacene',
+      "Refuser l'échange.",
+    ]);
+    expect(Rulebook.getAvailableActions(afterDraw, 1)).toContainEqual({
+      type: 'swap_decline',
+      payload: {},
+    });
+
+    const afterDecline = service.applyActions(afterDraw, [
+      { type: 'swap_decline', payload: {} } as any,
+    ]);
+    const messages = (afterDecline.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+
+    expect(afterDecline.pending).toBeNull();
+    expect(afterDecline.turn?.currentPlayerId).toBe(2);
+    expect(messages).toContain("Lilas refuse l'échange de position.");
+    expect(messages).toContain("C'est au tour de Hacene.");
+  });
+
+  it('does not replay on a neutral tile after an immediate replay card', () => {
+    const rollDice = jest
+      .fn()
+      .mockReturnValueOnce({ roll: 4, meta: {} })
+      .mockReturnValueOnce({ roll: 2, meta: {} });
+    const { service } = buildRealTurnService({ rollDice });
+    const state = buildTurnState({
+      pending: { type: 'draw', playerId: 1, blocking: true } as any,
+      metadata: buildFrousseMeta({
+        decks: {
+          cards: [
+            {
+              category: 'Farce',
+              localNumber: 11,
+              text: 'Une bougie clignote et vous joue un tour. Lancez le dé deux fois et gardez le plus petit résultat.',
+            },
+          ],
+          discard: [],
+        },
+      }),
+    });
+
+    const afterDraw = service.applyActions(state, [
+      { type: 'draw', payload: {} } as any,
+    ]);
+    expect(afterDraw.turn?.currentPlayerId).toBe(1);
+    expect(afterDraw.pending).toBeNull();
+
+    const afterRoll = service.applyActions(afterDraw, [
+      { type: 'roll', payload: {} } as any,
+    ]);
+    const messages = (afterRoll.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+
+    expect(afterRoll.turn?.currentPlayerId).toBe(2);
+    expect(messages).toContain("C'est au tour de Hacene.");
+    expect(
+      messages.some((message) => /^Lilas rejoue\./i.test(message)),
+    ).toBe(false);
+  });
+
+  it('advances to the next player immediately after a skip-turn card', () => {
+    const { service } = buildRealTurnService();
+    const state = buildTurnState({
+      pending: { type: 'draw', playerId: 1, blocking: true } as any,
+      metadata: buildFrousseMeta({
+        decks: {
+          cards: [
+            {
+              category: 'Piège',
+              localNumber: 2,
+              text: 'Vous glissez sur une flaque gluante et malodorante. Impossible de vous relever tout de suite. Passez 1 tour.',
+            },
+          ],
+          discard: [],
+        },
+      }),
+    });
+
+    const afterDraw = service.applyActions(state, [
+      { type: 'draw', payload: {} } as any,
+    ]);
+    const messages = (afterDraw.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+
+    expect(afterDraw.turn?.currentPlayerId).toBe(2);
+    expect((afterDraw.metadata as any)?.statuses?.skipTurn?.[1]).toBe(1);
+    expect(messages.at(-1)).toBe("C'est au tour de Hacene.");
   });
 });

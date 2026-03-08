@@ -180,6 +180,7 @@ export class PanierExpressUtils {
 
     const tokenMap: Record<string, string> = {
       echange: 'échange',
+      journee: 'journée',
       marche: 'marché',
       intemperie: 'intempérie',
       avarie: 'avarié',

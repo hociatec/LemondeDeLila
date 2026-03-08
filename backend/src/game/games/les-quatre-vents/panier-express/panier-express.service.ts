@@ -101,8 +101,13 @@ export class PanierExpressService extends AbstractGameService {
 
   exposeState(state: GameStateEntity): GameStateWithActions {
     const ensured = this.ensureMetadata(state);
-    const currentId = ensured.turn?.currentPlayerId ?? null;
-    const current = (ensured.players ?? []).find((p) => p.id === currentId);
+    const currentId = toPlayerIdValue(ensured.turn?.currentPlayerId);
+    const current =
+      currentId == null
+        ? null
+        : (ensured.players ?? []).find(
+            (p) => toPlayerIdValue(p?.id) === currentId,
+          ) ?? null;
     const isBot = current?.isBot === true;
     const actions =
       !isBot && typeof currentId === 'number'
@@ -129,10 +134,13 @@ export class PanierExpressService extends AbstractGameService {
   ): GameStateWithActions {
     const ensured = this.ensureMetadata(state);
 
+    const requestedViewerId = toPlayerIdValue(userId);
     const viewerId =
-      typeof userId === 'number' &&
-      (ensured.players ?? []).some((p) => p && p.id === userId)
-        ? userId
+      requestedViewerId != null &&
+      (ensured.players ?? []).some(
+        (p) => toPlayerIdValue(p?.id) === requestedViewerId,
+      )
+        ? requestedViewerId
         : null;
 
     const actions =
@@ -1446,22 +1454,12 @@ export class PanierExpressService extends AbstractGameService {
       next,
       `[Panier Express] Case Échange : ${playerName} est sollicité pour "${label}".`,
     );
-    const player = (next.players ?? []).find((p) => p.id === playerId);
-    const inventory = player ? this.utils.toStringArray(player.inventory) : [];
-    const hasIngredient = inventory.includes(ingredient);
-    if (!hasIngredient) {
-      const skipped = this.applySkipTurnTile(next, playerId, 2, true);
-      return this.core.appendLog(
-        skipped,
-        `[Panier Express] Case Échange : ${playerName} refuse "${label}" et perd 2 tours.`,
-      );
-    }
     const pending: PendingState = {
       type: 'merchant_request',
       playerId,
       blocking: true,
-      question: `Le marchand souhaite "${label}". (Entrée = accepter, R = refuser)`,
-      choices: ['Accepter', 'Refuser'],
+      question: `Le marchand souhaite "${label}".`,
+      choices: [label, 'Refuser'],
       data: { ingredient },
     };
     return { ...next, pending };
@@ -1958,9 +1956,14 @@ export class PanierExpressService extends AbstractGameService {
             'Piocher une course bonus (Espace).',
           );
         }
+        const targetNames = targets
+          .map((target) => this.utils.playerName(next, target.playerId))
+          .filter((name) => name.length > 0);
         next = this.core.appendLog(
           next,
-          `[Panier Express] Journée bio : bonus pour les joueurs sur un stand Bio.`,
+          targetNames.length
+            ? `[Panier Express] Journée bio : bonus pour ${targetNames.join(', ')}.`
+            : `[Panier Express] Journée bio : aucun joueur sur un stand Bio.`,
         );
         next = this.appendActionLog(next, playerId, 'event', {
           event,
@@ -2674,8 +2677,8 @@ export class PanierExpressService extends AbstractGameService {
           next = this.core.appendLog(
             next,
             discarded
-              ? `[Panier Express] ${eventLabel} : ${this.utils.playerName(state, playerId)} défausse "${this.utils.formatCourseLabel(discarded)}".`
-              : `[Panier Express] ${eventLabel} : aucune carte à défausser.`,
+              ? `[Panier Express] ${this.utils.playerName(state, playerId)} défausse "${this.utils.formatCourseLabel(discarded)}".`
+              : `[Panier Express] Aucune carte à défausser.`,
           );
           next = this.appendActionLog(next, playerId, 'event', {
             event,
@@ -2813,6 +2816,14 @@ export class PanierExpressService extends AbstractGameService {
       return this.core.appendLog(
         state,
         '[Panier Express] Acceptation du marchand invalide.',
+      );
+    }
+    const player = (state.players ?? []).find((p) => p.id === actorId);
+    const inventory = player ? this.utils.toStringArray(player.inventory) : [];
+    if (!inventory.includes(ingredient)) {
+      return this.core.appendLog(
+        state,
+        `[Panier Express] Case Échange : ${this.utils.playerName(state, actorId)} n'a pas "${this.utils.formatCourseLabel(ingredient)}". Refusez la demande.`,
       );
     }
     let next: GameStateEntity = { ...state, pending: null };
@@ -3604,14 +3615,16 @@ export class PanierExpressService extends AbstractGameService {
 
     // ---- Exchanges: règles avancées (multi-étapes / contraintes) ----
     const buildCourseSets = () => {
-      const stands = this.setup.standCourseMap();
+      const stands = this.setup.standCourseCatalog();
+      const summerFruitStandIds = new Set<string>([
+        'fruitier',
+        'bio-fruits',
+        'fruits-exotiques',
+        'fruits-rouges',
+      ]);
+      const winterVegStandIds = new Set<string>(['primeur-hivernal']);
       const fruitStand = (id: string) =>
         id.includes('fruit') || id === 'agrumes' || id === 'maraicher-automne';
-      const winterVegStand = (id: string) =>
-        id === 'primeur-hivernal' ||
-        id === 'bio-legumes' ||
-        id === 'champignons' ||
-        id.startsWith('legumes-');
       const fruit = new Set<string>();
       const veg = new Set<string>();
       const summerFruit = new Set<string>();
@@ -3621,10 +3634,14 @@ export class PanierExpressService extends AbstractGameService {
         if (id === 'bonus') return;
         if (fruitStand(id)) {
           list.forEach((c) => fruit.add(c));
-          if (id !== 'fruits-hiver') list.forEach((c) => summerFruit.add(c));
+          if (summerFruitStandIds.has(id)) {
+            list.forEach((c) => summerFruit.add(c));
+          }
         } else {
           list.forEach((c) => veg.add(c));
-          if (winterVegStand(id)) list.forEach((c) => winterVeg.add(c));
+          if (winterVegStandIds.has(id)) {
+            list.forEach((c) => winterVeg.add(c));
+          }
         }
       });
       return { fruit, veg, summerFruit, winterVeg };
@@ -4059,13 +4076,14 @@ export class PanierExpressService extends AbstractGameService {
     };
     next = this.core.appendLog(
       next,
-      `[Panier Express] Quiz : réponse ${correct ? 'correcte' : 'incorrecte'} pour ${this.utils.playerName(
+      `[Panier Express] Réponse ${correct ? 'correcte' : 'incorrecte'} pour ${this.utils.playerName(
         state,
         playerId,
       )}.`,
     );
     next = this.appendActionLog(next, playerId, 'answer_quiz', { correct });
     if (correct) {
+      next = this.core.appendLog(next, '[Panier Express] Piochez un ingrédient.');
       next = this.queueCourseDraws(
         next,
         [{ playerId, standId: 'bonus' }],
@@ -4166,7 +4184,7 @@ export class PanierExpressService extends AbstractGameService {
         type: 'pick',
         playerId,
         blocking: true,
-        label: 'Choisissez le stand à rejoindre (flèches puis Entrée).',
+        label: 'Choisissez le stand à rejoindre.',
         choices,
         data: {
           kind: 'tile.move_to_stand_choice',
@@ -4408,6 +4426,11 @@ function toText(value: unknown): string {
     return String(value);
   }
   return '';
+}
+
+function toPlayerIdValue(value: unknown): number | null {
+  const parsed = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function toUnknownArray(value: unknown): unknown[] {

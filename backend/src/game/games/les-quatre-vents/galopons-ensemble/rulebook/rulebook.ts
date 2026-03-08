@@ -14,6 +14,10 @@ import {
   type GaloponsActionType,
 } from '../definitions/galopons.definition';
 import {
+  getPendingPawnActionsForPlayer,
+  validatePendingPawnActionForActor,
+} from '../../../../core/helpers/pawn-pending-rulebook.helper';
+import {
   getPendingChooseTargetActionsForPlayer,
   getPendingDrawActionsForPlayer,
   validatePendingChooseTargetActionForActor,
@@ -36,6 +40,12 @@ export function getAvailableActions(
   if (pending) {
     const drawActions = getPendingDrawActionsForPlayer(pending, playerId);
     if (drawActions.length > 0) return drawActions;
+    const pawnActions = getPendingPawnActionsForPlayer(
+      pending,
+      playerId,
+      'choose_pawn',
+    );
+    if (pawnActions.length > 0) return pawnActions;
     const targetActions = getPendingChooseTargetActionsForPlayer(
       pending,
       playerId,
@@ -92,6 +102,37 @@ export function validateAction(
       throw new PlayerActionError('Action non disponible.', {
         gameType: 'galopons-ensemble',
       });
+    }
+
+    if (pendingRow.type === 'choose_pawn') {
+      const pawnValidation = validatePendingPawnActionForActor({
+        pending,
+        actorId,
+        actionType: type,
+        payload: action.payload ?? {},
+        pendingType: 'choose_pawn',
+      });
+      if (!pawnValidation.ok && pawnValidation.reason === 'wrong_action_type') {
+        throw new PlayerActionError('Choix invalide.', {
+          gameType: 'galopons-ensemble',
+        });
+      }
+      if (!pawnValidation.ok && pawnValidation.reason === 'invalid_pawn') {
+        throw new GameValidationError('Pion invalide.', {
+          gameType: 'galopons-ensemble',
+          pawnId:
+            asRecord(action.payload).pawnId ??
+            asRecord(action.payload).pawn ??
+            asRecord(action.payload).value ??
+            null,
+        });
+      }
+      if (!pawnValidation.ok) {
+        throw new PlayerActionError('Choix invalide.', {
+          gameType: 'galopons-ensemble',
+        });
+      }
+      return pawnValidation.action;
     }
 
     const targetValidation = validatePendingChooseTargetActionForActor({

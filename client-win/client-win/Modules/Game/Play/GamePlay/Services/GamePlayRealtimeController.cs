@@ -50,6 +50,7 @@ internal sealed class GamePlayRealtimeController
     private int? _viewerPlayerId;
     private int? _lastStateTurnPlayerId;
     private string _lastPendingType = string.Empty;
+    private string _lastPendingFocusSignature = string.Empty;
     private bool _lastBotThinking;
     private bool _endgameFeedbackEmitted;
     private bool _endgamePublicMessagesEmitted;
@@ -126,6 +127,7 @@ internal sealed class GamePlayRealtimeController
         _viewerPlayerId = null;
         _pendingForcedTurnAnnouncements = 0;
         _lastPendingType = string.Empty;
+        _lastPendingFocusSignature = string.Empty;
         _lastBotThinking = false;
         _endgameFeedbackEmitted = false;
         _endgamePublicMessagesEmitted = false;
@@ -412,8 +414,11 @@ internal sealed class GamePlayRealtimeController
         var viewerUsername = GetUsername(state, viewerId);
         var previousTurnPlayerId = _lastStateTurnPlayerId;
         var previousPendingType = _lastPendingType;
+        var previousPendingFocusSignature = _lastPendingFocusSignature;
         var previousBotThinking = _lastBotThinking;
         var currentHandCounts = BuildHandCounts(GamePlayExtrasParser.ExtractViewerHandLabels(state));
+        var nextPendingType = PawnPendingTypes.Normalize(state.Pending?.Type);
+        var nextPendingFocusSignature = BuildPendingFocusSignature(state.Pending);
 
         var nextStatus = NormalizeStatus(state);
         var nextPhase = (state.Phase ?? string.Empty).Trim();
@@ -425,11 +430,12 @@ internal sealed class GamePlayRealtimeController
         var isEndgameContext =
             string.Equals(nextStatus, "finished", StringComparison.OrdinalIgnoreCase) ||
             HasOutcomeData(state);
+        var batchHasDiceLog = presented.newLogMessages.Any(entry => IsDiceLogMessage(entry?.Message));
 
         foreach (var entry in presented.newLogMessages)
         {
             var trimmed = entry?.Message ?? string.Empty;
-            _logSounds.TryPlayForLogMessage(trimmed, viewerUsername);
+            _logSounds.TryPlayForLogMessage(trimmed, viewerUsername, suppressDrawSound: batchHasDiceLog);
 
             // Best-effort fallback: if the server logged the winner/draw, keep it so the client can still
             // emit a proper endgame header even if winner/outcome metadata is missing.
@@ -554,6 +560,21 @@ internal sealed class GamePlayRealtimeController
         {
             _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
         }
+        if (previousViewerTurnActionable &&
+            viewerTurnActionable &&
+            !PawnPendingTypes.IsPawnPendingType(previousPendingType) &&
+            !PawnPendingTypes.IsPawnPendingType(nextPendingType) &&
+            !string.Equals(
+                previousPendingFocusSignature,
+                nextPendingFocusSignature,
+                StringComparison.Ordinal) &&
+            (!string.IsNullOrEmpty(previousPendingFocusSignature) ||
+             !string.IsNullOrEmpty(nextPendingFocusSignature)))
+        {
+            // Some games keep the same actionable turn while rotating prompts/choice lists.
+            // Re-anchor focus so keyboard navigation follows the new pending step.
+            _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
+        }
         if (viewerMustChoosePawn && !previousViewerMustChoosePawn)
         {
             _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(_requestFocus));
@@ -608,11 +629,61 @@ internal sealed class GamePlayRealtimeController
         _syncShortcuts(state);
         _grid.SyncFromState(state, _viewerPlayerId);
 
-        _lastPendingType = PawnPendingTypes.Normalize(state.Pending?.Type);
+        _lastPendingType = nextPendingType;
+        _lastPendingFocusSignature = nextPendingFocusSignature;
         _lastBotThinking = state.BotThinking;
         _lastViewerHandCounts = currentHandCounts;
         _refreshCanExecute();
         TryAnnounceTurnFromState(state);
+    }
+
+    private static string BuildPendingFocusSignature(GamePendingDto? pending)
+    {
+        if (pending == null)
+        {
+            return string.Empty;
+        }
+
+        var type = PawnPendingTypes.Normalize(pending.Type);
+        var label = (pending.Label ?? string.Empty).Trim();
+        var question = (pending.Question ?? string.Empty).Trim();
+        var playerId = pending.PlayerId?.ToString() ?? string.Empty;
+        var targetPlayerId = pending.TargetPlayerId?.ToString() ?? string.Empty;
+        var choices = pending.Choices == null
+            ? string.Empty
+            : string.Join(
+                "\u001f",
+                pending.Choices
+                    .Where(choice => !string.IsNullOrWhiteSpace(choice))
+                    .Select(choice => choice.Trim()));
+        var data = pending.Data.ValueKind is System.Text.Json.JsonValueKind.Object or System.Text.Json.JsonValueKind.Array
+            ? pending.Data.ToString().Trim()
+            : string.Empty;
+
+        return string.Join(
+            "\u001e",
+            new[]
+            {
+                type,
+                playerId,
+                targetPlayerId,
+                label,
+                question,
+                choices,
+                data,
+            });
+    }
+
+    private static bool IsDiceLogMessage(string? message)
+    {
+        var trimmed = (message ?? string.Empty).Trim();
+        if (trimmed.Length == 0)
+        {
+            return false;
+        }
+
+        return trimmed.IndexOf("lance le dé", StringComparison.OrdinalIgnoreCase) >= 0 ||
+               trimmed.IndexOf("relance le dé", StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     private static string NormalizeStatus(GameStateDto state)

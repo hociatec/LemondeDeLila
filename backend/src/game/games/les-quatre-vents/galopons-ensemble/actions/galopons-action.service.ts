@@ -16,9 +16,12 @@ import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
 import type {
   GaloponsCard,
   GaloponsMetadata,
+  GaloponsPawn,
   GaloponsTile,
 } from '../model/galopons.types';
 
@@ -41,34 +44,91 @@ export class GaloponsActionService {
     private readonly turns: TurnFlowService,
     private readonly core: GameCoreService,
     private readonly deckPolicies: DeckPoliciesService,
+    private readonly setupFlow: SetupFlowService,
   ) {}
 
   applyActions(
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    const next = applyActionsSequentially(state, actions, (next, action) => {
-      const type = normalizeActionType(action);
-      return dispatchByActionType(
-        type,
-        {
-          roll: () => {
-            next = this.handleRoll(next);
-            return next;
+    const next = applyActionsSequentially(
+      this.ensurePawnSelection(state),
+      actions,
+      (next, action) => {
+        const type = normalizeActionType(action);
+        return dispatchByActionType(
+          type,
+          {
+            choose_pawn: () => {
+              next = this.handleChoosePawn(next, action);
+              next = this.ensurePawnSelection(next);
+              return next;
+            },
+            roll: () => {
+              next = this.handleRoll(next);
+              return next;
+            },
+            draw: () => {
+              next = this.handleDraw(next);
+              return next;
+            },
+            choose_target: () => {
+              next = this.handleChooseTarget(next, action);
+              return next;
+            },
           },
-          draw: () => {
-            next = this.handleDraw(next);
-            return next;
-          },
-          choose_target: () => {
-            next = this.handleChooseTarget(next, action);
-            return next;
-          },
-        },
-        () => next,
-      );
-    });
+          () => next,
+        );
+      },
+    );
     return next;
+  }
+
+  private handleChoosePawn(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    const resolved = resolvePendingPawnChoiceAction({
+      state,
+      action,
+      pendingType: 'choose_pawn',
+      resolveChoice: (rawPawn, options) =>
+        this.setupFlow.resolvePawnChoice(rawPawn, options),
+    });
+    if (!resolved) return state;
+
+    const { playerId, chosen } = resolved;
+    const meta = this.getMeta(state);
+    const pawnId = toText(chosen.id);
+    const pawnLabel = toText(chosen.label) || pawnId || 'pion';
+    const pawnByPlayerId = {
+      ...(meta.pawnByPlayerId ?? {}),
+      [playerId]: pawnId,
+    };
+    const players = (state.players ?? []).map((player) => {
+      if (player?.id !== playerId) return player;
+      return {
+        ...player,
+        pawn: pawnId,
+        pawnLabel,
+      };
+    });
+
+    const next: GameStateEntity = {
+      ...state,
+      players,
+      pending: null,
+      metadata: {
+        ...(state.metadata ?? {}),
+        ...meta,
+        pawnByPlayerId,
+      },
+    };
+
+    return this.core.appendLog(
+      next,
+      `${resolvePlayerNameFromState(next, playerId)} a choisi le pion : ${pawnLabel}.`,
+    );
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {
@@ -299,6 +359,10 @@ export class GaloponsActionService {
       next,
       `${resolvePlayerNameFromState(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${tile.n} (${tile.title}).`,
     );
+    const description = toText(tile.description);
+    if (description.length > 0) {
+      next = this.core.appendLog(next, description);
+    }
     if (tile.type === 'card') {
       next = this.core.appendLog(next, `Piochez une carte Aventure.`);
     } else if (tile.type === 'bonus') {
@@ -518,7 +582,9 @@ export class GaloponsActionService {
 
     // Choisir un joueur et avancer tous les deux.
     if (
-      /Choisissez un joueur et avancez tout les deux d'une case/i.test(text)
+      /Choisissez un joueur et avancez (?:tout|tous) les deux d['’]une case/i.test(
+        text,
+      )
     ) {
       const targets = this.otherPlayers(next, playerId);
       const pending: PendingState = {
@@ -726,15 +792,93 @@ export class GaloponsActionService {
       }));
   }
 
+  private ensurePawnSelection(state: GameStateEntity): GameStateEntity {
+    const pendingType = toText(asRecord(state.pending).type);
+    if (pendingType.length > 0) {
+      return state;
+    }
+
+    const players = Array.isArray(state.players) ? state.players : [];
+    const meta = this.getMeta(state);
+    const pawnByPlayerId = meta.pawnByPlayerId ?? {};
+    const availablePawns = (Array.isArray(meta.pawns) ? meta.pawns : [])
+      .filter((pawn) => !Object.values(pawnByPlayerId).includes(pawn.id))
+      .map((pawn) => ({
+        id: toText(pawn.id),
+        label: toText(pawn.name) || toText(pawn.id),
+        description: toText(pawn.description),
+      }))
+      .filter((pawn) => pawn.id.length > 0);
+
+    const pendingInfo = this.setupFlow.createSequentialPawnPending({
+      players,
+      startPlayerId: meta.setupStarterId ?? players[0]?.id ?? null,
+      isAssigned: (playerId) => Boolean(pawnByPlayerId[playerId]),
+      pawns: availablePawns,
+      pawnDataMapper: (choice) => ({
+        id: toText(choice.id),
+        label: toText(choice.label),
+        description: toText(choice.description),
+      }),
+    });
+    if (pendingInfo) {
+      return {
+        ...state,
+        pending: pendingInfo.pending,
+        turnIndex: pendingInfo.turnIndex,
+        turn: {
+          ...(state.turn ?? {
+            currentPlayerId: pendingInfo.playerId,
+            direction: 1,
+          }),
+          currentPlayerId: pendingInfo.playerId,
+          direction: state.turn?.direction === -1 ? -1 : 1,
+        },
+      };
+    }
+
+    const starterId = meta.setupStarterId ?? players[0]?.id ?? null;
+    if (
+      typeof starterId === 'number' &&
+      Number.isFinite(starterId) &&
+      state.turn?.currentPlayerId !== starterId
+    ) {
+      return {
+        ...state,
+        turn: {
+          ...(state.turn ?? { currentPlayerId: starterId, direction: 1 }),
+          currentPlayerId: starterId,
+          direction: state.turn?.direction === -1 ? -1 : 1,
+        },
+      };
+    }
+
+    return state;
+  }
+
   private getMeta(state: GameStateEntity): GaloponsMetadata {
     return (state.metadata ?? {}) as GaloponsMetadata;
   }
 
   private pawnLabel(state: GameStateEntity, id: number): string {
+    const meta = this.getMeta(state);
     const players = Array.isArray(state.players) ? state.players : [];
     const player = players.find((x) => x?.id === id) ?? null;
+    const playerRecord =
+      player != null && typeof player === 'object'
+        ? (player as Record<string, unknown>)
+        : {};
+    const explicitLabel =
+      typeof playerRecord.pawnLabel === 'string'
+        ? String(playerRecord.pawnLabel).trim()
+        : '';
+    const pawnId =
+      toText(meta.pawnByPlayerId?.[id]) ||
+      (typeof playerRecord.pawn === 'string'
+        ? String(playerRecord.pawn).trim()
+        : '');
     const pawn =
-      typeof player?.pawn === 'string' ? String(player.pawn).trim() : '';
+      explicitLabel || this.resolvePawnName(meta.pawns, pawnId) || pawnId;
     if (!pawn) return '"son pion"';
     const lower = pawn.toLowerCase();
     const feminine = lower.startsWith('la ') || lower.startsWith('une ');
@@ -748,6 +892,17 @@ export class GaloponsActionService {
         ? core.toLowerCase()
         : `${core.charAt(0).toLowerCase()}${core.slice(1)}`;
     return `"${feminine ? 'sa' : 'son'} ${lowered}"`;
+  }
+
+  private resolvePawnName(
+    pawns: GaloponsPawn[] | undefined,
+    pawnId: string,
+  ): string {
+    if (!pawnId) return '';
+    const pawn = Array.isArray(pawns)
+      ? pawns.find((entry) => toText(entry?.id) === pawnId)
+      : null;
+    return toText(pawn?.name);
   }
 }
 
@@ -811,4 +966,11 @@ function findNext(
     if (predicate(tiles[i])) return i;
   }
   return null;
+}
+
+function toText(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  return '';
 }

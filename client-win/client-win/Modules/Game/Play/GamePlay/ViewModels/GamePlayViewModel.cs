@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Threading;
 using client_win.Core;
 using client_win.Core.Input;
+using client_win.Core.Text;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Game.Play.Announcements.Services;
 using client_win.Modules.Game.Play.Actions.Dtos;
@@ -472,6 +473,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         }
 
         var label = (ChoicesLabel ?? string.Empty).Trim();
+        var normalizedLabel = MojibakeTextRepair.Fix(label).Trim();
         if (string.IsNullOrWhiteSpace(label))
         {
             if (isPawnPending)
@@ -486,7 +488,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         }
 
         if (!isPawnPending && hasServerPendingChoices &&
-            string.Equals(label, "RÃ©ponses possibles", StringComparison.OrdinalIgnoreCase))
+            (string.Equals(normalizedLabel, "Réponses possibles", StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(normalizedLabel, "Réponses", StringComparison.OrdinalIgnoreCase)))
         {
             _lastAnnouncedServerPendingLabel = string.Empty;
             return;

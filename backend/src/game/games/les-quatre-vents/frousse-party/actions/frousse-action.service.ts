@@ -75,6 +75,10 @@ export class FrousseActionService {
               next = this.handleChooseTarget(next, action);
               return next;
             },
+            swap_decline: () => {
+              next = this.handleSwapDecline(next);
+              return next;
+            },
           },
           () => next,
         );
@@ -319,8 +323,7 @@ export class FrousseActionService {
 
     // Relance immédiate (cartes bonus/farces).
     if (meta.keepTurnNow === true) {
-      delete meta.keepTurnNow;
-      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+      next = this.clearKeepTurnNow(next);
       return this.core.appendLog(
         next,
         `${resolvePlayerNameFromState(next, currentId)} rejoue.`,
@@ -374,6 +377,37 @@ export class FrousseActionService {
     next = this.core.appendLog(
       next,
       `${resolvePlayerNameFromState(next, currentId)} échange sa position avec ${resolvePlayerNameFromState(next, targetPlayerId)}.`,
+    );
+    return this.advanceTurnWithAnnouncement(next);
+  }
+
+  private handleSwapDecline(state: GameStateEntity): GameStateEntity {
+    if (String(state.status ?? '').toLowerCase() !== 'started') return state;
+
+    const pending = asPendingRecord(state.pending);
+    if (!pending || pending.type !== 'choose_target') return state;
+
+    const currentId =
+      typeof pending.playerId === 'number'
+        ? pending.playerId
+        : (state.turn?.currentPlayerId ?? null);
+    if (currentId == null) return state;
+
+    let meta = this.getMeta(state);
+    const ctx = meta.pendingContext ?? null;
+    if (!ctx || ctx.kind !== 'swap' || ctx.actorId !== currentId) {
+      return { ...state, pending: null };
+    }
+
+    meta = { ...meta, pendingContext: null };
+    let next: GameStateEntity = {
+      ...state,
+      pending: null,
+      metadata: { ...(state.metadata ?? {}), ...meta },
+    };
+    next = this.core.appendLog(
+      next,
+      `${resolvePlayerNameFromState(next, currentId)} refuse l'échange de position.`,
     );
     return this.advanceTurnWithAnnouncement(next);
   }
@@ -572,11 +606,7 @@ export class FrousseActionService {
     const appliedMeta = this.getMeta(applied);
     if (applied.pending) return applied;
     if (appliedMeta.keepTurnNow === true) {
-      delete appliedMeta.keepTurnNow;
-      return {
-        ...applied,
-        metadata: { ...(applied.metadata ?? {}), ...appliedMeta },
-      };
+      return this.clearKeepTurnNow(applied);
     }
     return this.advanceTurnWithAnnouncement(applied);
   }
@@ -642,8 +672,9 @@ export class FrousseActionService {
         label: 'Choisissez un joueur dans la liste, puis Entrée.',
         playerId,
         blocking: true,
-        choices: targets.map((t) => t.username),
+        choices: [...targets.map((t) => t.username), "Refuser l'échange."],
         data: {
+          canDecline: true,
           targets: targets.map((t) => ({
             targetPlayerId: t.id,
             targetUsername: t.username,
@@ -1146,6 +1177,14 @@ export class FrousseActionService {
 
   private getMeta(state: GameStateEntity): FrousseRuntimeMetadata {
     return normalizeFrousseMeta(state.metadata);
+  }
+
+  private clearKeepTurnNow(state: GameStateEntity): GameStateEntity {
+    const metadata = asRecord(state.metadata);
+    if (!('keepTurnNow' in metadata)) return state;
+    const nextMetadata = { ...metadata };
+    delete nextMetadata.keepTurnNow;
+    return { ...state, metadata: nextMetadata };
   }
 
   private pawnLabel(state: GameStateEntity, id: number): string {

@@ -315,4 +315,52 @@ describe('PanierExpress pending scenarios', () => {
     expect(b.inventory).toContain('noix');
     expect(after.turn?.currentPlayerId).toBe(2);
   });
+
+  it("échange de saison: ne propose que les fruits d'été du joueur", () => {
+    const state = makeStartedState(
+      game,
+      [
+        {
+          id: 1,
+          username: 'A',
+          inventory: ['mangue', 'noisette', 'tomate'],
+          basket: [],
+          shoppingList: [],
+        },
+        {
+          id: 2,
+          username: 'B',
+          inventory: ['poireau'],
+          basket: [],
+          shoppingList: [],
+        },
+      ],
+      1,
+    );
+    state.pending = {
+      type: 'pick',
+      playerId: 1,
+      blocking: true,
+      label: 'x',
+      choices: ['B'],
+      data: {
+        kind: 'exchange.echange_saison.choose_target',
+        targets: [{ playerId: 2, username: 'B' }],
+      },
+    };
+
+    const after = game.applyActions(state, [
+      {
+        type: 'pick_choice',
+        payload: { index: 0 },
+        meta: { actorId: 1 },
+      } as any,
+    ]);
+
+    expect(after.pending?.type).toBe('pick');
+    expect((after.pending as any)?.data?.kind).toBe(
+      'exchange.echange_saison.choose_give',
+    );
+    expect((after.pending as any)?.choices).toEqual(['mangue']);
+  });
 });

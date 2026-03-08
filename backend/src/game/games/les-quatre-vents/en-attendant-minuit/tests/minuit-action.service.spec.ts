@@ -100,7 +100,7 @@ describe('MinuitActionService', () => {
         positions: { 1: 0, 2: 0 },
         statuses: { skipTurn: {}, keepTurn: {} },
         tiles: [
-          { n: 1, title: 'Case dÃ©part', type: 'neutral', description: '' },
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 3, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 4, title: 'Case neutre', type: 'neutral', description: '' },
@@ -153,7 +153,7 @@ describe('MinuitActionService', () => {
         positions: { 1: 0, 2: 0 },
         statuses: { skipTurn: {}, keepTurn: {} },
         tiles: [
-          { n: 1, title: 'Case dÃ©part', type: 'neutral', description: '' },
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
         ],
         decks: { cards: [], discard: [] },
@@ -169,6 +169,49 @@ describe('MinuitActionService', () => {
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
 
     expect(messages).toContain("C'est au tour de Alf.");
+  });
+
+  it('logs the die roll with proper accents', () => {
+    const { random, turns, core } = createDeps();
+    random.rollDice.mockReturnValue({ roll: 2, meta: {} });
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [
+        { id: 1, username: 'Lilas', pawn: 'Le Bonhomme de Neige' } as any,
+        { id: 2, username: 'Alf', pawn: 'Le Lutin', isBot: true } as any,
+      ],
+      metadata: {
+        positions: { 1: 0, 2: 0 },
+        statuses: { skipTurn: {}, keepTurn: {} },
+        tiles: [
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
+          { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 3, title: 'Case neutre', type: 'neutral', description: '' },
+        ],
+        decks: { cards: [], discard: [] },
+      } as any,
+      pending: null,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = service.applyActions(state, [
+      { type: 'roll', payload: {} } as any,
+    ]);
+    const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
+
+    expect(messages).toContain('Lilas lance le dé : "2".');
+    expect(messages.some((m) => m.includes('dÃ©'))).toBe(false);
   });
 
   it('does not re-queue pick_pawn for bots without explicit isBot flag', () => {
@@ -193,7 +236,7 @@ describe('MinuitActionService', () => {
         pawnChoices: [
           { id: 'Le Lutin', name: 'Le Lutin', description: '' },
           { id: 'Le Renne', name: 'Le Renne', description: '' },
-          { id: 'Le P?re No?l', name: 'Le P?re No?l', description: '' },
+          { id: 'Le Père Noël', name: 'Le Père Noël', description: '' },
         ],
         pawns: {},
       } as any,
@@ -201,12 +244,12 @@ describe('MinuitActionService', () => {
         type: 'pick_pawn',
         playerId: -1,
         blocking: true,
-        choices: ['Le Lutin', 'Le Renne', 'Le PÃ¨re NoÃ«l'],
+        choices: ['Le Lutin', 'Le Renne', 'Le Père Noël'],
         data: {
           pawns: [
             { id: 'Le Lutin', label: 'Le Lutin' },
             { id: 'Le Renne', label: 'Le Renne' },
-            { id: 'Le P?re No?l', label: 'Le P?re No?l' },
+            { id: 'Le Père Noël', label: 'Le Père Noël' },
           ],
         },
       } as any,
@@ -251,18 +294,18 @@ describe('MinuitActionService', () => {
         pawnChoices: [
           { id: 'Le Lutin', name: 'Le Lutin', description: '' },
           { id: 'Le Renne', name: 'Le Renne', description: '' },
-          { id: 'Le P?re No?l', name: 'Le P?re No?l', description: '' },
+          { id: 'Le Père Noël', name: 'Le Père Noël', description: '' },
         ],
       } as any,
       pending: {
         type: 'pick_pawn',
         playerId: '-101',
         blocking: true,
-        choices: ['Le Bonhomme de Neige', 'La FÃ©e des Flocons'],
+        choices: ['Le Bonhomme de Neige', 'La Fée des Flocons'],
         data: {
           pawns: [
             { id: 'Le Bonhomme de Neige', label: 'Le Bonhomme de Neige' },
-            { id: 'La FÃ©e des Flocons', label: 'La FÃ©e des Flocons' },
+            { id: 'La Fée des Flocons', label: 'La Fée des Flocons' },
           ],
         },
       } as any,
@@ -304,10 +347,10 @@ describe('MinuitActionService', () => {
         type: 'pick_pawn',
         playerId: 1,
         blocking: true,
-        choices: ['La FÃ©e des Flocons', 'Le Bonhomme de Neige'],
+        choices: ['La Fée des Flocons', 'Le Bonhomme de Neige'],
         data: {
           pawns: [
-            { id: 'La FÃ©e des Flocons', label: 'La FÃ©e des Flocons' },
+            { id: 'La Fée des Flocons', label: 'La Fée des Flocons' },
             { id: 'Le Bonhomme de Neige', label: 'Le Bonhomme de Neige' },
           ],
         },
@@ -317,7 +360,7 @@ describe('MinuitActionService', () => {
     } as any;
 
     const next = service.applyActions(state, [
-      { type: 'pick_pawn', payload: { pawnId: 'La FÃ©e des Flocons' } } as any,
+      { type: 'pick_pawn', payload: { pawnId: 'La Fée des Flocons' } } as any,
     ]);
 
     expect(next.pending).toBeNull();
@@ -352,7 +395,7 @@ describe('MinuitActionService', () => {
         pawnChoices: [
           {
             id: 'fee-des-flocons',
-            name: 'La FÃ©e des Flocons',
+            name: 'La Fée des Flocons',
             description: 'Agile',
           },
           { id: 'lutin', name: 'Le Lutin', description: 'Rapide' },
@@ -362,10 +405,10 @@ describe('MinuitActionService', () => {
         type: 'pick_pawn',
         playerId: 1,
         blocking: true,
-        choices: ['La FÃ©e des Flocons: Agile', 'Le Lutin: Rapide'],
+        choices: ['La Fée des Flocons: Agile', 'Le Lutin: Rapide'],
         data: {
           pawns: [
-            { id: 'fee-des-flocons', label: 'La FÃ©e des Flocons: Agile' },
+            { id: 'fee-des-flocons', label: 'La Fée des Flocons: Agile' },
             { id: 'lutin', label: 'Le Lutin: Rapide' },
           ],
         },
@@ -380,7 +423,7 @@ describe('MinuitActionService', () => {
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
     expect(
       messages.some((m) =>
-        m.includes('Lilas a choisi le pion: La FÃ©e des Flocons.'),
+        m.includes('Lilas a choisi le pion: La Fée des Flocons.'),
       ),
     ).toBe(true);
     expect(messages.some((m) => m.includes('fee-des-flocons'))).toBe(false);
@@ -413,7 +456,7 @@ describe('MinuitActionService', () => {
         pawnChoices: [
           {
             id: 'bonhomme-pain-epices',
-            name: "Le Petit Bonhomme en Pain d'Ã‰pices",
+            name: "Le Petit Bonhomme en Pain d'Épices",
             description: '',
           },
           { id: 'lutin', name: 'Le Lutin', description: '' },
@@ -423,12 +466,12 @@ describe('MinuitActionService', () => {
         type: 'pick_pawn',
         playerId: 1,
         blocking: true,
-        choices: ["Le Petit Bonhomme en Pain d'Ã‰pices", 'Le Lutin'],
+        choices: ["Le Petit Bonhomme en Pain d'Épices", 'Le Lutin'],
         data: {
           pawns: [
             {
               id: 'bonhomme-pain-epices',
-              label: "Le Petit Bonhomme en Pain d'Ã‰pices",
+              label: "Le Petit Bonhomme en Pain d'Épices",
             },
             { id: 'lutin', label: 'Le Lutin' },
           ],
@@ -478,7 +521,7 @@ describe('MinuitActionService', () => {
           failureDelta: 0,
         },
         tiles: [
-          { n: 1, title: 'Case dÃ©part', type: 'neutral', description: '' },
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
         ],
         decks: { cards: [], discard: [] },
@@ -524,7 +567,7 @@ describe('MinuitActionService', () => {
         positions: { 1: 1, 2: 0 },
         statuses: { skipTurn: {}, keepTurn: {} },
         tiles: [
-          { n: 1, title: 'Case dÃ©part', type: 'neutral', description: '' },
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 3, title: 'Case carte', type: 'card', description: 'Piochez.' },
           { n: 4, title: 'Case neutre', type: 'neutral', description: '' },
@@ -537,7 +580,7 @@ describe('MinuitActionService', () => {
               title: 'Luge de vitesse',
               category: 'Surprises',
               kind: 'Surprise',
-              lines: ['Avancez jusquÃ  la prochaine Carte NoÃ«l.'],
+              lines: ['Avancez jusqu’à la prochaine Carte Noël.'],
             },
           ],
           discard: [],
@@ -587,7 +630,7 @@ describe('MinuitActionService', () => {
         positions: { 1: 2, 2: 5 },
         statuses: { skipTurn: {}, keepTurn: {} },
         tiles: [
-          { n: 1, title: 'Case dÃ©part', type: 'neutral', description: '' },
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 3, title: 'Case neutre', type: 'neutral', description: '' },
           {
@@ -621,7 +664,7 @@ describe('MinuitActionService', () => {
     expect(
       messages.some((m) =>
         m.includes(
-          'EnchaÃ®nement de cases interrompu pour Ã©viter une boucle infinie.',
+          'Enchaînement de cases interrompu pour éviter une boucle infinie.',
         ),
       ),
     ).toBe(true);

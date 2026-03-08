@@ -31,10 +31,10 @@ import type {
 const MINUIT_PAWNS = [
   'Le Lutin',
   'Le Bonhomme de Neige',
-  'La FÃ©e des Flocons',
-  'Le PÃ¨re NoÃ«l',
+  'La Fée des Flocons',
+  'Le Père Noël',
   'Le Renne',
-  "Le Petit Bonhomme en Pain d'Ã‰pices",
+  "Le Petit Bonhomme en Pain d'Épices",
 ];
 
 const MINUIT_PLAYER_NAME_OPTIONS = {
@@ -136,7 +136,7 @@ export class MinuitActionService {
 
     let meta = meta0;
 
-    // "Piochez a nouveau une carte au lieu de lancer le de" (tour suivant).
+    // "Piochez à nouveau une carte au lieu de lancer le dé" (tour suivant).
     if (meta.statuses?.forceDrawNextTurn?.[currentId] === true) {
       meta = {
         ...meta,
@@ -156,7 +156,7 @@ export class MinuitActionService {
       };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} pioche une carte au lieu de lancer le de.`,
+        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} pioche une carte au lieu de lancer le dé.`,
       );
       return {
         ...next,
@@ -164,7 +164,7 @@ export class MinuitActionService {
           type: 'draw',
           playerId: currentId,
           blocking: true,
-          label: 'Piocher une carte Noel (Espace).',
+          label: 'Piocher une carte Noël (Espace).',
           data: { context: 'force_draw' },
         },
       };
@@ -181,7 +181,7 @@ export class MinuitActionService {
     };
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} lance le dÃ© : "${roll}".`,
+      `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} lance le dé : "${roll}".`,
     );
 
     next = this.move(next, currentId, roll);
@@ -261,14 +261,14 @@ export class MinuitActionService {
     if (correct) {
       const delta =
         typeof pending.successDelta === 'number' ? pending.successDelta : 0;
-      next = this.core.appendLog(next, `${who} a choisi la bonne rÃ©ponse !`);
+      next = this.core.appendLog(next, `${who} a choisi la bonne réponse !`);
       if (delta > 0) {
         next = this.move(next, currentId, delta);
       }
     } else {
       next = this.core.appendLog(
         next,
-        `${who} a validÃ© la mauvaise rÃ©ponse.`,
+        `${who} a validé la mauvaise réponse.`,
       );
       const failDelta =
         typeof pending.failureDelta === 'number' ? pending.failureDelta : 0;
@@ -330,7 +330,7 @@ export class MinuitActionService {
       };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} Ã©change sa position avec ${resolvePlayerNameFromState(next, targetPlayerId, MINUIT_PLAYER_NAME_OPTIONS)}.`,
+        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} échange sa position avec ${resolvePlayerNameFromState(next, targetPlayerId, MINUIT_PLAYER_NAME_OPTIONS)}.`,
       );
       return this.advanceTurnOrKeep(next, currentId);
     }
@@ -343,7 +343,7 @@ export class MinuitActionService {
       };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} offre un cadeau a ${resolvePlayerNameFromState(next, targetPlayerId, MINUIT_PLAYER_NAME_OPTIONS)}.`,
+        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} offre un cadeau à ${resolvePlayerNameFromState(next, targetPlayerId, MINUIT_PLAYER_NAME_OPTIONS)}.`,
       );
       next = this.move(next, targetPlayerId, 1);
       next = this.move(next, currentId, 2);
@@ -671,7 +671,7 @@ export class MinuitActionService {
       if (occupant != null) {
         next = this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} place ${this.pawnPossessiveLabel(next, playerId)} sur une case occupÃ©e : recul d'une case.`,
+          `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} place ${this.pawnPossessiveLabel(next, playerId)} sur une case occupée : recul d'une case.`,
         );
         next = this.move(next, playerId, -1);
         meta = this.getMeta(next);
@@ -714,7 +714,7 @@ export class MinuitActionService {
             },
           };
           next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-          return this.core.appendLog(next, 'Malus ignorÃ©.');
+          return this.core.appendLog(next, 'Malus ignoré.');
         }
         if (delta === 0) return next;
 
@@ -740,7 +740,7 @@ export class MinuitActionService {
             },
           };
           next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-          return this.core.appendLog(next, 'Passe ton tour ignorÃ©.');
+          return this.core.appendLog(next, 'Passe ton tour ignoré.');
         }
         const turns = typeof tile.skipTurns === 'number' ? tile.skipTurns : 1;
         const curr = meta.statuses?.skipTurn?.[playerId] ?? 0;
@@ -765,7 +765,7 @@ export class MinuitActionService {
             type: 'draw',
             playerId,
             blocking: true,
-            label: 'Piocher une carte NoÃ«l (Espace).',
+            label: 'Piocher une carte Noël (Espace).',
           },
         };
       }
@@ -775,7 +775,7 @@ export class MinuitActionService {
 
     return this.core.appendLog(
       next,
-      'EnchaÃ®nement de cases interrompu pour Ã©viter une boucle infinie.',
+      'Enchaînement de cases interrompu pour éviter une boucle infinie.',
     );
   }
 
@@ -795,11 +795,11 @@ export class MinuitActionService {
       return next;
     }
 
-    if (/Ã©changez votre position avec un autre joueur/i.test(text)) {
+    if (/échangez votre position avec un autre joueur/i.test(text)) {
       const targets = this.otherPlayers(next, playerId);
       const pending: PendingState = {
         type: 'choose_target',
-        label: 'Choisissez un joueur dans la liste, puis EntrÃ©e.',
+        label: 'Choisissez un joueur dans la liste, puis Entrée.',
         playerId,
         blocking: true,
         choices: targets.map((t) => t.username),
@@ -818,11 +818,11 @@ export class MinuitActionService {
       };
     }
 
-    if (/vous offrez un cadeau a un autre joueur/i.test(text)) {
+    if (/vous offrez un cadeau à un autre joueur/i.test(text)) {
       const targets = this.otherPlayers(next, playerId);
       const pending: PendingState = {
         type: 'choose_target',
-        label: 'Choisissez un joueur dans la liste, puis EntrÃ©e.',
+        label: 'Choisissez un joueur dans la liste, puis Entrée.',
         playerId,
         blocking: true,
         choices: targets.map((t) => t.username),
@@ -853,7 +853,7 @@ export class MinuitActionService {
         },
       };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      return this.core.appendLog(next, 'Protection malus activÃ©e.');
+      return this.core.appendLog(next, 'Protection malus activée.');
     }
 
     if (/Ignorez la prochaine case.*Passe ton tour/i.test(text)) {
@@ -870,7 +870,7 @@ export class MinuitActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       return this.core.appendLog(
         next,
-        'Protection Â« passe ton tour Â» activÃ©e.',
+        'Protection « passe ton tour » activée.',
       );
     }
 
@@ -887,8 +887,8 @@ export class MinuitActionService {
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
-    // Force pioche au prochain tour (au lieu de lancer le de).
-    if (/Piochez a nouveau une carte au lieu de lancer le de/i.test(text)) {
+    // Force pioche au prochain tour (au lieu de lancer le dé).
+    if (/Piochez à nouveau une carte au lieu de lancer le dé/i.test(text)) {
       meta = {
         ...meta,
         statuses: {
@@ -902,18 +902,18 @@ export class MinuitActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       return this.core.appendLog(
         next,
-        'Au prochain tour, piochez une carte a la place du de.',
+        'Au prochain tour, piochez une carte à la place du dé.',
       );
     }
 
-    // Aller a la case neutre la plus proche derriere.
-    if (/case neutre la plus proche derriÃ¨re/i.test(text)) {
+    // Aller à la case neutre la plus proche derrière.
+    if (/case neutre la plus proche derrière/i.test(text)) {
       const pos = meta.positions[playerId] ?? 0;
       const prevPos = findPrev(meta.tiles, pos, (t) => t.type === 'neutral');
       if (prevPos != null) {
         next = this.core.appendLog(
           next,
-          'Retour a la case neutre la plus proche derriere.',
+          'Retour à la case neutre la plus proche derrière.',
         );
         next = this.setPos(next, playerId, prevPos);
         return this.applyLanding(next, playerId);
@@ -940,7 +940,7 @@ export class MinuitActionService {
       );
     }
 
-    if (/jusqu'a la prochaine Carte Noel/i.test(text)) {
+    if (/jusqu['’]à la prochaine Carte Noël/i.test(text)) {
       const nextPos = findNext(
         meta.tiles,
         meta.positions[playerId] ?? 0,
@@ -952,7 +952,7 @@ export class MinuitActionService {
       }
     }
 
-    if (/jusqu'a la case precedente Carte Noel/i.test(text)) {
+    if (/jusqu['’]à la case précédente Carte Noël/i.test(text)) {
       const prevPos = findPrev(
         meta.tiles,
         meta.positions[playerId] ?? 0,
@@ -961,14 +961,14 @@ export class MinuitActionService {
       if (prevPos != null) {
         next = this.core.appendLog(
           next,
-          "Recule jusqu'a la precedente Carte Noel.",
+          "Recule jusqu'à la précédente Carte Noël.",
         );
         next = this.setPos(next, playerId, prevPos);
         return this.applyLanding(next, playerId);
       }
     }
 
-    if (/position avec le joueur juste derriÃ¨re/i.test(text)) {
+    if (/position avec le joueur juste derrière/i.test(text)) {
       const behind = findBehind(meta.positions, playerId);
       if (behind != null) {
         const actorPos = meta.positions[playerId] ?? 0;
@@ -984,15 +984,15 @@ export class MinuitActionService {
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
         next = this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} Ã©change sa position avec ${resolvePlayerNameFromState(next, behind, MINUIT_PLAYER_NAME_OPTIONS)}.`,
+          `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} échange sa position avec ${resolvePlayerNameFromState(next, behind, MINUIT_PLAYER_NAME_OPTIONS)}.`,
         );
         return next;
       }
     }
 
     if (
-      /Relancez immÃ©diatement le dÃ©/i.test(text) ||
-      /Relancez le dÃ© maintenant/i.test(text)
+      /Relancez immédiatement le dé/i.test(text) ||
+      /Relancez le dé maintenant/i.test(text)
     ) {
       meta = {
         ...meta,
@@ -1011,11 +1011,11 @@ export class MinuitActionService {
       );
     }
 
-    if (/Lancez le dÃ© et avancez du nombre obtenu/i.test(text)) {
+    if (/Lancez le dé et avancez du nombre obtenu/i.test(text)) {
       const rng = this.random.rollDice(meta, 6);
       meta = { ...meta, ...rng.meta };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      next = this.core.appendLog(next, `Bonus : dÃ© = "${rng.roll}".`);
+      next = this.core.appendLog(next, `Bonus : dé = "${rng.roll}".`);
       next = this.move(next, playerId, rng.roll);
       return this.applyLanding(next, playerId);
     }
@@ -1033,7 +1033,7 @@ export class MinuitActionService {
     const lines = Array.isArray(card.lines) ? card.lines : [];
     const filtered = lines.filter(
       (line) =>
-        !/^si le joueur a la bonne rÃ©ponse/i.test(String(line ?? '').trim()),
+        !/^si le joueur a la bonne réponse/i.test(String(line ?? '').trim()),
     );
     const withoutChoices = filtered.filter(
       (line) => !/^[*]?[abc]\)/i.test(String(line ?? '').trim()),
@@ -1120,7 +1120,7 @@ export class MinuitActionService {
       ? answerLine.replace(/^[*]?[abc]\)\s*/i, '').trim()
       : undefined;
     const anyCorrect = lines.some((l) =>
-      /Les trois rÃ©ponses sont just(e|es)/i.test(l),
+      /Les trois réponses sont just(e|es)/i.test(l),
     );
     const fullText = lines.join(' ');
     const successDelta = extractMoveDelta(fullText);

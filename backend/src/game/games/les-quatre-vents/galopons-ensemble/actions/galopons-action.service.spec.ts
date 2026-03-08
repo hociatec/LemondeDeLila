@@ -1,10 +1,15 @@
+import { Test } from '@nestjs/testing';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { TurnService } from '../../../../modules/turn/services/turn.service';
 import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { GaloponsActionService } from './galopons-action.service';
+import { GaloponsSetupService } from '../setup/galopons-setup.service';
+import * as Rulebook from '../rulebook/rulebook';
 
 function buildTiles() {
   const tiles = Array.from({ length: 40 }, (_, i) => ({
@@ -88,12 +93,121 @@ function makeRuntime(rolls: number[] = []) {
     new TurnPoliciesService(core),
   );
   const deckPolicies = new DeckPoliciesService(random);
+  const setupFlow = new SetupFlowService();
   return {
-    service: new GaloponsActionService(random, turns, core, deckPolicies),
+    service: new GaloponsActionService(
+      random,
+      turns,
+      core,
+      deckPolicies,
+      setupFlow,
+    ),
   };
 }
 
+function makeSetupBaseState() {
+  return {
+    status: 'started',
+    phase: 'turn',
+    round: 1,
+    turnIndex: 0,
+    lastRoll: null,
+    log: [],
+    players: [
+      { id: 1, username: 'Lilas', isBot: false },
+      { id: 2, username: 'Bucky', isBot: true },
+      { id: 3, username: 'Otis', isBot: false },
+    ],
+    turn: { currentPlayerId: 1, direction: 1 },
+    metadata: {
+      gameType: 'galopons-ensemble',
+      rng: { seed: 1234, counter: 0 },
+    },
+    botThinking: false,
+  } as any;
+}
+
 describe('GaloponsActionService', () => {
+  it('requires sequential pawn selection before rolling and restores the starter turn', async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        GameCoreService,
+        RandomService,
+        SetupFlowService,
+        GameContentLoaderService,
+        DeckPoliciesService,
+        GaloponsSetupService,
+        {
+          provide: 'TurnFlowService',
+          useValue: {
+            advanceTurn: (state: any) => state,
+          },
+        },
+        {
+          provide: GaloponsActionService,
+          useFactory: (
+            random: RandomService,
+            turns: TurnFlowService,
+            core: GameCoreService,
+            deckPolicies: DeckPoliciesService,
+            setupFlow: SetupFlowService,
+          ) =>
+            new GaloponsActionService(
+              random,
+              turns,
+              core,
+              deckPolicies,
+              setupFlow,
+            ),
+          inject: [
+            RandomService,
+            'TurnFlowService',
+            GameCoreService,
+            DeckPoliciesService,
+            SetupFlowService,
+          ],
+        },
+      ],
+    }).compile();
+
+    const setup = moduleRef.get(GaloponsSetupService);
+    const actions = moduleRef.get(GaloponsActionService);
+
+    let state = setup.hydrateInitialState(makeSetupBaseState());
+    expect((state.pending as any)?.type).toBe('choose_pawn');
+    expect((state.pending as any)?.playerId).toBe(1);
+    expect((state.metadata as any)?.tiles?.[0]?.description).toContain(
+      "L'aventure commence ici.",
+    );
+    expect(
+      String((state.pending as any)?.data?.pawns?.[0]?.description ?? '').trim()
+        .length,
+    ).toBeGreaterThan(0);
+
+    let safety = 0;
+    while ((state.pending as any)?.type === 'choose_pawn' && safety < 10) {
+      const playerId = Number((state.pending as any)?.playerId ?? 0);
+      const available = Rulebook.getAvailableActions(state, playerId);
+      expect(available.length).toBeGreaterThan(0);
+      expect(available.every((action) => action.type === 'choose_pawn')).toBe(
+        true,
+      );
+      state = actions.applyActions(state, [available[0]]);
+      safety += 1;
+    }
+
+    expect(state.pending ?? null).toBeNull();
+    expect(safety).toBe(3);
+    expect(Number(state.turn?.currentPlayerId ?? 0)).toBe(1);
+    expect(
+      state.players.every(
+        (player: any) =>
+          String(player?.pawn ?? '').trim().length > 0 &&
+          String(player?.pawnLabel ?? '').trim().length > 0,
+      ),
+    ).toBe(true);
+  });
+
   it('handles roll with iou repayment and skip turns', () => {
     const { service } = makeRuntime([1, 2]);
     let state = makeState();
@@ -132,6 +246,34 @@ describe('GaloponsActionService', () => {
       const out = (service as any).applyLanding(state, 1);
       expect(out).toBeDefined();
     }
+  });
+
+  it('logs tile descriptions when present', () => {
+    const { service } = makeRuntime();
+    const state = makeState();
+    const out = (service as any).applyLanding(
+      {
+        ...state,
+        metadata: {
+          ...meta(state),
+          tiles: [
+            {
+              n: 1,
+              title: 'Départ',
+              type: 'start',
+              region: 'prairie',
+              description: "L'aventure commence ici.",
+            },
+          ],
+          positions: { 1: 0 },
+        },
+      },
+      1,
+    );
+
+    expect(out.log.some((entry: any) => entry?.message === "L'aventure commence ici.")).toBe(
+      true,
+    );
   });
 
   it('covers choose_target contexts pair_advance, give_apple and help_advance', () => {

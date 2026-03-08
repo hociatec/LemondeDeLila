@@ -125,7 +125,7 @@ export class PanierExpressSetupService {
       .filter((v) => v.length > 0);
   }
 
-  standCourseMap(): Record<string, string[]> {
+  standCourseCatalog(): Record<string, string[]> {
     const out: Record<string, string[]> = {};
     this.loadStands().stands.forEach((s) => {
       if (!s || typeof s.id !== 'string') return;
@@ -136,11 +136,19 @@ export class PanierExpressSetupService {
             .map((v) => String(v))
             .map((v) => v.trim())
             .filter((v) => v.length > 0)
-            .slice(0, PanierExpressSetupService.MAX_STAND_ITEMS)
         : [];
       out[id] = items;
     });
     return out;
+  }
+
+  standCourseMap(): Record<string, string[]> {
+    return Object.fromEntries(
+      Object.entries(this.standCourseCatalog()).map(([id, items]) => [
+        id,
+        items.slice(0, PanierExpressSetupService.MAX_STAND_ITEMS),
+      ]),
+    );
   }
 
   buildTiles(): PanierExpressTile[] {

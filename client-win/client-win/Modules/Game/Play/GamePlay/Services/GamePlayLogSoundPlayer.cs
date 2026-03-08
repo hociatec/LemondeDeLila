@@ -16,7 +16,7 @@ internal sealed class GamePlayLogSoundPlayer
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
     }
 
-    internal void TryPlayForLogMessage(string message, string? viewerUsername)
+    internal void TryPlayForLogMessage(string message, string? viewerUsername, bool suppressDrawSound = false)
     {
         var msg = (message ?? string.Empty).Trim();
         if (msg.Length == 0)
@@ -53,7 +53,8 @@ internal sealed class GamePlayLogSoundPlayer
         // Fallback robuste: certains jeux/états n'exposent pas toujours LastDraw de façon stable.
         // Quand une nouvelle ligne d'historique indique une pioche, jouer aussi le son.
         if (msg.Contains(" pioche", StringComparison.OrdinalIgnoreCase) &&
-            !msg.Contains("doit piocher", StringComparison.OrdinalIgnoreCase))
+            !msg.Contains("doit piocher", StringComparison.OrdinalIgnoreCase) &&
+            !suppressDrawSound)
         {
             TryPlayDrawSound();
         }

@@ -77,6 +77,27 @@ type CurrentPlayerView = {
   position?: unknown;
 };
 
+function normalizePromptToken(value: string): string {
+  return String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function extractPawnPromptToken(message: string): string | null {
+  const text = String(message ?? '').trim();
+  if (!text) return null;
+
+  const withPlayer = /^c['’]est à (.+?) de choisir (?:son|un) pion(?:[.,!?]|$)/i.exec(
+    text,
+  );
+  if (!withPlayer) return null;
+  return `prompt:choose-pawn:${normalizePromptToken(withPlayer[1])}`;
+}
+
 @Injectable()
 export class GameEngineService {
   private broadcaster?: (
@@ -2544,34 +2565,37 @@ export class GameEngineService {
 	      return state;
 	    }
 
-    const log = Array.isArray(state.log) ? state.log : [];
-	    const recentMessages = log.slice(-3).map((entry) =>
-	      String(entry?.message ?? '')
-	        .trim()
-	        .toLowerCase(),
-	    );
-	    if (pendingType === 'choose_pawn') {
-	      if (
-	        recentMessages.some(
-	          (m) => m.includes('de choisir un pion') || m.startsWith("c'est au tour de "),
-	        )
-	      ) {
-	        return state;
-	      }
-	    } else if (recentMessages.some((m) => m.startsWith("c'est au tour de "))) {
-	      return state;
-	    }
-
     const players = Array.isArray(state.players) ? state.players : [];
-	    const name =
-	      this.normalizeUsernameForLog(
-	        players.find((p) => p?.id === currentPlayerId)?.username,
-	      ) || `Joueur ${currentPlayerId}`;
-	    if (pendingType === 'choose_pawn') {
-	      return this.core.appendLog(state, `C'est à ${name} de choisir un pion.`);
-	    }
-	    return this.core.appendLog(state, `C'est au tour de ${name}.`);
-	  }
+    const name =
+      this.normalizeUsernameForLog(
+        players.find((p) => p?.id === currentPlayerId)?.username,
+      ) || `Joueur ${currentPlayerId}`;
+
+    const log = Array.isArray(state.log) ? state.log : [];
+    const recentMessages = log.slice(-6).map((entry) =>
+      String(entry?.message ?? '').trim(),
+    );
+    if (pendingType === 'choose_pawn') {
+      const expectedPromptToken = `prompt:choose-pawn:${normalizePromptToken(name)}`;
+      const hasSamePrompt = recentMessages.some(
+        (message) => extractPawnPromptToken(message) === expectedPromptToken,
+      );
+      if (hasSamePrompt) {
+        return state;
+      }
+      return this.core.appendLog(state, `C'est à ${name} de choisir un pion.`);
+    }
+
+    if (
+      recentMessages.some((message) =>
+        message.toLowerCase().startsWith("c'est au tour de "),
+      )
+    ) {
+      return state;
+    }
+
+    return this.core.appendLog(state, `C'est au tour de ${name}.`);
+  }
 
   private buildKey(roomId: number, gameType: string): string {
     return this.store.buildKey(roomId, gameType);

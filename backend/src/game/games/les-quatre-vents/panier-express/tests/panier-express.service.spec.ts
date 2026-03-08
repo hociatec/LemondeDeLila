@@ -382,6 +382,41 @@ describe('PanierExpressService', () => {
     expect(exposed.extras?.currentPlayerView?.shoppingList).toEqual(['ananas']);
   });
 
+  it("conserve la shopping list quand les ids joueurs sont sérialisés en chaînes", () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        {
+          id: 1,
+          username: 'admin',
+          shoppingList: ['ananas'],
+          basket: [],
+          inventory: [],
+        },
+        {
+          id: -1,
+          username: 'GnoleGear',
+          isBot: true,
+          shoppingList: ['melon'],
+          basket: [],
+          inventory: [],
+        },
+      ],
+      status: 'running',
+    } as any);
+
+    state.players = (state.players ?? []).map((player: any) => ({
+      ...player,
+      id: String(player.id),
+    }));
+    state.turn = { currentPlayerId: '-1', direction: 1 };
+    state.turnIndex = 0;
+
+    const exposed: any = service.exposeStateForUser(state, 1);
+
+    expect(exposed.extras?.currentPlayerView?.shoppingList).toEqual(['ananas']);
+    expect(exposed.extras?.ui?.panels?.shopping?.message).toContain('ananas');
+  });
+
   it('requiert une réponse pour answer_quiz (ignore correct côté client)', () => {
     const base: any = service.hydrateInitialState({
       players: [{ id: 1, username: 'A' }],
@@ -657,5 +692,150 @@ describe('PanierExpressService', () => {
 
     const after = phaseSvc.advanceTurn(state) as any;
     expect(after.turn?.direction).toBe(-1);
+  });
+
+  it("n'auto-refuse plus la demande du marchand quand l'ingrédient manque", () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'A', inventory: [], basket: [], shoppingList: [] },
+        { id: 2, username: 'B', inventory: [], basket: [], shoppingList: [] },
+      ],
+      status: 'started',
+    } as any);
+    state.turn = { currentPlayerId: 1, direction: 1 };
+    state.turnIndex = 0;
+    state.metadata = {
+      ...(state.metadata ?? {}),
+      rng: { seed: 1, counter: 0 },
+    };
+
+    const pendingState = (service as any).applyMerchantRequest(state, 1);
+    expect(pendingState.pending?.type).toBe('merchant_request');
+    expect(pendingState.pending?.choices).toHaveLength(2);
+    expect(pendingState.turn?.currentPlayerId).toBe(1);
+
+    const afterAccept = service.applyActions(pendingState, [
+      { type: 'merchant_request_accept', meta: { actorId: 1 } } as any,
+    ]);
+
+    expect(afterAccept.pending?.type).toBe('merchant_request');
+    expect(afterAccept.turn?.currentPlayerId).toBe(1);
+    const logs = (afterAccept.log ?? []).map((entry: any) => entry.message);
+    expect(logs.some((message: string) => message.includes("n'a pas"))).toBe(
+      true,
+    );
+  });
+
+  it('nettoie le log de quiz et met une pioche en attente après une bonne réponse', () => {
+    const state: any = service.hydrateInitialState({
+      players: [{ id: 1, username: 'A', inventory: [], basket: [] }],
+      status: 'started',
+    } as any);
+    state.turn = { currentPlayerId: 1, direction: 1 };
+    state.turnIndex = 0;
+    state.metadata.quiz = {
+      pending: {
+        1: {
+          question: 'Q?',
+          choices: ['pomme', 'poire'],
+          answer: 'pomme',
+        },
+      },
+    };
+
+    const after = service.applyActions(state, [
+      {
+        type: 'answer_quiz',
+        payload: { answer: 'pomme' },
+        meta: { actorId: 1 },
+      } as any,
+    ]);
+
+    const logs = (after.log ?? []).map((entry: any) => entry.message);
+    expect(logs).toContain('[Panier Express] Réponse correcte pour A.');
+    expect(logs).toContain('[Panier Express] Piochez un ingrédient.');
+    expect(
+      logs.some((message: string) => message.includes('Quiz : réponse')),
+    ).toBe(false);
+    expect(after.pending?.type).toBe('draw');
+  });
+
+  it('retire la mention flèches puis Entrée du choix de stand', () => {
+    const state: any = service.hydrateInitialState({
+      players: [{ id: 1, username: 'A' }],
+      status: 'running',
+    } as any);
+    state.status = 'started';
+    state.turn = { currentPlayerId: 1, direction: 1 };
+    state.turnIndex = 0;
+    state.pending = null;
+
+    const after = (service as any).applyMoveToStandChoice(state, 1);
+
+    expect(after.pending?.type).toBe('pick');
+    expect(after.pending?.label).toBe('Choisissez le stand à rejoindre.');
+  });
+
+  it("évite le doublon de libellé sur l'erreur de livraison", () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        {
+          id: 1,
+          username: 'A',
+          inventory: ['tomate'],
+          basket: [],
+          shoppingList: [],
+        },
+      ],
+      status: 'started',
+    } as any);
+    state.turn = { currentPlayerId: 1, direction: 1 };
+    state.turnIndex = 0;
+    state.metadata.decks.events = {
+      deck: ['erreur-de-livraison'],
+      discards: [],
+    };
+
+    const after = (service as any).applyEvent(state, 1);
+    const logs = (after.log ?? []).map((entry: any) => entry.message);
+
+    expect(logs).toContain('[Panier Express] Carte Événement: Erreur de livraison.');
+    expect(logs).toContain('[Panier Express] A défausse "tomate".');
+    expect(
+      logs.some((message: string) =>
+        message.includes('Erreur de livraison : A défausse'),
+      ),
+    ).toBe(false);
+  });
+
+  it("corrige l'accent de Journée bio et précise les joueurs concernés", () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'A', inventory: [], basket: [], shoppingList: [] },
+        { id: 2, username: 'B', inventory: [], basket: [], shoppingList: [] },
+      ],
+      status: 'running',
+    } as any);
+    state.status = 'started';
+    state.turn = { currentPlayerId: 1, direction: 1 };
+    state.turnIndex = 0;
+    state.pending = null;
+    state.metadata.decks.events = {
+      deck: ['journee-bio'],
+      discards: [],
+    };
+
+    const bioIndex = state.metadata.tiles.findIndex(
+      (tile: any) => tile?.type === 'stand' && tile?.standId === 'bio-fruits',
+    );
+    expect(bioIndex).toBeGreaterThanOrEqual(0);
+    state.metadata.positions[1] = 0;
+    state.metadata.positions[2] = bioIndex;
+
+    const after = (service as any).applyEvent(state, 1);
+    const logs = (after.log ?? []).map((entry: any) => entry.message);
+
+    expect(logs).toContain('[Panier Express] Carte Événement: Journée bio.');
+    expect(logs).toContain('[Panier Express] Journée bio: bonus pour B.');
   });
 });

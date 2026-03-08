@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { GameEngineService } from '../services/game-engine.service';
+import { GameCoreService } from '../../core/services/game-core.service';
 
 jest.mock(
   'winston',
@@ -28,6 +29,74 @@ jest.mock(
 );
 
 describe('GameEngineService', () => {
+  it('announces the next pawn chooser even if a previous pawn prompt is still recent', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      new GameCoreService(),
+      { getHandler: jest.fn(() => ({})) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const state: any = {
+      status: 'started',
+      turnIndex: 1,
+      players: [
+        { id: 1, username: 'Lilas' },
+        { id: 2, username: 'Mouche' },
+      ],
+      turn: { currentPlayerId: 2, direction: 1 },
+      pending: { type: 'choose_pawn', playerId: 2, blocking: true },
+      log: [
+        { message: "C'est à Lilas de choisir un pion." },
+        { message: "C'est au tour de Lilas." },
+        { message: '[Panier Express] Lilas a choisi le pion: panier en osier.' },
+      ],
+      metadata: {},
+    };
+
+    const out = (engine as any).appendFirstTurnAnnouncement(state);
+    const messages = (out.log ?? []).map((entry: any) => String(entry?.message));
+
+    expect(messages).toContain("C'est à Mouche de choisir un pion.");
+  });
+
+  it('does not duplicate the same pawn chooser announcement', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      new GameCoreService(),
+      { getHandler: jest.fn(() => ({})) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const state: any = {
+      status: 'started',
+      turnIndex: 1,
+      players: [{ id: 2, username: 'Mouche' }],
+      turn: { currentPlayerId: 2, direction: 1 },
+      pending: { type: 'choose_pawn', playerId: 2, blocking: true },
+      log: [{ message: "C'est à Mouche de choisir un pion." }],
+      metadata: {},
+    };
+
+    const out = (engine as any).appendFirstTurnAnnouncement(state);
+
+    expect(out).toBe(state);
+  });
+
   it('returns a fallback turn message on T even when panels are missing', async () => {
     const engine = new GameEngineService(
       {} as any,
