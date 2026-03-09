@@ -478,7 +478,7 @@ internal sealed class GamePlayRealtimeController
                 continue;
             }
 
-            var rewritten = RewriteLogForViewer(trimmed, viewerUsername, _lastViewerHandCounts, currentHandCounts);
+            var rewritten = GamePlayLogRewriter.RewriteForViewer(trimmed, viewerUsername, _lastViewerHandCounts, currentHandCounts);
             // Endgame phrases can be emitted via the dedicated game.ended payload AND via logs.
             // Prevent visible duplicates by skipping already-emitted "X dit: ..." lines in endgame context.
             if (isEndgameContext && LooksLikePublicEndgameLine(rewritten) && WasRecentlyEmitted(rewritten))
@@ -1239,109 +1239,4 @@ internal sealed class GamePlayRealtimeController
         return dict;
     }
 
-    private static string? InferSingleAddedCard(Dictionary<string, int>? previous, Dictionary<string, int>? current)
-    {
-        if (previous == null || current == null || current.Count == 0)
-        {
-            return null;
-        }
-
-        string? added = null;
-        foreach (var (label, currentCount) in current)
-        {
-            previous.TryGetValue(label, out var prevCount);
-            var diff = currentCount - prevCount;
-            if (diff <= 0)
-            {
-                continue;
-            }
-            if (diff > 1)
-            {
-                return null;
-            }
-            if (added != null)
-            {
-                return null;
-            }
-            added = label;
-        }
-
-        return added;
-    }
-
-    private static string RewriteLogForViewer(
-        string message,
-        string? viewerUsername,
-        Dictionary<string, int>? previousHandCounts,
-        Dictionary<string, int>? currentHandCounts)
-    {
-        var msg = (message ?? string.Empty).Trim();
-        if (msg.Length == 0 || string.IsNullOrWhiteSpace(viewerUsername))
-        {
-            return msg;
-        }
-
-        var viewerName = viewerUsername.Trim();
-        const string drawMarker = " pioche";
-        var drawIndex = msg.IndexOf(drawMarker, StringComparison.OrdinalIgnoreCase);
-        if (drawIndex > 0)
-        {
-            var actor = msg.Substring(0, drawIndex).Trim();
-            if (!string.IsNullOrWhiteSpace(actor))
-            {
-                if (string.Equals(actor, viewerName, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (string.Equals(msg, $"{actor} pioche.", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var added = InferSingleAddedCard(previousHandCounts, currentHandCounts);
-                        return added != null ? $"Vous piochez un {added}." : "Vous piochez.";
-                    }
-
-                    // If the server includes the drawn card label (ex: "Alice pioche un 5."),
-                    // keep it for the local player.
-                    var remainder = msg.Substring(drawIndex + drawMarker.Length).Trim();
-                    if (string.IsNullOrWhiteSpace(remainder) || string.Equals(remainder, ".", StringComparison.Ordinal))
-                    {
-                        return "Vous piochez.";
-                    }
-                    return $"Vous piochez {remainder}";
-                }
-                return msg;
-            }
-        }
-
-        var user = viewerName;
-
-        if (string.Equals(msg, $"{user} passe.", StringComparison.OrdinalIgnoreCase))
-        {
-            return "Vous passez.";
-        }
-
-        if (msg.StartsWith($"{user} se retire de la manche", StringComparison.OrdinalIgnoreCase))
-        {
-            return "Vous vous retirez de la manche. Vos jetons seront comptés à la fin de la manche.";
-        }
-
-        if (string.Equals(msg, $"{user} ne rend rien.", StringComparison.OrdinalIgnoreCase))
-        {
-            return "Vous ne rendez rien.";
-        }
-
-        var renderPrefix = $"{user} rend ";
-        if (msg.StartsWith(renderPrefix, StringComparison.OrdinalIgnoreCase))
-        {
-            return $"Vous rendez {msg.Substring(renderPrefix.Length).Trim()}";
-        }
-
-        // Jeu de carte : annonce toujours la carte, en adaptant la formulation pour le joueur local.
-        // Exemple serveur: "Fantômette joue un 1."
-        var prefix = $"{user} joue un ";
-        if (msg.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-        {
-            var card = msg.Substring(prefix.Length).Trim();
-            return $"Vous jouez un {card}";
-        }
-
-        return msg;
-    }
 }

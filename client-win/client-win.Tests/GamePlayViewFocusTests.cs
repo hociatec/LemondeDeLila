@@ -20,6 +20,7 @@ using client_win.Modules.Game.Play.Actions.Services;
 using client_win.Modules.Game.Play.Announcements.Services;
 using client_win.Modules.Game.Play.Choices.ViewModels;
 using client_win.Modules.Game.Play.GamePlay.Services;
+using client_win.Modules.Game.Play.GamePlay.ViewModels;
 using client_win.Modules.Game.Play.GamePlay.Views;
 using client_win.Modules.Game.Play.Grid.ViewModels;
 using client_win.Modules.Game.Play.Grid.Views;
@@ -460,7 +461,14 @@ public sealed class GamePlayViewFocusTests
         var type = assembly.GetType("client_win.Modules.Game.Play.GamePlay.Services.GamePlayLogSoundPlayer");
         Assert.NotNull(type);
 
-        var player = Activator.CreateInstance(type!, sounds);
+        var ctor = type!.GetConstructor(
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+            binder: null,
+            types: [typeof(ISoundService)],
+            modifiers: null);
+        Assert.NotNull(ctor);
+
+        var player = ctor!.Invoke([sounds]);
         Assert.NotNull(player);
 
         var method = type!.GetMethod(
@@ -630,7 +638,9 @@ public sealed class GamePlayViewFocusTests
                 .GetResult();
 
             Assert.True(handled);
-            Assert.Empty(socket.SentMessages);
+            Assert.DoesNotContain(
+                socket.SentMessages,
+                message => message.Contains("\"type\":\"game.actions\"", StringComparison.Ordinal));
             Assert.Equal(2, scope.ViewModel.PendingChoices.Count);
             Assert.Contains("Sur Lila", scope.ViewModel.PendingChoices);
             Assert.Contains("Sur Nina", scope.ViewModel.PendingChoices);

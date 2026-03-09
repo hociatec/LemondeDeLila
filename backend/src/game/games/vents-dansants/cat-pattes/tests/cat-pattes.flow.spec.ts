@@ -492,6 +492,71 @@ describe('CatPattes flow', () => {
     expect(logsLilas).not.toContain('Hacene pioche un poney.');
   });
 
+  it('redacts drawn card name end-to-end after a real draw action', async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        GameCoreService,
+        RandomService,
+        DeckPoliciesService,
+        CatPattesSetupService,
+        {
+          provide: 'TurnFlowService',
+          useValue: {
+            advanceTurn: (state: any) => state,
+          },
+        },
+        {
+          provide: CatPattesActionService,
+          useFactory: (
+            core: GameCoreService,
+            turns: any,
+            deckPolicies: DeckPoliciesService,
+            random: RandomService,
+          ) => new CatPattesActionService(core, turns, deckPolicies, random),
+          inject: [
+            GameCoreService,
+            'TurnFlowService',
+            DeckPoliciesService,
+            RandomService,
+          ],
+        },
+      ],
+    }).compile();
+
+    const setup = moduleRef.get(CatPattesSetupService);
+    const actionsService = moduleRef.get(CatPattesActionService);
+    const presenter = new CatPattesPresenterService();
+
+    let state: any = setup.hydrateInitialState(baseState());
+    state = actionsService.applyActions(state, [
+      { type: 'cat_pattes_set_config', payload: { roundsToPlay: 1 } } as any,
+    ]);
+
+    state = {
+      ...state,
+      metadata: {
+        ...(state.metadata ?? {}),
+        deck: ['pattes-20-1'],
+        discard: [],
+        hands: { 1: [], 2: [] },
+        drawnPlayerId: null,
+      },
+      turn: { currentPlayerId: 1, direction: 1 },
+      turnIndex: 0,
+    };
+
+    state = actionsService.applyActions(state, [{ type: 'draw', payload: {} } as any]);
+
+    const rawLog = (state.log ?? []).map((e: any) => String(e?.message ?? ''));
+    expect(rawLog.some((m: string) => m.startsWith('Hacene pioche '))).toBe(true);
+    expect(rawLog.some((m: string) => m.includes('Petite foulée'))).toBe(true);
+
+    const exposedP2: any = presenter.exposeStateForUser(state, 2);
+    const exposedLog = (exposedP2.log ?? []).map((e: any) => String(e?.message ?? ''));
+    expect(exposedLog.some((m: string) => m === 'Hacene pioche une carte.')).toBe(true);
+    expect(exposedLog.some((m: string) => m.includes('Petite foulée'))).toBe(false);
+  });
+
   it('does not expose opponents hands in presenter extras', async () => {
     const presenter = new CatPattesPresenterService();
     const state: any = {
