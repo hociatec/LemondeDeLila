@@ -80,19 +80,45 @@ jobs:
         run: |
           set -euo pipefail
           url="http://127.0.0.1:${PORT}/health/info"
-          echo "Checking ${url}"
-          curl -fsS "${url}" | node -e '
-            const fs = require("fs");
-            const expected = (process.env.EXPECTED_SHA || "").trim();
-            const raw = fs.readFileSync(0, "utf8");
-            const parsed = JSON.parse(raw);
-            const sha = String(parsed?.build?.sha ?? "").trim();
-            console.log("deployed_sha=" + (sha || "(missing)"));
-            if (!expected) {
-              console.log("expected_sha=(missing) - skipping strict check");
-              process.exit(0);
-            }
-            console.log("expected_sha=" + expected);
-            if (!sha) process.exit(2);
-            if (sha !== expected) process.exit(3);
-          '
+          attempts=30
+          delay=2
+          tmp_json="$(mktemp)"
+          cleanup() {
+            rm -f "$tmp_json"
+          }
+          trap cleanup EXIT
+
+          verify_json() {
+            node - "$tmp_json" <<'NODE'
+          const fs = require("fs");
+          const filePath = process.argv[2];
+          const expected = (process.env.EXPECTED_SHA || "").trim();
+          const raw = fs.readFileSync(filePath, "utf8");
+          const parsed = JSON.parse(raw);
+          const sha = String(parsed?.build?.sha ?? "").trim();
+          console.log("deployed_sha=" + (sha || "(missing)"));
+          if (!expected) {
+            console.log("expected_sha=(missing) - skipping strict check");
+            process.exit(0);
+          }
+          console.log("expected_sha=" + expected);
+          if (!sha) process.exit(2);
+          if (sha !== expected) process.exit(3);
+          NODE
+          }
+
+          for attempt in $(seq 1 "$attempts"); do
+            echo "Checking ${url} (attempt ${attempt}/${attempts})"
+            if curl -fsS "${url}" -o "$tmp_json" && verify_json; then
+              exit 0
+            fi
+
+            if [ "$attempt" -lt "$attempts" ]; then
+              sleep "$delay"
+            fi
+          done
+
+          echo "Backend did not expose expected build SHA after $((attempts * delay))s"
+          sudo -n systemctl --no-pager --full status lila-backend.service || true
+          sudo -n journalctl -u lila-backend.service --no-pager -n 120 || true
+          exit 1
