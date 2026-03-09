@@ -6,10 +6,12 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  Relation,
 } from 'typeorm';
+import type { Relation } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { GameMatchPlayer } from './game-match-player.entity';
+import type { User as UserEntity } from '../../user/entities/user.entity';
+import type { GameMatchPlayer as GameMatchPlayerEntity } from './game-match-player.entity';
 
 @Entity({ name: 'game_matches' })
 export class GameMatch {
@@ -42,8 +44,8 @@ export class GameMatch {
 
   @ManyToOne(() => User, { eager: true, nullable: true })
   @JoinColumn({ name: 'winner_user_id' })
-  winnerUser?: Relation<User> | null;
+  winnerUser?: Relation<UserEntity> | null;
 
   @OneToMany(() => GameMatchPlayer, (p) => p.match)
-  players!: Relation<GameMatchPlayer[]>;
+  players!: Relation<GameMatchPlayerEntity[]>;
 }

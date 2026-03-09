@@ -284,7 +284,7 @@ describe('PanierExpressService', () => {
     base.metadata.positions[1] = 0; // start
     const afterVictory = phaseSvc.advancePhases(base);
     expect(afterVictory.status?.toLowerCase()).toBe('finished');
-    expect(afterVictory.metadata.winnerId).toBe(1);
+    expect((afterVictory.metadata as any).winnerId).toBe(1);
   });
 
   it('permet à un bot de choisir automatiquement une réponse de quiz parmi les choix proposés', () => {

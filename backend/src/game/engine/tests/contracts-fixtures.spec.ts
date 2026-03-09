@@ -59,11 +59,9 @@ describe('Contract fixtures', () => {
         true,
       );
 
-      expect(state.turn && typeof state.turn === 'object').toBe(true);
-      expect(state.turn.direction === 1 || state.turn.direction === -1).toBe(
-        true,
-      );
-      const turn = state.turn;
+      const turn = (state as any).turn;
+      expect(turn && typeof turn === 'object').toBe(true);
+      expect(turn.direction === 1 || turn.direction === -1).toBe(true);
       expect(isJsonObject(turn)).toBe(true);
       if (isJsonObject(turn)) {
         expect(

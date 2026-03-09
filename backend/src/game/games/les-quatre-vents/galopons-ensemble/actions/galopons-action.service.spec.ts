@@ -199,8 +199,9 @@ describe('GaloponsActionService', () => {
     expect(state.pending ?? null).toBeNull();
     expect(safety).toBe(3);
     expect(Number(state.turn?.currentPlayerId ?? 0)).toBe(1);
+    const players = state.players ?? [];
     expect(
-      state.players.every(
+      players.every(
         (player: any) =>
           String(player?.pawn ?? '').trim().length > 0 &&
           String(player?.pawnLabel ?? '').trim().length > 0,

@@ -746,7 +746,7 @@ describe('All games scenario coverage harness', () => {
                   const actionWithMeta = {
                     ...action,
                     meta: {
-                      ...asRecord((action as Record<string, unknown>).meta),
+                      ...asRecord((action as unknown as Record<string, unknown>).meta),
                       actorId: candidate.actorId,
                     },
                   } as GameSingleActionDto;
@@ -767,7 +767,7 @@ describe('All games scenario coverage harness', () => {
                           ...validated,
                           meta: {
                             ...asRecord(
-                              (validated as Record<string, unknown>).meta,
+                              (validated as unknown as Record<string, unknown>).meta,
                             ),
                             actorId: candidate.actorId,
                           },

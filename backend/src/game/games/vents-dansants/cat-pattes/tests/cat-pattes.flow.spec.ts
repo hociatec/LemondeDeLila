@@ -529,7 +529,7 @@ describe('CatPattes flow', () => {
         { message: 'Hacene passe son tour.' },
       ],
       metadata: {
-        ...baseState().metadata,
+        ...(baseState().metadata as any),
         hands: { 1: [], 2: [] },
         positions: { 1: 0, 2: 0 },
         points: { 1: 0, 2: 0 },
@@ -563,7 +563,7 @@ describe('CatPattes flow', () => {
     const state: any = {
       ...baseState(),
       metadata: {
-        ...baseState().metadata,
+        ...(baseState().metadata as any),
         hands: { 1: ['pattes-10-1'], 2: ['parade-rayon-1'] },
         positions: { 1: 0, 2: 0 },
         points: { 1: 0, 2: 0 },
@@ -582,7 +582,7 @@ describe('CatPattes flow', () => {
     const state: any = {
       ...baseState(),
       metadata: {
-        ...baseState().metadata,
+        ...(baseState().metadata as any),
         hands: { 1: ['parade-croquettes-1', 'parade-rayon-1'], 2: [] },
         positions: { 1: 0, 2: 0 },
         points: { 1: 0, 2: 0 },
@@ -608,7 +608,7 @@ describe('CatPattes flow', () => {
     const state: any = {
       ...baseState(),
       metadata: {
-        ...baseState().metadata,
+        ...(baseState().metadata as any),
         hands: { 1: ['parade-croquettes-1', 'pattes-10-1'], 2: [] },
         positions: { 1: 0, 2: 0 },
         points: { 1: 0, 2: 0 },
@@ -674,7 +674,7 @@ describe('CatPattes flow', () => {
     const state: any = {
       ...baseState(),
       metadata: {
-        ...baseState().metadata,
+        ...(baseState().metadata as any),
         hands: { 1: ['bot-reserve'], 2: [] },
         positions: { 1: 0, 2: 0 },
         points: { 1: 0, 2: 0 },

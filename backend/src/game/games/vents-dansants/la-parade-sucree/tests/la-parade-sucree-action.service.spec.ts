@@ -70,7 +70,7 @@ describe('LaParadeSucreeActionService', () => {
     const { actions, state: initial } = makeRuntime();
     const state = {
       ...initial,
-      turn: { ...(initial.turn ?? {}), currentPlayerId: 1 },
+      turn: { ...(initial.turn ?? {}), direction: 1 as 1, currentPlayerId: 1 },
       metadata: {
         ...meta(initial),
         sequenceIndex: LA_PARADE_SEQUENCE.indexOf('7'),

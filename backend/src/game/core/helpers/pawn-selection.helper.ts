@@ -8,9 +8,7 @@ type PendingPawnOption = {
 export type PendingPawnPayload = {
   type?: unknown;
   playerId?: unknown;
-  data?: {
-    pawns?: unknown;
-  };
+  data?: Record<string, unknown>;
 };
 
 export type PendingPawnChoicePayload = {
@@ -57,9 +55,8 @@ export function isPendingPawnForPlayer(
 export function getPendingPawnOptions(
   pending: PendingPawnPayload | null | undefined,
 ): PendingPawnOption[] {
-  const fromDataRaw = Array.isArray(pending?.data?.pawns)
-    ? pending.data.pawns
-    : [];
+  const data = pending?.data as Record<string, unknown> | null | undefined;
+  const fromDataRaw = Array.isArray(data?.pawns) ? data.pawns : [];
   const fromData = fromDataRaw.filter(
     (option): option is Record<string, unknown> =>
       Boolean(option) && typeof option === 'object',

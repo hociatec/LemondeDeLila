@@ -5,9 +5,10 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  Relation,
 } from 'typeorm';
+import type { Relation } from 'typeorm';
 import { Room } from './room.entity';
+import type { Room as RoomEntity } from './room.entity';
 
 @Entity({ name: 'room_bots' })
 export class RoomBot {
@@ -16,7 +17,7 @@ export class RoomBot {
 
   @ManyToOne(() => Room, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'room_id' })
-  room!: Relation<Room>;
+  room!: Relation<RoomEntity>;
 
   @Column({ type: 'varchar', length: 100 })
   name!: string;

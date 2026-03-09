@@ -71,8 +71,12 @@ export class CatPattesSetupService {
       typeof baseState.turn?.currentPlayerId === 'number'
         ? baseState.turn.currentPlayerId
         : (players[0]?.id ?? null);
+    const baseMeta =
+      baseState.metadata && typeof baseState.metadata === 'object'
+        ? (baseState.metadata as Record<string, unknown>)
+        : ({} as Record<string, unknown>);
     const ownerPlayerId =
-      this.resolveOwnerPlayerId(players, baseState.metadata ?? {}) ??
+      this.resolveOwnerPlayerId(players, baseMeta) ??
       setupStarterId;
     const roundsToPlay = this.resolveRoundsToPlay(metaSeed?.roundsToPlay);
 

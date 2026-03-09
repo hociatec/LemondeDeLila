@@ -42,31 +42,24 @@ function createGateway() {
 }
 
 function payload(overrides?: Partial<any>): any {
+  const baseRoom = {
+    id: 10,
+    isPrivate: false,
+    status: 'setup',
+    startedAt: null,
+    owner: { id: 1, username: 'owner' },
+    players: [{ id: 2, username: 'p2' }],
+    spectators: [],
+    bots: [],
+  };
+  const overridesObj = (overrides ?? {}) as any;
+  const roomOverrides = overridesObj.room ?? {};
+  const { room: _roomIgnored, ...rest } = overridesObj;
   return {
-    room: {
-      id: 10,
-      isPrivate: false,
-      status: 'setup',
-      startedAt: null,
-      owner: { id: 1, username: 'owner' },
-      players: [{ id: 2, username: 'p2' }],
-      spectators: [],
-      bots: [],
-    },
+    room: { ...baseRoom, ...roomOverrides },
     manifest: null,
     generatedAt: new Date().toISOString(),
-    ...(overrides ?? {}),
-    room: {
-      id: 10,
-      isPrivate: false,
-      status: 'setup',
-      startedAt: null,
-      owner: { id: 1, username: 'owner' },
-      players: [{ id: 2, username: 'p2' }],
-      spectators: [],
-      bots: [],
-      ...((overrides as any)?.room ?? {}),
-    },
+    ...rest,
   };
 }
 

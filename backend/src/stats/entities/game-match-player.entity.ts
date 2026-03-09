@@ -5,11 +5,13 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  Relation,
   Unique,
 } from 'typeorm';
+import type { Relation } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { GameMatch } from './game-match.entity';
+import type { User as UserEntity } from '../../user/entities/user.entity';
+import type { GameMatch as GameMatchEntity } from './game-match.entity';
 
 export type GameMatchOutcome = 'unknown' | 'won' | 'lost' | 'quit' | 'draw';
 
@@ -22,12 +24,12 @@ export class GameMatchPlayer {
   @ManyToOne(() => GameMatch, (m) => m.players, { eager: false })
   @JoinColumn({ name: 'match_id' })
   @Index('idx_game_match_players_match')
-  match!: Relation<GameMatch>;
+  match!: Relation<GameMatchEntity>;
 
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'user_id' })
   @Index('idx_game_match_players_user')
-  user!: Relation<User>;
+  user!: Relation<UserEntity>;
 
   @Column({ type: 'varchar', length: 80 })
   username!: string;

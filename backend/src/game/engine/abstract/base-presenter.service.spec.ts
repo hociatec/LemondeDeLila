@@ -1,7 +1,6 @@
-import type { GameStateEntity } from '../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../dto/game-action.dto';
 import { BasePresenterService } from './base-presenter.service';
-import {
+import type {
   GameStateEntity,
   PendingState,
   PlayerStateEntity,

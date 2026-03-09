@@ -81,10 +81,12 @@ export class CorridorBotService {
       oppPos != null &&
       wallTargets.length > 0
     ) {
+      const opponentId = oppId as number;
+      const opponentGoalY = oppGoalY as number;
       const opponentWinNow = (() => {
-        const moves = CorridorRulebook.listLegalPawnMoves(state, oppId);
+        const moves = CorridorRulebook.listLegalPawnMoves(state, opponentId);
         return moves.some((m) =>
-          CorridorRulebook.isWinningPos(state, oppId, m),
+          CorridorRulebook.isWinningPos(state, opponentId, m),
         );
       })();
 
@@ -93,9 +95,9 @@ export class CorridorBotService {
           state,
           meta,
           botPlayerId,
-          oppId,
+          opponentId,
           myGoalY,
-          oppGoalY,
+          opponentGoalY,
           myPos,
           oppPos,
           wallTargets,
@@ -134,10 +136,11 @@ export class CorridorBotService {
       myDist != null &&
       oppDist != null
     ) {
+      const opponentGoalY = oppGoalY as number;
       const bestWall = this.pickAggressiveWall(
         meta,
         myGoalY,
-        oppGoalY,
+        opponentGoalY,
         myPos,
         oppPos,
         wallTargets,

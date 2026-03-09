@@ -61,7 +61,11 @@ describe('GerardPresidentActionService', () => {
     const hand = [...(getMeta(state).hands[current] ?? [])];
     state = {
       ...state,
-      turn: { ...(state.turn ?? {}), currentPlayerId: current },
+      turn: {
+        ...(state.turn ?? {}),
+        direction: 1 as 1,
+        currentPlayerId: current,
+      },
       metadata: {
         ...getMeta(state),
         roundPhase: 'collecting_names',
@@ -75,7 +79,7 @@ describe('GerardPresidentActionService', () => {
 
     state = {
       ...state,
-      turn: { ...(state.turn ?? {}), currentPlayerId: 1 },
+      turn: { ...(state.turn ?? {}), direction: 1 as 1, currentPlayerId: 1 },
       metadata: {
         ...getMeta(state),
         roundPhase: 'choosing_winner',
@@ -95,7 +99,11 @@ describe('GerardPresidentActionService', () => {
     const current = 2;
     const state = {
       ...initial,
-      turn: { ...(initial.turn ?? {}), currentPlayerId: current },
+      turn: {
+        ...(initial.turn ?? {}),
+        direction: 1 as 1,
+        currentPlayerId: current,
+      },
       metadata: {
         ...getMeta(initial),
         roundPhase: 'collecting_names',
@@ -114,7 +122,7 @@ describe('GerardPresidentActionService', () => {
       let state = makeRuntime().state;
       state = {
         ...state,
-        turn: { ...(state.turn ?? {}), currentPlayerId: 1 },
+        turn: { ...(state.turn ?? {}), direction: 1 as 1, currentPlayerId: 1 },
         metadata: {
           ...getMeta(state),
           roundPhase: 'collecting_names',

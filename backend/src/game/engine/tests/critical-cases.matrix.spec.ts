@@ -5,7 +5,7 @@ import { MorpionPresenter } from '../../games/vents-sacres/morpion/morpion.prese
 import { MorpionService } from '../../games/vents-sacres/morpion/morpion.service';
 import { GameEngineService } from '../services/game-engine.service';
 import { GameRegistryService } from '../services/game-registry.service';
-import { GameLoggerService } from '../../common/services/game-logger.service';
+import type { GameLoggerService } from '../../../common/services/game-logger.service';
 import type { GameStateEntity } from '../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../dto/game-action.dto';
 import type { GameRulesAdapter } from '../interfaces/game-rules-adapter.interface';
@@ -14,7 +14,7 @@ const registryStub: Partial<GameRegistryService> = {
   register: () => undefined,
 };
 
-const defaultPlayers: GameStateEntity['players'] = [
+const defaultPlayers: NonNullable<GameStateEntity['players']> = [
   { id: 1, username: 'A' },
   { id: 2, username: 'B' },
 ];
@@ -144,10 +144,7 @@ describe('Critical Cases Matrix', () => {
     const engine = Object.create(
       GameEngineService.prototype,
     ) as GameEngineService;
-    const engineWithLogger = engine as GameEngineService & {
-      gameLogger?: GameLoggerService;
-    };
-    engineWithLogger.gameLogger = loggerStub;
+    (engine as any).gameLogger = loggerStub;
 
     const state: GameStateEntity = {
       ...buildBaseState({

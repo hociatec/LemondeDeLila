@@ -5,10 +5,12 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  Relation,
 } from 'typeorm';
+import type { Relation } from 'typeorm';
 import { Room } from './room.entity';
+import type { Room as RoomEntity } from './room.entity';
 import { User } from '../../user/entities/user.entity';
+import type { User as UserEntity } from '../../user/entities/user.entity';
 
 @Entity({ name: 'room_participants' })
 export class RoomParticipant {
@@ -17,11 +19,11 @@ export class RoomParticipant {
 
   @ManyToOne(() => Room, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'room_id' })
-  room!: Relation<Room>;
+  room!: Relation<RoomEntity>;
 
   @ManyToOne(() => User, { eager: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
-  user!: Relation<User>;
+  user!: Relation<UserEntity>;
 
   @Column({ type: 'varchar', length: 20, default: 'player' })
   role!: string;
