@@ -5,6 +5,7 @@ import {
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
 import { RedisHealthIndicator } from './redis.health';
+import { getBuildInfo } from '../common/utils/build-info.utils';
 
 @Controller('health')
 export class HealthController {
@@ -21,5 +22,12 @@ export class HealthController {
       () => this.db.pingCheck('database'),
       () => this.redis.check('redis'),
     ]);
+  }
+
+  @Get('info')
+  info() {
+    return {
+      build: getBuildInfo(),
+    };
   }
 }

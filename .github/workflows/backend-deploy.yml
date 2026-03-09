@@ -72,3 +72,27 @@ jobs:
         run: |
           set -euo pipefail
           sudo -n /usr/local/sbin/deploy-lemonde-prod
+
+      - name: Verify deployed build SHA
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+          PORT: 3001
+        run: |
+          set -euo pipefail
+          url="http://127.0.0.1:${PORT}/health/info"
+          echo "Checking ${url}"
+          curl -fsS "${url}" | node -e '
+            const fs = require("fs");
+            const expected = (process.env.EXPECTED_SHA || "").trim();
+            const raw = fs.readFileSync(0, "utf8");
+            const parsed = JSON.parse(raw);
+            const sha = String(parsed?.build?.sha ?? "").trim();
+            console.log("deployed_sha=" + (sha || "(missing)"));
+            if (!expected) {
+              console.log("expected_sha=(missing) - skipping strict check");
+              process.exit(0);
+            }
+            console.log("expected_sha=" + expected);
+            if (!sha) process.exit(2);
+            if (sha !== expected) process.exit(3);
+          '
