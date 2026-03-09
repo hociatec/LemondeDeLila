@@ -2240,8 +2240,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 CancelActionType: null,
                 Fields: new[]
                 {
-                    new TableGameConfigWindow.Field("goalPattes", "Objectif pattes", "number", 600, 1500, "1000"),
-                    new TableGameConfigWindow.Field("pointsToWin", "Points pour gagner", "number", 1000, 20000, "4000"),
+                    new TableGameConfigWindow.Field("roundsToPlay", "Nombre de manches", "number", 1, 20, "3"),
                 });
         }
 

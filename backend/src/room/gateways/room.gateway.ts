@@ -1458,6 +1458,26 @@ export class RoomGateway
       }
     }
 
+    // Role switches (spectator <-> player) are common when a user joins a room from another interface.
+    // Keep an explicit announcement so other players understand what happened.
+    for (const id of roleSwitchIds) {
+      if (previous.spectators.has(id) && next.players.has(id)) {
+        const username =
+          next.players.get(id) ?? previous.spectators.get(id) ?? '';
+        await this.broadcastRoomAnnouncement(
+          roomId,
+          RoomGateway.buildPlayerBecamePlayerMessage(username),
+        );
+      } else if (previous.players.has(id) && next.spectators.has(id)) {
+        const username =
+          next.spectators.get(id) ?? previous.players.get(id) ?? '';
+        await this.broadcastRoomAnnouncement(
+          roomId,
+          RoomGateway.buildPlayerBecameSpectatorMessage(username),
+        );
+      }
+    }
+
     await this.emitPlayerDiff(
       roomId,
       previous.players,
@@ -1571,6 +1591,14 @@ export class RoomGateway
     spectator: boolean,
   ): string {
     return `${RoomGateway.formatPlayerName(name)}${spectator ? ' (spectateur)' : ''} a rejoint la table.`;
+  }
+
+  private static buildPlayerBecamePlayerMessage(name: string): string {
+    return `${RoomGateway.formatPlayerName(name)} est passé en mode joueur.`;
+  }
+
+  private static buildPlayerBecameSpectatorMessage(name: string): string {
+    return `${RoomGateway.formatPlayerName(name)} est passé en mode spectateur.`;
   }
 
   private static buildPlayerLeftMessage(

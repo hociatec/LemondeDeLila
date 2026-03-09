@@ -100,7 +100,11 @@ export class GaloponsActionService {
     const { playerId, chosen } = resolved;
     const meta = this.getMeta(state);
     const pawnId = toText(chosen.id);
-    const pawnLabel = toText(chosen.label) || pawnId || 'pion';
+    const pawnLabel =
+      this.resolvePawnName(meta.pawns, pawnId) ||
+      this.normalizePawnChoiceLabel(toText(chosen.label)) ||
+      pawnId ||
+      'pion';
     const pawnByPlayerId = {
       ...(meta.pawnByPlayerId ?? {}),
       [playerId]: pawnId,
@@ -903,6 +907,17 @@ export class GaloponsActionService {
       ? pawns.find((entry) => toText(entry?.id) === pawnId)
       : null;
     return toText(pawn?.name);
+  }
+
+  private normalizePawnChoiceLabel(value: string): string {
+    const label = toText(value);
+    if (!label) return '';
+    const idx = label.indexOf(':');
+    if (idx > 0) {
+      const left = label.slice(0, idx).trim();
+      if (left.length > 0) return left;
+    }
+    return label;
   }
 }
 
