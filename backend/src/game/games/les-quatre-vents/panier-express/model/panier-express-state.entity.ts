@@ -94,6 +94,7 @@ export type PanierExpressMetadata = {
   stands: string[];
   tiles: PanierExpressTile[];
   decks: PanierExpressDeckPool;
+  shoppingLists?: Record<number, string[]>;
   positions: Record<number, number>;
   /**
    * Nombre de tours de plateau complétés par joueur (passages sur la case départ).

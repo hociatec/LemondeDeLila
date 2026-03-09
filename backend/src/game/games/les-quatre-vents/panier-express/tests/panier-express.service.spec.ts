@@ -54,6 +54,41 @@ describe('PanierExpressService', () => {
     expect(choices.length).toBeGreaterThan(0);
   });
 
+  it('répare une liste de courses manquante/vidée pour le raccourci L', () => {
+    const state: any = {
+      players: [
+        { id: 1, username: 'A', shoppingList: [], basket: [], inventory: [] },
+        { id: 2, username: 'B', shoppingList: [], basket: [], inventory: [] },
+      ],
+      status: 'started',
+      phase: 'playing',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: {
+        roomId: 123,
+        roomStartedAt: '2026-03-09T00:00:00.000Z',
+        roomRunId: 1,
+        gameType: 'panier-express',
+      },
+    };
+
+    const exposed = service.exposeStateForUser(state, 1);
+    const extras: any = (exposed as any).extras;
+    expect(extras?.currentPlayerView?.id).toBe(1);
+    expect(Array.isArray(extras?.currentPlayerView?.shoppingList)).toBe(true);
+    expect(extras.currentPlayerView.shoppingList.length).toBe(3);
+
+    // Déterministe pour un même contexte (seed derived from roomId/startedAt/runId).
+    const exposed2 = service.exposeStateForUser(state, 1);
+    const extras2: any = (exposed2 as any).extras;
+    expect(extras2.currentPlayerView.shoppingList).toEqual(
+      extras.currentPlayerView.shoppingList,
+    );
+  });
+
   it('propose tous les pions quand un bot en a déjà un (reset bot pawn pendant setup)', () => {
     const base: any = service.hydrateInitialState({
       players: [

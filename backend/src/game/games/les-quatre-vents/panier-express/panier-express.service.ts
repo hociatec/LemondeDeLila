@@ -33,6 +33,8 @@ import {
   PanierExpressDeckPool,
 } from './model/panier-express-state.entity';
 import { playingLog } from '../../../../common/utils/playing-logger';
+import { seededShuffle } from '../../../../common/utils/seeded-shuffle';
+import { ensureSeededRng } from '../../../../common/utils/seeded-rng';
 import { PanierExpressSetupService } from './setup/panier-express-setup.service';
 import { PanierExpressDrawService } from './actions/panier-express-draw.service';
 import { PanierExpressQuizService } from './actions/panier-express-quiz.service';
@@ -389,6 +391,7 @@ export class PanierExpressService extends AbstractGameService {
       stands: this.standIds(),
       tiles: this.setup.buildTiles(),
       decks: this.setup.buildDeckPool(baseState),
+      shoppingLists: {},
       positions: {},
       laps: {},
       winnerId: null,
@@ -426,12 +429,103 @@ export class PanierExpressService extends AbstractGameService {
   private ensureMetadata(state: GameStateEntity): GameStateEntity {
     const normalizedPlayers = this.utils.normalizePlayers(state.players);
     const merged = this.mergeMetadataWithDefaults(state);
-    const metadata = this.hydrateMetadataCollections(
+    const metadataBeforeRepair = this.hydrateMetadataCollections(
       state,
       merged,
       normalizedPlayers,
     );
-    return { ...state, metadata, players: normalizedPlayers };
+    const repaired = this.ensureShoppingLists(
+      state,
+      metadataBeforeRepair,
+      normalizedPlayers,
+    );
+    return { ...state, metadata: repaired.metadata, players: repaired.players };
+  }
+
+  private ensureShoppingLists(
+    _state: GameStateEntity,
+    metadata: PanierExpressMetadata,
+    players: PanierExpressPlayer[],
+  ): { metadata: PanierExpressMetadata; players: PanierExpressPlayer[] } {
+    const pool = this.setup.courseItems();
+    if (!Array.isArray(pool) || pool.length === 0) {
+      return { metadata, players };
+    }
+
+    const rng = ensureSeededRng(metadata as any);
+    const size = Math.min(PanierExpressService.SHOPPING_LIST_SIZE, pool.length);
+    if (size <= 0) {
+      return { metadata, players };
+    }
+
+    const existingMap = asRecord((metadata as any).shoppingLists);
+    const outMap: Record<number, string[]> = {};
+    const used = new Set<string>();
+
+    const normalizeList = (value: unknown): string[] =>
+      this.utils
+        .toStringArray(value)
+        .map((v) => String(v ?? '').trim())
+        .filter((v) => v.length > 0)
+        .slice(0, size);
+
+    // 1) Privilégier l'état joueur si présent, sinon reprendre la map metadata.
+    for (const p of players) {
+      if (p == null || typeof p.id !== 'number') continue;
+      const fromPlayer = normalizeList((p as any).shoppingList);
+      const fromMeta = normalizeList(existingMap[String(p.id)]);
+      const list = fromPlayer.length > 0 ? fromPlayer : fromMeta;
+      if (list.length > 0) {
+        outMap[p.id] = list;
+        used.add(this.listKey(list));
+      }
+    }
+
+    // 2) Réparer les listes manquantes / vides de façon déterministe.
+    for (const p of players) {
+      if (p == null || typeof p.id !== 'number') continue;
+      if (outMap[p.id]?.length) continue;
+
+      let chosen: string[] | null = null;
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        const shuffled = seededShuffle(
+          pool,
+          rng.seed,
+          `panier-express:shopping:${p.id}:${attempt}`,
+        );
+        const candidate = shuffled.slice(0, size);
+        const key = this.listKey(candidate);
+        if (!used.has(key)) {
+          chosen = candidate;
+          used.add(key);
+          break;
+        }
+      }
+      if (!chosen) {
+        chosen = seededShuffle(
+          pool,
+          rng.seed,
+          `panier-express:shopping:${p.id}:fallback`,
+        ).slice(0, size);
+      }
+      outMap[p.id] = chosen;
+    }
+
+    const patchedPlayers = players.map((p) => {
+      if (p == null || typeof p.id !== 'number') return p;
+      const current = Array.isArray((p as any).shoppingList) ? p.shoppingList : [];
+      if (current.length > 0) {
+        // Normaliser la taille et éviter les entrées vides.
+        return { ...p, shoppingList: normalizeList(current) };
+      }
+      const restored = outMap[p.id] ?? [];
+      return { ...p, shoppingList: restored };
+    });
+
+    return {
+      metadata: { ...metadata, shoppingLists: outMap },
+      players: patchedPlayers,
+    };
   }
 
   private mergeMetadataWithDefaults(

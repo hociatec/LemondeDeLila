@@ -432,7 +432,8 @@ public sealed class AboutViewModel : ObservableObject
         sb.AppendLine("Objets / interface (en partie, selon le jeu)");
         sb.AppendLine("- Espace : piocher");
         sb.AppendLine("- Retour arrière : défausser (choisir une carte)");
-        sb.AppendLine("- s : score ou shopping list (Panier Express)");
+        sb.AppendLine("- s : score (Panier Express)");
+        sb.AppendLine("- l : shopping list (Panier Express)");
         sb.AppendLine("- b : annoncer panier");
         sb.AppendLine("- i : annoncer inventaire");
         sb.AppendLine("- c : annoncer main");
