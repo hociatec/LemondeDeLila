@@ -7,7 +7,6 @@ export type CatPattesActionType =
   | 'play_card'
   | 'discard_card'
   | 'pass'
-  | 'choose_pawn'
   | 'cat_pattes_set_config';
 
 export const CAT_PATTES_GAME: GameDefinition<
@@ -27,7 +26,6 @@ export const CAT_PATTES_GAME: GameDefinition<
     'play_card',
     'discard_card',
     'pass',
-    'choose_pawn',
     'cat_pattes_set_config',
   ],
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],

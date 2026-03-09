@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { GameCoreModule } from '../../../core/core.module';
 import { GameRegistryModule } from '../../../engine/game-registry.module';
-import { SetupFlowModule } from '../../../modules/setup-flow/setup-flow.module';
 import { TurnPoliciesModule } from '../../../modules/turn-policies/turn-policies.module';
 import { PromptPoliciesModule } from '../../../modules/prompt-policies/prompt-policies.module';
 import { BoardGameDeckKitModule } from '../../../modules/game-kits/board-game-kits.module';
@@ -16,7 +15,6 @@ import { CatPattesBotService } from './bots/cat-pattes-bot.service';
     GameCoreModule,
     GameRegistryModule,
     BoardGameDeckKitModule,
-    SetupFlowModule,
     TurnPoliciesModule,
     PromptPoliciesModule,
   ],

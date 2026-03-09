@@ -2,7 +2,6 @@ import type {
   CatPattesBotType,
   CatPattesObstacleType,
 } from './cat-pattes-cards';
-import type { CatPattesPawn } from './cat-pattes-cards';
 
 export interface CatPattesMetadata {
   rng?: Record<string, any>;
@@ -17,9 +16,7 @@ export interface CatPattesMetadata {
   hasSun: Record<number, boolean>;
   sunReady?: Record<number, boolean>;
   obstacleLock?: Record<number, boolean>;
-  pawns: CatPattesPawn[];
-  pawnByPlayerId: Record<number, string>;
-  setupStep?: 'setup_config' | 'choose_pawn' | 'playing';
+  setupStep?: 'setup_config' | 'playing';
   ownerPlayerId?: number | null;
   goalPattes?: number;
   roundsToPlay?: number;

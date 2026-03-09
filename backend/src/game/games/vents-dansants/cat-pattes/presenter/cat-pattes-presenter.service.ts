@@ -50,7 +50,7 @@ export class CatPattesPresenterService {
       Number(basePending?.playerId ?? NaN) !== Number(userId)
         ? null
         : basePending;
-    const pending = this.normalizePending(pendingForUser, actions);
+    const pending = pendingForUser;
     const handIds = Array.isArray(meta.hands?.[userId])
       ? [...meta.hands[userId]]
       : [];
@@ -130,8 +130,6 @@ export class CatPattesPresenterService {
       obstacles: meta.obstacles,
       bots: meta.bots,
       hasSun: meta.hasSun,
-      pawns: meta.pawns,
-      pawnByPlayerId: meta.pawnByPlayerId,
       ui: {
         panels: {
           hand: {
@@ -220,61 +218,5 @@ export class CatPattesPresenterService {
     });
   }
 
-  private normalizePending(
-    pending: any,
-    actions: Array<{ type?: string; payload?: Record<string, unknown> }>,
-  ): any {
-    if (!pending || typeof pending !== 'object') return pending ?? null;
-    const type = String(pending?.type ?? '')
-      .trim()
-      .toLowerCase();
-    if (type !== 'choose_pawn') return pending;
 
-    const rawChoices = Array.isArray(pending?.choices) ? pending.choices : [];
-    const normalizedChoices = rawChoices
-      .map((choice: unknown) => stringOrEmpty(choice).trim())
-      .filter((choice: string) => choice.length > 0);
-    if (normalizedChoices.length > 0) {
-      return {
-        ...pending,
-        choices: normalizedChoices,
-      };
-    }
-
-    const pendingPawns = Array.isArray(pending?.data?.pawns)
-      ? pending.data.pawns
-      : [];
-    const pawnsFromPendingData = pendingPawns
-      .map((pawn: any) => stringOrEmpty(pawn?.label ?? pawn?.id ?? '').trim())
-      .filter((choice: string) => choice.length > 0);
-    if (pawnsFromPendingData.length > 0) {
-      return {
-        ...pending,
-        choices: pawnsFromPendingData,
-      };
-    }
-
-    const pawnsFromActions = (Array.isArray(actions) ? actions : [])
-      .filter(
-        (action) =>
-          String(action?.type ?? '')
-            .trim()
-            .toLowerCase() === 'choose_pawn',
-      )
-      .map((action) => {
-        const payload = action?.payload ?? {};
-        return stringOrEmpty(
-          payload.pawnId ?? payload.pawn ?? payload.value,
-        ).trim();
-      })
-      .filter((choice) => choice.length > 0);
-    if (pawnsFromActions.length > 0) {
-      return {
-        ...pending,
-        choices: pawnsFromActions,
-      };
-    }
-
-    return pending;
-  }
 }

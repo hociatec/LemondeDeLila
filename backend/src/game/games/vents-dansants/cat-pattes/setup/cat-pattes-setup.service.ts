@@ -7,7 +7,7 @@ import {
 } from '../../../../setup/setup-service.helper';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
-import { CAT_PATTES_DECK, CAT_PATTES_PAWNS } from '../model/cat-pattes-cards';
+import { CAT_PATTES_DECK } from '../model/cat-pattes-cards';
 import type {
   CatPattesBotType,
   CatPattesObstacleType,
@@ -47,7 +47,6 @@ export class CatPattesSetupService {
     const sunReady: Record<number, boolean> = {};
     const obstacleLock: Record<number, boolean> = {};
     const turboPlayed: Record<number, number> = {};
-    const pawnByPlayerId: Record<number, string> = {};
 
     for (const player of players) {
       if (!player?.id) continue;
@@ -93,8 +92,6 @@ export class CatPattesSetupService {
       hasSun,
       sunReady,
       obstacleLock,
-      pawns: [...CAT_PATTES_PAWNS],
-      pawnByPlayerId,
       setupStep: 'setup_config',
       ownerPlayerId,
       goalPattes: CAT_PATTES_GOAL,
@@ -137,43 +134,6 @@ export class CatPattesSetupService {
     };
 
     return next;
-  }
-
-  private assignMissingBotPawns(
-    players: Array<{ id: number; username?: string; isBot?: boolean }>,
-    meta: CatPattesMetadata,
-  ): CatPattesMetadata {
-    const assigned = { ...(meta.pawnByPlayerId ?? {}) } as Record<
-      number,
-      string
-    >;
-    const used = new Set(
-      Object.values(assigned).filter(
-        (v) => typeof v === 'string' && v.trim().length > 0,
-      ),
-    );
-    const pool = Array.isArray(meta.pawns)
-      ? meta.pawns.filter((pawn) => !used.has(pawn))
-      : [];
-    const shuffled = this.random.shuffle(meta as any, pool);
-    const shuffledPool = Array.isArray(shuffled.values) ? shuffled.values : [];
-
-    let pawnIndex = 0;
-    for (const player of players) {
-      if (!player?.id || !this.isBotLike(player)) continue;
-      if (assigned[player.id]) continue;
-      const nextPawn = shuffledPool[pawnIndex];
-      if (!nextPawn) break;
-      assigned[player.id] = nextPawn;
-      used.add(nextPawn);
-      pawnIndex += 1;
-    }
-
-    return {
-      ...meta,
-      rng: shuffled.meta?.rng ?? meta.rng,
-      pawnByPlayerId: assigned,
-    };
   }
 
   private isBotLike(player: any): boolean {

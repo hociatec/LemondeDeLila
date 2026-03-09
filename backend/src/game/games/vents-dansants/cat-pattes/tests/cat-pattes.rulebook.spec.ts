@@ -13,8 +13,6 @@ function buildMeta(): CatPattesMetadata {
     bots: { 1: [] },
     turboPlayed: { 1: 0 },
     hasSun: { 1: true },
-    pawns: ['Maine Coon'],
-    pawnByPlayerId: { 1: 'Maine Coon' },
     setupStarterId: 1,
     drawnPlayerId: null,
     winnerId: null,

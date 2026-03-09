@@ -2,7 +2,6 @@
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
-import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { CatPattesActionService } from '../actions/cat-pattes-action.service';
 import { CatPattesSetupService } from '../setup/cat-pattes-setup.service';
@@ -33,12 +32,11 @@ function baseState(): GameStateEntity {
 }
 
 describe('CatPattes flow', () => {
-  it('lets human choose pawn before bot auto-assignment', async () => {
+  it('starts playing immediately after config (no pawn selection)', async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         GameCoreService,
         RandomService,
-        SetupFlowService,
         DeckPoliciesService,
         CatPattesSetupService,
         {
@@ -52,21 +50,13 @@ describe('CatPattes flow', () => {
           useFactory: (
             core: GameCoreService,
             turns: any,
-            setupFlow: SetupFlowService,
             deckPolicies: DeckPoliciesService,
             random: RandomService,
           ) =>
-            new CatPattesActionService(
-              core,
-              turns,
-              setupFlow,
-              deckPolicies,
-              random,
-            ),
+            new CatPattesActionService(core, turns, deckPolicies, random),
           inject: [
             GameCoreService,
             'TurnFlowService',
-            SetupFlowService,
             DeckPoliciesService,
             RandomService,
           ],
@@ -90,21 +80,25 @@ describe('CatPattes flow', () => {
     state = actionSvc.applyActions(state, [
       { type: 'cat_pattes_set_config', payload: { roundsToPlay: 3 } } as any,
     ]);
-    state = actionSvc.applyActions(state, [
-      { type: 'choose_pawn', payload: { pawnId: 'Maine Coon' } } as any,
-    ]);
 
-    const meta: any = state.metadata ?? {};
-    expect(String(meta.pawnByPlayerId?.[1] ?? '')).toBe('Maine Coon');
-    expect(String(meta.pawnByPlayerId?.[2] ?? '').length).toBeGreaterThan(0);
+    expect(state.pending).toBeNull();
+    expect(String((state.metadata as any)?.setupStep ?? '')).toBe('playing');
+    expect(state.turn?.currentPlayerId).toBe(2);
+
+    const actionsP2 = Rulebook.getAvailableActions(state as any, 2);
+    expect(actionsP2).toEqual([{ type: 'draw', payload: {} }]);
+
+    const messages = (state.log ?? []).map((e: any) => String(e?.message ?? ''));
+    expect(messages.some((m) => /D.+but de partie: .* commence\./i.test(m))).toBe(
+      true,
+    );
   });
 
-  it('requires pawn selection before draw/play', async () => {
+  it('allows draw/play after config', async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         GameCoreService,
         RandomService,
-        SetupFlowService,
         DeckPoliciesService,
         CatPattesSetupService,
         {
@@ -132,21 +126,13 @@ describe('CatPattes flow', () => {
           useFactory: (
             core: GameCoreService,
             turns: any,
-            setupFlow: SetupFlowService,
             deckPolicies: DeckPoliciesService,
             random: RandomService,
           ) =>
-            new CatPattesActionService(
-              core,
-              turns,
-              setupFlow,
-              deckPolicies,
-              random,
-            ),
+            new CatPattesActionService(core, turns, deckPolicies, random),
           inject: [
             GameCoreService,
             'TurnFlowService',
-            SetupFlowService,
             DeckPoliciesService,
             RandomService,
           ],
@@ -168,12 +154,6 @@ describe('CatPattes flow', () => {
     state = actionsService.applyActions(state, [
       { type: 'cat_pattes_set_config', payload: { roundsToPlay: 3 } } as any,
     ]);
-    state = actionsService.applyActions(state, [
-      { type: 'choose_pawn', payload: { pawnId: 'Maine Coon' } } as any,
-    ]);
-    state = actionsService.applyActions(state, [
-      { type: 'choose_pawn', payload: { pawnId: 'Siamois' } } as any,
-    ]);
 
     expect(state.pending).toBeNull();
     const messages = (state.log ?? []).map((e: any) =>
@@ -193,7 +173,6 @@ describe('CatPattes flow', () => {
       providers: [
         GameCoreService,
         RandomService,
-        SetupFlowService,
         DeckPoliciesService,
         CatPattesSetupService,
         {
@@ -221,21 +200,13 @@ describe('CatPattes flow', () => {
           useFactory: (
             core: GameCoreService,
             turns: any,
-            setupFlow: SetupFlowService,
             deckPolicies: DeckPoliciesService,
             random: RandomService,
           ) =>
-            new CatPattesActionService(
-              core,
-              turns,
-              setupFlow,
-              deckPolicies,
-              random,
-            ),
+            new CatPattesActionService(core, turns, deckPolicies, random),
           inject: [
             GameCoreService,
             'TurnFlowService',
-            SetupFlowService,
             DeckPoliciesService,
             RandomService,
           ],
@@ -249,12 +220,6 @@ describe('CatPattes flow', () => {
     let state = setup.hydrateInitialState(baseState());
     state = actionsService.applyActions(state, [
       { type: 'cat_pattes_set_config', payload: { roundsToPlay: 3 } } as any,
-    ]);
-    state = actionsService.applyActions(state, [
-      { type: 'choose_pawn', payload: { pawnId: 'Maine Coon' } } as any,
-    ]);
-    state = actionsService.applyActions(state, [
-      { type: 'choose_pawn', payload: { pawnId: 'Siamois' } } as any,
     ]);
 
     const meta0: any = state.metadata ?? {};
@@ -292,7 +257,6 @@ describe('CatPattes flow', () => {
       providers: [
         GameCoreService,
         RandomService,
-        SetupFlowService,
         DeckPoliciesService,
         CatPattesSetupService,
         {
@@ -320,21 +284,13 @@ describe('CatPattes flow', () => {
           useFactory: (
             core: GameCoreService,
             turns: any,
-            setupFlow: SetupFlowService,
             deckPolicies: DeckPoliciesService,
             random: RandomService,
           ) =>
-            new CatPattesActionService(
-              core,
-              turns,
-              setupFlow,
-              deckPolicies,
-              random,
-            ),
+            new CatPattesActionService(core, turns, deckPolicies, random),
           inject: [
             GameCoreService,
             'TurnFlowService',
-            SetupFlowService,
             DeckPoliciesService,
             RandomService,
           ],
@@ -348,12 +304,6 @@ describe('CatPattes flow', () => {
     let state = setup.hydrateInitialState(baseState());
     state = actionsService.applyActions(state, [
       { type: 'cat_pattes_set_config', payload: { roundsToPlay: 3 } } as any,
-    ]);
-    state = actionsService.applyActions(state, [
-      { type: 'choose_pawn', payload: { pawnId: 'Maine Coon' } } as any,
-    ]);
-    state = actionsService.applyActions(state, [
-      { type: 'choose_pawn', payload: { pawnId: 'Siamois' } } as any,
     ]);
 
     const meta: any = { ...(state.metadata ?? {}) };
@@ -401,7 +351,6 @@ describe('CatPattes flow', () => {
       providers: [
         GameCoreService,
         RandomService,
-        SetupFlowService,
         DeckPoliciesService,
         CatPattesSetupService,
       ],
@@ -434,7 +383,6 @@ describe('CatPattes flow', () => {
       providers: [
         GameCoreService,
         RandomService,
-        SetupFlowService,
         DeckPoliciesService,
         CatPattesSetupService,
         {
@@ -448,21 +396,13 @@ describe('CatPattes flow', () => {
           useFactory: (
             core: GameCoreService,
             turns: any,
-            setupFlow: SetupFlowService,
             deckPolicies: DeckPoliciesService,
             random: RandomService,
           ) =>
-            new CatPattesActionService(
-              core,
-              turns,
-              setupFlow,
-              deckPolicies,
-              random,
-            ),
+            new CatPattesActionService(core, turns, deckPolicies, random),
           inject: [
             GameCoreService,
             'TurnFlowService',
-            SetupFlowService,
             DeckPoliciesService,
             RandomService,
           ],
@@ -479,12 +419,6 @@ describe('CatPattes flow', () => {
         type: 'cat_pattes_set_config',
         payload: { roundsToPlay: 2 },
       } as any,
-    ]);
-    state = actionsService.applyActions(state, [
-      { type: 'choose_pawn', payload: { pawnId: 'Maine Coon' } } as any,
-    ]);
-    state = actionsService.applyActions(state, [
-      { type: 'choose_pawn', payload: { pawnId: 'Siamois' } } as any,
     ]);
 
     const metaBefore: any = { ...(state.metadata ?? {}) };
@@ -634,7 +568,6 @@ describe('CatPattes flow', () => {
       providers: [
         GameCoreService,
         RandomService,
-        SetupFlowService,
         DeckPoliciesService,
         CatPattesSetupService,
         {
@@ -648,21 +581,13 @@ describe('CatPattes flow', () => {
           useFactory: (
             core: GameCoreService,
             turns: any,
-            setupFlow: SetupFlowService,
             deckPolicies: DeckPoliciesService,
             random: RandomService,
           ) =>
-            new CatPattesActionService(
-              core,
-              turns,
-              setupFlow,
-              deckPolicies,
-              random,
-            ),
+            new CatPattesActionService(core, turns, deckPolicies, random),
           inject: [
             GameCoreService,
             'TurnFlowService',
-            SetupFlowService,
             DeckPoliciesService,
             RandomService,
           ],

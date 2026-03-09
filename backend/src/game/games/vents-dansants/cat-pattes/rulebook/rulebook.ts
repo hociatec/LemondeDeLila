@@ -11,17 +11,10 @@ import type { CatPattesMetadata } from '../model/cat-pattes-state.entity';
 import { CAT_PATTES_GOAL } from '../model/cat-pattes-state.entity';
 import { normalizeActionType } from '../../../../actions/action-service.helper';
 import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
-import {
-  getPendingPawnActionsForPlayer,
-  validatePendingPawnActionForActor,
-} from '../../../../core/helpers/pawn-pending-rulebook.helper';
-import { stringOrEmpty } from '@common/utils/string-value.utils';
 
 type CatPattesActionPayload = {
   cardId?: string | null;
   targetPlayerId?: number | null;
-  pawnId?: string | null;
-  pawn?: string | null;
   value?: string | null;
   roundsToPlay?: number | null;
 };
@@ -208,15 +201,6 @@ export function canPlayBot(
   return botCountersObstacle(bot, obstacle);
 }
 
-function normalizePawnKey(value: unknown): string {
-  return stringOrEmpty(value)
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '');
-}
-
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
@@ -234,18 +218,7 @@ export function getAvailableActions(
     return [];
   }
 
-  const pending = state.pending as any;
-  if (pending) {
-    const pawnActions = getPendingPawnActionsForPlayer(
-      pending,
-      playerId,
-      'choose_pawn',
-    );
-    if (pawnActions.length > 0) {
-      return pawnActions;
-    }
-    return [];
-  }
+  if (state.pending) return [];
 
   const current = state.turn?.currentPlayerId ?? null;
   if (!samePlayerId(current, playerId)) return [];
@@ -364,7 +337,6 @@ export function validateAction(
     type !== 'play_card' &&
     type !== 'discard_card' &&
     type !== 'draw' &&
-    type !== 'choose_pawn' &&
     type !== 'cat_pattes_set_config' &&
     type !== 'pass'
   ) {
@@ -402,27 +374,7 @@ export function validateAction(
     };
   }
 
-  const pending = state.pending as any;
-  if (pending) {
-    const pawnValidation = validatePendingPawnActionForActor({
-      pending,
-      actorId,
-      actionType: type,
-      payload,
-      pendingType: 'choose_pawn',
-      idResolver: (value) => normalizePawnKey(value),
-    });
-    if (pawnValidation.ok) {
-      return pawnValidation.action;
-    }
-    if (pawnValidation.reason === 'wrong_action_type') {
-      throw new Error('Action indisponible (choix de pion requis).');
-    }
-    if (pawnValidation.reason === 'invalid_pawn') {
-      throw new Error('Pion invalide.');
-    }
-    throw new Error('Action indisponible (choix en attente).');
-  }
+  if (state.pending) throw new Error('Action indisponible (choix en attente).');
 
   const current = state.turn?.currentPlayerId ?? null;
   if (!samePlayerId(current, actorId)) {

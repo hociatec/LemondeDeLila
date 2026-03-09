@@ -18,14 +18,6 @@ export type CatPattesBotType =
   | 'patte-blindee'
   | 'passage-star';
 
-export type CatPattesPawn =
-  | 'Maine Coon'
-  | 'Siamois'
-  | 'Persan'
-  | 'Bengal'
-  | 'Chartreux'
-  | 'Angora';
-
 export interface CatPattesCardDefinition {
   id: string;
   name: string;
@@ -202,12 +194,3 @@ const deck: CatPattesCardDefinition[] = [
 export const CAT_PATTES_DECK = deck;
 export const CAT_PATTES_CARD_BY_ID: Record<string, CatPattesCardDefinition> =
   Object.fromEntries(deck.map((card) => [card.id, card]));
-
-export const CAT_PATTES_PAWNS: CatPattesPawn[] = [
-  'Maine Coon',
-  'Siamois',
-  'Persan',
-  'Bengal',
-  'Chartreux',
-  'Angora',
-];

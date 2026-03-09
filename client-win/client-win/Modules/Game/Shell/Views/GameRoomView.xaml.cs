@@ -414,9 +414,18 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
     private bool TryHandleTabCycle(bool isShift, DependencyObject? focusedHint)
     {
         var targets = GetTabCycleTargets();
-        if (targets.Count < 2)
+        if (targets.Count == 0)
         {
             return false;
+        }
+
+        // If only the game zone is focusable/visible (chat/history hidden or not focusable yet),
+        // still handle Tab/Shift+Tab as a "recover focus into game zone" action.
+        // This is important because other behaviors can mark Tab as handled before it reaches here:
+        // in that case, returning false would leave the user stuck with no default tab navigation.
+        if (targets.Count == 1)
+        {
+            return FocusTabTarget(targets[0]);
         }
 
         var focused = Keyboard.FocusedElement as DependencyObject
