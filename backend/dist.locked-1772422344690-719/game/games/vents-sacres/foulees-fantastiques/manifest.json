@@ -1,8 +1,0 @@
-{
-  "code": "foulees-fantastiques",
-  "name": "Foulées Fantastiques !",
-  "minPlayers": 2,
-  "maxPlayers": 4,
-  "engine": "foulees-fantastiques",
-  "summary": "Jeu de course (type petits chevaux)"
-}
