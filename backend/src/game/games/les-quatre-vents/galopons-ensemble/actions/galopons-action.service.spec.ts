@@ -8,6 +8,8 @@ import { DeckPoliciesService } from '../../../../modules/deck-policies/services/
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { GaloponsActionService } from './galopons-action.service';
+import { SetupFlowModule } from '../../../../modules/setup-flow/setup-flow.module';
+import { GaloponsEnsembleModule } from '../galopons-ensemble.module';
 import { GaloponsSetupService } from '../setup/galopons-setup.service';
 import * as Rulebook from '../rulebook/rulebook';
 
@@ -128,6 +130,13 @@ function makeSetupBaseState() {
 }
 
 describe('GaloponsActionService', () => {
+  it('imports SetupFlowModule so Nest can resolve SetupFlowService', () => {
+    const imports = Reflect.getMetadata('imports', GaloponsEnsembleModule);
+
+    expect(Array.isArray(imports)).toBe(true);
+    expect(imports).toContain(SetupFlowModule);
+  });
+
   it('requires sequential pawn selection before rolling and restores the starter turn', async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [

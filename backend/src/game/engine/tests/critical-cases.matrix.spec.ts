@@ -57,6 +57,42 @@ function buildPlayAction(
   };
 }
 
+function buildChoosePawnAction(
+  actorId: number,
+  pawnId: string,
+): GameSingleActionDto {
+  return {
+    type: 'choose_pawn',
+    payload: { pawnId },
+    meta: { actorId },
+  };
+}
+
+function resolveMorpionPawnSelection(
+  service: MorpionService,
+  state: GameStateEntity,
+): GameStateEntity {
+  let next = state;
+  let safety = 0;
+
+  while ((next.pending as any)?.type === 'choose_pawn' && safety < 10) {
+    const playerId = Number((next.pending as any)?.playerId ?? 0);
+    const pawns = Array.isArray((next.pending as any)?.data?.pawns)
+      ? ((next.pending as any).data.pawns as Array<{ id?: string }>)
+      : [];
+    const pawnId = String(pawns[0]?.id ?? '').trim();
+
+    expect(playerId).toBeGreaterThan(0);
+    expect(pawnId).not.toBe('');
+
+    next = service.applyActions(next, [buildChoosePawnAction(playerId, pawnId)]);
+    safety += 1;
+  }
+
+  expect((next.pending as any)?.type ?? null).toBeNull();
+  return next;
+}
+
 function extractWinnerId(state: GameStateEntity): number | null {
   const metadata = state.metadata;
   if (!metadata || typeof metadata !== 'object') {
@@ -76,7 +112,9 @@ describe('Critical Cases Matrix', () => {
     );
 
     expect(state.status).toBe('started');
-    expect(state.turn?.currentPlayerId).toBe(1);
+    expect([1, 2]).toContain(state.turn?.currentPlayerId);
+    expect((state.pending as any)?.type).toBe('choose_pawn');
+    expect((state.pending as any)?.playerId).toBe(state.turn?.currentPlayerId);
   });
 
   it('choix pion: cree un pending bloquant avec playerId cible', () => {
@@ -107,6 +145,7 @@ describe('Critical Cases Matrix', () => {
       buildBaseState({ status: 'started' }),
     );
 
+    state = resolveMorpionPawnSelection(service, state);
     state = service.applyActions(state, [buildPlayAction(1, 0, 0)]);
     expect(state.turn?.currentPlayerId).toBe(2);
   });
@@ -117,6 +156,7 @@ describe('Critical Cases Matrix', () => {
       buildBaseState({ status: 'started' }),
     );
 
+    state = resolveMorpionPawnSelection(service, state);
     const plays = [
       buildPlayAction(1, 0, 0),
       buildPlayAction(2, 0, 1),
