@@ -1,6 +1,8 @@
 using System.ComponentModel;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -11,6 +13,8 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using client_win.Modules.Catalog.Models;
 using client_win.Modules.Game.History.Views;
+using client_win.Modules.Game.Play.GamePlay.ViewModels;
+using client_win.Modules.Game.Play.GamePlay.Views;
 using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Game.Shell.ViewModels;
 using client_win.Modules.Game.Shell.Views;
@@ -486,6 +490,183 @@ public sealed class GameRoomViewFocusFlowTests
         });
     }
 
+    [Fact]
+    public void RapidTabCycle_RemainsStable_WhenFocusIsTemporarilyLost()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            var focusCoordinator = new GameFocusCoordinator(dispatcher);
+            var vm = CreateViewModel(focusCoordinator, onStart: () => Task.CompletedTask);
+            var view = new GameRoomView { DataContext = vm };
+            var window = new Window
+            {
+                Width = 1000,
+                Height = 700,
+                Content = view,
+                ShowInTaskbar = false,
+                WindowStyle = WindowStyle.None,
+            };
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var zone = Assert.IsType<GameZoneHostView>(view.FindName("GameZoneHost"));
+                var anchor = zone.FindName("GameZoneFocusAnchor") as UIElement;
+                Assert.NotNull(anchor);
+                anchor!.Focus();
+                Keyboard.Focus(anchor);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(zone), dispatcher, 1200));
+
+                InvokeTabCycle(view, isShift: false);
+                StaDispatcherHarness.Drain(dispatcher);
+                var chat = Assert.IsType<TextBox>(view.FindName("ChatInput"));
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(chat), dispatcher, 1200));
+
+                Keyboard.ClearFocus();
+                Assert.Null(Keyboard.FocusedElement);
+
+                InvokeTabCycle(view, isShift: false);
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var history = Assert.IsType<GameHistoryView>(view.FindName("HistoryHost"));
+                var historyTarget = Assert.IsAssignableFrom<FrameworkElement>(history.FocusTarget);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(historyTarget), dispatcher, 1200));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void RapidTabCycle_DoesNotGetStolenByPendingGameplayFocusRecovery()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            EnsureTestApplicationResources();
+
+            var focusCoordinator = new GameFocusCoordinator(dispatcher);
+            var vm = CreateViewModel(focusCoordinator, onStart: () => Task.CompletedTask);
+            vm.GameZone.IsStarted = true;
+
+            var gameplay = new GamePlayView();
+            var handPanel = Assert.IsType<StackPanel>(gameplay.FindName("HandPanel"));
+            var handList = Assert.IsType<ListBox>(gameplay.FindName("HandList"));
+            handPanel.Visibility = Visibility.Visible;
+            handList.Visibility = Visibility.Visible;
+            handList.ItemsSource = new ObservableCollection<object>
+            {
+                "Carte 1",
+                "Carte 2",
+            };
+            vm.GameZone.Content = gameplay;
+
+            var view = new GameRoomView { DataContext = vm };
+            var window = new Window
+            {
+                Width = 1000,
+                Height = 700,
+                Content = view,
+                ShowInTaskbar = false,
+                WindowStyle = WindowStyle.None,
+            };
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                gameplay.FocusPreferredInteractiveElement(forceFromOutsideTextInput: true, allowExternalTextInputSteal: true);
+                var history = Assert.IsType<GameHistoryView>(view.FindName("HistoryHost"));
+                var historyTarget = Assert.IsAssignableFrom<FrameworkElement>(history.FocusTarget);
+                Assert.True(InvokePrivateBool(view, "TryFocusHistoryInternal"));
+                StaDispatcherHarness.Drain(dispatcher);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(historyTarget), dispatcher, 1200));
+
+                Thread.Sleep(700);
+                StaDispatcherHarness.Drain(dispatcher);
+
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(historyTarget), dispatcher, 1200));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void EnterOutsideGameZone_DoesNotStartWhenInlinePromptIsVisible()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            EnsureTestApplicationResources();
+
+            var focusCoordinator = new GameFocusCoordinator(dispatcher);
+            var startCalls = 0;
+            var vm = CreateViewModel(
+                focusCoordinator,
+                onStart: () =>
+                {
+                    startCalls++;
+                    return Task.CompletedTask;
+                });
+            vm.GameZone.CanStart = true;
+            vm.GameZone.IsStarted = false;
+
+            var gameplay = new GamePlayView();
+            vm.GameZone.Content = gameplay;
+
+            var view = new GameRoomView { DataContext = vm };
+            var window = new Window
+            {
+                Width = 1000,
+                Height = 700,
+                Content = view,
+                ShowInTaskbar = false,
+                WindowStyle = WindowStyle.None,
+            };
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var overlay = Assert.IsType<Border>(gameplay.FindName("InlinePromptOverlay"));
+                overlay.Visibility = Visibility.Visible;
+                gameplay.UpdateLayout();
+
+                var history = Assert.IsType<GameHistoryView>(view.FindName("HistoryHost"));
+                var historyTarget = Assert.IsAssignableFrom<FrameworkElement>(history.FocusTarget);
+                historyTarget.Focus();
+                Keyboard.Focus(historyTarget);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(historyTarget), dispatcher, 1200));
+
+                SendPreviewEnter(view);
+
+                Assert.Equal(0, startCalls);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    private static void EnsureTestApplicationResources()
+    {
+        if (Application.Current == null)
+        {
+            _ = new Application();
+        }
+    }
+
     private static GameRoomViewModel CreateViewModel(IGameFocusCoordinator focusCoordinator, Func<Task> onStart)
     {
         var game = new CatalogGame
@@ -583,6 +764,18 @@ public sealed class GameRoomViewFocusFlowTests
         var result = method!.Invoke(view, new object[] { isShift });
         Assert.True(result is bool b && b);
     }
+
+    private static bool InvokePrivateBool(object instance, string methodName)
+    {
+        var method = instance.GetType().GetMethod(
+            methodName,
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+        var result = method!.Invoke(instance, Array.Empty<object>());
+        Assert.IsType<bool>(result);
+        return (bool)result!;
+    }
+
 
     private static bool IsFocusWithin(DependencyObject root)
     {

@@ -19,6 +19,7 @@ using client_win.Modules.Game.Play.Actions.Dtos;
 using client_win.Modules.Game.Play.Actions.Services;
 using client_win.Modules.Game.Play.Announcements.Services;
 using client_win.Modules.Game.Play.Choices.ViewModels;
+using client_win.Modules.Game.Play.GamePlay.Dtos;
 using client_win.Modules.Game.Play.GamePlay.Services;
 using client_win.Modules.Game.Play.GamePlay.ViewModels;
 using client_win.Modules.Game.Play.GamePlay.Views;
@@ -116,6 +117,44 @@ public sealed class GamePlayViewFocusTests
                 view.FocusPreferredInteractiveElement();
 
                 Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 2200));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void InteractiveListFocus_StaysOnListRoot_WhenEnteringViaTab()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            EnsureTestApplicationResources();
+            var view = new GamePlayView();
+            var window = CreateHostWindow(view);
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var choicesList = Assert.IsType<ListBox>(view.FindName("ChoicesList"));
+                choicesList.Visibility = Visibility.Visible;
+                choicesList.ItemsSource = new ObservableCollection<ChoiceItem>
+                {
+                    new("Choix 1"),
+                    new("Choix 2"),
+                };
+
+                view.UpdateLayout();
+                choicesList.Focus();
+                Keyboard.Focus(choicesList);
+                StaDispatcherHarness.Drain(dispatcher);
+
+                Assert.True(IsFocusWithin(choicesList));
+                Assert.Equal(0, choicesList.SelectedIndex);
             }
             finally
             {
@@ -1059,9 +1098,21 @@ public sealed class GamePlayViewFocusTests
     private sealed class RecordingSocket : IWebSocketConnection
     {
         public WebSocketState State => WebSocketState.Connected;
-        public event Action<WebSocketState>? StateChanged;
-        public event Action<string>? MessageReceived;
-        public event Action<string>? Error;
+        public event Action<WebSocketState>? StateChanged
+        {
+            add { }
+            remove { }
+        }
+        public event Action<string>? MessageReceived
+        {
+            add { }
+            remove { }
+        }
+        public event Action<string>? Error
+        {
+            add { }
+            remove { }
+        }
 
         public List<string> SentMessages { get; } = new();
 

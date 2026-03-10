@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using client_win.Modules.Game.Play.GamePlay.Views;
 using client_win.Modules.Game.Shell.Models;
@@ -15,12 +16,15 @@ namespace client_win.Modules.Game.Shell.Views;
 
 public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocusHost
 {
+    private static readonly TimeSpan RapidTabRecoveryWindow = TimeSpan.FromMilliseconds(300);
     private GameRoomViewModel? _vm;
     private IDisposable? _focusHostLease;
     private IScreenReaderAnnouncer? _screenReader;
     private GameRoomFocusPolicy? _focusPolicy;
     private Action? _historyFocusedUpdateHandler;
     private KeyEventHandler? _rootTabHandler;
+    private DateTime _lastTabCycleAtUtc;
+    private TabTargetKind? _lastTabCycleTargetKind;
 
     public GameRoomView()
     {
@@ -188,6 +192,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
     private bool TryFocusHistoryInternal()
     {
         _vm?.GameZone.FocusCoordinator.CancelPendingRequests();
+        CancelPendingGamePlayFocusRecovery();
 
         if (HistoryHost == null || !HistoryHost.IsVisible || !HistoryHost.IsEnabled)
         {
@@ -226,6 +231,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
     private bool TryFocusChatInternal()
     {
         _vm?.GameZone.FocusCoordinator.CancelPendingRequests();
+        CancelPendingGamePlayFocusRecovery();
 
         if (ChatInput == null || ChatHost?.Visibility != Visibility.Visible || !ChatInput.IsEnabled || !ChatInput.IsVisible)
         {
@@ -250,6 +256,19 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         }
 
         return ok;
+    }
+
+    private void CancelPendingGamePlayFocusRecovery()
+    {
+        if (GameZoneHost == null)
+        {
+            return;
+        }
+
+        foreach (var playView in FindDescendants<GamePlayView>(GameZoneHost))
+        {
+            playView.CancelPendingFocusRecovery();
+        }
     }
 
     public void RequestFocusGameZone(GameFocusReason reason = GameFocusReason.Default) => RequestFocusGameZoneInternal(reason);
@@ -339,7 +358,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
                 }
 
                 // When an inline prompt overlay is visible, Enter belongs to the prompt.
-                if (focused != null && IsInlinePromptVisible(focused))
+                if (HasVisibleInlinePrompt())
                 {
                     return;
                 }
@@ -435,16 +454,43 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         {
             // Fast Tab/Shift+Tab can temporarily null out Keyboard.FocusedElement during focus transitions
             // (collapsed targets, async focus recovery, etc.). Recover to a stable circular target.
-            return FocusTabTarget(isShift ? targets[^1] : targets[0]);
+            if (TryRecoverRapidTabTarget(targets, isShift, out var recoveredIndex))
+            {
+                var recoveredNextIndex = isShift
+                    ? (recoveredIndex - 1 + targets.Count) % targets.Count
+                    : (recoveredIndex + 1) % targets.Count;
+                if (FocusTabTarget(targets[recoveredNextIndex]))
+                {
+                    RememberTabCycleTarget(targets[recoveredNextIndex]);
+                    return true;
+                }
+            }
+
+            var fallback = isShift ? targets[^1] : targets[0];
+            if (FocusTabTarget(fallback))
+            {
+                RememberTabCycleTarget(fallback);
+                return true;
+            }
+
+            return false;
         }
 
         // When an inline prompt overlay is visible, TAB belongs to the prompt (do not cycle out of the game).
-        if (IsInlinePromptVisible(focused))
+        if (HasVisibleInlinePrompt())
         {
             return false;
         }
 
         var index = GetTargetIndexForFocus(targets, focused);
+        if (index < 0)
+        {
+            if (TryRecoverRapidTabTarget(targets, isShift, out var recoveredIndex))
+            {
+                index = recoveredIndex;
+            }
+        }
+
         if (index < 0)
         {
             if (!IsFocusWithinElement(this, focused))
@@ -464,6 +510,7 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         {
             if (FocusTabTarget(targets[nextIndex]))
             {
+                RememberTabCycleTarget(targets[nextIndex]);
                 return true;
             }
 
@@ -475,24 +522,84 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget, IGameFocus
         return false;
     }
 
-    private static bool IsInlinePromptVisible(DependencyObject focused)
+    private bool TryRecoverRapidTabTarget(IReadOnlyList<TabTarget> targets, bool isShift, out int index)
     {
-        for (DependencyObject? current = focused; current != null; current = GetVisualOrLogicalParent(current))
+        index = -1;
+        if (!_lastTabCycleTargetKind.HasValue)
         {
-            if (current is not GamePlayView playView)
+            return false;
+        }
+
+        if (DateTime.UtcNow - _lastTabCycleAtUtc > RapidTabRecoveryWindow)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < targets.Count; i++)
+        {
+            if (targets[i].Kind == _lastTabCycleTargetKind.Value)
+            {
+                index = i;
+                return true;
+            }
+        }
+
+        index = isShift ? 0 : targets.Count - 1;
+        return true;
+    }
+
+    private void RememberTabCycleTarget(TabTarget target)
+    {
+        _lastTabCycleAtUtc = DateTime.UtcNow;
+        _lastTabCycleTargetKind = target.Kind;
+    }
+
+    private bool HasVisibleInlinePrompt()
+    {
+        if (GameZoneHost == null)
+        {
+            return false;
+        }
+
+        foreach (var playView in FindDescendants<GamePlayView>(GameZoneHost))
+        {
+            if (playView.FindName("InlinePromptOverlay") is UIElement overlay &&
+                overlay.Visibility == Visibility.Visible)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<T> FindDescendants<T>(DependencyObject root)
+        where T : DependencyObject
+    {
+        if (root == null)
+        {
+            yield break;
+        }
+
+        var count = VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child == null)
             {
                 continue;
             }
 
-            if (playView.FindName("InlinePromptOverlay") is not UIElement overlay)
+            if (child is T typed)
             {
-                return false;
+                yield return typed;
             }
 
-            return overlay.Visibility == Visibility.Visible;
+            foreach (var descendant in FindDescendants<T>(child))
+            {
+                yield return descendant;
+            }
         }
-
-        return false;
     }
 
     private List<TabTarget> GetTabCycleTargets()

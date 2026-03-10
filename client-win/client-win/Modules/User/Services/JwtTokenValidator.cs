@@ -193,7 +193,7 @@ public sealed class JwtTokenValidator
     {
         if (_environment == EnvironmentDetector.AppEnvironment.Development)
         {
-            // En dev, si la clÃ© n'est pas packagÃ©e, on prÃ©fÃ¨re garder le flux existant (mode permissif).
+            // En dev, si la clé n'est pas packagée, on préfère garder le flux existant (mode permissif).
             return null;
         }
 

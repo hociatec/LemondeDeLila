@@ -1,19 +1,19 @@
-﻿# Guide DÃ©veloppeur - Moteur de Jeux
+# Guide Développeur - Moteur de Jeux
 
-**DerniÃ¨re mise Ã  jour** : 21 dÃ©cembre 2025
+**Dernière mise à jour** : 21 décembre 2025
 **Version** : 1.0.0
 
 ---
 
-## Table des matiÃ¨res
+## Table des matières
 
 1. [Introduction](#introduction)
 2. [Architecture Globale](#architecture-globale)
 3. [Flow d'une Action](#flow-dune-action)
-4. [CrÃ©er un Nouveau Jeu](#crÃ©er-un-nouveau-jeu)
+4. [Créer un Nouveau Jeu](#créer-un-nouveau-jeu)
 5. [Ajouter une Action](#ajouter-une-action)
 6. [Ajouter une Phase](#ajouter-une-phase)
-7. [ImplÃ©menter un Bot](#implÃ©menter-un-bot)
+7. [Implémenter un Bot](#implémenter-un-bot)
 8. [Debugging](#debugging)
 9. [Tests](#tests)
 10. [Patterns et Bonnes Pratiques](#patterns-et-bonnes-pratiques)
@@ -22,102 +22,102 @@
 
 ## Introduction
 
-Ce guide dÃ©crit l'architecture du moteur de jeux et explique comment crÃ©er de nouveaux jeux, ajouter des fonctionnalitÃ©s, et maintenir le code.
+Ce guide décrit l'architecture du moteur de jeux et explique comment créer de nouveaux jeux, ajouter des fonctionnalités, et maintenir le code.
 
-### Concepts ClÃ©s
+### Concepts Clés
 
-- **GameRulesAdapter** : Interface que chaque jeu doit implÃ©menter
-- **GameStateEntity** : Ã‰tat partagÃ© de la partie (joueurs, tour, metadata)
-- **Metadata** : DonnÃ©es spÃ©cifiques au jeu (deck, scores, phases, etc.)
-- **Actions** : OpÃ©rations que les joueurs peuvent effectuer
-- **Phases** : Ã‰tapes du dÃ©roulement d'une partie
-- **Bots** : IA qui joue Ã  la place des joueurs
+- **GameRulesAdapter** : Interface que chaque jeu doit implémenter
+- **GameStateEntity** : État partagé de la partie (joueurs, tour, metadata)
+- **Metadata** : Données spécifiques au jeu (deck, scores, phases, etc.)
+- **Actions** : Opérations que les joueurs peuvent effectuer
+- **Phases** : Étapes du déroulement d'une partie
+- **Bots** : IA qui joue à la place des joueurs
 
 ---
 
 ## Architecture Globale
 
 ```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                        GAME ENGINE                               â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚                                                                  â”‚
-â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
-â”‚  â”‚ GameRegistry â”‚â”€â”€â”€â”€â”€â”€â”‚ GameEngine   â”‚â”€â”€â”€â”€â”€â”€â”‚ RoomService  â”‚  â”‚
-â”‚  â”‚  Service     â”‚      â”‚   Service    â”‚      â”‚              â”‚  â”‚
-â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
-â”‚         â”‚                      â”‚                      â”‚         â”‚
-â”‚         â”‚                      â”‚                      â”‚         â”‚
-â”‚         â–¼                      â–¼                      â–¼         â”‚
-â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
-â”‚  â”‚              GAME RULES ADAPTER                          â”‚  â”‚
-â”‚  â”‚  (Interface implÃ©mentÃ©e par chaque jeu)                  â”‚  â”‚
-â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
-â”‚         â”‚                      â”‚                      â”‚         â”‚
-â”‚         â–¼                      â–¼                      â–¼         â”‚
-â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
-â”‚  â”‚   Setup      â”‚      â”‚   Actions    â”‚      â”‚  Presenter   â”‚  â”‚
-â”‚  â”‚   Service    â”‚      â”‚   Handlers   â”‚      â”‚   Service    â”‚  â”‚
-â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
-â”‚                                                                  â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+�"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�",                        GAME ENGINE                               �",
+�"o�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�",                                                                  �",
+�",  �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�      �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�      �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�  �",
+�",  �", GameRegistry �",�"?�"?�"?�"?�"?�"?�", GameEngine   �",�"?�"?�"?�"?�"?�"?�", RoomService  �",  �",
+�",  �",  Service     �",      �",   Service    �",      �",              �",  �",
+�",  �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~      �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~      �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~  �",
+�",         �",                      �",                      �",         �",
+�",         �",                      �",                      �",         �",
+�",         �-�                      �-�                      �-�         �",
+�",  �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�  �",
+�",  �",              GAME RULES ADAPTER                          �",  �",
+�",  �",  (Interface implémentée par chaque jeu)                  �",  �",
+�",  �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~  �",
+�",         �",                      �",                      �",         �",
+�",         �-�                      �-�                      �-�         �",
+�",  �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�      �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�      �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�  �",
+�",  �",   Setup      �",      �",   Actions    �",      �",  Presenter   �",  �",
+�",  �",   Service    �",      �",   Handlers   �",      �",   Service    �",  �",
+�",  �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~      �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~      �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~  �",
+�",                                                                  �",
+�""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~
 
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                     ABSTRACT SERVICES                            â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚                                                                  â”‚
-â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
-â”‚  â”‚ AbstractGame     â”‚  â”‚ BasePresenter    â”‚  â”‚ ActionDisp.  â”‚  â”‚
-â”‚  â”‚   Service        â”‚  â”‚    Service       â”‚  â”‚   Service    â”‚  â”‚
-â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
-â”‚                                                                  â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+�"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�",                     ABSTRACT SERVICES                            �",
+�"o�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�",                                                                  �",
+�",  �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�  �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�  �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�  �",
+�",  �", AbstractGame     �",  �", BasePresenter    �",  �", ActionDisp.  �",  �",
+�",  �",   Service        �",  �",    Service       �",  �",   Service    �",  �",
+�",  �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~  �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~  �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~  �",
+�",                                                                  �",
+�""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~
 
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                       SHARED MODULES                             â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚                                                                  â”‚
-â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
-â”‚  â”‚ DeckPool   â”‚  â”‚   Turn     â”‚  â”‚   Phase    â”‚  â”‚ Victory  â”‚  â”‚
-â”‚  â”‚  Service   â”‚  â”‚  Service   â”‚  â”‚  Engine    â”‚  â”‚ Service  â”‚  â”‚
-â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
-â”‚                                                                  â”‚
-â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
-â”‚  â”‚ ActionLog  â”‚  â”‚   Bot      â”‚  â”‚   Quiz     â”‚  â”‚  Logger  â”‚  â”‚
-â”‚  â”‚  Service   â”‚  â”‚  Strategy  â”‚  â”‚  Runner    â”‚  â”‚ Service  â”‚  â”‚
-â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
-â”‚                                                                  â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+�"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�",                       SHARED MODULES                             �",
+�"o�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�",                                                                  �",
+�",  �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�  �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�  �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�  �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�  �",
+�",  �", DeckPool   �",  �",   Turn     �",  �",   Phase    �",  �", Victory  �",  �",
+�",  �",  Service   �",  �",  Service   �",  �",  Engine    �",  �", Service  �",  �",
+�",  �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~  �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~  �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~  �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~  �",
+�",                                                                  �",
+�",  �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�  �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�  �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�  �"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�  �",
+�",  �", ActionLog  �",  �",   Bot      �",  �",   Quiz     �",  �",  Logger  �",  �",
+�",  �",  Service   �",  �",  Strategy  �",  �",  Runner    �",  �", Service  �",  �",
+�",  �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~  �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~  �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~  �""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~  �",
+�",                                                                  �",
+�""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~
 ```
 
 ### Composants Principaux
 
 #### 1. **GameEngineService**
-- Point d'entrÃ©e principal pour toutes les opÃ©rations de jeu
-- GÃ¨re l'application des actions et le dÃ©clenchement des bots
-- Sauvegarde l'Ã©tat et broadcast aux clients
+- Point d'entrée principal pour toutes les opérations de jeu
+- Gère l'application des actions et le déclenchement des bots
+- Sauvegarde l'état et broadcast aux clients
 
 #### 2. **GameRegistryService**
 - Enregistre tous les jeux disponibles
-- Fournit l'accÃ¨s aux adaptateurs de rÃ¨gles
+- Fournit l'accès aux adaptateurs de règles
 
 #### 3. **GameRulesAdapter**
-- Interface que chaque jeu doit implÃ©menter
-- MÃ©thodes clÃ©s : `hydrateInitialState()`, `applyActions()`, `exposeState()`
+- Interface que chaque jeu doit implémenter
+- Méthodes clés : `hydrateInitialState()`, `applyActions()`, `exposeState()`
 
 #### 4. **AbstractGameService**
 - Classe de base pour tous les jeux
-- Fournit des mÃ©thodes communes (template method pattern)
-- MÃ©thodes : `extractActorId()`, `isPlayerBot()`, `findPlayer()`, etc.
+- Fournit des méthodes communes (template method pattern)
+- Méthodes : `extractActorId()`, `isPlayerBot()`, `findPlayer()`, etc.
 
 #### 5. **BasePresenterService**
 - Classe de base pour les presenters
-- GÃ¨re l'exposition de l'Ã©tat au client
+- Gère l'exposition de l'état au client
 - Template methods pour personnalisation
 
 #### 6. **ActionDispatcherService**
 - Registry pattern pour les handlers d'actions
-- Remplace les switch/case par un systÃ¨me extensible
+- Remplace les switch/case par un système extensible
 
 ---
 
@@ -126,144 +126,144 @@ Ce guide dÃ©crit l'architecture du moteur de jeux et explique comment crÃ©er
 Voici le flow complet d'une action joueur, du client au serveur et retour :
 
 ```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚   CLIENT    â”‚
-â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”˜
-       â”‚ 1. Emit 'game:action'
-       â”‚    { type: 'draw', payload: {} }
-       â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚  GameGateway        â”‚
-â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-       â”‚ 2. Validate WebSocket
-       â”‚
-       â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ GameEngineService   â”‚
-â”‚  .applyActions()    â”‚
-â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-       â”‚ 3. Load current state
-       â”‚
-       â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ GameRulesAdapter    â”‚
-â”‚  .validateAction()  â”‚ â—„â”€â”€â”€â”€â”€â”€ Optional: Validation spÃ©cifique au jeu
-â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-       â”‚ 4. Action validÃ©e
-       â”‚
-       â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ GameRulesAdapter    â”‚
-â”‚  .applyActions()    â”‚
-â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-       â”‚ 5. Dispatch action
-       â”‚
-       â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ ActionDispatcher    â”‚
-â”‚  .dispatch()        â”‚
-â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-       â”‚ 6. Find handler
-       â”‚
-       â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚  ActionHandler      â”‚
-â”‚   .handle()         â”‚
-â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-       â”‚ 7. Execute logic
-       â”‚ 8. Update state
-       â”‚
-       â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ PhaseEngine         â”‚
-â”‚  .advance()         â”‚ â—„â”€â”€â”€â”€â”€â”€ Optional: Transition de phase
-â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-       â”‚ 9. New state
-       â”‚
-       â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ VictoryService      â”‚
-â”‚  .check()           â”‚ â—„â”€â”€â”€â”€â”€â”€ Optional: VÃ©rifier victoire
-â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-       â”‚ 10. Save state
-       â”‚
-       â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ GameCoreService     â”‚
-â”‚  .saveState()       â”‚
-â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-       â”‚ 11. Broadcast
-       â”‚
-       â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ GameGateway         â”‚
-â”‚  .broadcast()       â”‚
-â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-       â”‚ 12. Emit 'game:state:update'
-       â”‚
-       â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚   CLIENT    â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+�"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�",   CLIENT    �",
+�""�"?�"?�"?�"?�"?�"?�"��"?�"?�"?�"?�"?�"?�"~
+       �", 1. Emit 'game:action'
+       �",    { type: 'draw', payload: {} }
+       �-�
+�"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�",  GameGateway        �",
+�""�"?�"?�"?�"?�"?�"?�"��"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~
+       �", 2. Validate WebSocket
+       �",
+       �-�
+�"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�", GameEngineService   �",
+�",  .applyActions()    �",
+�""�"?�"?�"?�"?�"?�"?�"��"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~
+       �", 3. Load current state
+       �",
+       �-�
+�"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�", GameRulesAdapter    �",
+�",  .validateAction()  �", �-"�"?�"?�"?�"?�"?�"? Optional: Validation spécifique au jeu
+�""�"?�"?�"?�"?�"?�"?�"��"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~
+       �", 4. Action validée
+       �",
+       �-�
+�"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�", GameRulesAdapter    �",
+�",  .applyActions()    �",
+�""�"?�"?�"?�"?�"?�"?�"��"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~
+       �", 5. Dispatch action
+       �",
+       �-�
+�"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�", ActionDispatcher    �",
+�",  .dispatch()        �",
+�""�"?�"?�"?�"?�"?�"?�"��"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~
+       �", 6. Find handler
+       �",
+       �-�
+�"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�",  ActionHandler      �",
+�",   .handle()         �",
+�""�"?�"?�"?�"?�"?�"?�"��"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~
+       �", 7. Execute logic
+       �", 8. Update state
+       �",
+       �-�
+�"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�", PhaseEngine         �",
+�",  .advance()         �", �-"�"?�"?�"?�"?�"?�"? Optional: Transition de phase
+�""�"?�"?�"?�"?�"?�"?�"��"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~
+       �", 9. New state
+       �",
+       �-�
+�"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�", VictoryService      �",
+�",  .check()           �", �-"�"?�"?�"?�"?�"?�"? Optional: Vérifier victoire
+�""�"?�"?�"?�"?�"?�"?�"��"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~
+       �", 10. Save state
+       �",
+       �-�
+�"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�", GameCoreService     �",
+�",  .saveState()       �",
+�""�"?�"?�"?�"?�"?�"?�"��"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~
+       �", 11. Broadcast
+       �",
+       �-�
+�"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�", GameGateway         �",
+�",  .broadcast()       �",
+�""�"?�"?�"?�"?�"?�"?�"��"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~
+       �", 12. Emit 'game:state:update'
+       �",
+       �-�
+�"O�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"�
+�",   CLIENT    �",
+�""�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"~
 ```
 
-### Ã‰tapes DÃ©taillÃ©es
+### Étapes Détaillées
 
-1. **Client Ã©met l'action** : WebSocket event `game:action`
-2. **Gateway valide** : VÃ©rifie l'authentification et les permissions
-3. **Engine charge l'Ã©tat** : RÃ©cupÃ¨re l'Ã©tat actuel depuis la base de donnÃ©es
+1. **Client émet l'action** : WebSocket event `game:action`
+2. **Gateway valide** : Vérifie l'authentification et les permissions
+3. **Engine charge l'état** : Récupère l'état actuel depuis la base de données
 4. **Validation** : L'adaptateur valide l'action (optionnel)
 5. **Application** : L'adaptateur applique l'action
-6. **Dispatch** : Le dispatcher trouve le handler appropriÃ©
-7. **ExÃ©cution** : Le handler exÃ©cute la logique mÃ©tier
-8. **Mise Ã  jour** : L'Ã©tat est mis Ã  jour
-9. **Phase** : Transition de phase si nÃ©cessaire
-10. **Victoire** : VÃ©rification des conditions de victoire
-11. **Sauvegarde** : Ã‰tat sauvegardÃ© dans la base de donnÃ©es
-12. **Broadcast** : Nouvel Ã©tat envoyÃ© Ã  tous les clients
+6. **Dispatch** : Le dispatcher trouve le handler approprié
+7. **Exécution** : Le handler exécute la logique métier
+8. **Mise à jour** : L'état est mis à jour
+9. **Phase** : Transition de phase si nécessaire
+10. **Victoire** : Vérification des conditions de victoire
+11. **Sauvegarde** : État sauvegardé dans la base de données
+12. **Broadcast** : Nouvel état envoyé à tous les clients
 
 ---
 
-## CrÃ©er un Nouveau Jeu
+## Créer un Nouveau Jeu
 
-### Ã‰tape 1 : Structure de Dossiers
+### Étape 1 : Structure de Dossiers
 
-CrÃ©ez la structure suivante dans `backend/src/game/games/` :
+Créez la structure suivante dans `backend/src/game/games/` :
 
 ```
 my-game/
-â”œâ”€â”€ actions/                    # Action handlers
-â”‚   â”œâ”€â”€ my-action.handler.ts
-â”‚   â””â”€â”€ ...
-â”œâ”€â”€ bots/                       # IA
-â”‚   â””â”€â”€ my-game-bot.service.ts
-â”œâ”€â”€ definitions/                # Configurations statiques
-â”‚   â”œâ”€â”€ game.definition.ts
-â”‚   â”œâ”€â”€ rules.definition.ts
-â”‚   â””â”€â”€ victory.definition.ts
-â”œâ”€â”€ model/                      # Types et entitÃ©s
-â”‚   â”œâ”€â”€ my-game.model.ts
-â”‚   â””â”€â”€ content/                # Fichiers JSON
-â”‚       â”œâ”€â”€ cards.json
-â”‚       â””â”€â”€ ...
-â”œâ”€â”€ phases/                     # Gestion des phases
-â”‚   â””â”€â”€ my-game-phase.service.ts
-â”œâ”€â”€ presenter/                  # Exposition d'Ã©tat
-â”‚   â””â”€â”€ my-game-presenter.service.ts
-â”œâ”€â”€ rulebook/                   # Validation
-â”‚   â””â”€â”€ rulebook.ts
-â”œâ”€â”€ setup/                      # Initialisation
-â”‚   â””â”€â”€ my-game-setup.service.ts
-â”œâ”€â”€ tests/                      # Tests
-â”‚   â”œâ”€â”€ my-game.service.spec.ts
-â”‚   â””â”€â”€ my-game.scenario.spec.ts
-â”œâ”€â”€ manifest.json              # MÃ©tadonnÃ©es du jeu
-â”œâ”€â”€ my-game.module.ts          # Module NestJS
-â”œâ”€â”€ my-game.service.ts         # Service principal
-â””â”€â”€ README.md                  # Documentation
+�"o�"?�"? actions/                    # Action handlers
+�",   �"o�"?�"? my-action.handler.ts
+�",   �""�"?�"? ...
+�"o�"?�"? bots/                       # IA
+�",   �""�"?�"? my-game-bot.service.ts
+�"o�"?�"? definitions/                # Configurations statiques
+�",   �"o�"?�"? game.definition.ts
+�",   �"o�"?�"? rules.definition.ts
+�",   �""�"?�"? victory.definition.ts
+�"o�"?�"? model/                      # Types et entités
+�",   �"o�"?�"? my-game.model.ts
+�",   �""�"?�"? content/                # Fichiers JSON
+�",       �"o�"?�"? cards.json
+�",       �""�"?�"? ...
+�"o�"?�"? phases/                     # Gestion des phases
+�",   �""�"?�"? my-game-phase.service.ts
+�"o�"?�"? presenter/                  # Exposition d'état
+�",   �""�"?�"? my-game-presenter.service.ts
+�"o�"?�"? rulebook/                   # Validation
+�",   �""�"?�"? rulebook.ts
+�"o�"?�"? setup/                      # Initialisation
+�",   �""�"?�"? my-game-setup.service.ts
+�"o�"?�"? tests/                      # Tests
+�",   �"o�"?�"? my-game.service.spec.ts
+�",   �""�"?�"? my-game.scenario.spec.ts
+�"o�"?�"? manifest.json              # Métadonnées du jeu
+�"o�"?�"? my-game.module.ts          # Module NestJS
+�"o�"?�"? my-game.service.ts         # Service principal
+�""�"?�"? README.md                  # Documentation
 ```
 
-### Ã‰tape 2 : DÃ©finir les MÃ©tadonnÃ©es
+### Étape 2 : Définir les Métadonnées
 
 **`model/my-game.model.ts`**
 
@@ -274,17 +274,17 @@ export type MyGameMetadata = {
   gameType?: string;
   phase: string;
   round: number;
-  // ... vos mÃ©tadonnÃ©es spÃ©cifiques
+  // ... vos métadonnées spécifiques
 };
 
 export type MyGameCard = {
   id: string;
   name: string;
-  // ... propriÃ©tÃ©s de carte
+  // ... propriétés de carte
 };
 ```
 
-### Ã‰tape 3 : CrÃ©er le Service Principal
+### Étape 3 : Créer le Service Principal
 
 **`my-game.service.ts`**
 
@@ -352,7 +352,7 @@ export class MyGameService extends AbstractGameService {
       try {
         next = this.dispatcher.dispatch(next, action, actorId);
       } catch (error) {
-        // GÃ©rer l'erreur
+        // Gérer l'erreur
         console.error('Action error:', error);
       }
     }
@@ -382,7 +382,7 @@ export class MyGameService extends AbstractGameService {
 }
 ```
 
-### Ã‰tape 4 : CrÃ©er le Setup Service
+### Étape 4 : Créer le Setup Service
 
 **`setup/my-game-setup.service.ts`**
 
@@ -398,7 +398,7 @@ export class MyGameSetupService {
       gameType: 'my-game',
       phase: 'setup',
       round: 1,
-      // ... initialiser vos mÃ©tadonnÃ©es
+      // ... initialiser vos métadonnées
     };
   }
 
@@ -407,13 +407,13 @@ export class MyGameSetupService {
       id: p.id,
       username: p.username,
       isBot: (p as any).isBot ?? false,
-      // ... propriÃ©tÃ©s spÃ©cifiques au joueur
+      // ... propriétés spécifiques au joueur
     }));
   }
 }
 ```
 
-### Ã‰tape 5 : CrÃ©er le Presenter Service
+### Étape 5 : Créer le Presenter Service
 
 **`presenter/my-game-presenter.service.ts`**
 
@@ -439,7 +439,7 @@ export class MyGamePresenterService extends BasePresenterService {
     metadata: MyGameMetadata,
     currentPlayerId: number | null,
   ): any {
-    // Retourner l'Ã©tat pending (quiz, choix, etc.)
+    // Retourner l'état pending (quiz, choix, etc.)
     return null;
   }
 
@@ -452,13 +452,13 @@ export class MyGamePresenterService extends BasePresenterService {
 
     return {
       ...baseExtras,
-      // ... vos extras spÃ©cifiques
+      // ... vos extras spécifiques
     };
   }
 }
 ```
 
-### Ã‰tape 6 : CrÃ©er le Module
+### Étape 6 : Créer le Module
 
 **`my-game.module.ts`**
 
@@ -479,7 +479,7 @@ import { MyGamePresenterService } from './presenter/my-game-presenter.service';
 export class MyGameModule {}
 ```
 
-### Ã‰tape 7 : Enregistrer le Jeu
+### Étape 7 : Enregistrer le Jeu
 
 **`backend/src/game/game.module.ts`**
 
@@ -495,7 +495,7 @@ import { MyGameModule } from './games/my-category/my-game/my-game.module';
 export class GameModule {}
 ```
 
-### Ã‰tape 8 : CrÃ©er le Manifest
+### Étape 8 : Créer le Manifest
 
 **`manifest.json`**
 
@@ -515,7 +515,7 @@ export class GameModule {}
 
 ## Ajouter une Action
 
-### Ã‰tape 1 : CrÃ©er le Handler
+### Étape 1 : Créer le Handler
 
 **`actions/my-action.handler.ts`**
 
@@ -545,7 +545,7 @@ export class MyActionHandler implements ActionHandler {
 }
 ```
 
-### Ã‰tape 2 : ImplÃ©menter la Logique
+### Étape 2 : Implémenter la Logique
 
 Dans votre service principal :
 
@@ -568,7 +568,7 @@ private handleMyAction(
 }
 ```
 
-### Ã‰tape 3 : Enregistrer le Handler
+### Étape 3 : Enregistrer le Handler
 
 ```typescript
 private initializeActionHandlers(): void {
@@ -582,7 +582,7 @@ private initializeActionHandlers(): void {
 }
 ```
 
-### Ã‰tape 4 : Ajouter au Rulebook
+### Étape 4 : Ajouter au Rulebook
 
 **`rulebook/rulebook.ts`**
 
@@ -593,7 +593,7 @@ export function getAvailableActions(
 ): GameSingleActionDto[] {
   const actions: GameSingleActionDto[] = [];
 
-  // VÃ©rifier si l'action est disponible
+  // Vérifier si l'action est disponible
   if (/* conditions */) {
     actions.push({
       type: 'my_action',
@@ -613,8 +613,8 @@ export function validateAction(
 
   if (type === 'my_action') {
     // Valider le payload
-    // VÃ©rifier les permissions
-    // Normaliser les donnÃ©es
+    // Vérifier les permissions
+    // Normaliser les données
   }
 
   return action;
@@ -625,7 +625,7 @@ export function validateAction(
 
 ## Ajouter une Phase
 
-### Ã‰tape 1 : DÃ©finir les Phases
+### Étape 1 : Définir les Phases
 
 **`definitions/rules.definition.ts`**
 
@@ -667,7 +667,7 @@ export const MY_GAME_PHASES: PhaseDefinition<MyGameMetadata>[] = [
     id: 'finished',
     canEnter: (state) => {
       const meta = state.metadata as MyGameMetadata;
-      // VÃ©rifier conditions de fin
+      // Vérifier conditions de fin
       return false;
     },
     onEnter: (state) => {
@@ -684,7 +684,7 @@ export const MY_GAME_PHASES: PhaseDefinition<MyGameMetadata>[] = [
 ];
 ```
 
-### Ã‰tape 2 : CrÃ©er le Phase Service
+### Étape 2 : Créer le Phase Service
 
 **`phases/my-game-phase.service.ts`**
 
@@ -714,9 +714,9 @@ export class MyGamePhaseService {
 
 ---
 
-## ImplÃ©menter un Bot
+## Implémenter un Bot
 
-### Ã‰tape 1 : CrÃ©er le Bot Service
+### Étape 1 : Créer le Bot Service
 
 **`bots/my-game-bot.service.ts`**
 
@@ -739,7 +739,7 @@ export class MyGameBotService {
       return [];
     }
 
-    // StratÃ©gie simple : choisir une action au hasard
+    // Stratégie simple : choisir une action au hasard
     const randomAction = availableActions[
       Math.floor(Math.random() * availableActions.length)
     ];
@@ -751,13 +751,13 @@ export class MyGameBotService {
     state: GameStateEntity,
     playerId: number,
   ): GameSingleActionDto[] {
-    // RÃ©cupÃ©rer les actions disponibles
+    // Récupérer les actions disponibles
     return [];
   }
 }
 ```
 
-### Ã‰tape 2 : StratÃ©gie AvancÃ©e
+### Étape 2 : Stratégie Avancée
 
 ```typescript
 import type { BotStrategy } from '../../../../modules/bot/bot-strategy.interface';
@@ -787,7 +787,7 @@ export class MyGameBotStrategy implements BotStrategy {
     state: GameStateEntity,
     botPlayerId: number,
   ): GameSingleActionDto[] {
-    // Choix alÃ©atoire
+    // Choix aléatoire
     return [];
   }
 
@@ -803,7 +803,7 @@ export class MyGameBotStrategy implements BotStrategy {
     state: GameStateEntity,
     botPlayerId: number,
   ): GameSingleActionDto[] {
-    // Algorithme optimisÃ© (minimax, etc.)
+    // Algorithme optimisé (minimax, etc.)
     return [];
   }
 }
@@ -813,7 +813,7 @@ export class MyGameBotStrategy implements BotStrategy {
 
 ## Debugging
 
-### Inspecter l'Ã‰tat du Jeu
+### Inspecter l'État du Jeu
 
 #### Via les Logs
 
@@ -875,7 +875,7 @@ socket.on("game:state:update", (data) => {
 
 2. **Ajouter des Breakpoints**
    - Ouvrez le fichier du service
-   - Cliquez Ã  gauche du numÃ©ro de ligne
+   - Cliquez à gauche du numéro de ligne
    - Lancez le debugger (F5)
 
 3. **Inspecter les Variables**
@@ -883,7 +883,7 @@ socket.on("game:state:update", (data) => {
    - Watch expressions : panneau "Watch"
    - Call stack : panneau "Call Stack"
 
-### VÃ©rifier les Validations
+### Vérifier les Validations
 
 ```typescript
 export function validateAction(
@@ -928,7 +928,7 @@ describe('MyGameService', () => {
         MyGameService,
         MyGameSetupService,
         MyGamePresenterService,
-        // Mock des dÃ©pendances
+        // Mock des dépendances
       ],
     }).compile();
 
@@ -968,13 +968,13 @@ describe('MyGameService', () => {
       const result = service.applyActions(state as any, actions);
 
       expect(result).toBeDefined();
-      // VÃ©rifier les modifications
+      // Vérifier les modifications
     });
   });
 });
 ```
 
-### Tests de ScÃ©narios
+### Tests de Scénarios
 
 **`tests/my-game.scenario.spec.ts`**
 
@@ -1094,22 +1094,22 @@ export function applyMultipleActions(
 
 ### 1. Template Method Pattern
 
-UtilisÃ© dans `AbstractGameService` et `BasePresenterService` :
+Utilisé dans `AbstractGameService` et `BasePresenterService` :
 
 ```typescript
-// Classe de base dÃ©finit le squelette
+// Classe de base définit le squelette
 abstract class AbstractGameService {
-  // MÃ©thode template
+  // Méthode template
   protected processAction(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
     const validated = this.validateAction(state, action);
     const applied = this.applyAction(state, validated);
     return this.postProcess(applied);
   }
 
-  // MÃ©thodes abstraites Ã  implÃ©menter
+  // Méthodes abstraites à implémenter
   protected abstract applyAction(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity;
 
-  // MÃ©thodes avec implÃ©mentation par dÃ©faut
+  // Méthodes avec implémentation par défaut
   protected postProcess(state: GameStateEntity): GameStateEntity {
     return state;
   }
@@ -1118,7 +1118,7 @@ abstract class AbstractGameService {
 
 ### 2. Registry Pattern
 
-UtilisÃ© dans `ActionDispatcherService` :
+Utilisé dans `ActionDispatcherService` :
 
 ```typescript
 class ActionDispatcherService {
@@ -1137,7 +1137,7 @@ class ActionDispatcherService {
 
 ### 3. Strategy Pattern
 
-UtilisÃ© pour les bots :
+Utilisé pour les bots :
 
 ```typescript
 interface BotStrategy {
@@ -1146,23 +1146,23 @@ interface BotStrategy {
 
 class EasyBotStrategy implements BotStrategy {
   getActions(state, botId) {
-    // StratÃ©gie facile
+    // Stratégie facile
   }
 }
 
 class HardBotStrategy implements BotStrategy {
   getActions(state, botId) {
-    // StratÃ©gie difficile
+    // Stratégie difficile
   }
 }
 ```
 
-### 4. ImmutabilitÃ©
+### 4. Immutabilité
 
-Toujours retourner un nouvel objet Ã©tat :
+Toujours retourner un nouvel objet état :
 
 ```typescript
-// âœ… BIEN
+// OK. BIEN
 function updateState(state: GameStateEntity): GameStateEntity {
   return {
     ...state,
@@ -1173,7 +1173,7 @@ function updateState(state: GameStateEntity): GameStateEntity {
   };
 }
 
-// âŒ MAL
+// KO. MAL
 function updateState(state: GameStateEntity): GameStateEntity {
   state.metadata.round += 1; // Mutation directe
   return state;
@@ -1183,17 +1183,17 @@ function updateState(state: GameStateEntity): GameStateEntity {
 ### 5. Validation en Couches
 
 ```typescript
-// 1. Validation gÃ©nÃ©rique (moteur)
+// 1. Validation générique (moteur)
 GameEngineService.validateAction()
 
-// 2. Validation spÃ©cifique au jeu (rulebook)
+// 2. Validation spécifique au jeu (rulebook)
 MyGameRulebook.validateAction()
 
 // 3. Validation du handler (action-specific)
-MyActionHandler.handle() // VÃ©rifications finales
+MyActionHandler.handle() // Vérifications finales
 ```
 
-### 6. Erreurs TypÃ©es
+### 6. Erreurs Typées
 
 ```typescript
 import { GameValidationError, PlayerActionError } from '../../../common/errors/game-errors';
@@ -1206,7 +1206,7 @@ throw new GameValidationError('Invalid action', {
 });
 ```
 
-### 7. Logging StructurÃ©
+### 7. Logging Structuré
 
 ```typescript
 import { myGameLog } from '../utils/my-game-logger';
@@ -1222,7 +1222,7 @@ myGameLog('action.my_action', {
 
 ---
 
-## Ressources SupplÃ©mentaires
+## Ressources Supplémentaires
 
 - **Exemples de Jeux** :
   - `backend/src/game/games/vents-dansants/la-bande-a-banane/` (jeu complet)
@@ -1239,6 +1239,6 @@ myGameLog('action.my_action', {
 
 ---
 
-**Fin du Guide DÃ©veloppeur**
+**Fin du Guide Développeur**
 
 

@@ -55,6 +55,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private Action<JsonElement>? _onIntentReceived;
     private Action<bool>? _onRoleChangedHandler;
     private bool _roomStopConfirmationPending;
+    private int _botRosterMutationPending;
 
     private bool _lastRoomStarted;
     private Dictionary<int, (string Username, bool Spectator)> _participants = new();
@@ -101,14 +102,24 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
     public Task AddBotAsync()
     {
+        if (Interlocked.CompareExchange(ref _botRosterMutationPending, 1, 0) != 0)
+        {
+            return Task.CompletedTask;
+        }
+
         _announcementService?.NotifyUserInteraction();
-        return _room.AddBotAsync();
+        return ReleaseBotMutationGateWhenDoneAsync(_room.AddBotAsync());
     }
 
     public Task RemoveBotAsync()
     {
+        if (Interlocked.CompareExchange(ref _botRosterMutationPending, 1, 0) != 0)
+        {
+            return Task.CompletedTask;
+        }
+
         _announcementService?.NotifyUserInteraction();
-        return _room.RemoveBotAsync();
+        return ReleaseBotMutationGateWhenDoneAsync(_room.RemoveBotAsync());
     }
     public Task TogglePrivacyAsync() => _room.TogglePrivacyAsync();
     public Task ToggleRoleAsync() => _room.ToggleRoleAsync();
@@ -117,7 +128,29 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _announcementService?.NotifyUserInteraction();
         return _room.RequestInfoAsync();
     }
-    public void EnsurePreStartGameUiLoaded() => EnsureGamePlayLoaded();
+
+    public Task ReleasePreStartGameUiAsync()
+    {
+        if (_tableVm.GameZone.IsStarted)
+        {
+            return Task.CompletedTask;
+        }
+
+        if (_tableVm.GameZone.Content == null && _gamePlayVm == null)
+        {
+            return Task.CompletedTask;
+        }
+
+        FocusParking.Park();
+        _tableVm.GameZone.Content = null;
+        SetRoomShortcutsForStarted(started: false);
+
+        _ = _dispatcher.BeginInvoke(
+            DispatcherPriority.ApplicationIdle,
+            new Action(() => _tableVm.GameZone.RequestFocus(GameFocusReason.AfterDialog)));
+
+        return Task.CompletedTask;
+    }
 
     private static bool IsRoomStarted(RoomDto? room)
     {
@@ -292,6 +325,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     UpdateGameTitle(payload);
                     SyncChatEnabled(payload.Manifest);
                     TrackParticipants(payload.Room);
+                    Interlocked.Exchange(ref _botRosterMutationPending, 0);
                     _ownerId = payload.Room?.Owner?.Id ?? 0;
                     ApplySpectatorState();
                     UpdateStartEligibility(payload);
@@ -425,6 +459,22 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 Log.Error(ex, "Erreur lors du changement d'options");
             }
         }, DispatcherPriority.Background);
+    }
+
+    private async Task ReleaseBotMutationGateWhenDoneAsync(Task actionTask)
+    {
+        try
+        {
+            await actionTask.ConfigureAwait(true);
+        }
+        finally
+        {
+            _ = Task.Delay(1500).ContinueWith(
+                _ => Interlocked.Exchange(ref _botRosterMutationPending, 0),
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+        }
     }
 
     public void InitializeFromLastState()

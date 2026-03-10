@@ -158,7 +158,7 @@ public partial class GamePlayView
             return false;
         }
 
-        // Naviguer la liste mÃªme si le focus est ailleurs (Tab/Maj+Tab, historique, etc.).
+        // Naviguer la liste même si le focus est ailleurs (Tab/Maj+Tab, historique, etc.).
         e.Handled = true;
 
         var count = targetList.Items.Count;
@@ -172,7 +172,7 @@ public partial class GamePlayView
         if (next >= count) next = count - 1;
 
         // Borne haute/basse: ne pas "reboucler" visuellement/sonorement.
-        // Si la liste est dÃ©jÃ  focusÃ©e, on consomme la touche sans re-focaliser le mÃªme item.
+        // Si la liste est déjà focusée, on consomme la touche sans re-focaliser le même item.
         if (next == current && wasFocusWithinTarget)
         {
             return true;
@@ -344,8 +344,8 @@ public partial class GamePlayView
     }
     private async void OnRootPreviewKeyDown(object sender, KeyEventArgs e)
     {
-        // Routed events: si une couche plus haute (ex: ShortcutBindingsBehavior) a dÃ©jÃ  consommÃ© la touche,
-        // ne pas la retraiter ici (sinon double envoi/annonces doublÃ©es).
+        // Routed events: si une couche plus haute (ex: ShortcutBindingsBehavior) a déjà consommé la touche,
+        // ne pas la retraiter ici (sinon double envoi/annonces doublées).
         if (e.Handled)
         {
             return;
@@ -356,14 +356,14 @@ public partial class GamePlayView
             return;
         }
 
-        // Quand un prompt inline est affichÃ©, ne pas intercepter les touches au niveau racine :
+        // Quand un prompt inline est affiché, ne pas intercepter les touches au niveau racine :
         // - laisser Tab naviguer dans le prompt
-        // - laisser EntrÃ©e/Ã‰chap valider/annuler (gÃ©rÃ© par le prompt)
+        // - laisser Entrée/Échap valider/annuler (géré par le prompt)
         // - ne pas forwarder les touches au serveur pendant une saisie
         if (DataContext is GamePlayViewModel promptVm && promptVm.HasInlinePrompt)
         {
-            // IMPORTANT: si le focus n'est pas dÃ©jÃ  dans le prompt, Tab peut "sortir" de la zone de jeu
-            // (historique/chat) et bloquer l'accÃ¨s Ã  la configuration. On force donc le focus dans le prompt.
+            // IMPORTANT: si le focus n'est pas déjà dans le prompt, Tab peut "sortir" de la zone de jeu
+            // (historique/chat) et bloquer l'accès à la configuration. On force donc le focus dans le prompt.
             if (e.Key == Key.Tab)
             {
                 e.Handled = true;
@@ -387,7 +387,7 @@ public partial class GamePlayView
 
         if (e.Key == Key.Tab)
         {
-            // Laisser WPF gÃ©rer Tab/Maj+Tab pour permettre l'accÃ¨s Ã  l'historique et au chat.
+            // Laisser WPF gérer Tab/Maj+Tab pour permettre l'accès à l'historique et au chat.
             // La capture de focus reste active uniquement pendant un prompt inline (bloc plus haut).
             return;
         }
@@ -449,7 +449,7 @@ public partial class GamePlayView
             }
         }
 
-        // UX clavier (ex: LAMA) : la main extra (pas les choix de pending) prend la prioritÃ©.
+        // UX clavier (ex: LAMA) : la main extra (pas les choix de pending) prend la priorité.
         if ((e.Key == Key.Enter || e.Key == Key.Return) &&
             !isFinishedState &&
             !vm.IsChoosePawnPending &&
@@ -504,8 +504,8 @@ public partial class GamePlayView
             return;
         }
 
-        // UX clavier (ex: LAMA) : si la liste de main/choix est affichÃ©e, EntrÃ©e valide le choix sÃ©lectionnÃ©
-        // mÃªme si le focus n'est pas dÃ©jÃ  dans la ListBox (on navigue souvent via â†‘/â†“ depuis la zone de jeu).
+        // UX clavier (ex: LAMA) : si la liste de main/choix est affichée, Entrée valide le choix sélectionné
+        // même si le focus n'est pas déjà dans la ListBox (on navigue souvent via ↑/↓ depuis la zone de jeu).
         if ((e.Key == Key.Enter || e.Key == Key.Return) &&
             !isFinishedState &&
             ChoicesList.IsVisible &&
@@ -545,8 +545,8 @@ public partial class GamePlayView
             return;
         }
 
-        // EmpÃªche la navigation directionnelle WPF (flÃ¨ches) de "sortir" du jeu et de casser l'interaction
-        // aprÃ¨s un Tab/Maj+Tab : on garde/ramÃ¨ne le focus sur une ancre stable dans la zone de jeu.
+        // Empêche la navigation directionnelle WPF (flèches) de "sortir" du jeu et de casser l'interaction
+        // après un Tab/Maj+Tab : on garde/ramène le focus sur une ancre stable dans la zone de jeu.
         if (e.Key is Key.Left or Key.Right or Key.Up or Key.Down)
         {
             if (ChoicesList.IsVisible && IsFocusWithinChoices())
@@ -565,7 +565,7 @@ public partial class GamePlayView
             return;
         }
 
-        // Grille: 'M' est un raccourci UI local (liste d'actions de la case), pas une touche envoyÃ©e au serveur.
+        // Grille: 'M' est un raccourci UI local (liste d'actions de la case), pas une touche envoyée au serveur.
         if (e.Key == Key.M && vm.Grid.IsVisible)
         {
             return;

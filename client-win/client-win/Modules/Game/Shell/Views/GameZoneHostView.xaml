@@ -30,7 +30,7 @@
 
             <Grid Grid.Row="1">
                 <!-- Ancre de focus permanente pour garder la navigation "dans la zone de jeu"
-                     mÃªme si la surface de jeu n'a pas d'Ã©lÃ©ment focusable Ã  l'instant T. -->
+                     même si la surface de jeu n'a pas d'élément focusable à l'instant T. -->
                 <local:GameZoneFocusAnchor x:Name="GameZoneFocusAnchor"
                                            Focusable="True"
                                            KeyboardNavigation.TabIndex="0"
@@ -63,7 +63,7 @@
 	                                VerticalContentAlignment="Stretch"
 	                                AutomationProperties.Name="{Binding Title, FallbackValue=Zone de jeu, TargetNullValue=Zone de jeu}" />
 
-                <!-- Placeholder visuel volontairement supprimÃ© (lecture d'Ã©cran: ne pas polluer le focus). -->
+                <!-- Placeholder visuel volontairement supprimé (lecture d'écran: ne pas polluer le focus). -->
             </Grid>
         </Grid>
     </Border>

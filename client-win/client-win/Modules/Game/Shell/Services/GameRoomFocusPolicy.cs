@@ -121,6 +121,14 @@ internal sealed class GameRoomFocusPolicy
             return true;
         }
 
+        if (reason is GameFocusReason.GamePlayReady && IsUserNavigationRecent())
+        {
+            // While the user is actively tabbing, passive "gameplay ready" nudges must not
+            // re-assert focus into the game zone. Otherwise rapid Tab/Shift+Tab can lose the
+            // current traversal target and appear to "jump".
+            return false;
+        }
+
         if (IsHistoryHoldActive())
         {
             return false;
@@ -154,12 +162,15 @@ internal sealed class GameRoomFocusPolicy
             return true;
         }
 
-        if (ResolveActiveRegion() == FocusRegionKind.GameZone)
+        var newFocus = e.NewFocus as DependencyObject;
+        if (newFocus != null && IsGameZoneAnchor(newFocus) && IsUserNavigationRecent())
         {
-            return true;
+            // A recent Tab/Shift+Tab landed on the anchor: keep it stable and let the outer
+            // tab cycle continue instead of bouncing back into gameplay content.
+            return false;
         }
 
-        if (IsUserNavigationRecent())
+        if (ResolveActiveRegion() == FocusRegionKind.GameZone)
         {
             return true;
         }

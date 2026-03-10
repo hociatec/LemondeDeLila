@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using System.Windows;
 using client_win.Modules.Game.Shell.Services;
@@ -60,13 +60,13 @@ public sealed class PresenceLauncher : IPresenceLauncher
             _navigation.Show(_viewModel!);
         });
 
-        return "PrÃ©sence ouverte.";
+        return "Présence ouverte.";
     }
 
     private async Task OpenStoryBookAsync(int userId, string username)
     {
         var stats = _services.GetRequiredService<IStatsService>();
-        // Depuis PrÃ©sence, Ã‰chap doit revenir Ã  la PrÃ©sence (pas Ã  la vue prÃ©cÃ©dente).
+        // Depuis Présence, Échap doit revenir à la Présence (pas à la vue précédente).
         var returnContent = (object?)_viewModel;
         if (returnContent == null)
         {

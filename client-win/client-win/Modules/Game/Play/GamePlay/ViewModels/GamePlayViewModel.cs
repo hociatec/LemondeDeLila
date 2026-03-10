@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Collections.Generic;
@@ -85,7 +85,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private string _inlinePromptSignature = string.Empty;
 
     private string _connectionStatus = "Connexion au moteur de jeu...";
-    private string _stateSummary = "En attente d'un Ã©tat de jeu (game.state)...";
+    private string _stateSummary = "En attente d'un état de jeu (game.state)...";
     private string _pendingText = string.Empty;
     private string _actionsText = string.Empty;
     private string _boardText = string.Empty;
@@ -314,11 +314,11 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
         var label = (choiceLabel ?? string.Empty).Trim();
         var message = string.IsNullOrWhiteSpace(label)
-            ? "DÃ©fausser cette carte ?"
-            : $"DÃ©fausser {label} ?";
+            ? "Défausser cette carte ?"
+            : $"Défausser {label} ?";
 
         var confirmed = await _dialogs.Confirm(
-            title: "DÃ©fausser",
+            title: "Défausser",
             message: message,
             okText: "Oui",
             cancelText: "Non").ConfigureAwait(true);
@@ -560,8 +560,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public async Task<bool> TryOpenPendingTextPromptAsync(CancellationToken cancellationToken = default)
     {
-        // Les prompts de jeu ne doivent plus ouvrir de fenÃªtre modale (ils sont affichÃ©s inline dans la vue).
-        // Cette mÃ©thode est conservÃ©e pour compatibilitÃ©, mais devient un no-op.
+        // Les prompts de jeu ne doivent plus ouvrir de fenêtre modale (ils sont affichés inline dans la vue).
+        // Cette méthode est conservée pour compatibilité, mais devient un no-op.
         await Task.CompletedTask;
         return false;
     }
@@ -1464,7 +1464,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         var pressed = normalizedKey.Trim().ToUpperInvariant();
         var hints = GamePlayExtrasParser.ExtractShortcutHints(state);
 
-        // PrioritÃ© aux actions serveur: si la touche correspond Ã  une action actuellement jouable,
+        // Priorité aux actions serveur: si la touche correspond à une action actuellement jouable,
         // ne pas la "manger" localement comme panneau d'interface (ex: P = pass, pas position).
         var hasAvailableActionOnPressedKey = hints.Any(hint =>
         {

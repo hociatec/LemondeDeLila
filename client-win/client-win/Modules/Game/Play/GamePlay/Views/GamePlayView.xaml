@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:behaviors="clr-namespace:client_win.Behaviors"
              xmlns:shell="clr-namespace:client_win.Modules.Game.Shell.Views"
              xmlns:grid="clr-namespace:client_win.Modules.Game.Play.Grid.Views"
              mc:Ignorable="d"
@@ -372,6 +373,7 @@
                         </ListBox.ItemTemplate>
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem">
+                                <Setter Property="IsTabStop" Value="False" />
                                 <Setter Property="Margin" Value="0 4 0 4" />
                                 <Setter Property="Padding" Value="10" />
                                 <Setter Property="Background" Value="#10223A" />
@@ -450,6 +452,7 @@
                     </ListBox.ItemTemplate>
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem">
+                            <Setter Property="IsTabStop" Value="False" />
                             <Setter Property="Margin" Value="0 4 0 4" />
                             <Setter Property="Padding" Value="10" />
                             <Setter Property="Background" Value="#10223A" />
@@ -506,6 +509,7 @@
                 Visibility="{Binding HasInlinePrompt, Converter={StaticResource BoolToVis}}"
                 Focusable="True"
                 FocusManager.IsFocusScope="True"
+                behaviors:ShortcutBindingsBehavior.DisableWhenFocusWithin="True"
                 KeyboardNavigation.TabNavigation="Cycle"
                 KeyboardNavigation.DirectionalNavigation="Contained"
                 PreviewKeyDown="OnInlinePromptPreviewKeyDown">

@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.Logging;
@@ -48,7 +48,7 @@ namespace client_win.Modules.MainMenu.Services;
 
 /// <summary>
 /// Router de navigation pour le menu principal.
-/// Se limite Ã  la navigation entre modules UI.
+/// Se limite à la navigation entre modules UI.
 /// </summary>
 public sealed class MenuRouter : IMenuRouter
 {
@@ -250,7 +250,7 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentContent;
         if (previous == null)
         {
-            return "Impossible d'ouvrir Mon coffre fort (vue prÃ©cÃ©dente indisponible).";
+            return "Impossible d'ouvrir Mon coffre fort (vue précédente indisponible).";
         }
 
         _vaultReturnContent = previous;
@@ -381,8 +381,8 @@ public sealed class MenuRouter : IMenuRouter
             rooms: _roomLobby,
             tables: _tables,
             announcements: _announcements,
-            // Quitter une table via raccourci (Q) doit revenir Ã  la taverne (menu prÃ©cÃ©dent),
-            // pas nÃ©cessairement Ã  la liste des tables.
+            // Quitter une table via raccourci (Q) doit revenir à la taverne (menu précédent),
+            // pas nécessairement à la liste des tables.
             returnContent: () => previous ?? vm,
             onClose: () =>
             {
@@ -407,8 +407,8 @@ public sealed class MenuRouter : IMenuRouter
         var owner = Application.Current?.MainWindow;
         if (owner == null)
         {
-            _logger.LogWarning("FenÃªtre principale indisponible pour le tchat");
-            return "FenÃªtre principale indisponible.";
+            _logger.LogWarning("Fenêtre principale indisponible pour le tchat");
+            return "Fenêtre principale indisponible.";
         }
 
         _audio.PauseBackground();
@@ -454,7 +454,7 @@ public sealed class MenuRouter : IMenuRouter
 
     public Task<string> OpenSocial()
     {
-        _logger.LogInformation("Ouverture du rÃ©seau social");
+        _logger.LogInformation("Ouverture du réseau social");
 
         var previous = _navigation.CurrentContent;
         _socialReturnContent = previous;
@@ -479,7 +479,7 @@ public sealed class MenuRouter : IMenuRouter
         SetPresenceContextForContent(_socialVm);
         _navigation.Show(_socialVm);
 
-        return Task.FromResult("RÃ©seau social ouvert.");
+        return Task.FromResult("Réseau social ouvert.");
     }
 
     public Task<string> OpenNotifications()
@@ -514,7 +514,7 @@ public sealed class MenuRouter : IMenuRouter
 
         if (_contactAdminOpen && _navigation.CurrentContent is AboutViewModel)
         {
-            return Task.FromResult("Contact admin dÃ©jÃ  ouvert.");
+            return Task.FromResult("Contact admin déjà ouvert.");
         }
 
         var previous = _navigation.CurrentContent;
@@ -540,7 +540,7 @@ public sealed class MenuRouter : IMenuRouter
 
         if (_navigation.CurrentContent is AdminViewModel)
         {
-            return Task.FromResult("Panneau d'administration dÃ©jÃ  ouvert.");
+            return Task.FromResult("Panneau d'administration déjà ouvert.");
         }
 
         _adminReturnContent = _navigation.CurrentContent;
@@ -589,7 +589,7 @@ public sealed class MenuRouter : IMenuRouter
 
     public Task<string> OpenAbout()
     {
-        _logger.LogInformation("Ouverture de la page Ã€ propos");
+        _logger.LogInformation("Ouverture de la page À propos");
 
         var previous = _navigation.CurrentContent;
         _aboutReturnContent = previous;
@@ -610,7 +610,7 @@ public sealed class MenuRouter : IMenuRouter
         SetPresenceContextForContent(_aboutVm);
         _navigation.Show(_aboutVm);
 
-        return Task.FromResult("Ã€ propos ouvert.");
+        return Task.FromResult("À propos ouvert.");
     }
 
     public Task<string> OpenOptions()
@@ -845,7 +845,7 @@ public sealed class MenuRouter : IMenuRouter
 
     public Task<string> Logout()
     {
-        _logger.LogInformation("DÃ©connexion demandÃ©e par l'utilisateur");
+        _logger.LogInformation("Déconnexion demandée par l'utilisateur");
         _adminVm = null;
         _adminReturnContent = null;
         _contactAdminOpen = false;
@@ -875,8 +875,8 @@ public sealed class MenuRouter : IMenuRouter
 
         _aboutVm = null;
         _aboutReturnContent = null;
-        // La dÃ©connexion est gÃ©rÃ©e par le MainMenuViewModel
-        return Task.FromResult("DÃ©connexion en cours...");
+        // La déconnexion est gérée par le MainMenuViewModel
+        return Task.FromResult("Déconnexion en cours...");
     }
 
     private async Task<string> OpenOptionsAndRestoreAsync()

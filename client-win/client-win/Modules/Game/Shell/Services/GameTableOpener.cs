@@ -1298,8 +1298,6 @@ public sealed class GameTableOpener : IGameTableOpener
 
                 if (canStart && !alreadyStarted)
                 {
-                    try { bindings?.EnsurePreStartGameUiLoaded(); } catch { }
-
                     var current = (room?.TableAmbienceSoundId ?? string.Empty).Trim();
                     var choices = preloadedAmbienceChoicesTask != null
                         ? await preloadedAmbienceChoicesTask.ConfigureAwait(true)
@@ -1428,6 +1426,17 @@ public sealed class GameTableOpener : IGameTableOpener
 
                         if (startFlow == null)
                         {
+                            try
+                            {
+                                if (bindings != null)
+                                {
+                                    await bindings.ReleasePreStartGameUiAsync().ConfigureAwait(true);
+                                }
+                            }
+                            catch
+                            {
+                                // best-effort
+                            }
                             return;
                         }
 
@@ -1476,18 +1485,34 @@ public sealed class GameTableOpener : IGameTableOpener
                 }
                 finally
                 {
+                    if (!string.IsNullOrWhiteSpace(postStartConfigActionType) &&
+                        postStartConfigPayload != null &&
+                        preStartGameSession != null)
+                    {
+                        try
+                        {
+                            await preStartGameSession.SendActionsAsync(
+                                    new[] { new GameClientAction(postStartConfigActionType, postStartConfigPayload) },
+                                    CancellationToken.None)
+                                .ConfigureAwait(false);
+                        }
+                        catch
+                        {
+                            // best-effort
+                        }
+                    }
+
                     if (preStartGameSession != null)
                     {
                         try { await preStartGameSession.DisposeAsync().ConfigureAwait(false); } catch { }
                         preStartGameSession = null;
                     }
 
-                    // Do not block game UI startup on post-start config replay.
-                    // Run it in background with its own short-lived game session.
+                    // Fallback: if the pre-start session was unavailable, replay once more in background.
                     if (!string.IsNullOrWhiteSpace(postStartConfigActionType) && postStartConfigPayload != null)
                     {
                         var gameType = (vm?.Game?.Id ?? placeholderGame.Id ?? string.Empty).Trim();
-                        if (!string.IsNullOrWhiteSpace(gameType))
+                        if (preStartGameSession == null && !string.IsNullOrWhiteSpace(gameType))
                         {
                             _ = Task.Run(async () =>
                             {

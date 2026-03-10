@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.Json;
 using client_win.Modules.Game.Play.Session.Dtos;
 using client_win.Modules.Game.Play.State.Dtos;
@@ -142,7 +142,7 @@ internal sealed class GameSessionMessageRouter
 
             if (string.Equals(action, "game.actions", StringComparison.OrdinalIgnoreCase))
             {
-                _emitCommandAck("Action reÃ§ue par le serveur.");
+                _emitCommandAck("Action reçue par le serveur.");
                 return;
             }
 
@@ -165,9 +165,9 @@ internal sealed class GameSessionMessageRouter
 
                 if (!string.IsNullOrWhiteSpace(message))
                 {
-                    // Robustesse lecteur d'Ã©cran: si l'utilisateur spamme 'T' pour rÃ©-entendre "Ã  qui le tour",
-                    // certains lecteurs/dÃ©dup peuvent ignorer les messages identiques. On rend le message unique
-                    // sans impact visuel/audible en alternant un caractÃ¨re invisible.
+                    // Robustesse lecteur d'écran: si l'utilisateur spamme 'T' pour ré-entendre "à qui le tour",
+                    // certains lecteurs/dédup peuvent ignorer les messages identiques. On rend le message unique
+                    // sans impact visuel/audible en alternant un caractère invisible.
                     _emitUiMessage($"[ui.shortcut] {message}");
                     return;
                 }
