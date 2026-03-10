@@ -551,6 +551,47 @@ public sealed class GamePlayViewFocusTests
     }
 
     [Fact]
+    public void RealtimeController_EmitsEveryNonDiceLogMessageInSameBatch()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            var sounds = new RecordingSoundService();
+            var emittedMessages = new List<GamePlayHistoryMessage>();
+            var controller = CreateRealtimeController(
+                dispatcher,
+                sounds,
+                emitMessage: message => emittedMessages.Add(message));
+
+            controller.HandleStateUpdated(CreatePendingState(
+                pendingType: string.Empty,
+                label: string.Empty,
+                choices: [],
+                turnIndex: 1));
+            StaDispatcherHarness.Drain(dispatcher);
+            emittedMessages.Clear();
+
+            controller.HandleStateUpdated(CreatePendingState(
+                pendingType: string.Empty,
+                label: string.Empty,
+                choices: [],
+                turnIndex: 1,
+                logMessages:
+                [
+                    new GameLogEntryDto("Mouche pioche Croquettes.", "2026-03-08T12:00:00Z"),
+                    new GameLogEntryDto("Mouche joue Croquettes.", "2026-03-08T12:00:01Z"),
+                ]));
+
+            Assert.True(StaDispatcherHarness.WaitUntil(() => emittedMessages.Count == 2, dispatcher, 1200));
+            StaDispatcherHarness.Drain(dispatcher);
+
+            Assert.Collection(
+                emittedMessages,
+                message => Assert.Equal("Vous piochez Croquettes.", message.Message),
+                message => Assert.Equal("Vous jouez Croquettes.", message.Message));
+        });
+    }
+
+    [Fact]
     public void SubmitSelectedHandCardAsync_CatPattes_SendsDirectPlayCardAction()
     {
         StaDispatcherHarness.Run(dispatcher =>
@@ -665,7 +706,8 @@ public sealed class GamePlayViewFocusTests
     private static GamePlayRealtimeController CreateRealtimeController(
         Dispatcher dispatcher,
         RecordingSoundService sounds,
-        Action? requestFocus = null)
+        Action? requestFocus = null,
+        Action<GamePlayHistoryMessage>? emitMessage = null)
     {
         var projector = new GamePlayStateProjector();
 
@@ -688,7 +730,7 @@ public sealed class GamePlayViewFocusTests
                 announce: _ => { }),
             syncShortcuts: _ => { },
             canStartAskCardSelection: _ => false,
-            emitMessage: _ => { },
+            emitMessage: emitMessage ?? (_ => { }),
             requestFocus: requestFocus ?? (() => { }),
             refreshCanExecute: () => { },
             onGameStatusChanged: (_, _) => { },

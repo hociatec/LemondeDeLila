@@ -430,9 +430,10 @@ internal sealed class GamePlayRealtimeController
         var isEndgameContext =
             string.Equals(nextStatus, "finished", StringComparison.OrdinalIgnoreCase) ||
             HasOutcomeData(state);
-        var batchHasDiceLog = presented.newLogMessages.Any(entry => IsDiceLogMessage(entry?.Message));
+        var newLogMessages = presented.newLogMessages.ToList();
+        var batchHasDiceLog = newLogMessages.Any(entry => IsDiceLogMessage(entry?.Message));
 
-        foreach (var entry in presented.newLogMessages)
+        foreach (var entry in newLogMessages)
         {
             var trimmed = entry?.Message ?? string.Empty;
             _logSounds.TryPlayForLogMessage(trimmed, viewerUsername, suppressDrawSound: batchHasDiceLog);
