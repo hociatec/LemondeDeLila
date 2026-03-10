@@ -46,8 +46,15 @@ public sealed partial class GameHistorySink : IGameHistorySink
             return;
         }
 
+        var trimmedMessage = (message ?? string.Empty).Trim();
+        var messageIsUi = trimmedMessage.StartsWith("[ui]", StringComparison.OrdinalIgnoreCase);
+        var messageIsUiTurn = trimmedMessage.StartsWith("[ui.turn]", StringComparison.OrdinalIgnoreCase);
+        var messageIsUiShortcutTagged = trimmedMessage.StartsWith("[ui.shortcut]", StringComparison.OrdinalIgnoreCase);
+        var messageIsUiShortcut = messageIsUi || messageIsUiTurn || messageIsUiShortcutTagged;
+
         void AddNow()
         {
+            var flushedPendingForMessage = false;
             foreach (var part in parts)
             {
                 var raw = part ?? string.Empty;
@@ -58,9 +65,11 @@ public sealed partial class GameHistorySink : IGameHistorySink
                 }
 
                 var trimmed = raw.Trim();
-                var isUi = trimmed.StartsWith("[ui]", StringComparison.OrdinalIgnoreCase);
-                var isUiTurn = trimmed.StartsWith("[ui.turn]", StringComparison.OrdinalIgnoreCase);
-                var isUiShortcutTagged = trimmed.StartsWith("[ui.shortcut]", StringComparison.OrdinalIgnoreCase);
+                var isUi = messageIsUi || trimmed.StartsWith("[ui]", StringComparison.OrdinalIgnoreCase);
+                var isUiTurn = messageIsUiTurn || trimmed.StartsWith("[ui.turn]", StringComparison.OrdinalIgnoreCase);
+                var isUiShortcutTagged =
+                    messageIsUiShortcutTagged ||
+                    trimmed.StartsWith("[ui.shortcut]", StringComparison.OrdinalIgnoreCase);
                 var isUiShortcut = isUi || isUiTurn || isUiShortcutTagged;
                 var cleaned = RemoveInvisibleFormattingChars(StripGamePrefix(trimmed));
                 if (MojibakeTextRepair.ShouldFix(cleaned))
@@ -85,7 +94,12 @@ public sealed partial class GameHistorySink : IGameHistorySink
                     cleaned,
                     timestamp,
                     priority: isUiShortcut ? AnnouncementPriority.Assertive : AnnouncementPriority.Polite,
-                    flushPending: isUi);
+                    flushPending: !flushedPendingForMessage && (messageIsUiShortcut || isUi));
+
+                if (messageIsUiShortcut || isUi)
+                {
+                    flushedPendingForMessage = true;
+                }
             }
         }
 
@@ -154,4 +168,3 @@ public sealed partial class GameHistorySink : IGameHistorySink
     }
 
 }
-

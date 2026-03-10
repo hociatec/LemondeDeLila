@@ -1,5 +1,11 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Threading;
+using client_win.Modules.Catalog.Models;
+using client_win.Modules.Game.History.Services;
+using client_win.Modules.Game.History.ViewModels;
 using client_win.Modules.Game.Play.GamePlay.Services;
+using client_win.Modules.Shell.Services;
 using Xunit;
 
 namespace client_win.Tests;
@@ -80,5 +86,81 @@ public sealed class GamePlayLogRewriterTests
 
         Assert.Equal("Vous défaussez Croquettes.", rewritten);
     }
-}
 
+    [Fact]
+    public void GameHistorySink_ReplaysEveryLineOfRepeatedUiShortcutMessage()
+    {
+        var announcements = new RecordingAnnouncementService();
+        var history = new GameHistoryViewModel(new CatalogGame
+        {
+            Id = "cat-pattes",
+            Name = "Cat Pattes",
+            Summary = "Test",
+            MinPlayers = 2,
+            MaxPlayers = 4,
+            Engine = "plateau",
+        });
+        var sink = new GameHistorySink(
+            Dispatcher.CurrentDispatcher,
+            history,
+            announcements);
+
+        const string message =
+            "[ui.shortcut] Hacene : libre.\nLilas : arrêtée par Gamelle vide.";
+
+        sink.Add(message);
+        sink.Add(message);
+
+        Assert.Equal(
+            new[]
+            {
+                "Hacene : libre.",
+                "Lilas : arrêtée par Gamelle vide.",
+                "Hacene : libre.",
+                "Lilas : arrêtée par Gamelle vide.",
+            },
+            history.Entries.ToArray());
+
+        Assert.Equal(2, announcements.CancelPendingCalls);
+        Assert.Equal(
+            new[]
+            {
+                ("Hacene : libre.", AnnouncementPriority.Assertive),
+                ("Lilas : arrêtée par Gamelle vide.", AnnouncementPriority.Assertive),
+                ("Hacene : libre.", AnnouncementPriority.Assertive),
+                ("Lilas : arrêtée par Gamelle vide.", AnnouncementPriority.Assertive),
+            },
+            announcements.Messages.ToArray());
+    }
+
+    private sealed class RecordingAnnouncementService : IAnnouncementService
+    {
+        public List<(string Message, AnnouncementPriority Priority)> Messages { get; } = new();
+
+        public int CancelPendingCalls { get; private set; }
+
+        public bool IsAvailable => true;
+
+        public void Enqueue(string message, AnnouncementPriority priority = AnnouncementPriority.Polite)
+        {
+            Messages.Add((message, priority));
+        }
+
+        public void EnqueueMany(IEnumerable<string> messages, AnnouncementPriority priority = AnnouncementPriority.Polite)
+        {
+            foreach (var message in messages ?? Enumerable.Empty<string>())
+            {
+                Enqueue(message, priority);
+            }
+        }
+
+        public void CancelPending(bool cancelSpeech = false)
+        {
+            CancelPendingCalls++;
+        }
+
+        public void NotifyUserInteraction() { }
+
+        public void SetGameplayUltraReactive(bool enabled) { }
+    }
+}
