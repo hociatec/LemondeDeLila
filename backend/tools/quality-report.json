@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-03-03T01:04:16.011Z",
-  "baselineUpdatedAt": "2026-03-03",
+  "generatedAt": "2026-03-11T21:30:41.030Z",
+  "baselineUpdatedAt": "2026-03-11",
   "metrics": {
     "manualActionPayloadParsing": 5,
-    "directPendingAssignments": 115,
-    "mojibakeMatches": 74,
-    "scoresByPlayerIdMentionsInGames": 67,
+    "directPendingAssignments": 124,
+    "mojibakeMatches": 36,
+    "scoresByPlayerIdMentionsInGames": 68,
     "targetScoreMentionsInGames": 39
   },
   "baseline": {
     "manualActionPayloadParsing": 5,
-    "directPendingAssignments": 115,
+    "directPendingAssignments": 124,
     "mojibakeMatches": 74,
-    "scoresByPlayerIdMentionsInGames": 67,
+    "scoresByPlayerIdMentionsInGames": 68,
     "targetScoreMentionsInGames": 39
   },
   "regressions": {
