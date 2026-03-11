@@ -474,20 +474,129 @@ export class GameEngineService {
         boardRaw['laps'] ??
         null;
 
-      if (!tilesRaw || !positionsRaw) {
-        return '';
+      if (tilesRaw && positionsRaw) {
+        return this.boardPayload.buildPositionPanelMessage({
+          tilesRaw,
+          positionsRaw,
+          lapsRaw,
+          playerId: null,
+          playersRaw,
+        });
       }
 
-      return this.boardPayload.buildPositionPanelMessage({
-        tilesRaw,
-        positionsRaw,
-        lapsRaw,
-        playerId: null,
+      const pawnsByPlayerRaw =
+        internalMeta['pawnsByPlayer'] ??
+        boardRaw['pawnsByPlayer'] ??
+        null;
+      const trackLengthRaw =
+        internalMeta['trackLength'] ??
+        boardRaw['trackLength'] ??
+        null;
+      if (pawnsByPlayerRaw && trackLengthRaw) {
+        return this.boardPayload.buildPawnProgressPositionPanelMessage({
+          playersRaw,
+          pawnsByPlayerRaw,
+          trackLengthRaw,
+          homeLengthRaw:
+            internalMeta['homeLength'] ??
+            boardRaw['homeLength'] ??
+            null,
+          offsetsRaw:
+            internalMeta['offsets'] ??
+            boardRaw['offsets'] ??
+            null,
+          pawnNamesByPlayerRaw:
+            internalMeta['pawnNamesByPlayer'] ??
+            boardRaw['pawnNamesByPlayer'] ??
+            null,
+        });
+      }
+
+      const corridorMessage = this.tryBuildCanonicalGridPositionPanelMessage(
+        internalMeta,
+        boardRaw,
         playersRaw,
-      });
+      );
+      if (corridorMessage) {
+        return corridorMessage;
+      }
+
+      return '';
     } catch {
       return '';
     }
+  }
+
+  private tryBuildCanonicalGridPositionPanelMessage(
+    internalMeta: Record<string, unknown>,
+    boardRaw: Record<string, unknown>,
+    playersRaw: unknown,
+  ): string {
+    const sizeRaw = internalMeta['size'] ?? boardRaw['size'] ?? null;
+    const size = Number(sizeRaw);
+    if (!Number.isFinite(size) || size <= 0) {
+      return '';
+    }
+
+    const rawPositions =
+      internalMeta['pawnsByPlayerId'] ??
+      boardRaw['pawnsByPlayerId'] ??
+      null;
+    if (!rawPositions || typeof rawPositions !== 'object') {
+      return '';
+    }
+
+    const players = Array.isArray(playersRaw) ? playersRaw : [];
+    const namesById = new Map<number, string>();
+    for (const player of players) {
+      if (!player || typeof player !== 'object') continue;
+      const record = player as Record<string, unknown>;
+      const id = Number(record['id']);
+      if (!Number.isFinite(id) || id <= 0) continue;
+      const username = this.normalizeMetadataString(record['username']).trim();
+      namesById.set(id, username || `Joueur ${id}`);
+    }
+
+    const entries = Object.entries(rawPositions as Record<string, unknown>)
+      .map(([rawId, rawPos]) => {
+        const id = Number(rawId);
+        if (!Number.isFinite(id) || id <= 0) return null;
+        if (!rawPos || typeof rawPos !== 'object') return null;
+        const pos = rawPos as Record<string, unknown>;
+        const x = Number(pos['x']);
+        const y = Number(pos['y']);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+        const name = namesById.get(id) ?? `Joueur ${id}`;
+        return {
+          id,
+          line: `${name} ${this.toGridCellRef(Math.trunc(x), Math.trunc(y), Math.trunc(size)).toLowerCase()}`,
+        };
+      })
+      .filter((entry): entry is { id: number; line: string } => entry != null)
+      .sort((a, b) => a.id - b.id);
+
+    if (entries.length === 0) {
+      return '';
+    }
+
+    return `Positions. ${entries.map((entry) => entry.line).join('. ')}.`;
+  }
+
+  private toGridCellRef(x: number, y: number, size: number): string {
+    const safeSize = Number.isFinite(size) && size > 0 ? Math.trunc(size) : 0;
+    if (safeSize <= 0) {
+      return `${x},${y}`;
+    }
+
+    let n = Math.max(1, Math.trunc(x) + 1);
+    let col = '';
+    while (n > 0) {
+      n -= 1;
+      col = String.fromCharCode(65 + (n % 26)) + col;
+      n = Math.floor(n / 26);
+    }
+    const row = Math.max(1, safeSize - Math.trunc(y));
+    return `${col}${row}`;
   }
 
   async refreshAndBroadcast(roomId: number, gameType: string): Promise<void> {

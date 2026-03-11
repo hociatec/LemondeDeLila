@@ -243,6 +243,129 @@ describe('GameEngineService', () => {
     });
   });
 
+  it('rebuilds the P panel from pawn progress metadata for all players', async () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      {
+        getHandler: jest.fn(() => ({
+          getShortcuts: jest.fn(() => [
+            { key: 'P', type: 'interface', id: 'position' },
+          ]),
+        })),
+      } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    (engine as any).getStateForUser = jest.fn().mockResolvedValue({
+      status: 'started',
+      players: [{ id: 1, username: 'hacene' }],
+      turn: { currentPlayerId: 1, direction: 1 },
+      extras: {
+        ui: {
+          panels: {
+            position: {
+              title: 'Position',
+              message: 'Position locale.',
+            },
+          },
+        },
+      },
+      log: [],
+    });
+    (engine as any).getInternalState = jest.fn().mockResolvedValue({
+      status: 'started',
+      players: [
+        { id: 1, username: 'hacene' },
+        { id: 2, username: 'Lila' },
+      ],
+      metadata: {
+        trackLength: 40,
+        homeLength: 4,
+        offsets: { 1: 0, 2: 10 },
+        pawnsByPlayer: {
+          1: [{ pawnIndex: 0, progress: 2 }],
+          2: [{ pawnIndex: 1, progress: 5 }],
+        },
+      },
+    });
+
+    const out = await engine.handleKeyPress(1, 'any', 1, 'P');
+    expect(out).toEqual({
+      kind: 'panel',
+      panelId: 'position',
+      message:
+        'Positions. hacene : Départ 0/1, Abri 0/1, Arrivée 0/1, Piste Pion 1 case 3/40. Lila : Départ 0/1, Abri 0/1, Arrivée 0/1, Piste Pion 2 case 16/40.',
+    });
+  });
+
+  it('rebuilds the P panel from grid coordinates for all players', async () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      {
+        getHandler: jest.fn(() => ({
+          getShortcuts: jest.fn(() => [
+            { key: 'P', type: 'interface', id: 'position' },
+          ]),
+        })),
+      } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    (engine as any).getStateForUser = jest.fn().mockResolvedValue({
+      status: 'started',
+      players: [{ id: 1, username: 'hacene' }],
+      turn: { currentPlayerId: 1, direction: 1 },
+      extras: {
+        ui: {
+          panels: {
+            position: {
+              title: 'Position',
+              message: 'Position locale.',
+            },
+          },
+        },
+      },
+      log: [],
+    });
+    (engine as any).getInternalState = jest.fn().mockResolvedValue({
+      status: 'started',
+      players: [
+        { id: 1, username: 'hacene' },
+        { id: 2, username: 'Lila' },
+      ],
+      metadata: {
+        size: 9,
+        pawnsByPlayerId: {
+          1: { x: 4, y: 8 },
+          2: { x: 4, y: 0 },
+        },
+      },
+    });
+
+    const out = await engine.handleKeyPress(1, 'any', 1, 'P');
+    expect(out).toEqual({
+      kind: 'panel',
+      panelId: 'position',
+      message: 'Positions. hacene e1. Lila e9.',
+    });
+  });
+
   it('does not replay stale skip-turn announcements on subsequent actions', async () => {
     const startedAt = '2026-02-09T00:00:00.000Z';
     const players = [
