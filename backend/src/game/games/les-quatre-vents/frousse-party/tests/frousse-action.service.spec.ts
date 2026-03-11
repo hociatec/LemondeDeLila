@@ -605,6 +605,81 @@ describe('FrousseActionService movement effects', () => {
     );
   });
 
+  it('does not auto-roll the odd-result trap test after drawing the card', () => {
+    const random: any = {
+      rollDice: jest.fn(() => ({ roll: 6, meta: {} })),
+      nextInt: jest.fn(() => ({ value: 0, meta: {} })),
+      pickOne: jest.fn(() => ({ value: null, meta: {} })),
+      shuffle: jest.fn((_meta: any, values: any[]) => ({ values, meta: {} })),
+    };
+    const turns: any = {
+      advanceTurn: jest.fn((state: GameStateEntity) => state),
+    };
+    const core: any = {
+      appendLog: jest.fn((state: GameStateEntity, message: string) => ({
+        ...state,
+        log: [...(Array.isArray(state.log) ? state.log : []), { message }],
+      })),
+    };
+
+    const service = new FrousseActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new BoardEffectsPoliciesService(),
+      new DeckPoliciesService(random),
+    );
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [{ id: 1, username: 'hacene' } as any],
+      pending: { type: 'draw', playerId: 1, blocking: true } as any,
+      metadata: {
+        positions: { 1: 2 },
+        statuses: {
+          skipTurn: {},
+          blocked: {},
+          nextMoveCap: {},
+          nextRollIfThreeBackTwo: {},
+          nextRollKeepLowest: {},
+          nextRollMalus: {},
+          nextRollDouble: {},
+          ignoreTrapUntilNextDraw: {},
+          ignoreNextGhost: {},
+          ignoreNextPrank: {},
+          ignoreNextTrap: {},
+        },
+        tiles: [],
+        decks: {
+          cards: [
+            {
+              category: 'Fantôme',
+              localNumber: 999,
+              text: 'Une ombre étrange vous barre la route. Lancez le dé : si le résultat est impair, passez 1 tour.',
+            },
+          ],
+          discard: [],
+        },
+      } as any,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = service.applyActions(state, [
+      { type: 'draw', payload: {} } as any,
+    ]);
+    const meta: any = next.metadata ?? {};
+    const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
+
+    expect(random.rollDice).not.toHaveBeenCalled();
+    expect(meta.statuses?.blocked?.[1]).toEqual({ kind: 'need_roll_even' });
+    expect(next.turn?.currentPlayerId).toBe(1);
+    expect(messages.some((m) => m.includes('Test : dé ='))).toBe(false);
+  });
+
   it('lets the player refuse a swap card and advances the turn', () => {
     const { service } = buildRealTurnService();
     const state = buildTurnState({

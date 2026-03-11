@@ -931,29 +931,22 @@ export class FrousseActionService {
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
-    // Immediate roll: if odd then skip.
+    // Manual follow-up roll: keep the turn and wait for the player to press Enter.
     if (
       /si le résultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(text)
     ) {
-      const out = this.random.rollDice(meta, 6);
-      meta = { ...meta, ...out.meta };
-      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      next = this.core.appendLog(next, `Test : dé = "${out.roll}".`);
-      if (out.roll % 2 === 1) {
-        const curr = meta.statuses.skipTurn?.[playerId] ?? 0;
-        meta = {
-          ...meta,
-          statuses: {
-            ...meta.statuses,
-            skipTurn: {
-              ...(meta.statuses.skipTurn ?? {}),
-              [playerId]: curr + 1,
-            },
+      meta = {
+        ...meta,
+        statuses: {
+          ...meta.statuses,
+          blocked: {
+            ...(meta.statuses.blocked ?? {}),
+            [playerId]: { kind: 'need_roll_even' },
           },
-        };
-        return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      }
-      return next;
+        },
+        keepTurnNow: true,
+      };
+      return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
     // Skip turns.
