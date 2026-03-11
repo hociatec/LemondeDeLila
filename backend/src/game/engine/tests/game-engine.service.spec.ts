@@ -181,22 +181,9 @@ describe('GameEngineService', () => {
     });
   });
 
-  it('rebuilds the P panel from the room roster when a game exposes only one position', async () => {
-    const rooms = {
-      getRoomPayload: jest.fn().mockResolvedValue({
-        room: {
-          id: 1,
-          players: [
-            { id: 1, username: 'hacene' },
-            { id: 2, username: 'Lila' },
-          ],
-          bots: [],
-        },
-      }),
-    };
-
+  it('rebuilds the P panel from the internal game state when a game exposes only one position', async () => {
     const engine = new GameEngineService(
-      rooms as any,
+      {} as any,
       {} as any,
       {
         getHandler: jest.fn(() => ({
@@ -235,13 +222,24 @@ describe('GameEngineService', () => {
       },
       log: [],
     });
+    (engine as any).getInternalState = jest.fn().mockResolvedValue({
+      status: 'started',
+      players: [
+        { id: 1, username: 'hacene' },
+        { id: 2, username: 'Lila' },
+      ],
+      metadata: {
+        tiles: new Array(40).fill({}),
+        positions: { 1: 2, 2: 5 },
+      },
+    });
 
     const out = await engine.handleKeyPress(1, 'any', 1, 'P');
     expect(out).toEqual({
       kind: 'panel',
       panelId: 'position',
       message:
-        'Positions. hacene : Tour plateau ?, case 3/40. Lila : position inconnue.',
+        'Positions. hacene : Tour plateau ?, case 3/40. Lila : Tour plateau ?, case 6/40.',
     });
   });
 

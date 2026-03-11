@@ -418,6 +418,7 @@ export class GameEngineService {
       if (panelId === 'position') {
         const rebuilt = await this.tryBuildCanonicalPositionPanelMessage(
           roomId,
+          gameType,
           state,
         );
         if (rebuilt) {
@@ -439,38 +440,50 @@ export class GameEngineService {
 
   private async tryBuildCanonicalPositionPanelMessage(
     roomId: number,
+    gameType: string,
     state: GameStateWithActions,
   ): Promise<string> {
     try {
-      const payload = await this.rooms.getRoomPayload(roomId);
+      const internal = await this.getInternalState(roomId, gameType).catch(
+        () => null,
+      );
+
+      const internalMeta =
+        internal?.metadata && typeof internal.metadata === 'object'
+          ? (internal.metadata as Record<string, unknown>)
+          : {};
       const boardRaw =
         state?.board && typeof state.board === 'object'
           ? (state.board as Record<string, unknown>)
-          : null;
-      if (!boardRaw) {
+          : {};
+      const playersRaw =
+        Array.isArray(internal?.players) && internal.players.length > 0
+          ? internal.players
+          : state.players;
+
+      const tilesRaw =
+        internalMeta['tiles'] ??
+        boardRaw['tiles'] ??
+        null;
+      const positionsRaw =
+        internalMeta['positions'] ??
+        boardRaw['positions'] ??
+        null;
+      const lapsRaw =
+        internalMeta['laps'] ??
+        boardRaw['laps'] ??
+        null;
+
+      if (!tilesRaw || !positionsRaw) {
         return '';
       }
 
-      const roomRoster = [
-        ...((payload?.room?.players ?? []).map((player) => ({
-          id: player?.id,
-          username: player?.username,
-        })) as Array<{ id: number; username?: string }>),
-        ...((payload?.room?.bots ?? []).map((bot) => ({
-          id:
-            typeof bot?.id === 'number'
-              ? -Math.abs(bot.id)
-              : -Math.abs(Number(bot?.id ?? 0)),
-          username: bot?.name,
-        })) as Array<{ id: number; username?: string }>),
-      ];
-
       return this.boardPayload.buildPositionPanelMessage({
-        tilesRaw: boardRaw['tiles'],
-        positionsRaw: boardRaw['positions'],
-        lapsRaw: boardRaw['laps'],
+        tilesRaw,
+        positionsRaw,
+        lapsRaw,
         playerId: null,
-        playersRaw: roomRoster,
+        playersRaw,
       });
     } catch {
       return '';
