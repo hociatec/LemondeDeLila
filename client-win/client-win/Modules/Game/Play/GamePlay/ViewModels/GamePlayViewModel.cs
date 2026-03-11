@@ -1493,11 +1493,11 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             return Task.FromResult(false);
         }
 
-        foreach (var hint in hints)
-        {
-            if (!string.Equals(hint.Type, "interface", StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
+          foreach (var hint in hints)
+          {
+              if (!string.Equals(hint.Type, "interface", StringComparison.OrdinalIgnoreCase))
+              {
+                  continue;
             }
 
             var raw = hint.Key ?? string.Empty;
@@ -1513,18 +1513,15 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             }
 
             var panelId = hint.Id ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(panelId))
-            {
-                continue;
-            }
+              if (string.IsNullOrWhiteSpace(panelId))
+              {
+                  continue;
+              }
 
-            var message = GamePlayPanelHistoryMessageBuilder.BuildPanelHistoryMessage(state, panelId.Trim());
-            if (!string.IsNullOrWhiteSpace(message))
-            {
-                EmitUiShortcutMessage(message);
-                return Task.FromResult(true);
-            }
-        }
+              // Prefer the server response for declared interface shortcuts so the announcement
+              // can be rebuilt from the canonical internal game state (for example all players on P).
+              return Task.FromResult(false);
+          }
 
         // Generic fallback for common UI panels across games.
         // Only used when no explicit interface hint matched the pressed key.
@@ -1534,16 +1531,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             if (!string.IsNullOrWhiteSpace(scoreMessage))
             {
                 EmitUiShortcutMessage(scoreMessage);
-                return Task.FromResult(true);
-            }
-        }
-
-        if (pressed == "P")
-        {
-            var positionMessage = GamePlayPanelHistoryMessageBuilder.BuildPositionHistoryMessage(state);
-            if (!string.IsNullOrWhiteSpace(positionMessage))
-            {
-                EmitUiShortcutMessage(positionMessage);
                 return Task.FromResult(true);
             }
         }

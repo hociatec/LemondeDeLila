@@ -243,6 +243,59 @@ describe('GameEngineService', () => {
     });
   });
 
+  it('injects a canonical global position panel in exposed state for user', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      {
+        getHandler: jest.fn(() => ({
+          exposeStateForUser: jest.fn((state: any) => ({
+            ...state,
+            extras: {
+              ui: {
+                panels: {
+                  position: {
+                    title: 'Position',
+                    message: 'Positions. hacene : Tour plateau ?, case 3/40.',
+                  },
+                },
+              },
+            },
+          })),
+        })),
+      } as any,
+      { compute: jest.fn(() => null) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      { attachGridRenderDescriptors: jest.fn((s) => s) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const exposed = (engine as any).exposeStateForUser(
+      {
+        status: 'started',
+        players: [
+          { id: 1, username: 'hacene' },
+          { id: 2, username: 'Lila' },
+        ],
+        turn: { currentPlayerId: 1, direction: 1 },
+        metadata: {
+          tiles: new Array(40).fill({}),
+          positions: { 1: 2, 2: 5 },
+        },
+      },
+      'any',
+      1,
+    );
+
+    expect(exposed?.extras?.ui?.panels?.position?.message).toBe(
+      'Positions. hacene : Tour plateau ?, case 3/40. Lila : Tour plateau ?, case 6/40.',
+    );
+  });
+
   it('rebuilds the P panel from pawn progress metadata for all players', async () => {
     const engine = new GameEngineService(
       {} as any,

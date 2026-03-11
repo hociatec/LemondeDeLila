@@ -1,7 +1,7 @@
 {
-  "version": "1.2.597.1",
-  "publishedAt": "2026-02-20T16:11:46.878Z",
-  "message": "Auto publish ClickOnce (main @ 285b6daae3120fbad438a26b1ee1188242a8fa18)",
+  "version": "1.2.603.0",
+  "publishedAt": "2026-03-11T22:21:40.000Z",
+  "message": "Correction raccourci P: annonce de la position de tous les joueurs.",
   "publicUrl": "https://api.lilas.hociatec.fr/updates/client-win/",
-  "minRequiredVersion": "1.2.597.1"
+  "minRequiredVersion": "1.2.603.0"
 }

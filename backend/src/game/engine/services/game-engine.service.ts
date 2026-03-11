@@ -252,13 +252,17 @@ export class GameEngineService {
         ? handler.exposeState(state)
         : (state as GameStateWithActions);
     const withLabel = this.attachTurnLabel(exposed, label);
-    const withDescriptors = this.attachUiDescriptors(
-      this.gridRender.attachGridRenderDescriptors(
-        this.attachViewerContext(
-          this.attachCurrentPlayerView(withLabel),
-          userId,
+    const withDescriptors = this.attachCanonicalPositionPanel(
+      this.attachUiDescriptors(
+        this.gridRender.attachGridRenderDescriptors(
+          this.attachViewerContext(
+            this.attachCurrentPlayerView(withLabel),
+            userId,
+          ),
         ),
       ),
+      state,
+      userId,
     );
     const withShortcuts = this.attachShortcuts(withDescriptors, handler);
     const withLifecycle = this.attachStartLifecycle(withShortcuts, userId);
@@ -447,84 +451,68 @@ export class GameEngineService {
       const internal = await this.getInternalState(roomId, gameType).catch(
         () => null,
       );
-
-      const internalMeta =
-        internal?.metadata && typeof internal.metadata === 'object'
-          ? (internal.metadata as Record<string, unknown>)
-          : {};
-      const boardRaw =
-        state?.board && typeof state.board === 'object'
-          ? (state.board as Record<string, unknown>)
-          : {};
-      const playersRaw =
-        Array.isArray(internal?.players) && internal.players.length > 0
-          ? internal.players
-          : state.players;
-
-      const tilesRaw =
-        internalMeta['tiles'] ??
-        boardRaw['tiles'] ??
-        null;
-      const positionsRaw =
-        internalMeta['positions'] ??
-        boardRaw['positions'] ??
-        null;
-      const lapsRaw =
-        internalMeta['laps'] ??
-        boardRaw['laps'] ??
-        null;
-
-      if (tilesRaw && positionsRaw) {
-        return this.boardPayload.buildPositionPanelMessage({
-          tilesRaw,
-          positionsRaw,
-          lapsRaw,
-          playerId: null,
-          playersRaw,
-        });
-      }
-
-      const pawnsByPlayerRaw =
-        internalMeta['pawnsByPlayer'] ??
-        boardRaw['pawnsByPlayer'] ??
-        null;
-      const trackLengthRaw =
-        internalMeta['trackLength'] ??
-        boardRaw['trackLength'] ??
-        null;
-      if (pawnsByPlayerRaw && trackLengthRaw) {
-        return this.boardPayload.buildPawnProgressPositionPanelMessage({
-          playersRaw,
-          pawnsByPlayerRaw,
-          trackLengthRaw,
-          homeLengthRaw:
-            internalMeta['homeLength'] ??
-            boardRaw['homeLength'] ??
-            null,
-          offsetsRaw:
-            internalMeta['offsets'] ??
-            boardRaw['offsets'] ??
-            null,
-          pawnNamesByPlayerRaw:
-            internalMeta['pawnNamesByPlayer'] ??
-            boardRaw['pawnNamesByPlayer'] ??
-            null,
-        });
-      }
-
-      const corridorMessage = this.tryBuildCanonicalGridPositionPanelMessage(
-        internalMeta,
-        boardRaw,
-        playersRaw,
-      );
-      if (corridorMessage) {
-        return corridorMessage;
-      }
-
-      return '';
+      return this.buildCanonicalPositionPanelMessage(internal, state);
     } catch {
       return '';
     }
+  }
+
+  private buildCanonicalPositionPanelMessage(
+    internal: GameStateEntity | null | undefined,
+    state: GameStateWithActions | null | undefined,
+  ): string {
+    const internalMeta =
+      internal?.metadata && typeof internal.metadata === 'object'
+        ? (internal.metadata as Record<string, unknown>)
+        : {};
+    const boardRaw =
+      state?.board && typeof state.board === 'object'
+        ? (state.board as Record<string, unknown>)
+        : {};
+    const playersRaw =
+      Array.isArray(internal?.players) && internal.players.length > 0
+        ? internal.players
+        : state?.players;
+
+    const tilesRaw = internalMeta['tiles'] ?? boardRaw['tiles'] ?? null;
+    const positionsRaw =
+      internalMeta['positions'] ?? boardRaw['positions'] ?? null;
+    const lapsRaw = internalMeta['laps'] ?? boardRaw['laps'] ?? null;
+
+    if (tilesRaw && positionsRaw) {
+      return this.boardPayload.buildPositionPanelMessage({
+        tilesRaw,
+        positionsRaw,
+        lapsRaw,
+        playerId: null,
+        playersRaw,
+      });
+    }
+
+    const pawnsByPlayerRaw =
+      internalMeta['pawnsByPlayer'] ?? boardRaw['pawnsByPlayer'] ?? null;
+    const trackLengthRaw =
+      internalMeta['trackLength'] ?? boardRaw['trackLength'] ?? null;
+    if (pawnsByPlayerRaw && trackLengthRaw) {
+      return this.boardPayload.buildPawnProgressPositionPanelMessage({
+        playersRaw,
+        pawnsByPlayerRaw,
+        trackLengthRaw,
+        homeLengthRaw:
+          internalMeta['homeLength'] ?? boardRaw['homeLength'] ?? null,
+        offsetsRaw: internalMeta['offsets'] ?? boardRaw['offsets'] ?? null,
+        pawnNamesByPlayerRaw:
+          internalMeta['pawnNamesByPlayer'] ??
+          boardRaw['pawnNamesByPlayer'] ??
+          null,
+      });
+    }
+
+    return this.tryBuildCanonicalGridPositionPanelMessage(
+      internalMeta,
+      boardRaw,
+      playersRaw,
+    );
   }
 
   private tryBuildCanonicalGridPositionPanelMessage(
@@ -597,6 +585,54 @@ export class GameEngineService {
     }
     const row = Math.max(1, safeSize - Math.trunc(y));
     return `${col}${row}`;
+  }
+
+  private attachCanonicalPositionPanel(
+    state: GameStateWithActions,
+    internal: GameStateEntity,
+    userId: number | null,
+  ): GameStateWithActions {
+    const status = String(state?.status ?? '')
+      .toLowerCase()
+      .trim();
+    if (status !== 'started') {
+      return state;
+    }
+
+    const message = this.buildCanonicalPositionPanelMessage(internal, state);
+    if (!message) {
+      return state;
+    }
+
+    const extras = GameEngineService.extractExtras(state);
+    const uiExisting = GameEngineService.extractUi(extras);
+    const ui = uiExisting ? { ...uiExisting } : {};
+    const panelsExisting = GameEngineService.extractPanels(uiExisting);
+    const panels = panelsExisting ? { ...panelsExisting } : {};
+    const current =
+      (panels['position'] as Record<string, unknown> | undefined) ?? {};
+    const title =
+      typeof current['title'] === 'string' && String(current['title']).trim()
+        ? String(current['title']).trim()
+        : 'Position';
+
+    panels['position'] = {
+      ...current,
+      title,
+      message,
+      scope: 'global',
+      source: 'canonical',
+      viewerPlayerId: userId,
+    };
+    ui['panels'] = panels;
+
+    return {
+      ...state,
+      extras: {
+        ...extras,
+        ui,
+      },
+    };
   }
 
   async refreshAndBroadcast(roomId: number, gameType: string): Promise<void> {
@@ -3163,10 +3199,14 @@ export class GameEngineService {
       ? handler.exposeState(state)
       : (state as GameStateWithActions);
     const withLabel = this.attachTurnLabel(exposed, label);
-    const withDescriptors = this.attachUiDescriptors(
-      this.gridRender.attachGridRenderDescriptors(
-        this.attachCurrentPlayerView(withLabel),
+    const withDescriptors = this.attachCanonicalPositionPanel(
+      this.attachUiDescriptors(
+        this.gridRender.attachGridRenderDescriptors(
+          this.attachCurrentPlayerView(withLabel),
+        ),
       ),
+      state,
+      null,
     );
     const withLifecycle = this.attachStartLifecycle(withDescriptors);
     return fixMojibakeDeep(this.stripBoardAndGridIfNotStarted(withLifecycle));
