@@ -13,7 +13,7 @@ export class BoardPayloadService {
         typeof record.id === 'number'
           ? record.id
           : Number.parseInt(stringOrEmpty(record.id), 10);
-      if (!Number.isFinite(id) || id <= 0) continue;
+      if (!Number.isFinite(id) || id === 0) continue;
       const username = stringOrEmpty(record.username).trim();
       namesById.set(id, username.length > 0 ? username : `Joueur ${id}`);
     }
@@ -95,11 +95,11 @@ export class BoardPayloadService {
     const allPlayerIds = new Set<number>();
     for (const rawId of Object.keys(board.positions)) {
       const pid = Number.parseInt(rawId, 10);
-      if (!Number.isFinite(pid) || pid <= 0) continue;
+      if (!Number.isFinite(pid) || pid === 0) continue;
       allPlayerIds.add(pid);
     }
     for (const pid of namesById.keys()) {
-      if (Number.isFinite(pid) && pid > 0) {
+      if (Number.isFinite(pid) && pid !== 0) {
         allPlayerIds.add(pid);
       }
     }
@@ -107,7 +107,7 @@ export class BoardPayloadService {
     for (const pid of allPlayerIds) {
       const rawId = String(pid);
       const rawPos = board.positions[rawId];
-      if (!Number.isFinite(pid) || pid <= 0) continue;
+      if (!Number.isFinite(pid) || pid === 0) continue;
       const name = namesById.get(pid) ?? `Joueur ${pid}`;
       allPlayers.push({
         id: pid,
@@ -167,7 +167,7 @@ export class BoardPayloadService {
     const playerIds = new Set<number>();
     for (const [rawId, rawPawns] of Object.entries(pawnsByPlayer)) {
       const id = Number.parseInt(rawId, 10);
-      if (!Number.isFinite(id) || id <= 0) continue;
+      if (!Number.isFinite(id) || id === 0) continue;
       if (!Array.isArray(rawPawns)) continue;
       playerIds.add(id);
       totalPawnsByPlayer.set(id, rawPawns.length);

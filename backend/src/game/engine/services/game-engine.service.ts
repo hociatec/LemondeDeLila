@@ -540,7 +540,7 @@ export class GameEngineService {
       if (!player || typeof player !== 'object') continue;
       const record = player as Record<string, unknown>;
       const id = Number(record['id']);
-      if (!Number.isFinite(id) || id <= 0) continue;
+      if (!Number.isFinite(id) || id === 0) continue;
       const username = this.normalizeMetadataString(record['username']).trim();
       namesById.set(id, username || `Joueur ${id}`);
     }
@@ -548,7 +548,7 @@ export class GameEngineService {
     const entries = Object.entries(rawPositions as Record<string, unknown>)
       .map(([rawId, rawPos]) => {
         const id = Number(rawId);
-        if (!Number.isFinite(id) || id <= 0) return null;
+        if (!Number.isFinite(id) || id === 0) return null;
         if (!rawPos || typeof rawPos !== 'object') return null;
         const pos = rawPos as Record<string, unknown>;
         const x = Number(pos['x']);

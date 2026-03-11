@@ -37,6 +37,24 @@ describe('BoardPayloadService', () => {
     expect(msg).toContain('Mouche : position inconnue.');
   });
 
+  it('buildPositionPanelMessage includes bots with negative ids', () => {
+    const svc = new BoardPayloadService();
+    const msg = svc.buildPositionPanelMessage({
+      tilesRaw: new Array(40).fill({}),
+      positionsRaw: { 1: 2, [-1]: 5 },
+      playerId: 1,
+      playersRaw: [
+        { id: 1, username: 'hacene' },
+        { id: -1, username: 'Bot' },
+      ],
+    });
+
+    expect(msg).toContain('hacene :');
+    expect(msg).toContain('Bot :');
+    expect(msg).toContain('case 3/40');
+    expect(msg).toContain('case 6/40');
+  });
+
   it('buildPawnProgressPositionPanelMessage lists every player with grouped pawn progress', () => {
     const svc = new BoardPayloadService();
     const msg = svc.buildPawnProgressPositionPanelMessage({
