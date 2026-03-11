@@ -78,6 +78,7 @@ export class TaxiExpressPresenterService {
                 tilesRaw: meta.tiles,
                 positionsRaw: meta.positions,
                 playerId: userId,
+                playersRaw: state.players,
               }),
             },
             score: {

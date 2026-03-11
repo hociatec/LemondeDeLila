@@ -31,7 +31,13 @@ export class JeuOiePresenterService {
         panels: {
           position: {
             title: 'Position',
-            message: this.buildPositionMessage(meta, userId),
+            message: this.boardPayload.buildPositionPanelMessage({
+              tilesRaw: meta.tiles,
+              positionsRaw: meta.positions,
+              lapsRaw: meta.laps,
+              playerId: userId,
+              playersRaw: state.players,
+            }),
           },
           board: {
             title: 'Plateau',
@@ -56,40 +62,6 @@ export class JeuOiePresenterService {
         meta.laps,
       ),
     } as any;
-  }
-
-  private buildPositionMessage(meta: JeuOieMetadata, userId: number): string {
-    const tiles = Array.isArray(meta?.tiles) ? meta.tiles : [];
-    const posRaw = (meta?.positions as any)?.[userId];
-    const pos = typeof posRaw === 'number' ? posRaw : Number(posRaw);
-    if (!Number.isFinite(pos) || tiles.length === 0) {
-      return 'Position: inconnue.';
-    }
-
-    const startIndex = tiles.findIndex((t: any) => t?.type === 'start');
-    const finishIndex = tiles.findIndex((t: any) => t?.type === 'finish');
-    const effectiveStart = startIndex >= 0 ? startIndex : 0;
-    const effectiveFinish = finishIndex >= 0 ? finishIndex : tiles.length - 1;
-    const maxCase = effectiveFinish > 0 ? effectiveFinish : tiles.length - 1;
-    if (maxCase <= 0) {
-      return 'Position: inconnue.';
-    }
-
-    const lapRaw = (meta?.laps as any)?.[userId];
-    const lap = typeof lapRaw === 'number' ? lapRaw : Number(lapRaw);
-    const tourPlateau = Number.isFinite(lap) ? String(Math.trunc(lap)) : '?';
-
-    const caseNumber = Math.max(0, Math.trunc(pos));
-    if (caseNumber < effectiveStart) {
-      return `Tour plateau ${tourPlateau}, avant départ (${caseNumber}/${maxCase}).`;
-    }
-    if (caseNumber === effectiveStart) {
-      return `Tour plateau ${tourPlateau}, départ (${caseNumber}/${maxCase}).`;
-    }
-    if (caseNumber >= effectiveFinish) {
-      return `Tour plateau ${tourPlateau}, arrivée (${maxCase}/${maxCase}).`;
-    }
-    return `Tour plateau ${tourPlateau}, case ${caseNumber}/${maxCase}.`;
   }
 
   private buildBoardMessage(meta: JeuOieMetadata): string {

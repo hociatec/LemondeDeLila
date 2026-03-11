@@ -1,8 +1,9 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
 
 import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
+import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import { ODYSSEE_GAME } from '../definitions/odyssee.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { OdysseeMetadata } from '../model/odyssee.types';
@@ -15,6 +16,8 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 @Injectable()
 export class OdysseePresenterService {
+  constructor(private readonly boardPayload: BoardPayloadService) {}
+
   exposeStateForUser(
     state: GameStateEntity,
     userId: number,
@@ -91,23 +94,16 @@ export class OdysseePresenterService {
           panels: {
             position: {
               title: 'Position',
-              message: (() => {
-                const pawns = Array.isArray(meta.pawnsByPlayer?.[userId])
-                  ? meta.pawnsByPlayer[userId]
-                  : [];
-                if (pawns.length === 0) return 'Position: inconnue.';
-
-                const parts = pawns
-                  .filter(
-                    (p) =>
-                      p &&
-                      typeof p.pawnIndex === 'number' &&
-                      typeof p.progress === 'number',
-                  )
-                  .map((p) => `Pion ${p.pawnIndex + 1}: ${p.progress}`);
-                if (parts.length === 0) return 'Position: inconnue.';
-                return `Pions: ${parts.join(', ')}.`;
-              })(),
+              message: this.boardPayload.buildPawnProgressPositionPanelMessage({
+                playersRaw: state.players,
+                pawnsByPlayerRaw: meta.pawnsByPlayer,
+                trackLengthRaw: meta.trackLength,
+                homeLengthRaw: meta.homeLength,
+                offsetsRaw: meta.offsets,
+                stableLabel: 'Base',
+                homeLabel: 'Hangar',
+                arrivedLabel: 'Arrivée',
+              }),
             },
             stable: {
               title: 'État',

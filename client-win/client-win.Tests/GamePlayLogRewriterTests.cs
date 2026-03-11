@@ -125,10 +125,8 @@ public sealed class GamePlayLogRewriterTests
         Assert.Equal(
             new[]
             {
-                ("Hacene : libre.", AnnouncementPriority.Assertive),
-                ("Lilas : arrêtée par Gamelle vide.", AnnouncementPriority.Assertive),
-                ("Hacene : libre.", AnnouncementPriority.Assertive),
-                ("Lilas : arrêtée par Gamelle vide.", AnnouncementPriority.Assertive),
+                ("Hacene : libre. Lilas : arrêtée par Gamelle vide.", AnnouncementPriority.Assertive),
+                ("Hacene : libre. Lilas : arrêtée par Gamelle vide.", AnnouncementPriority.Assertive),
             },
             announcements.Messages.ToArray());
     }

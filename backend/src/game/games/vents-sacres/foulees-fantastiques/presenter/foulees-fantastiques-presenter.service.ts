@@ -37,7 +37,7 @@ export class FouleesFantastiquesPresenterService {
       const arrived = pawns.filter(
         (pawn: any) => (pawn?.progress ?? -1) >= arrivalProgress,
       ).length;
-      return `${name} : ${arrived} arrivé${arrived > 1 ? 's' : ''}`;
+      return `${name} : ${arrived} arrivÃ©${arrived > 1 ? 's' : ''}`;
     });
     const myPawns = Array.isArray(meta.pawnsByPlayer?.[userId])
       ? meta.pawnsByPlayer[userId]
@@ -63,9 +63,9 @@ export class FouleesFantastiquesPresenterService {
 
     const stableLines: string[] = [];
     if (myColor) stableLines.push(`Couleur: ${myColor}.`);
-    stableLines.push(`Départ: ${inStable}/4.`);
+    stableLines.push(`DÃ©part: ${inStable}/4.`);
     stableLines.push(`Abri: ${inHome}/4.`);
-    stableLines.push(`Arrivés: ${finished}/4.`);
+    stableLines.push(`ArrivÃ©s: ${finished}/4.`);
 
     if (out.length) {
       const offset = meta.offsets?.[userId] ?? 0;
@@ -82,34 +82,19 @@ export class FouleesFantastiquesPresenterService {
       stableLines.push('Aucun animal sorti.');
     }
 
-    const positionLines: string[] = [];
-    const allOnTrack: Array<{ pos: number; line: string }> = [];
-    for (const p of players) {
-      if (!p) continue;
-      const offset = meta.offsets?.[p.id] ?? 0;
-      const names = (meta as any)?.pawnNamesByPlayer?.[p.id];
-      const pawns = Array.isArray(meta.pawnsByPlayer?.[p.id])
-        ? meta.pawnsByPlayer[p.id]
-        : [];
-      for (const pawn of pawns) {
-        const prog = typeof pawn?.progress === 'number' ? pawn.progress : -1;
-        if (prog < 0 || prog >= meta.trackLength) continue;
-        const pos = (offset + prog) % meta.trackLength;
-        const label =
-          Array.isArray(names) && typeof names[pawn.pawnIndex] === 'string'
-            ? String(names[pawn.pawnIndex]).trim()
-            : `animal ${pawn.pawnIndex + 1}`;
-        allOnTrack.push({
-          pos,
-          line: `${label}, tour 0, case ${pos + 1}/${meta.trackLength}.`,
-        });
-      }
-    }
-    allOnTrack.sort((a, b) => b.pos - a.pos);
-    positionLines.push(...allOnTrack.map((x) => x.line));
-    if (!positionLines.length) {
-      positionLines.push('Aucun animal sorti.');
-    }
+    const positionMessage = this.boardPayload.buildPawnProgressPositionPanelMessage(
+      {
+        playersRaw: state.players,
+        pawnsByPlayerRaw: meta.pawnsByPlayer,
+        trackLengthRaw: meta.trackLength,
+        homeLengthRaw: meta.homeLength,
+        offsetsRaw: meta.offsets,
+        pawnNamesByPlayerRaw: (meta as any)?.pawnNamesByPlayer,
+        stableLabel: 'DÃ©part',
+        homeLabel: 'Abri',
+        arrivedLabel: 'ArrivÃ©s',
+      },
+    );
 
     const extras = {
       ...(state as any).extras,
@@ -117,26 +102,19 @@ export class FouleesFantastiquesPresenterService {
         id: userId,
         username: me?.username ?? `Joueur ${userId}`,
         stable: stableLines,
-        position: positionLines,
+        position: [positionMessage],
       },
       ui: {
         panels: {
           stable: {
-            title: 'État',
+            title: 'Ã‰tat',
             message: stableLines.length
               ? stableLines.join(' ')
-              : 'État: inconnu.',
+              : 'Ã‰tat: inconnu.',
           },
           position: {
             title: 'Position',
-            message: positionLines.length
-              ? positionLines.join(' ')
-              : this.boardPayload.buildPositionPanelMessage({
-                  tilesRaw: meta.tiles,
-                  positionsRaw: meta.positions,
-                  lapsRaw: meta.laps,
-                  playerId: userId,
-                }),
+            message: positionMessage,
           },
           score: {
             title: 'Scores',
@@ -148,8 +126,6 @@ export class FouleesFantastiquesPresenterService {
       },
     };
 
-    // Ne pas exposer le pending (liste de choix) aux autres joueurs :
-    // c'est une décision à prendre uniquement par `pending.playerId`.
     const pendingForUser =
       state.pending && typeof (state.pending as any)?.playerId === 'number'
         ? (state.pending as any).playerId === userId

@@ -51,6 +51,9 @@ public sealed partial class GameHistorySink : IGameHistorySink
         var messageIsUiTurn = trimmedMessage.StartsWith("[ui.turn]", StringComparison.OrdinalIgnoreCase);
         var messageIsUiShortcutTagged = trimmedMessage.StartsWith("[ui.shortcut]", StringComparison.OrdinalIgnoreCase);
         var messageIsUiShortcut = messageIsUi || messageIsUiTurn || messageIsUiShortcutTagged;
+        var shortcutAnnouncementParts = messageIsUiShortcutTagged
+            ? new List<string>()
+            : null;
 
         void AddNow()
         {
@@ -90,6 +93,20 @@ public sealed partial class GameHistorySink : IGameHistorySink
 
                 _history.Entries.Add(cleaned);
 
+                if (shortcutAnnouncementParts != null)
+                {
+                    shortcutAnnouncementParts.Add(cleaned);
+                }
+
+                if (isUiShortcutTagged)
+                {
+                    if (messageIsUiShortcut || isUi)
+                    {
+                        flushedPendingForMessage = true;
+                    }
+                    continue;
+                }
+
                 TryAnnounce(
                     cleaned,
                     timestamp,
@@ -100,6 +117,15 @@ public sealed partial class GameHistorySink : IGameHistorySink
                 {
                     flushedPendingForMessage = true;
                 }
+            }
+
+            if (shortcutAnnouncementParts is { Count: > 0 })
+            {
+                TryAnnounce(
+                    string.Join(" ", shortcutAnnouncementParts),
+                    timestamp,
+                    priority: AnnouncementPriority.Assertive,
+                    flushPending: true);
             }
         }
 

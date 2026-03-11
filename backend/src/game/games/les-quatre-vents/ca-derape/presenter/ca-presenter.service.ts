@@ -12,30 +12,6 @@ import type { CaMetadata } from '../model/ca.types';
 export class CaPresenterService {
   constructor(private readonly boardPayload: BoardPayloadService) {}
 
-  private buildPositionMessage(meta: CaMetadata, playerId: number): string {
-    const tiles = Array.isArray(meta.tiles) ? meta.tiles : [];
-    const pos = meta.positions?.[playerId];
-    if (!Number.isFinite(pos) || tiles.length <= 0) {
-      return 'Position: inconnue.';
-    }
-
-    const tile = tiles[Math.max(0, Math.min(tiles.length - 1, pos))];
-    const caseNumber = Math.max(1, Math.trunc(pos) + 1);
-    const total = tiles.length;
-    const label = String(tile?.label ?? '').trim();
-    const desc = String(tile?.description ?? '').trim();
-    const isNeutral = Boolean(tile?.isNeutral);
-    const kindLabel = isNeutral ? 'Case neutre' : 'Carte obligatoire';
-
-    const parts = [
-      `Case ${caseNumber}/${total}${label ? ` - ${label}` : ''}.`,
-      desc ? desc : null,
-      `Type: ${kindLabel}.`,
-    ].filter(Boolean);
-
-    return parts.join(' ');
-  }
-
   exposeStateForUser(
     state: GameStateEntity,
     userId: number,
@@ -63,7 +39,12 @@ export class CaPresenterService {
           panels: {
             position: {
               title: 'Position',
-              message: this.buildPositionMessage(meta, userId),
+              message: this.boardPayload.buildPositionPanelMessage({
+                tilesRaw: meta.tiles,
+                positionsRaw: meta.positions,
+                playerId: userId,
+                playersRaw: state.players,
+              }),
             },
           },
         },

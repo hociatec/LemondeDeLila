@@ -33,11 +33,12 @@ export class AFondLesBallonsPresenterService {
         panels: {
           position: {
             title: 'Position',
-            message: this.buildAllPlayersPositionMessage(
-              meta.tiles,
-              meta.positions,
-              players,
-            ),
+            message: this.boardPayload.buildPositionPanelMessage({
+              tilesRaw: meta.tiles,
+              positionsRaw: meta.positions,
+              playerId: userId,
+              playersRaw: players,
+            }),
           },
         },
       },
@@ -59,52 +60,6 @@ export class AFondLesBallonsPresenterService {
     } as GameStateWithActions;
   }
 
-  private buildAllPlayersPositionMessage(
-    tilesRaw: unknown,
-    positionsRaw: unknown,
-    playersRaw: unknown,
-  ): string {
-    const board = this.boardPayload.buildTilesPositionsLaps(
-      tilesRaw,
-      positionsRaw,
-    );
-    const totalTiles = Array.isArray(board.tiles) ? board.tiles.length : 0;
-    const positions = board.positions ?? {};
-    if (totalTiles <= 0 || Object.keys(positions).length === 0) {
-      return 'Position: inconnue.';
-    }
-
-    const players = Array.isArray(playersRaw) ? playersRaw : [];
-    const namesById = new Map<number, string>();
-    for (const p of players) {
-      if (!p || typeof p.id !== 'number') continue;
-      const name = String(p.username ?? '').trim();
-      namesById.set(p.id, name.length > 0 ? name : `Joueur ${p.id}`);
-    }
-
-    const parts = Object.entries(positions)
-      .map(([playerIdRaw, posRaw]) => {
-        const playerId = Number(playerIdRaw);
-        const name = Number.isFinite(playerId)
-          ? (namesById.get(playerId) ?? `Joueur ${playerId}`)
-          : `Joueur ${playerIdRaw}`;
-        const pos = Number(posRaw);
-        const caseNumber = Number.isFinite(pos)
-          ? Math.max(1, Math.trunc(pos) + 1)
-          : null;
-        if (caseNumber == null) {
-          return null;
-        }
-        return `${name} case ${caseNumber}/${totalTiles}`;
-      })
-      .filter((entry): entry is string => typeof entry === 'string');
-
-    if (parts.length === 0) {
-      return 'Position: inconnue.';
-    }
-
-    return `Positions. ${parts.join('. ')}.`;
-  }
 }
 
 function asRecord(value: unknown): Record<string, unknown> {

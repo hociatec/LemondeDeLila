@@ -541,33 +541,13 @@ export class PanierExpressPresenterService extends BasePresenterService {
     meta: PanierExpressMetadata,
     playerViews: PanierExpressPlayerView[],
   ): string {
-    if (!playerViews.length) {
-      return 'Position: (aucun joueur).';
-    }
-    const totalTiles = Array.isArray(meta.tiles) ? meta.tiles.length : 0;
-    const lines = playerViews.map((view) => {
-      const name =
-        typeof view.username === 'string' && view.username.trim().length > 0
-          ? view.username.trim()
-          : `Joueur ${view.id}`;
-      const pos = meta.positions?.[view.id];
-      const lap = meta.laps?.[view.id];
-      const caseNumber =
-        typeof pos === 'number' && Number.isFinite(pos)
-          ? Math.max(1, Math.trunc(pos) + 1)
-          : null;
-      const lapText =
-        typeof lap === 'number' && Number.isFinite(lap)
-          ? `tour plateau ${Math.trunc(lap)}`
-          : 'tour plateau ?';
-      const caseText = caseNumber
-        ? totalTiles
-          ? `case ${caseNumber}/${totalTiles}`
-          : `case ${caseNumber}`
-        : 'case (inconnue)';
-      return `${name} : ${lapText}, ${caseText}.`;
+    return this.boardPayload.buildPositionPanelMessage({
+      tilesRaw: meta.tiles,
+      positionsRaw: meta.positions,
+      lapsRaw: meta.laps,
+      playerId: playerViews[0]?.id ?? null,
+      playersRaw: playerViews,
     });
-    return lines.join('\n');
   }
 
   private toStringArray(value: unknown): string[] {

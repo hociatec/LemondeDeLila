@@ -552,6 +552,39 @@ public sealed class GamePlayViewFocusTests
     }
 
     [Fact]
+    public void RealtimeController_AnnouncesTurnWhenPawnSelectionEndsWithoutTurnChange()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            var sounds = new RecordingSoundService();
+            var emittedMessages = new List<GamePlayHistoryMessage>();
+            var controller = CreateRealtimeController(
+                dispatcher,
+                sounds,
+                emitMessage: message => emittedMessages.Add(message));
+
+            controller.HandleStateUpdated(CreatePendingState(
+                pendingType: "pick_pawn",
+                label: "Choisissez un pion.",
+                choices: ["Lutin", "Fée"]));
+            StaDispatcherHarness.Drain(dispatcher);
+            emittedMessages.Clear();
+
+            controller.HandleStateUpdated(CreatePendingState(
+                pendingType: string.Empty,
+                label: string.Empty,
+                choices: [],
+                turnIndex: 1));
+
+            Assert.True(StaDispatcherHarness.WaitUntil(
+                () => emittedMessages.Any(m => string.Equals(m.Message, "C'est au tour de Mouche.", StringComparison.Ordinal)),
+                dispatcher,
+                1200));
+            StaDispatcherHarness.Drain(dispatcher);
+        });
+    }
+
+    [Fact]
     public void RealtimeController_PrefersDiceSoundOverDrawSoundWhenRollAndDrawShareSameBatch()
     {
         StaDispatcherHarness.Run(dispatcher =>

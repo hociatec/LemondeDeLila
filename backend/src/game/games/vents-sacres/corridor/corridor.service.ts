@@ -12,6 +12,11 @@ import { CorridorPresenterService } from './presenter/corridor-presenter.service
 import { CORRIDOR_GAME } from './definitions/game.definition';
 import { CorridorBotService } from './bots/corridor-bot.service';
 import * as CorridorRulebook from './rulebook/rulebook';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
+import { interfaceShortcut } from '../../../engine/shortcuts/shortcut-utils';
 
 @Injectable()
 export class CorridorService extends AbstractGameService {
@@ -53,6 +58,20 @@ export class CorridorService extends AbstractGameService {
   getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
     if (!state || String(state.status ?? '').trim().toLowerCase() !== 'started') {
       return [];
+    }
+
+    const meta = (state.metadata ?? {}) as any;
+    if (String(meta.setupStep ?? '') === 'setup_config') {
+      if (state.pending?.playerId !== playerId) {
+        return [];
+      }
+      return [
+        {
+          type: 'corridor_set_config',
+          payload: {},
+          label: 'Configuration du Corridor',
+        } as any,
+      ];
     }
 
     const pendingType = String(state.pending?.type ?? '').trim().toLowerCase();
@@ -118,5 +137,12 @@ export class CorridorService extends AbstractGameService {
     userId: number,
   ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
+  }
+
+  getShortcuts(_ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return [
+      interfaceShortcut('P', 'position'),
+      interfaceShortcut('S', 'score'),
+    ];
   }
 }

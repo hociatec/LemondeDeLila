@@ -216,6 +216,14 @@ export class MorpionPresenter extends BasePresenterService {
           `#${currentPlayerId}`)
         : 'inconnu';
 
+    const playerLines = players.map((player) => {
+      const name =
+        typeof player?.username === 'string' && player.username.trim().length > 0
+          ? player.username.trim()
+          : `Joueur ${player?.id ?? '?'}`;
+      const glyph = typeof player?.id === 'number' ? glyphForOwner(player.id) : '?';
+      return `${name} : pion ${glyph}.`;
+    });
     const playInfo =
       String(state.status ?? '').toLowerCase() === 'started'
         ? `Cases libres: ${emptyCount}. Entrée: jouer sur la case focus.`
@@ -226,8 +234,8 @@ export class MorpionPresenter extends BasePresenterService {
       ui: {
         panels: {
           position: {
-            title: 'Plateau',
-            message: `Tour: ${who}. ${boardMessage}`.trim(),
+            title: 'Position',
+            message: `Positions. ${playerLines.join(' ')} Tour: ${who}. ${boardMessage}`.trim(),
           },
           play: {
             title: 'Coups',

@@ -630,12 +630,16 @@ internal sealed class GamePlayRealtimeController
         _syncShortcuts(state);
         _grid.SyncFromState(state, _viewerPlayerId);
 
+        var endedPawnSelection =
+            PawnPendingTypes.IsPawnPendingType(previousPendingType) &&
+            !PawnPendingTypes.IsPawnPendingType(state.Pending?.Type);
+
         _lastPendingType = nextPendingType;
         _lastPendingFocusSignature = nextPendingFocusSignature;
         _lastBotThinking = state.BotThinking;
         _lastViewerHandCounts = currentHandCounts;
         _refreshCanExecute();
-        TryAnnounceTurnFromState(state);
+        TryAnnounceTurnFromState(state, force: endedPawnSelection);
     }
 
     private static string BuildPendingFocusSignature(GamePendingDto? pending)
@@ -876,7 +880,7 @@ internal sealed class GamePlayRealtimeController
                GamePlayWinnerReader.TryExtractOutcomeMap(state).Count > 0;
     }
 
-    private void TryAnnounceTurnFromState(GameStateDto state)
+    private void TryAnnounceTurnFromState(GameStateDto state, bool force = false)
     {
         if (!string.Equals(state.Status, "started", StringComparison.OrdinalIgnoreCase))
         {
@@ -896,7 +900,7 @@ internal sealed class GamePlayRealtimeController
             return;
         }
 
-        if (_lastStateTurnPlayerId == currentPlayerId)
+        if (!force && _lastStateTurnPlayerId == currentPlayerId)
         {
             return;
         }

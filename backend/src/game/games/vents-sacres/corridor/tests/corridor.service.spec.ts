@@ -5,14 +5,15 @@ import { CorridorPresenterService } from '../presenter/corridor-presenter.servic
 import * as CorridorRulebook from '../rulebook/rulebook';
 
 function createSvc(): CorridorService {
+  const setup = new CorridorSetupService();
   const presenter = new CorridorPresenterService(
     { buildFromWalls: () => ({}) } as any,
     { buildFromActions: () => ({}) } as any,
   );
   return new CorridorService(
     { register: () => {} } as any,
-    new CorridorSetupService(),
-    new CorridorActionService(),
+    setup,
+    new CorridorActionService(setup),
     presenter,
     undefined as any,
   );
@@ -70,8 +71,15 @@ describe('Corridor', () => {
       pending: null,
     } as any);
 
-    const exposed1 = svc.exposeStateForUser(started as any, 1);
-    const exposed2 = svc.exposeStateForUser(started as any, 2);
+    expect(String((started.metadata as any)?.setupStep ?? '')).toBe('setup_config');
+    expect(String(started.pending?.type ?? '')).toBe('config_prompt');
+
+    const configured = svc.applyActions(started as any, [
+      { type: 'corridor_set_config', payload: { wallsPerPlayer: 10 } } as any,
+    ]);
+
+    const exposed1 = svc.exposeStateForUser(configured as any, 1);
+    const exposed2 = svc.exposeStateForUser(configured as any, 2);
     const types1 = new Set((exposed1.actions ?? []).map((a: any) => a.type));
     const types2 = new Set((exposed2.actions ?? []).map((a: any) => a.type));
     expect(types1.has('choose_pawn') || types2.has('choose_pawn')).toBe(true);
@@ -99,13 +107,46 @@ describe('Corridor', () => {
       pending: null,
     } as any);
 
-    const forHuman = svc.exposeStateForUser(started as any, 1);
+    const configured = svc.applyActions(started as any, [
+      { type: 'corridor_set_config', payload: { wallsPerPlayer: 10 } } as any,
+    ]);
+
+    const forHuman = svc.exposeStateForUser(configured as any, 1);
     expect(forHuman.pending?.type).toBe('choose_pawn');
     expect(forHuman.pending?.playerId).toBe(1);
     expect(((forHuman.pending as any)?.data?.pawns ?? []).length).toBeGreaterThan(0);
 
-    const forBot = svc.exposeStateForUser(started as any, -1);
+    const forBot = svc.exposeStateForUser(configured as any, -1);
     expect(forBot.pending).toBeNull();
+  });
+
+  it('shows setup config prompt to the owner before pawn selection', async () => {
+    const svc = createSvc();
+    const started = svc.hydrateInitialState({
+      status: 'started',
+      phase: 'setup',
+      round: 0,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'Owner' },
+        { id: 2, username: 'Guest' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: { roomOwnerId: 1 },
+      pending: null,
+    } as any);
+
+    const ownerExposed = svc.exposeStateForUser(started as any, 1);
+    const guestExposed = svc.exposeStateForUser(started as any, 2);
+
+    expect(ownerExposed.pending?.type).toBe('config_prompt');
+    expect(ownerExposed.pending?.playerId).toBe(1);
+    expect(
+      (ownerExposed.actions ?? []).some((a: any) => a.type === 'corridor_set_config'),
+    ).toBe(true);
+    expect(guestExposed.pending).toBeNull();
   });
 
   it('allows a legal move and switches turn after pawn choices', async () => {
@@ -128,8 +169,10 @@ describe('Corridor', () => {
     };
 
     const started = svc.hydrateInitialState(base);
+    let ready: any = svc.applyActions(started as any, [
+      { type: 'corridor_set_config', payload: { wallsPerPlayer: 10 } } as any,
+    ]);
     // Pawn choice order is randomized; attempt for both players until pending clears.
-    let ready: any = started;
     ready = choosePawnForUser(svc, ready, 1);
     ready = choosePawnForUser(svc, ready, 2);
     ready = choosePawnForUser(svc, ready, 1);
@@ -170,11 +213,14 @@ describe('Corridor', () => {
     };
 
     const started = svc.hydrateInitialState(base);
-    expect(started.pending?.type).toBe('choose_pawn');
-    expect(started.pending?.playerId).toBe(1);
-    expect((started.metadata as any)?.pawnByPlayerId?.['-1']).toBeTruthy();
+    const configured = svc.applyActions(started as any, [
+      { type: 'corridor_set_config', payload: { wallsPerPlayer: 10 } } as any,
+    ]);
+    expect(configured.pending?.type).toBe('choose_pawn');
+    expect(configured.pending?.playerId).toBe(1);
+    expect((configured.metadata as any)?.pawnByPlayerId?.['-1']).toBeTruthy();
 
-    const ready = choosePawnForUser(svc, started, 1);
+    const ready = choosePawnForUser(svc, configured, 1);
     expect(ready.pending).toBeNull();
     expect(ready.turn?.currentPlayerId).toBe(-1);
   });
@@ -204,7 +250,10 @@ describe('Corridor', () => {
     };
 
     const started = svc.hydrateInitialState(base);
-    const afterChoose = choosePawnForUser(svc, started, 1);
+    const configured = svc.applyActions(started as any, [
+      { type: 'corridor_set_config', payload: { wallsPerPlayer: 10 } } as any,
+    ]);
+    const afterChoose = choosePawnForUser(svc, configured, 1);
     const ready = {
       ...afterChoose,
       turn: { ...(afterChoose.turn ?? {}), currentPlayerId: -1 },
@@ -289,6 +338,9 @@ describe('Corridor', () => {
 
     // Pawn choice order is randomized; attempt for both players until pending clears.
     let ready: any = svc.hydrateInitialState(base);
+    ready = svc.applyActions(ready as any, [
+      { type: 'corridor_set_config', payload: { wallsPerPlayer: 10 } } as any,
+    ]);
     ready = choosePawnForUser(svc, ready, 1);
     ready = choosePawnForUser(svc, ready, 2);
     ready = choosePawnForUser(svc, ready, 1);
@@ -305,5 +357,68 @@ describe('Corridor', () => {
     ]);
     const after = (next.metadata as any).wallsRemainingByPlayerId['1'];
     expect(after).toBe(before - 1);
+  });
+
+  it('does not let a player place more walls than configured', async () => {
+    const svc = createSvc();
+    let state: any = svc.hydrateInitialState({
+      status: 'started',
+      phase: 'setup',
+      round: 0,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: {},
+      pending: null,
+    } as any);
+
+    state = svc.applyActions(state, [
+      { type: 'corridor_set_config', payload: { wallsPerPlayer: 0 } } as any,
+    ]);
+    state = choosePawnForUser(svc, state, 1);
+    state = choosePawnForUser(svc, state, 2);
+    state = choosePawnForUser(svc, state, 1);
+    state = choosePawnForUser(svc, state, 2);
+
+    const exposed = svc.exposeStateForUser(state, 1);
+    expect((exposed.actions ?? []).some((a: any) => a.type === 'corridor_place_wall')).toBe(false);
+    expect((state.metadata as any).wallsRemainingByPlayerId['1']).toBe(0);
+  });
+
+  it('exposes walls remaining for every player in the score panel', async () => {
+    const svc = createSvc();
+    let state: any = svc.hydrateInitialState({
+      status: 'started',
+      phase: 'setup',
+      round: 0,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: {},
+      pending: null,
+    } as any);
+
+    state = svc.applyActions(state, [
+      { type: 'corridor_set_config', payload: { wallsPerPlayer: 3 } } as any,
+    ]);
+    state = choosePawnForUser(svc, state, 1);
+    state = choosePawnForUser(svc, state, 2);
+    state = choosePawnForUser(svc, state, 1);
+    state = choosePawnForUser(svc, state, 2);
+
+    const exposed = svc.exposeStateForUser(state, 1);
+    const score = (((exposed.extras as any)?.ui?.panels ?? {}) as any).score?.message ?? '';
+    expect(String(score)).toContain('A : 3/3 mur(s).');
+    expect(String(score)).toContain('B : 3/3 mur(s).');
   });
 });

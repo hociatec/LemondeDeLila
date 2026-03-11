@@ -54,6 +54,7 @@ export class VoyagePresenterService {
                 tilesRaw: meta.tiles,
                 positionsRaw: meta.positions,
                 playerId: userId,
+                playersRaw: state.players,
               }),
             },
             cards: {

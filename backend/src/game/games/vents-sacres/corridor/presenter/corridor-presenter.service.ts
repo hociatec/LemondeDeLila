@@ -26,8 +26,7 @@ export class CorridorPresenterService extends BasePresenterService {
     const meta = (state.metadata ?? {}) as CorridorMetadata;
     const exposed = this.buildExposedStateForUser(state, userId);
 
-    // En setup/finished: on retourne uniquement l'état "table" (pas de grille/plateau).
-    if (!this.isStarted(state)) {
+    if (!this.isStarted(state) || String(meta?.setupStep ?? '') === 'setup_config') {
       return exposed;
     }
 
@@ -60,10 +59,7 @@ export class CorridorPresenterService extends BasePresenterService {
       },
     );
 
-    const blockedEdges = this.gridBlockedEdges.buildFromWalls(
-      size,
-      meta?.walls,
-    );
+    const blockedEdges = this.gridBlockedEdges.buildFromWalls(size, meta?.walls);
     const cellTags = this.buildGridCellTags(state, userId, size);
     const exposedExtras =
       exposed.extras && typeof exposed.extras === 'object'
@@ -89,6 +85,10 @@ export class CorridorPresenterService extends BasePresenterService {
             position: {
               title: 'Positions',
               message: this.buildPositionPanelMessage(state, size),
+            },
+            score: {
+              title: 'Murs',
+              message: this.buildScorePanelMessage(state),
             },
           },
         },
@@ -151,6 +151,27 @@ export class CorridorPresenterService extends BasePresenterService {
     return `Positions. ${entries.join('. ')}.`;
   }
 
+  private buildScorePanelMessage(state: GameStateEntity): string {
+    const players = Array.isArray(state.players) ? state.players : [];
+    const meta = (state.metadata ?? {}) as CorridorMetadata;
+    const remainingByPlayerId = meta?.wallsRemainingByPlayerId ?? {};
+    const limit = Number.isFinite(Number(meta?.wallsPerPlayer))
+      ? Math.trunc(Number(meta.wallsPerPlayer))
+      : 0;
+    const entries = players.map((player) => {
+      const name =
+        typeof player?.username === 'string' && player.username.trim().length > 0
+          ? player.username.trim()
+          : `Joueur ${player?.id ?? '?'}`;
+      const remaining = Math.max(
+        0,
+        Math.trunc(Number(remainingByPlayerId[String(player?.id ?? '')] ?? 0)),
+      );
+      return `${name} : ${remaining}/${limit} mur(s).`;
+    });
+    return entries.length ? entries.join(' ') : 'Murs inconnus.';
+  }
+
   private toCellRef(x: number, y: number, size: number): string {
     const safeSize = Number.isFinite(size) && size > 0 ? Math.trunc(size) : 0;
     if (safeSize <= 0) {
@@ -195,6 +216,13 @@ export class CorridorPresenterService extends BasePresenterService {
     userId: number,
   ): GameSingleActionDto[] {
     if (!this.isStarted(state)) return [];
+    const meta = (state.metadata ?? {}) as CorridorMetadata;
+    if (String(meta.setupStep ?? '') === 'setup_config') {
+      if (state.pending?.playerId !== userId) {
+        return [];
+      }
+      return [{ type: 'corridor_set_config', payload: {} } as any];
+    }
     const pendingType = String(state.pending?.type ?? '')
       .trim()
       .toLowerCase();
@@ -251,8 +279,6 @@ export class CorridorPresenterService extends BasePresenterService {
     userId: number,
     _currentPlayerId: number | null,
   ): any {
-    // Keep the real pending phase (e.g. choose_pawn) for the targeted player.
-    // Base filter hides it automatically for other players when playerId differs.
     return this.filterPendingForUser((state.pending as any) ?? null, userId);
   }
 

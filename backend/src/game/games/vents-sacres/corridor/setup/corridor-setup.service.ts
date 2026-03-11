@@ -11,12 +11,19 @@ export class CorridorSetupService {
     const status = String(baseState.status ?? '')
       .toLowerCase()
       .trim();
+    const currentStep = String(
+      ((baseState.metadata ?? {}) as any)?.setupStep ?? '',
+    ).trim();
+    if (status === 'started' && currentStep && currentStep !== 'setup_config') {
+      return baseState;
+    }
     if (status !== 'started') {
       return {
         ...baseState,
         metadata: {
           ...(baseState.metadata ?? {}),
           size: CORRIDOR_GAME.boardSize,
+          wallsPerPlayer: CORRIDOR_GAME.wallsPerPlayer,
           winnerPlayerId: null,
         } as any,
       };
@@ -27,17 +34,73 @@ export class CorridorSetupService {
       throw new Error('Nombre de joueurs insuffisant pour demarrer Le Corridor.');
     }
 
+    const baseMeta =
+      baseState.metadata && typeof baseState.metadata === 'object'
+        ? (baseState.metadata as Record<string, unknown>)
+        : {};
+    const ownerPlayerId = this.resolveOwnerPlayerId(players as any[], baseMeta);
+    const wallsPerPlayer = this.resolveWallsPerPlayer(baseMeta.wallsPerPlayer);
+
+    return {
+      ...baseState,
+      phase: 'setup',
+      metadata: {
+        ...baseMeta,
+        size: CORRIDOR_GAME.boardSize,
+        setupStep: 'setup_config',
+        ownerPlayerId,
+        wallsPerPlayer,
+        winnerPlayerId: null,
+        winnerId: null,
+      } as any,
+      pending: {
+        type: 'config_prompt',
+        playerId: ownerPlayerId,
+        blocking: true,
+        label: 'Configuration Corridor.',
+        choices: [],
+        data: {
+          title: 'Le Corridor',
+          actionType: 'corridor_set_config',
+          fields: [
+            {
+              key: 'wallsPerPlayer',
+              label: 'Nombre de murs par joueur',
+              kind: 'number',
+              min: 0,
+              max: 20,
+              initialText: String(wallsPerPlayer),
+            },
+          ],
+        },
+      } as any,
+      turn: {
+        ...(baseState.turn ?? { direction: 1 }),
+        currentPlayerId: ownerPlayerId,
+        direction: 1,
+        label: 'Réglages Corridor',
+      },
+    };
+  }
+
+  applySetupConfig(
+    baseState: GameStateEntity,
+    wallsPerPlayer: number,
+  ): GameStateEntity {
+    const players = baseState.players ?? [];
+    if (players.length < CORRIDOR_GAME.minPlayers) {
+      throw new Error('Nombre de joueurs insuffisant pour demarrer Le Corridor.');
+    }
+
     const size = CORRIDOR_GAME.boardSize;
     const p1 = players[0];
     const p2 = players[1];
     const startX = Math.floor(size / 2);
-
     const pawnChoices = CORRIDOR_PAWNS.map((p) => ({
       id: p.id,
       label: p.label,
       description: p.description,
     }));
-
     const baseMeta =
       baseState.metadata && typeof baseState.metadata === 'object'
         ? (baseState.metadata as Record<string, unknown>)
@@ -45,18 +108,23 @@ export class CorridorSetupService {
     const pawnByPlayerId: Record<string, string> = {};
     const usedPawnIds = new Set<string>();
     const log = [...(baseState.log ?? [])];
+
     for (const bot of players.filter((p) => p?.isBot === true)) {
       const pick = pawnChoices.find((pawn) => !usedPawnIds.has(pawn.id));
       if (!pick) break;
       pawnByPlayerId[String(bot.id)] = pick.id;
       usedPawnIds.add(pick.id);
-      log.push({ message: `${bot.username} choisit ${pick.label}.`, timestamp: new Date().toISOString() });
+      log.push({
+        message: `${bot.username} choisit ${pick.label}.`,
+        timestamp: new Date().toISOString(),
+      });
     }
 
     const eligible = players.filter(
       (p) => p?.isBot !== true && !pawnByPlayerId[String(p?.id ?? '')],
     );
-    const pick = eligible.length > 1 ? nextRngInt(baseMeta, eligible.length) : null;
+    const pick =
+      eligible.length > 1 ? nextRngInt(baseMeta, eligible.length) : null;
     const pendingPlayerId =
       eligible.length <= 0
         ? null
@@ -66,8 +134,12 @@ export class CorridorSetupService {
     const metaAfterPick = pick?.meta ?? baseMeta;
 
     const metadata: CorridorMetadata = {
+      ...(metaAfterPick as any),
       size,
+      setupStep: 'playing',
+      ownerPlayerId: this.resolveOwnerPlayerId(players as any[], baseMeta),
       setupStarterId: p1.id,
+      wallsPerPlayer,
       pawns: pawnChoices,
       pawnByPlayerId,
       pawnsByPlayerId: {
@@ -80,8 +152,8 @@ export class CorridorSetupService {
       },
       walls: { h: [], v: [] },
       wallsRemainingByPlayerId: {
-        [String(p1.id)]: CORRIDOR_GAME.wallsPerPlayer,
-        [String(p2.id)]: CORRIDOR_GAME.wallsPerPlayer,
+        [String(p1.id)]: wallsPerPlayer,
+        [String(p2.id)]: wallsPerPlayer,
       },
       winnerPlayerId: null,
       winnerId: null,
@@ -101,7 +173,7 @@ export class CorridorSetupService {
       round: 1,
       turnIndex: 0,
       lastRoll: null,
-      metadata: { ...metaAfterPick, ...(metadata as any) },
+      metadata: metadata as any,
       pending:
         pendingPlayerId != null
           ? {
@@ -118,8 +190,40 @@ export class CorridorSetupService {
       turn: {
         currentPlayerId: pendingPlayerId ?? p1.id,
         direction: 1,
-        label: pendingPlayerId != null ? 'Choix du pion' : `Tour de ${p1.username}`,
+        label:
+          pendingPlayerId != null ? 'Choix du pion' : `Tour de ${p1.username}`,
       },
     };
+  }
+
+  private resolveOwnerPlayerId(
+    players: Array<{ id: number; isBot?: boolean }>,
+    metadata: Record<string, unknown>,
+  ): number | null {
+    const pickFirstHuman = (): number | null => {
+      const human = players.find((p) => p?.id != null && p.isBot !== true);
+      return typeof human?.id === 'number' ? human.id : null;
+    };
+    const ownerRaw =
+      typeof metadata?.ownerPlayerId === 'number'
+        ? metadata.ownerPlayerId
+        : typeof metadata?.roomOwnerId === 'number'
+          ? metadata.roomOwnerId
+          : null;
+    if (
+      typeof ownerRaw === 'number' &&
+      players.some((p) => Number(p?.id) === ownerRaw && p?.isBot !== true)
+    ) {
+      return ownerRaw;
+    }
+    return pickFirstHuman() ?? players[0]?.id ?? null;
+  }
+
+  resolveWallsPerPlayer(value: unknown): number {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return CORRIDOR_GAME.wallsPerPlayer;
+    const rounded = Math.round(parsed);
+    if (rounded < 0 || rounded > 20) return CORRIDOR_GAME.wallsPerPlayer;
+    return rounded;
   }
 }

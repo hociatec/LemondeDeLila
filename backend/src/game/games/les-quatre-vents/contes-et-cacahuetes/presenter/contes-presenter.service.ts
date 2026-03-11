@@ -45,6 +45,7 @@ export class ContesPresenterService {
               tilesRaw: meta.tiles,
               positionsRaw: meta.positions,
               playerId: userId,
+              playersRaw: state.players,
             }),
           },
           score: {

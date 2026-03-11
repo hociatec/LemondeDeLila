@@ -15,6 +15,15 @@ export class CorridorBotService {
   ): GameSingleActionDto[] {
     const current = state.turn?.currentPlayerId ?? null;
     if (current !== botPlayerId) return [];
+    const meta = (state.metadata ?? {}) as CorridorMetadata;
+    if (String(meta.setupStep ?? '') === 'setup_config') {
+      return [
+        {
+          type: 'corridor_set_config',
+          payload: { wallsPerPlayer: meta.wallsPerPlayer ?? 10 },
+        },
+      ];
+    }
     const pendingType = String(state.pending?.type ?? '')
       .trim()
       .toLowerCase();
@@ -28,7 +37,6 @@ export class CorridorBotService {
       return [{ type: 'choose_pawn', payload: { pawnId } }];
     }
 
-    const meta = (state.metadata ?? {}) as CorridorMetadata;
     const moveTargets = CorridorRulebook.listLegalPawnMoves(state, botPlayerId);
     const wallTargets = CorridorRulebook.listLegalWallPlacements(
       state,

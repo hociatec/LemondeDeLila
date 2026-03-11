@@ -10,9 +10,12 @@ import {
   harmonizeActionStateReturn,
   normalizeLowerActionType,
 } from '../../../../actions/action-service.helper';
+import { CorridorSetupService } from '../setup/corridor-setup.service';
 
 @Injectable()
 export class CorridorActionService {
+  constructor(private readonly setup: CorridorSetupService) {}
+
   private appendUniqueLogMessages(
     state: GameStateEntity,
     messages: string[],
@@ -78,15 +81,45 @@ export class CorridorActionService {
     if (pendingType === 'choose_pawn' && type !== 'choose_pawn') {
       return state;
     }
+    if ((state.metadata as CorridorMetadata | undefined)?.setupStep === 'setup_config') {
+      if (type !== 'corridor_set_config') {
+        return state;
+      }
+    }
     return dispatchByActionType(
       type,
       {
+        corridor_set_config: () => this.applySetConfig(state, action, actorId),
         choose_pawn: () => this.applyChoosePawn(state, action, actorId),
         corridor_move: () => this.applyMove(state, action, actorId),
         corridor_place_wall: () => this.applyWall(state, action, actorId),
       },
       () => state,
     );
+  }
+
+  private applySetConfig(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+    actorId: number | null,
+  ): GameStateEntity {
+    if (actorId == null) return state;
+    const meta = (state.metadata ?? {}) as CorridorMetadata;
+    if ((meta.setupStep ?? '') !== 'setup_config') {
+      return state;
+    }
+    if (meta.ownerPlayerId !== actorId) {
+      return state;
+    }
+
+    const payload = (action.payload ?? {}) as Record<string, unknown>;
+    const wallsPerPlayer = this.setup.resolveWallsPerPlayer(
+      payload.wallsPerPlayer ?? payload.value ?? null,
+    );
+    const next = this.setup.applySetupConfig(state, wallsPerPlayer);
+    return this.appendUniqueLogMessages(next, [
+      `${(state.players ?? []).find((p) => p?.id === actorId)?.username ?? `#${actorId}`} fixe ${wallsPerPlayer} mur(s) par joueur.`,
+    ]);
   }
 
   private applyChoosePawn(
