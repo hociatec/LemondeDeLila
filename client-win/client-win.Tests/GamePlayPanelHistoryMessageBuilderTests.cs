@@ -18,9 +18,7 @@ public sealed class GamePlayPanelHistoryMessageBuilderTests
 
         var message = GamePlayPanelHistoryMessageBuilder.BuildPositionHistoryMessage(state);
 
-        Assert.Contains("Positions.", message);
-        Assert.Contains("A", message);
-        Assert.Contains("B", message);
+        Assert.Equal("Positions. A : case 1/10. B : case 5/10.", message);
     }
 
     [Fact]

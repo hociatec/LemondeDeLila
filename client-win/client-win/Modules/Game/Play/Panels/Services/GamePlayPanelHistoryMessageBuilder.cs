@@ -18,6 +18,12 @@ internal static class GamePlayPanelHistoryMessageBuilder
         var normalizedPanelId = panelId.Trim();
         if (string.Equals(normalizedPanelId, "position", StringComparison.OrdinalIgnoreCase))
         {
+            if (GamePlayUiPanelsParser.TryGetPanelMessage(state, normalizedPanelId, out var panelMessage) &&
+                !string.IsNullOrWhiteSpace(panelMessage))
+            {
+                return panelMessage;
+            }
+
             var allPlayersPositions = BuildAllPlayersPositionsMessage(state);
             if (!string.IsNullOrWhiteSpace(allPlayersPositions))
             {
@@ -30,13 +36,19 @@ internal static class GamePlayPanelHistoryMessageBuilder
 
     internal static string BuildPositionHistoryMessage(GameStateDto state)
     {
+        if (GamePlayUiPanelsParser.TryGetPanelMessage(state, "position", out var panelMessage) &&
+            !string.IsNullOrWhiteSpace(panelMessage))
+        {
+            return panelMessage;
+        }
+
         var allPlayersPositions = BuildAllPlayersPositionsMessage(state);
         if (!string.IsNullOrWhiteSpace(allPlayersPositions))
         {
             return allPlayersPositions;
         }
 
-        return GamePlayUiPanelsParser.TryGetPanelMessage(state, "position", out var message) ? message : string.Empty;
+        return string.Empty;
     }
 
     private static string BuildAllPlayersPositionsMessage(GameStateDto state)

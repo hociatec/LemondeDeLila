@@ -48,6 +48,7 @@ import {
   fixMojibakeString,
 } from '../../../common/utils/mojibake';
 import { SocialProfile } from '../../../social/entities/social-profile.entity';
+import { BoardPayloadService } from '../../modules/board/services/board-payload.service';
 
 type GameEndedOutcome = 'won' | 'lost' | 'draw' | 'unknown';
 
@@ -140,6 +141,7 @@ export class GameEngineService {
     private readonly store: GameEngineStateStore,
     private readonly gameLogger: GameLoggerService,
     private readonly stats: GameStatsService,
+    private readonly boardPayload: BoardPayloadService = new BoardPayloadService(),
     @Optional()
     @InjectRepository(SocialProfile)
     private readonly socialProfiles?: Repository<SocialProfile>,
@@ -413,6 +415,16 @@ export class GameEngineService {
         }
       }
 
+      if (panelId === 'position') {
+        const rebuilt = await this.tryBuildCanonicalPositionPanelMessage(
+          roomId,
+          state,
+        );
+        if (rebuilt) {
+          message = rebuilt;
+        }
+      }
+
       return message
         ? {
             kind: 'panel',
@@ -423,6 +435,46 @@ export class GameEngineService {
     }
 
     return null;
+  }
+
+  private async tryBuildCanonicalPositionPanelMessage(
+    roomId: number,
+    state: GameStateWithActions,
+  ): Promise<string> {
+    try {
+      const payload = await this.rooms.getRoomPayload(roomId);
+      const boardRaw =
+        state?.board && typeof state.board === 'object'
+          ? (state.board as Record<string, unknown>)
+          : null;
+      if (!boardRaw) {
+        return '';
+      }
+
+      const roomRoster = [
+        ...((payload?.room?.players ?? []).map((player) => ({
+          id: player?.id,
+          username: player?.username,
+        })) as Array<{ id: number; username?: string }>),
+        ...((payload?.room?.bots ?? []).map((bot) => ({
+          id:
+            typeof bot?.id === 'number'
+              ? -Math.abs(bot.id)
+              : -Math.abs(Number(bot?.id ?? 0)),
+          username: bot?.name,
+        })) as Array<{ id: number; username?: string }>),
+      ];
+
+      return this.boardPayload.buildPositionPanelMessage({
+        tilesRaw: boardRaw['tiles'],
+        positionsRaw: boardRaw['positions'],
+        lapsRaw: boardRaw['laps'],
+        playerId: null,
+        playersRaw: roomRoster,
+      });
+    } catch {
+      return '';
+    }
   }
 
   async refreshAndBroadcast(roomId: number, gameType: string): Promise<void> {

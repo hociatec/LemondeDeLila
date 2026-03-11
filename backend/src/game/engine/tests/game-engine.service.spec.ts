@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { GameEngineService } from '../services/game-engine.service';
 import { GameCoreService } from '../../core/services/game-core.service';
+import { BoardPayloadService } from '../../modules/board/services/board-payload.service';
 
 jest.mock(
   'winston',
@@ -41,6 +42,7 @@ describe('GameEngineService', () => {
       {} as any,
       {} as any,
       {} as any,
+      new BoardPayloadService(),
       {} as any,
     );
 
@@ -79,6 +81,7 @@ describe('GameEngineService', () => {
       {} as any,
       {} as any,
       {} as any,
+      new BoardPayloadService(),
       {} as any,
     );
 
@@ -109,6 +112,7 @@ describe('GameEngineService', () => {
       {} as any,
       {} as any,
       {} as any,
+      new BoardPayloadService(),
       {} as any,
     );
 
@@ -147,6 +151,7 @@ describe('GameEngineService', () => {
       {} as any,
       {} as any,
       {} as any,
+      new BoardPayloadService(),
       {} as any,
     );
 
@@ -173,6 +178,70 @@ describe('GameEngineService', () => {
       kind: 'panel',
       panelId: 'hand',
       message: 'Main : 1, LAMA.',
+    });
+  });
+
+  it('rebuilds the P panel from the room roster when a game exposes only one position', async () => {
+    const rooms = {
+      getRoomPayload: jest.fn().mockResolvedValue({
+        room: {
+          id: 1,
+          players: [
+            { id: 1, username: 'hacene' },
+            { id: 2, username: 'Lila' },
+          ],
+          bots: [],
+        },
+      }),
+    };
+
+    const engine = new GameEngineService(
+      rooms as any,
+      {} as any,
+      {
+        getHandler: jest.fn(() => ({
+          getShortcuts: jest.fn(() => [
+            { key: 'P', type: 'interface', id: 'position' },
+          ]),
+        })),
+      } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    (engine as any).getStateForUser = jest.fn().mockResolvedValue({
+      status: 'started',
+      players: [{ id: 1, username: 'hacene' }],
+      turn: { currentPlayerId: 1, direction: 1 },
+      extras: {
+        ui: {
+          panels: {
+            position: {
+              title: 'Position',
+              message: 'Positions. hacene : Tour plateau ?, case 3/40.',
+            },
+          },
+        },
+      },
+      board: {
+        tiles: new Array(40).fill({}),
+        positions: { 1: 2 },
+      },
+      log: [],
+    });
+
+    const out = await engine.handleKeyPress(1, 'any', 1, 'P');
+    expect(out).toEqual({
+      kind: 'panel',
+      panelId: 'position',
+      message:
+        'Positions. hacene : Tour plateau ?, case 3/40. Lila : position inconnue.',
     });
   });
 
@@ -335,6 +404,7 @@ describe('GameEngineService', () => {
       {} as any,
       {} as any,
       {} as any,
+      new BoardPayloadService(),
       {} as any,
     );
 
@@ -1029,6 +1099,7 @@ describe('GameEngineService', () => {
       {} as any,
       {} as any,
       {} as any,
+      new BoardPayloadService(),
       socialProfiles as any,
     );
 
@@ -1076,6 +1147,7 @@ describe('GameEngineService', () => {
       {} as any,
       {} as any,
       {} as any,
+      new BoardPayloadService(),
       socialProfiles as any,
     );
 
