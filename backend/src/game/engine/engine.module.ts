@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoomModule } from '../../room/room.module';
 import { GameCoreModule } from '../core/core.module';
 import { BotModule } from '../modules/bot/bot.module';
+import { BoardModule } from '../modules/board/board.module';
 import { GridModule } from '../modules/grid/grid.module';
 import { TurnModule } from '../modules/turn/turn.module';
 import { GameRegistryModule } from './game-registry.module';
@@ -24,6 +25,7 @@ import { SocialProfile } from '../../social/entities/social-profile.entity';
     GameCoreModule,
     GameRegistryModule,
     BotModule,
+    BoardModule,
     GridModule,
     TurnModule,
     EngineServicesModule,

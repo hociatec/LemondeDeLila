@@ -7,6 +7,9 @@ concurrency:
   group: release-main
   cancel-in-progress: true
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   client_win_publish:
     name: Client Win - Build/Sign/Publish
