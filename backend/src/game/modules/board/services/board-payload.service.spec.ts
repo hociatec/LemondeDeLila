@@ -20,6 +20,23 @@ describe('BoardPayloadService', () => {
     expect(msg).toContain('case 3/3');
   });
 
+  it('buildPositionPanelMessage still lists every player when some positions are missing', () => {
+    const svc = new BoardPayloadService();
+    const msg = svc.buildPositionPanelMessage({
+      tilesRaw: [{}, {}, {}],
+      positionsRaw: { 3: 1 },
+      playerId: 3,
+      playersRaw: [
+        { id: 3, username: 'Lila' },
+        { id: 5, username: 'Mouche' },
+      ],
+    });
+
+    expect(msg).toContain('Lila :');
+    expect(msg).toContain('case 2/3');
+    expect(msg).toContain('Mouche : position inconnue.');
+  });
+
   it('buildPawnProgressPositionPanelMessage lists every player with grouped pawn progress', () => {
     const svc = new BoardPayloadService();
     const msg = svc.buildPawnProgressPositionPanelMessage({

@@ -2269,6 +2269,18 @@ public sealed class GameTableOpener : IGameTableOpener
                 });
         }
 
+        if (string.Equals(normalized, "corridor", StringComparison.Ordinal))
+        {
+            return new TableGameConfigWindow.Prompt(
+                Title: "Le Corridor",
+                ActionType: "corridor_set_config",
+                CancelActionType: null,
+                Fields: new[]
+                {
+                    new TableGameConfigWindow.Field("wallsPerPlayer", "Nombre de murs par joueur", "number", 0, 20, "10"),
+                });
+        }
+
         if (!string.Equals(normalized, "lama", StringComparison.Ordinal))
         {
             return null;

@@ -51,6 +51,14 @@ internal static class GamePlayPanelHistoryMessageBuilder
         {
             return string.Empty;
         }
+        var playerCount = (state.Players ?? new List<GamePlayerDto>()).Count;
+        if (playerCount > 1 && positions.Count < 2)
+        {
+            // Some games can expose a viewer-local board snapshot while still providing
+            // a correct multi-player `ui.panels.position` message. In that case prefer
+            // the panel fallback instead of announcing a truncated single-player result.
+            return string.Empty;
+        }
 
         var playersById = (state.Players ?? new List<GamePlayerDto>())
             .OfType<GamePlayerDto>()

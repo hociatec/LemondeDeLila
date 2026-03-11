@@ -92,14 +92,28 @@ export class BoardPayloadService {
     };
 
     const allPlayers: Array<{ id: number; line: string }> = [];
-    for (const [rawId, rawPos] of Object.entries(board.positions)) {
+    const allPlayerIds = new Set<number>();
+    for (const rawId of Object.keys(board.positions)) {
       const pid = Number.parseInt(rawId, 10);
       if (!Number.isFinite(pid) || pid <= 0) continue;
-      if (!Number.isFinite(rawPos)) continue;
+      allPlayerIds.add(pid);
+    }
+    for (const pid of namesById.keys()) {
+      if (Number.isFinite(pid) && pid > 0) {
+        allPlayerIds.add(pid);
+      }
+    }
+
+    for (const pid of allPlayerIds) {
+      const rawId = String(pid);
+      const rawPos = board.positions[rawId];
+      if (!Number.isFinite(pid) || pid <= 0) continue;
       const name = namesById.get(pid) ?? `Joueur ${pid}`;
       allPlayers.push({
         id: pid,
-        line: `${name} : ${formatLine(rawId, rawPos)}`,
+        line: Number.isFinite(rawPos)
+          ? `${name} : ${formatLine(rawId, rawPos)}`
+          : `${name} : position inconnue.`,
       });
     }
     allPlayers.sort((a, b) => a.id - b.id);
