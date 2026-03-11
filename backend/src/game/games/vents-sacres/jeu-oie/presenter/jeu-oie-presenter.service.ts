@@ -29,16 +29,6 @@ export class JeuOiePresenterService {
       },
       ui: {
         panels: {
-          position: {
-            title: 'Position',
-            message: this.boardPayload.buildPositionPanelMessage({
-              tilesRaw: meta.tiles,
-              positionsRaw: meta.positions,
-              lapsRaw: meta.laps,
-              playerId: userId,
-              playersRaw: state.players,
-            }),
-          },
           board: {
             title: 'Plateau',
             message: this.buildBoardMessage(meta),

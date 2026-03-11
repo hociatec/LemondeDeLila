@@ -59,15 +59,6 @@ export class PiratesEnVadrouillePresenterService {
         },
         ui: {
           panels: {
-            position: {
-              title: 'Position',
-              message: this.boardPayload.buildPositionPanelMessage({
-                tilesRaw: meta.tiles,
-                positionsRaw: meta.positions,
-                playerId: userId,
-                playersRaw: state.players,
-              }),
-            },
             collection: {
               title: 'Cartes & pièces',
               message: this.buildCollectionMessage(

@@ -51,15 +51,6 @@ export class GaloponsPresenterService {
         },
         ui: {
           panels: {
-            position: {
-              title: 'Position',
-              message: this.boardPayload.buildPositionPanelMessage({
-                tilesRaw: meta.tiles,
-                positionsRaw: meta.positions,
-                playerId: userId,
-                playersRaw: state.players,
-              }),
-            },
             apples: {
               title: 'Pommes',
               message: applesLines.length

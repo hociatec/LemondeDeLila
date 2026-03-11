@@ -82,10 +82,6 @@ export class CorridorPresenterService extends BasePresenterService {
           ...existingUi,
           panels: {
             ...existingPanels,
-            position: {
-              title: 'Positions',
-              message: this.buildPositionPanelMessage(state, size),
-            },
             score: {
               title: 'Murs',
               message: this.buildScorePanelMessage(state),
@@ -115,40 +111,6 @@ export class CorridorPresenterService extends BasePresenterService {
         },
       },
     } as any;
-  }
-
-  private buildPositionPanelMessage(
-    state: GameStateEntity,
-    size: number,
-  ): string {
-    const players = Array.isArray(state.players) ? state.players : [];
-    const byId = new Map<number, string>();
-    for (const p of players) {
-      if (!p || typeof p.id !== 'number') continue;
-      const name = String(p.username ?? '').trim();
-      byId.set(p.id, name.length > 0 ? name : `Joueur ${p.id}`);
-    }
-
-    const meta = (state.metadata ?? {}) as CorridorMetadata;
-    const positions = meta?.pawnsByPlayerId ?? {};
-    const entries: string[] = [];
-
-    for (const [pidRaw, pos] of Object.entries(positions)) {
-      if (!pos) continue;
-      const pid = Number(pidRaw);
-      const name = Number.isFinite(pid)
-        ? (byId.get(pid) ?? `Joueur ${pid}`)
-        : `Joueur ${pidRaw}`;
-      entries.push(
-        `${name} ${this.toCellRef(pos.x ?? 0, pos.y ?? 0, size).toLowerCase()}`,
-      );
-    }
-
-    if (entries.length === 0) {
-      return 'Positions inconnues.';
-    }
-
-    return `Positions. ${entries.join('. ')}.`;
   }
 
   private buildScorePanelMessage(state: GameStateEntity): string {

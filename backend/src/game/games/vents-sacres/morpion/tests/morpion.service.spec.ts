@@ -212,7 +212,7 @@ describe('MorpionService', () => {
     configured = service.applyActions(configured, [choose(otherId, MORPION_PAWNS[1]!.id)]);
 
     const exposed: any = service.exposeStateForUser(configured, 1);
-    expect(exposed?.extras?.ui?.panels?.position?.message).toContain('Plateau');
+    expect(exposed?.extras?.ui?.panels?.position).toBeUndefined();
     expect(exposed?.extras?.ui?.panels?.play?.message).toContain(
       'Cases libres',
     );

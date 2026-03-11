@@ -171,16 +171,12 @@ describe('Position panels', () => {
     },
   ];
 
-  it.each(cases)('$label exposes all players in the position panel', (entry) => {
+  it.each(cases)('$label does not expose a local position panel', (entry) => {
     const exposed = entry.presenter.exposeStateForUser(
       createBaseState(entry.metadata),
       1,
     );
 
-    const message = String(
-      (exposed.extras as any)?.ui?.panels?.position?.message ?? '',
-    );
-    expect(message).toContain('Lila :');
-    expect(message).toContain('Mouche :');
+    expect((exposed.extras as any)?.ui?.panels?.position).toBeUndefined();
   });
 });

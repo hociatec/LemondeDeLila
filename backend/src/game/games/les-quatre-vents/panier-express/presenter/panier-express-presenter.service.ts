@@ -470,10 +470,6 @@ export class PanierExpressPresenterService extends BasePresenterService {
     };
 
     const meta = this.getPanierMeta(state);
-    const positionMessage = this.buildPositionPanelMessage(
-      meta,
-      params.playerViews,
-    );
     const quizFeedbackMessage = this.buildQuizFeedbackMessage(
       meta,
       params.currentId,
@@ -504,10 +500,6 @@ export class PanierExpressPresenterService extends BasePresenterService {
         title: 'Score',
         message: scoreMessage(),
       },
-      position: {
-        title: 'Position',
-        message: positionMessage,
-      },
     };
     if (quizFeedbackMessage) {
       panels.quiz_feedback = {
@@ -535,19 +527,6 @@ export class PanierExpressPresenterService extends BasePresenterService {
       return null;
     }
     return meta.quizOutcome?.[playerId]?.message ?? null;
-  }
-
-  private buildPositionPanelMessage(
-    meta: PanierExpressMetadata,
-    playerViews: PanierExpressPlayerView[],
-  ): string {
-    return this.boardPayload.buildPositionPanelMessage({
-      tilesRaw: meta.tiles,
-      positionsRaw: meta.positions,
-      lapsRaw: meta.laps,
-      playerId: playerViews[0]?.id ?? null,
-      playersRaw: playerViews,
-    });
   }
 
   private toStringArray(value: unknown): string[] {

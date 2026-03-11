@@ -2,7 +2,7 @@ import { BoardPayloadService } from '../../../../modules/board/services/board-pa
 import { ToutPresDeMamanPresenterService } from './tout-pres-de-maman-presenter.service';
 
 describe('ToutPresDeMamanPresenterService', () => {
-  it('exposes the position panel for every player on the board', () => {
+  it('does not expose a local position panel', () => {
     const service = new ToutPresDeMamanPresenterService(
       new BoardPayloadService(),
     );
@@ -24,8 +24,6 @@ describe('ToutPresDeMamanPresenterService', () => {
       1,
     );
 
-    const message = (exposed.extras as any)?.ui?.panels?.position?.message;
-    expect(String(message ?? '')).toContain('Lila :');
-    expect(String(message ?? '')).toContain('Mouche :');
+    expect((exposed.extras as any)?.ui?.panels?.position).toBeUndefined();
   });
 });

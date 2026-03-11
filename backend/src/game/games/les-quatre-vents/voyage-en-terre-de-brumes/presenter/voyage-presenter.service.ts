@@ -48,15 +48,6 @@ export class VoyagePresenterService {
         },
         ui: {
           panels: {
-            position: {
-              title: 'Position',
-              message: this.boardPayload.buildPositionPanelMessage({
-                tilesRaw: meta.tiles,
-                positionsRaw: meta.positions,
-                playerId: userId,
-                playersRaw: state.players,
-              }),
-            },
             cards: {
               title: 'Cartes',
               message: `Total ${total} (Légendes ${c.legend}, Trésors ${c.treasure}, Paysages ${c.landscape}).`,

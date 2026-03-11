@@ -69,15 +69,6 @@ export class MonVillagePresenterService {
         },
         ui: {
           panels: {
-            position: {
-              title: 'Position',
-              message: this.boardPayload.buildPositionPanelMessage({
-                tilesRaw: meta.tiles,
-                positionsRaw: meta.positions,
-                playerId: userId,
-                playersRaw: state.players,
-              }),
-            },
             cartes: {
               title: 'Cartes',
               message: this.buildCollectionMessage(collection),

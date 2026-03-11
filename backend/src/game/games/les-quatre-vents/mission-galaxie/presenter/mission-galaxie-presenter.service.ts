@@ -54,17 +54,7 @@ export class MissionGalaxiePresenterService {
         },
         pendingCard,
         ui: {
-          panels: {
-            position: {
-              title: 'Position',
-              message: this.boardPayload.buildPositionPanelMessage({
-                tilesRaw: meta.tiles,
-                positionsRaw: meta.positions,
-                playerId: userId,
-                playersRaw: state.players,
-              }),
-            },
-          },
+          panels: {},
         },
       },
       board: this.boardPayload.buildTilesPositionsLaps(

@@ -72,13 +72,6 @@ export class CatPattesPresenterService {
       const points = Number(meta.points?.[pid] ?? 0);
       return `${name} : ${points} pattes`;
     });
-    const progressionLines = players.map((p) => {
-      const pid = p?.id;
-      const name = nameById[pid] ?? `Joueur ${pid}`;
-      const value = Number(meta.positions?.[pid] ?? 0);
-      return `${name} : ${value} pattes / ${goalPattes}.`;
-    });
-
     const obstacleLabels: Record<string, string> = {
       gamelle: 'Gamelle vide',
       pluie: 'Pluie torrentielle',
@@ -152,10 +145,6 @@ export class CatPattesPresenterService {
           score: {
             title: 'Score',
             message: `${scoreLines.join(', ')}. Manches: ${Math.min(completedRounds, roundsToPlay)}/${roundsToPlay}.`,
-          },
-          position: {
-            title: 'Progression',
-            message: progressionLines.join(' '),
           },
           discard: {
             title: 'Dernière carte',

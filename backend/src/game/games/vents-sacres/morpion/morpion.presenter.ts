@@ -233,10 +233,6 @@ export class MorpionPresenter extends BasePresenterService {
       ...base,
       ui: {
         panels: {
-          position: {
-            title: 'Position',
-            message: `Positions. ${playerLines.join(' ')} Tour: ${who}. ${boardMessage}`.trim(),
-          },
           play: {
             title: 'Coups',
             message: playInfo,

@@ -55,15 +55,6 @@ export class ToutPresDeMamanPresenterService {
         nextCard: nextCard?.text ?? 'Pile de cartes vide',
         ui: {
           panels: {
-            position: {
-              title: 'Position',
-              message: this.boardPayload.buildPositionPanelMessage({
-                tilesRaw: meta.tiles,
-                positionsRaw: meta.positions,
-                playerId: userId,
-                playersRaw: state.players,
-              }),
-            },
             score: {
               title: 'Eucalyptus',
               message: scoreLines.length

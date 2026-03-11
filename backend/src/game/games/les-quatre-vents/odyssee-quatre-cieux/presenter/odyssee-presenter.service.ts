@@ -92,19 +92,6 @@ export class OdysseePresenterService {
         },
         ui: {
           panels: {
-            position: {
-              title: 'Position',
-              message: this.boardPayload.buildPawnProgressPositionPanelMessage({
-                playersRaw: state.players,
-                pawnsByPlayerRaw: meta.pawnsByPlayer,
-                trackLengthRaw: meta.trackLength,
-                homeLengthRaw: meta.homeLength,
-                offsetsRaw: meta.offsets,
-                stableLabel: 'Base',
-                homeLabel: 'Hangar',
-                arrivedLabel: 'Arrivée',
-              }),
-            },
             stable: {
               title: 'État',
               message: stableLines.join(' '),

@@ -112,10 +112,6 @@ export class FouleesFantastiquesPresenterService {
               ? stableLines.join(' ')
               : 'Ã‰tat: inconnu.',
           },
-          position: {
-            title: 'Position',
-            message: positionMessage,
-          },
           score: {
             title: 'Scores',
             message: scoreLines.length

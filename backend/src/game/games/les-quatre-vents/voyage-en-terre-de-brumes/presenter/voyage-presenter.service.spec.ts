@@ -2,7 +2,7 @@ import { BoardPayloadService } from '../../../../modules/board/services/board-pa
 import { VoyagePresenterService } from './voyage-presenter.service';
 
 describe('VoyagePresenterService', () => {
-  it('exposes the position panel for every player on the board', () => {
+  it('does not expose a local position panel', () => {
     const service = new VoyagePresenterService(new BoardPayloadService());
     const exposed = service.exposeStateForUser(
       {
@@ -20,8 +20,6 @@ describe('VoyagePresenterService', () => {
       1,
     );
 
-    const message = (exposed.extras as any)?.ui?.panels?.position?.message;
-    expect(String(message ?? '')).toContain('Lila :');
-    expect(String(message ?? '')).toContain('Mouche :');
+    expect((exposed.extras as any)?.ui?.panels?.position).toBeUndefined();
   });
 });
