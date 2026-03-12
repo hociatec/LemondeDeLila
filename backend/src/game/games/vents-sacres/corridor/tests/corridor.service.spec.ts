@@ -6,7 +6,7 @@ import * as CorridorRulebook from '../rulebook/rulebook';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 
 function createSvc(): CorridorService {
-  const setup = new CorridorSetupService();
+  const setup = new CorridorSetupService(new SetupFlowService());
   const presenter = new CorridorPresenterService(
     { buildFromWalls: () => ({}) } as any,
     { buildFromActions: () => ({}) } as any,
@@ -123,6 +123,7 @@ describe('Corridor', () => {
     const forHuman = svc.exposeStateForUser(configured as any, 1);
     expect(forHuman.pending?.type).toBe('choose_pawn');
     expect(forHuman.pending?.playerId).toBe(1);
+    expect((forHuman.pending?.choices ?? []).length).toBeGreaterThan(0);
     expect(
       ((forHuman.pending as any)?.data?.pawns ?? []).length,
     ).toBeGreaterThan(0);

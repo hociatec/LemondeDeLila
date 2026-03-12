@@ -4,9 +4,12 @@ import { CORRIDOR_GAME } from '../definitions/game.definition';
 import { CORRIDOR_PAWNS } from '../definitions/corridor.pawns';
 import type { CorridorMetadata } from '../model/corridor.model';
 import { nextRngInt } from '../../../../../common/utils/seeded-rng';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 
 @Injectable()
 export class CorridorSetupService {
+  constructor(private readonly setupFlow: SetupFlowService) {}
+
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const status = String(baseState.status ?? '')
       .toLowerCase()
@@ -171,6 +174,32 @@ export class CorridorSetupService {
         description: pawn.description,
       }));
 
+    const pendingInfo =
+      pendingPlayerId != null
+        ? this.setupFlow.createSequentialPawnPending({
+            players: players.map((player) => ({
+              id: Number(player?.id),
+              username:
+                typeof player?.username === 'string' ? player.username : null,
+            })),
+            startPlayerId: pendingPlayerId,
+            isAssigned: (playerId) => {
+              const player = players.find((entry) => Number(entry?.id) === playerId);
+              if (!player || player?.isBot === true) {
+                return true;
+              }
+              return Boolean(pawnByPlayerId[String(playerId)]);
+            },
+            pendingType: 'choose_pawn',
+            pawns: pendingChoices,
+            pawnDataMapper: (choice) => ({
+              id: String(choice.id ?? '').trim(),
+              label: String(choice.label ?? '').trim(),
+              description: String(choice.description ?? '').trim(),
+            }),
+          })
+        : null;
+
     return {
       ...baseState,
       phase: 'play',
@@ -178,18 +207,7 @@ export class CorridorSetupService {
       turnIndex: 0,
       lastRoll: null,
       metadata: metadata as any,
-      pending:
-        pendingPlayerId != null
-          ? {
-              type: 'choose_pawn',
-              label: 'Votre pion.',
-              playerId: pendingPlayerId,
-              blocking: true,
-              data: {
-                pawns: pendingChoices,
-              },
-            }
-          : null,
+      pending: pendingInfo?.pending ?? null,
       log,
       turn: {
         currentPlayerId: pendingPlayerId ?? p1.id,
