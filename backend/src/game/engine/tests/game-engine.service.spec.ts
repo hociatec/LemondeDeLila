@@ -181,6 +181,62 @@ describe('GameEngineService', () => {
     });
   });
 
+  it('ignores a stale ENTER roll shortcut when fresh internal state says it is not the player turn', async () => {
+    const handler = {
+      validateAction: jest.fn(() => {
+        throw new Error("Ce n'est pas votre tour.");
+      }),
+    };
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      { getHandler: jest.fn(() => handler) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      new BoardPayloadService(),
+      {} as any,
+    );
+
+    (engine as any).getStateForUser = jest.fn().mockResolvedValue({
+      status: 'started',
+      players: [
+        { id: 1, username: 'hacene' },
+        { id: -2, username: 'Ratatouille', isBot: true },
+      ],
+      turn: { currentPlayerId: -2, direction: 1 },
+      actions: [{ type: 'roll', payload: {} }],
+      extras: {},
+      log: [],
+    });
+    (engine as any).getInternalState = jest.fn().mockResolvedValue({
+      status: 'started',
+      players: [
+        { id: 1, username: 'hacene' },
+        { id: -2, username: 'Ratatouille', isBot: true },
+      ],
+      turn: { currentPlayerId: -2, direction: 1 },
+      metadata: {},
+      log: [],
+      extras: {},
+    });
+
+    const out = await engine.handleKeyPress(1, 'galopons-ensemble', 1, 'ENTER');
+
+    expect(out).toBeNull();
+    expect(handler.validateAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        turn: { currentPlayerId: -2, direction: 1 },
+      }),
+      { type: 'roll', payload: {} },
+      1,
+    );
+  });
+
   it('rebuilds the P panel from the internal game state when a game exposes only one position', async () => {
     const engine = new GameEngineService(
       {} as any,

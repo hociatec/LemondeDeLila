@@ -345,7 +345,16 @@ export class GameEngineService {
     if (match.type === 'action') {
       const actionType = String(match.actionType ?? '').trim();
       if (!actionType) return null;
-      return { kind: 'action', actions: [{ type: actionType, payload: {} }] };
+      const action = { type: actionType, payload: {} } as GameSingleActionDto;
+      try {
+        const fresh = await this.getInternalState(roomId, gameType);
+        if (handler?.validateAction) {
+          handler.validateAction(fresh, action, userId);
+        }
+      } catch {
+        return null;
+      }
+      return { kind: 'action', actions: [action] };
     }
 
     if (match.type === 'interface') {
