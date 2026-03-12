@@ -10,6 +10,7 @@ import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-
 import { loadCanonicalPawns } from '../../../../core/helpers/pawn-catalog.helper';
 import { ensureSeededRng } from '../../../../../common/utils/seeded-rng';
 import { seededShuffle } from '../../../../../common/utils/seeded-shuffle';
+import { queueConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-setup.helper';
 import type {
   AFondLesBallonsCard,
   AFondLesBallonsCharacter,
@@ -88,40 +89,31 @@ export class AFondLesBallonsSetupService {
       winnerId: null,
     };
 
-    const pendingInfo = this.setupFlow.createSequentialPawnPending({
-      players: players.map((p) => ({ id: p.id, username: p.username ?? null })),
+    const next: GameStateEntity = {
+      ...baseState,
+      phase: 'playing',
+      turn: {
+        ...(baseState.turn ?? { direction: 1 }),
+        currentPlayerId: setupStarterId,
+        direction: 1,
+      },
+      metadata: { ...metaSeed, ...shuffledDeck.meta, ...metaBase },
+    };
+
+    return queueConfiguredPawnSelection({
+      state: next,
+      core: this.core,
+      setupFlow: this.setupFlow,
+      catalog: pawns,
       startPlayerId: setupStarterId,
-      isAssigned: (playerId) => Boolean(pawnByPlayerId[playerId]),
-      pawns,
+      pendingType: 'choose_pawn',
+      metadataAssignmentKey: 'pawnByPlayerId',
       pawnDataMapper: (p) => ({
         id: toText(p.id),
         label: toText(p.label),
         description: toText(p.description),
       }),
     });
-    const turnIndex =
-      pendingInfo?.turnIndex != null
-        ? pendingInfo.turnIndex
-        : baseState.turnIndex;
-    const turnPlayerId =
-      pendingInfo?.playerId != null
-        ? pendingInfo.playerId
-        : (setupStarterId ?? baseState.turn?.currentPlayerId ?? null);
-
-    const next: GameStateEntity = {
-      ...baseState,
-      phase: 'playing',
-      pending: pendingInfo?.pending ?? null,
-      turn: {
-        ...(baseState.turn ?? { direction: 1 }),
-        currentPlayerId: turnPlayerId,
-        direction: 1,
-      },
-      turnIndex,
-      metadata: { ...metaSeed, ...shuffledDeck.meta, ...metaBase },
-    };
-
-    return next;
   }
 }
 

@@ -5,6 +5,7 @@ import { getSafePlayers } from '../../../../setup/setup-service.helper';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { queueConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-setup.helper';
 import { ensureSeededRng } from '../../../../../common/utils/seeded-rng';
 import { seededShuffle } from '../../../../../common/utils/seeded-shuffle';
 import type { JeuOieCaseTextsJsonV1 } from '../model/jeu-oie-content.entity';
@@ -27,7 +28,7 @@ const JEU_OIE_PAWNS: JeuOiePawn[] = [
 @Injectable()
 export class JeuOieSetupService {
   constructor(
-    _core: GameCoreService,
+    private readonly core: GameCoreService,
     private readonly contentLoader: GameContentLoaderService,
     private readonly setupFlow: SetupFlowService,
   ) {}
@@ -59,22 +60,6 @@ export class JeuOieSetupService {
         ? baseState.turn.currentPlayerId
         : null,
     );
-    const pendingInfo = this.setupFlow.createSequentialPawnPending({
-      players,
-      startPlayerId: starterId,
-      isAssigned: (playerId) => Boolean(pawnByPlayerId[playerId]),
-      pawns: JEU_OIE_PAWNS.map((pawn) => ({
-        id: pawn.id,
-        label: pawn.label,
-        feminine: pawn.feminine,
-      })),
-      pawnDataMapper: (choice: any) => ({
-        id: choice.id,
-        label: choice.label,
-        feminine: Boolean(choice?.feminine),
-      }),
-    });
-
     const meta: JeuOieMetadata = {
       tiles: buildTiles(this.loadTexts()),
       positions,
@@ -90,20 +75,32 @@ export class JeuOieSetupService {
       ...baseState,
       phase: 'turn',
       lastRoll: null,
-      pending: pendingInfo?.pending ?? null,
-      turnIndex:
-        pendingInfo?.turnIndex != null
-          ? pendingInfo.turnIndex
-          : baseState.turnIndex,
       turn: {
         ...(baseState.turn ?? { direction: 1 }),
-        currentPlayerId: pendingInfo?.playerId ?? starterId,
+        currentPlayerId: starterId,
         direction: 1,
       },
       metadata: { ...(baseState.metadata ?? {}), ...meta },
     };
 
-    return next;
+    return queueConfiguredPawnSelection({
+      state: next,
+      core: this.core,
+      setupFlow: this.setupFlow,
+      catalog: JEU_OIE_PAWNS.map((pawn) => ({
+        id: pawn.id,
+        label: pawn.label,
+        feminine: pawn.feminine,
+      })),
+      startPlayerId: starterId,
+      pendingType: 'choose_pawn',
+      metadataAssignmentKey: 'pawnByPlayerId',
+      pawnDataMapper: (choice) => ({
+        id: choice.id,
+        label: choice.label,
+        feminine: Boolean(choice?.feminine),
+      }),
+    });
   }
 }
 

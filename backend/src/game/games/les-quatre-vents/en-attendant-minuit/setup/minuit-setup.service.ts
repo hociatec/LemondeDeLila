@@ -6,6 +6,7 @@ import { RandomService } from '../../../../modules/random/services/random.servic
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { loadV1Content } from '../../../../setup/content-loader.helper';
 import { loadCanonicalPawns } from '../../../../core/helpers/pawn-catalog.helper';
+import { queueConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-setup.helper';
 import type {
   MinuitBoardJsonV1,
   MinuitCardsJsonV1,
@@ -26,7 +27,7 @@ const DEFAULT_PAWNS = [
 @Injectable()
 export class MinuitSetupService {
   constructor(
-    _core: GameCoreService,
+    private readonly core: GameCoreService,
     private readonly contentLoader: GameContentLoaderService,
     private readonly random: RandomService,
     private readonly setupFlow: SetupFlowService,
@@ -110,59 +111,17 @@ export class MinuitSetupService {
     const missingForPending = playersForPending.filter(
       (p) => !!p && !this.isBotLike(p) && !this.hasPawnAssigned(p, meta),
     );
-    const pending = !missingForPending.length
-      ? null
-      : (this.setupFlow.createSequentialPawnPending({
-          players: playersForPending,
-          startPlayerId: playersForPending[0]?.id ?? null,
-          isAssigned: (playerId) => {
-            const player = playersForPending.find((p) => p?.id === playerId);
-            return (
-              !player ||
-              this.isBotLike(player) ||
-              this.hasPawnAssigned(player, meta)
-            );
-          },
-          pendingType: 'pick_pawn',
-          pawns: (() => {
-            const taken = new Set<string>(
-              playersForPending
-                .map((p) =>
-                  typeof p?.pawn === 'string' ? String(p.pawn).trim() : '',
-                )
-                .filter((pawn) => pawn.length > 0),
-            );
-            const entries = this.listPawnChoiceEntries(meta, pawns.pawns ?? []);
-            const available = entries.filter((entry) => !taken.has(entry.id));
-            const chosenEntries = available.length ? available : [...entries];
-            return chosenEntries.map((entry) => ({
-              id: entry.id,
-              label: entry.label,
-              description: entry.description,
-            }));
-          })(),
-          includeChoiceMapData: true,
-          pawnDataMapper: (choice: unknown) => {
-            const choiceRecord = asRecord(choice);
-            return {
-              id: toText(choiceRecord.id).trim(),
-              label: toText(choiceRecord.label).trim(),
-              description: toText(choiceRecord.description).trim(),
-            };
-          },
-        })?.pending ?? null);
-
     const next: GameStateEntity = {
       ...base,
       phase: 'playing',
-      pending,
-      turn: pending?.playerId
-        ? {
-            ...(base.turn ?? { direction: 1 }),
-            currentPlayerId: pending.playerId,
-            direction: 1,
-          }
-        : base.turn,
+      turn:
+        !missingForPending.length || playersForPending[0]?.id == null
+          ? base.turn
+          : {
+              ...(base.turn ?? { direction: 1 }),
+              currentPlayerId: playersForPending[0]?.id ?? null,
+              direction: 1,
+            },
       metadata: {
         ...(base.metadata ?? {}),
         ...shuffled.meta,
@@ -170,7 +129,29 @@ export class MinuitSetupService {
       },
     };
 
-    return next;
+    if (!missingForPending.length) {
+      return next;
+    }
+
+    return queueConfiguredPawnSelection({
+      state: next,
+      core: this.core,
+      setupFlow: this.setupFlow,
+      catalog: this.listPawnChoiceEntries(meta, pawns.pawns ?? []),
+      startPlayerId: playersForPending[0]?.id ?? null,
+      pendingType: 'pick_pawn',
+      playerPawnField: 'pawn',
+      isBotPlayer: (player) => this.isBotLike(player),
+      includeChoiceMapData: true,
+      pawnDataMapper: (choice: unknown) => {
+        const choiceRecord = asRecord(choice);
+        return {
+          id: toText(choiceRecord.id).trim(),
+          label: toText(choiceRecord.label).trim(),
+          description: toText(choiceRecord.description).trim(),
+        };
+      },
+    });
   }
 
   private listPawnChoiceEntries(

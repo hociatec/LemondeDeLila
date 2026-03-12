@@ -10,6 +10,7 @@ import { GameContentLoaderService } from '../../../../engine/services/game-conte
 import { loadCanonicalPawns } from '../../../../core/helpers/pawn-catalog.helper';
 import { ensureSeededRng } from '../../../../../common/utils/seeded-rng';
 import { seededShuffle } from '../../../../../common/utils/seeded-shuffle';
+import { queueConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-setup.helper';
 import type {
   AventureSauvageCard,
   AventureSauvageMetadata,
@@ -20,7 +21,7 @@ import type {
 @Injectable()
 export class AventureSauvageSetupService {
   constructor(
-    _core: GameCoreService,
+    private readonly core: GameCoreService,
     private readonly random: RandomService,
     private readonly contentLoader: GameContentLoaderService,
     private readonly setupFlow: SetupFlowService,
@@ -95,17 +96,33 @@ export class AventureSauvageSetupService {
       patte: shuffledPatte.values,
     };
 
-    const pendingInfo = this.setupFlow.createSequentialPawnPending({
-      players,
+    const next: GameStateEntity = {
+      ...baseState,
+      phase: 'playing',
+      turn: {
+        ...(baseState.turn ?? { direction: 1 }),
+        currentPlayerId: setupStarterId,
+        direction: 1,
+      },
+      metadata: {
+        ...(baseState.metadata ?? {}),
+        ...metaBase,
+        rng: rngMeta.rng,
+      },
+    };
+
+    return queueConfiguredPawnSelection({
+      state: next,
+      core: this.core,
+      setupFlow: this.setupFlow,
+      catalog: pawns.map((pawn) => ({
+        id: pawn.id,
+        label: pawn.label,
+        description: pawn.description,
+      })),
       startPlayerId: setupStarterId,
-      isAssigned: (playerId) => Boolean(pawnByPlayerId[playerId]),
-      pawns: pawns
-        .filter((p) => !Object.values(pawnByPlayerId).includes(p.id))
-        .map((p) => ({
-          id: p.id,
-          label: p.label,
-          description: p.description,
-        })),
+      pendingType: 'choose_pawn',
+      metadataAssignmentKey: 'pawnByPlayerId',
       choiceLabelBuilder: (pawn) =>
         toText(pawn.description).length > 0
           ? `${toText(pawn.label)}: ${toText(pawn.description)}`
@@ -116,32 +133,6 @@ export class AventureSauvageSetupService {
         description: toText(choice.description),
       }),
     });
-    const turnIndex =
-      pendingInfo?.turnIndex != null
-        ? pendingInfo.turnIndex
-        : baseState.turnIndex;
-    const turnPlayerId =
-      pendingInfo?.playerId != null
-        ? pendingInfo.playerId
-        : (setupStarterId ?? baseState.turn?.currentPlayerId ?? null);
-    const next: GameStateEntity = {
-      ...baseState,
-      phase: 'playing',
-      pending: pendingInfo?.pending ?? null,
-      turn: {
-        ...(baseState.turn ?? { direction: 1 }),
-        currentPlayerId: turnPlayerId,
-        direction: 1,
-      },
-      turnIndex,
-      metadata: {
-        ...(baseState.metadata ?? {}),
-        ...metaBase,
-        rng: rngMeta.rng,
-      },
-    };
-
-    return next;
   }
 
   private normalizePawnAssignments(

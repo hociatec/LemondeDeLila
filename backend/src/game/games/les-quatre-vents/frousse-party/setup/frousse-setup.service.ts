@@ -3,6 +3,8 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { GameCoreService } from '../../../../core/services/game-core.service';
+import { queueConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-setup.helper';
 import { loadCanonicalPawns } from '../../../../core/helpers/pawn-catalog.helper';
 import { loadV1Content } from '../../../../setup/content-loader.helper';
 import type {
@@ -15,6 +17,7 @@ import type {
 @Injectable()
 export class FrousseSetupService {
   constructor(
+    private readonly core: GameCoreService,
     private readonly contentLoader: GameContentLoaderService,
     private readonly random: RandomService,
     private readonly setupFlow: SetupFlowService,
@@ -72,20 +75,20 @@ export class FrousseSetupService {
       },
     };
 
-    const pendingInfo = this.setupFlow.createSequentialPawnPending({
-      players,
-      startPlayerId: players[0]?.id ?? null,
-      isAssigned: (playerId) => {
-        const player = players.find((p) => p?.id === playerId);
-        return String(player?.pawn ?? '').trim().length > 0;
-      },
-      pawns: (Array.isArray(meta.pawns) ? meta.pawns : [])
+    return queueConfiguredPawnSelection({
+      state: initial,
+      core: this.core,
+      setupFlow: this.setupFlow,
+      catalog: (Array.isArray(meta.pawns) ? meta.pawns : [])
         .map((p) => ({
           id: toText(p?.id),
           label: toText(p?.name) || toText(p?.id),
           description: toText(p?.description),
         }))
         .filter((p) => p.id.length > 0),
+      startPlayerId: players[0]?.id ?? null,
+      pendingType: 'choose_pawn',
+      playerPawnField: 'pawn',
       pawnDataMapper: (choice) => ({
         id: toText(choice.id),
         label: toText(choice.label),
@@ -93,20 +96,6 @@ export class FrousseSetupService {
       }),
       extraPendingData: { kind: 'choose_pawn' },
     });
-    if (!pendingInfo) return initial;
-    return {
-      ...initial,
-      pending: pendingInfo.pending,
-      turnIndex: pendingInfo.turnIndex,
-      turn: {
-        ...(base.turn ?? {
-          currentPlayerId: pendingInfo.playerId,
-          direction: 1,
-        }),
-        currentPlayerId: pendingInfo.playerId,
-        direction: base.turn?.direction === -1 ? -1 : 1,
-      },
-    };
   }
 
   private loadBoard(): FrousseBoardJsonV1 {

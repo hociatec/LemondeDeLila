@@ -6,6 +6,7 @@ import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { fixMojibakeDeep } from '../../../../../common/utils/mojibake';
+import { queueConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-setup.helper';
 import type {
   ContesCacahuetesMetadata,
   ContesCacahuetesTile,
@@ -17,7 +18,7 @@ type ContesRuntimeMetadata = ContesCacahuetesMetadata & Record<string, unknown>;
 @Injectable()
 export class ContesCacahuetesSetupService {
   constructor(
-    _core: GameCoreService,
+    private readonly core: GameCoreService,
     private readonly random: RandomService,
     private readonly setupFlow: SetupFlowService,
   ) {}
@@ -66,49 +67,13 @@ export class ContesCacahuetesSetupService {
       },
       winnerId: null,
     };
-    const pendingInfo = this.setupFlow.createSequentialPawnPending({
-      players: updatedPlayers,
-      startPlayerId: setupStarterId,
-      isAssigned: (playerId) => {
-        const player = updatedPlayers.find((p) => p.id === playerId);
-        return toText(player?.pawn).trim().length > 0;
-      },
-      pawns: pawns
-        .filter((pawn) => {
-          const used = new Set(
-            updatedPlayers
-              .map((p) => toText(p.pawn).trim())
-              .filter((v) => v.length > 0),
-          );
-          return !used.has(pawn.id);
-        })
-        .map((pawn) => ({
-          id: pawn.id,
-          label: pawn.label,
-          description: pawn.description,
-        })),
-      choiceLabelBuilder: (pawn) =>
-        toText(pawn.description).trim().length > 0
-          ? `${toText(pawn.label).trim()}: ${toText(pawn.description).trim()}`
-          : toText(pawn.label).trim(),
-      pawnDataMapper: (choice) => ({
-        id: toText(choice.id).trim(),
-        label: toText(choice.label).trim(),
-        description: toText(choice.description).trim(),
-      }),
-    });
     const next: GameStateEntity = {
       ...baseState,
       players: updatedPlayers,
       phase: 'playing',
-      pending: pendingInfo?.pending ?? null,
-      turnIndex:
-        pendingInfo?.turnIndex != null
-          ? pendingInfo.turnIndex
-          : baseState.turnIndex,
       turn: {
         ...(baseState.turn ?? { direction: 1 }),
-        currentPlayerId: pendingInfo?.playerId ?? setupStarterId,
+        currentPlayerId: setupStarterId,
         direction: 1,
       },
       metadata: {
@@ -117,7 +82,30 @@ export class ContesCacahuetesSetupService {
         ...metaBase,
       },
     };
-    return fixMojibakeDeep(next);
+    return fixMojibakeDeep(
+      queueConfiguredPawnSelection({
+        state: next,
+        core: this.core,
+        setupFlow: this.setupFlow,
+        catalog: pawns.map((pawn) => ({
+          id: pawn.id,
+          label: pawn.label,
+          description: pawn.description,
+        })),
+        startPlayerId: setupStarterId,
+        pendingType: 'choose_pawn',
+        playerPawnField: 'pawn',
+        choiceLabelBuilder: (pawn) =>
+          toText(pawn.description).trim().length > 0
+            ? `${toText(pawn.label).trim()}: ${toText(pawn.description).trim()}`
+            : toText(pawn.label).trim(),
+        pawnDataMapper: (choice) => ({
+          id: toText(choice.id).trim(),
+          label: toText(choice.label).trim(),
+          description: toText(choice.description).trim(),
+        }),
+      }),
+    );
   }
 
   private getRuntimeMeta(state: GameStateEntity): ContesRuntimeMetadata {
@@ -139,6 +127,133 @@ function buildSharedPawns(): Array<{
   description: string;
 }> {
   return CONTES_PAWNS.map((pawn) => ({ ...pawn }));
+}
+
+function buildCanonicalTiles(): ContesCacahuetesTile[] {
+  const conteTitles = [
+    'Case Conte - Japon : Momotarō',
+    'Case Conte - Sénégal : Le lièvre et la hyène',
+    'Case Conte - Russie : Vassilissa la très belle',
+    "Case Conte - Canada : L'ours géant et l'enfant",
+    'Case Conte - Maroc : Le figuier magique',
+    'Case Conte - Chine : La princesse éventail',
+    'Case Conte - Irlande : Le géant Fionn et Benandonner',
+    'Case Conte - Pérou : Le colibri courageux',
+    'Case Conte - Égypte : Le secret du Nil',
+    'Case Conte - Australie : Tiddalik, la grenouille',
+    "Case Conte - Allemagne : Le joueur de flûte d'Hamelin",
+    'Case Conte - Inde : Le prince au cobra',
+    "Case Conte - Groenland : L'ourse et la chasseuse",
+    "Case Conte - Italie : Giufà et l'âne",
+    'Case Conte - Kenya : Le feu volant',
+    'Case Conte - Chili : La lune et le renard',
+    'Case Conte - France : Le Petit Poucet',
+    'Case Conte - Corée du Sud : La grue reconnaissante',
+    'Case Conte - Brésil : La tortue et le jaguar',
+    'Case Conte - Iran : Le tapis volant',
+    'Case Conte - Thaïlande : La mangue du roi',
+    'Case Conte - Angleterre : Jack et le haricot magique',
+    "Case Conte - Vietnam : L'enfant des rizières",
+    'Case Conte - Espagne : Le tambour enchanté',
+    'Case Conte - Haïti : Ti-Jean et le diable',
+    "Case Conte - Turquie : Nasreddine et l'âne",
+    'Case Conte - Nouvelle-Zélande : Maui ralentit le soleil',
+    "Case Conte - Mali : L'hippopotame et les étoiles",
+    'Case Conte - Pologne : Le roi grenouille',
+  ];
+
+  const tileKinds = [
+    'start',
+    'bonus',
+    'conte',
+    'surprise',
+    'conte',
+    'malus',
+    'conte',
+    'bonus',
+    'conte',
+    'surprise',
+    'conte',
+    'malus',
+    'conte',
+    'bonus',
+    'conte',
+    'surprise',
+    'conte',
+    'malus',
+    'conte',
+    'bonus',
+    'conte',
+    'surprise',
+    'conte',
+    'malus',
+    'conte',
+    'bonus',
+    'conte',
+    'surprise',
+    'conte',
+    'malus',
+    'conte',
+    'bonus',
+    'conte',
+    'surprise',
+    'conte',
+    'malus',
+    'conte',
+    'bonus',
+    'conte',
+    'surprise',
+    'conte',
+    'malus',
+    'conte',
+    'bonus',
+    'conte',
+    'surprise',
+    'conte',
+    'malus',
+    'conte',
+    'bonus',
+    'conte',
+    'surprise',
+    'conte',
+    'malus',
+    'conte',
+    'bonus',
+    'conte',
+    'malus',
+    'conte',
+    'finish',
+  ] as const;
+
+  let conteIndex = 0;
+  return tileKinds.map((kind, index) => {
+    if (kind === 'conte') {
+      const label = conteTitles[conteIndex] ?? `Case Conte ${conteIndex + 1}`;
+      conteIndex += 1;
+      return {
+        id: `conte-${index + 1}`,
+        type: 'conte',
+        label,
+      } as ContesCacahuetesTile;
+    }
+
+    const label =
+      kind === 'start'
+        ? 'Case Départ'
+        : kind === 'finish'
+          ? 'Case Arrivée'
+          : kind === 'bonus'
+            ? 'Case Bonus'
+            : kind === 'malus'
+              ? 'Case Malus'
+              : 'Case Surprise';
+
+    return {
+      id: `${kind}-${index + 1}`,
+      type: kind,
+      label,
+    } as ContesCacahuetesTile;
+  });
 }
 
 function buildNarratedCanonicalTiles(): ContesCacahuetesTile[] {

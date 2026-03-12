@@ -3,6 +3,8 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { GameCoreService } from '../../../../core/services/game-core.service';
+import { queueConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-setup.helper';
 import { loadV1Content } from '../../../../setup/content-loader.helper';
 import type {
   GaloponsBoardJsonV1,
@@ -51,6 +53,7 @@ function toText(value: unknown): string {
 @Injectable()
 export class GaloponsSetupService {
   constructor(
+    private readonly core: GameCoreService,
     private readonly contentLoader: GameContentLoaderService,
     private readonly random: RandomService,
     private readonly setupFlow: SetupFlowService,
@@ -130,17 +133,19 @@ export class GaloponsSetupService {
       },
     };
 
-    const pendingInfo = this.setupFlow.createSequentialPawnPending({
-      players: hydratedPlayers,
+    return queueConfiguredPawnSelection({
+      state: initial,
+      core: this.core,
+      setupFlow: this.setupFlow,
+      catalog: pawns.map((pawn) => ({
+        id: pawn.id,
+        label: pawn.name,
+        description: pawn.description,
+      })),
       startPlayerId: setupStarterId,
-      isAssigned: (playerId) => Boolean(pawnByPlayerId[playerId]),
-      pawns: pawns
-        .filter((pawn) => !Object.values(pawnByPlayerId).includes(pawn.id))
-        .map((pawn) => ({
-          id: pawn.id,
-          label: pawn.name,
-          description: pawn.description,
-        })),
+      pendingType: 'choose_pawn',
+      metadataAssignmentKey: 'pawnByPlayerId',
+      playerPawnField: 'pawn',
       choiceLabelBuilder: (pawn) =>
         toText(pawn.description).length > 0
           ? `${toText(pawn.label)}: ${toText(pawn.description)}`
@@ -151,23 +156,6 @@ export class GaloponsSetupService {
         description: toText(choice.description),
       }),
     });
-    if (!pendingInfo) {
-      return initial;
-    }
-
-    return {
-      ...initial,
-      pending: pendingInfo.pending,
-      turnIndex: pendingInfo.turnIndex,
-      turn: {
-        ...(initial.turn ?? {
-          currentPlayerId: pendingInfo.playerId,
-          direction: 1,
-        }),
-        currentPlayerId: pendingInfo.playerId,
-        direction: 1,
-      },
-    };
   }
 
   private loadBoard(): GaloponsBoardJsonV1 {
