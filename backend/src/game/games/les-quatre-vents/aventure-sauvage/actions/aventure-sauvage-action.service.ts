@@ -222,6 +222,10 @@ export class AventureSauvageActionService {
     if (started.pending) {
       return started;
     }
+    const resolvedStarterId =
+      typeof started.turn?.currentPlayerId === 'number'
+        ? started.turn.currentPlayerId
+        : (players[0]?.id ?? null);
     const starterName = resolvePlayerNameFromState(
       started,
       resolvedStarterId ?? players[0]?.id ?? 0,
