@@ -655,6 +655,48 @@ describe('GameEngineService', () => {
     expect(out).toEqual([]);
   });
 
+  it("réordonne les joueurs sautés avant l'annonce du prochain tour", () => {
+    const engine = new GameEngineService(
+      {} as any,
+      new GameCoreService(),
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      new BoardPayloadService(),
+      {} as any,
+    );
+
+    const state: any = {
+      players: [
+        { id: 1, username: 'Lilas' },
+        { id: 2, username: 'Clover' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      log: [{ message: "C'est au tour de Lilas." }],
+      metadata: {
+        turnFlow: {
+          skipped: [{ id: 2, remainingAfter: 0 }],
+        },
+      },
+    };
+
+    const out = (engine as any).appendSkipTurnAnnouncements(state);
+    const messages = (out.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+
+    expect(messages).toEqual([
+      'Clover passe son tour.',
+      "C'est au tour de Lilas.",
+    ]);
+    expect(out.metadata?.turnFlow?.skipped ?? []).toEqual([]);
+  });
+
   it('silently ignores unavailable actions when actor is out of turn', async () => {
     const engine = new GameEngineService(
       {} as any,

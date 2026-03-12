@@ -3445,7 +3445,35 @@ export class GameEngineService {
         return state;
       }
 
+      const currentPlayerId = state.turn?.currentPlayerId ?? null;
+      const currentPlayer =
+        currentPlayerId != null
+          ? (state.players?.find((p) => p?.id === currentPlayerId) ?? null)
+          : null;
+      const currentName = this.normalizeUsernameForLog(currentPlayer?.username);
+      const expectedTurnAnnouncement = currentName
+        ? `C'est au tour de ${currentName}.`
+        : null;
+
       let out = state;
+      const existingLog = Array.isArray(state.log) ? [...state.log] : [];
+      const lastEntry =
+        existingLog.length > 0 ? existingLog[existingLog.length - 1] : null;
+      const lastMessage =
+        lastEntry && typeof lastEntry.message === 'string'
+          ? String(lastEntry.message).trim()
+          : '';
+      const shouldMoveTurnAnnouncement =
+        expectedTurnAnnouncement != null &&
+        lastMessage === expectedTurnAnnouncement;
+      if (shouldMoveTurnAnnouncement) {
+        existingLog.pop();
+        out = {
+          ...out,
+          log: existingLog,
+        };
+      }
+
       for (const entry of skipped) {
         if (!entry || typeof entry !== 'object') continue;
         const data = entry as Record<string, unknown>;
@@ -3460,6 +3488,10 @@ export class GameEngineService {
         const who = name ? name : `joueur ${id}`;
         const suffix = remaining > 0 ? ` (${remaining} restant)` : '';
         out = this.core.appendLog(out, `${who} passe son tour${suffix}.`);
+      }
+
+      if (shouldMoveTurnAnnouncement) {
+        out = this.core.appendLog(out, expectedTurnAnnouncement!);
       }
 
       const cleanedTurnFlow = { ...turnFlow, skipped: [] };
