@@ -8,9 +8,7 @@ import { RandomService } from '../../../../modules/random/services/random.servic
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
-import {
-  type PawnChoiceOption,
-} from '../../../../core/helpers/pawn-choice-action.helper';
+import { type PawnChoiceOption } from '../../../../core/helpers/pawn-choice-action.helper';
 import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
 import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
 import type {
@@ -297,7 +295,10 @@ export class AFondLesBallonsActionService {
         })),
       extraMetadataBuilder: ({ metadata, playerId, choice }) => ({
         charactersByPlayerId: {
-          ...(asRecord(metadata.charactersByPlayerId) as Record<number, unknown>),
+          ...(asRecord(metadata.charactersByPlayerId) as Record<
+            number,
+            unknown
+          >),
           [playerId]: {
             id: choice.id,
             name: choice.label ?? choice.id,
@@ -308,7 +309,7 @@ export class AFondLesBallonsActionService {
     });
     if (!applied) return state;
     const { playerId } = applied;
-    let next = applied.state;
+    const next = applied.state;
     const nextMeta = this.getMeta(next);
 
     const playersForPending = Array.isArray(next.players) ? next.players : [];

@@ -50,4 +50,3 @@ describe('TurnPoliciesService non-regression', () => {
     expect(out.log.at(-1)?.message).toBe("C'est à Lila de choisir son pion.");
   });
 });
-

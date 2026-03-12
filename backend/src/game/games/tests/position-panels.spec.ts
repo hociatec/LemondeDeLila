@@ -177,6 +177,6 @@ describe('Position panels', () => {
       1,
     );
 
-    expect((exposed.extras as any)?.ui?.panels?.position).toBeUndefined();
+    expect(exposed.extras?.ui?.panels?.position).toBeUndefined();
   });
 });

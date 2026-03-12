@@ -58,13 +58,17 @@ describe('GameEngineService', () => {
       log: [
         { message: "C'est à Lilas de choisir son pion." },
         { message: "C'est au tour de Lilas." },
-        { message: '[Panier Express] Lilas a choisi le pion: panier en osier.' },
+        {
+          message: '[Panier Express] Lilas a choisi le pion: panier en osier.',
+        },
       ],
       metadata: {},
     };
 
     const out = (engine as any).appendFirstTurnAnnouncement(state);
-    const messages = (out.log ?? []).map((entry: any) => String(entry?.message));
+    const messages = (out.log ?? []).map((entry: any) =>
+      String(entry?.message),
+    );
 
     expect(messages).toContain("C'est à Mouche de choisir son pion.");
   });
@@ -130,7 +134,9 @@ describe('GameEngineService', () => {
     };
 
     const out = (engine as any).appendFirstTurnAnnouncement(state);
-    const messages = (out.log ?? []).map((entry: any) => String(entry?.message));
+    const messages = (out.log ?? []).map((entry: any) =>
+      String(entry?.message),
+    );
 
     expect(messages).toContain("C'est à hacene de choisir son pion.");
     expect(messages).not.toContain("C'est au tour de hacene.");
@@ -163,7 +169,9 @@ describe('GameEngineService', () => {
     };
 
     const out = (engine as any).appendFirstTurnAnnouncement(state);
-    const messages = (out.log ?? []).map((entry: any) => String(entry?.message));
+    const messages = (out.log ?? []).map((entry: any) =>
+      String(entry?.message),
+    );
 
     expect(messages).toContain("C'est à Oggy de choisir son pion.");
   });
@@ -765,7 +773,7 @@ describe('GameEngineService', () => {
     expect(out.metadata?.turnFlow?.skipped ?? []).toEqual([]);
   });
 
-  it("annonce les cases de contes et cacahuÃ¨tes sans numÃ©ro de case", () => {
+  it('annonce les cases de contes et cacahuÃ¨tes sans numÃ©ro de case', () => {
     const engine = new GameEngineService(
       {} as any,
       new GameCoreService(),
@@ -825,12 +833,12 @@ describe('GameEngineService', () => {
       String(entry?.message ?? ''),
     );
 
-    expect(messages.some((message: string) => message.includes('Case Départ'))).toBe(
-      true,
-    );
-    expect(messages.some((message: string) => message.includes('case 1 -'))).toBe(
-      false,
-    );
+    expect(
+      messages.some((message: string) => message.includes('Case Départ')),
+    ).toBe(true);
+    expect(
+      messages.some((message: string) => message.includes('case 1 -')),
+    ).toBe(false);
   });
 
   it('silently ignores unavailable actions when actor is out of turn', async () => {
@@ -1569,5 +1577,3 @@ describe('GameEngineService', () => {
     expect(payload.endgameMessagesByPlayerId).toEqual({});
   });
 });
-
-

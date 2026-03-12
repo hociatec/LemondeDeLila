@@ -64,13 +64,7 @@ async function createActionsModule(
           setupFlow: SetupFlowService,
           deckPolicies: DeckPoliciesService,
         ) =>
-          new ContesActionService(
-            core,
-            random,
-            turns,
-            setupFlow,
-            deckPolicies,
-          ),
+          new ContesActionService(core, random, turns, setupFlow, deckPolicies),
         inject: [
           GameCoreService,
           RandomService,
@@ -119,7 +113,9 @@ describe('Contes effects', () => {
     expect(toText(asRecord(bonusDeck[0]).title)).toBe('Bottes de sept lieues');
     expect(toText(asRecord(malusDeck[0]).title)).toBe('Sortilège de Sommeil');
     expect(toText(asRecord(surpriseDeck[0]).title)).toBe('Baguette Malicieuse');
-    expect(toText(asRecord(conteDeck[0]).title)).toBe('Conte - Japon : Momotarō');
+    expect(toText(asRecord(conteDeck[0]).title)).toBe(
+      'Conte - Japon : Momotarō',
+    );
 
     expect(pawns).toHaveLength(6);
     expect(toText(asRecord(pawns[0]).id)).toBe('Aika - Mongolie');
@@ -550,6 +546,3 @@ describe('Contes effects', () => {
     expect(logText).not.toContain('Aucune carte disponible');
   });
 });
-
-
-

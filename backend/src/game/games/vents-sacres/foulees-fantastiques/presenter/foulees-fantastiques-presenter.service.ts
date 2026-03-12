@@ -82,8 +82,8 @@ export class FouleesFantastiquesPresenterService {
       stableLines.push('Aucun animal sorti.');
     }
 
-    const positionMessage = this.boardPayload.buildPawnProgressPositionPanelMessage(
-      {
+    const positionMessage =
+      this.boardPayload.buildPawnProgressPositionPanelMessage({
         playersRaw: state.players,
         pawnsByPlayerRaw: meta.pawnsByPlayer,
         trackLengthRaw: meta.trackLength,
@@ -93,8 +93,7 @@ export class FouleesFantastiquesPresenterService {
         stableLabel: 'DÃ©part',
         homeLabel: 'Abri',
         arrivedLabel: 'ArrivÃ©s',
-      },
-    );
+      });
 
     const extras = {
       ...(state as any).extras,

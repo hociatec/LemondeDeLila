@@ -108,9 +108,7 @@ describe('MnemoQuizStoreService persistence path', () => {
       };
     });
 
-    // NodeNext + isolatedModules: avoid dynamic import resolution issues in TS by using require.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const mod = require('../store/mnemo-quiz-store.service') as {
+    const mod = (await import('../store/mnemo-quiz-store.service')) as {
       MnemoQuizStoreService: new () => any;
     };
     return new mod.MnemoQuizStoreService();

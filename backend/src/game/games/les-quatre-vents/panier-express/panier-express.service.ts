@@ -107,9 +107,9 @@ export class PanierExpressService extends AbstractGameService {
     const current =
       currentId == null
         ? null
-        : (ensured.players ?? []).find(
+        : ((ensured.players ?? []).find(
             (p) => toPlayerIdValue(p?.id) === currentId,
-          ) ?? null;
+          ) ?? null);
     const isBot = current?.isBot === true;
     const actions =
       !isBot && typeof currentId === 'number'
@@ -513,7 +513,9 @@ export class PanierExpressService extends AbstractGameService {
 
     const patchedPlayers = players.map((p) => {
       if (p == null || typeof p.id !== 'number') return p;
-      const current = Array.isArray((p as any).shoppingList) ? p.shoppingList : [];
+      const current = Array.isArray((p as any).shoppingList)
+        ? p.shoppingList
+        : [];
       if (current.length > 0) {
         // Normaliser la taille et éviter les entrées vides.
         return { ...p, shoppingList: normalizeList(current) };
@@ -4163,7 +4165,10 @@ export class PanierExpressService extends AbstractGameService {
     );
     next = this.appendActionLog(next, playerId, 'answer_quiz', { correct });
     if (correct) {
-      next = this.core.appendLog(next, '[Panier Express] Piochez un ingrédient.');
+      next = this.core.appendLog(
+        next,
+        '[Panier Express] Piochez un ingrédient.',
+      );
       next = this.queueCourseDraws(
         next,
         [{ playerId, standId: 'bonus' }],

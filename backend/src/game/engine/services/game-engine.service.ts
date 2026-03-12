@@ -92,9 +92,8 @@ function extractPawnPromptToken(message: string): string | null {
   const text = String(message ?? '').trim();
   if (!text) return null;
 
-  const withPlayer = /^c['’]est à (.+?) de choisir (?:son|un) pion(?:[.,!?]|$)/i.exec(
-    text,
-  );
+  const withPlayer =
+    /^c['’]est à (.+?) de choisir (?:son|un) pion(?:[.,!?]|$)/i.exec(text);
   if (!withPlayer) return null;
   return `prompt:choose-pawn:${normalizePromptToken(withPlayer[1])}`;
 }
@@ -536,9 +535,7 @@ export class GameEngineService {
     }
 
     const rawPositions =
-      internalMeta['pawnsByPlayerId'] ??
-      boardRaw['pawnsByPlayerId'] ??
-      null;
+      internalMeta['pawnsByPlayerId'] ?? boardRaw['pawnsByPlayerId'] ?? null;
     if (!rawPositions || typeof rawPositions !== 'object') {
       return '';
     }
@@ -1255,7 +1252,9 @@ export class GameEngineService {
             log.slice(-80).map((e) => String(e?.message ?? '').trim()),
           );
           let nextLog = log;
-          for (const [playerIdRaw, outcome] of Object.entries(outcomesByPlayerId)) {
+          for (const [playerIdRaw, outcome] of Object.entries(
+            outcomesByPlayerId,
+          )) {
             const normalizedOutcome = String(outcome ?? '')
               .trim()
               .toLowerCase();
@@ -1616,7 +1615,9 @@ export class GameEngineService {
     const humans = players.filter((p) => !p.isBot);
     const humanIdSet = new Set(
       humans
-        .map((p) => (typeof p?.id === 'number' && Number.isFinite(p.id) ? p.id : null))
+        .map((p) =>
+          typeof p?.id === 'number' && Number.isFinite(p.id) ? p.id : null,
+        )
         .filter((id): id is number => id != null),
     );
 
@@ -2790,9 +2791,9 @@ export class GameEngineService {
       ) || `Joueur ${currentPlayerId}`;
 
     const log = Array.isArray(state.log) ? state.log : [];
-    const recentMessages = log.slice(-6).map((entry) =>
-      String(entry?.message ?? '').trim(),
-    );
+    const recentMessages = log
+      .slice(-6)
+      .map((entry) => String(entry?.message ?? '').trim());
     if (pendingType === 'choose_pawn' || pendingType === 'pick_pawn') {
       const expectedPromptToken = `prompt:choose-pawn:${normalizePromptToken(name)}`;
       const hasSamePrompt = recentMessages.some(
@@ -2827,7 +2828,9 @@ export class GameEngineService {
     const log = Array.isArray(state.log) ? [...state.log] : [];
     for (let i = log.length - 1; i >= 0 && i >= log.length - 6; i -= 1) {
       const message =
-        typeof log[i]?.message === 'string' ? String(log[i].message).trim() : '';
+        typeof log[i]?.message === 'string'
+          ? String(log[i].message).trim()
+          : '';
       if (message !== expectedMessage) continue;
       log.splice(i, 1);
       return { ...state, log };
@@ -3435,7 +3438,8 @@ export class GameEngineService {
 
         if (
           label &&
-          (/^case\\s+\\d+/i.test(label) || (isContes && /^case\s+/i.test(label)))
+          (/^case\\s+\\d+/i.test(label) ||
+            (isContes && /^case\s+/i.test(label)))
         ) {
           out = this.core.appendLog(
             out,
@@ -3516,7 +3520,7 @@ export class GameEngineService {
       }
 
       if (shouldMoveTurnAnnouncement) {
-        out = this.core.appendLog(out, expectedTurnAnnouncement!);
+        out = this.core.appendLog(out, expectedTurnAnnouncement);
       }
 
       const cleanedTurnFlow = { ...turnFlow, skipped: [] };
@@ -3607,7 +3611,9 @@ export class GameEngineService {
     const ui = uiExisting ? { ...uiExisting } : {};
     const panelsExisting = GameEngineService.extractPanels(uiExisting);
     const panels = panelsExisting ? { ...panelsExisting } : {};
-    const hasGameDefinedPanels = Object.keys(panels).some((id) => id !== 'turn');
+    const hasGameDefinedPanels = Object.keys(panels).some(
+      (id) => id !== 'turn',
+    );
     const currentPlayerView =
       (extrasAfter['currentPlayerView'] as CurrentPlayerView | null) ?? null;
     const metadata =
@@ -3698,7 +3704,11 @@ export class GameEngineService {
         'Score',
         buildListMessage('Score', extrasAfter['score']),
       );
-      upsertPanel('hand', 'Main', buildListMessage('Main', extrasAfter['hand']));
+      upsertPanel(
+        'hand',
+        'Main',
+        buildListMessage('Main', extrasAfter['hand']),
+      );
       upsertPanel(
         'books',
         'Familles',
@@ -3713,7 +3723,10 @@ export class GameEngineService {
         ? metadata['maxPollution']
         : null;
 
-    if (!hasGameDefinedPanels && (pollution !== null || maxPollution !== null)) {
+    if (
+      !hasGameDefinedPanels &&
+      (pollution !== null || maxPollution !== null)
+    ) {
       let message = 'Pollution: inconnue.';
       if (pollution !== null && maxPollution !== null)
         message = `Pollution: ${pollution}/${maxPollution}.`;

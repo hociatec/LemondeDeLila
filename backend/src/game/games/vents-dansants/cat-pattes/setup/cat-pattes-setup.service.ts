@@ -75,8 +75,7 @@ export class CatPattesSetupService {
         ? (baseState.metadata as Record<string, unknown>)
         : ({} as Record<string, unknown>);
     const ownerPlayerId =
-      this.resolveOwnerPlayerId(players, baseMeta) ??
-      setupStarterId;
+      this.resolveOwnerPlayerId(players, baseMeta) ?? setupStarterId;
     const roundsToPlay = this.resolveRoundsToPlay(metaSeed?.roundsToPlay);
 
     const metadata: CatPattesMetadata = {

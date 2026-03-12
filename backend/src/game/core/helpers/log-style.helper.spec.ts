@@ -46,4 +46,3 @@ describe('log-style.helper', () => {
     expect(normalizeGameLogMessage('   \n\t')).toBe('');
   });
 });
-

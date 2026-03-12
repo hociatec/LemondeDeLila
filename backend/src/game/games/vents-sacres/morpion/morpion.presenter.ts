@@ -170,60 +170,12 @@ export class MorpionPresenter extends BasePresenterService {
     state: GameStateEntity,
     _metadata: MorpionMetadata,
     _userId: number,
-    currentPlayerId: number | null,
+    _currentPlayerId: number | null,
   ): Record<string, unknown> {
     const base = this.getBaseExtras(state);
     const meta = (state.metadata ?? {}) as MorpionMetadata;
-    const size = meta.size ?? 3;
     const board = Array.isArray(meta.board) ? meta.board : [];
-    const players = Array.isArray(state.players) ? state.players : [];
-    const glyphByPlayerId = (meta as any)?.glyphByPlayerId ?? {};
-
-    const glyphForOwner = (ownerId: number): string => {
-      const mapped = String(glyphByPlayerId?.[String(ownerId)] ?? '')
-        .trim()
-        .toLowerCase();
-      const mappedPawn = MORPION_PAWNS.find((pawn) => pawn.id === mapped);
-      if (mappedPawn?.glyph) return mappedPawn.glyph;
-      const player0 = players[0]?.id ?? 1;
-      const player1 = players[1]?.id ?? 2;
-      if (ownerId === player0) return MORPION_PAWNS[0]?.glyph ?? 'V';
-      if (ownerId === player1) return MORPION_PAWNS[1]?.glyph ?? 'E';
-      return '@';
-    };
-
-    const rowLabel = (y: number) => {
-      const cells: string[] = [];
-      for (let x = 0; x < size; x += 1) {
-        const idx = y * size + x;
-        const ownerId = Number(board[idx] ?? 0);
-        cells.push(ownerId ? glyphForOwner(ownerId) : '.');
-      }
-      return cells.join(' ');
-    };
-
-    const boardMessage = [
-      `Plateau:`,
-      rowLabel(0),
-      rowLabel(1),
-      rowLabel(2),
-    ].join(' ');
-
     const emptyCount = board.filter((v) => Number(v ?? 0) === 0).length;
-    const who =
-      typeof currentPlayerId === 'number'
-        ? (players.find((p) => p?.id === currentPlayerId)?.username ??
-          `#${currentPlayerId}`)
-        : 'inconnu';
-
-    const playerLines = players.map((player) => {
-      const name =
-        typeof player?.username === 'string' && player.username.trim().length > 0
-          ? player.username.trim()
-          : `Joueur ${player?.id ?? '?'}`;
-      const glyph = typeof player?.id === 'number' ? glyphForOwner(player.id) : '?';
-      return `${name} : pion ${glyph}.`;
-    });
     const playInfo =
       String(state.status ?? '').toLowerCase() === 'started'
         ? `Cases libres: ${emptyCount}. Entrée: jouer sur la case focus.`
@@ -243,9 +195,12 @@ export class MorpionPresenter extends BasePresenterService {
   }
 
   private normalizePawnId(value: unknown): string | null {
-    const normalized = String(value ?? '')
-      .trim()
-      .toLowerCase();
+    const normalized =
+      typeof value === 'string'
+        ? value.trim().toLowerCase()
+        : typeof value === 'number'
+          ? String(value).trim().toLowerCase()
+          : '';
     if (!normalized) return null;
 
     if (normalized === 'x') return MORPION_PAWNS[0]?.id ?? null;

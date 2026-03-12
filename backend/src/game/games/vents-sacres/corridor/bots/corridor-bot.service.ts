@@ -89,7 +89,7 @@ export class CorridorBotService {
       oppPos != null &&
       wallTargets.length > 0
     ) {
-      const opponentId = oppId as number;
+      const opponentId = oppId;
       const opponentGoalY = oppGoalY as number;
       const opponentWinNow = (() => {
         const moves = CorridorRulebook.listLegalPawnMoves(state, opponentId);

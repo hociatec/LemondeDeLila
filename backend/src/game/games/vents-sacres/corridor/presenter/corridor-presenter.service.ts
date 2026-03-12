@@ -26,7 +26,10 @@ export class CorridorPresenterService extends BasePresenterService {
     const meta = (state.metadata ?? {}) as CorridorMetadata;
     const exposed = this.buildExposedStateForUser(state, userId);
 
-    if (!this.isStarted(state) || String(meta?.setupStep ?? '') === 'setup_config') {
+    if (
+      !this.isStarted(state) ||
+      String(meta?.setupStep ?? '') === 'setup_config'
+    ) {
       return exposed;
     }
 
@@ -59,7 +62,10 @@ export class CorridorPresenterService extends BasePresenterService {
       },
     );
 
-    const blockedEdges = this.gridBlockedEdges.buildFromWalls(size, meta?.walls);
+    const blockedEdges = this.gridBlockedEdges.buildFromWalls(
+      size,
+      meta?.walls,
+    );
     const cellTags = this.buildGridCellTags(state, userId, size);
     const exposedExtras =
       exposed.extras && typeof exposed.extras === 'object'
@@ -122,7 +128,8 @@ export class CorridorPresenterService extends BasePresenterService {
       : 0;
     const entries = players.map((player) => {
       const name =
-        typeof player?.username === 'string' && player.username.trim().length > 0
+        typeof player?.username === 'string' &&
+        player.username.trim().length > 0
           ? player.username.trim()
           : `Joueur ${player?.id ?? '?'}`;
       const remaining = Math.max(

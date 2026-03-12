@@ -31,7 +31,9 @@ export class CorridorSetupService {
 
     const players = baseState.players ?? [];
     if (players.length < CORRIDOR_GAME.minPlayers) {
-      throw new Error('Nombre de joueurs insuffisant pour demarrer Le Corridor.');
+      throw new Error(
+        'Nombre de joueurs insuffisant pour demarrer Le Corridor.',
+      );
     }
 
     const baseMeta =
@@ -89,7 +91,9 @@ export class CorridorSetupService {
   ): GameStateEntity {
     const players = baseState.players ?? [];
     if (players.length < CORRIDOR_GAME.minPlayers) {
-      throw new Error('Nombre de joueurs insuffisant pour demarrer Le Corridor.');
+      throw new Error(
+        'Nombre de joueurs insuffisant pour demarrer Le Corridor.',
+      );
     }
 
     const size = CORRIDOR_GAME.boardSize;
@@ -129,8 +133,8 @@ export class CorridorSetupService {
       eligible.length <= 0
         ? null
         : eligible.length === 1
-          ? eligible[0]!.id ?? null
-          : (eligible[pick!.value]?.id ?? eligible[0]!.id ?? null);
+          ? (eligible[0].id ?? null)
+          : (eligible[pick!.value]?.id ?? eligible[0].id ?? null);
     const metaAfterPick = pick?.meta ?? baseMeta;
 
     const metadata: CorridorMetadata = {

@@ -83,7 +83,9 @@ function buildFrousseMeta(overrides: Record<string, unknown> = {}): any {
   };
 }
 
-function buildTurnState(overrides: Partial<GameStateEntity> = {}): GameStateEntity {
+function buildTurnState(
+  overrides: Partial<GameStateEntity> = {},
+): GameStateEntity {
   return {
     status: 'started',
     turnIndex: 0,
@@ -761,9 +763,9 @@ describe('FrousseActionService movement effects', () => {
 
     expect(afterRoll.turn?.currentPlayerId).toBe(2);
     expect(messages).toContain("C'est au tour de Hacene.");
-    expect(
-      messages.some((message) => /^Lilas rejoue\./i.test(message)),
-    ).toBe(false);
+    expect(messages.some((message) => /^Lilas rejoue\./i.test(message))).toBe(
+      false,
+    );
   });
 
   it('advances to the next player immediately after a skip-turn card', () => {

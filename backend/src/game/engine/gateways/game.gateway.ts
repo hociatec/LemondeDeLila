@@ -790,14 +790,17 @@ export class GameGateway
       })();
       const publicEndgameMessagesByPlayerId = (() => {
         const out: Record<string, string> = {};
-        for (const [playerId, rawOutcome] of Object.entries(outcomesByPlayerId)) {
+        for (const [playerId, rawOutcome] of Object.entries(
+          outcomesByPlayerId,
+        )) {
           const numericPlayerId = Number(playerId);
           if (!Number.isFinite(numericPlayerId) || numericPlayerId <= 0) {
             continue;
           }
-          const outcome = String(rawOutcome ?? '')
-            .trim()
-            .toLowerCase();
+          const outcome =
+            typeof rawOutcome === 'string'
+              ? rawOutcome.trim().toLowerCase()
+              : '';
           if (outcome !== 'won' && outcome !== 'lost') {
             continue;
           }
@@ -806,7 +809,9 @@ export class GameGateway
             continue;
           }
           const chosen =
-            outcome === 'won' ? byPlayer.victoryMessage : byPlayer.defeatMessage;
+            outcome === 'won'
+              ? byPlayer.victoryMessage
+              : byPlayer.defeatMessage;
           if (typeof chosen !== 'string') {
             continue;
           }

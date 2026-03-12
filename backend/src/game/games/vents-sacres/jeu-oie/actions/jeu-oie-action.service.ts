@@ -67,14 +67,24 @@ export class JeuOieActionService {
       metadataAssignmentKey: 'pawnByPlayerId',
       choiceCatalogFallback: (options) =>
         options.map((p) => ({
-          id: String(p?.id ?? '').trim(),
-          label: String(p?.label ?? '').trim(),
+          id:
+            typeof p?.id === 'string'
+              ? p.id.trim()
+              : typeof p?.id === 'number'
+                ? String(p.id)
+                : '',
+          label:
+            typeof p?.label === 'string'
+              ? p.label.trim()
+              : typeof p?.label === 'number'
+                ? String(p.label)
+                : '',
           feminine: Boolean(p?.feminine),
         })),
     });
     if (!applied) return state;
     const { playerId } = applied;
-    let next = applied.state;
+    const next = applied.state;
 
     const playersForPending = Array.isArray(next.players) ? next.players : [];
     const metaForPending = this.getMeta(next);
@@ -100,7 +110,8 @@ export class JeuOieActionService {
       setupFlow: this.setupFlow,
       chooserPlayerId: playerId,
       players: playersForPending,
-      isAssigned: (candidateId) => Boolean(pawnByPlayerIdForPending[candidateId]),
+      isAssigned: (candidateId) =>
+        Boolean(pawnByPlayerIdForPending[candidateId]),
       pawns: choicesForPending,
       pawnDataMapper: (p: any) => ({
         id: String(p?.id ?? '').trim(),

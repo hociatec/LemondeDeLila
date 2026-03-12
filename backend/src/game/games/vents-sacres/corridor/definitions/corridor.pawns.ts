@@ -13,16 +13,19 @@ export const CORRIDOR_PAWNS: CorridorPawnChoice[] = [
   {
     id: 'eau',
     label: "L'eau",
-    description: 'Souple et patiente, elle contourne les obstacles avec précision.',
+    description:
+      'Souple et patiente, elle contourne les obstacles avec précision.',
   },
   {
     id: 'terre',
     label: 'La terre',
-    description: 'Stable et solide, elle avance avec une régularité implacable.',
+    description:
+      'Stable et solide, elle avance avec une régularité implacable.',
   },
   {
     id: 'feu',
     label: 'Le feu',
-    description: 'Direct et audacieux, il cherche la ligne d’arrivée sans détour.',
+    description:
+      'Direct et audacieux, il cherche la ligne d’arrivée sans détour.',
   },
 ];

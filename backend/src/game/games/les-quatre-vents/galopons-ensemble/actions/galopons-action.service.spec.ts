@@ -281,9 +281,11 @@ describe('GaloponsActionService', () => {
       1,
     );
 
-    expect(out.log.some((entry: any) => entry?.message === "L'aventure commence ici.")).toBe(
-      true,
-    );
+    expect(
+      out.log.some(
+        (entry: any) => entry?.message === "L'aventure commence ici.",
+      ),
+    ).toBe(true);
   });
 
   it('covers choose_target contexts pair_advance, give_apple and help_advance', () => {

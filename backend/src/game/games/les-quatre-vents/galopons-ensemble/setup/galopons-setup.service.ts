@@ -20,8 +20,7 @@ const GALOPONS_PAWNS = [
   {
     id: 'mustang',
     name: 'Le Mustang',
-    description:
-      `Ce cheval des grands espaces adore galoper librement comme s'il tournait dans un vieux western. Rapide, malin et un peu rebelle, il a toujours l'air de dire : "Attrape-moi si tu peux !"`,
+    description: `Ce cheval des grands espaces adore galoper librement comme s'il tournait dans un vieux western. Rapide, malin et un peu rebelle, il a toujours l'air de dire : "Attrape-moi si tu peux !"`,
   },
   {
     id: 'percheron',
@@ -32,8 +31,7 @@ const GALOPONS_PAWNS = [
   {
     id: 'camargue',
     name: 'Le Camargue',
-    description:
-      `Toujours prêt à patauger dans les marais, ce cheval blanc semble aimer l'eau presque autant qu'un canard. Rustique et courageux, il suit les taureaux avec l'air de dire : "Même pas peur !"`,
+    description: `Toujours prêt à patauger dans les marais, ce cheval blanc semble aimer l'eau presque autant qu'un canard. Rustique et courageux, il suit les taureaux avec l'air de dire : "Même pas peur !"`,
   },
 ];
 

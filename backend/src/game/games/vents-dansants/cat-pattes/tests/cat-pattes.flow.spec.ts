@@ -52,8 +52,7 @@ describe('CatPattes flow', () => {
             turns: any,
             deckPolicies: DeckPoliciesService,
             random: RandomService,
-          ) =>
-            new CatPattesActionService(core, turns, deckPolicies, random),
+          ) => new CatPattesActionService(core, turns, deckPolicies, random),
           inject: [
             GameCoreService,
             'TurnFlowService',
@@ -88,10 +87,12 @@ describe('CatPattes flow', () => {
     const actionsP2 = Rulebook.getAvailableActions(state as any, 2);
     expect(actionsP2).toEqual([{ type: 'draw', payload: {} }]);
 
-    const messages = (state.log ?? []).map((e: any) => String(e?.message ?? ''));
-    expect(messages.some((m) => /D.+but de partie: .* commence\./i.test(m))).toBe(
-      true,
+    const messages = (state.log ?? []).map((e: any) =>
+      String(e?.message ?? ''),
     );
+    expect(
+      messages.some((m) => /D.+but de partie: .* commence\./i.test(m)),
+    ).toBe(true);
   });
 
   it('allows draw/play after config', async () => {
@@ -128,8 +129,7 @@ describe('CatPattes flow', () => {
             turns: any,
             deckPolicies: DeckPoliciesService,
             random: RandomService,
-          ) =>
-            new CatPattesActionService(core, turns, deckPolicies, random),
+          ) => new CatPattesActionService(core, turns, deckPolicies, random),
           inject: [
             GameCoreService,
             'TurnFlowService',
@@ -202,8 +202,7 @@ describe('CatPattes flow', () => {
             turns: any,
             deckPolicies: DeckPoliciesService,
             random: RandomService,
-          ) =>
-            new CatPattesActionService(core, turns, deckPolicies, random),
+          ) => new CatPattesActionService(core, turns, deckPolicies, random),
           inject: [
             GameCoreService,
             'TurnFlowService',
@@ -286,8 +285,7 @@ describe('CatPattes flow', () => {
             turns: any,
             deckPolicies: DeckPoliciesService,
             random: RandomService,
-          ) =>
-            new CatPattesActionService(core, turns, deckPolicies, random),
+          ) => new CatPattesActionService(core, turns, deckPolicies, random),
           inject: [
             GameCoreService,
             'TurnFlowService',
@@ -398,8 +396,7 @@ describe('CatPattes flow', () => {
             turns: any,
             deckPolicies: DeckPoliciesService,
             random: RandomService,
-          ) =>
-            new CatPattesActionService(core, turns, deckPolicies, random),
+          ) => new CatPattesActionService(core, turns, deckPolicies, random),
           inject: [
             GameCoreService,
             'TurnFlowService',
@@ -545,16 +542,26 @@ describe('CatPattes flow', () => {
       turnIndex: 0,
     };
 
-    state = actionsService.applyActions(state, [{ type: 'draw', payload: {} } as any]);
+    state = actionsService.applyActions(state, [
+      { type: 'draw', payload: {} } as any,
+    ]);
 
     const rawLog = (state.log ?? []).map((e: any) => String(e?.message ?? ''));
-    expect(rawLog.some((m: string) => m.startsWith('Hacene pioche '))).toBe(true);
+    expect(rawLog.some((m: string) => m.startsWith('Hacene pioche '))).toBe(
+      true,
+    );
     expect(rawLog.some((m: string) => m.includes('Petite foulée'))).toBe(true);
 
     const exposedP2: any = presenter.exposeStateForUser(state, 2);
-    const exposedLog = (exposedP2.log ?? []).map((e: any) => String(e?.message ?? ''));
-    expect(exposedLog.some((m: string) => m === 'Hacene pioche une carte.')).toBe(true);
-    expect(exposedLog.some((m: string) => m.includes('Petite foulée'))).toBe(false);
+    const exposedLog = (exposedP2.log ?? []).map((e: any) =>
+      String(e?.message ?? ''),
+    );
+    expect(
+      exposedLog.some((m: string) => m === 'Hacene pioche une carte.'),
+    ).toBe(true);
+    expect(exposedLog.some((m: string) => m.includes('Petite foulée'))).toBe(
+      false,
+    );
   });
 
   it('does not expose opponents hands in presenter extras', async () => {
@@ -648,8 +655,7 @@ describe('CatPattes flow', () => {
             turns: any,
             deckPolicies: DeckPoliciesService,
             random: RandomService,
-          ) =>
-            new CatPattesActionService(core, turns, deckPolicies, random),
+          ) => new CatPattesActionService(core, turns, deckPolicies, random),
           inject: [
             GameCoreService,
             'TurnFlowService',

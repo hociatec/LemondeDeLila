@@ -215,7 +215,11 @@ describe('ArcheDeMnemosyneService admin/game flow', () => {
     state = {
       ...state,
       phase: 'play',
-      turn: { ...(state.turn ?? {}), direction: 1 as 1, currentPlayerId: 1 },
+      turn: {
+        ...(state.turn ?? {}),
+        direction: 1 as const,
+        currentPlayerId: 1,
+      },
       metadata: {
         ...(state.metadata as any),
         ownerPlayerId: 1,

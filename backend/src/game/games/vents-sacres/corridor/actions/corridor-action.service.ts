@@ -29,7 +29,10 @@ export class CorridorActionService {
       if (String(last ?? '').trim() === message) continue;
       out = {
         ...out,
-        log: [...(out.log ?? []), { message, timestamp: new Date().toISOString() }],
+        log: [
+          ...(out.log ?? []),
+          { message, timestamp: new Date().toISOString() },
+        ],
       };
     }
     return out;
@@ -82,7 +85,10 @@ export class CorridorActionService {
     if (pendingType === 'choose_pawn' && type !== 'choose_pawn') {
       return state;
     }
-    if ((state.metadata as CorridorMetadata | undefined)?.setupStep === 'setup_config') {
+    if (
+      (state.metadata as CorridorMetadata | undefined)?.setupStep ===
+      'setup_config'
+    ) {
       if (type !== 'corridor_set_config') {
         return state;
       }
@@ -113,7 +119,7 @@ export class CorridorActionService {
       return state;
     }
 
-    const payload = (action.payload ?? {}) as Record<string, unknown>;
+    const payload = action.payload ?? {};
     const wallsPerPlayer = this.setup.resolveWallsPerPlayer(
       payload.wallsPerPlayer ?? payload.value ?? null,
     );
@@ -129,7 +135,11 @@ export class CorridorActionService {
     actorId: number | null,
   ): GameStateEntity {
     if (actorId == null) return state;
-    if (String(state.pending?.type ?? '').trim().toLowerCase() !== 'choose_pawn') {
+    if (
+      String(state.pending?.type ?? '')
+        .trim()
+        .toLowerCase() !== 'choose_pawn'
+    ) {
       return state;
     }
     const pendingPlayerId = state.pending?.playerId ?? null;
@@ -144,7 +154,10 @@ export class CorridorActionService {
         this.appendUniqueLogMessages(current, [message]),
     } as any;
     const setupLike = {
-      resolvePawnChoice: (_rawPawn: unknown, options: Array<Record<string, unknown>>) => {
+      resolvePawnChoice: (
+        _rawPawn: unknown,
+        options: Array<Record<string, unknown>>,
+      ) => {
         const raw = String(
           (action.payload as any)?.pawnId ??
             (action.payload as any)?.pawn ??
@@ -152,7 +165,15 @@ export class CorridorActionService {
             '',
         ).trim();
         return (
-          options.find((entry) => String(entry?.id ?? '').trim() === raw) ?? null
+          options.find((entry) => {
+            const entryId =
+              typeof entry?.id === 'string'
+                ? entry.id.trim()
+                : typeof entry?.id === 'number'
+                  ? String(entry.id)
+                  : '';
+            return entryId === raw;
+          }) ?? null
         );
       },
     } as any;
@@ -174,7 +195,7 @@ export class CorridorActionService {
       allPawns,
       { ...(appliedMeta.pawnByPlayerId ?? {}) },
     );
-    let next: GameStateEntity = {
+    const next: GameStateEntity = {
       ...applied.state,
       metadata: {
         ...(applied.state.metadata ?? {}),
@@ -187,7 +208,8 @@ export class CorridorActionService {
       typeof meta.setupStarterId === 'number'
         ? meta.setupStarterId
         : (state.players?.[0]?.id ?? actorId);
-    const starter = (state.players ?? []).find((p) => p?.id === starterId) ?? null;
+    const starter =
+      (state.players ?? []).find((p) => p?.id === starterId) ?? null;
     const nextPendingPlayer = (state.players ?? []).find(
       (p) => p?.isBot !== true && !withBotsAssigned[String(p.id)],
     )?.id;
@@ -203,7 +225,10 @@ export class CorridorActionService {
               blocking: true,
               data: {
                 pawns: allPawns
-                  .filter((p) => !Object.values(withBotsAssigned).includes(String(p.id)))
+                  .filter(
+                    (p) =>
+                      !Object.values(withBotsAssigned).includes(String(p.id)),
+                  )
                   .map((p) => ({
                     id: p.id,
                     label: `${p.label} - ${String(p.description ?? '').trim()}`,

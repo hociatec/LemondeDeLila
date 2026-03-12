@@ -56,8 +56,10 @@ describe('MorpionService', () => {
     const choose = (actorId: number, pawnId: string) =>
       ({ type: 'choose_pawn', payload: { pawnId }, meta: { actorId } }) as any;
 
-    state = service.applyActions(state, [choose(chooserId, MORPION_PAWNS[0]!.id)]);
-    state = service.applyActions(state, [choose(otherId, MORPION_PAWNS[1]!.id)]);
+    state = service.applyActions(state, [
+      choose(chooserId, MORPION_PAWNS[0].id),
+    ]);
+    state = service.applyActions(state, [choose(otherId, MORPION_PAWNS[1].id)]);
 
     const exposedAfterSetup: any = service.exposeStateForUser(state, 1);
     expect((exposedAfterSetup.actions ?? []).length).toBe(9);
@@ -87,8 +89,10 @@ describe('MorpionService', () => {
 
     const chooserId = state.pending?.playerId ?? 1;
     const otherId = chooserId === 1 ? 2 : 1;
-    state = service.applyActions(state, [choose(chooserId, MORPION_PAWNS[0]!.id)]);
-    state = service.applyActions(state, [choose(otherId, MORPION_PAWNS[1]!.id)]);
+    state = service.applyActions(state, [
+      choose(chooserId, MORPION_PAWNS[0].id),
+    ]);
+    state = service.applyActions(state, [choose(otherId, MORPION_PAWNS[1].id)]);
 
     state = service.applyActions(state, [play(1, 0, 0)]);
     state = service.applyActions(state, [play(2, 0, 1)]);
@@ -124,8 +128,10 @@ describe('MorpionService', () => {
 
     const chooserId = state.pending?.playerId ?? 1;
     const otherId = chooserId === 1 ? 2 : 1;
-    state = service.applyActions(state, [choose(chooserId, MORPION_PAWNS[0]!.id)]);
-    state = service.applyActions(state, [choose(otherId, MORPION_PAWNS[1]!.id)]);
+    state = service.applyActions(state, [
+      choose(chooserId, MORPION_PAWNS[0].id),
+    ]);
+    state = service.applyActions(state, [choose(otherId, MORPION_PAWNS[1].id)]);
 
     const expected: Array<[number, number, string]> = [
       [0, 0, 'A3'],
@@ -179,7 +185,9 @@ describe('MorpionService', () => {
       ({ type: 'choose_pawn', payload: { pawnId }, meta: { actorId } }) as any;
 
     // Bot pawns are auto-assigned. Finish human pawn selection, then force bot turn for move suggestion.
-    let next = service.applyActions(state, [choose(1, MORPION_PAWNS[0]!.id)]) as any;
+    const next = service.applyActions(state, [
+      choose(1, MORPION_PAWNS[0].id),
+    ]) as any;
     next.turn.currentPlayerId = 2;
 
     const actions = service.getBotActions(next, 2);
@@ -208,8 +216,12 @@ describe('MorpionService', () => {
       ({ type: 'choose_pawn', payload: { pawnId }, meta: { actorId } }) as any;
     const chooserId = state.pending?.playerId ?? 1;
     const otherId = chooserId === 1 ? 2 : 1;
-    let configured: any = service.applyActions(state, [choose(chooserId, MORPION_PAWNS[0]!.id)]);
-    configured = service.applyActions(configured, [choose(otherId, MORPION_PAWNS[1]!.id)]);
+    let configured: any = service.applyActions(state, [
+      choose(chooserId, MORPION_PAWNS[0].id),
+    ]);
+    configured = service.applyActions(configured, [
+      choose(otherId, MORPION_PAWNS[1].id),
+    ]);
 
     const exposed: any = service.exposeStateForUser(configured, 1);
     expect(exposed?.extras?.ui?.panels?.position).toBeUndefined();

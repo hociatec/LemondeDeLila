@@ -7,10 +7,7 @@ import * as Rulebook from '../rulebook/rulebook';
 import { CAT_PATTES_GAME } from '../definitions/game.definition';
 import type { CatPattesMetadata } from '../model/cat-pattes-state.entity';
 import { CAT_PATTES_CARD_BY_ID } from '../model/cat-pattes-cards';
-import {
-  CAT_PATTES_DEFAULT_ROUNDS,
-  CAT_PATTES_GOAL,
-} from '../model/cat-pattes-state.entity';
+import { CAT_PATTES_DEFAULT_ROUNDS } from '../model/cat-pattes-state.entity';
 import { stringOrEmpty } from '@common/utils/string-value.utils';
 
 @Injectable()
@@ -24,13 +21,6 @@ export class CatPattesPresenterService {
     userId: number,
   ): GameStateWithActions {
     const meta = (state.metadata ?? {}) as CatPattesMetadata;
-    const goalPattes = (() => {
-      const parsed = Number(meta.goalPattes ?? CAT_PATTES_GOAL);
-      if (!Number.isFinite(parsed)) return CAT_PATTES_GOAL;
-      const rounded = Math.round(parsed);
-      if (rounded <= 0) return CAT_PATTES_GOAL;
-      return rounded;
-    })();
     const actions = Rulebook.getAvailableActions(state, userId);
     const roundsToPlay = (() => {
       const parsed = Number(meta.roundsToPlay ?? CAT_PATTES_DEFAULT_ROUNDS);
@@ -106,7 +96,7 @@ export class CatPattesPresenterService {
       )
       .join(' • ');
     const lastDiscardId = Array.isArray(meta.discard)
-      ? meta.discard[meta.discard.length - 1] ?? null
+      ? (meta.discard[meta.discard.length - 1] ?? null)
       : null;
     const lastDiscardName =
       lastDiscardId && CAT_PATTES_CARD_BY_ID[lastDiscardId]
@@ -206,6 +196,4 @@ export class CatPattesPresenterService {
       return { ...entry, message: `${actorLabel} pioche une carte.` };
     });
   }
-
-
 }

@@ -177,7 +177,7 @@ export class LamaPresenter extends BasePresenterService {
     // One action per card in hand (including duplicates), but only expose "play" when legal.
     // This prevents "blocked" turns where the UI suggests an unplayable card that the server ignores.
     for (const value of sortedHandValues) {
-      if (!(isSameTurn && trackerPlayed) && allowed.has(value as LamaCardValue)) {
+      if (!(isSameTurn && trackerPlayed) && allowed.has(value)) {
         out.push({ type: 'lama_play', payload: { value, count: 1 } });
       } else {
         out.push({ type: 'lama_preview', payload: { value } });

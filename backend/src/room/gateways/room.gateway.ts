@@ -771,14 +771,14 @@ export class RoomGateway
       } satisfies RoomIntent);
       await this.broadcastRoomIntent(roomId, {
         type: 'announcement',
-          payload: {
-            message:
-              focusIntent.reason === 'room.started'
+        payload: {
+          message:
+            focusIntent.reason === 'room.started'
               ? 'la partie démare, bon jeux!'
               : 'Mise à jour de la table en cours.',
-            priority:
-              focusIntent.priority === 'assertive' ? 'assertive' : 'polite',
-          },
+          priority:
+            focusIntent.priority === 'assertive' ? 'assertive' : 'polite',
+        },
       } satisfies RoomIntent);
     }
 

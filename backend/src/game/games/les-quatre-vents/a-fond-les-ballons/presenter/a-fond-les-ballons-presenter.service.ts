@@ -49,7 +49,6 @@ export class AFondLesBallonsPresenterService {
       ),
     } as GameStateWithActions;
   }
-
 }
 
 function asRecord(value: unknown): Record<string, unknown> {

@@ -55,8 +55,16 @@ export class CorridorService extends AbstractGameService {
   // Used by the engine to:
   // - expose `game.actions` when requested
   // - allow explicit "out of turn" actions (ex: pending choose_pawn while currentPlayerId is wrong/outdated).
-  getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
-    if (!state || String(state.status ?? '').trim().toLowerCase() !== 'started') {
+  getAvailableActions(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameSingleActionDto[] {
+    if (
+      !state ||
+      String(state.status ?? '')
+        .trim()
+        .toLowerCase() !== 'started'
+    ) {
       return [];
     }
 
@@ -74,7 +82,9 @@ export class CorridorService extends AbstractGameService {
       ];
     }
 
-    const pendingType = String(state.pending?.type ?? '').trim().toLowerCase();
+    const pendingType = String(state.pending?.type ?? '')
+      .trim()
+      .toLowerCase();
     if (pendingType === 'choose_pawn') {
       if (state.pending?.playerId !== playerId) {
         return [];
@@ -106,8 +116,10 @@ export class CorridorService extends AbstractGameService {
       return [];
     }
 
-    const moves = CorridorRulebook.listLegalPawnMoves(state as any, playerId) ?? [];
-    const walls = CorridorRulebook.listLegalWallPlacements(state as any, playerId) ?? [];
+    const moves =
+      CorridorRulebook.listLegalPawnMoves(state as any, playerId) ?? [];
+    const walls =
+      CorridorRulebook.listLegalWallPlacements(state as any, playerId) ?? [];
     return [
       ...moves.map((to: any) => ({
         type: 'corridor_move',

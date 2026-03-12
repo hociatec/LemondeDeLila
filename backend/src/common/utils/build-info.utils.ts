@@ -80,8 +80,7 @@ function tryResolveGitHeadSha(): { sha: string | null; ref: string | null } {
 
     const refPath = path.join(gitDir, ref);
     const sha =
-      (readText(refPath) ?? '').trim() ||
-      resolvePackedRef(gitDir, ref);
+      (readText(refPath) ?? '').trim() || resolvePackedRef(gitDir, ref);
     return {
       sha: sha && sha.length >= 7 ? sha : null,
       ref,
@@ -126,4 +125,3 @@ export function getBuildInfo(): BuildInfo {
   };
   return cached;
 }
-

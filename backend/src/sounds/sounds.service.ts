@@ -88,13 +88,7 @@ export class SoundsService {
             'lemonde-de-lila',
             'sounds',
           )
-        : path.join(
-            homedir(),
-            '.local',
-            'share',
-            'lemonde-de-lila',
-            'sounds',
-          );
+        : path.join(homedir(), '.local', 'share', 'lemonde-de-lila', 'sounds');
 
     this.bootstrapPersistentStorage(legacyRoot, persistentRoot);
 
@@ -110,7 +104,7 @@ export class SoundsService {
     } catch (err) {
       this.logger.warn(
         `Persistent sounds dir not writable (${persistentRoot}); falling back to legacy (${legacyRoot}): ${String(
-          (err as any)?.message ?? err,
+          err?.message ?? err,
         )}`,
       );
       return legacyRoot;
@@ -130,7 +124,10 @@ export class SoundsService {
     const details = anyErr?.message ? `: ${String(anyErr.message)}` : '';
     const stack = typeof anyErr?.stack === 'string' ? anyErr.stack : undefined;
 
-    this.logger.error(`Sound storage error during ${action}${code}${details}`, stack);
+    this.logger.error(
+      `Sound storage error during ${action}${code}${details}`,
+      stack,
+    );
 
     return new InternalServerErrorException(
       `Erreur stockage sons pendant ${action}${code}${details}. Vérifiez les permissions du dossier de données.`.trim(),
@@ -372,13 +369,16 @@ export class SoundsService {
         10000,
       );
     } catch (err) {
-      if (this.isSpawnExecutionError(err) && (ext === '.wav' || ext === '.wave')) {
+      if (
+        this.isSpawnExecutionError(err) &&
+        (ext === '.wav' || ext === '.wave')
+      ) {
         return (await this.readWavMeta(filePath)).durationSeconds;
       }
       throw this.audioToolExecutionError(
         'ffprobe',
         err,
-        "Utilisez un fichier .wav si ffprobe est bloqué sur ce serveur.",
+        'Utilisez un fichier .wav si ffprobe est bloqué sur ce serveur.',
       );
     }
     if (res.code !== 0) {
@@ -422,13 +422,16 @@ export class SoundsService {
         20000,
       );
     } catch (err) {
-      if (this.isSpawnExecutionError(err) && (ext === '.wav' || ext === '.wave')) {
+      if (
+        this.isSpawnExecutionError(err) &&
+        (ext === '.wav' || ext === '.wave')
+      ) {
         return await this.isWavSilent(filePath);
       }
       throw this.audioToolExecutionError(
         'ffmpeg',
         err,
-        "Utilisez un fichier .wav si ffmpeg est bloqué sur ce serveur.",
+        'Utilisez un fichier .wav si ffmpeg est bloqué sur ce serveur.',
       );
     }
     const output = `${res.stderr}\n${res.stdout}`;
@@ -831,7 +834,7 @@ export class SoundsService {
           throw this.audioToolExecutionError(
             'ffmpeg',
             err,
-            "Utilisez un fichier .wav si ffmpeg est bloqué sur ce serveur.",
+            'Utilisez un fichier .wav si ffmpeg est bloqué sur ce serveur.',
           );
         } else {
           throw err;

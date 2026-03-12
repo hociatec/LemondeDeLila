@@ -107,12 +107,17 @@ export class AdminSoundsController {
       throw new BadRequestException('Fichier manquant (champ "file").');
     }
     try {
-      const entry = await this.sounds.setSound(soundId, file.path, file.originalname);
+      const entry = await this.sounds.setSound(
+        soundId,
+        file.path,
+        file.originalname,
+      );
       return { ok: true, sound: entry };
     } catch (err) {
-      const anyErr = err as any;
+      const anyErr = err;
       const message = String(anyErr?.message ?? err);
-      const stack = typeof anyErr?.stack === 'string' ? anyErr.stack : undefined;
+      const stack =
+        typeof anyErr?.stack === 'string' ? anyErr.stack : undefined;
       this.logger.error(`Sound upload failed (${soundId}): ${message}`, stack);
 
       // Preserve explicit HTTP exceptions (400/404/500 with message) so the client can display them.
@@ -141,8 +146,11 @@ export class AdminSoundsController {
 
   private static sanitizeFilename(originalName: string): string {
     const base = path.basename(String(originalName || 'sound'));
-    return base
-      .replace(/[\\/:*?"<>|\u0000-\u001F]/g, '_')
+    const sanitizedControls = Array.from(base, (char) =>
+      char.charCodeAt(0) < 32 ? '_' : char,
+    ).join('');
+    return sanitizedControls
+      .replace(/[\\/:*?"<>|]/g, '_')
       .replace(/\s+/g, ' ')
       .trim()
       .slice(0, 120);

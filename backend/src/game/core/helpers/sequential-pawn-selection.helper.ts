@@ -48,9 +48,7 @@ export function continueSequentialPawnSelection(params: {
         ...(params.state.turn ?? { direction: 1 }),
         currentPlayerId: pendingInfo.playerId,
         direction:
-          params.state.turn?.direction === -1 && !params.state.pending
-            ? -1
-            : 1,
+          params.state.turn?.direction === -1 && !params.state.pending ? -1 : 1,
       },
     };
     return typeof params.onPending === 'function'

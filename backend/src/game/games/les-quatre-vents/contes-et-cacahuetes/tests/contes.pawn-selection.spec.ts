@@ -115,18 +115,22 @@ describe('Contes pawn selection', () => {
       expect(available.every((action) => action.type === 'choose_pawn')).toBe(
         true,
       );
-    const firstAction = available[0];
-    const toApply: GameSingleActionDto[] = [firstAction];
-    state = actionsService.applyActions(state, toApply);
-    if (toText(asRecord(state.pending).type) === 'choose_pawn') {
-      const nextPawns = Array.isArray(asRecord(asRecord(state.pending).data).pawns)
-        ? (asRecord(state.pending).data as Record<string, unknown>).pawns
-        : [];
-      expect(nextPawns.length).toBeGreaterThan(0);
-      expect(toText(asRecord(nextPawns[0]).description).trim().length).toBeGreaterThan(0);
+      const firstAction = available[0];
+      const toApply: GameSingleActionDto[] = [firstAction];
+      state = actionsService.applyActions(state, toApply);
+      if (toText(asRecord(state.pending).type) === 'choose_pawn') {
+        const nextPawns = Array.isArray(
+          asRecord(asRecord(state.pending).data).pawns,
+        )
+          ? (asRecord(state.pending).data as Record<string, unknown>).pawns
+          : [];
+        expect(nextPawns.length).toBeGreaterThan(0);
+        expect(
+          toText(asRecord(nextPawns[0]).description).trim().length,
+        ).toBeGreaterThan(0);
+      }
+      safety += 1;
     }
-    safety += 1;
-  }
 
     expect(state.pending ?? null).toBeNull();
     expect(safety).toBe(3);

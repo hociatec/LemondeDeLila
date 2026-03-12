@@ -267,10 +267,7 @@ export class MinuitActionService {
         next = this.move(next, currentId, delta);
       }
     } else {
-      next = this.core.appendLog(
-        next,
-        `${who} a validé la mauvaise réponse.`,
-      );
+      next = this.core.appendLog(next, `${who} a validé la mauvaise réponse.`);
       const failDelta =
         typeof pending.failureDelta === 'number' ? pending.failureDelta : 0;
       if (failDelta !== 0) {

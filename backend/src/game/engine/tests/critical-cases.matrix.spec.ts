@@ -85,7 +85,9 @@ function resolveMorpionPawnSelection(
     expect(playerId).toBeGreaterThan(0);
     expect(pawnId).not.toBe('');
 
-    next = service.applyActions(next, [buildChoosePawnAction(playerId, pawnId)]);
+    next = service.applyActions(next, [
+      buildChoosePawnAction(playerId, pawnId),
+    ]);
     safety += 1;
   }
 

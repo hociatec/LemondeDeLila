@@ -79,7 +79,8 @@ describe('SoundsController', () => {
     const sounds: any = {
       resolveSoundFile: jest.fn().mockResolvedValue({
         entry: { sha256: 'abc' },
-        filePath: '/home/ubuntu/.local/share/lemonde-de-lila/sounds/TableAmbience1/abc.wav',
+        filePath:
+          '/home/ubuntu/.local/share/lemonde-de-lila/sounds/TableAmbience1/abc.wav',
       }),
     };
     const controller = new SoundsController(sounds);

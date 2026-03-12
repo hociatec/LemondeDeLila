@@ -9,9 +9,7 @@ import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-
 import { BoardEffectsPoliciesService } from '../../../../modules/board-effects-policies/services/board-effects-policies.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
-import {
-  type PawnChoiceOption,
-} from '../../../../core/helpers/pawn-choice-action.helper';
+import { type PawnChoiceOption } from '../../../../core/helpers/pawn-choice-action.helper';
 import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
 import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
 import type {
@@ -182,7 +180,7 @@ export class AventureSauvageActionService {
     });
     if (!applied) return state;
     const { playerId } = applied;
-    let next = applied.state;
+    const next = applied.state;
     const nextMeta = this.getMeta(next);
 
     const playersForPending = Array.isArray(next.players) ? next.players : [];

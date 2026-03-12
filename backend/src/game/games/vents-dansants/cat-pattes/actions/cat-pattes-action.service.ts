@@ -56,39 +56,35 @@ export class CatPattesActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
-    const next = applyActionsSequentially(
-      state,
-      actions,
-      (next, action) => {
-        const type = normalizeActionType(action);
-        return dispatchByActionType(
-          type,
-          {
-            draw: () => {
-              next = this.handleDraw(next);
-              return next;
-            },
-            play_card: () => {
-              next = this.handlePlayCard(next, action);
-              return next;
-            },
-            cat_pattes_set_config: () => {
-              next = this.handleSetConfig(next, action);
-              return next;
-            },
-            discard_card: () => {
-              next = this.handleDiscard(next, action);
-              return next;
-            },
-            pass: () => {
-              next = this.handleDiscard(next, action);
-              return next;
-            },
+    const next = applyActionsSequentially(state, actions, (next, action) => {
+      const type = normalizeActionType(action);
+      return dispatchByActionType(
+        type,
+        {
+          draw: () => {
+            next = this.handleDraw(next);
+            return next;
           },
-          () => next,
-        );
-      },
-    );
+          play_card: () => {
+            next = this.handlePlayCard(next, action);
+            return next;
+          },
+          cat_pattes_set_config: () => {
+            next = this.handleSetConfig(next, action);
+            return next;
+          },
+          discard_card: () => {
+            next = this.handleDiscard(next, action);
+            return next;
+          },
+          pass: () => {
+            next = this.handleDiscard(next, action);
+            return next;
+          },
+        },
+        () => next,
+      );
+    });
     return next;
   }
 
@@ -365,11 +361,14 @@ export class CatPattesActionService {
     if (nextPosition === goalPattes) {
       const finalMeta = this.getMeta(next);
       const points = { ...(finalMeta.points ?? {}) };
-      for (const [pidRaw, pattesRaw] of Object.entries(finalMeta.positions ?? {})) {
+      for (const [pidRaw, pattesRaw] of Object.entries(
+        finalMeta.positions ?? {},
+      )) {
         const pid = Number(pidRaw);
         if (!Number.isFinite(pid)) continue;
         const pattes = Number(pattesRaw ?? 0);
-        points[pid] = (points[pid] ?? 0) + (Number.isFinite(pattes) ? pattes : 0);
+        points[pid] =
+          (points[pid] ?? 0) + (Number.isFinite(pattes) ? pattes : 0);
       }
       const completedRounds = Number(finalMeta.completedRounds ?? 0) + 1;
       const roundsToPlay = this.getRoundsToPlay(finalMeta);

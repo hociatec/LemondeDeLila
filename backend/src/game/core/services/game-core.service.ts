@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { RoomPayload } from '../../../room/dto/room-response.dto';
 import {
   GameLogEntry,
@@ -40,9 +40,8 @@ function extractPawnPromptToken(message: string): string | null {
     return 'prompt:choose-your-pawn';
   }
 
-  const withPlayer = /^c['â€™]est Ã  (.+?) de choisir (?:son|un) pion(?:[.,!?]|$)/i.exec(
-    text,
-  );
+  const withPlayer =
+    /^c['â€™]est Ã {2}(.+?) de choisir (?:son|un) pion(?:[.,!?]|$)/i.exec(text);
   if (withPlayer) {
     return `prompt:choose-pawn:${normalizePromptToken(withPlayer[1])}`;
   }
@@ -243,4 +242,3 @@ export class GameCoreService {
     return seededShuffle(players, seed, 'game-core:starter');
   }
 }
-

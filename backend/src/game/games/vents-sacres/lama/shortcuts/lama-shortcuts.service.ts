@@ -55,7 +55,8 @@ export class LamaShortcutsService {
       meta?.allowPlayAfterDraw === true ||
       meta?.allowPlayAfterDraw === 1 ||
       String(meta?.allowPlayAfterDraw ?? '').toLowerCase() === 'true';
-    const canPassTurn = allowPlayAfterDraw && isSameTurn && trackerDrawn && !trackerPlayed;
+    const canPassTurn =
+      allowPlayAfterDraw && isSameTurn && trackerDrawn && !trackerPlayed;
 
     return [
       ...(canDraw ? [actionShortcut('SPACE', 'draw')] : []),

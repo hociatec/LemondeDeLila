@@ -113,7 +113,7 @@ export class ContesActionService {
     });
     if (!applied) return state;
     const { playerId } = applied;
-    let next = applied.state;
+    const next = applied.state;
 
     const starterId =
       typeof this.getMeta(next).setupStarterId === 'number'
@@ -125,9 +125,8 @@ export class ContesActionService {
         .map((p) => toText(p?.pawn))
         .filter((p: string) => p.length > 0),
     );
-    const choicesForPending = (Array.isArray(this.getMeta(next).pawns)
-      ? this.getMeta(next).pawns
-      : []
+    const choicesForPending = (
+      Array.isArray(this.getMeta(next).pawns) ? this.getMeta(next).pawns : []
     )
       .filter((pawn) => !usedForPending.has(pawn.id))
       .map((pawn) => ({
@@ -303,13 +302,19 @@ export class ContesActionService {
     }
 
     if (ctx === 'grimoire_voyageur') {
-      return this.moveTargetToPlayerAndAdvance(next, playerId, targetPlayerId, 1);
+      return this.moveTargetToPlayerAndAdvance(
+        next,
+        playerId,
+        targetPlayerId,
+        1,
+      );
     }
 
     if (ctx.startsWith('give_drawn_bonus:')) {
       const bonusId = Number(ctx.split(':')[1]);
       if (!Number.isFinite(bonusId)) return next;
-      const title = this.findCardTitle(next, 'bonus', bonusId) ?? `Bonus ${bonusId}`;
+      const title =
+        this.findCardTitle(next, 'bonus', bonusId) ?? `Bonus ${bonusId}`;
       next = this.core.appendLog(
         next,
         `${resolvePlayerNameFromState(next, playerId)} donne "${title}" à ${resolvePlayerNameFromState(next, targetPlayerId)}.`,

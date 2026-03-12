@@ -141,618 +141,57 @@ function buildSharedPawns(): Array<{
   return CONTES_PAWNS.map((pawn) => ({ ...pawn }));
 }
 
-function buildPawns(): Array<{
-  id: string;
-  label: string;
-  description: string;
-}> {
-  return [
-    {
-      id: 'Aika - Mongolie',
-      label: 'Aika - Mongolie',
-      description:
-        "Aika est une petite fille aux yeux en amande petillants et aux cheveux noirs tresses avec des rubans colores qui dansent dans le vent des vastes steppes mongoles. Son visage legerement hele reflete ses journees passees e galoper avec les chevaux de sa famille nomade. Curieuse et audacieuse, elle raconte avec malice les histoires de ses ancetres tout en observant le monde autour d'elle. Sa tunique ornee de motifs dores et ses bottines souples font d'elle une heroene sortie d'un conte ancien, prete e vous entraener dans des aventures fantastiques e travers les plaines infinies.",
-    },
-    {
-      id: 'Freja - Suède',
-      label: 'Freja - Suède',
-      description:
-        "Freja est une petite fille aux longs cheveux blonds tresses en couronne et aux yeux bleus clairs comme un lac gele, illumines d'une lueur espiegle. Sa peau claire, legerement rosee par l'air nordique, contraste avec le rouge profond de son pull en laine aux motifs traditionnels. Malicieuse et inventive, elle chante des chansons folkloriques et invente des petits defis pour vous. e ses cetes, chaque pas dans les forets suedoises devient une aventure enchantee, oe les legendes des anciens Vikings et les aurores boreales semblent danser autour de vous.",
-    },
-    {
-      id: 'Lani - Îles Marshall',
-      label: 'Lani - Îles Marshall',
-      description:
-        "Lani est une petite fille aux grands yeux marron lumineux et aux cheveux bruns boucles attaches en une queue de cheval espiegle. Sa peau doree par le soleil tropical et sa robe legere aux couleurs de l'ocean refletent la chaleur et la douceur de son ele. Enjouee et reveuse, elle adore explorer les plages et inventer des histoires de creatures marines fantastiques. e ses cetes, vous sentez le parfum des fleurs exotiques et le chant des vagues, et chaque lagon semble scintiller d'une magie invisible, pret e vous emporter dans une aventure coloree et vivante.",
-    },
-    {
-      id: 'Niko - Géorgie',
-      label: 'Niko - Géorgie',
-      description:
-        "Niko est un petit gareon aux cheveux bruns ebouriffes et aux yeux noisette petillants, avec un teint clair qui tranche avec les rouges et ors de sa chemise traditionnelle. Curieux et courageux, il grimpe sur les collines et ecoute le vent souffler e travers les montagnes du Caucase, racontant les legendes de son pays. e ses cetes, vous sentez la beaute des vallees georgiennes et entendez l'echo des chants anciens, comme si chaque pierre sur laquelle il pose le pied contenait un secret millenaire.",
-    },
-    {
-      id: 'Tavi - Fidji',
-      label: 'Tavi - Fidji',
-      description:
-        "Tavi est un petit gareon e la peau doree par le soleil des eles, aux cheveux noirs et lisses et aux yeux bruns profonds qui brillent de malice. Sa chemise coloree e motifs tropicaux reflete sa nature joyeuse et sociable. Toujours espiegle, il danse, chante et invente des histoires autour des recifs et des vagues magiques. e ses cetes, vous sentez la chaleur du sable sous vos pieds, le froissement des feuilles de cocotiers et voyez les lagons scintiller comme si chaque goutte d'eau contenait une histoire prete e etre racontee.",
-    },
-    {
-      id: 'Arman - Arménie',
-      label: 'Arman - Arménie',
-      description:
-        "Arman est un petit gareon aux cheveux bruns fonces et aux yeux verts profonds qui observent chaque detail du monde avec intelligence et douceur. Sa peau legerement olive et sa tenue traditionnelle aux broderies anciennes refletent son attachement aux traditions et au patrimoine de son pays. Passionne et attentif, il raconte les legendes des montagnes volcaniques et des monasteres d'Armenie, vous faisant voyager dans un univers oe chaque pierre murmure un secret et oe les paysages scintillent de mystere. e ses cetes, vous etes immediatement plonge dans un monde riche, fascinant et vivant.",
-    },
-  ];
-}
-
-function buildTiles(): ContesCacahuetesTile[] {
-  return [
-    {
-      type: 'start',
-      label: `Case Départ - Vous ouvrez le grand livre des contes, et un vent de magie emporte vos feuilles volantes... Chaque pas vous rapproche d'histoires fantastiques, de surprises et de rires à profusion. L'aventure commence maintenant !`,
-    },
-    {
-      type: 'bonus',
-      label: `Case Bonus - Un coup de pouce magique ! La chance vous sourit, profitez-en.`,
-    },
-    { type: 'conte', label: `Case Conte - Japon : Momotarō` },
-    {
-      type: 'surprise',
-      label: `Case Surprise - Le conte réserve toujours des rebondissements.`,
-    },
-    {
-      type: 'conte',
-      label: `Case Conte - Sénégal : Le lièvre et la hyène`,
-    },
-    {
-      type: 'malus',
-      label: `Case Malus - Oups... le conte vous joue un vilain tour.`,
-    },
-    { type: 'conte', label: `Case Conte - Russie : Vassilissa la très belle` },
-    {
-      type: 'bonus',
-      label: `Case Bonus - Une bonne fée passait par là... et elle était de bonne humeur !`,
-    },
-    { type: 'conte', label: `Case Conte - Canada : L'ours géant et l'enfant` },
-    {
-      type: 'surprise',
-      label: `Case Surprise - Personne ne s'y attendait... pas même vous !`,
-    },
-    { type: 'conte', label: `Case Conte - Maroc : Le figuier magique` },
-    {
-      type: 'malus',
-      label: `Case Malus - Tout ne se passe pas comme prévu dans les histoires...`,
-    },
-    { type: 'conte', label: `Case Conte - Chine : La princesse éventail` },
-    {
-      type: 'bonus',
-      label: `Case Bonus - Le vent tourne en votre faveur, avancez avec le sourire.`,
-    },
-    {
-      type: 'conte',
-      label: `Case Conte - Irlande : Le géant Fionn et Benandonner`,
-    },
-    {
-      type: 'surprise',
-      label: `Case Surprise - Un événement étrange surgit de nulle part.`,
-    },
-    { type: 'conte', label: `Case Conte - Pérou : Le colibri courageux` },
-    {
-      type: 'malus',
-      label: `Case Malus - Une péripétie inattendue freine votre avancée.`,
-    },
-    { type: 'conte', label: `Case Conte - Égypte : Le secret du Nil` },
-    {
-      type: 'bonus',
-      label: `Case Bonus - Une histoire bien racontée porte toujours chance.`,
-    },
-    {
-      type: 'conte',
-      label: `Case Conte - Australie : Tiddalik, la grenouille`,
-    },
-    {
-      type: 'surprise',
-      label: `Case Surprise - Tout peut arriver quand on tourne la page.`,
-    },
-    {
-      type: 'conte',
-      label: `Case Conte - Allemagne : Le joueur de flûte d'Hamelin`,
-    },
-    {
-      type: 'malus',
-      label: `Case Malus - Même les héros trébuchent parfois.`,
-    },
-    { type: 'conte', label: `Case Conte - Inde : Le prince au cobra` },
-    {
-      type: 'bonus',
-      label: `Case Bonus - Vous trouvez un trèfle... à quatre feuilles, évidemment !`,
-    },
-    {
-      type: 'conte',
-      label: `Case Conte - Groenland : L'ourse et la chasseuse`,
-    },
-    {
-      type: 'surprise',
-      label: `Case Surprise - Le hasard adore se mêler aux histoires.`,
-    },
-    { type: 'conte', label: `Case Conte - Italie : Giufà et l'âne` },
-    { type: 'malus', label: `Case Malus - Le sort s'emmêle... et vous avec.` },
-    { type: 'conte', label: `Case Conte - Kenya : Le feu volant` },
-    {
-      type: 'bonus',
-      label: `Case Bonus - Le conte vous applaudit. À vous la récompense !`,
-    },
-    { type: 'conte', label: `Case Conte - Chili : La lune et le renard` },
-    {
-      type: 'surprise',
-      label: `Case Surprise - Une surprise se cache entre les lignes.`,
-    },
-    { type: 'conte', label: `Case Conte - France : Le Petit Poucet` },
-    {
-      type: 'malus',
-      label: `Case Malus - Le conte prend un tournant un peu grinçant.`,
-    },
-    {
-      type: 'conte',
-      label: `Case Conte - Corée du Sud : La grue reconnaissante`,
-    },
-    {
-      type: 'bonus',
-      label: `Case Bonus - Les esprits du récit vous encouragent chaleureusement.`,
-    },
-    { type: 'conte', label: `Case Conte - Brésil : La tortue et le jaguar` },
-    {
-      type: 'surprise',
-      label: `Case Surprise - Le conte vous observe... et agit !`,
-    },
-    { type: 'conte', label: `Case Conte - Iran : Le tapis volant` },
-    {
-      type: 'malus',
-      label: `Case Malus - Une mauvaise surprise surgit entre deux pages.`,
-    },
-    { type: 'conte', label: `Case Conte - Thaïlande : La mangue du roi` },
-    {
-      type: 'bonus',
-      label: `Case Bonus - Un héros bien préparé mérite toujours un avantage.`,
-    },
-    {
-      type: 'conte',
-      label: `Case Conte - Angleterre : Jack et le haricot magique`,
-    },
-    {
-      type: 'surprise',
-      label: `Case Surprise - Rien n'est jamais figé dans un bon récit.`,
-    },
-    { type: 'conte', label: `Case Conte - Vietnam : L'enfant des rizières` },
-    {
-      type: 'malus',
-      label: `Case Malus - Les chemins des légendes ne sont pas toujours droits.`,
-    },
-    { type: 'conte', label: `Case Conte - Espagne : Le tambour enchanté` },
-    {
-      type: 'bonus',
-      label: `Case Bonus - La chance vous fait un clin d'oeil malicieux.`,
-    },
-    { type: 'conte', label: `Case Conte - Haïti : Ti-Jean et le diable` },
-    {
-      type: 'surprise',
-      label: `Case Surprise - Une surprise tombe pile au bon, ou, mauvais moment.`,
-    },
-    { type: 'conte', label: `Case Conte - Turquie : Nasreddine et l'âne` },
-    { type: 'malus', label: `Case Malus - Le destin vous teste... courage !` },
-    {
-      type: 'conte',
-      label: `Case Conte - Nouvelle-Zélande : Maui ralentit le soleil`,
-    },
-    {
-      type: 'bonus',
-      label: `Case Bonus - Un moment de gloire... savourez-le !`,
-    },
-    {
-      type: 'conte',
-      label: `Case Conte - Mali : L'hippopotame et les étoiles`,
-    },
-    {
-      type: 'malus',
-      label: `Case Malus - Même à la fin, le conte aime faire durer le suspense.`,
-    },
-    { type: 'conte', label: `Case Conte - Pologne : Le roi grenouille` },
-    {
-      type: 'finish',
-      label: `Case Arrivée - Vous atteignez le majestueux livre magique, ses pages scintillent et s'animent autour de vous... Les contes du monde entier vous saluent et vous couronnent Maître ou Maîtresse des histoires, héros de cette aventure mémorable !`,
-    },
-  ];
-
-  let conteIndex = 0;
-  return tiles.map((tile) => {
-    if (tile.type !== 'conte') {
-      return tile;
-    }
-
-    const description = CONTE_TILE_STORIES[conteIndex] ?? '';
-    conteIndex += 1;
-    return description ? { ...tile, description } : tile;
-  });
-}
-
-const CONTE_TILE_STORIES: string[] = [
-  `Il était une fois, dans un petit village japonais bordé de collines verdoyantes et de rivières étincelantes, un couple âgé qui vivait paisiblement.
-Un jour, alors que la vieille dame lavait des vêtements dans la rivière, elle découvrit une énorme pêche flottant sur l'eau. Curieuse, elle la ramena chez elle. À leur grande surprise, en l'ouvrant, ils trouvèrent un petit garçon robuste et joyeux à l'intérieur. Ils l'appelèrent Momotarō, le "garçon-pêche".
-Grandissant avec force et courage, Momotarō apprit qu'au loin, sur une île mystérieuse, des oni (démons malicieux) semaient la terreur parmi les habitants. Déterminé à protéger son village, il partit à l'aventure, emportant avec lui des kibi dango (des petites boules de millet sucrées) pour convaincre des compagnons de le suivre.
-Sur son chemin, il rencontra un chien fidèle, un singe polyvalent et un faisan majestueux. Chacun, séduit par les kibi dango et la détermination de l'enfant, devint son allié loyal. Ensemble, ils traversèrent les eaux tumultueuses et atteignirent l'île des oni.
-Grâce à leur courage, leur ruse et la force de l'amitié, ils vainquirent les démons, récupérèrent les trésors volés et ramenèrent la paix dans le village. Momotarō, héros humble et courageux, reçut la gratitude éternelle de son peuple, et son histoire continua de se raconter au fil des générations.`,
-  `Dans les vastes savanes du Sénégal, où les baobabs se dressent comme des géants silencieux et où le soleil éclaire la terre d'un éclat doré, vivait un lièvre malin et rusé, connu pour ses tours et ses farces. Non loin de là, la hyène, grande et gourmande, rêvait toujours de le piéger pour le manger.
-Un jour, cette dernière décida de tendre un piège ingénieux au lièvre. Mais le petit animal, vif comme le vent sur la savane, devina la ruse. Avec son esprit rapide et ses pattes légères, il imagina un plan astucieux.
-Il laissa derrière lui des empreintes trompeuses, fit semblant de tomber dans un piège et conduisit la hyène à se coincer elle-même dans un buisson épineux. Chaque farce était plus drôle et surprenante que la précédente, et bientôt, même les autres animaux de la savane venaient applaudir les tours de ce dernier.
-Mais le lièvre n'était pas cruel. Avec un sourire malicieux, il libéra la hyène, lui montrant que l'intelligence et la ruse pouvaient être plus fortes que la force brute.
-Et depuis ce jour, tous les habitants de la savane racontent encore les exploits de la créature à grandes oreilles, héros petit mais redoutablement malin.`,
-  `Au coeur des forêts enneigées de Russie, là où les pins s'étiraient vers le ciel et où la neige crissait sous les pas, vivait Vassilissa, une jeune fille d'une beauté éclatante et d'un coeur pur. Elle portait toujours avec elle une poupée de chiffon, cadeau de sa mère disparue, qui semblait parler et donner des conseils secrets à celle qui savait écouter.
-Orpheline, elle vivait avec sa méchante belle-mère et ses deux demi-soeurs jalouses, qui ne cessaient de lui imposer des tâches impossibles. Mais la poupée, animée d'une magie subtile, guidait Vassilissa et l'aidait à accomplir ses corvées avec habileté et intelligence.
-Un jour, la belle-mère, avide de se débarrasser d'elle, l'envoya chercher du feu chez la redoutable sorcière Baba Yaga, cachée au fond de la forêt. Courageuse mais prudente, Vassilissa suivit les conseils de sa poupée, traversa ponts instables, rivières glacées et créatures mystérieuses, et réussit à accomplir les tâches impossibles que la femme lui imposait.
-Grâce à sa ruse, sa patience et l'aide de la poupée magique, l'enfant revint saine et sauve, portant le feu comme un triomphe de sa bonté et de son courage.
-Depuis ce jour, les contes russes parlent encore de Vassilissa, la jeune fille qui triomphait toujours des épreuves avec intelligence et coeur pur.`,
-  `Dans les forÃªts profondes du Canada, lÃ  oÃ¹ les riviÃ¨res scintillaient comme des rubans d'argent et oÃ¹ les montagnes se dressaient majestueusement, vivait un petit enfant curieux et courageux.
-Un jour, alors qu'il explorait les bois en suivant le chant des oiseaux, il rencontra un ours gÃ©ant au pelage brun dorÃ©, imposant mais aux yeux d'une douceur surprenante.
-L'animal, protecteur de la forÃªt, Ã©tait sage et puissant, et il connaissait tous les secrets de la faune et de la flore. Il mit l'enfant Ã  l'Ã©preuve : il dÃ» traverser une riviÃ¨re tumultueuse, escalader une colline escarpÃ©e et comprendre le langage des oiseaux et des arbres. Mais chaque Ã©preuve Ã©tait en rÃ©alitÃ© un enseignement sur le courage, la patience et le respect de la nature.
-Avec chaque Ã©tape, le jeune garÃ§on comprit que la force ne rÃ©sidait pas seulement dans la taille ou la puissance, mais dans l'intelligence, l'empathie et le respect de son environnement. L'ours gÃ©ant, impressionnÃ© par son coeur pur et sa dÃ©termination, devint son alliÃ© et compagnon, le guidant Ã  travers la forÃªt et lui transmettant les secrets anciens des crÃ©atures et de la terre.
-Depuis ce jour, on raconte au Canada l'histoire de l'enfant qui marcha aux cÃ´tÃ©s de l'ours gÃ©ant, apprenant Ã  Ã©couter, Ã  respecter et Ã  devenir un vrai ami de la forÃªt.`,
-  `Au coeur des ruelles animÃ©es du Maroc, sous un ciel azur oÃ¹ le soleil Ã©clairait les mosaÃ¯ques colorÃ©es, se trouvait un figuier ancien, immense et mystÃ©rieux, dont les branches semblaient toucher les nuages. On racontait que cet arbre n'Ã©tait pas ordinaire : ses figues dorÃ©es Ã©taient enchantÃ©es, capables d'exaucer les souhaits les plus sincÃ¨res.
-Un enfant curieux et intrÃ©pide s'approcha un matin, attirÃ© par l'odeur sucrÃ©e des fruits et le bruissement des feuilles. Alors qu'il tendait la main pour cueillir une figue, l'arbre se mit Ã  parler dans un murmure doux et rassurant, rÃ©vÃ©lant que seul celui qui possÃ©dait un coeur pur pouvait goÃ»ter Ã  sa magie.
-Pour prouver sa valeur, il devait faire preuve de courage, de gÃ©nÃ©rositÃ© et d'ingÃ©niositÃ© : partager ses trouvailles avec les habitants du village, aider les animaux de la place et rÃ©soudre des Ã©nigmes laissÃ©es par les anciens du royaume. Ã€ chaque acte de bontÃ©, les figues du figuier brillaient plus fort, et l'enfant sentait une Ã©nergie chaude et bienveillante parcourir ses doigts.
-Finalement, ayant dÃ©montrÃ© sa sagesse et son coeur gÃ©nÃ©reux, il put cueillir une figue magique. Cette derniÃ¨re ne donnait pas seulement la chance ou la richesse, mais rÃ©vÃ©lait les secrets pour comprendre et respecter les gens, la nature et la magie qui se cache dans chaque geste quotidien.`,
-  `Dans les jardins impÃ©riaux baignÃ©s de brume matinale, oÃ¹ les lotus flottaient sur les bassins et oÃ¹ les pavillons aux toits dorÃ©s reflÃ©taient la lumiÃ¨re du soleil, vivait une princesse renommÃ©e pour sa beautÃ© et sa sagesse. Mais ce qui la distinguait le plus Ã©tait son Ã©ventail en soie brodÃ©e d'or et de jade, capable de contrÃ´ler le vent et de murmurer les secrets du ciel.
-Un jour, une grande sÃ©cheresse frappa le royaume. Les riviÃ¨res s'assÃ©chÃ¨rent et les arbres perdirent leurs feuilles. La princesse, connue pour son coeur gÃ©nÃ©reux et sa dÃ©termination, prit son Ã©ventail magique et s'avanÃ§a dans le jardin. Chaque mouvement de l'objet faisait danser la brise et onduler les nuages, et bientÃ´t, un vent doux et humide se leva, apportant la pluie salvatrice sur les champs dessÃ©chÃ©s.
-Mais la princesse n'utilisait pas sa magie uniquement pour des miracles visibles : elle enseignait aux villageois l'importance de la patience, de la sagesse et du respect pour la nature, leur montrant que chaque geste, mÃªme petit, pouvait faire naÃ®tre le changement.
-GrÃ¢ce Ã  elle, les riviÃ¨res reprirent vie, les fleurs s'Ã©panouirent et les enfants jouaient Ã  l'ombre des cerisiers en fleurs, tout en Ã©coutant les histoires que soufflait le vent de son Ã©ventail.`,
-  `Dans les collines verdoyantes et brumeuses d'Irlande, lÃ  oÃ¹ les moutons paissaient paisiblement et oÃ¹ le vent portait le parfum de l'herbe fraÃ®che, vivait un jeune gÃ©ant nommÃ© Fionn. Curieux et courageux, il adorait explorer les landes et Ã©couter les histoires des anciens, apprenant les lÃ©gendes des druides et des guerriers d'antan.
-Un matin, il entendit parler d'un gÃ©ant colossal nommÃ© Benandonner, qui vivait de l'autre cÃ´tÃ© de la mer et terrorisait les villages de ses pas gigantesques. DÃ©terminÃ© Ã  protÃ©ger son pays et Ã  prouver son courage, Fionn dÃ©cida de se rendre Ã  la rencontre de ce dernier.
-Mais Fionn Ã©tait malin et rusÃ© : lorsqu'il le croisa, il remarqua que le gÃ©ant Ã©tait Ã©norme et redoutable, mais qu'il se moquait de sa propre force lorsqu'il rit de ses erreurs. Fionn usa alors de ruse et d'astuce. Il fit croire Ã  Benandonner qu'il Ã©tait un gÃ©ant encore plus puissant, et par une sÃ©rie de jeux d'ombres et de tromperies, il rÃ©ussit Ã  faire fuir la crÃ©ature vers l'autre cÃ´tÃ© de la mer.
-Depuis ce jour, Fionn devint le protecteur des collines irlandaises, et les villageois racontent encore comment un jeune gÃ©ant malin avait surpassÃ© un de ses congÃ©naires terrible, transformant la peur en lÃ©gende et le danger en histoire Ã  raconter autour du feu.`,
-  `Dans les hauteurs vertigineuses des Andes pÃ©ruviennes, lÃ  oÃ¹ les sommets effleurent les nuages et oÃ¹ les torrents grondent dans les vallÃ©es, vivait un petit colibri au plumage Ã©clatant. Bien que minuscule et fragile face aux montagnes imposantes et aux dangers qui rÃ´daient, ce colibri avait un courage qui dÃ©passait sa taille.
-Un jour, un incendie Ã©clata dans la forÃªt qui nourrissait la faune et la flore des montagnes. Les grandes crÃ©atures s'effrayaient, et personne n'osait s'approcher des flammes. Mais le petit colibri, dÃ©terminÃ© Ã  protÃ©ger la vie autour de lui, vola droit vers le feu. Il transportait de minuscules gouttes d'eau dans son bec, tombant sans relÃ¢che sur les flammes.
-MalgrÃ© la chaleur et la fatigue, le colibri ne cÃ©da jamais. Les autres animaux, inspirÃ©s par sa dÃ©termination et son courage, commencÃ¨rent Ã  l'aider. Ensemble, ils parvinrent Ã  Ã©teindre l'incendie, sauvant ainsi la forÃªt et tous ses habitants.
-Depuis ce jour, le colibri est cÃ©lÃ©brÃ© dans les lÃ©gendes pÃ©ruviennes comme le symbole du courage et de la persÃ©vÃ©rance, prouvant que mÃªme les plus petits peuvent accomplir de grands exploits si leur coeur est vaillant.`,
-  `Au coeur de l'Ã‰gypte ancienne, lÃ  oÃ¹ le Nil serpentait comme un ruban bleu entre les sables dorÃ©s, se trouvait un village paisible dont les habitants vivaient en harmonie avec le fleuve sacrÃ©. On racontait qu'au crÃ©puscule, lorsque le soleil baignait les rives d'une lumiÃ¨re d'or, le Nil rÃ©vÃ©lait ses secrets aux coeurs courageux.
-Un jeune garÃ§on du village, curieux et intrÃ©pide, rÃªvait de dÃ©couvrir ce mystÃ¨re. Chaque soir, il s'asseyait au bord de l'eau, Ã©coutant le murmure des vagues et observant les reflets dansants du soleil. Une nuit, le fleuve sembla s'animer, et une lumiÃ¨re scintillante surgit Ã  la surface.
-GuidÃ© par cette lueur, l'enfant navigua sur une petite barque, dÃ©couvrant une Ã®le cachÃ©e oÃ¹ les plantes et les animaux semblaient parler entre eux. LÃ , un ancien esprit du Nil lui confia que le secret de la vie rÃ©sidait dans l'Ã©quilibre et le respect de la nature, dans la maniÃ¨re dont le fleuve nourrissait la terre et les hommes, jour aprÃ¨s jour.
-De retour au village, le jeune homme partagea cette sagesse : il enseigna aux habitants Ã  Ã©couter le fleuve et Ã  protÃ©ger ses eaux, et le village prospÃ©ra comme jamais.
-Depuis ce temps, le Nil est cÃ©lÃ©brÃ© non seulement pour ses eaux fertiles, mais aussi pour les secrets qu'il murmure Ã  ceux qui savent regarder et Ã©couter.`,
-  `Dans les vastes Ã©tendues rouges de l'Australie, lÃ  oÃ¹ les eucalyptus s'Ã©lanÃ§aient vers le ciel et oÃ¹ le sable chaud crissait sous les pieds, vivait Tiddalik, une grenouille pas comme les autres. Sa particularitÃ© ? Il pouvait boire toute l'eau du pays, et lorsqu'il Ã©tait gourmand, il ne laissait aucune goutte pour les autres.
-Un jour, il eut une soif insatiable et avala tous les lacs, riviÃ¨res et mares de la rÃ©gion. Les kangourous, les wombats, les perruches et les lÃ©zards se retrouvÃ¨rent sans une seule goutte d'eau. Le dÃ©sert, dÃ©jÃ  chaud, devint impitoyable, et les animaux Ã©taient au bord du dÃ©sespoir.
-Alors, ils dÃ©cidÃ¨rent d'unir leurs forces. Chaque animal essaya de le faire rire, car selon la lÃ©gende, rire faisait relÃ¢cher l'eau avalÃ©e par Tiddalik. Les oiseaux chantÃ¨rent de folles mÃ©lodies, les kangourous sautÃ¨rent en cadence, et les wombats se roulÃ¨rent dans le sable jusqu'Ã  ce que Tiddalik Ã©clate de rire, et en un instant, toute l'eau revint dans les riviÃ¨res et les lacs, rendant la vie Ã  la terre et Ã  ses habitants.
-Depuis ce jour, on raconte que la grenouille veille sur l'eau, rappelant Ã  tous que la gÃ©nÃ©rositÃ© et le partage sont essentiels Ã  la survie de chacun.`,
-  `Dans la ville pittoresque d'Hamelin, aux maisons Ã  colombages et aux ruelles pavÃ©es, un problÃ¨me inquiÃ©tant pesait sur les habitants : une invasion de rats qui dÃ©voraient les rÃ©coltes, envahissaient les maisons et troublaient le sommeil des habitants.
-Un jour, un Ã©trange joueur de flÃ»te fit son apparition. VÃªtu d'un manteau colorÃ© et tenant une flÃ»te aux reflets dorÃ©s, il proposa son aide contre une promesse : Ãªtre payÃ© gÃ©nÃ©reusement pour se dÃ©barrasser des rongeurs. DÃ©sespÃ©rÃ©s, les habitants acceptÃ¨rent.
-Le joueur de flÃ»te leva son instrument Ã  ses lÃ¨vres et une mÃ©lodie envoÃ»tante s'Ã©leva dans l'air. Les rats, charmÃ©s et hypnotisÃ©s, le suivirent sans un bruit. Ils sortirent de chaque maison, de chaque cave et de chaque recoin, marchant derriÃ¨re lui jusqu'Ã  la riviÃ¨re, oÃ¹ ils disparurent Ã  jamais.
-Mais, hÃ©las, une fois sa mission accomplie, les habitants refusÃ¨rent de le payer comme convenu. Furieux, le joueur de flÃ»te joua de nouveau une mÃ©lodie magique, et cette fois-ci, les enfants d'Hamelin furent emportÃ©s par la musique, marchant derriÃ¨re lui hors de la ville, comme les rats autrefois, laissant derriÃ¨re eux une ville silencieuse et pleine de remords.`,
-  `Dans un royaume lointain d'Inde, aux palais aux dÃ´mes dorÃ©s et aux jardins luxuriants, vivait un jeune prince courageux. Sa curiositÃ© et son courage le poussaient souvent Ã  explorer les forÃªts et les riviÃ¨res qui entouraient son palais.
-Un jour, alors qu'il se promenait prÃ¨s d'un Ã©tang sacrÃ©, il rencontra un cobra majestueux, aux Ã©cailles scintillantes et aux yeux perÃ§ants. Mais ce n'Ã©tait pas un serpent ordinaire : il pouvait parler et possÃ©dait des pouvoirs magiques anciens. Ce dernier expliqua au prince qu'un grand danger menaÃ§ait le royaume, et que seul un coeur pur et courageux pourrait dÃ©jouer ce sort.
-Le prince accepta la mission. GrÃ¢ce aux conseils du reptile et Ã  son intelligence, il traversa des Ã©preuves mystÃ©rieuses : rÃ©soudre des Ã©nigmes, franchir des ponts invisibles et affronter des illusions trompeuses. Ã€ chaque dÃ©fi, le cobra l'accompagnait, enseignant la patience, la prudence et le respect de la nature.
-Finalement, grÃ¢ce Ã  leur alliance, le prince rÃ©ussit Ã  sauver le royaume et Ã  ramener la paix et la prospÃ©ritÃ©. En signe de gratitude, le cobra se transforma en joyau magique, symbole de sagesse et de courage, que le prince porta toujours avec lui.`,
-  `Au coeur des vastes glaces du Groenland, lÃ  oÃ¹ le vent hurlait et oÃ¹ la neige recouvrait tout, vivait une jeune chasseuse courageuse. Sa peau rosÃ©e par le froid et ses yeux perÃ§ants lui permettaient de repÃ©rer les moindres traces dans la neige immaculÃ©e.
-Un matin, alors qu'elle suivait des empreintes mystÃ©rieuses, elle rencontra une grande ourse blanche, majestueuse et imposante, mais Ã©tonnamment douce dans son regard. La crÃ©ature parlait un langage secret que seuls les habitants du Groenland pouvaient comprendre. Elle confia Ã  la chasseuse une mission : protÃ©ger les animaux et les esprits de la glace d'un danger imminent.
-La chasseuse accepta. Ensemble, elles traversÃ¨rent des fjords gelÃ©s, escaladÃ¨rent des montagnes couvertes de neige et affrontÃ¨rent les tempÃªtes polaires. Chaque pas Ã©tait un dÃ©fi, mais la prÃ©sence de l'ourse la guidait et la protÃ©geait. La chasseuse apprit Ã  Ã©couter la nature, Ã  comprendre les murmures des vents et le chant des aurores borÃ©ales.
-Ã€ la fin de leur pÃ©riple, la chasseuse avait non seulement sauvÃ© les crÃ©atures du Groenland, mais elle avait aussi tissÃ© un lien indestructible avec l'ourse, qui devint sa protectrice Ã©ternelle.
-Les habitants du village racontent encore que, lorsque la neige tombe doucement, on peut voir l'ourse et la chasseuse parcourir les Ã©tendues glacÃ©es, unies par un courage et une amitiÃ© hors du commun.`,
-  `Dans un petit village ensoleillÃ© d'Italie, au pied des collines et entre les oliveraies, vivait GiufÃ , un garÃ§on malin et plein de malice. Il possÃ©dait un Ã¢ne tÃªtu mais attachant, qui semblait parfois comprendre mieux que GiufÃ  lui-mÃªme.
-Un jour, le village organisa une fÃªte et le jeune homme fut chargÃ© de conduire son animal au marchÃ© pour y vendre des produits. Mais l'Ã¢ne, espiÃ¨gle et obstinÃ©, refusait d'avancer droit et se mit Ã  zigzaguer entre les rues pavÃ©es. GiufÃ  dut user de toute son ingÃ©niositÃ© pour le guider : il chanta de drÃ´les de chansons, fit des tours de magie et mÃªme des petites farces pour le distraire.
-Finalement, grÃ¢ce Ã  son esprit vif et Ã  sa patience, il rÃ©ussit Ã  le mener au marchÃ©. Les villageois, Ã©merveillÃ©s par son habiletÃ© et amusÃ©s par les facÃ©ties de l'Ã¢ne, le fÃ©licitÃ¨rent et racontÃ¨rent cette aventure longtemps aprÃ¨s.
-GiufÃ  et son Ã¢ne devinrent un symbole de ruse, de courage et de joie de vivre dans tout le village, rappelant que mÃªme face Ã  des obstacles inattendus, l'intelligence et l'humour peuvent toujours triompher.`,
-  `Dans les vastes plaines dorÃ©es du Kenya, lÃ  oÃ¹ le vent faisait onduler les hautes herbes et oÃ¹ les acacias dessinaient des ombres lÃ©gÃ¨res sur la terre chaude, vivait un jeune garÃ§on courageux nommÃ© Kibaru. Ses yeux noirs brillaient comme des braises et ses cheveux courts dansaient sous le soleil de midi.
-Un soir, alors que le ciel se teintait d'orange et de pourpre, Kibaru aperÃ§ut un phÃ©nomÃ¨ne Ã©trange : des flammes flottantes, comme des lucioles ardentes, qui s'Ã©levaient dans les airs sans brÃ»ler les herbes ni les arbres. FascinÃ©, il dÃ©cida de les suivre. Chaque pas le menait plus loin, Ã  travers riviÃ¨res et collines, guidÃ© par la lumiÃ¨re tremblante du feu volant.
-Ces flammes, selon la lÃ©gende, Ã©taient les esprits protecteurs de la savane, envoyÃ©s pour aider ceux qui montraient courage et bontÃ©. Kibaru dÃ©couvrit qu'en capturant leur lumiÃ¨re dans une petite calebasse, il pouvait transporter le feu d'un village Ã  l'autre, permettant aux habitants de cuisiner, de s'Ã©clairer et de se rÃ©chauffer, mÃªme lors des nuits les plus sombres.
-Mais il devait Ãªtre prudent : le feu volant Ã©tait capricieux. S'il devenait impatient, il s'envolait et disparaissait dans le ciel Ã©toilÃ©.
-GrÃ¢ce Ã  sa patience et son respect pour les esprits, Kibaru apprit Ã  danser avec les flammes, Ã  les guider sans jamais les contraindre, transformant ainsi chaque nuit en un spectacle lumineux fascinant.`,
-  `Dans les montagnes arides et mystÃ©rieuses du Chili, lÃ  oÃ¹ les sommets s'Ã©lancent vers le ciel et oÃ¹ le vent murmure aux pierres, vivait un renard rusÃ© et curieux nommÃ© Chai. Son pelage roux flamboyant se fondait parfois avec les roches, et ses yeux dorÃ©s reflÃ©taient les Ã©clats de la lune qui baignait les vallÃ©es chaque nuit.
-Un jour, alors que la lune brillait plus intensÃ©ment que jamais, Chai la regarda descendre du ciel et parler dans un souffle lÃ©ger : "Renard, si tu veux comprendre les secrets de la nuit, suis mes rayons et observe avec attention."
-FascinÃ© et prudent, l'animal suivit la lueur argentÃ©e Ã  travers les rochers, les riviÃ¨res scintillantes et les forÃªts clairsemÃ©es.
-Au fil de son voyage nocturne, le renard comprit que la lune n'Ã©clairait pas seulement la terre, mais rÃ©vÃ©lait Ã©galement la vÃ©ritÃ© dans le coeur de ceux qui l'observaient. Chaque rayon lui enseignait la patience, l'humilitÃ© et la valeur de la curiositÃ© : apprendre Ã  Ã©couter le monde avant d'agir.
-Ã€ la fin de son pÃ©riple, il rÃ©alisa que l'astre lui avait offert un cadeau invisible mais puissant : la sagesse de voir ce que les yeux seuls ne peuvent percevoir.
-Depuis ce soir-lÃ , il partageait sa ruse et sa connaissance avec les autres animaux, devenant un guide respectÃ© dans les montagnes chiliennes.`,
-  `Dans une forÃªt dense et mystÃ©rieuse de France, oÃ¹ les arbres s'Ã©lanÃ§aient vers le ciel et oÃ¹ chaque ombre semblait abriter un secret, vivait un petit garÃ§on astucieux appelÃ© Poucet. Bien que minuscule de taille, son esprit Ã©tait immense, et ses yeux pÃ©tillants d'intelligence brillaient Ã  travers les feuilles des arbres comme deux Ã©toiles dans la nuit.
-Un soir, alors que la lune se glissait entre les branches, le petit bonhomme fut confrontÃ© Ã  un grand danger : ses frÃ¨res et lui avaient Ã©tÃ© abandonnÃ©s par leurs parents, perdus au coeur de la forÃªt. Mais Poucet, avec son courage et sa ruse, laissa tomber derriÃ¨re lui de petites pierres blanches qui brillaient sous la lune. Ainsi, ils purent retrouver leur chemin, pas Ã  pas, guidÃ©s par le scintillement fragile mais constant des cailloux.
-Plus tard, confrontÃ© au terrible ogre, l'enfant usa encore de son intelligence : il Ã©changea les bonnets de ses frÃ¨res avec les siens, trompant l'ogre et sauvant sa famille grÃ¢ce Ã  son audace et son esprit vif.`,
-  `Dans un village tranquille de CorÃ©e, nichÃ© entre des collines verdoyantes et des riviÃ¨res scintillantes, vivait un homme pauvre mais au coeur gÃ©nÃ©reux. Un soir d'hiver, alors qu'il marchait seul sous le vent glacÃ©, il trouva une grue blessÃ©e, ses ailes froissÃ©es et ses plumes Ã©bouriffÃ©es par la neige. PoussÃ© par la compassion, il la recueillit et prit soin d'elle avec patience et douceur, lui offrant chaleur et nourriture.
-Quelques jours plus tard, l'oiseau disparut mystÃ©rieusement, mais bientÃ´t, une Ã©trange femme silencieuse frappa Ã  sa porte. Elle proposa de tisser pour lui de magnifiques Ã©toffes, mais Ã  une condition : il ne devait jamais regarder ce qu'elle faisait. Curieux mais respectueux, il accepta et bientÃ´t, il reÃ§ut des tissus d'une beautÃ© incroyable, faits de fil d'argent et de soie lumineuse.
-Un soir, sa curiositÃ© le poussa Ã  jeter un coup d'oeil, et il dÃ©couvrit que la femme n'Ã©tait autre que la grue elle-mÃªme, transformÃ©e par reconnaissance pour sa bontÃ©. ImpressionnÃ© par sa fidÃ©litÃ© et son coeur pur, il comprit alors que la gÃ©nÃ©rositÃ© attirait toujours la magie et la reconnaissance sous des formes inattendues.`,
-  `Au coeur de la forÃªt amazonienne, dense et vibrante de vie, vivait une tortue rusÃ©e et rÃ©flÃ©chie, toujours attentive aux moindres bruits et mouvements de la jungle.
-Un jour, alors qu'elle se promenait prÃ¨s de la riviÃ¨re, elle rencontra un jaguar affamÃ©, majestueux et redoutable, dont le regard perÃ§ant trahissait l'envie de la dÃ©vorer.
-La tortue, au lieu de cÃ©der Ã  la panique, eut une idÃ©e brillante. Elle l'invita Ã  participer Ã  un concours : qui pourrait atteindre le vieux figuier au sommet de la colline avant l'autre ? Celui-ci, sÃ»r de sa rapiditÃ© et de sa force, accepta sans hÃ©siter.
-Tout le long du chemin, la tortue avanÃ§ait lentement mais avec une ruse astucieuse : elle laissait des indices trompeurs, faisait semblant de se perdre, et utilisait les racines et les troncs pour ralentir le jaguar. Finalement, il arriva Ã©puisÃ© et confus, tandis qu'elle, sans hÃ¢te mais avec intelligence, atteignit le figuier en premier.
-Le fÃ©lin, impressionnÃ© et respectueux de l'ingÃ©niositÃ© de la tortue, renonÃ§a Ã  sa faim et devint un alliÃ© inattendu, partageant avec elle la richesse de la forÃªt et les secrets des animaux.`,
-  `Dans les bazars colorÃ©s et animÃ©s d'une ville ancienne de Perse, un jeune garÃ§on dÃ©couvrit un tapis ancien et poussiÃ©reux, cachÃ© derriÃ¨re des tissus et des lanternes scintillantes. Ce tapis n'Ã©tait pas ordinaire : ses fils d'or et de soie s'animaient dÃ¨s qu'on posait un pied dessus, et il s'Ã©levait dans les airs, prÃªt Ã  emporter son voyageur vers des horizons insoupÃ§onnÃ©s.
-Le garÃ§on, Ã©merveillÃ© et un peu craintif, s'installa au centre du tapis. AussitÃ´t, il sentit le vent caresser son visage et vit les ruelles se rÃ©trÃ©cir sous lui alors qu'il s'Ã©levait au-dessus de la commune. Le tapis vola entre les minarets et les jardins suspendus, passant au-dessus des marchÃ©s parfumÃ©s et des fontaines chantantes.
-Chaque mouvement du tapis Ã©tait magique et fluide, comme guidÃ© par l'air lui-mÃªme. Il traversa des vallÃ©es dÃ©sertiques, survola des montagnes majestueuses, et emmena son passager dans des paysages merveilleusement variÃ©s, oÃ¹ les couleurs et les sons semblaient sortir d'un rÃªve.`,
-  `Dans le royaume verdoyant de ThaÃ¯lande, au coeur de jardins luxuriants et parfumÃ©s, un jeune garÃ§on s'approcha d'un arbre majestueux, le manguier du roi, dont les fruits Ã©taient rÃ©putÃ©s plus sucrÃ©s et juteux que tous les autres. On raconte que celui qui goÃ»te une de ces mangues ressent la magie du royaume et obtient la sagesse et la chance.
-Ce dernier, curieux et Ã©merveillÃ©, tendit la main vers un fruit dorÃ© suspendu haut dans les branches. DÃ¨s qu'il toucha la mangue, un doux parfum tropical envahit l'air, et une lumiÃ¨re chaleureuse enveloppa ses doigts, comme si le soleil lui-mÃªme s'Ã©tait glissÃ© dans l'arbre.
-Soudain, le fruit se dÃ©tacha et descendit doucement, guidÃ© par un souffle magique, jusqu'Ã  lui. En la goÃ»tant, il ressentit un Ã©clat de bonheur et d'Ã©nergie, voyant autour de lui les Ã©lÃ©phants, les riziÃ¨res Ã©tincelantes et les temples scintillants, tous baignÃ©s dans une lumiÃ¨re dorÃ©e.`,
-  `Dans un petit village anglais bordÃ© de collines verdoyantes, vivait Jack, un garÃ§on pauvre mais audacieux, qui partageait sa vie avec sa mÃ¨re dans une maisonnette en bois.
-Un matin, la seule vache de la famille ne donna plus de lait. Sa mÃ¨re, inquiÃ¨te, demanda Ã  son fils de la vendre au marchÃ© afin de survivre.
-Sur le chemin, Jack rencontra un vieil homme mystÃ©rieux qui lui proposa d'Ã©changer la vache contre quelques haricots extraordinaires, brillants et colorÃ©s, avec un Ã©clat presque magique. L'enfant accepta, intriguÃ©. De retour Ã  la maison, sa mÃ¨re, furieuse, jeta les haricots par la fenÃªtre.
-La nuit tomba, et sous l'Ã©clat de la lune, un haricot poussa, grandit jusqu'au ciel ! Il devint un immense haricot magique qui s'Ã©leva au-dessus des nuages, vers un monde inconnu. Jack, courageux et curieux, dÃ©cida de grimper le long de cette liane vertigineuse.
-Au sommet, il dÃ©couvrit un palais fantastique, abritant un ogre immense et des trÃ©sors fabuleux. Les sons du chÃ¢teau rÃ©sonnaient dans le vent : le tintement de piÃ¨ces d'or, le rugissement de l'ogre et les chants des oiseaux du ciel.
-L'enfant, rusÃ© et audacieux, utilisa son intelligence et son courage afin de rÃ©cupÃ©rer les trÃ©sors et retrouver le chemin vers la maison, en faisant preuve d'ingÃ©niositÃ© et de bravoure.`,
-  `Dans un petit village nichÃ© au coeur des riziÃ¨res verdoyantes du Vietnam, vivait un enfant nommÃ© Minh, curieux et dÃ©bordant d'Ã©nergie. Chaque matin, il parcourait les sentiers Ã©troits entre les champs inondÃ©s, observant les reflets du soleil sur l'eau et Ã©coutant le doux murmure du vent dans les palmiers.
-Un jour, alors qu'il jouait prÃ¨s d'un petit ruisseau, il dÃ©couvrit un canard blessÃ©. Avec douceur et patience, il le soigna, s'occupant de ses ailes et de ses plumes trempÃ©es. L'animal, reconnaissant, devint son compagnon fidÃ¨le, l'accompagnant dans toutes ses aventures Ã  travers les riziÃ¨res.
-Mais ces terres regorgeaient de mystÃ¨res. Entre les brumes matinales, Minh aperÃ§ut des crÃ©atures Ã©tranges et bienveillantes, qui semblaient garder les secrets des champs et des cours d'eau. Il apprit Ã  comprendre le langage des animaux, Ã  Ã©couter les lÃ©gendes transmises par les anciens, et Ã  respecter la magie qui imprÃ¨gne chaque Ã©lÃ©ment de la nature.
-Un jour, une inondation menaÃ§a les riziÃ¨res du village. GrÃ¢ce Ã  son intelligence, son courage et l'aide de son fidÃ¨le canard, Minh parvint Ã  guider les villageois et Ã  protÃ©ger les champs. Sa bravoure devint une lÃ©gende locale, et l'enfant des riziÃ¨res fut cÃ©lÃ©brÃ© comme un hÃ©ros humble et sage, capable d'harmoniser le monde naturel et humain autour de lui.`,
-  `Dans un petit village d'Espagne, nichÃ© entre les collines et les oliveraies, vivait un jeune garÃ§on nommÃ© Diego, passionnÃ© par la musique et les fÃªtes traditionnelles. Son instrument prÃ©fÃ©rÃ© Ã©tait un vieux tambour en bois, transmis de gÃ©nÃ©ration en gÃ©nÃ©ration dans sa famille, dont les battements rÃ©sonnaient comme un coeur vibrant de vie et de lÃ©gendes.
-Un soir, alors que le soleil se couchait derriÃ¨re les collines, Diego dÃ©couvrit que le tambour possÃ©dait des pouvoirs magiques : chaque rythme qu'il jouait faisait danser les animaux, les villageois, et mÃªme les Ã©toiles dans le ciel. Ã‰merveillÃ©, il dÃ©cida de partager cette magie avec tout le village, et bientÃ´t, une fÃªte improvisÃ©e Ã©clata, oÃ¹ chacun dansait et chantait, portÃ© par la musique enchantÃ©e du tambour.
-Mais la magie n'Ã©tait pas sans dÃ©fis. Les sons du tambour attirÃ¨rent Ã©galement des esprits farceurs, qui cherchaient Ã  troubler l'harmonie du village. Avec courage et ingÃ©niositÃ©, Diego apprit Ã  jouer de douces mÃ©lodies, apaisant les esprits, ce qui renforÃ§a le lien entre les habitants, la faune et la flore.
-GrÃ¢ce Ã  son tambour enchantÃ©, Diego devint le gardien de la joie et des traditions, rappelant Ã  tous que la musique pouvait unir les coeurs et transformer chaque journÃ©e en un moment extraordinaire.`,
-  `Dans un village colorÃ© d'HaÃ¯ti, bordÃ© par des champs de canne Ã  sucre et des collines verdoyantes, vivait un petit garÃ§on nommÃ© Ti-Jean, vif et malin, connu pour son esprit rusÃ© et son sourire espiÃ¨gle.
-Un jour, alors qu'il cueillait des fruits prÃ¨s de la riviÃ¨re, le diable apparut, dÃ©cidÃ© Ã  tester l'ingÃ©niositÃ© des humains et Ã  attirer les Ã¢mes naÃ¯ves dans ses tours diaboliques.
-Mais Ti-Jean n'Ã©tait pas un enfant ordinaire. Avec son intelligence, son courage et une bonne dose d'audace, il rÃ©ussit Ã  tromper le diable Ã  chaque Ã©preuve. Que ce soit en Ã©changeant des objets, en crÃ©ant des illusions ou en racontant des histoires confuses, ce dernier dÃ©joua les piÃ¨ges avec humour et ingÃ©niositÃ©.
-Ã€ chaque dÃ©fi relevÃ©, il montrait que la ruse et la crÃ©ativitÃ© pouvaient vaincre mÃªme les plus grandes forces. Les villageois, Ã©merveillÃ©s par ses exploits, racontaient ses aventures autour des feux de camp, et Ti-Jean devint un symbole de courage et de vivacitÃ©.`,
-  `Dans un petit village turc baignÃ© de soleil, aux ruelles Ã©troites et aux marchÃ©s animÃ©s, vivait Nasreddine, un homme sage et espiÃ¨gle, connu pour son humour et ses rÃ©ponses pleines de bon sens. Un jour, alors qu'il chevauchait son fidÃ¨le Ã¢ne, il croisa des villageois qui se moquaient de lui, le jugeant toujours un peu bizarre.
-Mais Nasreddine ne se laissa jamais dÃ©stabiliser. Avec un sourire malicieux et une logique inattendue, il transforma chaque situation ridicule en une leÃ§on pleine d'esprit. Que ce soit en discutant avec les marchands, en rÃ©solvant des querelles ou en improvisant de drÃ´les d'histoires, il montrait que l'intelligence et l'humour Ã©taient des armes plus puissantes que la force.
-L'Ã¢ne, fidÃ¨le compagnon de ses aventures, participait souvent involontairement aux tours et aux situations comiques, ajoutant encore plus de charme et de rires Ã  chaque anecdote. Les villageois racontaient ensuite ses exploits dans les cafÃ©s et sous les arbres, riant des situations absurdes et admirant la sagacitÃ© de l'homme.`,
-  `Dans les terres vertes et mystÃ©rieuses de la Nouvelle-ZÃ©lande, entre montagnes majestueuses et forÃªts denses, vivait Maui, un demi-dieu espiÃ¨gle aux exploits lÃ©gendaires. Un jour, voyant que les journÃ©es Ã©taient trop courtes pour permettre aux hommes et aux femmes de finir leur travail, il dÃ©cida de ralentir le soleil.
-Avec courage et ruse, il grimpa sur le sommet d'une montagne et lanÃ§a un lasso magique, fabriquÃ© Ã  partir des cheveux de sa grand-mÃ¨re. Il attrapa le soleil, qui se dÃ©battait avec force, illuminant le ciel de sa lumiÃ¨re Ã©clatante. GrÃ¢ce Ã  son ingÃ©niositÃ© et sa dÃ©termination, Maui rÃ©ussit Ã  ralentir sa course, offrant aux humains de longues journÃ©es pour pÃªcher, cultiver et profiter de la vie.
-Ce geste hÃ©roÃ¯que n'Ã©tait pas seulement un exploit physique, mais un acte plein de malice et d'ingÃ©niositÃ©, car l'homme savait que l'intelligence et la crÃ©ativitÃ© Ã©taient des forces aussi puissantes que le courage.
-Les habitants racontÃ¨rent encore et encore cette aventure, admirant le demi-dieu qui avait su apprivoiser le soleil lui-mÃªme.`,
-  `Au bord du grand fleuve Niger, sous le ciel Ã©toilÃ© du Mali, vivait un hippopotame curieux et rÃªveur. Chaque nuit, il regardait les Ã©toiles briller et se demandait pourquoi elles semblaient si loin et inaccessibles. Les autres animaux riaient de ses rÃªveries, mais lui savait qu'un jour, il trouverait un moyen de toucher ces points lumineux qui scintillaient au-dessus de sa tÃªte.
-Une nuit, guidÃ© par la lueur des astres, il entreprit un voyage extraordinaire, traversant riviÃ¨res et marÃ©cages, parlant aux lucioles et aux hiboux qui l'accompagnaient. Avec patience et courage, il construisit un bÃ¢ton magique, gravÃ© de symboles anciens et lumineux, qui lui permit de capturer un fragment d'Ã©toile.
-GrÃ¢ce Ã  sa persÃ©vÃ©rance, l'hippopotame rÃ©alisa que mÃªme les rÃªves les plus grands pouvaient Ãªtre atteints si l'on osait avancer avec le coeur ouvert et l'esprit attentif.
-Les Ã©toiles, touchÃ©es par sa dÃ©termination, continuÃ¨rent de briller plus fort, illuminant le fleuve et inspirant tous les animaux et les humains qui vivaient autour de lui.`,
-  `Dans une forÃªt ancienne et mystÃ©rieuse de Pologne, vivait un roi transformÃ© en grenouille, enfermÃ© par un sortilÃ¨ge mystÃ©rieux. Jadis noble et courageux, il passait ses journÃ©es sur les berges d'un Ã©tang scintillant, regardant les nuages se reflÃ©ter dans l'eau et rÃªvant de retrouver sa forme humaine.
-Un jour, une petite princesse curieuse s'aventura prÃ¨s de l'Ã©tang. Elle avait entendu parler de la lÃ©gende du roi grenouille, mais elle ne craignait pas les apparences. Avec douceur et courage, elle engagea la conversation avec le prince transformÃ©, Ã©coutant ses histoires de royaumes lointains, de chÃ¢teaux majestueux et de crÃ©atures fantastiques.
-En Ã©change de sa gentillesse et de sa patience, le roi grenouille offrit une promesse : quiconque oserait l'aider avec un coeur pur pourrait briser le sort et voir le royaume s'illuminer d'une magie ancienne. La princesse accepta le dÃ©fi, rÃ©alisant que la confiance, le respect et le courage Ã©taient souvent les clÃ©s pour libÃ©rer la magie cachÃ©e derriÃ¨re les apparences.`,
-];
-
-function buildCanonicalTiles(): ContesCacahuetesTile[] {
-  const tiles: ContesCacahuetesTile[] = [
-    {
-      type: 'start',
-      label:
-        "Case Départ: Vous ouvrez le grand livre des contes, et un vent de magie emporte vos feuilles volantes Chaque pas vous rapproche d'histoires fantastiques, de surprises et de rires à profusion. L'aventure commence maintenant !",
-    },
-    {
-      type: 'bonus',
-      label:
-        'Case Bonus: Un coup de pouce magique ! La chance vous sourit, profitez-en.',
-    },
-    { type: 'conte', label: 'Case Conte - Japon : Momotarō' },
-    {
-      type: 'surprise',
-      label: 'Case Surprise: Le conte réserve toujours des rebondissements.',
-    },
-    {
-      type: 'conte',
-      label: 'Case Conte - Sénégal : Le lièvre et la hyène',
-    },
-    {
-      type: 'malus',
-      label: 'Case Malus: Oups le conte vous joue un vilain tour.',
-    },
-    { type: 'conte', label: 'Case Conte - Russie : Vassilissa la très belle' },
-    {
-      type: 'bonus',
-      label:
-        'Case Bonus: Une bonne fée passait par là et elle était de bonne humeur !',
-    },
-    { type: 'conte', label: "Case Conte - Canada : L'ours géant et l'enfant" },
-    {
-      type: 'surprise',
-      label: "Case Surprise: Personne ne s'y attendait pas même vous !",
-    },
-    { type: 'conte', label: 'Case Conte - Maroc : Le figuier magique' },
-    {
-      type: 'malus',
-      label: 'Case Malus: Tout ne se passe pas comme prévu dans les histoires',
-    },
-    { type: 'conte', label: 'Case Conte - Chine : La princesse éventail' },
-    {
-      type: 'bonus',
-      label:
-        'Case Bonus: Le vent tourne en votre faveur, avancez avec le sourire.',
-    },
-    {
-      type: 'conte',
-      label: 'Case Conte - Irlande : Le géant Fionn et Benandonner',
-    },
-    {
-      type: 'surprise',
-      label: 'Case Surprise: Un événement étrange surgit de nulle part.',
-    },
-    { type: 'conte', label: 'Case Conte - Pérou : Le colibri courageux' },
-    {
-      type: 'malus',
-      label: 'Case Malus: Une péripétie inattendue freine votre avancée.',
-    },
-    { type: 'conte', label: 'Case Conte - Égypte : Le secret du Nil' },
-    {
-      type: 'bonus',
-      label: 'Case Bonus: Une histoire bien racontée porte toujours chance.',
-    },
-    {
-      type: 'conte',
-      label: 'Case Conte - Australie : Tiddalik, la grenouille',
-    },
-    {
-      type: 'surprise',
-      label: 'Case Surprise: Tout peut arriver quand on tourne la page.',
-    },
-    {
-      type: 'conte',
-      label: "Case Conte - Allemagne : Le joueur de flûte d'Hamelin",
-    },
-    {
-      type: 'malus',
-      label: 'Case Malus: Même les héros trébuchent parfois.',
-    },
-    { type: 'conte', label: 'Case Conte - Inde : Le prince au cobra' },
-    {
-      type: 'bonus',
-      label:
-        'Case Bonus: Vous trouvez un trèfle à quatre feuilles, évidemment !',
-    },
-    {
-      type: 'conte',
-      label: "Case Conte - Groenland : L'ourse et la chasseuse",
-    },
-    {
-      type: 'surprise',
-      label: 'Case Surprise: Le hasard adore se mêler aux histoires.',
-    },
-    { type: 'conte', label: "Case Conte - Italie : Giufà et l'âne" },
-    { type: 'malus', label: "Case Malus: Le sort s'emmêle et vous avec." },
-    { type: 'conte', label: 'Case Conte - Kenya : Le feu volant' },
-    {
-      type: 'bonus',
-      label: 'Case Bonus: Le conte vous applaudit. À vous la récompense !',
-    },
-    { type: 'conte', label: 'Case Conte - Chili : La lune et le renard' },
-    {
-      type: 'surprise',
-      label: 'Case Surprise: Une surprise se cache entre les lignes.',
-    },
-    { type: 'conte', label: 'Case Conte - France : Le Petit Poucet' },
-    {
-      type: 'malus',
-      label: 'Case Malus: Le conte prend un tournant un peu grinçant.',
-    },
-    {
-      type: 'conte',
-      label: 'Case Conte - Corée du Sud : La grue reconnaissante',
-    },
-    {
-      type: 'bonus',
-      label:
-        'Case Bonus: Les esprits du récit vous encouragent chaleureusement.',
-    },
-    { type: 'conte', label: 'Case Conte - Brésil : La tortue et le jaguar' },
-    {
-      type: 'surprise',
-      label: 'Case Surprise: Le conte vous observe et agit !',
-    },
-    { type: 'conte', label: 'Case Conte - Iran : Le tapis volant' },
-    {
-      type: 'malus',
-      label: 'Case Malus: Une mauvaise surprise surgit entre deux pages.',
-    },
-    { type: 'conte', label: 'Case Conte - Thaïlande : La mangue du roi' },
-    {
-      type: 'bonus',
-      label:
-        'Case Bonus: Un héros bien préparé mérite toujours un avantage.',
-    },
-    {
-      type: 'conte',
-      label: 'Case Conte - Angleterre : Jack et le haricot magique',
-    },
-    {
-      type: 'surprise',
-      label: "Case Surprise: Rien n'est jamais figé dans un bon récit.",
-    },
-    { type: 'conte', label: "Case Conte - Vietnam : L'enfant des rizières" },
-    {
-      type: 'malus',
-      label:
-        'Case Malus: Les chemins des légendes ne sont pas toujours droits.',
-    },
-    { type: 'conte', label: 'Case Conte - Espagne : Le tambour enchanté' },
-    {
-      type: 'bonus',
-      label: "Case Bonus: La chance vous fait un clin d'oeil malicieux.",
-    },
-    { type: 'conte', label: 'Case Conte - Haïti : Ti-Jean et le diable' },
-    {
-      type: 'surprise',
-      label:
-        'Case Surprise: Une surprise tombe pile au bon, ou, mauvais moment.',
-    },
-    { type: 'conte', label: "Case Conte - Turquie : Nasreddine et l'âne" },
-    { type: 'malus', label: 'Case Malus: Le destin vous teste courage !' },
-    {
-      type: 'conte',
-      label: 'Case Conte - Nouvelle-Zélande : Maui ralentit le soleil',
-    },
-    {
-      type: 'bonus',
-      label: 'Case Bonus: Un moment de gloire savourez-le !',
-    },
-    {
-      type: 'conte',
-      label: "Case Conte - Mali : L'hippopotame et les étoiles",
-    },
-    {
-      type: 'malus',
-      label:
-        'Case Malus: Même à la fin, le conte aime faire durer le suspense.',
-    },
-    { type: 'conte', label: 'Case Conte - Pologne : Le roi grenouille' },
-    {
-      type: 'finish',
-      label:
-        "Case Arrivée: Vous atteignez le majestueux livre magique, ses pages scintillent et s'animent autour de vous... Les contes du monde entier vous saluent et vous couronnent Maître ou Maîtresse des histoires, héros de cette aventure mémorable !",
-    },
-  ];
-
-  let conteIndex = 0;
-  return tiles.map((tile) => {
-    if (tile.type !== 'conte') {
-      return tile;
-    }
-
-    const description = CONTE_TILE_STORIES[conteIndex] ?? '';
-    conteIndex += 1;
-    return description ? { ...tile, description } : tile;
-  });
-}
-
 function buildNarratedCanonicalTiles(): ContesCacahuetesTile[] {
   const base = buildCanonicalTiles();
   const descriptions = [
-    "Vous ouvrez le grand livre des contes, et un vent de magie emporte vos feuilles volantes Chaque pas vous rapproche d'histoires fantastiques, de surprises et de rires à profusion. L'aventure commence maintenant !",
+    "Vous ouvrez le grand livre des contes, et un vent de magie emporte vos feuilles volantes Chaque pas vous rapproche d'histoires fantastiques, de surprises et de rires ÃƒÂ  profusion. L'aventure commence maintenant !",
     'Un coup de pouce magique ! La chance vous sourit, profitez-en.',
     null,
-    'Le conte réserve toujours des rebondissements.',
+    'Le conte rÃƒÂ©serve toujours des rebondissements.',
     null,
     'Oups le conte vous joue un vilain tour.',
     null,
-    'Une bonne fée passait par là et elle était de bonne humeur !',
+    'Une bonne fÃƒÂ©e passait par lÃƒÂ  et elle ÃƒÂ©tait de bonne humeur !',
     null,
-    "Personne ne s'y attendait pas même vous !",
+    "Personne ne s'y attendait pas mÃƒÂªme vous !",
     null,
-    'Tout ne se passe pas comme prévu dans les histoires',
+    'Tout ne se passe pas comme prÃƒÂ©vu dans les histoires',
     null,
     'Le vent tourne en votre faveur, avancez avec le sourire.',
     null,
-    'Un événement étrange surgit de nulle part.',
+    'Un ÃƒÂ©vÃƒÂ©nement ÃƒÂ©trange surgit de nulle part.',
     null,
-    'Une péripétie inattendue freine votre avancée.',
+    'Une pÃƒÂ©ripÃƒÂ©tie inattendue freine votre avancÃƒÂ©e.',
     null,
-    'Une histoire bien racontée porte toujours chance.',
+    'Une histoire bien racontÃƒÂ©e porte toujours chance.',
     null,
     'Tout peut arriver quand on tourne la page.',
     null,
-    'Même les héros trébuchent parfois.',
+    'MÃƒÂªme les hÃƒÂ©ros trÃƒÂ©buchent parfois.',
     null,
-    'Vous trouvez un trèfle à quatre feuilles, évidemment !',
+    'Vous trouvez un trÃƒÂ¨fle ÃƒÂ  quatre feuilles, ÃƒÂ©videmment !',
     null,
-    'Le hasard adore se mêler aux histoires.',
+    'Le hasard adore se mÃƒÂªler aux histoires.',
     null,
-    "Le sort s'emmêle et vous avec.",
+    "Le sort s'emmÃƒÂªle et vous avec.",
     null,
-    'Le conte vous applaudit. À vous la récompense !',
+    'Le conte vous applaudit. Ãƒâ‚¬ vous la rÃƒÂ©compense !',
     null,
     'Une surprise se cache entre les lignes.',
     null,
-    'Le conte prend un tournant un peu grinçant.',
+    'Le conte prend un tournant un peu grinÃƒÂ§ant.',
     null,
-    'Les esprits du récit vous encouragent chaleureusement.',
+    'Les esprits du rÃƒÂ©cit vous encouragent chaleureusement.',
     null,
     'Le conte vous observe et agit !',
     null,
     'Une mauvaise surprise surgit entre deux pages.',
     null,
-    'Un héros bien préparé mérite toujours un avantage.',
+    'Un hÃƒÂ©ros bien prÃƒÂ©parÃƒÂ© mÃƒÂ©rite toujours un avantage.',
     null,
-    "Rien n'est jamais figé dans un bon récit.",
+    "Rien n'est jamais figÃƒÂ© dans un bon rÃƒÂ©cit.",
     null,
-    'Les chemins des légendes ne sont pas toujours droits.',
+    'Les chemins des lÃƒÂ©gendes ne sont pas toujours droits.',
     null,
     "La chance vous fait un clin d'oeil malicieux.",
     null,
@@ -762,12 +201,12 @@ function buildNarratedCanonicalTiles(): ContesCacahuetesTile[] {
     null,
     'Un moment de gloire savourez-le !',
     null,
-    'Même à la fin, le conte aime faire durer le suspense.',
+    'MÃƒÂªme ÃƒÂ  la fin, le conte aime faire durer le suspense.',
     null,
-    "Vous atteignez le majestueux livre magique, ses pages scintillent et s'animent autour de vous... Les contes du monde entier vous saluent et vous couronnent Maître ou Maîtresse des histoires, héros de cette aventure mémorable !",
+    "Vous atteignez le majestueux livre magique, ses pages scintillent et s'animent autour de vous... Les contes du monde entier vous saluent et vous couronnent MaÃƒÂ®tre ou MaÃƒÂ®tresse des histoires, hÃƒÂ©ros de cette aventure mÃƒÂ©morable !",
   ];
   const labels = [
-    'Case Départ',
+    'Case DÃƒÂ©part',
     'Case Bonus',
     null,
     'Case Surprise',
@@ -826,7 +265,7 @@ function buildNarratedCanonicalTiles(): ContesCacahuetesTile[] {
     null,
     'Case Malus',
     null,
-    'Case Arrivée',
+    'Case ArrivÃƒÂ©e',
   ];
 
   return base.map((tile, index) => {
@@ -849,67 +288,67 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 1,
       type: 'bonus',
       title: `Bottes de sept lieues`,
-      text: `Avancez de 2 cases supplémentaires. Ces bottes magiques vous font bondir loin devant !`,
+      text: `Avancez de 2 cases supplÃƒÂ©mentaires. Ces bottes magiques vous font bondir loin devant !`,
     },
     {
       id: 2,
       type: 'bonus',
-      title: `Parchemin Enchanté`,
-      text: `Si le résultat ne vous plaît pas, vous pouvez relancer qu'une seule fois le dé. Le vieux grimoire vous montre une autre possibilité.`,
+      title: `Parchemin EnchantÃƒÂ©`,
+      text: `Si le rÃƒÂ©sultat ne vous plaÃƒÂ®t pas, vous pouvez relancer qu'une seule fois le dÃƒÂ©. Le vieux grimoire vous montre une autre possibilitÃƒÂ©.`,
     },
     {
       id: 3,
       type: 'bonus',
       title: `Amulette Protectrice`,
-      text: `Gardez cette carte dans votre main. Elle vous protège d'un malus (valable une fois). Elle se défausse après usage.`,
+      text: `Gardez cette carte dans votre main. Elle vous protÃƒÂ¨ge d'un malus (valable une fois). Elle se dÃƒÂ©fausse aprÃƒÂ¨s usage.`,
     },
     {
       id: 4,
       type: 'bonus',
-      title: `Cape d'Invisibilité`,
-      text: `Si vous arrivez sur une case Malus, son effet est automatiquement ignoré et vous avancez d'une case supplémentaire.`,
+      title: `Cape d'InvisibilitÃƒÂ©`,
+      text: `Si vous arrivez sur une case Malus, son effet est automatiquement ignorÃƒÂ© et vous avancez d'une case supplÃƒÂ©mentaire.`,
     },
     {
       id: 5,
       type: 'bonus',
-      title: `Poussière de Fée`,
-      text: `Vous pouvez faire avancer un autre joueur de votre choix de 2 cases. Un geste d'amitié qui crée la magie.`,
+      title: `PoussiÃƒÂ¨re de FÃƒÂ©e`,
+      text: `Vous pouvez faire avancer un autre joueur de votre choix de 2 cases. Un geste d'amitiÃƒÂ© qui crÃƒÂ©e la magie.`,
     },
     {
       id: 6,
       type: 'bonus',
       title: `Haricot Magique`,
-      text: `Un haricot magique vous propulse dans les airs ! Lancez le dé maintenant : le résultat obtenu est automatiquement doublé.`,
+      text: `Un haricot magique vous propulse dans les airs ! Lancez le dÃƒÂ© maintenant : le rÃƒÂ©sultat obtenu est automatiquement doublÃƒÂ©.`,
     },
     {
       id: 7,
       type: 'bonus',
-      title: `Clé d'Or Universelle`,
-      text: `Si vous tombez sur une case Conte, choisissez l'effet (bonus ou malus) pour un autre joueur de votre choix. La clé vous donne le pouvoir de décider.`,
+      title: `ClÃƒÂ© d'Or Universelle`,
+      text: `Si vous tombez sur une case Conte, choisissez l'effet (bonus ou malus) pour un autre joueur de votre choix. La clÃƒÂ© vous donne le pouvoir de dÃƒÂ©cider.`,
     },
     {
       id: 8,
       type: 'bonus',
-      title: `Ami Légendaire`,
-      text: `Vous êtes aidé par un personnage magique ! Avancez de 3 cases.`,
+      title: `Ami LÃƒÂ©gendaire`,
+      text: `Vous ÃƒÂªtes aidÃƒÂ© par un personnage magique ! Avancez de 3 cases.`,
     },
     {
       id: 9,
       type: 'bonus',
       title: `Pont Arc-en-ciel`,
-      text: `Un pont magique apparaît ! Piochez une carte Bonus puis une carte Surprise, et appliquez leurs effets.`,
+      text: `Un pont magique apparaÃƒÂ®t ! Piochez une carte Bonus puis une carte Surprise, et appliquez leurs effets.`,
     },
     {
       id: 10,
       type: 'bonus',
       title: `Formule Magique`,
-      text: `Choisissez un joueur et échangez votre prochain tour avec le sien (vous avancez à sa place, et inversement). Surprise garantie !`,
+      text: `Choisissez un joueur et ÃƒÂ©changez votre prochain tour avec le sien (vous avancez ÃƒÂ  sa place, et inversement). Surprise garantie !`,
     },
     {
       id: 11,
       type: 'bonus',
-      title: `Flûte Enchantée`,
-      text: `Tous les autres joueurs vous applaudissent : pendant leur prochain tour, ils avancent de 1 case seulement, même avec un grand dé.`,
+      title: `FlÃƒÂ»te EnchantÃƒÂ©e`,
+      text: `Tous les autres joueurs vous applaudissent : pendant leur prochain tour, ils avancent de 1 case seulement, mÃƒÂªme avec un grand dÃƒÂ©.`,
     },
     {
       id: 12,
@@ -921,13 +360,13 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 13,
       type: 'bonus',
       title: `Monture Mystique`,
-      text: `Un animal légendaire vous emmène loin. Avancez de 5 cases, mais passez un tour au prochain lancé de dé.`,
+      text: `Un animal lÃƒÂ©gendaire vous emmÃƒÂ¨ne loin. Avancez de 5 cases, mais passez un tour au prochain lancÃƒÂ© de dÃƒÂ©.`,
     },
     {
       id: 14,
       type: 'bonus',
       title: `Feuille Magique`,
-      text: `Gardez cette carte dans votre main : la prochaine fois que vous faites 1 au dé, avancer de 4 cases à la place. Comme un coup de vent !`,
+      text: `Gardez cette carte dans votre main : la prochaine fois que vous faites 1 au dÃƒÂ©, avancer de 4 cases ÃƒÂ  la place. Comme un coup de vent !`,
     },
     {
       id: 15,
@@ -941,38 +380,38 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
     {
       id: 1,
       type: 'malus',
-      title: `Sortilège de Sommeil`,
+      title: `SortilÃƒÂ¨ge de Sommeil`,
       text: `Vous vous endormez comme la Belle au bois dormant. Passez un tour.`,
     },
     {
       id: 2,
       type: 'malus',
-      title: `Ronce Enchevêtrée`,
-      text: `Vous êtes coincé dans une forêt de ronces... Reculez de 2 cases.`,
+      title: `Ronce EnchevÃƒÂªtrÃƒÂ©e`,
+      text: `Vous ÃƒÂªtes coincÃƒÂ© dans une forÃƒÂªt de ronces... Reculez de 2 cases.`,
     },
     {
       id: 3,
       type: 'malus',
       title: `Grimoire Capricieux`,
-      text: `Vous lisez une formule à l'envers : échangez votre place avec le joueur le plus proche derrière vous !`,
+      text: `Vous lisez une formule ÃƒÂ  l'envers : ÃƒÂ©changez votre place avec le joueur le plus proche derriÃƒÂ¨re vous !`,
     },
     {
       id: 4,
       type: 'malus',
-      title: `Pluie de Mots Oubliés`,
-      text: `Vous oubliez un passage de votre histoire. Lancez le dé et avancez seulement de la moitié du chiffre obtenu.`,
+      title: `Pluie de Mots OubliÃƒÂ©s`,
+      text: `Vous oubliez un passage de votre histoire. Lancez le dÃƒÂ© et avancez seulement de la moitiÃƒÂ© du chiffre obtenu.`,
     },
     {
       id: 5,
       type: 'malus',
-      title: `Loup dans la Forêt`,
-      text: `Un grand méchant loup surgit ! Vous devez attendre qu'un autre joueur atteigne ou dépasse votre case pour pouvoir rejouer.`,
+      title: `Loup dans la ForÃƒÂªt`,
+      text: `Un grand mÃƒÂ©chant loup surgit ! Vous devez attendre qu'un autre joueur atteigne ou dÃƒÂ©passe votre case pour pouvoir rejouer.`,
     },
     {
       id: 6,
       type: 'malus',
       title: `Sable Mouvant Magique`,
-      text: `Vous vous enfoncez dans une étrange plage mouvante. Passez deux tours.`,
+      text: `Vous vous enfoncez dans une ÃƒÂ©trange plage mouvante. Passez deux tours.`,
     },
     {
       id: 7,
@@ -984,43 +423,43 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 8,
       type: 'malus',
       title: `Confusion de Contes`,
-      text: `Les histoires s'emmêlent ! Avancez de 3 cases... puis reculez de 4. Zut, ce n'était pas dans cet ordre-là !`,
+      text: `Les histoires s'emmÃƒÂªlent ! Avancez de 3 cases... puis reculez de 4. Zut, ce n'ÃƒÂ©tait pas dans cet ordre-lÃƒÂ  !`,
     },
     {
       id: 9,
       type: 'malus',
       title: `Maladresse de Sorcier`,
-      text: `Vous cassez votre baguette magique. Piochez une carte Bonus puis donnez-la à un autre joueur de votre choix.`,
+      text: `Vous cassez votre baguette magique. Piochez une carte Bonus puis donnez-la ÃƒÂ  un autre joueur de votre choix.`,
     },
     {
       id: 10,
       type: 'malus',
       title: `Ombre Farceuse`,
-      text: `Une créature invisible vous embête... Relancez votre dé, mais cette fois, reculez au lieu d'avancer.`,
+      text: `Une crÃƒÂ©ature invisible vous embÃƒÂªte... Relancez votre dÃƒÂ©, mais cette fois, reculez au lieu d'avancer.`,
     },
     {
       id: 11,
       type: 'malus',
-      title: `Énigme Infernale`,
-      text: `Vous êtes bloqué par un sphinx rusé ! Pour continuer, lancez le dé : si vous obtenez un 4 ou plus, avancez normalement. Sinon, passez un tour.`,
+      title: `Ãƒâ€°nigme Infernale`,
+      text: `Vous ÃƒÂªtes bloquÃƒÂ© par un sphinx rusÃƒÂ© ! Pour continuer, lancez le dÃƒÂ© : si vous obtenez un 4 ou plus, avancez normalement. Sinon, passez un tour.`,
     },
     {
       id: 12,
       type: 'malus',
       title: `Passage Obscur`,
-      text: `Vous entrez dans un tunnel sombre. Retournez à la case Malus précédente et revivez son effet.`,
+      text: `Vous entrez dans un tunnel sombre. Retournez ÃƒÂ  la case Malus prÃƒÂ©cÃƒÂ©dente et revivez son effet.`,
     },
     {
       id: 13,
       type: 'malus',
-      title: `Chaussures Enchantées... mais trop petites`,
-      text: `Reculez de deux cases pour changer de chaussures. Aïe !`,
+      title: `Chaussures EnchantÃƒÂ©es... mais trop petites`,
+      text: `Reculez de deux cases pour changer de chaussures. AÃƒÂ¯e !`,
     },
     {
       id: 14,
       type: 'malus',
-      title: `Miroir Brisé`,
-      text: `Un miroir magique vous renvoie à votre passé. Retournez à la case départ.`,
+      title: `Miroir BrisÃƒÂ©`,
+      text: `Un miroir magique vous renvoie ÃƒÂ  votre passÃƒÂ©. Retournez ÃƒÂ  la case dÃƒÂ©part.`,
     },
     {
       id: 15,
@@ -1047,25 +486,25 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 3,
       type: 'surprise',
       title: `Rencontre Inattendue`,
-      text: `Un personnage célèbre d'un autre conte apparaît ! Piochez une carte Bonus.`,
+      text: `Un personnage cÃƒÂ©lÃƒÂ¨bre d'un autre conte apparaÃƒÂ®t ! Piochez une carte Bonus.`,
     },
     {
       id: 4,
       type: 'surprise',
       title: `Coffre aux Merveilles`,
-      text: `Vous ouvrez un vieux coffre enchanté. Tirez deux cartes au hasard (Bonus, Malus ou Surprise) et appliquez-les toutes les deux.`,
+      text: `Vous ouvrez un vieux coffre enchantÃƒÂ©. Tirez deux cartes au hasard (Bonus, Malus ou Surprise) et appliquez-les toutes les deux.`,
     },
     {
       id: 5,
       type: 'surprise',
-      title: `Poussière de Rire`,
-      text: `Un nuage de poussière de rire se répand ! Chaque joueur lance un petit dé de 1 à 3. Celui qui a le plus grand avance d'une case. Remarque : s'il y a execo, au chiffre trois, ils avancent ensemble.`,
+      title: `PoussiÃƒÂ¨re de Rire`,
+      text: `Un nuage de poussiÃƒÂ¨re de rire se rÃƒÂ©pand ! Chaque joueur lance un petit dÃƒÂ© de 1 ÃƒÂ  3. Celui qui a le plus grand avance d'une case. Remarque : s'il y a execo, au chiffre trois, ils avancent ensemble.`,
     },
     {
       id: 6,
       type: 'surprise',
-      title: `Tempête de Pages`,
-      text: `Un vent magique emporte les histoires ! Choisissez un autre joueur et échangez vos positions sur le plateau.`,
+      title: `TempÃƒÂªte de Pages`,
+      text: `Un vent magique emporte les histoires ! Choisissez un autre joueur et ÃƒÂ©changez vos positions sur le plateau.`,
     },
     {
       id: 7,
@@ -1076,38 +515,38 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
     {
       id: 8,
       type: 'surprise',
-      title: `Livre à l'Envers`,
-      text: `Vous lisez une histoire à l'envers. Votre prochain tour se fait en reculant.`,
+      title: `Livre ÃƒÂ  l'Envers`,
+      text: `Vous lisez une histoire ÃƒÂ  l'envers. Votre prochain tour se fait en reculant.`,
     },
     {
       id: 9,
       type: 'surprise',
-      title: `Chanson Enchantée`,
-      text: `Une mélodie magique résonne ! Choisissez : avancer de 3 cases ou prendre une carte Bonus à un autre joueur.`,
+      title: `Chanson EnchantÃƒÂ©e`,
+      text: `Une mÃƒÂ©lodie magique rÃƒÂ©sonne ! Choisissez : avancer de 3 cases ou prendre une carte Bonus ÃƒÂ  un autre joueur.`,
     },
     {
       id: 10,
       type: 'surprise',
       title: `Dragon de Papier`,
-      text: `Un mini-dragon apparaît dans votre livre ! Il vous protège automatiquement de la prochaine carte Malus.`,
+      text: `Un mini-dragon apparaÃƒÂ®t dans votre livre ! Il vous protÃƒÂ¨ge automatiquement de la prochaine carte Malus.`,
     },
     {
       id: 11,
       type: 'surprise',
       title: `Conte Perdu`,
-      text: `Vous découvrez un conte inconnu. Piochez une nouvelle carte Conte, même si vous êtes sur une case spéciale.`,
+      text: `Vous dÃƒÂ©couvrez un conte inconnu. Piochez une nouvelle carte Conte, mÃƒÂªme si vous ÃƒÂªtes sur une case spÃƒÂ©ciale.`,
     },
     {
       id: 12,
       type: 'surprise',
-      title: `Montre Enchantée`,
-      text: `Relancez le dé, puis reculez du nombre obtenu.`,
+      title: `Montre EnchantÃƒÂ©e`,
+      text: `Relancez le dÃƒÂ©, puis reculez du nombre obtenu.`,
     },
     {
       id: 13,
       type: 'surprise',
-      title: `Souhait Éphémère`,
-      text: `Faites un vœu simple : avancer de 2 cases, échanger votre pion avec un autre joueur, ou tirer une carte Bonus (à vous de choisir).`,
+      title: `Souhait Ãƒâ€°phÃƒÂ©mÃƒÂ¨re`,
+      text: `Faites un vÃ…â€œu simple : avancer de 2 cases, ÃƒÂ©changer votre pion avec un autre joueur, ou tirer une carte Bonus (ÃƒÂ  vous de choisir).`,
     },
     {
       id: 14,
@@ -1119,7 +558,7 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 15,
       type: 'surprise',
       title: `Grimoire Voyageur`,
-      text: `Vous lisez un conte venu d'ailleurs. Échangez votre place avec un autre joueur : vous restez sur place, et lui prend votre position puis avance d'une case.`,
+      text: `Vous lisez un conte venu d'ailleurs. Ãƒâ€°changez votre place avec un autre joueur : vous restez sur place, et lui prend votre position puis avance d'une case.`,
     },
   ];
 
@@ -1127,270 +566,270 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
     {
       id: 1,
       type: 'conte',
-      title: `Conte - Japon : Momotarō`,
-      text: `Il était une fois, dans un petit village japonais bordé de collines verdoyantes et de rivières étincelantes, un couple âgé qui vivait paisiblement.
-Un jour, alors que la vieille dame lavait des vêtements dans la rivière, elle découvrit une énorme pêche flottant sur l'eau. Curieuse, elle la ramena chez elle. ì leur grande surprise, en l'ouvrant, ils trouvèrent un petit garçon robuste et joyeux à l'intérieur. Ils l'appelèrent Momotarō, le garçon-pêche.
-Grandissant avec force et courage, Momotarō apprit qu'au loin, sur une île mystérieuse, des oni (démons malicieux) semaient la terreur parmi les habitants. Déterminé à protéger son village, il partit à l'aventure, emportant avec lui des kibi dango (des petites boules de millet sucrées) pour convaincre des compagnons de le suivre.
-Sur son chemin, il rencontra un chien fidèle, un singe polyvalent et un faisan majestueux. Chacun, séduit par les kibi dango et la détermination de l'enfant, devint son allié loyal. Ensemble, ils traversèrent les eaux tumultueuses et atteignirent l'île des oni.
-Grâce à leur courage, leur ruse et la force de l'amitié, ils vainquirent les démons, récupérèrent les trésors volés et ramenèrent la paix dans le village. Momotarō, héros humble et courageux, reçut la gratitude éternelle de son peuple, et son histoire continua de se raconter au fil des générations.`,
+      title: `Conte - Japon : MomotarÃ…Â`,
+      text: `Il ÃƒÂ©tait une fois, dans un petit village japonais bordÃƒÂ© de collines verdoyantes et de riviÃƒÂ¨res ÃƒÂ©tincelantes, un couple ÃƒÂ¢gÃƒÂ© qui vivait paisiblement.
+Un jour, alors que la vieille dame lavait des vÃƒÂªtements dans la riviÃƒÂ¨re, elle dÃƒÂ©couvrit une ÃƒÂ©norme pÃƒÂªche flottant sur l'eau. Curieuse, elle la ramena chez elle. ÃƒÂ¬ leur grande surprise, en l'ouvrant, ils trouvÃƒÂ¨rent un petit garÃƒÂ§on robuste et joyeux ÃƒÂ  l'intÃƒÂ©rieur. Ils l'appelÃƒÂ¨rent MomotarÃ…Â, le garÃƒÂ§on-pÃƒÂªche.
+Grandissant avec force et courage, MomotarÃ…Â apprit qu'au loin, sur une ÃƒÂ®le mystÃƒÂ©rieuse, des oni (dÃƒÂ©mons malicieux) semaient la terreur parmi les habitants. DÃƒÂ©terminÃƒÂ© ÃƒÂ  protÃƒÂ©ger son village, il partit ÃƒÂ  l'aventure, emportant avec lui des kibi dango (des petites boules de millet sucrÃƒÂ©es) pour convaincre des compagnons de le suivre.
+Sur son chemin, il rencontra un chien fidÃƒÂ¨le, un singe polyvalent et un faisan majestueux. Chacun, sÃƒÂ©duit par les kibi dango et la dÃƒÂ©termination de l'enfant, devint son alliÃƒÂ© loyal. Ensemble, ils traversÃƒÂ¨rent les eaux tumultueuses et atteignirent l'ÃƒÂ®le des oni.
+GrÃƒÂ¢ce ÃƒÂ  leur courage, leur ruse et la force de l'amitiÃƒÂ©, ils vainquirent les dÃƒÂ©mons, rÃƒÂ©cupÃƒÂ©rÃƒÂ¨rent les trÃƒÂ©sors volÃƒÂ©s et ramenÃƒÂ¨rent la paix dans le village. MomotarÃ…Â, hÃƒÂ©ros humble et courageux, reÃƒÂ§ut la gratitude ÃƒÂ©ternelle de son peuple, et son histoire continua de se raconter au fil des gÃƒÂ©nÃƒÂ©rations.`,
     },
     {
       id: 2,
       type: 'conte',
-      title: `Conte - Sénégal : Le lièvre et l'hyène`,
-      text: `Dans les vastes savanes du Sénégal, où les baobabs se dressent comme des géants silencieux et où le soleil éclaire la terre d'un éclat doré, vivait un lièvre malin et rusé, connu pour ses tours et ses farces. Non loin de là, la hyène, grande et gourmande, rêvait toujours de le piéger pour le manger.
-Un jour, cette dernière décida de tendre un piège ingénieux au lièvre. Mais le petit animal, vif comme le vent sur la savane, devina la ruse. Avec son esprit rapide et ses pattes légères, il imagina un plan astucieux.
-Il laissa derrière lui des empreintes trompeuses, fit semblant de tomber dans un piège et conduisit la hyène à se coincer elle-même dans un buisson épineux. Chaque farce était plus drôle et surprenante que la précédente, et bientôt, même les autres animaux de la savane venaient applaudir les tours de ce dernier.
-Mais le lièvre n'était pas cruel. Avec un sourire malicieux, il libéra la hyène, lui montrant que l'intelligence et la ruse pouvaient être plus fortes que la force brute.
-Et depuis ce jour, tous les habitants de la savane racontent encore les exploits de la créature à grandes oreilles, héros petit mais redoutablement malin.`,
+      title: `Conte - SÃƒÂ©nÃƒÂ©gal : Le liÃƒÂ¨vre et l'hyÃƒÂ¨ne`,
+      text: `Dans les vastes savanes du SÃƒÂ©nÃƒÂ©gal, oÃƒÂ¹ les baobabs se dressent comme des gÃƒÂ©ants silencieux et oÃƒÂ¹ le soleil ÃƒÂ©claire la terre d'un ÃƒÂ©clat dorÃƒÂ©, vivait un liÃƒÂ¨vre malin et rusÃƒÂ©, connu pour ses tours et ses farces. Non loin de lÃƒÂ , la hyÃƒÂ¨ne, grande et gourmande, rÃƒÂªvait toujours de le piÃƒÂ©ger pour le manger.
+Un jour, cette derniÃƒÂ¨re dÃƒÂ©cida de tendre un piÃƒÂ¨ge ingÃƒÂ©nieux au liÃƒÂ¨vre. Mais le petit animal, vif comme le vent sur la savane, devina la ruse. Avec son esprit rapide et ses pattes lÃƒÂ©gÃƒÂ¨res, il imagina un plan astucieux.
+Il laissa derriÃƒÂ¨re lui des empreintes trompeuses, fit semblant de tomber dans un piÃƒÂ¨ge et conduisit la hyÃƒÂ¨ne ÃƒÂ  se coincer elle-mÃƒÂªme dans un buisson ÃƒÂ©pineux. Chaque farce ÃƒÂ©tait plus drÃƒÂ´le et surprenante que la prÃƒÂ©cÃƒÂ©dente, et bientÃƒÂ´t, mÃƒÂªme les autres animaux de la savane venaient applaudir les tours de ce dernier.
+Mais le liÃƒÂ¨vre n'ÃƒÂ©tait pas cruel. Avec un sourire malicieux, il libÃƒÂ©ra la hyÃƒÂ¨ne, lui montrant que l'intelligence et la ruse pouvaient ÃƒÂªtre plus fortes que la force brute.
+Et depuis ce jour, tous les habitants de la savane racontent encore les exploits de la crÃƒÂ©ature ÃƒÂ  grandes oreilles, hÃƒÂ©ros petit mais redoutablement malin.`,
     },
     {
       id: 3,
       type: 'conte',
-      title: `Conte - Russie : Vassilissa la très belle`,
-      text: `Au coeur des forêts enneigées de Russie, là où les pins s'étiraient vers le ciel et où la neige crissait sous les pas, vivait Vassilissa, une jeune fille d'une beauté éclatante et d'un coeur pur. Elle portait toujours avec elle une poupée de chiffon, cadeau de sa mère disparue, qui semblait parler et donner des conseils secrets à celle qui savait écouter.
-Orpheline, elle vivait avec sa méchante belle-mère et ses deux demi-soeurs jalouses, qui ne cessaient de lui imposer des tâches impossibles. Mais la poupée, animée d'une magie subtile, guidait Vassilissa et l'aidait à accomplir ses corvées avec habileté et intelligence.
-Un jour, la belle-mère, avide de se débarrasser d'elle, l'envoya chercher du feu chez la redoutable sorcière Baba Yaga, cachée au fond de la forêt. Courageuse mais prudente, Vassilissa suivit les conseils de sa poupée, traversa ponts instables, rivières glacées et créatures mystérieuses, et réussit à accomplir les tâches impossibles que la femme lui imposait.
-Grâce à sa ruse, sa patience et l'aide de la poupée magique, l'enfant revint saine et sauve, portant le feu comme un triomphe de sa bonté et de son courage.
-Depuis ce jour, les contes russes parlent encore de Vassilissa, la jeune fille qui triomphait toujours des épreuves avec intelligence et coeur pur.`,
+      title: `Conte - Russie : Vassilissa la trÃƒÂ¨s belle`,
+      text: `Au coeur des forÃƒÂªts enneigÃƒÂ©es de Russie, lÃƒÂ  oÃƒÂ¹ les pins s'ÃƒÂ©tiraient vers le ciel et oÃƒÂ¹ la neige crissait sous les pas, vivait Vassilissa, une jeune fille d'une beautÃƒÂ© ÃƒÂ©clatante et d'un coeur pur. Elle portait toujours avec elle une poupÃƒÂ©e de chiffon, cadeau de sa mÃƒÂ¨re disparue, qui semblait parler et donner des conseils secrets ÃƒÂ  celle qui savait ÃƒÂ©couter.
+Orpheline, elle vivait avec sa mÃƒÂ©chante belle-mÃƒÂ¨re et ses deux demi-soeurs jalouses, qui ne cessaient de lui imposer des tÃƒÂ¢ches impossibles. Mais la poupÃƒÂ©e, animÃƒÂ©e d'une magie subtile, guidait Vassilissa et l'aidait ÃƒÂ  accomplir ses corvÃƒÂ©es avec habiletÃƒÂ© et intelligence.
+Un jour, la belle-mÃƒÂ¨re, avide de se dÃƒÂ©barrasser d'elle, l'envoya chercher du feu chez la redoutable sorciÃƒÂ¨re Baba Yaga, cachÃƒÂ©e au fond de la forÃƒÂªt. Courageuse mais prudente, Vassilissa suivit les conseils de sa poupÃƒÂ©e, traversa ponts instables, riviÃƒÂ¨res glacÃƒÂ©es et crÃƒÂ©atures mystÃƒÂ©rieuses, et rÃƒÂ©ussit ÃƒÂ  accomplir les tÃƒÂ¢ches impossibles que la femme lui imposait.
+GrÃƒÂ¢ce ÃƒÂ  sa ruse, sa patience et l'aide de la poupÃƒÂ©e magique, l'enfant revint saine et sauve, portant le feu comme un triomphe de sa bontÃƒÂ© et de son courage.
+Depuis ce jour, les contes russes parlent encore de Vassilissa, la jeune fille qui triomphait toujours des ÃƒÂ©preuves avec intelligence et coeur pur.`,
     },
     {
       id: 4,
       type: 'conte',
-      title: `Conte - Canada : L'ours géant et l'enfant`,
-      text: `Dans les forêts profondes du Canada, là où les rivières scintillaient comme des rubans d'argent et où les montagnes se dressaient majestueusement, vivait un petit enfant curieux et courageux.
-Un jour, alors qu'il explorait les bois en suivant le chant des oiseaux, il rencontra un ours géant au pelage brun doré, imposant mais aux yeux d'une douceur surprenante.
-L'animal, protecteur de la forêt, était sage et puissant, et il connaissait tous les secrets de la faune et de la flore. Il mit l'enfant à l'épreuve : il dû traverser une rivière tumultueuse, escalader une colline escarpée et comprendre le langage des oiseaux et des arbres. Mais chaque épreuve était en réalité un enseignement sur le courage, la patience et le respect de la nature.
-Avec chaque étape, le jeune garçon comprit que la force ne résidait pas seulement dans la taille ou la puissance, mais dans l'intelligence, l'empathie et le respect de son environnement. L'ours géant, impressionné par son coeur pur et sa détermination, devint son allié et compagnon, le guidant à travers la forêt et lui transmettant les secrets anciens des créatures et de la terre.
-Depuis ce jour, on raconte au Canada l'histoire de l'enfant qui marcha aux côtés de l'ours géant, apprenant à écouter, à respecter et à devenir un vrai ami de la forêt.`,
+      title: `Conte - Canada : L'ours gÃƒÂ©ant et l'enfant`,
+      text: `Dans les forÃƒÂªts profondes du Canada, lÃƒÂ  oÃƒÂ¹ les riviÃƒÂ¨res scintillaient comme des rubans d'argent et oÃƒÂ¹ les montagnes se dressaient majestueusement, vivait un petit enfant curieux et courageux.
+Un jour, alors qu'il explorait les bois en suivant le chant des oiseaux, il rencontra un ours gÃƒÂ©ant au pelage brun dorÃƒÂ©, imposant mais aux yeux d'une douceur surprenante.
+L'animal, protecteur de la forÃƒÂªt, ÃƒÂ©tait sage et puissant, et il connaissait tous les secrets de la faune et de la flore. Il mit l'enfant ÃƒÂ  l'ÃƒÂ©preuve : il dÃƒÂ» traverser une riviÃƒÂ¨re tumultueuse, escalader une colline escarpÃƒÂ©e et comprendre le langage des oiseaux et des arbres. Mais chaque ÃƒÂ©preuve ÃƒÂ©tait en rÃƒÂ©alitÃƒÂ© un enseignement sur le courage, la patience et le respect de la nature.
+Avec chaque ÃƒÂ©tape, le jeune garÃƒÂ§on comprit que la force ne rÃƒÂ©sidait pas seulement dans la taille ou la puissance, mais dans l'intelligence, l'empathie et le respect de son environnement. L'ours gÃƒÂ©ant, impressionnÃƒÂ© par son coeur pur et sa dÃƒÂ©termination, devint son alliÃƒÂ© et compagnon, le guidant ÃƒÂ  travers la forÃƒÂªt et lui transmettant les secrets anciens des crÃƒÂ©atures et de la terre.
+Depuis ce jour, on raconte au Canada l'histoire de l'enfant qui marcha aux cÃƒÂ´tÃƒÂ©s de l'ours gÃƒÂ©ant, apprenant ÃƒÂ  ÃƒÂ©couter, ÃƒÂ  respecter et ÃƒÂ  devenir un vrai ami de la forÃƒÂªt.`,
     },
     {
       id: 5,
       type: 'conte',
       title: `Conte - Maroc : Le figuier magique`,
-      text: `Au coeur des ruelles animées du Maroc, sous un ciel azur où le soleil éclairait les mosaïques colorées, se trouvait un figuier ancien, immense et mystérieux, dont les branches semblaient toucher les nuages. On racontait que cet arbre n'était pas ordinaire : ses figues dorées étaient enchantées, capables d'exaucer les souhaits les plus sincères.
-Un enfant curieux et intrépide s'approcha un matin, attiré par l'odeur sucrée des fruits et le bruissement des feuilles. Alors qu'il tendait la main pour cueillir une figue, l'arbre se mit à parler dans un murmure doux et rassurant, révélant que seul celui qui possédait un coeur pur pouvait goûter à sa magie.
-Pour prouver sa valeur, il devait faire preuve de courage, de générosité et d'ingéniosité : partager ses trouvailles avec les habitants du village, aider les animaux de la place et résoudre des énigmes laissées par les anciens du royaume. ì chaque acte de bonté, les figues du figuier brillaient plus fort, et l'enfant sentait une énergie chaude et bienveillante parcourir ses doigts.
-Finalement, ayant démontré sa sagesse et son coeur généreux, il put cueillir une figue magique. Cette dernière ne donnait pas seulement la chance ou la richesse, mais révélait les secrets pour comprendre et respecter les gens, la nature et la magie qui se cache dans chaque geste quotidien.`,
+      text: `Au coeur des ruelles animÃƒÂ©es du Maroc, sous un ciel azur oÃƒÂ¹ le soleil ÃƒÂ©clairait les mosaÃƒÂ¯ques colorÃƒÂ©es, se trouvait un figuier ancien, immense et mystÃƒÂ©rieux, dont les branches semblaient toucher les nuages. On racontait que cet arbre n'ÃƒÂ©tait pas ordinaire : ses figues dorÃƒÂ©es ÃƒÂ©taient enchantÃƒÂ©es, capables d'exaucer les souhaits les plus sincÃƒÂ¨res.
+Un enfant curieux et intrÃƒÂ©pide s'approcha un matin, attirÃƒÂ© par l'odeur sucrÃƒÂ©e des fruits et le bruissement des feuilles. Alors qu'il tendait la main pour cueillir une figue, l'arbre se mit ÃƒÂ  parler dans un murmure doux et rassurant, rÃƒÂ©vÃƒÂ©lant que seul celui qui possÃƒÂ©dait un coeur pur pouvait goÃƒÂ»ter ÃƒÂ  sa magie.
+Pour prouver sa valeur, il devait faire preuve de courage, de gÃƒÂ©nÃƒÂ©rositÃƒÂ© et d'ingÃƒÂ©niositÃƒÂ© : partager ses trouvailles avec les habitants du village, aider les animaux de la place et rÃƒÂ©soudre des ÃƒÂ©nigmes laissÃƒÂ©es par les anciens du royaume. ÃƒÂ¬ chaque acte de bontÃƒÂ©, les figues du figuier brillaient plus fort, et l'enfant sentait une ÃƒÂ©nergie chaude et bienveillante parcourir ses doigts.
+Finalement, ayant dÃƒÂ©montrÃƒÂ© sa sagesse et son coeur gÃƒÂ©nÃƒÂ©reux, il put cueillir une figue magique. Cette derniÃƒÂ¨re ne donnait pas seulement la chance ou la richesse, mais rÃƒÂ©vÃƒÂ©lait les secrets pour comprendre et respecter les gens, la nature et la magie qui se cache dans chaque geste quotidien.`,
     },
     {
       id: 6,
       type: 'conte',
-      title: `Conte - Chine : La princesse éventail`,
-      text: `Dans les jardins impériaux baignés de brume matinale, où les lotus flottaient sur les bassins et où les pavillons aux toits dorés reflétaient la lumière du soleil, vivait une princesse renommée pour sa beauté et sa sagesse. Mais ce qui la distinguait le plus était son éventail en soie brodée d'or et de jade, capable de contrôler le vent et de murmurer les secrets du ciel.
-Un jour, une grande sécheresse frappa le royaume. Les rivières s'asséchèrent et les arbres perdirent leurs feuilles. La princesse, connue pour son coeur généreux et sa détermination, prit son éventail magique et s'avança dans le jardin. Chaque mouvement de l'objet faisait danser la brise et onduler les nuages, et bientôt, un vent doux et humide se leva, apportant la pluie salvatrice sur les champs desséchés.
-Mais la princesse n'utilisait pas sa magie uniquement pour des miracles visibles : elle enseignait aux villageois l'importance de la patience, de la sagesse et du respect pour la nature, leur montrant que chaque geste, même petit, pouvait faire naître le changement.
-Grâce à elle, les rivières reprirent vie, les fleurs s'épanouirent et les enfants jouaient à l'ombre des cerisiers en fleurs, tout en écoutant les histoires que soufflait le vent de son éventail.`,
+      title: `Conte - Chine : La princesse ÃƒÂ©ventail`,
+      text: `Dans les jardins impÃƒÂ©riaux baignÃƒÂ©s de brume matinale, oÃƒÂ¹ les lotus flottaient sur les bassins et oÃƒÂ¹ les pavillons aux toits dorÃƒÂ©s reflÃƒÂ©taient la lumiÃƒÂ¨re du soleil, vivait une princesse renommÃƒÂ©e pour sa beautÃƒÂ© et sa sagesse. Mais ce qui la distinguait le plus ÃƒÂ©tait son ÃƒÂ©ventail en soie brodÃƒÂ©e d'or et de jade, capable de contrÃƒÂ´ler le vent et de murmurer les secrets du ciel.
+Un jour, une grande sÃƒÂ©cheresse frappa le royaume. Les riviÃƒÂ¨res s'assÃƒÂ©chÃƒÂ¨rent et les arbres perdirent leurs feuilles. La princesse, connue pour son coeur gÃƒÂ©nÃƒÂ©reux et sa dÃƒÂ©termination, prit son ÃƒÂ©ventail magique et s'avanÃƒÂ§a dans le jardin. Chaque mouvement de l'objet faisait danser la brise et onduler les nuages, et bientÃƒÂ´t, un vent doux et humide se leva, apportant la pluie salvatrice sur les champs dessÃƒÂ©chÃƒÂ©s.
+Mais la princesse n'utilisait pas sa magie uniquement pour des miracles visibles : elle enseignait aux villageois l'importance de la patience, de la sagesse et du respect pour la nature, leur montrant que chaque geste, mÃƒÂªme petit, pouvait faire naÃƒÂ®tre le changement.
+GrÃƒÂ¢ce ÃƒÂ  elle, les riviÃƒÂ¨res reprirent vie, les fleurs s'ÃƒÂ©panouirent et les enfants jouaient ÃƒÂ  l'ombre des cerisiers en fleurs, tout en ÃƒÂ©coutant les histoires que soufflait le vent de son ÃƒÂ©ventail.`,
     },
     {
       id: 7,
       type: 'conte',
-      title: `Conte - Irlande : Le géant Fionn et Benandonner`,
-      text: `Dans les collines verdoyantes et brumeuses d'Irlande, là où les moutons paissaient paisiblement et où le vent portait le parfum de l'herbe fraîche, vivait un jeune géant nommé Fionn. Curieux et courageux, il adorait explorer les landes et écouter les histoires des anciens, apprenant les légendes des druides et des guerriers d'antan.
-Un matin, il entendit parler d'un géant colossal nommé Benandonner, qui vivait de l'autre côté de la mer et terrorisait les villages de ses pas gigantesques. Déterminé à protéger son pays et à prouver son courage, Fionn décida de se rendre à la rencontre de ce dernier.
-Mais Fionn était malin et rusé : lorsqu'il le croisa, il remarqua que le géant était énorme et redoutable, mais qu'il se moquait de sa propre force lorsqu'il rit de ses erreurs. Fionn usa alors de ruse et d'astuce. Il fit croire à Benandonner qu'il était un géant encore plus puissant, et par une série de jeux d'ombres et de tromperies, il réussit à faire fuir la créature vers l'autre côté de la mer.
-Depuis ce jour, Fionn devint le protecteur des collines irlandaises, et les villageois racontent encore comment un jeune géant malin avait surpassé un de ses congénaires terrible, transformant la peur en légende et le danger en histoire à raconter autour du feu.`,
+      title: `Conte - Irlande : Le gÃƒÂ©ant Fionn et Benandonner`,
+      text: `Dans les collines verdoyantes et brumeuses d'Irlande, lÃƒÂ  oÃƒÂ¹ les moutons paissaient paisiblement et oÃƒÂ¹ le vent portait le parfum de l'herbe fraÃƒÂ®che, vivait un jeune gÃƒÂ©ant nommÃƒÂ© Fionn. Curieux et courageux, il adorait explorer les landes et ÃƒÂ©couter les histoires des anciens, apprenant les lÃƒÂ©gendes des druides et des guerriers d'antan.
+Un matin, il entendit parler d'un gÃƒÂ©ant colossal nommÃƒÂ© Benandonner, qui vivait de l'autre cÃƒÂ´tÃƒÂ© de la mer et terrorisait les villages de ses pas gigantesques. DÃƒÂ©terminÃƒÂ© ÃƒÂ  protÃƒÂ©ger son pays et ÃƒÂ  prouver son courage, Fionn dÃƒÂ©cida de se rendre ÃƒÂ  la rencontre de ce dernier.
+Mais Fionn ÃƒÂ©tait malin et rusÃƒÂ© : lorsqu'il le croisa, il remarqua que le gÃƒÂ©ant ÃƒÂ©tait ÃƒÂ©norme et redoutable, mais qu'il se moquait de sa propre force lorsqu'il rit de ses erreurs. Fionn usa alors de ruse et d'astuce. Il fit croire ÃƒÂ  Benandonner qu'il ÃƒÂ©tait un gÃƒÂ©ant encore plus puissant, et par une sÃƒÂ©rie de jeux d'ombres et de tromperies, il rÃƒÂ©ussit ÃƒÂ  faire fuir la crÃƒÂ©ature vers l'autre cÃƒÂ´tÃƒÂ© de la mer.
+Depuis ce jour, Fionn devint le protecteur des collines irlandaises, et les villageois racontent encore comment un jeune gÃƒÂ©ant malin avait surpassÃƒÂ© un de ses congÃƒÂ©naires terrible, transformant la peur en lÃƒÂ©gende et le danger en histoire ÃƒÂ  raconter autour du feu.`,
     },
     {
       id: 8,
       type: 'conte',
-      title: `Conte - Pérou : Le colibri courageux`,
-      text: `Dans les hauteurs vertigineuses des Andes péruviennes, là où les sommets effleurent les nuages et où les torrents grondent dans les vallées, vivait un petit colibri au plumage éclatant. Bien que minuscule et fragile face aux montagnes imposantes et aux dangers qui rôdaient, ce colibri avait un courage qui dépassait sa taille.
-Un jour, un incendie éclata dans la forêt qui nourrissait la faune et la flore des montagnes. Les grandes créatures s'effrayaient, et personne n'osait s'approcher des flammes. Mais le petit colibri, déterminé à protéger la vie autour de lui, vola droit vers le feu. Il transportait de minuscules gouttes d'eau dans son bec, tombant sans relâche sur les flammes.
-Malgré la chaleur et la fatigue, le colibri ne céda jamais. Les autres animaux, inspirés par sa détermination et son courage, commencèrent à l'aider. Ensemble, ils parvinrent à éteindre l'incendie, sauvant ainsi la forêt et tous ses habitants.
-Depuis ce jour, le colibri est célébré dans les légendes péruviennes comme le symbole du courage et de la persévérance, prouvant que même les plus petits peuvent accomplir de grands exploits si leur coeur est vaillant.`,
+      title: `Conte - PÃƒÂ©rou : Le colibri courageux`,
+      text: `Dans les hauteurs vertigineuses des Andes pÃƒÂ©ruviennes, lÃƒÂ  oÃƒÂ¹ les sommets effleurent les nuages et oÃƒÂ¹ les torrents grondent dans les vallÃƒÂ©es, vivait un petit colibri au plumage ÃƒÂ©clatant. Bien que minuscule et fragile face aux montagnes imposantes et aux dangers qui rÃƒÂ´daient, ce colibri avait un courage qui dÃƒÂ©passait sa taille.
+Un jour, un incendie ÃƒÂ©clata dans la forÃƒÂªt qui nourrissait la faune et la flore des montagnes. Les grandes crÃƒÂ©atures s'effrayaient, et personne n'osait s'approcher des flammes. Mais le petit colibri, dÃƒÂ©terminÃƒÂ© ÃƒÂ  protÃƒÂ©ger la vie autour de lui, vola droit vers le feu. Il transportait de minuscules gouttes d'eau dans son bec, tombant sans relÃƒÂ¢che sur les flammes.
+MalgrÃƒÂ© la chaleur et la fatigue, le colibri ne cÃƒÂ©da jamais. Les autres animaux, inspirÃƒÂ©s par sa dÃƒÂ©termination et son courage, commencÃƒÂ¨rent ÃƒÂ  l'aider. Ensemble, ils parvinrent ÃƒÂ  ÃƒÂ©teindre l'incendie, sauvant ainsi la forÃƒÂªt et tous ses habitants.
+Depuis ce jour, le colibri est cÃƒÂ©lÃƒÂ©brÃƒÂ© dans les lÃƒÂ©gendes pÃƒÂ©ruviennes comme le symbole du courage et de la persÃƒÂ©vÃƒÂ©rance, prouvant que mÃƒÂªme les plus petits peuvent accomplir de grands exploits si leur coeur est vaillant.`,
     },
     {
       id: 9,
       type: 'conte',
-      title: `Conte - Égypte : Le secret du Nil`,
-      text: `Au coeur de l'Égypte ancienne, là où le Nil serpentait comme un ruban bleu entre les sables dorés, se trouvait un village paisible dont les habitants vivaient en harmonie avec le fleuve sacré. On racontait qu'au crépuscule, lorsque le soleil baignait les rives d'une lumière d'or, le Nil révélait ses secrets aux coeurs courageux.
-Un jeune garçon du village, curieux et intrépide, rêvait de découvrir ce mystère. Chaque soir, il s'asseyait au bord de l'eau, écoutant le murmure des vagues et observant les reflets dansants du soleil. Une nuit, le fleuve sembla s'animer, et une lumière scintillante surgit à la surface.
-Guidé par cette lueur, l'enfant navigua sur une petite barque, découvrant une île cachée où les plantes et les animaux semblaient parler entre eux. Là, un ancien esprit du Nil lui confia que le secret de la vie résidait dans l'équilibre et le respect de la nature, dans la manière dont le fleuve nourrissait la terre et les hommes, jour après jour.
-De retour au village, le jeune homme partagea cette sagesse : il enseigna aux habitants à écouter le fleuve et à protéger ses eaux, et le village prospéra comme jamais.
-Depuis ce temps, le Nil est célébré non seulement pour ses eaux fertiles, mais aussi pour les secrets qu'il murmure à ceux qui savent regarder et écouter.`,
+      title: `Conte - Ãƒâ€°gypte : Le secret du Nil`,
+      text: `Au coeur de l'Ãƒâ€°gypte ancienne, lÃƒÂ  oÃƒÂ¹ le Nil serpentait comme un ruban bleu entre les sables dorÃƒÂ©s, se trouvait un village paisible dont les habitants vivaient en harmonie avec le fleuve sacrÃƒÂ©. On racontait qu'au crÃƒÂ©puscule, lorsque le soleil baignait les rives d'une lumiÃƒÂ¨re d'or, le Nil rÃƒÂ©vÃƒÂ©lait ses secrets aux coeurs courageux.
+Un jeune garÃƒÂ§on du village, curieux et intrÃƒÂ©pide, rÃƒÂªvait de dÃƒÂ©couvrir ce mystÃƒÂ¨re. Chaque soir, il s'asseyait au bord de l'eau, ÃƒÂ©coutant le murmure des vagues et observant les reflets dansants du soleil. Une nuit, le fleuve sembla s'animer, et une lumiÃƒÂ¨re scintillante surgit ÃƒÂ  la surface.
+GuidÃƒÂ© par cette lueur, l'enfant navigua sur une petite barque, dÃƒÂ©couvrant une ÃƒÂ®le cachÃƒÂ©e oÃƒÂ¹ les plantes et les animaux semblaient parler entre eux. LÃƒÂ , un ancien esprit du Nil lui confia que le secret de la vie rÃƒÂ©sidait dans l'ÃƒÂ©quilibre et le respect de la nature, dans la maniÃƒÂ¨re dont le fleuve nourrissait la terre et les hommes, jour aprÃƒÂ¨s jour.
+De retour au village, le jeune homme partagea cette sagesse : il enseigna aux habitants ÃƒÂ  ÃƒÂ©couter le fleuve et ÃƒÂ  protÃƒÂ©ger ses eaux, et le village prospÃƒÂ©ra comme jamais.
+Depuis ce temps, le Nil est cÃƒÂ©lÃƒÂ©brÃƒÂ© non seulement pour ses eaux fertiles, mais aussi pour les secrets qu'il murmure ÃƒÂ  ceux qui savent regarder et ÃƒÂ©couter.`,
     },
     {
       id: 10,
       type: 'conte',
       title: `Conte - Australie : Tiddalik, la grenouille`,
-      text: `Dans les vastes étendues rouges de l'Australie, là où les eucalyptus s'élançaient vers le ciel et où le sable chaud crissait sous les pieds, vivait Tiddalik, une grenouille pas comme les autres. Sa particularité ? Il pouvait boire toute l'eau du pays, et lorsqu'il était gourmand, il ne laissait aucune goutte pour les autres.
-Un jour, il eut une soif insatiable et avala tous les lacs, rivières et mares de la région. Les kangourous, les wombats, les perruches et les lézards se retrouvèrent sans une seule goutte d'eau. Le désert, déjà chaud, devint impitoyable, et les animaux étaient au bord du désespoir.
-Alors, ils décidèrent d'unir leurs forces. Chaque animal essaya de le faire rire, car selon la légende, rire faisait relâcher l'eau avalée par Tiddalik. Les oiseaux chantèrent de folles mélodies, les kangourous sautèrent en cadence, et les wombats se roulèrent dans le sable jusqu'à ce que Tiddalik éclate de rire, et en un instant, toute l'eau revint dans les rivières et les lacs, rendant la vie à la terre et à ses habitants.
-Depuis ce jour, on raconte que la grenouille veille sur l'eau, rappelant à tous que la générosité et le partage sont essentiels à la survie de chacun.`,
+      text: `Dans les vastes ÃƒÂ©tendues rouges de l'Australie, lÃƒÂ  oÃƒÂ¹ les eucalyptus s'ÃƒÂ©lanÃƒÂ§aient vers le ciel et oÃƒÂ¹ le sable chaud crissait sous les pieds, vivait Tiddalik, une grenouille pas comme les autres. Sa particularitÃƒÂ© ? Il pouvait boire toute l'eau du pays, et lorsqu'il ÃƒÂ©tait gourmand, il ne laissait aucune goutte pour les autres.
+Un jour, il eut une soif insatiable et avala tous les lacs, riviÃƒÂ¨res et mares de la rÃƒÂ©gion. Les kangourous, les wombats, les perruches et les lÃƒÂ©zards se retrouvÃƒÂ¨rent sans une seule goutte d'eau. Le dÃƒÂ©sert, dÃƒÂ©jÃƒÂ  chaud, devint impitoyable, et les animaux ÃƒÂ©taient au bord du dÃƒÂ©sespoir.
+Alors, ils dÃƒÂ©cidÃƒÂ¨rent d'unir leurs forces. Chaque animal essaya de le faire rire, car selon la lÃƒÂ©gende, rire faisait relÃƒÂ¢cher l'eau avalÃƒÂ©e par Tiddalik. Les oiseaux chantÃƒÂ¨rent de folles mÃƒÂ©lodies, les kangourous sautÃƒÂ¨rent en cadence, et les wombats se roulÃƒÂ¨rent dans le sable jusqu'ÃƒÂ  ce que Tiddalik ÃƒÂ©clate de rire, et en un instant, toute l'eau revint dans les riviÃƒÂ¨res et les lacs, rendant la vie ÃƒÂ  la terre et ÃƒÂ  ses habitants.
+Depuis ce jour, on raconte que la grenouille veille sur l'eau, rappelant ÃƒÂ  tous que la gÃƒÂ©nÃƒÂ©rositÃƒÂ© et le partage sont essentiels ÃƒÂ  la survie de chacun.`,
     },
     {
       id: 11,
       type: 'conte',
-      title: `Conte - Allemagne : Le joueur de flûte de Hamelin`,
-      text: `Dans la ville pittoresque d'Hamelin, aux maisons à colombages et aux ruelles pavées, un problème inquiétant pesait sur les habitants : une invasion de rats qui dévoraient les récoltes, envahissaient les maisons et troublaient le sommeil des habitants.
-Un jour, un étrange joueur de flûte fit son apparition. Vêtu d'un manteau coloré et tenant une flûte aux reflets dorés, il proposa son aide contre une promesse : être payé généreusement pour se débarrasser des rongeurs. Désespérés, les habitants acceptèrent.
-Le joueur de flûte leva son instrument à ses lèvres et une mélodie envoûtante s'éleva dans l'air. Les rats, charmés et hypnotisés, le suivirent sans un bruit. Ils sortirent de chaque maison, de chaque cave et de chaque recoin, marchant derrière lui jusqu'à la rivière, où ils disparurent à jamais.
-Mais, hélas, une fois sa mission accomplie, les habitants refusèrent de le payer comme convenu. Furieux, le joueur de flûte joua de nouveau une mélodie magique, et cette fois-ci, les enfants d'Hamelin furent emportés par la musique, marchant derrière lui hors de la ville, comme les rats autrefois, laissant derrière eux une ville silencieuse et pleine de remords.`,
+      title: `Conte - Allemagne : Le joueur de flÃƒÂ»te de Hamelin`,
+      text: `Dans la ville pittoresque d'Hamelin, aux maisons ÃƒÂ  colombages et aux ruelles pavÃƒÂ©es, un problÃƒÂ¨me inquiÃƒÂ©tant pesait sur les habitants : une invasion de rats qui dÃƒÂ©voraient les rÃƒÂ©coltes, envahissaient les maisons et troublaient le sommeil des habitants.
+Un jour, un ÃƒÂ©trange joueur de flÃƒÂ»te fit son apparition. VÃƒÂªtu d'un manteau colorÃƒÂ© et tenant une flÃƒÂ»te aux reflets dorÃƒÂ©s, il proposa son aide contre une promesse : ÃƒÂªtre payÃƒÂ© gÃƒÂ©nÃƒÂ©reusement pour se dÃƒÂ©barrasser des rongeurs. DÃƒÂ©sespÃƒÂ©rÃƒÂ©s, les habitants acceptÃƒÂ¨rent.
+Le joueur de flÃƒÂ»te leva son instrument ÃƒÂ  ses lÃƒÂ¨vres et une mÃƒÂ©lodie envoÃƒÂ»tante s'ÃƒÂ©leva dans l'air. Les rats, charmÃƒÂ©s et hypnotisÃƒÂ©s, le suivirent sans un bruit. Ils sortirent de chaque maison, de chaque cave et de chaque recoin, marchant derriÃƒÂ¨re lui jusqu'ÃƒÂ  la riviÃƒÂ¨re, oÃƒÂ¹ ils disparurent ÃƒÂ  jamais.
+Mais, hÃƒÂ©las, une fois sa mission accomplie, les habitants refusÃƒÂ¨rent de le payer comme convenu. Furieux, le joueur de flÃƒÂ»te joua de nouveau une mÃƒÂ©lodie magique, et cette fois-ci, les enfants d'Hamelin furent emportÃƒÂ©s par la musique, marchant derriÃƒÂ¨re lui hors de la ville, comme les rats autrefois, laissant derriÃƒÂ¨re eux une ville silencieuse et pleine de remords.`,
     },
     {
       id: 12,
       type: 'conte',
       title: `Conte - Inde : Le prince au cobra`,
-      text: `Dans un royaume lointain d'Inde, aux palais aux dômes dorés et aux jardins luxuriants, vivait un jeune prince courageux. Sa curiosité et son courage le poussaient souvent à explorer les forêts et les rivières qui entouraient son palais.
-Un jour, alors qu'il se promenait près d'un étang sacré, il rencontra un cobra majestueux, aux écailles scintillantes et aux yeux perçants. Mais ce n'était pas un serpent ordinaire : il pouvait parler et possédait des pouvoirs magiques anciens. Ce dernier expliqua au prince qu'un grand danger menaçait le royaume, et que seul un coeur pur et courageux pourrait déjouer ce sort.
-Le prince accepta la mission. Grâce aux conseils du reptile et à son intelligence, il traversa des épreuves mystérieuses : résoudre des énigmes, franchir des ponts invisibles et affronter des illusions trompeuses. ì chaque défi, le cobra l'accompagnait, enseignant la patience, la prudence et le respect de la nature.
-Finalement, grâce à leur alliance, le prince réussit à sauver le royaume et à ramener la paix et la prospérité. En signe de gratitude, le cobra se transforma en joyau magique, symbole de sagesse et de courage, que le prince porta toujours avec lui.`,
+      text: `Dans un royaume lointain d'Inde, aux palais aux dÃƒÂ´mes dorÃƒÂ©s et aux jardins luxuriants, vivait un jeune prince courageux. Sa curiositÃƒÂ© et son courage le poussaient souvent ÃƒÂ  explorer les forÃƒÂªts et les riviÃƒÂ¨res qui entouraient son palais.
+Un jour, alors qu'il se promenait prÃƒÂ¨s d'un ÃƒÂ©tang sacrÃƒÂ©, il rencontra un cobra majestueux, aux ÃƒÂ©cailles scintillantes et aux yeux perÃƒÂ§ants. Mais ce n'ÃƒÂ©tait pas un serpent ordinaire : il pouvait parler et possÃƒÂ©dait des pouvoirs magiques anciens. Ce dernier expliqua au prince qu'un grand danger menaÃƒÂ§ait le royaume, et que seul un coeur pur et courageux pourrait dÃƒÂ©jouer ce sort.
+Le prince accepta la mission. GrÃƒÂ¢ce aux conseils du reptile et ÃƒÂ  son intelligence, il traversa des ÃƒÂ©preuves mystÃƒÂ©rieuses : rÃƒÂ©soudre des ÃƒÂ©nigmes, franchir des ponts invisibles et affronter des illusions trompeuses. ÃƒÂ¬ chaque dÃƒÂ©fi, le cobra l'accompagnait, enseignant la patience, la prudence et le respect de la nature.
+Finalement, grÃƒÂ¢ce ÃƒÂ  leur alliance, le prince rÃƒÂ©ussit ÃƒÂ  sauver le royaume et ÃƒÂ  ramener la paix et la prospÃƒÂ©ritÃƒÂ©. En signe de gratitude, le cobra se transforma en joyau magique, symbole de sagesse et de courage, que le prince porta toujours avec lui.`,
     },
     {
       id: 13,
       type: 'conte',
       title: `Conte - Groenland : L'ourse et la chasseuse`,
-      text: `Au coeur des vastes glaces du Groenland, là où le vent hurlait et où la neige recouvrait tout, vivait une jeune chasseuse courageuse. Sa peau rosée par le froid et ses yeux perçants lui permettaient de repérer les moindres traces dans la neige immaculée.
-Un matin, alors qu'elle suivait des empreintes mystérieuses, elle rencontra une grande ourse blanche, majestueuse et imposante, mais étonnamment douce dans son regard. La créature parlait un langage secret que seuls les habitants du Groenland pouvaient comprendre. Elle confia à la chasseuse une mission : protéger les animaux et les esprits de la glace d'un danger imminent.
-La chasseuse accepta. Ensemble, elles traversèrent des fjords gelés, escaladèrent des montagnes couvertes de neige et affrontèrent les tempêtes polaires. Chaque pas était un défi, mais la présence de l'ourse la guidait et la protégeait. La chasseuse apprit à écouter la nature, à comprendre les murmures des vents et le chant des aurores boréales.
-ì la fin de leur périple, la chasseuse avait non seulement sauvé les créatures du Groenland, mais elle avait aussi tissé un lien indestructible avec l'ourse, qui devint sa protectrice éternelle.
-Les habitants du village racontent encore que, lorsque la neige tombe doucement, on peut voir l'ourse et la chasseuse parcourir les étendues glacées, unies par un courage et une amitié hors du commun.`,
+      text: `Au coeur des vastes glaces du Groenland, lÃƒÂ  oÃƒÂ¹ le vent hurlait et oÃƒÂ¹ la neige recouvrait tout, vivait une jeune chasseuse courageuse. Sa peau rosÃƒÂ©e par le froid et ses yeux perÃƒÂ§ants lui permettaient de repÃƒÂ©rer les moindres traces dans la neige immaculÃƒÂ©e.
+Un matin, alors qu'elle suivait des empreintes mystÃƒÂ©rieuses, elle rencontra une grande ourse blanche, majestueuse et imposante, mais ÃƒÂ©tonnamment douce dans son regard. La crÃƒÂ©ature parlait un langage secret que seuls les habitants du Groenland pouvaient comprendre. Elle confia ÃƒÂ  la chasseuse une mission : protÃƒÂ©ger les animaux et les esprits de la glace d'un danger imminent.
+La chasseuse accepta. Ensemble, elles traversÃƒÂ¨rent des fjords gelÃƒÂ©s, escaladÃƒÂ¨rent des montagnes couvertes de neige et affrontÃƒÂ¨rent les tempÃƒÂªtes polaires. Chaque pas ÃƒÂ©tait un dÃƒÂ©fi, mais la prÃƒÂ©sence de l'ourse la guidait et la protÃƒÂ©geait. La chasseuse apprit ÃƒÂ  ÃƒÂ©couter la nature, ÃƒÂ  comprendre les murmures des vents et le chant des aurores borÃƒÂ©ales.
+ÃƒÂ¬ la fin de leur pÃƒÂ©riple, la chasseuse avait non seulement sauvÃƒÂ© les crÃƒÂ©atures du Groenland, mais elle avait aussi tissÃƒÂ© un lien indestructible avec l'ourse, qui devint sa protectrice ÃƒÂ©ternelle.
+Les habitants du village racontent encore que, lorsque la neige tombe doucement, on peut voir l'ourse et la chasseuse parcourir les ÃƒÂ©tendues glacÃƒÂ©es, unies par un courage et une amitiÃƒÂ© hors du commun.`,
     },
     {
       id: 14,
       type: 'conte',
-      title: `Conte - Italie : Giufà et l'âne`,
-      text: `Dans un petit village ensoleillé d'Italie, au pied des collines et entre les oliveraies, vivait Giufà, un garçon malin et plein de malice. Il possédait un âne têtu mais attachant, qui semblait parfois comprendre mieux que Giufà lui-même.
-Un jour, le village organisa une fête et le jeune homme fut chargé de conduire son animal au marché pour y vendre des produits. Mais l'âne, espiègle et obstiné, refusait d'avancer droit et se mit à zigzaguer entre les rues pavées. Giufà dut user de toute son ingéniosité pour le guider : il chanta de drôles de chansons, fit des tours de magie et même des petites farces pour le distraire.
-Finalement, grâce à son esprit vif et à sa patience, il réussit à le mener au marché. Les villageois, émerveillés par son habileté et amusés par les facéties de l'âne, le félicitèrent et racontèrent cette aventure longtemps après.
-Giufà et son âne devinrent un symbole de ruse, de courage et de joie de vivre dans tout le village, rappelant que même face à des obstacles inattendus, l'intelligence et l'humour peuvent toujours triompher.`,
+      title: `Conte - Italie : GiufÃƒÂ  et l'ÃƒÂ¢ne`,
+      text: `Dans un petit village ensoleillÃƒÂ© d'Italie, au pied des collines et entre les oliveraies, vivait GiufÃƒÂ , un garÃƒÂ§on malin et plein de malice. Il possÃƒÂ©dait un ÃƒÂ¢ne tÃƒÂªtu mais attachant, qui semblait parfois comprendre mieux que GiufÃƒÂ  lui-mÃƒÂªme.
+Un jour, le village organisa une fÃƒÂªte et le jeune homme fut chargÃƒÂ© de conduire son animal au marchÃƒÂ© pour y vendre des produits. Mais l'ÃƒÂ¢ne, espiÃƒÂ¨gle et obstinÃƒÂ©, refusait d'avancer droit et se mit ÃƒÂ  zigzaguer entre les rues pavÃƒÂ©es. GiufÃƒÂ  dut user de toute son ingÃƒÂ©niositÃƒÂ© pour le guider : il chanta de drÃƒÂ´les de chansons, fit des tours de magie et mÃƒÂªme des petites farces pour le distraire.
+Finalement, grÃƒÂ¢ce ÃƒÂ  son esprit vif et ÃƒÂ  sa patience, il rÃƒÂ©ussit ÃƒÂ  le mener au marchÃƒÂ©. Les villageois, ÃƒÂ©merveillÃƒÂ©s par son habiletÃƒÂ© et amusÃƒÂ©s par les facÃƒÂ©ties de l'ÃƒÂ¢ne, le fÃƒÂ©licitÃƒÂ¨rent et racontÃƒÂ¨rent cette aventure longtemps aprÃƒÂ¨s.
+GiufÃƒÂ  et son ÃƒÂ¢ne devinrent un symbole de ruse, de courage et de joie de vivre dans tout le village, rappelant que mÃƒÂªme face ÃƒÂ  des obstacles inattendus, l'intelligence et l'humour peuvent toujours triompher.`,
     },
     {
       id: 15,
       type: 'conte',
       title: `Conte - Kenya : Le feu volant`,
-      text: `Dans les vastes plaines dorées du Kenya, là où le vent faisait onduler les hautes herbes et où les acacias dessinaient des ombres légères sur la terre chaude, vivait un jeune garçon courageux nommé Kibaru. Ses yeux noirs brillaient comme des braises et ses cheveux courts dansaient sous le soleil de midi.
-Un soir, alors que le ciel se teintait d'orange et de pourpre, Kibaru aperçut un phénomène étrange : des flammes flottantes, comme des lucioles ardentes, qui s'élevaient dans les airs sans brûler les herbes ni les arbres. Fasciné, il décida de les suivre. Chaque pas le menait plus loin, à travers rivières et collines, guidé par la lumière tremblante du feu volant.
-Ces flammes, selon la légende, étaient les esprits protecteurs de la savane, envoyés pour aider ceux qui montraient courage et bonté. Kibaru découvrit qu'en capturant leur lumière dans une petite calebasse, il pouvait transporter le feu d'un village à l'autre, permettant aux habitants de cuisiner, de s'éclairer et de se réchauffer, même lors des nuits les plus sombres.
-Mais il devait être prudent : le feu volant était capricieux. S'il devenait impatient, il s'envolait et disparaissait dans le ciel étoilé.
-Grâce à sa patience et son respect pour les esprits, Kibaru apprit à danser avec les flammes, à les guider sans jamais les contraindre, transformant ainsi chaque nuit en un spectacle lumineux fascinant.`,
+      text: `Dans les vastes plaines dorÃƒÂ©es du Kenya, lÃƒÂ  oÃƒÂ¹ le vent faisait onduler les hautes herbes et oÃƒÂ¹ les acacias dessinaient des ombres lÃƒÂ©gÃƒÂ¨res sur la terre chaude, vivait un jeune garÃƒÂ§on courageux nommÃƒÂ© Kibaru. Ses yeux noirs brillaient comme des braises et ses cheveux courts dansaient sous le soleil de midi.
+Un soir, alors que le ciel se teintait d'orange et de pourpre, Kibaru aperÃƒÂ§ut un phÃƒÂ©nomÃƒÂ¨ne ÃƒÂ©trange : des flammes flottantes, comme des lucioles ardentes, qui s'ÃƒÂ©levaient dans les airs sans brÃƒÂ»ler les herbes ni les arbres. FascinÃƒÂ©, il dÃƒÂ©cida de les suivre. Chaque pas le menait plus loin, ÃƒÂ  travers riviÃƒÂ¨res et collines, guidÃƒÂ© par la lumiÃƒÂ¨re tremblante du feu volant.
+Ces flammes, selon la lÃƒÂ©gende, ÃƒÂ©taient les esprits protecteurs de la savane, envoyÃƒÂ©s pour aider ceux qui montraient courage et bontÃƒÂ©. Kibaru dÃƒÂ©couvrit qu'en capturant leur lumiÃƒÂ¨re dans une petite calebasse, il pouvait transporter le feu d'un village ÃƒÂ  l'autre, permettant aux habitants de cuisiner, de s'ÃƒÂ©clairer et de se rÃƒÂ©chauffer, mÃƒÂªme lors des nuits les plus sombres.
+Mais il devait ÃƒÂªtre prudent : le feu volant ÃƒÂ©tait capricieux. S'il devenait impatient, il s'envolait et disparaissait dans le ciel ÃƒÂ©toilÃƒÂ©.
+GrÃƒÂ¢ce ÃƒÂ  sa patience et son respect pour les esprits, Kibaru apprit ÃƒÂ  danser avec les flammes, ÃƒÂ  les guider sans jamais les contraindre, transformant ainsi chaque nuit en un spectacle lumineux fascinant.`,
     },
     {
       id: 16,
       type: 'conte',
       title: `Conte - Chili : La lune et le renard`,
-      text: `Dans les montagnes arides et mystérieuses du Chili, là où les sommets s'élancent vers le ciel et où le vent murmure aux pierres, vivait un renard rusé et curieux nommé Chai. Son pelage roux flamboyant se fondait parfois avec les roches, et ses yeux dorés reflétaient les éclats de la lune qui baignait les vallées chaque nuit.
-Un jour, alors que la lune brillait plus intensément que jamais, Chai, la regarda descendre du ciel et parler dans un souffle léger :
+      text: `Dans les montagnes arides et mystÃƒÂ©rieuses du Chili, lÃƒÂ  oÃƒÂ¹ les sommets s'ÃƒÂ©lancent vers le ciel et oÃƒÂ¹ le vent murmure aux pierres, vivait un renard rusÃƒÂ© et curieux nommÃƒÂ© Chai. Son pelage roux flamboyant se fondait parfois avec les roches, et ses yeux dorÃƒÂ©s reflÃƒÂ©taient les ÃƒÂ©clats de la lune qui baignait les vallÃƒÂ©es chaque nuit.
+Un jour, alors que la lune brillait plus intensÃƒÂ©ment que jamais, Chai, la regarda descendre du ciel et parler dans un souffle lÃƒÂ©ger :
 Renard, si tu veux comprendre les secrets de la nuit, suis mes rayons et observe avec attention.
-Fasciné et prudent, l'animal suivit la lueur argentée à travers les rochers, les rivières scintillantes et les forêts clairsemées.
-Au fil de son voyage nocturne, le renard comprit que la lune n'éclairait pas seulement la terre, mais révélait également la vérité dans le coeur de ceux qui l'observaient. Chaque rayon lui enseignait la patience, l'humilité et la valeur de la curiosité : apprendre à écouter le monde avant d'agir.
-ì la fin de son périple, il réalisa que l'astre lui avait offert un cadeau invisible mais puissant : la sagesse de voir ce que les yeux seuls ne peuvent percevoir.
-Depuis ce soir-là, il partageait sa ruse et sa connaissance avec les autres animaux, devenant un guide respecté dans les montagnes chiliennes.`,
+FascinÃƒÂ© et prudent, l'animal suivit la lueur argentÃƒÂ©e ÃƒÂ  travers les rochers, les riviÃƒÂ¨res scintillantes et les forÃƒÂªts clairsemÃƒÂ©es.
+Au fil de son voyage nocturne, le renard comprit que la lune n'ÃƒÂ©clairait pas seulement la terre, mais rÃƒÂ©vÃƒÂ©lait ÃƒÂ©galement la vÃƒÂ©ritÃƒÂ© dans le coeur de ceux qui l'observaient. Chaque rayon lui enseignait la patience, l'humilitÃƒÂ© et la valeur de la curiositÃƒÂ© : apprendre ÃƒÂ  ÃƒÂ©couter le monde avant d'agir.
+ÃƒÂ¬ la fin de son pÃƒÂ©riple, il rÃƒÂ©alisa que l'astre lui avait offert un cadeau invisible mais puissant : la sagesse de voir ce que les yeux seuls ne peuvent percevoir.
+Depuis ce soir-lÃƒÂ , il partageait sa ruse et sa connaissance avec les autres animaux, devenant un guide respectÃƒÂ© dans les montagnes chiliennes.`,
     },
     {
       id: 17,
       type: 'conte',
       title: `Conte - France : Le Petit Poucet`,
-      text: `Dans une forêt dense et mystérieuse de France, où les arbres s'élançaient vers le ciel et où chaque ombre semblait abriter un secret, vivait un petit garçon astucieux appelé Poucet. Bien que minuscule de taille, son esprit était immense, et ses yeux pétillants d'intelligence brillaient à travers les feuilles des arbres comme deux étoiles dans la nuit.
-Un soir, alors que la lune se glissait entre les branches, le petit bonhomme fut confronté à un grand danger : ses frères et lui avaient été abandonnés par leurs parents, perdus au coeur de la forêt. Mais Poucet, avec son courage et sa ruse, laissa tomber derrière lui de petites pierres blanches qui brillaient sous la lune. Ainsi, ils purent retrouver leur chemin, pas à pas, guidés par le scintillement fragile mais constant des cailloux.
-Plus tard, confronté au terrible ogre, l'enfant usa encore de son intelligence : il échangea les bonnets de ses frères avec les siens, trompant l'ogre et sauvant sa famille grâce à son audace et son esprit vif.`,
+      text: `Dans une forÃƒÂªt dense et mystÃƒÂ©rieuse de France, oÃƒÂ¹ les arbres s'ÃƒÂ©lanÃƒÂ§aient vers le ciel et oÃƒÂ¹ chaque ombre semblait abriter un secret, vivait un petit garÃƒÂ§on astucieux appelÃƒÂ© Poucet. Bien que minuscule de taille, son esprit ÃƒÂ©tait immense, et ses yeux pÃƒÂ©tillants d'intelligence brillaient ÃƒÂ  travers les feuilles des arbres comme deux ÃƒÂ©toiles dans la nuit.
+Un soir, alors que la lune se glissait entre les branches, le petit bonhomme fut confrontÃƒÂ© ÃƒÂ  un grand danger : ses frÃƒÂ¨res et lui avaient ÃƒÂ©tÃƒÂ© abandonnÃƒÂ©s par leurs parents, perdus au coeur de la forÃƒÂªt. Mais Poucet, avec son courage et sa ruse, laissa tomber derriÃƒÂ¨re lui de petites pierres blanches qui brillaient sous la lune. Ainsi, ils purent retrouver leur chemin, pas ÃƒÂ  pas, guidÃƒÂ©s par le scintillement fragile mais constant des cailloux.
+Plus tard, confrontÃƒÂ© au terrible ogre, l'enfant usa encore de son intelligence : il ÃƒÂ©changea les bonnets de ses frÃƒÂ¨res avec les siens, trompant l'ogre et sauvant sa famille grÃƒÂ¢ce ÃƒÂ  son audace et son esprit vif.`,
     },
     {
       id: 18,
       type: 'conte',
-      title: `Conte - Corée du Sud : La grue reconnaissante`,
-      text: `Dans un village tranquille de Corée, niché entre des collines verdoyantes et des rivières scintillantes, vivait un homme pauvre mais au coeur généreux. Un soir d'hiver, alors qu'il marchait seul sous le vent glacé, il trouva une grue blessée, ses ailes froissées et ses plumes ébouriffées par la neige. Poussé par la compassion, il la recueillit et prit soin d'elle avec patience et douceur, lui offrant chaleur et nourriture.
-Quelques jours plus tard, l'oiseau disparut mystérieusement, mais bientôt, une étrange femme silencieuse frappa à sa porte. Elle proposa de tisser pour lui de magnifiques étoffes, mais à une condition : il ne devait jamais regarder ce qu'elle faisait. Curieux mais respectueux, il accepta et bientôt, il reçut des tissus d'une beauté incroyable, faits de fil d'argent et de soie lumineuse.
-Un soir, sa curiosité le poussa à jeter un coup d'oeil, et il découvrit que la femme n'était autre que la grue elle-même, transformée par reconnaissance pour sa bonté. Impressionné par sa fidélité et son coeur pur, il comprit alors que la générosité attirait toujours la magie et la reconnaissance sous des formes inattendues.`,
+      title: `Conte - CorÃƒÂ©e du Sud : La grue reconnaissante`,
+      text: `Dans un village tranquille de CorÃƒÂ©e, nichÃƒÂ© entre des collines verdoyantes et des riviÃƒÂ¨res scintillantes, vivait un homme pauvre mais au coeur gÃƒÂ©nÃƒÂ©reux. Un soir d'hiver, alors qu'il marchait seul sous le vent glacÃƒÂ©, il trouva une grue blessÃƒÂ©e, ses ailes froissÃƒÂ©es et ses plumes ÃƒÂ©bouriffÃƒÂ©es par la neige. PoussÃƒÂ© par la compassion, il la recueillit et prit soin d'elle avec patience et douceur, lui offrant chaleur et nourriture.
+Quelques jours plus tard, l'oiseau disparut mystÃƒÂ©rieusement, mais bientÃƒÂ´t, une ÃƒÂ©trange femme silencieuse frappa ÃƒÂ  sa porte. Elle proposa de tisser pour lui de magnifiques ÃƒÂ©toffes, mais ÃƒÂ  une condition : il ne devait jamais regarder ce qu'elle faisait. Curieux mais respectueux, il accepta et bientÃƒÂ´t, il reÃƒÂ§ut des tissus d'une beautÃƒÂ© incroyable, faits de fil d'argent et de soie lumineuse.
+Un soir, sa curiositÃƒÂ© le poussa ÃƒÂ  jeter un coup d'oeil, et il dÃƒÂ©couvrit que la femme n'ÃƒÂ©tait autre que la grue elle-mÃƒÂªme, transformÃƒÂ©e par reconnaissance pour sa bontÃƒÂ©. ImpressionnÃƒÂ© par sa fidÃƒÂ©litÃƒÂ© et son coeur pur, il comprit alors que la gÃƒÂ©nÃƒÂ©rositÃƒÂ© attirait toujours la magie et la reconnaissance sous des formes inattendues.`,
     },
     {
       id: 19,
       type: 'conte',
-      title: `Conte - Brésil : La tortue et le jaguar`,
-      text: `Au coeur de la forêt amazonienne, dense et vibrante de vie, vivait une tortue rusée et réfléchie, toujours attentive aux moindres bruits et mouvements de la jungle.
-Un jour, alors qu'elle se promenait près de la rivière, elle rencontra un jaguar affamé, majestueux et redoutable, dont le regard perçant trahissait l'envie de la dévorer.
-La tortue, au lieu de céder à la panique, eut une idée brillante. Elle l'invita à participer à un concours : qui pourrait atteindre le vieux figuier au sommet de la colline avant l'autre ? Celui-ci, sûr de sa rapidité et de sa force, accepta sans hésiter.
-Tout le long du chemin, la tortue avançait lentement mais avec une ruse astucieuse : elle laissait des indices trompeurs, faisait semblant de se perdre, et utilisait les racines et les troncs pour ralentir le jaguar. Finalement, il arriva épuisé et confus, tandis qu'elle, sans hâte mais avec intelligence, atteignit le figuier en premier.
-Le félin, impressionné et respectueux de l'ingéniosité de la tortue, renonça à sa faim et devint un allié inattendu, partageant avec elle la richesse de la forêt et les secrets des animaux.`,
+      title: `Conte - BrÃƒÂ©sil : La tortue et le jaguar`,
+      text: `Au coeur de la forÃƒÂªt amazonienne, dense et vibrante de vie, vivait une tortue rusÃƒÂ©e et rÃƒÂ©flÃƒÂ©chie, toujours attentive aux moindres bruits et mouvements de la jungle.
+Un jour, alors qu'elle se promenait prÃƒÂ¨s de la riviÃƒÂ¨re, elle rencontra un jaguar affamÃƒÂ©, majestueux et redoutable, dont le regard perÃƒÂ§ant trahissait l'envie de la dÃƒÂ©vorer.
+La tortue, au lieu de cÃƒÂ©der ÃƒÂ  la panique, eut une idÃƒÂ©e brillante. Elle l'invita ÃƒÂ  participer ÃƒÂ  un concours : qui pourrait atteindre le vieux figuier au sommet de la colline avant l'autre ? Celui-ci, sÃƒÂ»r de sa rapiditÃƒÂ© et de sa force, accepta sans hÃƒÂ©siter.
+Tout le long du chemin, la tortue avanÃƒÂ§ait lentement mais avec une ruse astucieuse : elle laissait des indices trompeurs, faisait semblant de se perdre, et utilisait les racines et les troncs pour ralentir le jaguar. Finalement, il arriva ÃƒÂ©puisÃƒÂ© et confus, tandis qu'elle, sans hÃƒÂ¢te mais avec intelligence, atteignit le figuier en premier.
+Le fÃƒÂ©lin, impressionnÃƒÂ© et respectueux de l'ingÃƒÂ©niositÃƒÂ© de la tortue, renonÃƒÂ§a ÃƒÂ  sa faim et devint un alliÃƒÂ© inattendu, partageant avec elle la richesse de la forÃƒÂªt et les secrets des animaux.`,
     },
     {
       id: 20,
       type: 'conte',
       title: `Conte - Iran : Le tapis volant`,
-      text: `Dans les bazars colorés et animés d'une ville ancienne de Perse, un jeune garçon découvrit un tapis ancien et poussiéreux, caché derrière des tissus et des lanternes scintillantes. Ce tapis n'était pas ordinaire : ses fils d'or et de soie s'animaient dès qu'on posait un pied dessus, et il s'élevait dans les airs, prêt à emporter son voyageur vers des horizons insoupçonnés.
-Le garçon, émerveillé et un peu craintif, s'installa au centre du tapis. Aussitôt, il senti le vent caresser son visage et vit les ruelles se rétrécir sous lui alors qu'il s'élevait au-dessus de la commune. Le tapis vola entre les minarets et les jardins suspendus, passant au-dessus des marchés parfumés et des fontaines chantantes.
-Chaque mouvement du tapis était magique et fluide, comme guidé par l'air lui-même. Il traversa des vallées désertiques, survola des montagnes majestueuses, et emmena son passager dans des paysages merveilleusement variés, où les couleurs et les sons semblaient sortir d'un rêve.`,
+      text: `Dans les bazars colorÃƒÂ©s et animÃƒÂ©s d'une ville ancienne de Perse, un jeune garÃƒÂ§on dÃƒÂ©couvrit un tapis ancien et poussiÃƒÂ©reux, cachÃƒÂ© derriÃƒÂ¨re des tissus et des lanternes scintillantes. Ce tapis n'ÃƒÂ©tait pas ordinaire : ses fils d'or et de soie s'animaient dÃƒÂ¨s qu'on posait un pied dessus, et il s'ÃƒÂ©levait dans les airs, prÃƒÂªt ÃƒÂ  emporter son voyageur vers des horizons insoupÃƒÂ§onnÃƒÂ©s.
+Le garÃƒÂ§on, ÃƒÂ©merveillÃƒÂ© et un peu craintif, s'installa au centre du tapis. AussitÃƒÂ´t, il senti le vent caresser son visage et vit les ruelles se rÃƒÂ©trÃƒÂ©cir sous lui alors qu'il s'ÃƒÂ©levait au-dessus de la commune. Le tapis vola entre les minarets et les jardins suspendus, passant au-dessus des marchÃƒÂ©s parfumÃƒÂ©s et des fontaines chantantes.
+Chaque mouvement du tapis ÃƒÂ©tait magique et fluide, comme guidÃƒÂ© par l'air lui-mÃƒÂªme. Il traversa des vallÃƒÂ©es dÃƒÂ©sertiques, survola des montagnes majestueuses, et emmena son passager dans des paysages merveilleusement variÃƒÂ©s, oÃƒÂ¹ les couleurs et les sons semblaient sortir d'un rÃƒÂªve.`,
     },
     {
       id: 21,
       type: 'conte',
-      title: `Conte - Thaïlande : La mangue du roi`,
-      text: `Dans le royaume verdoyant de Thaïlande, au coeur de jardins luxuriants et parfumés, un jeune garçon s'approcha d'un arbre majestueux, le manguier du roi, dont les fruits étaient réputés plus sucrés et juteux que tous les autres. On raconte que celui qui goûte une de ces mangues ressent la magie du royaume et obtient la sagesse et la chance.
-Ce dernier, curieux et émerveillé, tendit la main vers un fruit doré suspendu haut dans les branches. Dès qu'il toucha la mangue, un doux parfum tropical envahit l'air, et une lumière chaleureuse enveloppa ses doigts, comme si le soleil lui-même s'était glissé dans l'arbre.
-Soudain, le fruit se détacha et descendit doucement, guidé par un souffle magique, jusqu'à lui. En la goûtant, il ressentit un éclat de bonheur et d'énergie, voyant autour de lui les éléphants, les rizières étincelantes et les temples scintillants, tous baignés dans une lumière dorée.`,
+      title: `Conte - ThaÃƒÂ¯lande : La mangue du roi`,
+      text: `Dans le royaume verdoyant de ThaÃƒÂ¯lande, au coeur de jardins luxuriants et parfumÃƒÂ©s, un jeune garÃƒÂ§on s'approcha d'un arbre majestueux, le manguier du roi, dont les fruits ÃƒÂ©taient rÃƒÂ©putÃƒÂ©s plus sucrÃƒÂ©s et juteux que tous les autres. On raconte que celui qui goÃƒÂ»te une de ces mangues ressent la magie du royaume et obtient la sagesse et la chance.
+Ce dernier, curieux et ÃƒÂ©merveillÃƒÂ©, tendit la main vers un fruit dorÃƒÂ© suspendu haut dans les branches. DÃƒÂ¨s qu'il toucha la mangue, un doux parfum tropical envahit l'air, et une lumiÃƒÂ¨re chaleureuse enveloppa ses doigts, comme si le soleil lui-mÃƒÂªme s'ÃƒÂ©tait glissÃƒÂ© dans l'arbre.
+Soudain, le fruit se dÃƒÂ©tacha et descendit doucement, guidÃƒÂ© par un souffle magique, jusqu'ÃƒÂ  lui. En la goÃƒÂ»tant, il ressentit un ÃƒÂ©clat de bonheur et d'ÃƒÂ©nergie, voyant autour de lui les ÃƒÂ©lÃƒÂ©phants, les riziÃƒÂ¨res ÃƒÂ©tincelantes et les temples scintillants, tous baignÃƒÂ©s dans une lumiÃƒÂ¨re dorÃƒÂ©e.`,
     },
     {
       id: 22,
       type: 'conte',
       title: `Conte - Angleterre : Jack et le haricot magique`,
-      text: `Dans un petit village anglais bordé de collines verdoyantes, vivait Jack, un garçon pauvre mais audacieux, qui partageait sa vie avec sa mère dans une maisonnette en bois.
-Un matin, la seule vache de la famille ne donna plus de lait. Sa mère, inquiète, demanda à son fils de la vendre au marché afin de survivre.
-Sur le chemin, Jack rencontra un vieil homme mystérieux qui lui proposa d'échanger la vache contre quelques haricots extraordinaires, brillants et colorés, avec un éclat presque magique. L'enfant accepta, intrigué. De retour à la maison, sa mère, furieuse, jeta les haricots par la fenêtre.
-La nuit tomba, et sous l'éclat de la lune, un haricot poussa, grandit jusqu'au ciel ! Il devint un immense haricot magique qui s'éleva au-dessus des nuages, vers un monde inconnu. Jack, courageux et curieux, décida de grimper le long de cette liane vertigineuse.
-Au sommet, il découvrit un palais fantastique, abritant un ogre immense et des trésors fabuleux. Les sons du château résonnaient dans le vent : le tintement de pièces d'or, le rugissement de l'ogre et les chants des oiseaux du ciel.
-L'enfant, rusé et audacieux, utilisa son intelligence et son courage afin de récupérer les trésors et retrouver le chemin vers la maison, en faisant preuve d'ingéniosité et de bravoure.`,
+      text: `Dans un petit village anglais bordÃƒÂ© de collines verdoyantes, vivait Jack, un garÃƒÂ§on pauvre mais audacieux, qui partageait sa vie avec sa mÃƒÂ¨re dans une maisonnette en bois.
+Un matin, la seule vache de la famille ne donna plus de lait. Sa mÃƒÂ¨re, inquiÃƒÂ¨te, demanda ÃƒÂ  son fils de la vendre au marchÃƒÂ© afin de survivre.
+Sur le chemin, Jack rencontra un vieil homme mystÃƒÂ©rieux qui lui proposa d'ÃƒÂ©changer la vache contre quelques haricots extraordinaires, brillants et colorÃƒÂ©s, avec un ÃƒÂ©clat presque magique. L'enfant accepta, intriguÃƒÂ©. De retour ÃƒÂ  la maison, sa mÃƒÂ¨re, furieuse, jeta les haricots par la fenÃƒÂªtre.
+La nuit tomba, et sous l'ÃƒÂ©clat de la lune, un haricot poussa, grandit jusqu'au ciel ! Il devint un immense haricot magique qui s'ÃƒÂ©leva au-dessus des nuages, vers un monde inconnu. Jack, courageux et curieux, dÃƒÂ©cida de grimper le long de cette liane vertigineuse.
+Au sommet, il dÃƒÂ©couvrit un palais fantastique, abritant un ogre immense et des trÃƒÂ©sors fabuleux. Les sons du chÃƒÂ¢teau rÃƒÂ©sonnaient dans le vent : le tintement de piÃƒÂ¨ces d'or, le rugissement de l'ogre et les chants des oiseaux du ciel.
+L'enfant, rusÃƒÂ© et audacieux, utilisa son intelligence et son courage afin de rÃƒÂ©cupÃƒÂ©rer les trÃƒÂ©sors et retrouver le chemin vers la maison, en faisant preuve d'ingÃƒÂ©niositÃƒÂ© et de bravoure.`,
     },
     {
       id: 23,
       type: 'conte',
-      title: `Conte - Vietnam : L'enfant des rizières`,
-      text: `Dans un petit village niché au coeur des rizières verdoyantes du Vietnam, vivait un enfant nommé Minh, curieux et débordant d'énergie. Chaque matin, il parcourait les sentiers étroits entre les champs inondés, observant les reflets du soleil sur l'eau et écoutant le doux murmure du vent dans les palmiers.
-Un jour, alors qu'il jouait près d'un petit ruisseau, il découvrit un canard blessé. Avec douceur et patience, il le soigna, s'occupant de ses ailes et de ses plumes trempées. L'animal, reconnaissant, devint son compagnon fidèle, l'accompagnant dans toutes ses aventures à travers les rizières.
-Mais ces terres regorgeaient de mystères. Entre les brumes matinales, Minh aperçut des créatures étranges et bienveillantes, qui semblaient garder les secrets des champs et des cours d'eau. Il apprit à comprendre le langage des animaux, à écouter les légendes transmises par les anciens, et à respecter la magie qui imprégnait chaque élément de la nature.
-Un jour, une inondation menaça les rizières du village. Grâce à son intelligence, son courage et l'aide de son fidèle canard, Minh parvint à guider les villageois et à protéger les champs. Sa bravoure devint une légende locale, et l'enfant des rizières fut célébré comme un héros humble et sage, capable d'harmoniser le monde naturel et humain autour de lui.`,
+      title: `Conte - Vietnam : L'enfant des riziÃƒÂ¨res`,
+      text: `Dans un petit village nichÃƒÂ© au coeur des riziÃƒÂ¨res verdoyantes du Vietnam, vivait un enfant nommÃƒÂ© Minh, curieux et dÃƒÂ©bordant d'ÃƒÂ©nergie. Chaque matin, il parcourait les sentiers ÃƒÂ©troits entre les champs inondÃƒÂ©s, observant les reflets du soleil sur l'eau et ÃƒÂ©coutant le doux murmure du vent dans les palmiers.
+Un jour, alors qu'il jouait prÃƒÂ¨s d'un petit ruisseau, il dÃƒÂ©couvrit un canard blessÃƒÂ©. Avec douceur et patience, il le soigna, s'occupant de ses ailes et de ses plumes trempÃƒÂ©es. L'animal, reconnaissant, devint son compagnon fidÃƒÂ¨le, l'accompagnant dans toutes ses aventures ÃƒÂ  travers les riziÃƒÂ¨res.
+Mais ces terres regorgeaient de mystÃƒÂ¨res. Entre les brumes matinales, Minh aperÃƒÂ§ut des crÃƒÂ©atures ÃƒÂ©tranges et bienveillantes, qui semblaient garder les secrets des champs et des cours d'eau. Il apprit ÃƒÂ  comprendre le langage des animaux, ÃƒÂ  ÃƒÂ©couter les lÃƒÂ©gendes transmises par les anciens, et ÃƒÂ  respecter la magie qui imprÃƒÂ©gnait chaque ÃƒÂ©lÃƒÂ©ment de la nature.
+Un jour, une inondation menaÃƒÂ§a les riziÃƒÂ¨res du village. GrÃƒÂ¢ce ÃƒÂ  son intelligence, son courage et l'aide de son fidÃƒÂ¨le canard, Minh parvint ÃƒÂ  guider les villageois et ÃƒÂ  protÃƒÂ©ger les champs. Sa bravoure devint une lÃƒÂ©gende locale, et l'enfant des riziÃƒÂ¨res fut cÃƒÂ©lÃƒÂ©brÃƒÂ© comme un hÃƒÂ©ros humble et sage, capable d'harmoniser le monde naturel et humain autour de lui.`,
     },
     {
       id: 24,
       type: 'conte',
-      title: `Conte - Espagne : Le tambour enchanté`,
-      text: `Dans un petit village d'Espagne, niché entre les collines et les oliveraies, vivait un jeune garçon nommé Diego, passionné par la musique et les fêtes traditionnelles. Son instrument préféré était un vieux tambour en bois, transmis de génération en génération dans sa famille, dont les battements résonnaient comme un coeur vibrant de vie et de légendes.
-Un soir, alors que le soleil se couchait derrière les collines, Diego découvrit que le tambour possédait des pouvoirs magiques : chaque rythme qu'il jouait faisait danser les animaux, les villageois, et même les étoiles dans le ciel. Émerveillé, il décida de partager cette magie avec tout le village, et bientôt, une fête improvisée éclata, où chacun dansait et chantait, porté par la musique enchantée du tambour.
-Mais la magie n'était pas sans défis. Les sons du tambour attirèrent également des esprits farceurs, qui cherchaient à troubler l'harmonie du village. Avec courage et ingéniosité, Diego apprit à jouer de douces mélodies, apaisant les esprits, ce qui renforça le lien entre les habitants, la faune et la flore.
-Grâce à son tambour enchanté, Diego devint le gardien de la joie et des traditions, rappelant à tous que la musique pouvait unir les coeurs et transformer chaque journée en un moment extraordinaire.`,
+      title: `Conte - Espagne : Le tambour enchantÃƒÂ©`,
+      text: `Dans un petit village d'Espagne, nichÃƒÂ© entre les collines et les oliveraies, vivait un jeune garÃƒÂ§on nommÃƒÂ© Diego, passionnÃƒÂ© par la musique et les fÃƒÂªtes traditionnelles. Son instrument prÃƒÂ©fÃƒÂ©rÃƒÂ© ÃƒÂ©tait un vieux tambour en bois, transmis de gÃƒÂ©nÃƒÂ©ration en gÃƒÂ©nÃƒÂ©ration dans sa famille, dont les battements rÃƒÂ©sonnaient comme un coeur vibrant de vie et de lÃƒÂ©gendes.
+Un soir, alors que le soleil se couchait derriÃƒÂ¨re les collines, Diego dÃƒÂ©couvrit que le tambour possÃƒÂ©dait des pouvoirs magiques : chaque rythme qu'il jouait faisait danser les animaux, les villageois, et mÃƒÂªme les ÃƒÂ©toiles dans le ciel. Ãƒâ€°merveillÃƒÂ©, il dÃƒÂ©cida de partager cette magie avec tout le village, et bientÃƒÂ´t, une fÃƒÂªte improvisÃƒÂ©e ÃƒÂ©clata, oÃƒÂ¹ chacun dansait et chantait, portÃƒÂ© par la musique enchantÃƒÂ©e du tambour.
+Mais la magie n'ÃƒÂ©tait pas sans dÃƒÂ©fis. Les sons du tambour attirÃƒÂ¨rent ÃƒÂ©galement des esprits farceurs, qui cherchaient ÃƒÂ  troubler l'harmonie du village. Avec courage et ingÃƒÂ©niositÃƒÂ©, Diego apprit ÃƒÂ  jouer de douces mÃƒÂ©lodies, apaisant les esprits, ce qui renforÃƒÂ§a le lien entre les habitants, la faune et la flore.
+GrÃƒÂ¢ce ÃƒÂ  son tambour enchantÃƒÂ©, Diego devint le gardien de la joie et des traditions, rappelant ÃƒÂ  tous que la musique pouvait unir les coeurs et transformer chaque journÃƒÂ©e en un moment extraordinaire.`,
     },
     {
       id: 25,
       type: 'conte',
-      title: `Conte - Haïti : Ti-Jean et le diable`,
-      text: `Dans un village coloré d'Haïti, bordé par des champs de canne à sucre et des collines verdoyantes, vivait un petit garçon nommé Ti-Jean, vif et malin, connu pour son esprit rusé et son sourire espiègle.
-Un jour, alors qu'il cueillait des fruits près de la rivière, le diable apparut, décidé à tester l'ingéniosité des humains et à attirer les âmes naïves dans ses tours diaboliques.
-Mais Ti-Jean n'était pas un enfant ordinaire. Avec son intelligence, son courage et une bonne dose d'audace, il réussit à tromper le diable à chaque épreuve. Que ce soit en échangeant des objets, en créant des illusions ou en racontant des histoires confuses, ce dernier déjoua les pièges avec humour et ingéniosité.
-ì chaque défi relevé, il montrait que la ruse et la créativité pouvaient vaincre même les plus grandes forces. Les villageois, émerveillés par ses exploits, racontaient ses aventures autour des feux de camp, et Ti-Jean devint un symbole de courage et de vivacité.`,
+      title: `Conte - HaÃƒÂ¯ti : Ti-Jean et le diable`,
+      text: `Dans un village colorÃƒÂ© d'HaÃƒÂ¯ti, bordÃƒÂ© par des champs de canne ÃƒÂ  sucre et des collines verdoyantes, vivait un petit garÃƒÂ§on nommÃƒÂ© Ti-Jean, vif et malin, connu pour son esprit rusÃƒÂ© et son sourire espiÃƒÂ¨gle.
+Un jour, alors qu'il cueillait des fruits prÃƒÂ¨s de la riviÃƒÂ¨re, le diable apparut, dÃƒÂ©cidÃƒÂ© ÃƒÂ  tester l'ingÃƒÂ©niositÃƒÂ© des humains et ÃƒÂ  attirer les ÃƒÂ¢mes naÃƒÂ¯ves dans ses tours diaboliques.
+Mais Ti-Jean n'ÃƒÂ©tait pas un enfant ordinaire. Avec son intelligence, son courage et une bonne dose d'audace, il rÃƒÂ©ussit ÃƒÂ  tromper le diable ÃƒÂ  chaque ÃƒÂ©preuve. Que ce soit en ÃƒÂ©changeant des objets, en crÃƒÂ©ant des illusions ou en racontant des histoires confuses, ce dernier dÃƒÂ©joua les piÃƒÂ¨ges avec humour et ingÃƒÂ©niositÃƒÂ©.
+ÃƒÂ¬ chaque dÃƒÂ©fi relevÃƒÂ©, il montrait que la ruse et la crÃƒÂ©ativitÃƒÂ© pouvaient vaincre mÃƒÂªme les plus grandes forces. Les villageois, ÃƒÂ©merveillÃƒÂ©s par ses exploits, racontaient ses aventures autour des feux de camp, et Ti-Jean devint un symbole de courage et de vivacitÃƒÂ©.`,
     },
     {
       id: 26,
       type: 'conte',
-      title: `Conte - Turquie : Nasreddine et l'âne`,
-      text: `Dans un petit village turc baigné de soleil, aux ruelles étroites et aux marchés animés, vivait Nasreddine, un homme sage et espiègle, connu pour son humour et ses réponses pleines de bon sens. Un jour, alors qu'il chevauchait son fidèle âne, il croisa des villageois qui se moquaient de lui, le jugeant toujours un peu bizarre.
-Mais Nasreddine ne se laissa jamais déstabiliser. Avec un sourire malicieux et une logique inattendue, il transforma chaque situation ridicule en une leçon pleine d'esprit. Que ce soit en discutant avec les marchands, en résolvant des querelles ou en improvisant de drôles d'histoires, il montrait que l'intelligence et l'humour étaient des armes plus puissantes que la force.
-L'âne, fidèle compagnon de ses aventures, participait souvent involontairement aux tours et aux situations comiques, ajoutant encore plus de charme et de rires à chaque anecdote. Les villageois racontaient ensuite ses exploits dans les cafés et sous les arbres, riant des situations absurdes et admirant la sagacité de l'homme.`,
+      title: `Conte - Turquie : Nasreddine et l'ÃƒÂ¢ne`,
+      text: `Dans un petit village turc baignÃƒÂ© de soleil, aux ruelles ÃƒÂ©troites et aux marchÃƒÂ©s animÃƒÂ©s, vivait Nasreddine, un homme sage et espiÃƒÂ¨gle, connu pour son humour et ses rÃƒÂ©ponses pleines de bon sens. Un jour, alors qu'il chevauchait son fidÃƒÂ¨le ÃƒÂ¢ne, il croisa des villageois qui se moquaient de lui, le jugeant toujours un peu bizarre.
+Mais Nasreddine ne se laissa jamais dÃƒÂ©stabiliser. Avec un sourire malicieux et une logique inattendue, il transforma chaque situation ridicule en une leÃƒÂ§on pleine d'esprit. Que ce soit en discutant avec les marchands, en rÃƒÂ©solvant des querelles ou en improvisant de drÃƒÂ´les d'histoires, il montrait que l'intelligence et l'humour ÃƒÂ©taient des armes plus puissantes que la force.
+L'ÃƒÂ¢ne, fidÃƒÂ¨le compagnon de ses aventures, participait souvent involontairement aux tours et aux situations comiques, ajoutant encore plus de charme et de rires ÃƒÂ  chaque anecdote. Les villageois racontaient ensuite ses exploits dans les cafÃƒÂ©s et sous les arbres, riant des situations absurdes et admirant la sagacitÃƒÂ© de l'homme.`,
     },
     {
       id: 27,
       type: 'conte',
-      title: `Conte - Nouvelle-Zélande : Maui ralentit le soleil`,
-      text: `Dans les terres vertes et mystérieuses de la Nouvelle-Zélande, entre montagnes majestueuses et forêts denses, vivait Maui, un demi-dieu espiègle aux exploits légendaires. Un jour, voyant que les journées étaient trop courtes pour permettre aux hommes et aux femmes de finir leur travail, il décida de ralentir le soleil.
-Avec courage et ruse, il grimpa sur le sommet d'une montagne et lança un lasso magique, fabriqué à partir des cheveux de sa grand-mère. Il attrapa le soleil, qui se débattait avec force, illuminant le ciel de sa lumière éclatante. Grâce à son ingéniosité et sa détermination, Maui réussit à ralentir sa course, offrant aux humains de longues journées pour pêcher, cultiver et profiter de la vie.
-Ce geste héroïque n'était pas seulement un exploit physique, mais un acte plein de malice et d'ingéniosité, car l'homme savait que l'intelligence et la créativité étaient des forces aussi puissantes que le courage.
-Les habitants racontèrent encore et encore cette aventure, admirant le demi-dieu qui avait su apprivoiser le soleil lui-même.`,
+      title: `Conte - Nouvelle-ZÃƒÂ©lande : Maui ralentit le soleil`,
+      text: `Dans les terres vertes et mystÃƒÂ©rieuses de la Nouvelle-ZÃƒÂ©lande, entre montagnes majestueuses et forÃƒÂªts denses, vivait Maui, un demi-dieu espiÃƒÂ¨gle aux exploits lÃƒÂ©gendaires. Un jour, voyant que les journÃƒÂ©es ÃƒÂ©taient trop courtes pour permettre aux hommes et aux femmes de finir leur travail, il dÃƒÂ©cida de ralentir le soleil.
+Avec courage et ruse, il grimpa sur le sommet d'une montagne et lanÃƒÂ§a un lasso magique, fabriquÃƒÂ© ÃƒÂ  partir des cheveux de sa grand-mÃƒÂ¨re. Il attrapa le soleil, qui se dÃƒÂ©battait avec force, illuminant le ciel de sa lumiÃƒÂ¨re ÃƒÂ©clatante. GrÃƒÂ¢ce ÃƒÂ  son ingÃƒÂ©niositÃƒÂ© et sa dÃƒÂ©termination, Maui rÃƒÂ©ussit ÃƒÂ  ralentir sa course, offrant aux humains de longues journÃƒÂ©es pour pÃƒÂªcher, cultiver et profiter de la vie.
+Ce geste hÃƒÂ©roÃƒÂ¯que n'ÃƒÂ©tait pas seulement un exploit physique, mais un acte plein de malice et d'ingÃƒÂ©niositÃƒÂ©, car l'homme savait que l'intelligence et la crÃƒÂ©ativitÃƒÂ© ÃƒÂ©taient des forces aussi puissantes que le courage.
+Les habitants racontÃƒÂ¨rent encore et encore cette aventure, admirant le demi-dieu qui avait su apprivoiser le soleil lui-mÃƒÂªme.`,
     },
     {
       id: 28,
       type: 'conte',
-      title: `Conte - Mali : L'hippopotame et les étoiles`,
-      text: `Au bord du grand fleuve Niger, sous le ciel étoilé du Mali, vivait un hippopotame curieux et rêveur. Chaque nuit, il regardait les étoiles briller et se demandait pourquoi elles semblaient si loin et inaccessibles. Les autres animaux riaient de ses rêveries, mais lui savait qu'un jour, il trouverait un moyen de toucher ces points lumineux qui scintillaient au-dessus de sa tête.
-Une nuit, guidé par la lueur des astres, il entreprit un voyage extraordinaire, traversant rivières et marécages, parlant aux lucioles et aux hiboux qui l'accompagnaient. Avec patience et courage, il construisit un bâton magique, gravé de symboles anciens et lumineux, qui lui permit de capturer un fragment d'étoile.
-Grâce à sa persévérance, l'hippopotame réalisa que même les rêves les plus grands pouvaient être atteints si l'on osait avancer avec le coeur ouvert et l'esprit attentif.
-Les étoiles, touchées par sa détermination, continuèrent de briller plus fort, illuminant le fleuve et inspirant tous les animaux et les humains qui vivaient autour de lui.`,
+      title: `Conte - Mali : L'hippopotame et les ÃƒÂ©toiles`,
+      text: `Au bord du grand fleuve Niger, sous le ciel ÃƒÂ©toilÃƒÂ© du Mali, vivait un hippopotame curieux et rÃƒÂªveur. Chaque nuit, il regardait les ÃƒÂ©toiles briller et se demandait pourquoi elles semblaient si loin et inaccessibles. Les autres animaux riaient de ses rÃƒÂªveries, mais lui savait qu'un jour, il trouverait un moyen de toucher ces points lumineux qui scintillaient au-dessus de sa tÃƒÂªte.
+Une nuit, guidÃƒÂ© par la lueur des astres, il entreprit un voyage extraordinaire, traversant riviÃƒÂ¨res et marÃƒÂ©cages, parlant aux lucioles et aux hiboux qui l'accompagnaient. Avec patience et courage, il construisit un bÃƒÂ¢ton magique, gravÃƒÂ© de symboles anciens et lumineux, qui lui permit de capturer un fragment d'ÃƒÂ©toile.
+GrÃƒÂ¢ce ÃƒÂ  sa persÃƒÂ©vÃƒÂ©rance, l'hippopotame rÃƒÂ©alisa que mÃƒÂªme les rÃƒÂªves les plus grands pouvaient ÃƒÂªtre atteints si l'on osait avancer avec le coeur ouvert et l'esprit attentif.
+Les ÃƒÂ©toiles, touchÃƒÂ©es par sa dÃƒÂ©termination, continuÃƒÂ¨rent de briller plus fort, illuminant le fleuve et inspirant tous les animaux et les humains qui vivaient autour de lui.`,
     },
     {
       id: 29,
       type: 'conte',
       title: `Conte - Pologne : Le roi grenouille`,
-      text: `Dans une forêt ancienne et mystérieuse de Pologne, vivait un roi transformé en grenouille, enfermé par un sortilège mystérieux. Jadis noble et courageux, il passait ses journées sur les berges d'un étang scintillant, regardant les nuages se refléter dans l'eau et rêvant de retrouver sa forme humaine.
-Un jour, une petite princesse curieuse s'aventura près de l'étang. Elle avait entendu parler de la légende du roi grenouille, mais elle ne craignait pas les apparences. Avec douceur et courage, elle engagea la conversation avec le prince transformé, écoutant ses histoires de royaumes lointains, de châteaux majestueux et de créatures fantastiques.
-En échange de sa gentillesse et de sa patience, le roi grenouille offrit une promesse : quiconque oserait l'aider avec un coeur pur pourrait briser le sort et voir le royaume s'illuminer d'une magie ancienne. La princesse accepta le défi, réalisant que la confiance, le respect et le courage étaient souvent les clés pour libérer la magie cachée derrière les apparences.`,
+      text: `Dans une forÃƒÂªt ancienne et mystÃƒÂ©rieuse de Pologne, vivait un roi transformÃƒÂ© en grenouille, enfermÃƒÂ© par un sortilÃƒÂ¨ge mystÃƒÂ©rieux. Jadis noble et courageux, il passait ses journÃƒÂ©es sur les berges d'un ÃƒÂ©tang scintillant, regardant les nuages se reflÃƒÂ©ter dans l'eau et rÃƒÂªvant de retrouver sa forme humaine.
+Un jour, une petite princesse curieuse s'aventura prÃƒÂ¨s de l'ÃƒÂ©tang. Elle avait entendu parler de la lÃƒÂ©gende du roi grenouille, mais elle ne craignait pas les apparences. Avec douceur et courage, elle engagea la conversation avec le prince transformÃƒÂ©, ÃƒÂ©coutant ses histoires de royaumes lointains, de chÃƒÂ¢teaux majestueux et de crÃƒÂ©atures fantastiques.
+En ÃƒÂ©change de sa gentillesse et de sa patience, le roi grenouille offrit une promesse : quiconque oserait l'aider avec un coeur pur pourrait briser le sort et voir le royaume s'illuminer d'une magie ancienne. La princesse accepta le dÃƒÂ©fi, rÃƒÂ©alisant que la confiance, le respect et le courage ÃƒÂ©taient souvent les clÃƒÂ©s pour libÃƒÂ©rer la magie cachÃƒÂ©e derriÃƒÂ¨re les apparences.`,
     },
   ];
 

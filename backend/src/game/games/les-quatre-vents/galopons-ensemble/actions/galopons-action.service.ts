@@ -100,12 +100,18 @@ export class GaloponsActionService {
       playerPawnField: 'pawn',
       playerPawnLabelField: 'pawnLabel',
       playerPawnLabelResolver: (choice, currentState) =>
-        this.resolvePawnName(this.getMeta(currentState).pawns, toText(choice.id)) ||
+        this.resolvePawnName(
+          this.getMeta(currentState).pawns,
+          toText(choice.id),
+        ) ||
         this.normalizePawnChoiceLabel(toText(choice.label)) ||
         toText(choice.id) ||
         'pion',
       logLabelResolver: (choice, currentState) =>
-        this.resolvePawnName(this.getMeta(currentState).pawns, toText(choice.id)) ||
+        this.resolvePawnName(
+          this.getMeta(currentState).pawns,
+          toText(choice.id),
+        ) ||
         this.normalizePawnChoiceLabel(toText(choice.label)) ||
         toText(choice.id) ||
         'pion',

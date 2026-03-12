@@ -60,11 +60,12 @@ export class TurnPoliciesService {
       .toLowerCase();
     const pendingPlayerId = Number(pending?.playerId);
     if (pendingType === 'choose_pawn' && pendingPlayerId === playerId) {
-      return this.core.appendLog(state, `C'est à ${label} de choisir son pion.`);
+      return this.core.appendLog(
+        state,
+        `C'est à ${label} de choisir son pion.`,
+      );
     }
 
     return this.core.appendLog(state, turnAnnouncement(label));
   }
 }
-
-

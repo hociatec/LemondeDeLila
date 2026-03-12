@@ -47,13 +47,11 @@ export function applyConfiguredPawnSelection(params: {
     pawnId: string,
   ) => boolean;
   playerNameOptions?: unknown;
-}):
-  | {
-      state: GameStateEntity;
-      playerId: number;
-      choice: ConfiguredPawnChoice;
-    }
-  | null {
+}): {
+  state: GameStateEntity;
+  playerId: number;
+  choice: ConfiguredPawnChoice;
+} | null {
   const resolved = resolvePendingPawnChoiceAction({
     state: params.state,
     action: params.action,
@@ -122,9 +120,7 @@ export function applyConfiguredPawnSelection(params: {
 
   const players = Array.isArray(params.state.players)
     ? params.state.players.map((player) => {
-        if (
-          !(params.playerMatcher ?? defaultPlayerMatcher)(player, playerId)
-        ) {
+        if (!(params.playerMatcher ?? defaultPlayerMatcher)(player, playerId)) {
           return player;
         }
         const updated =

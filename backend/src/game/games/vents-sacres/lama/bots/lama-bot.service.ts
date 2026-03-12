@@ -79,7 +79,7 @@ export class LamaBotService {
     }
 
     if (alreadyDrew && !trackerPlayed) {
-      if (Boolean(meta.allowPlayAfterDraw)) {
+      if (meta.allowPlayAfterDraw) {
         return [{ type: 'lama_pass', payload: {} }];
       }
       return [{ type: 'lama_quit', payload: {} }];
