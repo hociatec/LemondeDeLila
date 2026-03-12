@@ -1,9 +1,9 @@
 {
-  "updatedAt": "2026-03-11",
+  "updatedAt": "2026-03-12",
   "metrics": {
     "manualActionPayloadParsing": 5,
-    "directPendingAssignments": 124,
-    "mojibakeMatches": 74,
+    "directPendingAssignments": 132,
+    "mojibakeMatches": 325,
     "scoresByPlayerIdMentionsInGames": 68,
     "targetScoreMentionsInGames": 39
   }

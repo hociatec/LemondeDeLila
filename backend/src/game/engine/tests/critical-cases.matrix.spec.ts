@@ -3,6 +3,7 @@ import { SetupFlowService } from '../../modules/setup-flow/services/setup-flow.s
 import { GridCellActionsService } from '../../modules/grid/services/grid-cell-actions.service';
 import { MorpionPresenter } from '../../games/vents-sacres/morpion/morpion.presenter';
 import { MorpionService } from '../../games/vents-sacres/morpion/morpion.service';
+import { GameCoreService } from '../../core/services/game-core.service';
 import { GameEngineService } from '../services/game-engine.service';
 import { GameRegistryService } from '../services/game-registry.service';
 import type { GameLoggerService } from '../../../common/services/game-logger.service';
@@ -43,6 +44,8 @@ const createMorpion = () =>
   new MorpionService(
     registryStub as GameRegistryService,
     new MorpionPresenter(new GridCellActionsService()),
+    new GameCoreService(),
+    new SetupFlowService(),
   );
 
 function buildPlayAction(
