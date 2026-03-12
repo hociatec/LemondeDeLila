@@ -100,6 +100,74 @@ describe('GameEngineService', () => {
     expect(out).toBe(state);
   });
 
+  it('removes a stale turn announcement when pawn selection is pending', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      new GameCoreService(),
+      { getHandler: jest.fn(() => ({})) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      new BoardPayloadService(),
+      {} as any,
+    );
+
+    const state: any = {
+      status: 'started',
+      turnIndex: 0,
+      players: [{ id: 1, username: 'hacene' }],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: { type: 'choose_pawn', playerId: 1, blocking: true },
+      log: [
+        { message: "C'est à hacene de choisir son pion." },
+        { message: "C'est au tour de hacene." },
+      ],
+      metadata: {},
+    };
+
+    const out = (engine as any).appendFirstTurnAnnouncement(state);
+    const messages = (out.log ?? []).map((entry: any) => String(entry?.message));
+
+    expect(messages).toContain("C'est à hacene de choisir son pion.");
+    expect(messages).not.toContain("C'est au tour de hacene.");
+  });
+
+  it('announces pick_pawn with the same chooser prompt', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      new GameCoreService(),
+      { getHandler: jest.fn(() => ({})) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      new BoardPayloadService(),
+      {} as any,
+    );
+
+    const state: any = {
+      status: 'started',
+      turnIndex: 1,
+      players: [{ id: -2, username: 'Oggy', isBot: true }],
+      turn: { currentPlayerId: -2, direction: 1 },
+      pending: { type: 'pick_pawn', playerId: -2, blocking: true },
+      log: [],
+      metadata: {},
+    };
+
+    const out = (engine as any).appendFirstTurnAnnouncement(state);
+    const messages = (out.log ?? []).map((entry: any) => String(entry?.message));
+
+    expect(messages).toContain("C'est à Oggy de choisir son pion.");
+  });
+
   it('returns a fallback turn message on T even when panels are missing', async () => {
     const engine = new GameEngineService(
       {} as any,

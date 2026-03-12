@@ -1853,7 +1853,7 @@ export class GameEngineService {
     gameType: string,
   ): Promise<GameStateWithActions> {
     this.gameLogger.debug('Bot turn tick', { roomId, gameType });
-    const state = await this.normalizeBotThinking(
+    let state = await this.normalizeBotThinking(
       roomId,
       gameType,
       await this.getInternalState(roomId, gameType),
@@ -1871,6 +1871,8 @@ export class GameEngineService {
     if (!botPlayer || !botPlayer.isBot || botActorId == null) {
       return this.exposeState(state, gameType);
     }
+
+    state = this.appendFirstTurnAnnouncement(state);
 
     let botActions = this.botRunner.suggestForHandler(
       handler,
@@ -2776,13 +2778,10 @@ export class GameEngineService {
     ) {
       return state;
     }
-	    const pending = state.pending ?? null;
-	    const pendingType = String(pending?.type ?? '')
-	      .trim()
-	      .toLowerCase();
-	    if (pendingType === 'pick_pawn') {
-	      return state;
-	    }
+    const pending = state.pending ?? null;
+    const pendingType = String(pending?.type ?? '')
+      .trim()
+      .toLowerCase();
 
     const players = Array.isArray(state.players) ? state.players : [];
     const name =
@@ -2794,15 +2793,20 @@ export class GameEngineService {
     const recentMessages = log.slice(-6).map((entry) =>
       String(entry?.message ?? '').trim(),
     );
-    if (pendingType === 'choose_pawn') {
+    if (pendingType === 'choose_pawn' || pendingType === 'pick_pawn') {
       const expectedPromptToken = `prompt:choose-pawn:${normalizePromptToken(name)}`;
       const hasSamePrompt = recentMessages.some(
         (message) => extractPawnPromptToken(message) === expectedPromptToken,
       );
+      const turnAnnouncement = `C'est au tour de ${name}.`;
+      const cleaned = this.removeRecentExactLogMessage(state, turnAnnouncement);
       if (hasSamePrompt) {
-        return state;
+        return cleaned;
       }
-      return this.core.appendLog(state, `C'est à ${name} de choisir un pion.`);
+      return this.core.appendLog(
+        cleaned,
+        `C'est à ${name} de choisir son pion.`,
+      );
     }
 
     if (
@@ -2814,6 +2818,21 @@ export class GameEngineService {
     }
 
     return this.core.appendLog(state, `C'est au tour de ${name}.`);
+  }
+
+  private removeRecentExactLogMessage(
+    state: GameStateEntity,
+    expectedMessage: string,
+  ): GameStateEntity {
+    const log = Array.isArray(state.log) ? [...state.log] : [];
+    for (let i = log.length - 1; i >= 0 && i >= log.length - 6; i -= 1) {
+      const message =
+        typeof log[i]?.message === 'string' ? String(log[i].message).trim() : '';
+      if (message !== expectedMessage) continue;
+      log.splice(i, 1);
+      return { ...state, log };
+    }
+    return state;
   }
 
   private buildKey(roomId: number, gameType: string): string {
