@@ -599,7 +599,7 @@ public sealed class GamePlayViewFocusTests
     }
 
     [Fact]
-    public void RealtimeController_AnnouncesTurnWhenPawnSelectionEndsWithoutTurnChange()
+    public void RealtimeController_DoesNotAnnounceTurnLocallyWhenPawnSelectionEnds()
     {
         StaDispatcherHarness.Run(dispatcher =>
         {
@@ -623,11 +623,11 @@ public sealed class GamePlayViewFocusTests
                 choices: [],
                 turnIndex: 1));
 
-            Assert.True(StaDispatcherHarness.WaitUntil(
-                () => emittedMessages.Any(m => string.Equals(m.Message, "C'est au tour de Mouche.", StringComparison.Ordinal)),
-                dispatcher,
-                1200));
             StaDispatcherHarness.Drain(dispatcher);
+
+            Assert.DoesNotContain(
+                emittedMessages,
+                m => string.Equals(m.Message, "C'est au tour de Mouche.", StringComparison.Ordinal));
         });
     }
 

@@ -419,6 +419,9 @@ internal sealed class GamePlayRealtimeController
         var currentHandCounts = BuildHandCounts(GamePlayExtrasParser.ExtractViewerHandLabels(state));
         var nextPendingType = PawnPendingTypes.Normalize(state.Pending?.Type);
         var nextPendingFocusSignature = BuildPendingFocusSignature(state.Pending);
+        var endedPawnSelection =
+            PawnPendingTypes.IsPawnPendingType(previousPendingType) &&
+            !PawnPendingTypes.IsPawnPendingType(state.Pending?.Type);
 
         var nextStatus = NormalizeStatus(state);
         var nextPhase = (state.Phase ?? string.Empty).Trim();
@@ -528,9 +531,9 @@ internal sealed class GamePlayRealtimeController
             _lastEndgameDrawFromLog = false;
             _recentHistoryLines.Clear();
             _recentHistoryLineSet.Clear();
-            // During pawn selection setup, the pending label is the authoritative prompt.
-            // Avoid adding a redundant "C'est au tour de ...".
-            if (!PawnPendingTypes.IsPawnPendingType(state.Pending?.Type) &&
+            // During pawn selection setup, the server log is authoritative.
+            // Do not synthesize a local "C'est au tour de ..." around choose/pick pawn.
+            if (!HasPawnSetupContext(state) &&
                 (startReady || !startReadyKnown))
             {
                 var currentPlayerId = state.Turn?.CurrentPlayerId;
@@ -630,16 +633,15 @@ internal sealed class GamePlayRealtimeController
         _syncShortcuts(state);
         _grid.SyncFromState(state, _viewerPlayerId);
 
-        var endedPawnSelection =
-            PawnPendingTypes.IsPawnPendingType(previousPendingType) &&
-            !PawnPendingTypes.IsPawnPendingType(state.Pending?.Type);
-
         _lastPendingType = nextPendingType;
         _lastPendingFocusSignature = nextPendingFocusSignature;
         _lastBotThinking = state.BotThinking;
         _lastViewerHandCounts = currentHandCounts;
         _refreshCanExecute();
-        TryAnnounceTurnFromState(state, force: endedPawnSelection);
+        if (!endedPawnSelection)
+        {
+            TryAnnounceTurnFromState(state);
+        }
     }
 
     private static string BuildPendingFocusSignature(GamePendingDto? pending)
@@ -880,6 +882,28 @@ internal sealed class GamePlayRealtimeController
                GamePlayWinnerReader.TryExtractOutcomeMap(state).Count > 0;
     }
 
+    private static bool HasPawnSetupContext(GameStateDto state)
+    {
+        if (PawnPendingTypes.IsPawnPendingType(state.Pending?.Type))
+        {
+            return true;
+        }
+
+        if ((state.Actions ?? new List<GameAvailableActionDto>())
+            .Any(action => PawnPendingTypes.IsPawnPendingType(action?.Type)))
+        {
+            return true;
+        }
+
+        var recentMessages = (state.Log ?? new List<GameLogEntryDto>())
+            .TakeLast(6)
+            .Select(entry => (entry?.Message ?? string.Empty).Trim());
+
+        return recentMessages.Any(message =>
+            message.IndexOf("choisir son pion", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            message.IndexOf("a choisi le pion:", StringComparison.OrdinalIgnoreCase) >= 0);
+    }
+
     private void TryAnnounceTurnFromState(GameStateDto state, bool force = false)
     {
         if (!string.Equals(state.Status, "started", StringComparison.OrdinalIgnoreCase))
@@ -887,9 +911,8 @@ internal sealed class GamePlayRealtimeController
             return;
         }
 
-        // Pawn selection is a setup phase; avoid announcing "C'est au tour de X." before the game actually starts.
-        // The server already prompts with "C'est à X de choisir un pion." during this phase.
-        if (PawnPendingTypes.IsPawnPendingType(state.Pending?.Type))
+        // The server remains the sole source of truth during pawn setup.
+        if (HasPawnSetupContext(state))
         {
             return;
         }
