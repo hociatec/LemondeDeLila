@@ -697,6 +697,74 @@ describe('GameEngineService', () => {
     expect(out.metadata?.turnFlow?.skipped ?? []).toEqual([]);
   });
 
+  it("annonce les cases de contes et cacahuètes sans numéro de case", () => {
+    const engine = new GameEngineService(
+      {} as any,
+      new GameCoreService(),
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      new BoardPayloadService(),
+      {} as any,
+    );
+
+    const previous: any = {
+      players: [{ id: 1, username: 'Lilas' }],
+      status: 'started',
+      metadata: {
+        gameType: 'contes-et-cacahuetes',
+        positions: { 1: -1 },
+        tiles: [
+          {
+            label:
+              "Case Départ: Vous ouvrez le grand livre des contes, et un vent de magie emporte vos feuilles volantes Chaque pas vous rapproche d'histoires fantastiques, de surprises et de rires à profusion. L'aventure commence maintenant !",
+          },
+        ],
+      },
+      log: [],
+    };
+    const next: any = {
+      players: [{ id: 1, username: 'Lilas' }],
+      status: 'started',
+      metadata: {
+        gameType: 'contes-et-cacahuetes',
+        positions: { 1: 0 },
+        tiles: [
+          {
+            label:
+              "Case Départ: Vous ouvrez le grand livre des contes, et un vent de magie emporte vos feuilles volantes Chaque pas vous rapproche d'histoires fantastiques, de surprises et de rires à profusion. L'aventure commence maintenant !",
+          },
+        ],
+      },
+      log: [],
+    };
+    const handler: any = {
+      shouldAnnounceBoardArrivals: jest.fn(() => true),
+    };
+
+    const out = (engine as any).appendBoardArrivalAnnouncements(
+      'contes-et-cacahuetes',
+      handler,
+      previous,
+      next,
+    );
+    const messages = (out.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+
+    expect(messages.some((message: string) => message.startsWith('Lilas arrive sur Case Départ:'))).toBe(
+      true,
+    );
+    expect(messages.some((message: string) => message.includes('case 1 -'))).toBe(
+      false,
+    );
+  });
+
   it('silently ignores unavailable actions when actor is out of turn', async () => {
     const engine = new GameEngineService(
       {} as any,

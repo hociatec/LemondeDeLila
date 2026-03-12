@@ -41,6 +41,48 @@ function baseState(): GameStateEntity {
   };
 }
 
+async function createActionsModule(
+  advanceTurn: (state: GameStateEntity) => GameStateEntity = (state) => state,
+) {
+  return Test.createTestingModule({
+    providers: [
+      GameCoreService,
+      RandomService,
+      SetupFlowService,
+      DeckPoliciesService,
+      ContesCacahuetesSetupService,
+      {
+        provide: 'TurnFlowService',
+        useValue: { advanceTurn },
+      },
+      {
+        provide: ContesActionService,
+        useFactory: (
+          core: GameCoreService,
+          random: RandomService,
+          turns: TurnFlowService,
+          setupFlow: SetupFlowService,
+          deckPolicies: DeckPoliciesService,
+        ) =>
+          new ContesActionService(
+            core,
+            random,
+            turns,
+            setupFlow,
+            deckPolicies,
+          ),
+        inject: [
+          GameCoreService,
+          RandomService,
+          'TurnFlowService',
+          SetupFlowService,
+          DeckPoliciesService,
+        ],
+      },
+    ],
+  }).compile();
+}
+
 describe('Contes effects', () => {
   it('hydrates the board, decks and pawn choices expected by the pending content report', async () => {
     const moduleRef = await Test.createTestingModule({
@@ -112,46 +154,57 @@ describe('Contes effects', () => {
     expect(toText(capeRow.text)).not.toContain('case Conte');
   });
 
-  it('requires a number choice from each player for Poussiere de rire', async () => {
+  it('uses the canonical board labels for start, bonus and finish', async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         GameCoreService,
         RandomService,
         SetupFlowService,
-        DeckPoliciesService,
         ContesCacahuetesSetupService,
-        {
-          provide: 'TurnFlowService',
-          useValue: {
-            advanceTurn: (state: GameStateEntity): GameStateEntity => state,
-          },
-        },
-        {
-          provide: ContesActionService,
-          useFactory: (
-            core: GameCoreService,
-            random: RandomService,
-            turns: TurnFlowService,
-            setupFlow: SetupFlowService,
-            deckPolicies: DeckPoliciesService,
-          ) =>
-            new ContesActionService(
-              core,
-              random,
-              turns,
-              setupFlow,
-              deckPolicies,
-            ),
-          inject: [
-            GameCoreService,
-            RandomService,
-            'TurnFlowService',
-            SetupFlowService,
-            DeckPoliciesService,
-          ],
-        },
       ],
     }).compile();
+
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const state = setup.hydrateInitialState(baseState());
+    const metadata = asRecord(state.metadata);
+    const tiles = Array.isArray(metadata.tiles) ? metadata.tiles : [];
+
+    expect(toText(asRecord(tiles[0]).label)).toBe(
+      "Case Départ: Vous ouvrez le grand livre des contes, et un vent de magie emporte vos feuilles volantes Chaque pas vous rapproche d'histoires fantastiques, de surprises et de rires à profusion. L'aventure commence maintenant !",
+    );
+    expect(toText(asRecord(tiles[1]).label)).toBe(
+      'Case Bonus: Un coup de pouce magique ! La chance vous sourit, profitez-en.',
+    );
+    expect(toText(asRecord(tiles[59]).label)).toBe(
+      "Case Arrivée: Vous atteignez le majestueux livre magique, ses pages scintillent et s'animent autour de vous... Les contes du monde entier vous saluent et vous couronnent Maître ou Maîtresse des histoires, héros de cette aventure mémorable !",
+    );
+  });
+
+  it('attaches the full story text to conte tiles', async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        GameCoreService,
+        RandomService,
+        SetupFlowService,
+        ContesCacahuetesSetupService,
+      ],
+    }).compile();
+
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const state = setup.hydrateInitialState(baseState());
+    const metadata = asRecord(state.metadata);
+    const tiles = Array.isArray(metadata.tiles) ? metadata.tiles : [];
+    const firstConte = asRecord(tiles[2]);
+    const lastConte = asRecord(tiles[58]);
+
+    expect(toText(firstConte.label)).toContain('Momotar');
+    expect(toText(firstConte.description)).toContain('gar');
+    expect(toText(lastConte.label)).toContain('roi grenouille');
+    expect(toText(lastConte.description)).toContain('princesse curieuse');
+  });
+
+  it('requires a number choice from each player for Poussiere de rire', async () => {
+    const moduleRef = await createActionsModule();
 
     const setup = moduleRef.get(ContesCacahuetesSetupService);
     const actionsService = moduleRef.get(ContesActionService);
@@ -218,43 +271,7 @@ describe('Contes effects', () => {
       }),
     );
 
-    const moduleRef = await Test.createTestingModule({
-      providers: [
-        GameCoreService,
-        RandomService,
-        SetupFlowService,
-        DeckPoliciesService,
-        ContesCacahuetesSetupService,
-        {
-          provide: 'TurnFlowService',
-          useValue: { advanceTurn },
-        },
-        {
-          provide: ContesActionService,
-          useFactory: (
-            core: GameCoreService,
-            random: RandomService,
-            turns: TurnFlowService,
-            setupFlow: SetupFlowService,
-            deckPolicies: DeckPoliciesService,
-          ) =>
-            new ContesActionService(
-              core,
-              random,
-              turns,
-              setupFlow,
-              deckPolicies,
-            ),
-          inject: [
-            GameCoreService,
-            RandomService,
-            'TurnFlowService',
-            SetupFlowService,
-            DeckPoliciesService,
-          ],
-        },
-      ],
-    }).compile();
+    const moduleRef = await createActionsModule(advanceTurn);
 
     const setup = moduleRef.get(ContesCacahuetesSetupService);
     const actionsService = moduleRef.get(ContesActionService);
@@ -293,5 +310,169 @@ describe('Contes effects', () => {
     expect(advanceTurn).toHaveBeenCalledTimes(1);
     expect(state.pending ?? null).toBeNull();
     expect(Number(state.turn?.currentPlayerId ?? 0)).toBe(2);
+  });
+
+  it('announces the drawn bonus card before applying its effect', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    const metadata = asRecord(state.metadata);
+    const decks = asRecord(metadata.decks);
+    state = {
+      ...state,
+      metadata: {
+        ...(state.metadata ?? {}),
+        decks: {
+          ...decks,
+          bonus: [
+            {
+              id: 1,
+              type: 'bonus',
+              title: 'Bottes de sept lieues',
+              text: 'Avancez de 2 cases supplémentaires. Ces bottes magiques vous font bondir loin devant !',
+            },
+          ],
+          discardBonus: [],
+        },
+      },
+    };
+
+    state = (actionsService as any).resolveQueuedDraw(state, 1, {
+      queue: ['bonus'],
+      depth: 0,
+    });
+
+    const logText = Array.isArray(state.log)
+      ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
+      : '';
+    expect(logText).toContain('Lilas pioche une carte Bonus');
+    expect(logText).toContain('Bottes de sept lieues');
+  });
+
+  it('keeps the retained bonus cards in hand through statuses', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    state = (actionsService as any).applyBonusEffectById(state, 1, 3, 0);
+    state = (actionsService as any).applyBonusEffectById(state, 1, 4, 0);
+    state = (actionsService as any).applyBonusEffectById(state, 1, 14, 0);
+
+    const statuses = asRecord(asRecord(state.metadata).statuses);
+    expect(Number(asRecord(statuses.shieldMalus)['1'] ?? 0)).toBe(1);
+    expect(Boolean(asRecord(statuses.ignoreNextConteAndAdvance)['1'])).toBe(
+      true,
+    );
+    expect(Boolean(asRecord(statuses.replaceOneOn1By4)['1'])).toBe(true);
+  });
+
+  it('lets all tied winners advance on Poussiere de rire', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    state = {
+      ...state,
+      pending: {
+        type: 'choose_number',
+        label: 'Poussière de rire',
+        playerId: 1,
+        blocking: true,
+        choices: ['1', '2', '3'],
+        data: {
+          context: 'laughter_dust',
+          min: 1,
+          max: 3,
+          order: [1, 2, 3],
+          picks: {},
+        },
+      },
+      metadata: {
+        ...(state.metadata ?? {}),
+        positions: { 1: 10, 2: 11, 3: 12 },
+      },
+    };
+
+    state = actionsService.applyActions(state, [
+      { type: 'choose_number', payload: { value: 3 } },
+    ]);
+    state = actionsService.applyActions(state, [
+      { type: 'choose_number', payload: { value: 2 } },
+    ]);
+    state = actionsService.applyActions(state, [
+      { type: 'choose_number', payload: { value: 3 } },
+    ]);
+
+    const positions = asRecord(asRecord(state.metadata).positions);
+    expect(Number(positions['1'] ?? 0)).toBe(11);
+    expect(Number(positions['2'] ?? 0)).toBe(11);
+    expect(Number(positions['3'] ?? 0)).toBe(13);
+  });
+
+  it('draws a bonus for Maladresse de Sorcier and applies it to the chosen player', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    const metadata = asRecord(state.metadata);
+    const decks = asRecord(metadata.decks);
+    state = {
+      ...state,
+      metadata: {
+        ...(state.metadata ?? {}),
+        positions: { 1: 5, 2: 7, 3: 9 },
+        decks: {
+          ...decks,
+          bonus: [
+            {
+              id: 8,
+              type: 'bonus',
+              title: 'Ami Légendaire',
+              text: 'Vous êtes aidé par un personnage magique ! Avancez de 3 cases.',
+            },
+          ],
+          discardBonus: [],
+        },
+      },
+    };
+
+    state = (actionsService as any).applyMalusEffectById(state, 1, 9, 0);
+    expect(asRecord(state.pending).data.context).toBe('give_drawn_bonus:8');
+
+    state = actionsService.applyActions(state, [
+      { type: 'choose_target', payload: { targetPlayerId: 2 } },
+    ]);
+
+    const positions = asRecord(asRecord(state.metadata).positions);
+    expect(Number(positions['2'] ?? 0)).toBe(10);
+  });
+
+  it('keeps the caster in place for Grimoire voyageur and only moves the target', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    state = {
+      ...state,
+      metadata: {
+        ...(state.metadata ?? {}),
+        positions: { 1: 14, 2: 6, 3: 2 },
+      },
+    };
+
+    state = (actionsService as any).applySurpriseEffectById(state, 1, 15, 0);
+    state = actionsService.applyActions(state, [
+      { type: 'choose_target', payload: { targetPlayerId: 2 } },
+    ]);
+
+    const positions = asRecord(asRecord(state.metadata).positions);
+    expect(Number(positions['1'] ?? 0)).toBe(14);
+    expect(Number(positions['2'] ?? 0)).toBe(15);
   });
 });

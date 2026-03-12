@@ -3411,7 +3411,13 @@ export class GameEngineService {
           continue;
         }
 
-        if (label && /^case\\s+\\d+/i.test(label)) {
+        const gameTypeRaw = this.normalizeMetadataString(nextMeta['gameType']);
+        const isContes = gameTypeRaw === 'contes-et-cacahuetes';
+
+        if (
+          label &&
+          (/^case\\s+\\d+/i.test(label) || (isContes && /^case\s+/i.test(label)))
+        ) {
           out = this.core.appendLog(
             out,
             `${name} arrive sur ${label}.${desc}`.trim(),

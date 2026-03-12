@@ -9,6 +9,7 @@ export type ContesCacahuetesTileType =
 export type ContesCacahuetesTile = {
   type: ContesCacahuetesTileType;
   label: string;
+  description?: string;
 };
 
 export type ContesCardType = 'bonus' | 'malus' | 'surprise' | 'conte';

@@ -18,6 +18,7 @@ import type {
   ContesCacahuetesTile,
   ContesPending,
 } from '../model/contes-et-cacahuetes-state.entity';
+import { CONTES_PAWNS } from '../model/contes-et-cacahuetes-pawns.data';
 import {
   applyActionsSequentially,
   dispatchByActionType,
@@ -138,22 +139,18 @@ export class ContesActionService {
         ? this.getMeta(next).setupStarterId!
         : (state.turn?.currentPlayerId ?? null);
     const playersForPending = Array.isArray(next.players) ? next.players : [];
-    const allPawnsForPending = [
-      'Aika - Mongolie',
-      'Freja - Su\u00e8de',
-      'Lani - \u00celes Marshall',
-      'Niko - G\u00e9orgie',
-      'Tavi - Fidji',
-      'Arman - Arm\u00e9nie',
-    ];
     const usedForPending = new Set(
       playersForPending
         .map((p) => toText(p?.pawn))
         .filter((p: string) => p.length > 0),
     );
-    const choicesForPending = allPawnsForPending
-      .filter((name) => !usedForPending.has(name))
-      .map((name) => ({ id: name, label: name }));
+    const choicesForPending = CONTES_PAWNS.filter(
+      (pawn) => !usedForPending.has(pawn.id),
+    ).map((pawn) => ({
+      id: pawn.id,
+      label: pawn.label,
+      description: pawn.description,
+    }));
     const pendingInfo = this.setupFlow.createSequentialPawnPending({
       players: playersForPending,
       startPlayerId: playerId,
@@ -162,6 +159,15 @@ export class ContesActionService {
         return toText(player?.pawn).length > 0;
       },
       pawns: choicesForPending,
+      choiceLabelBuilder: (pawn) =>
+        toText(pawn.description).trim().length > 0
+          ? `${toText(pawn.label).trim()}: ${toText(pawn.description).trim()}`
+          : toText(pawn.label).trim(),
+      pawnDataMapper: (choice) => ({
+        id: toText(choice.id).trim(),
+        label: toText(choice.label).trim(),
+        description: toText(choice.description).trim(),
+      }),
     });
     if (pendingInfo) {
       const withPending: GameStateEntity = {
@@ -340,12 +346,18 @@ export class ContesActionService {
     }
 
     if (ctx === 'grimoire_voyageur') {
-      next = this.swapPositions(next, playerId, targetPlayerId);
+      return this.moveTargetToPlayerAndAdvance(next, playerId, targetPlayerId, 1);
+    }
+
+    if (ctx.startsWith('give_drawn_bonus:')) {
+      const bonusId = Number(ctx.split(':')[1]);
+      if (!Number.isFinite(bonusId)) return next;
+      const title = this.findCardTitle(next, 'bonus', bonusId) ?? `Bonus ${bonusId}`;
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, targetPlayerId)} avance d’1 case.`,
+        `${resolvePlayerNameFromState(next, playerId)} donne "${title}" à ${resolvePlayerNameFromState(next, targetPlayerId)}.`,
       );
-      return this.moveBy(next, targetPlayerId, 1, 0);
+      return this.applyBonusEffectById(next, targetPlayerId, bonusId, 0);
     }
 
     if (ctx === 'key_gold_choose_target') {
@@ -757,10 +769,7 @@ export class ContesActionService {
       return this.continueQueuedDraw(next, playerId, queue, depth);
     }
 
-    next = this.core.appendLog(
-      next,
-      `${card.type.toUpperCase()} : ${card.title}. ${card.text}`,
-    );
+    next = this.announceDrawnCard(next, playerId, card);
 
     if (card.type === 'conte') {
       return this.continueQueuedDraw(next, playerId, queue, depth);
@@ -830,9 +839,10 @@ export class ContesActionService {
     if (remaining <= 0) return state;
 
     const draw = this.drawCard(state, 'bonus');
-    const next = draw.state;
+    let next = draw.state;
     if (draw.card) {
       drawn.push(draw.card);
+      next = this.announceDrawnCard(next, playerId, draw.card);
     }
 
     if (remaining - 1 > 0) {
@@ -873,6 +883,25 @@ export class ContesActionService {
   }
 
   // --- Effects + helpers (added in next patches) ---
+
+  private announceDrawnCard(
+    state: GameStateEntity,
+    playerId: number,
+    card: ContesCard,
+  ): GameStateEntity {
+    const typeLabel =
+      card.type === 'bonus'
+        ? 'Bonus'
+        : card.type === 'malus'
+          ? 'Malus'
+          : card.type === 'surprise'
+            ? 'Surprise'
+            : 'Conte';
+    return this.core.appendLog(
+      state,
+      `${resolvePlayerNameFromState(state, playerId)} pioche une carte ${typeLabel} : ${card.title}. ${card.text}`,
+    );
+  }
 
   private applyBonusEffectById(
     state: GameStateEntity,
@@ -1008,12 +1037,7 @@ export class ContesActionService {
         next = this.moveBy(next, playerId, 3, depth);
         return this.moveBy(next, playerId, -4, depth);
       case 9:
-        return this.startChooseTarget(
-          next,
-          playerId,
-          'give_bonus_choose_target',
-          'Maladresse : choisissez un joueur à qui donner une de vos cartes Bonus.',
-        );
+        return this.drawBonusToGive(next, playerId);
       case 10: {
         const out = this.random.rollDice(this.getMeta(next), 6);
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...out.meta } };
@@ -1317,6 +1341,25 @@ export class ContesActionService {
     });
   }
 
+  private drawBonusToGive(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
+    const draw = this.drawCard(state, 'bonus');
+    let next = draw.state;
+    const card = draw.card;
+    if (!card) {
+      return this.core.appendLog(next, 'Aucune carte Bonus disponible.');
+    }
+    next = this.announceDrawnCard(next, playerId, card);
+    return this.startChooseTarget(
+      next,
+      playerId,
+      `give_drawn_bonus:${card.id}`,
+      `Maladresse de sorcier : choisissez un joueur qui recevra "${card.title}".`,
+    );
+  }
+
   private startGiveBonusChoice(
     state: GameStateEntity,
     giverId: number,
@@ -1564,6 +1607,32 @@ export class ContesActionService {
     return next;
   }
 
+  private moveTargetToPlayerAndAdvance(
+    state: GameStateEntity,
+    ownerId: number,
+    targetId: number,
+    deltaAfterMove: number,
+  ): GameStateEntity {
+    const meta = this.getMeta(state);
+    const positions = { ...(meta.positions ?? {}) };
+    const ownerPos = positions[ownerId] ?? 0;
+    positions[targetId] = ownerPos;
+    let next: GameStateEntity = {
+      ...state,
+      metadata: { ...(state.metadata ?? {}), ...meta, positions },
+    };
+    next = this.core.appendLog(
+      next,
+      `${resolvePlayerNameFromState(next, targetId)} prend la position de ${resolvePlayerNameFromState(next, ownerId)}.`,
+    );
+    if (!deltaAfterMove) return next;
+    next = this.core.appendLog(
+      next,
+      `${resolvePlayerNameFromState(next, targetId)} avance d’1 case.`,
+    );
+    return this.moveBy(next, targetId, deltaAfterMove, 0);
+  }
+
   private setTurnSwap(
     state: GameStateEntity,
     aId: number,
@@ -1578,6 +1647,28 @@ export class ContesActionService {
       next,
       `Formule magique : prochains tours Ò©changÒ©s entre ${resolvePlayerNameFromState(next, aId)} et ${resolvePlayerNameFromState(next, bId)}.`,
     );
+  }
+
+  private findCardTitle(
+    state: GameStateEntity,
+    type: ContesCardType,
+    cardId: number,
+  ): string | null {
+    const decks = this.getMeta(state).decks;
+    const keys: Array<keyof ContesCacahuetesMetadata['decks']> =
+      type === 'bonus'
+        ? ['bonus', 'discardBonus']
+        : type === 'malus'
+          ? ['malus', 'discardMalus']
+          : type === 'surprise'
+            ? ['surprise', 'discardSurprise']
+            : ['contes', 'discardContes'];
+    for (const key of keys) {
+      const cards = toContesCardArray(decks[key]);
+      const found = cards.find((card) => Number(card.id) === cardId);
+      if (found?.title) return found.title;
+    }
+    return null;
   }
 
   private onAnyPlayerPassedBlocked(
