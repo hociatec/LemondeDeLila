@@ -2772,23 +2772,26 @@ export class GameEngineService {
       return state;
     }
 
-    const currentPlayerId = state.turn?.currentPlayerId ?? null;
-    if (
-      typeof currentPlayerId !== 'number' ||
-      !Number.isFinite(currentPlayerId)
-    ) {
-      return state;
-    }
     const pending = state.pending ?? null;
     const pendingType = String(pending?.type ?? '')
       .trim()
       .toLowerCase();
+    const announcementPlayerId =
+      pendingType === 'choose_pawn' || pendingType === 'pick_pawn'
+        ? pending?.playerId ?? null
+        : state.turn?.currentPlayerId ?? null;
+    if (
+      typeof announcementPlayerId !== 'number' ||
+      !Number.isFinite(announcementPlayerId)
+    ) {
+      return state;
+    }
 
     const players = Array.isArray(state.players) ? state.players : [];
     const name =
       this.normalizeUsernameForLog(
-        players.find((p) => p?.id === currentPlayerId)?.username,
-      ) || `Joueur ${currentPlayerId}`;
+        players.find((p) => p?.id === announcementPlayerId)?.username,
+      ) || `Joueur ${announcementPlayerId}`;
 
     const log = Array.isArray(state.log) ? state.log : [];
     const recentMessages = log

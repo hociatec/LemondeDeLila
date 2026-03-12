@@ -63,4 +63,24 @@ describe('TurnPoliciesService non-regression', () => {
     expect(core.appendLog).not.toHaveBeenCalled();
     expect(out).toBe(state);
   });
+
+  it('never emits "C\'est au tour de" for the active chooser while pawn setup is pending', () => {
+    const state: any = {
+      players: [{ id: 3, username: 'Lila' }],
+      pending: { type: 'choose_pawn', playerId: 3, blocking: true },
+      log: [],
+    };
+
+    service.appendTurnAnnouncement(state, 3);
+
+    expect(core.appendLog).toHaveBeenCalledTimes(1);
+    expect(core.appendLog).toHaveBeenCalledWith(
+      state,
+      "C'est à Lila de choisir son pion.",
+    );
+    expect(core.appendLog).not.toHaveBeenCalledWith(
+      state,
+      "C'est au tour de Lila.",
+    );
+  });
 });

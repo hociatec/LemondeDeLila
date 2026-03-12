@@ -73,6 +73,52 @@ describe('GameEngineService', () => {
     expect(messages).toContain("C'est à Mouche de choisir son pion.");
   });
 
+  it('keeps pawn setup ordered as chooser, choice, next chooser without turn announcement in between', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      new GameCoreService(),
+      { getHandler: jest.fn(() => ({})) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      new BoardPayloadService(),
+      {} as any,
+    );
+
+    const state: any = {
+      status: 'started',
+      turnIndex: 1,
+      players: [
+        { id: 1, username: 'hacene' },
+        { id: -2, username: 'Oggy', isBot: true },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: { type: 'choose_pawn', playerId: -2, blocking: true },
+      log: [
+        { message: "C'est à hacene de choisir son pion." },
+        { message: 'hacene a choisi le pion: Professeur Gribouille.' },
+      ],
+      metadata: {},
+    };
+
+    const out = (engine as any).appendFirstTurnAnnouncement(state);
+    const messages = (out.log ?? []).map((entry: any) =>
+      String(entry?.message),
+    );
+
+    expect(messages).toEqual([
+      "C'est à hacene de choisir son pion.",
+      'hacene a choisi le pion: Professeur Gribouille.',
+      "C'est à Oggy de choisir son pion.",
+    ]);
+    expect(messages).not.toContain("C'est au tour de hacene.");
+    expect(messages).not.toContain("C'est au tour de Oggy.");
+  });
+
   it('does not duplicate the same pawn chooser announcement', () => {
     const engine = new GameEngineService(
       {} as any,
@@ -174,6 +220,48 @@ describe('GameEngineService', () => {
     );
 
     expect(messages).toContain("C'est à Oggy de choisir son pion.");
+  });
+
+  it('announces the starting turn only after pawn selection is finished', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      new GameCoreService(),
+      { getHandler: jest.fn(() => ({})) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      new BoardPayloadService(),
+      {} as any,
+    );
+
+    const state: any = {
+      status: 'started',
+      turnIndex: 0,
+      players: [
+        { id: 1, username: 'hacene' },
+        { id: -2, username: 'Oggy', isBot: true },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: null,
+      log: [
+        { message: "C'est à hacene de choisir son pion." },
+        { message: 'hacene a choisi le pion: Professeur Gribouille.' },
+        { message: "C'est à Oggy de choisir son pion." },
+        { message: 'Oggy a choisi le pion: Miss Froufrou.' },
+      ],
+      metadata: {},
+    };
+
+    const out = (engine as any).appendFirstTurnAnnouncement(state);
+    const messages = (out.log ?? []).map((entry: any) =>
+      String(entry?.message),
+    );
+
+    expect(messages.at(-1)).toBe("C'est au tour de hacene.");
   });
 
   it('returns a fallback turn message on T even when panels are missing', async () => {
