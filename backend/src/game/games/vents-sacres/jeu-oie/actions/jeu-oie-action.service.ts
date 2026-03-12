@@ -108,6 +108,7 @@ export class JeuOieActionService {
     let started = continueSequentialPawnSelection({
       state: next,
       setupFlow: this.setupFlow,
+      core: this.core,
       chooserPlayerId: playerId,
       players: playersForPending,
       isAssigned: (candidateId) =>
@@ -437,6 +438,7 @@ export class JeuOieActionService {
     return continueSequentialPawnSelection({
       state,
       setupFlow: this.setupFlow,
+      core: this.core,
       chooserPlayerId:
         typeof state.turn?.currentPlayerId === 'number'
           ? state.turn.currentPlayerId

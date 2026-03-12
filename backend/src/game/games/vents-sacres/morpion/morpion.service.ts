@@ -17,7 +17,10 @@ import {
   applyActionsSequentially,
   normalizeActionType,
 } from '../../../actions/action-service.helper';
-import { victoryAnnouncement } from '../../../core/helpers/game-log-text.helper';
+import {
+  starterTurnAnnouncement,
+  victoryAnnouncement,
+} from '../../../core/helpers/game-log-text.helper';
 import { normalizeGameLogMessage } from '../../../core/helpers/log-style.helper';
 import { MORPION_PAWNS } from './definitions/morpion.pawns';
 import { nextRngInt } from '../../../../common/utils/seeded-rng';
@@ -573,7 +576,7 @@ export class MorpionService extends AbstractGameService {
       const startName =
         players.find((p) => p?.id === startPlayerId)?.username ??
         `#${startPlayerId}`;
-      log = this.appendLog(log, `C'est au tour de ${startName}.`);
+      log = this.appendLog(log, starterTurnAnnouncement(startName));
     }
     return {
       ...queued,

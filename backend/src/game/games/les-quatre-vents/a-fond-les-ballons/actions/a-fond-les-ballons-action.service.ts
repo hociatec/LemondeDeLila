@@ -11,6 +11,11 @@ import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-
 import { type PawnChoiceOption } from '../../../../core/helpers/pawn-choice-action.helper';
 import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
 import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
+import {
+  hasRecentPawnSelectionLogs,
+  starterTurnAnnouncement,
+  turnAnnouncement,
+} from '../../../../core/helpers/game-log-text.helper';
 import type {
   AFondLesBallonsCard,
   AFondLesBallonsMetadata,
@@ -323,6 +328,7 @@ export class AFondLesBallonsActionService {
     const withTurn = continueSequentialPawnSelection({
       state: next,
       setupFlow: this.setupFlow,
+      core: this.core,
       chooserPlayerId: playerId,
       players: playersForPending,
       isAssigned: (candidateId) =>
@@ -411,9 +417,12 @@ export class AFondLesBallonsActionService {
   private appendTurnAnnouncement(state: GameStateEntity): GameStateEntity {
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
+    const name = resolvePlayerNameFromState(state, currentId);
     return this.core.appendLog(
       state,
-      `C'est au tour de ${resolvePlayerNameFromState(state, currentId)}.`,
+      hasRecentPawnSelectionLogs(state.log)
+        ? starterTurnAnnouncement(name)
+        : turnAnnouncement(name),
     );
   }
 

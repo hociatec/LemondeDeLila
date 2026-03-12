@@ -1,7 +1,11 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import { GameCoreService } from '../../../core/services/game-core.service';
-import { turnAnnouncement } from '../../../core/helpers/game-log-text.helper';
+import {
+  hasRecentPawnSelectionLogs,
+  starterTurnAnnouncement,
+  turnAnnouncement,
+} from '../../../core/helpers/game-log-text.helper';
 import { stringOrEmpty } from '@common/utils/string-value.utils';
 @Injectable()
 export class TurnPoliciesService {
@@ -75,6 +79,11 @@ export class TurnPoliciesService {
       return this.core.appendLog(state, prompt);
     }
 
-    return this.core.appendLog(state, turnAnnouncement(label));
+    return this.core.appendLog(
+      state,
+      hasRecentPawnSelectionLogs(state.log)
+        ? starterTurnAnnouncement(label)
+        : turnAnnouncement(label),
+    );
   }
 }

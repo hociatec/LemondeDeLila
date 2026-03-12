@@ -124,24 +124,40 @@ export function assignConfiguredBotPawns(params: {
       ...working,
       metadata,
     };
+    const playerName = resolvePlayerNameFromState(
+      {
+        ...working,
+        players: replacePlayer(players, updated, Number(player?.id)),
+      },
+      Number(player?.id),
+      params.playerNameOptions as any,
+    );
+    const prompt = `C'est à ${playerName} de choisir son pion.`;
+    let withUpdatedPlayers = {
+      ...working,
+      players: replacePlayer(players, updated, Number(player?.id)),
+      metadata,
+    };
+    const hasPrompt = Array.isArray(withUpdatedPlayers.log)
+      ? withUpdatedPlayers.log
+          .slice(-6)
+          .some((entry) => String(entry?.message ?? '').trim() === prompt)
+      : false;
+    if (!hasPrompt) {
+      working = params.core.appendLog(withUpdatedPlayers, prompt);
+      withUpdatedPlayers = {
+        ...working,
+        players: replacePlayer(players, updated, Number(player?.id)),
+        metadata,
+      };
+    }
     const logLabel =
       typeof params.logLabelResolver === 'function'
         ? params.logLabelResolver(choice, working)
         : choice.label || choice.id;
     working = params.core.appendLog(
-      {
-        ...working,
-        players: replacePlayer(players, updated, Number(player?.id)),
-        metadata,
-      },
-      `${resolvePlayerNameFromState(
-        {
-          ...working,
-          players: replacePlayer(players, updated, Number(player?.id)),
-        },
-        Number(player?.id),
-        params.playerNameOptions as any,
-      )} a choisi le pion: ${logLabel}.`,
+      withUpdatedPlayers,
+      `${playerName} a choisi le pion: ${logLabel}.`,
     );
     return updated;
   });

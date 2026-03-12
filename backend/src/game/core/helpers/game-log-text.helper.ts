@@ -3,6 +3,28 @@ export function turnAnnouncement(playerLabel: string): string {
   return `C'est au tour de ${name}.`;
 }
 
+export function starterTurnAnnouncement(playerLabel: string): string {
+  const name = String(playerLabel ?? '').trim() || 'Joueur';
+  return `C'est au tour de ${name} de débuter.`;
+}
+
+export function hasRecentPawnSelectionLogs(
+  log: Array<{ message?: unknown }> | null | undefined,
+): boolean {
+  const recentMessages = Array.isArray(log)
+    ? log
+        .slice(-6)
+        .map((entry) => String(entry?.message ?? '').trim())
+        .filter((message) => message.length > 0)
+    : [];
+
+  return recentMessages.some(
+    (message) =>
+      message.includes('a choisi le pion:') ||
+      message.includes('de choisir son pion.'),
+  );
+}
+
 export function pawnPlacement(params: {
   playerLabel: string;
   pawnLabel: string;

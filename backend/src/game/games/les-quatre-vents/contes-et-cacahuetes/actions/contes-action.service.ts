@@ -137,6 +137,7 @@ export class ContesActionService {
     const started = continueSequentialPawnSelection({
       state: next,
       setupFlow: this.setupFlow,
+      core: this.core,
       chooserPlayerId: playerId,
       players: playersForPending,
       isAssigned: (candidateId) => {

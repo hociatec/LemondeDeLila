@@ -20,6 +20,7 @@ import { DeckPoliciesService } from '../../../../modules/deck-policies/services/
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
 import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
+import { starterTurnAnnouncement } from '../../../../core/helpers/game-log-text.helper';
 import type {
   FrousseCard,
   FrousseMetadata,
@@ -131,6 +132,7 @@ export class FrousseActionService {
     return continueSequentialPawnSelection({
       state,
       setupFlow: this.setupFlow,
+      core: this.core,
       chooserPlayerId: players[0]?.id ?? null,
       players,
       isAssigned: (candidateId) => {
@@ -1230,7 +1232,7 @@ export class FrousseActionService {
       );
       next = this.core.appendLog(
         next,
-        `C'est au tour de ${resolvePlayerNameFromState(next, starter.id)}.`,
+        starterTurnAnnouncement(resolvePlayerNameFromState(next, starter.id)),
       );
     }
     return next;

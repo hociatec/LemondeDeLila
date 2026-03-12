@@ -801,6 +801,7 @@ export class GaloponsActionService {
     return continueSequentialPawnSelection({
       state,
       setupFlow: this.setupFlow,
+      core: this.core,
       chooserPlayerId: meta.setupStarterId ?? players[0]?.id ?? null,
       players,
       isAssigned: (playerId) => Boolean(pawnByPlayerId[playerId]),

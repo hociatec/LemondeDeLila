@@ -25,6 +25,11 @@ import {
   assignConfiguredBotPawns,
   queueConfiguredPawnSelection,
 } from '../../../../core/helpers/configured-pawn-setup.helper';
+import {
+  hasRecentPawnSelectionLogs,
+  starterTurnAnnouncement,
+  turnAnnouncement,
+} from '../../../../core/helpers/game-log-text.helper';
 import { MINUIT_GAME } from '../definitions/minuit.definition';
 import type {
   MinuitCard,
@@ -1148,9 +1153,12 @@ export class MinuitActionService {
   private appendTurnAnnouncement(state: GameStateEntity): GameStateEntity {
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
+    const playerName = this.getTurnPolicies().playerName(state, currentId);
     return this.getPromptPolicies().appendLogOnce(
       state,
-      `C'est au tour de ${this.getTurnPolicies().playerName(state, currentId)}.`,
+      hasRecentPawnSelectionLogs(state.log)
+        ? starterTurnAnnouncement(playerName)
+        : turnAnnouncement(playerName),
     );
   }
 

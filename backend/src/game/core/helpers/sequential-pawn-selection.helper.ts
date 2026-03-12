@@ -1,5 +1,7 @@
 import type { GameStateEntity } from '../entities/game-state.entity';
 import type { SetupFlowService } from '../../modules/setup-flow/services/setup-flow.service';
+import type { GameCoreService } from '../services/game-core.service';
+import { resolvePlayerNameFromState } from '../../modules/turn-policies/player-name.helper';
 
 export type SequentialPawnChoice = {
   id: string;
@@ -11,6 +13,7 @@ export type SequentialPawnChoice = {
 export function continueSequentialPawnSelection(params: {
   state: GameStateEntity;
   setupFlow: SetupFlowService;
+  core?: GameCoreService;
   chooserPlayerId: number;
   players: Array<any>;
   isAssigned: (candidateId: number) => boolean;
@@ -40,7 +43,7 @@ export function continueSequentialPawnSelection(params: {
   });
 
   if (pendingInfo) {
-    const withPending: GameStateEntity = {
+    let withPending: GameStateEntity = {
       ...params.state,
       pending: pendingInfo.pending,
       turnIndex: pendingInfo.turnIndex,
@@ -51,6 +54,17 @@ export function continueSequentialPawnSelection(params: {
           params.state.turn?.direction === -1 && !params.state.pending ? -1 : 1,
       },
     };
+    if (params.core) {
+      const prompt = `C'est à ${resolvePlayerNameFromState(withPending, pendingInfo.playerId)} de choisir son pion.`;
+      const hasPrompt = Array.isArray(withPending.log)
+        ? withPending.log
+            .slice(-6)
+            .some((entry) => String(entry?.message ?? '').trim() === prompt)
+        : false;
+      if (!hasPrompt) {
+        withPending = params.core.appendLog(withPending, prompt);
+      }
+    }
     return typeof params.onPending === 'function'
       ? params.onPending(withPending)
       : withPending;

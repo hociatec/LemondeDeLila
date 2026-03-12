@@ -83,4 +83,22 @@ describe('TurnPoliciesService non-regression', () => {
       "C'est au tour de Lila.",
     );
   });
+
+  it('emits "de débuter" after recent pawn selection logs', () => {
+    const state: any = {
+      players: [{ id: 3, username: 'Lila' }],
+      log: [
+        { message: "C'est à Lila de choisir son pion." },
+        { message: 'Lila a choisi le pion: Coq rockeur.' },
+      ],
+    };
+
+    const out = service.appendTurnAnnouncement(state, 3);
+
+    expect(core.appendLog).toHaveBeenCalledWith(
+      state,
+      "C'est au tour de Lila de débuter.",
+    );
+    expect(out.log.at(-1)?.message).toBe("C'est au tour de Lila de débuter.");
+  });
 });

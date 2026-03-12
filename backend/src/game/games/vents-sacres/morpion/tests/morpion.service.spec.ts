@@ -92,6 +92,39 @@ describe('MorpionService', () => {
     expect((exposedAfterSetup.actions ?? []).length).toBe(9);
   });
 
+  it('logs a chooser prompt before each automatic bot pawn choice', async () => {
+    const service = new MorpionService(
+      { register: () => {} } as any,
+      new MorpionPresenter(new GridCellActionsService()),
+      new GameCoreService(),
+      new SetupFlowService(),
+    );
+
+    const state: any = service.hydrateInitialState({
+      status: 'started',
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [
+        { id: 1, username: 'Bot', isBot: true },
+        { id: 2, username: 'Human' },
+      ],
+      log: [],
+      metadata: {},
+    } as any);
+
+    const messages = (state.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+    const botPromptIndex = messages.findIndex(
+      (message: string) => message === "C'est à Bot de choisir son pion.",
+    );
+    const botChoiceIndex = messages.findIndex((message: string) =>
+      message.startsWith('Bot a choisi le pion: '),
+    );
+
+    expect(botPromptIndex).toBeGreaterThanOrEqual(0);
+    expect(botChoiceIndex).toBeGreaterThan(botPromptIndex);
+  });
+
   it('detects a winner', async () => {
     const service = new MorpionService(
       { register: () => {} } as any,
