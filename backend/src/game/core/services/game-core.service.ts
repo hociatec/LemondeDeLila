@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { RoomPayload } from '../../../room/dto/room-response.dto';
 import {
   GameLogEntry,
@@ -40,7 +40,7 @@ function extractPawnPromptToken(message: string): string | null {
     return 'prompt:choose-your-pawn';
   }
 
-  const withPlayer = /^c['’]est à (.+?) de choisir son pion(?:[.,!?]|$)/i.exec(
+  const withPlayer = /^c['â€™]est Ã  (.+?) de choisir (?:son|un) pion(?:[.,!?]|$)/i.exec(
     text,
   );
   if (withPlayer) {
@@ -141,8 +141,8 @@ export class GameCoreService {
       ? this.shufflePlayers(playersBase, rng.seed)
       : playersBase;
 
-    // ownerPlayerId: identifiant du "propriétaire de la table" (par id joueur).
-    // Important: ne pas l'utiliser pour la seed RNG (donc le calculer après ensureSeededRng).
+    // ownerPlayerId: identifiant du "propriÃ©taire de la table" (par id joueur).
+    // Important: ne pas l'utiliser pour la seed RNG (donc le calculer aprÃ¨s ensureSeededRng).
     metadata.ownerPlayerId =
       roomOwnerId != null && players.some((p) => p?.id === roomOwnerId)
         ? roomOwnerId
@@ -243,3 +243,4 @@ export class GameCoreService {
     return seededShuffle(players, seed, 'game-core:starter');
   }
 }
+

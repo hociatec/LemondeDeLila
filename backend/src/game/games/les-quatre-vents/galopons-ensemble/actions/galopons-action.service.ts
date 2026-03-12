@@ -18,6 +18,7 @@ import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.ser
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
+import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
 import type {
   GaloponsCard,
   GaloponsMetadata,
@@ -814,50 +815,20 @@ export class GaloponsActionService {
       }))
       .filter((pawn) => pawn.id.length > 0);
 
-    const pendingInfo = this.setupFlow.createSequentialPawnPending({
+    return continueSequentialPawnSelection({
+      state,
+      setupFlow: this.setupFlow,
+      chooserPlayerId: meta.setupStarterId ?? players[0]?.id ?? null,
       players,
-      startPlayerId: meta.setupStarterId ?? players[0]?.id ?? null,
       isAssigned: (playerId) => Boolean(pawnByPlayerId[playerId]),
       pawns: availablePawns,
+      starterId: meta.setupStarterId ?? players[0]?.id ?? null,
       pawnDataMapper: (choice) => ({
         id: toText(choice.id),
         label: toText(choice.label),
         description: toText(choice.description),
       }),
     });
-    if (pendingInfo) {
-      return {
-        ...state,
-        pending: pendingInfo.pending,
-        turnIndex: pendingInfo.turnIndex,
-        turn: {
-          ...(state.turn ?? {
-            currentPlayerId: pendingInfo.playerId,
-            direction: 1,
-          }),
-          currentPlayerId: pendingInfo.playerId,
-          direction: state.turn?.direction === -1 ? -1 : 1,
-        },
-      };
-    }
-
-    const starterId = meta.setupStarterId ?? players[0]?.id ?? null;
-    if (
-      typeof starterId === 'number' &&
-      Number.isFinite(starterId) &&
-      state.turn?.currentPlayerId !== starterId
-    ) {
-      return {
-        ...state,
-        turn: {
-          ...(state.turn ?? { currentPlayerId: starterId, direction: 1 }),
-          currentPlayerId: starterId,
-          direction: state.turn?.direction === -1 ? -1 : 1,
-        },
-      };
-    }
-
-    return state;
   }
 
   private getMeta(state: GameStateEntity): GaloponsMetadata {

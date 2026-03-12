@@ -1,4 +1,4 @@
-import { normalizeGameLogMessage } from './log-style.helper';
+﻿import { normalizeGameLogMessage } from './log-style.helper';
 
 describe('log-style.helper', () => {
   it('normalizes spaces and line breaks', () => {
@@ -8,7 +8,7 @@ describe('log-style.helper', () => {
   });
 
   it('repairs mojibake in log messages', () => {
-    expect(normalizeGameLogMessage('Victoire de Lila : défi gagné.')).toBe(
+    expect(normalizeGameLogMessage('Victoire de Lila : dÃ©fi gagnÃ©.')).toBe(
       'Victoire de Lila: défi gagné.',
     );
   });
@@ -18,7 +18,16 @@ describe('log-style.helper', () => {
       normalizeGameLogMessage(
         'Lilas choisit le pion : Le Lion: Majestueux et fier..',
       ),
-    ).toBe('Lilas choisit le pion: Le Lion: Majestueux et fier.');
+    ).toBe('Lilas a choisi le pion: Le Lion: Majestueux et fier.');
+  });
+
+  it('normalizes pawn-choice prompts and confirmations', () => {
+    expect(normalizeGameLogMessage("C'est à Lilas de choisir un pion.")).toBe(
+      "C'est à Lilas de choisir son pion.",
+    );
+    expect(normalizeGameLogMessage('Lilas choisit le pion Coq rockeur.')).toBe(
+      'Lilas a choisi le pion: Coq rockeur.',
+    );
   });
 
   it('normalizes common french accent typos in logs', () => {
@@ -37,3 +46,4 @@ describe('log-style.helper', () => {
     expect(normalizeGameLogMessage('   \n\t')).toBe('');
   });
 });
+

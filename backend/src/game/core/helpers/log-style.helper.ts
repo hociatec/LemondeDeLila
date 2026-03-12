@@ -13,6 +13,25 @@ function normalizeCommonFrenchTypos(input: string): string {
     );
 }
 
+function normalizePawnChoiceLogs(input: string): string {
+  return input
+    .replace(
+      /^(.+?) choisit le pion\s*:?\s*(.+)$/i,
+      (_raw, who: string, pawn: string) =>
+        `${String(who).trim()} a choisi le pion: ${String(pawn).trim()}`,
+    )
+    .replace(
+      /^c['â€™]est à (.+?) de choisir un pion([.!?])?$/i,
+      (_raw, who: string, punct: string | undefined) =>
+        `C'est à ${String(who).trim()} de choisir son pion${punct ?? '.'}`,
+    )
+    .replace(
+      /^c['â€™]est Ã  (.+?) de choisir un pion([.!?])?$/i,
+      (_raw, who: string, punct: string | undefined) =>
+        `C'est à ${String(who).trim()} de choisir son pion${punct ?? '.'}`,
+    );
+}
+
 function toLogString(value: unknown): string {
   if (typeof value === 'string') return value;
   if (typeof value === 'number' || typeof value === 'boolean') {
@@ -32,5 +51,5 @@ export function normalizeGameLogMessage(input: unknown): string {
     .replace(/\s+([,;:.!?])/g, '$1')
     .replace(/(?<!\.)\.\.(?!\.)/g, '.')
     .trim();
-  return normalizeCommonFrenchTypos(normalized);
+  return normalizePawnChoiceLogs(normalizeCommonFrenchTypos(normalized));
 }

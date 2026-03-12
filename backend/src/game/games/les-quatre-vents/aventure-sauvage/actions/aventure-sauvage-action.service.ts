@@ -13,6 +13,7 @@ import {
   resolvePendingPawnChoiceAction,
   type PawnChoiceOption,
 } from '../../../../core/helpers/pawn-choice-action.helper';
+import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
 import type {
   AventureSauvageCard,
   AventureSauvageMetadata,
@@ -213,9 +214,12 @@ export class AventureSauvageActionService {
       metaForPending,
       pawnByPlayerIdForPending,
     );
-    const pendingInfo = this.setupFlow.createSequentialPawnPending({
+    const players = Array.isArray(next.players) ? next.players : [];
+    const started = continueSequentialPawnSelection({
+      state: next,
+      setupFlow: this.setupFlow,
+      chooserPlayerId: playerId,
       players: playersForPending,
-      startPlayerId: playerId,
       isAssigned: (candidateId) =>
         Boolean(pawnByPlayerIdForPending[candidateId]),
       pawns: choicesForPending.map((p) => ({
@@ -232,43 +236,15 @@ export class AventureSauvageActionService {
         label: toText(p.label),
         description: toText(p.description),
       }),
+      starterId:
+        typeof nextMeta.setupStarterId === 'number'
+          ? nextMeta.setupStarterId
+          : (state.turn?.currentPlayerId ?? players[0]?.id ?? null),
+      onPending: (withPending) => this.ensurePawnSelectionPrompt(withPending),
     });
-    if (pendingInfo) {
-      const withPending: GameStateEntity = {
-        ...next,
-        pending: pendingInfo.pending,
-        turnIndex: pendingInfo.turnIndex,
-        turn: {
-          ...(next.turn ?? { direction: 1 }),
-          currentPlayerId: pendingInfo.playerId,
-          direction: 1,
-        },
-      };
-      return this.ensurePawnSelectionPrompt(withPending);
+    if (started.pending) {
+      return started;
     }
-
-    const players = Array.isArray(next.players) ? next.players : [];
-    const starterId =
-      typeof nextMeta.setupStarterId === 'number'
-        ? nextMeta.setupStarterId
-        : (state.turn?.currentPlayerId ?? players[0]?.id ?? null);
-    const starterIndex =
-      starterId != null ? players.findIndex((p) => p?.id === starterId) : -1;
-    const resolvedStarterId =
-      starterId != null && starterIndex >= 0
-        ? starterId
-        : (players[0]?.id ?? null);
-
-    const started: GameStateEntity = {
-      ...next,
-      pending: null,
-      turnIndex: starterIndex >= 0 ? starterIndex : next.turnIndex,
-      turn: {
-        ...(next.turn ?? { direction: 1 }),
-        currentPlayerId: resolvedStarterId,
-        direction: 1,
-      },
-    };
     const starterName = resolvePlayerNameFromState(
       started,
       resolvedStarterId ?? players[0]?.id ?? 0,

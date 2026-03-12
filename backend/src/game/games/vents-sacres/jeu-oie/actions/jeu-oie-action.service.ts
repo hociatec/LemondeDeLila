@@ -9,6 +9,7 @@ import { GameCoreService } from '../../../../core/services/game-core.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
 import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
+import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
 import type { JeuOieMetadata, JeuOieTile } from '../model/jeu-oie-state.entity';
 
 import {
@@ -119,56 +120,32 @@ export class JeuOieActionService {
         feminine: Boolean(p?.feminine),
       }))
       .filter((p) => p.id.length > 0 && !usedForPending.has(p.id));
-    const pendingInfo = this.setupFlow.createSequentialPawnPending({
+    const players = Array.isArray(next.players) ? next.players : [];
+    let started = continueSequentialPawnSelection({
+      state: next,
+      setupFlow: this.setupFlow,
+      chooserPlayerId: playerId,
       players: playersForPending,
-      startPlayerId: playerId,
-      isAssigned: (candidateId) =>
-        Boolean(pawnByPlayerIdForPending[candidateId]),
+      isAssigned: (candidateId) => Boolean(pawnByPlayerIdForPending[candidateId]),
       pawns: choicesForPending,
       pawnDataMapper: (p: any) => ({
         id: String(p?.id ?? '').trim(),
         label: String(p?.label ?? '').trim(),
         feminine: Boolean(p?.feminine),
       }),
+      starterId:
+        typeof nextMeta.setupStarterId === 'number'
+          ? nextMeta.setupStarterId
+          : (players[0]?.id ?? null),
+      onPending: (withPending) => this.ensurePawnSelectionPrompt(withPending),
     });
-    if (pendingInfo) {
-      const withPending: GameStateEntity = {
-        ...next,
-        pending: pendingInfo.pending,
-        turnIndex: pendingInfo.turnIndex,
-        turn: {
-          ...(next.turn ?? { direction: 1 }),
-          currentPlayerId: pendingInfo.playerId,
-          direction: 1,
-        },
-      };
-      return this.ensurePawnSelectionPrompt(withPending);
+    if (started.pending) {
+      return started;
     }
 
-    const players = Array.isArray(next.players) ? next.players : [];
-    const starterId =
-      typeof nextMeta.setupStarterId === 'number'
-        ? nextMeta.setupStarterId
-        : (players[0]?.id ?? null);
-    const starterIndex =
-      starterId != null ? players.findIndex((p) => p?.id === starterId) : -1;
-    const resolvedStarterId =
-      starterId != null && starterIndex >= 0
-        ? starterId
-        : (players[0]?.id ?? null);
-    let started: GameStateEntity = {
-      ...next,
-      pending: null,
-      turnIndex: starterIndex >= 0 ? starterIndex : next.turnIndex,
-      turn: {
-        ...(next.turn ?? { direction: 1 }),
-        currentPlayerId: resolvedStarterId,
-        direction: 1,
-      },
-    };
     const starterName = resolvePlayerNameFromState(
       started,
-      resolvedStarterId ?? 0,
+      started.turn?.currentPlayerId ?? 0,
     );
     started = this.core.appendLog(
       started,
@@ -176,7 +153,7 @@ export class JeuOieActionService {
     );
     return this.getTurnPolicies().appendTurnAnnouncement(
       started,
-      resolvedStarterId,
+      started.turn?.currentPlayerId ?? null,
       (s, id) => resolvePlayerNameFromState(s, id),
     );
   }
@@ -472,12 +449,14 @@ export class JeuOieActionService {
     const pawns = availablePawns.length > 0 ? availablePawns : fallbackPawns;
     if (!pawns.length) return state;
 
-    const pendingInfo = this.setupFlow.createSequentialPawnPending({
-      players,
-      startPlayerId:
+    return continueSequentialPawnSelection({
+      state,
+      setupFlow: this.setupFlow,
+      chooserPlayerId:
         typeof state.turn?.currentPlayerId === 'number'
           ? state.turn.currentPlayerId
           : (players[0]?.id ?? null),
+      players,
       isAssigned,
       pawns,
       pawnDataMapper: (choice: any) => ({
@@ -485,20 +464,8 @@ export class JeuOieActionService {
         label: String(choice?.label ?? '').trim(),
         feminine: Boolean(choice?.feminine),
       }),
+      onStarted: () => ({ ...state, pending: null }),
     });
-    if (!pendingInfo) return state;
-
-    const next: GameStateEntity = {
-      ...state,
-      pending: pendingInfo.pending,
-      turnIndex: pendingInfo.turnIndex,
-      turn: {
-        ...(state.turn ?? { direction: 1 }),
-        currentPlayerId: pendingInfo.playerId,
-        direction: 1,
-      },
-    };
-    return next;
   }
 
   private getTurnPolicies(): TurnPoliciesService {

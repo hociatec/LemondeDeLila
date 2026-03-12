@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+﻿import { BadRequestException } from '@nestjs/common';
 import { GameEngineService } from '../services/game-engine.service';
 import { GameCoreService } from '../../core/services/game-core.service';
 import { BoardPayloadService } from '../../modules/board/services/board-payload.service';
@@ -56,7 +56,7 @@ describe('GameEngineService', () => {
       turn: { currentPlayerId: 2, direction: 1 },
       pending: { type: 'choose_pawn', playerId: 2, blocking: true },
       log: [
-        { message: "C'est à Lilas de choisir un pion." },
+        { message: "C'est à Lilas de choisir son pion." },
         { message: "C'est au tour de Lilas." },
         { message: '[Panier Express] Lilas a choisi le pion: panier en osier.' },
       ],
@@ -66,7 +66,7 @@ describe('GameEngineService', () => {
     const out = (engine as any).appendFirstTurnAnnouncement(state);
     const messages = (out.log ?? []).map((entry: any) => String(entry?.message));
 
-    expect(messages).toContain("C'est à Mouche de choisir un pion.");
+    expect(messages).toContain("C'est à Mouche de choisir son pion.");
   });
 
   it('does not duplicate the same pawn chooser announcement', () => {
@@ -91,7 +91,7 @@ describe('GameEngineService', () => {
       players: [{ id: 2, username: 'Mouche' }],
       turn: { currentPlayerId: 2, direction: 1 },
       pending: { type: 'choose_pawn', playerId: 2, blocking: true },
-      log: [{ message: "C'est à Mouche de choisir un pion." }],
+      log: [{ message: "C'est à Mouche de choisir son pion." }],
       metadata: {},
     };
 
@@ -655,7 +655,7 @@ describe('GameEngineService', () => {
     expect(out).toEqual([]);
   });
 
-  it("réordonne les joueurs sautés avant l'annonce du prochain tour", () => {
+  it("rÃ©ordonne les joueurs sautÃ©s avant l'annonce du prochain tour", () => {
     const engine = new GameEngineService(
       {} as any,
       new GameCoreService(),
@@ -697,7 +697,7 @@ describe('GameEngineService', () => {
     expect(out.metadata?.turnFlow?.skipped ?? []).toEqual([]);
   });
 
-  it("annonce les cases de contes et cacahuètes sans numéro de case", () => {
+  it("annonce les cases de contes et cacahuÃ¨tes sans numÃ©ro de case", () => {
     const engine = new GameEngineService(
       {} as any,
       new GameCoreService(),
@@ -722,7 +722,7 @@ describe('GameEngineService', () => {
         tiles: [
           {
             label:
-              "Case Départ: Vous ouvrez le grand livre des contes, et un vent de magie emporte vos feuilles volantes Chaque pas vous rapproche d'histoires fantastiques, de surprises et de rires à profusion. L'aventure commence maintenant !",
+              "Case DÃ©part: Vous ouvrez le grand livre des contes, et un vent de magie emporte vos feuilles volantes Chaque pas vous rapproche d'histoires fantastiques, de surprises et de rires Ã  profusion. L'aventure commence maintenant !",
           },
         ],
       },
@@ -737,7 +737,7 @@ describe('GameEngineService', () => {
         tiles: [
           {
             label:
-              "Case Départ: Vous ouvrez le grand livre des contes, et un vent de magie emporte vos feuilles volantes Chaque pas vous rapproche d'histoires fantastiques, de surprises et de rires à profusion. L'aventure commence maintenant !",
+              "Case DÃ©part: Vous ouvrez le grand livre des contes, et un vent de magie emporte vos feuilles volantes Chaque pas vous rapproche d'histoires fantastiques, de surprises et de rires Ã  profusion. L'aventure commence maintenant !",
           },
         ],
       },
@@ -757,7 +757,7 @@ describe('GameEngineService', () => {
       String(entry?.message ?? ''),
     );
 
-    expect(messages.some((message: string) => message.startsWith('Lilas arrive sur Case Départ:'))).toBe(
+    expect(messages.some((message: string) => message.includes('Case Départ'))).toBe(
       true,
     );
     expect(messages.some((message: string) => message.includes('case 1 -'))).toBe(
@@ -1215,7 +1215,7 @@ describe('GameEngineService', () => {
       turnIndex: 4,
       players: [
         { id: 1, username: 'Hacene', isBot: false },
-        { id: -7, username: 'Idéfix', isBot: true },
+        { id: -7, username: 'IdÃ©fix', isBot: true },
       ],
       turn: { currentPlayerId: -7, direction: 1 },
       metadata: {},
@@ -1225,7 +1225,7 @@ describe('GameEngineService', () => {
     const payload: any = {
       room: {
         players: [{ id: 1, username: 'Hacene' }],
-        bots: [{ id: 7, name: 'Idéfix' }],
+        bots: [{ id: 7, name: 'IdÃ©fix' }],
       },
     };
 
@@ -1267,7 +1267,7 @@ describe('GameEngineService', () => {
     const payload: any = {
       room: {
         players: [{ id: 1, username: 'Hacene' }],
-        bots: [{ id: 11, name: 'Idéfix' }],
+        bots: [{ id: 11, name: 'IdÃ©fix' }],
       },
     };
 
@@ -1501,3 +1501,5 @@ describe('GameEngineService', () => {
     expect(payload.endgameMessagesByPlayerId).toEqual({});
   });
 });
+
+

@@ -19,6 +19,7 @@ import { BoardEffectsPoliciesService } from '../../../../modules/board-effects-p
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
+import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
 import type {
   FrousseCard,
   FrousseMetadata,
@@ -127,6 +128,10 @@ export class FrousseActionService {
   private ensurePawnSelection(state: GameStateEntity): GameStateEntity {
     if (state.pending) return state;
     const players = Array.isArray(state.players) ? state.players : [];
+    const everyoneHasPawn = players.every((player) =>
+      Boolean(resolvePawnId(player?.pawn)),
+    );
+    if (everyoneHasPawn) return state;
     const metaForPending = this.getMeta(state);
     const usedForPending = new Set(
       players
@@ -142,9 +147,11 @@ export class FrousseActionService {
         description: toText(p?.description),
       }))
       .filter((p) => p.id.length > 0 && !usedForPending.has(p.id));
-    const pendingInfo = this.setupFlow.createSequentialPawnPending({
+    return continueSequentialPawnSelection({
+      state,
+      setupFlow: this.setupFlow,
+      chooserPlayerId: players[0]?.id ?? null,
       players,
-      startPlayerId: players[0]?.id ?? null,
       isAssigned: (candidateId) => {
         const player = players.find((p) => p?.id === candidateId);
         return Boolean(resolvePawnId(player?.pawn));
@@ -157,26 +164,6 @@ export class FrousseActionService {
       }),
       extraPendingData: { kind: 'choose_pawn' },
     });
-    if (!pendingInfo) return state;
-    const withPending: GameStateEntity = {
-      ...state,
-      pending: pendingInfo.pending,
-      turnIndex: pendingInfo.turnIndex,
-      turn: {
-        ...(state.turn ?? {
-          currentPlayerId: pendingInfo.playerId,
-          direction: 1,
-        }),
-        currentPlayerId: pendingInfo.playerId,
-        direction: state.turn?.direction === -1 ? -1 : 1,
-      },
-    };
-    const chooserId =
-      typeof pendingInfo.playerId === 'number' ? pendingInfo.playerId : null;
-    if (chooserId == null) {
-      return withPending;
-    }
-    return withPending;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {

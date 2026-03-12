@@ -12,6 +12,7 @@ import {
   resolvePendingPawnChoiceAction,
   type PawnChoiceOption,
 } from '../../../../core/helpers/pawn-choice-action.helper';
+import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
 import type {
   AFondLesBallonsCard,
   AFondLesBallonsMetadata,
@@ -344,9 +345,12 @@ export class AFondLesBallonsActionService {
       metaForPending,
       pawnByPlayerIdForPending,
     );
-    const pendingInfo = this.setupFlow.createSequentialPawnPending({
+    const players = Array.isArray(next.players) ? next.players : [];
+    const withTurn = continueSequentialPawnSelection({
+      state: next,
+      setupFlow: this.setupFlow,
+      chooserPlayerId: playerId,
       players: playersForPending,
-      startPlayerId: playerId,
       isAssigned: (candidateId) =>
         Boolean(pawnByPlayerIdForPending[candidateId]),
       pawns: choicesForPending.map((p) => ({
@@ -363,43 +367,14 @@ export class AFondLesBallonsActionService {
         label: toText(pawn.label),
         description: toText(pawn.description),
       }),
+      starterId:
+        typeof nextMeta.setupStarterId === 'number'
+          ? nextMeta.setupStarterId
+          : (state.turn?.currentPlayerId ?? players[0]?.id ?? null),
     });
-    if (pendingInfo) {
-      const withPending: GameStateEntity = {
-        ...next,
-        pending: pendingInfo.pending,
-        turnIndex: pendingInfo.turnIndex,
-        turn: {
-          ...(next.turn ?? { direction: 1 }),
-          currentPlayerId: pendingInfo.playerId,
-          direction: 1,
-        },
-      };
-      return withPending;
+    if (withTurn.pending) {
+      return withTurn;
     }
-
-    const players = Array.isArray(next.players) ? next.players : [];
-    const starterId =
-      typeof nextMeta.setupStarterId === 'number'
-        ? nextMeta.setupStarterId
-        : (state.turn?.currentPlayerId ?? players[0]?.id ?? null);
-    const starterIndex =
-      starterId != null ? players.findIndex((p) => p?.id === starterId) : -1;
-    const resolvedStarterId =
-      starterId != null && starterIndex >= 0
-        ? starterId
-        : (players[0]?.id ?? null);
-
-    const withTurn: GameStateEntity = {
-      ...next,
-      pending: null,
-      turnIndex: starterIndex >= 0 ? starterIndex : next.turnIndex,
-      turn: {
-        ...(next.turn ?? { direction: 1 }),
-        currentPlayerId: resolvedStarterId,
-        direction: 1,
-      },
-    };
     return this.appendTurnAnnouncement(withTurn);
   }
 

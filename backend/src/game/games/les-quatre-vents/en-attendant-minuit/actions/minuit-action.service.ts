@@ -2,7 +2,6 @@
 import type {
   GameStateEntity,
   PendingState,
-  TurnStateEntity,
 } from '../../../../core/entities/game-state.entity';
 import {
   applyActionsSequentially,
@@ -20,6 +19,7 @@ import { DeckPoliciesService } from '../../../../modules/deck-policies/services/
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
 import { PromptPoliciesService } from '../../../../modules/prompt-policies/services/prompt-policies.service';
+import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
 import { MINUIT_GAME } from '../definitions/minuit.definition';
 import type {
   MinuitCard,
@@ -454,9 +454,11 @@ export class MinuitActionService {
     const choiceEntries = this.listPawnChoiceEntries(this.getMeta(state));
     const available = choiceEntries.filter((entry) => !taken.has(entry.id));
     const entries = available.length ? available : [...choiceEntries];
-    const pendingInfo = this.setupFlow.createSequentialPawnPending({
+    return continueSequentialPawnSelection({
+      state,
+      setupFlow: this.setupFlow,
+      chooserPlayerId: players[0]?.id ?? null,
       players,
-      startPlayerId: players[0]?.id ?? null,
       isAssigned: (playerId) => {
         const player = players.find((p) => Number(p?.id) === playerId);
         return (
@@ -466,12 +468,12 @@ export class MinuitActionService {
         );
       },
       pendingType: 'pick_pawn',
+      includeChoiceMapData: true,
       pawns: entries.map((entry) => ({
         id: entry.id,
         label: entry.label,
         description: entry.description,
       })),
-      includeChoiceMapData: true,
       pawnDataMapper: (choice: unknown) => {
         const choiceRecord = asRecord(choice);
         return {
@@ -480,24 +482,8 @@ export class MinuitActionService {
           description: toText(choiceRecord.description).trim(),
         };
       },
+      onStarted: () => ({ ...state, pending: null }),
     });
-    if (!pendingInfo) return state;
-    const fallbackTurn: TurnStateEntity = {
-      currentPlayerId: pendingInfo.playerId,
-      direction: 1,
-    };
-    const existingTurn: TurnStateEntity = state.turn ?? fallbackTurn;
-    const withPending: GameStateEntity = {
-      ...state,
-      pending: pendingInfo.pending,
-      turnIndex: pendingInfo.turnIndex,
-      turn: {
-        ...existingTurn,
-        currentPlayerId: pendingInfo.playerId,
-        direction: existingTurn.direction === -1 ? -1 : 1,
-      },
-    };
-    return withPending;
   }
 
   private assignBotPawns(state: GameStateEntity): GameStateEntity {

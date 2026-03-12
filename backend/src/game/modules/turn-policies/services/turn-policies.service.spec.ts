@@ -1,4 +1,4 @@
-import { GameCoreService } from '../../../core/services/game-core.service';
+﻿import { GameCoreService } from '../../../core/services/game-core.service';
 import { TurnPoliciesService } from './turn-policies.service';
 
 describe('TurnPoliciesService non-regression', () => {
@@ -45,8 +45,9 @@ describe('TurnPoliciesService non-regression', () => {
     const out = service.appendTurnAnnouncement(state, 3);
     expect(core.appendLog).toHaveBeenCalledWith(
       state,
-      "C'est à Lila de choisir un pion.",
+      "C'est à Lila de choisir son pion.",
     );
-    expect(out.log.at(-1)?.message).toBe("C'est à Lila de choisir un pion.");
+    expect(out.log.at(-1)?.message).toBe("C'est à Lila de choisir son pion.");
   });
 });
+
