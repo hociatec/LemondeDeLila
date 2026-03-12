@@ -131,6 +131,73 @@ public sealed class GamePlayLogRewriterTests
             announcements.Messages.ToArray());
     }
 
+    [Fact]
+    public void GameHistorySink_SkipsRegularTurnAnnouncementDuringPawnSetup()
+    {
+        var announcements = new RecordingAnnouncementService();
+        var history = new GameHistoryViewModel(new CatalogGame
+        {
+            Id = "a-fond-les-ballons",
+            Name = "A fond les ballons",
+            Summary = "Test",
+            MinPlayers = 2,
+            MaxPlayers = 4,
+            Engine = "plateau",
+        });
+        var sink = new GameHistorySink(
+            Dispatcher.CurrentDispatcher,
+            history,
+            announcements);
+
+        sink.Add("C'est à hacene de choisir son pion.");
+        sink.Add("C'est au tour de hacene.");
+        sink.Add("hacene a choisi le pion: Capitaine Cacahuète.");
+
+        Assert.Equal(
+            new[]
+            {
+                "C'est à hacene de choisir son pion.",
+                "hacene a choisi le pion: Capitaine Cacahuète.",
+            },
+            history.Entries.ToArray());
+    }
+
+    [Fact]
+    public void GameHistorySink_KeepsStarterAnnouncementAfterPawnSetup()
+    {
+        var announcements = new RecordingAnnouncementService();
+        var history = new GameHistoryViewModel(new CatalogGame
+        {
+            Id = "a-fond-les-ballons",
+            Name = "A fond les ballons",
+            Summary = "Test",
+            MinPlayers = 2,
+            MaxPlayers = 4,
+            Engine = "plateau",
+        });
+        var sink = new GameHistorySink(
+            Dispatcher.CurrentDispatcher,
+            history,
+            announcements);
+
+        sink.Add("C'est à hacene de choisir son pion.");
+        sink.Add("hacene a choisi le pion: Capitaine Cacahuète.");
+        sink.Add("C'est à Karaba de choisir son pion.");
+        sink.Add("Karaba a choisi le pion: Hamstero Dynamite.");
+        sink.Add("C'est au tour de hacene de débuter.");
+
+        Assert.Equal(
+            new[]
+            {
+                "C'est à hacene de choisir son pion.",
+                "hacene a choisi le pion: Capitaine Cacahuète.",
+                "C'est à Karaba de choisir son pion.",
+                "Karaba a choisi le pion: Hamstero Dynamite.",
+                "C'est au tour de hacene de débuter.",
+            },
+            history.Entries.ToArray());
+    }
+
     private sealed class RecordingAnnouncementService : IAnnouncementService
     {
         public List<(string Message, AnnouncementPriority Priority)> Messages { get; } = new();

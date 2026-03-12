@@ -87,6 +87,11 @@ public partial class GameHistorySink
             return true;
         }
 
+        if (ShouldSkipPawnSetupTurnAnnouncement(cleaned))
+        {
+            return true;
+        }
+
         var now = DateTime.UtcNow;
 
         // When the server provides a timestamp, it is a stable identifier for that log entry
@@ -168,6 +173,34 @@ public partial class GameHistorySink
         _lastMessage = cleaned;
         _lastMessageAtUtc = now;
         return false;
+    }
+
+    private bool ShouldSkipPawnSetupTurnAnnouncement(string cleaned)
+    {
+        if (string.IsNullOrWhiteSpace(cleaned))
+        {
+            return false;
+        }
+
+        var normalized = cleaned.Trim();
+        if (!normalized.StartsWith("C'est au tour de ", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (normalized.IndexOf("de début", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            return false;
+        }
+
+        var recentEntries = _history.Entries
+            .TakeLast(6)
+            .Select(entry => NormalizeAnnouncement(entry))
+            .Where(entry => !string.IsNullOrWhiteSpace(entry));
+
+        return recentEntries.Any(entry =>
+            entry.IndexOf("choisir son pion", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            entry.IndexOf("a choisi le pion:", StringComparison.OrdinalIgnoreCase) >= 0);
     }
 
     private static string? BuildDedupeKey(string message)

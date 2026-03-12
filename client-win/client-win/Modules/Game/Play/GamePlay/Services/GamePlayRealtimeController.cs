@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
-using client_win.Modules.Game.Play.Announcements.Services;
 using client_win.Modules.Game.Play.Board.Services;
 using client_win.Modules.Game.Play.Choices.ViewModels;
 using client_win.Modules.Game.Play.Common;
@@ -25,7 +24,6 @@ internal sealed class GamePlayRealtimeController
     private readonly GamePlayPanelRequester _panels;
     private readonly GamePlayStateProjector _projector;
     private readonly GamePlayStatePresenter _presenter;
-    private readonly GamePlayAnnouncementRouter _announcementRouter;
     private readonly GamePlayEndgameSoundPlayer _endgameSounds;
     private readonly GamePlayDiceSoundPlayer _diceSounds;
     private readonly GamePlayLogSoundPlayer _logSounds;
@@ -48,7 +46,6 @@ internal sealed class GamePlayRealtimeController
     private string? _lastGameStatus;
     private string? _lastGamePhase;
     private int? _viewerPlayerId;
-    private int? _lastStateTurnPlayerId;
     private string _lastPendingType = string.Empty;
     private string _lastPendingFocusSignature = string.Empty;
     private bool _lastBotThinking;
@@ -62,7 +59,6 @@ internal sealed class GamePlayRealtimeController
     private bool _lastStartReadyKnown;
     private bool _lastViewerTurnActionable;
     private bool _lastViewerMustChoosePawn;
-    private int _pendingForcedTurnAnnouncements;
     private Dictionary<string, int>? _lastViewerHandCounts;
     private readonly object _statePumpLock = new();
     private readonly List<GameStateDto> _pendingStates = new();
@@ -75,7 +71,6 @@ internal sealed class GamePlayRealtimeController
         GamePlayPanelRequester panels,
         GamePlayStateProjector projector,
         GamePlayStatePresenter presenter,
-        GamePlayAnnouncementRouter announcementRouter,
         GamePlayEndgameSoundPlayer endgameSounds,
         GamePlayDiceSoundPlayer diceSounds,
         GamePlayLogSoundPlayer logSounds,
@@ -98,7 +93,6 @@ internal sealed class GamePlayRealtimeController
         _panels = panels ?? throw new ArgumentNullException(nameof(panels));
         _projector = projector ?? throw new ArgumentNullException(nameof(projector));
         _presenter = presenter ?? throw new ArgumentNullException(nameof(presenter));
-        _announcementRouter = announcementRouter ?? throw new ArgumentNullException(nameof(announcementRouter));
         _endgameSounds = endgameSounds ?? throw new ArgumentNullException(nameof(endgameSounds));
         _diceSounds = diceSounds ?? throw new ArgumentNullException(nameof(diceSounds));
         _logSounds = logSounds ?? throw new ArgumentNullException(nameof(logSounds));
@@ -121,11 +115,9 @@ internal sealed class GamePlayRealtimeController
     internal void ResetForInitialize()
     {
         _skipLogReplayOnce = true;
-        _lastStateTurnPlayerId = null;
         _lastGameStatus = null;
         _lastGamePhase = null;
         _viewerPlayerId = null;
-        _pendingForcedTurnAnnouncements = 0;
         _lastPendingType = string.Empty;
         _lastPendingFocusSignature = string.Empty;
         _lastBotThinking = false;
@@ -196,24 +188,10 @@ internal sealed class GamePlayRealtimeController
 
     internal void NoteForcedTurnRequest()
     {
-        _pendingForcedTurnAnnouncements = Math.Min(3, _pendingForcedTurnAnnouncements + 1);
     }
 
     internal void HandleTurnUpdated(TurnInfoDto info)
     {
-        _dispatcher.InvokeAsync(() =>
-        {
-            var force = _pendingForcedTurnAnnouncements > 0;
-            if (force) _pendingForcedTurnAnnouncements = Math.Max(0, _pendingForcedTurnAnnouncements - 1);
-            // Évite le spam : les tours sont déjà annoncés via l'historique serveur.
-            // Garder seulement les annonces "forcées" (ex: demande manuelle de game.turn).
-            if (force &&
-                string.Equals(_lastGameStatus, "started", StringComparison.OrdinalIgnoreCase) &&
-                (_lastStartReady || !_lastStartReadyKnown))
-            {
-        _announcementRouter.TryHandleTurnUpdate(info, msg => _emitMessage(new GamePlayHistoryMessage(msg)), force: true);
-            }
-        }, DispatcherPriority.Background);
     }
 
     internal void HandleStateUpdated(GameStateDto state)
@@ -412,17 +390,12 @@ internal sealed class GamePlayRealtimeController
         var extractedViewerId = GamePlayExtrasParser.ExtractViewerPlayerId(state);
         var viewerId = extractedViewerId ?? _viewerPlayerId;
         var viewerUsername = GetUsername(state, viewerId);
-        var previousTurnPlayerId = _lastStateTurnPlayerId;
         var previousPendingType = _lastPendingType;
         var previousPendingFocusSignature = _lastPendingFocusSignature;
         var previousBotThinking = _lastBotThinking;
         var currentHandCounts = BuildHandCounts(GamePlayExtrasParser.ExtractViewerHandLabels(state));
         var nextPendingType = PawnPendingTypes.Normalize(state.Pending?.Type);
         var nextPendingFocusSignature = BuildPendingFocusSignature(state.Pending);
-        var endedPawnSelection =
-            PawnPendingTypes.IsPawnPendingType(previousPendingType) &&
-            !PawnPendingTypes.IsPawnPendingType(state.Pending?.Type);
-
         var nextStatus = NormalizeStatus(state);
         var nextPhase = (state.Phase ?? string.Empty).Trim();
         var previousStatus = _lastGameStatus ?? string.Empty;
@@ -533,27 +506,6 @@ internal sealed class GamePlayRealtimeController
             _recentHistoryLineSet.Clear();
             // During pawn selection setup, the server log is authoritative.
             // Do not synthesize a local "C'est au tour de ..." around choose/pick pawn.
-            if (!HasPawnSetupContext(state) &&
-                (startReady || !startReadyKnown))
-            {
-                var currentPlayerId = state.Turn?.CurrentPlayerId;
-                var currentPlayerUsername = currentPlayerId != null
-                    ? state.Players?
-                        .FirstOrDefault(p => p != null && p.Id == currentPlayerId.Value)?
-                        .Username?
-                        .Trim()
-                    : null;
-                _announcementRouter.TryHandleTurnUpdate(
-                    new TurnInfoDto
-                    {
-                        CurrentPlayerId = currentPlayerId,
-                        CurrentPlayerUsername = string.IsNullOrWhiteSpace(currentPlayerUsername)
-                            ? null
-                            : currentPlayerUsername
-                    },
-                    msg => _emitMessage(new GamePlayHistoryMessage(msg)),
-                    force: true);
-            }
         }
 
         if (startReady && !previousStartReady)
@@ -638,10 +590,6 @@ internal sealed class GamePlayRealtimeController
         _lastBotThinking = state.BotThinking;
         _lastViewerHandCounts = currentHandCounts;
         _refreshCanExecute();
-        if (!endedPawnSelection)
-        {
-            TryAnnounceTurnFromState(state);
-        }
     }
 
     private static string BuildPendingFocusSignature(GamePendingDto? pending)
@@ -880,67 +828,6 @@ internal sealed class GamePlayRealtimeController
     {
         return GamePlayWinnerReader.TryExtractWinnerPlayerId(state) != null ||
                GamePlayWinnerReader.TryExtractOutcomeMap(state).Count > 0;
-    }
-
-    private static bool HasPawnSetupContext(GameStateDto state)
-    {
-        if (PawnPendingTypes.IsPawnPendingType(state.Pending?.Type))
-        {
-            return true;
-        }
-
-        if ((state.Actions ?? new List<GameAvailableActionDto>())
-            .Any(action => PawnPendingTypes.IsPawnPendingType(action?.Type)))
-        {
-            return true;
-        }
-
-        var recentMessages = (state.Log ?? new List<GameLogEntryDto>())
-            .TakeLast(6)
-            .Select(entry => (entry?.Message ?? string.Empty).Trim());
-
-        return recentMessages.Any(message =>
-            message.IndexOf("choisir son pion", StringComparison.OrdinalIgnoreCase) >= 0 ||
-            message.IndexOf("a choisi le pion:", StringComparison.OrdinalIgnoreCase) >= 0);
-    }
-
-    private void TryAnnounceTurnFromState(GameStateDto state, bool force = false)
-    {
-        if (!string.Equals(state.Status, "started", StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        // The server remains the sole source of truth during pawn setup.
-        if (HasPawnSetupContext(state))
-        {
-            return;
-        }
-
-        var currentPlayerId = state.Turn?.CurrentPlayerId;
-        if (currentPlayerId == null)
-        {
-            return;
-        }
-
-        if (!force && _lastStateTurnPlayerId == currentPlayerId)
-        {
-            return;
-        }
-
-        _lastStateTurnPlayerId = currentPlayerId;
-
-        var username = state.Players?
-            .FirstOrDefault(p => p != null && p.Id == currentPlayerId.Value)?
-            .Username;
-
-        _announcementRouter.TryHandleTurnUpdate(
-            new TurnInfoDto
-            {
-                CurrentPlayerId = currentPlayerId,
-                CurrentPlayerUsername = string.IsNullOrWhiteSpace(username) ? null : username.Trim()
-            },
-            emitHistoryMessage: msg => _emitMessage(new GamePlayHistoryMessage(msg)));
     }
 
     private void TryEmitGenericEndgameSummary(GameStateDto state)

@@ -13,7 +13,6 @@ using client_win.Core;
 using client_win.Core.Input;
 using client_win.Core.Text;
 using client_win.Modules.Audio.Services;
-using client_win.Modules.Game.Play.Announcements.Services;
 using client_win.Modules.Game.Play.Actions.Dtos;
 using client_win.Modules.Game.Play.Actions.Services;
 using client_win.Modules.Game.Play.Choices.Services;
@@ -58,7 +57,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private readonly GamePlayStateProjector _projector = new();
     private readonly GamePlayPanelRequester _panels = new();
     private readonly GamePlayStatePresenter _presenter;
-    private readonly GamePlayAnnouncementRouter _announcementRouter;
     private readonly GamePlayEndgameSoundPlayer _endgameSounds;
     private readonly GamePlayDiceSoundPlayer _diceSounds;
     private readonly GamePlayLogSoundPlayer _logSounds;
@@ -174,8 +172,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         _choices.PendingChoices.CollectionChanged += _pendingChoicesChangedHandler;
 
         _presenter = new GamePlayStatePresenter(_projector);
-        _announcementRouter = new GamePlayAnnouncementRouter();
-
         Grid = new GridBoardViewModel(
             dialogs: _dialogs,
             sounds: sounds ?? throw new ArgumentNullException(nameof(sounds)),
@@ -212,7 +208,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 	            panels: _panels,
 	            projector: _projector,
 	            presenter: _presenter,
-	            announcementRouter: _announcementRouter,
 	            endgameSounds: _endgameSounds,
 	            diceSounds: _diceSounds,
                 logSounds: _logSounds,

@@ -17,7 +17,6 @@ using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Game.Play.Actions.Dtos;
 using client_win.Modules.Game.Play.Actions.Services;
-using client_win.Modules.Game.Play.Announcements.Services;
 using client_win.Modules.Game.Play.Choices.ViewModels;
 using client_win.Modules.Game.Play.GamePlay.Dtos;
 using client_win.Modules.Game.Play.GamePlay.Services;
@@ -835,7 +834,6 @@ public sealed class GamePlayViewFocusTests
             panels: new GamePlayPanelRequester(),
             projector: projector,
             presenter: new GamePlayStatePresenter(projector),
-            announcementRouter: new GamePlayAnnouncementRouter(),
             endgameSounds: new GamePlayEndgameSoundPlayer(sounds),
             diceSounds: new GamePlayDiceSoundPlayer(sounds),
             logSounds: new GamePlayLogSoundPlayer(sounds),
