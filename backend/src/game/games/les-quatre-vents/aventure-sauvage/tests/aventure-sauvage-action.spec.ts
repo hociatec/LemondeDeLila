@@ -78,6 +78,51 @@ describe('AventureSauvageActionService', () => {
     );
   });
 
+  it('attribue automatiquement un pion au bot au demarrage', async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        GameCoreService,
+        RandomService,
+        SetupFlowService,
+        BoardEffectsPoliciesService,
+        DeckPoliciesService,
+        GameContentLoaderService,
+        AventureSauvageSetupService,
+        AventureSauvageActionService,
+      ],
+    }).compile();
+
+    const setup = moduleRef.get(AventureSauvageSetupService);
+
+    const state = setup.hydrateInitialState({
+      ...makeBaseState(),
+      players: [
+        { id: 1, username: 'Lilas', isBot: false },
+        { id: 2, username: 'Balto', isBot: true },
+      ],
+    });
+
+    expect(state.pending?.playerId).toBe(1);
+    const metadata = asRecord(state.metadata);
+    const pawnByPlayerId = asRecord(metadata.pawnByPlayerId);
+    expect(typeof pawnByPlayerId['2']).toBe('string');
+
+    const messages = messagesOf(state);
+    const botPromptIndex = messages.findIndex(
+      (message) => message === "C'est à Balto de choisir son pion.",
+    );
+    const botChoiceIndex = messages.findIndex((message) =>
+      message.startsWith('Balto a choisi le pion: '),
+    );
+    const humanPromptIndex = messages.findIndex(
+      (message) => message === "C'est à Lilas de choisir son pion.",
+    );
+
+    expect(botPromptIndex).toBeGreaterThanOrEqual(0);
+    expect(botChoiceIndex).toBeGreaterThan(botPromptIndex);
+    expect(humanPromptIndex).toBeGreaterThan(botChoiceIndex);
+  });
+
   it('avance le tour apres une pioche avec Passez un tour', async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [

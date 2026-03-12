@@ -10,7 +10,10 @@ import { GameContentLoaderService } from '../../../../engine/services/game-conte
 import { loadCanonicalPawns } from '../../../../core/helpers/pawn-catalog.helper';
 import { ensureSeededRng } from '../../../../../common/utils/seeded-rng';
 import { seededShuffle } from '../../../../../common/utils/seeded-shuffle';
-import { queueConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-setup.helper';
+import {
+  assignConfiguredBotPawns,
+  queueConfiguredPawnSelection,
+} from '../../../../core/helpers/configured-pawn-setup.helper';
 import type {
   AventureSauvageCard,
   AventureSauvageMetadata,
@@ -111,8 +114,19 @@ export class AventureSauvageSetupService {
       },
     };
 
-    return queueConfiguredPawnSelection({
+    const withBots = assignConfiguredBotPawns({
       state: next,
+      core: this.core,
+      catalog: pawns.map((pawn) => ({
+        id: pawn.id,
+        label: pawn.label,
+        description: pawn.description,
+      })),
+      metadataAssignmentKey: 'pawnByPlayerId',
+    });
+
+    return queueConfiguredPawnSelection({
+      state: withBots,
       core: this.core,
       setupFlow: this.setupFlow,
       catalog: pawns.map((pawn) => ({
