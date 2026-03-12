@@ -41,7 +41,7 @@ export class PanierExpressPhaseService {
       currentId != null
         ? (state.players ?? []).findIndex((p) => p.id === currentId)
         : state.turnIndex;
-    const next = this.turns.advanceTurn(state);
+    const next = this.turns.advanceTurn(state, { skipAnnouncement: true });
 
     const meta = this.getMetadata(next);
     const statuses: any = meta.statuses ?? {};
@@ -105,10 +105,6 @@ export class PanierExpressPhaseService {
       skipTurn: (withMeta.metadata as any)?.statuses?.skipTurn ?? {},
     });
     const skipped = Array.isArray(turnFlow?.skipped) ? turnFlow.skipped : [];
-    if (!skipped.length) {
-      return withMeta;
-    }
-
     let out = withMeta;
     for (const entry of skipped) {
       const id = typeof entry?.id === 'number' ? entry.id : null;
@@ -126,13 +122,21 @@ export class PanierExpressPhaseService {
       ...(turnFlow && typeof turnFlow === 'object' ? turnFlow : {}),
       skipped: [],
     };
-    return {
+    const cleaned: GameStateEntity = {
       ...out,
       metadata: {
         ...(out.metadata as any),
         turnFlow: cleanedTurnFlow,
       },
     };
+    const nextPlayerId = cleaned.turn?.currentPlayerId ?? null;
+    if (typeof nextPlayerId !== 'number' || !Number.isFinite(nextPlayerId)) {
+      return cleaned;
+    }
+    return this.core.appendLog(
+      cleaned,
+      `C'est au tour de ${this.utils.playerName(cleaned, nextPlayerId)}.`,
+    );
   }
 
   private applyVictory(state: GameStateEntity): GameStateEntity {

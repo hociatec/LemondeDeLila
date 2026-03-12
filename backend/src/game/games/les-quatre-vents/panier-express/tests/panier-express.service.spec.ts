@@ -106,6 +106,35 @@ describe('PanierExpressService', () => {
     expect(choices.length).toBeGreaterThanOrEqual(6);
   });
 
+  it('journalise le prochain choix de pion pour les joueurs suivants en setup séquentiel', () => {
+    let state: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'Lilas' },
+        { id: 2, username: 'Azrael' },
+        { id: 3, username: 'Scoop' },
+      ],
+      status: 'started',
+    } as any);
+
+    const firstPawn = (state.pending as any)?.data?.pawns?.[0]?.id;
+    state = service.applyActions(state, [
+      {
+        type: 'choose_pawn',
+        payload: { pawnId: firstPawn },
+        meta: { actorId: 1 },
+      } as any,
+    ]);
+
+    const messages = (state.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+    expect(messages).toContain(
+      '[Panier Express] Lilas a choisi le pion: panier en osier.',
+    );
+    expect(messages).toContain("C'est à Azrael de choisir un pion.");
+    expect(messages).toContain("C'est au tour de Azrael.");
+  });
+
   it('expose correctement les pending non-quiz et les vues joueurs', () => {
     const base: any = service.hydrateInitialState({
       players: [
@@ -213,6 +242,38 @@ describe('PanierExpressService', () => {
       payload: { playerId: 1 },
     });
     expect(afterSkip.turn?.currentPlayerId).toBe(2);
+  });
+
+  it("annonce les skips avant d'annoncer le prochain tour actif", () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'Lilas' },
+        { id: 2, username: 'Azrael' },
+        { id: 3, username: 'Scoop' },
+      ],
+      status: 'started',
+    } as any);
+    state.turn = { currentPlayerId: 1, direction: 1 };
+    state.turnIndex = 0;
+    state.metadata.statuses.skipTurn = { 2: 2, 3: 2 };
+
+    const after = phaseSvc.advanceTurn(state) as any;
+    const messages = (after.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+    const azraelIndex = messages.findIndex((message) =>
+      message.includes('Azrael passe son tour (1 restant).'),
+    );
+    const scoopIndex = messages.findIndex((message) =>
+      message.includes('Scoop passe son tour (1 restant).'),
+    );
+    const turnIndex = messages.findIndex((message) =>
+      message.includes("C'est au tour de Lilas."),
+    );
+
+    expect(azraelIndex).toBeGreaterThanOrEqual(0);
+    expect(scoopIndex).toBeGreaterThan(azraelIndex);
+    expect(turnIndex).toBeGreaterThan(scoopIndex);
   });
 
   it('incrémente le tour de plateau quand un joueur repasse par la case départ', () => {
@@ -759,6 +820,75 @@ describe('PanierExpressService', () => {
     expect(logs.some((message: string) => message.includes("n'a pas"))).toBe(
       true,
     );
+    expect(
+      logs.some((message: string) => message.includes('Refusez la demande')),
+    ).toBe(false);
+  });
+
+  it("l'échange imposé ne rend pas aléatoirement la carte donnée au joueur ciblé", () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        {
+          id: 1,
+          username: 'Lilas',
+          inventory: ['nashi'],
+          basket: [],
+          shoppingList: [],
+        },
+        {
+          id: 2,
+          username: 'Azrael',
+          inventory: ['framboise'],
+          basket: [],
+          shoppingList: [],
+        },
+      ],
+      status: 'started',
+      pending: {
+        type: 'pick',
+        playerId: 1,
+        blocking: true,
+        label: 'Choisissez une carte à donner à Azrael, puis Entrée.',
+        choices: ['nashi'],
+        data: {
+          kind: 'exchange.impose.choose_card',
+          initiatorId: 2,
+          cards: ['nashi'],
+        },
+      },
+    } as any);
+    state.turn = { currentPlayerId: 2, direction: 1 };
+    state.turnIndex = 1;
+
+    const after = service.applyActions(state, [
+      {
+        type: 'pick_choice',
+        payload: { index: 0 },
+        meta: { actorId: 1 },
+      } as any,
+    ]);
+
+    const lilas = (after.players as any[]).find((player) => player.id === 1);
+    const azrael = (after.players as any[]).find((player) => player.id === 2);
+
+    expect(lilas.inventory).not.toContain('nashi');
+    expect(azrael.inventory).toContain('nashi');
+  });
+
+  it('utilise un deck bonus global non dupliqué', () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      status: 'started',
+    } as any);
+
+    const bonusDeck = state.metadata?.decks?.['courses-bonus']?.deck ?? [];
+    const catalog = (service as any).setup.courseItems();
+
+    expect(bonusDeck.length).toBe(catalog.length);
+    expect(new Set(bonusDeck).size).toBe(catalog.length);
   });
 
   it('nettoie le log de quiz et met une pioche en attente après une bonne réponse', () => {

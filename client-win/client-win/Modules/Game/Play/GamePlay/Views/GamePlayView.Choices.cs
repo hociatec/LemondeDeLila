@@ -326,6 +326,20 @@ public partial class GamePlayView
                 return;
             }
 
+            // If choices appear while focus is already parked on the game root,
+            // move directly to the newly available list so arrows work immediately.
+            if (ChoicesList.IsVisible &&
+                ChoicesList.Items.Count > 0 &&
+                IsFocusInsideThisGameView() &&
+                !IsFocusWithinInteractiveTarget())
+            {
+                Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+                {
+                    FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
+                }));
+                return;
+            }
+
             // Ne pas voler le focus si l'utilisateur est dans une zone de saisie/lecture (ex: historique).
             if (IsTextInputFocused())
             {

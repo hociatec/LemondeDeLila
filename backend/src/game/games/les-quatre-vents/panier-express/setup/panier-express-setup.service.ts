@@ -202,7 +202,10 @@ export class PanierExpressSetupService {
     standIds.add('bonus');
     standIds.forEach((standId) => {
       const items = standMap[standId] ?? this.courseItems();
-      const deck = this.buildReplenishableDeck(items);
+      const deck =
+        standId === 'bonus'
+          ? [...this.courseItems()]
+          : this.buildReplenishableDeck(items);
       pool = this.setDeck(
         pool,
         `courses-${standId}`,

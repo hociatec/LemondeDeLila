@@ -290,6 +290,53 @@ public sealed class GamePlayViewFocusTests
     }
 
     [Fact]
+    public void PendingChoices_AppearWhileFocusOnGameRoot_FocusesChoicesList()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            EnsureTestApplicationResources();
+            var socket = new RecordingSocket();
+            var state = CreatePendingState(
+                pendingType: string.Empty,
+                label: string.Empty,
+                choices: []);
+            using var scope = CreateGamePlayViewModelScope(dispatcher, socket, state);
+            var view = new GamePlayView
+            {
+                DataContext = scope.ViewModel,
+            };
+            var window = CreateHostWindow(view);
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var choicesList = Assert.IsType<ListBox>(view.FindName("ChoicesList"));
+
+                view.Focus();
+                Keyboard.Focus(view);
+                Assert.True(IsFocusWithin(view));
+                Assert.False(IsFocusWithin(choicesList));
+
+                scope.ViewModel.PendingChoices.Add("Azrael");
+                scope.ViewModel.PendingChoices.Add("Scoop");
+                StaDispatcherHarness.Drain(dispatcher);
+
+                Assert.True(StaDispatcherHarness.WaitUntil(
+                    () => choicesList.Items.Count == 2 && IsFocusWithin(choicesList),
+                    dispatcher,
+                    2200));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void FocusPreferredInteractiveElement_WhenNoInteractiveTarget_FocusesGameRoot()
     {
         StaDispatcherHarness.Run(dispatcher =>

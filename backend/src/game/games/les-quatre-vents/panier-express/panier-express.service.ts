@@ -806,7 +806,21 @@ export class PanierExpressService extends AbstractGameService {
         direction: state.turn?.direction === -1 ? -1 : 1,
       },
     };
-    return withPending;
+    const alreadyAssignedCount = normalizedPlayers.filter((p) =>
+      this.getPawnText(p),
+    ).length;
+    if (alreadyAssignedCount <= 0) {
+      return withPending;
+    }
+    let announced = this.core.appendLog(
+      withPending,
+      `C'est à ${this.utils.playerName(withPending, chooser.id)} de choisir un pion.`,
+    );
+    announced = this.core.appendLog(
+      announced,
+      `C'est au tour de ${this.utils.playerName(announced, chooser.id)}.`,
+    );
+    return announced;
   }
 
   private ensureStarted(state: GameStateEntity): GameStateEntity {
@@ -2917,7 +2931,7 @@ export class PanierExpressService extends AbstractGameService {
     if (!inventory.includes(ingredient)) {
       return this.core.appendLog(
         state,
-        `[Panier Express] Case Échange : ${this.utils.playerName(state, actorId)} n'a pas "${this.utils.formatCourseLabel(ingredient)}". Refusez la demande.`,
+        `[Panier Express] Case Échange : ${this.utils.playerName(state, actorId)} n'a pas "${this.utils.formatCourseLabel(ingredient)}".`,
       );
     }
     let next: GameStateEntity = { ...state, pending: null };
@@ -4083,29 +4097,6 @@ export class PanierExpressService extends AbstractGameService {
       next = removed.state;
       if (removed.removed) {
         next = addCourseToPlayer(next, initiatorId, give);
-      }
-      try {
-        const initiator = this.getPlayers(next).find(
-          (p) => p.id === initiatorId,
-        );
-        const initiatorInv = this.utils.toStringArray(
-          initiator?.inventory ?? [],
-        );
-        if (initiatorInv.length > 0) {
-          const metaRng = this.random.createMetaRng(this.getMetadata(next));
-          const picked = this.random.pickOne(metaRng.getMeta(), initiatorInv);
-          next = { ...next, metadata: picked.meta };
-          const back = toText(picked.value).trim();
-          if (back) {
-            const removedBack = removeCourseFromPlayer(next, initiatorId, back);
-            next = removedBack.state;
-            if (removedBack.removed) {
-              next = addCourseToPlayer(next, actorId, back);
-            }
-          }
-        }
-      } catch {
-        // ignore
       }
       next = this.core.appendLog(
         next,

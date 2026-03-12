@@ -124,11 +124,11 @@ export class PanierExpressDrawService {
     const message = discarded
       ? discarded === 'duplicate'
         ? duplicateSource === 'panier'
-          ? `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'a déjà dans le panier. Cet ingrédient part donc à la défausse.`
+          ? `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'a dÃ©jÃ  dans le panier. Cet ingrÃ©dient part donc Ã  la dÃ©fausse.`
           : duplicateSource === 'inventaire'
-            ? `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'a déjà dans l'inventaire. Cet ingrédient part donc à la défausse.`
-            : `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'a déjà. Cet ingrédient part donc à la défausse.`
-        : `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'inventaire est plein. Cet ingrédient part donc à la défausse.`
+            ? `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'ingrÃ©dient est dÃ©jÃ  prÃ©sent dans l'inventaire. Cet ingrÃ©dient part donc Ã  la dÃ©fausse.`
+            : `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'a dÃ©jÃ . Cet ingrÃ©dient part donc Ã  la dÃ©fausse.`
+        : `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'inventaire est plein. Cet ingrÃ©dient part donc Ã  la dÃ©fausse.`
       : `[Panier Express] ${playerLabel} pioche "${courseLabel}".`;
     const logged = this.core.appendLog(nextState, message);
 
@@ -157,9 +157,11 @@ export class PanierExpressDrawService {
   ): { card: string | null; metadata: PanierExpressMetadata } {
     if (standId) {
       const replenish = () =>
-        this.setup.buildReplenishableDeck(
-          this.setup.standCourseMap()[standId] ?? this.setup.courseItems(),
-        );
+        standId === 'bonus'
+          ? [...this.setup.courseItems()]
+          : this.setup.buildReplenishableDeck(
+              this.setup.standCourseMap()[standId] ?? this.setup.courseItems(),
+            );
       const draw = this.deckHelper.drawWithReplenish<string>(
         meta,
         standKey,
