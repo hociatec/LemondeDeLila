@@ -24,6 +24,15 @@ describe('MorpionService', () => {
     expect(state.pending?.type).toBe('choose_pawn');
     expect(state.pending?.playerId).toBe(2);
     expect(state.turn?.currentPlayerId).toBe(2);
+    const messages = (state.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+    expect(
+      messages.some((message: string) =>
+        message.startsWith('Bot a choisi le pion: '),
+      ),
+    ).toBe(true);
+    expect(messages).toContain("C'est à Human de choisir son pion.");
   });
 
   it('requires pawn selection before exposing playable cells', async () => {
@@ -59,7 +68,19 @@ describe('MorpionService', () => {
     state = service.applyActions(state, [
       choose(chooserId, MORPION_PAWNS[0].id),
     ]);
+    let messages = (state.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+    expect(messages).toContain(
+      `C'est à ${otherId === 1 ? 'A' : 'B'} de choisir son pion.`,
+    );
     state = service.applyActions(state, [choose(otherId, MORPION_PAWNS[1].id)]);
+    messages = (state.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+    expect(messages).toContain(
+      `${otherId === 1 ? 'A' : 'B'} a choisi le pion: ${MORPION_PAWNS[1].label}.`,
+    );
 
     const exposedAfterSetup: any = service.exposeStateForUser(state, 1);
     expect((exposedAfterSetup.actions ?? []).length).toBe(9);

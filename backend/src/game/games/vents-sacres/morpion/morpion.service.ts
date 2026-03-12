@@ -112,7 +112,13 @@ export class MorpionService extends AbstractGameService {
       const pawn =
         MorpionService.PawnChoices.find((p) => p.id === entry.pawnId) ?? null;
       const pawnLabel = pawn?.label ?? entry.pawnId;
-      log = this.appendLog(log, `${botName} choisit le pion ${pawnLabel}.`);
+      log = this.appendLog(log, `${botName} a choisi le pion: ${pawnLabel}.`);
+    }
+    if (typeof firstPlayerId === 'number' && Number.isFinite(firstPlayerId)) {
+      const chooserName =
+        players.find((p) => p?.id === firstPlayerId)?.username ??
+        `#${firstPlayerId}`;
+      log = this.appendLog(log, `C'est à ${chooserName} de choisir son pion.`);
     }
 
     return {
@@ -508,7 +514,7 @@ export class MorpionService extends AbstractGameService {
       pawnId;
     let log = this.appendLog(
       state.log,
-      `${players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`} choisit le pion ${pawnLabel}.`,
+      `${players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`} a choisi le pion: ${pawnLabel}.`,
     );
     for (const entry of botAssigned.assignedBots) {
       const botName =
@@ -517,7 +523,7 @@ export class MorpionService extends AbstractGameService {
       const pawn =
         MorpionService.PawnChoices.find((p) => p.id === entry.pawnId) ?? null;
       const label = pawn?.label ?? entry.pawnId;
-      log = this.appendLog(log, `${botName} choisit le pion ${label}.`);
+      log = this.appendLog(log, `${botName} a choisi le pion: ${label}.`);
     }
 
     const { playerId: nextPlayerId, meta: metaAfterPick } =
@@ -531,7 +537,7 @@ export class MorpionService extends AbstractGameService {
       const nextName =
         players.find((p) => p?.id === nextPlayerId)?.username ??
         `#${nextPlayerId}`;
-      log = this.appendLog(log, `C'est à ${nextName} de choisir un pion.`);
+      log = this.appendLog(log, `C'est à ${nextName} de choisir son pion.`);
       return {
         ...state,
         metadata: {

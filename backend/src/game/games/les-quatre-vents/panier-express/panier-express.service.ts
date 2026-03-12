@@ -728,7 +728,7 @@ export class PanierExpressService extends AbstractGameService {
     assignedBots.forEach((bot) => {
       next = this.core.appendLog(
         next,
-        `[Panier Express] ${this.utils.playerName(next, bot.id)} a choisi le pion: ${bot.pawn}.`,
+        `${this.utils.playerName(next, bot.id)} a choisi le pion: ${bot.pawn}.`,
       );
     });
     return next;
@@ -808,16 +808,15 @@ export class PanierExpressService extends AbstractGameService {
         direction: state.turn?.direction === -1 ? -1 : 1,
       },
     };
-    const alreadyAssignedCount = normalizedPlayers.filter((p) =>
-      this.getPawnText(p),
-    ).length;
-    if (alreadyAssignedCount <= 0) {
+    const prompt = `C'est à ${this.utils.playerName(withPending, chooser.id)} de choisir son pion.`;
+    if (
+      (withPending.log ?? []).some(
+        (entry) => String(entry?.message ?? '').trim() === prompt,
+      )
+    ) {
       return withPending;
     }
-    return this.core.appendLog(
-      withPending,
-      `C'est à ${this.utils.playerName(withPending, chooser.id)} de choisir son pion.`,
-    );
+    return this.core.appendLog(withPending, prompt);
   }
 
   private ensureStarted(state: GameStateEntity): GameStateEntity {
@@ -834,21 +833,7 @@ export class PanierExpressService extends AbstractGameService {
     }
     const withBots = this.assignBotPawns(state);
     const readyPlayers = withBots.players ?? [];
-    const meta = this.getMetadata(withBots);
-    let withLogs: GameStateEntity = withBots;
-    let metaAfterLogs = meta;
-    if (!meta.pawnAnnouncementsDone) {
-      readyPlayers.forEach((p) => {
-        const pawn = this.getPawnText(p);
-        if (!pawn) return;
-        withLogs = this.core.appendLog(
-          withLogs,
-          `[Panier Express] ${this.utils.playerName(withLogs, p.id)} a choisi le pion: ${pawn}.`,
-        );
-      });
-      metaAfterLogs = { ...metaAfterLogs, pawnAnnouncementsDone: true };
-      withLogs = { ...withLogs, metadata: metaAfterLogs };
-    }
+    const withLogs: GameStateEntity = withBots;
     const started: GameStateEntity = {
       ...withLogs,
       status: 'started',
@@ -3059,7 +3044,7 @@ export class PanierExpressService extends AbstractGameService {
     };
     next = this.core.appendLog(
       next,
-      `[Panier Express] ${this.utils.playerName(state, resolved.playerId)} a choisi le pion: ${chosen}.`,
+      `${this.utils.playerName(state, resolved.playerId)} a choisi le pion: ${chosen}.`,
     );
 
     const statusNow = String(state.status ?? '').toLowerCase();

@@ -52,6 +52,10 @@ describe('PanierExpressService', () => {
       ? (hydrated.pending as any).choices
       : [];
     expect(choices.length).toBeGreaterThan(0);
+    const messages = (hydrated.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+    expect(messages).toContain("C'est à A de choisir son pion.");
   });
 
   it('rÃƒÂ©pare une liste de courses manquante/vidÃƒÂ©e pour le raccourci L', () => {
@@ -128,10 +132,8 @@ describe('PanierExpressService', () => {
     const messages = (state.log ?? []).map((entry: any) =>
       String(entry?.message ?? ''),
     );
-    expect(messages).toContain(
-      '[Panier Express] Lilas a choisi le pion: panier en osier.',
-    );
-    expect(messages).toContain("C'est Ã  Azrael de choisir son pion.");
+    expect(messages).toContain('Lilas a choisi le pion: panier en osier.');
+    expect(messages).toContain("C'est à Azrael de choisir son pion.");
     expect(messages).not.toContain("C'est au tour de Azrael.");
   });
 

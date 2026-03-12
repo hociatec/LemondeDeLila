@@ -59,11 +59,20 @@ export class TurnPoliciesService {
       .trim()
       .toLowerCase();
     const pendingPlayerId = Number(pending?.playerId);
-    if (pendingType === 'choose_pawn' && pendingPlayerId === playerId) {
-      return this.core.appendLog(
-        state,
-        `C'est à ${label} de choisir son pion.`,
-      );
+    if (pendingType === 'choose_pawn' || pendingType === 'pick_pawn') {
+      if (pendingPlayerId !== playerId) {
+        return state;
+      }
+      const prompt = `C'est à ${label} de choisir son pion.`;
+      const recentMessages = Array.isArray(state.log)
+        ? state.log
+            .slice(-6)
+            .map((entry) => stringOrEmpty(entry?.message).trim())
+        : [];
+      if (recentMessages.includes(prompt)) {
+        return state;
+      }
+      return this.core.appendLog(state, prompt);
     }
 
     return this.core.appendLog(state, turnAnnouncement(label));
