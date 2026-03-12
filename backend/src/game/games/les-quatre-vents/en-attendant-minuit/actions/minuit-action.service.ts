@@ -20,6 +20,7 @@ import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.ser
 import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
 import { PromptPoliciesService } from '../../../../modules/prompt-policies/services/prompt-policies.service';
 import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
+import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
 import { MINUIT_GAME } from '../definitions/minuit.definition';
 import type {
   MinuitCard,
@@ -546,52 +547,20 @@ export class MinuitActionService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const pending = state.pending;
-    if (!pending || pending.type !== 'pick_pawn') return state;
-    const playerId = Number(pending.playerId);
-    if (!Number.isFinite(playerId)) return state;
-    const payload = asRecord(action?.payload ?? {});
-    const requestedPawn =
-      payload.pawnId ?? payload.pawn ?? payload.value ?? null;
-    const pendingData = asRecord(pending.data);
-    const options = Array.isArray(pendingData.pawns)
-      ? pendingData.pawns.map((entry) => asRecord(entry))
-      : [];
-    const chosen = this.setupFlow.resolvePawnChoice(requestedPawn, options);
-    const chosenRecord = asRecord(chosen);
-    const resolvedPawn = toText(chosenRecord.id).trim();
-    if (!resolvedPawn) return state;
-    const players = Array.isArray(state.players) ? state.players : [];
-    const takenByOthers = new Set<string>(
-      players
-        .filter((p) => Number(p?.id) !== playerId)
-        .map((p) => (typeof p?.pawn === 'string' ? p.pawn.trim() : ''))
-        .filter((pawn) => pawn.length > 0),
-    );
-    if (takenByOthers.has(resolvedPawn)) return state;
-    const updatedPlayers = players.map((p) =>
-      Number(p?.id) === playerId ? { ...p, pawn: resolvedPawn } : p,
-    );
-    const meta = this.getMeta(state);
-    const nextPawns: Record<number, string> = {
-      ...(meta.pawns ?? {}),
-      [playerId]: resolvedPawn,
-    };
-    const resolvedPawnName = this.resolvePawnName(meta, resolvedPawn);
-    let next: GameStateEntity = {
-      ...state,
-      players: updatedPlayers,
-      pending: null,
-      metadata: {
-        ...(state.metadata ?? {}),
-        ...{ ...meta, pawns: nextPawns },
-      },
-    };
-    next = this.core.appendLog(
-      next,
-      `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} a choisi le pion: ${resolvedPawnName}.`,
-    );
-    return this.ensurePawnSelection(next);
+    const applied = applyConfiguredPawnSelection({
+      state,
+      action,
+      setupFlow: this.setupFlow,
+      core: this.core,
+      pendingType: 'pick_pawn',
+      metadataCatalogKey: 'pawnChoices',
+      metadataAssignmentKey: 'pawns',
+      playerPawnField: 'pawn',
+      playerNameOptions: MINUIT_PLAYER_NAME_OPTIONS,
+      logLabelResolver: (choice, currentState) =>
+        this.resolvePawnName(this.getMeta(currentState), toText(choice.id)),
+    });
+    return this.ensurePawnSelection(applied?.state ?? state);
   }
 
   private listPawnChoices(meta: MinuitMetadata): string[] {

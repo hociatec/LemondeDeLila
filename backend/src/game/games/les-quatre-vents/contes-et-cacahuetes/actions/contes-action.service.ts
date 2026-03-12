@@ -9,8 +9,8 @@ import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
-import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
 import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
+import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
 import { fixMojibakeDeep } from '../../../../../common/utils/mojibake';
 import type {
   ContesCard,
@@ -19,7 +19,6 @@ import type {
   ContesCacahuetesTile,
   ContesPending,
 } from '../model/contes-et-cacahuetes-state.entity';
-import { CONTES_PAWNS } from '../model/contes-et-cacahuetes-pawns.data';
 import {
   applyActionsSequentially,
   dispatchByActionType,
@@ -103,37 +102,18 @@ export class ContesActionService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const resolved = resolvePendingPawnChoiceAction({
+    const applied = applyConfiguredPawnSelection({
       state,
       action,
+      setupFlow: this.setupFlow,
+      core: this.core,
       pendingType: 'choose_pawn',
-      resolveChoice: (rawPawn, options) =>
-        this.setupFlow.resolvePawnChoice(rawPawn, options),
+      metadataCatalogKey: 'pawns',
+      playerPawnField: 'pawn',
     });
-    if (!resolved) return state;
-    const { playerId, chosen } = resolved;
-
-    const players = Array.isArray(state.players) ? state.players : [];
-    const used = new Set(
-      players
-        .filter((p) => p?.id !== playerId)
-        .map((p) => toText(p?.pawn))
-        .filter((p: string) => p.length > 0),
-    );
-    if (used.has(chosen.id)) return state;
-
-    const updatedPlayers = players.map((p) =>
-      p?.id === playerId ? { ...p, pawn: chosen.id } : p,
-    );
-    let next: GameStateEntity = {
-      ...state,
-      players: updatedPlayers,
-      pending: null,
-    };
-    next = this.core.appendLog(
-      next,
-      `${resolvePlayerNameFromState(next, playerId)} a choisi le pion : ${chosen.label}.`,
-    );
+    if (!applied) return state;
+    const { playerId } = applied;
+    let next = applied.state;
 
     const starterId =
       typeof this.getMeta(next).setupStarterId === 'number'
@@ -145,13 +125,16 @@ export class ContesActionService {
         .map((p) => toText(p?.pawn))
         .filter((p: string) => p.length > 0),
     );
-    const choicesForPending = CONTES_PAWNS.filter(
-      (pawn) => !usedForPending.has(pawn.id),
-    ).map((pawn) => ({
-      id: pawn.id,
-      label: pawn.label,
-      description: pawn.description,
-    }));
+    const choicesForPending = (Array.isArray(this.getMeta(next).pawns)
+      ? this.getMeta(next).pawns
+      : []
+    )
+      .filter((pawn) => !usedForPending.has(pawn.id))
+      .map((pawn) => ({
+        id: pawn.id,
+        label: pawn.label,
+        description: pawn.description,
+      }));
     const started = continueSequentialPawnSelection({
       state: next,
       setupFlow: this.setupFlow,

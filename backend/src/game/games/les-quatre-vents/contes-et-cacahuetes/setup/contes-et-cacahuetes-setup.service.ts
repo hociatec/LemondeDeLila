@@ -44,6 +44,7 @@ export class ContesCacahuetesSetupService {
         : null;
 
     const metaBase: ContesCacahuetesMetadata = {
+      pawns,
       tiles: buildNarratedCanonicalTiles(),
       positions,
       setupStarterId,

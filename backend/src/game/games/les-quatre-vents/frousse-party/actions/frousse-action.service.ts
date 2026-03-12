@@ -18,8 +18,8 @@ import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-
 import { BoardEffectsPoliciesService } from '../../../../modules/board-effects-policies/services/board-effects-policies.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
-import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
 import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
+import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
 import type {
   FrousseCard,
   FrousseMetadata,
@@ -92,37 +92,18 @@ export class FrousseActionService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const resolved = resolvePendingPawnChoiceAction({
+    const applied = applyConfiguredPawnSelection({
       state,
       action,
+      setupFlow: this.setupFlow,
+      core: this.core,
       pendingType: 'choose_pawn',
-      resolveChoice: (rawPawn, options) =>
-        this.setupFlow.resolvePawnChoice(rawPawn, options),
+      metadataCatalogKey: 'pawns',
+      playerPawnField: 'pawn',
+      playerPawnLabelField: 'pawnLabel',
+      logPrefix: '[Frousse Party] ',
     });
-    if (!resolved) return state;
-    const { playerId, chosen } = resolved;
-
-    const players = (state.players ?? []).map((p) => {
-      if (p?.id !== playerId) return p;
-      return {
-        ...p,
-        pawn: chosen.id,
-        pawnLabel: String(chosen.label ?? chosen.id ?? ''),
-      };
-    });
-
-    const next: GameStateEntity = {
-      ...state,
-      players,
-      pending: null,
-    };
-
-    const label = chosen.label ?? chosen.id ?? 'pion';
-    const withLog = this.core.appendLog(
-      next,
-      `[Frousse Party] ${resolvePlayerNameFromState(next, playerId)} a choisi le pion: ${label}.`,
-    );
-    return this.finalizeStarterAfterPawnSelection(withLog);
+    return this.finalizeStarterAfterPawnSelection(applied?.state ?? state);
   }
 
   private ensurePawnSelection(state: GameStateEntity): GameStateEntity {

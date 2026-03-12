@@ -8,8 +8,8 @@ import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.ser
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
-import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
 import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
+import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
 import type { JeuOieMetadata, JeuOieTile } from '../model/jeu-oie-state.entity';
 
 import {
@@ -57,50 +57,24 @@ export class JeuOieActionService {
     action: GameSingleActionDto,
   ): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
-    const resolved = resolvePendingPawnChoiceAction({
+    const applied = applyConfiguredPawnSelection({
       state,
       action,
+      setupFlow: this.setupFlow,
+      core: this.core,
       pendingType: 'choose_pawn',
-      resolveChoice: (rawPawn, options) =>
-        this.setupFlow.resolvePawnChoice(rawPawn, options),
-    }) as {
-      playerId: number;
-      options: any[];
-      chosen: { id: string; label: string; feminine: boolean };
-    } | null;
-    if (!resolved) return state;
-    const { playerId, options, chosen } = resolved;
-
-    const meta = this.getMeta(state);
-    const assigned = { ...(meta.pawnByPlayerId ?? {}) } as Record<
-      number,
-      string
-    >;
-    if (assigned[playerId]) return state;
-    if (Object.values(assigned).some((id) => id === chosen.id)) return state;
-
-    const nextMeta: JeuOieMetadata = {
-      ...meta,
-      pawns:
-        Array.isArray(meta.pawns) && meta.pawns.length > 0
-          ? meta.pawns
-          : options.map((p: any) => ({
-              id: String(p?.id ?? '').trim(),
-              label: String(p?.label ?? '').trim(),
-              feminine: Boolean(p?.feminine),
-            })),
-      pawnByPlayerId: { ...assigned, [playerId]: chosen.id },
-    };
-
-    let next: GameStateEntity = {
-      ...state,
-      pending: null,
-      metadata: { ...(state.metadata ?? {}), ...nextMeta },
-    };
-    next = this.core.appendLog(
-      next,
-      `${resolvePlayerNameFromState(next, playerId)} a choisi le pion : ${String(chosen.label ?? 'pion').trim()}.`,
-    );
+      metadataCatalogKey: 'pawns',
+      metadataAssignmentKey: 'pawnByPlayerId',
+      choiceCatalogFallback: (options) =>
+        options.map((p) => ({
+          id: String(p?.id ?? '').trim(),
+          label: String(p?.label ?? '').trim(),
+          feminine: Boolean(p?.feminine),
+        })),
+    });
+    if (!applied) return state;
+    const { playerId } = applied;
+    let next = applied.state;
 
     const playersForPending = Array.isArray(next.players) ? next.players : [];
     const metaForPending = this.getMeta(next);
@@ -134,8 +108,8 @@ export class JeuOieActionService {
         feminine: Boolean(p?.feminine),
       }),
       starterId:
-        typeof nextMeta.setupStarterId === 'number'
-          ? nextMeta.setupStarterId
+        typeof this.getMeta(next).setupStarterId === 'number'
+          ? this.getMeta(next).setupStarterId
           : (players[0]?.id ?? null),
       onPending: (withPending) => this.ensurePawnSelectionPrompt(withPending),
     });

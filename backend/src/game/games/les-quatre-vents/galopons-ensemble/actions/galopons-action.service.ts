@@ -17,8 +17,8 @@ import { RandomService } from '../../../../modules/random/services/random.servic
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
-import { resolvePendingPawnChoiceAction } from '../../../../core/helpers/pawn-choice-action.helper';
 import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
+import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
 import type {
   GaloponsCard,
   GaloponsMetadata,
@@ -89,51 +89,28 @@ export class GaloponsActionService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const resolved = resolvePendingPawnChoiceAction({
+    const applied = applyConfiguredPawnSelection({
       state,
       action,
+      setupFlow: this.setupFlow,
+      core: this.core,
       pendingType: 'choose_pawn',
-      resolveChoice: (rawPawn, options) =>
-        this.setupFlow.resolvePawnChoice(rawPawn, options),
+      metadataCatalogKey: 'pawns',
+      metadataAssignmentKey: 'pawnByPlayerId',
+      playerPawnField: 'pawn',
+      playerPawnLabelField: 'pawnLabel',
+      playerPawnLabelResolver: (choice, currentState) =>
+        this.resolvePawnName(this.getMeta(currentState).pawns, toText(choice.id)) ||
+        this.normalizePawnChoiceLabel(toText(choice.label)) ||
+        toText(choice.id) ||
+        'pion',
+      logLabelResolver: (choice, currentState) =>
+        this.resolvePawnName(this.getMeta(currentState).pawns, toText(choice.id)) ||
+        this.normalizePawnChoiceLabel(toText(choice.label)) ||
+        toText(choice.id) ||
+        'pion',
     });
-    if (!resolved) return state;
-
-    const { playerId, chosen } = resolved;
-    const meta = this.getMeta(state);
-    const pawnId = toText(chosen.id);
-    const pawnLabel =
-      this.resolvePawnName(meta.pawns, pawnId) ||
-      this.normalizePawnChoiceLabel(toText(chosen.label)) ||
-      pawnId ||
-      'pion';
-    const pawnByPlayerId = {
-      ...(meta.pawnByPlayerId ?? {}),
-      [playerId]: pawnId,
-    };
-    const players = (state.players ?? []).map((player) => {
-      if (player?.id !== playerId) return player;
-      return {
-        ...player,
-        pawn: pawnId,
-        pawnLabel,
-      };
-    });
-
-    const next: GameStateEntity = {
-      ...state,
-      players,
-      pending: null,
-      metadata: {
-        ...(state.metadata ?? {}),
-        ...meta,
-        pawnByPlayerId,
-      },
-    };
-
-    return this.core.appendLog(
-      next,
-      `${resolvePlayerNameFromState(next, playerId)} a choisi le pion : ${pawnLabel}.`,
-    );
+    return applied?.state ?? state;
   }
 
   private handleRoll(state: GameStateEntity): GameStateEntity {

@@ -9,10 +9,10 @@ import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.ser
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import {
-  resolvePendingPawnChoiceAction,
   type PawnChoiceOption,
 } from '../../../../core/helpers/pawn-choice-action.helper';
 import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
+import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
 import type {
   AFondLesBallonsCard,
   AFondLesBallonsMetadata,
@@ -281,62 +281,35 @@ export class AFondLesBallonsActionService {
   ): GameStateEntity {
     const status = String(state.status ?? '').toLowerCase();
     if (status !== 'started') return state;
-    const resolved = resolvePendingPawnChoiceAction({
+    const applied = applyConfiguredPawnSelection({
       state,
       action,
+      setupFlow: this.setupFlow,
+      core: this.core,
       pendingType: 'choose_pawn',
-      resolveChoice: (rawPawn, options) =>
-        this.setupFlow.resolvePawnChoice(rawPawn, options),
+      metadataCatalogKey: 'pawns',
+      metadataAssignmentKey: 'pawnByPlayerId',
+      choiceCatalogFallback: (options) =>
+        options.map((p: PawnChoiceOption) => ({
+          id: toText(p.id),
+          label: toText(p.label),
+          description: toText(p.description),
+        })),
+      extraMetadataBuilder: ({ metadata, playerId, choice }) => ({
+        charactersByPlayerId: {
+          ...(asRecord(metadata.charactersByPlayerId) as Record<number, unknown>),
+          [playerId]: {
+            id: choice.id,
+            name: choice.label ?? choice.id,
+            description: choice.description ?? '',
+          },
+        },
+      }),
     });
-    if (!resolved) return state;
-    const { playerId, options, chosen } = resolved;
-
-    const meta = this.getMeta(state);
-    const assigned = { ...(meta.pawnByPlayerId ?? {}) } as Record<
-      number,
-      string
-    >;
-    if (assigned[playerId]) return state;
-    if (Object.values(assigned).some((id) => id === chosen.id)) return state;
-
-    const pawns =
-      Array.isArray(meta.pawns) && meta.pawns.length > 0
-        ? meta.pawns
-        : options.map((p: PawnChoiceOption) => ({
-            id: toText(p.id),
-            label: toText(p.label),
-            description: toText(p.description),
-          }));
-    const pawn = pawns.find((p) => p.id === chosen.id) ?? chosen;
-
-    const charactersByPlayerId = {
-      ...(meta.charactersByPlayerId ?? {}),
-      [playerId]: {
-        id: pawn.id,
-        name: pawn.label ?? pawn.id,
-        description: pawn.description ?? '',
-      },
-    };
-
-    const nextMeta: AFondLesBallonsMetadata = {
-      ...meta,
-      pawns,
-      pawnByPlayerId: { ...assigned, [playerId]: pawn.id },
-      charactersByPlayerId,
-    };
-
-    let next: GameStateEntity = {
-      ...state,
-      pending: null,
-      metadata: { ...(state.metadata ?? {}), ...nextMeta },
-    };
-
-    next = this.core.appendLog(
-      next,
-      `${resolvePlayerNameFromState(next, playerId)} a choisi le pion : ${String(
-        pawn.label ?? 'pion',
-      ).trim()}.`,
-    );
+    if (!applied) return state;
+    const { playerId } = applied;
+    let next = applied.state;
+    const nextMeta = this.getMeta(next);
 
     const playersForPending = Array.isArray(next.players) ? next.players : [];
     const metaForPending = this.getMeta(next);

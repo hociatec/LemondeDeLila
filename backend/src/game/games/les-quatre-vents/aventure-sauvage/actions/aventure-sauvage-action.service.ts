@@ -10,10 +10,10 @@ import { BoardEffectsPoliciesService } from '../../../../modules/board-effects-p
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
 import {
-  resolvePendingPawnChoiceAction,
   type PawnChoiceOption,
 } from '../../../../core/helpers/pawn-choice-action.helper';
 import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
+import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
 import type {
   AventureSauvageCard,
   AventureSauvageMetadata,
@@ -165,47 +165,25 @@ export class AventureSauvageActionService {
   ): GameStateEntity {
     const status = String(state.status ?? '').toLowerCase();
     if (status !== 'started') return state;
-    const resolved = resolvePendingPawnChoiceAction({
+    const applied = applyConfiguredPawnSelection({
       state,
       action,
+      setupFlow: this.setupFlow,
+      core: this.core,
       pendingType: 'choose_pawn',
-      resolveChoice: (rawPawn, options) =>
-        this.setupFlow.resolvePawnChoice(rawPawn, options),
+      metadataCatalogKey: 'pawns',
+      metadataAssignmentKey: 'pawnByPlayerId',
+      choiceCatalogFallback: (options) =>
+        options.map((p: PawnChoiceOption) => ({
+          id: toText(p.id),
+          label: toText(p.label),
+          description: toText(p.description),
+        })),
     });
-    if (!resolved) return state;
-    const { playerId, options, chosen } = resolved;
-
-    const meta = this.getMeta(state);
-    const assigned = { ...(meta.pawnByPlayerId ?? {}) } as Record<
-      number,
-      string
-    >;
-    if (assigned[playerId]) return state;
-    if (Object.values(assigned).some((id) => id === chosen.id)) return state;
-
-    const nextMeta: AventureSauvageMetadata = {
-      ...meta,
-      pawns:
-        Array.isArray(meta.pawns) && meta.pawns.length > 0
-          ? meta.pawns
-          : options.map((p: PawnChoiceOption) => ({
-              id: toText(p.id),
-              label: toText(p.label),
-              description: toText(p.description),
-            })),
-      pawnByPlayerId: { ...assigned, [playerId]: chosen.id },
-    };
-
-    let next: GameStateEntity = {
-      ...state,
-      pending: null,
-      metadata: { ...(state.metadata ?? {}), ...nextMeta },
-    };
-
-    next = this.core.appendLog(
-      next,
-      `${resolvePlayerNameFromState(next, playerId)} a choisi le pion : ${String(chosen.label ?? 'pion').trim()}.`,
-    );
+    if (!applied) return state;
+    const { playerId } = applied;
+    let next = applied.state;
+    const nextMeta = this.getMeta(next);
 
     const playersForPending = Array.isArray(next.players) ? next.players : [];
     const metaForPending = this.getMeta(next);

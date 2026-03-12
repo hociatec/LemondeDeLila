@@ -11,6 +11,7 @@ import {
   normalizeLowerActionType,
 } from '../../../../actions/action-service.helper';
 import { CorridorSetupService } from '../setup/corridor-setup.service';
+import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
 
 @Injectable()
 export class CorridorActionService {
@@ -136,48 +137,63 @@ export class CorridorActionService {
       return state;
     }
 
-    const pawnId = String(
-      (action.payload as any)?.pawnId ??
-        (action.payload as any)?.pawn ??
-        (action.payload as any)?.id ??
-        '',
-    ).trim();
-    if (!pawnId) return state;
-
     const meta = (state.metadata ?? {}) as CorridorMetadata;
     const allPawns = Array.isArray(meta?.pawns) ? meta.pawns : [];
-    const pawnByPlayerId = { ...(meta?.pawnByPlayerId ?? {}) };
-    if (pawnByPlayerId[String(actorId)]) return state;
-    if (Object.values(pawnByPlayerId).includes(pawnId)) return state;
-    const chosen = allPawns.find((p) => String(p?.id ?? '').trim() === pawnId);
-    if (!chosen) return state;
+    const coreLike = {
+      appendLog: (current: GameStateEntity, message: string) =>
+        this.appendUniqueLogMessages(current, [message]),
+    } as any;
+    const setupLike = {
+      resolvePawnChoice: (_rawPawn: unknown, options: Array<Record<string, unknown>>) => {
+        const raw = String(
+          (action.payload as any)?.pawnId ??
+            (action.payload as any)?.pawn ??
+            (action.payload as any)?.id ??
+            '',
+        ).trim();
+        return (
+          options.find((entry) => String(entry?.id ?? '').trim() === raw) ?? null
+        );
+      },
+    } as any;
+    const applied = applyConfiguredPawnSelection({
+      state,
+      action,
+      setupFlow: setupLike,
+      core: coreLike,
+      pendingType: 'choose_pawn',
+      metadataCatalogKey: 'pawns',
+      metadataAssignmentKey: 'pawnByPlayerId',
+      logLabelResolver: (choice) => String(choice.label ?? choice.id).trim(),
+    });
+    if (!applied) return state;
 
-    pawnByPlayerId[String(actorId)] = pawnId;
-    const withBotsAssigned = this.autoAssignBotPawns(state.players ?? [], allPawns, pawnByPlayerId);
-    const nextPendingPlayer = (state.players ?? []).find(
-      (p) => p?.isBot !== true && !withBotsAssigned[String(p.id)],
-    )?.id;
+    const appliedMeta = (applied.state.metadata ?? {}) as CorridorMetadata;
+    const withBotsAssigned = this.autoAssignBotPawns(
+      state.players ?? [],
+      allPawns,
+      { ...(appliedMeta.pawnByPlayerId ?? {}) },
+    );
+    let next: GameStateEntity = {
+      ...applied.state,
+      metadata: {
+        ...(applied.state.metadata ?? {}),
+        ...appliedMeta,
+        pawnByPlayerId: withBotsAssigned,
+      },
+    };
+
     const starterId =
       typeof meta.setupStarterId === 'number'
         ? meta.setupStarterId
         : (state.players?.[0]?.id ?? actorId);
     const starter = (state.players ?? []).find((p) => p?.id === starterId) ?? null;
+    const nextPendingPlayer = (state.players ?? []).find(
+      (p) => p?.isBot !== true && !withBotsAssigned[String(p.id)],
+    )?.id;
     const nextTurnPlayerId = nextPendingPlayer ?? starterId;
-
-    const nextMeta: CorridorMetadata = {
-      ...meta,
-      pawnByPlayerId: withBotsAssigned,
-    };
-
-    const actorName =
-      (state.players ?? []).find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
-    const nextWithLog = this.appendUniqueLogMessages(state, [
-      `${actorName} choisit ${chosen.label}.`,
-    ]);
-
     return {
-      ...nextWithLog,
-      metadata: { ...(nextWithLog.metadata ?? {}), ...(nextMeta as any) },
+      ...next,
       pending:
         nextPendingPlayer != null
           ? {
@@ -197,7 +213,7 @@ export class CorridorActionService {
             }
           : null,
       turn: {
-        ...(nextWithLog.turn ?? { direction: 1 }),
+        ...(next.turn ?? { direction: 1 }),
         currentPlayerId: nextTurnPlayerId,
         direction: 1,
         label:

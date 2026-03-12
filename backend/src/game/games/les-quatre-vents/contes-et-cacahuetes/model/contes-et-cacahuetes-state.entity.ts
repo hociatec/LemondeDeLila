@@ -22,6 +22,7 @@ export type ContesCard = {
 };
 
 export type ContesCacahuetesMetadata = {
+  pawns?: Array<{ id: string; label: string; description?: string }>;
   tiles: ContesCacahuetesTile[];
   positions: Record<number, number>;
   setupStarterId?: number | null;
