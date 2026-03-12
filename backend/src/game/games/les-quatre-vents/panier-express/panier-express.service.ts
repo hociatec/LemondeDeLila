@@ -812,15 +812,10 @@ export class PanierExpressService extends AbstractGameService {
     if (alreadyAssignedCount <= 0) {
       return withPending;
     }
-    let announced = this.core.appendLog(
+    return this.core.appendLog(
       withPending,
-      `C'est à ${this.utils.playerName(withPending, chooser.id)} de choisir un pion.`,
+      `C'est à ${this.utils.playerName(withPending, chooser.id)} de choisir son pion.`,
     );
-    announced = this.core.appendLog(
-      announced,
-      `C'est au tour de ${this.utils.playerName(announced, chooser.id)}.`,
-    );
-    return announced;
   }
 
   private ensureStarted(state: GameStateEntity): GameStateEntity {

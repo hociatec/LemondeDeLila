@@ -4,7 +4,7 @@ import { PanierExpressPhaseService } from '../phases/panier-express-phase.servic
 import { nextRngInt } from '../../../../../common/utils/seeded-rng';
 import { createPanierExpressTestingModule } from './panier-express-test-harness';
 
-// Tests unitaires ciblés Panier Express (pioche stand/bonus, échange, quiz, flux de tour, bot, presenter).
+// Tests unitaires ciblÃ©s Panier Express (pioche stand/bonus, Ã©change, quiz, flux de tour, bot, presenter).
 describe('PanierExpressService', () => {
   let service: PanierExpressService;
   let exchangeSvc: PanierExpressExchangeService;
@@ -17,7 +17,7 @@ describe('PanierExpressService', () => {
     phaseSvc = moduleRef.get(PanierExpressPhaseService);
   });
 
-  it('expose un état initial avec decks et tuiles', () => {
+  it('expose un Ã©tat initial avec decks et tuiles', () => {
     const state: any = {
       players: [
         { id: 1, username: 'A' },
@@ -54,7 +54,7 @@ describe('PanierExpressService', () => {
     expect(choices.length).toBeGreaterThan(0);
   });
 
-  it('répare une liste de courses manquante/vidée pour le raccourci L', () => {
+  it('rÃ©pare une liste de courses manquante/vidÃ©e pour le raccourci L', () => {
     const state: any = {
       players: [
         { id: 1, username: 'A', shoppingList: [], basket: [], inventory: [] },
@@ -81,7 +81,7 @@ describe('PanierExpressService', () => {
     expect(Array.isArray(extras?.currentPlayerView?.shoppingList)).toBe(true);
     expect(extras.currentPlayerView.shoppingList.length).toBe(3);
 
-    // Déterministe pour un même contexte (seed derived from roomId/startedAt/runId).
+    // DÃ©terministe pour un mÃªme contexte (seed derived from roomId/startedAt/runId).
     const exposed2 = service.exposeStateForUser(state, 1);
     const extras2: any = (exposed2 as any).extras;
     expect(extras2.currentPlayerView.shoppingList).toEqual(
@@ -89,7 +89,7 @@ describe('PanierExpressService', () => {
     );
   });
 
-  it('propose tous les pions quand un bot en a déjà un (reset bot pawn pendant setup)', () => {
+  it('propose tous les pions quand un bot en a dÃ©jÃ  un (reset bot pawn pendant setup)', () => {
     const base: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A' },
@@ -106,7 +106,7 @@ describe('PanierExpressService', () => {
     expect(choices.length).toBeGreaterThanOrEqual(6);
   });
 
-  it('journalise le prochain choix de pion pour les joueurs suivants en setup séquentiel', () => {
+  it('journalise le prochain choix de pion pour les joueurs suivants en setup sÃ©quentiel', () => {
     let state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'Lilas' },
@@ -131,8 +131,8 @@ describe('PanierExpressService', () => {
     expect(messages).toContain(
       '[Panier Express] Lilas a choisi le pion: panier en osier.',
     );
-    expect(messages).toContain("C'est à Azrael de choisir un pion.");
-    expect(messages).toContain("C'est au tour de Azrael.");
+    expect(messages).toContain("C'est à Azrael de choisir son pion.");
+    expect(messages).not.toContain("C'est au tour de Azrael.");
   });
 
   it('expose correctement les pending non-quiz et les vues joueurs', () => {
@@ -160,7 +160,7 @@ describe('PanierExpressService', () => {
     expect(currentView.id).toBe(1);
     expect(currentView.basket).toContain('pomme');
 
-    // Plateau exposé pour permettre l'annonce "case/total".
+    // Plateau exposÃ© pour permettre l'annonce "case/total".
     const board: any = (exposed as any).board;
     expect(board).toBeTruthy();
     expect(Array.isArray(board.tiles)).toBe(true);
@@ -170,7 +170,7 @@ describe('PanierExpressService', () => {
     expect(typeof board.turns).toBe('object');
   });
 
-  it('avancer sur un stand ajoute une carte cohérente', () => {
+  it('avancer sur un stand ajoute une carte cohÃ©rente', () => {
     const base: any = service.hydrateInitialState({
       players: [{ id: 1, username: 'A' }],
       status: 'starting',
@@ -204,7 +204,7 @@ describe('PanierExpressService', () => {
     expect((exposed.pending as any)?.blocking).toBe(true);
   });
 
-  it('sanitize et expose les quiz même sans question explicite', () => {
+  it('sanitize et expose les quiz mÃªme sans question explicite', () => {
     const base: any = service.hydrateInitialState({
       players: [{ id: 1, username: 'A' }],
       status: 'running',
@@ -276,7 +276,7 @@ describe('PanierExpressService', () => {
     expect(turnIndex).toBeGreaterThan(scoopIndex);
   });
 
-  it('incrémente le tour de plateau quand un joueur repasse par la case départ', () => {
+  it('incrÃ©mente le tour de plateau quand un joueur repasse par la case dÃ©part', () => {
     const base: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A' },
@@ -293,12 +293,12 @@ describe('PanierExpressService', () => {
     meta.positions[1] = tilesLen - 1;
     meta.laps[1] = 0;
 
-    // 39 -> 1 : le joueur repasse par la case départ pendant le déplacement.
+    // 39 -> 1 : le joueur repasse par la case dÃ©part pendant le dÃ©placement.
     const moved = (service as any).movePlayer(base, 1, 2);
     expect(moved.metadata.laps[1]).toBe(1);
   });
 
-  it('décrémente le tour de plateau quand un joueur recule en repassant par la case départ (tour 1 -> tour 0)', () => {
+  it('dÃ©crÃ©mente le tour de plateau quand un joueur recule en repassant par la case dÃ©part (tour 1 -> tour 0)', () => {
     const base: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A' },
@@ -317,7 +317,7 @@ describe('PanierExpressService', () => {
     expect(moved.metadata.laps[1]).toBe(-1);
   });
 
-  it("ne met pas d'échange en pending si l'initiateur n'a aucune carte", () => {
+  it("ne met pas d'Ã©change en pending si l'initiateur n'a aucune carte", () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: [] },
@@ -335,7 +335,7 @@ describe('PanierExpressService', () => {
     expect(after.pending ?? null).toBeNull();
   });
 
-  it('déclare une victoire quand un joueur a complété sa liste sur la case start', () => {
+  it('dÃ©clare une victoire quand un joueur a complÃ©tÃ© sa liste sur la case start', () => {
     const base: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', shoppingList: ['pomme'], basket: ['pomme'] },
@@ -348,7 +348,7 @@ describe('PanierExpressService', () => {
     expect((afterVictory.metadata as any).winnerId).toBe(1);
   });
 
-  it('permet à un bot de choisir automatiquement une réponse de quiz parmi les choix proposés', () => {
+  it('permet Ã  un bot de choisir automatiquement une rÃ©ponse de quiz parmi les choix proposÃ©s', () => {
     const base: any = service.hydrateInitialState({
       players: [{ id: 1, username: 'Bot A', isBot: true }],
       status: 'running',
@@ -389,7 +389,7 @@ describe('PanierExpressService', () => {
     base.turn = { currentPlayerId: 1, direction: 1 };
     base.turnIndex = 0;
 
-    // Simule un tirage chanceux : 3 cartes ont déjà été sorties du deck au moment de l'offre.
+    // Simule un tirage chanceux : 3 cartes ont dÃ©jÃ  Ã©tÃ© sorties du deck au moment de l'offre.
     base.metadata.decks['courses-bonus'] = {
       deck: ['banane'],
       discards: [],
@@ -448,7 +448,7 @@ describe('PanierExpressService', () => {
     expect((after.metadata as any)?.rng?.counter).toBe(1);
   });
 
-  it("expose currentPlayerView pour l'utilisateur connecté (même si c'est le tour d'un bot)", () => {
+  it("expose currentPlayerView pour l'utilisateur connectÃ© (mÃªme si c'est le tour d'un bot)", () => {
     const state: any = service.hydrateInitialState({
       players: [
         {
@@ -470,7 +470,7 @@ describe('PanierExpressService', () => {
       status: 'running',
     } as any);
 
-    // Le bot a un id négatif dans le state du moteur.
+    // Le bot a un id nÃ©gatif dans le state du moteur.
     state.turn = { currentPlayerId: -1, direction: 1 };
     state.turnIndex = 0;
 
@@ -478,7 +478,7 @@ describe('PanierExpressService', () => {
     expect(exposed.extras?.currentPlayerView?.shoppingList).toEqual(['ananas']);
   });
 
-  it("conserve la shopping list quand les ids joueurs sont sérialisés en chaînes", () => {
+  it("conserve la shopping list quand les ids joueurs sont sÃ©rialisÃ©s en chaÃ®nes", () => {
     const state: any = service.hydrateInitialState({
       players: [
         {
@@ -513,7 +513,7 @@ describe('PanierExpressService', () => {
     expect(exposed.extras?.ui?.panels?.shopping?.message).toContain('ananas');
   });
 
-  it('requiert une réponse pour answer_quiz (ignore correct côté client)', () => {
+  it('requiert une rÃ©ponse pour answer_quiz (ignore correct cÃ´tÃ© client)', () => {
     const base: any = service.hydrateInitialState({
       players: [{ id: 1, username: 'A' }],
       status: 'running',
@@ -537,7 +537,7 @@ describe('PanierExpressService', () => {
     expect((after.metadata as any)?.quiz?.pending?.[1]).toBeTruthy();
   });
 
-  it('refill le deck de courses lorsqu’il est vide et permet toujours de piocher', () => {
+  it('refill le deck de courses lorsquâ€™il est vide et permet toujours de piocher', () => {
     const base: any = service.hydrateInitialState({
       players: [{ id: 1, username: 'A' }],
       status: 'starting',
@@ -600,7 +600,7 @@ describe('PanierExpressService', () => {
     );
   });
 
-  it('met en pending un échange lorsqu’une offre est possible', () => {
+  it('met en pending un Ã©change lorsquâ€™une offre est possible', () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: ['pomme'] },
@@ -619,7 +619,7 @@ describe('PanierExpressService', () => {
     expect(typeof (after.pending as any)?.card).toBe('string');
   });
 
-  it("gère l'échange impossible sans pending", () => {
+  it("gÃ¨re l'Ã©change impossible sans pending", () => {
     const state: any = service.hydrateInitialState({
       players: [{ id: 1, username: 'A', inventory: ['pomme'] }],
       status: 'running',
@@ -632,7 +632,7 @@ describe('PanierExpressService', () => {
     expect((after as any).pending ?? null).toBeNull();
   });
 
-  it('résout un échange et met à jour les inventaires', () => {
+  it('rÃ©sout un Ã©change et met Ã  jour les inventaires', () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: ['pomme', 'banane'] },
@@ -659,7 +659,7 @@ describe('PanierExpressService', () => {
     expect(after.pending).toBeNull();
   });
 
-  it('refuse de lancer un second échange tant que le premier est en attente', () => {
+  it('refuse de lancer un second Ã©change tant que le premier est en attente', () => {
     const base: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: ['pomme'] },
@@ -676,7 +676,7 @@ describe('PanierExpressService', () => {
     expect(second.pending?.playerId).toBe(1);
   });
 
-  it("rejette l'action d'un autre joueur que celui concerné", () => {
+  it("rejette l'action d'un autre joueur que celui concernÃ©", () => {
     const base: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: ['pomme'] },
@@ -755,7 +755,7 @@ describe('PanierExpressService', () => {
     ).toThrow();
   });
 
-  it('décrémente les statuts temporaires au changement de tour', () => {
+  it('dÃ©crÃ©mente les statuts temporaires au changement de tour', () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A' },
@@ -790,7 +790,7 @@ describe('PanierExpressService', () => {
     expect(after.turn?.direction).toBe(-1);
   });
 
-  it("n'auto-refuse plus la demande du marchand quand l'ingrédient manque", () => {
+  it("n'auto-refuse plus la demande du marchand quand l'ingrÃ©dient manque", () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: [], basket: [], shoppingList: [] },
@@ -825,7 +825,7 @@ describe('PanierExpressService', () => {
     ).toBe(false);
   });
 
-  it("l'échange imposé ne rend pas aléatoirement la carte donnée au joueur ciblé", () => {
+  it("l'Ã©change imposÃ© ne rend pas alÃ©atoirement la carte donnÃ©e au joueur ciblÃ©", () => {
     const state: any = service.hydrateInitialState({
       players: [
         {
@@ -848,7 +848,7 @@ describe('PanierExpressService', () => {
         type: 'pick',
         playerId: 1,
         blocking: true,
-        label: 'Choisissez une carte à donner à Azrael, puis Entrée.',
+        label: 'Choisissez une carte Ã  donner Ã  Azrael, puis EntrÃ©e.',
         choices: ['nashi'],
         data: {
           kind: 'exchange.impose.choose_card',
@@ -875,7 +875,7 @@ describe('PanierExpressService', () => {
     expect(azrael.inventory).toContain('nashi');
   });
 
-  it('utilise un deck bonus global non dupliqué', () => {
+  it('utilise un deck bonus global non dupliquÃ©', () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A' },
@@ -891,7 +891,7 @@ describe('PanierExpressService', () => {
     expect(new Set(bonusDeck).size).toBe(catalog.length);
   });
 
-  it('nettoie le log de quiz et met une pioche en attente après une bonne réponse', () => {
+  it('nettoie le log de quiz et met une pioche en attente aprÃ¨s une bonne rÃ©ponse', () => {
     const state: any = service.hydrateInitialState({
       players: [{ id: 1, username: 'A', inventory: [], basket: [] }],
       status: 'started',
@@ -920,12 +920,12 @@ describe('PanierExpressService', () => {
     expect(logs).toContain('[Panier Express] Réponse correcte pour A.');
     expect(logs).toContain('[Panier Express] Piochez un ingrédient.');
     expect(
-      logs.some((message: string) => message.includes('Quiz : réponse')),
+      logs.some((message: string) => message.includes('Quiz : rÃ©ponse')),
     ).toBe(false);
     expect(after.pending?.type).toBe('draw');
   });
 
-  it('retire la mention flèches puis Entrée du choix de stand', () => {
+  it('retire la mention flÃ¨ches puis EntrÃ©e du choix de stand', () => {
     const state: any = service.hydrateInitialState({
       players: [{ id: 1, username: 'A' }],
       status: 'running',
@@ -941,7 +941,7 @@ describe('PanierExpressService', () => {
     expect(after.pending?.label).toBe('Choisissez le stand à rejoindre.');
   });
 
-  it("évite le doublon de libellé sur l'erreur de livraison", () => {
+  it("Ã©vite le doublon de libellÃ© sur l'erreur de livraison", () => {
     const state: any = service.hydrateInitialState({
       players: [
         {
@@ -968,12 +968,12 @@ describe('PanierExpressService', () => {
     expect(logs).toContain('[Panier Express] A défausse "tomate".');
     expect(
       logs.some((message: string) =>
-        message.includes('Erreur de livraison : A défausse'),
+        message.includes('Erreur de livraison : A dÃ©fausse'),
       ),
     ).toBe(false);
   });
 
-  it("corrige l'accent de Journée bio et précise les joueurs concernés", () => {
+  it("corrige l'accent de JournÃ©e bio et prÃ©cise les joueurs concernÃ©s", () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: [], basket: [], shoppingList: [] },
