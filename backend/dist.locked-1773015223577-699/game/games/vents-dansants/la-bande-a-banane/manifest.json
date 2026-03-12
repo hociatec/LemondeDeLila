@@ -1,8 +1,0 @@
-﻿{
-  "code": "la-bande-a-banane",
-  "name": "La Bande à Banane !",
-  "minPlayers": 2,
-  "maxPlayers": 6,
-  "engine": "la-bande-a-banane",
-  "summary": "Réunissez cinq singes différents en jouant des cartes Singe, Action, Piège et Joker pour devenir le chef de la Bande à Banane !"
-}
