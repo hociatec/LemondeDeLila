@@ -2802,8 +2802,7 @@ export class GameEngineService {
       const hasSamePrompt = recentMessages.some(
         (message) => extractPawnPromptToken(message) === expectedPromptToken,
       );
-      const turnAnnouncement = `C'est au tour de ${name}.`;
-      const cleaned = this.removeRecentExactLogMessage(state, turnAnnouncement);
+      const cleaned = this.removeRecentTurnAnnouncements(state);
       if (hasSamePrompt) {
         return cleaned;
       }
@@ -2821,7 +2820,15 @@ export class GameEngineService {
       return state;
     }
 
-    return this.core.appendLog(state, `C'est au tour de ${name}.`);
+    const hasRecentPawnSetupLogs = recentMessages.some((message) =>
+      /a choisi le pion:/i.test(message),
+    );
+    return this.core.appendLog(
+      state,
+      hasRecentPawnSetupLogs
+        ? `C'est au tour de ${name} de débuter.`
+        : `C'est au tour de ${name}.`,
+    );
   }
 
   private removeRecentExactLogMessage(
@@ -2839,6 +2846,21 @@ export class GameEngineService {
       return { ...state, log };
     }
     return state;
+  }
+
+  private removeRecentTurnAnnouncements(state: GameStateEntity): GameStateEntity {
+    const log = Array.isArray(state.log) ? [...state.log] : [];
+    let changed = false;
+    for (let i = log.length - 1; i >= 0 && i >= log.length - 6; i -= 1) {
+      const message =
+        typeof log[i]?.message === 'string'
+          ? String(log[i].message).trim()
+          : '';
+      if (!message.toLowerCase().startsWith("c'est au tour de ")) continue;
+      log.splice(i, 1);
+      changed = true;
+    }
+    return changed ? { ...state, log } : state;
   }
 
   private buildKey(roomId: number, gameType: string): string {
