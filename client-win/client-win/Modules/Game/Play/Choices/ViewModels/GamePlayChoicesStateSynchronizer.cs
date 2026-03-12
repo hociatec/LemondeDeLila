@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using client_win.Core.Text;
 using client_win.Modules.Game.Play.Actions.Dtos;
 using client_win.Modules.Game.Play.Choices.Services;
 using client_win.Modules.Game.Play.Common;
@@ -39,25 +38,6 @@ internal sealed class GamePlayChoicesStateSynchronizer
 
         var serverChoices = PendingChoicesReader.ExtractServerPendingChoices(state);
         var hasServerPendingChoices = serverChoices.Count > 0;
-        var pawnChoicesFromPendingData = ExtractChoosePawnChoicesFromPendingData(state);
-        var hasPawnChoicesFromPendingData = pawnChoicesFromPendingData.Count > 0;
-
-        if (hasPawnChoicesFromPendingData)
-        {
-            if (TryBuildChoosePawnFallbackChoices(state, out var pawnActions))
-            {
-                // Corridor (et jeux similaires) expose parfois les pions via pending.data.pawns
-                // sans pending.choices. On doit quand même lier chaque ligne à une action.
-                ApplyLocalChoices("choose_pawn_pending_data", pawnActions, setLabel);
-                setLabel("Votre pion.");
-                return;
-            }
-
-            _localChoices.Clear();
-            setLabel("Votre pion.");
-            _list.Apply(MakeA11yDistinct(pawnChoicesFromPendingData), autoSelectFirst: true);
-            return;
-        }
 
         if (hasServerPendingChoices)
         {
@@ -72,14 +52,6 @@ internal sealed class GamePlayChoicesStateSynchronizer
             var type = (state.Pending?.Type ?? string.Empty).Trim();
             var isQuiz = string.Equals(type, "quiz", StringComparison.OrdinalIgnoreCase);
             _list.Apply(serverChoices, autoSelectFirst: !isQuiz);
-            return;
-        }
-
-        if (TryBuildChoosePawnFallbackChoices(state, out var pawnChoices))
-        {
-            ApplyLocalChoices("choose_pawn_fallback", pawnChoices, setLabel);
-            var pendingLabel = PendingChoicesReader.BuildServerChoicesLabel(state.Pending);
-            setLabel(string.IsNullOrWhiteSpace(pendingLabel) ? "Votre pion." : pendingLabel);
             return;
         }
 
@@ -196,11 +168,6 @@ internal sealed class GamePlayChoicesStateSynchronizer
         }
 
         if (string.Equals(pendingType, "quiz", StringComparison.OrdinalIgnoreCase) && canAnswerQuiz)
-        {
-            return true;
-        }
-
-        if (PawnPendingTypes.IsPawnPendingType(pendingType) && HasChoosePawnData(state.Pending))
         {
             return true;
         }
@@ -323,18 +290,6 @@ internal sealed class GamePlayChoicesStateSynchronizer
         }
     }
 
-    private static bool HasChoosePawnData(GamePendingDto? pending)
-    {
-        if (pending == null || pending.Data.ValueKind != JsonValueKind.Object)
-        {
-            return false;
-        }
-
-        return pending.Data.TryGetProperty("pawns", out var pawns) &&
-               pawns.ValueKind == JsonValueKind.Array &&
-               pawns.GetArrayLength() > 0;
-    }
-
     private void ApplyLocalChoices(string mode, Dictionary<string, GameClientAction> choices, Action<string> setLabel)
     {
         _localChoices.Set(mode, choices);
@@ -356,171 +311,6 @@ internal sealed class GamePlayChoicesStateSynchronizer
         }
 
         return actions.Any(a => string.Equals(a.Type, actionType, StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static bool TryBuildChoosePawnFallbackChoices(
-        GameStateDto state,
-        out Dictionary<string, GameClientAction> choices)
-    {
-        choices = new Dictionary<string, GameClientAction>(StringComparer.Ordinal);
-
-        var pendingType = (state.Pending?.Type ?? string.Empty).Trim();
-        if (!PawnPendingTypes.IsPawnPendingType(pendingType))
-        {
-            return false;
-        }
-
-        if ((state.Pending?.Choices?.Count ?? 0) > 0)
-        {
-            return false;
-        }
-
-        if (state.Pending?.Data.ValueKind == JsonValueKind.Object &&
-            state.Pending.Data.TryGetProperty("pawns", out var pawnsNode) &&
-            pawnsNode.ValueKind == JsonValueKind.Array)
-        {
-            foreach (var pawn in pawnsNode.EnumerateArray())
-            {
-                if (pawn.ValueKind != JsonValueKind.Object)
-                {
-                    continue;
-                }
-
-                var pawnId = PawnPayloadReader.TryReadPawnId(pawn);
-                var pawnLabel = JsonPayloadReader.TryReadString(pawn, "label");
-                var pawnDescription = JsonPayloadReader.TryReadString(pawn, "description");
-                if (string.IsNullOrWhiteSpace(pawnId))
-                {
-                    continue;
-                }
-
-                pawnId = pawnId.Trim();
-                var label = !string.IsNullOrWhiteSpace(pawnLabel)
-                    ? pawnLabel.Trim()
-                    : pawnId;
-                if (!string.IsNullOrWhiteSpace(pawnDescription))
-                {
-                    label = $"{label} - {pawnDescription.Trim()}";
-                }
-                label = MojibakeTextRepair.Fix(label);
-                var key = ChoiceLabelUniquifier.MakeUniqueChoiceLabel(choices, label);
-                choices[key] = new GameClientAction("choose_pawn", new { pawnId });
-            }
-        }
-
-        if (choices.Count > 0)
-        {
-            return true;
-        }
-
-        var actions = state.Actions ?? new List<GameAvailableActionDto>();
-        if (actions.Count == 0)
-        {
-            return false;
-        }
-
-        foreach (var action in actions.Where(a => string.Equals(a.Type, "choose_pawn", StringComparison.OrdinalIgnoreCase)))
-        {
-            if (action.Payload.ValueKind != JsonValueKind.Object)
-            {
-                continue;
-            }
-
-            var pawnId = PawnPayloadReader.TryReadPawnId(action.Payload);
-            if (string.IsNullOrWhiteSpace(pawnId))
-            {
-                continue;
-            }
-            pawnId = pawnId.Trim();
-
-            var key = ChoiceLabelUniquifier.MakeUniqueChoiceLabel(choices, pawnId);
-            choices[key] = new GameClientAction(action.Type, new { pawnId });
-        }
-
-        return choices.Count > 0;
-    }
-
-    private static List<string> ExtractChoosePawnChoicesFromPendingData(GameStateDto state)
-    {
-        var pendingType = (state.Pending?.Type ?? string.Empty).Trim();
-        if (!PawnPendingTypes.IsPawnPendingType(pendingType))
-        {
-            return new List<string>();
-        }
-
-        if (state.Pending?.Data.ValueKind != JsonValueKind.Object)
-        {
-            return new List<string>();
-        }
-
-        if (!state.Pending.Data.TryGetProperty("pawns", out var pawnsNode) ||
-            pawnsNode.ValueKind != JsonValueKind.Array)
-        {
-            return new List<string>();
-        }
-
-        var choices = new List<string>();
-        foreach (var pawn in pawnsNode.EnumerateArray())
-        {
-            if (pawn.ValueKind != JsonValueKind.Object)
-            {
-                continue;
-            }
-
-            var label = JsonPayloadReader.TryReadString(pawn, "label")
-                        ?? PawnPayloadReader.TryReadPawnId(pawn);
-            var description = JsonPayloadReader.TryReadString(pawn, "description");
-            if (string.IsNullOrWhiteSpace(label))
-            {
-                continue;
-            }
-
-            var text = MojibakeTextRepair.Fix(label).Trim();
-            if (!string.IsNullOrWhiteSpace(description))
-            {
-                text = $"{text} - {MojibakeTextRepair.Fix(description).Trim()}";
-            }
-            choices.Add(text);
-        }
-
-        return choices.Count > 0 ? MakeA11yDistinct(choices) : new List<string>();
-    }
-
-    private static List<string> MakeA11yDistinct(List<string> choices)
-    {
-        if (choices == null || choices.Count <= 1)
-        {
-            return choices ?? new List<string>();
-        }
-
-        var counts = new Dictionary<string, int>(StringComparer.Ordinal);
-        foreach (var c in choices)
-        {
-            counts[c] = (counts.TryGetValue(c, out var n) ? n : 0) + 1;
-        }
-
-        var hasDuplicates = counts.Values.Any(v => v > 1);
-        if (!hasDuplicates)
-        {
-            return choices;
-        }
-
-        var seen = new Dictionary<string, int>(StringComparer.Ordinal);
-        var outList = new List<string>(choices.Count);
-        foreach (var c in choices)
-        {
-            if (!counts.TryGetValue(c, out var total) || total <= 1)
-            {
-                outList.Add(c);
-                continue;
-            }
-
-            var index = (seen.TryGetValue(c, out var n) ? n : 0) + 1;
-            seen[c] = index;
-            outList.Add(c + new string('\u2060', index));
-        }
-
-        return outList;
     }
 
 }

@@ -2,12 +2,16 @@ import { MorpionService } from '../morpion.service';
 import { MorpionPresenter } from '../morpion.presenter';
 import { GridCellActionsService } from '../../../../modules/grid/services/grid-cell-actions.service';
 import { MORPION_PAWNS } from '../definitions/morpion.pawns';
+import { GameCoreService } from '../../../../core/services/game-core.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 
 describe('MorpionService', () => {
   it('starts pawn selection with a human even if a bot is first', async () => {
     const service = new MorpionService(
       { register: () => {} } as any,
       new MorpionPresenter(new GridCellActionsService()),
+      new GameCoreService(),
+      new SetupFlowService(),
     );
 
     const state: any = service.hydrateInitialState({
@@ -39,6 +43,8 @@ describe('MorpionService', () => {
     const service = new MorpionService(
       { register: () => {} } as any,
       new MorpionPresenter(new GridCellActionsService()),
+      new GameCoreService(),
+      new SetupFlowService(),
     );
 
     let state: any = service.hydrateInitialState({
@@ -90,6 +96,8 @@ describe('MorpionService', () => {
     const service = new MorpionService(
       { register: () => {} } as any,
       new MorpionPresenter(new GridCellActionsService()),
+      new GameCoreService(),
+      new SetupFlowService(),
     );
 
     let state: any = service.hydrateInitialState({
@@ -129,6 +137,8 @@ describe('MorpionService', () => {
     const service = new MorpionService(
       { register: () => {} } as any,
       new MorpionPresenter(new GridCellActionsService()),
+      new GameCoreService(),
+      new SetupFlowService(),
     );
 
     let state: any = service.hydrateInitialState({
@@ -189,6 +199,8 @@ describe('MorpionService', () => {
     const service = new MorpionService(
       { register: () => {} } as any,
       new MorpionPresenter(new GridCellActionsService()),
+      new GameCoreService(),
+      new SetupFlowService(),
     );
 
     const state: any = service.hydrateInitialState({
@@ -220,6 +232,8 @@ describe('MorpionService', () => {
     const service = new MorpionService(
       { register: () => {} } as any,
       new MorpionPresenter(new GridCellActionsService()),
+      new GameCoreService(),
+      new SetupFlowService(),
     );
 
     const state: any = service.hydrateInitialState({

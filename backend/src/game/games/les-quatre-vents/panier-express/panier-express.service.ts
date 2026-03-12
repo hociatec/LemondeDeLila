@@ -38,6 +38,10 @@ import { ensureSeededRng } from '../../../../common/utils/seeded-rng';
 import { PanierExpressSetupService } from './setup/panier-express-setup.service';
 import { PanierExpressDrawService } from './actions/panier-express-draw.service';
 import { PanierExpressQuizService } from './actions/panier-express-quiz.service';
+import {
+  assignConfiguredBotPawns,
+  queueConfiguredPawnSelection,
+} from '../../../core/helpers/configured-pawn-setup.helper';
 import { PanierExpressExchangeService } from './actions/panier-express-exchange.service';
 import { PanierExpressUtils } from './model/panier-express-utils.service';
 import * as PanierExpressRulebook from './rulebook/rulebook';
@@ -45,6 +49,7 @@ import { PanierExpressBotService } from './bots/panier-express-bot.service';
 import { PanierExpressPhaseService } from './phases/panier-express-phase.service';
 import { PanierExpressPresenterService } from './presenter/panier-express-presenter.service';
 import { RandomService } from '../../../modules/random/services/random.service';
+import { SetupFlowService } from '../../../modules/setup-flow/services/setup-flow.service';
 import { resolvePendingPawnChoiceAction } from '../../../core/helpers/pawn-choice-action.helper';
 import type {
   GameShortcutHint,
@@ -91,6 +96,7 @@ export class PanierExpressService extends AbstractGameService {
     private readonly phaseFlow: PanierExpressPhaseService,
     private readonly presenter: PanierExpressPresenterService,
     private readonly random: RandomService,
+    private readonly setupFlow: SetupFlowService,
   ) {
     super(registry);
   }
@@ -693,45 +699,39 @@ export class PanierExpressService extends AbstractGameService {
   private assignBotPawns(state: GameStateEntity): GameStateEntity {
     const pawnChoices = this.setup.pawnChoices();
     if (!pawnChoices.length) return state;
-    const pawns = pawnChoices.map((pawn) => pawn.name);
-    const players = state.players ?? [];
-    let meta = this.getMetadata(state);
-    const used = new Set(
-      players.map((p) => this.getPawnText(p)).filter((pawn) => pawn.length > 0),
-    );
-    const assignedBots: Array<{ id: number; pawn: string }> = [];
-    const updated = players.map((p) => {
-      const currentPawn = this.getPawnText(p);
-      if (currentPawn.length > 0) {
-        used.add(currentPawn);
-        return p;
-      }
-      if (!this.utils.isBot(p)) return p;
-      const available = pawns.filter((pawn) => !used.has(pawn));
-      const pool = available.length > 0 ? available : pawns;
-      const picked = this.random.pickOne(meta, pool);
-      meta = picked.meta;
-      const chosen = toText(picked.value).trim();
-      if (!chosen) return p;
-      used.add(chosen);
-      assignedBots.push({ id: p.id, pawn: chosen });
-      return { ...p, pawn: chosen };
-    });
-    let next: GameStateEntity = {
-      ...state,
-      players: updated,
-      metadata: {
-        ...(state.metadata ?? {}),
-        ...meta,
+    return assignConfiguredBotPawns({
+      state,
+      core: this.core,
+      catalog: pawnChoices.map((pawn) => ({
+        id: pawn.name,
+        label: pawn.name,
+        description: pawn.description ?? '',
+      })),
+      playerPawnField: 'pawn',
+      isBotPlayer: (player) => this.utils.isBot(player),
+      pickChoice: ({ state: currentState, available, catalog }) => {
+        const meta = this.getMetadata(currentState);
+        const pool = available.length > 0 ? available : catalog;
+        const picked = this.random.pickOne(
+          meta,
+          pool.map((choice) => choice.id),
+        );
+        const choiceId = toText(picked.value).trim();
+        return {
+          choice:
+            pool.find((choice) => choice.id === choiceId) ??
+            catalog.find((choice) => choice.id === choiceId) ??
+            null,
+          state: {
+            ...currentState,
+            metadata: {
+              ...(currentState.metadata ?? {}),
+              ...picked.meta,
+            },
+          },
+        };
       },
-    };
-    assignedBots.forEach((bot) => {
-      next = this.core.appendLog(
-        next,
-        `${this.utils.playerName(next, bot.id)} a choisi le pion: ${bot.pawn}.`,
-      );
     });
-    return next;
   }
 
   private withPending(
@@ -773,50 +773,35 @@ export class PanierExpressService extends AbstractGameService {
         ? state
         : { ...state, players: normalizedPlayers };
 
-    const taken = new Set(
-      normalizedPlayers
-        .filter((p) => !this.utils.isBot(p))
-        .map((p) => this.getPawnText(p))
-        .filter((pawn) => pawn.length > 0),
-    );
-    const available = pawnChoices.filter((pawn) => !taken.has(pawn.name));
-    const choices = available.length > 0 ? available : pawnChoices;
-    const chooser = missing[0];
-    if (!chooser) return withClearedBots;
-    const pawns = choices.map((pawn) => ({
-      id: pawn.name,
-      label:
-        pawn.description && pawn.description.length > 0
-          ? `${pawn.name}: ${pawn.description}`
-          : pawn.name,
-      description: pawn.description ?? '',
-    }));
-    const pendingChoice: PendingState = {
-      type: 'choose_pawn',
-      playerId: chooser.id,
-      blocking: true,
-      label: `${this.utils.playerName(withClearedBots, chooser.id)} choisit son pion (puis Entrée).`,
-      choices: pawns.map((pawn) => pawn.label),
-      data: { pawns },
-    };
-    const withPending: GameStateEntity = {
-      ...withClearedBots,
-      pending: pendingChoice,
-      turn: {
-        ...(state.turn ?? { currentPlayerId: chooser.id, direction: 1 }),
-        currentPlayerId: chooser.id,
-        direction: state.turn?.direction === -1 ? -1 : 1,
-      },
-    };
-    const prompt = `C'est à ${this.utils.playerName(withPending, chooser.id)} de choisir son pion.`;
-    if (
-      (withPending.log ?? []).some(
-        (entry) => String(entry?.message ?? '').trim() === prompt,
-      )
-    ) {
-      return withPending;
-    }
-    return this.core.appendLog(withPending, prompt);
+    return queueConfiguredPawnSelection({
+      state: withClearedBots,
+      core: this.core,
+      setupFlow: this.setupFlow,
+      catalog: pawnChoices.map((pawn) => ({
+        id: pawn.name,
+        label: pawn.name,
+        description: pawn.description ?? '',
+      })),
+      startPlayerId: missing[0]?.id ?? normalizedPlayers[0]?.id ?? null,
+      pendingType: 'choose_pawn',
+      playerPawnField: 'pawn',
+      isBotPlayer: (player) => this.utils.isBot(player),
+      takenPawnIdsResolver: (currentState) =>
+        new Set(
+          (Array.isArray(currentState.players) ? currentState.players : [])
+            .filter((player) => !this.utils.isBot(player))
+            .map((player) => this.getPawnText(player))
+            .filter((pawn) => pawn.length > 0),
+        ),
+      pawnDataMapper: (choice) => ({
+        id: String(choice.id ?? '').trim(),
+        label:
+          String(choice.description ?? '').trim().length > 0
+            ? `${String(choice.label ?? '').trim()}: ${String(choice.description ?? '').trim()}`
+            : String(choice.label ?? '').trim(),
+        description: String(choice.description ?? '').trim(),
+      }),
+    });
   }
 
   private ensureStarted(state: GameStateEntity): GameStateEntity {

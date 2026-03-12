@@ -398,7 +398,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             return true;
         }
 
-        return HasChoosePawnData(state.Pending);
+        return false;
     }
 
     private static bool ReadLifecycleBoolean(GameStateDto state, string key)
@@ -433,18 +433,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         {
             return false;
         }
-    }
-
-    private static bool HasChoosePawnData(GamePendingDto? pending)
-    {
-        if (pending == null || pending.Data.ValueKind != JsonValueKind.Object)
-        {
-            return false;
-        }
-
-        return pending.Data.TryGetProperty("pawns", out var pawns) &&
-               pawns.ValueKind == JsonValueKind.Array &&
-               pawns.GetArrayLength() > 0;
     }
 
     private void MaybeAnnouncePendingChoicesLabel()
@@ -1522,18 +1510,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
               // can be rebuilt from the canonical internal game state (for example all players on P).
               return Task.FromResult(false);
           }
-
-        // Generic fallback for common UI panels across games.
-        // Only used when no explicit interface hint matched the pressed key.
-        if (pressed == "S")
-        {
-            var scoreMessage = GamePlayPanelHistoryMessageBuilder.BuildPanelHistoryMessage(state, "score");
-            if (!string.IsNullOrWhiteSpace(scoreMessage))
-            {
-                EmitUiShortcutMessage(scoreMessage);
-                return Task.FromResult(true);
-            }
-        }
 
         return Task.FromResult(false);
     }

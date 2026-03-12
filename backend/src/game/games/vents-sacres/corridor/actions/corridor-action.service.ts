@@ -12,10 +12,18 @@ import {
 } from '../../../../actions/action-service.helper';
 import { CorridorSetupService } from '../setup/corridor-setup.service';
 import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
+import {
+  assignConfiguredBotPawns,
+  queueConfiguredPawnSelection,
+} from '../../../../core/helpers/configured-pawn-setup.helper';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 
 @Injectable()
 export class CorridorActionService {
-  constructor(private readonly setup: CorridorSetupService) {}
+  constructor(
+    private readonly setup: CorridorSetupService,
+    private readonly setupFlow: SetupFlowService,
+  ) {}
 
   private appendUniqueLogMessages(
     state: GameStateEntity,
@@ -189,20 +197,18 @@ export class CorridorActionService {
     });
     if (!applied) return state;
 
-    const appliedMeta = (applied.state.metadata ?? {}) as CorridorMetadata;
-    const withBotsAssigned = this.autoAssignBotPawns(
-      state.players ?? [],
-      allPawns,
-      { ...(appliedMeta.pawnByPlayerId ?? {}) },
-    );
-    const next: GameStateEntity = {
-      ...applied.state,
-      metadata: {
-        ...(applied.state.metadata ?? {}),
-        ...appliedMeta,
-        pawnByPlayerId: withBotsAssigned,
-      },
-    };
+    const next = assignConfiguredBotPawns({
+      state: applied.state,
+      core: coreLike,
+      catalog: allPawns.map((pawn) => ({
+        id: String(pawn.id ?? '').trim(),
+        label: String(pawn.label ?? '').trim(),
+        description: String(pawn.description ?? '').trim(),
+      })),
+      metadataAssignmentKey: 'pawnByPlayerId',
+      isBotPlayer: (player) => player?.isBot === true,
+      logLabelResolver: (choice) => String(choice.label ?? choice.id).trim(),
+    });
 
     const starterId =
       typeof meta.setupStarterId === 'number'
@@ -210,36 +216,31 @@ export class CorridorActionService {
         : (state.players?.[0]?.id ?? actorId);
     const starter =
       (state.players ?? []).find((p) => p?.id === starterId) ?? null;
-    const nextPendingPlayer = (state.players ?? []).find(
-      (p) => p?.isBot !== true && !withBotsAssigned[String(p.id)],
-    )?.id;
-    const nextTurnPlayerId = nextPendingPlayer ?? starterId;
+    const queued = queueConfiguredPawnSelection({
+      state: next,
+      core: coreLike,
+      setupFlow: this.setupFlow,
+      catalog: allPawns.map((pawn) => ({
+        id: String(pawn.id ?? '').trim(),
+        label: String(pawn.label ?? '').trim(),
+        description: String(pawn.description ?? '').trim(),
+      })),
+      startPlayerId: actorId,
+      pendingType: 'choose_pawn',
+      metadataAssignmentKey: 'pawnByPlayerId',
+      isBotPlayer: (player) => player?.isBot === true,
+      pawnDataMapper: (choice) => ({
+        id: String(choice.id ?? '').trim(),
+        label: `${String(choice.label ?? '').trim()} - ${String(choice.description ?? '').trim()}`,
+        description: String(choice.description ?? '').trim(),
+      }),
+    });
+    const nextPendingPlayer = queued.pending?.playerId ?? null;
     return {
-      ...next,
-      pending:
-        nextPendingPlayer != null
-          ? {
-              type: 'choose_pawn',
-              label: 'Votre pion.',
-              playerId: nextPendingPlayer,
-              blocking: true,
-              data: {
-                pawns: allPawns
-                  .filter(
-                    (p) =>
-                      !Object.values(withBotsAssigned).includes(String(p.id)),
-                  )
-                  .map((p) => ({
-                    id: p.id,
-                    label: `${p.label} - ${String(p.description ?? '').trim()}`,
-                    description: p.description,
-                  })),
-              },
-            }
-          : null,
+      ...queued,
       turn: {
-        ...(next.turn ?? { direction: 1 }),
-        currentPlayerId: nextTurnPlayerId,
+        ...(queued.turn ?? { direction: 1 }),
+        currentPlayerId: nextPendingPlayer ?? starterId,
         direction: 1,
         label:
           nextPendingPlayer != null
@@ -247,23 +248,6 @@ export class CorridorActionService {
             : `Tour de ${starter?.username ?? 'joueur'}`,
       },
     };
-  }
-
-  private autoAssignBotPawns(
-    players: Array<{ id: number; isBot?: boolean }>,
-    pawns: Array<{ id: string }>,
-    pawnByPlayerId: Record<string, string>,
-  ): Record<string, string> {
-    const out = { ...pawnByPlayerId };
-    const used = new Set(Object.values(out));
-    for (const bot of players.filter((p) => p?.isBot === true)) {
-      if (out[String(bot.id)]) continue;
-      const pick = pawns.find((p) => !used.has(String(p.id)));
-      if (!pick) break;
-      out[String(bot.id)] = String(pick.id);
-      used.add(String(pick.id));
-    }
-    return out;
   }
 
   private applyMove(

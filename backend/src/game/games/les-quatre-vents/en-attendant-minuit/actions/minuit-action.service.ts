@@ -21,6 +21,10 @@ import { TurnPoliciesService } from '../../../../modules/turn-policies/services/
 import { PromptPoliciesService } from '../../../../modules/prompt-policies/services/prompt-policies.service';
 import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
 import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
+import {
+  assignConfiguredBotPawns,
+  queueConfiguredPawnSelection,
+} from '../../../../core/helpers/configured-pawn-setup.helper';
 import { MINUIT_GAME } from '../definitions/minuit.definition';
 import type {
   MinuitCard,
@@ -441,103 +445,52 @@ export class MinuitActionService {
         ? { ...state, pending: null }
         : state;
     }
-    const taken = new Set<string>([
-      ...players
-        .map((p) => (typeof p?.pawn === 'string' ? String(p.pawn).trim() : ''))
-        .filter((pawn) => pawn.length > 0),
-      ...Object.values(meta.pawns ?? {})
-        .map((pawn) => String(pawn ?? '').trim())
-        .filter((pawn) => pawn.length > 0),
-    ]);
     const choiceEntries = this.listPawnChoiceEntries(this.getMeta(state));
-    const available = choiceEntries.filter((entry) => !taken.has(entry.id));
-    const entries = available.length ? available : [...choiceEntries];
-    return continueSequentialPawnSelection({
+    const queued = queueConfiguredPawnSelection({
       state,
+      core: this.core,
       setupFlow: this.setupFlow,
-      chooserPlayerId: players[0]?.id ?? null,
-      players,
-      isAssigned: (playerId) => {
-        const player = players.find((p) => Number(p?.id) === playerId);
-        return (
-          !player ||
-          this.isBotLike(player, meta) ||
-          this.hasPawnAssigned(player, meta)
-        );
-      },
-      pendingType: 'pick_pawn',
-      includeChoiceMapData: true,
-      pawns: entries.map((entry) => ({
+      catalog: choiceEntries.map((entry) => ({
         id: entry.id,
         label: entry.label,
         description: entry.description,
       })),
-      pawnDataMapper: (choice: unknown) => {
-        const choiceRecord = asRecord(choice);
-        return {
-          id: toText(choiceRecord.id).trim(),
-          label: toText(choiceRecord.label).trim(),
-          description: toText(choiceRecord.description).trim(),
-        };
-      },
-      onStarted: () => ({ ...state, pending: null }),
+      startPlayerId: players[0]?.id ?? null,
+      pendingType: 'pick_pawn',
+      metadataAssignmentKey: 'pawns',
+      playerPawnField: 'pawn',
+      isBotPlayer: (player, currentState) =>
+        this.isBotLike(player, this.getMeta(currentState)),
+      includeChoiceMapData: true,
+      pawnDataMapper: (choice) => ({
+        id: String(choice.id ?? '').trim(),
+        label: String(choice.label ?? '').trim(),
+        description: String(choice.description ?? '').trim(),
+      }),
     });
+    return queued.pending ? queued : { ...state, pending: null };
   }
 
   private assignBotPawns(state: GameStateEntity): GameStateEntity {
-    const players = Array.isArray(state.players) ? state.players : [];
     const meta = this.getMeta(state);
-    const assigned: Record<number, string> = { ...(meta.pawns ?? {}) };
-    const taken = new Set<string>(
-      Object.values(assigned)
-        .map((pawn) => (typeof pawn === 'string' ? pawn.trim() : ''))
-        .filter((pawn) => pawn.length > 0),
-    );
-    let changed = false;
-    const assignedBots: Array<{ id: number; pawn: string }> = [];
-    const updatedPlayers = players.map((p) => {
-      if (!p) return p;
-      const pawn =
-        typeof p.pawn === 'string' && String(p.pawn).trim().length > 0
-          ? String(p.pawn).trim()
-          : String(assigned[p.id] ?? '').trim();
-      if (!this.isBotLike(p, meta)) {
-        if (pawn.length > 0) {
-          assigned[p.id] = pawn;
-          taken.add(pawn);
-        }
-        return p;
-      }
-      if (pawn.length > 0) {
-        assigned[p.id] = pawn;
-        taken.add(pawn);
-        return p;
-      }
-      const available = this.listPawnChoices(meta).find(
-        (candidate) => !taken.has(candidate),
-      );
-      if (!available) return p;
-      taken.add(available);
-      assigned[p.id] = available;
-      changed = true;
-      assignedBots.push({ id: p.id, pawn: available });
-      return { ...p, pawn: available };
+    return assignConfiguredBotPawns({
+      state,
+      core: this.core,
+      catalog: this.listPawnChoiceEntries(meta).map((entry) => ({
+        id: entry.id,
+        label: entry.label,
+        description: entry.description,
+      })),
+      metadataAssignmentKey: 'pawns',
+      playerPawnField: 'pawn',
+      isBotPlayer: (player, currentState) =>
+        this.isBotLike(player, this.getMeta(currentState)),
+      playerNameOptions: MINUIT_PLAYER_NAME_OPTIONS,
+      logLabelResolver: (choice, currentState) =>
+        this.resolvePawnName(this.getMeta(currentState), toText(choice.id)),
+      pickChoice: ({ available, catalog }) =>
+        available.length > 0 ? available[0] : catalog[0] ?? null,
     });
-    const metaChanged = !this.arePawnsEqual(meta.pawns, assigned);
-    if (!changed && !metaChanged) return state;
-    const nextMeta: MinuitMetadata = { ...meta, pawns: assigned };
-    let next: GameStateEntity = {
-      ...state,
-      players: updatedPlayers,
-      metadata: { ...(state.metadata ?? {}), ...nextMeta },
-    };
-    for (const bot of assignedBots) {
-      next = this.core.appendLog(
-        next,
-        `${resolvePlayerNameFromState(next, bot.id, MINUIT_PLAYER_NAME_OPTIONS)} a choisi le pion: ${this.resolvePawnName(nextMeta, bot.pawn)}.`,
-      );
-    }
-    return next;
   }
 
   private handlePickPawn(

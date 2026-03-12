@@ -16,6 +16,7 @@ import { QuizRunnerService } from '../../../../modules/quiz/services/quiz-runner
 import { VictoryService } from '../../../../modules/victory/services/victory.service';
 import { ActionLogService } from '../../../../modules/actionlog/services/action-log.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
+import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { BotRunnerService } from '../../../../modules/bot/services/bot-runner.service';
 import { InteractiveExchangeService } from '../../../../modules/exchange/services/interactive-exchange.service';
 import { GameRegistryService } from '../../../../engine/services/game-registry.service';
@@ -51,6 +52,7 @@ export async function createPanierExpressTestingModule() {
       VictoryService,
       ActionLogService,
       RandomService,
+      SetupFlowService,
       InteractiveExchangeService,
       GameContentLoaderService,
       PanierExpressSetupService,

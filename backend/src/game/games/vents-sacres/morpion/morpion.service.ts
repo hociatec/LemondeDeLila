@@ -21,6 +21,12 @@ import { victoryAnnouncement } from '../../../core/helpers/game-log-text.helper'
 import { normalizeGameLogMessage } from '../../../core/helpers/log-style.helper';
 import { MORPION_PAWNS } from './definitions/morpion.pawns';
 import { nextRngInt } from '../../../../common/utils/seeded-rng';
+import { GameCoreService } from '../../../core/services/game-core.service';
+import { SetupFlowService } from '../../../modules/setup-flow/services/setup-flow.service';
+import {
+  assignConfiguredBotPawns,
+  queueConfiguredPawnSelection,
+} from '../../../core/helpers/configured-pawn-setup.helper';
 
 @Injectable()
 export class MorpionService extends AbstractGameService {
@@ -36,29 +42,10 @@ export class MorpionService extends AbstractGameService {
   constructor(
     registry: GameRegistryService,
     private readonly presenter: MorpionPresenter,
+    private readonly core: GameCoreService,
+    private readonly setupFlow: SetupFlowService,
   ) {
     super(registry);
-  }
-
-  private autoAssignBotPawns(
-    players: Array<{ id: number; isBot?: boolean }>,
-    assigned: Record<string, string>,
-  ): {
-    map: Record<string, string>;
-    assignedBots: Array<{ playerId: number; pawnId: string }>;
-  } {
-    const out = { ...(assigned ?? {}) };
-    const assignedBots: Array<{ playerId: number; pawnId: string }> = [];
-    const used = new Set(Object.values(out));
-    for (const bot of (players ?? []).filter((p) => p?.isBot === true)) {
-      if (out[String(bot.id)]) continue;
-      const pick = MorpionService.PawnChoices.find((p) => !used.has(p.id));
-      if (!pick) break;
-      out[String(bot.id)] = pick.id;
-      used.add(pick.id);
-      assignedBots.push({ playerId: bot.id, pawnId: pick.id });
-    }
-    return { map: out, assignedBots };
   }
 
   private pickRandomHumanNeedingPawn(
@@ -88,10 +75,40 @@ export class MorpionService extends AbstractGameService {
       baseState.metadata && typeof baseState.metadata === 'object'
         ? (baseState.metadata as Record<string, unknown>)
         : {};
-    const botAssigned = this.autoAssignBotPawns(players as any, {});
-    const assignedBots = botAssigned.map;
+    const baseStateWithCatalog: GameStateEntity = {
+      ...baseState,
+      metadata: {
+        ...baseMeta,
+        pawns: MorpionService.PawnChoices.map((pawn) => ({
+          id: pawn.id,
+          label: pawn.label,
+          description: pawn.description,
+          glyph: pawn.glyph,
+        })),
+      },
+    };
+    const withBots = assignConfiguredBotPawns({
+      state: baseStateWithCatalog,
+      core: this.core,
+      catalog: MorpionService.PawnChoices.map((pawn) => ({
+        id: pawn.id,
+        label: pawn.label,
+        description: pawn.description,
+        glyph: pawn.glyph,
+      })),
+      metadataAssignmentKey: 'glyphByPlayerId',
+      isBotPlayer: (player) => player?.isBot === true,
+      logLabelResolver: (choice) => String(choice.label ?? choice.id).trim(),
+    });
+    const assignedBots =
+      ((withBots.metadata as any)?.glyphByPlayerId as Record<string, string>) ??
+      {};
     const { playerId: firstPlayerId, meta: metaAfterPick } =
-      this.pickRandomHumanNeedingPawn(players as any, assignedBots, baseMeta);
+      this.pickRandomHumanNeedingPawn(
+        (withBots.players ?? []) as any,
+        assignedBots,
+        withBots.metadata as Record<string, unknown>,
+      );
     const metadata: MorpionMetadata = {
       size: 3,
       board: Array.from({ length: 9 }, () => 0),
@@ -99,50 +116,50 @@ export class MorpionService extends AbstractGameService {
       winnerId: null,
       draw: false,
     };
-    const pending = firstPlayerId
-      ? this.buildChoosePawnPending(players, firstPlayerId, assignedBots)
-      : null;
-
-    // Announce bot pawn picks so humans know what each bot is using.
-    let log = Array.isArray(baseState.log) ? baseState.log : [];
-    for (const entry of botAssigned.assignedBots) {
-      const botName =
-        players.find((p) => p?.id === entry.playerId)?.username ??
-        `#${entry.playerId}`;
-      const pawn =
-        MorpionService.PawnChoices.find((p) => p.id === entry.pawnId) ?? null;
-      const pawnLabel = pawn?.label ?? entry.pawnId;
-      log = this.appendLog(log, `${botName} a choisi le pion: ${pawnLabel}.`);
-    }
-    if (typeof firstPlayerId === 'number' && Number.isFinite(firstPlayerId)) {
-      const chooserName =
-        players.find((p) => p?.id === firstPlayerId)?.username ??
-        `#${firstPlayerId}`;
-      log = this.appendLog(log, `C'est à ${chooserName} de choisir son pion.`);
-    }
-
-    return {
-      ...baseState,
+    const initialized: GameStateEntity = {
+      ...withBots,
       status: 'started',
       phase: 'play',
       round: baseState.round ?? 1,
       turnIndex: baseState.turnIndex ?? 0,
       lastRoll: null,
       metadata: { ...metaAfterPick, ...(metadata as any) },
-      pending,
       turn: {
         ...(baseState.turn ?? { direction: 1 }),
         currentPlayerId: firstPlayerId,
         direction: 1,
-        label:
-          firstPlayerId && pending
-            ? `Choix du pion - ${players.find((p) => p?.id === firstPlayerId)?.username ?? `#${firstPlayerId}`}`
-            : firstPlayerId
-              ? `Tour de ${players.find((p) => p?.id === firstPlayerId)?.username ?? `#${firstPlayerId}`}`
-              : undefined,
       },
-      log,
     };
+    const queued = queueConfiguredPawnSelection({
+      state: initialized,
+      core: this.core,
+      setupFlow: this.setupFlow,
+      catalog: MorpionService.PawnChoices.map((pawn) => ({
+        id: pawn.id,
+        label: pawn.label,
+        description: pawn.description,
+      })),
+      startPlayerId: firstPlayerId,
+      pendingType: 'choose_pawn',
+      metadataAssignmentKey: 'glyphByPlayerId',
+      isBotPlayer: (player) => player?.isBot === true,
+      pawnDataMapper: (choice) => ({
+        id: String(choice.id ?? '').trim(),
+        label: String(choice.label ?? '').trim(),
+        description: String(choice.description ?? '').trim(),
+      }),
+    });
+    return queued.pending
+      ? queued
+      : {
+          ...queued,
+          pending: null,
+          turn: {
+            ...(queued.turn ?? { direction: 1 }),
+            currentPlayerId: firstPlayerId,
+            direction: 1,
+          },
+        };
   }
 
   applyActions(
@@ -496,19 +513,6 @@ export class MorpionService extends AbstractGameService {
     }
 
     const players = Array.isArray(state.players) ? state.players : [];
-    const metaAll =
-      state.metadata && typeof state.metadata === 'object'
-        ? (state.metadata as Record<string, unknown>)
-        : {};
-    const meta = { ...(metaAll as any) } as MorpionMetadata;
-    const glyphByPlayerId = { ...(meta.glyphByPlayerId ?? {}) };
-    glyphByPlayerId[String(actorId)] = pawnId;
-    const botAssigned = this.autoAssignBotPawns(
-      players as any,
-      glyphByPlayerId,
-    );
-    const withBotsAssigned = botAssigned.map;
-
     const pawnLabel =
       MorpionService.PawnChoices.find((pawn) => pawn.id === pawnId)?.label ??
       pawnId;
@@ -516,47 +520,51 @@ export class MorpionService extends AbstractGameService {
       state.log,
       `${players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`} a choisi le pion: ${pawnLabel}.`,
     );
-    for (const entry of botAssigned.assignedBots) {
-      const botName =
-        players.find((p) => p?.id === entry.playerId)?.username ??
-        `#${entry.playerId}`;
-      const pawn =
-        MorpionService.PawnChoices.find((p) => p.id === entry.pawnId) ?? null;
-      const label = pawn?.label ?? entry.pawnId;
-      log = this.appendLog(log, `${botName} a choisi le pion: ${label}.`);
-    }
-
-    const { playerId: nextPlayerId, meta: metaAfterPick } =
-      this.pickRandomHumanNeedingPawn(
-        players as any,
-        withBotsAssigned,
-        metaAll,
-      );
-
-    if (typeof nextPlayerId === 'number') {
-      const nextName =
-        players.find((p) => p?.id === nextPlayerId)?.username ??
-        `#${nextPlayerId}`;
-      log = this.appendLog(log, `C'est à ${nextName} de choisir son pion.`);
-      return {
-        ...state,
-        metadata: {
-          ...metaAfterPick,
-          ...meta,
-          glyphByPlayerId: withBotsAssigned,
-        } as any,
-        pending: this.buildChoosePawnPending(
-          players,
-          nextPlayerId,
-          withBotsAssigned,
-        ),
-        turn: {
-          ...(state.turn ?? { direction: 1 }),
-          currentPlayerId: nextPlayerId,
-          direction: 1,
-          label: `Choix du pion - ${players.find((p) => p?.id === nextPlayerId)?.username ?? `#${nextPlayerId}`}`,
+    const metaAll =
+      state.metadata && typeof state.metadata === 'object'
+        ? (state.metadata as Record<string, unknown>)
+        : {};
+    const meta = { ...(metaAll as any) } as MorpionMetadata;
+    const nextBase: GameStateEntity = {
+      ...state,
+      log,
+      metadata: {
+        ...meta,
+        glyphByPlayerId: {
+          ...(meta.glyphByPlayerId ?? {}),
+          [String(actorId)]: pawnId,
         },
-        log,
+      } as any,
+      pending: null,
+    };
+    const queued = queueConfiguredPawnSelection({
+      state: nextBase,
+      core: this.core,
+      setupFlow: this.setupFlow,
+      catalog: MorpionService.PawnChoices.map((pawn) => ({
+        id: pawn.id,
+        label: pawn.label,
+        description: pawn.description,
+      })),
+      startPlayerId: actorId,
+      pendingType: 'choose_pawn',
+      metadataAssignmentKey: 'glyphByPlayerId',
+      isBotPlayer: (player) => player?.isBot === true,
+      pawnDataMapper: (choice) => ({
+        id: String(choice.id ?? '').trim(),
+        label: String(choice.label ?? '').trim(),
+        description: String(choice.description ?? '').trim(),
+      }),
+    });
+    if (queued.pending) {
+      return {
+        ...queued,
+        turn: {
+          ...(queued.turn ?? { direction: 1 }),
+          currentPlayerId: queued.pending.playerId,
+          direction: 1,
+          label: `Choix du pion - ${players.find((p) => p?.id === queued.pending?.playerId)?.username ?? `#${queued.pending?.playerId}`}`,
+        },
       };
     }
 
@@ -568,15 +576,14 @@ export class MorpionService extends AbstractGameService {
       log = this.appendLog(log, `C'est au tour de ${startName}.`);
     }
     return {
-      ...state,
+      ...queued,
       metadata: {
-        ...metaAfterPick,
         ...meta,
-        glyphByPlayerId: withBotsAssigned,
+        ...((queued.metadata as any) ?? {}),
       } as any,
       pending: null,
       turn: {
-        ...(state.turn ?? { direction: 1 }),
+        ...(queued.turn ?? { direction: 1 }),
         currentPlayerId: startPlayerId,
         direction: 1,
         label: startPlayerId
@@ -585,37 +592,6 @@ export class MorpionService extends AbstractGameService {
       },
       log,
     };
-  }
-
-  private buildChoosePawnPending(
-    players: any[],
-    playerId: number,
-    assigned: Record<string, string>,
-  ) {
-    const taken = new Set(
-      Object.values(assigned ?? {})
-        .map((v) => this.normalizePawnChoice(v))
-        .filter((v): v is string => v != null),
-    );
-    const available = MorpionService.PawnChoices.filter(
-      (c) => !taken.has(c.id),
-    );
-    const availableLabels = available.map((c) => c.label);
-    return {
-      type: 'choose_pawn',
-      playerId,
-      blocking: true,
-      label: `Choisissez votre pion (${availableLabels.join(' / ')}).`,
-      choices: available.map((c) => `${c.label} - ${c.description}`),
-      data: {
-        pawns: available.map((c) => ({
-          id: c.id,
-          label: c.label,
-          description: c.description,
-          glyph: c.glyph,
-        })),
-      },
-    } as any;
   }
 
   private asChoosePawnPending(
