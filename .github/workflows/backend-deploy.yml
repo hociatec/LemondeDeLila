@@ -45,11 +45,6 @@ jobs:
     needs: quality
     runs-on: [self-hosted, Linux, X64]
     steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
       - name: Verify Node/npm on runner
         run: |
           set -euo pipefail
