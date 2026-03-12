@@ -1,4 +1,4 @@
-import { Test } from '@nestjs/testing';
+﻿import { Test } from '@nestjs/testing';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
@@ -127,7 +127,7 @@ describe('Contes effects', () => {
     expect(toText(asRecord(pawns[0]).description)).not.toHaveLength(0);
   });
 
-  it('keeps Cape d’Invisibilite aligned with malus tile behavior', async () => {
+  it('keeps Cape dâ€™Invisibilite aligned with malus tile behavior', async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         GameCoreService,
@@ -169,14 +169,17 @@ describe('Contes effects', () => {
     const metadata = asRecord(state.metadata);
     const tiles = Array.isArray(metadata.tiles) ? metadata.tiles : [];
 
-    expect(toText(asRecord(tiles[0]).label)).toBe(
-      "Case Départ: Vous ouvrez le grand livre des contes, et un vent de magie emporte vos feuilles volantes Chaque pas vous rapproche d'histoires fantastiques, de surprises et de rires à profusion. L'aventure commence maintenant !",
+    expect(toText(asRecord(tiles[0]).label)).toBe('Case Départ');
+    expect(toText(asRecord(tiles[0]).description)).toContain(
+      'Vous ouvrez le grand livre des contes',
     );
-    expect(toText(asRecord(tiles[1]).label)).toBe(
-      'Case Bonus: Un coup de pouce magique ! La chance vous sourit, profitez-en.',
+    expect(toText(asRecord(tiles[1]).label)).toBe('Case Bonus');
+    expect(toText(asRecord(tiles[1]).description)).toContain(
+      'Un coup de pouce magique',
     );
-    expect(toText(asRecord(tiles[59]).label)).toBe(
-      "Case Arrivée: Vous atteignez le majestueux livre magique, ses pages scintillent et s'animent autour de vous... Les contes du monde entier vous saluent et vous couronnent Maître ou Maîtresse des histoires, héros de cette aventure mémorable !",
+    expect(toText(asRecord(tiles[59]).label)).toBe('Case Arrivée');
+    expect(toText(asRecord(tiles[59]).description)).toContain(
+      'Vous atteignez le majestueux livre magique',
     );
   });
 
@@ -331,7 +334,7 @@ describe('Contes effects', () => {
               id: 1,
               type: 'bonus',
               title: 'Bottes de sept lieues',
-              text: 'Avancez de 2 cases supplémentaires. Ces bottes magiques vous font bondir loin devant !',
+              text: 'Avancez de 2 cases supplÃ©mentaires. Ces bottes magiques vous font bondir loin devant !',
             },
           ],
           discardBonus: [],
@@ -379,7 +382,7 @@ describe('Contes effects', () => {
       ...state,
       pending: {
         type: 'choose_number',
-        label: 'Poussière de rire',
+        label: 'PoussiÃ¨re de rire',
         playerId: 1,
         blocking: true,
         choices: ['1', '2', '3'],
@@ -432,8 +435,8 @@ describe('Contes effects', () => {
             {
               id: 8,
               type: 'bonus',
-              title: 'Ami Légendaire',
-              text: 'Vous êtes aidé par un personnage magique ! Avancez de 3 cases.',
+              title: 'Ami LÃ©gendaire',
+              text: 'Vous Ãªtes aidÃ© par un personnage magique ! Avancez de 3 cases.',
             },
           ],
           discardBonus: [],
@@ -475,4 +478,78 @@ describe('Contes effects', () => {
     expect(Number(positions['1'] ?? 0)).toBe(14);
     expect(Number(positions['2'] ?? 0)).toBe(15);
   });
+  it('announces the tile text and the draw prompt on bonus and conte spaces', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    state = {
+      ...state,
+      metadata: {
+        ...(state.metadata ?? {}),
+        positions: { 1: 0, 2: 0, 3: 0 },
+      },
+    };
+
+    state = (actionsService as any).moveBy(state, 1, 1, 0);
+    const bonusLog = Array.isArray(state.log)
+      ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
+      : '';
+    expect(bonusLog).toContain('Lilas arrive sur Case Bonus.');
+    expect(bonusLog).toContain('Un coup de pouce magique');
+    expect(bonusLog).toContain('Piochez une carte Bonus.');
+
+    state = {
+      ...state,
+      log: [],
+      pending: null,
+      metadata: {
+        ...(state.metadata ?? {}),
+        positions: { 1: 1, 2: 0, 3: 0 },
+      },
+    };
+
+    state = (actionsService as any).moveBy(state, 1, 1, 0);
+    const conteLog = Array.isArray(state.log)
+      ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
+      : '';
+    expect(conteLog).toContain('Lilas arrive sur Case Conte - Japon');
+    expect(conteLog).toContain('gar');
+    expect(conteLog).toContain('Piochez une carte Conte.');
+  });
+
+  it('does not announce unavailable cards when a draw pile is empty', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    const metadata = asRecord(state.metadata);
+    const decks = asRecord(metadata.decks);
+    state = {
+      ...state,
+      metadata: {
+        ...(state.metadata ?? {}),
+        decks: {
+          ...decks,
+          bonus: [],
+          discardBonus: [],
+        },
+      },
+    };
+
+    state = (actionsService as any).resolveQueuedDraw(state, 1, {
+      queue: ['bonus'],
+      depth: 0,
+    });
+
+    const logText = Array.isArray(state.log)
+      ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
+      : '';
+    expect(logText).not.toContain('Aucune carte disponible');
+  });
 });
+
+
+

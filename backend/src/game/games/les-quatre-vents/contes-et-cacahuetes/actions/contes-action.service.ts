@@ -597,16 +597,7 @@ export class ContesActionService {
     const tile = (this.getMeta(next).tiles ?? [])[nextPos] as
       | ContesCacahuetesTile
       | undefined;
-    const labelRaw = String(tile?.label ?? '').trim();
-    const label = labelRaw
-      ? /^(case|départ|arrivée)\b/i.test(labelRaw)
-        ? labelRaw
-        : `Case ${nextPos + 1} - ${labelRaw}`
-      : `Case ${nextPos + 1}`;
-    next = this.core.appendLog(
-      next,
-      `${resolvePlayerNameFromState(next, playerId)} place ${this.pawnLabel(next, playerId)} en case ${nextPos + 1} (${label}).`,
-    );
+    next = this.appendTileArrivalLog(next, playerId, nextPos, tile);
     if (raw >= finishIndex) {
       next = this.setWinner(next, playerId);
       next = this.core.appendLog(
@@ -663,6 +654,14 @@ export class ContesActionService {
     type: 'bonus' | 'malus' | 'surprise' | 'conte',
     depth: number,
   ): GameStateEntity {
+    const drawLabel =
+      type === 'bonus'
+        ? 'Piochez une carte Bonus.'
+        : type === 'malus'
+          ? 'Piochez une carte Malus.'
+          : type === 'surprise'
+            ? 'Piochez une carte Surprise.'
+            : 'Piochez une carte Conte.';
     if (type === 'malus') {
       const meta = this.getMeta(state);
       const ignore = Boolean(
@@ -691,7 +690,8 @@ export class ContesActionService {
       }
     }
 
-    return this.setPending(state, {
+    const withPrompt = this.core.appendLog(state, drawLabel);
+    return this.setPending(withPrompt, {
       type: 'draw',
       label: `Piocher une carte ${type.toUpperCase()} (Espace).`,
       playerId,
@@ -765,7 +765,6 @@ export class ContesActionService {
     let next = draw.state;
     const card = draw.card;
     if (!card) {
-      next = this.core.appendLog(next, `Aucune carte disponible.`);
       return this.continueQueuedDraw(next, playerId, queue, depth);
     }
 
@@ -901,6 +900,29 @@ export class ContesActionService {
       state,
       `${resolvePlayerNameFromState(state, playerId)} pioche une carte ${typeLabel} : ${card.title}. ${card.text}`,
     );
+  }
+
+  private appendTileArrivalLog(
+    state: GameStateEntity,
+    playerId: number,
+    nextPos: number,
+    tile: ContesCacahuetesTile | undefined,
+  ): GameStateEntity {
+    const labelRaw = String(tile?.label ?? '').trim();
+    const descriptionRaw = String(tile?.description ?? '').trim();
+    const label = labelRaw
+      ? /^(case|départ|arrivée)\b/i.test(labelRaw)
+        ? labelRaw
+        : `Case ${nextPos + 1} - ${labelRaw}`
+      : `Case ${nextPos + 1}`;
+    let next = this.core.appendLog(
+      state,
+      `${resolvePlayerNameFromState(state, playerId)} arrive sur ${label}.`,
+    );
+    if (descriptionRaw) {
+      next = this.core.appendLog(next, descriptionRaw);
+    }
+    return next;
   }
 
   private applyBonusEffectById(
