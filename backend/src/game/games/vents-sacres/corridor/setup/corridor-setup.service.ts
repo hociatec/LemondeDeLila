@@ -5,10 +5,18 @@ import { CORRIDOR_PAWNS } from '../definitions/corridor.pawns';
 import type { CorridorMetadata } from '../model/corridor.model';
 import { nextRngInt } from '../../../../../common/utils/seeded-rng';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import { GameCoreService } from '../../../../core/services/game-core.service';
+import {
+  assignConfiguredBotPawns,
+  queueConfiguredPawnSelection,
+} from '../../../../core/helpers/configured-pawn-setup.helper';
 
 @Injectable()
 export class CorridorSetupService {
-  constructor(private readonly setupFlow: SetupFlowService) {}
+  constructor(
+    private readonly setupFlow: SetupFlowService,
+    private readonly core: GameCoreService,
+  ) {}
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const status = String(baseState.status ?? '')
@@ -112,23 +120,26 @@ export class CorridorSetupService {
       baseState.metadata && typeof baseState.metadata === 'object'
         ? (baseState.metadata as Record<string, unknown>)
         : {};
-    const pawnByPlayerId: Record<string, string> = {};
-    const usedPawnIds = new Set<string>();
-    const log = [...(baseState.log ?? [])];
-
-    for (const bot of players.filter((p) => p?.isBot === true)) {
-      const pick = pawnChoices.find((pawn) => !usedPawnIds.has(pawn.id));
-      if (!pick) break;
-      pawnByPlayerId[String(bot.id)] = pick.id;
-      usedPawnIds.add(pick.id);
-      log.push({
-        message: `${bot.username} choisit ${pick.label}.`,
-        timestamp: new Date().toISOString(),
-      });
-    }
+    const withBots = assignConfiguredBotPawns({
+      state: {
+        ...baseState,
+        metadata: {
+          ...baseMeta,
+          pawns: pawnChoices,
+        } as any,
+      },
+      core: this.core,
+      catalog: pawnChoices,
+      metadataAssignmentKey: 'pawnByPlayerId',
+      isBotPlayer: (player) => player?.isBot === true,
+      logLabelResolver: (choice) => String(choice.label ?? choice.id).trim(),
+    });
+    const assignedPawns =
+      ((withBots.metadata as any)?.pawnByPlayerId as Record<string, string>) ??
+      {};
 
     const eligible = players.filter(
-      (p) => p?.isBot !== true && !pawnByPlayerId[String(p?.id ?? '')],
+      (p) => p?.isBot !== true && !assignedPawns[String(p?.id ?? '')],
     );
     const pick =
       eligible.length > 1 ? nextRngInt(baseMeta, eligible.length) : null;
@@ -148,7 +159,7 @@ export class CorridorSetupService {
       setupStarterId: p1.id,
       wallsPerPlayer,
       pawns: pawnChoices,
-      pawnByPlayerId,
+      pawnByPlayerId: assignedPawns,
       pawnsByPlayerId: {
         [String(p1.id)]: { x: startX, y: 0 },
         [String(p2.id)]: { x: startX, y: size - 1 },
@@ -166,49 +177,14 @@ export class CorridorSetupService {
       winnerId: null,
     };
 
-    const pendingChoices = pawnChoices
-      .filter((pawn) => !usedPawnIds.has(pawn.id))
-      .map((pawn) => ({
-        id: pawn.id,
-        label: `${pawn.label} - ${pawn.description}`,
-        description: pawn.description,
-      }));
-
-    const pendingInfo =
-      pendingPlayerId != null
-        ? this.setupFlow.createSequentialPawnPending({
-            players: players.map((player) => ({
-              id: Number(player?.id),
-              username:
-                typeof player?.username === 'string' ? player.username : null,
-            })),
-            startPlayerId: pendingPlayerId,
-            isAssigned: (playerId) => {
-              const player = players.find((entry) => Number(entry?.id) === playerId);
-              if (!player || player?.isBot === true) {
-                return true;
-              }
-              return Boolean(pawnByPlayerId[String(playerId)]);
-            },
-            pendingType: 'choose_pawn',
-            pawns: pendingChoices,
-            pawnDataMapper: (choice) => ({
-              id: String(choice.id ?? '').trim(),
-              label: String(choice.label ?? '').trim(),
-              description: String(choice.description ?? '').trim(),
-            }),
-          })
-        : null;
-
-    return {
-      ...baseState,
+    const initialized: GameStateEntity = {
+      ...withBots,
       phase: 'play',
       round: 1,
       turnIndex: 0,
       lastRoll: null,
       metadata: metadata as any,
-      pending: pendingInfo?.pending ?? null,
-      log,
+      pending: null,
       turn: {
         currentPlayerId: pendingPlayerId ?? p1.id,
         direction: 1,
@@ -216,6 +192,22 @@ export class CorridorSetupService {
           pendingPlayerId != null ? 'Choix du pion' : `Tour de ${p1.username}`,
       },
     };
+
+    return queueConfiguredPawnSelection({
+      state: initialized,
+      core: this.core,
+      setupFlow: this.setupFlow,
+      catalog: pawnChoices,
+      startPlayerId: pendingPlayerId,
+      pendingType: 'choose_pawn',
+      metadataAssignmentKey: 'pawnByPlayerId',
+      isBotPlayer: (player) => player?.isBot === true,
+      pawnDataMapper: (choice) => ({
+        id: String(choice.id ?? '').trim(),
+        label: `${String(choice.label ?? '').trim()} - ${String(choice.description ?? '').trim()}`,
+        description: String(choice.description ?? '').trim(),
+      }),
+    });
   }
 
   private resolveOwnerPlayerId(

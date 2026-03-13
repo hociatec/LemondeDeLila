@@ -6,7 +6,16 @@ import * as CorridorRulebook from '../rulebook/rulebook';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 
 function createSvc(): CorridorService {
-  const setup = new CorridorSetupService(new SetupFlowService());
+  const core = {
+    appendLog: (state: any, message: string) => ({
+      ...state,
+      log: [
+        ...(state.log ?? []),
+        { message, timestamp: new Date().toISOString() },
+      ],
+    }),
+  } as any;
+  const setup = new CorridorSetupService(new SetupFlowService(), core);
   const presenter = new CorridorPresenterService(
     { buildFromWalls: () => ({}) } as any,
     { buildFromActions: () => ({}) } as any,
@@ -237,6 +246,38 @@ describe('Corridor', () => {
     const ready = choosePawnForUser(svc, configured, 1);
     expect(ready.pending).toBeNull();
     expect(ready.turn?.currentPlayerId).toBe(-1);
+  });
+
+  it('uses generic pawn selection logs during setup', async () => {
+    const svc = createSvc();
+
+    const started = svc.hydrateInitialState({
+      status: 'started',
+      phase: 'setup',
+      round: 0,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: -1, username: 'Donatello', isBot: true },
+        { id: 1, username: 'hacene', isBot: false },
+      ],
+      turn: { currentPlayerId: -1, direction: 1 },
+      metadata: {},
+      pending: null,
+    } as any);
+
+    const configured = svc.applyActions(started as any, [
+      { type: 'corridor_set_config', payload: { wallsPerPlayer: 10 } } as any,
+    ]);
+
+    const messages = (configured.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+    expect(messages).toContain("C'est à Donatello de choisir son pion.");
+    expect(messages).toContain('Donatello a choisi le pion: Le vent.');
+    expect(messages).toContain("C'est à hacene de choisir son pion.");
+    expect(messages).not.toContain('Donatello choisit Le vent.');
   });
 
   it('does not finish on a non-winning move when legacy winner metadata exists', async () => {
