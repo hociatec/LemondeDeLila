@@ -642,6 +642,36 @@ describe('RoomService lifecycle scenarios', () => {
     expect(deps.rooms.delete).not.toHaveBeenCalled();
   });
 
+  it('leaveRoom: in started game, does not add a replacement bot when replaceWithBot is false', async () => {
+    const { service, deps, usersById, roomsById } = createFixture();
+    usersById.set(1, buildUser(1, 'player'));
+    const room = buildRoom({
+      owner: buildUser(2, 'owner2'),
+      status: 'started',
+      startedAt: new Date('2026-03-02T12:00:00.000Z'),
+    });
+    roomsById.set(10, room);
+    deps.participants.findOne.mockResolvedValueOnce({
+      id: 100,
+      user: { id: 1, username: 'player' },
+      room: { id: 10 },
+      leftAt: null,
+    });
+    deps.participants.count
+      .mockResolvedValueOnce(1)
+      .mockResolvedValueOnce(1);
+    deps.botService.countBotsForRoom.mockResolvedValueOnce(0);
+    jest
+      .spyOn(service, 'invalidateRoomPayloadCache')
+      .mockResolvedValue(undefined);
+
+    await service.leaveRoom(10, 1, { replaceWithBot: false });
+
+    expect(deps.stats.markQuit).toHaveBeenCalledWith(10, 1);
+    expect(deps.botService.addBotSystem).not.toHaveBeenCalled();
+    expect(deps.rooms.delete).not.toHaveBeenCalled();
+  });
+
   it('leaveRoom: deletes room when no humans and no bots remain', async () => {
     const { service, deps, usersById, roomsById } = createFixture();
     usersById.set(1, buildUser(1, 'player'));

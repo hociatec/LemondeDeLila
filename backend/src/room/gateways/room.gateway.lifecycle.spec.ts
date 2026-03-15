@@ -626,6 +626,31 @@ describe('RoomGateway lifecycle scenarios', () => {
     );
   });
 
+  it('delayed participant leave disables replacement bot after a disconnect grace timeout', () => {
+    jest.useFakeTimers();
+    try {
+      const { gateway, deps } = createGatewayFixture();
+
+      (gateway as any).sendRoomState = jest.fn().mockResolvedValue(undefined);
+      (gateway as any).hasUserConnections = jest.fn().mockReturnValue(false);
+
+      (gateway as any).scheduleDelayedParticipantLeave(10, 3);
+      jest.runOnlyPendingTimers();
+
+      expect(deps.roomsService.leaveRoom).toHaveBeenCalledWith(
+        10,
+        3,
+        expect.objectContaining({
+          preserveRoom: false,
+          disconnectOnly: false,
+          replaceWithBot: false,
+        }),
+      );
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('immediate ack: emits room.ack only for immediate actions', () => {
     const { gateway } = createGatewayFixture();
     const socket = createSocket();

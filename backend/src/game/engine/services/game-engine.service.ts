@@ -1972,14 +1972,9 @@ export class GameEngineService {
       if (players.length === 0 && desiredPlayers.length === 0) {
         return state;
       }
-      if (desiredPlayers.length > 0) {
-        const same =
-          players.length === desiredPlayers.length &&
-          players.every((p, i) => p?.id === desiredPlayers[i]?.id);
-        if (!same) {
-          players = desiredPlayers;
-          changed = true;
-        }
+      if (players.length === 0 && desiredPlayers.length > 0) {
+        players = desiredPlayers;
+        changed = true;
       }
 
       const roomPlayers: RoomPlayer[] = Array.isArray(payload?.room?.players)
@@ -2012,21 +2007,6 @@ export class GameEngineService {
           .filter((id) => Number.isFinite(id) && id < 0),
       );
 
-      // Bots already present in the game state (initial bots / already replaced seats).
-      const assignedBotNames = new Set(
-        players
-          .filter((p) => p.isBot === true)
-          .map((p) => this.normalizeUsernameForLog(p.username))
-          .filter((n) => n.length > 0),
-      );
-
-      const availableBotNames: string[] = [];
-      for (const name of roomBotNames) {
-        if (!assignedBotNames.has(name)) {
-          availableBotNames.push(name);
-        }
-      }
-
       const mappedPlayers = players.map((p) => {
         const id = p.id;
         if (!Number.isFinite(id) || id === 0) return p;
@@ -2044,13 +2024,6 @@ export class GameEngineService {
             return { ...p, isBot: false, username: roomUsername };
           }
           return p;
-        }
-
-        // Human left the room: let an available room bot take over this seat (same id).
-        if (!isBot && availableBotNames.length > 0) {
-          const botName = availableBotNames.shift()!;
-          changed = true;
-          return { ...p, isBot: true, username: botName };
         }
 
         return p;

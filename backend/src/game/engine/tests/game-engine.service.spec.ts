@@ -1488,6 +1488,49 @@ describe('GameEngineService', () => {
     expect(next.turn?.currentPlayerId).toBe(-11);
   });
 
+  it('does not convert a started human seat into a bot when room payload is temporarily partial', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const state: any = {
+      status: 'started',
+      turnIndex: 2,
+      players: [
+        { id: 1, username: 'Lila', isBot: false },
+        { id: -7, username: 'Idefix', isBot: true },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: {},
+      log: [],
+      extras: {},
+    };
+    const payload: any = {
+      room: {
+        players: [],
+        bots: [{ id: 7, name: 'Idefix' }],
+      },
+    };
+
+    const next = (engine as any).syncRosterForStartedRoom(state, payload);
+    const human = (next.players ?? []).find((p: any) => p?.id === 1);
+
+    expect(human).toBeDefined();
+    expect(human?.isBot).toBe(false);
+    expect(human?.username).toBe('Lila');
+    expect(next.turn?.currentPlayerId).toBe(1);
+  });
+
   it('sets metadata.lifecycle.startReady to false while config prompt is pending', () => {
     const engine = new GameEngineService(
       {} as any,

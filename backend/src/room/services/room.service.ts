@@ -625,6 +625,7 @@ export class RoomService {
       preserveRoom?: boolean;
       disconnectOnly?: boolean;
       preserveOwner?: boolean;
+      replaceWithBot?: boolean;
     },
   ): Promise<Room | null> {
     const room = await this.requireRoom(roomId);
@@ -733,7 +734,7 @@ export class RoomService {
     const started =
       String(room.status ?? '').toLowerCase() === 'started' ||
       Boolean(room.startedAt);
-    if (participant && started) {
+    if (participant && started && opts?.replaceWithBot !== false) {
       try {
         const activeHumans = await this.countActiveHumans(room.id);
         if (activeHumans > 0) {

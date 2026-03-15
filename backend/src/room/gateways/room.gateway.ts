@@ -2625,6 +2625,7 @@ export class RoomGateway
           // Si la room devient vide, elle est supprimée (sinon conservée).
           preserveRoom: false,
           disconnectOnly: false,
+          replaceWithBot: false,
         })
         .then(() => this.sendRoomState(roomId))
         .catch(() => {});
