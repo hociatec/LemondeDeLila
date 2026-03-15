@@ -184,6 +184,12 @@ describe('GaloponsActionService', () => {
     let state = setup.hydrateInitialState(makeSetupBaseState());
     expect((state.pending as any)?.type).toBe('choose_pawn');
     expect((state.pending as any)?.playerId).toBe(1);
+    expect((state.players ?? []).find((player: any) => player?.id === 2)?.pawn).toBe(
+      'shetland',
+    );
+    expect(
+      (state.players ?? []).find((player: any) => player?.id === 2)?.pawnLabel,
+    ).toBe('Le Poney Shetland');
     expect((state.metadata as any)?.tiles?.[0]?.description).toContain(
       "L'aventure commence ici.",
     );
@@ -205,7 +211,7 @@ describe('GaloponsActionService', () => {
     }
 
     expect(state.pending ?? null).toBeNull();
-    expect(safety).toBe(3);
+    expect(safety).toBe(2);
     expect(Number(state.turn?.currentPlayerId ?? 0)).toBe(1);
     const players = state.players ?? [];
     expect(

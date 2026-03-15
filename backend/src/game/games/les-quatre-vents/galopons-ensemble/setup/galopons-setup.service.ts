@@ -4,7 +4,10 @@ import { GameContentLoaderService } from '../../../../engine/services/game-conte
 import { RandomService } from '../../../../modules/random/services/random.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
 import { GameCoreService } from '../../../../core/services/game-core.service';
-import { queueConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-setup.helper';
+import {
+  assignConfiguredBotPawns,
+  queueConfiguredPawnSelection,
+} from '../../../../core/helpers/configured-pawn-setup.helper';
 import { loadV1Content } from '../../../../setup/content-loader.helper';
 import type {
   GaloponsBoardJsonV1,
@@ -132,8 +135,22 @@ export class GaloponsSetupService {
       },
     };
 
-    return queueConfiguredPawnSelection({
+    const withBots = assignConfiguredBotPawns({
       state: initial,
+      core: this.core,
+      catalog: pawns.map((pawn) => ({
+        id: pawn.id,
+        label: pawn.name,
+        description: pawn.description,
+      })),
+      metadataAssignmentKey: 'pawnByPlayerId',
+      playerPawnField: 'pawn',
+      playerPawnLabelField: 'pawnLabel',
+      logLabelResolver: (choice) => toText(choice.label) || toText(choice.id),
+    });
+
+    return queueConfiguredPawnSelection({
+      state: withBots,
       core: this.core,
       setupFlow: this.setupFlow,
       catalog: pawns.map((pawn) => ({

@@ -22,7 +22,10 @@ import {
   createPendingState,
 } from '../../../../modules/pending-action/services/pending-action.service';
 import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
-import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
+import {
+  applyConfiguredPawnSelection,
+} from '../../../../core/helpers/configured-pawn-selection.helper';
+import { assignConfiguredBotPawns } from '../../../../core/helpers/configured-pawn-setup.helper';
 import type {
   GaloponsCard,
   GaloponsCardEffect,
@@ -951,8 +954,24 @@ export class GaloponsActionService {
       return state;
     }
 
-    const players = Array.isArray(state.players) ? state.players : [];
-    const meta = this.getMeta(state);
+    let next = state;
+    let players = Array.isArray(next.players) ? next.players : [];
+    let meta = this.getMeta(next);
+    next = assignConfiguredBotPawns({
+      state: next,
+      core: this.core,
+      catalog: (Array.isArray(meta.pawns) ? meta.pawns : []).map((pawn) => ({
+        id: toText(pawn.id),
+        label: toText(pawn.name) || toText(pawn.id),
+        description: toText(pawn.description),
+      })),
+      metadataAssignmentKey: 'pawnByPlayerId',
+      playerPawnField: 'pawn',
+      playerPawnLabelField: 'pawnLabel',
+      logLabelResolver: (choice) => toText(choice.label) || toText(choice.id),
+    });
+    players = Array.isArray(next.players) ? next.players : [];
+    meta = this.getMeta(next);
     const pawnByPlayerId = meta.pawnByPlayerId ?? {};
     const availablePawns = (Array.isArray(meta.pawns) ? meta.pawns : [])
       .filter((pawn) => !Object.values(pawnByPlayerId).includes(pawn.id))
@@ -964,7 +983,7 @@ export class GaloponsActionService {
       .filter((pawn) => pawn.id.length > 0);
 
     return continueSequentialPawnSelection({
-      state,
+      state: next,
       setupFlow: this.setupFlow,
       core: this.core,
       chooserPlayerId: meta.setupStarterId ?? players[0]?.id ?? null,
