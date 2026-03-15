@@ -165,38 +165,7 @@ export class GaloponsActionService {
 
     next = this.move(next, currentId, roll);
     next = this.applyLanding(next, currentId);
-
-    meta = this.getMeta(next);
-    if (meta.winnerId != null) return { ...next, status: 'finished' };
-    if (next.pending) return next;
-
-    // Fin de manche : si déclenchée et que tous ont joué.
-    if (meta.finish?.triggered && meta.finish.pendingIds.length === 0) {
-      return this.finishGame(next);
-    }
-
-    // Rejouer immédiat ? (déclenché par carte)
-    const keepTurn = asRecord(meta).keepTurn === true;
-    if (keepTurn) {
-      meta = { ...meta };
-      delete asRecord(meta).keepTurn;
-      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      return this.core.appendLog(
-        next,
-        `${resolvePlayerNameFromState(next, currentId)} rejoue.`,
-      );
-    }
-
-    // Si fin de manche déclenchée, retirer le joueur courant des pendingIds.
-    if (meta.finish?.triggered) {
-      const pendingIds = meta.finish.pendingIds.filter(
-        (id) => id !== currentId,
-      );
-      meta = { ...meta, finish: { ...meta.finish, pendingIds } };
-      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-    }
-
-    return this.turns.advanceTurn(next);
+    return this.resolveTurnEnd(next, currentId);
   }
 
   private handleChooseTarget(
@@ -237,12 +206,10 @@ export class GaloponsActionService {
       next = this.move(next, currentId, 1);
       next = this.move(next, targetPlayerId, 1);
       next = this.applyLanding(next, currentId);
-      if (ctx.replayAfter)
-        return this.core.appendLog(
-          next,
-          `${resolvePlayerNameFromState(next, currentId)} rejoue.`,
-        );
-      return this.turns.advanceTurn(next);
+      if (!next.pending) {
+        next = this.applyLanding(next, targetPlayerId);
+      }
+      return this.resolveTurnEnd(next, currentId, ctx.replayAfter === true);
     }
 
     if (ctx.kind === 'give_apple') {
@@ -279,12 +246,7 @@ export class GaloponsActionService {
         next,
         `${resolvePlayerNameFromState(next, targetPlayerId)} devra rendre une pomme plus tard.`,
       );
-      if (ctx.replayAfter)
-        return this.core.appendLog(
-          next,
-          `${resolvePlayerNameFromState(next, currentId)} rejoue.`,
-        );
-      return this.turns.advanceTurn(next);
+      return this.resolveTurnEnd(next, currentId, ctx.replayAfter === true);
     }
 
     if (ctx.kind === 'help_advance') {
@@ -293,25 +255,30 @@ export class GaloponsActionService {
         `${resolvePlayerNameFromState(next, currentId)} aide ${resolvePlayerNameFromState(next, targetPlayerId)} : +2 cases.`,
       );
       next = this.move(next, targetPlayerId, 2);
+      next = this.applyLanding(next, targetPlayerId);
       meta = this.getMeta(next);
+      const targetApples = meta.apples?.[targetPlayerId] ?? 0;
       meta = {
         ...meta,
         apples: {
           ...meta.apples,
-          [currentId]: (meta.apples?.[currentId] ?? 0) + 1,
+          [currentId]:
+            (meta.apples?.[currentId] ?? 0) + (targetApples > 0 ? 1 : 0),
+          [targetPlayerId]: Math.max(0, targetApples - 1),
         },
       };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      next = this.core.appendLog(
-        next,
-        `${resolvePlayerNameFromState(next, currentId)} reçoit une pomme en remerciement.`,
-      );
-      if (ctx.replayAfter)
-        return this.core.appendLog(
-          next,
-          `${resolvePlayerNameFromState(next, currentId)} rejoue.`,
-        );
-      return this.turns.advanceTurn(next);
+      next =
+        targetApples > 0
+          ? this.core.appendLog(
+              next,
+              `${resolvePlayerNameFromState(next, currentId)} reçoit une pomme en remerciement.`,
+            )
+          : this.core.appendLog(
+              next,
+              `${resolvePlayerNameFromState(next, targetPlayerId)} n'a pas de pomme à offrir en remerciement.`,
+            );
+      return this.resolveTurnEnd(next, currentId, ctx.replayAfter === true);
     }
 
     return this.turns.advanceTurn(next);
@@ -474,6 +441,34 @@ export class GaloponsActionService {
     let meta = this.getMeta(next);
     const text = card.text;
     const replayAfter = /Rejouez/i.test(text);
+
+    if (/Donnez-lui une pomme en la défaussant/i.test(text)) {
+      const apples = meta.apples?.[playerId] ?? 0;
+      if (apples > 0) {
+        meta = {
+          ...meta,
+          apples: {
+            ...meta.apples,
+            [playerId]: apples - 1,
+          },
+        };
+        next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+        next = this.core.appendLog(
+          next,
+          `${resolvePlayerNameFromState(next, playerId)} défausse 1 pomme.`,
+        );
+      } else {
+        next = this.core.appendLog(
+          next,
+          `${resolvePlayerNameFromState(next, playerId)} n'a pas de pomme à défausser.`,
+        );
+      }
+      if (replayAfter) {
+        asRecord(meta).keepTurn = true;
+        next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+      }
+      return next;
+    }
 
     // Donner une pomme (peut être combiné avec "Rejouez immédiatement").
     if (/Donnez-lui une pomme/i.test(text)) {
@@ -817,6 +812,43 @@ export class GaloponsActionService {
 
   private getMeta(state: GameStateEntity): GaloponsMetadata {
     return (state.metadata ?? {}) as GaloponsMetadata;
+  }
+
+  private resolveTurnEnd(
+    state: GameStateEntity,
+    currentId: number,
+    replayAfter = false,
+  ): GameStateEntity {
+    let next = state;
+    let meta = this.getMeta(next);
+
+    if (meta.finish?.triggered) {
+      const pendingIds = meta.finish.pendingIds.filter((id) => id !== currentId);
+      if (pendingIds !== meta.finish.pendingIds) {
+        meta = { ...meta, finish: { ...meta.finish, pendingIds } };
+        next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+      }
+    }
+
+    meta = this.getMeta(next);
+    if (meta.winnerId != null) return { ...next, status: 'finished' };
+    if (next.pending) return next;
+    if (meta.finish?.triggered && meta.finish.pendingIds.length === 0) {
+      return this.finishGame(next);
+    }
+
+    const keepTurn = replayAfter || asRecord(meta).keepTurn === true;
+    if (keepTurn) {
+      meta = { ...meta };
+      delete asRecord(meta).keepTurn;
+      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+      return this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, currentId)} rejoue.`,
+      );
+    }
+
+    return this.turns.advanceTurn(next);
   }
 
   private pawnLabel(state: GameStateEntity, id: number): string {

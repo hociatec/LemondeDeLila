@@ -314,6 +314,146 @@ describe('GaloponsActionService', () => {
     }
   });
 
+  it('keeps the first pending draw and preserves the collision outcome during pair advance', () => {
+    const { service } = makeRuntime();
+    const state = {
+      ...makeState(),
+      pending: {
+        type: 'choose_target',
+        playerId: 1,
+        blocking: true,
+        choices: ['P2'],
+      },
+      metadata: {
+        ...meta(makeState()),
+        positions: { 1: 0, 2: 1, 3: 0 },
+        pendingContext: { kind: 'pair_advance', actorId: 1, replayAfter: false },
+      },
+    };
+
+    const out = service.applyActions(state, [
+      { type: 'choose_target', payload: { targetPlayerId: 2 } },
+    ]);
+
+    expect(meta(out).positions).toEqual({ 1: 1, 2: 2, 3: 0 });
+    expect(meta(out).apples[1]).toBe(2);
+    expect(meta(out).apples[2]).toBe(1);
+    expect((out.pending as any)?.type).toBe('draw');
+    expect((out.pending as any)?.playerId).toBe(1);
+    expect(out.turn?.currentPlayerId).toBe(1);
+  });
+
+  it('does not overwrite the first pending draw when both players would land on card tiles during pair advance', () => {
+    const { service } = makeRuntime();
+    const state = {
+      ...makeState(),
+      pending: {
+        type: 'choose_target',
+        playerId: 1,
+        blocking: true,
+        choices: ['P2'],
+      },
+      metadata: {
+        ...meta(makeState()),
+        positions: { 1: 1, 2: 1, 3: 0 },
+        tiles: [
+          { n: 1, title: 'Start', type: 'start', region: 'prairie' },
+          { n: 2, title: 'Neutral', type: 'neutral', region: 'prairie' },
+          { n: 3, title: 'Card', type: 'card', region: 'foret' },
+          ...buildTiles().slice(3),
+        ],
+        pendingContext: { kind: 'pair_advance', actorId: 1, replayAfter: false },
+      },
+    };
+
+    const out = service.applyActions(state, [
+      { type: 'choose_target', payload: { targetPlayerId: 2 } },
+    ]);
+
+    expect(meta(out).positions).toEqual({ 1: 2, 2: 0, 3: 0 });
+    expect((out.pending as any)?.type).toBe('draw');
+    expect((out.pending as any)?.playerId).toBe(1);
+    expect(out.turn?.currentPlayerId).toBe(1);
+  });
+
+  it('transfers the thank-you apple from the helped player instead of creating one', () => {
+    const { service } = makeRuntime();
+    const state = {
+      ...makeState(),
+      pending: {
+        type: 'choose_target',
+        playerId: 1,
+        blocking: true,
+        choices: ['P2'],
+      },
+      metadata: {
+        ...meta(makeState()),
+        positions: { 1: 0, 2: 0, 3: 2 },
+        apples: { 1: 2, 2: 1, 3: 0 },
+        pendingContext: { kind: 'help_advance', actorId: 1, replayAfter: false },
+      },
+    };
+
+    const out = service.applyActions(state, [
+      { type: 'choose_target', payload: { targetPlayerId: 2 } },
+    ]);
+
+    expect(meta(out).positions[2]).toBe(2);
+    expect(meta(out).apples[1]).toBe(3);
+    expect(meta(out).apples[2]).toBe(2);
+  });
+
+  it('discards an apple without creating a target debt for the discard-and-replay card', () => {
+    const { service } = makeRuntime();
+    const out = (service as any).applyCard(makeState(), 1, {
+      id: 15,
+      text: "Vous aidez un poulain perdu à retrouver son chemin. Donnez-lui une pomme en la défaussant, puis rejouez immédiatement.",
+    });
+
+    expect(meta(out).apples[1]).toBe(1);
+    expect(meta(out).ious?.[1] ?? {}).toEqual({});
+    expect(out.pending).toBeNull();
+    expect((meta(out) as any).keepTurn).toBe(true);
+  });
+
+  it('finishes the final round after removing the current player from pendingIds', () => {
+    const { service } = makeRuntime([1]);
+    const pawns = [
+      { id: 'shetland', name: 'Le Poney Shetland', description: 'P1' },
+      { id: 'mustang', name: 'Le Mustang', description: 'P2' },
+      { id: 'percheron', name: 'Le Percheron', description: 'P3' },
+    ];
+    const state = {
+      ...makeState(),
+      players: [
+        { id: 1, username: 'P1', pawn: 'shetland', pawnLabel: 'Le Poney Shetland' },
+        { id: 2, username: 'P2', pawn: 'mustang', pawnLabel: 'Le Mustang' },
+        { id: 3, username: 'P3', pawn: 'percheron', pawnLabel: 'Le Percheron' },
+      ],
+      turn: { currentPlayerId: 3, direction: 1 },
+      metadata: {
+        ...meta(makeState()),
+        pawns,
+        pawnByPlayerId: { 1: 'shetland', 2: 'mustang', 3: 'percheron' },
+        setupStarterId: 3,
+        positions: { 1: 39, 2: 20, 3: 10 },
+        apples: { 1: 1, 2: 0, 3: 0 },
+        finish: {
+          triggered: true,
+          starterId: 1,
+          pendingIds: [3],
+          bonusGiven: true,
+        },
+      },
+    };
+
+    const out = service.applyActions(state, [{ type: 'roll', payload: {} }]);
+
+    expect(out.status).toBe('finished');
+    expect(meta(out).winnerId).toBe(1);
+    expect(meta(out).finish?.pendingIds).toEqual([]);
+  });
+
   it('covers adventure card text branches', () => {
     const { service } = makeRuntime();
     const texts = [

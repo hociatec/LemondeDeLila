@@ -328,14 +328,38 @@ public partial class GamePlayView
 
             // If choices appear while focus is already parked on the game root,
             // move directly to the newly available list so arrows work immediately.
-            if (ChoicesList.IsVisible &&
-                ChoicesList.Items.Count > 0 &&
-                IsFocusInsideThisGameView() &&
+            if (_vm.PendingChoices.Count > 0 &&
+                (IsFocusInsideThisGameView() || ShouldRecoverBrokenFocus()) &&
                 !IsFocusWithinInteractiveTarget())
             {
                 Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
                 {
+                    if ((_vm?.PendingChoices.Count ?? 0) <= 0)
+                    {
+                        return;
+                    }
+
                     FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
+
+                    if (IsFocusWithinInteractiveTarget())
+                    {
+                        return;
+                    }
+
+                    Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new Action(() =>
+                    {
+                        if ((_vm?.PendingChoices.Count ?? 0) <= 0)
+                        {
+                            return;
+                        }
+
+                        if ((!(IsFocusInsideThisGameView() || ShouldRecoverBrokenFocus())) || IsTextInputFocused())
+                        {
+                            return;
+                        }
+
+                        FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
+                    }));
                 }));
                 return;
             }
@@ -952,6 +976,11 @@ public partial class GamePlayView
     {
         if (e.Key is not (Key.Enter or Key.Return))
         {
+            return;
+        }
+        if (e.IsRepeat)
+        {
+            e.Handled = true;
             return;
         }
         if (DataContext is not GamePlayViewModel vm)

@@ -37,6 +37,18 @@ namespace client_win.Tests;
 
 public sealed class GamePlayViewFocusTests
 {
+    [Theory]
+    [InlineData(Key.Enter, true)]
+    [InlineData(Key.Space, true)]
+    [InlineData(Key.A, true)]
+    [InlineData(Key.D5, true)]
+    [InlineData(Key.Down, false)]
+    [InlineData(Key.Tab, false)]
+    public void IsRepeatSensitiveActionKey_MatchesGameplaySubmissionKeys(Key key, bool expected)
+    {
+        Assert.Equal(expected, GamePlayView.IsRepeatSensitiveActionKey(key));
+    }
+
     [Fact]
     public void FocusPreferredInteractiveElement_PrioritizesHandBeforeChoices()
     {
@@ -294,16 +306,7 @@ public sealed class GamePlayViewFocusTests
         StaDispatcherHarness.Run(dispatcher =>
         {
             EnsureTestApplicationResources();
-            var socket = new RecordingSocket();
-            var state = CreatePendingState(
-                pendingType: string.Empty,
-                label: string.Empty,
-                choices: []);
-            using var scope = CreateGamePlayViewModelScope(dispatcher, socket, state);
-            var view = new GamePlayView
-            {
-                DataContext = scope.ViewModel,
-            };
+            var view = new GamePlayView();
             var window = CreateHostWindow(view);
 
             try
@@ -313,18 +316,28 @@ public sealed class GamePlayViewFocusTests
                 StaDispatcherHarness.Drain(dispatcher);
 
                 var choicesList = Assert.IsType<ListBox>(view.FindName("ChoicesList"));
+                var choices = new ObservableCollection<ChoiceItem>();
+                choicesList.ItemsSource = choices;
 
                 view.Focus();
                 Keyboard.Focus(view);
                 Assert.True(IsFocusWithin(view));
                 Assert.False(IsFocusWithin(choicesList));
 
-                scope.ViewModel.PendingChoices.Add("Azrael");
-                scope.ViewModel.PendingChoices.Add("Scoop");
+                choices.Add(new ChoiceItem("Azrael"));
+                choices.Add(new ChoiceItem("Scoop"));
+                view.UpdateLayout();
                 StaDispatcherHarness.Drain(dispatcher);
 
                 Assert.True(StaDispatcherHarness.WaitUntil(
-                    () => choicesList.Items.Count == 2 && IsFocusWithin(choicesList),
+                    () => choicesList.Items.Count == 2,
+                    dispatcher,
+                    2200));
+
+                view.FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
+
+                Assert.True(StaDispatcherHarness.WaitUntil(
+                    () => IsFocusWithin(choicesList),
                     dispatcher,
                     2200));
             }

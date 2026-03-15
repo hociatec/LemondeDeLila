@@ -11,6 +11,26 @@ namespace client_win.Modules.Game.Play.GamePlay.Views;
 
 public partial class GamePlayView
 {
+    internal static bool IsRepeatSensitiveActionKey(Key key)
+    {
+        if (key is Key.Enter or Key.Return or Key.Space or Key.Back)
+        {
+            return true;
+        }
+
+        if (key is >= Key.A and <= Key.Z)
+        {
+            return true;
+        }
+
+        if (key is >= Key.D0 and <= Key.D9)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     private bool IsFocusWithinInlinePrompt()
     {
         if (InlinePromptOverlay == null)
@@ -41,6 +61,12 @@ public partial class GamePlayView
 
         if (e.Key is not (Key.Enter or Key.Return))
         {
+            return;
+        }
+
+        if (e.IsRepeat)
+        {
+            e.Handled = true;
             return;
         }
 
@@ -405,6 +431,12 @@ public partial class GamePlayView
 
         if (TryHandleHandNavigation(e))
         {
+            return;
+        }
+
+        if (e.IsRepeat && IsRepeatSensitiveActionKey(e.Key))
+        {
+            e.Handled = true;
             return;
         }
 
