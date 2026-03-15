@@ -17,14 +17,25 @@ import { RandomService } from '../../../../modules/random/services/random.servic
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
 import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
+import {
+  clearPendingState,
+  createPendingState,
+} from '../../../../modules/pending-action/services/pending-action.service';
 import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
 import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
 import type {
   GaloponsCard,
+  GaloponsCardEffect,
   GaloponsMetadata,
   GaloponsPawn,
   GaloponsTile,
 } from '../model/galopons.types';
+
+type GaloponsChooseTargetContext = {
+  kind: 'pair_advance' | 'give_apple' | 'help_advance';
+  actorId: number;
+  replayAfter?: boolean;
+};
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value != null && typeof value === 'object'
@@ -189,13 +200,12 @@ export class GaloponsActionService {
     if (!Number.isFinite(targetPlayerId)) return state;
 
     let meta = this.getMeta(state);
-    const ctx = meta.pendingContext ?? null;
-    if (!ctx || ctx.actorId !== currentId) return { ...state, pending: null };
+    const ctx = this.getChooseTargetContext(pending);
+    if (!ctx || ctx.actorId !== currentId) return clearPendingState(state);
 
     let next: GameStateEntity = {
-      ...state,
-      pending: null,
-      metadata: { ...(state.metadata ?? {}), ...meta, pendingContext: null },
+      ...clearPendingState(state),
+      metadata: { ...(state.metadata ?? {}), ...meta },
     };
 
     if (ctx.kind === 'pair_advance') {
@@ -296,8 +306,9 @@ export class GaloponsActionService {
         : (state.turn?.currentPlayerId ?? null);
     if (!playerId) return state;
 
-    const cleared: GameStateEntity = { ...state, pending: null };
-    return this.applyDrawCard(cleared, playerId);
+    const cleared = clearPendingState(state);
+    const next = this.applyDrawCard(cleared, playerId);
+    return this.resolveTurnEnd(next, playerId);
   }
 
   private applyLanding(
@@ -404,15 +415,12 @@ export class GaloponsActionService {
     }
 
     if (tile.type === 'card') {
-      return {
-        ...next,
-        pending: {
-          type: 'draw',
-          playerId,
-          blocking: true,
-          label: 'Piocher une carte Aventure (Espace).',
-        },
-      };
+      return createPendingState(next, {
+        type: 'draw',
+        playerId,
+        blocking: true,
+        label: 'Piocher une carte Aventure (Espace).',
+      });
     }
 
     return next;
@@ -433,6 +441,142 @@ export class GaloponsActionService {
   }
 
   private applyCard(
+    state: GameStateEntity,
+    playerId: number,
+    card: GaloponsCard,
+  ): GameStateEntity {
+    if (card.effect) {
+      return this.applyStructuredCardEffect(state, playerId, card, card.effect);
+    }
+
+    return this.applyTextCardEffect(state, playerId, card);
+  }
+
+  private applyStructuredCardEffect(
+    state: GameStateEntity,
+    playerId: number,
+    card: GaloponsCard,
+    effect: GaloponsCardEffect,
+  ): GameStateEntity {
+    let next = state;
+    let meta = this.getMeta(next);
+
+    switch (effect.kind) {
+      case 'move':
+        next = this.move(next, playerId, effect.delta);
+        return this.applyLanding(next, playerId);
+      case 'move_to_next_region': {
+        const nextPos = findNext(
+          meta.tiles,
+          meta.positions[playerId] ?? 0,
+          (tile) => tile.region === effect.region,
+        );
+        if (nextPos != null) {
+          next = this.setPos(next, playerId, nextPos);
+          return this.applyLanding(next, playerId);
+        }
+        return next;
+      }
+      case 'replay':
+        meta = { ...meta, keepTurn: true } as GaloponsMetadata & {
+          keepTurn?: boolean;
+        };
+        return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+      case 'gain_apples':
+        meta = {
+          ...meta,
+          apples: {
+            ...meta.apples,
+            [playerId]: (meta.apples?.[playerId] ?? 0) + effect.count,
+          },
+        };
+        next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+        return this.core.appendLog(
+          next,
+          `${resolvePlayerNameFromState(next, playerId)} gagne ${effect.count} pomme${effect.count > 1 ? 's' : ''}.`,
+        );
+      case 'skip_turn': {
+        const curr = meta.statuses?.skipTurn?.[playerId] ?? 0;
+        meta = {
+          ...meta,
+          statuses: {
+            ...meta.statuses,
+            skipTurn: { ...(meta.statuses.skipTurn ?? {}), [playerId]: curr + effect.count },
+          },
+        };
+        return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+      }
+      case 'give_apple_with_iou':
+        return this.createChooseTargetPending(next, playerId, {
+          kind: 'give_apple',
+          actorId: playerId,
+          replayAfter: false,
+        });
+      case 'discard_apple_and_replay': {
+        const apples = meta.apples?.[playerId] ?? 0;
+        if (apples > 0) {
+          meta = {
+            ...meta,
+            apples: {
+              ...meta.apples,
+              [playerId]: apples - 1,
+            },
+            keepTurn: true,
+          } as GaloponsMetadata & { keepTurn?: boolean };
+          next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+          return this.core.appendLog(
+            next,
+            `${resolvePlayerNameFromState(next, playerId)} défausse 1 pomme.`,
+          );
+        }
+        meta = { ...meta, keepTurn: true } as GaloponsMetadata & {
+          keepTurn?: boolean;
+        };
+        next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+        return this.core.appendLog(
+          next,
+          `${resolvePlayerNameFromState(next, playerId)} n'a pas de pomme à défausser.`,
+        );
+      }
+      case 'help_advance_for_apple':
+        return this.createChooseTargetPending(next, playerId, {
+          kind: 'help_advance',
+          actorId: playerId,
+          replayAfter: false,
+        });
+      case 'pair_advance':
+        return this.createChooseTargetPending(next, playerId, {
+          kind: 'pair_advance',
+          actorId: playerId,
+          replayAfter: false,
+        });
+      case 'global_skip_turn': {
+        const skip = { ...(meta.statuses?.skipTurn ?? {}) };
+        for (const id of Object.keys(meta.positions ?? {})
+          .map(Number)
+          .filter(Number.isFinite)) {
+          skip[id] = (skip[id] ?? 0) + effect.count;
+        }
+        meta = { ...meta, statuses: { ...meta.statuses, skipTurn: skip } };
+        return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+      }
+      case 'discard_apple': {
+        const apples = meta.apples?.[playerId] ?? 0;
+        if (apples > 0) {
+          meta = { ...meta, apples: { ...meta.apples, [playerId]: apples - 1 } };
+          return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+        }
+        return this.core.appendLog(
+          next,
+          `${resolvePlayerNameFromState(next, playerId)} n'a pas de pomme à défausser.`,
+        );
+      }
+      default:
+        return this.applyTextCardEffect(state, playerId, card);
+    }
+  }
+
+  private applyTextCardEffect(
     state: GameStateEntity,
     playerId: number,
     card: GaloponsCard,
@@ -486,15 +630,11 @@ export class GaloponsActionService {
           })),
         },
       };
-      meta = {
-        ...meta,
-        pendingContext: { kind: 'give_apple', actorId: playerId, replayAfter },
-      };
-      return {
-        ...next,
-        pending,
-        metadata: { ...(next.metadata ?? {}), ...meta },
-      };
+      return this.createChooseTargetPending(next, playerId, {
+        kind: 'give_apple',
+        actorId: playerId,
+        replayAfter,
+      });
     }
 
     // Rejouer.
@@ -583,19 +723,11 @@ export class GaloponsActionService {
           })),
         },
       };
-      meta = {
-        ...meta,
-        pendingContext: {
-          kind: 'pair_advance',
-          actorId: playerId,
-          replayAfter,
-        },
-      };
-      return {
-        ...next,
-        pending,
-        metadata: { ...(next.metadata ?? {}), ...meta },
-      };
+      return this.createChooseTargetPending(next, playerId, {
+        kind: 'pair_advance',
+        actorId: playerId,
+        replayAfter,
+      });
     }
 
     // Aider un autre joueur en +2 et recevoir une pomme.
@@ -614,19 +746,11 @@ export class GaloponsActionService {
           })),
         },
       };
-      meta = {
-        ...meta,
-        pendingContext: {
-          kind: 'help_advance',
-          actorId: playerId,
-          replayAfter,
-        },
-      };
-      return {
-        ...next,
-        pending,
-        metadata: { ...(next.metadata ?? {}), ...meta },
-      };
+      return this.createChooseTargetPending(next, playerId, {
+        kind: 'help_advance',
+        actorId: playerId,
+        replayAfter,
+      });
     }
 
     // Défausser une pomme.
@@ -676,6 +800,52 @@ export class GaloponsActionService {
     }
 
     return next;
+  }
+
+  private createChooseTargetPending(
+    state: GameStateEntity,
+    playerId: number,
+    pendingContext: GaloponsChooseTargetContext,
+  ): GameStateEntity {
+    const targets = this.otherPlayers(state, playerId);
+    const pending: PendingState = {
+      type: 'choose_target',
+      label: 'Choisissez un joueur dans la liste, puis Entrée.',
+      playerId,
+      blocking: true,
+      choices: targets.map((target) => target.username),
+      data: {
+        context: pendingContext,
+        targets: targets.map((target) => ({
+          targetPlayerId: target.id,
+          targetUsername: target.username,
+        })),
+      },
+    };
+
+    return createPendingState(state, pending);
+  }
+
+  private getChooseTargetContext(
+    pending: GameStateEntity['pending'],
+  ): GaloponsChooseTargetContext | null {
+    const data = asRecord(asRecord(pending).data);
+    const raw = asRecord(data.context);
+    const kind = toText(raw.kind);
+    const actorId = Number(raw.actorId);
+    if (
+      (kind !== 'pair_advance' &&
+        kind !== 'give_apple' &&
+        kind !== 'help_advance') ||
+      !Number.isFinite(actorId)
+    ) {
+      return null;
+    }
+    return {
+      kind,
+      actorId,
+      replayAfter: raw.replayAfter === true,
+    };
   }
 
   private finishGame(state: GameStateEntity): GameStateEntity {

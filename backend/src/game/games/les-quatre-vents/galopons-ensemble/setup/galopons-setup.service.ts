@@ -94,7 +94,6 @@ export class GaloponsSetupService {
       ious: {},
       statuses: { skipTurn: {} },
       decks: { cards: shuffled.values, discard: [] },
-      pendingContext: null,
       finish: {
         triggered: false,
         starterId: null,

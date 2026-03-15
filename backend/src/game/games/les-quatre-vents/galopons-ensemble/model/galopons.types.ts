@@ -16,7 +16,24 @@ export type GaloponsTile = {
   skipTurns?: number;
 };
 
-export type GaloponsCard = { id: number; text: string };
+export type GaloponsCardEffect =
+  | { kind: 'move'; delta: number }
+  | { kind: 'move_to_next_region'; region: 'foret' | 'montagne' }
+  | { kind: 'replay' }
+  | { kind: 'gain_apples'; count: number }
+  | { kind: 'skip_turn'; count: number }
+  | { kind: 'give_apple_with_iou' }
+  | { kind: 'discard_apple_and_replay' }
+  | { kind: 'help_advance_for_apple'; delta: number }
+  | { kind: 'pair_advance'; delta: number }
+  | { kind: 'global_skip_turn'; count: number }
+  | { kind: 'discard_apple' };
+
+export type GaloponsCard = {
+  id: number;
+  text: string;
+  effect?: GaloponsCardEffect;
+};
 export type GaloponsPawn = { id: string; name: string; description: string };
 
 export type GaloponsMetadata = {
@@ -29,11 +46,6 @@ export type GaloponsMetadata = {
   ious: Record<number, Record<number, number>>;
   statuses: { skipTurn: Record<number, number> };
   decks: { cards: GaloponsCard[]; discard: GaloponsCard[] };
-  pendingContext?: {
-    kind: 'pair_advance' | 'give_apple' | 'help_advance';
-    actorId: number;
-    replayAfter?: boolean;
-  } | null;
   finish?: {
     triggered: boolean;
     starterId: number | null;

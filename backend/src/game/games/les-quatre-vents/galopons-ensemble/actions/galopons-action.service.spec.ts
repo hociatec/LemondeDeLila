@@ -66,7 +66,6 @@ function makeState() {
         cards: [{ id: 1, text: 'Recevez 2 jetons Pomme' }],
         discard: [],
       },
-      pendingContext: null,
       finish: {
         triggered: false,
         starterId: null,
@@ -300,11 +299,11 @@ describe('GaloponsActionService', () => {
           playerId: 1,
           blocking: true,
           choices: ['P2'],
+          data: { context: { kind, actorId: 1, replayAfter: true } },
         },
         turn: { currentPlayerId: 1, direction: 1 },
         metadata: {
           ...meta(makeState()),
-          pendingContext: { kind, actorId: 1, replayAfter: true },
         },
       };
       const out = service.applyActions(state, [
@@ -312,6 +311,32 @@ describe('GaloponsActionService', () => {
       ]);
       expect(out).toBeDefined();
     }
+  });
+
+  it('advances to the next player after resolving a simple draw card', () => {
+    const { service } = makeRuntime();
+    const state = {
+      ...makeState(),
+      pending: {
+        type: 'draw',
+        playerId: 1,
+        blocking: true,
+      },
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: {
+        ...meta(makeState()),
+        decks: {
+          cards: [{ id: 1, text: 'Recevez 2 jetons Pomme' }],
+          discard: [],
+        },
+      },
+    };
+
+    const out = service.applyActions(state, [{ type: 'draw', payload: {} }]);
+
+    expect(out.pending).toBeNull();
+    expect(meta(out).apples[1]).toBe(4);
+    expect(out.turn?.currentPlayerId).toBe(2);
   });
 
   it('keeps the first pending draw and preserves the collision outcome during pair advance', () => {
@@ -323,11 +348,11 @@ describe('GaloponsActionService', () => {
         playerId: 1,
         blocking: true,
         choices: ['P2'],
+        data: { context: { kind: 'pair_advance', actorId: 1, replayAfter: false } },
       },
       metadata: {
         ...meta(makeState()),
         positions: { 1: 0, 2: 1, 3: 0 },
-        pendingContext: { kind: 'pair_advance', actorId: 1, replayAfter: false },
       },
     };
 
@@ -352,6 +377,7 @@ describe('GaloponsActionService', () => {
         playerId: 1,
         blocking: true,
         choices: ['P2'],
+        data: { context: { kind: 'pair_advance', actorId: 1, replayAfter: false } },
       },
       metadata: {
         ...meta(makeState()),
@@ -362,7 +388,6 @@ describe('GaloponsActionService', () => {
           { n: 3, title: 'Card', type: 'card', region: 'foret' },
           ...buildTiles().slice(3),
         ],
-        pendingContext: { kind: 'pair_advance', actorId: 1, replayAfter: false },
       },
     };
 
@@ -385,12 +410,12 @@ describe('GaloponsActionService', () => {
         playerId: 1,
         blocking: true,
         choices: ['P2'],
+        data: { context: { kind: 'help_advance', actorId: 1, replayAfter: false } },
       },
       metadata: {
         ...meta(makeState()),
         positions: { 1: 0, 2: 0, 3: 2 },
         apples: { 1: 2, 2: 1, 3: 0 },
-        pendingContext: { kind: 'help_advance', actorId: 1, replayAfter: false },
       },
     };
 

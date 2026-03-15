@@ -56,7 +56,7 @@ export function getAvailableActions(
 
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== playerId) return [];
-  return [{ type: 'roll' }, { type: 'ROLL_DICE' }];
+  return [{ type: 'roll' }];
 }
 
 export function validateAction(
