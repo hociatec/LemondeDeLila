@@ -1531,6 +1531,124 @@ describe('GameEngineService', () => {
     expect(next.turn?.currentPlayerId).toBe(1);
   });
 
+  it('realigns a started human seat when persisted bot flags are wrong', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const state: any = {
+      status: 'started',
+      turnIndex: 0,
+      players: [
+        { id: 1, username: 'Margalo', isBot: true },
+        { id: -7, username: 'hacene', isBot: false },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: {},
+      log: [],
+      extras: {},
+    };
+    const payload: any = {
+      room: {
+        players: [{ id: 1, username: 'hacene' }],
+        bots: [{ id: 7, name: 'Margalo' }],
+      },
+    };
+
+    const next = (engine as any).syncRosterForStartedRoom(state, payload);
+    const human = (next.players ?? []).find((p: any) => p?.id === 1);
+    const bot = (next.players ?? []).find((p: any) => p?.id === -7);
+
+    expect(human).toBeDefined();
+    expect(human?.username).toBe('hacene');
+    expect(human?.isBot).toBe(false);
+    expect(bot).toBeDefined();
+    expect(bot?.username).toBe('Margalo');
+    expect(bot?.isBot).toBe(true);
+    expect(next.turn?.currentPlayerId).toBe(1);
+  });
+
+  it('keeps the human actionable after roster realignment and only targets the bot on its actual turn', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const persistedState: any = {
+      status: 'started',
+      turnIndex: 0,
+      players: [
+        { id: 1, username: 'Margalo', isBot: true },
+        { id: -7, username: 'hacene', isBot: false },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: null,
+      metadata: {},
+      log: [],
+      extras: {},
+    };
+    const payload: any = {
+      room: {
+        players: [{ id: 1, username: 'hacene' }],
+        bots: [{ id: 7, name: 'Margalo' }],
+      },
+    };
+
+    const synced = (engine as any).syncRosterForStartedRoom(
+      persistedState,
+      payload,
+    );
+    const handler = {
+      getAvailableActions: jest.fn((state: any, playerId: number) =>
+        state.turn?.currentPlayerId === playerId ? [{ type: 'roll' }] : [],
+      ),
+    };
+
+    expect(synced.turn?.currentPlayerId).toBe(1);
+    expect(
+      (synced.players ?? []).find((p: any) => p?.id === 1)?.username,
+    ).toBe('hacene');
+    expect((synced.players ?? []).find((p: any) => p?.id === 1)?.isBot).toBe(
+      false,
+    );
+    expect(
+      (synced.players ?? []).find((p: any) => p?.id === -7)?.username,
+    ).toBe('Margalo');
+    expect(
+      (synced.players ?? []).find((p: any) => p?.id === -7)?.isBot,
+    ).toBe(true);
+    expect((engine as any).getBotActorIdForState(synced, handler)).toBeNull();
+
+    const botTurnState = {
+      ...synced,
+      turn: { currentPlayerId: -7, direction: 1 },
+      turnIndex: 1,
+    };
+
+    expect((engine as any).getBotActorIdForState(botTurnState, handler)).toBe(
+      -7,
+    );
+  });
+
   it('sets metadata.lifecycle.startReady to false while config prompt is pending', () => {
     const engine = new GameEngineService(
       {} as any,

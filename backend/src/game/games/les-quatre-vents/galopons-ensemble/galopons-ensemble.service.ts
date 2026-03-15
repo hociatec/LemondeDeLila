@@ -82,6 +82,6 @@ export class GaloponsEnsembleService extends AbstractGameService {
   }
 
   shouldAnnounceBoardArrivals(): boolean {
-    return true;
+    return false;
   }
 }

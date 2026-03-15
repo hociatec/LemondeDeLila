@@ -1977,6 +1977,13 @@ export class GameEngineService {
         changed = true;
       }
 
+      const desiredById = new Map<number, PlayerStateEntity>();
+      for (const player of desiredPlayers) {
+        const id = Number(player?.id);
+        if (!Number.isFinite(id) || id === 0) continue;
+        desiredById.set(id, player);
+      }
+
       const roomPlayers: RoomPlayer[] = Array.isArray(payload?.room?.players)
         ? payload.room.players
         : [];
@@ -2010,6 +2017,22 @@ export class GameEngineService {
       const mappedPlayers = players.map((p) => {
         const id = p.id;
         if (!Number.isFinite(id) || id === 0) return p;
+
+        const desired = desiredById.get(id) ?? null;
+        if (desired) {
+          const desiredUsername = this.normalizeUsernameForLog(desired.username);
+          const currentUsername = this.normalizeUsernameForLog(p.username);
+          const desiredIsBot = desired.isBot === true;
+          if (p.isBot !== desiredIsBot || currentUsername !== desiredUsername) {
+            changed = true;
+            return {
+              ...p,
+              username: desiredUsername || p.username,
+              isBot: desiredIsBot,
+            };
+          }
+          return p;
+        }
 
         const roomUsername = humanById.get(id) ?? null;
         const isBot = p.isBot === true;
