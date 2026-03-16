@@ -1112,7 +1112,7 @@ export class GameEngineService {
       // Si ce n'est pas le tour d'un bot, préférer le message "pas votre tour"
       // (le flag botThinking peut rester true un court instant).
       if (currentPlayer?.isBot) {
-        return this.exposeState(current, gameType);
+        return this.broadcastCurrentStateAndExpose(roomId, gameType, current);
       }
     }
 
@@ -1121,10 +1121,10 @@ export class GameEngineService {
       handler?.validateActor?.(current, actions, actorId ?? null) === true;
     if (!allowBotTurn && !actorOverride) {
       if (currentPlayer?.isBot) {
-        return this.exposeState(current, gameType);
+        return this.broadcastCurrentStateAndExpose(roomId, gameType, current);
       }
       if (currentPlayerId !== actorId) {
-        return this.exposeState(current, gameType);
+        return this.broadcastCurrentStateAndExpose(roomId, gameType, current);
       }
     }
 
@@ -1367,6 +1367,15 @@ export class GameEngineService {
     });
 
     return this.exposeState(marked, gameType);
+  }
+
+  private broadcastCurrentStateAndExpose(
+    roomId: number,
+    gameType: string,
+    state: GameStateEntity,
+  ): GameStateResponse {
+    this.broadcaster?.(gameType, roomId, state);
+    return this.exposeState(state, gameType);
   }
 
   private toMetadata(target: { metadata?: unknown }): Record<string, unknown> {

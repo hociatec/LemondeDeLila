@@ -1134,6 +1134,64 @@ describe('GameEngineService', () => {
     );
   });
 
+  it('broadcasts the canonical current state when an out-of-turn action is ignored', async () => {
+    const current: any = {
+      status: 'started',
+      turnIndex: 0,
+      log: [],
+      players: [
+        { id: 1, username: 'hacene', isBot: false },
+        { id: -2, username: 'Ratatouille', isBot: true },
+      ],
+      turn: { currentPlayerId: -2, direction: 1 },
+      metadata: { gameType: 'galopons-ensemble', roomId: 1 },
+    };
+
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      {
+        getHandler: jest.fn(() => ({
+          getAvailableActions: jest.fn(() => []),
+          validateActor: jest.fn(() => false),
+        })),
+      } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const broadcast = jest.fn();
+    engine.setBroadcaster(broadcast);
+    (engine as any).getInternalState = jest.fn(async () => current);
+    (engine as any).normalizeBotThinking = jest.fn(async () => current);
+    (engine as any).exposeState = jest.fn(() => current);
+
+    const out = await (engine as any).applyActionsInternal(
+      1,
+      'galopons-ensemble',
+      [{ type: 'roll', payload: {} }],
+      1,
+      false,
+    );
+
+    expect(out).toBe(current);
+    expect(broadcast).toHaveBeenCalledWith(
+      'galopons-ensemble',
+      1,
+      current,
+    );
+    expect((engine as any).exposeState).toHaveBeenCalledWith(
+      current,
+      'galopons-ensemble',
+    );
+  });
+
   it('does not mark botThinking when a blocking pending action targets a human', async () => {
     const state: any = {
       status: 'started',

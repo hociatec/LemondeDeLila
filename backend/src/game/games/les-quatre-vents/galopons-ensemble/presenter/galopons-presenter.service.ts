@@ -108,20 +108,10 @@ export class GaloponsPresenterService extends BasePresenterService {
   protected buildExtrasForUser(
     state: GameStateEntity,
     metadata: Record<string, unknown>,
-    userId: number,
-    _currentPlayerId: number | null,
+    _userId: number,
+    currentPlayerId: number | null,
   ): Record<string, unknown> {
-    const base = this.buildExtras(state, metadata, userId);
-    const players = Array.isArray(state.players) ? state.players : [];
-    const me = players.find((player) => player?.id === userId);
-
-    return {
-      ...base,
-      currentPlayerView: {
-        id: userId,
-        username: me?.username ?? `Joueur ${userId}`,
-      },
-    };
+    return this.buildExtras(state, metadata, currentPlayerId);
   }
 
   private getMeta(state: GameStateEntity): GaloponsMetadata {
