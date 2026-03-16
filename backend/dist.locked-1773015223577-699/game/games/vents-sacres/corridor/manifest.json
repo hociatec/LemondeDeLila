@@ -1,0 +1,9 @@
+{
+  "code": "corridor",
+  "name": "Le Corridor",
+  "minPlayers": 2,
+  "maxPlayers": 2,
+  "engine": "corridor",
+  "summary": "Déplacez votre pion sur une grille pour atteindre le bord opposé."
+}
+

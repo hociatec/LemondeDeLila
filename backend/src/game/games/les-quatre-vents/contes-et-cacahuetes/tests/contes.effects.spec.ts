@@ -113,6 +113,10 @@ describe('Contes effects', () => {
     expect(toText(asRecord(bonusDeck[0]).title)).toBe('Bottes de sept lieues');
     expect(toText(asRecord(malusDeck[0]).title)).toBe('Sortilège de Sommeil');
     expect(toText(asRecord(surpriseDeck[0]).title)).toBe('Baguette Malicieuse');
+    expect(toText(asRecord(surpriseDeck[12]).title)).toBe('Souhait Éphémère');
+    expect(toText(asRecord(surpriseDeck[12]).text)).toContain(
+      'Faites un vœu simple',
+    );
     expect(toText(asRecord(conteDeck[0]).title)).toBe(
       'Conte - Japon : Momotarō',
     );
@@ -123,7 +127,7 @@ describe('Contes effects', () => {
     expect(toText(asRecord(pawns[0]).description)).not.toHaveLength(0);
   });
 
-  it('keeps Cape dâ€™Invisibilite aligned with malus tile behavior', async () => {
+  it("keeps Cape d'Invisibilité aligned with malus tile behavior", async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         GameCoreService,
@@ -330,7 +334,7 @@ describe('Contes effects', () => {
               id: 1,
               type: 'bonus',
               title: 'Bottes de sept lieues',
-              text: 'Avancez de 2 cases supplÃ©mentaires. Ces bottes magiques vous font bondir loin devant !',
+              text: 'Avancez de 2 cases supplémentaires. Ces bottes magiques vous font bondir loin devant !',
             },
           ],
           discardBonus: [],
@@ -378,7 +382,7 @@ describe('Contes effects', () => {
       ...state,
       pending: {
         type: 'choose_number',
-        label: 'PoussiÃ¨re de rire',
+        label: 'Poussière de rire',
         playerId: 1,
         blocking: true,
         choices: ['1', '2', '3'],
@@ -431,8 +435,8 @@ describe('Contes effects', () => {
             {
               id: 8,
               type: 'bonus',
-              title: 'Ami LÃ©gendaire',
-              text: 'Vous Ãªtes aidÃ© par un personnage magique ! Avancez de 3 cases.',
+              title: 'Ami Légendaire',
+              text: 'Vous êtes aidé par un personnage magique ! Avancez de 3 cases.',
             },
           ],
           discardBonus: [],

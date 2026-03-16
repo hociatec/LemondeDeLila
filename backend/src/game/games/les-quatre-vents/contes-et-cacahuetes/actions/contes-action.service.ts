@@ -537,7 +537,7 @@ export class ContesActionService {
   ): GameStateEntity {
     if (!delta) return state;
     if (depth > 10)
-      return this.core.appendLog(state, 'Effet en chaÒ®ne interrompu.');
+      return this.core.appendLog(state, 'Effet en chaîne interrompu.');
 
     const meta = this.getMeta(state);
     const tilesLen = Array.isArray(meta.tiles) ? meta.tiles.length : 60;
@@ -648,7 +648,7 @@ export class ContesActionService {
       if (protectedOut.protected) {
         return this.core.appendLog(
           protectedOut.state,
-          `${resolvePlayerNameFromState(state, playerId)} est protÒ©gÒ© du Malus.`,
+          `${resolvePlayerNameFromState(state, playerId)} est protégé du Malus.`,
         );
       }
     }
@@ -1630,7 +1630,7 @@ export class ContesActionService {
     next = this.setStatusCount(next, 'turnSwapRemaining', bId, 1);
     return this.core.appendLog(
       next,
-      `Formule magique : prochains tours Ò©changÒ©s entre ${resolvePlayerNameFromState(next, aId)} et ${resolvePlayerNameFromState(next, bId)}.`,
+      `Formule magique : prochains tours échangés entre ${resolvePlayerNameFromState(next, aId)} et ${resolvePlayerNameFromState(next, bId)}.`,
     );
   }
 

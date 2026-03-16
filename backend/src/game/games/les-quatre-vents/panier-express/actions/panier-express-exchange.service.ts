@@ -545,34 +545,25 @@ export class PanierExpressExchangeService {
           `[Panier Express] ${exchangeLabel} : inventaire vide.`,
         );
       }
-      let next: GameStateEntity = { ...state, metadata };
-      const metaRng = this.random.createMetaRng((next.metadata as any) ?? {});
-      const pickA = this.random.pickOne(metaRng.getMeta(), myInv);
-      next = { ...next, metadata: pickA.meta };
-      const aCard = String(pickA.value ?? '').trim();
-      const pickB = this.random.pickOne((next.metadata as any) ?? {}, theirInv);
-      next = { ...next, metadata: pickB.meta };
-      const bCard = String(pickB.value ?? '').trim();
-      if (aCard)
-        next = removeFromInventoryState(this.utils, next, playerId, aCard);
-      if (bCard)
-        next = removeFromInventoryState(
-          this.utils,
-          next,
-          targetPlayerId,
-          bCard,
-        );
-      if (aCard)
-        next = addCardToPlayerState(this.utils, next, targetPlayerId, aCard);
-      if (bCard) next = addCardToPlayerState(this.utils, next, playerId, bCard);
-      const positionLabel =
-        resolvedCard === 'echange-devant'
-          ? 'juste devant vous'
-          : 'juste derrière vous';
-      return this.core.appendLog(
-        next,
-        `[Panier Express] ${exchangeLabel} : échange au hasard avec le joueur ${positionLabel} (${this.utils.playerName(state, targetPlayerId)}).`,
-      );
+      return {
+        ...state,
+        metadata,
+        pending: {
+          type: 'pick',
+          playerId,
+          blocking: true,
+          label: `Choisissez une carte à échanger avec ${this.utils.playerName(
+            state,
+            targetPlayerId,
+          )}, puis Entrée.`,
+          choices: myInv,
+          data: {
+            kind: 'exchange.voisin.choose_give',
+            targetPlayerId,
+            exchangeLabel,
+          },
+        } as any,
+      };
     }
 
     if (resolvedCard === 'panier-mixe') {

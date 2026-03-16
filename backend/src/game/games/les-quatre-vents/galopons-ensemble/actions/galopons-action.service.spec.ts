@@ -11,6 +11,7 @@ import { GaloponsActionService } from './galopons-action.service';
 import { SetupFlowModule } from '../../../../modules/setup-flow/setup-flow.module';
 import { GaloponsEnsembleModule } from '../galopons-ensemble.module';
 import { GaloponsSetupService } from '../setup/galopons-setup.service';
+import { GaloponsBotService } from '../bots/galopons-bot.service';
 import * as Rulebook from '../rulebook/rulebook';
 
 function buildTiles() {
@@ -407,6 +408,48 @@ describe('GaloponsActionService', () => {
     expect(out.turn?.currentPlayerId).toBe(1);
   });
 
+  it('syncs a forced target draw to the target player and resumes the turn order from the initiator', () => {
+    const { service } = makeRuntime();
+    const state = {
+      ...makeState(),
+      pending: {
+        type: 'choose_target',
+        playerId: 1,
+        blocking: true,
+        choices: ['P2'],
+        initiatorPlayerId: 1,
+        data: { context: { kind: 'pair_advance', actorId: 1, replayAfter: false } },
+      },
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: {
+        ...meta(makeState()),
+        positions: { 1: 2, 2: 0, 3: 4 },
+        decks: {
+          cards: [{ id: 1, text: 'Recevez 2 jetons Pomme' }],
+          discard: [],
+        },
+      },
+    };
+
+    const afterTargetSelection = service.applyActions(state, [
+      { type: 'choose_target', payload: { targetPlayerId: 2 } },
+    ]);
+
+    expect(meta(afterTargetSelection).positions).toEqual({ 1: 3, 2: 1, 3: 4 });
+    expect((afterTargetSelection.pending as any)?.type).toBe('draw');
+    expect((afterTargetSelection.pending as any)?.playerId).toBe(2);
+    expect((afterTargetSelection.pending as any)?.initiatorPlayerId).toBe(1);
+    expect(afterTargetSelection.turn?.currentPlayerId).toBe(2);
+
+    const afterDraw = service.applyActions(afterTargetSelection, [
+      { type: 'draw', payload: {} },
+    ]);
+
+    expect(afterDraw.pending).toBeNull();
+    expect(meta(afterDraw).apples[2]).toBe(3);
+    expect(afterDraw.turn?.currentPlayerId).toBe(2);
+  });
+
   it('transfers the thank-you apple from the helped player instead of creating one', () => {
     const { service } = makeRuntime();
     const state = {
@@ -525,5 +568,47 @@ describe('GaloponsActionService', () => {
     });
     expect(finished.status).toBe('finished');
     expect(meta(finished).winnerId).toBe(2);
+  });
+
+  it('only lets the bot act when it is the current player or the pending owner', () => {
+    const idleBotRunner = {
+      choose: jest.fn(),
+    } as any;
+    const idleBotService = new GaloponsBotService(idleBotRunner);
+
+    expect(
+      idleBotService.getBotActions(
+        {
+          status: 'started',
+          turn: { currentPlayerId: 1, direction: 1 },
+          pending: null,
+        } as any,
+        2,
+      ),
+    ).toEqual([]);
+    expect(idleBotRunner.choose).not.toHaveBeenCalled();
+
+    const chosen = [{ type: 'draw', payload: {} }];
+    const activeBotRunner = {
+      choose: jest.fn().mockReturnValue(chosen),
+    } as any;
+    const activeBotService = new GaloponsBotService(activeBotRunner);
+
+    expect(
+      activeBotService.getBotActions(
+        {
+          status: 'started',
+          turn: { currentPlayerId: 1, direction: 1 },
+          pending: { type: 'draw', playerId: 2, blocking: true },
+        } as any,
+        2,
+      ),
+    ).toEqual(chosen);
+    expect(activeBotRunner.choose).toHaveBeenCalledWith(
+      [{ type: 'draw', payload: {} }],
+      expect.objectContaining({ playerId: 2 }),
+      'random',
+      expect.any(Object),
+    );
   });
 });

@@ -12,6 +12,14 @@ export class GaloponsBotService {
     state: GameStateEntity,
     botPlayerId: number,
   ): GameSingleActionDto[] {
+    const currentPlayerId = state.turn?.currentPlayerId ?? null;
+    const pendingPlayerId = state.pending?.playerId ?? null;
+    const isPendingForBot =
+      typeof pendingPlayerId === 'number' && pendingPlayerId === botPlayerId;
+    if (currentPlayerId !== botPlayerId && !isPendingForBot) {
+      return [];
+    }
+
     const available = Rulebook.getAvailableActions(state, botPlayerId);
     return this.botRunner.choose(
       available,

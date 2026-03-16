@@ -251,7 +251,7 @@ describe('FrousseActionService movement effects', () => {
 
   it('formats doubled roll log with "=" (not "->")', () => {
     const random: any = {
-      rollDice: jest.fn(() => ({ roll: 1, meta: {} })),
+      rollDice: jest.fn(() => ({ roll: 5, meta: {} })),
       nextInt: jest.fn(() => ({ value: 0, meta: {} })),
       pickOne: jest.fn(() => ({ value: null, meta: {} })),
       shuffle: jest.fn((_meta: any, values: any[]) => ({ values, meta: {} })),
@@ -310,7 +310,7 @@ describe('FrousseActionService movement effects', () => {
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
     const rollMessage = messages.find((m) => m.includes('lance le')) ?? '';
 
-    expect(rollMessage).toMatch(/\(doubl.+ = 2\)/i);
+    expect(rollMessage).toContain('"5 (doublé = 10)"');
     expect(rollMessage).not.toMatch(/doubl.+ ->/i);
   });
 
@@ -607,6 +607,106 @@ describe('FrousseActionService movement effects', () => {
     );
   });
 
+  it('suppresses duplicated double-roll effect text in draw logs', () => {
+    const random: any = {
+      rollDice: jest.fn(() => ({ roll: 1, meta: {} })),
+      nextInt: jest.fn(() => ({ value: 0, meta: {} })),
+      pickOne: jest.fn(() => ({ value: null, meta: {} })),
+      shuffle: jest.fn((_meta: any, values: any[]) => ({ values, meta: {} })),
+    };
+    const turns: any = {
+      advanceTurn: jest.fn((state: GameStateEntity) => state),
+    };
+    const core: any = {
+      appendLog: jest.fn((state: GameStateEntity, message: string) => ({
+        ...state,
+        log: [...(Array.isArray(state.log) ? state.log : []), { message }],
+      })),
+    };
+
+    const service = new FrousseActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new BoardEffectsPoliciesService(),
+      new DeckPoliciesService(random),
+    );
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [{ id: 1, username: 'Lilas' } as any],
+      pending: { type: 'draw', playerId: 1, blocking: true } as any,
+      metadata: {
+        positions: { 1: 0 },
+        statuses: {
+          skipTurn: {},
+          blocked: {},
+          nextMoveCap: {},
+          nextRollIfThreeBackTwo: {},
+          nextRollKeepLowest: {},
+          nextRollMalus: {},
+          nextRollDouble: {},
+          ignoreTrapUntilNextDraw: {},
+          ignoreNextGhost: {},
+          ignoreNextPrank: {},
+          ignoreNextTrap: {},
+        },
+        tiles: [],
+        decks: {
+          cards: [
+            {
+              category: 'Bonus',
+              localNumber: 99,
+              text: "Des bottes turbo s'activent sous vos pieds. Doublez votre prochain lancer de dé.",
+            },
+          ],
+          discard: [],
+        },
+      } as any,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = service.applyActions(state, [
+      { type: 'draw', payload: {} } as any,
+    ]);
+    const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
+    const drawMessage = messages.find((m) => m.includes('pioche une carte')) ?? '';
+
+    expect(drawMessage).toContain('Doublez votre prochain lancer de dé.');
+    expect(drawMessage).not.toContain(
+      '): Doublez le prochain lancer de dé.',
+    );
+  });
+
+  it('bounces back from the exit when the final tile is overshot', () => {
+    const { service } = buildRealTurnService({
+      rollDice: jest.fn(() => ({ roll: 6, meta: {} })),
+    });
+    const state = buildTurnState({
+      metadata: buildFrousseMeta({
+        positions: { 1: 48, 2: 0 },
+      }),
+    });
+
+    const next = service.applyActions(state, [
+      { type: 'roll', payload: {} } as any,
+    ]);
+    const meta: any = next.metadata ?? {};
+    const messages = (next.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+
+    expect(meta.positions?.[1]).toBe(44);
+    expect(meta.winnerId ?? null).toBeNull();
+    expect(messages.some((message) => message.includes("s'échappe du manoir"))).toBe(
+      false,
+    );
+  });
+
   it('does not auto-roll the odd-result trap test after drawing the card', () => {
     const random: any = {
       rollDice: jest.fn(() => ({ roll: 6, meta: {} })),
@@ -704,6 +804,9 @@ describe('FrousseActionService movement effects', () => {
       { type: 'draw', payload: {} } as any,
     ]);
     expect(afterDraw.pending?.type).toBe('choose_target');
+    expect(String(afterDraw.pending?.label ?? '')).toContain(
+      'échanger votre position',
+    );
     expect(afterDraw.pending?.choices).toEqual([
       'Hacene',
       "Refuser l'échange.",

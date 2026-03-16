@@ -288,7 +288,11 @@ public partial class GamePlayView
 
                             ChoicesList.SelectedIndex = idx;
                             ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
-                            // Silent restore: keep selection stable without forcing keyboard focus.
+                            if (ShouldRestoreChoiceKeyboardFocus())
+                            {
+                                TryFocusChoiceIndex(ChoicesList, idx);
+                                _pendingInitialInteractiveFocus = !IsFocusWithinChoicesList();
+                            }
                         }
                         catch
                         {
@@ -329,7 +333,7 @@ public partial class GamePlayView
             // If choices appear while focus is already parked on the game root,
             // move directly to the newly available list so arrows work immediately.
             if (_vm.PendingChoices.Count > 0 &&
-                (IsFocusInsideThisGameView() || ShouldRecoverBrokenFocus()) &&
+                (IsFocusInsideThisGameViewOrZoneAnchor() || ShouldRecoverBrokenFocus()) &&
                 !IsFocusWithinInteractiveTarget())
             {
                 Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
@@ -353,7 +357,7 @@ public partial class GamePlayView
                             return;
                         }
 
-                        if ((!(IsFocusInsideThisGameView() || ShouldRecoverBrokenFocus())) || IsTextInputFocused())
+                        if ((!(IsFocusInsideThisGameViewOrZoneAnchor() || ShouldRecoverBrokenFocus())) || IsTextInputFocused())
                         {
                             return;
                         }
@@ -614,6 +618,7 @@ public partial class GamePlayView
         // Never steal focus from chat/history or other areas on background state refreshes.
         if (!forceFromOutsideTextInput &&
             !IsFocusInsideThisGameView() &&
+            !IsFocusOnGameZoneAnchor() &&
             !ShouldRecoverBrokenFocus())
         {
             return;
@@ -823,6 +828,36 @@ public partial class GamePlayView
         return false;
     }
 
+    private bool IsFocusOnGameZoneAnchor()
+    {
+        if (Keyboard.FocusedElement is not DependencyObject focused)
+        {
+            return false;
+        }
+
+        for (var current = GetVisualOrLogicalParent(this); current != null; current = GetVisualOrLogicalParent(current))
+        {
+            if (current is not GameZoneHostView host)
+            {
+                continue;
+            }
+
+            if (host.FindName("GameZoneFocusAnchor") is not DependencyObject anchor)
+            {
+                return false;
+            }
+
+            return IsDescendantOrSelf(focused, anchor);
+        }
+
+        return false;
+    }
+
+    private bool IsFocusInsideThisGameViewOrZoneAnchor()
+    {
+        return IsFocusInsideThisGameView() || IsFocusOnGameZoneAnchor();
+    }
+
     private bool IsFocusInsideThisGameView()
     {
         var focused = Keyboard.FocusedElement as DependencyObject;
@@ -837,6 +872,16 @@ public partial class GamePlayView
         }
 
         return false;
+    }
+
+    private bool ShouldRestoreChoiceKeyboardFocus()
+    {
+        if (IsTextInputFocused())
+        {
+            return false;
+        }
+
+        return IsFocusInsideThisGameViewOrZoneAnchor() || ShouldRecoverBrokenFocus();
     }
 
     private bool ShouldRecoverBrokenFocus()

@@ -1,0 +1,216 @@
+﻿{
+  "version": 1,
+  "questions": [
+    {
+      "id": 1,
+      "title": "PlanÃ¨te proche",
+      "prompt": "Votre vaisseau s'approche du Soleil. Quelle planÃ¨te orbite le plus prÃ¨s de cette Ã©toile ?",
+      "choices": [
+        "Mercure",
+        "VÃ©nus",
+        "Mars",
+        "Jupiter"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 2,
+      "title": "Notre galaxie",
+      "prompt": "Comment s'appelle la galaxie qui contient la Terre ?",
+      "choices": [
+        "La Voie LactÃ©e",
+        "AndromÃ¨de",
+        "Orion",
+        "Sagittarius"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 3,
+      "title": "PlanÃ¨te rouge",
+      "prompt": "Une planÃ¨te rouge apparaÃ®t sur vos instruments. Quel est son nom ?",
+      "choices": [
+        "Mars",
+        "VÃ©nus",
+        "Mercure",
+        "Jupiter"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 4,
+      "title": "GÃ©ante gazeuse",
+      "prompt": "Quel gÃ©ant du systÃ¨me solaire est plus imposant que toutes les autres planÃ¨tes ?",
+      "choices": [
+        "Jupiter",
+        "Saturne",
+        "Neptune",
+        "Uranus"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 5,
+      "title": "Constellation",
+      "prompt": "Comment appelle-t-on les regroupements lumineux d'Ã©toiles ?",
+      "choices": [
+        "Une constellation",
+        "Une nÃ©buleuse",
+        "Un astÃ©roÃ¯de",
+        "Un amas d'Ã©toiles"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 6,
+      "title": "Compagnon terrestre",
+      "prompt": "Quel astre accompagne toujours la Terre ?",
+      "choices": [
+        "La Lune",
+        "Phobos",
+        "Mars",
+        "VÃ©nus"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 7,
+      "title": "Objet changeant",
+      "prompt": "Chaque nuit, vous observez un corps brillant dont l'allure varie lÃ©gÃ¨rement. De quel astre s'agit-il ?",
+      "choices": [
+        "La Lune",
+        "Jupiter",
+        "VÃ©nus",
+        "Une Ã©toile filante"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 8,
+      "title": "PlanÃ¨tes du systÃ¨me",
+      "prompt": "Vous visualisez toutes les planÃ¨tes du systÃ¨me solaire. Combien y en a-t-il ?",
+      "choices": [
+        "Huit planÃ¨tes",
+        "Sept planÃ¨tes",
+        "Neuf planÃ¨tes",
+        "Dix planÃ¨tes"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 9,
+      "title": "DÃ©couvertes lumineuses",
+      "prompt": "Un trait lumineux traverse le ciel. Que reprÃ©sente une Ã©toile filante ?",
+      "choices": [
+        "Un petit corps rocheux brÃ»lant",
+        "Une roche tombante",
+        "Un fragment de comÃ¨te",
+        "Un mÃ©tÃ©ore brillant"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 10,
+      "title": "Anneaux cÃ©lÃ¨bres",
+      "prompt": "Une planÃ¨te entourÃ©e d'anneaux majestueux se profile. Quel est son nom ?",
+      "choices": [
+        "Saturne",
+        "Jupiter",
+        "Uranus",
+        "Neptune"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 11,
+      "title": "VÃ©hicule spatial",
+      "prompt": "Quel vÃ©hicule transporte les astronautes vers l'espace ?",
+      "choices": [
+        "Une fusÃ©e",
+        "Une navette",
+        "Un satellite",
+        "Une station orbitale"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 12,
+      "title": "PlanÃ¨te la plus chaude",
+      "prompt": "MÃªme si elle n'est pas la plus proche du Soleil, quelle planÃ¨te dÃ©tient le record de chaleur ?",
+      "choices": [
+        "VÃ©nus",
+        "Mercure",
+        "Mars",
+        "Jupiter"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 13,
+      "title": "Premier humain",
+      "prompt": "Quel est le nom du premier humain Ã  avoir marchÃ© sur la Lune ?",
+      "choices": [
+        "Neil Armstrong",
+        "Buzz Aldrin",
+        "Yuri Gagarin",
+        "John Glenn"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 14,
+      "title": "CÅ“ur du Soleil",
+      "prompt": "Que contient le centre du Soleil ?",
+      "choices": [
+        "Un noyau trÃ¨s chaud",
+        "Une cavitÃ© vide",
+        "Une matiÃ¨re froide",
+        "Une Ã©nergie instable"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 15,
+      "title": "Trou noir",
+      "prompt": "Comment dÃ©finit-on un trou noir ?",
+      "choices": [
+        "Une zone oÃ¹ rien ne peut s'Ã©chapper",
+        "Un astre Ã©teint",
+        "Un trou dans l'espace",
+        "Une planÃ¨te invisible"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    }
+  ]
+}
+

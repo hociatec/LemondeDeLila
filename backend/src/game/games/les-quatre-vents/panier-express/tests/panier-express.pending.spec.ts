@@ -363,4 +363,145 @@ describe('PanierExpress pending scenarios', () => {
     );
     expect((after.pending as any)?.choices).toEqual(['mangue']);
   });
+
+  it('échange devant: résout le choix de carte avec le voisin', () => {
+    const state = makeStartedState(
+      game,
+      [
+        {
+          id: 1,
+          username: 'A',
+          inventory: ['amande'],
+          basket: [],
+          shoppingList: [],
+        },
+        {
+          id: 2,
+          username: 'B',
+          inventory: ['noix'],
+          basket: [],
+          shoppingList: [],
+        },
+      ],
+      1,
+    );
+    const pendingState: any = {
+      ...state,
+      pending: {
+        type: 'pick',
+        playerId: 1,
+        blocking: true,
+        label: 'Choisissez une carte à échanger avec B, puis Entrée.',
+        choices: ['amande'],
+        data: {
+          kind: 'exchange.voisin.choose_give',
+          targetPlayerId: 2,
+          exchangeLabel: 'Échange devant',
+        },
+      },
+    };
+
+    expect(pendingState.pending?.type).toBe('pick');
+    expect((pendingState.pending as any)?.data?.kind).toBe(
+      'exchange.voisin.choose_give',
+    );
+    expect(pendingState.pending?.choices).toEqual(['amande']);
+
+    const after = game.applyActions(pendingState, [
+      {
+        type: 'pick_choice',
+        payload: { index: 0 },
+        meta: { actorId: 1 },
+      } as any,
+    ]);
+
+    const a = (after.players as any[]).find((p) => p.id === 1);
+    const b = (after.players as any[]).find((p) => p.id === 2);
+    const logs = (after.log ?? []).map((entry: any) => String(entry.message));
+
+    expect(a.inventory).toEqual(['noix']);
+    expect(b.inventory).toEqual(['amande']);
+    expect(after.turn?.currentPlayerId).toBe(2);
+    expect(
+      logs.some((message) =>
+        message.includes('Échange devant:') &&
+        message.includes('donne "amande" à B') &&
+        message.includes('reçoit "noix"'),
+      ),
+    ).toBe(true);
+  });
+
+  it("échange stratégique: l'offre affichée et le log d'acceptation décrivent les cartes échangées", () => {
+    const state = makeStartedState(
+      game,
+      [
+        {
+          id: 1,
+          username: 'A',
+          inventory: ['amande'],
+          basket: [],
+          shoppingList: [],
+        },
+        {
+          id: 2,
+          username: 'B',
+          inventory: ['noix'],
+          basket: [],
+          shoppingList: [],
+        },
+      ],
+      1,
+    );
+    state.pending = {
+      type: 'pick',
+      playerId: 1,
+      blocking: true,
+      label: 'x',
+      choices: ['amande'],
+      data: {
+        kind: 'exchange.strategique.choose_give',
+        targetPlayerId: 2,
+        take: 'noix',
+        exchangeId: 'abc',
+      },
+    };
+
+    const confirmStep = game.applyActions(state, [
+      {
+        type: 'pick_choice',
+        payload: { index: 0 },
+        meta: { actorId: 1 },
+      } as any,
+    ]);
+
+    expect(confirmStep.pending?.type).toBe('pick');
+    expect(String(confirmStep.pending?.label ?? '')).toContain(
+      'A vous propose "amande" contre "noix".',
+    );
+    expect(confirmStep.pending?.choices).toEqual(['Accepter', 'Refuser']);
+
+    const after = game.applyActions(confirmStep, [
+      {
+        type: 'pick_choice',
+        payload: { index: 0 },
+        meta: { actorId: 2 },
+      } as any,
+    ]);
+
+    const a = (after.players as any[]).find((p) => p.id === 1);
+    const b = (after.players as any[]).find((p) => p.id === 2);
+    const logs = (after.log ?? []).map((entry: any) => String(entry.message));
+    const aCards = [...(a.inventory ?? []), ...(a.basket ?? [])];
+    const bCards = [...(b.inventory ?? []), ...(b.basket ?? [])];
+
+    expect(aCards).toContain('noix');
+    expect(bCards).toContain('amande');
+    expect(
+      logs.some((message) =>
+        message.includes('Échange stratégique:') &&
+        message.includes('donne "amande"') &&
+        message.includes('reçoit "noix"'),
+      ),
+    ).toBe(true);
+  });
 });

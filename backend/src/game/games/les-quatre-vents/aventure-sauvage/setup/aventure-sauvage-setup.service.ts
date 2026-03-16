@@ -369,7 +369,7 @@ function buildTiles(): AventureSauvageTile[] {
     },
     {
       type: 'finish',
-      label: 'Case Neutre - Arrivee (verte)',
+      label: 'Case Neutre - Arrivée (verte)',
       description:
         "Vous atteignez enfin la mare au coeur de la jungle. L'eau est calme, l'air plus frais, et le sentier s'arrête ici. Votre aventure prend fin.",
     },

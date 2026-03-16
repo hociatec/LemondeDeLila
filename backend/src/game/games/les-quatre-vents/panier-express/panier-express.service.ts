@@ -1529,13 +1529,18 @@ export class PanierExpressService extends AbstractGameService {
       next,
       `[Panier Express] Case Échange : ${playerName} est sollicité pour "${label}".`,
     );
+    const player = this.getPlayers(next).find((p) => p.id === playerId);
+    const inventory = this.utils.toStringArray(player?.inventory);
+    const hasInventory = inventory.length > 0;
     const pending: PendingState = {
-      type: 'merchant_request',
+      type: 'pick',
       playerId,
       blocking: true,
-      question: `Le marchand souhaite "${label}".`,
-      choices: [label, 'Refuser'],
-      data: { ingredient },
+      question: hasInventory
+        ? `Le marchand souhaite "${label}". Sélectionnez l'ingrédient demandé ou "Refuser".`
+        : `Le marchand souhaite "${label}". Inventaire vide.`,
+      choices: hasInventory ? [...inventory, 'Refuser'] : ['Refuser'],
+      data: { kind: 'merchant_request.choose', ingredient },
     };
     return { ...next, pending };
   }
@@ -2122,13 +2127,13 @@ export class PanierExpressService extends AbstractGameService {
         break;
       }
       case 'intemperie-au-marche':
-        this.getPlayers(next).forEach((p) => {
-          next = this.movePlayer(next, p.id, -1);
-        });
         next = this.core.appendLog(
           next,
           `[Panier Express] Intempérie : tous les joueurs reculent d'une case.`,
         );
+        this.getPlayers(next).forEach((p) => {
+          next = this.movePlayer(next, p.id, -1);
+        });
         next = this.appendActionLog(next, playerId, 'event', {
           event,
           effect: 'all_move',
@@ -2884,7 +2889,11 @@ export class PanierExpressService extends AbstractGameService {
     const pending = this.getPendingRecord(state);
     const pendingData = asRecord(pending?.data);
     const ingredient =
-      pending && toText(pending.type) === 'merchant_request'
+      pending &&
+      ((toText(pending.type) === 'merchant_request' &&
+        pendingData.kind == null) ||
+        (toText(pending.type) === 'pick' &&
+          toText(pendingData.kind) === 'merchant_request.choose'))
         ? toText(pendingData.ingredient).trim()
         : '';
     if (!ingredient) {
@@ -2933,7 +2942,11 @@ export class PanierExpressService extends AbstractGameService {
     const pending = this.getPendingRecord(state);
     const pendingData = asRecord(pending?.data);
     const ingredient =
-      pending && toText(pending.type) === 'merchant_request'
+      pending &&
+      ((toText(pending.type) === 'merchant_request' &&
+        pendingData.kind == null) ||
+        (toText(pending.type) === 'pick' &&
+          toText(pendingData.kind) === 'merchant_request.choose'))
         ? toText(pendingData.ingredient).trim()
         : '';
     let next: GameStateEntity = { ...state, pending: null };
@@ -3655,6 +3668,35 @@ export class PanierExpressService extends AbstractGameService {
       return this.phaseFlow.advanceTurn(next);
     }
 
+    if (kind === 'merchant_request.choose') {
+      const ingredient = toText(pendingData.ingredient).trim();
+      const chosen = toText(choices[index]).trim();
+      if (!ingredient || !chosen) {
+        return clearPending(state);
+      }
+
+      if (stringEqualsInsensitive(chosen, 'Refuser')) {
+        return this.handleMerchantRequestRefuse(state, {
+          type: 'merchant_request_refuse',
+          meta: { actorId },
+        } as any);
+      }
+
+      if (!stringEqualsInsensitive(chosen, ingredient)) {
+        return this.core.appendLog(
+          state,
+          `[Panier Express] Le marchand souhaite "${this.utils.formatCourseLabel(
+            ingredient,
+          )}". Choisissez l'ingrédient demandé ou "Refuser".`,
+        );
+      }
+
+      return this.handleMerchantRequestAccept(state, {
+        type: 'merchant_request_accept',
+        meta: { actorId },
+      } as any);
+    }
+
     if (kind === 'exchange.troc_rapide.choose_give') {
       const targetPlayerId = Number(pendingData.targetPlayerId);
       if (!Number.isFinite(targetPlayerId)) return clearPending(state);
@@ -3684,6 +3726,51 @@ export class PanierExpressService extends AbstractGameService {
       next = this.core.appendLog(
         next,
         `[Panier Express] Troc rapide : ${this.utils.playerName(state, actorId)} donne "${this.utils.formatCourseLabel(give)}" et reçoit "${this.utils.formatCourseLabel(take)}".`,
+      );
+      return this.phaseFlow.advanceTurn(next);
+    }
+
+    if (kind === 'exchange.voisin.choose_give') {
+      const targetPlayerId = Number(pendingData.targetPlayerId);
+      const exchangeLabel = toText(pendingData.exchangeLabel).trim() || 'Échange';
+      if (!Number.isFinite(targetPlayerId)) return clearPending(state);
+      const give = toText(choices[index]).trim();
+      if (!give) return clearPending(state);
+
+      let next = clearPending(state);
+      const target = this.getPlayers(next).find((p) => p.id === targetPlayerId);
+      const targetInv = this.utils.toStringArray(target?.inventory);
+      if (!targetInv.length) {
+        next = this.core.appendLog(
+          next,
+          `[Panier Express] ${exchangeLabel} : cible sans inventaire.`,
+        );
+        return this.phaseFlow.advanceTurn(next);
+      }
+
+      const metaRng = this.random.createMetaRng(this.getMetadata(next));
+      const picked = this.random.pickOne(metaRng.getMeta(), targetInv);
+      next = { ...next, metadata: picked.meta };
+      const take = toText(picked.value).trim();
+      const removedGive = removeCourseFromPlayer(next, actorId, give);
+      next = removedGive.state;
+      const removedTake = removeCourseFromPlayer(next, targetPlayerId, take);
+      next = removedTake.state;
+      if (removedGive.removed) {
+        next = addCourseToPlayer(next, targetPlayerId, give);
+      }
+      if (removedTake.removed) {
+        next = addCourseToPlayer(next, actorId, take);
+      }
+      next = this.core.appendLog(
+        next,
+        `[Panier Express] ${exchangeLabel} : ${this.utils.playerName(
+          state,
+          actorId,
+        )} donne "${this.utils.formatCourseLabel(give)}" à ${this.utils.playerName(
+          state,
+          targetPlayerId,
+        )} et reçoit "${this.utils.formatCourseLabel(take)}".`,
       );
       return this.phaseFlow.advanceTurn(next);
     }
@@ -3803,7 +3890,14 @@ export class PanierExpressService extends AbstractGameService {
           type: 'pick',
           playerId: targetPlayerId,
           blocking: true,
-          label: `Échange stratégique : accepter l'échange ?`,
+          label: `Échange stratégique : ${this.utils.playerName(
+            state,
+            actorId,
+          )} vous propose "${this.utils.formatCourseLabel(
+            give,
+          )}" contre "${this.utils.formatCourseLabel(
+            take,
+          )}". Choisissez Accepter ou Refuser.`,
           choices: ['Accepter', 'Refuser'],
           data: {
             kind: 'exchange.strategique.confirm',
@@ -3867,12 +3961,26 @@ export class PanierExpressService extends AbstractGameService {
           next = addCourseToPlayer(next, initiatorId, take);
         next = this.core.appendLog(
           next,
-          `[Panier Express] Échange stratégique : accepté (${this.utils.playerName(state, initiatorId)} ⇄ ${this.utils.playerName(state, actorId)}).`,
+          `[Panier Express] Échange stratégique : ${this.utils.playerName(
+            state,
+            initiatorId,
+          )} donne "${this.utils.formatCourseLabel(
+            give,
+          )}" à ${this.utils.playerName(
+            state,
+            actorId,
+          )} et reçoit "${this.utils.formatCourseLabel(take)}" en échange.`,
         );
       } else {
         next = this.core.appendLog(
           next,
-          `[Panier Express] Échange stratégique : refusé.`,
+          `[Panier Express] Échange stratégique : ${this.utils.playerName(
+            state,
+            actorId,
+          )} refuse l'échange proposé par ${this.utils.playerName(
+            state,
+            initiatorId,
+          )}.`,
         );
       }
       return this.phaseFlow.advanceTurn(next);
@@ -4490,6 +4598,10 @@ function toPlayerIdValue(value: unknown): number | null {
 
 function toUnknownArray(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
+}
+
+function stringEqualsInsensitive(left: string, right: string): boolean {
+  return left.localeCompare(right, 'fr', { sensitivity: 'base' }) === 0;
 }
 
 function toDrawQueueEntries(

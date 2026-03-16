@@ -198,6 +198,29 @@ public sealed class GamePlayLogRewriterTests
             history.Entries.ToArray());
     }
 
+    [Fact]
+    public void GameHistoryViewModel_KeepsFullTableHistory()
+    {
+        var history = new GameHistoryViewModel(new CatalogGame
+        {
+            Id = "panier-express",
+            Name = "Panier Express",
+            Summary = "Test",
+            MinPlayers = 2,
+            MaxPlayers = 4,
+            Engine = "plateau",
+        });
+
+        for (var i = 0; i < 500; i++)
+        {
+            history.Entries.Add($"Ligne {i + 1}");
+        }
+
+        Assert.Equal(500, history.Entries.Count);
+        Assert.Equal("Ligne 1", history.Entries.First());
+        Assert.Equal("Ligne 500", history.Entries.Last());
+    }
+
     private sealed class RecordingAnnouncementService : IAnnouncementService
     {
         public List<(string Message, AnnouncementPriority Priority)> Messages { get; } = new();

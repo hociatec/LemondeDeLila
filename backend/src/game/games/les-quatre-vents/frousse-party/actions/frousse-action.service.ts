@@ -443,7 +443,7 @@ export class FrousseActionService {
       }
     }
 
-    if (pos >= 49) {
+    if (pos === 49) {
       meta = { ...meta, winnerId: playerId };
       next = this.core.appendLog(
         next,
@@ -639,7 +639,8 @@ export class FrousseActionService {
       if (!targets.length) return next;
       const pending: PendingState = {
         type: 'choose_target',
-        label: 'Choisissez un joueur dans la liste, puis Entrée.',
+        label:
+          'Choisissez le joueur avec qui échanger votre position, ou "Refuser l\'échange".',
         playerId,
         blocking: true,
         choices: [...targets.map((t) => t.username), "Refuser l'échange."],
@@ -1069,7 +1070,9 @@ export class FrousseActionService {
     }
 
     if (roll.doubledFrom != null) {
-      label = `${label} (doublé = ${roll.value})`;
+      const beforeDouble =
+        roll.malusApplied !== 0 ? label : `${roll.doubledFrom}`;
+      label = `${beforeDouble} (doublé = ${roll.value})`;
     }
 
     return label;
@@ -1082,7 +1085,12 @@ export class FrousseActionService {
   ): GameStateEntity {
     const meta = this.getMeta(state);
     const pos = meta.positions?.[playerId] ?? 0;
-    const nextPos = clamp(pos + delta, 0, 49);
+    let nextPos = pos + delta;
+    if (nextPos < 0) {
+      nextPos = 0;
+    } else if (nextPos > 49) {
+      nextPos = Math.max(0, 49 - (nextPos - 49));
+    }
     return this.setPos(state, playerId, nextPos);
   }
 
@@ -1539,7 +1547,12 @@ function shouldSuppressRepeatedEffect(
   if (!effect) return false;
   const card = normalizeForContains(cardText);
   if (!card) return false;
-  return card.includes(effect);
+  if (card.includes(effect)) return true;
+
+  const effectTokens = tokenizeMeaningfulText(effectLabel);
+  if (!effectTokens.length) return false;
+  const cardTokens = new Set(tokenizeMeaningfulText(cardText));
+  return effectTokens.every((token) => cardTokens.has(token));
 }
 
 function normalizeForContains(value: string): string {
@@ -1550,4 +1563,48 @@ function normalizeForContains(value: string): string {
     .replace(/[^\p{L}\p{N}\s]/gu, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function tokenizeMeaningfulText(value: string): string[] {
+  const stopWords = new Set([
+    'a',
+    'au',
+    'aux',
+    'avec',
+    'ce',
+    'ces',
+    'd',
+    'de',
+    'des',
+    'du',
+    'en',
+    'et',
+    'immediatement',
+    'jusqu',
+    'l',
+    'la',
+    'le',
+    'les',
+    'ou',
+    'un',
+    'une',
+    'vos',
+    'votre',
+    'vous',
+  ]);
+
+  return normalizeForContains(value)
+    .split(' ')
+    .map(stemComparableToken)
+    .filter((token) => token.length > 1 && !stopWords.has(token));
+}
+
+function stemComparableToken(token: string): string {
+  let out = token.trim();
+  if (out.length > 4 && out.endsWith('es')) {
+    out = out.slice(0, -2);
+  } else if (out.length > 3 && (out.endsWith('s') || out.endsWith('x'))) {
+    out = out.slice(0, -1);
+  }
+  return out;
 }

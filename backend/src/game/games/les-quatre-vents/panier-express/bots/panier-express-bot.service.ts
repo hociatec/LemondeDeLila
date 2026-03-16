@@ -71,6 +71,30 @@ export class PanierExpressBotService {
       if (type === 'pick_choice') {
         const index =
           typeof action.payload?.index === 'number' ? action.payload.index : 0;
+        const pending = state.pending as any;
+        const pendingData =
+          pending && typeof pending === 'object' ? pending.data ?? {} : {};
+        const pendingKind =
+          typeof pendingData?.kind === 'string' ? pendingData.kind.trim() : '';
+
+        if (pendingKind === 'merchant_request.choose') {
+          const ingredient =
+            typeof pendingData?.ingredient === 'string'
+              ? pendingData.ingredient.trim()
+              : '';
+          const choice =
+            Array.isArray(pending?.choices) && index >= 0
+              ? String(pending.choices[index] ?? '').trim()
+              : '';
+          if (ingredient && choice && choice.localeCompare(ingredient, 'fr', { sensitivity: 'base' }) === 0) {
+            return 10;
+          }
+          if (choice.localeCompare('Refuser', 'fr', { sensitivity: 'base' }) === 0) {
+            return ingredient ? 8 : 9;
+          }
+          return -5;
+        }
+
         // Choix déterministe: on préfère les premiers items pour progresser.
         return 8 - Math.max(0, Math.min(6, index));
       }

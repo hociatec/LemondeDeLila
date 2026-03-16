@@ -11,7 +11,7 @@ namespace client_win.Modules.Game.History.ViewModels;
 
 public sealed class GameHistoryViewModel : ObservableObject
 {
-    private const int MaxEntries = 400;
+    private const int MaxEntries = int.MaxValue;
     private bool _isPruning;
     private bool _pruneScheduled;
     private readonly Dispatcher _dispatcher;

@@ -792,7 +792,7 @@ describe('PanierExpressService', () => {
     expect(after.turn?.direction).toBe(-1);
   });
 
-  it("n'auto-refuse plus la demande du marchand quand l'ingrÃƒÂ©dient manque", () => {
+  it("propose seulement Refuser quand le marchand demande un ingrédient et que l'inventaire est vide", () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: [], basket: [], shoppingList: [] },
@@ -808,23 +808,33 @@ describe('PanierExpressService', () => {
     };
 
     const pendingState = (service as any).applyMerchantRequest(state, 1);
-    expect(pendingState.pending?.type).toBe('merchant_request');
-    expect(pendingState.pending?.choices).toHaveLength(2);
+    expect(pendingState.pending?.type).toBe('pick');
+    expect((pendingState.pending as any)?.data?.kind).toBe(
+      'merchant_request.choose',
+    );
+    expect(pendingState.pending?.choices).toEqual(['Refuser']);
+    expect(String(pendingState.pending?.question ?? '')).toContain(
+      'Inventaire vide',
+    );
     expect(pendingState.turn?.currentPlayerId).toBe(1);
 
-    const afterAccept = service.applyActions(pendingState, [
-      { type: 'merchant_request_accept', meta: { actorId: 1 } } as any,
+    const afterRefuse = service.applyActions(pendingState, [
+      {
+        type: 'pick_choice',
+        payload: { index: 0 },
+        meta: { actorId: 1 },
+      } as any,
     ]);
 
-    expect(afterAccept.pending?.type).toBe('merchant_request');
-    expect(afterAccept.turn?.currentPlayerId).toBe(1);
-    const logs = (afterAccept.log ?? []).map((entry: any) => entry.message);
+    expect(afterRefuse.pending).toBeNull();
+    expect(afterRefuse.turn?.currentPlayerId).toBe(2);
+    const logs = (afterRefuse.log ?? []).map((entry: any) => entry.message);
     expect(logs.some((message: string) => message.includes("n'a pas"))).toBe(
-      true,
+      false,
     );
     expect(
-      logs.some((message: string) => message.includes('Refusez la demande')),
-    ).toBe(false);
+      logs.some((message: string) => message.includes('refuse')),
+    ).toBe(true);
   });
 
   it("l'ÃƒÂ©change imposÃƒÂ© ne rend pas alÃƒÂ©atoirement la carte donnÃƒÂ©e au joueur ciblÃƒÂ©", () => {
@@ -919,10 +929,10 @@ describe('PanierExpressService', () => {
     ]);
 
     const logs = (after.log ?? []).map((entry: any) => entry.message);
-    expect(logs).toContain('[Panier Express] RÃ©ponse correcte pour A.');
-    expect(logs).toContain('[Panier Express] Piochez un ingrÃ©dient.');
+    expect(logs).toContain('[Panier Express] Réponse correcte pour A.');
+    expect(logs).toContain('[Panier Express] Piochez un ingrédient.');
     expect(
-      logs.some((message: string) => message.includes('Quiz : rÃƒÂ©ponse')),
+      logs.some((message: string) => message.includes('Quiz : réponse')),
     ).toBe(false);
     expect(after.pending?.type).toBe('draw');
   });
@@ -940,7 +950,7 @@ describe('PanierExpressService', () => {
     const after = (service as any).applyMoveToStandChoice(state, 1);
 
     expect(after.pending?.type).toBe('pick');
-    expect(after.pending?.label).toBe('Choisissez le stand Ã  rejoindre.');
+    expect(after.pending?.label).toBe('Choisissez le stand à rejoindre.');
   });
 
   it("ÃƒÂ©vite le doublon de libellÃƒÂ© sur l'erreur de livraison", () => {
@@ -966,13 +976,11 @@ describe('PanierExpressService', () => {
     const after = (service as any).applyEvent(state, 1);
     const logs = (after.log ?? []).map((entry: any) => entry.message);
 
-    expect(logs).toContain(
-      '[Panier Express] Carte Ã‰vÃ©nement: Erreur de livraison.',
-    );
-    expect(logs).toContain('[Panier Express] A dÃ©fausse "tomate".');
+    expect(logs).toContain('[Panier Express] Carte Événement: Erreur de livraison.');
+    expect(logs).toContain('[Panier Express] A défausse "tomate".');
     expect(
       logs.some((message: string) =>
-        message.includes('Erreur de livraison : A dÃƒÂ©fausse'),
+        message.includes('Erreur de livraison : A défausse'),
       ),
     ).toBe(false);
   });
@@ -1004,7 +1012,39 @@ describe('PanierExpressService', () => {
     const after = (service as any).applyEvent(state, 1);
     const logs = (after.log ?? []).map((entry: any) => entry.message);
 
-    expect(logs).toContain('[Panier Express] Carte Ã‰vÃ©nement: JournÃ©e bio.');
-    expect(logs).toContain('[Panier Express] JournÃ©e bio: bonus pour B.');
+    expect(logs).toContain('[Panier Express] Carte Événement: Journée bio.');
+    expect(logs).toContain('[Panier Express] Journée bio: bonus pour B.');
+  });
+
+  it("journalise l'intempérie avant les déplacements des joueurs", () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'A', inventory: [], basket: [], shoppingList: [] },
+        { id: 2, username: 'B', inventory: [], basket: [], shoppingList: [] },
+        { id: 3, username: 'C', inventory: [], basket: [], shoppingList: [] },
+      ],
+      status: 'running',
+    } as any);
+    state.status = 'started';
+    state.turn = { currentPlayerId: 1, direction: 1 };
+    state.turnIndex = 0;
+    state.pending = null;
+    state.metadata.positions = { 1: 2, 2: 3, 3: 4 };
+    state.metadata.decks.events = {
+      deck: ['intemperie-au-marche'],
+      discards: [],
+    };
+
+    const after = (service as any).applyEvent(state, 1);
+    const logs = (after.log ?? []).map((entry: any) => String(entry.message));
+    const weatherIndex = logs.findIndex((message) =>
+      message.includes('Intempérie') && message.includes('reculent'),
+    );
+    const firstMoveIndex = logs.findIndex((message) =>
+      message.includes('recule') && message.includes('1 case'),
+    );
+
+    expect(weatherIndex).toBeGreaterThanOrEqual(0);
+    expect(firstMoveIndex).toBeGreaterThan(weatherIndex);
   });
 });

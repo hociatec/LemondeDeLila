@@ -29,6 +29,7 @@ using client_win.Modules.Game.Play.Session.Services;
 using client_win.Modules.Game.Play.State.Dtos;
 using client_win.Modules.Game.Play.State.Services;
 using client_win.Modules.Network.WebSockets;
+using client_win.Modules.Game.Shell.Views;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.TextPrompts.Services;
 using Xunit;
@@ -340,6 +341,131 @@ public sealed class GamePlayViewFocusTests
                     () => IsFocusWithin(choicesList),
                     dispatcher,
                     2200));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void PendingChoices_AppearWhileFocusOnZoneAnchor_FocusesChoicesList()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            EnsureTestApplicationResources();
+
+            var socket = new RecordingSocket();
+            var state = CreatePendingState(
+                pendingType: string.Empty,
+                label: string.Empty,
+                choices: Array.Empty<string>());
+            using var scope = CreateGamePlayViewModelScope(dispatcher, socket, state);
+
+            var gameplay = new GamePlayView
+            {
+                DataContext = scope.ViewModel,
+            };
+            var host = new GameZoneHostView
+            {
+                AllowAnchorAutoFocus = _ => false,
+                DataContext = new StubGameZoneHostContext
+                {
+                    Title = "Zone de jeu",
+                    Content = gameplay,
+                    IsStarted = true,
+                },
+            };
+            var window = new Window
+            {
+                Width = 1000,
+                Height = 700,
+                Content = host,
+                ShowInTaskbar = false,
+                WindowStyle = WindowStyle.None,
+            };
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var anchor = Assert.IsType<GameZoneFocusAnchor>(host.FindName("GameZoneFocusAnchor"));
+                var choicesList = Assert.IsType<ListBox>(gameplay.FindName("ChoicesList"));
+
+                anchor.Focus();
+                Keyboard.Focus(anchor);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(anchor), dispatcher, 1200));
+
+                scope.ViewModel.PendingChoices.Add("Donner tomate");
+                scope.ViewModel.PendingChoices.Add("Refuser");
+                gameplay.UpdateLayout();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                Assert.True(StaDispatcherHarness.WaitUntil(() => choicesList.Items.Count == 2, dispatcher, 2200));
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 2200));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void PendingChoices_AfterSubmit_FocusesReplacementChoicesList()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            EnsureTestApplicationResources();
+
+            var socket = new RecordingSocket();
+            var state = CreatePendingState(
+                pendingType: string.Empty,
+                label: string.Empty,
+                choices: Array.Empty<string>());
+            using var scope = CreateGamePlayViewModelScope(dispatcher, socket, state);
+
+            var view = new GamePlayView
+            {
+                DataContext = scope.ViewModel,
+            };
+            var window = CreateHostWindow(view);
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var choicesList = Assert.IsType<ListBox>(view.FindName("ChoicesList"));
+
+                scope.ViewModel.PendingChoices.Add("Azrael");
+                scope.ViewModel.PendingChoices.Add("Scoop");
+                view.UpdateLayout();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                Assert.True(StaDispatcherHarness.WaitUntil(() => choicesList.Items.Count == 2, dispatcher, 2200));
+
+                view.FocusPreferredInteractiveElement(forceFromOutsideTextInput: true, allowExternalTextInputSteal: true);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 2200));
+
+                InvokePrivateVoid(view, "NoteChoiceSubmittedForFocusRestore");
+
+                scope.ViewModel.PendingChoices.Clear();
+                scope.ViewModel.PendingChoices.Add("Donner tomate");
+                scope.ViewModel.PendingChoices.Add("Refuser");
+                view.UpdateLayout();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                Assert.True(StaDispatcherHarness.WaitUntil(
+                    () => scope.ViewModel.DisplayChoices.Count == 2 &&
+                          string.Equals(scope.ViewModel.DisplayChoices[0].Text, "Donner tomate", StringComparison.Ordinal),
+                    dispatcher,
+                    2200));
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 2200));
             }
             finally
             {
@@ -1126,6 +1252,27 @@ public sealed class GamePlayViewFocusTests
         }
 
         return false;
+    }
+
+    private static void InvokePrivateVoid(object target, string methodName)
+    {
+        var method = target.GetType().GetMethod(
+            methodName,
+            BindingFlags.Instance | BindingFlags.NonPublic,
+            binder: null,
+            types: Type.EmptyTypes,
+            modifiers: null);
+        Assert.NotNull(method);
+        method!.Invoke(target, Array.Empty<object>());
+    }
+
+    private sealed class StubGameZoneHostContext
+    {
+        public string Title { get; set; } = "Zone de jeu";
+
+        public object? Content { get; set; }
+
+        public bool IsStarted { get; set; } = true;
     }
 
     private sealed class FakeGridVm
