@@ -669,6 +669,178 @@ describe('MinuitActionService', () => {
       ),
     ).toBe(true);
   });
+
+  it('stops an occupied-tile bounce loop as soon as a landing position repeats', () => {
+    const { random, turns, core } = createDeps();
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
+
+    const tiles = Array.from({ length: 28 }, (_, index) => ({
+      n: index + 1,
+      title: `Case ${index + 1}`,
+      type: 'neutral',
+      description: '',
+    })) as any[];
+    tiles[26] = {
+      n: 27,
+      title: 'Case Avance - Bonnet chanceux',
+      type: 'move',
+      delta: 1,
+      description: 'Votre bonnet vous porte chance. Avancez de 1 case.',
+    };
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [
+        { id: 1, username: 'Lilas', pawn: 'Le Renne' } as any,
+        { id: 2, username: 'Bucky', pawn: 'Le Lutin', isBot: true } as any,
+      ],
+      metadata: {
+        positions: { 1: 26, 2: 27 },
+        statuses: { skipTurn: {}, keepTurn: {} },
+        tiles,
+        decks: { cards: [], discard: [] },
+      } as any,
+      pending: null,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = (service as any).applyLanding(state, 1);
+    const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
+
+    expect(
+      messages.filter((m) =>
+        m.includes(
+          'Enchaînement de cases interrompu pour éviter une boucle infinie.',
+        ),
+      ),
+    ).toHaveLength(1);
+    expect(
+      messages.filter((m) => m.includes('Votre bonnet vous porte chance.'))
+        .length,
+    ).toBe(1);
+  });
+
+  it('does not add an extra player-specific skip log when a card already says to skip a turn', () => {
+    const { random, turns, core } = createDeps();
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [
+        { id: 1, username: 'Olaf', pawn: 'Le Bonhomme de Neige' } as any,
+        { id: 2, username: 'Lilas', pawn: 'Le Lutin' } as any,
+      ],
+      metadata: {
+        positions: { 1: 0, 2: 0 },
+        statuses: { skipTurn: {}, keepTurn: {} },
+        tiles: [{ n: 1, title: 'Case départ', type: 'neutral', description: '' }],
+        decks: {
+          cards: [
+            {
+              id: 24,
+              title: 'Traîneau bloqué dans la neige',
+              category: 'Surprises',
+              kind: 'Surprise',
+              lines: ['Vous devez pelleter pour le dégager. Passez votre tour.'],
+            },
+          ],
+          discard: [],
+        },
+      } as any,
+      pending: { type: 'draw', playerId: 1, blocking: true } as any,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = service.applyActions(state, [
+      { type: 'draw', payload: {} } as any,
+    ]);
+    const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
+
+    expect(messages).toContain('Olaf pioche "Traîneau bloqué dans la neige".');
+    expect(
+      messages.some((m) => m.includes('Olaf passe 1 tour(s).')),
+    ).toBe(false);
+  });
+
+  it('uses the corrected "Carte de vœux magique" title in the draw log', () => {
+    const { random, turns, core } = createDeps();
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [
+        { id: 1, username: 'Lilas', pawn: 'Le Lutin' } as any,
+        { id: 2, username: 'Olaf', pawn: 'Le Renne' } as any,
+      ],
+      metadata: {
+        positions: { 1: 6, 2: 0 },
+        statuses: { skipTurn: {}, keepTurn: {} },
+        tiles: [
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
+          { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 3, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 4, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 5, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 6, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 7, title: 'Case Carte Noël', type: 'card', description: '' },
+        ],
+        decks: {
+          cards: [
+            {
+              id: 21,
+              title: 'Carte de vœux magique',
+              category: 'Surprises',
+              kind: 'Surprise',
+              lines: ['Elle vous porte chance. Relancez le dé maintenant.'],
+            },
+          ],
+          discard: [],
+        },
+      } as any,
+      pending: { type: 'draw', playerId: 1, blocking: true } as any,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = service.applyActions(state, [
+      { type: 'draw', payload: {} } as any,
+    ]);
+    const messages = (next.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+
+    expect(messages).toContain('Lilas pioche "Carte de vœux magique".');
+    expect(messages.some((message) => /vSux/i.test(message))).toBe(false);
+    expect(messages.some((message) => /Vous recevez une carte/i.test(message))).toBe(
+      false,
+    );
+  });
 });
 
 describe('Minuit Rulebook compat', () => {

@@ -953,6 +953,20 @@ describe('PanierExpressService', () => {
     expect(after.pending?.label).toBe('Choisissez le stand à rejoindre.');
   });
 
+  it("retire le doublon 'Choisissez' de la case 21", () => {
+    const state: any = service.hydrateInitialState({
+      players: [{ id: 1, username: 'A' }],
+      status: 'started',
+    } as any);
+    const tile = (state.metadata as any)?.tiles?.find(
+      (entry: any) => entry?.id === 'case-21-stand-au-choix',
+    );
+
+    expect(tile?.description).toBe(
+      'Choisissez votre prochaine destination pour compléter votre panier efficacement. Avancez ou reculez de 2 cases.',
+    );
+  });
+
   it("ÃƒÂ©vite le doublon de libellÃƒÂ© sur l'erreur de livraison", () => {
     const state: any = service.hydrateInitialState({
       players: [
@@ -1014,6 +1028,112 @@ describe('PanierExpressService', () => {
 
     expect(logs).toContain('[Panier Express] Carte Événement: Journée bio.');
     expect(logs).toContain('[Panier Express] Journée bio: bonus pour B.');
+  });
+
+  it('Recette express exige salade, tomate et oignon dans l’inventaire', () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        {
+          id: 1,
+          username: 'A',
+          inventory: ['salade', 'tomate'],
+          basket: [],
+          shoppingList: ['poire', 'carotte'],
+        },
+      ],
+      status: 'running',
+    } as any);
+    state.status = 'started';
+    state.turn = { currentPlayerId: 1, direction: 1 };
+    state.turnIndex = 0;
+    state.pending = null;
+    state.metadata.decks.events = {
+      deck: ['recette-express'],
+      discards: [],
+    };
+
+    const after = (service as any).applyEvent(state, 1);
+    const logs = (after.log ?? []).map((entry: any) => String(entry.message));
+
+    expect(logs).toContain(
+      '[Panier Express] Recette express: condition non remplie (salade, tomate et oignon requis).',
+    );
+    expect(after.players[0].basket).toEqual([]);
+  });
+
+  it('Recette express défausse un doublon et accorde un bonus de tour', () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        {
+          id: 1,
+          username: 'A',
+          inventory: ['salade', 'tomate', 'oignon', 'poire'],
+          basket: [],
+          shoppingList: ['poire', 'carotte'],
+        },
+      ],
+      status: 'running',
+    } as any);
+    state.status = 'started';
+    state.turn = { currentPlayerId: 1, direction: 1 };
+    state.turnIndex = 0;
+    state.pending = null;
+    state.metadata.decks.events = {
+      deck: ['recette-express'],
+      discards: [],
+    };
+    jest
+      .spyOn((service as any).random, 'pickOne')
+      .mockImplementationOnce((meta: any) => ({ value: 'poire', meta }));
+
+    const after = (service as any).applyEvent(state, 1);
+    const logs = (after.log ?? []).map((entry: any) => String(entry.message));
+
+    expect(after.players[0].inventory).toEqual([
+      'salade',
+      'tomate',
+      'oignon',
+      'poire',
+    ]);
+    expect((after.metadata as any)?.discards?.courses).toContain('poire');
+    expect((service as any).turnStatus.getStatus(after, 1, 'keepTurn')).toBe(1);
+    expect(logs).toContain(
+      '[Panier Express] Recette express: "poire" est déjà présent, carte défaussée puis rejouez immédiatement.',
+    );
+  });
+
+  it('Recette express ajoute au panier un ingrédient manquant de la liste', () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        {
+          id: 1,
+          username: 'A',
+          inventory: ['salade', 'tomate', 'oignon'],
+          basket: [],
+          shoppingList: ['carotte', 'poire'],
+        },
+      ],
+      status: 'running',
+    } as any);
+    state.status = 'started';
+    state.turn = { currentPlayerId: 1, direction: 1 };
+    state.turnIndex = 0;
+    state.pending = null;
+    state.metadata.decks.events = {
+      deck: ['recette-express'],
+      discards: [],
+    };
+    jest
+      .spyOn((service as any).random, 'pickOne')
+      .mockImplementationOnce((meta: any) => ({ value: 'carotte', meta }));
+
+    const after = (service as any).applyEvent(state, 1);
+    const logs = (after.log ?? []).map((entry: any) => String(entry.message));
+
+    expect(after.players[0].basket).toEqual(['carotte']);
+    expect(after.players[0].inventory).toEqual(['salade', 'tomate', 'oignon']);
+    expect((service as any).turnStatus.getStatus(after, 1, 'keepTurn')).toBe(0);
+    expect(logs).toContain('[Panier Express] Recette express: reçoit "carotte".');
   });
 
   it("journalise l'intempérie avant les déplacements des joueurs", () => {

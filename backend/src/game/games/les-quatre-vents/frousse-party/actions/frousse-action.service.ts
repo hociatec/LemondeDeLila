@@ -868,10 +868,7 @@ export class FrousseActionService {
     }
 
     // Teleport to case 40.
-    if (
-      /jusqu'a la case 40/i.test(text) ||
-      /jusqu['’]a la case 40/i.test(text)
-    ) {
+    if (isTeleportToCase40(text)) {
       next = this.setPos(next, playerId, 39);
       return this.applyLanding(next, playerId);
     }
@@ -1431,6 +1428,10 @@ function extractSkipTurns(text: string): number {
   return 0;
 }
 
+function isTeleportToCase40(text: string): boolean {
+  return /jusqu['’]?(?:a|à)\s+la case 40/i.test(text);
+}
+
 function describeCardEffect(card: FrousseCard): string {
   const text = card.text ?? '';
 
@@ -1471,8 +1472,7 @@ function describeCardEffect(card: FrousseCard): string {
     return 'Rejouez avec un malus de -2 au lancer.';
   if (/Si vous faites un trois, reculez de 2 cases/i.test(text))
     return 'Si vous faites un trois, reculez de 2 cases.';
-  if (/jusqu['’]a la case 40/i.test(text))
-    return 'Allez directement a la case 40.';
+  if (isTeleportToCase40(text)) return 'Allez directement a la case 40.';
   if (
     /Relancez le dé/i.test(text) ||
     (/Relancez/i.test(text) && /dé/i.test(text))

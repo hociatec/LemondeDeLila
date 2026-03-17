@@ -624,7 +624,7 @@ export class ContesActionService {
           ? 'Piochez une carte Malus.'
           : type === 'surprise'
             ? 'Piochez une carte Surprise.'
-            : 'Piochez une carte Conte.';
+            : '';
     if (type === 'malus') {
       const meta = this.getMeta(state);
       const ignore = Boolean(
@@ -653,7 +653,7 @@ export class ContesActionService {
       }
     }
 
-    const withPrompt = this.core.appendLog(state, drawLabel);
+    const withPrompt = drawLabel ? this.core.appendLog(state, drawLabel) : state;
     return this.setPending(withPrompt, {
       type: 'draw',
       label: `Piocher une carte ${type.toUpperCase()} (Espace).`,
@@ -933,7 +933,7 @@ export class ContesActionService {
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...out.meta } };
         next = this.core.appendLog(
           next,
-          `Haricot magique : dé "${out.roll}", doublé.`,
+          `Haricot magique : dé "${out.roll}" x 2 = ${out.roll * 2}.`,
         );
         return this.moveBy(next, playerId, out.roll * 2, depth);
       }

@@ -1,6 +1,8 @@
 import { Room } from '../entities/room.entity';
 import { RoomParticipant } from '../entities/room-participant.entity';
 import { RoomService } from './room.service';
+import { PresenceService, type PresenceBroadcastPlayer } from '../../presence/services/presence.service';
+import { PresenceTransport } from '../../presence/services/presence-transport';
 
 type Fixture = {
   service: RoomService;
@@ -190,6 +192,53 @@ function createFixture(): Fixture {
     },
     usersById,
     roomsById,
+  };
+}
+
+class PresenceTransportStub extends PresenceTransport {
+  connect = jest.fn(async () => undefined);
+  publish = jest.fn(async (_event: any) => undefined);
+  subscribe = jest.fn(async (_handler: any) => undefined);
+  disconnect = jest.fn(async () => undefined);
+}
+
+function createPresenceService(participantsFind: jest.Mock) {
+  const chat = {
+    recordMessageForBroadcast: jest.fn(),
+    getRecentNormalizedMessages: jest.fn(),
+  } as any;
+  const chatSettings = {
+    getChatHistoryLimit: jest.fn(() => 50),
+    getEditWindowSeconds: jest.fn(() => 60),
+  } as any;
+  const participants = {
+    find: participantsFind,
+  } as any;
+  const users = {
+    findOne: jest.fn(),
+  } as any;
+
+  return new PresenceService(
+    chat,
+    chatSettings,
+    participants,
+    users,
+    new PresenceTransportStub(),
+  );
+}
+
+function buildPresencePlayer(
+  overrides: Partial<PresenceBroadcastPlayer> = {},
+): PresenceBroadcastPlayer {
+  return {
+    id: 1,
+    username: 'Lilas',
+    currentRoom: null,
+    activity: 'home',
+    contextLocked: false,
+    lastInteractionAt: 0,
+    roomStarted: null,
+    ...(overrides ?? {}),
   };
 }
 
@@ -745,5 +794,85 @@ describe('RoomService lifecycle scenarios', () => {
 
     expect(deps.participants.findOne).not.toHaveBeenCalled();
     expect(deps.rooms.save).not.toHaveBeenCalled();
+  });
+});
+
+describe('PresenceService room enrichment', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('keeps currentRoom for locked non-table contexts', async () => {
+    const service = createPresenceService(
+      jest.fn().mockResolvedValue([
+        {
+          user: { id: 7 },
+          room: {
+            id: 42,
+            name: 'Table d Azrael',
+            status: 'setup',
+            startedAt: null,
+          },
+        },
+      ]),
+    );
+    const playersByUser = new Map<number, PresenceBroadcastPlayer>([
+      [
+        7,
+        buildPresencePlayer({
+          id: 7,
+          username: 'Azrael',
+          activity: 'social',
+          contextLocked: true,
+        }),
+      ],
+    ]);
+
+    await (service as any).attachRooms(playersByUser);
+
+    expect(playersByUser.get(7)).toEqual(
+      expect.objectContaining({
+        activity: 'social',
+        currentRoom: { id: 42, name: 'Table d Azrael' },
+        roomStarted: false,
+      }),
+    );
+  });
+
+  it('keeps chat activity while exposing the active room', async () => {
+    const service = createPresenceService(
+      jest.fn().mockResolvedValue([
+        {
+          user: { id: 9 },
+          room: {
+            id: 77,
+            name: 'Table fantome',
+            status: 'started',
+            startedAt: new Date('2026-03-17T10:00:00.000Z'),
+          },
+        },
+      ]),
+    );
+    const playersByUser = new Map<number, PresenceBroadcastPlayer>([
+      [
+        9,
+        buildPresencePlayer({
+          id: 9,
+          username: 'Bucky',
+          activity: 'chat',
+          contextLocked: true,
+        }),
+      ],
+    ]);
+
+    await (service as any).attachRooms(playersByUser);
+
+    expect(playersByUser.get(9)).toEqual(
+      expect.objectContaining({
+        activity: 'chat',
+        currentRoom: { id: 77, name: 'Table fantome' },
+        roomStarted: true,
+      }),
+    );
   });
 });

@@ -70,9 +70,11 @@ export class GaloponsSetupService {
     const players = Array.isArray(base.players) ? base.players : [];
     const positions: Record<number, number> = {};
     const apples: Record<number, number> = {};
+    const movementDirection: Record<number, 1 | -1> = {};
     for (const player of players) {
       positions[player.id] = 0;
       apples[player.id] = 0;
+      movementDirection[player.id] = 1;
     }
 
     const seedMeta = asRecord(base.metadata);
@@ -91,6 +93,7 @@ export class GaloponsSetupService {
       tiles: board.tiles ?? [],
       positions,
       apples,
+      movementDirection,
       pawns,
       pawnByPlayerId,
       setupStarterId,

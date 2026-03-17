@@ -3573,7 +3573,10 @@ export class GameEngineService {
         const player = out.players?.find((p) => p?.id === id) ?? null;
         const name = this.normalizeUsernameForLog(player?.username);
         const who = name ? name : `joueur ${id}`;
-        const suffix = remaining > 0 ? ` (${remaining} restant)` : '';
+        // Some games use a large sentinel value for "blocked until a condition"
+        // rather than a literal number of remaining skipped turns.
+        const suffix =
+          remaining > 0 && remaining < 100 ? ` (${remaining} restant)` : '';
         out = this.core.appendLog(out, `${who} passe son tour${suffix}.`);
       }
 

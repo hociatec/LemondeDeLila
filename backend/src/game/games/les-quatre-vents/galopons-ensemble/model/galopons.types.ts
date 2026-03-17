@@ -40,6 +40,7 @@ export type GaloponsMetadata = {
   tiles: GaloponsTile[];
   positions: Record<number, number>;
   apples: Record<number, number>;
+  movementDirection?: Record<number, 1 | -1>;
   pawns: GaloponsPawn[];
   pawnByPlayerId: Record<number, string>;
   setupStarterId: number | null;

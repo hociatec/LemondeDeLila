@@ -52,6 +52,8 @@ function asPartialMeta(value: unknown): Partial<GaloponsMetadata> {
     : {};
 }
 
+const GALOPONS_WINNING_APPLES = 3;
+
 @Injectable()
 export class GaloponsActionService {
   constructor(
@@ -392,39 +394,38 @@ export class GaloponsActionService {
     if (description.length > 0) {
       next = this.core.appendLog(next, description);
     }
-    if (tile.type === 'card') {
-      next = this.core.appendLog(next, `Piochez une carte Aventure.`);
-    } else if (tile.type === 'bonus') {
-      next = this.core.appendLog(next, `Gagnez des pommes.`);
-    } else if (tile.type === 'skip') {
-      next = this.core.appendLog(next, `Passez des tours.`);
-    } else if (tile.type === 'finish') {
-      next = this.core.appendLog(next, `Écurie finale.`);
-    }
 
-    // Si arrivée : déclenche fin de manche.
+    // Si arrivée : +1 pomme, victoire immédiate à partir de 3 pommes,
+    // sinon le joueur repart en sens inverse vers la case départ.
     if (tile.type === 'finish') {
-      if (!meta.finish?.triggered) {
-        const others = Object.keys(meta.positions ?? {})
-          .map(Number)
-          .filter((id) => Number.isFinite(id) && id !== playerId);
+      const apples = (meta.apples?.[playerId] ?? 0) + 1;
+      meta = {
+        ...meta,
+        apples: {
+          ...meta.apples,
+          [playerId]: apples,
+        },
+      };
+      if (apples >= GALOPONS_WINNING_APPLES) {
+        meta = { ...meta, winnerId: playerId };
+      } else {
         meta = {
           ...meta,
-          apples: {
-            ...meta.apples,
-            [playerId]: (meta.apples?.[playerId] ?? 0) + 1,
-          },
-          finish: {
-            triggered: true,
-            starterId: playerId,
-            pendingIds: others,
-            bonusGiven: true,
+          movementDirection: {
+            ...(meta.movementDirection ?? {}),
+            [playerId]: -1,
           },
         };
-        next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+      }
+      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+      next = this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, playerId)} atteint l'Écurie finale (+1 pomme).`,
+      );
+      if (apples < GALOPONS_WINNING_APPLES) {
         next = this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, playerId)} atteint l'Écurie finale (+1 pomme).`,
+          `${resolvePlayerNameFromState(next, playerId)} n'a pas encore assez de pommes pour gagner et repart vers la case départ.`,
         );
       }
       return next;
@@ -470,11 +471,7 @@ export class GaloponsActionService {
           },
         },
       };
-      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      return this.core.appendLog(
-        next,
-        `${resolvePlayerNameFromState(next, playerId)} passe ${turns} tour(s).`,
-      );
+      return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
     if (tile.type === 'card') {
@@ -504,6 +501,10 @@ export class GaloponsActionService {
     meta = draw.meta;
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     if (!draw.card) return next;
+    next = this.core.appendLog(
+      next,
+      `${resolvePlayerNameFromState(next, playerId)} pioche une carte Aventure.`,
+    );
     next = this.core.appendLog(next, `Carte Aventure : ${draw.card.text}`);
     return this.applyCard(next, playerId, draw.card, turnInitiatorPlayerId);
   }
@@ -550,6 +551,7 @@ export class GaloponsActionService {
         const nextPos = findNext(
           meta.tiles,
           meta.positions[playerId] ?? 0,
+          this.getMovementDirection(meta, playerId),
           (tile) => tile.region === effect.region,
         );
         if (nextPos != null) {
@@ -861,6 +863,7 @@ export class GaloponsActionService {
       const nextPos = findNext(
         meta.tiles,
         meta.positions[playerId] ?? 0,
+        this.getMovementDirection(meta, playerId),
         (t) => t.region === 'foret',
       );
       if (nextPos != null) {
@@ -872,6 +875,7 @@ export class GaloponsActionService {
       const nextPos = findNext(
         meta.tiles,
         meta.positions[playerId] ?? 0,
+        this.getMovementDirection(meta, playerId),
         (t) => t.region === 'montagne',
       );
       if (nextPos != null) {
@@ -942,15 +946,13 @@ export class GaloponsActionService {
 
   private finishGame(state: GameStateEntity): GameStateEntity {
     const meta = this.getMeta(state);
-    const entries = Object.entries(meta.apples ?? {}).map(([id, a]) => ({
-      id: Number(id),
-      apples: Number(a),
-    }));
-    const best = entries
-      .filter((e) => Number.isFinite(e.id))
-      .sort((a, b) => b.apples - a.apples)[0];
-    if (!best) return { ...state, status: 'finished' };
-    const nextMeta: GaloponsMetadata = { ...meta, winnerId: best.id };
+    const winnerId =
+      typeof meta.winnerId === 'number' && Number.isFinite(meta.winnerId)
+        ? meta.winnerId
+        : null;
+    if (winnerId == null) return { ...state, status: 'finished' };
+    const apples = meta.apples?.[winnerId] ?? 0;
+    const nextMeta: GaloponsMetadata = { ...meta, winnerId };
     let next: GameStateEntity = {
       ...state,
       metadata: { ...(state.metadata ?? {}), ...nextMeta },
@@ -958,7 +960,7 @@ export class GaloponsActionService {
     };
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, best.id)} remporte la partie avec ${best.apples} pomme(s) !`,
+      `${resolvePlayerNameFromState(next, winnerId)} remporte la partie avec ${apples} pomme(s) !`,
     );
     return next;
   }
@@ -970,7 +972,47 @@ export class GaloponsActionService {
   ): GameStateEntity {
     const meta = this.getMeta(state);
     const pos = meta.positions?.[playerId] ?? 0;
-    return this.setPos(state, playerId, clamp(pos + delta, 0, 39));
+    const maxPos = Math.max(
+      0,
+      (Array.isArray(meta.tiles) ? meta.tiles.length : 1) - 1,
+    );
+    const direction = this.getMovementDirection(meta, playerId);
+    const steps = Math.max(0, Math.abs(Math.trunc(delta)));
+    if (steps === 0) return state;
+
+    if (delta < 0) {
+      const backwardMovement = (direction * -1) as 1 | -1;
+      return this.setPos(state, playerId, pos + backwardMovement * steps);
+    }
+
+    const movement = direction;
+    let nextPos = pos;
+    let nextDirection = direction;
+
+    for (let step = 0; step < steps; step += 1) {
+      nextPos += movement;
+      if (nextPos > maxPos) {
+        nextPos = maxPos - (nextPos - maxPos);
+        if (delta > 0 && direction === 1) {
+          nextDirection = -1;
+        }
+      } else if (nextPos < 0) {
+        nextPos = -nextPos;
+        if (delta > 0 && direction === -1) {
+          nextDirection = 1;
+        }
+      }
+    }
+
+    if (delta > 0 && direction === -1 && nextPos === 0) {
+      nextDirection = 1;
+    }
+
+    let next = this.setPos(state, playerId, nextPos);
+    if (nextDirection !== direction) {
+      next = this.setMovementDirection(next, playerId, nextDirection);
+    }
+    return next;
   }
 
   private setPos(
@@ -979,9 +1021,13 @@ export class GaloponsActionService {
     pos: number,
   ): GameStateEntity {
     const meta = this.getMeta(state);
+    const maxPos = Math.max(0, (Array.isArray(meta.tiles) ? meta.tiles.length : 1) - 1);
     const nextMeta: GaloponsMetadata = {
       ...meta,
-      positions: { ...(meta.positions ?? {}), [playerId]: clamp(pos, 0, 39) },
+      positions: {
+        ...(meta.positions ?? {}),
+        [playerId]: clamp(pos, 0, maxPos),
+      },
     };
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
@@ -1164,32 +1210,9 @@ export class GaloponsActionService {
     let next = state;
     let meta = this.getMeta(next);
 
-    if (meta.finish?.triggered) {
-      const pendingIds = meta.finish.pendingIds.filter((id) => id !== currentId);
-      if (pendingIds !== meta.finish.pendingIds) {
-        meta = { ...meta, finish: { ...meta.finish, pendingIds } };
-        next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      }
-    }
-
     meta = this.getMeta(next);
-    if (meta.winnerId != null) return { ...next, status: 'finished' };
+    if (meta.winnerId != null) return this.finishGame(next);
     if (next.pending) return next;
-    if (meta.finish?.triggered) {
-      // The final round gives each remaining player exactly one turn.
-      // Ignore any leftover replay effect once the finish phase has started.
-      if (asRecord(meta).keepTurn === true) {
-        meta = { ...meta };
-        delete asRecord(meta).keepTurn;
-        next = { ...next, metadata: meta };
-      }
-      if (meta.finish.pendingIds.length === 0) {
-        return this.finishGame(next);
-      }
-      return this.turns.advanceTurn(
-        this.setCurrentTurnPlayer(next, advanceFromPlayerId),
-      );
-    }
 
     const keepTurn = replayAfter || asRecord(meta).keepTurn === true;
     if (keepTurn) {
@@ -1208,6 +1231,32 @@ export class GaloponsActionService {
     return this.turns.advanceTurn(
       this.setCurrentTurnPlayer(next, advanceFromPlayerId),
     );
+  }
+
+  private getMovementDirection(
+    meta: GaloponsMetadata,
+    playerId: number,
+  ): 1 | -1 {
+    return meta.movementDirection?.[playerId] === -1 ? -1 : 1;
+  }
+
+  private setMovementDirection(
+    state: GameStateEntity,
+    playerId: number,
+    direction: 1 | -1,
+  ): GameStateEntity {
+    const meta = this.getMeta(state);
+    return {
+      ...state,
+      metadata: {
+        ...(state.metadata ?? {}),
+        ...meta,
+        movementDirection: {
+          ...(meta.movementDirection ?? {}),
+          [playerId]: direction,
+        },
+      },
+    };
   }
 
   private pawnLabel(state: GameStateEntity, id: number): string {
@@ -1321,8 +1370,15 @@ function extractMoveDelta(text: string): number {
 function findNext(
   tiles: GaloponsTile[],
   start: number,
+  direction: 1 | -1,
   predicate: (t: GaloponsTile) => boolean,
 ): number | null {
+  if (direction === -1) {
+    for (let i = start - 1; i >= 0; i -= 1) {
+      if (predicate(tiles[i])) return i;
+    }
+    return null;
+  }
   for (let i = start + 1; i < tiles.length; i += 1) {
     if (predicate(tiles[i])) return i;
   }

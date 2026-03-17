@@ -514,12 +514,6 @@ export class PresenceService implements OnModuleDestroy {
       if (!entry || !p.room) {
         continue;
       }
-      if (entry.activity === 'chat') {
-        continue;
-      }
-      if (entry.contextLocked && entry.activity !== 'table') {
-        continue;
-      }
       if (entry.currentRoom === null) {
         entry.currentRoom = { id: p.room.id, name: p.room.name };
       }

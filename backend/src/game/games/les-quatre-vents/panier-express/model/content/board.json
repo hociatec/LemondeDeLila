@@ -138,7 +138,7 @@
       "type": "move_choice",
       "delta": 2,
       "label": "Stand au choix",
-      "description": "Choisissez votre prochaine destination pour compléter votre panier efficacement. Choisissez : avancez ou reculez de 2 cases."
+      "description": "Choisissez votre prochaine destination pour compléter votre panier efficacement. Avancez ou reculez de 2 cases."
     },
     {
       "id": "case-22-stand-primeur-special",

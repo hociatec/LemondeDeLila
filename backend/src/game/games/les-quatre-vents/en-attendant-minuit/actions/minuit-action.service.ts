@@ -571,6 +571,7 @@ export class MinuitActionService {
     playerId: number,
   ): GameStateEntity {
     let next = state;
+    const visitedPositions = new Set<number>();
     for (let step = 0; step < MINUIT_MAX_LANDING_STEPS; step += 1) {
       let meta = this.getMeta(next);
       const pos = meta.positions?.[playerId] ?? 0;
@@ -591,6 +592,13 @@ export class MinuitActionService {
       }
 
       const afterPos = meta.positions?.[playerId] ?? 0;
+      if (visitedPositions.has(afterPos)) {
+        return this.core.appendLog(
+          next,
+          'Enchaînement de cases interrompu pour éviter une boucle infinie.',
+        );
+      }
+      visitedPositions.add(afterPos);
       next = this.core.appendLog(
         next,
         `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} place ${this.pawnPossessiveLabel(next, playerId)} en case ${afterPos + 1} (${tile.title}).`,
@@ -843,11 +851,7 @@ export class MinuitActionService {
           },
         },
       };
-      next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      return this.core.appendLog(
-        next,
-        `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} passe ${skip} tour(s).`,
-      );
+      return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
     if (/jusqu['’]à la prochaine Carte Noël/i.test(text)) {

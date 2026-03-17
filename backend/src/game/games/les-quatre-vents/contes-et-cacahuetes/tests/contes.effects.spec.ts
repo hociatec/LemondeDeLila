@@ -354,6 +354,46 @@ describe('Contes effects', () => {
     expect(logText).toContain('Bottes de sept lieues');
   });
 
+  it('clarifies the doubled die result for Haricot magique', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+    const random = moduleRef.get(RandomService);
+    jest.spyOn(random, 'rollDice').mockReturnValue({ roll: 4, meta: {} });
+
+    let state = setup.hydrateInitialState(baseState());
+    const metadata = asRecord(state.metadata);
+    const decks = asRecord(metadata.decks);
+    state = {
+      ...state,
+      metadata: {
+        ...(state.metadata ?? {}),
+        decks: {
+          ...decks,
+          bonus: [
+            {
+              id: 6,
+              type: 'bonus',
+              title: 'Haricot magique',
+              text: 'Lancez le dé maintenant : le résultat obtenu est automatiquement doublé.',
+            },
+          ],
+          discardBonus: [],
+        },
+      },
+    };
+
+    state = (actionsService as any).resolveQueuedDraw(state, 1, {
+      queue: ['bonus'],
+      depth: 0,
+    });
+
+    const logText = Array.isArray(state.log)
+      ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
+      : '';
+    expect(logText).toMatch(/Haricot magique\s*:\s*dé "4" x 2 = 8\./);
+  });
+
   it('keeps the retained bonus cards in hand through statuses', async () => {
     const moduleRef = await createActionsModule();
     const setup = moduleRef.get(ContesCacahuetesSetupService);
@@ -478,7 +518,7 @@ describe('Contes effects', () => {
     expect(Number(positions['1'] ?? 0)).toBe(14);
     expect(Number(positions['2'] ?? 0)).toBe(15);
   });
-  it('announces the tile text and the draw prompt on bonus and conte spaces', async () => {
+  it('announces the tile text on bonus and conte spaces without a redundant conte prompt', async () => {
     const moduleRef = await createActionsModule();
     const setup = moduleRef.get(ContesCacahuetesSetupService);
     const actionsService = moduleRef.get(ContesActionService);
@@ -516,7 +556,7 @@ describe('Contes effects', () => {
       : '';
     expect(conteLog).toContain('Lilas arrive sur Case Conte - Japon');
     expect(conteLog).toContain('gar');
-    expect(conteLog).toContain('Piochez une carte Conte.');
+    expect(conteLog).not.toContain('Piochez une carte Conte.');
   });
 
   it('does not announce unavailable cards when a draw pile is empty', async () => {

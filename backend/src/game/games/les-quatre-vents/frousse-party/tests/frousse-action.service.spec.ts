@@ -83,6 +83,26 @@ function buildFrousseMeta(overrides: Record<string, unknown> = {}): any {
   };
 }
 
+function buildLinearTiles(
+  count: number,
+  overrides: Record<number, Record<string, unknown>> = {},
+): any[] {
+  return Array.from({ length: count }, (_value, index) => {
+    const n = index + 1;
+    const override = overrides[n] ?? {};
+    const type = String(override.type ?? 'neutral');
+    const title = String(override.title ?? `Case ${n}`);
+    const defaultKind = type === 'card' ? 'case symbole' : 'case neutre';
+    return {
+      n,
+      type,
+      title,
+      label: String(override.label ?? `case ${n}. ${title} (${defaultKind})`),
+      description: String(override.description ?? ''),
+    };
+  });
+}
+
 function buildTurnState(
   overrides: Partial<GameStateEntity> = {},
 ): GameStateEntity {
@@ -705,6 +725,81 @@ describe('FrousseActionService movement effects', () => {
     expect(messages.some((message) => message.includes("s'échappe du manoir"))).toBe(
       false,
     );
+  });
+
+  it('teleports to case 40 when the accented card text is drawn, then continues from there', () => {
+    const rollDice = jest
+      .fn()
+      .mockReturnValueOnce({ roll: 1, meta: {} })
+      .mockReturnValueOnce({ roll: 3, meta: {} });
+    const { service } = buildRealTurnService({ rollDice });
+    const state = buildTurnState({
+      pending: { type: 'draw', playerId: 1, blocking: true } as any,
+      metadata: buildFrousseMeta({
+        positions: { 1: 47, 2: 0 },
+        tiles: buildLinearTiles(50, {
+          40: {
+            title: 'Galerie des voiles fantomatiques',
+            type: 'card',
+            label: 'case 40. Galerie des voiles fantomatiques (case symbole)',
+          },
+        }),
+        decks: {
+          cards: [
+            {
+              category: 'Bonus',
+              localNumber: 15,
+              text: "Un ascenseur secret se met en marche. Avancez ou reculez directement jusqu'à la case 40.",
+            },
+            {
+              category: 'Bonus',
+              localNumber: 12,
+              text: 'Un miroir magique vous montre la sortie.',
+            },
+          ],
+          discard: [],
+        },
+      }),
+    });
+
+    const afterTeleport = service.applyActions(state, [
+      { type: 'draw', payload: {} } as any,
+    ]);
+    const afterTeleportMessages = (afterTeleport.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+    const teleportDrawMessage =
+      afterTeleportMessages.find((message) =>
+        message.includes('ascenseur secret'),
+      ) ?? '';
+
+    expect((afterTeleport.metadata as any)?.positions?.[1]).toBe(39);
+    expect(afterTeleport.pending?.type).toBe('draw');
+    expect(afterTeleport.pending?.playerId).toBe(1);
+    expect(afterTeleport.turn?.currentPlayerId).toBe(1);
+    expect(teleportDrawMessage).toContain('Allez directement a la case 40.');
+    expect(teleportDrawMessage).not.toContain('Effet immédiat.');
+    expect(
+      afterTeleportMessages.some((message) => message.includes('en case 40')),
+    ).toBe(true);
+
+    const afterCase40Draw = service.applyActions(afterTeleport, [
+      { type: 'draw', payload: {} } as any,
+    ]);
+    expect(afterCase40Draw.pending).toBeNull();
+    expect(afterCase40Draw.turn?.currentPlayerId).toBe(2);
+
+    const afterOtherPlayerRoll = service.applyActions(afterCase40Draw, [
+      { type: 'roll', payload: {} } as any,
+    ]);
+    expect(afterOtherPlayerRoll.turn?.currentPlayerId).toBe(1);
+
+    const afterNextLilasRoll = service.applyActions(afterOtherPlayerRoll, [
+      { type: 'roll', payload: {} } as any,
+    ]);
+
+    expect((afterNextLilasRoll.metadata as any)?.positions?.[1]).toBe(42);
+    expect((afterNextLilasRoll.metadata as any)?.positions?.[1]).not.toBe(48);
   });
 
   it('does not auto-roll the odd-result trap test after drawing the card', () => {

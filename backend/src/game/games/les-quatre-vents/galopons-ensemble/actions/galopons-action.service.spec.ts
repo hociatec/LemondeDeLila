@@ -61,6 +61,7 @@ function makeState() {
       tiles: buildTiles(),
       positions: { 1: 0, 2: 1, 3: 2 },
       apples: { 1: 2, 2: 1, 3: 0 },
+      movementDirection: { 1: 1, 2: 1, 3: 1 },
       ious: { 1: {}, 2: { 1: 1 }, 3: {} },
       statuses: { skipTurn: { 1: 0, 2: 0, 3: 0 } },
       decks: {
@@ -344,6 +345,11 @@ describe('GaloponsActionService', () => {
     expect(out.pending).toBeNull();
     expect(meta(out).apples[1]).toBe(4);
     expect(out.turn?.currentPlayerId).toBe(2);
+    expect(
+      out.log.some(
+        (entry: any) => entry?.message === 'P1 pioche une carte Aventure.',
+      ),
+    ).toBe(true);
   });
 
   it('does not reset the turn to setupStarterId once pawn selection is complete', () => {
@@ -539,34 +545,104 @@ describe('GaloponsActionService', () => {
     expect((meta(out) as any).keepTurn).toBe(true);
   });
 
-  it('finishes the final round after removing the current player from pendingIds', () => {
-    const { service } = makeRuntime([1]);
-    const pawns = [
-      { id: 'shetland', name: 'Le Poney Shetland', description: 'P1' },
-      { id: 'mustang', name: 'Le Mustang', description: 'P2' },
-      { id: 'percheron', name: 'Le Percheron', description: 'P3' },
-    ];
+  it("requires exact landing on the final tile and bounces back on overshoot", () => {
+    const { service } = makeRuntime([2]);
     const state = {
       ...makeState(),
-      players: [
-        { id: 1, username: 'P1', pawn: 'shetland', pawnLabel: 'Le Poney Shetland' },
-        { id: 2, username: 'P2', pawn: 'mustang', pawnLabel: 'Le Mustang' },
-        { id: 3, username: 'P3', pawn: 'percheron', pawnLabel: 'Le Percheron' },
-      ],
-      turn: { currentPlayerId: 3, direction: 1 },
+      turn: { currentPlayerId: 1, direction: 1 },
       metadata: {
         ...meta(makeState()),
-        pawns,
-        pawnByPlayerId: { 1: 'shetland', 2: 'mustang', 3: 'percheron' },
-        setupStarterId: 3,
-        positions: { 1: 39, 2: 20, 3: 10 },
-        apples: { 1: 1, 2: 0, 3: 0 },
-        finish: {
-          triggered: true,
-          starterId: 1,
-          pendingIds: [3],
-          bonusGiven: true,
-        },
+        tiles: buildTiles().slice(0, 5),
+        positions: { 1: 3, 2: 1, 3: 2 },
+        apples: { 1: 1, 2: 3, 3: 0 },
+      },
+    };
+
+    const out = service.applyActions(state, [{ type: 'roll', payload: {} }]);
+
+    expect(meta(out).positions[1]).toBe(3);
+    expect(meta(out).winnerId).toBeNull();
+    expect(out.status).toBe('started');
+  });
+
+  it("sends the player back toward the start when the stable is reached without enough apples", () => {
+    const { service } = makeRuntime([1, 2]);
+    const state = {
+      ...makeState(),
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: {
+        ...meta(makeState()),
+        positions: { 1: 3, 2: 1, 3: 2 },
+        apples: { 1: 1, 2: 3, 3: 0 },
+        movementDirection: { 1: 1, 2: 1, 3: 1 },
+      },
+    };
+
+    const afterFinish = service.applyActions(state, [
+      { type: 'roll', payload: {} },
+    ]);
+
+    expect(meta(afterFinish).positions[1]).toBe(4);
+    expect(meta(afterFinish).apples[1]).toBe(2);
+    expect(meta(afterFinish).movementDirection?.[1]).toBe(-1);
+    expect(afterFinish.status).toBe('started');
+
+    const backState = {
+      ...afterFinish,
+      pending: null,
+      turn: { currentPlayerId: 1, direction: 1 },
+    };
+    const afterBackRoll = service.applyActions(backState, [
+      { type: 'roll', payload: {} },
+    ]);
+
+    expect(meta(afterBackRoll).positions[1]).toBe(2);
+    expect(meta(afterBackRoll).movementDirection?.[1]).toBe(-1);
+  });
+
+  it('switches back to forward movement once the player returns to the start', () => {
+    const { service } = makeRuntime([1, 2]);
+    const state = {
+      ...makeState(),
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: {
+        ...meta(makeState()),
+        positions: { 1: 1, 2: 2, 3: 3 },
+        apples: { 1: 2, 2: 0, 3: 0 },
+        movementDirection: { 1: -1, 2: 1, 3: 1 },
+      },
+    };
+
+    const backToStart = service.applyActions(state, [
+      { type: 'roll', payload: {} },
+    ]);
+
+    expect(meta(backToStart).positions[1]).toBe(0);
+    expect(meta(backToStart).movementDirection?.[1]).toBe(1);
+
+    const nextTurnFromStart = service.applyActions(
+      {
+        ...backToStart,
+        pending: null,
+        turn: { currentPlayerId: 1, direction: 1 },
+      },
+      [{ type: 'roll', payload: {} }],
+    );
+
+    expect(meta(nextTurnFromStart).positions[1]).toBe(2);
+    expect(meta(nextTurnFromStart).movementDirection?.[1]).toBe(1);
+  });
+
+  it("declares victory only for the player who reaches the stable with enough apples", () => {
+    const { service } = makeRuntime([1]);
+    const state = {
+      ...makeState(),
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: {
+        ...meta(makeState()),
+        positions: { 1: 3, 2: 2, 3: 1 },
+        apples: { 1: 2, 2: 5, 3: 0 },
+        movementDirection: { 1: 1, 2: 1, 3: 1 },
       },
     };
 
@@ -574,40 +650,7 @@ describe('GaloponsActionService', () => {
 
     expect(out.status).toBe('finished');
     expect(meta(out).winnerId).toBe(1);
-    expect(meta(out).finish?.pendingIds).toEqual([]);
-  });
-
-  it('ignores replay effects once the final round has started', () => {
-    const { service } = makeRuntime([2]);
-    const state = {
-      ...makeState(),
-      turn: { currentPlayerId: 1, direction: 1 },
-      metadata: {
-        ...meta(makeState()),
-        positions: { 1: 2, 2: 1, 3: 0 },
-        keepTurn: true,
-        finish: {
-          triggered: false,
-          starterId: null,
-          pendingIds: [],
-          bonusGiven: false,
-        },
-      },
-    };
-
-    const out = service.applyActions(state, [{ type: 'roll', payload: {} }]);
-
-    expect(out.turn?.currentPlayerId).toBe(2);
-    expect(meta(out).finish).toEqual({
-      triggered: true,
-      starterId: 1,
-      pendingIds: [2, 3],
-      bonusGiven: true,
-    });
-    expect((meta(out) as any).keepTurn).toBeUndefined();
-    expect(
-      out.log.some((entry: any) => entry?.message === 'P1 rejoue.'),
-    ).toBe(false);
+    expect(meta(out).apples[1]).toBe(3);
   });
 
   it('covers adventure card text branches', () => {
@@ -646,10 +689,57 @@ describe('GaloponsActionService', () => {
 
     const finished = (service as any).finishGame({
       ...state,
-      metadata: { ...meta(state), apples: { 1: 1, 2: 4, 3: 2 } },
+      metadata: { ...meta(state), apples: { 1: 1, 2: 4, 3: 2 }, winnerId: 1 },
     });
     expect(finished.status).toBe('finished');
-    expect(meta(finished).winnerId).toBe(2);
+    expect(meta(finished).winnerId).toBe(1);
+  });
+
+  it('does not add redundant generic board effect logs on card, skip and finish tiles', () => {
+    const { service } = makeRuntime();
+    const state = makeState();
+
+    const onCard = (service as any).applyLanding(
+      {
+        ...state,
+        log: [],
+        metadata: { ...meta(state), positions: { ...meta(state).positions, 1: 1 } },
+      },
+      1,
+    );
+    const onSkip = (service as any).applyLanding(
+      {
+        ...state,
+        log: [],
+        metadata: { ...meta(state), positions: { ...meta(state).positions, 1: 3 } },
+      },
+      1,
+    );
+    const onFinish = (service as any).applyLanding(
+      {
+        ...state,
+        log: [],
+        metadata: { ...meta(state), positions: { ...meta(state).positions, 1: 4 } },
+      },
+      1,
+    );
+
+    const cardMessages = (onCard.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+    const skipMessages = (onSkip.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+    const finishMessages = (onFinish.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+
+    expect(cardMessages).not.toContain('Piochez une carte Aventure.');
+    expect(skipMessages).not.toContain('Passez des tours.');
+    expect(skipMessages.some((message) => /passe 1 tour\(s\)\./i.test(message))).toBe(
+      false,
+    );
+    expect(finishMessages).not.toContain('Écurie finale.');
   });
 
   it('only lets the bot act when it is the current player or the pending owner', () => {

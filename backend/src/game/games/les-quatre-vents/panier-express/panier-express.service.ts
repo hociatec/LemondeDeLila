@@ -2165,14 +2165,13 @@ export class PanierExpressService extends AbstractGameService {
         const me = this.getPlayers(next).find((p) => p.id === playerId);
         const list = this.utils.toStringArray(me?.shoppingList ?? []);
         const basket = this.utils.toStringArray(me?.basket ?? []);
-        const owned = new Set(basket);
-        const uniques = new Set(list.filter((item) => owned.has(item)));
-        const requiredItems = 1;
-        const requirementLabel =
-          requiredItems > 1
-            ? `${requiredItems} ingrédients requis`
-            : '1 ingrédient requis';
-        if (list.length === 0 || uniques.size < requiredItems) {
+        const inventory = this.utils.toStringArray(me?.inventory ?? []);
+        const requiredItems = ['salade', 'tomate', 'oignon'];
+        const requirementLabel = 'salade, tomate et oignon requis';
+        if (
+          list.length === 0 ||
+          !requiredItems.every((item) => inventory.includes(item))
+        ) {
           next = this.core.appendLog(
             next,
             `[Panier Express] ${eventLabel} : condition non remplie (${requirementLabel}).`,
@@ -2194,25 +2193,38 @@ export class PanierExpressService extends AbstractGameService {
           });
           break;
         }
-        next = {
-          ...next,
-          players: this.getPlayers(next).map((p) => {
-            if (p.id !== playerId) return p;
-            const nextBasket = this.utils.toStringArray(p.basket);
-            return { ...p, basket: [...nextBasket, card] };
-          }),
-        };
-        const metaNow = this.getMetadata(next);
-        next = {
-          ...next,
-          metadata: {
-            ...metaNow,
-            lastObtainedCourse: {
-              ...(metaNow.lastObtainedCourse ?? {}),
-              [playerId]: card,
-            },
-          },
-        };
+        if (basket.includes(card) || inventory.includes(card)) {
+          addToDiscard(card);
+          next = this.turnStatus.setStatus(next, playerId, 'keepTurn', 1);
+          next = this.core.appendLog(
+            next,
+            `[Panier Express] ${eventLabel} : "${this.utils.formatCourseLabel(card)}" est déjà présent, carte défaussée puis rejouez immédiatement.`,
+          );
+          next = this.appendActionLog(next, playerId, 'event', {
+            event,
+            effect: 'discard_keep_turn',
+            card,
+          });
+          break;
+        }
+
+        addOneCourseToPlayer(playerId, card);
+        const playerNow = this.getPlayers(next).find((p) => p.id === playerId);
+        const kept =
+          this.utils.toStringArray(playerNow?.basket).includes(card) ||
+          this.utils.toStringArray(playerNow?.inventory).includes(card);
+        if (!kept) {
+          next = this.core.appendLog(
+            next,
+            `[Panier Express] ${eventLabel} : "${this.utils.formatCourseLabel(card)}" est défaussé.`,
+          );
+          next = this.appendActionLog(next, playerId, 'event', {
+            event,
+            effect: 'discard',
+            card,
+          });
+          break;
+        }
         next = this.core.appendLog(
           next,
           `[Panier Express] ${eventLabel} : reçoit "${this.utils.formatCourseLabel(card)}".`,
