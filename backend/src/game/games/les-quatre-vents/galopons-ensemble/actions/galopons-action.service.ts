@@ -66,8 +66,11 @@ export class GaloponsActionService {
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
+    const seededState = this.needsPawnSelection(state)
+      ? this.ensurePawnSelection(state)
+      : state;
     const next = applyActionsSequentially(
-      this.ensurePawnSelection(state),
+      seededState,
       actions,
       (next, action) => {
         const type = normalizeActionType(action);
@@ -97,6 +100,31 @@ export class GaloponsActionService {
       },
     );
     return next;
+  }
+
+  private needsPawnSelection(state: GameStateEntity): boolean {
+    const pendingType = toText(asRecord(state.pending).type);
+    if (pendingType === 'choose_pawn') {
+      return true;
+    }
+
+    const players = Array.isArray(state.players) ? state.players : [];
+    if (!players.length) {
+      return false;
+    }
+
+    const meta = this.getMeta(state);
+    return players.some((player) => {
+      const playerId = Number(player?.id);
+      if (!Number.isFinite(playerId)) {
+        return false;
+      }
+
+      const row = asRecord(player);
+      const assignedPawn =
+        toText(meta.pawnByPlayerId?.[playerId]) || toText(row.pawn);
+      return assignedPawn.length === 0;
+    });
   }
 
   private handleChoosePawn(

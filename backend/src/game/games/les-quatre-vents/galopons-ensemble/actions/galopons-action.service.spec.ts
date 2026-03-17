@@ -346,6 +346,55 @@ describe('GaloponsActionService', () => {
     expect(out.turn?.currentPlayerId).toBe(2);
   });
 
+  it('does not reset the turn to setupStarterId once pawn selection is complete', () => {
+    const { service } = makeRuntime([2]);
+    const state = {
+      ...makeState(),
+      players: [
+        {
+          id: 2,
+          username: 'Azrael',
+          isBot: true,
+          pawn: 'shetland',
+          pawnLabel: 'Le Poney Shetland',
+        },
+        {
+          id: 1,
+          username: 'hacene',
+          isBot: false,
+          pawn: 'mustang',
+          pawnLabel: 'Le Mustang',
+        },
+      ],
+      turnIndex: 1,
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: {
+        ...meta(makeState()),
+        setupStarterId: 2,
+        pawnByPlayerId: { 1: 'mustang', 2: 'shetland' },
+        positions: { 1: 0, 2: 0 },
+        apples: { 1: 0, 2: 0 },
+        ious: { 1: {}, 2: {} },
+        statuses: { skipTurn: {} },
+      },
+    };
+
+    const out = service.applyActions(state, [{ type: 'roll', payload: {} }]);
+
+    expect(
+      out.log.some((entry: any) =>
+        String(entry?.message ?? '').includes('hacene lance le dé'),
+      ),
+    ).toBe(true);
+    expect(
+      out.log.some((entry: any) =>
+        String(entry?.message ?? '').includes('Azrael lance le dé'),
+      ),
+    ).toBe(false);
+    expect(meta(out).positions[1]).toBe(2);
+    expect(out.turn?.currentPlayerId).toBe(2);
+  });
+
   it('keeps the first pending draw and preserves the collision outcome during pair advance', () => {
     const { service } = makeRuntime();
     const state = {
