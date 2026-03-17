@@ -1546,6 +1546,87 @@ describe('GameEngineService', () => {
     expect(next.turn?.currentPlayerId).toBe(-11);
   });
 
+  it('keeps the actionable bot seat when a started room payload temporarily omits bots', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const state: any = {
+      status: 'started',
+      turnIndex: 1,
+      players: [
+        { id: 1, username: 'hacene', isBot: false },
+        { id: -7, username: 'Rudolf', isBot: true },
+      ],
+      turn: { currentPlayerId: -7, direction: 1 },
+      metadata: {},
+      log: [{ message: "C'est au tour de Rudolf de débuter." }],
+      extras: {},
+    };
+    const payload: any = {
+      room: {
+        players: [{ id: 1, username: 'hacene' }],
+        bots: [],
+      },
+    };
+
+    const next = (engine as any).syncRosterForStartedRoom(state, payload);
+
+    expect((next.players ?? []).find((p: any) => p?.id === -7)).toBeDefined();
+    expect(next.turn?.currentPlayerId).toBe(-7);
+  });
+
+  it('keeps a pending bot seat when a started room payload is temporarily partial', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const state: any = {
+      status: 'started',
+      turnIndex: 0,
+      players: [
+        { id: 1, username: 'hacene', isBot: false },
+        { id: -7, username: 'Rudolf', isBot: true },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: { type: 'choose_pawn', playerId: -7, blocking: true },
+      metadata: {},
+      log: [],
+      extras: {},
+    };
+    const payload: any = {
+      room: {
+        players: [{ id: 1, username: 'hacene' }],
+        bots: [],
+      },
+    };
+
+    const next = (engine as any).syncRosterForStartedRoom(state, payload);
+
+    expect((next.players ?? []).find((p: any) => p?.id === -7)).toBeDefined();
+    expect(next.pending?.playerId).toBe(-7);
+  });
+
   it('does not convert a started human seat into a bot when room payload is temporarily partial', () => {
     const engine = new GameEngineService(
       {} as any,

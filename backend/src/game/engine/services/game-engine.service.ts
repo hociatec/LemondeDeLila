@@ -2062,6 +2062,30 @@ export class GameEngineService {
       });
 
       // Remove room bots that no longer exist (id < 0 and not in allowedBotIds).
+      const preserveBotIds = new Set<number>();
+      const currentTurnPlayerId = state.turn?.currentPlayerId ?? null;
+      if (
+        typeof currentTurnPlayerId === 'number' &&
+        currentTurnPlayerId < 0 &&
+        mappedPlayers.some(
+          (player) =>
+            player?.id === currentTurnPlayerId && player?.isBot === true,
+        )
+      ) {
+        preserveBotIds.add(currentTurnPlayerId);
+      }
+      const pendingPlayerId =
+        typeof state.pending?.playerId === 'number' ? state.pending.playerId : null;
+      if (
+        typeof pendingPlayerId === 'number' &&
+        pendingPlayerId < 0 &&
+        mappedPlayers.some(
+          (player) => player?.id === pendingPlayerId && player?.isBot === true,
+        )
+      ) {
+        preserveBotIds.add(pendingPlayerId);
+      }
+
       const filteredPlayers = mappedPlayers.filter((p) => {
         const id = p.id;
         if (!Number.isFinite(id) || id === 0) return true;
@@ -2070,7 +2094,11 @@ export class GameEngineService {
         // Keep/remove them by id only (name may evolve/canonicalize across layers).
         if (id < 0) {
           if (!isBot) return true;
-          return allowedBotIds.has(id);
+          if (allowedBotIds.has(id)) return true;
+          // Some room payload refreshes are temporarily partial while a bot is
+          // already the actionable actor. Dropping that seat would silently
+          // hand the turn back to a human on the next engine read.
+          return preserveBotIds.has(id);
         }
         if (!isBot) return true;
         const name = this.normalizeUsernameForLog(p.username);
@@ -2110,11 +2138,11 @@ export class GameEngineService {
         }
       }
 
-      const pendingPlayerId = state.pending?.playerId ?? null;
+      const nextPendingPlayerId = state.pending?.playerId ?? null;
       if (
-        typeof pendingPlayerId === 'number' &&
-        pendingPlayerId !== 0 &&
-        !nextPlayers.some((p) => p?.id === pendingPlayerId)
+        typeof nextPendingPlayerId === 'number' &&
+        nextPendingPlayerId !== 0 &&
+        !nextPlayers.some((p) => p?.id === nextPendingPlayerId)
       ) {
         changed = true;
         state = {
