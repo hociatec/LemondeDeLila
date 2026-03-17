@@ -528,6 +528,39 @@ describe('GaloponsActionService', () => {
     expect(meta(out).finish?.pendingIds).toEqual([]);
   });
 
+  it('ignores replay effects once the final round has started', () => {
+    const { service } = makeRuntime([2]);
+    const state = {
+      ...makeState(),
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: {
+        ...meta(makeState()),
+        positions: { 1: 2, 2: 1, 3: 0 },
+        keepTurn: true,
+        finish: {
+          triggered: false,
+          starterId: null,
+          pendingIds: [],
+          bonusGiven: false,
+        },
+      },
+    };
+
+    const out = service.applyActions(state, [{ type: 'roll', payload: {} }]);
+
+    expect(out.turn?.currentPlayerId).toBe(2);
+    expect(meta(out).finish).toEqual({
+      triggered: true,
+      starterId: 1,
+      pendingIds: [2, 3],
+      bonusGiven: true,
+    });
+    expect((meta(out) as any).keepTurn).toBeUndefined();
+    expect(
+      out.log.some((entry: any) => entry?.message === 'P1 rejoue.'),
+    ).toBe(false);
+  });
+
   it('covers adventure card text branches', () => {
     const { service } = makeRuntime();
     const texts = [

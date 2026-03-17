@@ -1147,8 +1147,20 @@ export class GaloponsActionService {
     meta = this.getMeta(next);
     if (meta.winnerId != null) return { ...next, status: 'finished' };
     if (next.pending) return next;
-    if (meta.finish?.triggered && meta.finish.pendingIds.length === 0) {
-      return this.finishGame(next);
+    if (meta.finish?.triggered) {
+      // The final round gives each remaining player exactly one turn.
+      // Ignore any leftover replay effect once the finish phase has started.
+      if (asRecord(meta).keepTurn === true) {
+        meta = { ...meta };
+        delete asRecord(meta).keepTurn;
+        next = { ...next, metadata: meta };
+      }
+      if (meta.finish.pendingIds.length === 0) {
+        return this.finishGame(next);
+      }
+      return this.turns.advanceTurn(
+        this.setCurrentTurnPlayer(next, advanceFromPlayerId),
+      );
     }
 
     const keepTurn = replayAfter || asRecord(meta).keepTurn === true;
@@ -1157,7 +1169,7 @@ export class GaloponsActionService {
       delete asRecord(meta).keepTurn;
       next = {
         ...this.setCurrentTurnPlayer(next, currentId),
-        metadata: { ...(next.metadata ?? {}), ...meta },
+        metadata: meta,
       };
       return this.core.appendLog(
         next,
