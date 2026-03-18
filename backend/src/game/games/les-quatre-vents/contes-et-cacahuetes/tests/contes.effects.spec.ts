@@ -8,6 +8,7 @@ import type { TurnFlowService } from '../../../../modules/turn/services/turn-flo
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { ContesCacahuetesSetupService } from '../setup/contes-et-cacahuetes-setup.service';
 import { ContesActionService } from '../actions/contes-action.service';
+import type { ContesCard } from '../model/contes-et-cacahuetes-state.entity';
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value != null && typeof value === 'object'
@@ -555,8 +556,54 @@ describe('Contes effects', () => {
       ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
       : '';
     expect(conteLog).toContain('Lilas arrive sur Case Conte - Japon');
-    expect(conteLog).toContain('gar');
+    expect(conteLog).not.toContain('gar');
     expect(conteLog).not.toContain('Piochez une carte Conte.');
+  });
+
+  it('records conte narration only for the drawing player', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    const metadata = asRecord(state.metadata);
+    const decks = asRecord(metadata.decks);
+    const conteCard: ContesCard = {
+      id: 999,
+      type: 'conte',
+      title: 'Conte test',
+      text: 'Le conte secret.',
+    };
+
+    state = {
+      ...state,
+      metadata: {
+        ...(state.metadata ?? {}),
+        decks: {
+          ...decks,
+          contes: [conteCard],
+          conte: [conteCard],
+          discardContes: [],
+        },
+      },
+    };
+
+    state = (actionsService as any).resolveQueuedDraw(
+      { ...state, pending: null },
+      1,
+      { cardType: 'conte', depth: 0 },
+    );
+
+    const logText = Array.isArray(state.log)
+      ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
+      : '';
+    expect(logText).toContain('Lilas pioche une carte Conte: Conte test.');
+    expect(logText).not.toContain('Le conte secret.');
+
+    const updatedMeta = asRecord(state.metadata);
+    const lastConte = asRecord(updatedMeta.lastConte);
+    expect(toText(lastConte.title)).toBe('Conte test');
+    expect(toText(lastConte.text)).toBe('Le conte secret.');
   });
 
   it('does not announce unavailable cards when a draw pile is empty', async () => {

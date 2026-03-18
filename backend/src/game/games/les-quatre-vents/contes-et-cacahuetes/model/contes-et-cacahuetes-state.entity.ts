@@ -21,6 +21,13 @@ export type ContesCard = {
   text: string;
 };
 
+export type ContesNarration = {
+  playerId: number;
+  title: string;
+  text: string;
+  timestamp: string;
+};
+
 export type ContesCacahuetesMetadata = {
   pawns?: Array<{ id: string; label: string; description?: string }>;
   tiles: ContesCacahuetesTile[];
@@ -52,6 +59,7 @@ export type ContesCacahuetesMetadata = {
     keyOfGold: Record<number, boolean>;
   };
   winnerId: number | null;
+  lastConte?: ContesNarration | null;
 };
 
 export type ContesPending =

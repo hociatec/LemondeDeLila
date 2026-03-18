@@ -1,12 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import type {
+  GameLogEntry,
+  GameStateEntity,
+} from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
 
 import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import * as Rulebook from '../rulebook/rulebook';
 import { CONTES_CACAHUETES_GAME } from '../definitions/game.definition';
-import type { ContesCacahuetesMetadata } from '../model/contes-et-cacahuetes-state.entity';
+import type {
+  ContesCacahuetesMetadata,
+  ContesNarration,
+} from '../model/contes-et-cacahuetes-state.entity';
 
 @Injectable()
 export class ContesPresenterService {
@@ -47,8 +53,15 @@ export class ContesPresenterService {
       },
     };
 
+    const logWithConte = this.insertConteNarration(
+      state.log,
+      meta.lastConte,
+      userId,
+    );
+
     return {
       ...state,
+      log: logWithConte,
       catalog: {
         phases: CONTES_CACAHUETES_GAME.phaseOrder.map((p) => p.id),
         victory: null,
@@ -61,6 +74,30 @@ export class ContesPresenterService {
         meta.positions,
       ),
     } as GameStateWithActions;
+  }
+
+  private insertConteNarration(
+    log: GameLogEntry[] | undefined,
+    narration: ContesNarration | null | undefined,
+    viewerId: number,
+  ): GameLogEntry[] {
+    const entries = Array.isArray(log) ? [...log] : [];
+    if (!narration || narration.playerId !== viewerId) {
+      return entries;
+    }
+    const text = String(narration.text ?? '').trim();
+    if (!text) {
+      return entries;
+    }
+    const existing = entries.some((entry) => entry?.message === text);
+    if (existing) {
+      return entries;
+    }
+    entries.push({
+      message: text,
+      timestamp: narration.timestamp ?? new Date().toISOString(),
+    });
+    return entries;
   }
 }
 

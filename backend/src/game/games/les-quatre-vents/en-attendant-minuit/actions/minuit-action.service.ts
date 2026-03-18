@@ -318,6 +318,22 @@ export class MinuitActionService {
     const ctx = meta.pendingContext ?? null;
     if (!ctx || ctx.actorId !== currentId) return { ...state, pending: null };
 
+    if (ctx.kind === 'swap' && targetPlayerId === -1) {
+      let next: GameStateEntity = {
+        ...state,
+        pending: null,
+        metadata: { ...(state.metadata ?? {}), ...meta, pendingContext: null },
+      };
+      next = this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(
+          next,
+          currentId,
+          MINUIT_PLAYER_NAME_OPTIONS,
+        )} refuse l’échange.`,
+      );
+      return this.advanceTurnOrKeep(next, currentId);
+    }
     const actorPos = meta.positions?.[currentId] ?? 0;
     const targetPos = meta.positions?.[targetPlayerId] ?? 0;
 
@@ -715,6 +731,7 @@ export class MinuitActionService {
 
     if (/échangez votre position avec un autre joueur/i.test(text)) {
       const targets = this.otherPlayers(next, playerId);
+      targets.push({ id: -1, username: 'Refuser l’échange' });
       const pending: PendingState = {
         type: 'choose_target',
         label: 'Choisissez un joueur dans la liste, puis Entrée.',

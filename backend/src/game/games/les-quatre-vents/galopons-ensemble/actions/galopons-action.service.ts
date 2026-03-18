@@ -850,7 +850,14 @@ export class GaloponsActionService {
       const a = meta.apples?.[playerId] ?? 0;
       if (a > 0) {
         meta = { ...meta, apples: { ...meta.apples, [playerId]: a - 1 } };
-        return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+        const updated = {
+          ...next,
+          metadata: { ...(next.metadata ?? {}), ...meta },
+        };
+        return this.core.appendLog(
+          updated,
+          `${resolvePlayerNameFromState(updated, playerId)} défausse une pomme.`,
+        );
       }
       return this.core.appendLog(
         next,

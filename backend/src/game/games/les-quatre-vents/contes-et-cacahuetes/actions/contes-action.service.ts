@@ -17,6 +17,7 @@ import type {
   ContesCardType,
   ContesCacahuetesMetadata,
   ContesCacahuetesTile,
+  ContesNarration,
   ContesPending,
 } from '../model/contes-et-cacahuetes-state.entity';
 import {
@@ -282,6 +283,12 @@ export class ContesActionService {
       return this.moveBy(next, targetPlayerId, 2, 0);
     }
 
+    if (ctx === 'swap_positions' && targetPlayerId === -1) {
+      return this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, playerId)} refuse l’échange.`,
+      );
+    }
     if (ctx === 'swap_positions') {
       return this.swapPositions(next, playerId, targetPlayerId);
     }
@@ -859,10 +866,58 @@ export class ContesActionService {
           : card.type === 'surprise'
             ? 'Surprise'
             : 'Conte';
-    return this.core.appendLog(
+    const baseMessage = `${resolvePlayerNameFromState(
       state,
-      `${resolvePlayerNameFromState(state, playerId)} pioche une carte ${typeLabel} : ${card.title}. ${card.text}`,
+      playerId,
+    )} pioche une carte ${typeLabel} : ${card.title}.`;
+
+    if (card.type === 'conte') {
+      const next = this.core.appendLog(state, baseMessage);
+      return this.recordConteNarration(next, playerId, card);
+    }
+
+    return this.core.appendLog(state, `${baseMessage} ${card.text}`);
+  }
+
+  private recordConteNarration(
+    state: GameStateEntity,
+    playerId: number,
+    card: ContesCard,
+  ): GameStateEntity {
+    const meta = this.getMeta(state);
+    const narration: ContesNarration = {
+      playerId,
+      title: card.title,
+      text: card.text,
+      timestamp: new Date().toISOString(),
+    };
+    return {
+      ...state,
+      metadata: {
+        ...meta,
+        lastConte: narration,
+      },
+    };
+  }
+
+  private describePlayerPawn(
+    state: GameStateEntity,
+    playerId: number,
+  ): string {
+    const players = Array.isArray(state.players) ? state.players : [];
+    const player = players.find((p) => Number(p?.id) === playerId);
+    if (!player) return '';
+    const pawnId = toText(player.pawn).trim();
+    if (!pawnId) return '';
+    const meta = this.getMeta(state);
+    const pawns = Array.isArray(meta.pawns) ? meta.pawns : [];
+    const match = pawns.find(
+      (pawn) => toText((pawn as any)?.id).trim() === pawnId,
     );
+    if (match && toText((match as any).label).trim()) {
+      return toText((match as any).label).trim();
+    }
+    return pawnId;
   }
 
   private appendTileArrivalLog(
@@ -878,11 +933,14 @@ export class ContesActionService {
         ? labelRaw
         : `Case ${nextPos + 1} - ${labelRaw}`
       : `Case ${nextPos + 1}`;
-    let next = this.core.appendLog(
-      state,
-      `${resolvePlayerNameFromState(state, playerId)} arrive sur ${label}.`,
-    );
-    if (descriptionRaw) {
+    const pawnLabel = this.describePlayerPawn(state, playerId);
+    const arrivalMessage = pawnLabel
+      ? `${resolvePlayerNameFromState(state, playerId)} déplace ${pawnLabel} jusqu'à ${label}.`
+      : `${resolvePlayerNameFromState(state, playerId)} arrive sur ${label}.`;
+    let next = this.core.appendLog(state, arrivalMessage);
+    const tileType = String(tile?.type ?? '').toLowerCase();
+    const isConteTile = tileType === 'conte';
+    if (descriptionRaw && !isConteTile) {
       next = this.core.appendLog(next, descriptionRaw);
     }
     return next;
@@ -1303,6 +1361,12 @@ export class ContesActionService {
         targetPlayerId: p.id,
         targetUsername: p.username ?? `Joueur ${p.id}`,
       }));
+    if (context === 'swap_positions') {
+      targets.push({
+        targetPlayerId: -1,
+        targetUsername: 'Refuser l’échange',
+      });
+    }
     if (!targets.length) {
       if (
         context === 'song_take_bonus' ||

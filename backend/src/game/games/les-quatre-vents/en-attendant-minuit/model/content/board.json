@@ -28,9 +28,9 @@
     {
       "n": 4,
       "title": "Case Avance - Traîneau express",
-      "description": "Vous montez à bord d'un traîneau lancé à toute vitesse. Avancez de 2 cases.",
+      "description": "Vous montez à bord d'un traîneau lancé à toute vitesse. Avancez de 3 cases.",
       "type": "move",
-      "delta": 2,
+      "delta": 3,
       "skipTurns": 0
     },
     {
