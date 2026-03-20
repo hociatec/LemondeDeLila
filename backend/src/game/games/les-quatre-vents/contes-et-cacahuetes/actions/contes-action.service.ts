@@ -1405,7 +1405,8 @@ export class ContesActionService {
   ): { state: GameStateEntity; card: ContesCard | null } {
     const meta = this.getMeta(state);
     const decks = meta.decks;
-    const pileKey = type;
+    const pileKey: keyof ContesCacahuetesMetadata['decks'] =
+      type === 'conte' ? 'contes' : type;
     const discardKey: keyof ContesCacahuetesMetadata['decks'] =
       type === 'bonus'
         ? 'discardBonus'

@@ -608,6 +608,51 @@ describe('Contes effects', () => {
     expect(toText(lastConte.text)).toBe('Le conte secret.');
   });
 
+  it('draws from the real "contes" deck on conte spaces and stores the narration', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    const metadata = asRecord(state.metadata);
+    const decks = asRecord(metadata.decks);
+    const conteCard: ContesCard = {
+      id: 2001,
+      type: 'conte',
+      title: 'Conte Sénégal',
+      text: 'Le lièvre déjoue la hyène.',
+    };
+
+    state = {
+      ...state,
+      metadata: {
+        ...(state.metadata ?? {}),
+        positions: { 1: 1, 2: 0, 3: 0 },
+        decks: {
+          ...decks,
+          contes: [conteCard],
+          discardContes: [],
+        },
+      },
+      log: [],
+    } as any;
+
+    state = (actionsService as any).moveBy(state, 1, 1, 0);
+    expect(toText(asRecord(state.pending).type)).toBe('draw');
+    expect(toText(asRecord(asRecord(state.pending).data).cardType)).toBe('conte');
+
+    state = actionsService.applyActions(state, [{ type: 'draw', payload: {} }]);
+
+    const logText = Array.isArray(state.log)
+      ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
+      : '';
+    const lastConte = asRecord(asRecord(state.metadata).lastConte);
+
+    expect(logText).toContain('Lilas pioche une carte Conte: Conte Sénégal.');
+    expect(toText(lastConte.title)).toBe('Conte Sénégal');
+    expect(toText(lastConte.text)).toBe('Le lièvre déjoue la hyène.');
+  });
+
   it('uses simplified pawn names and the new arrival phrasing during movement', async () => {
     const moduleRef = await createActionsModule();
     const setup = moduleRef.get(ContesCacahuetesSetupService);
