@@ -831,6 +831,119 @@ describe('GameEngineService', () => {
     expect(stateRef.metadata?.turnFlow?.skipped ?? []).toEqual([]);
   });
 
+  it('replaces a stale bot timer after a human draw resolves into a bot turn', async () => {
+    let scheduled = true;
+    let stateRef: any = null;
+
+    const currentState = {
+      status: 'started',
+      phase: 'turn',
+      turnIndex: 0,
+      players: [
+        { id: 1, username: 'hacene', isBot: false },
+        { id: 2, username: 'Noodle', isBot: true },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: { type: 'draw', playerId: 1, blocking: true, data: {} },
+      metadata: { gameType: 'contes-et-cacahuetes' },
+      log: [],
+      botThinking: true,
+      botThinkingSince: Date.now(),
+    };
+
+    const nextState = {
+      ...currentState,
+      turnIndex: 1,
+      turn: { currentPlayerId: 2, direction: 1 },
+      pending: null,
+      botThinking: false,
+      botThinkingSince: null,
+    };
+
+    const store = {
+      buildKey: jest.fn(() => '1:contes-et-cacahuetes'),
+      delete: jest.fn().mockResolvedValue(undefined),
+      get: jest.fn(async () => stateRef),
+      set: jest.fn(async (_roomId: number, _gameType: string, next: any) => {
+        stateRef = next;
+      }),
+      markBotThinking: jest.fn((state: any, isBot: boolean) => ({
+        ...state,
+        botThinking: isBot,
+      })),
+      syncRoomStatus: jest.fn((state: any) => state),
+    };
+
+    const handler = {
+      getAvailableActions: jest.fn((state: any, playerId: number) => {
+        if (state?.pending?.type === 'draw' && playerId === 1) {
+          return [{ type: 'draw', payload: {} }];
+        }
+        if (state?.turn?.currentPlayerId === 2 && playerId === 2) {
+          return [{ type: 'roll', payload: {} }];
+        }
+        return [];
+      }),
+      validateAction: jest.fn((_state: any, action: any) => action),
+      applyActions: jest.fn(() => nextState),
+    };
+
+    const botScheduler = {
+      clear: jest.fn(() => {
+        scheduled = false;
+      }),
+      has: jest.fn(() => scheduled),
+      schedule: jest.fn(() => {
+        scheduled = true;
+      }),
+    };
+
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      { getHandler: jest.fn(() => handler) } as any,
+      { compute: jest.fn(() => null) } as any,
+      {} as any,
+      botScheduler as any,
+      {
+        getBotTurnDelayMs: jest.fn(() => 0),
+        getBotStartDelayMs: jest.fn(() => 0),
+        getBotDrawDelayMs: jest.fn(() => 0),
+      } as any,
+      { attachGridRenderDescriptors: jest.fn((s: any) => s) } as any,
+      store as any,
+      {
+        info: jest.fn(),
+        debug: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        logPlayerAction: jest.fn(),
+        logValidationFailure: jest.fn(),
+      } as any,
+      { finalizeFinished: jest.fn() } as any,
+    );
+
+    stateRef = currentState;
+    (engine as any).getInternalState = jest.fn(async () => stateRef);
+
+    await engine.applyActions(
+      1,
+      'contes-et-cacahuetes',
+      [{ type: 'draw', payload: {} }],
+      1,
+      false,
+    );
+
+    expect(botScheduler.clear).toHaveBeenCalledWith('1:contes-et-cacahuetes');
+    expect(botScheduler.schedule).toHaveBeenCalledWith(
+      expect.objectContaining({
+        key: '1:contes-et-cacahuetes',
+        roomId: 1,
+        gameType: 'contes-et-cacahuetes',
+      }),
+    );
+  });
+
   it('silently ignores unavailable draw action (even with payload)', async () => {
     const engine = new GameEngineService(
       {} as any,
@@ -1137,6 +1250,9 @@ describe('GameEngineService', () => {
       metadata: { gameType: 'frousse-party', roomId: 1 },
     };
 
+    const botScheduler = { clear: jest.fn() };
+    const store = { buildKey: jest.fn(() => '1:frousse-party') };
+
     const engine = new GameEngineService(
       {} as any,
       {} as any,
@@ -1148,10 +1264,10 @@ describe('GameEngineService', () => {
       } as any,
       {} as any,
       {} as any,
+      botScheduler as any,
       {} as any,
       {} as any,
-      {} as any,
-      {} as any,
+      store as any,
       {} as any,
       {} as any,
     );
@@ -1188,6 +1304,9 @@ describe('GameEngineService', () => {
       metadata: { gameType: 'galopons-ensemble', roomId: 1 },
     };
 
+    const botScheduler = { clear: jest.fn() };
+    const store = { buildKey: jest.fn(() => '1:galopons-ensemble') };
+
     const engine = new GameEngineService(
       {} as any,
       {} as any,
@@ -1199,10 +1318,10 @@ describe('GameEngineService', () => {
       } as any,
       {} as any,
       {} as any,
+      botScheduler as any,
       {} as any,
       {} as any,
-      {} as any,
-      {} as any,
+      store as any,
       {} as any,
       {} as any,
     );

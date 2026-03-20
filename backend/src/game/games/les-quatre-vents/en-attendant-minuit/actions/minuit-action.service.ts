@@ -590,7 +590,7 @@ export class MinuitActionService {
     const visitedPositions = new Set<number>();
     for (let step = 0; step < MINUIT_MAX_LANDING_STEPS; step += 1) {
       let meta = this.getMeta(next);
-      const pos = meta.positions?.[playerId] ?? 0;
+      const pos = this.getPlayerPosition(meta, playerId);
       let tile = meta.tiles[pos] as MinuitTile | undefined;
       if (!tile) return next;
 
@@ -602,12 +602,12 @@ export class MinuitActionService {
         );
         next = this.move(next, playerId, -1);
         meta = this.getMeta(next);
-        const afterPos = meta.positions?.[playerId] ?? 0;
+        const afterPos = this.getPlayerPosition(meta, playerId);
         tile = meta.tiles[afterPos] as MinuitTile | undefined;
         if (!tile) return next;
       }
 
-      const afterPos = meta.positions?.[playerId] ?? 0;
+      const afterPos = this.getPlayerPosition(meta, playerId);
       if (visitedPositions.has(afterPos)) {
         return this.core.appendLog(
           next,
@@ -655,7 +655,7 @@ export class MinuitActionService {
         const beforePos = afterPos;
         next = this.move(next, playerId, delta);
         const movedMeta = this.getMeta(next);
-        const movedPos = movedMeta.positions?.[playerId] ?? beforePos;
+        const movedPos = this.getPlayerPosition(movedMeta, playerId);
         if (movedPos === beforePos) return next;
         continue;
       }
@@ -943,12 +943,21 @@ export class MinuitActionService {
     }
 
     if (/Lancez le dé et avancez du nombre obtenu/i.test(text)) {
-      const rng = this.random.rollDice(meta, 6);
-      meta = { ...meta, ...rng.meta };
+      meta = {
+        ...meta,
+        statuses: {
+          ...meta.statuses,
+          keepTurn: {
+            ...(meta.statuses.keepTurn ?? {}),
+            [playerId]: (meta.statuses.keepTurn?.[playerId] ?? 0) + 1,
+          },
+        },
+      };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      next = this.core.appendLog(next, `Bonus : dé = "${rng.roll}".`);
-      next = this.move(next, playerId, rng.roll);
-      return this.applyLanding(next, playerId);
+      return this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} doit lancer le dé pour appliquer ce bonus.`,
+      );
     }
 
     const delta = extractMoveDelta(text);
@@ -988,7 +997,7 @@ export class MinuitActionService {
     delta: number,
   ): GameStateEntity {
     const meta = this.getMeta(state);
-    const pos = meta.positions?.[playerId] ?? 0;
+    const pos = this.getPlayerPosition(meta, playerId);
     const nextPos = bounce(pos + delta, 55);
     return this.setPos(state, playerId, nextPos);
   }
@@ -1092,9 +1101,13 @@ export class MinuitActionService {
     for (const [id, p] of Object.entries(meta.positions ?? {})) {
       const pid = Number(id);
       if (!Number.isFinite(pid) || pid === me) continue;
-      if ((p ?? 0) === pos) return pid;
+      if (Number(p ?? 0) === pos) return pid;
     }
     return null;
+  }
+
+  private getPlayerPosition(meta: MinuitMetadata, playerId: number): number {
+    return clamp(Number(meta.positions?.[playerId] ?? 0), 0, 55);
   }
 
   private getMeta(state: GameStateEntity): MinuitMetadata {

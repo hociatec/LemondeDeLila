@@ -1051,9 +1051,10 @@ export class GameEngineService {
       await this.getInternalState(roomId, gameType),
     );
     // `getInternalState()` peut programmer un timer bot pour l'état courant.
-    // Quand on exécute une action bot immédiatement, ce timer devient obsolète et empêche
-    // la programmation du tour suivant (même clé). On le supprime donc ici.
-    if (allowBotTurn) {
+    // Toute action validée (humaine ou bot) rend ce timer obsolète: si on le garde,
+    // `scheduleBotTurn()` peut refuser de programmer le nouvel état parce que la clé
+    // existe encore, puis l'ancien timer se déclarera "stale" sans relancer le tour.
+    if (Array.isArray(actions) && actions.length > 0) {
       this.botScheduler.clear(this.buildKey(roomId, gameType));
     }
     if ((current.status || '').toLowerCase() === 'finished') {

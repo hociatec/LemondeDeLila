@@ -8,7 +8,9 @@ import type { TurnFlowService } from '../../../../modules/turn/services/turn-flo
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import { ContesCacahuetesSetupService } from '../setup/contes-et-cacahuetes-setup.service';
 import { ContesActionService } from '../actions/contes-action.service';
+import { ContesPresenterService } from '../presenter/contes-presenter.service';
 import type { ContesCard } from '../model/contes-et-cacahuetes-state.entity';
+import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value != null && typeof value === 'object'
@@ -604,6 +606,359 @@ describe('Contes effects', () => {
     const lastConte = asRecord(updatedMeta.lastConte);
     expect(toText(lastConte.title)).toBe('Conte test');
     expect(toText(lastConte.text)).toBe('Le conte secret.');
+  });
+
+  it('uses simplified pawn names and the new arrival phrasing during movement', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    state = {
+      ...state,
+      players: [
+        { id: 1, username: 'Lilas', isBot: false, pawn: 'Niko - Géorgie' },
+        { id: 2, username: 'Bucky', isBot: true, pawn: 'Freja - Suède' },
+        { id: 3, username: 'Otis', isBot: false, pawn: 'Lani - Îles Marshall' },
+      ] as any,
+      metadata: {
+        ...(state.metadata ?? {}),
+        positions: { 1: 0, 2: 0, 3: 0 },
+      },
+    };
+
+    state = (actionsService as any).moveBy(state, 1, 1, 0);
+    const logText = Array.isArray(state.log)
+      ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
+      : '';
+
+    expect(logText).toContain('Lilas déplace Niko sur une Case Bonus.');
+    expect(logText).not.toContain('Niko - Géorgie');
+    expect(logText).not.toContain("jusqu'à");
+  });
+
+  it('uses the "sur une Case ..." phrasing on surprise spaces', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    state = {
+      ...state,
+      players: [
+        { id: 1, username: 'Lilas', isBot: false, pawn: 'Niko - Géorgie' },
+        { id: 2, username: 'Bucky', isBot: true, pawn: 'Freja - Suède' },
+        { id: 3, username: 'Otis', isBot: false, pawn: 'Lani - Îles Marshall' },
+      ] as any,
+      metadata: {
+        ...(state.metadata ?? {}),
+        positions: { 1: 0, 2: 0, 3: 0 },
+      },
+      log: [],
+    };
+
+    state = (actionsService as any).moveBy(state, 1, 3, 0);
+    const messages = Array.isArray(state.log)
+      ? state.log.map((entry) => toText(asRecord(entry).message))
+      : [];
+
+    expect(
+      messages.some((message) => message.includes('Lilas déplace Niko sur une Case Surprise')),
+    ).toBe(true);
+    expect(messages.some((message) => message.includes("jusqu'à"))).toBe(false);
+  });
+
+  it('keeps only the pawn first name in movement logs', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    state = {
+      ...state,
+      players: [
+        { id: 1, username: 'Lilas', isBot: false, pawn: 'Niko - Géorgie' },
+        { id: 2, username: 'Bucky', isBot: true, pawn: 'Freja - Suède' },
+        { id: 3, username: 'Otis', isBot: false, pawn: 'Lani - Îles Marshall' },
+      ] as any,
+      metadata: {
+        ...(state.metadata ?? {}),
+        positions: { 1: 2, 2: 0, 3: 0 },
+      },
+      log: [],
+    };
+
+    state = (actionsService as any).moveBy(state, 1, 3, 0);
+    const logText = Array.isArray(state.log)
+      ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
+      : '';
+
+    expect(logText).toContain('Lilas déplace Niko');
+    expect(logText).not.toContain('Niko - Géorgie');
+  });
+
+  it('applies Baguette Malicieuse on the final square only', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    state = {
+      ...state,
+      players: [
+        { id: 1, username: 'Lilas', isBot: false, pawn: 'Niko - Géorgie' },
+        { id: 2, username: 'Bucky', isBot: true, pawn: 'Freja - Suède' },
+        { id: 3, username: 'Otis', isBot: false, pawn: 'Lani - Îles Marshall' },
+      ] as any,
+      metadata: {
+        ...(state.metadata ?? {}),
+        positions: { 1: 7, 2: 0, 3: 0 },
+      },
+      log: [],
+    };
+
+    state = (actionsService as any).applySurpriseEffectById(state, 1, 1, 0);
+    const logText = Array.isArray(state.log)
+      ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
+      : '';
+    const positions = asRecord(asRecord(state.metadata).positions);
+
+    expect(Number(positions['1'] ?? 0)).toBe(6);
+    expect(logText).toContain('Lilas déplace Niko sur une Case Conte -');
+    expect(logText.match(/Lilas déplace Niko sur une Case Conte -/g) ?? []).toHaveLength(1);
+  });
+
+  it('resumes the queued Coffre aux merveilles draw after Poussière de rire resolves', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    const metadata = asRecord(state.metadata);
+    const decks = asRecord(metadata.decks);
+
+    state = {
+      ...state,
+      turn: { currentPlayerId: 2, direction: 1 },
+      turnIndex: 1,
+      players: [
+        { id: 1, username: 'Lilas', isBot: false, pawn: 'Niko - Géorgie' },
+        { id: 2, username: 'Noodle', isBot: true, pawn: 'Freja - Suède' },
+        { id: 3, username: 'Otis', isBot: false, pawn: 'Lani - Îles Marshall' },
+      ] as any,
+      metadata: {
+        ...(state.metadata ?? {}),
+        positions: { 1: 10, 2: 11, 3: 12 },
+        decks: {
+          ...decks,
+          surprise: [
+            {
+              id: 5,
+              type: 'surprise',
+              title: 'Poussière de Rire',
+              text: 'Chaque joueur lance un petit dé de 1 à 3. Celui qui a le plus grand avance d’une case.',
+            },
+          ],
+          bonus: [
+            {
+              id: 2,
+              type: 'bonus',
+              title: 'Parchemin enchanté',
+              text: 'Relancez le dé.',
+            },
+          ],
+          discardSurprise: [],
+          discardBonus: [],
+        },
+      },
+      pending: {
+        type: 'draw',
+        label: 'Piocher une carte (Espace).',
+        playerId: 2,
+        blocking: true,
+        data: {
+          context: 'draw_and_apply',
+          queue: ['surprise', 'bonus'],
+          depth: 0,
+        },
+      } as any,
+      log: [],
+    } as any;
+
+    state = actionsService.applyActions(state, [{ type: 'draw', payload: {} }]);
+    expect(toText(asRecord(state.pending).type)).toBe('choose_number');
+
+    state = actionsService.applyActions(state, [
+      { type: 'choose_number', payload: { value: 3 } },
+    ]);
+    state = actionsService.applyActions(state, [
+      { type: 'choose_number', payload: { value: 1 } },
+    ]);
+    state = actionsService.applyActions(state, [
+      { type: 'choose_number', payload: { value: 2 } },
+    ]);
+
+    expect(toText(asRecord(state.pending).type)).toBe('draw');
+    expect(toText(asRecord(asRecord(state.pending).data).context)).toBe(
+      'draw_and_apply',
+    );
+
+    state = actionsService.applyActions(state, [{ type: 'draw', payload: {} }]);
+
+    expect(toText(asRecord(state.pending).type)).toBe('draw');
+    state = actionsService.applyActions(state, [{ type: 'draw', payload: {} }]);
+
+    expect(state.pending ?? null).toBeNull();
+    const logText = Array.isArray(state.log)
+      ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
+      : '';
+    expect(logText).toContain('Noodle pioche une carte Bonus: Parchemin enchanté.');
+  });
+
+  it('uses the singular form for Poussière de rire when one player wins', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    state = {
+      ...state,
+      pending: {
+        type: 'choose_number',
+        label: 'Poussière de rire',
+        playerId: 1,
+        blocking: true,
+        choices: ['1', '2', '3'],
+        data: {
+          context: 'laughter_dust',
+          min: 1,
+          max: 3,
+          order: [1, 2, 3],
+          picks: {},
+        },
+      },
+      metadata: {
+        ...(state.metadata ?? {}),
+        positions: { 1: 10, 2: 11, 3: 12 },
+      },
+      log: [],
+    } as any;
+
+    state = actionsService.applyActions(state, [
+      { type: 'choose_number', payload: { value: 3 } },
+    ]);
+    state = actionsService.applyActions(state, [
+      { type: 'choose_number', payload: { value: 1 } },
+    ]);
+    state = actionsService.applyActions(state, [
+      { type: 'choose_number', payload: { value: 2 } },
+    ]);
+
+    const logText = Array.isArray(state.log)
+      ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
+      : '';
+
+    expect(logText).toContain("Lilas avance d'1 case.");
+    expect(logText).not.toContain('avance(nt)');
+  });
+
+  it('uses the plural form for Poussière de rire when players tie', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    state = {
+      ...state,
+      pending: {
+        type: 'choose_number',
+        label: 'Poussière de rire',
+        playerId: 1,
+        blocking: true,
+        choices: ['1', '2', '3'],
+        data: {
+          context: 'laughter_dust',
+          min: 1,
+          max: 3,
+          order: [1, 2, 3],
+          picks: {},
+        },
+      },
+      metadata: {
+        ...(state.metadata ?? {}),
+        positions: { 1: 10, 2: 11, 3: 12 },
+      },
+      log: [],
+    } as any;
+
+    state = actionsService.applyActions(state, [
+      { type: 'choose_number', payload: { value: 3 } },
+    ]);
+    state = actionsService.applyActions(state, [
+      { type: 'choose_number', payload: { value: 1 } },
+    ]);
+    state = actionsService.applyActions(state, [
+      { type: 'choose_number', payload: { value: 3 } },
+    ]);
+
+    const logText = Array.isArray(state.log)
+      ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
+      : '';
+
+    expect(logText).toContain("Lilas, Otis avancent d'1 case.");
+    expect(logText).not.toContain('avance(nt)');
+  });
+
+  it('shows conte narration to the landing player only through the presenter', async () => {
+    const moduleRef = await createActionsModule();
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+    const presenter = new ContesPresenterService(new BoardPayloadService());
+
+    let state = setup.hydrateInitialState(baseState());
+    const metadata = asRecord(state.metadata);
+    const decks = asRecord(metadata.decks);
+    const conteCard: ContesCard = {
+      id: 1001,
+      type: 'conte',
+      title: 'Conte privé',
+      text: 'Le conte doit être visible uniquement pour Lilas.',
+    };
+
+    state = {
+      ...state,
+      players: [
+        { id: 1, username: 'Lilas', isBot: false, pawn: 'Niko - Géorgie' },
+        { id: 2, username: 'Bucky', isBot: true, pawn: 'Freja - Suède' },
+        { id: 3, username: 'Otis', isBot: false, pawn: 'Lani - Îles Marshall' },
+      ] as any,
+      metadata: {
+        ...(state.metadata ?? {}),
+        positions: { 1: 1, 2: 0, 3: 0 },
+        decks: {
+          ...decks,
+          contes: [conteCard],
+          conte: [conteCard],
+          discardContes: [],
+        },
+      },
+      log: [],
+    } as any;
+
+    state = (actionsService as any).moveBy(state, 1, 1, 0);
+    state = actionsService.applyActions(state, [{ type: 'draw', payload: {} }]);
+
+    const lilasView = presenter.exposeStateForUser(state, 1);
+    const buckyView = presenter.exposeStateForUser(state, 2);
+    const lilasLog = Array.isArray(lilasView.log)
+      ? lilasView.log.map((entry) => toText(asRecord(entry).message)).join(' ')
+      : '';
+    const buckyLog = Array.isArray(buckyView.log)
+      ? buckyView.log.map((entry) => toText(asRecord(entry).message)).join(' ')
+      : '';
+
+    expect(lilasLog).toContain('Le conte doit être visible uniquement pour Lilas.');
+    expect(buckyLog).not.toContain('Le conte doit être visible uniquement pour Lilas.');
   });
 
   it('does not announce unavailable cards when a draw pile is empty', async () => {

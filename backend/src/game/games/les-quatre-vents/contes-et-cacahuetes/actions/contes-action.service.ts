@@ -377,6 +377,9 @@ export class ContesActionService {
 
     const nextPlayerId = order.find((id) => picks[id] == null);
     if (nextPlayerId != null) {
+      const continuationData = this.extractQueuedDrawContinuationData(
+        pending.data ?? {},
+      );
       return this.setPending(next, {
         type: 'choose_number',
         label: `Poussière de rire : ${resolvePlayerNameFromState(next, nextPlayerId)}, choisissez un nombre entre 1 et 3 puis Entrée.`,
@@ -389,6 +392,7 @@ export class ContesActionService {
           max: 3,
           order,
           picks,
+          ...continuationData,
         },
       });
     }
@@ -401,7 +405,7 @@ export class ContesActionService {
 
     next = this.core.appendLog(
       next,
-      `Poussière de rire : plus grand choix = ${max}. ${winners.map((id) => resolvePlayerNameFromState(next, id)).join(', ')} avance(nt) d’1 case.`,
+      `Poussière de rire : plus grand choix = ${max}. ${winners.map((id) => resolvePlayerNameFromState(next, id)).join(', ')} ${winners.length > 1 ? 'avancent' : 'avance'} d'1 case.`,
     );
     for (const id of winners) {
       next = this.moveBy(next, id, 1, 0);
@@ -751,7 +755,9 @@ export class ContesActionService {
       next = this.applySurpriseEffectById(next, playerId, card.id, depth);
     }
 
-    if (next.pending) return next;
+    if (next.pending) {
+      return this.attachQueuedDrawContinuation(next, queue, depth);
+    }
     return this.continueQueuedDraw(next, playerId, queue, depth);
   }
 
@@ -914,10 +920,139 @@ export class ContesActionService {
     const match = pawns.find(
       (pawn) => toText((pawn as any)?.id).trim() === pawnId,
     );
-    if (match && toText((match as any).label).trim()) {
-      return toText((match as any).label).trim();
+    const fullLabel =
+      match && toText((match as any).label).trim()
+        ? toText((match as any).label).trim()
+        : pawnId;
+    return this.simplifyPawnLabel(fullLabel);
+  }
+
+  private simplifyPawnLabel(label: string): string {
+    const text = toText(label).trim();
+    if (!text) return '';
+    return text.split(' - ')[0]?.trim() ?? text;
+  }
+
+  private formatArrivalTarget(label: string): string {
+    const text = String(label ?? '').trim();
+    if (!text) return 'sur sa case';
+    if (/^case\b/i.test(text)) return `sur une ${text}`;
+    return `sur ${text}`;
+  }
+
+  private attachQueuedDrawContinuation(
+    state: GameStateEntity,
+    queue: string[],
+    depth: number,
+  ): GameStateEntity {
+    if (!queue.length || !state.pending) return state;
+    const pending = state.pending as ContesPending;
+    return this.setPending(state, {
+      ...pending,
+      data: {
+        ...(pending.data ?? {}),
+        ...this.extractQueuedDrawContinuationData({
+          queuedDrawQueue: [...queue],
+          queuedDrawDepth: depth,
+        }),
+      },
+    });
+  }
+
+  private extractQueuedDrawContinuationData(
+    data: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const queue = Array.isArray(data.queuedDrawQueue)
+      ? data.queuedDrawQueue.filter((value) => typeof value === 'string')
+      : [];
+    const depth = Number.isFinite(data.queuedDrawDepth)
+      ? Number(data.queuedDrawDepth)
+      : 0;
+    if (!queue.length) return {};
+    return {
+      queuedDrawQueue: [...queue],
+      queuedDrawDepth: depth,
+    };
+  }
+
+  private attachQueuedDrawContinuationFromPending(
+    state: GameStateEntity,
+    pending: ContesPending | null,
+  ): GameStateEntity {
+    const continuationData = this.extractQueuedDrawContinuationData(
+      (pending?.data ?? {}) as Record<string, unknown>,
+    );
+    if (!Object.keys(continuationData).length || !state.pending) return state;
+    const nextPending = state.pending as ContesPending;
+    return this.setPending(state, {
+      ...nextPending,
+      data: {
+        ...(nextPending.data ?? {}),
+        ...continuationData,
+      },
+    });
+  }
+
+  private resumeQueuedDrawContinuation(
+    state: GameStateEntity,
+    pending: ContesPending | null,
+  ): GameStateEntity {
+    const queue = Array.isArray(pending?.data?.queuedDrawQueue)
+      ? pending?.data?.queuedDrawQueue.filter((value) => typeof value === 'string')
+      : [];
+    const depth = Number.isFinite(pending?.data?.queuedDrawDepth)
+      ? Number(pending?.data?.queuedDrawDepth)
+      : 0;
+    if (!queue.length) return state;
+    const playerId =
+      typeof pending?.playerId === 'number' ? pending.playerId : null;
+    if (playerId == null) return state;
+    return this.continueQueuedDraw(state, playerId, queue, depth);
+  }
+
+  private moveByToFinalTile(
+    state: GameStateEntity,
+    playerId: number,
+    delta: number,
+    depth: number,
+  ): GameStateEntity {
+    if (!delta) return state;
+    if (depth > 10)
+      return this.core.appendLog(state, 'Effet en chaîne interrompu.');
+
+    const meta = this.getMeta(state);
+    const tilesLen = Array.isArray(meta.tiles) ? meta.tiles.length : 60;
+    const finishIndex = Math.max(0, tilesLen - 1);
+    const current = Number(meta.positions?.[playerId] ?? 0);
+    const raw = current + delta;
+    const nextPos = raw >= finishIndex ? finishIndex : raw < 0 ? 0 : raw;
+
+    let next: GameStateEntity = {
+      ...state,
+      metadata: {
+        ...(state.metadata ?? {}),
+        ...meta,
+        positions: { ...(meta.positions ?? {}), [playerId]: nextPos },
+      },
+    };
+
+    next = this.onAnyPlayerPassedBlocked(next, playerId, nextPos);
+
+    const tile = (this.getMeta(next).tiles ?? [])[nextPos] as
+      | ContesCacahuetesTile
+      | undefined;
+    next = this.appendTileArrivalLog(next, playerId, nextPos, tile);
+    if (raw >= finishIndex) {
+      next = this.setWinner(next, playerId);
+      next = this.core.appendLog(
+        next,
+        `${resolvePlayerNameFromState(next, playerId)} remporte la partie !`,
+      );
+      return { ...next, status: 'finished' };
     }
-    return pawnId;
+
+    if (!tile) return next;
+    return this.applyTileEffect(next, playerId, tile, depth + 1);
   }
 
   private appendTileArrivalLog(
@@ -935,7 +1070,7 @@ export class ContesActionService {
       : `Case ${nextPos + 1}`;
     const pawnLabel = this.describePlayerPawn(state, playerId);
     const arrivalMessage = pawnLabel
-      ? `${resolvePlayerNameFromState(state, playerId)} déplace ${pawnLabel} jusqu'à ${label}.`
+      ? `${resolvePlayerNameFromState(state, playerId)} déplace ${pawnLabel} ${this.formatArrivalTarget(label)}.`
       : `${resolvePlayerNameFromState(state, playerId)} arrive sur ${label}.`;
     let next = this.core.appendLog(state, arrivalMessage);
     const tileType = String(tile?.type ?? '').toLowerCase();
@@ -1130,8 +1265,7 @@ export class ContesActionService {
     let next = state;
     switch (id) {
       case 1:
-        next = this.moveBy(next, playerId, 1, depth);
-        return this.moveBy(next, playerId, -2, depth);
+        return this.moveByToFinalTile(next, playerId, -1, depth);
       case 2:
         return this.moveBy(next, playerId, 4, depth);
       case 3:
@@ -1774,7 +1908,10 @@ export class ContesActionService {
     next: GameStateEntity,
   ): GameStateEntity {
     if (!previous?.pending) return next;
-    if (next?.pending) return next;
+    const previousPending = previous.pending as ContesPending | null;
+    if (next?.pending) {
+      return this.attachQueuedDrawContinuationFromPending(next, previousPending);
+    }
     if (String(next?.status ?? '').toLowerCase() === 'finished') return next;
 
     const currentTurnPlayerId =
@@ -1782,7 +1919,6 @@ export class ContesActionService {
       Number.isFinite(previous.turn.currentPlayerId)
         ? previous.turn.currentPlayerId
         : null;
-    const previousPending = previous.pending as ContesPending | null;
     const pendingPlayerId =
       typeof previousPending?.playerId === 'number' &&
       Number.isFinite(previousPending.playerId)
@@ -1790,6 +1926,9 @@ export class ContesActionService {
         : null;
     const playerId = currentTurnPlayerId ?? pendingPlayerId;
     if (playerId == null) return next;
+
+    next = this.resumeQueuedDrawContinuation(next, previousPending);
+    if (next?.pending) return next;
 
     return this.endTurn(next, playerId);
   }

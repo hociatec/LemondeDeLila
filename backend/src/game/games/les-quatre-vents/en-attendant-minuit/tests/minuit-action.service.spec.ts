@@ -729,6 +729,354 @@ describe('MinuitActionService', () => {
     ).toBe(1);
   });
 
+  it('detects an occupied landing even when opponent positions are serialized as strings', () => {
+    const { random, turns, core } = createDeps();
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
+
+    const tiles = Array.from({ length: 8 }, (_, index) => ({
+      n: index + 1,
+      title: `Case ${index + 1}`,
+      type: 'neutral',
+      description: '',
+    })) as any[];
+    tiles[3] = {
+      n: 4,
+      title: 'Case Avance - Traîneau express',
+      type: 'move',
+      delta: 3,
+      description: 'Avancez de 3 cases.',
+    };
+    tiles[5] = {
+      n: 6,
+      title: 'Case Recule - Neige fondue',
+      type: 'move',
+      delta: -1,
+      description: 'Reculez de 1 case.',
+    };
+    tiles[6] = {
+      n: 7,
+      title: 'Case Carte Noël',
+      type: 'card',
+      description: 'Piochez une carte et appliquez son effet.',
+    };
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [
+        { id: 1, username: 'Lilas', pawn: 'Le Père Noël' } as any,
+        { id: 2, username: 'Chipeur', pawn: 'Le Lutin', isBot: true } as any,
+      ],
+      metadata: {
+        positions: { 1: 3, 2: '6' as any },
+        statuses: { skipTurn: {}, keepTurn: {} },
+        tiles,
+        decks: { cards: [], discard: [] },
+      } as any,
+      pending: null,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = (service as any).applyLanding(state, 1);
+    const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
+
+    expect(
+      messages.some((m) => m.includes('sur une case occupée : recul')),
+    ).toBe(true);
+    expect(messages.some((m) => m.includes('en case 6'))).toBe(true);
+    expect((next.metadata as any).positions[1]).toBe(4);
+  });
+
+  it('does not auto-roll the die for "Bonnet du Père Noël"', () => {
+    const { random, turns, core } = createDeps();
+    random.rollDice.mockReturnValue({ roll: 6, meta: {} });
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
+
+    const state: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [
+        { id: 1, username: 'Lilas', pawn: 'Le Père Noël' } as any,
+        { id: 2, username: 'Olaf', pawn: 'Le Lutin', isBot: true } as any,
+      ],
+      metadata: {
+        positions: { 1: 28, 2: 0 },
+        statuses: { skipTurn: {}, keepTurn: {} },
+        tiles: [
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
+          { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 3, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 4, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 5, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 6, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 7, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 8, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 9, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 10, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 11, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 12, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 13, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 14, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 15, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 16, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 17, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 18, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 19, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 20, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 21, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 22, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 23, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 24, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 25, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 26, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 27, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 28, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 29, title: 'Case Carte Noël', type: 'card', description: '' },
+          { n: 30, title: 'Case neutre', type: 'neutral', description: '' },
+        ],
+        decks: {
+          cards: [
+            {
+              id: 2,
+              title: 'Bonnet du Père Noël',
+              category: 'Cadeaux',
+              kind: 'Cadeau',
+              lines: [
+                'Votre bonnet vous porte chance ! Lancez le dé et avancez du nombre obtenu.',
+              ],
+            },
+          ],
+          discard: [],
+        },
+      } as any,
+      pending: { type: 'draw', playerId: 1, blocking: true } as any,
+      log: [],
+      extras: {},
+    } as any;
+
+    const next = service.applyActions(state, [
+      { type: 'draw', payload: {} } as any,
+    ]);
+    const messages = (next.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+
+    expect(random.rollDice).not.toHaveBeenCalled();
+    expect((next.metadata as any).positions[1]).toBe(28);
+    expect(next.turn?.currentPlayerId).toBe(1);
+    expect(messages.some((m) => m.includes('doit lancer le dé'))).toBe(true);
+    expect(messages.some((m) => m.includes('Bonus : dé ='))).toBe(false);
+  });
+
+  it('replays Lilas bug-report remarks without regressing on occupied tiles or auto-roll bonus cards', () => {
+    const { random, turns, core } = createDeps();
+    const service = new MinuitActionService(
+      random,
+      turns,
+      core,
+      new SetupFlowService(),
+      new DeckPoliciesService(random),
+    );
+
+    const phaseOne: GameStateEntity = {
+      status: 'started',
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      players: [
+        { id: 1, username: 'Lilas', pawn: 'Le Père Noël' } as any,
+        { id: 2, username: 'Chipeur', pawn: 'Le Lutin', isBot: true } as any,
+        {
+          id: 3,
+          username: 'Polynesia',
+          pawn: 'Le Bonhomme de Neige',
+          isBot: true,
+        } as any,
+      ],
+      metadata: {
+        positions: { 1: 2, 2: 6, 3: 4 },
+        statuses: {
+          skipTurn: {},
+          keepTurn: {},
+          ignoreNextMalus: {},
+          ignoreNextSkip: {},
+          forceDrawNextTurn: {},
+        },
+        pendingQuiz: {
+          playerId: 1,
+          question:
+            'Quelle célébrité américaine a popularisé pour la première fois la chanson White Christmas dans les années 1940?',
+          choices: ['Frank Sinatra', 'Bing Crosby', 'Dean Martin'],
+          answer: 'Bing Crosby',
+          successDelta: 2,
+          failureDelta: 0,
+          anyCorrect: false,
+        },
+        tiles: [
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
+          { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 3, title: 'Case Carte Noël', type: 'card', description: '' },
+          {
+            n: 4,
+            title: 'Case Avance - Traîneau express',
+            type: 'move',
+            delta: 3,
+            description:
+              "Vous montez à bord d'un traîneau lancé à toute vitesse. Avancez de 3 cases.",
+          },
+          {
+            n: 5,
+            title: 'Case neutre - Boulangerie des lutins',
+            type: 'neutral',
+            description: "Une délicieuse odeur de biscuits flotte dans l'air.",
+          },
+          {
+            n: 6,
+            title: 'Case Recule - Neige fondue',
+            type: 'move',
+            delta: -1,
+            description: 'Vous glissez sur une plaque de glace. Reculez de 1 case.',
+          },
+          {
+            n: 7,
+            title: 'Case Carte Noël',
+            type: 'card',
+            description: 'Piochez une carte et appliquez son effet.',
+          },
+        ],
+        decks: { cards: [], discard: [] },
+      } as any,
+      pending: null,
+      log: [],
+      extras: {},
+    } as any;
+
+    const afterQuiz = service.applyActions(phaseOne, [
+      { type: 'answer_quiz', payload: { answer: 'Bing Crosby' } } as any,
+    ]);
+    const phaseOneMessages = (afterQuiz.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+
+    expect(phaseOneMessages).toContain('Lilas a choisi la bonne réponse !');
+    expect(
+      phaseOneMessages.filter((m) =>
+        m.includes('sur une case occupée : recul d\'une case.'),
+      ).length,
+    ).toBeGreaterThanOrEqual(2);
+    expect(
+      phaseOneMessages.some((m) => m.includes('en case 4 (Case Avance - Traîneau express).')),
+    ).toBe(true);
+    expect(
+      phaseOneMessages.some((m) => m.includes('en case 6 (Case Recule - Neige fondue).')),
+    ).toBe(true);
+    expect(
+      phaseOneMessages.some((m) =>
+        m.includes('Enchaînement de cases interrompu pour éviter une boucle infinie.'),
+      ),
+    ).toBe(true);
+    expect((afterQuiz.metadata as any).positions[1]).toBe(3);
+
+    const phaseTwo: GameStateEntity = {
+      ...afterQuiz,
+      turnIndex: 0,
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: { type: 'draw', playerId: 1, blocking: true } as any,
+      log: [],
+      metadata: {
+        ...((afterQuiz.metadata ?? {}) as any),
+        pendingQuiz: null,
+        positions: { 1: 28, 2: 12, 3: 22 },
+        decks: {
+          cards: [
+            {
+              id: 2,
+              title: 'Bonnet du Père Noël',
+              category: 'Cadeaux',
+              kind: 'Cadeau',
+              lines: [
+                'Votre bonnet vous porte chance ! Lancez le dé et avancez du nombre obtenu.',
+              ],
+            },
+          ],
+          discard: [],
+        },
+        tiles: [
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
+          { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 3, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 4, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 5, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 6, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 7, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 8, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 9, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 10, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 11, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 12, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 13, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 14, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 15, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 16, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 17, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 18, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 19, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 20, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 21, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 22, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 23, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 24, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 25, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 26, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 27, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 28, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 29, title: 'Case Carte Noël', type: 'card', description: '' },
+          { n: 30, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 31, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 32, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 33, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 34, title: 'Case neutre', type: 'neutral', description: '' },
+          { n: 35, title: 'Case neutre', type: 'neutral', description: '' },
+        ],
+      } as any,
+    } as any;
+
+    random.rollDice.mockClear();
+    const afterBonnet = service.applyActions(phaseTwo, [
+      { type: 'draw', payload: {} } as any,
+    ]);
+    const phaseTwoMessages = (afterBonnet.log ?? []).map((entry: any) =>
+      String(entry?.message ?? ''),
+    );
+
+    expect(random.rollDice).not.toHaveBeenCalled();
+    expect((afterBonnet.metadata as any).positions[1]).toBe(28);
+    expect(afterBonnet.turn?.currentPlayerId).toBe(1);
+    expect(
+      phaseTwoMessages.some((m) => m.includes('Bonnet du Père Noël')),
+    ).toBe(true);
+    expect(phaseTwoMessages.some((m) => m.includes('doit lancer le dé'))).toBe(
+      true,
+    );
+    expect(phaseTwoMessages.some((m) => m.includes('Bonus : dé ='))).toBe(
+      false,
+    );
+  });
+
   it('does not add an extra player-specific skip log when a card already says to skip a turn', () => {
     const { random, turns, core } = createDeps();
     const service = new MinuitActionService(
