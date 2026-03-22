@@ -16,7 +16,7 @@ internal sealed class GamePlayLogSoundPlayer
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
     }
 
-    internal void TryPlayForLogMessage(string message, string? viewerUsername, bool suppressDrawSound = false)
+    internal void TryPlayForLogMessage(string message, string? viewerUsername)
     {
         var msg = (message ?? string.Empty).Trim();
         if (msg.Length == 0)
@@ -24,8 +24,7 @@ internal sealed class GamePlayLogSoundPlayer
             return;
         }
 
-        // Quiz (Arche de Mnémosyne): le serveur écrit explicitement "Bonne réponse"/"Mauvaise réponse".
-        // Jouer le son uniquement pour la réponse du joueur local (évite le spam sonore).
+        // Quiz: keep the explicit feedback sound, but only for the local player's answer.
         if (!string.IsNullOrWhiteSpace(viewerUsername))
         {
             var prefix = viewerUsername.Trim() + " répond :";
@@ -44,19 +43,9 @@ internal sealed class GamePlayLogSoundPlayer
             }
         }
 
-        // Fin de manche (LAMA et autres jeux qui utilisent ce libellé).
         if (msg.StartsWith("Fin de la manche", StringComparison.OrdinalIgnoreCase))
         {
             _sounds.Play(SoundId.RoundEnded);
-        }
-
-        // Fallback robuste: certains jeux/états n'exposent pas toujours LastDraw de façon stable.
-        // Quand une nouvelle ligne d'historique indique une pioche, jouer aussi le son.
-        if (msg.Contains(" pioche", StringComparison.OrdinalIgnoreCase) &&
-            !msg.Contains("doit piocher", StringComparison.OrdinalIgnoreCase) &&
-            !suppressDrawSound)
-        {
-            TryPlayDrawSound();
         }
     }
 
@@ -67,6 +56,7 @@ internal sealed class GamePlayLogSoundPlayer
         {
             return;
         }
+
         _lastDrawSoundUtc = now;
         _sounds.Play(SoundId.DrawCard);
     }

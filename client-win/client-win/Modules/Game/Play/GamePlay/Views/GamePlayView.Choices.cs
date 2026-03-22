@@ -301,8 +301,6 @@ public partial class GamePlayView
                     }));
                     return;
                 }
-
-                _restoreChoiceFocusAfterSubmit = false;
             }
 
             if (_vm.PendingChoices.Count <= 0)
@@ -322,10 +320,9 @@ public partial class GamePlayView
                 ChoicesList.IsVisible &&
                 ChoicesList.Items.Count > 0)
             {
-                _pendingInitialInteractiveFocus = false;
                 Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
                 {
-                    FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
+                    FocusChoicesListForPendingInteraction();
                 }));
                 return;
             }
@@ -343,7 +340,7 @@ public partial class GamePlayView
                         return;
                     }
 
-                    FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
+                    FocusChoicesListForPendingInteraction();
 
                     if (IsFocusWithinInteractiveTarget())
                     {
@@ -362,7 +359,7 @@ public partial class GamePlayView
                             return;
                         }
 
-                        FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
+                        FocusChoicesListForPendingInteraction();
                     }));
                 }));
                 return;
@@ -549,6 +546,80 @@ public partial class GamePlayView
         }
 
         RunPostPawnSelectionRecovery(_postPawnSelectionRecoveryRequestId);
+    }
+
+    private void TryRecoverPendingInteractiveFocusFromLayout()
+    {
+        if (!_pendingInitialInteractiveFocus)
+        {
+            return;
+        }
+
+        if (IsTextInputFocused())
+        {
+            return;
+        }
+
+        if (IsFocusWithinInteractiveTarget())
+        {
+            _pendingInitialInteractiveFocus = false;
+            return;
+        }
+
+        if ((ChoicesList?.IsVisible == true && ChoicesList.Items.Count > 0) ||
+            (HandList?.IsVisible == true && HandList.Items.Count > 0) ||
+            (GridItems?.IsVisible == true))
+        {
+            FocusPreferredInteractiveElement(forceFromOutsideTextInput: true);
+        }
+    }
+
+    private void FocusChoicesListForPendingInteraction()
+    {
+        if (ChoicesList == null || !ChoicesList.IsVisible || ChoicesList.Items.Count <= 0)
+        {
+            return;
+        }
+
+        if (IsFocusOnGameZoneAnchor())
+        {
+            for (var parent = GetVisualOrLogicalParent(this); parent != null; parent = GetVisualOrLogicalParent(parent))
+            {
+                if (parent is not GameZoneHostView host)
+                {
+                    continue;
+                }
+
+                host.FocusGameZone(GameFocusReason.Default);
+                if (IsFocusWithinChoicesList())
+                {
+                    _pendingInitialInteractiveFocus = false;
+                    return;
+                }
+
+                break;
+            }
+        }
+
+        if (ChoicesList.SelectedIndex < 0)
+        {
+            ChoicesList.SelectedIndex = 0;
+        }
+
+        var idx = ChoicesList.SelectedIndex;
+        if (idx < 0)
+        {
+            idx = 0;
+        }
+        if (idx >= ChoicesList.Items.Count)
+        {
+            idx = ChoicesList.Items.Count - 1;
+        }
+
+        ChoicesList.SelectedIndex = idx;
+        ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+        TryFocusChoiceIndex(ChoicesList, idx);
+        _pendingInitialInteractiveFocus = !IsFocusWithinChoicesList();
     }
 
     private void RunGameZoneFocusRequest(int requestId, GameFocusReason reason)

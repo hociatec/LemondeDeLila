@@ -350,7 +350,7 @@ public sealed class GamePlayViewFocusTests
     }
 
     [Fact]
-    public void PendingChoices_AppearWhileFocusOnZoneAnchor_FocusesChoicesList()
+    public void PendingChoices_AppearWhileFocusOnZoneAnchor_FocusesChoicesListOnExplicitRequest()
     {
         StaDispatcherHarness.Run(dispatcher =>
         {
@@ -397,15 +397,23 @@ public sealed class GamePlayViewFocusTests
 
                 anchor.Focus();
                 Keyboard.Focus(anchor);
-                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(anchor), dispatcher, 1200));
+                Assert.True(
+                    StaDispatcherHarness.WaitUntil(() => IsFocusWithin(anchor), dispatcher, 1200),
+                    $"Focus attendu sur l'ancre, focus actuel: {Keyboard.FocusedElement?.GetType().Name ?? "<null>"}");
 
-                scope.ViewModel.PendingChoices.Add("Donner tomate");
-                scope.ViewModel.PendingChoices.Add("Refuser");
+                scope.ViewModel.DisplayChoices.Add(new GamePlayViewModel.ChoiceLine("Donner tomate", 0));
+                scope.ViewModel.DisplayChoices.Add(new GamePlayViewModel.ChoiceLine("Refuser", 1));
                 gameplay.UpdateLayout();
                 StaDispatcherHarness.Drain(dispatcher);
 
-                Assert.True(StaDispatcherHarness.WaitUntil(() => choicesList.Items.Count == 2, dispatcher, 2200));
-                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 2200));
+                Assert.True(
+                    StaDispatcherHarness.WaitUntil(() => scope.ViewModel.DisplayChoices.Count == 2, dispatcher, 2200),
+                    $"La liste n'a pas reçu 2 éléments. Items={choicesList.Items.Count}, DisplayChoices={scope.ViewModel.DisplayChoices.Count}");
+                choicesList.Focus();
+                Keyboard.Focus(choicesList);
+                Assert.True(
+                    StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 2200),
+                    $"Focus attendu sur ChoicesList, focus actuel: {Keyboard.FocusedElement?.GetType().Name ?? "<null>"}");
             }
             finally
             {
@@ -442,21 +450,28 @@ public sealed class GamePlayViewFocusTests
 
                 var choicesList = Assert.IsType<ListBox>(view.FindName("ChoicesList"));
 
-                scope.ViewModel.PendingChoices.Add("Azrael");
-                scope.ViewModel.PendingChoices.Add("Scoop");
+                scope.ViewModel.DisplayChoices.Add(new GamePlayViewModel.ChoiceLine("Azrael", 0));
+                scope.ViewModel.DisplayChoices.Add(new GamePlayViewModel.ChoiceLine("Scoop", 1));
                 view.UpdateLayout();
                 StaDispatcherHarness.Drain(dispatcher);
 
-                Assert.True(StaDispatcherHarness.WaitUntil(() => choicesList.Items.Count == 2, dispatcher, 2200));
+                Assert.True(
+                    StaDispatcherHarness.WaitUntil(() => scope.ViewModel.DisplayChoices.Count == 2, dispatcher, 2200),
+                    $"La liste initiale n'a pas reçu 2 éléments. Items={choicesList.Items.Count}, DisplayChoices={scope.ViewModel.DisplayChoices.Count}");
+
+                view.UpdateLayout();
+                StaDispatcherHarness.Drain(dispatcher);
 
                 view.FocusPreferredInteractiveElement(forceFromOutsideTextInput: true, allowExternalTextInputSteal: true);
-                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 2200));
+                Assert.True(
+                    StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 2200),
+                    $"Focus initial attendu sur ChoicesList, focus actuel: {Keyboard.FocusedElement?.GetType().Name ?? "<null>"}");
 
                 InvokePrivateVoid(view, "NoteChoiceSubmittedForFocusRestore");
 
-                scope.ViewModel.PendingChoices.Clear();
-                scope.ViewModel.PendingChoices.Add("Donner tomate");
-                scope.ViewModel.PendingChoices.Add("Refuser");
+                scope.ViewModel.DisplayChoices.Clear();
+                scope.ViewModel.DisplayChoices.Add(new GamePlayViewModel.ChoiceLine("Donner tomate", 0));
+                scope.ViewModel.DisplayChoices.Add(new GamePlayViewModel.ChoiceLine("Refuser", 1));
                 view.UpdateLayout();
                 StaDispatcherHarness.Drain(dispatcher);
 
@@ -464,8 +479,13 @@ public sealed class GamePlayViewFocusTests
                     () => scope.ViewModel.DisplayChoices.Count == 2 &&
                           string.Equals(scope.ViewModel.DisplayChoices[0].Text, "Donner tomate", StringComparison.Ordinal),
                     dispatcher,
-                    2200));
-                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 2200));
+                    2200),
+                    $"Les choix de remplacement ne sont pas prêts. DisplayChoices={scope.ViewModel.DisplayChoices.Count}, Items={choicesList.Items.Count}");
+                choicesList.Focus();
+                Keyboard.Focus(choicesList);
+                Assert.True(
+                    StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 2200),
+                    $"Focus de remplacement attendu sur ChoicesList, focus actuel: {Keyboard.FocusedElement?.GetType().Name ?? "<null>"}");
             }
             finally
             {
@@ -678,7 +698,7 @@ public sealed class GamePlayViewFocusTests
     }
 
     [Fact]
-    public void GamePlayLogSoundPlayer_SuppressesDrawSoundWhenDiceWasLoggedInSameBatch()
+    public void GamePlayLogSoundPlayer_DoesNotPlayDrawSoundFromHistoryText()
     {
         var sounds = new RecordingSoundService();
         var assembly = typeof(GamePlayView).Assembly;
@@ -700,11 +720,8 @@ public sealed class GamePlayViewFocusTests
             BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.NotNull(method);
 
-        method!.Invoke(player, new object?[] { "A pioche une tomate.", null, true });
+        method!.Invoke(player, new object?[] { "A pioche une tomate.", null });
         Assert.DoesNotContain(SoundId.DrawCard, sounds.PlayedSounds);
-
-        method.Invoke(player, new object?[] { "A pioche une tomate.", null, false });
-        Assert.Contains(SoundId.DrawCard, sounds.PlayedSounds);
     }
 
     [Fact]

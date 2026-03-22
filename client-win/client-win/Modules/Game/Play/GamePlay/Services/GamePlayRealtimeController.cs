@@ -407,12 +407,11 @@ internal sealed class GamePlayRealtimeController
             string.Equals(nextStatus, "finished", StringComparison.OrdinalIgnoreCase) ||
             HasOutcomeData(state);
         var newLogMessages = presented.newLogMessages.ToList();
-        var batchHasDiceLog = newLogMessages.Any(entry => IsDiceLogMessage(entry?.Message));
 
         foreach (var entry in newLogMessages)
         {
             var trimmed = entry?.Message ?? string.Empty;
-            _logSounds.TryPlayForLogMessage(trimmed, viewerUsername, suppressDrawSound: batchHasDiceLog);
+            _logSounds.TryPlayForLogMessage(trimmed, viewerUsername);
 
             // Best-effort fallback: if the server logged the winner/draw, keep it so the client can still
             // emit a proper endgame header even if winner/outcome metadata is missing.
@@ -627,18 +626,6 @@ internal sealed class GamePlayRealtimeController
                 choices,
                 data,
             });
-    }
-
-    private static bool IsDiceLogMessage(string? message)
-    {
-        var trimmed = (message ?? string.Empty).Trim();
-        if (trimmed.Length == 0)
-        {
-            return false;
-        }
-
-        return trimmed.IndexOf("lance le dé", StringComparison.OrdinalIgnoreCase) >= 0 ||
-               trimmed.IndexOf("relance le dé", StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     private static string NormalizeStatus(GameStateDto state)

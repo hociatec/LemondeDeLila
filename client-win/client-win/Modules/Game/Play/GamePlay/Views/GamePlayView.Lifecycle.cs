@@ -49,6 +49,7 @@ public partial class GamePlayView
 
     private void OnLayoutUpdated(object? sender, EventArgs e)
     {
+        TryRecoverPendingInteractiveFocusFromLayout();
         TryRecoverPostPawnSelectionFocusFromLayout();
     }
 

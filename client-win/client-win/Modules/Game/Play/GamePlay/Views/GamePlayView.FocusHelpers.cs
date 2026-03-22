@@ -78,6 +78,13 @@ public partial class GamePlayView
 
         index = ClampIndex(index, list.Items.Count);
 
+        list.Focus();
+        Keyboard.Focus(list);
+        if (IsFocusWithinList(list))
+        {
+            return true;
+        }
+
         try
         {
             list.ScrollIntoView(list.Items[index]);
@@ -91,7 +98,26 @@ public partial class GamePlayView
         {
             item.Focus();
             Keyboard.Focus(item);
-            return true;
+            if (IsFocusWithinList(list))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsFocusWithinList(ListBox list)
+    {
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        while (focused != null)
+        {
+            if (ReferenceEquals(focused, list))
+            {
+                return true;
+            }
+
+            focused = GetVisualOrLogicalParent(focused);
         }
 
         return false;
@@ -149,8 +175,11 @@ public partial class GamePlayView
             {
                 list.Focus();
                 Keyboard.Focus(list);
-                if (isHandList) UnhookHandListFocusObservers();
-                else UnhookChoicesListFocusObservers();
+                if (IsFocusWithinList(list))
+                {
+                    if (isHandList) UnhookHandListFocusObservers();
+                    else UnhookChoicesListFocusObservers();
+                }
             }
         };
 
