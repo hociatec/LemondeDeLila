@@ -6,6 +6,6 @@ import {
 
 export const buildBoardMissionShortcuts: GameShortcutsBuilder = () => [
   interfaceShortcut('P', 'position'),
-  actionShortcut('SPACE', 'roll'),
+  actionShortcut('D', 'roll'),
   interfaceShortcut('S', 'score'),
 ];
