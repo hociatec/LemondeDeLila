@@ -8,6 +8,7 @@
     "deleteOutDir": true,
     "assets": [
       "game/games/**/model/content/**/*.json",
+      "game/games/**/content/**/*.json",
       "game/games/**/manifest.json",
       "game/games/**/rules.md"
     ]
