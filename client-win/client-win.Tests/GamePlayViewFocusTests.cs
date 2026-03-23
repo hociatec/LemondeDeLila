@@ -397,23 +397,15 @@ public sealed class GamePlayViewFocusTests
 
                 anchor.Focus();
                 Keyboard.Focus(anchor);
-                Assert.True(
-                    StaDispatcherHarness.WaitUntil(() => IsFocusWithin(anchor), dispatcher, 1200),
-                    $"Focus attendu sur l'ancre, focus actuel: {Keyboard.FocusedElement?.GetType().Name ?? "<null>"}");
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(anchor), dispatcher, 1200));
 
-                scope.ViewModel.DisplayChoices.Add(new GamePlayViewModel.ChoiceLine("Donner tomate", 0));
-                scope.ViewModel.DisplayChoices.Add(new GamePlayViewModel.ChoiceLine("Refuser", 1));
+                SetDisplayChoices(scope.ViewModel, "Donner tomate", "Refuser");
                 gameplay.UpdateLayout();
                 StaDispatcherHarness.Drain(dispatcher);
 
-                Assert.True(
-                    StaDispatcherHarness.WaitUntil(() => scope.ViewModel.DisplayChoices.Count == 2, dispatcher, 2200),
-                    $"La liste n'a pas reçu 2 éléments. Items={choicesList.Items.Count}, DisplayChoices={scope.ViewModel.DisplayChoices.Count}");
-                choicesList.Focus();
-                Keyboard.Focus(choicesList);
-                Assert.True(
-                    StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 2200),
-                    $"Focus attendu sur ChoicesList, focus actuel: {Keyboard.FocusedElement?.GetType().Name ?? "<null>"}");
+                Assert.True(StaDispatcherHarness.WaitUntil(() => scope.ViewModel.DisplayChoices.Count == 2, dispatcher, 2200));
+                FocusList(dispatcher, choicesList);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 2200));
             }
             finally
             {
@@ -450,28 +442,21 @@ public sealed class GamePlayViewFocusTests
 
                 var choicesList = Assert.IsType<ListBox>(view.FindName("ChoicesList"));
 
-                scope.ViewModel.DisplayChoices.Add(new GamePlayViewModel.ChoiceLine("Azrael", 0));
-                scope.ViewModel.DisplayChoices.Add(new GamePlayViewModel.ChoiceLine("Scoop", 1));
+                SetDisplayChoices(scope.ViewModel, "Azrael", "Scoop");
                 view.UpdateLayout();
                 StaDispatcherHarness.Drain(dispatcher);
 
-                Assert.True(
-                    StaDispatcherHarness.WaitUntil(() => scope.ViewModel.DisplayChoices.Count == 2, dispatcher, 2200),
-                    $"La liste initiale n'a pas reçu 2 éléments. Items={choicesList.Items.Count}, DisplayChoices={scope.ViewModel.DisplayChoices.Count}");
+                Assert.True(StaDispatcherHarness.WaitUntil(() => scope.ViewModel.DisplayChoices.Count == 2, dispatcher, 2200));
 
                 view.UpdateLayout();
                 StaDispatcherHarness.Drain(dispatcher);
 
                 view.FocusPreferredInteractiveElement(forceFromOutsideTextInput: true, allowExternalTextInputSteal: true);
-                Assert.True(
-                    StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 2200),
-                    $"Focus initial attendu sur ChoicesList, focus actuel: {Keyboard.FocusedElement?.GetType().Name ?? "<null>"}");
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 2200));
 
                 InvokePrivateVoid(view, "NoteChoiceSubmittedForFocusRestore");
 
-                scope.ViewModel.DisplayChoices.Clear();
-                scope.ViewModel.DisplayChoices.Add(new GamePlayViewModel.ChoiceLine("Donner tomate", 0));
-                scope.ViewModel.DisplayChoices.Add(new GamePlayViewModel.ChoiceLine("Refuser", 1));
+                SetDisplayChoices(scope.ViewModel, "Donner tomate", "Refuser");
                 view.UpdateLayout();
                 StaDispatcherHarness.Drain(dispatcher);
 
@@ -479,13 +464,65 @@ public sealed class GamePlayViewFocusTests
                     () => scope.ViewModel.DisplayChoices.Count == 2 &&
                           string.Equals(scope.ViewModel.DisplayChoices[0].Text, "Donner tomate", StringComparison.Ordinal),
                     dispatcher,
-                    2200),
-                    $"Les choix de remplacement ne sont pas prêts. DisplayChoices={scope.ViewModel.DisplayChoices.Count}, Items={choicesList.Items.Count}");
-                choicesList.Focus();
-                Keyboard.Focus(choicesList);
-                Assert.True(
-                    StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 2200),
-                    $"Focus de remplacement attendu sur ChoicesList, focus actuel: {Keyboard.FocusedElement?.GetType().Name ?? "<null>"}");
+                    2200));
+                FocusList(dispatcher, choicesList);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 2200));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void ChoicesList_Enter_IsNotConsumed_WhenQuizChoicesAreGone()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            EnsureTestApplicationResources();
+
+            var socket = new RecordingSocket();
+            var state = CreateStartedStateWithActions(
+                new GameAvailableActionDto
+                {
+                    Type = "draw",
+                });
+            using var scope = CreateGamePlayViewModelScope(dispatcher, socket, state);
+
+            var view = new GamePlayView
+            {
+                DataContext = scope.ViewModel,
+            };
+            var window = CreateHostWindow(view);
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var choicesList = Assert.IsType<ListBox>(view.FindName("ChoicesList"));
+                SetDisplayChoices(scope.ViewModel, "Histoire", "Science");
+                view.UpdateLayout();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                choicesList.SelectedIndex = 0;
+                FocusList(dispatcher, choicesList);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(choicesList), dispatcher, 1200));
+
+                var source = PresentationSource.FromVisual(choicesList);
+                Assert.NotNull(source);
+
+                var args = new KeyEventArgs(Keyboard.PrimaryDevice, source!, Environment.TickCount, Key.Enter)
+                {
+                    RoutedEvent = Keyboard.KeyDownEvent,
+                };
+
+                choicesList.RaiseEvent(args);
+                StaDispatcherHarness.Drain(dispatcher);
+
+                Assert.False(args.Handled);
             }
             finally
             {
@@ -698,7 +735,7 @@ public sealed class GamePlayViewFocusTests
     }
 
     [Fact]
-    public void GamePlayLogSoundPlayer_DoesNotPlayDrawSoundFromHistoryText()
+    public void GamePlayLogSoundPlayer_PlaysDrawSoundFromHistoryText()
     {
         var sounds = new RecordingSoundService();
         var assembly = typeof(GamePlayView).Assembly;
@@ -721,7 +758,7 @@ public sealed class GamePlayViewFocusTests
         Assert.NotNull(method);
 
         method!.Invoke(player, new object?[] { "A pioche une tomate.", null });
-        Assert.DoesNotContain(SoundId.DrawCard, sounds.PlayedSounds);
+        Assert.Contains(SoundId.DrawCard, sounds.PlayedSounds);
     }
 
     [Fact]
@@ -787,7 +824,7 @@ public sealed class GamePlayViewFocusTests
     }
 
     [Fact]
-    public void RealtimeController_PrefersDiceSoundOverDrawSoundWhenRollAndDrawShareSameBatch()
+    public void RealtimeController_PrefersDrawFlowOverDiceSoundWhenRollAndDrawShareSameBatch()
     {
         StaDispatcherHarness.Run(dispatcher =>
         {
@@ -813,14 +850,76 @@ public sealed class GamePlayViewFocusTests
                     new GameLogEntryDto("[Panier Express] Mouche pioche \"melon\".", "2026-03-08T12:00:01Z"),
                 ]));
 
-            Assert.True(StaDispatcherHarness.WaitUntil(
-                () => sounds.PlayedSounds.Contains(SoundId.DiceRolled),
-                dispatcher,
-                1200));
+            StaDispatcherHarness.Drain(dispatcher);
+
+            Assert.DoesNotContain(SoundId.DiceRolled, sounds.PlayedSounds);
+            Assert.Contains(SoundId.DrawCard, sounds.PlayedSounds);
+        });
+    }
+
+    [Fact]
+    public void RealtimeController_PlaysDiceSoundWhenNewRollLogArrivesEvenIfRollValueDidNotChange()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            var sounds = new RecordingSoundService();
+            var controller = CreateRealtimeController(dispatcher, sounds);
+
+            controller.HandleStateUpdated(CreatePendingState(
+                pendingType: string.Empty,
+                label: string.Empty,
+                choices: [],
+                turnIndex: 3,
+                lastRoll: 4));
+            StaDispatcherHarness.Drain(dispatcher);
+            sounds.PlayedSounds.Clear();
+
+            controller.HandleStateUpdated(CreatePendingState(
+                pendingType: string.Empty,
+                label: string.Empty,
+                choices: [],
+                turnIndex: 3,
+                lastRoll: 4,
+                logMessages:
+                [
+                    new GameLogEntryDto("Mouche lance le dé : \"4\"", "2026-03-08T12:00:02Z"),
+                ]));
             StaDispatcherHarness.Drain(dispatcher);
 
             Assert.Contains(SoundId.DiceRolled, sounds.PlayedSounds);
-            Assert.DoesNotContain(SoundId.DrawCard, sounds.PlayedSounds);
+        });
+    }
+
+    [Fact]
+    public void RealtimeController_DoesNotReplayDiceSoundOnTurnAdvanceWithoutNewRollLog()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            var sounds = new RecordingSoundService();
+            var controller = CreateRealtimeController(dispatcher, sounds);
+
+            controller.HandleStateUpdated(CreatePendingState(
+                pendingType: string.Empty,
+                label: string.Empty,
+                choices: [],
+                turnIndex: 3,
+                lastRoll: 4));
+            StaDispatcherHarness.Drain(dispatcher);
+            sounds.PlayedSounds.Clear();
+
+            controller.HandleStateUpdated(CreatePendingState(
+                pendingType: string.Empty,
+                label: string.Empty,
+                choices: [],
+                turnIndex: 4,
+                lastRoll: 4,
+                logMessages:
+                [
+                    new GameLogEntryDto("Azrael refuse l'échange proposé par Mouche.", "2026-03-08T12:00:03Z"),
+                ]));
+            StaDispatcherHarness.Drain(dispatcher);
+
+            Assert.DoesNotContain(SoundId.DiceRolled, sounds.PlayedSounds);
         });
     }
 
@@ -1162,6 +1261,43 @@ public sealed class GamePlayViewFocusTests
         };
     }
 
+    private static GameStateDto CreateStartedStateWithActions(params GameAvailableActionDto[] actions)
+    {
+        return new GameStateDto
+        {
+            Status = "started",
+            Phase = "play",
+            TurnIndex = 1,
+            Players =
+            [
+                new GamePlayerDto
+                {
+                    Id = 1,
+                    Username = "Mouche",
+                },
+            ],
+            Turn = new GameTurnDto
+            {
+                CurrentPlayerId = 1,
+            },
+            Actions = actions?.ToList() ?? new List<GameAvailableActionDto>(),
+            Log = new List<GameLogEntryDto>(),
+            Metadata = JsonSerializer.SerializeToElement(new
+            {
+                lifecycle = new
+                {
+                    startReady = false,
+                    viewerTurnActionable = true,
+                    viewerMustChoosePawn = false,
+                },
+            }),
+            Extras = JsonSerializer.SerializeToElement(new
+            {
+                viewerPlayerId = 1,
+            }),
+        };
+    }
+
     private static List<GameAvailableActionDto> BuildPendingActions(
         string pendingType,
         IReadOnlyList<string> choices)
@@ -1269,6 +1405,22 @@ public sealed class GamePlayViewFocusTests
         }
 
         return false;
+    }
+
+    private static void SetDisplayChoices(GamePlayViewModel viewModel, params string[] choices)
+    {
+        viewModel.DisplayChoices.Clear();
+        for (var i = 0; i < choices.Length; i++)
+        {
+            viewModel.DisplayChoices.Add(new GamePlayViewModel.ChoiceLine(choices[i], i));
+        }
+    }
+
+    private static void FocusList(Dispatcher dispatcher, ListBox list)
+    {
+        list.Focus();
+        Keyboard.Focus(list);
+        StaDispatcherHarness.Drain(dispatcher);
     }
 
     private static void InvokePrivateVoid(object target, string methodName)

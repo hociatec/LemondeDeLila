@@ -408,10 +408,21 @@ internal sealed class GamePlayRealtimeController
             HasOutcomeData(state);
         var newLogMessages = presented.newLogMessages.ToList();
 
+        var suppressDiceSoundForCurrentUpdate = false;
+        var forceDiceSoundForCurrentUpdate = false;
+
         foreach (var entry in newLogMessages)
         {
             var trimmed = entry?.Message ?? string.Empty;
             _logSounds.TryPlayForLogMessage(trimmed, viewerUsername);
+            if (LooksLikeResolvedDrawLog(trimmed))
+            {
+                suppressDiceSoundForCurrentUpdate = true;
+            }
+            if (LooksLikeDiceRollLog(trimmed))
+            {
+                forceDiceSoundForCurrentUpdate = true;
+            }
 
             // Best-effort fallback: if the server logged the winner/draw, keep it so the client can still
             // emit a proper endgame header even if winner/outcome metadata is missing.
@@ -555,7 +566,10 @@ internal sealed class GamePlayRealtimeController
         }
         _choices.UpdateFromState(state, _viewerPlayerId, _canStartAskCardSelection);
 
-        _diceSounds.TryPlayDiceRollSound(state);
+        _diceSounds.TryPlayDiceRollSound(
+            state,
+            suppressForCurrentUpdate: suppressDiceSoundForCurrentUpdate,
+            forceForCurrentUpdate: forceDiceSoundForCurrentUpdate && !suppressDiceSoundForCurrentUpdate);
 
         var becameFinished =
             !string.Equals(previousStatus, "finished", StringComparison.OrdinalIgnoreCase) &&
@@ -674,6 +688,30 @@ internal sealed class GamePlayRealtimeController
         }
 
         return status;
+    }
+
+    private static bool LooksLikeResolvedDrawLog(string message)
+    {
+        var trimmed = (message ?? string.Empty).Trim();
+        if (trimmed.Length == 0)
+        {
+            return false;
+        }
+
+        return trimmed.Contains(" pioche ", StringComparison.OrdinalIgnoreCase) ||
+               trimmed.EndsWith(" pioche.", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool LooksLikeDiceRollLog(string message)
+    {
+        var trimmed = (message ?? string.Empty).Trim();
+        if (trimmed.Length == 0)
+        {
+            return false;
+        }
+
+        return trimmed.Contains(" lance le dé ", StringComparison.OrdinalIgnoreCase) ||
+               trimmed.Contains(" lance le de ", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsStartReadyFromState(GameStateDto state)

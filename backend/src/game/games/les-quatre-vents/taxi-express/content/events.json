@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "cards": [
+    { "id": 1, "title": "Groupe de motards", "description": "Une nuée de motards rugissants déboule sur la route, vous devez freiner !", "blockedTileId": 1 },
+    { "id": 2, "title": "Route barrée", "description": "Des étals colorés occupent toute la rue : impossible de passer.", "blockedTileId": 2 },
+    { "id": 3, "title": "Sortie des écoles", "description": "Une horde d’enfants traverse en riant : patience, laissez-les passer.", "blockedTileId": 3 },
+    { "id": 4, "title": "Tempête", "description": "Un arbre tombe en travers de la chaussée : il faut s’arrêter.", "blockedTileId": 4 },
+    { "id": 5, "title": "Piétons pressés", "description": "Des passants imprudents traversent sans regarder, mieux vaut freiner.", "blockedTileId": 5 },
+    { "id": 6, "title": "Embouteillage", "description": "Les voitures sont coincées partout : vous avancez au compte-gouttes.", "blockedTileId": 6 },
+    { "id": 7, "title": "Travaux", "description": "Le bitume est en chantier : il faudra patienter encore un moment.", "blockedTileId": 7 },
+    { "id": 8, "title": "Envie pressante du client", "description": "Le client tape sur le siège : il faut s’arrêter immédiatement.", "blockedTileId": 8 },
+    { "id": 9, "title": "Manifestation", "description": "Une foule en colère bloque la rue, impossible de passer.", "blockedTileId": 9 },
+    { "id": 10, "title": "Feu rouge", "description": "Les feux s’allument soudain : stop obligatoire !", "blockedTileId": 10 },
+    { "id": 11, "title": "Voiture en panne", "description": "Une voiture arrêtée en plein milieu vous force à vous immobiliser.", "blockedTileId": 11 },
+    { "id": 12, "title": "Accident", "description": "Les secours sont déjà sur place : le chemin est bloqué.", "blockedTileId": 12 },
+    { "id": 13, "title": "Jour de livraison", "description": "Un camion encombrant bouche la voie : mieux vaut attendre.", "blockedTileId": 13 },
+    { "id": 14, "title": "Contrôle routier", "description": "La police vérifie les papiers : vous devez attendre quelques instants.", "blockedTileId": 14 },
+    { "id": 15, "title": "Pluie torrentielle", "description": "Des trombes d’eau tombent : la route devient impraticable.", "blockedTileId": 15 },
+    { "id": 16, "title": "Incendie", "description": "Des pompiers s’activent autour d’un bâtiment en feu : passage impossible.", "blockedTileId": 16 },
+    { "id": 17, "title": "Inondation", "description": "La chaussée est sous l’eau, impossible de continuer.", "blockedTileId": 17 },
+    { "id": 18, "title": "Fête des voisins", "description": "Rires, musique et décorations envahissent la rue, il faut attendre.", "blockedTileId": 18 },
+    { "id": 19, "title": "Ralenti d’oiseaux", "description": "Une nuée de pigeons traverse devant vous : prudence.", "blockedTileId": 19 },
+    { "id": 20, "title": "Collecte de dons", "description": "Des bénévoles occupent la rue : impossible de passer.", "blockedTileId": 20 },
+    { "id": 21, "title": "Forum de la santé", "description": "Des stands et des visiteurs encombrent le passage.", "blockedTileId": 21 },
+    { "id": 22, "title": "Transfert de prisonniers", "description": "Des policiers escortent des détenus : mieux vaut stopper le taxi.", "blockedTileId": 22 },
+    { "id": 23, "title": "Exercices de secourisme", "description": "Une scène de formation bloque la rue, patience !", "blockedTileId": 23 },
+    { "id": 24, "title": "Foire aux fleurs", "description": "Les allées de fleurs colorées envahissent la chaussée.", "blockedTileId": 24 },
+    { "id": 25, "title": "Convoi exceptionnel", "description": "Un camion immense traverse la rue, vous devez attendre.", "blockedTileId": 25 }
+  ]
+}

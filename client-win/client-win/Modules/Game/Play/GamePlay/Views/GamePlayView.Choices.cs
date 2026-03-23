@@ -1103,21 +1103,20 @@ public partial class GamePlayView
         {
             return;
         }
-        // Quiz listbox must consume Enter to submit selected answer,
-        // so it does not trigger global Enter shortcut (roll).
-        e.Handled = true;
         try
         {
             bool sent = await vm.SubmitSelectedChoiceAsync(CancellationToken.None).ConfigureAwait(true);
-                if (sent)
-                {
-                    NoteChoiceSubmittedForFocusRestore(vm);
-                    return;
-                }
+            if (sent)
+            {
+                e.Handled = true;
+                NoteChoiceSubmittedForFocusRestore(vm);
+                return;
+            }
 
             // Quiz: when cursor is on question line, Enter jumps to first answer.
             if (vm.IsQuizPending && ChoicesList.Items.Count > 1 && ChoicesList.SelectedIndex == 0)
             {
+                e.Handled = true;
                 ChoicesList.SelectedIndex = 1;
                 ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
                 TryFocusChoiceIndex(ChoicesList, 1);
@@ -1125,7 +1124,7 @@ public partial class GamePlayView
         }
         catch
         {
-            // ignore (Enter stays consumed)
+            // ignore
         }
     }
 }

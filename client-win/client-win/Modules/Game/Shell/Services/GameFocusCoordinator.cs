@@ -137,7 +137,7 @@ public sealed class GameFocusCoordinator : IGameFocusCoordinator
             return false;
         }
 
-        if (reason is GameFocusReason.InitialLoad or GameFocusReason.TableStarted or GameFocusReason.ChoosePawn)
+        if (reason is GameFocusReason.InitialLoad or GameFocusReason.TableStarted or GameFocusReason.ChoosePawn or GameFocusReason.TurnActionReady)
         {
             return result == GameFocusAttemptResult.Interactive;
         }
@@ -149,7 +149,8 @@ public sealed class GameFocusCoordinator : IGameFocusCoordinator
     {
         return reason is GameFocusReason.InitialLoad
             or GameFocusReason.TableStarted
-            or GameFocusReason.ChoosePawn;
+            or GameFocusReason.ChoosePawn
+            or GameFocusReason.TurnActionReady;
     }
 
     private static bool IsTraceEnabled()

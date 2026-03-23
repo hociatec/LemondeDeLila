@@ -120,6 +120,31 @@ public sealed class GameFocusCoordinatorTests
     }
 
     [Fact]
+    public void TurnActionReady_UsesCriticalRetriesUntilInteractive()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            var coordinator = new GameFocusCoordinator(dispatcher);
+            var host = new FakeHost(
+                GameFocusAttemptResult.Anchor,
+                GameFocusAttemptResult.Anchor,
+                GameFocusAttemptResult.Anchor,
+                GameFocusAttemptResult.Anchor,
+                GameFocusAttemptResult.Interactive);
+            using var _ = coordinator.AttachHost(host);
+
+            coordinator.RequestGameZone(GameFocusReason.TurnActionReady);
+
+            Assert.True(StaDispatcherHarness.WaitUntil(() => host.CallCount >= 5, dispatcher, 3500));
+            StaDispatcherHarness.Drain(dispatcher);
+
+            Assert.Equal(GameFocusReason.TurnActionReady, host.LastReason);
+            Assert.Equal(1, host.ActivateCount);
+            Assert.InRange(host.CallCount, 5, 6);
+        });
+    }
+
+    [Fact]
     public void NewRequest_CancelsPreviousPendingPasses()
     {
         StaDispatcherHarness.Run(dispatcher =>

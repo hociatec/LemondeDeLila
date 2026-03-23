@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "setup": { "startTileIndex": 0 },
+  "decks": { "clients": "clients", "events": "events" },
+  "victory": { "type": "completed_trips", "target": 5 },
+  "turnFlow": [
+    { "type": "ensure_active_client" },
+    { "type": "ensure_turn_event" },
+    { "type": "roll" },
+    { "type": "move_by_last_roll" },
+    { "type": "resolve_blocked_path" },
+    { "type": "resolve_destination" },
+    { "type": "advance_turn" }
+  ],
+  "messages": {
+    "newClient": "Nouveau client : {clientName} vers {destination}.",
+    "noClientAvailable": "Aucun client disponible pour le moment.",
+    "event": "Événement : {title} ({tile}) - {description}",
+    "noEvent": "Événement : la ville est calme, aucun obstacle identifié.",
+    "move": "{player} avance de {roll} case(s) et place son taxi en case {tileIndex} ({tileTitle}).",
+    "blocked": "{player} croise l’événement {tileTitle}, le client descend et le taxi retourne à la station.",
+    "dropoff": "{player} dépose {clientName} à destination ({tileTitle}).",
+    "win": "{player} remporte la course avec {count} trajets validés !"
+  }
+}

@@ -3,6 +3,16 @@
   "name": "Taxi Express",
   "minPlayers": 2,
   "maxPlayers": 5,
-  "engine": "taxi-express",
-  "summary": "Transportez vos clients en évitant les obstacles pour valider cinq trajets."
+  "engine": "board-mission",
+  "category": "JeuxDePlateaux",
+  "subcategory": "LesQuatreVents",
+  "summary": "Transportez vos clients en évitant les obstacles pour valider cinq trajets.",
+  "boardMission": {
+    "actionLabel": "Lancer le dé",
+    "scorePanelTitle": "Trajets",
+    "idleClientText": "Aucun client à bord.",
+    "idleRouteText": "Aucun trajet en cours.",
+    "idleEventText": "Pas d’obstacle identifié.",
+    "phases": ["turn"]
+  }
 }

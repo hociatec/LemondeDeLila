@@ -207,6 +207,47 @@ public sealed class GameRoomViewFocusFlowTests
     }
 
     [Fact]
+    public void TurnActionReadyFocusRequest_ReanchorsFocusFromHistoryToGameZone()
+    {
+        StaDispatcherHarness.Run(dispatcher =>
+        {
+            var focusCoordinator = new GameFocusCoordinator(dispatcher);
+            var vm = CreateViewModel(focusCoordinator, onStart: () => Task.CompletedTask);
+            var view = new GameRoomView { DataContext = vm };
+            var window = new Window
+            {
+                Width = 1000,
+                Height = 700,
+                Content = view,
+                ShowInTaskbar = false,
+                WindowStyle = WindowStyle.None,
+            };
+
+            try
+            {
+                window.Show();
+                window.Activate();
+                StaDispatcherHarness.Drain(dispatcher);
+
+                var history = Assert.IsType<GameHistoryView>(view.FindName("HistoryHost"));
+                var historyTarget = Assert.IsAssignableFrom<FrameworkElement>(history.FocusTarget);
+                historyTarget.Focus();
+                Keyboard.Focus(historyTarget);
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(historyTarget), dispatcher, 1200));
+
+                vm.GameZone.RequestFocus(GameFocusReason.TurnActionReady);
+
+                var zone = Assert.IsType<GameZoneHostView>(view.FindName("GameZoneHost"));
+                Assert.True(StaDispatcherHarness.WaitUntil(() => IsFocusWithin(zone), dispatcher, 1200));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void ArrowDown_FromGameName_DoesNotEscapeTableView()
     {
         StaDispatcherHarness.Run(dispatcher =>

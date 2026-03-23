@@ -275,15 +275,44 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     {
         // Use latest server state first to avoid races where PendingType property
         // has not been synchronized yet (e.g. just after choose_pawn resolution).
-        var pendingType = (_session?.LastState?.Pending?.Type ?? string.Empty).Trim();
+        var state = _session?.LastState;
+        var pendingType = (state?.Pending?.Type ?? string.Empty).Trim();
         var choosePawnFromState = IsPawnSelectionPendingType(pendingType);
         var choosePawn = choosePawnFromState || IsChoosePawnPending;
-        RequestGameZoneFocus(choosePawn ? GameFocusReason.ChoosePawn : GameFocusReason.GamePlayReady);
+        var reason = choosePawn
+            ? GameFocusReason.ChoosePawn
+            : HasImmediateTurnAction(state)
+                ? GameFocusReason.TurnActionReady
+                : GameFocusReason.GamePlayReady;
+        RequestGameZoneFocus(reason);
     }
 
     private void RequestGameZoneFocus(GameFocusReason reason)
     {
         GameZoneFocusRequested?.Invoke(reason);
+    }
+
+    private static bool HasImmediateTurnAction(GameStateDto? state)
+    {
+        var actions = state?.Actions;
+        if (actions == null || actions.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (var action in actions)
+        {
+            var type = (action?.Type ?? string.Empty).Trim();
+            if (string.Equals(type, "draw", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(type, "draw_card", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(type, "roll", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(type, "roll_dice", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private async Task<bool> ConfirmDiscardIfNeededAsync(

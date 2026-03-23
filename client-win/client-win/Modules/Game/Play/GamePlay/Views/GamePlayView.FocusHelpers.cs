@@ -78,13 +78,6 @@ public partial class GamePlayView
 
         index = ClampIndex(index, list.Items.Count);
 
-        list.Focus();
-        Keyboard.Focus(list);
-        if (IsFocusWithinList(list))
-        {
-            return true;
-        }
-
         try
         {
             list.ScrollIntoView(list.Items[index]);
@@ -171,16 +164,6 @@ public partial class GamePlayView
                 return;
             }
 
-            if (list.ItemContainerGenerator.Status == GeneratorStatus.ContainersGenerated)
-            {
-                list.Focus();
-                Keyboard.Focus(list);
-                if (IsFocusWithinList(list))
-                {
-                    if (isHandList) UnhookHandListFocusObservers();
-                    else UnhookChoicesListFocusObservers();
-                }
-            }
         };
 
         if (isHandList)

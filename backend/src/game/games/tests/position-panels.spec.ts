@@ -11,10 +11,11 @@ import { MonVillagePresenterService } from '../les-quatre-vents/mon-village-mon-
 import { PiratesEnVadrouillePresenterService } from '../les-quatre-vents/pirates-en-vadrouille/presenter/pirates-en-vadrouille-presenter.service';
 import { PrimalisPresenterService } from '../les-quatre-vents/primalis/presenter/primalis-presenter.service';
 import { SacAMalicesPresenterService } from '../les-quatre-vents/sac-a-malices/presenter/sac-a-malices-presenter.service';
-import { TaxiExpressPresenterService } from '../les-quatre-vents/taxi-express/presenter/taxi-express-presenter.service';
 import { ToutPresDeMamanPresenterService } from '../les-quatre-vents/tout-pres-de-maman/presenter/tout-pres-de-maman-presenter.service';
 import { VoyagePresenterService } from '../les-quatre-vents/voyage-en-terre-de-brumes/presenter/voyage-presenter.service';
 import { JeuOiePresenterService } from '../vents-sacres/jeu-oie/presenter/jeu-oie-presenter.service';
+import { BoardMissionPresenterService } from '../../engine/board-mission/board-mission-presenter.service';
+import { BoardMissionRuntimeSupportService } from '../../engine/board-mission/board-mission-runtime-support.service';
 
 type PresenterCase = {
   label: string;
@@ -38,6 +39,10 @@ function createBaseState(metadata: Record<string, unknown>) {
 
 describe('Position panels', () => {
   const board = new BoardPayloadService();
+  const boardMissionPresenter = new BoardMissionPresenterService(
+    board,
+    new BoardMissionRuntimeSupportService(),
+  );
   const sharedTiles = [{}, {}, {}];
   const sharedPositions = { 1: 0, 2: 2 };
 
@@ -138,7 +143,37 @@ describe('Position panels', () => {
     },
     {
       label: 'Taxi Express',
-      presenter: new TaxiExpressPresenterService(board),
+      presenter: {
+        exposeStateForUser(state: any, userId: number) {
+          return boardMissionPresenter.exposeStateForUser(
+            state,
+            userId,
+            {
+              rules: {
+                version: 1,
+                setup: { startTileIndex: 0 },
+                decks: { clients: 'clients', events: 'events' },
+                victory: { type: 'completed_trips', target: 5 },
+                turnFlow: [{ type: 'roll' }],
+                messages: {
+                  newClient: '',
+                  noClientAvailable: '',
+                  event: '',
+                  noEvent: '',
+                  move: '',
+                  blocked: '',
+                  dropoff: '',
+                  win: '',
+                },
+              },
+            },
+            {
+              phases: ['turn'],
+              scorePanelTitle: 'Trajets',
+            },
+          );
+        },
+      },
       metadata: {
         tiles: sharedTiles,
         positions: sharedPositions,

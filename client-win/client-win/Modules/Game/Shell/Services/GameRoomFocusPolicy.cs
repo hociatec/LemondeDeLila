@@ -108,7 +108,7 @@ internal sealed class GameRoomFocusPolicy
 
     public bool ShouldAllowGameZoneRequest(GameFocusReason reason)
     {
-        if (reason is GameFocusReason.InitialLoad or GameFocusReason.TableStarted or GameFocusReason.ChoosePawn)
+        if (reason is GameFocusReason.InitialLoad or GameFocusReason.TableStarted or GameFocusReason.ChoosePawn or GameFocusReason.TurnActionReady)
         {
             // Critical gameplay transitions must recover focus to the game zone,
             // even if history is currently focused.

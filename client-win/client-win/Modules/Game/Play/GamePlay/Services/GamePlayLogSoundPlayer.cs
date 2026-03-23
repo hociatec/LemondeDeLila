@@ -43,6 +43,12 @@ internal sealed class GamePlayLogSoundPlayer
             }
         }
 
+        if (LooksLikeDrawLog(msg))
+        {
+            TryPlayDrawSound();
+            return;
+        }
+
         if (msg.StartsWith("Fin de la manche", StringComparison.OrdinalIgnoreCase))
         {
             _sounds.Play(SoundId.RoundEnded);
@@ -59,5 +65,11 @@ internal sealed class GamePlayLogSoundPlayer
 
         _lastDrawSoundUtc = now;
         _sounds.Play(SoundId.DrawCard);
+    }
+
+    private static bool LooksLikeDrawLog(string message)
+    {
+        return message.Contains(" pioche ", StringComparison.OrdinalIgnoreCase) ||
+               message.EndsWith(" pioche.", StringComparison.OrdinalIgnoreCase);
     }
 }

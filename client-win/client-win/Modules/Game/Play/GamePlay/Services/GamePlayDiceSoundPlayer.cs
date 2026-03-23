@@ -24,7 +24,10 @@ internal sealed class GamePlayDiceSoundPlayer
         _lastTurnIndex = 0;
     }
 
-    internal void TryPlayDiceRollSound(GameStateDto? state)
+    internal void TryPlayDiceRollSound(
+        GameStateDto? state,
+        bool suppressForCurrentUpdate = false,
+        bool forceForCurrentUpdate = false)
     {
         if (state == null)
         {
@@ -48,13 +51,11 @@ internal sealed class GamePlayDiceSoundPlayer
             return;
         }
 
-        var shouldPlay =
-            roll != _lastRoll ||
-            (turnIndex != _lastTurnIndex && roll > 0);
+        var shouldPlay = roll != _lastRoll;
 
         _lastRoll = roll;
         _lastTurnIndex = turnIndex;
-        if (shouldPlay)
+        if ((shouldPlay || forceForCurrentUpdate) && !suppressForCurrentUpdate)
         {
             _sounds.Play(SoundId.DiceRolled);
         }

@@ -9,4 +9,5 @@ public enum GameFocusReason
     TableStarted = 4,
     GamePlayReady = 5,
     ChoosePawn = 6,
+    TurnActionReady = 7,
 }
