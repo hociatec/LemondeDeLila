@@ -6,13 +6,13 @@
   "engine": "board-mission",
   "category": "JeuxDePlateaux",
   "subcategory": "LesQuatreVents",
-  "summary": "Transportez vos clients en évitant les obstacles pour valider cinq trajets.",
+  "summary": "Transportez vos clients en \u00e9vitant les obstacles pour valider cinq trajets.",
   "boardMission": {
-    "actionLabel": "Lancer le dé",
+    "actionLabel": "Lancer le d\u00e9",
     "scorePanelTitle": "Trajets",
-    "idleClientText": "Aucun client à bord.",
+    "idleClientText": "Aucun client \u00e0 bord.",
     "idleRouteText": "Aucun trajet en cours.",
-    "idleEventText": "Pas d’obstacle identifié.",
+    "idleEventText": "Pas d\u2019obstacle identifi\u00e9.",
     "phases": ["turn"]
   }
 }

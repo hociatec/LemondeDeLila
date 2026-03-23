@@ -15,11 +15,11 @@
   "messages": {
     "newClient": "Nouveau client : {clientName} vers {destination}.",
     "noClientAvailable": "Aucun client disponible pour le moment.",
-    "event": "Événement : {title} ({tile}) - {description}",
-    "noEvent": "Événement : la ville est calme, aucun obstacle identifié.",
-    "move": "{player} avance de {roll} case(s) et place son taxi en case {tileIndex} ({tileTitle}).",
-    "blocked": "{player} croise l’événement {tileTitle}, le client descend et le taxi retourne à la station.",
-    "dropoff": "{player} dépose {clientName} à destination ({tileTitle}).",
-    "win": "{player} remporte la course avec {count} trajets validés !"
+    "event": "\u00c9v\u00e9nement : {title} ({tile}) - {description}",
+    "noEvent": "\u00c9v\u00e9nement : la ville est calme, aucun obstacle identifi\u00e9.",
+    "move": "{player} lance le d\u00e9 : {roll}, et place son taxi en case {tileIndex} ({tileTitle}).",
+    "blocked": "{player} croise l\u2019\u00e9v\u00e9nement {tileTitle}, le client descend et le taxi retourne \u00e0 la station.",
+    "dropoff": "{player} d\u00e9pose {clientName} \u00e0 destination ({tileTitle}).",
+    "win": "{player} remporte la course avec {count} trajets valid\u00e9s !"
   }
 }
