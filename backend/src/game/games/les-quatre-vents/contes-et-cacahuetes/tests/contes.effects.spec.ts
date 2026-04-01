@@ -557,9 +557,13 @@ describe('Contes effects', () => {
     const conteLog = Array.isArray(state.log)
       ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
       : '';
+    const lastConte = asRecord(asRecord(state.metadata).lastConte);
     expect(conteLog).toContain('Lilas arrive sur Case Conte - Japon');
     expect(conteLog).not.toContain('gar');
     expect(conteLog).not.toContain('Piochez une carte Conte.');
+    expect(state.pending).toBeNull();
+    expect(toText(lastConte.title)).toBe('Conte - Japon : Momotarō');
+    expect(toText(lastConte.text)).toContain('petit village japonais');
   });
 
   it('records conte narration only for the drawing player', async () => {
@@ -608,7 +612,7 @@ describe('Contes effects', () => {
     expect(toText(lastConte.text)).toBe('Le conte secret.');
   });
 
-  it('draws from the real "contes" deck on conte spaces and stores the narration', async () => {
+  it('reads the matching tile story immediately on conte spaces without consuming the deck', async () => {
     const moduleRef = await createActionsModule();
     const setup = moduleRef.get(ContesCacahuetesSetupService);
     const actionsService = moduleRef.get(ContesActionService);
@@ -634,23 +638,21 @@ describe('Contes effects', () => {
           discardContes: [],
         },
       },
+      pending: null,
       log: [],
     } as any;
 
     state = (actionsService as any).moveBy(state, 1, 1, 0);
-    expect(toText(asRecord(state.pending).type)).toBe('draw');
-    expect(toText(asRecord(asRecord(state.pending).data).cardType)).toBe('conte');
-
-    state = actionsService.applyActions(state, [{ type: 'draw', payload: {} }]);
-
-    const logText = Array.isArray(state.log)
-      ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
-      : '';
+    const remainingContes = Array.isArray(asRecord(asRecord(state.metadata).decks).contes)
+      ? (asRecord(asRecord(state.metadata).decks).contes as unknown[])
+      : [];
     const lastConte = asRecord(asRecord(state.metadata).lastConte);
 
-    expect(logText).toContain('Lilas pioche une carte Conte: Conte Sénégal.');
-    expect(toText(lastConte.title)).toBe('Conte Sénégal');
-    expect(toText(lastConte.text)).toBe('Le lièvre déjoue la hyène.');
+    expect(state.pending).toBeNull();
+    expect(toText(lastConte.title)).toBe('Conte - Japon : Momotarō');
+    expect(toText(lastConte.text)).toContain('petit village japonais');
+    expect(remainingContes).toHaveLength(1);
+    expect(toText(asRecord(remainingContes[0]).title)).toBe('Conte Sénégal');
   });
 
   it('uses simplified pawn names and the new arrival phrasing during movement', async () => {
@@ -850,14 +852,11 @@ describe('Contes effects', () => {
 
     state = actionsService.applyActions(state, [{ type: 'draw', payload: {} }]);
 
-    expect(toText(asRecord(state.pending).type)).toBe('draw');
-    state = actionsService.applyActions(state, [{ type: 'draw', payload: {} }]);
-
     expect(state.pending ?? null).toBeNull();
     const logText = Array.isArray(state.log)
       ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
       : '';
-    expect(logText).toContain('Noodle pioche une carte Bonus: Parchemin enchanté.');
+    expect(logText).toContain('pioche une carte Bonus: Parchemin enchanté.');
   });
 
   it('uses the singular form for Poussière de rire when one player wins', async () => {
@@ -962,13 +961,13 @@ describe('Contes effects', () => {
 
     let state = setup.hydrateInitialState(baseState());
     const metadata = asRecord(state.metadata);
-    const decks = asRecord(metadata.decks);
-    const conteCard: ContesCard = {
-      id: 1001,
+    const tiles = Array.isArray(metadata.tiles) ? [...metadata.tiles] : [];
+    tiles[2] = {
+      ...asRecord(tiles[2]),
       type: 'conte',
-      title: 'Conte privé',
-      text: 'Le conte doit être visible uniquement pour Lilas.',
-    };
+      label: 'Case Conte - Conte privé',
+      description: 'Le conte doit être visible uniquement pour Lilas.',
+    } as any;
 
     state = {
       ...state,
@@ -980,18 +979,12 @@ describe('Contes effects', () => {
       metadata: {
         ...(state.metadata ?? {}),
         positions: { 1: 1, 2: 0, 3: 0 },
-        decks: {
-          ...decks,
-          contes: [conteCard],
-          conte: [conteCard],
-          discardContes: [],
-        },
+        tiles,
       },
       log: [],
     } as any;
 
     state = (actionsService as any).moveBy(state, 1, 1, 0);
-    state = actionsService.applyActions(state, [{ type: 'draw', payload: {} }]);
 
     const lilasView = presenter.exposeStateForUser(state, 1);
     const buckyView = presenter.exposeStateForUser(state, 2);

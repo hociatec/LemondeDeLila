@@ -1,0 +1,8 @@
+{
+  "code": "mission-galaxie",
+  "name": "Mission Galaxie",
+  "minPlayers": 2,
+  "maxPlayers": 6,
+  "engine": "mission-galaxie",
+  "summary": "Une course cosmique de 50 cases où questions, défis et événements déterminent votre avance."
+}

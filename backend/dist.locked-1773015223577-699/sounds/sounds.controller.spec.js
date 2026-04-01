@@ -1,0 +1,92 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+const _soundscontroller = require("./sounds.controller");
+describe('SoundsController', ()=>{
+    it('returns only enabled table ambiences on public endpoint', async ()=>{
+        const sounds = {
+            listTableAmbiencesWithFilter: jest.fn().mockResolvedValue({
+                updatedAt: '2026-03-02T00:00:00.000Z',
+                items: [
+                    {
+                        soundId: 'TableAmbience1',
+                        name: 'Ambiance 1',
+                        enabled: true
+                    }
+                ]
+            })
+        };
+        const controller = new _soundscontroller.SoundsController(sounds);
+        const out = await controller.tableAmbiences();
+        expect(sounds.listTableAmbiencesWithFilter).toHaveBeenCalledWith({
+            includeDisabled: false
+        });
+        expect(out.items).toHaveLength(1);
+        expect(out.items[0].soundId).toBe('TableAmbience1');
+    });
+    it('allows cross-origin media loading for mp3 sounds', async ()=>{
+        const sounds = {
+            resolveSoundFile: jest.fn().mockResolvedValue({
+                entry: {
+                    sha256: 'abc'
+                },
+                filePath: '/tmp/sound.mp3',
+                ext: '.mp3'
+            })
+        };
+        const controller = new _soundscontroller.SoundsController(sounds);
+        const res = {
+            setHeader: jest.fn(),
+            sendFile: jest.fn(),
+            redirect: jest.fn()
+        };
+        await controller.getSound('RoomJoined', 'abc', res);
+        expect(res.setHeader).toHaveBeenCalledWith('Cross-Origin-Resource-Policy', 'cross-origin');
+        expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'audio/mpeg');
+        expect(res.sendFile).toHaveBeenCalledWith('/tmp/sound.mp3', {
+            dotfiles: 'allow'
+        });
+        expect(res.redirect).not.toHaveBeenCalled();
+    });
+    it('redirects legacy mp3 requests to wav when the server stores wav', async ()=>{
+        const sounds = {
+            resolveSoundFile: jest.fn().mockResolvedValue({
+                entry: {
+                    sha256: 'abc',
+                    soundId: 'RoomJoined'
+                },
+                filePath: '/tmp/sound.wav',
+                ext: '.wav'
+            })
+        };
+        const controller = new _soundscontroller.SoundsController(sounds);
+        const res = {
+            setHeader: jest.fn(),
+            sendFile: jest.fn(),
+            redirect: jest.fn()
+        };
+        await controller.getSound('RoomJoined', 'abc', res);
+        expect(res.redirect).toHaveBeenCalledWith(301, '/api/sounds/RoomJoined/abc.wav');
+        expect(res.sendFile).not.toHaveBeenCalled();
+    });
+    it('allows serving wav files from storage paths under dot-directories', async ()=>{
+        const sounds = {
+            resolveSoundFile: jest.fn().mockResolvedValue({
+                entry: {
+                    sha256: 'abc'
+                },
+                filePath: '/home/ubuntu/.local/share/lemonde-de-lila/sounds/TableAmbience1/abc.wav'
+            })
+        };
+        const controller = new _soundscontroller.SoundsController(sounds);
+        const res = {
+            setHeader: jest.fn(),
+            sendFile: jest.fn()
+        };
+        await controller.getSoundWav('TableAmbience1', 'abc', res);
+        expect(res.sendFile).toHaveBeenCalledWith('/home/ubuntu/.local/share/lemonde-de-lila/sounds/TableAmbience1/abc.wav', {
+            dotfiles: 'allow'
+        });
+    });
+});

@@ -755,7 +755,7 @@ function defaultAnimalDeck(): AventureSauvageCard[] {
     {
       id: 17,
       deck: 'animal',
-      text: "Vous poursuivez une grenouille géante de nénuphar en nénuphar. ì chaque saut, vous glissez, tournez en rond et finissez par reculer d'une case avant de rebondir aussitôt en avant d'une case, en éclatant de rire.",
+      text: "Vous poursuivez une grenouille géante de nénuphar en nénuphar. À chaque saut, vous glissez, tournez en rond et finissez par reculer d'une case avant de rebondir aussitôt en avant d'une case, en éclatant de rire.",
     },
     {
       id: 18,

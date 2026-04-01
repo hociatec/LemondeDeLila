@@ -2198,7 +2198,7 @@ export class PanierExpressService extends AbstractGameService {
           next = this.turnStatus.setStatus(next, playerId, 'keepTurn', 1);
           next = this.core.appendLog(
             next,
-            `[Panier Express] ${eventLabel} : "${this.utils.formatCourseLabel(card)}" est déjà présent, carte défaussée puis rejouez immédiatement.`,
+            `[Panier Express] ${eventLabel} : vous piochez « ${this.utils.formatCourseLabel(card)} », mais cet ingrédient est déjà dans le panier. Il est donc défaussé. Vous rejouez immédiatement.`,
           );
           next = this.appendActionLog(next, playerId, 'event', {
             event,

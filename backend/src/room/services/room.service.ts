@@ -35,7 +35,6 @@ export class RoomService {
   private roomPayloadRedisDisabled = false;
   private readonly roomPayloadRedisPrefix = 'room:payload:';
   private readonly roomPayloadTtlSeconds: number;
-  private readonly restoredRoomGraceMs: number;
   private readonly roomBans = new Map<number, Set<number>>();
 
   private static isAdminRoles(roles: unknown): boolean {
@@ -397,14 +396,6 @@ export class RoomService {
     const ttl =
       Number.isFinite(ttlCandidate) && ttlCandidate >= 1 ? ttlCandidate : 15;
     this.roomPayloadTtlSeconds = Math.min(ttl, 3600);
-
-    const restoredGraceCandidate = Number(
-      this.config.get('RESTORED_ROOM_GRACE_MS') ?? 180_000,
-    );
-    this.restoredRoomGraceMs =
-      Number.isFinite(restoredGraceCandidate) && restoredGraceCandidate >= 0
-        ? restoredGraceCandidate
-        : 180_000;
   }
 
   async primeRoomPayloadCache(
@@ -642,36 +633,17 @@ export class RoomService {
       await this.participants.save(participant);
     }
     await this.invalidateRoomPayloadCache(room.id);
-    let preserveRestoredRoom = false;
 
     // Special case: if this room was created by restoring a vault snapshot and the original
-    // restorer quits, we only delete the restored room when no human players remain (i.e. only bots would be left).
-    // This avoids kicking other humans still playing on the restored table.
+    // restorer quits, delete the restored room and its linked vault snapshot when no human players remain.
     if (
       participant &&
       opts?.disconnectOnly !== true &&
       room.restoredFromSnapshotId &&
       room.restoredOwnerUserId === userId
     ) {
-      const restoredAtMs =
-        room.createdAt instanceof Date ? room.createdAt.getTime() : 0;
-      const withinGrace =
-        restoredAtMs > 0 &&
-        this.restoredRoomGraceMs > 0 &&
-        Date.now() - restoredAtMs < this.restoredRoomGraceMs;
-      preserveRestoredRoom = withinGrace;
-      if (withinGrace) {
-        this.logger.log(
-          'Restored room owner left within grace window; keep room',
-          {
-            roomId: room.id,
-            userId,
-            graceMs: this.restoredRoomGraceMs,
-          },
-        );
-      }
       const activeHumansAfterLeave = await this.countActiveHumans(room.id);
-      if (activeHumansAfterLeave === 0 && !preserveRestoredRoom) {
+      if (activeHumansAfterLeave === 0) {
         const snapshotId = String(room.restoredFromSnapshotId ?? '').trim();
         this.logger.log(
           'Restored room abandoned (no humans left => delete room)',
@@ -746,7 +718,7 @@ export class RoomService {
       }
     }
 
-    if (opts?.preserveRoom || preserveRestoredRoom) {
+    if (opts?.preserveRoom) {
       this.presenceService.broadcastPresence();
       this.notifyLobbyChanged(room.id, 'left');
       return room;
@@ -935,6 +907,11 @@ export class RoomService {
         // best effort
       }
     }
+    if (room.restoredFromSnapshotId) {
+      await this.deleteLinkedRestoredSnapshot(room, userId);
+      room.restoredFromSnapshotId = null;
+      room.restoredOwnerUserId = null;
+    }
     room.status = 'setup';
     room.startedAt = null;
     await this.rooms.save(room);
@@ -943,6 +920,34 @@ export class RoomService {
     }
     this.notifyLobbyChanged(room.id, 'reset');
     return room;
+  }
+
+  private async deleteLinkedRestoredSnapshot(
+    room: Room,
+    fallbackOwnerUserId: number,
+  ): Promise<void> {
+    const snapshotId = String(room.restoredFromSnapshotId ?? '').trim();
+    if (!snapshotId) {
+      return;
+    }
+
+    const ownerUserId =
+      typeof room.restoredOwnerUserId === 'number' &&
+      Number.isFinite(room.restoredOwnerUserId)
+        ? Number(room.restoredOwnerUserId)
+        : fallbackOwnerUserId;
+    if (!Number.isFinite(ownerUserId) || ownerUserId <= 0) {
+      return;
+    }
+
+    try {
+      await this.vaultSnapshots.delete({
+        id: snapshotId,
+        ownerUserId,
+      } as any);
+    } catch {
+      // best effort
+    }
   }
 
   /**

@@ -1030,6 +1030,31 @@ describe('PanierExpressService', () => {
     expect(logs).toContain('[Panier Express] Journée bio: bonus pour B.');
   });
 
+  it("corrige l'accent de Retour en arrière dans le libellé d'événement", () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'A', inventory: [], basket: [], shoppingList: [] },
+      ],
+      status: 'running',
+    } as any);
+    state.status = 'started';
+    state.turn = { currentPlayerId: 1, direction: 1 };
+    state.turnIndex = 0;
+    state.pending = null;
+    state.metadata.decks.events = {
+      deck: ['retour-en-arriere'],
+      discards: [],
+    };
+
+    const after = (service as any).applyEvent(state, 1);
+    const logs = (after.log ?? []).map((entry: any) => entry.message);
+
+    expect(logs).toContain('[Panier Express] Carte Événement: Retour en arrière.');
+    expect(logs).toContain(
+      '[Panier Express] Retour en arrière: reculez de 3 cases.',
+    );
+  });
+
   it('Recette express exige salade, tomate et oignon dans l’inventaire', () => {
     const state: any = service.hydrateInitialState({
       players: [
@@ -1098,7 +1123,7 @@ describe('PanierExpressService', () => {
     expect((after.metadata as any)?.discards?.courses).toContain('poire');
     expect((service as any).turnStatus.getStatus(after, 1, 'keepTurn')).toBe(1);
     expect(logs).toContain(
-      '[Panier Express] Recette express: "poire" est déjà présent, carte défaussée puis rejouez immédiatement.',
+      '[Panier Express] Recette express: vous piochez « poire », mais cet ingrédient est déjà dans le panier. Il est donc défaussé. Vous rejouez immédiatement.',
     );
   });
 

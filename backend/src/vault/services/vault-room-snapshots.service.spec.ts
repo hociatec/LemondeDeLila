@@ -227,4 +227,67 @@ describe('VaultRoomSnapshotsService', () => {
     expect(rooms.adminDestroyRoom).toHaveBeenCalledWith(20);
     expect(rooms.adminDestroyRoom).toHaveBeenCalledTimes(2);
   });
+
+  it('abandonRestoredRoom deletes both the restored room and its linked snapshot', async () => {
+    const snapshotStore = new Map<string, SnapshotRecord>();
+    snapshotStore.set('snap-1', {
+      id: 'snap-1',
+      ownerUserId: 1,
+      name: 'Save 1',
+      gameType: 'panier-express',
+      roomName: 'Table test',
+      playersLabel: 'owner',
+      snapshotJson: JSON.stringify({ version: 1 }),
+      createdAt: new Date('2026-02-25T20:00:00.000Z'),
+    });
+
+    const snapshots = {
+      find: jest.fn(async () => []),
+      findOne: jest.fn(async () => null),
+      delete: jest.fn(async ({ id, ownerUserId }: any) => {
+        const item = snapshotStore.get(String(id));
+        if (!item || item.ownerUserId !== Number(ownerUserId)) {
+          return { affected: 0 };
+        }
+        snapshotStore.delete(String(id));
+        return { affected: 1 };
+      }),
+      create: jest.fn((data: any) => data),
+      save: jest.fn(async (entity: any) => entity),
+    } as unknown as Repository<VaultRoomSnapshotEntity>;
+
+    const roomBots = {
+      save: jest.fn(async (entity: any) => entity),
+    } as unknown as Repository<RoomBot>;
+
+    const rooms = {
+      requireRoomForOwnerAction: jest.fn(async () => ({
+        id: 20,
+        restoredFromSnapshotId: 'snap-1',
+        restoredOwnerUserId: 1,
+      })),
+      adminDestroyRoom: jest.fn(async () => undefined),
+    };
+
+    const service = new VaultRoomSnapshotsService(
+      snapshots,
+      roomBots,
+      rooms as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const ok = await service.abandonRestoredRoom(1, 20);
+
+    expect(ok).toBe(true);
+    expect(rooms.adminDestroyRoom).toHaveBeenCalledWith(20);
+    expect(snapshots.delete).toHaveBeenCalledWith({
+      id: 'snap-1',
+      ownerUserId: 1,
+    });
+    expect(snapshotStore.has('snap-1')).toBe(false);
+  });
 });

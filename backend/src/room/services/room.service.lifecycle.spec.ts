@@ -590,6 +590,39 @@ describe('RoomService lifecycle scenarios', () => {
     expect(deps.stats.endMatchOnReset).toHaveBeenCalledWith(10);
   });
 
+  it('resetRoom: deletes the linked vault snapshot for restored rooms', async () => {
+    const { service, deps, usersById, roomsById } = createFixture();
+    usersById.set(1, buildUser(1, 'owner'));
+    roomsById.set(
+      10,
+      buildRoom({
+        owner: buildUser(1, 'owner'),
+        status: 'started',
+        startedAt: new Date('2026-03-02T12:00:00.000Z'),
+        restoredFromSnapshotId: 'snap-restore-1',
+        restoredOwnerUserId: 1,
+      }),
+    );
+    deps.catalog.getGame.mockResolvedValueOnce({
+      id: 'lama',
+      maxPlayers: 4,
+      status: 'published',
+    });
+    jest
+      .spyOn(service, 'invalidateRoomPayloadCache')
+      .mockResolvedValue(undefined);
+
+    const room = await service.resetRoom(10, 1);
+
+    expect(deps.vaultSnapshots.delete).toHaveBeenCalledWith({
+      id: 'snap-restore-1',
+      ownerUserId: 1,
+    });
+    expect(room.restoredFromSnapshotId).toBeNull();
+    expect(room.restoredOwnerUserId).toBeNull();
+    expect(room.status).toBe('setup');
+  });
+
   it('togglePrivacy: toggles privacy and invalidates cache', async () => {
     const { service, usersById, roomsById } = createFixture();
     usersById.set(1, buildUser(1, 'owner'));
@@ -746,6 +779,38 @@ describe('RoomService lifecycle scenarios', () => {
 
     expect(result).toBeNull();
     expect(deps.botService.removeAllBotsForRoom).toHaveBeenCalledWith(10);
+    expect(deps.rooms.delete).toHaveBeenCalledWith(10);
+  });
+
+  it('leaveRoom: deletes restored room and linked vault snapshot when owner leaves and no humans remain', async () => {
+    const { service, deps, usersById, roomsById } = createFixture();
+    usersById.set(1, buildUser(1, 'owner'));
+    const room = buildRoom({
+      owner: buildUser(1, 'owner'),
+      status: 'started',
+      startedAt: new Date('2026-03-02T12:00:00.000Z'),
+      restoredFromSnapshotId: 'snap-restore-2',
+      restoredOwnerUserId: 1,
+    });
+    roomsById.set(10, room);
+    deps.participants.findOne.mockResolvedValueOnce({
+      id: 100,
+      user: { id: 1, username: 'owner' },
+      room: { id: 10 },
+      leftAt: null,
+    });
+    deps.participants.count.mockResolvedValueOnce(0);
+    jest
+      .spyOn(service, 'invalidateRoomPayloadCache')
+      .mockResolvedValue(undefined);
+
+    const result = await service.leaveRoom(10, 1);
+
+    expect(result).toBeNull();
+    expect(deps.vaultSnapshots.delete).toHaveBeenCalledWith({
+      id: 'snap-restore-2',
+      ownerUserId: 1,
+    });
     expect(deps.rooms.delete).toHaveBeenCalledWith(10);
   });
 

@@ -190,6 +190,7 @@ export class PanierExpressUtils {
       abime: 'abîmé',
       detrempe: 'détrempé',
       derriere: 'derrière',
+      arriere: 'arrière',
       impose: 'imposé',
       perce: 'percé',
       spontane: 'spontané',

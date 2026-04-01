@@ -843,6 +843,11 @@ public sealed class GameTableOpener : IGameTableOpener
                             _navigation.Show(tavernVm);
                             return Task.FromResult("Rejoindre une table ouvert.");
                         },
+                        openStoryBook: () =>
+                        {
+                            if (catalogVm == null) return Task.FromResult("Impossible d'ouvrir le livre des contes.");
+                            return _menuRouter.OpenStats();
+                        },
                         openVault: () =>
                         {
                             if (catalogVm == null) return Task.FromResult("Impossible d'ouvrir Mon coffre fort.");

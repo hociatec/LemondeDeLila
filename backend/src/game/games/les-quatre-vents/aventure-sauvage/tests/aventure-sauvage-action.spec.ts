@@ -123,6 +123,34 @@ describe('AventureSauvageActionService', () => {
     expect(humanPromptIndex).toBeGreaterThan(botChoiceIndex);
   });
 
+  it("corrige l'accent de la grenouille géante dans le deck Animal rigolo", async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        GameCoreService,
+        RandomService,
+        SetupFlowService,
+        BoardEffectsPoliciesService,
+        DeckPoliciesService,
+        GameContentLoaderService,
+        AventureSauvageSetupService,
+        AventureSauvageActionService,
+      ],
+    }).compile();
+
+    const setup = moduleRef.get(AventureSauvageSetupService);
+    const state = setup.hydrateInitialState(makeBaseState());
+    const metadata = asRecord(state.metadata);
+    const decks = asRecord(metadata.decks);
+    const animalDeck = Array.isArray(decks.animal) ? decks.animal : [];
+    const frogCard = animalDeck.find((card) =>
+      toText(asRecord(card).text).includes('grenouille géante'),
+    );
+    const frogText = toText(asRecord(frogCard).text);
+
+    expect(frogText).toContain('À chaque saut');
+    expect(frogText).not.toContain('ì chaque saut');
+  });
+
   it('avance le tour apres une pioche avec Passez un tour', async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [

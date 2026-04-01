@@ -1,0 +1,125 @@
+﻿{
+  "version": 1,
+  "cards": [
+    {
+      "id": 1,
+      "text": "Vous découvrez un raccourci à travers la prairie. Avancez de 2 cases."
+    },
+    {
+      "id": 2,
+      "text": "Votre cheval réalise une belle cabriole. Rejouez."
+    },
+    {
+      "id": 3,
+      "text": "Vous trouvez un fruit tombé d'un arbre. Recevez un jeton pomme."
+    },
+    {
+      "id": 4,
+      "text": "Votre cheval s'arrête pour boire à la rivière. Passez votre tour."
+    },
+    {
+      "id": 5,
+      "text": "Vous aidez un autre cavalier à franchir une souche. Donnez-lui une pomme. Il vous en rendra une plus tard."
+    },
+    {
+      "id": 6,
+      "text": "Votre cheval perd un fer en chemin. Reculez de 2 cases."
+    },
+    {
+      "id": 7,
+      "text": "Un oiseau chante près de vous, tout semble plus léger. Avancez d'une case."
+    },
+    {
+      "id": 8,
+      "text": "Votre cheval veut brouter tranquillement. Passez votre tour."
+    },
+    {
+      "id": 9,
+      "text": "Vous découvrez un chemin secret. Avancez jusqu'à la prochaine case forêt."
+    },
+    {
+      "id": 10,
+      "text": "Votre cheval glisse légèrement dans la boue. Reculez d'une case."
+    },
+    {
+      "id": 11,
+      "text": "Un papillon se pose sur votre nez, tout le monde rit. Rejouez immédiatement."
+    },
+    {
+      "id": 12,
+      "text": "Vous rencontrez une amie jument sur le chemin. Avancez de 3 cases."
+    },
+    {
+      "id": 13,
+      "text": "Votre cheval saute un tronc d'arbre avec élégance. Gagnez 1 jeton Pomme."
+    },
+    {
+      "id": 14,
+      "text": "Un bruit soudain effraie votre cheval. Reculez d'une case."
+    },
+    {
+      "id": 15,
+      "text": "Vous aidez un poulain perdu à retrouver son chemin. Donnez-lui une pomme en la défaussant, puis rejouez immédiatement."
+    },
+    {
+      "id": 16,
+      "text": "Vous découvrez une cachette remplie de fruits. Recevez 2 jetons Pomme."
+    },
+    {
+      "id": 17,
+      "text": "Une fine pluie commence à tomber. Passez votre tour."
+    },
+    {
+      "id": 18,
+      "text": "Votre cheval s'élance dans un grand galop. Avancez de 4 cases."
+    },
+    {
+      "id": 19,
+      "text": "Vous perdez votre chapeau en route. Reculez d'une case pour le récupérer."
+    },
+    {
+      "id": 20,
+      "text": "Vous aidez un autre joueur en le faisant avancer de 2 cases. En remerciement, il vous donne une pomme."
+    },
+    {
+      "id": 21,
+      "text": "Votre cheval hennit de joie. Rejouez immédiatement."
+    },
+    {
+      "id": 22,
+      "text": "Une grosse branche bloque votre passage. Passez votre tour."
+    },
+    {
+      "id": 23,
+      "text": "Vous entendez le vent souffler dans les arbres. Avancez jusqu'à la prochaine case montagne."
+    },
+    {
+      "id": 24,
+      "text": "Votre cheval est fatigué. Défaussez-vous d'une pomme pour pouvoir avancer normalement."
+    },
+    {
+      "id": 25,
+      "text": "Vous remportez le concours du plus beau sabot. Recevez 2 jetons Pomme."
+    },
+    {
+      "id": 26,
+      "text": "Une flaque d'eau vous ralentit. Reculez d'une case."
+    },
+    {
+      "id": 27,
+      "text": "Votre cheval bondit au-dessus d'un ruisseau. Avancez de 2 cases."
+    },
+    {
+      "id": 28,
+      "text": "Vous trouvez un trèfle à quatre feuilles. Choisissez un joueur et avancez tous les deux d'une case."
+    },
+    {
+      "id": 29,
+      "text": "Votre cheval fait une pause câlin. Tous les joueurs restent sur place pendant un tour."
+    },
+    {
+      "id": 30,
+      "text": "Un nuage de mouches attaque votre cheval. Reculez de deux cases."
+    }
+  ]
+}

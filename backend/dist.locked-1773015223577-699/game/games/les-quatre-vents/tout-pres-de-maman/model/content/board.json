@@ -1,0 +1,245 @@
+{
+  "version": 1,
+  "tiles": [
+    {
+      "id": 1,
+      "title": "Case départ",
+      "type": "start",
+      "description": "Vous sortez de la poche de maman et gagnez deux jetons eucalyptus."
+    },
+    {
+      "id": 2,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Vous observez les fleurs colorées et un petit lézard."
+    },
+    {
+      "id": 3,
+      "title": "Case jeton",
+      "type": "token",
+      "description": "Vous découvrez un jeton d’eucalyptus."
+    },
+    {
+      "id": 4,
+      "title": "Case carte",
+      "type": "card",
+      "description": "Piochez une carte et suivez les instructions."
+    },
+    {
+      "id": 5,
+      "title": "Case bonds",
+      "type": "bonds",
+      "description": "Vous bondissez de deux cases."
+    },
+    {
+      "id": 6,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Vous franchissez un bosquet et écoutez les oiseaux."
+    },
+    {
+      "id": 7,
+      "title": "Case glissade",
+      "type": "slide",
+      "description": "La boue glisse : reculez de deux cases."
+    },
+    {
+      "id": 8,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Vous avancez au milieu des herbes séchées."
+    },
+    {
+      "id": 9,
+      "title": "Case carte",
+      "type": "card",
+      "description": "Piochez une carte."
+    },
+    {
+      "id": 10,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Une coccinelle vous accompagn? sur une feuille."
+    },
+    {
+      "id": 11,
+      "title": "Case jeton",
+      "type": "token",
+      "description": "Vous trouvez un jeton eucalyptus."
+    },
+    {
+      "id": 12,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Un papillon se pose sur une fleur d’acacia."
+    },
+    {
+      "id": 13,
+      "title": "Tempête",
+      "type": "storm",
+      "description": "Un vent secoue les arbres : passez votre prochain tour."
+    },
+    {
+      "id": 14,
+      "title": "Case jeton",
+      "type": "token",
+      "description": "Vous trouvez un bosquet d’eucalyptus."
+    },
+    {
+      "id": 15,
+      "title": "Case bonds",
+      "type": "bonds",
+      "description": "Vos bonds vous font virevolter de deux cases."
+    },
+    {
+      "id": 16,
+      "title": "Case carte",
+      "type": "card",
+      "description": "Piochez une carte."
+    },
+    {
+      "id": 17,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Vous sentez le parfum des fleurs jaunes."
+    },
+    {
+      "id": 18,
+      "title": "Case glissade",
+      "type": "slide",
+      "description": "Une flaque boueuse vous fait reculer de deux cases."
+    },
+    {
+      "id": 19,
+      "title": "Case jeton",
+      "type": "token",
+      "description": "Vous découvrez un jeton près d’un rocher."
+    },
+    {
+      "id": 20,
+      "title": "Nid d’oiseaux",
+      "type": "nest",
+      "description": "Écoutez les oisillons : passez votre prochain tour."
+    },
+    {
+      "id": 21,
+      "title": "Case bonds",
+      "type": "bonds",
+      "description": "Vous bondissez avec légèreté de deux cases."
+    },
+    {
+      "id": 22,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Vous poursuivez votre chemin à l’ombre des grands arbres."
+    },
+    {
+      "id": 23,
+      "title": "Case carte",
+      "type": "card",
+      "description": "Piochez une carte."
+    },
+    {
+      "id": 24,
+      "title": "Case jeton",
+      "type": "token",
+      "description": "Vous trouvez un jeton eucalyptus."
+    },
+    {
+      "id": 25,
+      "title": "Case glissade",
+      "type": "slide",
+      "description": "Un ravin boueux vous fait reculer de deux cases."
+    },
+    {
+      "id": 26,
+      "title": "Case rencontre",
+      "type": "meeting",
+      "description": "Choisissez un autre joueur : avancez tous les deux d’une case."
+    },
+    {
+      "id": 27,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Une prairie ondulante et des insectes colorés."
+    },
+    {
+      "id": 28,
+      "title": "Case bonds",
+      "type": "bonds",
+      "description": "Vous sautez de deux cases."
+    },
+    {
+      "id": 29,
+      "title": "Case carte",
+      "type": "card",
+      "description": "Piochez une carte."
+    },
+    {
+      "id": 30,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Une clairière baignée de soleil."
+    },
+    {
+      "id": 31,
+      "title": "Case jeton",
+      "type": "token",
+      "description": "Vous trouvez un jeton eucalyptus."
+    },
+    {
+      "id": 32,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Un sentier bordé de petits cailloux."
+    },
+    {
+      "id": 33,
+      "title": "Case glissade",
+      "type": "slide",
+      "description": "Une flaque vous fait reculer de deux cases."
+    },
+    {
+      "id": 34,
+      "title": "Case carte",
+      "type": "card",
+      "description": "Piochez une carte."
+    },
+    {
+      "id": 35,
+      "title": "Case jeton",
+      "type": "token",
+      "description": "Vous découvrez un jeton eucalyptus."
+    },
+    {
+      "id": 36,
+      "title": "Case bonds",
+      "type": "bonds",
+      "description": "Avancez de deux cases."
+    },
+    {
+      "id": 37,
+      "title": "Case carte",
+      "type": "card",
+      "description": "Piochez une carte."
+    },
+    {
+      "id": 38,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Vous continuez parmi les herbes odorantes."
+    },
+    {
+      "id": 39,
+      "title": "Case jeton",
+      "type": "token",
+      "description": "Vous trouvez un jeton eucalyptus."
+    },
+    {
+      "id": 40,
+      "title": "Case maman",
+      "type": "finish",
+      "description": "Votre maman vous attend dans une clairière lumineuse."
+    }
+  ]
+}

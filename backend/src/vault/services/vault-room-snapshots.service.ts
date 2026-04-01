@@ -387,8 +387,9 @@ export class VaultRoomSnapshotsService {
 
     await this.engine.restoreInternalState(created.id, gameType, restored);
 
-    // Note: la restauration ne supprime pas la sauvegarde.
-    // L'utilisateur peut restaurer plusieurs fois ou supprimer manuellement.
+    // Note: la sauvegarde reste visible dans le coffre après restauration.
+    // Elle sera écrasée si la table restaurée est re-sauvegardée, ou supprimée
+    // si la table restaurée est abandonnée/réinitialisée.
 
     // Notify players to open the restored table.
     for (const p of humans) {
@@ -403,9 +404,8 @@ export class VaultRoomSnapshotsService {
   }
 
   /**
-   * Supprime une table créée via restauration (sans supprimer la sauvegarde).
-   * Utilisé quand le propriétaire quitte la table (Q) sans la re-sauvegarder,
-   * pour que la sauvegarde redevienne restaurable.
+   * Supprime une table créée via restauration et sa sauvegarde liée.
+   * Utilisé quand le propriétaire quitte la table (Q) sans la re-sauvegarder.
    */
   async abandonRestoredRoom(
     ownerUserId: number,
@@ -439,6 +439,12 @@ export class VaultRoomSnapshotsService {
 
     try {
       await this.rooms.adminDestroyRoom(id);
+    } catch {
+      return false;
+    }
+
+    try {
+      await this.snapshots.delete({ id: snapshotId, ownerUserId } as any);
     } catch {
       return false;
     }

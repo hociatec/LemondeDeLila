@@ -598,13 +598,14 @@ export class ContesActionService {
     if (tile.type === 'surprise')
       return this.drawAndApply(state, playerId, 'surprise', depth);
     if (tile.type === 'conte')
-      return this.applyConteTile(state, playerId, depth);
+      return this.applyConteTile(state, playerId, tile, depth);
     return state;
   }
 
   private applyConteTile(
     state: GameStateEntity,
     playerId: number,
+    tile: ContesCacahuetesTile,
     depth: number,
   ): GameStateEntity {
     const meta = this.getMeta(state);
@@ -619,7 +620,12 @@ export class ContesActionService {
       );
     }
 
-    return this.drawAndApply(state, playerId, 'conte', depth);
+    const conte = this.buildConteNarrationFromTile(tile);
+    if (!conte) {
+      return this.drawAndApply(state, playerId, 'conte', depth);
+    }
+
+    return this.recordConteNarration(state, playerId, conte);
   }
 
   private drawAndApply(
@@ -904,6 +910,37 @@ export class ContesActionService {
         lastConte: narration,
       },
     };
+  }
+
+  private buildConteNarrationFromTile(
+    tile: ContesCacahuetesTile,
+  ): ContesCard | null {
+    const title = this.normalizeConteTileTitle(toText(tile.label));
+    const text = toText(tile.description).trim();
+    if (!title || !text) {
+      return null;
+    }
+
+    return {
+      id: 0,
+      type: 'conte',
+      title,
+      text,
+    };
+  }
+
+  private normalizeConteTileTitle(label: string): string {
+    const trimmed = label.trim();
+    if (!trimmed) {
+      return '';
+    }
+
+    const withoutPrefix = trimmed.replace(/^case\s+conte\s*-\s*/i, '').trim();
+    if (!withoutPrefix) {
+      return trimmed;
+    }
+
+    return `Conte - ${withoutPrefix}`;
   }
 
   private describePlayerPawn(
