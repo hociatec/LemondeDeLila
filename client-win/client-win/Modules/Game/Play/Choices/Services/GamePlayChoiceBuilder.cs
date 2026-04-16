@@ -14,7 +14,11 @@ internal static class GamePlayChoiceBuilder
     internal static bool TryBuildDiscardChoices(GameStateDto state, out Dictionary<string, GameClientAction> choices) =>
         DiscardChoiceBuilder.TryBuildDiscardChoices(state, out choices);
 
-    internal static bool TryBuildAskCardChoices(GameStateDto state, out Dictionary<string, GameClientAction> choices) =>
-        AskCardChoiceBuilder.TryBuildAskCardChoices(state, out choices);
+    // Ask-card selection is now server-driven (pending + choiceActionsByIndex).
+    // Keep a stub for backward compatibility with older client code paths.
+    internal static bool TryBuildAskCardChoices(GameStateDto state, out Dictionary<string, GameClientAction> choices)
+    {
+        choices = new Dictionary<string, GameClientAction>(StringComparer.Ordinal);
+        return false;
+    }
 }
-

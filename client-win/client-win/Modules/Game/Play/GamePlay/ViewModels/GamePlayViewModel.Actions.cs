@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using client_win.Modules.Game.Play.Choices.Services;
 using client_win.Modules.Game.Play.Session.Services;
 using client_win.Modules.Game.Play.State.Dtos;
 using Serilog;
@@ -37,26 +36,6 @@ public sealed partial class GamePlayViewModel
         {
             Log.Error(ex, "Erreur lors de la demande de game.turn");
         }
-    }
-
-    private bool CanStartAskCardSelection(GameStateDto? state)
-    {
-        if (state == null)
-        {
-            return false;
-        }
-
-        if (state.Pending != null)
-        {
-            return false;
-        }
-
-        if (!HasAction(state, "ask_card"))
-        {
-            return false;
-        }
-
-        return GamePlayChoiceBuilder.TryBuildAskCardChoices(state, out _);
     }
 
     private static bool HasAction(GameStateDto state, string actionType)

@@ -196,7 +196,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             isSpectator: () => _isSpectator,
             actions: _actions,
             choices: _choices,
-            canStartAskCardSelection: CanStartAskCardSelection,
             requestTurnAsync: RequestTurnAsync,
             emitMessage: msg => MessageReceived?.Invoke(new GamePlayHistoryMessage(msg)),
             onDrawActionSent: () => _logSounds.TryPlayDrawSound());
@@ -214,7 +213,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 	            choices: _choices,
 	            grid: Grid,
 	            syncShortcuts: SyncShortcuts,
-	            canStartAskCardSelection: CanStartAskCardSelection,
 	            emitMessage: msg => MessageReceived?.Invoke(msg),
 	            requestFocus: RequestGameZoneFocusForCurrentState,
 	            refreshCanExecute: RefreshCanExecute,

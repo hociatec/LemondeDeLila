@@ -76,9 +76,9 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
             .ConfigureAwait(false);
     }
 
-    public void UpdateFromState(GameStateDto state, int? viewerPlayerId, Func<GameStateDto, bool> canStartAskCardSelection)
+    public void UpdateFromState(GameStateDto state, int? viewerPlayerId)
     {
-        _sync.UpdateFromState(state, viewerPlayerId, canStartAskCardSelection, setLabel: s => ChoicesLabel = s);
+        _sync.UpdateFromState(state, viewerPlayerId, setLabel: s => ChoicesLabel = s);
     }
 
     public bool TryStartDiscardSelection(GameStateDto state, Action<string> announce)

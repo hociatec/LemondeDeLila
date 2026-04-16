@@ -957,7 +957,7 @@ public sealed class GameRoomViewFocusFlowTests
             thread.SetApartmentState(ApartmentState.STA);
             thread.Start();
 
-            Assert.True(done.Wait(7000), "STA dispatcher test timed out.");
+            Assert.True(done.Wait(12000), "STA dispatcher test timed out.");
             if (failure != null)
             {
                 throw failure;

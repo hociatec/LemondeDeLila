@@ -30,7 +30,6 @@ internal sealed class GamePlayRealtimeController
     private readonly GamePlayChoicesViewModel _choices;
     private readonly GridBoardViewModel _grid;
     private readonly Action<GameStateDto> _syncShortcuts;
-    private readonly Func<GameStateDto, bool> _canStartAskCardSelection;
     private readonly Action<GamePlayHistoryMessage> _emitMessage;
     private readonly Action _requestFocus;
     private readonly Action _refreshCanExecute;
@@ -79,7 +78,6 @@ internal sealed class GamePlayRealtimeController
         GamePlayChoicesViewModel choices,
         GridBoardViewModel grid,
         Action<GameStateDto> syncShortcuts,
-        Func<GameStateDto, bool> canStartAskCardSelection,
         Action<GamePlayHistoryMessage> emitMessage,
         Action requestFocus,
         Action refreshCanExecute,
@@ -101,7 +99,6 @@ internal sealed class GamePlayRealtimeController
         _choices = choices ?? throw new ArgumentNullException(nameof(choices));
         _grid = grid ?? throw new ArgumentNullException(nameof(grid));
         _syncShortcuts = syncShortcuts ?? throw new ArgumentNullException(nameof(syncShortcuts));
-        _canStartAskCardSelection = canStartAskCardSelection ?? throw new ArgumentNullException(nameof(canStartAskCardSelection));
         _emitMessage = emitMessage ?? throw new ArgumentNullException(nameof(emitMessage));
         _requestFocus = requestFocus ?? throw new ArgumentNullException(nameof(requestFocus));
         _refreshCanExecute = refreshCanExecute ?? throw new ArgumentNullException(nameof(refreshCanExecute));
@@ -568,7 +565,7 @@ internal sealed class GamePlayRealtimeController
         {
             _viewerPlayerId = extractedViewerId;
         }
-        _choices.UpdateFromState(state, _viewerPlayerId, _canStartAskCardSelection);
+        _choices.UpdateFromState(state, _viewerPlayerId);
 
         _diceSounds.TryPlayDiceRollSound(
             state,

@@ -23,7 +23,6 @@ internal sealed class GamePlayChoicesStateSynchronizer
     internal void UpdateFromState(
         GameStateDto state,
         int? viewerPlayerId,
-        Func<GameStateDto, bool> canStartAskCardSelection,
         Action<string> setLabel)
     {
         if (state == null) return;
@@ -52,13 +51,6 @@ internal sealed class GamePlayChoicesStateSynchronizer
             var type = (state.Pending?.Type ?? string.Empty).Trim();
             var isQuiz = string.Equals(type, "quiz", StringComparison.OrdinalIgnoreCase);
             _list.Apply(serverChoices, autoSelectFirst: !isQuiz);
-            return;
-        }
-
-        if (_localChoices.IsMode("ask") &&
-            _localChoices.HasChoices &&
-            canStartAskCardSelection(state))
-        {
             return;
         }
 

@@ -15,7 +15,6 @@ internal sealed class GamePlayCommands
     private readonly Func<bool> _isSpectator;
     private readonly GamePlayActionDispatcher _actions;
     private readonly GamePlayChoicesViewModel _choices;
-    private readonly Func<GameStateDto?, bool> _canStartAskCardSelection;
     private readonly Func<Task> _requestTurnAsync;
     private readonly Action<string> _emitMessage;
     private readonly Action? _onDrawActionSent;
@@ -25,7 +24,6 @@ internal sealed class GamePlayCommands
         Func<bool> isSpectator,
         GamePlayActionDispatcher actions,
         GamePlayChoicesViewModel choices,
-        Func<GameStateDto?, bool> canStartAskCardSelection,
         Func<Task> requestTurnAsync,
         Action<string> emitMessage,
         Action? onDrawActionSent = null)
@@ -34,7 +32,6 @@ internal sealed class GamePlayCommands
         _isSpectator = isSpectator ?? throw new ArgumentNullException(nameof(isSpectator));
         _actions = actions ?? throw new ArgumentNullException(nameof(actions));
         _choices = choices ?? throw new ArgumentNullException(nameof(choices));
-        _canStartAskCardSelection = canStartAskCardSelection ?? throw new ArgumentNullException(nameof(canStartAskCardSelection));
         _requestTurnAsync = requestTurnAsync ?? throw new ArgumentNullException(nameof(requestTurnAsync));
         _emitMessage = emitMessage ?? throw new ArgumentNullException(nameof(emitMessage));
         _onDrawActionSent = onDrawActionSent;
@@ -81,18 +78,6 @@ internal sealed class GamePlayCommands
             },
             canExecute: () => !_isSpectator() && _choices.HasDiscardChoices(_getSession()?.LastState));
 
-        AskCardSelect = new AsyncRelayCommand(
-            () =>
-            {
-                var state = _getSession()?.LastState;
-                if (state != null)
-                {
-                    _choices.TryStartAskSelection(state, _emitMessage);
-                }
-                return Task.CompletedTask;
-            },
-            canExecute: () => !_isSpectator() && _canStartAskCardSelection(_getSession()?.LastState));
-
         SimpleActionFromHint = new AsyncRelayCommand<string>(
             async actionType =>
             {
@@ -134,7 +119,6 @@ internal sealed class GamePlayCommands
     internal AsyncRelayCommand ExchangeRefuse { get; }
     internal AsyncRelayCommand Draw { get; }
     internal AsyncRelayCommand DiscardSelect { get; }
-    internal AsyncRelayCommand AskCardSelect { get; }
     internal AsyncRelayCommand<string> SimpleActionFromHint { get; }
     internal AsyncRelayCommand<string> SendKey { get; }
     internal AsyncRelayCommand TurnInfo { get; }
@@ -146,7 +130,6 @@ internal sealed class GamePlayCommands
         ExchangeRefuse.RaiseCanExecuteChanged();
         Draw.RaiseCanExecuteChanged();
         DiscardSelect.RaiseCanExecuteChanged();
-        AskCardSelect.RaiseCanExecuteChanged();
         SimpleActionFromHint.RaiseCanExecuteChanged();
         SendKey.RaiseCanExecuteChanged();
         TurnInfo.RaiseCanExecuteChanged();
