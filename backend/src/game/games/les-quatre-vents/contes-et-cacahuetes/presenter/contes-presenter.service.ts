@@ -49,6 +49,10 @@ export class ContesPresenterService {
             title: 'Score',
             message: scoreLines.join(' '),
           },
+          status: {
+            title: 'Statuts',
+            message: this.buildStatusPanelMessage(meta, players),
+          },
         },
       },
     };
@@ -98,6 +102,62 @@ export class ContesPresenterService {
       timestamp: narration.timestamp ?? new Date().toISOString(),
     });
     return entries;
+  }
+
+  private buildStatusPanelMessage(
+    meta: ContesCacahuetesMetadata,
+    players: Array<{ id?: number; username?: string | null }>,
+  ): string {
+    const lines = players.map((player) => {
+      const pid = Number(player?.id);
+      const name =
+        player?.username && String(player.username).trim()
+          ? String(player.username).trim()
+          : `Joueur ${pid}`;
+      const statuses: string[] = [];
+      const statusMap =
+        meta.statuses ?? ({} as ContesCacahuetesMetadata['statuses']);
+      const addCount = (
+        key: keyof ContesCacahuetesMetadata['statuses'],
+        label: string,
+      ) => {
+        const count = Number(
+          (statusMap[key] as Record<number, unknown>)?.[pid] ?? 0,
+        );
+        if (Number.isFinite(count) && count > 0)
+          statuses.push(`${label} x${count}`);
+      };
+      const addFlag = (
+        key: keyof ContesCacahuetesMetadata['statuses'],
+        label: string,
+      ) => {
+        if (Boolean((statusMap[key] as Record<number, unknown>)?.[pid])) {
+          statuses.push(label);
+        }
+      };
+
+      addCount('skipTurn', 'tour passé');
+      addCount('rerollToken', 'parchemin');
+      addCount('shieldMalus', 'amulette');
+      addCount('forcedRollOneTurns', 'dé limité');
+      addCount('noBonusCardsTurns', 'bonus muets');
+      addFlag('reverseNextTurn', 'livre à l’envers');
+      addFlag('protectNextMalus', 'dragon');
+      addFlag('ignoreNextConteAndAdvance', 'cape');
+      addFlag('replaceOneOn1By4', 'feuille magique');
+      addFlag('keyOfGold', 'clé d’or');
+      if (
+        typeof (statusMap.blockedUntilPassed as Record<number, unknown>)?.[
+          pid
+        ] === 'number'
+      ) {
+        statuses.push('bloqué par le loup');
+      }
+
+      return `${name} : ${statuses.length ? statuses.join(', ') : 'aucun statut'}.`;
+    });
+
+    return lines.length ? lines.join(' ') : 'Aucun statut.';
   }
 }
 

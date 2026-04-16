@@ -6,6 +6,6 @@ import {
 
 export const buildContesShortcuts: GameShortcutsBuilder = () => [
   actionShortcut('SPACE', 'draw'),
-  interfaceShortcut('S', 'score'),
+  interfaceShortcut('S', 'status'),
   interfaceShortcut('P', 'position'),
 ];

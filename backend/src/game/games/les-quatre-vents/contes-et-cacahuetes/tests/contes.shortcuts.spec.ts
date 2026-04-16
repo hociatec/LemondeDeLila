@@ -7,7 +7,7 @@ type ShortcutView = {
 };
 
 describe('ContesShortcuts', () => {
-  it('declares draw, score and position shortcuts', () => {
+  it('declares draw, status and position shortcuts', () => {
     const shortcuts = buildContesShortcuts({
       metadata: {},
       currentPlayerId: 1,
@@ -25,7 +25,7 @@ describe('ContesShortcuts', () => {
       shortcuts.some(
         (shortcut) =>
           String(shortcut.type ?? '') === 'interface' &&
-          String(shortcut.id ?? '') === 'score',
+          String(shortcut.id ?? '') === 'status',
       ),
     ).toBe(true);
     expect(

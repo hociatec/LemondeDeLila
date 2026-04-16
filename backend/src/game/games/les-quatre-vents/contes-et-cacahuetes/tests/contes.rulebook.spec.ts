@@ -71,7 +71,7 @@ describe('Contes rulebook', () => {
     ]);
   });
 
-  it('returns empty actions when blocked or not current player', () => {
+  it('keeps roll available for a blocked current player so the turn can be skipped', () => {
     const blocked = getAvailableActions(
       makeState({
         metadata: {
@@ -82,8 +82,10 @@ describe('Contes rulebook', () => {
       }),
       1,
     );
-    expect(blocked).toEqual([]);
+    expect(blocked).toEqual([{ type: 'roll', payload: {} }]);
+  });
 
+  it('returns empty actions when not current player', () => {
     const notCurrent = getAvailableActions(
       makeState({
         turn: { currentPlayerId: 2, direction: 1 },
@@ -129,8 +131,8 @@ describe('Contes rulebook', () => {
     ).toThrow(GameValidationError);
   });
 
-  it('rejects roll when actor is blocked or not on turn', () => {
-    expect(() =>
+  it('validates roll for a blocked current player so the action service can skip them', () => {
+    expect(
       validateAction(
         makeState({
           metadata: {
@@ -142,8 +144,10 @@ describe('Contes rulebook', () => {
         { type: 'roll', payload: {} },
         1,
       ),
-    ).toThrow(PlayerActionError);
+    ).toEqual({ type: 'roll', payload: {} });
+  });
 
+  it('rejects roll when actor is not on turn', () => {
     expect(() =>
       validateAction(
         makeState({

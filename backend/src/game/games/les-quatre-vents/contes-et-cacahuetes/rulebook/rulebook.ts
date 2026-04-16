@@ -88,16 +88,6 @@ export function getAvailableActions(
     return [];
   }
 
-  const meta = asRecord(state.metadata);
-  const blockedUntilPassed: Record<number, number> =
-    (asRecord(asRecord(meta.statuses).blockedUntilPassed) as Record<
-      number,
-      number
-    >) ?? {};
-  if (typeof blockedUntilPassed[playerId] === 'number') {
-    return [];
-  }
-
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== playerId) return [];
   return [{ type: 'roll', payload: {} }];
@@ -292,19 +282,6 @@ export function validateAction(
     throw new PlayerActionError('Action non disponible.', {
       gameType: GAME_TYPE,
     });
-  }
-
-  const meta = asRecord(state.metadata);
-  const blockedUntilPassed: Record<number, number> =
-    (asRecord(asRecord(meta.statuses).blockedUntilPassed) as Record<
-      number,
-      number
-    >) ?? {};
-  if (typeof blockedUntilPassed[actorId] === 'number') {
-    throw new PlayerActionError(
-      'Vous êtes bloqué(e) : attendez qu’un autre joueur vous dépasse.',
-      { gameType: GAME_TYPE },
-    );
   }
 
   const current = state.turn?.currentPlayerId ?? null;

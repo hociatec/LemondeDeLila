@@ -44,12 +44,14 @@ export class ContesCacahuetesSetupService {
           ]?.id ?? null)
         : null;
 
+    const shuffledDecks = this.shuffleDecks(starterPick.meta, buildDecks());
+
     const metaBase: ContesCacahuetesMetadata = {
       pawns,
       tiles: buildNarratedCanonicalTiles(),
       positions,
       setupStarterId,
-      decks: buildDecks(),
+      decks: shuffledDecks.decks,
       statuses: {
         skipTurn: {},
         rerollToken: {},
@@ -63,6 +65,7 @@ export class ContesCacahuetesSetupService {
         blockedUntilPassed: {},
         turnSwapWith: {},
         turnSwapRemaining: {},
+        turnSwapPlayingSlot: {},
         keyOfGold: {},
       },
       winnerId: null,
@@ -78,7 +81,7 @@ export class ContesCacahuetesSetupService {
       },
       metadata: {
         ...(baseState.metadata ?? {}),
-        ...starterPick.meta,
+        ...shuffledDecks.meta,
         ...metaBase,
       },
     };
@@ -110,6 +113,35 @@ export class ContesCacahuetesSetupService {
 
   private getRuntimeMeta(state: GameStateEntity): ContesRuntimeMetadata {
     return (state.metadata ?? {}) as ContesRuntimeMetadata;
+  }
+
+  private shuffleDecks(
+    meta: ContesRuntimeMetadata,
+    decks: ContesCacahuetesMetadata['decks'],
+  ): {
+    meta: ContesRuntimeMetadata;
+    decks: ContesCacahuetesMetadata['decks'];
+  } {
+    let nextMeta = meta;
+    const bonus = this.random.shuffle(nextMeta, decks.bonus);
+    nextMeta = bonus.meta;
+    const malus = this.random.shuffle(nextMeta, decks.malus);
+    nextMeta = malus.meta;
+    const surprise = this.random.shuffle(nextMeta, decks.surprise);
+    nextMeta = surprise.meta;
+    const contes = this.random.shuffle(nextMeta, decks.contes);
+    nextMeta = contes.meta;
+
+    return {
+      meta: nextMeta,
+      decks: {
+        ...decks,
+        bonus: bonus.values,
+        malus: malus.values,
+        surprise: surprise.values,
+        contes: contes.values,
+      },
+    };
   }
 }
 
@@ -552,7 +584,7 @@ function buildDecks(): ContesCacahuetesMetadata['decks'] {
       id: 5,
       type: 'surprise',
       title: `PoussiÃƒÂ¨re de Rire`,
-      text: `Un nuage de poussiÃƒÂ¨re de rire se rÃƒÂ©pand ! Chaque joueur lance un petit dÃƒÂ© de 1 ÃƒÂ  3. Celui qui a le plus grand avance d'une case. Remarque : s'il y a execo, au chiffre trois, ils avancent ensemble.`,
+      text: `Un nuage de poussiÃƒÂ¨re de rire se rÃƒÂ©pand ! Chaque joueur lance un petit dÃƒÂ© de 1 ÃƒÂ  3. Celui qui a le plus grand avance d'une case. Remarque : s'il y a égalité au chiffre trois, ils avancent ensemble.`,
     },
     {
       id: 6,

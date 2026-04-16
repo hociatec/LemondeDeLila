@@ -670,7 +670,9 @@ export class ContesActionService {
       }
     }
 
-    const withPrompt = drawLabel ? this.core.appendLog(state, drawLabel) : state;
+    const withPrompt = drawLabel
+      ? this.core.appendLog(state, drawLabel)
+      : state;
     return this.setPending(withPrompt, {
       type: 'draw',
       label: `Piocher une carte ${type.toUpperCase()} (Espace).`,
@@ -762,7 +764,7 @@ export class ContesActionService {
     }
 
     if (next.pending) {
-      return this.attachQueuedDrawContinuation(next, queue, depth);
+      return this.attachQueuedDrawContinuation(next, queue, depth, playerId);
     }
     return this.continueQueuedDraw(next, playerId, queue, depth);
   }
@@ -943,10 +945,7 @@ export class ContesActionService {
     return `Conte - ${withoutPrefix}`;
   }
 
-  private describePlayerPawn(
-    state: GameStateEntity,
-    playerId: number,
-  ): string {
+  private describePlayerPawn(state: GameStateEntity, playerId: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
     const player = players.find((p) => Number(p?.id) === playerId);
     if (!player) return '';
@@ -981,6 +980,7 @@ export class ContesActionService {
     state: GameStateEntity,
     queue: string[],
     depth: number,
+    playerId: number,
   ): GameStateEntity {
     if (!queue.length || !state.pending) return state;
     const pending = state.pending as ContesPending;
@@ -991,6 +991,7 @@ export class ContesActionService {
         ...this.extractQueuedDrawContinuationData({
           queuedDrawQueue: [...queue],
           queuedDrawDepth: depth,
+          queuedDrawPlayerId: playerId,
         }),
       },
     });
@@ -1006,9 +1007,11 @@ export class ContesActionService {
       ? Number(data.queuedDrawDepth)
       : 0;
     if (!queue.length) return {};
+    const playerId = Number(data.queuedDrawPlayerId);
     return {
       queuedDrawQueue: [...queue],
       queuedDrawDepth: depth,
+      ...(Number.isFinite(playerId) ? { queuedDrawPlayerId: playerId } : {}),
     };
   }
 
@@ -1035,14 +1038,20 @@ export class ContesActionService {
     pending: ContesPending | null,
   ): GameStateEntity {
     const queue = Array.isArray(pending?.data?.queuedDrawQueue)
-      ? pending?.data?.queuedDrawQueue.filter((value) => typeof value === 'string')
+      ? pending?.data?.queuedDrawQueue.filter(
+          (value) => typeof value === 'string',
+        )
       : [];
     const depth = Number.isFinite(pending?.data?.queuedDrawDepth)
       ? Number(pending?.data?.queuedDrawDepth)
       : 0;
     if (!queue.length) return state;
-    const playerId =
-      typeof pending?.playerId === 'number' ? pending.playerId : null;
+    const queuedPlayerId = Number(pending?.data?.queuedDrawPlayerId);
+    const playerId = Number.isFinite(queuedPlayerId)
+      ? queuedPlayerId
+      : typeof pending?.playerId === 'number'
+        ? pending.playerId
+        : null;
     if (playerId == null) return state;
     return this.continueQueuedDraw(state, playerId, queue, depth);
   }
@@ -1936,6 +1945,7 @@ export class ContesActionService {
   private endTurn(state: GameStateEntity, playerId: number): GameStateEntity {
     let next = state;
     next = this.decrementPerTurn(next, playerId, 'noBonusCardsTurns');
+    next = this.restoreTurnSwapSlotBeforeAdvance(next, playerId);
     const advanced = this.turns.advanceTurn(next);
     const swapped = this.applyTurnSwapIfNeeded(advanced);
     return this.appendTurnAnnouncement(swapped, swapped.turn?.currentPlayerId);
@@ -1948,7 +1958,10 @@ export class ContesActionService {
     if (!previous?.pending) return next;
     const previousPending = previous.pending as ContesPending | null;
     if (next?.pending) {
-      return this.attachQueuedDrawContinuationFromPending(next, previousPending);
+      return this.attachQueuedDrawContinuationFromPending(
+        next,
+        previousPending,
+      );
     }
     if (String(next?.status ?? '').toLowerCase() === 'finished') return next;
 
@@ -1985,6 +1998,7 @@ export class ContesActionService {
       current,
       remaining - 1,
     );
+    next = this.setStatusCount(next, 'turnSwapPlayingSlot', swapWith, current);
     next = {
       ...next,
       turn: { ...(next.turn ?? { direction: 1 }), currentPlayerId: swapWith },
@@ -2002,6 +2016,24 @@ export class ContesActionService {
     }
 
     return next;
+  }
+
+  private restoreTurnSwapSlotBeforeAdvance(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameStateEntity {
+    const slotOwner = Number(
+      this.getMeta(state).statuses.turnSwapPlayingSlot?.[playerId] ?? 0,
+    );
+    if (!Number.isFinite(slotOwner) || slotOwner <= 0) return state;
+    const next = this.setStatusCount(state, 'turnSwapPlayingSlot', playerId, 0);
+    return {
+      ...next,
+      turn: {
+        ...(next.turn ?? { direction: 1 }),
+        currentPlayerId: slotOwner,
+      },
+    };
   }
 
   private swapWithClosestBehind(

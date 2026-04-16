@@ -113,16 +113,30 @@ describe('Contes effects', () => {
     expect(surpriseDeck).toHaveLength(15);
     expect(conteDeck).toHaveLength(29);
 
-    expect(toText(asRecord(bonusDeck[0]).title)).toBe('Bottes de sept lieues');
-    expect(toText(asRecord(malusDeck[0]).title)).toBe('Sortilège de Sommeil');
-    expect(toText(asRecord(surpriseDeck[0]).title)).toBe('Baguette Malicieuse');
-    expect(toText(asRecord(surpriseDeck[12]).title)).toBe('Souhait Éphémère');
-    expect(toText(asRecord(surpriseDeck[12]).text)).toContain(
-      'Faites un vœu simple',
+    expect(
+      bonusDeck.some(
+        (card) => toText(asRecord(card).title) === 'Bottes de sept lieues',
+      ),
+    ).toBe(true);
+    expect(
+      malusDeck.some(
+        (card) => toText(asRecord(card).title) === 'Sortilège de Sommeil',
+      ),
+    ).toBe(true);
+    expect(
+      surpriseDeck.some(
+        (card) => toText(asRecord(card).title) === 'Baguette Malicieuse',
+      ),
+    ).toBe(true);
+    const wishCard = surpriseDeck.find(
+      (card) => toText(asRecord(card).title) === 'Souhait Éphémère',
     );
-    expect(toText(asRecord(conteDeck[0]).title)).toBe(
-      'Conte - Japon : Momotarō',
-    );
+    expect(toText(asRecord(wishCard).text)).toContain('Faites un vœu simple');
+    expect(
+      conteDeck.some(
+        (card) => toText(asRecord(card).title) === 'Conte - Japon : Momotarō',
+      ),
+    ).toBe(true);
 
     expect(pawns).toHaveLength(6);
     expect(toText(asRecord(pawns[0]).id)).toBe('Aika - Mongolie');
@@ -643,7 +657,9 @@ describe('Contes effects', () => {
     } as any;
 
     state = (actionsService as any).moveBy(state, 1, 1, 0);
-    const remainingContes = Array.isArray(asRecord(asRecord(state.metadata).decks).contes)
+    const remainingContes = Array.isArray(
+      asRecord(asRecord(state.metadata).decks).contes,
+    )
       ? (asRecord(asRecord(state.metadata).decks).contes as unknown[])
       : [];
     const lastConte = asRecord(asRecord(state.metadata).lastConte);
@@ -710,7 +726,9 @@ describe('Contes effects', () => {
       : [];
 
     expect(
-      messages.some((message) => message.includes('Lilas déplace Niko sur une Case Surprise')),
+      messages.some((message) =>
+        message.includes('Lilas déplace Niko sur une Case Surprise'),
+      ),
     ).toBe(true);
     expect(messages.some((message) => message.includes("jusqu'à"))).toBe(false);
   });
@@ -772,7 +790,9 @@ describe('Contes effects', () => {
 
     expect(Number(positions['1'] ?? 0)).toBe(6);
     expect(logText).toContain('Lilas déplace Niko sur une Case Conte -');
-    expect(logText.match(/Lilas déplace Niko sur une Case Conte -/g) ?? []).toHaveLength(1);
+    expect(
+      logText.match(/Lilas déplace Niko sur une Case Conte -/g) ?? [],
+    ).toHaveLength(1);
   });
 
   it('resumes the queued Coffre aux merveilles draw after Poussière de rire resolves', async () => {
@@ -846,6 +866,7 @@ describe('Contes effects', () => {
     ]);
 
     expect(toText(asRecord(state.pending).type)).toBe('draw');
+    expect(Number(asRecord(state.pending).playerId)).toBe(2);
     expect(toText(asRecord(asRecord(state.pending).data).context)).toBe(
       'draw_and_apply',
     );
@@ -857,6 +878,81 @@ describe('Contes effects', () => {
       ? state.log.map((entry) => toText(asRecord(entry).message)).join(' ')
       : '';
     expect(logText).toContain('pioche une carte Bonus: Parchemin enchanté.');
+    expect(logText).toContain('Noodle pioche une carte Bonus');
+    expect(logText).not.toContain('Otis pioche une carte Bonus');
+  });
+
+  it('applies Formule magique in both turn slots and keeps Livre à l’envers on the swapped turn', async () => {
+    const advanceNext = (input: GameStateEntity): GameStateEntity => {
+      const players = Array.isArray(input.players) ? input.players : [];
+      const currentId = input.turn?.currentPlayerId ?? null;
+      const currentIndex = players.findIndex(
+        (player) => player?.id === currentId,
+      );
+      const nextPlayer = players[(currentIndex + 1) % players.length];
+      return {
+        ...input,
+        turn: {
+          ...(input.turn ?? { direction: 1 }),
+          currentPlayerId: nextPlayer?.id ?? currentId ?? 1,
+        },
+      };
+    };
+    const moduleRef = await createActionsModule(advanceNext);
+    const setup = moduleRef.get(ContesCacahuetesSetupService);
+    const actionsService = moduleRef.get(ContesActionService);
+
+    let state = setup.hydrateInitialState(baseState());
+    state = {
+      ...state,
+      players: [
+        { id: 1, username: 'Lilas', isBot: false, pawn: 'Niko - Géorgie' },
+        { id: 2, username: 'Foxy Loxy', isBot: false, pawn: 'Aika - Mongolie' },
+      ] as any,
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: {
+        ...(state.metadata ?? {}),
+        positions: { 1: 10, 2: 20 },
+        tiles: Array.from({ length: 60 }, (_, index) => ({
+          type: index === 0 ? 'start' : 'finish',
+          label: `Case ${index + 1}`,
+        })),
+      },
+      log: [],
+    } as any;
+
+    state = (actionsService as any).setTurnSwap(state, 1, 2);
+    state = (actionsService as any).setStatusBool(
+      state,
+      'reverseNextTurn',
+      1,
+      true,
+    );
+
+    state = (actionsService as any).endTurn(state, 1);
+    expect(state.turn?.currentPlayerId).toBe(1);
+    expect(
+      Number(
+        asRecord(
+          asRecord(asRecord(state.metadata).statuses).turnSwapPlayingSlot,
+        )['1'] ?? 0,
+      ),
+    ).toBe(2);
+
+    state = (actionsService as any).applyMoveFromRoll(state, 1, 3, 0);
+    expect(Number(asRecord(asRecord(state.metadata).positions)['1'] ?? 0)).toBe(
+      7,
+    );
+    expect(
+      Boolean(
+        asRecord(asRecord(asRecord(state.metadata).statuses).reverseNextTurn)[
+          '1'
+        ],
+      ),
+    ).toBe(false);
+
+    state = (actionsService as any).endTurn(state, 1);
+    expect(state.turn?.currentPlayerId).toBe(2);
   });
 
   it('uses the singular form for Poussière de rire when one player wins', async () => {
@@ -995,8 +1091,12 @@ describe('Contes effects', () => {
       ? buckyView.log.map((entry) => toText(asRecord(entry).message)).join(' ')
       : '';
 
-    expect(lilasLog).toContain('Le conte doit être visible uniquement pour Lilas.');
-    expect(buckyLog).not.toContain('Le conte doit être visible uniquement pour Lilas.');
+    expect(lilasLog).toContain(
+      'Le conte doit être visible uniquement pour Lilas.',
+    );
+    expect(buckyLog).not.toContain(
+      'Le conte doit être visible uniquement pour Lilas.',
+    );
   });
 
   it('does not announce unavailable cards when a draw pile is empty', async () => {

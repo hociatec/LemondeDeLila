@@ -56,6 +56,7 @@ export type ContesCacahuetesMetadata = {
     blockedUntilPassed: Record<number, number>;
     turnSwapWith: Record<number, number>;
     turnSwapRemaining: Record<number, number>;
+    turnSwapPlayingSlot: Record<number, number>;
     keyOfGold: Record<number, boolean>;
   };
   winnerId: number | null;
@@ -105,6 +106,9 @@ export type ContesPending =
         max: number;
         order?: number[];
         picks?: Record<number, number>;
+        queuedDrawQueue?: string[];
+        queuedDrawDepth?: number;
+        queuedDrawPlayerId?: number;
       };
     }
   | {
@@ -113,7 +117,12 @@ export type ContesPending =
       playerId: number;
       blocking: true;
       choices: string[];
-      data: { context: string };
+      data: {
+        context: string;
+        queuedDrawQueue?: string[];
+        queuedDrawDepth?: number;
+        queuedDrawPlayerId?: number;
+      };
     }
   | {
       type: 'choose_card';
@@ -143,5 +152,8 @@ export type ContesPending =
         remaining?: number;
         drawn?: ContesCard[];
         depth?: number;
+        queuedDrawQueue?: string[];
+        queuedDrawDepth?: number;
+        queuedDrawPlayerId?: number;
       };
     };
