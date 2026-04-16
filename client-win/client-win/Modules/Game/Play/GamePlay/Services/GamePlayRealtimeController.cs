@@ -59,7 +59,7 @@ internal sealed class GamePlayRealtimeController
     private bool _lastViewerTurnActionable;
     private bool _lastViewerMustChoosePawn;
     private Dictionary<string, int>? _lastViewerHandCounts;
-    private string? _lastDrawAt;
+    private string? _lastDrawSignature;
     private bool _skipDrawSoundOnce = true;
     private readonly object _statePumpLock = new();
     private readonly List<GameStateDto> _pendingStates = new();
@@ -616,19 +616,21 @@ internal sealed class GamePlayRealtimeController
         }
 
         var at = (state.LastDraw?.At ?? string.Empty).Trim();
+        var pid = state.LastDraw?.PlayerId?.ToString() ?? string.Empty;
+        var signature = $"{pid}|{at}";
         if (_skipDrawSoundOnce)
         {
             _skipDrawSoundOnce = false;
-            _lastDrawAt = at.Length == 0 ? null : at;
+            _lastDrawSignature = at.Length == 0 ? null : signature;
             return;
         }
 
-        if (at.Length == 0 || string.Equals(_lastDrawAt, at, StringComparison.Ordinal))
+        if (at.Length == 0 || string.Equals(_lastDrawSignature, signature, StringComparison.Ordinal))
         {
             return;
         }
 
-        _lastDrawAt = at;
+        _lastDrawSignature = signature;
         _logSounds.TryPlayDrawSound();
     }
 

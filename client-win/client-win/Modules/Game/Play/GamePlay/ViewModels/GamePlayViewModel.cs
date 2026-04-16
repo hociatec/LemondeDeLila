@@ -67,6 +67,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private readonly GamePlayRealtimeController _realtime;
     private readonly GamePlayConnectionController _connection;
     private readonly GamePlayCommands _commands;
+    private Dictionary<string, string> _actionTypeByServerKey = new(StringComparer.OrdinalIgnoreCase);
 
     private readonly object _initializeLock = new();
     private Task? _initializeTask;

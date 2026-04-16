@@ -36,22 +36,19 @@ public sealed partial class GamePlayViewModel
             return;
         }
 
-        // Trigger draw sound on the action itself (server-validated shortcut),
+        // Trigger draw sound on the draw action itself (server-validated shortcut),
         // not by parsing log text.
-        if (!string.Equals(ack.Key, "SPACE", StringComparison.OrdinalIgnoreCase))
+        var key = (ack.Key ?? string.Empty).Trim();
+        if (key.Length == 0)
         {
             return;
         }
 
-        // If the server returned an interface panel message or a room operation, this is not a draw action.
-        if (!string.IsNullOrWhiteSpace(ack.Message) ||
-            !string.IsNullOrWhiteSpace(ack.PanelId) ||
-            !string.IsNullOrWhiteSpace(ack.RoomOp))
+        if (_actionTypeByServerKey.TryGetValue(key, out var actionType) &&
+            string.Equals(actionType, "draw", StringComparison.OrdinalIgnoreCase))
         {
-            return;
+            _logSounds.TryPlayDrawSound();
         }
-
-        _logSounds.TryPlayDrawSound();
     }
 
     private void OnUiMessageReceived(string message)
