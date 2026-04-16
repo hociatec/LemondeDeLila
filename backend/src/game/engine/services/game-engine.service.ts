@@ -265,7 +265,11 @@ export class GameEngineService {
     );
     const withShortcuts = this.attachShortcuts(withDescriptors, handler);
     const withLifecycle = this.attachStartLifecycle(withShortcuts, userId);
-    const withChoiceActions = this.attachPendingChoiceActions(withLifecycle);
+    const withSyntheticPending = this.attachSyntheticPendingFromActions(
+      withLifecycle,
+    );
+    const withChoiceActions =
+      this.attachPendingChoiceActions(withSyntheticPending);
     const finalState = fixMojibakeDeep(
       this.stripBoardAndGridIfNotStarted(withChoiceActions),
     );
@@ -278,6 +282,117 @@ export class GameEngineService {
       );
     }
     return finalState;
+  }
+
+  private attachSyntheticPendingFromActions(
+    state: GameStateWithActions,
+  ): GameStateWithActions {
+    // Never override a real server pending.
+    if (state?.pending) {
+      return state;
+    }
+
+    const rawActions = Array.isArray(state?.actions) ? state.actions! : [];
+    if (rawActions.length === 0) {
+      return state;
+    }
+
+    const types = new Set(
+      rawActions
+        .map((a) => (typeof a?.type === 'string' ? a.type.trim().toLowerCase() : ''))
+        .filter((t) => t),
+    );
+    const hasDraw = types.has('draw') || types.has('draw_card');
+    if (hasDraw) {
+      return state;
+    }
+
+    const discardActions = rawActions.filter((a) => {
+      const type = typeof a?.type === 'string' ? a.type.trim().toLowerCase() : '';
+      return type === 'discard_card';
+    });
+    if (discardActions.length === 0) {
+      return state;
+    }
+
+    const extras = GameEngineService.extractExtras(state);
+    const viewerPlayerIdRaw = extras['viewerPlayerId'];
+    const viewerPlayerId =
+      typeof viewerPlayerIdRaw === 'number' && Number.isFinite(viewerPlayerIdRaw)
+        ? viewerPlayerIdRaw
+        : null;
+    if (viewerPlayerId == null) {
+      return state;
+    }
+
+    // Optional label index from handCards (when provided by the game).
+    const labelByKey = new Map<string, string>();
+    const handCards = extras['handCards'];
+    if (Array.isArray(handCards)) {
+      for (const c of handCards) {
+        if (!c || typeof c !== 'object') continue;
+        const familyId =
+          typeof (c as any).familyId === 'string' ? String((c as any).familyId).trim() : '';
+        const memberId =
+          typeof (c as any).memberId === 'string' ? String((c as any).memberId).trim() : '';
+        const label =
+          typeof (c as any).label === 'string' ? String((c as any).label).trim() : '';
+        if (!memberId || !label) continue;
+        const key = `${familyId}|${memberId}`;
+        if (!labelByKey.has(key)) {
+          labelByKey.set(key, label);
+        }
+      }
+    }
+
+    const choices: string[] = [];
+    const choiceActionsByIndex: Array<{
+      type: string;
+      payload: any;
+      meta?: any;
+    }> = [];
+
+    for (const a of discardActions) {
+      const payload =
+        (a as any)?.payload && typeof (a as any).payload === 'object'
+          ? (a as any).payload
+          : {};
+      const memberId =
+        typeof (payload as any).memberId === 'string'
+          ? String((payload as any).memberId).trim()
+          : '';
+      const familyId =
+        typeof (payload as any).familyId === 'string'
+          ? String((payload as any).familyId).trim()
+          : '';
+      if (!memberId) {
+        return state;
+      }
+
+      const key = `${familyId}|${memberId}`;
+      const label = labelByKey.get(key) ?? memberId;
+      choices.push(label);
+      choiceActionsByIndex.push({
+        type: 'discard_card',
+        payload: familyId ? { memberId, familyId } : { memberId },
+        meta: (a as any)?.meta ?? undefined,
+      });
+    }
+
+    return {
+      ...state,
+      pending: {
+        type: 'choose_action',
+        label: 'Choisissez une carte a defausser, puis Entree.',
+        playerId: viewerPlayerId,
+        blocking: true,
+        choices,
+        data: {
+          context: 'synthetic:discard_card',
+          choiceActionsByIndex,
+        },
+      },
+    };
   }
 
   private attachPendingChoiceActions(

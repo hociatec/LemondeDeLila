@@ -674,6 +674,60 @@ describe('GameEngineService', () => {
     });
   });
 
+  it('injects a synthetic discard pending when discard_card actions exist and draw is unavailable', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      { getHandler: jest.fn(() => undefined) } as any,
+      { compute: jest.fn(() => null) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      { attachGridRenderDescriptors: jest.fn((s) => s) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const exposed = (engine as any).exposeStateForUser(
+      {
+        status: 'started',
+        phase: 'play',
+        round: 1,
+        turnIndex: 1,
+        lastRoll: null,
+        log: [],
+        players: [{ id: 1, username: 'Lila' }],
+        turn: { currentPlayerId: 1, direction: 1 },
+        extras: {
+          viewerPlayerId: 1,
+          handCards: [
+            { familyId: 'f', memberId: 'm1', label: 'Fam - Carte 1' },
+            { familyId: 'f', memberId: 'm2', label: 'Fam - Carte 2' },
+          ],
+        },
+        actions: [
+          { type: 'discard_card', payload: { familyId: 'f', memberId: 'm2' } },
+          { type: 'discard_card', payload: { familyId: 'f', memberId: 'm1' } },
+        ],
+      },
+      'any',
+      1,
+    );
+
+    expect((exposed as any).pending?.type).toBe('choose_action');
+    expect((exposed as any).pending?.playerId).toBe(1);
+    expect((exposed as any).pending?.choices).toEqual([
+      'Fam - Carte 2',
+      'Fam - Carte 1',
+    ]);
+    expect((exposed as any).pending?.data?.choiceActionsByIndex?.[0]).toEqual({
+      type: 'discard_card',
+      payload: { memberId: 'm2', familyId: 'f' },
+      meta: undefined,
+    });
+  });
+
   it('rebuilds the P panel from grid coordinates for all players', async () => {
     const engine = new GameEngineService(
       {} as any,
