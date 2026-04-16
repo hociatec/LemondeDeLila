@@ -35,6 +35,8 @@ using client_win.Modules.Vault.Services;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.Catalog.ViewModels;
 using client_win.Modules.MainMenu.ViewModels;
+using client_win.Modules.Stats.Services;
+using client_win.Modules.Stats.ViewModels;
 using client_win.Modules.Vault.ViewModels;
 
 namespace client_win.Modules.Game.Shell.Services;
@@ -61,6 +63,7 @@ public sealed class GameTableOpener : IGameTableOpener
     private readonly ITextPromptService _textPrompts;
     private readonly IVaultClient _vault;
     private readonly ICatalogService _catalog;
+    private readonly IStatsService _stats;
     private readonly IGameFocusCoordinator _focus;
     private readonly IHomeViewAccessor _homeAccessor;
     private static int _globalSoundsPreloaded;
@@ -90,6 +93,7 @@ public sealed class GameTableOpener : IGameTableOpener
         ITextPromptService textPrompts,
         IVaultClient vault,
         ICatalogService catalog,
+        IStatsService stats,
         IGameFocusCoordinator focus,
         IHomeViewAccessor homeAccessor)
     {
@@ -113,6 +117,7 @@ public sealed class GameTableOpener : IGameTableOpener
         _textPrompts = textPrompts ?? throw new ArgumentNullException(nameof(textPrompts));
         _vault = vault ?? throw new ArgumentNullException(nameof(vault));
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
+        _stats = stats ?? throw new ArgumentNullException(nameof(stats));
         _focus = focus ?? throw new ArgumentNullException(nameof(focus));
         _homeAccessor = homeAccessor ?? throw new ArgumentNullException(nameof(homeAccessor));
     }
@@ -846,7 +851,17 @@ public sealed class GameTableOpener : IGameTableOpener
                         openStoryBook: () =>
                         {
                             if (catalogVm == null) return Task.FromResult("Impossible d'ouvrir le livre des contes.");
-                            return _menuRouter.OpenStats();
+
+                            var returnContent = catalogVm;
+                            var statsVm = new StatsViewModel(
+                                _stats,
+                                onClose: () =>
+                                {
+                                    try { _navigation.Show(returnContent); } catch { /* ignore */ }
+                                },
+                                cacheable: false);
+                            _navigation.Show(statsVm);
+                            return Task.FromResult("Livre des contes ouvert.");
                         },
                         openVault: () =>
                         {
