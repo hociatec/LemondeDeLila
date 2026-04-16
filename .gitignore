@@ -11,3 +11,6 @@ backend/logs/
 
 # Runtime logs (written by systemd unit on the server)
 log/
+
+# Local dotnet CLI home (created during sandboxed test runs)
+.dotnet_home/
