@@ -60,6 +60,8 @@ internal sealed class GamePlayRealtimeController
     private bool _lastViewerTurnActionable;
     private bool _lastViewerMustChoosePawn;
     private Dictionary<string, int>? _lastViewerHandCounts;
+    private string? _lastDrawAt;
+    private bool _skipDrawSoundOnce = true;
     private readonly object _statePumpLock = new();
     private readonly List<GameStateDto> _pendingStates = new();
     private int _statePumpRunning;
@@ -132,6 +134,8 @@ internal sealed class GamePlayRealtimeController
         _lastViewerTurnActionable = false;
         _lastViewerMustChoosePawn = false;
         _lastViewerHandCounts = null;
+        _lastDrawAt = null;
+        _skipDrawSoundOnce = true;
         lock (_statePumpLock)
         {
             _pendingStates.Clear();
@@ -571,6 +575,8 @@ internal sealed class GamePlayRealtimeController
             suppressForCurrentUpdate: suppressDiceSoundForCurrentUpdate,
             forceForCurrentUpdate: forceDiceSoundForCurrentUpdate && !suppressDiceSoundForCurrentUpdate);
 
+        TryPlayDrawSoundFromLastDraw(state);
+
         var becameFinished =
             !string.Equals(previousStatus, "finished", StringComparison.OrdinalIgnoreCase) &&
             string.Equals(nextStatus, "finished", StringComparison.OrdinalIgnoreCase);
@@ -603,6 +609,30 @@ internal sealed class GamePlayRealtimeController
         _lastBotThinking = state.BotThinking;
         _lastViewerHandCounts = currentHandCounts;
         _refreshCanExecute();
+    }
+
+    private void TryPlayDrawSoundFromLastDraw(GameStateDto state)
+    {
+        if (state == null)
+        {
+            return;
+        }
+
+        var at = (state.LastDraw?.At ?? string.Empty).Trim();
+        if (_skipDrawSoundOnce)
+        {
+            _skipDrawSoundOnce = false;
+            _lastDrawAt = at.Length == 0 ? null : at;
+            return;
+        }
+
+        if (at.Length == 0 || string.Equals(_lastDrawAt, at, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _lastDrawAt = at;
+        _logSounds.TryPlayDrawSound();
     }
 
     private static string BuildPendingFocusSignature(GamePendingDto? pending)

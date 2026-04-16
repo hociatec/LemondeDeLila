@@ -16,7 +16,7 @@ internal sealed class GameSessionMessageRouter
     private readonly Action<string> _emitError;
     private readonly Action<string> _emitCommandAck;
     private readonly Action<string> _emitUiMessage;
-    private readonly Action<string>? _emitKeyAck;
+    private readonly Action<GameKeyAckDto>? _emitKeyAck;
     private readonly Action<string> _emitStatePatch;
     private readonly Action<GameEndedDto> _emitEnded;
     private readonly Action<string> _emitRaw;
@@ -30,7 +30,7 @@ internal sealed class GameSessionMessageRouter
         Action<string> emitError,
         Action<string> emitCommandAck,
         Action<string> emitUiMessage,
-        Action<string>? emitKeyAck,
+        Action<GameKeyAckDto>? emitKeyAck,
         Action<string> emitStatePatch,
         Action<GameEndedDto> emitEnded,
         Action<string> emitRaw,
@@ -153,15 +153,33 @@ internal sealed class GameSessionMessageRouter
                 var key = payload.TryGetProperty("key", out var keyProp) && keyProp.ValueKind == JsonValueKind.String
                     ? (keyProp.GetString() ?? string.Empty).Trim().ToUpperInvariant()
                     : string.Empty;
-                if (!string.IsNullOrWhiteSpace(key))
-                {
-                    _emitKeyAck?.Invoke(key);
-                }
 
                 var message = payload.TryGetProperty("message", out var messageProp) &&
                               messageProp.ValueKind == JsonValueKind.String
                     ? (messageProp.GetString() ?? string.Empty).Trim()
                     : string.Empty;
+
+                var panelId = payload.TryGetProperty("panelId", out var panelProp) &&
+                              panelProp.ValueKind == JsonValueKind.String
+                    ? (panelProp.GetString() ?? string.Empty).Trim()
+                    : string.Empty;
+
+                var roomOp = payload.TryGetProperty("roomOp", out var roomProp) &&
+                             roomProp.ValueKind == JsonValueKind.String
+                    ? (roomProp.GetString() ?? string.Empty).Trim()
+                    : string.Empty;
+
+                if (!string.IsNullOrWhiteSpace(key))
+                {
+                    _emitKeyAck?.Invoke(new GameKeyAckDto
+                    {
+                        Key = key,
+                        Ok = ok,
+                        PanelId = string.IsNullOrWhiteSpace(panelId) ? null : panelId,
+                        Message = string.IsNullOrWhiteSpace(message) ? null : message,
+                        RoomOp = string.IsNullOrWhiteSpace(roomOp) ? null : roomOp,
+                    });
+                }
 
                 if (!string.IsNullOrWhiteSpace(message))
                 {

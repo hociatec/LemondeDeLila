@@ -66,7 +66,15 @@ public sealed class GameSession : IAsyncDisposable
             emitError: msg => ErrorReceived?.Invoke(msg),
             emitCommandAck: msg => CommandAckReceived?.Invoke(msg),
             emitUiMessage: msg => UiMessageReceived?.Invoke(msg),
-            emitKeyAck: key => EndKeySend(key),
+            emitKeyAck: ack =>
+            {
+                if (!string.IsNullOrWhiteSpace(ack.Key))
+                {
+                    EndKeySend(ack.Key);
+                }
+
+                KeyAckReceived?.Invoke(ack);
+            },
             emitStatePatch: raw =>
             {
                 ClearAllInFlightKeys();
@@ -113,6 +121,7 @@ public sealed class GameSession : IAsyncDisposable
     public event Action<string>? ErrorReceived;
     public event Action<string>? CommandAckReceived;
     public event Action<string>? UiMessageReceived;
+    public event Action<GameKeyAckDto>? KeyAckReceived;
     public event Action<GameEndedDto>? EndedReceived;
 
     public Task CloseAsync() => _socket.CloseAsync();

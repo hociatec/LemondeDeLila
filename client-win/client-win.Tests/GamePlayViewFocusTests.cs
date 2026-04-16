@@ -735,7 +735,7 @@ public sealed class GamePlayViewFocusTests
     }
 
     [Fact]
-    public void GamePlayLogSoundPlayer_PlaysDrawSoundFromHistoryText()
+    public void GamePlayLogSoundPlayer_DoesNotPlayDrawSoundFromHistoryText()
     {
         var sounds = new RecordingSoundService();
         var assembly = typeof(GamePlayView).Assembly;
@@ -758,7 +758,7 @@ public sealed class GamePlayViewFocusTests
         Assert.NotNull(method);
 
         method!.Invoke(player, new object?[] { "A pioche une tomate.", null });
-        Assert.Contains(SoundId.DrawCard, sounds.PlayedSounds);
+        Assert.DoesNotContain(SoundId.DrawCard, sounds.PlayedSounds);
     }
 
     [Fact]
@@ -844,6 +844,7 @@ public sealed class GamePlayViewFocusTests
                 choices: [],
                 turnIndex: 3,
                 lastRoll: 4,
+                lastDraw: new GameDrawDto { PlayerId = 1, At = "2026-03-08T12:00:01Z" },
                 logMessages:
                 [
                     new GameLogEntryDto("Mouche lance le dé : \"4\"", "2026-03-08T12:00:00Z"),
@@ -1208,6 +1209,7 @@ public sealed class GamePlayViewFocusTests
         IReadOnlyList<string> choices,
         int turnIndex = 1,
         int? lastRoll = null,
+        GameDrawDto? lastDraw = null,
         IReadOnlyList<GameLogEntryDto>? logMessages = null)
     {
         var pendingChoices = new List<string>(choices ?? Array.Empty<string>());
@@ -1217,6 +1219,7 @@ public sealed class GamePlayViewFocusTests
             Phase = "play",
             TurnIndex = turnIndex,
             LastRoll = lastRoll,
+            LastDraw = lastDraw,
             Players =
             [
                 new GamePlayerDto

@@ -872,6 +872,13 @@ export class ContesActionService {
     playerId: number,
     card: ContesCard,
   ): GameStateEntity {
+    // Ensure `lastDraw` reflects actual draws, not only explicit "draw" actions.
+    // This lets clients trigger the draw sound for other players and for automatic draws
+    // caused by card effects, without parsing log text.
+    const stateWithLastDraw = {
+      ...state,
+      lastDraw: { playerId, at: new Date().toISOString() },
+    };
     const typeLabel =
       card.type === 'bonus'
         ? 'Bonus'
@@ -881,16 +888,16 @@ export class ContesActionService {
             ? 'Surprise'
             : 'Conte';
     const baseMessage = `${resolvePlayerNameFromState(
-      state,
+      stateWithLastDraw,
       playerId,
     )} pioche une carte ${typeLabel} : ${card.title}.`;
 
     if (card.type === 'conte') {
-      const next = this.core.appendLog(state, baseMessage);
+      const next = this.core.appendLog(stateWithLastDraw, baseMessage);
       return this.recordConteNarration(next, playerId, card);
     }
 
-    return this.core.appendLog(state, `${baseMessage} ${card.text}`);
+    return this.core.appendLog(stateWithLastDraw, `${baseMessage} ${card.text}`);
   }
 
   private recordConteNarration(

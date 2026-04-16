@@ -238,6 +238,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                 s.EndedReceived += _realtime.HandleEnded;
                 s.ErrorReceived += OnServerError;
                 s.CommandAckReceived += OnCommandAckReceived;
+                s.KeyAckReceived += OnKeyAckReceived;
                 s.UiMessageReceived += OnUiMessageReceived;
             },
             unbindSession: s =>
@@ -247,6 +248,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                 s.EndedReceived -= _realtime.HandleEnded;
                 s.ErrorReceived -= OnServerError;
                 s.CommandAckReceived -= OnCommandAckReceived;
+                s.KeyAckReceived -= OnKeyAckReceived;
                 s.UiMessageReceived -= OnUiMessageReceived;
             },
             setConnectionStatus: status => ConnectionStatus = status,
