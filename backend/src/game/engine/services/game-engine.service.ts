@@ -312,6 +312,108 @@ export class GameEngineService {
       return type === 'discard_card';
     });
     if (discardActions.length === 0) {
+      // continue
+    } else {
+      const extras = GameEngineService.extractExtras(state);
+      const viewerPlayerIdRaw = extras['viewerPlayerId'];
+      const viewerPlayerId =
+        typeof viewerPlayerIdRaw === 'number' &&
+        Number.isFinite(viewerPlayerIdRaw)
+          ? viewerPlayerIdRaw
+          : null;
+      if (viewerPlayerId == null) {
+        return state;
+      }
+
+      // Optional label index from handCards (when provided by the game).
+      const labelByKey = new Map<string, string>();
+      const handCards = extras['handCards'];
+      if (Array.isArray(handCards)) {
+        for (const c of handCards) {
+          if (!c || typeof c !== 'object') continue;
+          const familyId =
+            typeof (c as any).familyId === 'string'
+              ? String((c as any).familyId).trim()
+              : '';
+          const memberId =
+            typeof (c as any).memberId === 'string'
+              ? String((c as any).memberId).trim()
+              : '';
+          const label =
+            typeof (c as any).label === 'string'
+              ? String((c as any).label).trim()
+              : '';
+          if (!memberId || !label) continue;
+          const key = `${familyId}|${memberId}`;
+          if (!labelByKey.has(key)) {
+            labelByKey.set(key, label);
+          }
+        }
+      }
+
+      const choices: string[] = [];
+      const choiceActionsByIndex: Array<{
+        type: string;
+        payload: any;
+        meta?: any;
+      }> = [];
+
+      for (const a of discardActions) {
+        const payload =
+          (a as any)?.payload && typeof (a as any).payload === 'object'
+            ? (a as any).payload
+            : {};
+        const memberId =
+          typeof (payload as any).memberId === 'string'
+            ? String((payload as any).memberId).trim()
+            : '';
+        const familyId =
+          typeof (payload as any).familyId === 'string'
+            ? String((payload as any).familyId).trim()
+            : '';
+        if (!memberId) {
+          return state;
+        }
+
+        const key = `${familyId}|${memberId}`;
+        const label = labelByKey.get(key) ?? memberId;
+        choices.push(label);
+        choiceActionsByIndex.push({
+          type: 'discard_card',
+          payload: familyId ? { memberId, familyId } : { memberId },
+          meta: (a as any)?.meta ?? undefined,
+        });
+      }
+
+      return {
+        ...state,
+        pending: {
+          type: 'choose_action',
+          label: 'Choisissez une carte a defausser, puis Entree.',
+          playerId: viewerPlayerId,
+          blocking: true,
+          choices,
+          data: {
+            context: 'synthetic:discard_card',
+            choiceActionsByIndex,
+          },
+        },
+      };
+    }
+
+    // Synthetic ask-card selector (optional): expose a choices list when `ask_card` is available.
+    // This replaces client-side AskCardChoiceBuilder for WPF.
+    const hasRoll = rawActions.some((a) => isRollActionType(a?.type));
+    if (hasRoll) {
+      return state;
+    }
+
+    const askActions = rawActions.filter((a) => {
+      const type =
+        typeof a?.type === 'string' ? a.type.trim().toLowerCase() : '';
+      return type === 'ask_card';
+    });
+    if (askActions.length === 0) {
       return state;
     }
 
@@ -325,22 +427,56 @@ export class GameEngineService {
       return state;
     }
 
-    // Optional label index from handCards (when provided by the game).
-    const labelByKey = new Map<string, string>();
-    const handCards = extras['handCards'];
-    if (Array.isArray(handCards)) {
-      for (const c of handCards) {
-        if (!c || typeof c !== 'object') continue;
-        const familyId =
-          typeof (c as any).familyId === 'string' ? String((c as any).familyId).trim() : '';
-        const memberId =
-          typeof (c as any).memberId === 'string' ? String((c as any).memberId).trim() : '';
-        const label =
-          typeof (c as any).label === 'string' ? String((c as any).label).trim() : '';
-        if (!memberId || !label) continue;
-        const key = `${familyId}|${memberId}`;
-        if (!labelByKey.has(key)) {
-          labelByKey.set(key, label);
+    const usernameById = new Map<number, string>();
+    const playerViews = extras['playerViews'];
+    if (Array.isArray(playerViews)) {
+      for (const p of playerViews) {
+        if (!p || typeof p !== 'object') continue;
+        const id =
+          typeof (p as any).id === 'number' && Number.isFinite((p as any).id)
+            ? (p as any).id
+            : null;
+        const username =
+          typeof (p as any).username === 'string'
+            ? String((p as any).username).trim()
+            : '';
+        if (id == null || !username) continue;
+        if (!usernameById.has(id)) usernameById.set(id, username);
+      }
+    } else if (Array.isArray(state.players)) {
+      for (const p of state.players) {
+        if (!p || typeof p !== 'object') continue;
+        const id = typeof (p as any).id === 'number' ? (p as any).id : null;
+        const username =
+          typeof (p as any).username === 'string'
+            ? String((p as any).username).trim()
+            : '';
+        if (id == null || !username) continue;
+        if (!usernameById.has(id)) usernameById.set(id, username);
+      }
+    }
+
+    const normalizedCardNameById = new Map<string, string>();
+    const catalog = extras['catalog'];
+    if (catalog && typeof catalog === 'object' && !Array.isArray(catalog)) {
+      for (const familyId of Object.keys(catalog as any)) {
+        const list = (catalog as any)[familyId];
+        if (!Array.isArray(list)) continue;
+        for (const entry of list) {
+          if (!entry || typeof entry !== 'object') continue;
+          const id =
+            typeof (entry as any).id === 'string'
+              ? String((entry as any).id).trim()
+              : '';
+          const name =
+            typeof (entry as any).name === 'string'
+              ? String((entry as any).name).trim()
+              : '';
+          if (!id || !name) continue;
+          const key = id.toLowerCase();
+          if (!normalizedCardNameById.has(key)) {
+            normalizedCardNameById.set(key, name);
+          }
         }
       }
     }
@@ -352,29 +488,52 @@ export class GameEngineService {
       meta?: any;
     }> = [];
 
-    for (const a of discardActions) {
+    for (const a of askActions) {
       const payload =
         (a as any)?.payload && typeof (a as any).payload === 'object'
           ? (a as any).payload
           : {};
-      const memberId =
-        typeof (payload as any).memberId === 'string'
-          ? String((payload as any).memberId).trim()
-          : '';
+
+      const targetRaw =
+        typeof (payload as any).targetPlayerId === 'number'
+          ? (payload as any).targetPlayerId
+          : typeof (payload as any).targetId === 'number'
+            ? (payload as any).targetId
+            : null;
+      const targetId =
+        typeof targetRaw === 'number' && Number.isFinite(targetRaw)
+          ? targetRaw
+          : null;
+
       const familyId =
         typeof (payload as any).familyId === 'string'
           ? String((payload as any).familyId).trim()
           : '';
-      if (!memberId) {
-        return state;
-      }
+      const memberId =
+        typeof (payload as any).memberId === 'string'
+          ? String((payload as any).memberId).trim()
+          : '';
+      const cardId =
+        typeof (payload as any).cardId === 'string'
+          ? String((payload as any).cardId).trim()
+          : '';
 
-      const key = `${familyId}|${memberId}`;
-      const label = labelByKey.get(key) ?? memberId;
+      const cardKey = (memberId || cardId).toLowerCase();
+      const cardName =
+        cardKey && normalizedCardNameById.has(cardKey)
+          ? normalizedCardNameById.get(cardKey)!
+          : memberId || cardId;
+      const targetName =
+        targetId != null
+          ? usernameById.get(targetId) ?? `Joueur ${targetId}`
+          : '';
+
+      const label =
+        targetName && cardName ? `${targetName} : ${cardName}` : 'ask_card';
       choices.push(label);
       choiceActionsByIndex.push({
-        type: 'discard_card',
-        payload: familyId ? { memberId, familyId } : { memberId },
+        type: 'ask_card',
+        payload,
         meta: (a as any)?.meta ?? undefined,
       });
     }
@@ -383,12 +542,12 @@ export class GameEngineService {
       ...state,
       pending: {
         type: 'choose_action',
-        label: 'Choisissez une carte a defausser, puis Entree.',
+        label: 'Choisissez une demande, puis Entree.',
         playerId: viewerPlayerId,
-        blocking: true,
+        blocking: false,
         choices,
         data: {
-          context: 'synthetic:discard_card',
+          context: 'synthetic:ask_card',
           choiceActionsByIndex,
         },
       },

@@ -11,6 +11,13 @@ internal static class DiscardChoiceBuilder
 {
     internal static bool HasDiscardChoices(GameStateDto? state)
     {
+        // If the server exposes a pending (including synthetic pending from the engine),
+        // do not offer client-side discard selection.
+        if (state?.Pending != null)
+        {
+            return false;
+        }
+
         if (state?.Actions == null || state.Actions.Count == 0)
         {
             return false;
@@ -119,4 +126,3 @@ internal static class DiscardChoiceBuilder
         return index;
     }
 }
-

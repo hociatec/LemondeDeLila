@@ -728,6 +728,61 @@ describe('GameEngineService', () => {
     });
   });
 
+  it('injects a synthetic ask pending when ask_card actions exist (no roll/draw)', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      { getHandler: jest.fn(() => undefined) } as any,
+      { compute: jest.fn(() => null) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      { attachGridRenderDescriptors: jest.fn((s) => s) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const exposed = (engine as any).exposeStateForUser(
+      {
+        status: 'started',
+        phase: 'play',
+        round: 1,
+        turnIndex: 1,
+        lastRoll: null,
+        log: [],
+        players: [
+          { id: 1, username: 'Lila' },
+          { id: 2, username: 'Fox' },
+        ],
+        turn: { currentPlayerId: 1, direction: 1 },
+        extras: {
+          viewerPlayerId: 1,
+          playerViews: [
+            { id: 1, username: 'Lila' },
+            { id: 2, username: 'Fox' },
+          ],
+          catalog: { f: [{ id: 'c1', name: 'Fam - Carte 1' }] },
+        },
+        actions: [
+          { type: 'ask_card', payload: { cardId: 'c1', targetPlayerId: 2 } },
+          { type: 'pass', payload: {} },
+        ],
+      },
+      'any',
+      1,
+    );
+
+    expect((exposed as any).pending?.data?.context).toBe('synthetic:ask_card');
+    expect((exposed as any).pending?.blocking).toBe(false);
+    expect((exposed as any).pending?.choices?.[0]).toBe('Fox : Fam - Carte 1');
+    expect((exposed as any).pending?.data?.choiceActionsByIndex?.[0]).toEqual({
+      type: 'ask_card',
+      payload: { cardId: 'c1', targetPlayerId: 2 },
+      meta: undefined,
+    });
+  });
+
   it('rebuilds the P panel from grid coordinates for all players', async () => {
     const engine = new GameEngineService(
       {} as any,
