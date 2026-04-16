@@ -624,6 +624,56 @@ describe('GameEngineService', () => {
     });
   });
 
+  it('attaches pending choiceActionsByIndex when actions align with pending choices', () => {
+    const engine = new GameEngineService(
+      {} as any,
+      {} as any,
+      { getHandler: jest.fn(() => undefined) } as any,
+      { compute: jest.fn(() => null) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      { attachGridRenderDescriptors: jest.fn((s) => s) } as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const exposed = (engine as any).exposeStateForUser(
+      {
+        status: 'started',
+        phase: 'play',
+        round: 1,
+        turnIndex: 1,
+        lastRoll: null,
+        log: [],
+        players: [{ id: 1, username: 'Lila' }],
+        turn: { currentPlayerId: 1, direction: 1 },
+        pending: {
+          type: 'quiz',
+          playerId: 1,
+          choices: ['A', 'B'],
+          data: {},
+        },
+        actions: [
+          { type: 'answer_quiz', payload: { answerIndex: 0 } },
+          { type: 'answer_quiz', payload: { answerIndex: 1 } },
+        ],
+      },
+      'any',
+      1,
+    );
+
+    expect(
+      (exposed?.pending as any)?.data?.choiceActionsByIndex?.length,
+    ).toBe(2);
+    expect((exposed?.pending as any)?.data?.choiceActionsByIndex?.[1]).toEqual({
+      type: 'answer_quiz',
+      payload: { answerIndex: 1 },
+      meta: undefined,
+    });
+  });
+
   it('rebuilds the P panel from grid coordinates for all players', async () => {
     const engine = new GameEngineService(
       {} as any,

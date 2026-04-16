@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Game.Play.Actions.Dtos;
@@ -51,6 +52,14 @@ internal sealed class GamePlayActionDispatcher
         if (available.Count == 0) return false;
 
         var pendingType = (state.Pending.Type ?? string.Empty).Trim();
+
+        // Preferred path: backend provides an explicit mapping choice index -> action.
+        // This keeps the client "thin" and avoids game-specific heuristics.
+        if (TryBuildActionFromServerChoiceActions(state.Pending, index, out var mapped))
+        {
+            action = mapped;
+            return true;
+        }
 
         // Cas spécial: "choose_pawn" (ex: petits chevaux).
         // On construit l'action depuis `pending.data.moves`, aligné sur `pending.choices`.
@@ -185,6 +194,69 @@ internal sealed class GamePlayActionDispatcher
         if (string.IsNullOrWhiteSpace(chosen.Type)) return false;
 
         action = new GameClientAction(type: chosen.Type, payload: chosen.Payload);
+        return true;
+    }
+
+    private static bool TryBuildActionFromServerChoiceActions(
+        GamePendingDto pending,
+        int choiceIndex,
+        out GameClientAction? action)
+    {
+        action = null;
+
+        if (pending == null || choiceIndex < 0)
+        {
+            return false;
+        }
+
+        if (pending.Data.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        if (!pending.Data.TryGetProperty("choiceActionsByIndex", out var actions) ||
+            actions.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        if (choiceIndex >= actions.GetArrayLength())
+        {
+            return false;
+        }
+
+        var node = actions[choiceIndex];
+        if (node.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        var type = node.TryGetProperty("type", out var typeNode) && typeNode.ValueKind == JsonValueKind.String
+            ? (typeNode.GetString() ?? string.Empty).Trim()
+            : string.Empty;
+        if (type.Length == 0)
+        {
+            return false;
+        }
+
+        object? payload = null;
+        if (node.TryGetProperty("payload", out var payloadNode) &&
+            payloadNode.ValueKind != JsonValueKind.Undefined &&
+            payloadNode.ValueKind != JsonValueKind.Null)
+        {
+            // Detach from the original JsonDocument to avoid lifetime issues.
+            payload = JsonNode.Parse(payloadNode.GetRawText());
+        }
+
+        object? meta = null;
+        if (node.TryGetProperty("meta", out var metaNode) &&
+            metaNode.ValueKind != JsonValueKind.Undefined &&
+            metaNode.ValueKind != JsonValueKind.Null)
+        {
+            meta = JsonNode.Parse(metaNode.GetRawText());
+        }
+
+        action = new GameClientAction(type, payload, meta);
         return true;
     }
 

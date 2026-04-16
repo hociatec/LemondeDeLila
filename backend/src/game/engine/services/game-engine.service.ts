@@ -265,8 +265,9 @@ export class GameEngineService {
     );
     const withShortcuts = this.attachShortcuts(withDescriptors, handler);
     const withLifecycle = this.attachStartLifecycle(withShortcuts, userId);
+    const withChoiceActions = this.attachPendingChoiceActions(withLifecycle);
     const finalState = fixMojibakeDeep(
-      this.stripBoardAndGridIfNotStarted(withLifecycle),
+      this.stripBoardAndGridIfNotStarted(withChoiceActions),
     );
     if (byState) {
       byState.set(cacheKey, finalState);
@@ -277,6 +278,53 @@ export class GameEngineService {
       );
     }
     return finalState;
+  }
+
+  private attachPendingChoiceActions(
+    state: GameStateWithActions,
+  ): GameStateWithActions {
+    const pending = state?.pending;
+    const choices = Array.isArray(pending?.choices) ? pending!.choices! : [];
+    if (!pending || choices.length === 0) {
+      return state;
+    }
+
+    const rawData =
+      pending.data && typeof pending.data === 'object' ? pending.data : {};
+    const data: Record<string, unknown> = { ...(rawData as any) };
+
+    // Do not override a game-specific mapping if it already exists.
+    if (Array.isArray((data as any).choiceActionsByIndex)) {
+      return state;
+    }
+
+    const rawActions = Array.isArray(state?.actions) ? state.actions! : [];
+    const candidates = rawActions.filter((a) => {
+      const type = typeof a?.type === 'string' ? a.type.trim() : '';
+      if (!type) return false;
+      const normalized = type.toLowerCase();
+      if (isRollActionType(normalized)) return false;
+      if (normalized === 'draw' || normalized === 'draw_card') return false;
+      return true;
+    });
+
+    if (candidates.length !== choices.length) {
+      return state;
+    }
+
+    data.choiceActionsByIndex = candidates.map((a) => ({
+      type: String(a.type ?? '').trim(),
+      payload: (a as any).payload ?? {},
+      meta: (a as any).meta ?? undefined,
+    }));
+
+    return {
+      ...state,
+      pending: {
+        ...pending,
+        data,
+      },
+    };
   }
 
   async handleKeyPress(
