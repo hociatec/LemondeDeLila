@@ -164,7 +164,9 @@ export class PanierExpressSetupService {
     const seed = this.extractSeed(baseState);
     const shuffle = <T>(items: readonly T[], salt: string): T[] => {
       if (seed != null) return seededShuffle(items, seed, salt);
-      return this.deckPool.shuffle([...items]);
+      // Fallback déterministe (important pour éviter les tests flaky).
+      // Le seed sera disponible ensuite via `metadata.rng` (room context / tests).
+      return [...items];
     };
 
     let pool: PanierExpressDeckPool = {};
@@ -242,7 +244,7 @@ export class PanierExpressSetupService {
     if (seed != null) {
       return seededShuffle(normalized, seed, 'panier-express:quizzes');
     }
-    return this.decks.shuffle(normalized);
+    return normalized;
   }
 
   pawns(): string[] {

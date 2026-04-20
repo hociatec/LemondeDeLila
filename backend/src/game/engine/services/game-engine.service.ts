@@ -10,8 +10,6 @@ import { In, Repository } from 'typeorm';
 import { RoomService } from '../../../room/services/room.service';
 import {
   RoomPayload,
-  RoomPlayer,
-  RoomBotState,
 } from '../../../room/dto/room-response.dto';
 import { GameCoreService } from '../../core/services/game-core.service';
 import {
@@ -40,15 +38,66 @@ import { PayloadValidationError } from '../../../common/errors/game-errors';
 import { GameLoggerService } from '../../../common/services/game-logger.service';
 import { GameStatsService } from '../../../stats/services/game-stats.service';
 import { GridRenderService } from '../../modules/grid/services/grid-render.service';
-import type { GameShortcutHint } from '../shortcuts/game-shortcuts';
-import { actionShortcut, interfaceShortcut } from '../shortcuts/shortcut-utils';
-import { isRollActionType } from '../../actions/action-service.helper';
 import {
   fixMojibakeDeep,
   fixMojibakeString,
 } from '../../../common/utils/mojibake';
 import { SocialProfile } from '../../../social/entities/social-profile.entity';
 import { BoardPayloadService } from '../../modules/board/services/board-payload.service';
+import {
+  getMetadataObject,
+  normalizeMetadataString,
+  parseMetadataNumber,
+  toMetadata,
+  tryReadOutcomesByPlayerId,
+  tryReadWinnerId,
+} from './game-engine.metadata';
+import {
+  extractExtras,
+  extractPanelMessage,
+  extractPanels,
+  extractUi,
+} from './game-engine-extras';
+import { attachUiDescriptors } from './game-engine-ui-descriptors';
+import {
+  attachCurrentPlayerView,
+  attachTurnLabel,
+  stripBoardAndGridIfNotStarted,
+} from './game-engine-presentation';
+import { attachViewerContext } from './game-engine-viewer-context';
+import { attachStartLifecycle } from './game-engine-lifecycle';
+import { attachShortcuts, buildShortcuts } from './game-engine-shortcuts';
+import {
+  attachPendingChoiceActions,
+  attachSyntheticPendingFromActions,
+} from './game-engine-pending-presentation';
+import {
+  attachCanonicalPositionPanel,
+  buildCanonicalPositionPanelMessage,
+} from './game-engine-position-panel';
+import { enqueueMutation } from './game-engine-mutation-queue';
+import { runApplyActionsInternal } from './runtime/game-engine-runtime.apply-actions';
+import { runPlayBotTurnInternal } from './runtime/game-engine-runtime.bot-turn';
+import { runApplySystemActions } from './runtime/game-engine-runtime.system-actions';
+import { runScheduleBotTurn } from './runtime/game-engine-runtime.scheduler';
+import { runGetInternalState } from './runtime/game-engine-runtime.internal-state';
+import {
+  buildPlayersFromPayload as buildPlayersFromRoomPayload,
+  syncRosterForStartedRoom,
+} from './runtime/game-engine-runtime.roster-sync';
+import { buildInitialState } from './runtime/game-engine-runtime.initial-state';
+import {
+  appendFirstTurnAnnouncement as appendFirstTurnAnnouncementRuntime,
+  ensureRandomStarterAtGameStart as ensureRandomStarterAtGameStartRuntime,
+} from './runtime/game-engine-runtime.turn-announcements';
+import {
+  appendBoardArrivalAnnouncements as appendBoardArrivalAnnouncementsRuntime,
+  appendSkipTurnAnnouncements as appendSkipTurnAnnouncementsRuntime,
+} from './runtime/game-engine-runtime.log-announcements';
+import {
+  runMarkBotThinking,
+  runNormalizeBotThinking,
+} from './runtime/game-engine-runtime.bot-thinking';
 
 type GameEndedOutcome = 'won' | 'lost' | 'draw' | 'unknown';
 
@@ -69,34 +118,6 @@ type GameEndedPayload = {
   >;
   turnIndex: number | null;
 };
-
-type CurrentPlayerView = {
-  shoppingList?: unknown;
-  basket?: unknown;
-  inventory?: unknown;
-  stable?: unknown;
-  position?: unknown;
-};
-
-function normalizePromptToken(value: string): string {
-  return String(value ?? '')
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim();
-}
-
-function extractPawnPromptToken(message: string): string | null {
-  const text = String(message ?? '').trim();
-  if (!text) return null;
-
-  const withPlayer =
-    /^c['’]est à (.+?) de choisir (?:son|un) pion(?:[.,!?]|$)/i.exec(text);
-  if (!withPlayer) return null;
-  return `prompt:choose-pawn:${normalizePromptToken(withPlayer[1])}`;
-}
 
 @Injectable()
 export class GameEngineService {
@@ -127,6 +148,132 @@ export class GameEngineService {
   private static nowMs(): number {
     return Date.now();
   }
+
+  private readonly runtimeDeps = {
+    nowMs: () => GameEngineService.nowMs(),
+    roomsGetRoomPayload: (roomId: number) => this.rooms.getRoomPayload(roomId),
+    roomsResetRoomSystem: (roomId: number) => this.rooms.resetRoomSystem(roomId),
+    roomsNotifyRoomStateUpdated: (roomId: number) =>
+      this.rooms.notifyRoomStateUpdated(roomId),
+    registryGetHandler: (gameType: string) => this.registry.getHandler(gameType),
+    storeGet: (roomId: number, gameType: string) => this.store.get(roomId, gameType),
+    storeSet: (
+      roomId: number,
+      gameType: string,
+      state: GameStateEntity,
+      opts?: { asyncPersist?: boolean },
+    ) => this.store.set(roomId, gameType, state, opts),
+    storeDelete: (roomId: number, gameType: string) => this.store.delete(roomId, gameType),
+    storeSyncRoomStatus: (state: GameStateEntity, payload: RoomPayload) =>
+      this.store.syncRoomStatus(state, payload),
+    storeMarkBotThinking: (state: GameStateEntity, isBot: boolean) =>
+      this.store.markBotThinking(state, isBot),
+    botSchedulerClear: (key: string) => this.botScheduler.clear(key),
+    buildKey: (roomId: number, gameType: string) => this.buildKey(roomId, gameType),
+    buildSystemTimerKey: (roomId: number, gameType: string, suffix: string) =>
+      this.buildSystemTimerKey(roomId, gameType, suffix),
+    cleanupRoom: (roomId: number, gameType: string) => this.cleanupRoom(roomId, gameType),
+    getInternalState: (roomId: number, gameType: string) =>
+      this.getInternalState(roomId, gameType),
+    normalizeBotThinking: (roomId: number, gameType: string, state: GameStateEntity) =>
+      this.normalizeBotThinking(roomId, gameType, state),
+    markBotThinking: (
+      roomId: number,
+      gameType: string,
+      state: GameStateEntity,
+      botTurn?: boolean,
+    ) => this.markBotThinking(roomId, gameType, state, botTurn),
+    scheduleBotTurn: (roomId: number, gameType: string, state: GameStateEntity) =>
+      this.scheduleBotTurn(roomId, gameType, state),
+    applySystemActions: (
+      roomId: number,
+      gameType: string,
+      actions: GameSingleActionDto[],
+    ) => this.applySystemActions(roomId, gameType, actions),
+    playBotTurn: (roomId: number, gameType: string) => this.playBotTurn(roomId, gameType),
+    getBotActorIdForState: (
+      state: GameStateEntity,
+      handler: GameRulesAdapter | undefined,
+    ) => this.getBotActorIdForState(state, handler),
+    pendingSignature: (pending: PendingState | null | undefined) =>
+      this.pendingSignature(pending),
+    exposeState: (state: GameStateEntity, gameType: string) =>
+      this.exposeState(state, gameType),
+    applyActionsInternal: (
+      roomId: number,
+      gameType: string,
+      actions: GameSingleActionDto[],
+      actorId: number | null,
+      allowBotTurn: boolean,
+      botActorIdOverride: number | null,
+    ) =>
+      this.applyActionsInternal(
+        roomId,
+        gameType,
+        actions,
+        actorId,
+        allowBotTurn,
+        botActorIdOverride,
+      ),
+    appendFirstTurnAnnouncement: (state: GameStateEntity) =>
+      this.appendFirstTurnAnnouncement(state),
+    appendBoardArrivalAnnouncements: (
+      gameType: string,
+      handler: GameRulesAdapter | undefined,
+      previous: GameStateEntity,
+      next: GameStateEntity,
+    ) => this.appendBoardArrivalAnnouncements(gameType, handler, previous, next),
+    appendSkipTurnAnnouncements: (state: GameStateEntity) =>
+      this.appendSkipTurnAnnouncements(state),
+    normalizeWinnerMetadata: (state: GameStateEntity) =>
+      this.normalizeWinnerMetadata(state),
+    forceFinishedIfWinnerDetected: (state: GameStateEntity) =>
+      this.forceFinishedIfWinnerDetected(state),
+    isWithinFinishedGraceWindow: (state: GameStateEntity) =>
+      this.isWithinFinishedGraceWindow(state),
+    scheduleFinishedRoomReset: (
+      roomId: number,
+      gameType: string,
+      state: GameStateEntity,
+    ) => this.scheduleFinishedRoomReset(roomId, gameType, state),
+    buildInitialState: (payload: RoomPayload, gameType: string) =>
+      this.buildInitialState(payload, gameType),
+    syncRosterForStartedRoom: (state: GameStateEntity, payload: RoomPayload) =>
+      this.syncRosterForStartedRoom(state, payload),
+    validateActions: (
+      state: GameStateEntity,
+      handler: GameRulesAdapter | undefined,
+      actions: GameSingleActionDto[],
+      actorId: number | null,
+    ) => this.validateActions(state, handler, actions, actorId),
+    normalizeActionType: (value: unknown) => this.normalizeActionType(value),
+    isDrawAction: (action: GameSingleActionDto) => this.isDrawAction(action),
+    isBotTurn: (state: GameStateEntity) => this.isBotTurn(state),
+    deriveFinishedOutcomes: (state: GameStateEntity) =>
+      this.deriveFinishedOutcomes(state),
+    buildEndgameMessagesByPlayerId: (players: PlayerStateEntity[]) =>
+      this.buildEndgameMessagesByPlayerId(players),
+    buildEndedPayload: (roomId: number, gameType: string, state: GameStateEntity) =>
+      this.buildEndedPayload(roomId, gameType, state),
+    broadcastCurrentStateAndExpose: (
+      roomId: number,
+      gameType: string,
+      state: GameStateEntity,
+    ) => this.broadcastCurrentStateAndExpose(roomId, gameType, state),
+    coreAppendLog: (state: GameStateEntity, message: string) =>
+      this.core.appendLog(state, message),
+    coreBuildBaseState: (payload: RoomPayload, gameType: string) =>
+      this.core.buildBaseState(payload, gameType),
+    normalizeUsernameForLog: (username: unknown) =>
+      this.normalizeUsernameForLog(username),
+    botSettings: () => this.botSettings,
+    botScheduler: () => this.botScheduler,
+    botRunner: () => this.botRunner,
+    statsFinalizeFinished: (roomId: number, state: GameStateEntity) =>
+      this.stats.finalizeFinished(roomId, state),
+    broadcaster: () => this.broadcaster,
+    endedBroadcaster: () => this.endedBroadcaster,
+  };
 
   constructor(
     private readonly rooms: RoomService,
@@ -192,10 +339,11 @@ export class GameEngineService {
     roomId: number,
     gameType: string,
   ): Promise<GameStateWithActions> {
-    const internal = await this.enqueueMutation(
-      this.buildKey(roomId, gameType),
-      () => this.getInternalState(roomId, gameType),
-    );
+    const internal = await enqueueMutation({
+      queue: this.mutationQueue,
+      key: this.buildKey(roomId, gameType),
+      task: () => this.getInternalState(roomId, gameType),
+    });
     return this.exposeState(internal, gameType);
   }
 
@@ -224,10 +372,11 @@ export class GameEngineService {
     gameType: string,
     userId: number,
   ): Promise<GameStateWithActions> {
-    const internal = await this.enqueueMutation(
-      this.buildKey(roomId, gameType),
-      () => this.getInternalState(roomId, gameType),
-    );
+    const internal = await enqueueMutation({
+      queue: this.mutationQueue,
+      key: this.buildKey(roomId, gameType),
+      task: () => this.getInternalState(roomId, gameType),
+    });
     return this.exposeStateForUser(internal, gameType, userId);
   }
 
@@ -250,28 +399,29 @@ export class GameEngineService {
       : handler?.exposeState
         ? handler.exposeState(state)
         : (state as GameStateWithActions);
-    const withLabel = this.attachTurnLabel(exposed, label);
-    const withDescriptors = this.attachCanonicalPositionPanel(
-      this.attachUiDescriptors(
-        this.gridRender.attachGridRenderDescriptors(
-          this.attachViewerContext(
-            this.attachCurrentPlayerView(withLabel),
-            userId,
-          ),
+    const withLabel = attachTurnLabel(exposed, label);
+    const withDescriptors = attachCanonicalPositionPanel({
+      state: attachUiDescriptors({
+        state: this.gridRender.attachGridRenderDescriptors(
+          attachViewerContext(attachCurrentPlayerView(withLabel), userId),
         ),
-      ),
-      state,
+        normalizeString: normalizeMetadataString,
+      }),
+      internal: state,
       userId,
-    );
-    const withShortcuts = this.attachShortcuts(withDescriptors, handler);
-    const withLifecycle = this.attachStartLifecycle(withShortcuts, userId);
-    const withSyntheticPending = this.attachSyntheticPendingFromActions(
-      withLifecycle,
-    );
-    const withChoiceActions =
-      this.attachPendingChoiceActions(withSyntheticPending);
+      boardPayload: this.boardPayload,
+      normalizeString: normalizeMetadataString,
+    });
+    const withShortcuts = attachShortcuts({ state: withDescriptors, handler });
+    const withLifecycle = attachStartLifecycle({
+      state: withShortcuts,
+      userId,
+    });
+    const withSyntheticPending =
+      attachSyntheticPendingFromActions(withLifecycle);
+    const withChoiceActions = attachPendingChoiceActions(withSyntheticPending);
     const finalState = fixMojibakeDeep(
-      this.stripBoardAndGridIfNotStarted(withChoiceActions),
+      stripBoardAndGridIfNotStarted(withChoiceActions),
     );
     if (byState) {
       byState.set(cacheKey, finalState);
@@ -282,323 +432,6 @@ export class GameEngineService {
       );
     }
     return finalState;
-  }
-
-  private attachSyntheticPendingFromActions(
-    state: GameStateWithActions,
-  ): GameStateWithActions {
-    // Never override a real server pending.
-    if (state?.pending) {
-      return state;
-    }
-
-    const rawActions = Array.isArray(state?.actions) ? state.actions! : [];
-    if (rawActions.length === 0) {
-      return state;
-    }
-
-    const types = new Set(
-      rawActions
-        .map((a) => (typeof a?.type === 'string' ? a.type.trim().toLowerCase() : ''))
-        .filter((t) => t),
-    );
-    const hasDraw = types.has('draw') || types.has('draw_card');
-    if (hasDraw) {
-      return state;
-    }
-
-    const discardActions = rawActions.filter((a) => {
-      const type = typeof a?.type === 'string' ? a.type.trim().toLowerCase() : '';
-      return type === 'discard_card';
-    });
-    if (discardActions.length === 0) {
-      // continue
-    } else {
-      const extras = GameEngineService.extractExtras(state);
-      const viewerPlayerIdRaw = extras['viewerPlayerId'];
-      const viewerPlayerId =
-        typeof viewerPlayerIdRaw === 'number' &&
-        Number.isFinite(viewerPlayerIdRaw)
-          ? viewerPlayerIdRaw
-          : null;
-      if (viewerPlayerId == null) {
-        return state;
-      }
-
-      // Optional label index from handCards (when provided by the game).
-      const labelByKey = new Map<string, string>();
-      const handCards = extras['handCards'];
-      if (Array.isArray(handCards)) {
-        for (const c of handCards) {
-          if (!c || typeof c !== 'object') continue;
-          const familyId =
-            typeof (c as any).familyId === 'string'
-              ? String((c as any).familyId).trim()
-              : '';
-          const memberId =
-            typeof (c as any).memberId === 'string'
-              ? String((c as any).memberId).trim()
-              : '';
-          const label =
-            typeof (c as any).label === 'string'
-              ? String((c as any).label).trim()
-              : '';
-          if (!memberId || !label) continue;
-          const key = `${familyId}|${memberId}`;
-          if (!labelByKey.has(key)) {
-            labelByKey.set(key, label);
-          }
-        }
-      }
-
-      const choices: string[] = [];
-      const choiceActionsByIndex: Array<{
-        type: string;
-        payload: any;
-        meta?: any;
-      }> = [];
-
-      for (const a of discardActions) {
-        const payload =
-          (a as any)?.payload && typeof (a as any).payload === 'object'
-            ? (a as any).payload
-            : {};
-        const memberId =
-          typeof (payload as any).memberId === 'string'
-            ? String((payload as any).memberId).trim()
-            : '';
-        const familyId =
-          typeof (payload as any).familyId === 'string'
-            ? String((payload as any).familyId).trim()
-            : '';
-        if (!memberId) {
-          return state;
-        }
-
-        const key = `${familyId}|${memberId}`;
-        const label = labelByKey.get(key) ?? memberId;
-        choices.push(label);
-        choiceActionsByIndex.push({
-          type: 'discard_card',
-          payload: familyId ? { memberId, familyId } : { memberId },
-          meta: (a as any)?.meta ?? undefined,
-        });
-      }
-
-      return {
-        ...state,
-        pending: {
-          type: 'choose_action',
-          label: 'Choisissez une carte a defausser, puis Entree.',
-          playerId: viewerPlayerId,
-          blocking: true,
-          choices,
-          data: {
-            context: 'synthetic:discard_card',
-            choiceActionsByIndex,
-          },
-        },
-      };
-    }
-
-    // Synthetic ask-card selector (optional): expose a choices list when `ask_card` is available.
-    // This replaces client-side AskCardChoiceBuilder for WPF.
-    const hasRoll = rawActions.some((a) => isRollActionType(a?.type));
-    if (hasRoll) {
-      return state;
-    }
-
-    const askActions = rawActions.filter((a) => {
-      const type =
-        typeof a?.type === 'string' ? a.type.trim().toLowerCase() : '';
-      return type === 'ask_card';
-    });
-    if (askActions.length === 0) {
-      return state;
-    }
-
-    const extras = GameEngineService.extractExtras(state);
-    const viewerPlayerIdRaw = extras['viewerPlayerId'];
-    const viewerPlayerId =
-      typeof viewerPlayerIdRaw === 'number' && Number.isFinite(viewerPlayerIdRaw)
-        ? viewerPlayerIdRaw
-        : null;
-    if (viewerPlayerId == null) {
-      return state;
-    }
-
-    const usernameById = new Map<number, string>();
-    const playerViews = extras['playerViews'];
-    if (Array.isArray(playerViews)) {
-      for (const p of playerViews) {
-        if (!p || typeof p !== 'object') continue;
-        const id =
-          typeof (p as any).id === 'number' && Number.isFinite((p as any).id)
-            ? (p as any).id
-            : null;
-        const username =
-          typeof (p as any).username === 'string'
-            ? String((p as any).username).trim()
-            : '';
-        if (id == null || !username) continue;
-        if (!usernameById.has(id)) usernameById.set(id, username);
-      }
-    } else if (Array.isArray(state.players)) {
-      for (const p of state.players) {
-        if (!p || typeof p !== 'object') continue;
-        const id = typeof (p as any).id === 'number' ? (p as any).id : null;
-        const username =
-          typeof (p as any).username === 'string'
-            ? String((p as any).username).trim()
-            : '';
-        if (id == null || !username) continue;
-        if (!usernameById.has(id)) usernameById.set(id, username);
-      }
-    }
-
-    const normalizedCardNameById = new Map<string, string>();
-    const catalog = extras['catalog'];
-    if (catalog && typeof catalog === 'object' && !Array.isArray(catalog)) {
-      for (const familyId of Object.keys(catalog as any)) {
-        const list = (catalog as any)[familyId];
-        if (!Array.isArray(list)) continue;
-        for (const entry of list) {
-          if (!entry || typeof entry !== 'object') continue;
-          const id =
-            typeof (entry as any).id === 'string'
-              ? String((entry as any).id).trim()
-              : '';
-          const name =
-            typeof (entry as any).name === 'string'
-              ? String((entry as any).name).trim()
-              : '';
-          if (!id || !name) continue;
-          const key = id.toLowerCase();
-          if (!normalizedCardNameById.has(key)) {
-            normalizedCardNameById.set(key, name);
-          }
-        }
-      }
-    }
-
-    const choices: string[] = [];
-    const choiceActionsByIndex: Array<{
-      type: string;
-      payload: any;
-      meta?: any;
-    }> = [];
-
-    for (const a of askActions) {
-      const payload =
-        (a as any)?.payload && typeof (a as any).payload === 'object'
-          ? (a as any).payload
-          : {};
-
-      const targetRaw =
-        typeof (payload as any).targetPlayerId === 'number'
-          ? (payload as any).targetPlayerId
-          : typeof (payload as any).targetId === 'number'
-            ? (payload as any).targetId
-            : null;
-      const targetId =
-        typeof targetRaw === 'number' && Number.isFinite(targetRaw)
-          ? targetRaw
-          : null;
-
-      const familyId =
-        typeof (payload as any).familyId === 'string'
-          ? String((payload as any).familyId).trim()
-          : '';
-      const memberId =
-        typeof (payload as any).memberId === 'string'
-          ? String((payload as any).memberId).trim()
-          : '';
-      const cardId =
-        typeof (payload as any).cardId === 'string'
-          ? String((payload as any).cardId).trim()
-          : '';
-
-      const cardKey = (memberId || cardId).toLowerCase();
-      const cardName =
-        cardKey && normalizedCardNameById.has(cardKey)
-          ? normalizedCardNameById.get(cardKey)!
-          : memberId || cardId;
-      const targetName =
-        targetId != null
-          ? usernameById.get(targetId) ?? `Joueur ${targetId}`
-          : '';
-
-      const label =
-        targetName && cardName ? `${targetName} : ${cardName}` : 'ask_card';
-      choices.push(label);
-      choiceActionsByIndex.push({
-        type: 'ask_card',
-        payload,
-        meta: (a as any)?.meta ?? undefined,
-      });
-    }
-
-    return {
-      ...state,
-      pending: {
-        type: 'choose_action',
-        label: 'Choisissez une demande, puis Entree.',
-        playerId: viewerPlayerId,
-        blocking: false,
-        choices,
-        data: {
-          context: 'synthetic:ask_card',
-          choiceActionsByIndex,
-        },
-      },
-    };
-  }
-
-  private attachPendingChoiceActions(
-    state: GameStateWithActions,
-  ): GameStateWithActions {
-    const pending = state?.pending;
-    const choices = Array.isArray(pending?.choices) ? pending!.choices! : [];
-    if (!pending || choices.length === 0) {
-      return state;
-    }
-
-    const rawData =
-      pending.data && typeof pending.data === 'object' ? pending.data : {};
-    const data: Record<string, unknown> = { ...(rawData as any) };
-
-    // Do not override a game-specific mapping if it already exists.
-    if (Array.isArray((data as any).choiceActionsByIndex)) {
-      return state;
-    }
-
-    const rawActions = Array.isArray(state?.actions) ? state.actions! : [];
-    const candidates = rawActions.filter((a) => {
-      const type = typeof a?.type === 'string' ? a.type.trim() : '';
-      if (!type) return false;
-      const normalized = type.toLowerCase();
-      if (isRollActionType(normalized)) return false;
-      if (normalized === 'draw' || normalized === 'draw_card') return false;
-      return true;
-    });
-
-    if (candidates.length !== choices.length) {
-      return state;
-    }
-
-    data.choiceActionsByIndex = candidates.map((a) => ({
-      type: String(a.type ?? '').trim(),
-      payload: (a as any).payload ?? {},
-      meta: (a as any).meta ?? undefined,
-    }));
-
-    return {
-      ...state,
-      pending: {
-        ...pending,
-        data,
-      },
-    };
   }
 
   async handleKeyPress(
@@ -629,15 +462,7 @@ export class GameEngineService {
       return { kind: 'room', op: 'restart' };
     }
 
-    const declared: GameShortcutHint[] = handler?.getShortcuts
-      ? handler.getShortcuts({
-          metadata: state?.metadata ?? {},
-          currentPlayerId: state?.turn?.currentPlayerId ?? null,
-          started: String(state?.status ?? '').toLowerCase() === 'started',
-        })
-      : [];
-
-    const shortcuts = this.mergeCommonShortcuts(state, declared);
+    const shortcuts = buildShortcuts({ state, handler });
 
     const match = shortcuts.find((s) => {
       const rawKey = typeof s?.key === 'string' ? s.key : '';
@@ -682,13 +507,13 @@ export class GameEngineService {
       const panelId = String(match.id ?? '').trim();
       if (!panelId) return null;
 
-      const extras = GameEngineService.extractExtras(state);
-      const ui = GameEngineService.extractUi(extras);
-      const panels = GameEngineService.extractPanels(ui);
+      const extras = extractExtras(state);
+      const ui = extractUi(extras);
+      const panels = extractPanels(ui);
       const panel = panels
         ? (panels[panelId] as Record<string, unknown> | undefined)
         : undefined;
-      let message = GameEngineService.extractPanelMessage(panel);
+      let message = extractPanelMessage(panel);
 
       if (!message && panelId === 'turn') {
         const status = String(state?.status ?? '')
@@ -732,7 +557,7 @@ export class GameEngineService {
         const toStringList = (raw: unknown): string[] =>
           Array.isArray(raw)
             ? raw
-                .map((v) => this.normalizeMetadataString(v))
+                .map((v) => normalizeMetadataString(v))
                 .filter((v) => v.length > 0)
             : [];
 
@@ -781,186 +606,15 @@ export class GameEngineService {
       const internal = await this.getInternalState(roomId, gameType).catch(
         () => null,
       );
-      return this.buildCanonicalPositionPanelMessage(internal, state);
+      return buildCanonicalPositionPanelMessage({
+        internal,
+        state,
+        boardPayload: this.boardPayload,
+        normalizeString: normalizeMetadataString,
+      });
     } catch {
       return '';
     }
-  }
-
-  private buildCanonicalPositionPanelMessage(
-    internal: GameStateEntity | null | undefined,
-    state: GameStateWithActions | null | undefined,
-  ): string {
-    const internalMeta =
-      internal?.metadata && typeof internal.metadata === 'object'
-        ? (internal.metadata as Record<string, unknown>)
-        : {};
-    const boardRaw =
-      state?.board && typeof state.board === 'object'
-        ? (state.board as Record<string, unknown>)
-        : {};
-    const playersRaw =
-      Array.isArray(internal?.players) && internal.players.length > 0
-        ? internal.players
-        : state?.players;
-
-    const tilesRaw = internalMeta['tiles'] ?? boardRaw['tiles'] ?? null;
-    const positionsRaw =
-      internalMeta['positions'] ?? boardRaw['positions'] ?? null;
-    const lapsRaw = internalMeta['laps'] ?? boardRaw['laps'] ?? null;
-
-    if (tilesRaw && positionsRaw) {
-      return this.boardPayload.buildPositionPanelMessage({
-        tilesRaw,
-        positionsRaw,
-        lapsRaw,
-        playerId: null,
-        playersRaw,
-      });
-    }
-
-    const pawnsByPlayerRaw =
-      internalMeta['pawnsByPlayer'] ?? boardRaw['pawnsByPlayer'] ?? null;
-    const trackLengthRaw =
-      internalMeta['trackLength'] ?? boardRaw['trackLength'] ?? null;
-    if (pawnsByPlayerRaw && trackLengthRaw) {
-      return this.boardPayload.buildPawnProgressPositionPanelMessage({
-        playersRaw,
-        pawnsByPlayerRaw,
-        trackLengthRaw,
-        homeLengthRaw:
-          internalMeta['homeLength'] ?? boardRaw['homeLength'] ?? null,
-        offsetsRaw: internalMeta['offsets'] ?? boardRaw['offsets'] ?? null,
-        pawnNamesByPlayerRaw:
-          internalMeta['pawnNamesByPlayer'] ??
-          boardRaw['pawnNamesByPlayer'] ??
-          null,
-      });
-    }
-
-    return this.tryBuildCanonicalGridPositionPanelMessage(
-      internalMeta,
-      boardRaw,
-      playersRaw,
-    );
-  }
-
-  private tryBuildCanonicalGridPositionPanelMessage(
-    internalMeta: Record<string, unknown>,
-    boardRaw: Record<string, unknown>,
-    playersRaw: unknown,
-  ): string {
-    const sizeRaw = internalMeta['size'] ?? boardRaw['size'] ?? null;
-    const size = Number(sizeRaw);
-    if (!Number.isFinite(size) || size <= 0) {
-      return '';
-    }
-
-    const rawPositions =
-      internalMeta['pawnsByPlayerId'] ?? boardRaw['pawnsByPlayerId'] ?? null;
-    if (!rawPositions || typeof rawPositions !== 'object') {
-      return '';
-    }
-
-    const players = Array.isArray(playersRaw) ? playersRaw : [];
-    const namesById = new Map<number, string>();
-    for (const player of players) {
-      if (!player || typeof player !== 'object') continue;
-      const record = player as Record<string, unknown>;
-      const id = Number(record['id']);
-      if (!Number.isFinite(id) || id === 0) continue;
-      const username = this.normalizeMetadataString(record['username']).trim();
-      namesById.set(id, username || `Joueur ${id}`);
-    }
-
-    const entries = Object.entries(rawPositions as Record<string, unknown>)
-      .map(([rawId, rawPos]) => {
-        const id = Number(rawId);
-        if (!Number.isFinite(id) || id === 0) return null;
-        if (!rawPos || typeof rawPos !== 'object') return null;
-        const pos = rawPos as Record<string, unknown>;
-        const x = Number(pos['x']);
-        const y = Number(pos['y']);
-        if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
-        const name = namesById.get(id) ?? `Joueur ${id}`;
-        return {
-          id,
-          line: `${name} ${this.toGridCellRef(Math.trunc(x), Math.trunc(y), Math.trunc(size)).toLowerCase()}`,
-        };
-      })
-      .filter((entry): entry is { id: number; line: string } => entry != null)
-      .sort((a, b) => a.id - b.id);
-
-    if (entries.length === 0) {
-      return '';
-    }
-
-    return `Positions. ${entries.map((entry) => entry.line).join('. ')}.`;
-  }
-
-  private toGridCellRef(x: number, y: number, size: number): string {
-    const safeSize = Number.isFinite(size) && size > 0 ? Math.trunc(size) : 0;
-    if (safeSize <= 0) {
-      return `${x},${y}`;
-    }
-
-    let n = Math.max(1, Math.trunc(x) + 1);
-    let col = '';
-    while (n > 0) {
-      n -= 1;
-      col = String.fromCharCode(65 + (n % 26)) + col;
-      n = Math.floor(n / 26);
-    }
-    const row = Math.max(1, safeSize - Math.trunc(y));
-    return `${col}${row}`;
-  }
-
-  private attachCanonicalPositionPanel(
-    state: GameStateWithActions,
-    internal: GameStateEntity,
-    userId: number | null,
-  ): GameStateWithActions {
-    const status = String(state?.status ?? '')
-      .toLowerCase()
-      .trim();
-    if (status !== 'started') {
-      return state;
-    }
-
-    const message = this.buildCanonicalPositionPanelMessage(internal, state);
-    if (!message) {
-      return state;
-    }
-
-    const extras = GameEngineService.extractExtras(state);
-    const uiExisting = GameEngineService.extractUi(extras);
-    const ui = uiExisting ? { ...uiExisting } : {};
-    const panelsExisting = GameEngineService.extractPanels(uiExisting);
-    const panels = panelsExisting ? { ...panelsExisting } : {};
-    const current =
-      (panels['position'] as Record<string, unknown> | undefined) ?? {};
-    const title =
-      typeof current['title'] === 'string' && String(current['title']).trim()
-        ? String(current['title']).trim()
-        : 'Position';
-
-    panels['position'] = {
-      ...current,
-      title,
-      message,
-      scope: 'global',
-      source: 'canonical',
-      viewerPlayerId: userId,
-    };
-    ui['panels'] = panels;
-
-    return {
-      ...state,
-      extras: {
-        ...extras,
-        ui,
-      },
-    };
   }
 
   async refreshAndBroadcast(roomId: number, gameType: string): Promise<void> {
@@ -968,342 +622,36 @@ export class GameEngineService {
     this.broadcaster?.(gameType, roomId, state);
   }
 
-  private attachShortcuts(
-    state: GameStateWithActions,
-    handler: GameRulesAdapter | undefined,
-  ): GameStateWithActions {
-    const extras = GameEngineService.extractExtras(state);
-
-    const declared: GameShortcutHint[] = handler?.getShortcuts
-      ? handler.getShortcuts({
-          metadata: state.metadata ?? {},
-          currentPlayerId: state.turn?.currentPlayerId ?? null,
-          started: String(state.status ?? '').toLowerCase() === 'started',
-        })
-      : [];
-
-    const shortcuts = this.mergeCommonShortcuts(state, declared);
-
-    return {
-      ...state,
-      extras: {
-        ...extras,
-        shortcuts,
-      },
-    };
-  }
-
-  private mergeCommonShortcuts(
-    state: GameStateWithActions | null | undefined,
-    declared: GameShortcutHint[],
-  ): GameShortcutHint[] {
-    const common: GameShortcutHint[] = [];
-
-    // Always available: request/announce turn information.
-    common.push(interfaceShortcut('T', 'turn'));
-
-    // Rules overlay (client-side): prefer Ctrl+R (avoid interfering with in-game text inputs).
-    common.push(interfaceShortcut('Ctrl+R', 'rules'));
-
-    // Action shortcuts: emit only when action exists in the exposed state.
-    const actions = Array.isArray(state?.actions)
-      ? (state.actions as GameSingleActionDto[])
-      : [];
-    const types = new Set(
-      actions
-        .map((a) =>
-          typeof a?.type === 'string' ? a.type.trim().toLowerCase() : '',
-        )
-        .filter((t) => t),
-    );
-
-    const hasRoll = Array.isArray(actions)
-      ? actions.some((a) => isRollActionType(a?.type))
-      : false;
-    if (hasRoll) {
-      common.push(actionShortcut('ENTER', 'roll'));
-    }
-    if (types.has('draw')) {
-      common.push(actionShortcut('SPACE', 'draw'));
-    }
-    if (types.has('lama_pass')) {
-      common.push(actionShortcut('S', 'lama_pass'));
-    }
-
-    const out: GameShortcutHint[] = [];
-    const seen = new Set<string>();
-    for (const s of [...(Array.isArray(declared) ? declared : []), ...common]) {
-      const keyStr = s.key;
-      const typeStr = s.type;
-      const idStr = typeStr === 'interface' ? String(s.id ?? '') : '';
-      const actionTypeStr =
-        typeStr === 'action' ? String(s.actionType ?? '') : '';
-      const sig = `${keyStr}|${typeStr}|${idStr}|${actionTypeStr}`;
-      if (!keyStr || !typeStr) continue;
-      if (seen.has(sig)) continue;
-      seen.add(sig);
-      out.push(s);
-    }
-
-    return out;
-  }
-
   private async getInternalState(
     roomId: number,
     gameType: string,
   ): Promise<GameStateEntity> {
-    let payload: RoomPayload;
-    try {
-      payload = await this.rooms.getRoomPayload(roomId);
-    } catch (err) {
-      this.cleanupRoom(roomId, gameType);
-      if (this.isRoomNotFound(err)) {
-        throw new NotFoundException('Table introuvable');
-      }
-      throw err;
-    }
-    const actualGameType = String(payload?.room?.gameType ?? '').trim();
-    if (actualGameType && actualGameType !== gameType) {
-      // Empêche la création d'un état "fantôme" quand le client passe le mauvais gameType
-      // (ex: "generic" alors que la room est en "corridor").
-      this.cleanupRoom(roomId, gameType);
-      throw new BadRequestException('Type de jeu invalide pour cette table');
-    }
-    const existing = await this.store.get(roomId, gameType);
-    if (existing) {
-      const metadata = this.toMetadata(existing);
-      const previousStatus = String(existing.status ?? '').toLowerCase();
-      const roomStatus = String(payload.room.status ?? '').toLowerCase();
-      const storedStartedAt = this.normalizeMetadataString(
-        metadata['roomStartedAt'],
-      );
-      const roomStartedAt = this.normalizeMetadataString(
-        payload.room.startedAt,
-      );
-
-      // Garde-fou : si un état "finished" est encore stocké alors que la room est restée en "started"
-      // (crash/restart serveur ou événement WS manqué), forcer un reset pour retrouver une table
-      // modifiable (ajout/suppression de bots, relance).
-      const maybeFinished =
-        previousStatus === 'finished'
-          ? existing
-          : this.forceFinishedIfWinnerDetected(existing);
-      const maybeFinishedStatus = String(
-        maybeFinished?.status ?? '',
-      ).toLowerCase();
-      if (roomStatus === 'started' && maybeFinishedStatus === 'finished') {
-        if (this.isWithinFinishedGraceWindow(maybeFinished)) {
-          await this.scheduleFinishedRoomReset(roomId, gameType, maybeFinished);
-          return maybeFinished;
-        }
-
-        this.gameLogger.warn(
-          'Stale finished game detected while room is started; auto-resetting room',
-          {
-            roomId,
-            gameType,
-            previousStatus,
-            roomStatus,
-          },
-        );
-
-        try {
-          await this.rooms.resetRoomSystem(roomId);
-        } catch (err) {
-          this.gameLogger.error(
-            'Auto-reset room (stale finished) failed',
-            err instanceof Error ? err : undefined,
-            { roomId, gameType },
-          );
-        }
-
-        try {
-          await this.store.delete(roomId, gameType);
-        } catch (err) {
-          this.gameLogger.error(
-            'Auto-reset game state (stale finished) failed',
-            err instanceof Error ? err : undefined,
-            { roomId, gameType },
-          );
-        }
-
-        try {
-          await this.rooms.notifyRoomStateUpdated(roomId);
-        } catch {
-          // best effort
-        }
-
-        try {
-          payload = await this.rooms.getRoomPayload(roomId);
-        } catch (err) {
-          this.cleanupRoom(roomId, gameType);
-          if (this.isRoomNotFound(err)) {
-            throw new NotFoundException('Table introuvable');
-          }
-          throw err;
-        }
-
-        this.cleanupRoom(roomId, gameType);
-        const rebuilt = this.buildInitialState(payload, gameType);
-        const marked = await this.normalizeBotThinking(
-          roomId,
-          gameType,
-          await this.markBotThinking(roomId, gameType, rebuilt),
-        );
-        await this.scheduleBotTurn(roomId, gameType, marked);
-        return marked;
-      }
-
-      const storedRunId = this.parseMetadataNumber(metadata['roomRunId']);
-      const roomRunId = this.parseMetadataNumber(payload.room.runId);
-      const hasRunId =
-        storedRunId !== null &&
-        roomRunId !== null &&
-        roomRunId >= 0 &&
-        storedRunId >= 0;
-      const hasRunIdChanged = hasRunId && storedRunId !== roomRunId;
-
-      const hasMeaningfulStartedAtChange = (() => {
-        if (!storedStartedAt || !roomStartedAt) return false;
-        const a = Date.parse(storedStartedAt);
-        const b = Date.parse(roomStartedAt);
-        if (Number.isFinite(a) && Number.isFinite(b)) {
-          // Certains stockages/serializations tronquent les millisecondes (".000Z").
-          // On ne reconstruit l'état que si la différence est significative (ex: vraie relance de la table).
-          return Math.abs(a - b) > 2000;
-        }
-        return storedStartedAt !== roomStartedAt;
-      })();
-
-      // Réinitialisation explicite (room repasse en "setup/open/...") :
-      // on repart d'un état neuf pour permettre d'ajouter/retirer des joueurs et relancer une partie.
-      if (
-        previousStatus === 'started' &&
-        roomStatus &&
-        roomStatus !== 'started' &&
-        roomStatus !== 'finished'
-      ) {
-        this.gameLogger.info('Game state reset detected', {
-          roomId,
-          gameType,
-          previousStatus,
-          roomStatus,
-        });
-        this.cleanupRoom(roomId, gameType);
-        const rebuilt = this.buildInitialState(payload, gameType);
-        const marked = await this.normalizeBotThinking(
-          roomId,
-          gameType,
-          await this.markBotThinking(roomId, gameType, rebuilt),
-        );
-        await this.scheduleBotTurn(roomId, gameType, marked);
-        return marked;
-      }
-
-      const synced = this.store.syncRoomStatus(existing, payload);
-      const withRoster = this.syncRosterForStartedRoom(synced, payload);
-      if (withRoster !== synced) {
-        try {
-          await this.store.set(roomId, gameType, withRoster);
-        } catch {
-          // best effort
-        }
-      }
-      const nextStatus = String(withRoster.status ?? '').toLowerCase();
-      const currentPlayers = existing.players?.length ?? 0;
-      const incomingPlayers =
-        (payload.room.players?.length ?? 0) + (payload.room.bots?.length ?? 0);
-      const gameStarted = (existing.status || '').toLowerCase() === 'started';
-      this.gameLogger.debug('Retrieved game state', {
-        roomId,
-        gameType,
-        status: withRoster.status,
-        turnIndex: withRoster.turnIndex,
-        currentPlayerId: withRoster.turn?.currentPlayerId ?? null,
-        players:
-          withRoster.players?.map((p) => ({
-            id: p.id,
-            isBot: Boolean(p.isBot),
-          })) ?? [],
-        incomingPlayers,
-        gameStarted,
-      });
-      // Démarrage : à la transition vers "started", reconstruire l'état initial à partir de la room
-      // (permet d'avoir un premier joueur aléatoire via le GameCoreService).
-      if (previousStatus !== 'started' && nextStatus === 'started') {
-        const rebuilt = this.buildInitialState(payload, gameType);
-        const marked = await this.normalizeBotThinking(
-          roomId,
-          gameType,
-          await this.markBotThinking(roomId, gameType, rebuilt),
-        );
-        await this.scheduleBotTurn(roomId, gameType, marked);
-        return marked;
-      }
-
-      // Cas spécial : la room a été reset (startedAt remis à null) puis relancée,
-      // mais le moteur n'a pas "vu" la transition setup->started (ex: aucun WS game connecté).
-      // On force la reconstruction si runId a changé (prioritaire) ou si startedAt a changé de manière significative.
-      if (
-        previousStatus === 'started' &&
-        nextStatus === 'started' &&
-        roomStartedAt &&
-        storedStartedAt &&
-        (hasRunIdChanged || hasMeaningfulStartedAtChange)
-      ) {
-        this.gameLogger.info('Game state rebuild (startedAt changed)', {
-          roomId,
-          gameType,
-          storedStartedAt,
-          roomStartedAt,
-          storedRunId: storedRunId ?? null,
-          roomRunId: roomRunId ?? null,
-        });
-        this.cleanupRoom(roomId, gameType);
-        const rebuilt = this.buildInitialState(payload, gameType);
-        const marked = await this.normalizeBotThinking(
-          roomId,
-          gameType,
-          await this.markBotThinking(roomId, gameType, rebuilt),
-        );
-        await this.scheduleBotTurn(roomId, gameType, marked);
-        return marked;
-      }
-      if (!gameStarted && incomingPlayers !== currentPlayers) {
-        const rebuilt = this.buildInitialState(payload, gameType);
-        const marked = await this.normalizeBotThinking(
-          roomId,
-          gameType,
-          await this.markBotThinking(roomId, gameType, rebuilt),
-        );
-        await this.scheduleBotTurn(roomId, gameType, marked);
-        return marked;
-      }
-      const normalized = await this.normalizeBotThinking(
-        roomId,
-        gameType,
-        withRoster,
-      );
-      const forcedFinished = this.forceFinishedIfWinnerDetected(normalized);
-      if (forcedFinished !== normalized) {
-        try {
-          await this.store.set(roomId, gameType, forcedFinished);
-        } catch {
-          // best effort
-        }
-      }
-      await this.scheduleBotTurn(roomId, gameType, forcedFinished);
-      return forcedFinished;
-    }
-
-    const state = this.buildInitialState(payload, gameType);
-    const marked = await this.normalizeBotThinking(
+    return runGetInternalState({
       roomId,
       gameType,
-      await this.markBotThinking(roomId, gameType, state),
-    );
-    await this.scheduleBotTurn(roomId, gameType, marked);
-    return marked;
+      roomsGetRoomPayload: this.runtimeDeps.roomsGetRoomPayload,
+      roomsResetRoomSystem: this.runtimeDeps.roomsResetRoomSystem,
+      roomsNotifyRoomStateUpdated: this.runtimeDeps.roomsNotifyRoomStateUpdated,
+      storeGet: this.runtimeDeps.storeGet,
+      storeSet: this.runtimeDeps.storeSet,
+      storeDelete: this.runtimeDeps.storeDelete,
+      storeSyncRoomStatus: this.runtimeDeps.storeSyncRoomStatus,
+      cleanupRoom: this.runtimeDeps.cleanupRoom,
+      isRoomNotFound: (err) => this.isRoomNotFound(err),
+      toMetadata,
+      normalizeMetadataString,
+      parseMetadataNumber,
+      forceFinishedIfWinnerDetected: this.runtimeDeps.forceFinishedIfWinnerDetected,
+      isWithinFinishedGraceWindow: this.runtimeDeps.isWithinFinishedGraceWindow,
+      scheduleFinishedRoomReset: this.runtimeDeps.scheduleFinishedRoomReset,
+      buildInitialState: this.runtimeDeps.buildInitialState,
+      markBotThinking: this.runtimeDeps.markBotThinking,
+      normalizeBotThinking: this.runtimeDeps.normalizeBotThinking,
+      scheduleBotTurn: this.runtimeDeps.scheduleBotTurn,
+      syncRosterForStartedRoom: this.runtimeDeps.syncRosterForStartedRoom,
+      gameLogger: this.gameLogger as any,
+      exceptions: { NotFoundException, BadRequestException },
+    });
   }
 
   /**
@@ -1348,15 +696,18 @@ export class GameEngineService {
     actorId: number | null,
     allowBotTurn = false,
   ): Promise<GameStateResponse> {
-    return this.enqueueMutation(this.buildKey(roomId, gameType), () =>
-      this.applyActionsInternal(
-        roomId,
-        gameType,
-        actions,
-        actorId,
-        allowBotTurn,
-      ),
-    );
+    return enqueueMutation({
+      queue: this.mutationQueue,
+      key: this.buildKey(roomId, gameType),
+      task: () =>
+        this.applyActionsInternal(
+          roomId,
+          gameType,
+          actions,
+          actorId,
+          allowBotTurn,
+        ),
+    });
   }
 
   private async applyActionsInternal(
@@ -1367,329 +718,47 @@ export class GameEngineService {
     allowBotTurn = false,
     botActorIdOverride: number | null = null,
   ): Promise<GameStateResponse> {
-    const current = await this.normalizeBotThinking(
+    return runApplyActionsInternal({
       roomId,
       gameType,
-      await this.getInternalState(roomId, gameType),
-    );
-    // `getInternalState()` peut programmer un timer bot pour l'état courant.
-    // Toute action validée (humaine ou bot) rend ce timer obsolète: si on le garde,
-    // `scheduleBotTurn()` peut refuser de programmer le nouvel état parce que la clé
-    // existe encore, puis l'ancien timer se déclarera "stale" sans relancer le tour.
-    if (Array.isArray(actions) && actions.length > 0) {
-      this.botScheduler.clear(this.buildKey(roomId, gameType));
-    }
-    if ((current.status || '').toLowerCase() === 'finished') {
-      return this.exposeState(current, gameType);
-    }
-    const handler = this.registry.getHandler(gameType);
-    if (!allowBotTurn && (!actorId || Number.isNaN(actorId))) {
-      throw new UnauthorizedException('Authentification requise pour jouer.');
-    }
-    const currentPlayerId = current.turn?.currentPlayerId ?? null;
-    const currentPlayer = current.players?.find(
-      (p) => p.id === currentPlayerId,
-    );
-    const actingPlayer =
-      actorId != null && Number.isFinite(actorId)
-        ? (current.players?.find((p) => p.id === actorId) ?? null)
-        : null;
-
-    if (!allowBotTurn) {
-      if (!actingPlayer || actingPlayer.isBot) {
-        throw new UnauthorizedException(
-          'Mode spectateur : action de jeu interdite',
-        );
-      }
-    }
-
-    const allowOutOfTurnActions = (() => {
-      if (allowBotTurn) return false;
-      if (!handler?.getAvailableActions) return false;
-      if (actorId == null || Number.isNaN(actorId)) return false;
-      if (currentPlayerId == null || actorId === currentPlayerId) return false;
-
-      const available = handler.getAvailableActions(current, actorId) ?? [];
-      if (!Array.isArray(available) || available.length === 0) return false;
-
-      const allowedTypes = new Set(
-        available
-          .map((a) => this.normalizeActionType(a.type))
-          .filter((t) => t.length > 0),
-      );
-      if (allowedTypes.size === 0) return false;
-
-      const requestedTypes = (Array.isArray(actions) ? actions : [])
-        .map((a) => this.normalizeActionType(a.type))
-        .filter((t) => t.length > 0);
-      if (requestedTypes.length === 0) return false;
-
-      // Autorise uniquement si toutes les actions demandées sont explicitement disponibles
-      // pour l'acteur (ex: confirm exchange pendant le tour d'un bot).
-      return requestedTypes.every((t) => allowedTypes.has(t));
-    })();
-
-    // Un bot peut être en "thinking" (timer) pendant qu'un humain doit confirmer un pending
-    // (ex: échange). On n'interdit pas ces actions explicitement autorisées.
-    if (!allowBotTurn && current.botThinking && !allowOutOfTurnActions) {
-      // Si ce n'est pas le tour d'un bot, préférer le message "pas votre tour"
-      // (le flag botThinking peut rester true un court instant).
-      if (currentPlayer?.isBot) {
-        return this.broadcastCurrentStateAndExpose(roomId, gameType, current);
-      }
-    }
-
-    const actorOverride =
-      allowOutOfTurnActions ||
-      handler?.validateActor?.(current, actions, actorId ?? null) === true;
-    if (!allowBotTurn && !actorOverride) {
-      if (currentPlayer?.isBot) {
-        return this.broadcastCurrentStateAndExpose(roomId, gameType, current);
-      }
-      if (currentPlayerId !== actorId) {
-        return this.broadcastCurrentStateAndExpose(roomId, gameType, current);
-      }
-    }
-
-    const botActorId = allowBotTurn
-      ? (botActorIdOverride ?? currentPlayerId)
-      : null;
-    if (allowBotTurn && botActorId == null) {
-      throw new BadRequestException(
-        'Action bot invalide : acteur introuvable.',
-      );
-    }
-    if (allowBotTurn && typeof botActorId === 'number') {
-      const bot = current.players?.find((p) => p.id === botActorId) ?? null;
-      if (!bot?.isBot) {
-        throw new BadRequestException('Action bot invalide.');
-      }
-    }
-
-    const actorLabel = allowBotTurn ? 'bot' : 'human';
-    const validatedActions = await this.validateActions(
-      current,
-      handler,
       actions,
-      allowBotTurn ? botActorId : actorId,
-    );
-    const sanitizedActions = validatedActions.map((action) => ({
-      ...action,
-      meta: {
-        ...(action?.meta ?? {}),
-        actor: actorLabel,
-        actorId: allowBotTurn ? botActorId : actorId,
-      },
-    }));
-
-    this.gameLogger.logPlayerAction(
-      {
-        type: 'apply_actions',
-        payload: {
-          actions: sanitizedActions.map((a) => ({
-            type: a.type,
-            hasPayload: Boolean(a.payload),
-          })),
-          allowBotTurn,
-        },
-      },
-      {
-        roomId,
-        gameType,
-        playerId: allowBotTurn
-          ? (botActorId ?? undefined)
-          : (actorId ?? undefined),
-        turnIndex: current.turnIndex,
-        action: {
-          status: current.status,
-          currentPlayerId,
-        },
-      },
-    );
-
-    if (!handler) {
-      const next = this.core.appendLog(
-        current,
-        `Type de jeu non spécialisé: ${gameType}`,
-      );
-      const marked = await this.markBotThinking(roomId, gameType, next);
-      await this.scheduleBotTurn(roomId, gameType, marked);
-      this.broadcaster?.(gameType, roomId, marked);
-      return this.exposeState(marked, gameType);
-    }
-
-    const next = handler.applyActions(current, sanitizedActions);
-    const botTurn = this.isBotTurn(next);
-    let marked = await this.markBotThinking(roomId, gameType, next, botTurn);
-    const drawAction = sanitizedActions.find((a) => this.isDrawAction(a));
-    if (drawAction) {
-      const actionPlayerId = allowBotTurn
-        ? (botActorId ?? null)
-        : (actorId ?? null);
-      marked = {
-        ...marked,
-        lastDraw: { playerId: actionPlayerId, at: new Date().toISOString() },
-      };
-    }
-    marked = this.normalizeWinnerMetadata(marked);
-    marked = this.forceFinishedIfWinnerDetected(marked);
-    marked = this.appendBoardArrivalAnnouncements(
-      gameType,
-      handler,
-      current,
-      marked,
-    );
-    marked = this.appendSkipTurnAnnouncements(marked);
-    if ((marked.status || '').toLowerCase() === 'finished') {
-      const metadata = this.toMetadata(marked);
-      const obj = { ...metadata };
-      const { winnerId, outcomesByPlayerId } =
-        this.deriveFinishedOutcomes(marked);
-
-      marked = {
-        ...marked,
-        metadata: {
-          ...obj,
-          finishedAt: new Date().toISOString(),
-          ...(winnerId != null ? { winnerId, winnerPlayerId: winnerId } : {}),
-          ...(outcomesByPlayerId ? { outcomesByPlayerId } : {}),
-        },
-      };
-
-      // Expose victory/defeat profile phrases in the main log so all clients can see them,
-      // even if they don't consume the dedicated game.ended event.
-      try {
-        if (outcomesByPlayerId && Object.keys(outcomesByPlayerId).length > 0) {
-          const endgameMessagesByPlayerId =
-            await this.buildEndgameMessagesByPlayerId(marked.players ?? []);
-          const players = marked.players ?? [];
-          const nameById = new Map<number, string>();
-          for (const p of players) {
-            if (!p || typeof p.id !== 'number') continue;
-            const normalized = this.normalizeUsernameForLog(p.username);
-            nameById.set(p.id, normalized || `Joueur ${p.id}`);
-          }
-
-          const log = Array.isArray(marked.log) ? [...marked.log] : [];
-          const recent = new Set(
-            log.slice(-80).map((e) => String(e?.message ?? '').trim()),
-          );
-          let nextLog = log;
-          for (const [playerIdRaw, outcome] of Object.entries(
-            outcomesByPlayerId,
-          )) {
-            const normalizedOutcome = String(outcome ?? '')
-              .trim()
-              .toLowerCase();
-            if (normalizedOutcome !== 'won' && normalizedOutcome !== 'lost') {
-              continue;
-            }
-
-            const byPlayer = endgameMessagesByPlayerId[playerIdRaw];
-            if (!byPlayer || typeof byPlayer !== 'object') {
-              continue;
-            }
-
-            const chosen =
-              normalizedOutcome === 'won'
-                ? byPlayer.victoryMessage
-                : byPlayer.defeatMessage;
-            if (!chosen) {
-              continue;
-            }
-
-            const pid = Number(playerIdRaw);
-            const name =
-              Number.isFinite(pid) && pid > 0
-                ? (nameById.get(pid) ?? `Joueur ${pid}`)
-                : `Joueur ${playerIdRaw}`;
-            const line = `${name} dit: ${chosen}`.trim();
-            if (!line || recent.has(line)) {
-              continue;
-            }
-
-            nextLog = [
-              ...nextLog,
-              { message: line, timestamp: new Date().toISOString() },
-            ];
-            recent.add(line);
-          }
-
-          if (nextLog !== log) {
-            marked = { ...marked, log: nextLog };
-          }
-        }
-      } catch {
-        // Best-effort: endgame phrases must not block state updates.
-      }
-    }
-
-    // Persiste l'état final post-traité (logs d'arrivée / sauts de tour nettoyés).
-    // Sans cette écriture, des métadonnées temporaires (ex: turnFlow.skipped) peuvent être rejouées au tour suivant.
-    await this.store.set(roomId, gameType, marked, { asyncPersist: true });
-
-    // L'annonce de tour est déjà exposée via le label "C'est à X de jouer.".
-    // Ne pas logger une seconde phrase dans l'historique pour éviter les doublons.
-    await this.scheduleBotTurn(roomId, gameType, marked);
-    this.broadcaster?.(gameType, roomId, marked);
-
-    // Fin de partie : remettre la room en "setup" (comme le raccourci X) et réinitialiser l'état du jeu
-    // pour permettre de relancer immédiatement.
-    if ((marked.status || '').toLowerCase() === 'finished') {
-      // Best-effort: les stats ne doivent pas empêcher le reset de table.
-      try {
-        await this.stats.finalizeFinished(roomId, marked);
-      } catch (err) {
-        this.gameLogger.error(
-          'Finalize finished game failed',
-          err instanceof Error ? err : undefined,
-          { roomId, gameType },
-        );
-      }
-
-      try {
-        const endedPayload = await this.buildEndedPayload(
-          roomId,
-          gameType,
-          marked,
-        );
-        this.endedBroadcaster?.(gameType, roomId, marked, endedPayload);
-      } catch (err) {
-        this.gameLogger.error(
-          'Broadcast game.ended failed',
-          err instanceof Error ? err : undefined,
-          { roomId, gameType },
-        );
-      }
-
-      try {
-        await this.scheduleFinishedRoomReset(roomId, gameType, marked);
-      } catch (err) {
-        this.gameLogger.error(
-          'Schedule finished game reset failed',
-          err instanceof Error ? err : undefined,
-          { roomId, gameType },
-        );
-      }
-
-      // Attente : pas de rebuild tant que la table n'est pas redémarrée.
-      this.botScheduler.clear(this.buildKey(roomId, gameType));
-    }
-
-    this.gameLogger.debug('Actions applied successfully', {
-      roomId,
-      gameType,
-      playerId: actorId ?? undefined,
-      turnIndex: marked.turnIndex,
-      action: {
-        status: marked.status,
-        currentPlayerId: marked.turn?.currentPlayerId ?? null,
-        isBotTurn: botTurn,
-        botThinking: marked.botThinking ?? false,
-      },
+      actorId,
+      allowBotTurn,
+      botActorIdOverride,
+      getInternalState: this.runtimeDeps.getInternalState,
+      normalizeBotThinking: this.runtimeDeps.normalizeBotThinking,
+      registryGetHandler: this.runtimeDeps.registryGetHandler,
+      validateActions: this.runtimeDeps.validateActions,
+      normalizeActionType: this.runtimeDeps.normalizeActionType,
+      isDrawAction: this.runtimeDeps.isDrawAction,
+      isBotTurn: this.runtimeDeps.isBotTurn,
+      markBotThinking: this.runtimeDeps.markBotThinking,
+      scheduleBotTurn: this.runtimeDeps.scheduleBotTurn,
+      botSchedulerClear: this.runtimeDeps.botSchedulerClear,
+      buildKey: this.runtimeDeps.buildKey,
+      exposeState: this.runtimeDeps.exposeState,
+      broadcastCurrentStateAndExpose: this.runtimeDeps.broadcastCurrentStateAndExpose,
+      coreAppendLog: this.runtimeDeps.coreAppendLog,
+      storeSet: this.runtimeDeps.storeSet,
+      normalizeWinnerMetadata: this.runtimeDeps.normalizeWinnerMetadata,
+      forceFinishedIfWinnerDetected:
+        this.runtimeDeps.forceFinishedIfWinnerDetected,
+      appendBoardArrivalAnnouncements:
+        this.runtimeDeps.appendBoardArrivalAnnouncements,
+      appendSkipTurnAnnouncements: this.runtimeDeps.appendSkipTurnAnnouncements,
+      toMetadata,
+      deriveFinishedOutcomes: this.runtimeDeps.deriveFinishedOutcomes,
+      buildEndgameMessagesByPlayerId:
+        this.runtimeDeps.buildEndgameMessagesByPlayerId,
+      normalizeUsernameForLog: this.runtimeDeps.normalizeUsernameForLog,
+      statsFinalizeFinished: this.runtimeDeps.statsFinalizeFinished,
+      buildEndedPayload: this.runtimeDeps.buildEndedPayload,
+      endedBroadcaster: this.runtimeDeps.endedBroadcaster(),
+      scheduleFinishedRoomReset: this.runtimeDeps.scheduleFinishedRoomReset,
+      broadcaster: this.runtimeDeps.broadcaster(),
+      gameLogger: this.gameLogger as any,
+      exceptions: { BadRequestException, UnauthorizedException },
     });
-
-    return this.exposeState(marked, gameType);
   }
 
   private broadcastCurrentStateAndExpose(
@@ -1701,54 +770,10 @@ export class GameEngineService {
     return this.exposeState(state, gameType);
   }
 
-  private toMetadata(target: { metadata?: unknown }): Record<string, unknown> {
-    const meta = target.metadata;
-    if (meta && typeof meta === 'object' && !Array.isArray(meta)) {
-      return meta as Record<string, unknown>;
-    }
-    return {};
-  }
-
-  private normalizeMetadataString(value: unknown): string {
-    if (typeof value === 'string') {
-      return value.trim();
-    }
-    if (typeof value === 'number' || typeof value === 'boolean') {
-      return String(value).trim();
-    }
-    return '';
-  }
-
-  private parseMetadataNumber(value: unknown): number | null {
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      return value;
-    }
-    if (typeof value === 'string') {
-      const normalized = value.trim();
-      if (!normalized) {
-        return null;
-      }
-      const parsed = Number(normalized);
-      return Number.isFinite(parsed) ? parsed : null;
-    }
-    return null;
-  }
-
-  private getMetadataObject(
-    metadata: Record<string, unknown>,
-    key: string,
-  ): Record<string, unknown> | null {
-    const value = metadata[key];
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-      return value as Record<string, unknown>;
-    }
-    return null;
-  }
-
   private normalizeWinnerMetadata<TState extends { metadata?: unknown }>(
     state: TState,
   ): TState {
-    const meta = this.toMetadata(state);
+    const meta = toMetadata(state);
     if (Object.keys(meta).length === 0) return state;
 
     const winnerId = meta?.winnerId;
@@ -1804,48 +829,6 @@ export class GameEngineService {
     return name;
   }
 
-  private buildPlayersFromPayload(payload: RoomPayload): PlayerStateEntity[] {
-    const result: PlayerStateEntity[] = [];
-    const roomPlayers: RoomPlayer[] = Array.isArray(payload?.room?.players)
-      ? payload.room.players
-      : [];
-    for (const player of roomPlayers) {
-      const pid =
-        typeof player?.id === 'number' ? player.id : Number(player?.id ?? NaN);
-      if (!Number.isFinite(pid) || pid === 0) continue;
-      const username = this.normalizeUsernameForLog(player.username);
-      // Some room implementations keep a "ghost" seat after a disconnect/leave (id present, name empty).
-      // In a started game, we must not keep this seat, otherwise the UI shows "Joueur X" alongside bots.
-      if (!username) continue;
-      result.push({
-        id: pid,
-        username,
-        isBot: false,
-      });
-    }
-    const roomBots: RoomBotState[] = Array.isArray(payload?.room?.bots)
-      ? payload.room.bots
-      : [];
-    for (const bot of roomBots) {
-      const rawId =
-        typeof bot?.id === 'number'
-          ? bot.id
-          : typeof bot?.id === 'string'
-            ? Number(bot.id)
-            : NaN;
-      if (!Number.isFinite(rawId)) continue;
-      const pid = -Math.abs(rawId);
-      if (pid === 0) continue;
-      result.push({
-        id: pid,
-        username:
-          this.normalizeUsernameForLog(bot.name) || `Bot ${Math.abs(pid)}`,
-        isBot: true,
-      });
-    }
-    return result;
-  }
-
   private normalizeActionType(value: unknown): string {
     if (typeof value !== 'string') {
       return '';
@@ -1888,7 +871,7 @@ export class GameEngineService {
       return state;
     }
 
-    const meta = this.toMetadata(state);
+    const meta = toMetadata(state);
     if (Object.keys(meta).length === 0) {
       return state;
     }
@@ -1896,7 +879,7 @@ export class GameEngineService {
     // Certains jeux peuvent déjà marquer une fin logique via `finishedAt`/`outcomesByPlayerId`
     // sans avoir basculé `status` -> finished (legacy / bug). On force dans ce cas pour
     // déclencher le reset automatique de table côté moteur.
-    const finishedAt = this.normalizeMetadataString(meta['finishedAt']);
+    const finishedAt = normalizeMetadataString(meta['finishedAt']);
     if (finishedAt.length > 0) {
       return state.status === 'finished'
         ? state
@@ -1953,7 +936,7 @@ export class GameEngineService {
         .filter((id): id is number => id != null),
     );
 
-    const metadata = this.toMetadata(state);
+    const metadata = toMetadata(state);
 
     const winnerFromMeta = this.tryReadWinnerId(metadata);
     const existingOutcomesRaw = this.tryReadOutcomesByPlayerId(metadata);
@@ -1995,7 +978,7 @@ export class GameEngineService {
     gameType: string,
     state: GameStateWithActions,
   ): Promise<GameEndedPayload> {
-    const metadata = this.toMetadata(state);
+    const metadata = toMetadata(state);
     const { winnerId, outcomesByPlayerId } = this.deriveFinishedOutcomes(state);
     const players = state.players ?? [];
 
@@ -2134,352 +1117,64 @@ export class GameEngineService {
   }
 
   private tryReadWinnerId(meta: Record<string, unknown>): number | null {
-    for (const key of ['winnerId', 'winnerPlayerId', 'winner_id']) {
-      const raw = meta[key];
-      if (typeof raw === 'number' && Number.isFinite(raw)) {
-        return raw;
-      }
-      if (typeof raw === 'string' && raw.trim().length > 0) {
-        const n = Number(raw.trim());
-        if (Number.isFinite(n)) {
-          return n;
-        }
-      }
-    }
-
-    return null;
+    return tryReadWinnerId(meta);
   }
 
   private tryReadOutcomesByPlayerId(
     meta: Record<string, unknown>,
   ): Record<string, 'won' | 'lost'> | null {
-    const rawOutcomes = meta.outcomesByPlayerId;
-    if (!rawOutcomes || typeof rawOutcomes !== 'object') {
-      return null;
-    }
-
-    const out: Record<string, 'won' | 'lost'> = {};
-    for (const [key, value] of Object.entries(
-      rawOutcomes as Record<string, unknown>,
-    )) {
-      const normalized = this.normalizeMetadataString(value).toLowerCase();
-      if (normalized !== 'won' && normalized !== 'lost') {
-        continue;
-      }
-      out[String(key)] = normalized;
-    }
-
-    return Object.keys(out).length > 0 ? out : null;
+    return tryReadOutcomesByPlayerId(meta);
   }
 
   async playBotTurn(
     roomId: number,
     gameType: string,
   ): Promise<GameStateWithActions> {
-    return this.enqueueMutation(this.buildKey(roomId, gameType), () =>
-      this.playBotTurnInternal(roomId, gameType),
-    );
+    return enqueueMutation({
+      queue: this.mutationQueue,
+      key: this.buildKey(roomId, gameType),
+      task: () => this.playBotTurnInternal(roomId, gameType),
+    });
   }
 
   private async playBotTurnInternal(
     roomId: number,
     gameType: string,
   ): Promise<GameStateWithActions> {
-    this.gameLogger.debug('Bot turn tick', { roomId, gameType });
-    let state = await this.normalizeBotThinking(
+    return runPlayBotTurnInternal({
       roomId,
       gameType,
-      await this.getInternalState(roomId, gameType),
-    );
-    const key = this.buildKey(roomId, gameType);
-    this.botScheduler.clear(key);
-
-    const handler = this.registry.getHandler(gameType);
-    const botActorId = this.getBotActorIdForState(state, handler);
-    const botPlayer =
-      botActorId != null
-        ? state.players?.find((p) => p.id === botActorId)
-        : null;
-
-    if (!botPlayer || !botPlayer.isBot || botActorId == null) {
-      return this.exposeState(state, gameType);
-    }
-
-    state = this.appendFirstTurnAnnouncement(state);
-
-    let botActions = this.botRunner.suggestForHandler(
-      handler,
-      state,
-      botActorId,
-    );
-    if (!botActions || botActions.length === 0) {
-      const fallback = handler?.getAvailableActions
-        ? handler.getAvailableActions(state, botActorId)
-        : [];
-      if (
-        Array.isArray(fallback) &&
-        fallback.length > 0 &&
-        botActorId != null
-      ) {
-        botActions = this.botRunner.choose(fallback, {
-          state,
-          playerId: botActorId,
-        });
-      }
-    }
-    if (!botActions || botActions.length === 0) {
-      this.gameLogger.warn('Bot has no available actions', {
-        roomId,
-        gameType,
-        playerId: botActorId ?? undefined,
-        action: {
-          status: state.status,
-        },
-      });
-      const marked = await this.markBotThinking(roomId, gameType, state, false);
-      this.broadcaster?.(gameType, roomId, marked);
-      return this.exposeState(marked, gameType);
-    }
-
-    this.gameLogger.logPlayerAction(
-      {
-        type: 'bot_play',
-        payload: {
-          actions: botActions.map((a) => a.type),
-        },
-      },
-      {
-        roomId,
-        gameType,
-        playerId: botActorId ?? undefined,
-        action: {
-          isBot: botPlayer.isBot,
-          status: state.status,
-        },
-      },
-    );
-
-    await this.applyActionsInternal(
-      roomId,
-      gameType,
-      botActions,
-      null,
-      true,
-      botActorId,
-    );
-    const updated = (await this.store.get(roomId, gameType)) ?? state;
-    return this.exposeState(updated, gameType);
-  }
-
-  private enqueueMutation<T>(key: string, task: () => Promise<T>): Promise<T> {
-    const previous = this.mutationQueue.get(key) ?? Promise.resolve();
-    const next = previous.then(task, task);
-    this.mutationQueue.set(key, next);
-    next
-      .finally(() => {
-        if (this.mutationQueue.get(key) === next) {
-          this.mutationQueue.delete(key);
-        }
-      })
-      .catch(() => {});
-    return next;
+      getInternalState: this.runtimeDeps.getInternalState,
+      normalizeBotThinking: this.runtimeDeps.normalizeBotThinking,
+      buildKey: this.runtimeDeps.buildKey,
+      botSchedulerClear: this.runtimeDeps.botSchedulerClear,
+      registryGetHandler: this.runtimeDeps.registryGetHandler,
+      getBotActorIdForState: this.runtimeDeps.getBotActorIdForState,
+      appendFirstTurnAnnouncement: this.runtimeDeps.appendFirstTurnAnnouncement,
+      botRunner: this.runtimeDeps.botRunner() as any,
+      applyActionsInternal: this.runtimeDeps.applyActionsInternal,
+      storeGet: this.runtimeDeps.storeGet,
+      exposeState: this.runtimeDeps.exposeState,
+      markBotThinking: this.runtimeDeps.markBotThinking,
+      broadcaster: this.runtimeDeps.broadcaster(),
+      gameLogger: this.gameLogger as any,
+    });
   }
 
   private syncRosterForStartedRoom(
     state: GameStateEntity,
     payload: RoomPayload,
   ): GameStateEntity {
-    try {
-      let changed = false;
-      if (
-        !state ||
-        String(state.status ?? '')
-          .toLowerCase()
-          .trim() !== 'started'
-      ) {
-        return state;
-      }
-      let players = state.players ?? [];
-      const desiredPlayers = this.buildPlayersFromPayload(payload);
-      if (players.length === 0 && desiredPlayers.length === 0) {
-        return state;
-      }
-      if (players.length === 0 && desiredPlayers.length > 0) {
-        players = desiredPlayers;
-        changed = true;
-      }
-
-      const desiredById = new Map<number, PlayerStateEntity>();
-      for (const player of desiredPlayers) {
-        const id = Number(player?.id);
-        if (!Number.isFinite(id) || id === 0) continue;
-        desiredById.set(id, player);
-      }
-
-      const roomPlayers: RoomPlayer[] = Array.isArray(payload?.room?.players)
-        ? payload.room.players
-        : [];
-      const roomBots: RoomBotState[] = Array.isArray(payload?.room?.bots)
-        ? payload.room.bots
-        : [];
-
-      const humanById = new Map<number, string>();
-      for (const p of roomPlayers) {
-        const id = p.id;
-        if (!Number.isFinite(id) || id <= 0) continue;
-        const username = this.normalizeUsernameForLog(p.username);
-        if (!username) continue;
-        humanById.set(id, username);
-      }
-
-      const roomBotNames = roomBots
-        .map((b) => this.normalizeUsernameForLog(b.name))
-        .filter((n) => n.length > 0);
-      const allowedBotNames = new Set(roomBotNames);
-
-      // Bots "sièges" (id négatif) proviennent de payload.room.bots (GameCoreService buildPlayers).
-      // Si un bot est retiré de la room pendant une partie, il doit aussi disparaître du roster du jeu
-      // sinon l'exclusion est visuellement sans effet et le bot continue de jouer.
-      const allowedBotIds = new Set<number>(
-        roomBots
-          .map((b) => -Math.abs(b.id))
-          .filter((id) => Number.isFinite(id) && id < 0),
-      );
-
-      const mappedPlayers = players.map((p) => {
-        const id = p.id;
-        if (!Number.isFinite(id) || id === 0) return p;
-
-        const desired = desiredById.get(id) ?? null;
-        if (desired) {
-          const desiredUsername = this.normalizeUsernameForLog(desired.username);
-          const currentUsername = this.normalizeUsernameForLog(p.username);
-          const desiredIsBot = desired.isBot === true;
-          if (p.isBot !== desiredIsBot || currentUsername !== desiredUsername) {
-            changed = true;
-            return {
-              ...p,
-              username: desiredUsername || p.username,
-              isBot: desiredIsBot,
-            };
-          }
-          return p;
-        }
-
-        const roomUsername = humanById.get(id) ?? null;
-        const isBot = p.isBot === true;
-
-        // Human is present in room: ensure player is human with correct username.
-        if (roomUsername) {
-          if (
-            isBot ||
-            this.normalizeUsernameForLog(p.username) !== roomUsername
-          ) {
-            changed = true;
-            return { ...p, isBot: false, username: roomUsername };
-          }
-          return p;
-        }
-
-        return p;
-      });
-
-      // Remove room bots that no longer exist (id < 0 and not in allowedBotIds).
-      const preserveBotIds = new Set<number>();
-      const currentTurnPlayerId = state.turn?.currentPlayerId ?? null;
-      if (
-        typeof currentTurnPlayerId === 'number' &&
-        currentTurnPlayerId < 0 &&
-        mappedPlayers.some(
-          (player) =>
-            player?.id === currentTurnPlayerId && player?.isBot === true,
-        )
-      ) {
-        preserveBotIds.add(currentTurnPlayerId);
-      }
-      const pendingPlayerId =
-        typeof state.pending?.playerId === 'number' ? state.pending.playerId : null;
-      if (
-        typeof pendingPlayerId === 'number' &&
-        pendingPlayerId < 0 &&
-        mappedPlayers.some(
-          (player) => player?.id === pendingPlayerId && player?.isBot === true,
-        )
-      ) {
-        preserveBotIds.add(pendingPlayerId);
-      }
-
-      const filteredPlayers = mappedPlayers.filter((p) => {
-        const id = p.id;
-        if (!Number.isFinite(id) || id === 0) return true;
-        const isBot = p.isBot === true;
-        // Stable bot seats are identified by negative ids.
-        // Keep/remove them by id only (name may evolve/canonicalize across layers).
-        if (id < 0) {
-          if (!isBot) return true;
-          if (allowedBotIds.has(id)) return true;
-          // Some room payload refreshes are temporarily partial while a bot is
-          // already the actionable actor. Dropping that seat would silently
-          // hand the turn back to a human on the next engine read.
-          return preserveBotIds.has(id);
-        }
-        if (!isBot) return true;
-        const name = this.normalizeUsernameForLog(p.username);
-        return Boolean(name && allowedBotNames.has(name));
-      });
-      const nextPlayers = filteredPlayers;
-      if (nextPlayers.length !== mappedPlayers.length) {
-        changed = true;
-      }
-
-      const currentPlayerId = state.turn?.currentPlayerId ?? null;
-      if (
-        typeof currentPlayerId === 'number' &&
-        currentPlayerId !== 0 &&
-        !nextPlayers.some((p) => p?.id === currentPlayerId)
-      ) {
-        // Keep a stable index if possible; otherwise fallback to first player.
-        const prevIndex = Math.max(
-          0,
-          players.findIndex((p) => p?.id === currentPlayerId),
-        );
-        const fallbackIndex = Math.min(
-          prevIndex,
-          Math.max(0, nextPlayers.length - 1),
-        );
-        const fallbackId =
-          nextPlayers[fallbackIndex]?.id ?? nextPlayers[0]?.id ?? null;
-        if (fallbackId !== currentPlayerId) {
-          changed = true;
-          state = {
-            ...state,
-            turn: {
-              ...(state.turn ?? { direction: 1 }),
-              currentPlayerId: fallbackId,
-            },
-          };
-        }
-      }
-
-      const nextPendingPlayerId = state.pending?.playerId ?? null;
-      if (
-        typeof nextPendingPlayerId === 'number' &&
-        nextPendingPlayerId !== 0 &&
-        !nextPlayers.some((p) => p?.id === nextPendingPlayerId)
-      ) {
-        changed = true;
-        state = {
-          ...state,
-          pending: state.pending
-            ? { ...state.pending, playerId: null }
-            : state.pending,
-        };
-      }
-
-      return changed ? { ...state, players: nextPlayers } : state;
-    } catch {
-      return state;
-    }
+    return syncRosterForStartedRoom({
+      state,
+      payload,
+      buildPlayersFromPayload: (nextPayload) =>
+        buildPlayersFromRoomPayload({
+          payload: nextPayload,
+          normalizeUsernameForLog: this.runtimeDeps.normalizeUsernameForLog,
+        }),
+      normalizeUsernameForLog: this.runtimeDeps.normalizeUsernameForLog,
+    });
   }
 
   /**
@@ -2493,9 +1188,11 @@ export class GameEngineService {
     if (!Number.isFinite(roomId) || roomId <= 0) return null;
     const gt = String(gameType ?? '').trim();
     if (!gt) return null;
-    const internal = await this.enqueueMutation(this.buildKey(roomId, gt), () =>
-      this.getInternalState(roomId, gt),
-    );
+    const internal = await enqueueMutation({
+      queue: this.mutationQueue,
+      key: this.buildKey(roomId, gt),
+      task: () => this.getInternalState(roomId, gt),
+    });
     return internal ?? null;
   }
 
@@ -2514,15 +1211,19 @@ export class GameEngineService {
     if (!gt) {
       throw new Error('gameType invalide');
     }
-    await this.enqueueMutation(this.buildKey(roomId, gt), async () => {
-      await this.store.set(roomId, gt, state);
-      const marked = await this.normalizeBotThinking(
-        roomId,
-        gt,
-        await this.markBotThinking(roomId, gt, state),
-      );
-      await this.scheduleBotTurn(roomId, gt, marked);
-      this.broadcaster?.(gt, roomId, marked);
+    await enqueueMutation({
+      queue: this.mutationQueue,
+      key: this.buildKey(roomId, gt),
+      task: async () => {
+        await this.store.set(roomId, gt, state);
+        const marked = await this.normalizeBotThinking(
+          roomId,
+          gt,
+          await this.markBotThinking(roomId, gt, state),
+        );
+        await this.scheduleBotTurn(roomId, gt, marked);
+        this.broadcaster?.(gt, roomId, marked);
+      },
     });
   }
 
@@ -2621,56 +1322,32 @@ export class GameEngineService {
     gameType: string,
     actions: GameSingleActionDto[],
   ): Promise<void> {
-    await this.enqueueMutation(this.buildKey(roomId, gameType), async () => {
-      const current = await this.normalizeBotThinking(
-        roomId,
-        gameType,
-        await this.getInternalState(roomId, gameType),
-      );
-      if ((current.status || '').toLowerCase() === 'finished') {
-        return;
-      }
-
-      const handler = this.registry.getHandler(gameType);
-      if (!handler) {
-        return;
-      }
-
-      const meta = this.toMetadata(current);
-      const fallbackActorId =
-        typeof meta['ownerPlayerId'] === 'number'
-          ? meta['ownerPlayerId']
-          : (current.turn?.currentPlayerId ?? current.players?.[0]?.id ?? null);
-
-      const sanitizedActions = (Array.isArray(actions) ? actions : []).map(
-        (action) => ({
-          ...action,
-          meta: {
-            ...(action?.meta ?? {}),
-            actor: 'system',
-            actorId: fallbackActorId,
-          },
-        }),
-      );
-
-      const next = handler.applyActions(current, sanitizedActions);
-      const botTurn = this.isBotTurn(next);
-      let marked = await this.markBotThinking(roomId, gameType, next, botTurn);
-      marked = this.normalizeWinnerMetadata(marked);
-      marked = this.forceFinishedIfWinnerDetected(marked);
-      marked = this.appendBoardArrivalAnnouncements(
-        gameType,
-        handler,
-        current,
-        marked,
-      );
-      marked = this.appendSkipTurnAnnouncements(marked);
-      await this.store.set(roomId, gameType, marked, { asyncPersist: true });
-
-      // Pas d'annonce de tour dans l'historique (évite doublon avec le label de tour).
-
-      await this.scheduleBotTurn(roomId, gameType, marked);
-      this.broadcaster?.(gameType, roomId, marked);
+    await enqueueMutation({
+      queue: this.mutationQueue,
+      key: this.buildKey(roomId, gameType),
+      task: async () => {
+        await runApplySystemActions({
+          roomId,
+          gameType,
+          actions,
+          getInternalState: this.runtimeDeps.getInternalState,
+          normalizeBotThinking: this.runtimeDeps.normalizeBotThinking,
+          registryGetHandler: this.runtimeDeps.registryGetHandler,
+          toMetadata,
+          isBotTurn: this.runtimeDeps.isBotTurn,
+          markBotThinking: this.runtimeDeps.markBotThinking,
+          normalizeWinnerMetadata: this.runtimeDeps.normalizeWinnerMetadata,
+          forceFinishedIfWinnerDetected:
+            this.runtimeDeps.forceFinishedIfWinnerDetected,
+          appendBoardArrivalAnnouncements:
+            this.runtimeDeps.appendBoardArrivalAnnouncements,
+          appendSkipTurnAnnouncements:
+            this.runtimeDeps.appendSkipTurnAnnouncements,
+          storeSet: this.runtimeDeps.storeSet,
+          scheduleBotTurn: this.runtimeDeps.scheduleBotTurn,
+          broadcaster: this.runtimeDeps.broadcaster(),
+        });
+      },
     });
   }
 
@@ -2679,272 +1356,30 @@ export class GameEngineService {
     gameType: string,
     state: GameStateEntity,
   ): Promise<void> {
-    const key = this.buildKey(roomId, gameType);
-    const systemKey = this.buildSystemTimerKey(roomId, gameType, 'system');
-    const status = (state.status || '').toLowerCase();
-    if (
-      status === 'finished' ||
-      status === 'setup' ||
-      status === 'open' ||
-      status === 'pending' ||
-      status === 'preparing'
-    ) {
-      this.botScheduler.clear(key);
-      this.botScheduler.clear(systemKey);
-      return;
-    }
-
-    // Timed transitions (currently used by LAMA for "pause between rounds").
-    if (gameType === 'lama') {
-      const lamaMeta = this.toMetadata(state);
-      const step = this.normalizeMetadataString(lamaMeta['step']);
-      if (step === 'round_pause') {
-        const untilMs = this.parseMetadataNumber(lamaMeta['roundPauseUntilMs']);
-        const delayMs =
-          untilMs != null
-            ? Math.max(0, untilMs - GameEngineService.nowMs())
-            : 0;
-        this.botScheduler.clear(key);
-        this.botScheduler.schedule({
-          key: systemKey,
-          delayMs,
-          roomId,
-          gameType,
-          run: async () => {
-            const latest = (await this.store.get(roomId, gameType)) ?? null;
-            if (!latest) return;
-            const latestMeta = this.toMetadata(latest);
-            const latestStep = this.normalizeMetadataString(latestMeta['step']);
-            if (latestStep !== 'round_pause') return;
-            const latestUntilMs = this.parseMetadataNumber(
-              latestMeta['roundPauseUntilMs'],
-            );
-            if (
-              typeof untilMs === 'number' &&
-              latestUntilMs !== null &&
-              latestUntilMs !== untilMs
-            ) {
-              return;
-            }
-            await this.applySystemActions(roomId, gameType, [
-              { type: 'lama_resume_round', payload: {} },
-            ]);
-          },
-          onStale: () => this.cleanupRoom(roomId, gameType),
-        });
-        return;
-      }
-
-      // No pause: ensure timer is cleared.
-      this.botScheduler.clear(systemKey);
-    }
-
-    // Timed transitions: Arche de Mnemosyne quiz timeout.
-    if (gameType === 'arche-de-mnemosyne') {
-      const mnemoMeta = this.toMetadata(state);
-      const configMeta = this.getMetadataObject(mnemoMeta, 'config');
-      const useTimer = configMeta?.['useTimer'] === true;
-      const untilMs = this.parseMetadataNumber(mnemoMeta['quizDeadlineAtMs']);
-      const questionMeta = this.getMetadataObject(mnemoMeta, 'currentQuestion');
-      const questionId =
-        questionMeta && typeof questionMeta['id'] === 'string'
-          ? questionMeta['id']
-          : null;
-      const interUntilMs = this.parseMetadataNumber(
-        mnemoMeta['interQuestionUntilMs'],
-      );
-
-      if (interUntilMs != null && !questionId) {
-        const delayMs = Math.max(0, interUntilMs - GameEngineService.nowMs());
-        this.botScheduler.clear(systemKey);
-        this.botScheduler.schedule({
-          key: systemKey,
-          delayMs,
-          roomId,
-          gameType,
-          run: async () => {
-            const latest = (await this.store.get(roomId, gameType)) ?? null;
-            if (!latest) return;
-            const latestMeta = this.toMetadata(latest);
-            const latestQuestionMeta = this.getMetadataObject(
-              latestMeta,
-              'currentQuestion',
-            );
-            if (
-              latestQuestionMeta &&
-              typeof latestQuestionMeta['id'] === 'string'
-            ) {
-              return;
-            }
-            const latestInterUntilMs = this.parseMetadataNumber(
-              latestMeta['interQuestionUntilMs'],
-            );
-            if (latestInterUntilMs === null) return;
-            if (latestInterUntilMs !== interUntilMs) return;
-            await this.applySystemActions(roomId, gameType, [
-              { type: 'mnemo_timeout', payload: {} },
-            ]);
-          },
-          onStale: () => this.cleanupRoom(roomId, gameType),
-        });
-      } else if (useTimer && untilMs != null && questionId) {
-        const delayMs = Math.max(0, untilMs - GameEngineService.nowMs());
-        this.botScheduler.clear(systemKey);
-        this.botScheduler.schedule({
-          key: systemKey,
-          delayMs,
-          roomId,
-          gameType,
-          run: async () => {
-            const latest = (await this.store.get(roomId, gameType)) ?? null;
-            if (!latest) return;
-            const latestMeta = this.toMetadata(latest);
-            const latestConfigMeta = this.getMetadataObject(
-              latestMeta,
-              'config',
-            );
-            if (latestConfigMeta?.['useTimer'] !== true) return;
-            const latestQuestionMeta = this.getMetadataObject(
-              latestMeta,
-              'currentQuestion',
-            );
-            if (
-              !latestQuestionMeta ||
-              typeof latestQuestionMeta['id'] !== 'string'
-            ) {
-              return;
-            }
-            if (latestQuestionMeta['id'] !== questionId) return;
-            const latestDeadline = this.parseMetadataNumber(
-              latestMeta['quizDeadlineAtMs'],
-            );
-            if (latestDeadline !== null && latestDeadline !== untilMs) {
-              return;
-            }
-            await this.applySystemActions(roomId, gameType, [
-              { type: 'mnemo_timeout', payload: {} },
-            ]);
-          },
-          onStale: () => this.cleanupRoom(roomId, gameType),
-        });
-      } else {
-        this.botScheduler.clear(systemKey);
-      }
-    }
-
-    const handler = this.registry.getHandler(gameType);
-    const botActorId = this.getBotActorIdForState(state, handler);
-    const botPlayer =
-      botActorId != null
-        ? (state.players?.find((p) => p.id === botActorId) ?? null)
-        : null;
-    if (!botPlayer?.isBot) {
-      this.botScheduler.clear(key);
-      return;
-    }
-    if (this.botScheduler.has(key)) return;
-
-    const baseDelayMs = this.botSettings.getBotTurnDelayMs();
-    const initialDelayMs = this.botSettings.getBotStartDelayMs();
-    const drawDelayMs = this.botSettings.getBotDrawDelayMs();
-    const meta = this.toMetadata(state);
-    const immediateStart = meta['botImmediateStartPending'] === true;
-    const pending = state.pending ?? null;
-    const pendingType =
-      typeof pending?.type === 'string'
-        ? pending.type.trim().toLowerCase()
-        : '';
-    const isQuizPending =
-      gameType === 'arche-de-mnemosyne' && pending?.type === 'quiz';
-    const configMeta = this.getMetadataObject(meta, 'config');
-    const quizTimerSeconds =
-      isQuizPending &&
-      configMeta &&
-      typeof configMeta['timerSeconds'] === 'number'
-        ? Number(configMeta['timerSeconds'])
-        : null;
-    const quizTimerMs =
-      quizTimerSeconds != null && Number.isFinite(quizTimerSeconds)
-        ? Math.max(1, quizTimerSeconds) * 1000
-        : null;
-    let delayMs = baseDelayMs;
-    if (immediateStart) {
-      delayMs = initialDelayMs;
-    } else if (pendingType === 'draw') {
-      delayMs = drawDelayMs;
-    }
-    if (isQuizPending && quizTimerMs != null) {
-      delayMs = Math.min(delayMs, quizTimerMs);
-    }
-    const stateForSchedule = immediateStart
-      ? {
-          ...state,
-          metadata: { ...meta, botImmediateStartPending: false },
-        }
-      : state;
-    const thinking = await this.markBotThinking(
+    await runScheduleBotTurn({
       roomId,
       gameType,
-      stateForSchedule,
-      true,
-    );
-    this.broadcaster?.(gameType, roomId, thinking);
-    this.gameLogger.debug('Bot turn scheduled', {
-      roomId,
-      gameType,
-      turnIndex: thinking.turnIndex,
-      playerId: botActorId ?? undefined,
-      action: {
-        status: thinking.status,
-        delayMs,
-      },
-    });
-    const expectedTurnIndex = thinking.turnIndex ?? null;
-    const expectedCurrentPlayerId = thinking.turn?.currentPlayerId ?? null;
-    const expectedBotActorId = botActorId ?? null;
-    const expectedPendingSig = this.pendingSignature(thinking.pending);
-
-    this.botScheduler.schedule({
-      key,
-      delayMs,
-      roomId,
-      gameType,
-      run: async () => {
-        const latest = (await this.store.get(roomId, gameType)) ?? null;
-        if (!latest) {
-          return;
-        }
-        if ((latest.status || '').toLowerCase() === 'finished') {
-          return;
-        }
-        const latestTurnIndex = latest.turnIndex ?? null;
-        const latestCurrentPlayerId = latest.turn?.currentPlayerId ?? null;
-        const latestBotActorId = this.getBotActorIdForState(latest, handler);
-        const latestPendingSig = this.pendingSignature(latest.pending);
-        if (
-          latestTurnIndex !== expectedTurnIndex ||
-          latestCurrentPlayerId !== expectedCurrentPlayerId ||
-          latestBotActorId !== expectedBotActorId ||
-          latestPendingSig !== expectedPendingSig
-        ) {
-          this.gameLogger.debug('Bot turn skipped (stale)', {
-            roomId,
-            gameType,
-            action: {
-              expectedTurnIndex,
-              latestTurnIndex,
-              expectedCurrentPlayerId,
-              latestCurrentPlayerId,
-              expectedBotActorId,
-              latestBotActorId,
-            },
-          });
-          await this.scheduleBotTurn(roomId, gameType, latest);
-          return;
-        }
-        await this.playBotTurn(roomId, gameType);
-      },
-      onStale: () => this.cleanupRoom(roomId, gameType),
+      state,
+      buildKey: this.runtimeDeps.buildKey,
+      buildSystemTimerKey: this.runtimeDeps.buildSystemTimerKey,
+      toMetadata,
+      normalizeString: normalizeMetadataString,
+      parseNumber: parseMetadataNumber,
+      getMetadataObject,
+      registryGetHandler: this.runtimeDeps.registryGetHandler,
+      getBotActorIdForState: this.runtimeDeps.getBotActorIdForState,
+      pendingSignature: this.runtimeDeps.pendingSignature,
+      markBotThinking: this.runtimeDeps.markBotThinking,
+      scheduleBotTurn: this.runtimeDeps.scheduleBotTurn,
+      applySystemActions: this.runtimeDeps.applySystemActions,
+      playBotTurn: this.runtimeDeps.playBotTurn,
+      storeGet: this.runtimeDeps.storeGet,
+      broadcaster: this.runtimeDeps.broadcaster(),
+      cleanupRoom: this.runtimeDeps.cleanupRoom,
+      botSettings: this.runtimeDeps.botSettings(),
+      botScheduler: this.runtimeDeps.botScheduler() as any,
+      nowMs: this.runtimeDeps.nowMs,
+      gameLogger: this.gameLogger as any,
     });
   }
 
@@ -3024,199 +1459,36 @@ export class GameEngineService {
     payload: RoomPayload,
     gameType: string,
   ): GameStateEntity {
-    const baseState = this.core.buildBaseState(payload, gameType);
-    const status = String(baseState.status ?? '')
-      .toLowerCase()
-      .trim();
-    // Tant que la table n'est pas en "started", on ne doit pas hydrater un état de partie :
-    // sinon certains jeux reconstruisent un plateau "started" et empêchent d'ajouter/retirer des bots
-    // ou de relancer proprement après une fin de partie.
-    if (status !== 'started') {
-      return baseState;
-    }
-    const handler = this.registry.getHandler(gameType);
-    if (handler) {
-      const hydrated = handler.hydrateInitialState(baseState);
-      const randomizedStarter = this.ensureRandomStarterAtGameStart(
-        baseState,
-        hydrated,
-      );
-      const withMeta = {
-        ...randomizedStarter,
-        metadata: {
-          ...(randomizedStarter.metadata ?? {}),
-          botImmediateStartPending: true,
-        },
-      } as GameStateEntity;
-      return this.appendFirstTurnAnnouncement(withMeta);
-    }
-    const logged = this.core.appendLog(
-      baseState,
-      `Type de jeu non spécialisé: ${gameType}`,
-    );
-    const withMeta = {
-      ...logged,
-      metadata: {
-        ...(logged.metadata ?? {}),
-        botImmediateStartPending: true,
-      },
-    } as GameStateEntity;
-    return this.appendFirstTurnAnnouncement(withMeta);
+    return buildInitialState({
+      payload,
+      gameType,
+      coreBuildBaseState: this.runtimeDeps.coreBuildBaseState,
+      coreAppendLog: this.runtimeDeps.coreAppendLog,
+      registryGetHandler: this.runtimeDeps.registryGetHandler,
+      ensureRandomStarterAtGameStart:
+        (baseState, currentState) =>
+          this.ensureRandomStarterAtGameStart(baseState, currentState),
+      appendFirstTurnAnnouncement: this.runtimeDeps.appendFirstTurnAnnouncement,
+    });
   }
 
   private ensureRandomStarterAtGameStart(
     baseState: GameStateEntity,
     state: GameStateEntity,
   ): GameStateEntity {
-    const status = String(state.status ?? '')
-      .toLowerCase()
-      .trim();
-    if (status !== 'started') return state;
-
-    const players = Array.isArray(state.players) ? state.players : [];
-    if (!players.length) return state;
-
-    const pending = state.pending ?? null;
-    const pendingPlayerId =
-      typeof pending?.playerId === 'number' ? pending.playerId : null;
-    const blockingPending = pending?.blocking === true;
-    if (blockingPending && pendingPlayerId != null) {
-      // Les jeux avec setup bloquant (choix de pion/config propriétaire) gardent leur acteur pending.
-      return state;
-    }
-
-    const starterMeta = this.toMetadata(state);
-    if (starterMeta['starterChosenAfterPawnSelection'] === true) {
-      // Certains jeux tirent explicitement le starter après setup (ex: choix de pion).
-      return state;
-    }
-
-    const baseStarterId = baseState.turn?.currentPlayerId ?? null;
-    const starterId =
-      typeof baseStarterId === 'number' &&
-      players.some((p) => p?.id === baseStarterId)
-        ? baseStarterId
-        : (players[0]?.id ?? null);
-    if (typeof starterId !== 'number') return state;
-
-    const currentId = state.turn?.currentPlayerId ?? null;
-    const starterIndex = Math.max(
-      0,
-      players.findIndex((p) => p?.id === starterId),
-    );
-    const currentTurnIndex =
-      typeof state.turnIndex === 'number' ? state.turnIndex : 0;
-    if (currentId === starterId && currentTurnIndex === starterIndex) {
-      return state;
-    }
-
-    return {
-      ...state,
-      turnIndex: starterIndex,
-      turn: {
-        ...(state.turn ?? { direction: 1 }),
-        currentPlayerId: starterId,
-      },
-    };
+    return ensureRandomStarterAtGameStartRuntime({
+      baseState,
+      state,
+      toMetadata,
+    });
   }
 
   private appendFirstTurnAnnouncement(state: GameStateEntity): GameStateEntity {
-    const status = String(state.status ?? '')
-      .toLowerCase()
-      .trim();
-    if (status !== 'started') {
-      return state;
-    }
-
-    const pending = state.pending ?? null;
-    const pendingType = String(pending?.type ?? '')
-      .trim()
-      .toLowerCase();
-    const announcementPlayerId =
-      pendingType === 'choose_pawn' || pendingType === 'pick_pawn'
-        ? pending?.playerId ?? null
-        : state.turn?.currentPlayerId ?? null;
-    if (
-      typeof announcementPlayerId !== 'number' ||
-      !Number.isFinite(announcementPlayerId)
-    ) {
-      return state;
-    }
-
-    const players = Array.isArray(state.players) ? state.players : [];
-    const name =
-      this.normalizeUsernameForLog(
-        players.find((p) => p?.id === announcementPlayerId)?.username,
-      ) || `Joueur ${announcementPlayerId}`;
-
-    const log = Array.isArray(state.log) ? state.log : [];
-    const recentMessages = log
-      .slice(-6)
-      .map((entry) => String(entry?.message ?? '').trim());
-    if (pendingType === 'choose_pawn' || pendingType === 'pick_pawn') {
-      const expectedPromptToken = `prompt:choose-pawn:${normalizePromptToken(name)}`;
-      const hasSamePrompt = recentMessages.some(
-        (message) => extractPawnPromptToken(message) === expectedPromptToken,
-      );
-      const cleaned = this.removeRecentTurnAnnouncements(state);
-      if (hasSamePrompt) {
-        return cleaned;
-      }
-      return this.core.appendLog(
-        cleaned,
-        `C'est à ${name} de choisir son pion.`,
-      );
-    }
-
-    if (
-      recentMessages.some((message) =>
-        message.toLowerCase().startsWith("c'est au tour de "),
-      )
-    ) {
-      return state;
-    }
-
-    const hasRecentPawnSetupLogs = recentMessages.some((message) =>
-      /a choisi le pion:/i.test(message),
-    );
-    return this.core.appendLog(
+    return appendFirstTurnAnnouncementRuntime({
       state,
-      hasRecentPawnSetupLogs
-        ? `C'est au tour de ${name} de débuter.`
-        : `C'est au tour de ${name}.`,
-    );
-  }
-
-  private removeRecentExactLogMessage(
-    state: GameStateEntity,
-    expectedMessage: string,
-  ): GameStateEntity {
-    const log = Array.isArray(state.log) ? [...state.log] : [];
-    for (let i = log.length - 1; i >= 0 && i >= log.length - 6; i -= 1) {
-      const message =
-        typeof log[i]?.message === 'string'
-          ? String(log[i].message).trim()
-          : '';
-      if (message !== expectedMessage) continue;
-      log.splice(i, 1);
-      return { ...state, log };
-    }
-    return state;
-  }
-
-  private removeRecentTurnAnnouncements(state: GameStateEntity): GameStateEntity {
-    const log = Array.isArray(state.log) ? [...state.log] : [];
-    let changed = false;
-    for (let i = log.length - 1; i >= 0 && i >= log.length - 6; i -= 1) {
-      const message =
-        typeof log[i]?.message === 'string'
-          ? String(log[i].message).trim()
-          : '';
-      if (!message.toLowerCase().startsWith("c'est au tour de ")) continue;
-      log.splice(i, 1);
-      changed = true;
-    }
-    return changed ? { ...state, log } : state;
+      appendLog: this.runtimeDeps.coreAppendLog,
+      normalizeUsernameForLog: this.runtimeDeps.normalizeUsernameForLog,
+    });
   }
 
   private buildKey(roomId: number, gameType: string): string {
@@ -3231,8 +1503,8 @@ export class GameEngineService {
       return false;
     }
 
-    const metadata = this.toMetadata(state);
-    const finishedAt = this.normalizeMetadataString(metadata['finishedAt']);
+    const metadata = toMetadata(state);
+    const finishedAt = normalizeMetadataString(metadata['finishedAt']);
     if (!finishedAt) {
       return false;
     }
@@ -3265,9 +1537,7 @@ export class GameEngineService {
       return;
     }
 
-    const expectedFinishedAt = this.normalizeMetadataString(
-      this.toMetadata(state)['finishedAt'],
-    );
+    const expectedFinishedAt = normalizeMetadataString(toMetadata(state)['finishedAt']);
 
     this.botScheduler.schedule({
       key: systemKey,
@@ -3275,17 +1545,18 @@ export class GameEngineService {
       roomId,
       gameType,
       run: async () => {
-        await this.enqueueMutation(
-          this.buildKey(roomId, gameType),
-          async () => {
+        await enqueueMutation({
+          queue: this.mutationQueue,
+          key: this.buildKey(roomId, gameType),
+          task: async () => {
             const latest = (await this.store.get(roomId, gameType)) ?? null;
             if (!latest) return;
             if (String(latest.status ?? '').toLowerCase() !== 'finished') {
               return;
             }
 
-            const latestFinishedAt = this.normalizeMetadataString(
-              this.toMetadata(latest)['finishedAt'],
+            const latestFinishedAt = normalizeMetadataString(
+              toMetadata(latest)['finishedAt'],
             );
             if (
               expectedFinishedAt &&
@@ -3337,7 +1608,7 @@ export class GameEngineService {
             // Attente : pas de rebuild tant que la table n'est pas redémarrée.
             this.botScheduler.clear(this.buildKey(roomId, gameType));
           },
-        );
+        });
       },
       onStale: () => this.cleanupRoom(roomId, gameType),
     });
@@ -3349,19 +1620,19 @@ export class GameEngineService {
     state: GameStateEntity,
     botTurn?: boolean,
   ): Promise<GameStateEntity> {
-    const handler = this.registry.getHandler(gameType);
-    // `botThinking` doit refléter un bot réellement actionnable.
-    // Sinon, on bloque les humains avec "Un bot joue..." alors qu'aucune action bot n'est possible
-    // (ex: pending bloquant pour un humain pendant setup).
-    const actionableBotId = this.getBotActorIdForState(state, handler);
-    const isBot = actionableBotId != null || (botTurn === true && !handler);
-    const now = GameEngineService.nowMs();
-    const marked = {
-      ...this.store.markBotThinking(state, isBot),
-      botThinkingSince: isBot ? now : null,
-    };
-    await this.store.set(roomId, gameType, marked, { asyncPersist: true });
-    return marked;
+    return runMarkBotThinking({
+      roomId,
+      gameType,
+      state,
+      botTurn,
+      runtime: {
+        registryGetHandler: this.runtimeDeps.registryGetHandler,
+        getBotActorIdForState: this.runtimeDeps.getBotActorIdForState,
+        nowMs: this.runtimeDeps.nowMs,
+        storeMarkBotThinking: this.runtimeDeps.storeMarkBotThinking,
+        storeSet: this.runtimeDeps.storeSet,
+      },
+    });
   }
 
   private async normalizeBotThinking(
@@ -3369,40 +1640,17 @@ export class GameEngineService {
     gameType: string,
     state: GameStateEntity,
   ): Promise<GameStateEntity> {
-    const since =
-      typeof state.botThinkingSince === 'number'
-        ? state.botThinkingSince
-        : null;
-    if (!state.botThinking) {
-      return state;
-    }
-    if (since == null) {
-      const patched = {
-        ...state,
-        botThinkingSince: GameEngineService.nowMs(),
-      };
-      await this.store.set(roomId, gameType, patched, { asyncPersist: true });
-      return patched;
-    }
-    const age = GameEngineService.nowMs() - since;
-    if (age <= GameEngineService.BOT_THINKING_TTL_MS) {
-      return state;
-    }
-    this.gameLogger.warn('Bot thinking state expired', {
+    return runNormalizeBotThinking({
       roomId,
       gameType,
-      turnIndex: state.turnIndex,
-      action: {
-        ageMs: age,
+      state,
+      botThinkingTtlMs: GameEngineService.BOT_THINKING_TTL_MS,
+      runtime: {
+        nowMs: this.runtimeDeps.nowMs,
+        storeSet: this.runtimeDeps.storeSet,
+        gameLogger: this.gameLogger,
       },
     });
-    const cleared = {
-      ...state,
-      botThinking: false,
-      botThinkingSince: null,
-    };
-    await this.store.set(roomId, gameType, cleared, { asyncPersist: true });
-    return cleared;
   }
 
   private async validateActions(
@@ -3411,10 +1659,10 @@ export class GameEngineService {
     actions: GameSingleActionDto[],
     actorId: number | null,
   ): Promise<GameSingleActionDto[]> {
-    const ctx = this.toMetadata(state);
+    const ctx = toMetadata(state);
     const ctxGameType =
       typeof ctx['gameType'] === 'string' ? ctx['gameType'] : null;
-    const ctxRoomId = this.parseMetadataNumber(ctx['roomId']);
+    const ctxRoomId = parseMetadataNumber(ctx['roomId']);
     const list = Array.isArray(actions) ? actions : [];
     if (list.length === 0) {
       return [];
@@ -3610,625 +1858,53 @@ export class GameEngineService {
     const exposed = handler?.exposeState
       ? handler.exposeState(state)
       : (state as GameStateWithActions);
-    const withLabel = this.attachTurnLabel(exposed, label);
+    const withLabel = attachTurnLabel(exposed, label);
     const withDescriptors = this.attachCanonicalPositionPanel(
-      this.attachUiDescriptors(
-        this.gridRender.attachGridRenderDescriptors(
-          this.attachCurrentPlayerView(withLabel),
+      attachUiDescriptors({
+        state: this.gridRender.attachGridRenderDescriptors(
+          attachCurrentPlayerView(withLabel),
         ),
-      ),
+        normalizeString: normalizeMetadataString,
+      }),
       state,
       null,
     );
-    const withLifecycle = this.attachStartLifecycle(withDescriptors);
-    return fixMojibakeDeep(this.stripBoardAndGridIfNotStarted(withLifecycle));
-  }
-
-  private stripBoardAndGridIfNotStarted(
-    state: GameStateWithActions,
-  ): GameStateWithActions {
-    const status = String(state?.status ?? '')
-      .toLowerCase()
-      .trim();
-    if (status === 'started') return state;
-
-    const extras = GameEngineService.extractExtras(state);
-    const nextExtras = { ...extras };
-    if (nextExtras.grid !== undefined) {
-      delete nextExtras.grid;
-    }
-
-    const out = {
-      ...state,
-      actions: [],
-      pending: null,
-      extras: nextExtras,
-    } as GameStateWithActions & Record<string, unknown>;
-    if (out.board !== undefined) {
-      delete out.board;
-    }
-    return out as GameStateWithActions;
-  }
-
-  private attachTurnLabel(
-    state: GameStateWithActions,
-    label: string | null,
-  ): GameStateWithActions {
-    if (!label) return state;
-    const current = state.turn ?? null;
-    if (!current) {
-      return { ...state, turn: { currentPlayerId: null, direction: 1, label } };
-    }
-    return { ...state, turn: { ...current, label } };
-  }
-
-  private attachCurrentPlayerView(
-    state: GameStateWithActions,
-  ): GameStateWithActions {
-    const currentPlayerId = state.turn?.currentPlayerId ?? null;
-    if (currentPlayerId === null) return state;
-
-    const extras = GameEngineService.extractExtras(state);
-
-    // Si le jeu a déjà défini currentPlayerView, on ne l'écrase pas
-    if (extras['currentPlayerView'] !== undefined) return state;
-
-    const players = Array.isArray(state.players) ? state.players : [];
-    const currentPlayer = players.find((p) => p?.id === currentPlayerId);
-    if (!currentPlayer) return state;
-
-    const currentPlayerView = {
-      id: currentPlayer.id,
-      username: currentPlayer.username ?? `Joueur ${currentPlayer.id}`,
-    };
-
-    return {
-      ...state,
-      extras: {
-        ...extras,
-        currentPlayerView,
-      },
-    };
+    const withLifecycle = attachStartLifecycle({ state: withDescriptors });
+    return fixMojibakeDeep(stripBoardAndGridIfNotStarted(withLifecycle));
   }
 
   private appendBoardArrivalAnnouncements(
-    _gameType: string,
+    gameType: string,
     handler: GameRulesAdapter | undefined,
     previous: GameStateEntity,
     next: GameStateEntity,
   ): GameStateEntity {
-    try {
-      if (!handler?.shouldAnnounceBoardArrivals?.()) {
-        return next;
-      }
-      if (
-        String(next.status ?? '')
-          .toLowerCase()
-          .trim() !== 'started'
-      ) {
-        return next;
-      }
-
-      const prevMeta = this.toMetadata(previous);
-      const nextMeta = this.toMetadata(next);
-
-      const tiles = Array.isArray(nextMeta['tiles'])
-        ? (nextMeta['tiles'] as Record<string, unknown>[])
-        : [];
-      const prevPositions =
-        this.getMetadataObject(prevMeta, 'positions') ??
-        ({} as Record<string, unknown>);
-      const nextPositions =
-        this.getMetadataObject(nextMeta, 'positions') ??
-        ({} as Record<string, unknown>);
-
-      if (tiles.length === 0) {
-        return next;
-      }
-
-      const players = Array.isArray(next.players) ? next.players : [];
-      type PlayerMovement = {
-        id: number;
-        username: string;
-        prevPos: number | null;
-        nextPos: number | null;
-      };
-      const changed = players
-        .map<PlayerMovement | null>((p) => {
-          if (!p || typeof p.id !== 'number') return null;
-          const username =
-            this.normalizeUsernameForLog(p.username) || `joueur ${p.id}`;
-          const prevRaw = prevPositions[String(p.id)];
-          const nextRaw = nextPositions[String(p.id)];
-          const prevPos =
-            typeof prevRaw === 'number' ? prevRaw : Number(prevRaw);
-          const nextPos =
-            typeof nextRaw === 'number' ? nextRaw : Number(nextRaw);
-          return {
-            id: p.id,
-            username,
-            prevPos: Number.isFinite(prevPos) ? Math.trunc(prevPos) : null,
-            nextPos: Number.isFinite(nextPos) ? Math.trunc(nextPos) : null,
-          };
-        })
-        .filter(
-          (p): p is PlayerMovement =>
-            p != null &&
-            p.nextPos != null &&
-            p.prevPos != null &&
-            p.nextPos !== p.prevPos,
-        )
-        .sort((a, b) => a.id - b.id);
-
-      if (changed.length === 0) {
-        return next;
-      }
-
-      let out = next;
-      for (const p of changed) {
-        const idx = p.nextPos as number;
-        if (idx < 0 || idx >= tiles.length) {
-          continue;
-        }
-
-        const tile = tiles[idx] ?? {};
-        const labelRaw = this.normalizeMetadataString(tile['label']);
-        const titleRaw = this.normalizeMetadataString(
-          tile['title'] ?? tile['name'],
-        );
-        const descriptionRaw = this.normalizeMetadataString(
-          tile['description'],
-        );
-
-        const caseNumber = idx + 1;
-        const label = labelRaw || titleRaw ? labelRaw || titleRaw : '';
-        const desc = descriptionRaw ? ` ${descriptionRaw}` : '';
-
-        const name = p.username || `joueur ${p.id}`;
-
-        // Éviter les doublons évidents : si la dernière entrée mentionne déjà l'arrivée sur cette case.
-        const recentMsgs = (() => {
-          const log = Array.isArray(out.log) ? out.log : [];
-          const msgs: string[] = [];
-          for (let i = log.length - 1; i >= 0 && msgs.length < 4; i -= 1) {
-            const entry = log[i];
-            const msg = entry?.message;
-            if (typeof msg === 'string' && msg.trim().length > 0) {
-              msgs.push(String(msg).trim());
-            }
-          }
-          return msgs;
-        })();
-        const needleByNumber = `arrive sur case ${caseNumber}`.toLowerCase();
-        const needleByLabel = label ? `arrive sur ${label}`.toLowerCase() : '';
-        const needleByPlacement = `en case ${caseNumber}`.toLowerCase();
-        const hasRecentArrival = recentMsgs.some((m) => {
-          const lower = m.toLowerCase();
-          return (
-            lower.includes(needleByNumber) ||
-            (needleByLabel && lower.includes(needleByLabel)) ||
-            lower.includes(needleByPlacement)
-          );
-        });
-        if (hasRecentArrival) {
-          continue;
-        }
-
-        const gameTypeRaw = this.normalizeMetadataString(nextMeta['gameType']);
-        const isContes = gameTypeRaw === 'contes-et-cacahuetes';
-
-        if (
-          label &&
-          (/^case\\s+\\d+/i.test(label) ||
-            (isContes && /^case\s+/i.test(label)))
-        ) {
-          out = this.core.appendLog(
-            out,
-            `${name} arrive sur ${label}.${desc}`.trim(),
-          );
-        } else {
-          const suffix = label ? ` - ${label}` : '';
-          out = this.core.appendLog(
-            out,
-            `${name} arrive sur case ${caseNumber}${suffix}.${desc}`.trim(),
-          );
-        }
-      }
-
-      return out;
-    } catch {
-      return next;
-    }
+    return appendBoardArrivalAnnouncementsRuntime({
+      gameType,
+      handler,
+      previous,
+      next,
+      toMetadata,
+      getMetadataObject,
+      normalizeMetadataString,
+      normalizeUsernameForLog: this.runtimeDeps.normalizeUsernameForLog,
+      appendLog: this.runtimeDeps.coreAppendLog,
+    });
   }
 
   private appendSkipTurnAnnouncements(state: GameStateEntity): GameStateEntity {
-    try {
-      const meta = this.toMetadata(state);
-      const turnFlow =
-        this.getMetadataObject(meta, 'turnFlow') ??
-        ({} as Record<string, unknown>);
-      const skippedRaw = turnFlow['skipped'];
-      const skipped = Array.isArray(skippedRaw)
-        ? (skippedRaw as unknown[])
-        : [];
-      if (!skipped.length) {
-        return state;
-      }
-
-      const currentPlayerId = state.turn?.currentPlayerId ?? null;
-      const currentPlayer =
-        currentPlayerId != null
-          ? (state.players?.find((p) => p?.id === currentPlayerId) ?? null)
-          : null;
-      const currentName = this.normalizeUsernameForLog(currentPlayer?.username);
-      const expectedTurnAnnouncement = currentName
-        ? `C'est au tour de ${currentName}.`
-        : null;
-
-      let out = state;
-      const existingLog = Array.isArray(state.log) ? [...state.log] : [];
-      const lastEntry =
-        existingLog.length > 0 ? existingLog[existingLog.length - 1] : null;
-      const lastMessage =
-        lastEntry && typeof lastEntry.message === 'string'
-          ? String(lastEntry.message).trim()
-          : '';
-      const shouldMoveTurnAnnouncement =
-        expectedTurnAnnouncement != null &&
-        lastMessage === expectedTurnAnnouncement;
-      if (shouldMoveTurnAnnouncement) {
-        existingLog.pop();
-        out = {
-          ...out,
-          log: existingLog,
-        };
-      }
-
-      for (const entry of skipped) {
-        if (!entry || typeof entry !== 'object') continue;
-        const data = entry as Record<string, unknown>;
-        const id = typeof data['id'] === 'number' ? data['id'] : null;
-        if (id == null) continue;
-        const remaining =
-          typeof data['remainingAfter'] === 'number'
-            ? data['remainingAfter']
-            : 0;
-        const player = out.players?.find((p) => p?.id === id) ?? null;
-        const name = this.normalizeUsernameForLog(player?.username);
-        const who = name ? name : `joueur ${id}`;
-        // Some games use a large sentinel value for "blocked until a condition"
-        // rather than a literal number of remaining skipped turns.
-        const suffix =
-          remaining > 0 && remaining < 100 ? ` (${remaining} restant)` : '';
-        out = this.core.appendLog(out, `${who} passe son tour${suffix}.`);
-      }
-
-      if (shouldMoveTurnAnnouncement) {
-        out = this.core.appendLog(out, expectedTurnAnnouncement);
-      }
-
-      const cleanedTurnFlow = { ...turnFlow, skipped: [] };
-      return {
-        ...out,
-        metadata: {
-          ...meta,
-          turnFlow: cleanedTurnFlow,
-        },
-      };
-    } catch {
-      return state;
-    }
-  }
-
-  private attachViewerContext(
-    state: GameStateWithActions,
-    userId: number,
-  ): GameStateWithActions {
-    const extras = GameEngineService.extractExtras(state);
-
-    // Ne pas écraser si un jeu a déjà défini ces champs.
-    if (extras['viewerPlayerId'] !== undefined) return state;
-
-    const players = Array.isArray(state.players) ? state.players : [];
-    const viewerPlayer = players.find((p) => p?.id === userId) ?? null;
-    const viewerPlayerId = viewerPlayer ? viewerPlayer.id : null;
-    const viewerUsername =
-      viewerPlayer && typeof viewerPlayer.username === 'string'
-        ? viewerPlayer.username
-        : viewerPlayer
-          ? `Joueur ${viewerPlayer.id}`
-          : null;
-
-    return {
-      ...state,
-      extras: {
-        ...extras,
-        viewerPlayerId,
-        viewerUsername,
-      },
-    };
-  }
-
-  private attachUiDescriptors(
-    state: GameStateWithActions,
-  ): GameStateWithActions {
-    // Les panneaux UI doivent Ä»tre entiÄ¶rement dÄ·finis par les jeux via `extras.ui.panels`.
-    // Le moteur n'infÄ¶re plus de panneaux gÄ·nÄ·riques (shopping, position, pollution, etc.).
-    // Provide a generic "turn" panel derived from `turn.label` (no game rules).
-    const turnLabel = String(state.turn?.label ?? '').trim();
-    if (!turnLabel) return state;
-
-    const extrasNow = GameEngineService.extractExtras(state);
-    const uiExistingNow = GameEngineService.extractUi(extrasNow);
-    const uiNow = uiExistingNow ? { ...uiExistingNow } : {};
-    const panelsExistingNow = GameEngineService.extractPanels(uiExistingNow);
-    const panelsNow = panelsExistingNow ? { ...panelsExistingNow } : {};
-    const existingTurn = panelsNow['turn'] as
-      | Record<string, unknown>
-      | undefined;
-    const existingTurnMessage =
-      existingTurn && typeof existingTurn['message'] === 'string'
-        ? existingTurn['message']
-        : null;
-    const hasTurnMessage =
-      typeof existingTurnMessage === 'string' &&
-      existingTurnMessage.trim().length > 0;
-
-    if (!hasTurnMessage) {
-      panelsNow['turn'] = {
-        title: 'Tour',
-        message: turnLabel.endsWith('.') ? turnLabel : `${turnLabel}.`,
-      };
-    }
-
-    uiNow['panels'] = panelsNow;
-    const stateWithTurnPanel: GameStateWithActions = {
-      ...state,
-      extras: {
-        ...extrasNow,
-        ui: uiNow,
-      },
-    };
-
-    const extrasAfter = GameEngineService.extractExtras(stateWithTurnPanel);
-    const uiExisting = GameEngineService.extractUi(extrasAfter);
-    const ui = uiExisting ? { ...uiExisting } : {};
-    const panelsExisting = GameEngineService.extractPanels(uiExisting);
-    const panels = panelsExisting ? { ...panelsExisting } : {};
-    const hasGameDefinedPanels = Object.keys(panels).some(
-      (id) => id !== 'turn',
-    );
-    const currentPlayerView =
-      (extrasAfter['currentPlayerView'] as CurrentPlayerView | null) ?? null;
-    const metadata =
-      stateWithTurnPanel.metadata &&
-      typeof stateWithTurnPanel.metadata === 'object'
-        ? (stateWithTurnPanel.metadata as Record<string, unknown>)
-        : {};
-    const upsertPanel = (id: string, title: string, message: string) => {
-      if (!id || !title || !message) return;
-
-      const existing = panels[id] as Record<string, unknown> | undefined;
-      const existingMessage =
-        existing && typeof existing['message'] === 'string'
-          ? existing['message']
-          : null;
-      const hasMessage =
-        typeof existingMessage === 'string' &&
-        existingMessage.trim().length > 0;
-      if (hasMessage) return;
-
-      panels[id] = { title, message };
-    };
-
-    const buildListMessage = (title: string, itemsRaw: unknown) => {
-      const items = Array.isArray(itemsRaw)
-        ? itemsRaw.map((x) => this.normalizeMetadataString(x)).filter((x) => x)
-        : [];
-
-      if (items.length === 0) return `${title}: (vide)`;
-
-      const max = 12;
-      const shown = items.length > max ? items.slice(0, max) : items;
-      const body = shown.join(', ');
-      return items.length > max
-        ? `${title}: ${body}, ... (+${items.length - max})`
-        : `${title}: ${body}`;
-    };
-
-    const normalizeSentence = (text: unknown): string => {
-      const t = this.normalizeMetadataString(text);
-      if (!t) return '';
-      return t.endsWith('.') ? t : `${t}.`;
-    };
-
-    const buildJoinedLinesMessage = (title: string, linesRaw: unknown) => {
-      const lines = Array.isArray(linesRaw)
-        ? linesRaw.map(normalizeSentence).filter((x) => x)
-        : [];
-      if (lines.length === 0) return `${title}: inconnue.`;
-      return lines.join(' ');
-    };
-
-    if (
-      !hasGameDefinedPanels &&
-      currentPlayerView &&
-      typeof currentPlayerView === 'object'
-    ) {
-      upsertPanel(
-        'shopping',
-        'Shopping list',
-        buildListMessage('Shopping list', currentPlayerView.shoppingList),
-      );
-      upsertPanel(
-        'basket',
-        'Panier',
-        buildListMessage('Panier', currentPlayerView.basket),
-      );
-      upsertPanel(
-        'inventory',
-        'Inventaire',
-        buildListMessage('Inventaire', currentPlayerView.inventory),
-      );
-      upsertPanel(
-        'stable',
-        'Écurie',
-        buildJoinedLinesMessage('Écurie', currentPlayerView.stable),
-      );
-      upsertPanel(
-        'position',
-        'Position',
-        buildJoinedLinesMessage('Position', currentPlayerView.position),
-      );
-    }
-
-    if (!hasGameDefinedPanels) {
-      upsertPanel(
-        'score',
-        'Score',
-        buildListMessage('Score', extrasAfter['score']),
-      );
-      upsertPanel(
-        'hand',
-        'Main',
-        buildListMessage('Main', extrasAfter['hand']),
-      );
-      upsertPanel(
-        'books',
-        'Familles',
-        buildListMessage('Familles', extrasAfter['books']),
-      );
-    }
-
-    const pollution =
-      typeof metadata['pollution'] === 'number' ? metadata['pollution'] : null;
-    const maxPollution =
-      typeof metadata['maxPollution'] === 'number'
-        ? metadata['maxPollution']
-        : null;
-
-    if (
-      !hasGameDefinedPanels &&
-      (pollution !== null || maxPollution !== null)
-    ) {
-      let message = 'Pollution: inconnue.';
-      if (pollution !== null && maxPollution !== null)
-        message = `Pollution: ${pollution}/${maxPollution}.`;
-      else if (pollution !== null) message = `Pollution: ${pollution}.`;
-      else if (maxPollution !== null)
-        message = `Pollution max: ${maxPollution}.`;
-
-      upsertPanel('pollution', 'Pollution', message);
-    }
-
-    ui['panels'] = panels;
-    return {
-      ...stateWithTurnPanel,
-      extras: {
-        ...extrasAfter,
-        ui,
-      },
-    };
-  }
-
-  private attachStartLifecycle(
-    state: GameStateWithActions,
-    userId?: number,
-  ): GameStateWithActions {
-    const status = String(state?.status ?? '')
-      .toLowerCase()
-      .trim();
-    const pendingType = String(state?.pending?.type ?? '')
-      .toLowerCase()
-      .trim();
-    const currentPlayerId =
-      typeof state?.turn?.currentPlayerId === 'number'
-        ? state.turn.currentPlayerId
-        : null;
-    const hasActions =
-      Array.isArray(state?.actions) && state.actions.length > 0;
-    const botThinking = state?.botThinking === true;
-
-    const pendingPlayerIdRaw = state?.pending?.playerId;
-    const pendingPlayerId =
-      typeof pendingPlayerIdRaw === 'number'
-        ? pendingPlayerIdRaw
-        : Number(pendingPlayerIdRaw);
-    const viewerPendingTurn =
-      userId != null &&
-      Number.isFinite(pendingPlayerId) &&
-      pendingPlayerId === userId;
-    const viewerPendingFallback =
-      userId != null &&
-      !Number.isFinite(pendingPlayerId) &&
-      currentPlayerId != null &&
-      currentPlayerId === userId;
-
-    const started = status === 'started';
-    const hasConfigPrompt =
-      pendingType === 'config_prompt' || pendingType.endsWith('_set_config');
-    const startReady = started && !hasConfigPrompt;
-    const viewerMustChoosePawn =
-      userId != null &&
-      started &&
-      this.isPawnPendingType(pendingType) &&
-      (viewerPendingTurn || viewerPendingFallback);
-    const viewerTurnActionable =
-      userId != null &&
-      started &&
-      currentPlayerId != null &&
-      currentPlayerId === userId &&
-      hasActions &&
-      !botThinking &&
-      !viewerMustChoosePawn;
-
-    const metadataRaw =
-      state?.metadata && typeof state.metadata === 'object'
-        ? (state.metadata as Record<string, unknown>)
-        : ({} as Record<string, unknown>);
-    const lifecycleRaw =
-      metadataRaw['lifecycle'] && typeof metadataRaw['lifecycle'] === 'object'
-        ? (metadataRaw['lifecycle'] as Record<string, unknown>)
-        : ({} as Record<string, unknown>);
-
-    const currentStartReady = lifecycleRaw['startReady'];
-    const currentViewerTurnActionable = lifecycleRaw['viewerTurnActionable'];
-    const currentViewerMustChoosePawn = lifecycleRaw['viewerMustChoosePawn'];
-    if (
-      typeof currentStartReady === 'boolean' &&
-      currentStartReady === startReady &&
-      typeof currentViewerTurnActionable === 'boolean' &&
-      currentViewerTurnActionable === viewerTurnActionable &&
-      typeof currentViewerMustChoosePawn === 'boolean' &&
-      currentViewerMustChoosePawn === viewerMustChoosePawn
-    ) {
-      return state;
-    }
-
-    return {
-      ...state,
-      metadata: {
-        ...metadataRaw,
-        lifecycle: {
-          ...lifecycleRaw,
-          startReady,
-          viewerTurnActionable,
-          viewerMustChoosePawn,
-        },
-      },
-    };
-  }
-
-  private isPawnPendingType(pendingType: string): boolean {
-    const normalized = String(pendingType ?? '')
-      .trim()
-      .toLowerCase();
-    return normalized === 'choose_pawn' || normalized === 'pick_pawn';
+    return appendSkipTurnAnnouncementsRuntime({
+      state,
+      toMetadata,
+      getMetadataObject,
+      normalizeUsernameForLog: this.runtimeDeps.normalizeUsernameForLog,
+      appendLog: this.runtimeDeps.coreAppendLog,
+    });
   }
 
   private isRoomNotFound(err: unknown): boolean {
     if (err instanceof NotFoundException) return true;
-    const message = this.normalizeMetadataString(
+    const message = normalizeMetadataString(
       err instanceof Error ? err.message : err,
     );
     return (
@@ -4246,60 +1922,5 @@ export class GameEngineService {
     }
     void this.store.delete(roomId, gameType);
     this.mutationQueue.delete(key);
-  }
-
-  private static extractExtras(
-    state: GameStateWithActions | GameStateEntity | null | undefined,
-  ): Record<string, unknown> {
-    if (!state) {
-      return {};
-    }
-    const candidate =
-      'extras' in state ? (state as { extras?: unknown }).extras : undefined;
-    if (
-      candidate &&
-      typeof candidate === 'object' &&
-      !Array.isArray(candidate)
-    ) {
-      return candidate as Record<string, unknown>;
-    }
-    return {};
-  }
-
-  private static extractUi(
-    extras: Record<string, unknown>,
-  ): Record<string, unknown> | null {
-    const uiRaw = extras['ui'];
-    if (uiRaw && typeof uiRaw === 'object' && !Array.isArray(uiRaw)) {
-      return uiRaw as Record<string, unknown>;
-    }
-    return null;
-  }
-
-  private static extractPanels(
-    ui: Record<string, unknown> | null,
-  ): Record<string, unknown> | null {
-    if (!ui) {
-      return null;
-    }
-    const panelsRaw = ui['panels'];
-    if (
-      panelsRaw &&
-      typeof panelsRaw === 'object' &&
-      !Array.isArray(panelsRaw)
-    ) {
-      return panelsRaw as Record<string, unknown>;
-    }
-    return null;
-  }
-
-  private static extractPanelMessage(
-    panel: Record<string, unknown> | undefined,
-  ): string {
-    if (!panel) {
-      return '';
-    }
-    const message = panel['message'];
-    return typeof message === 'string' ? message.trim() : '';
   }
 }

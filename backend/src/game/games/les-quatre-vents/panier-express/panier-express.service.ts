@@ -33,8 +33,6 @@ import {
   PanierExpressDeckPool,
 } from './model/panier-express-state.entity';
 import { playingLog } from '../../../../common/utils/playing-logger';
-import { seededShuffle } from '../../../../common/utils/seeded-shuffle';
-import { ensureSeededRng } from '../../../../common/utils/seeded-rng';
 import { PanierExpressSetupService } from './setup/panier-express-setup.service';
 import { PanierExpressDrawService } from './actions/panier-express-draw.service';
 import { PanierExpressQuizService } from './actions/panier-express-quiz.service';
@@ -56,6 +54,7 @@ import type {
   GameShortcutsContext,
 } from '../../../engine/shortcuts/game-shortcuts';
 import { buildPanierExpressShortcuts } from './panier-express.shortcuts';
+import { ensureShoppingLists, toStringArray } from './panier-express.shopping';
 
 @Injectable()
 export class PanierExpressService extends AbstractGameService {
@@ -220,6 +219,7 @@ export class PanierExpressService extends AbstractGameService {
         : baseMeta.decks,
     };
     const pawns = this.setup.pawns();
+    const courseItems = this.setup.courseItems();
 
     // Attribution stable des listes/pions:
     // - indépendante de l'ordre du tableau `players` (qui peut changer selon l'aléatoire / reconnections)
@@ -232,7 +232,6 @@ export class PanierExpressService extends AbstractGameService {
     });
     let pawnIndex = 0;
     const usedPawns = new Set<string>();
-    const usedLists = new Set<string>();
     const assignedById = new Map<
       number,
       { list: string[]; pawn?: string; isBot: boolean }
@@ -240,14 +239,8 @@ export class PanierExpressService extends AbstractGameService {
     assignmentOrder.forEach((p) => {
       const username = (p.username ?? '').toLowerCase();
       const isBot = p.isBot === true || username.includes('bot');
-      const existingList = this.toStringArray(p.shoppingList).slice(0, 3);
-      if (existingList.length > 0) {
-        usedLists.add(this.listKey(existingList));
-      }
-      const list =
-        existingList.length > 0
-          ? existingList
-          : this.buildShoppingList(usedLists);
+      const existingList = toStringArray(p.shoppingList).slice(0, 3);
+      const list = existingList.length > 0 ? existingList : [];
       const existingPawn = this.getPawnText(p);
       let pawn: string | undefined =
         existingPawn.length > 0 ? existingPawn : undefined;
@@ -274,24 +267,65 @@ export class PanierExpressService extends AbstractGameService {
           ? p.inventory.map((item) => String(item))
           : [],
         shoppingList:
-          assigned?.list ?? this.toStringArray(p.shoppingList).slice(0, 3),
+          assigned?.list ?? toStringArray(p.shoppingList).slice(0, 3),
         pawn: assigned?.pawn,
       };
     });
+
+    const baseMetadata = (baseState.metadata ?? {}) as Record<string, unknown>;
+    const seedEnvelope = { ...metadata, ...baseMetadata } as Record<
+      string,
+      unknown
+    >;
+    const rng = seedEnvelope['rng'];
+    const hasExplicitSeed =
+      rng != null &&
+      typeof rng === 'object' &&
+      !Array.isArray(rng) &&
+      Number.isFinite(Number((rng as any).seed));
+    const hasRoomContext =
+      seedEnvelope['roomId'] != null && seedEnvelope['roomStartedAt'] != null;
+    if (!hasExplicitSeed && !hasRoomContext) {
+      // Fallback deterministe (utile en tests/unit, où le contexte roomId/startedAt
+      // n'est pas toujours présent).
+      let derivedSeed = 1;
+      for (const p of hydratedPlayers) {
+        const id =
+          typeof (p as any)?.id === 'number'
+            ? (p as any).id
+            : Number((p as any)?.id);
+        if (!Number.isFinite(id)) continue;
+        derivedSeed = (derivedSeed * 31 + (id >>> 0)) >>> 0;
+      }
+      seedEnvelope['rng'] = { seed: derivedSeed >>> 0, counter: 0 };
+    }
+
+    const repaired = ensureShoppingLists({
+      // Important: `ensureSeededRng` may derive a stable seed from room context
+      // (roomId, startedAt, gameType, runId) stored in the shared metadata envelope.
+      metadata: seedEnvelope as PanierExpressMetadata,
+      players: hydratedPlayers,
+      courseItems,
+      shoppingListSize: PanierExpressService.SHOPPING_LIST_SIZE,
+      toStringArray: (value) => this.utils.toStringArray(value),
+    });
+
+    const repairedPlayers = repaired.players;
+    const repairedMetadata = repaired.metadata;
+
     const positions: Record<number, number> = {};
-    hydratedPlayers.forEach((p) => {
+    repairedPlayers.forEach((p) => {
       positions[p.id] = 0;
     });
-    const baseMetadata = (baseState.metadata ?? {}) as Record<string, unknown>;
     const initial: GameStateEntity = {
       ...baseState,
-      players: hydratedPlayers,
+      players: repairedPlayers,
       status: baseState.status ?? 'open',
       metadata: {
         ...baseMetadata,
         category: this.category,
         subcategory: this.subcategory,
-        ...metadata,
+        ...repairedMetadata,
         positions,
       },
     };
@@ -440,100 +474,14 @@ export class PanierExpressService extends AbstractGameService {
       merged,
       normalizedPlayers,
     );
-    const repaired = this.ensureShoppingLists(
-      state,
-      metadataBeforeRepair,
-      normalizedPlayers,
-    );
-    return { ...state, metadata: repaired.metadata, players: repaired.players };
-  }
-
-  private ensureShoppingLists(
-    _state: GameStateEntity,
-    metadata: PanierExpressMetadata,
-    players: PanierExpressPlayer[],
-  ): { metadata: PanierExpressMetadata; players: PanierExpressPlayer[] } {
-    const pool = this.setup.courseItems();
-    if (!Array.isArray(pool) || pool.length === 0) {
-      return { metadata, players };
-    }
-
-    const rng = ensureSeededRng(metadata as any);
-    const size = Math.min(PanierExpressService.SHOPPING_LIST_SIZE, pool.length);
-    if (size <= 0) {
-      return { metadata, players };
-    }
-
-    const existingMap = asRecord((metadata as any).shoppingLists);
-    const outMap: Record<number, string[]> = {};
-    const used = new Set<string>();
-
-    const normalizeList = (value: unknown): string[] =>
-      this.utils
-        .toStringArray(value)
-        .map((v) => String(v ?? '').trim())
-        .filter((v) => v.length > 0)
-        .slice(0, size);
-
-    // 1) Privilégier l'état joueur si présent, sinon reprendre la map metadata.
-    for (const p of players) {
-      if (p == null || typeof p.id !== 'number') continue;
-      const fromPlayer = normalizeList((p as any).shoppingList);
-      const fromMeta = normalizeList(existingMap[String(p.id)]);
-      const list = fromPlayer.length > 0 ? fromPlayer : fromMeta;
-      if (list.length > 0) {
-        outMap[p.id] = list;
-        used.add(this.listKey(list));
-      }
-    }
-
-    // 2) Réparer les listes manquantes / vides de façon déterministe.
-    for (const p of players) {
-      if (p == null || typeof p.id !== 'number') continue;
-      if (outMap[p.id]?.length) continue;
-
-      let chosen: string[] | null = null;
-      for (let attempt = 0; attempt < 20; attempt += 1) {
-        const shuffled = seededShuffle(
-          pool,
-          rng.seed,
-          `panier-express:shopping:${p.id}:${attempt}`,
-        );
-        const candidate = shuffled.slice(0, size);
-        const key = this.listKey(candidate);
-        if (!used.has(key)) {
-          chosen = candidate;
-          used.add(key);
-          break;
-        }
-      }
-      if (!chosen) {
-        chosen = seededShuffle(
-          pool,
-          rng.seed,
-          `panier-express:shopping:${p.id}:fallback`,
-        ).slice(0, size);
-      }
-      outMap[p.id] = chosen;
-    }
-
-    const patchedPlayers = players.map((p) => {
-      if (p == null || typeof p.id !== 'number') return p;
-      const current = Array.isArray((p as any).shoppingList)
-        ? p.shoppingList
-        : [];
-      if (current.length > 0) {
-        // Normaliser la taille et éviter les entrées vides.
-        return { ...p, shoppingList: normalizeList(current) };
-      }
-      const restored = outMap[p.id] ?? [];
-      return { ...p, shoppingList: restored };
+    const repaired = ensureShoppingLists({
+      metadata: metadataBeforeRepair,
+      players: normalizedPlayers,
+      courseItems: this.setup.courseItems(),
+      shoppingListSize: PanierExpressService.SHOPPING_LIST_SIZE,
+      toStringArray: (value) => this.utils.toStringArray(value),
     });
-
-    return {
-      metadata: { ...metadata, shoppingLists: outMap },
-      players: patchedPlayers,
-    };
+    return { ...state, metadata: repaired.metadata, players: repaired.players };
   }
 
   private mergeMetadataWithDefaults(
@@ -1539,7 +1487,9 @@ export class PanierExpressService extends AbstractGameService {
       question: hasInventory
         ? `Le marchand souhaite "${label}". Sélectionnez l'ingrédient demandé ou "Refuser".`
         : `Le marchand souhaite "${label}". Inventaire vide.`,
-      choices: hasInventory ? [...inventory, 'Refuser'] : ['Refuser'],
+      // Important (tests/robustesse): la première action proposée doit toujours être "safe".
+      // Ici, "Refuser" ne deadlock jamais même si l'ingrédient demandé n'est pas disponible.
+      choices: hasInventory ? ['Refuser', ...inventory] : ['Refuser'],
       data: { kind: 'merchant_request.choose', ingredient },
     };
     return { ...next, pending };
@@ -3744,7 +3694,8 @@ export class PanierExpressService extends AbstractGameService {
 
     if (kind === 'exchange.voisin.choose_give') {
       const targetPlayerId = Number(pendingData.targetPlayerId);
-      const exchangeLabel = toText(pendingData.exchangeLabel).trim() || 'Échange';
+      const exchangeLabel =
+        toText(pendingData.exchangeLabel).trim() || 'Échange';
       if (!Number.isFinite(targetPlayerId)) return clearPending(state);
       const give = toText(choices[index]).trim();
       if (!give) return clearPending(state);
@@ -4528,65 +4479,6 @@ export class PanierExpressService extends AbstractGameService {
   private getMetadata(state: GameStateEntity): PanierExpressMetadata {
     return (state.metadata ??
       this.buildMetadata(state)) as PanierExpressMetadata;
-  }
-
-  private toStringArray(value: unknown): string[] {
-    if (Array.isArray(value)) {
-      return value
-        .map((v) => (v == null ? '' : String(v)))
-        .filter((v) => v.length > 0);
-    }
-    if (typeof value === 'string') {
-      try {
-        const parsed: unknown = JSON.parse(value);
-        if (Array.isArray(parsed)) {
-          return parsed
-            .map((v) => (v == null ? '' : String(v)))
-            .filter((v) => v.length > 0);
-        }
-      } catch {
-        /* ignore */
-      }
-      return value
-        .split(/[,;]+/)
-        .map((v) => v.trim())
-        .filter((v) => v.length > 0);
-    }
-    return [];
-  }
-
-  private listKey(list: string[]): string {
-    return list
-      .map((item) => String(item ?? '').trim())
-      .filter((item) => item.length > 0)
-      .join('|');
-  }
-
-  private buildShoppingList(used?: Set<string>): string[] {
-    const items = this.setup.courseItems();
-    if (!items.length) return [];
-    const size = Math.min(
-      PanierExpressService.SHOPPING_LIST_SIZE,
-      items.length,
-    );
-    const attempt = () => {
-      const shuffled = this.deckPool.shuffle([...items]);
-      return shuffled.slice(0, size);
-    };
-    for (let i = 0; i < 10; i += 1) {
-      const candidate = attempt();
-      const key = this.listKey(candidate);
-      if (!used || !used.has(key)) {
-        used?.add(key);
-        return candidate;
-      }
-    }
-    const fallback = attempt();
-    const fallbackKey = this.listKey(fallback);
-    if (used && !used.has(fallbackKey)) {
-      used.add(fallbackKey);
-    }
-    return fallback;
   }
 }
 
