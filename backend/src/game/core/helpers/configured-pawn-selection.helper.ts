@@ -1,6 +1,10 @@
-import type { GameStateEntity } from '../entities/game-state.entity';
+import type {
+  GameStateEntity,
+  PlayerStateEntity,
+} from '../entities/game-state.entity';
 import type { GameSingleActionDto } from '../../engine/dto/game-action.dto';
 import { resolvePlayerNameFromState } from '../../modules/turn-policies/player-name.helper';
+import type { ResolvePlayerNameOptions } from '../../modules/turn-policies/player-name.helper';
 import type { SetupFlowService } from '../../modules/setup-flow/services/setup-flow.service';
 import type { GameCoreService } from '../services/game-core.service';
 import { resolvePendingPawnChoiceAction } from './pawn-choice-action.helper';
@@ -12,6 +16,8 @@ export type ConfiguredPawnChoice = {
   [key: string]: unknown;
 };
 
+type ConfiguredPlayer = PlayerStateEntity & Record<string, unknown>;
+
 export function applyConfiguredPawnSelection(params: {
   state: GameStateEntity;
   action: GameSingleActionDto;
@@ -22,7 +28,7 @@ export function applyConfiguredPawnSelection(params: {
   metadataAssignmentKey?: string;
   playerPawnField?: string | false;
   playerPawnLabelField?: string | false;
-  playerMatcher?: (player: any, playerId: number) => boolean;
+  playerMatcher?: (player: ConfiguredPlayer, playerId: number) => boolean;
   choiceCatalogFallback?: (
     options: Array<Record<string, unknown>>,
   ) => ConfiguredPawnChoice[];
@@ -46,7 +52,7 @@ export function applyConfiguredPawnSelection(params: {
     playerId: number,
     pawnId: string,
   ) => boolean;
-  playerNameOptions?: unknown;
+  playerNameOptions?: ResolvePlayerNameOptions;
 }): {
   state: GameStateEntity;
   playerId: number;
@@ -119,14 +125,11 @@ export function applyConfiguredPawnSelection(params: {
   }
 
   const players = Array.isArray(params.state.players)
-    ? params.state.players.map((player) => {
+    ? (params.state.players as ConfiguredPlayer[]).map((player) => {
         if (!(params.playerMatcher ?? defaultPlayerMatcher)(player, playerId)) {
           return player;
         }
-        const updated =
-          player != null && typeof player === 'object'
-            ? ({ ...player } as Record<string, unknown>)
-            : ({} as Record<string, unknown>);
+        const updated: ConfiguredPlayer = { ...player };
         if (params.playerPawnField) {
           updated[params.playerPawnField] = choice.id;
         }
@@ -157,7 +160,7 @@ export function applyConfiguredPawnSelection(params: {
     `${prefix}${resolvePlayerNameFromState(
       next,
       playerId,
-      params.playerNameOptions as any,
+      params.playerNameOptions,
     )} a choisi le pion: ${label}.`,
   );
 
@@ -239,7 +242,10 @@ function normalizeChoice(value: Record<string, unknown>): ConfiguredPawnChoice {
   };
 }
 
-function defaultPlayerMatcher(player: any, playerId: number): boolean {
+function defaultPlayerMatcher(
+  player: ConfiguredPlayer,
+  playerId: number,
+): boolean {
   return Number(player?.id) === playerId;
 }
 

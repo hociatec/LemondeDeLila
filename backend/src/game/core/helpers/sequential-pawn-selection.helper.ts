@@ -2,6 +2,7 @@ import type { GameStateEntity } from '../entities/game-state.entity';
 import type { SetupFlowService } from '../../modules/setup-flow/services/setup-flow.service';
 import type { GameCoreService } from '../services/game-core.service';
 import { resolvePlayerNameFromState } from '../../modules/turn-policies/player-name.helper';
+import type { PlayerStateEntity } from '../entities/game-state.entity';
 
 export type SequentialPawnChoice = {
   id: string;
@@ -10,12 +11,14 @@ export type SequentialPawnChoice = {
   [key: string]: unknown;
 };
 
+type SequentialPawnPlayer = PlayerStateEntity & Record<string, unknown>;
+
 export function continueSequentialPawnSelection(params: {
   state: GameStateEntity;
   setupFlow: SetupFlowService;
   core?: GameCoreService;
   chooserPlayerId: number;
-  players: Array<any>;
+  players: SequentialPawnPlayer[];
   isAssigned: (candidateId: number) => boolean;
   pawns: SequentialPawnChoice[];
   starterId?: number | null;

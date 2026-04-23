@@ -1212,7 +1212,7 @@ export class GaloponsActionService {
     state: GameStateEntity,
     currentId: number,
     replayAfter = false,
-    advanceFromPlayerId = currentId,
+    advanceFromPlayerId: number | null = currentId,
   ): GameStateEntity {
     let next = state;
     let meta = this.getMeta(next);

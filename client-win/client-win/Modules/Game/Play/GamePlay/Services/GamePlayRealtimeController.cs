@@ -131,7 +131,7 @@ internal sealed class GamePlayRealtimeController
         _lastViewerTurnActionable = false;
         _lastViewerMustChoosePawn = false;
         _lastViewerHandCounts = null;
-        _lastDrawAt = null;
+        _lastDrawSignature = null;
         _skipDrawSoundOnce = true;
         lock (_statePumpLock)
         {

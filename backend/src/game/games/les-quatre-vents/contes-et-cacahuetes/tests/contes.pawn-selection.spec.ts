@@ -122,7 +122,8 @@ describe('Contes pawn selection', () => {
         const nextPawns = Array.isArray(
           asRecord(asRecord(state.pending).data).pawns,
         )
-          ? (asRecord(state.pending).data as Record<string, unknown>).pawns
+          ? ((asRecord(state.pending).data as Record<string, unknown>)
+              .pawns as unknown[])
           : [];
         expect(nextPawns.length).toBeGreaterThan(0);
         expect(

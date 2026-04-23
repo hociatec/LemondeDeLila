@@ -564,7 +564,7 @@ export class MorpionService extends AbstractGameService {
         ...queued,
         turn: {
           ...(queued.turn ?? { direction: 1 }),
-          currentPlayerId: queued.pending.playerId,
+          currentPlayerId: queued.pending.playerId ?? null,
           direction: 1,
           label: `Choix du pion - ${players.find((p) => p?.id === queued.pending?.playerId)?.username ?? `#${queued.pending?.playerId}`}`,
         },

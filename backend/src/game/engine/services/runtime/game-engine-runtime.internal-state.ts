@@ -1,5 +1,5 @@
 import type { BadRequestException, NotFoundException } from '@nestjs/common';
-import type { RoomPayload } from '../../../room/dto/room-response.dto';
+import type { RoomPayload } from '../../../../room/dto/room-response.dto';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import type {
   RuntimeLogger,
@@ -12,7 +12,7 @@ export async function runGetInternalState(params: {
   roomId: number;
   gameType: string;
   roomsGetRoomPayload: (roomId: number) => Promise<RoomPayload>;
-  roomsResetRoomSystem: (roomId: number) => Promise<void>;
+  roomsResetRoomSystem: (roomId: number) => Promise<unknown>;
   roomsNotifyRoomStateUpdated: (roomId: number) => Promise<void>;
   storeGet: RuntimeStoreGet;
   storeSet: RuntimeStoreSet;

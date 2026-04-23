@@ -1,5 +1,8 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { WsRouteRegistry } from '../../../common/ws/ws-route-registry.service';
+import {
+  WsRouteRegistry,
+  type WsSession,
+} from '../../../common/ws/ws-route-registry.service';
 import { GameWsHandler } from './game-ws.handler';
 
 @Injectable()
@@ -11,7 +14,7 @@ export class GameWsRegistrar implements OnModuleInit {
 
   onModuleInit() {
     // Rules fetching: keep backward-compatible aliases.
-    const rulesHandler = (session: any, payload: any) =>
+    const rulesHandler = (session: WsSession, payload: unknown) =>
       this.handler.rules(session, payload);
     this.registry.register('game.rules', rulesHandler);
     this.registry.register('game.rules.get', rulesHandler);

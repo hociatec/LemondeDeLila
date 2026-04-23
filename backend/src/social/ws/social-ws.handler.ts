@@ -24,7 +24,7 @@ export class SocialWsHandler {
     return { type: 'social.friends.list', payload: { items } };
   }
 
-  async listRequests(session: WsSession, payload: any) {
+  async listRequests(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(SocialRequestListDto, payload);
     const direction = (dto.direction ?? 'incoming') as
@@ -41,56 +41,56 @@ export class SocialWsHandler {
     return { type: 'social.friends.blocked', payload: { items } };
   }
 
-  async requestFriend(session: WsSession, payload: any) {
+  async requestFriend(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(SocialUserIdDto, payload);
     const result = await this.social.requestFriend(user.id, dto.userId);
     return { type: 'social.friends.request', payload: result };
   }
 
-  async acceptFriend(session: WsSession, payload: any) {
+  async acceptFriend(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(SocialUserIdDto, payload);
     const result = await this.social.acceptFriend(user.id, dto.userId);
     return { type: 'social.friends.accept', payload: result };
   }
 
-  async rejectFriend(session: WsSession, payload: any) {
+  async rejectFriend(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(SocialUserIdDto, payload);
     const result = await this.social.rejectFriend(user.id, dto.userId);
     return { type: 'social.friends.reject', payload: result };
   }
 
-  async cancelRequest(session: WsSession, payload: any) {
+  async cancelRequest(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(SocialUserIdDto, payload);
     const result = await this.social.cancelRequest(user.id, dto.userId);
     return { type: 'social.friends.cancel', payload: result };
   }
 
-  async removeFriend(session: WsSession, payload: any) {
+  async removeFriend(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(SocialUserIdDto, payload);
     const result = await this.social.removeFriend(user.id, dto.userId);
     return { type: 'social.friends.remove', payload: result };
   }
 
-  async blockFriend(session: WsSession, payload: any) {
+  async blockFriend(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(SocialUserIdDto, payload);
     const result = await this.social.blockUser(user.id, dto.userId);
     return { type: 'social.friends.block', payload: result };
   }
 
-  async unblockFriend(session: WsSession, payload: any) {
+  async unblockFriend(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(SocialUserIdDto, payload);
     const result = await this.social.unblockUser(user.id, dto.userId);
     return { type: 'social.friends.unblock', payload: result };
   }
 
-  async getProfile(session: WsSession, payload: any) {
+  async getProfile(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(SocialProfileGetDto, payload);
     const targetId = dto.userId ?? user.id;
@@ -98,7 +98,7 @@ export class SocialWsHandler {
     return { type: 'social.profile.get', payload: { profile: result } };
   }
 
-  async updateProfile(session: WsSession, payload: any) {
+  async updateProfile(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(SocialProfileUpdateDto, payload);
     const result = await this.social.updateProfile(
@@ -111,7 +111,7 @@ export class SocialWsHandler {
     return { type: 'social.profile.update', payload: { profile: result } };
   }
 
-  async searchUsers(session: WsSession, payload: any) {
+  async searchUsers(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(SocialSearchDto, payload);
     const items = await this.social.searchUsers(dto.query, user.id);

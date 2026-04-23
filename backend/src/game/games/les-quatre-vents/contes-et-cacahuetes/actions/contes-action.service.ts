@@ -126,9 +126,16 @@ export class ContesActionService {
         .map((p) => toText(p?.pawn))
         .filter((p: string) => p.length > 0),
     );
-    const choicesForPending = (
-      Array.isArray(this.getMeta(next).pawns) ? this.getMeta(next).pawns : []
-    )
+    const pawns = this.getMeta(next).pawns;
+    const pawnCatalog = Array.isArray(pawns)
+      ? pawns.filter(
+          (
+            pawn,
+          ): pawn is NonNullable<ContesCacahuetesMetadata['pawns']>[number] =>
+            pawn != null,
+        )
+      : [];
+    const choicesForPending = pawnCatalog
       .filter((pawn) => !usedForPending.has(pawn.id))
       .map((pawn) => ({
         id: pawn.id,
@@ -960,12 +967,10 @@ export class ContesActionService {
     if (!pawnId) return '';
     const meta = this.getMeta(state);
     const pawns = Array.isArray(meta.pawns) ? meta.pawns : [];
-    const match = pawns.find(
-      (pawn) => toText((pawn as any)?.id).trim() === pawnId,
-    );
+    const match = pawns.find((pawn) => toText(pawn?.id).trim() === pawnId);
     const fullLabel =
-      match && toText((match as any).label).trim()
-        ? toText((match as any).label).trim()
+      match && toText(match.label).trim()
+        ? toText(match.label).trim()
         : pawnId;
     return this.simplifyPawnLabel(fullLabel);
   }
@@ -990,7 +995,7 @@ export class ContesActionService {
     playerId: number,
   ): GameStateEntity {
     if (!queue.length || !state.pending) return state;
-    const pending = state.pending as ContesPending;
+    const pending = state.pending as Exclude<ContesPending, null>;
     return this.setPending(state, {
       ...pending,
       data: {
@@ -1001,7 +1006,7 @@ export class ContesActionService {
           queuedDrawPlayerId: playerId,
         }),
       },
-    });
+    } as Exclude<ContesPending, null>);
   }
 
   private extractQueuedDrawContinuationData(
@@ -1030,30 +1035,35 @@ export class ContesActionService {
       (pending?.data ?? {}) as Record<string, unknown>,
     );
     if (!Object.keys(continuationData).length || !state.pending) return state;
-    const nextPending = state.pending as ContesPending;
+    const nextPending = state.pending as Exclude<ContesPending, null>;
     return this.setPending(state, {
       ...nextPending,
       data: {
         ...(nextPending.data ?? {}),
         ...continuationData,
       },
-    });
+    } as Exclude<ContesPending, null>);
   }
 
   private resumeQueuedDrawContinuation(
     state: GameStateEntity,
     pending: ContesPending | null,
   ): GameStateEntity {
-    const queue = Array.isArray(pending?.data?.queuedDrawQueue)
-      ? pending?.data?.queuedDrawQueue.filter(
-          (value) => typeof value === 'string',
+    const pendingData = asRecord(pending?.data) as {
+      queuedDrawQueue?: unknown;
+      queuedDrawDepth?: unknown;
+      queuedDrawPlayerId?: unknown;
+    };
+    const queue = Array.isArray(pendingData.queuedDrawQueue)
+      ? pendingData.queuedDrawQueue.filter(
+          (value): value is string => typeof value === 'string',
         )
       : [];
-    const depth = Number.isFinite(pending?.data?.queuedDrawDepth)
-      ? Number(pending?.data?.queuedDrawDepth)
+    const depth = Number.isFinite(pendingData.queuedDrawDepth)
+      ? Number(pendingData.queuedDrawDepth)
       : 0;
     if (!queue.length) return state;
-    const queuedPlayerId = Number(pending?.data?.queuedDrawPlayerId);
+    const queuedPlayerId = Number(pendingData.queuedDrawPlayerId);
     const playerId = Number.isFinite(queuedPlayerId)
       ? queuedPlayerId
       : typeof pending?.playerId === 'number'

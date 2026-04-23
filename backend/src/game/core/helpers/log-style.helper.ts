@@ -3,13 +3,13 @@ import { fixMojibakeString } from '../../../common/utils/mojibake';
 function normalizeCommonFrenchTypos(input: string): string {
   return input
     .replace(/\bdebut de partie\b/gi, (raw) =>
-      raw[0] === raw[0].toUpperCase() ? 'DÃ©but de partie' : 'dÃ©but de partie',
+      raw[0] === raw[0].toUpperCase() ? 'Début de partie' : 'début de partie',
     )
     .replace(/\blance le de\b/gi, (raw) =>
-      raw[0] === raw[0].toUpperCase() ? 'Lance le dÃ©' : 'lance le dÃ©',
+      raw[0] === raw[0].toUpperCase() ? 'Lance le dé' : 'lance le dé',
     )
     .replace(/\blancez le de\b/gi, (raw) =>
-      raw[0] === raw[0].toUpperCase() ? 'Lancez le dÃ©' : 'lancez le dÃ©',
+      raw[0] === raw[0].toUpperCase() ? 'Lancez le dé' : 'lancez le dé',
     );
 }
 
@@ -21,14 +21,9 @@ function normalizePawnChoiceLogs(input: string): string {
         `${String(who).trim()} a choisi le pion: ${String(pawn).trim()}`,
     )
     .replace(
-      /^c['Ã¢â‚¬â„¢]est Ã {2}(.+?) de choisir un pion([.!?])?$/i,
+      /^c['’]est [àa] (.+?) de choisir un pion([.!?])?$/i,
       (_raw, who: string, punct: string | undefined) =>
-        `C'est Ã  ${String(who).trim()} de choisir son pion${punct ?? '.'}`,
-    )
-    .replace(
-      /^c['Ã¢â‚¬â„¢]est ÃƒÂ {2}(.+?) de choisir un pion([.!?])?$/i,
-      (_raw, who: string, punct: string | undefined) =>
-        `C'est Ã  ${String(who).trim()} de choisir son pion${punct ?? '.'}`,
+        `C'est à ${String(who).trim()} de choisir son pion${punct ?? '.'}`,
     );
 }
 

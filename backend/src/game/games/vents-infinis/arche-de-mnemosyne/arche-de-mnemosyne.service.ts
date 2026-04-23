@@ -13,6 +13,7 @@ import {
   actionShortcut,
   interfaceShortcut,
 } from '../../../engine/shortcuts/shortcut-utils';
+import type { GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
 import { MnemoQuizStoreService } from './store/mnemo-quiz-store.service';
 import {
   applyActionsSequentially,
@@ -59,6 +60,11 @@ const ARCHE_PLAYER_NAME_OPTIONS = {
   unwrapDoubleQuotes: true,
 } as const;
 
+type ActionMeta = {
+  actorId?: unknown;
+  actor?: unknown;
+};
+
 @Injectable()
 export class ArcheDeMnemosyneService extends AbstractGameService {
   readonly gameType = 'arche-de-mnemosyne';
@@ -81,7 +87,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const players = Array.isArray(baseState.players) ? baseState.players : [];
     const initialFirstId = players[0]?.id ?? null;
-    const baseMeta = (baseState.metadata ?? {}) as any;
+    const baseMeta = this.asRecord(baseState.metadata);
     const ownerPlayerId = (() => {
       // Le moteur (GameCoreService) expose généralement le propriétaire de table via `roomOwnerId`.
       // IMPORTANT: ne pas déduire depuis players[0] (peut être un bot) sinon les prompts de config
@@ -90,7 +96,8 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       if (typeof baseMeta.ownerPlayerId === 'number')
         return baseMeta.ownerPlayerId;
 
-      const firstHumanId = players.find((p: any) => p && !p.isBot)?.id ?? null;
+      const firstHumanId =
+        players.find((p) => p && p.isBot !== true)?.id ?? null;
       return firstHumanId ?? initialFirstId;
     })();
 
@@ -108,12 +115,12 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     const meta: MnemoQuizMetadata = {
       rng:
         typeof baseState.metadata === 'object' && baseState.metadata
-          ? (baseState.metadata as any).rng
+          ? (this.asRecord(baseState.metadata).rng as Record<string, any> | undefined)
           : undefined,
       ownerPlayerId,
       config,
       selectedCategoryId: null,
-      scoresByPlayerId: Object.fromEntries(players.map((p: any) => [p.id, 0])),
+      scoresByPlayerId: Object.fromEntries(players.map((p) => [p.id, 0])),
       usedQuestionIds: [],
       currentQuestion: null,
       quizAnswersByPlayerId: {},
@@ -125,7 +132,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     };
 
     const firstId =
-      players.find((p: any) => p?.id === ownerPlayerId)?.id ?? initialFirstId;
+      players.find((p) => p?.id === ownerPlayerId)?.id ?? initialFirstId;
 
     const state: GameStateEntity = {
       ...baseState,
@@ -177,7 +184,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       'mnemo_edit_question',
     ]);
     const meta = this.getMeta(state);
-    const actor = String((action as any)?.meta?.actor ?? '')
+    const actor = this.getActionActorTag(action)
       .trim()
       .toLowerCase();
     const isSystem = actor === 'system';
@@ -224,23 +231,20 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         throw new Error('Acteur requis.');
       }
       const players = Array.isArray(state.players) ? state.players : [];
-      if (!players.some((p: any) => p?.id === actorId)) {
+      if (!players.some((p) => p?.id === actorId)) {
         throw new Error('Joueur invalide.');
       }
       if (!meta.currentQuestion) {
         throw new Error('Aucune question en cours.');
       }
-      const deadline =
-        typeof (meta as any).quizDeadlineAtMs === 'number'
-          ? (meta as any).quizDeadlineAtMs
-          : null;
+      const deadline = this.getQuizDeadlineAtMs(meta);
       if (deadline != null && Date.now() > deadline) {
         throw new Error('Trop tard.');
       }
-      if ((meta.quizAnswersByPlayerId as any)?.[actorId] != null) {
+      if (this.getQuizAnswers(meta)[actorId] != null) {
         throw new Error('Vous avez déjà répondu.');
       }
-      const idx = Number((action.payload as any)?.answerIndex);
+      const idx = Number(this.asRecord(action.payload).answerIndex);
       if (!Number.isFinite(idx) || idx < 0 || idx >= 4) {
         throw new Error('Réponse invalide.');
       }
@@ -268,9 +272,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       // Les prompts (config) sont visibles uniquement pour leur propriétaire.
       if (type === 'mnemo_set_config' || type === 'mnemo_prompt_cancel') {
         const ownerId =
-          typeof (meta as any).promptOwnerId === 'number'
-            ? (meta as any).promptOwnerId
-            : null;
+          this.getPromptOwnerId(meta);
         if (actorId != null && ownerId != null && actorId === ownerId) {
           return { ...action, type, payload: action.payload ?? {} };
         }
@@ -290,7 +292,9 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     return this.syncBotPending(this.resolveQuizIfReady(next));
   }
 
-  getShortcuts(ctx: any) {
+  getShortcuts(
+    ctx: Partial<GameShortcutsContext<MnemoQuizMetadata>> | null | undefined,
+  ) {
     const started = Boolean(ctx?.started);
     if (!started) {
       return [];
@@ -306,18 +310,18 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
   ): GameStateWithActions {
     const meta = this.getMeta(state);
     const { quizAnswersByPlayerId: _quizAnswersByPlayerId, ...metaRest } =
-      (meta ?? {}) as any;
+      meta;
     const built = this.buildPendingForUser(state, userId);
     const actions = this.buildActionsForUser(state, userId);
     const players = Array.isArray(state.players) ? state.players : [];
 
-    const scoreByPlayerId = (meta?.scoresByPlayerId ?? {}) as any as Record<
+    const scoreByPlayerId = this.asRecord(meta?.scoresByPlayerId) as Record<
       number,
       number
     >;
     const scoreLines = players
-      .filter((p: any) => p && Number.isFinite(Number(p.id)))
-      .map((p: any) => ({
+      .filter((p) => p && Number.isFinite(Number(p.id)))
+      .map((p) => ({
         id: Number(p.id),
         name: String(p.username ?? `#${p.id}`),
         score: Number(scoreByPlayerId[Number(p.id)] ?? 0),
@@ -333,7 +337,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       ? `Score: ${scoreLines.map((s) => `${s.name}: ${s.score}`).join(', ')}. Objectif: ${safeTargetPoints} point(s).`
       : `Score: indisponible. Objectif: ${safeTargetPoints} point(s).`;
 
-    const safeMeta: any = {
+    const safeMeta: Record<string, unknown> = {
       ...metaRest,
       currentQuestion: meta.currentQuestion
         ? {
@@ -352,16 +356,17 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     }
 
     return {
-      ...(state as any),
+      ...state,
       metadata: safeMeta,
       actions: formatPresenterActions(actions),
-      pending: built,
+      pending: built as GameStateEntity['pending'],
       extras: {
-        ...((state as any).extras ?? {}),
+        ...(this.asRecord(state.extras) ?? {}),
         ui: {
-          ...(((state as any).extras ?? {})?.ui ?? {}),
+          ...(this.asRecord(this.asRecord(state.extras).ui) ?? {}),
           panels: {
-            ...(((state as any).extras ?? {})?.ui?.panels ?? {}),
+            ...(this.asRecord(this.asRecord(this.asRecord(state.extras).ui).panels) ??
+              {}),
             score: { title: 'Score', message: scoreMessage },
           },
         },
@@ -374,20 +379,14 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     action: GameSingleActionDto,
   ): GameStateEntity {
     const type = normalizeActionType(action) as ActionType;
-    const payload: any = action.payload ?? {};
+    const payload = this.asRecord(action.payload);
     const meta = this.getMeta(state);
 
     if (type === 'mnemo_timeout') {
       const q = meta.currentQuestion;
-      const deadline =
-        typeof (meta as any).quizDeadlineAtMs === 'number'
-          ? (meta as any).quizDeadlineAtMs
-          : null;
+      const deadline = this.getQuizDeadlineAtMs(meta);
       if (!q || deadline == null) {
-        const until =
-          typeof (meta as any).interQuestionUntilMs === 'number'
-            ? (meta as any).interQuestionUntilMs
-            : null;
+        const until = this.getInterQuestionUntilMs(meta);
         if (until == null) return state;
         if (Date.now() < until) return state;
 
@@ -395,18 +394,15 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
           ...meta,
           interQuestionUntilMs: null,
         };
-        return { ...state, metadata: clearedMeta as any };
+        return { ...state, metadata: clearedMeta };
       }
       if (Date.now() < deadline) return state;
 
       const players = Array.isArray(state.players) ? state.players : [];
       const playerIds = players
-        .map((p: any) => Number(p?.id))
+        .map((p) => Number(p?.id))
         .filter((id: number) => Number.isFinite(id));
-      const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<
-        number,
-        number
-      >;
+      const answers = this.getQuizAnswers(meta);
       const timedOutIds = playerIds.filter((id) => answers[id] == null);
       return this.syncBotPending(
         this.resolveQuizIfReady(state, true, timedOutIds),
@@ -422,7 +418,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     }
 
     if (type === 'mnemo_open_config') {
-      const actorId = (action as any)?.meta?.actorId ?? null;
+      const actorId = this.getActionActorId(action);
       if (!this.canConfigure(state, actorId)) {
         return state;
       }
@@ -434,11 +430,8 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     }
 
     if (type === 'mnemo_set_config') {
-      const actorId = (action as any)?.meta?.actorId ?? null;
-      const ownerId =
-        typeof (meta as any).promptOwnerId === 'number'
-          ? (meta as any).promptOwnerId
-          : null;
+      const actorId = this.getActionActorId(action);
+      const ownerId = this.getPromptOwnerId(meta);
       if (actorId == null || ownerId == null || actorId !== ownerId) {
         return state;
       }
@@ -511,7 +504,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
           : null;
       const selected = categoryId && categoryId.length ? categoryId : null;
       const categories = this.store.listCategories();
-      const actorId = (action as any)?.meta?.actorId ?? null;
+      const actorId = this.getActionActorId(action);
       const withSelection: MnemoQuizMetadata = {
         ...meta,
         selectedCategoryId: selected,
@@ -541,12 +534,9 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     }
 
     if (type === 'draw') {
-      const actorId = (action as any)?.meta?.actorId ?? null;
+      const actorId = this.getActionActorId(action);
       if (actorId == null) return state;
-      const interUntilMs =
-        typeof (meta as any).interQuestionUntilMs === 'number'
-          ? (meta as any).interQuestionUntilMs
-          : null;
+      const interUntilMs = this.getInterQuestionUntilMs(meta);
       if (interUntilMs != null && Date.now() < interUntilMs) return state;
       if (meta.currentQuestion) return state;
       const currentId = state.turn?.currentPlayerId ?? null;
@@ -556,7 +546,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
           ...meta,
           interQuestionUntilMs: null,
         };
-        const clearedState = { ...state, metadata: clearedMeta as any };
+        const clearedState = { ...state, metadata: clearedMeta };
         return this.syncBotPending(this.drawNextQuestionOrStay(clearedState));
       }
       return this.syncBotPending(this.drawNextQuestionOrStay(state));
@@ -565,12 +555,12 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     // Quiz gameplay: any player can answer (not owner-only).
     // NOTE: The owner-only guard below is for admin pages; quiz answering must remain open to everyone.
     if (type === 'answer_quiz') {
-      const actorId = (action as any)?.meta?.actorId ?? null;
+      const actorId = this.getActionActorId(action);
       const question = meta.currentQuestion;
       const answerIndex = Number(payload.answerIndex);
       if (actorId == null || !question) return state;
 
-      const answers = { ...(meta.quizAnswersByPlayerId ?? {}) } as any;
+      const answers = { ...this.getQuizAnswers(meta) };
       if (answers[actorId] != null) return state;
 
       answers[actorId] = answerIndex;
@@ -583,7 +573,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       };
     }
 
-    if (!this.isOwner(state, (action as any)?.meta?.actorId ?? null)) {
+    if (!this.isOwner(state, this.getActionActorId(action))) {
       // Sécurité: aucune action admin si pas owner.
       return state;
     }
@@ -602,7 +592,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         raw === 'pending' ||
         raw === 'to_edit' ||
         raw === 'trash'
-          ? (raw as any)
+          ? (raw as MnemoQuestionStatus)
           : 'all';
       return {
         ...state,
@@ -773,11 +763,11 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       try {
         this.store.createQuestion({
           categoryId: view.categoryId,
-          question: payload.question,
-          correct: payload.correct,
-          wrong1: payload.wrong1,
-          wrong2: payload.wrong2,
-          wrong3: payload.wrong3,
+          question: stringOrEmpty(payload.question),
+          correct: stringOrEmpty(payload.correct),
+          wrong1: stringOrEmpty(payload.wrong1),
+          wrong2: stringOrEmpty(payload.wrong2),
+          wrong3: stringOrEmpty(payload.wrong3),
           status: 'validated',
         });
         return this.core.appendLog(
@@ -890,11 +880,11 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       const questionId = String(payload.questionId ?? '').trim();
       try {
         this.store.updateQuestion(questionId, {
-          question: payload.question,
-          correct: payload.correct,
-          wrong1: payload.wrong1,
-          wrong2: payload.wrong2,
-          wrong3: payload.wrong3,
+          question: stringOrEmpty(payload.question),
+          correct: stringOrEmpty(payload.correct),
+          wrong1: stringOrEmpty(payload.wrong1),
+          wrong2: stringOrEmpty(payload.wrong2),
+          wrong3: stringOrEmpty(payload.wrong3),
         });
         return this.core.appendLog(
           { ...state, metadata: { ...meta, prompt: null } },
@@ -906,64 +896,6 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
           `Erreur: ${(err as Error).message}`,
         );
       }
-    }
-
-    if (type === 'answer_quiz') {
-      const actorId = (action as any)?.meta?.actorId ?? null;
-      const question = meta.currentQuestion;
-      const answerIndex = Number(payload.answerIndex);
-      if (actorId == null || !question) return state;
-
-      const answers = { ...(meta.quizAnswersByPlayerId ?? {}) } as any;
-      if (answers[actorId] != null) return state; // safety (should be blocked by validateAction)
-
-      answers[actorId] = answerIndex;
-
-      return {
-        ...state,
-        metadata: { ...meta, quizAnswersByPlayerId: answers },
-      };
-
-      /* const currentId = state.turn?.currentPlayerId ?? null;
-      const idx = Number(payload.answerIndex);
-      const q = meta.currentQuestion;
-      if (currentId == null || !q) return state;
-
-      const choice = q.choices[idx] ?? '';
-      const correct = choice === q.correctChoice;
-      const who = resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS);
-
-      let next = state;
-      if (correct) {
-        const nextScores = { ...(meta.scoresByPlayerId ?? {}) };
-        nextScores[currentId] = (nextScores[currentId] ?? 0) + 1;
-        next = this.core.appendLog(next, `${who} répond : ${choice}. Bonne réponse (+1).`);
-        next = { ...next, metadata: { ...meta, scoresByPlayerId: nextScores } };
-      } else {
-        next = this.core.appendLog(next, `${who} répond : ${choice}. Mauvaise réponse.`);
-      }
-
-      const afterMeta = this.getMeta(next);
-      const score = afterMeta.scoresByPlayerId?.[currentId] ?? 0;
-      if (score >= (afterMeta.config?.targetPoints ?? 20)) {
-        const finished = this.core.appendLog(next, `${who} a gagné !`);
-        return {
-          ...finished,
-          status: 'finished',
-          metadata: { ...afterMeta, winnerId: currentId, currentQuestion: null },
-        };
-      }
-
-      const cleared: GameStateEntity = {
-        ...next,
-        metadata: {
-          ...afterMeta,
-          currentQuestion: null,
-        },
-      };
-      const advanced = this.turns.advanceTurn(cleared);
-      return this.drawNextQuestionOrStay(advanced);
-      */
     }
 
     return state;
@@ -978,7 +910,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     const q = meta.currentQuestion;
     if (!q) return state;
 
-    const currentRoundRaw = Number((state as any)?.round ?? 1);
+    const currentRoundRaw = Number(state?.round ?? 1);
     const currentRound =
       Number.isFinite(currentRoundRaw) && currentRoundRaw > 0
         ? Math.trunc(currentRoundRaw)
@@ -986,14 +918,11 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 
     const players = Array.isArray(state.players) ? state.players : [];
     const playerIds = players
-      .map((p: any) => Number(p?.id))
+      .map((p) => Number(p?.id))
       .filter((id: number) => Number.isFinite(id));
     if (!playerIds.length) return state;
 
-    const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<
-      number,
-      number
-    >;
+    const answers = this.getQuizAnswers(meta);
     const allAnswered = playerIds.every((id) => answers[id] != null);
     if (!force && !allAnswered) {
       return state;
@@ -1034,7 +963,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       -1,
     );
 
-    const nextScores = { ...(meta.scoresByPlayerId ?? {}) } as any as Record<
+    const nextScores = { ...(meta.scoresByPlayerId ?? {}) } as Record<
       number,
       number
     >;
@@ -1193,14 +1122,14 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 
     const cleared: GameStateEntity = {
       ...next,
-      metadata: afterMeta as any,
+      metadata: afterMeta,
     };
     const advanced = this.turns.advanceTurn(cleared);
     if (force || endedBecauseAllAnswered) {
       return {
         ...advanced,
         round: currentRound + 1,
-        metadata: afterMeta as any,
+        metadata: afterMeta,
         pending: null,
       };
     }
@@ -1249,7 +1178,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     const used = new Set(meta.usedQuestionIds ?? []);
     const remaining = pool.filter((q) => !used.has(q.id));
     const pickFrom = remaining.length ? remaining : pool;
-    const pick = this.random.pickIndex(meta as any, pickFrom.length);
+    const pick = this.random.pickIndex(meta, pickFrom.length);
     const picked = pickFrom[pick.index];
     let rngMeta = pick.meta as MnemoQuizMetadata;
 
@@ -1293,10 +1222,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         .flatMap((q) => [q.correct, q.wrong1, q.wrong2, q.wrong3])
         .map((s) => stringOrEmpty(s).trim())
         .filter((s) => s.length > 0);
-      const candidatesShuffled = this.random.shuffle(
-        rngMeta as any,
-        candidatesRaw,
-      );
+      const candidatesShuffled = this.random.shuffle(rngMeta, candidatesRaw);
       rngMeta = candidatesShuffled.meta;
       for (const c of candidatesShuffled.values) {
         if (unique.length >= 4) break;
@@ -1312,10 +1238,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       unique.push(rawChoices[unique.length]);
     }
 
-    const shuffled = this.random.shuffle(
-      rngMeta as any,
-      unique.length ? unique : rawChoices,
-    );
+    const shuffled = this.random.shuffle(rngMeta, unique.length ? unique : rawChoices);
     rngMeta = shuffled.meta;
     const choices = shuffled.values;
     const currentQuestion = {
@@ -1361,11 +1284,9 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     if (phase === 'setup') {
       if (meta.prompt) {
         const ownerId =
-          typeof (meta as any).promptOwnerId === 'number'
-            ? (meta as any).promptOwnerId
-            : null;
+          this.getPromptOwnerId(meta);
         if (ownerId === botPlayerId) {
-          return [{ type: 'mnemo_set_config', payload: {} } as any];
+          return [{ type: 'mnemo_set_config', payload: {} }];
         }
         return null;
       }
@@ -1375,22 +1296,19 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       const choices = [...categoryIds, null];
       const pickIndex = Math.floor(Math.random() * choices.length);
       const chosen = choices[pickIndex] ?? null;
-      return [{ type: 'mnemo_start', payload: { categoryId: chosen } } as any];
+      return [{ type: 'mnemo_start', payload: { categoryId: chosen } }];
     }
 
     const q = meta.currentQuestion;
     if (!q) {
-      return [{ type: 'draw', payload: {} } as any];
+      return [{ type: 'draw', payload: {} }];
     }
 
     const players = Array.isArray(state.players) ? state.players : [];
-    const bot = players.find((p: any) => p?.id === botPlayerId) as any;
+    const bot = players.find((p) => p?.id === botPlayerId);
     if (!bot?.isBot) return null;
 
-    const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<
-      number,
-      number
-    >;
+    const answers = this.getQuizAnswers(meta);
     if (answers[botPlayerId] != null) return null;
 
     // Le jeu expose toujours 4 choix, mais on reste robuste.
@@ -1400,10 +1318,10 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     // Bot simple: réponse aléatoire.
     const answerIndex = Math.floor(Math.random() * choicesLen);
 
-    return [{ type: 'answer_quiz', payload: { answerIndex } } as any];
+    return [{ type: 'answer_quiz', payload: { answerIndex } }];
   }
 
-  private parseBool(value: any, defaultValue = false): boolean {
+  private parseBool(value: unknown, defaultValue = false): boolean {
     if (typeof value === 'boolean') return value;
     if (typeof value === 'number') return value !== 0;
     const t = String(value ?? '')
@@ -1433,15 +1351,12 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       const phase = String(state.phase ?? '')
         .toLowerCase()
         .trim();
-      const promptOwnerId =
-        typeof (meta as any).promptOwnerId === 'number'
-          ? (meta as any).promptOwnerId
-          : null;
+      const promptOwnerId = this.getPromptOwnerId(meta);
 
       if (phase === 'setup') {
         if (meta.prompt && typeof promptOwnerId === 'number') {
           const promptOwner =
-            players.find((p: any) => p?.id === promptOwnerId) ?? null;
+            players.find((p) => p?.id === promptOwnerId) ?? null;
           if (!state.pending && promptOwner?.isBot) {
             return {
               ...state,
@@ -1449,7 +1364,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
                 type: 'mnemo_set_config',
                 playerId: promptOwnerId,
                 blocking: true,
-              } as any,
+              },
             };
           }
           return state.pending ? { ...state, pending: null } : state;
@@ -1457,7 +1372,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 
         const currentId = state.turn?.currentPlayerId ?? null;
         const currentPlayer =
-          players.find((p: any) => p?.id === currentId) ?? null;
+          players.find((p) => p?.id === currentId) ?? null;
         if (
           !state.pending &&
           currentPlayer?.isBot &&
@@ -1469,7 +1384,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
               type: 'mnemo_start',
               playerId: currentId,
               blocking: true,
-            } as any,
+            },
           };
         }
         return state.pending ? { ...state, pending: null } : state;
@@ -1478,11 +1393,8 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       if (!meta.currentQuestion) {
         const currentId = state.turn?.currentPlayerId ?? null;
         const currentPlayer =
-          players.find((p: any) => p?.id === currentId) ?? null;
-        const interUntilMs =
-          typeof (meta as any).interQuestionUntilMs === 'number'
-            ? (meta as any).interQuestionUntilMs
-            : null;
+          players.find((p) => p?.id === currentId) ?? null;
+        const interUntilMs = this.getInterQuestionUntilMs(meta);
         if (interUntilMs != null && Date.now() < interUntilMs) {
           return state.pending ? { ...state, pending: null } : state;
         }
@@ -1497,19 +1409,16 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
               type: 'draw',
               playerId: currentId,
               blocking: true,
-            } as any,
+            },
           };
         }
         return state.pending ? { ...state, pending: null } : state;
       }
 
-      const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<
-        number,
-        number
-      >;
+      const answers = this.getQuizAnswers(meta);
       const bots = players
-        .filter((p: any) => p?.isBot)
-        .map((p: any) => Number(p?.id))
+        .filter((p) => p?.isBot)
+        .map((p) => Number(p?.id))
         .filter((id: number) => Number.isFinite(id))
         .sort((a, b) => a - b);
 
@@ -1520,22 +1429,22 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 
       return {
         ...state,
-        pending: { type: 'quiz', playerId: nextBot, blocking: true } as any,
+        pending: { type: 'quiz', playerId: nextBot, blocking: true },
       };
     } catch {
       return state;
     }
   }
 
-  private buildPendingForUser(state: GameStateEntity, userId: number): any {
+  private buildPendingForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): Record<string, unknown> | null {
     const meta = this.getMeta(state);
     const currentId = state.turn?.currentPlayerId ?? null;
 
-    const pendingState = state.pending as any;
-    const interUntilMs =
-      typeof (meta as any).interQuestionUntilMs === 'number'
-        ? (meta as any).interQuestionUntilMs
-        : null;
+    const pendingState = state.pending;
+    const interUntilMs = this.getInterQuestionUntilMs(meta);
     if (interUntilMs != null && Date.now() < interUntilMs) {
       return null;
     }
@@ -1553,9 +1462,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     }
 
     const promptOwnerId =
-      typeof (meta as any).promptOwnerId === 'number'
-        ? (meta as any).promptOwnerId
-        : null;
+      this.getPromptOwnerId(meta);
     const canSeePrompt =
       Boolean(meta.prompt) &&
       (promptOwnerId === userId ||
@@ -1600,7 +1507,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 
     if (
       meta.currentQuestion &&
-      (meta.quizAnswersByPlayerId as any)?.[userId] == null
+      this.getQuizAnswers(meta)?.[userId] == null
     ) {
       return {
         type: 'quiz',
@@ -1608,10 +1515,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         playerId: userId,
         question: meta.currentQuestion.question,
         choices: meta.currentQuestion.choices,
-        deadlineAtMs:
-          typeof (meta as any).quizDeadlineAtMs === 'number'
-            ? (meta as any).quizDeadlineAtMs
-            : null,
+        deadlineAtMs: this.getQuizDeadlineAtMs(meta),
       };
     }
 
@@ -1669,7 +1573,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       const categoryNameById = Object.fromEntries(
         categories.map((c) => [c.id, c.name]),
       );
-      const statusFilter = (view as any).status ?? 'all';
+      const statusFilter = view.status ?? 'all';
       const all = this.store.listQuestions();
       const list =
         statusFilter === 'all'
@@ -1767,9 +1671,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     const actions: GameSingleActionDto[] = [];
 
     const promptOwnerId =
-      typeof (meta as any).promptOwnerId === 'number'
-        ? (meta as any).promptOwnerId
-        : null;
+      this.getPromptOwnerId(meta);
     const canSeePrompt =
       Boolean(meta.prompt) &&
       (promptOwnerId === userId ||
@@ -1778,14 +1680,14 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     if (canSeePrompt && meta.prompt) {
       // IMPORTANT: le moteur filtre les actions par "allowedTypes".
       // Si on n'expose pas aussi `prompt.actionType`, le client ne peut pas soumettre le prompt.
-      const promptActionType = String((meta.prompt as any)?.actionType ?? '')
+      const promptActionType = String(meta.prompt?.actionType ?? '')
         .trim()
         .toLowerCase();
       if (promptActionType) {
         actions.push({ type: promptActionType, payload: {} });
       }
       const cancelType = String(
-        (meta.prompt as any)?.cancelActionType ?? 'mnemo_prompt_cancel',
+        meta.prompt?.cancelActionType ?? 'mnemo_prompt_cancel',
       )
         .trim()
         .toLowerCase();
@@ -1795,7 +1697,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 
     if (
       meta.currentQuestion &&
-      (meta.quizAnswersByPlayerId as any)?.[userId] == null
+      this.getQuizAnswers(meta)?.[userId] == null
     ) {
       for (let i = 0; i < 4; i++) {
         actions.push({ type: 'answer_quiz', payload: { answerIndex: i } });
@@ -1849,7 +1751,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     }
 
     if (view.page === 'all_questions') {
-      const statusFilter = (view as any).status ?? 'all';
+      const statusFilter = view.status ?? 'all';
       const all = this.store.listQuestions();
       const list =
         statusFilter === 'all'
@@ -1978,7 +1880,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     return { page: 'setup' };
   }
 
-  private normalizeStatus(value: any): MnemoQuestionStatus {
+  private normalizeStatus(value: unknown): MnemoQuestionStatus {
     const raw = String(value ?? '')
       .trim()
       .toLowerCase();
@@ -1988,7 +1890,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     return 'pending';
   }
 
-  private statusLabel(value: any): string {
+  private statusLabel(value: unknown): string {
     const raw = String(value ?? '')
       .trim()
       .toLowerCase();
@@ -2011,26 +1913,26 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
           key: 'correctSoloPoints',
           label: 'Points accordés si un seul joueur répond correctement',
           kind: 'number',
-          initialText: String((config as any)?.correctSoloPoints ?? 2),
+          initialText: String(config?.correctSoloPoints ?? 2),
         },
         {
           key: 'correctMultiPoints',
           label:
             'Points accordés par joueur en cas de bonnes réponses multiples',
           kind: 'number',
-          initialText: String((config as any)?.correctMultiPoints ?? 1),
+          initialText: String(config?.correctMultiPoints ?? 1),
         },
         {
           key: 'wrongPoints',
           label: 'Points appliqués en cas de mauvaise réponse',
           kind: 'number',
-          initialText: String((config as any)?.wrongPoints ?? 0),
+          initialText: String(config?.wrongPoints ?? 0),
         },
         {
           key: 'timeoutPoints',
           label: 'Points appliqués si le joueur ne répond pas à temps',
           kind: 'number',
-          initialText: String((config as any)?.timeoutPoints ?? -1),
+          initialText: String(config?.timeoutPoints ?? -1),
         },
         {
           key: 'targetPoints',
@@ -2054,14 +1956,14 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
           key: 'interQuestionSeconds',
           label: 'Délai avant la question suivante (secondes)',
           kind: 'number',
-          initialText: String((config as any)?.interQuestionSeconds ?? 15),
+          initialText: String(config?.interQuestionSeconds ?? 15),
         },
       ],
     };
   }
 
   private clampInt(
-    value: any,
+    value: unknown,
     min: number,
     max: number,
     fallback: number,
@@ -2085,7 +1987,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 
   private isOwner(state: GameStateEntity, playerId: number | null): boolean {
     if (playerId == null) return false;
-    const meta = this.getMeta(state) as any;
+    const meta = this.getMeta(state);
     const ownerId =
       typeof meta?.ownerPlayerId === 'number' ? meta.ownerPlayerId : null;
     if (ownerId == null) return false;
@@ -2111,22 +2013,28 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
   }
 
   private getMeta(state: GameStateEntity): MnemoQuizMetadata {
-    const raw = (state.metadata ?? {}) as any;
+    const raw = this.asRecord(state.metadata);
 
     // Robustesse: certaines vieilles sauvegardes/états peuvent ne pas contenir `adminView`.
     // Sans ça, des accès directs `meta.adminView.page` font planter le jeu côté serveur
     // et le client reçoit "Cannot read properties of undefined (reading 'page')".
+    const rawAdminView = this.asRecord(raw.adminView);
     const adminView =
-      raw?.adminView &&
-      typeof raw.adminView === 'object' &&
-      typeof raw.adminView.page === 'string'
-        ? raw.adminView
+      typeof rawAdminView.page === 'string'
+        ? (rawAdminView as unknown as MnemoAdminPage)
         : ({ page: 'setup' } as MnemoAdminPage);
 
     // Config par défaut (évite des undefined cascades).
+    const rawConfig = this.asRecord(raw.config);
     const config =
-      raw?.config && typeof raw.config === 'object'
-        ? raw.config
+      typeof rawConfig.targetPoints === 'number' &&
+      typeof rawConfig.useTimer === 'boolean' &&
+      typeof rawConfig.timerSeconds === 'number' &&
+      typeof rawConfig.correctSoloPoints === 'number' &&
+      typeof rawConfig.correctMultiPoints === 'number' &&
+      typeof rawConfig.wrongPoints === 'number' &&
+      typeof rawConfig.timeoutPoints === 'number'
+        ? (rawConfig as unknown as MnemoQuizConfig)
         : ({
             targetPoints: 20,
             useTimer: true,
@@ -2138,6 +2046,46 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
             timeoutPoints: -1,
           } as MnemoQuizConfig);
 
-    return { ...raw, adminView, config };
+    return { ...raw, adminView, config } as MnemoQuizMetadata;
+  }
+
+  private asRecord(value: unknown): Record<string, unknown> {
+    return value != null && typeof value === 'object'
+      ? (value as Record<string, unknown>)
+      : {};
+  }
+
+  private getActionMeta(action: GameSingleActionDto): ActionMeta {
+    return this.asRecord(action.meta) as ActionMeta;
+  }
+
+  private getActionActorId(action: GameSingleActionDto): number | null {
+    const actorId = this.getActionMeta(action).actorId;
+    return typeof actorId === 'number' && Number.isFinite(actorId)
+      ? actorId
+      : null;
+  }
+
+  private getActionActorTag(action: GameSingleActionDto): string {
+    return String(this.getActionMeta(action).actor ?? '');
+  }
+
+  private getPromptOwnerId(meta: MnemoQuizMetadata): number | null {
+    const value = (meta as Record<string, unknown>).promptOwnerId;
+    return typeof value === 'number' && Number.isFinite(value) ? value : null;
+  }
+
+  private getInterQuestionUntilMs(meta: MnemoQuizMetadata): number | null {
+    const value = (meta as Record<string, unknown>).interQuestionUntilMs;
+    return typeof value === 'number' && Number.isFinite(value) ? value : null;
+  }
+
+  private getQuizDeadlineAtMs(meta: MnemoQuizMetadata): number | null {
+    const value = (meta as Record<string, unknown>).quizDeadlineAtMs;
+    return typeof value === 'number' && Number.isFinite(value) ? value : null;
+  }
+
+  private getQuizAnswers(meta: MnemoQuizMetadata): Record<number, number> {
+    return (this.asRecord(meta.quizAnswersByPlayerId) as Record<number, number>) ?? {};
   }
 }

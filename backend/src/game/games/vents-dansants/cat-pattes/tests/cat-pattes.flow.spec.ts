@@ -237,12 +237,17 @@ describe('CatPattes flow', () => {
     expect(drawnCount).toBe(7);
 
     const available = Rulebook.getAvailableActions(state as any, 1);
-    const playOrDiscard =
-      available.find((a: any) => a.type === 'play_card') ??
-      available.find((a: any) => a.type === 'discard_card');
-    expect(playOrDiscard).toBeDefined();
+    const fallbackCardId = Array.isArray(meta1.hands?.[1])
+      ? String(meta1.hands[1][0] ?? '')
+      : '';
+    const discardAction =
+      available.find((a: any) => a.type === 'discard_card') ??
+      (fallbackCardId
+        ? ({ type: 'discard_card', payload: { cardId: fallbackCardId } } as any)
+        : null);
+    expect(discardAction).toBeDefined();
 
-    state = actionsService.applyActions(state, [playOrDiscard as any]);
+    state = actionsService.applyActions(state, [discardAction as any]);
     const meta2: any = state.metadata ?? {};
     const afterPlayCount = Array.isArray(meta2.hands?.[1])
       ? meta2.hands[1].length

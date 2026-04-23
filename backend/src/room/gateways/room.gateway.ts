@@ -39,7 +39,7 @@ type AuthedClient = {
   username: string;
   roomId: number;
 };
-type IncomingPayload = { type?: string; payload?: any };
+type IncomingPayload = { type?: string; payload?: unknown };
 type ClientRole = 'participant' | 'spectator';
 type ClientMeta = AuthedClient & {
   role: ClientRole;
@@ -62,6 +62,11 @@ type RoomSnapshot = {
   ownerId: number | null;
   ownerName: string;
   isPrivate: boolean;
+};
+
+type RoomWithOptionalRuntimeFields = {
+  runId?: unknown;
+  tableAmbienceSoundId?: string | null;
 };
 
 @WebSocketGateway({ path: '/ws' })
@@ -181,7 +186,7 @@ export class RoomGateway
     if (silentTargets?.size === 0) this.silentRooms.delete(roomId);
   }
 
-  async handleConnection(client: WebSocket, ...args: any[]) {
+  async handleConnection(client: WebSocket, ...args: unknown[]) {
     // WS ticket (short-lived) required.
     if (!this.wsTickets.validate(client, args, 'room')) {
       this.logger.warn('Connexion WS refusée: ticket manquant ou invalide.');
@@ -367,7 +372,7 @@ export class RoomGateway
           clearInterval(hb);
           this.heartbeats.delete(client);
           try {
-            (client as any).terminate?.();
+            client.terminate();
           } catch {
             try {
               client.close();
@@ -377,7 +382,7 @@ export class RoomGateway
           }
           return;
         }
-        (client as any).ping?.();
+        client.ping();
       } catch {
         // ignore
       }
@@ -500,7 +505,7 @@ export class RoomGateway
   }
 
   @SubscribeMessage('message')
-  async handleMessage(client: WebSocket, raw: any) {
+  async handleMessage(client: WebSocket, raw: unknown) {
     await this.enqueueClientMessage(client, async () => {
       const meta = this.clients.get(client);
       if (!meta) {
@@ -939,7 +944,7 @@ export class RoomGateway
   private async broadcast(
     roomId: number,
     type: string,
-    payload: any,
+    payload: unknown,
     emittedRoomId?: number,
   ) {
     const message = JSON.stringify({
@@ -983,7 +988,7 @@ export class RoomGateway
     client.send(JSON.stringify({ type: 'error', payload: { message } }));
   }
 
-  private safeSend(client: WebSocket, payload: any) {
+  private safeSend(client: WebSocket, payload: unknown) {
     if (client.readyState !== WebSocket.OPEN) {
       return;
     }
@@ -998,14 +1003,14 @@ export class RoomGateway
     }
   }
 
-  private decode(raw: any): IncomingPayload | null {
+  private decode(raw: unknown): IncomingPayload | null {
     let text = '';
     if (typeof raw === 'string') {
       text = raw;
     } else if (Buffer.isBuffer(raw)) {
       text = raw.toString('utf-8');
-    } else if (raw && typeof raw === 'object' && 'byteLength' in raw) {
-      text = Buffer.from(raw as ArrayBuffer).toString('utf-8');
+    } else if (raw instanceof ArrayBuffer) {
+      text = Buffer.from(raw).toString('utf-8');
     } else {
       return null;
     }
@@ -1041,11 +1046,10 @@ export class RoomGateway
   private async handleRoomIntentExecute(
     client: WebSocket,
     meta: ClientMeta,
-    payload: any,
+    payload: unknown,
     receivedAtMs: number,
   ): Promise<void> {
-    const envelope =
-      payload != null && typeof payload === 'object' ? payload : {};
+    const envelope = this.asRecord(payload);
     const intentIdRaw =
       typeof envelope.intentId === 'string'
         ? envelope.intentId
@@ -1101,7 +1105,7 @@ export class RoomGateway
     client: WebSocket,
     meta: ClientMeta,
     type: string | undefined,
-    payload: any,
+    payload: unknown,
     receivedAtMs: number,
   ): void {
     if (!RoomGateway.isImmediateAckAction(type)) {
@@ -1167,7 +1171,7 @@ export class RoomGateway
     client: WebSocket,
     meta: ClientMeta,
     type: string | undefined,
-    data: any,
+    data: unknown,
     receivedAtMs: number,
   ): Promise<void> {
     switch (type) {
@@ -1214,9 +1218,11 @@ export class RoomGateway
           payload: {
             serverTimeMs: Date.now(),
             clientSentAtMs:
-              typeof data?.clientSentAtMs === 'number'
-                ? data.clientSentAtMs
-                : ((data?._trace?.sentAtMs as number | undefined) ?? null),
+              typeof this.asRecord(data).clientSentAtMs === 'number'
+                ? Number(this.asRecord(data).clientSentAtMs)
+                : ((this.asRecord(this.asRecord(data)._trace).sentAtMs as
+                    | number
+                    | undefined) ?? null),
           },
         });
         break;
@@ -1292,7 +1298,11 @@ export class RoomGateway
     await this.sendChatHistoryToClient(client, meta.roomId);
   }
 
-  private async handleChatSend(client: WebSocket, meta: ClientMeta, data: any) {
+  private async handleChatSend(
+    client: WebSocket,
+    meta: ClientMeta,
+    data: unknown,
+  ) {
     if (!meta.roomId || meta.roomId <= 0) {
       await this.sendError(client, 'Vous n’êtes pas dans une table.');
       return;
@@ -1312,7 +1322,7 @@ export class RoomGateway
     }
     this.lastChatSentAt.set(client, now);
 
-    const message = this.normalizeChatMessage(data?.message);
+    const message = this.normalizeChatMessage(this.asRecord(data).message);
     if (!message) {
       return;
     }
@@ -1334,17 +1344,15 @@ export class RoomGateway
   }
 
   private extractTraceMeta(
-    payload: any,
+    payload: unknown,
     receivedAtMs: number,
   ): { traceId: string | null; clientToServerMs: number | null } {
+    const row = this.asRecord(payload);
+    const trace = this.asRecord(row._trace);
     const traceId =
-      payload && typeof payload === 'object'
-        ? (payload?._trace?.id as string | undefined)
-        : undefined;
+      typeof trace.id === 'string' ? String(trace.id) : undefined;
     const sentAtMs =
-      payload && typeof payload === 'object'
-        ? (payload?._trace?.sentAtMs as number | undefined)
-        : undefined;
+      typeof trace.sentAtMs === 'number' ? Number(trace.sentAtMs) : undefined;
 
     const id =
       typeof traceId === 'string' && traceId.trim().length > 0
@@ -1718,7 +1726,7 @@ export class RoomGateway
 
   private async handleRoomStart(
     meta: AuthedClient,
-    payload: any,
+    payload: unknown,
     receivedAtMs: number,
   ) {
     const trace = this.extractTraceMeta(payload, receivedAtMs);
@@ -1740,9 +1748,11 @@ export class RoomGateway
             payload.room.startedAt = room.startedAt
               ? room.startedAt.toISOString()
               : null;
+            const roomWithRuntime =
+              room as unknown as RoomWithOptionalRuntimeFields;
             payload.room.runId =
-              typeof (room as any).runId === 'number'
-                ? (room as any).runId
+              typeof roomWithRuntime.runId === 'number'
+                ? roomWithRuntime.runId
                 : null;
             payload.generatedAt = new Date().toISOString();
             return payload;
@@ -1759,7 +1769,7 @@ export class RoomGateway
 
   private async handleRoomReset(
     meta: AuthedClient,
-    payload: any,
+    payload: unknown,
     receivedAtMs: number,
   ) {
     const trace = this.extractTraceMeta(payload, receivedAtMs);
@@ -1833,7 +1843,7 @@ export class RoomGateway
 
   private async handleTogglePrivacy(
     meta: AuthedClient,
-    payload: any,
+    payload: unknown,
     receivedAtMs: number,
   ) {
     const trace = this.extractTraceMeta(payload, receivedAtMs);
@@ -1874,7 +1884,7 @@ export class RoomGateway
 
   private async handleBotAdd(
     meta: AuthedClient,
-    payload: any,
+    payload: unknown,
     receivedAtMs: number,
   ) {
     const trace = this.extractTraceMeta(payload, receivedAtMs);
@@ -1908,14 +1918,15 @@ export class RoomGateway
 
   private async handleBotRemove(
     meta: AuthedClient,
-    payload: any,
+    payload: unknown,
     receivedAtMs: number,
   ) {
     const trace = this.extractTraceMeta(payload, receivedAtMs);
     await this.perf.measure(
       'ws.room.bot.remove.total',
       async () => {
-        let botId = Number(payload?.botId ?? payload?.id ?? -1);
+        const row = this.asRecord(payload);
+        let botId = Number(row.botId ?? row.id ?? -1);
         if (!Number.isFinite(botId) || botId <= 0) {
           const last = await this.botService.getLastBotForRoom(meta.roomId);
           if (!last?.id) {
@@ -1955,9 +1966,10 @@ export class RoomGateway
   private async handleSetRole(
     client: WebSocket,
     meta: ClientMeta,
-    payload: any,
+    payload: unknown,
   ) {
-    const roomIdRaw = payload?.roomId ?? meta.roomId;
+    const row = this.asRecord(payload);
+    const roomIdRaw = row.roomId ?? meta.roomId;
     const roomId = Number(roomIdRaw);
     if (!Number.isFinite(roomId) || roomId <= 0) {
       throw new Error('roomId invalide');
@@ -1974,10 +1986,8 @@ export class RoomGateway
     const isOwner = state.room.owner?.id === meta.userId;
 
     const hasSpectatorFlag =
-      payload != null &&
-      typeof payload === 'object' &&
-      Object.prototype.hasOwnProperty.call(payload, 'spectator');
-    const spectatorRaw = payload?.spectator;
+      Object.prototype.hasOwnProperty.call(row, 'spectator');
+    const spectatorRaw = row.spectator;
     const spectator = hasSpectatorFlag
       ? spectatorRaw === true ||
         spectatorRaw === 1 ||
@@ -2048,25 +2058,27 @@ export class RoomGateway
   private async handleRoomCreate(
     client: WebSocket,
     meta: ClientMeta,
-    payload: any,
+    payload: unknown,
     receivedAtMs: number,
   ) {
     const trace = this.extractTraceMeta(payload, receivedAtMs);
     await this.perf.measure(
       'ws.room.create.total',
       async () => {
+        const row = this.asRecord(payload);
         const gameType =
-          typeof payload?.gameType === 'string' ? payload.gameType : '';
-        const name = typeof payload?.name === 'string' ? payload.name : null;
-        const maxPlayersRaw = payload?.maxPlayers ?? payload?.max ?? null;
+          typeof row.gameType === 'string' ? String(row.gameType) : '';
+        const name =
+          typeof row.name === 'string' ? String(row.name) : null;
+        const maxPlayersRaw = row.maxPlayers ?? row.max ?? null;
         const maxPlayers =
           typeof maxPlayersRaw === 'number'
             ? maxPlayersRaw
-            : Number.isFinite(parseInt(maxPlayersRaw, 10))
-              ? parseInt(maxPlayersRaw, 10)
+            : Number.isFinite(parseInt(String(maxPlayersRaw ?? ''), 10))
+              ? parseInt(String(maxPlayersRaw ?? ''), 10)
               : null;
         const isPrivate =
-          typeof payload?.isPrivate === 'boolean' ? payload.isPrivate : false;
+          typeof row.isPrivate === 'boolean' ? row.isPrivate : false;
         const room = await this.roomsService.createRoom(
           meta.userId,
           gameType,
@@ -2147,7 +2159,7 @@ export class RoomGateway
       {
         userId: meta.userId,
         roomId: meta.roomId,
-        gameType: payload?.gameType ?? null,
+        gameType: this.asRecord(payload).gameType ?? null,
         ...trace,
       },
     );
@@ -2156,15 +2168,16 @@ export class RoomGateway
   private async handleRoomJoin(
     client: WebSocket,
     meta: ClientMeta,
-    payload: any,
+    payload: unknown,
     receivedAtMs: number,
   ) {
     const trace = this.extractTraceMeta(payload, receivedAtMs);
     await this.perf.measure(
       'ws.room.join.total',
       async () => {
-        const roomId = Number(payload?.roomId ?? payload?.room ?? 0);
-        const spectatorRaw = payload?.spectator;
+        const row = this.asRecord(payload);
+        const roomId = Number(row.roomId ?? row.room ?? 0);
+        const spectatorRaw = row.spectator;
         const spectator =
           spectatorRaw === true ||
           spectatorRaw === 1 ||
@@ -2172,8 +2185,8 @@ export class RoomGateway
           spectatorRaw === 'true' ||
           spectatorRaw === 'yes' ||
           spectatorRaw === 'y';
-        const silentRaw = payload?.silent;
-        const hiddenRaw = payload?.hidden;
+        const silentRaw = row.silent;
+        const hiddenRaw = row.hidden;
         const silent =
           silentRaw === true ||
           silentRaw === 1 ||
@@ -2312,7 +2325,7 @@ export class RoomGateway
       },
       {
         userId: meta.userId,
-        roomId: payload?.roomId ?? payload?.room ?? null,
+        roomId: this.asRecord(payload).roomId ?? this.asRecord(payload).room ?? null,
         ...trace,
       },
     );
@@ -2347,7 +2360,7 @@ export class RoomGateway
 
   private async handleKickOrBan(
     meta: ClientMeta,
-    payload: any,
+    payload: unknown,
     ban: boolean,
   ): Promise<void> {
     const roomId = meta.roomId;
@@ -2355,7 +2368,8 @@ export class RoomGateway
       throw new Error('roomId invalide');
     }
 
-    const targetRaw = payload?.userId ?? payload?.id ?? payload?.targetUserId;
+    const row = this.asRecord(payload);
+    const targetRaw = row.userId ?? row.id ?? row.targetUserId;
     const targetUserId = Number(targetRaw);
     if (!Number.isFinite(targetUserId) || targetUserId <= 0) {
       throw new Error('userId invalide');
@@ -2403,13 +2417,17 @@ export class RoomGateway
     await this.sendRoomState(roomId);
   }
 
-  private async handleSetOwner(meta: ClientMeta, payload: any): Promise<void> {
+  private async handleSetOwner(
+    meta: ClientMeta,
+    payload: unknown,
+  ): Promise<void> {
     const roomId = meta.roomId;
     if (!Number.isFinite(roomId) || roomId <= 0) {
       throw new Error('roomId invalide');
     }
 
-    const targetRaw = payload?.userId ?? payload?.id ?? payload?.newOwnerId;
+    const row = this.asRecord(payload);
+    const targetRaw = row.userId ?? row.id ?? row.newOwnerId;
     const newOwnerId = Number(targetRaw);
     if (!Number.isFinite(newOwnerId) || newOwnerId <= 0) {
       throw new Error('userId invalide');
@@ -2521,14 +2539,15 @@ export class RoomGateway
   private async handleSetAmbience(
     client: WebSocket,
     meta: AuthedClient,
-    payload: any,
+    payload: unknown,
     receivedAtMs: number,
   ) {
     const trace = this.extractTraceMeta(payload, receivedAtMs);
     await this.perf.measure(
       'ws.room.setAmbience.total',
       async () => {
-        const raw = String(payload?.soundId ?? '').trim();
+        const row = this.asRecord(payload);
+        const raw = String(row.soundId ?? '').trim();
         const soundId = raw.length ? raw : null;
 
         const allowed = new Set<string>([
@@ -2579,11 +2598,13 @@ export class RoomGateway
           meta.roomId,
           meta.userId,
         );
-        (room as any).tableAmbienceSoundId = soundId;
+        const roomWithRuntime = room as unknown as RoomWithOptionalRuntimeFields;
+        roomWithRuntime.tableAmbienceSoundId = soundId;
         await this.roomsService.saveRoom(room);
 
         const updated = await this.tryUpdateRoomPayload(meta.roomId, (p) => {
-          (p.room as any).tableAmbienceSoundId = soundId;
+          (p.room as RoomWithOptionalRuntimeFields).tableAmbienceSoundId =
+            soundId;
           p.generatedAt = new Date().toISOString();
           return p;
         });
@@ -2655,5 +2676,11 @@ export class RoomGateway
     } catch {
       return false;
     }
+  }
+
+  private asRecord(value: unknown): Record<string, unknown> {
+    return value != null && typeof value === 'object'
+      ? (value as Record<string, unknown>)
+      : {};
   }
 }

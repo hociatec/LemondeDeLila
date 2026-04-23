@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
-import jsonwebtoken from 'jsonwebtoken';
+import { verify as jwtVerify, type Algorithm } from 'jsonwebtoken';
 import {
   getJwtVerifyAlgorithms,
   requireJwtVerifyKey,
@@ -94,18 +94,10 @@ type JwtPayloadBase = {
 };
 
 type JwtVerifyOptions = {
-  algorithms?: string[];
+  algorithms?: Algorithm[];
   issuer?: string;
   audience?: string;
   clockTolerance?: number;
 };
-
-type JwtVerifier = (
-  token: string,
-  key: string | Buffer,
-  options: JwtVerifyOptions,
-) => unknown;
-
-const jwtVerify = (jsonwebtoken as unknown as { verify: JwtVerifier }).verify;
 
 type RequestWithUser = Request & { user?: JwtPayloadBase };

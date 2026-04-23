@@ -14,7 +14,7 @@ export class GameWsHandler {
     private readonly validator: PayloadValidationService,
   ) {}
 
-  async rules(session: WsSession, payload: any) {
+  async rules(session: WsSession, payload: unknown) {
     requireUser(session);
     const dto = this.validator.validate(GameRulesDto, payload);
     const gameType = dto.gameType;

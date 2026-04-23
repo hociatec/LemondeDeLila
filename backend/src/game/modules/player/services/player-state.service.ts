@@ -12,7 +12,7 @@ export class PlayerStateService {
   ): boolean {
     if (playerId == null) return false;
     const player = (state.players ?? []).find((p) => p.id === playerId);
-    return Boolean(player && (player as any).alive !== false);
+    return Boolean(player && player.alive !== false);
   }
 
   kill(state: GameStateEntity, playerId: number): GameStateEntity {
@@ -24,7 +24,7 @@ export class PlayerStateService {
 
   livingIds(state: GameStateEntity): number[] {
     return (state.players ?? [])
-      .filter((p) => (p as any).alive !== false)
+      .filter((p) => p.alive !== false)
       .map((p) => p.id)
       .filter((id) => typeof id === 'number');
   }
@@ -32,7 +32,7 @@ export class PlayerStateService {
   ensureAliveFlag(players: PlayerStateEntity[]): PlayerStateEntity[] {
     return (players ?? []).map((p) => ({
       ...p,
-      alive: (p as any).alive ?? true,
+      alive: p.alive ?? true,
     }));
   }
 }

@@ -1,5 +1,6 @@
 ﻿import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
   Optional,
@@ -137,6 +138,7 @@ export class GameEngineService {
     GameStateEntity,
     Map<string, GameStateWithActions>
   >();
+  private readonly gameStats: GameStatsService;
 
   private static readonly MAX_ACTIONS_PER_MESSAGE = 12;
   private static readonly MAX_ACTION_TYPE_LENGTH = 64;
@@ -152,11 +154,14 @@ export class GameEngineService {
   private readonly runtimeDeps = {
     nowMs: () => GameEngineService.nowMs(),
     roomsGetRoomPayload: (roomId: number) => this.rooms.getRoomPayload(roomId),
-    roomsResetRoomSystem: (roomId: number) => this.rooms.resetRoomSystem(roomId),
+    roomsResetRoomSystem: (roomId: number) =>
+      this.rooms.resetRoomSystem(roomId).then(() => undefined),
     roomsNotifyRoomStateUpdated: (roomId: number) =>
       this.rooms.notifyRoomStateUpdated(roomId),
-    registryGetHandler: (gameType: string) => this.registry.getHandler(gameType),
-    storeGet: (roomId: number, gameType: string) => this.store.get(roomId, gameType),
+    registryGetHandler: (gameType: string) =>
+      this.registry.getHandler(gameType) ?? null,
+    storeGet: (roomId: number, gameType: string) =>
+      this.store.get(roomId, gameType),
     storeSet: (
       roomId: number,
       gameType: string,
@@ -193,7 +198,7 @@ export class GameEngineService {
     playBotTurn: (roomId: number, gameType: string) => this.playBotTurn(roomId, gameType),
     getBotActorIdForState: (
       state: GameStateEntity,
-      handler: GameRulesAdapter | undefined,
+      handler: GameRulesAdapter | null,
     ) => this.getBotActorIdForState(state, handler),
     pendingSignature: (pending: PendingState | null | undefined) =>
       this.pendingSignature(pending),
@@ -242,7 +247,7 @@ export class GameEngineService {
       this.syncRosterForStartedRoom(state, payload),
     validateActions: (
       state: GameStateEntity,
-      handler: GameRulesAdapter | undefined,
+      handler: GameRulesAdapter | null,
       actions: GameSingleActionDto[],
       actorId: number | null,
     ) => this.validateActions(state, handler, actions, actorId),
@@ -259,7 +264,7 @@ export class GameEngineService {
       roomId: number,
       gameType: string,
       state: GameStateEntity,
-    ) => this.broadcastCurrentStateAndExpose(roomId, gameType, state),
+    ) => Promise.resolve(this.broadcastCurrentStateAndExpose(roomId, gameType, state)),
     coreAppendLog: (state: GameStateEntity, message: string) =>
       this.core.appendLog(state, message),
     coreBuildBaseState: (payload: RoomPayload, gameType: string) =>
@@ -270,7 +275,7 @@ export class GameEngineService {
     botScheduler: () => this.botScheduler,
     botRunner: () => this.botRunner,
     statsFinalizeFinished: (roomId: number, state: GameStateEntity) =>
-      this.stats.finalizeFinished(roomId, state),
+      this.gameStats.finalizeFinished(roomId, state),
     broadcaster: () => this.broadcaster,
     endedBroadcaster: () => this.endedBroadcaster,
   };
@@ -286,12 +291,24 @@ export class GameEngineService {
     private readonly gridRender: GridRenderService,
     private readonly store: GameEngineStateStore,
     private readonly gameLogger: GameLoggerService,
-    private readonly stats: GameStatsService,
+    @Inject(GameStatsService)
+    statsOrBoardPayload: GameStatsService | BoardPayloadService,
     private readonly boardPayload: BoardPayloadService = new BoardPayloadService(),
     @Optional()
     @InjectRepository(SocialProfile)
     private readonly socialProfiles?: Repository<SocialProfile>,
-  ) {}
+  ) {
+    this.gameStats =
+      statsOrBoardPayload instanceof BoardPayloadService
+        ? ({
+            finalizeFinished: async () => undefined,
+          } as unknown as GameStatsService)
+        : statsOrBoardPayload;
+
+    if (statsOrBoardPayload instanceof BoardPayloadService) {
+      this.boardPayload = statsOrBoardPayload;
+    }
+  }
 
   /**
    * Configure la fonction de broadcast pour notifier les clients des changements d'état.
@@ -1236,7 +1253,7 @@ export class GameEngineService {
 
   private getBotActorIdForState(
     state: GameStateEntity,
-    handler: GameRulesAdapter | undefined,
+    handler: GameRulesAdapter | null,
   ): number | null {
     if ((state.status || '').toLowerCase() === 'finished') return null;
 
@@ -1655,7 +1672,7 @@ export class GameEngineService {
 
   private async validateActions(
     state: GameStateEntity,
-    handler: GameRulesAdapter | undefined,
+    handler: GameRulesAdapter | null,
     actions: GameSingleActionDto[],
     actorId: number | null,
   ): Promise<GameSingleActionDto[]> {
@@ -1859,16 +1876,18 @@ export class GameEngineService {
       ? handler.exposeState(state)
       : (state as GameStateWithActions);
     const withLabel = attachTurnLabel(exposed, label);
-    const withDescriptors = this.attachCanonicalPositionPanel(
-      attachUiDescriptors({
+    const withDescriptors = attachCanonicalPositionPanel({
+      state: attachUiDescriptors({
         state: this.gridRender.attachGridRenderDescriptors(
           attachCurrentPlayerView(withLabel),
         ),
         normalizeString: normalizeMetadataString,
       }),
-      state,
-      null,
-    );
+      internal: state,
+      userId: null,
+      boardPayload: this.boardPayload,
+      normalizeString: normalizeMetadataString,
+    });
     const withLifecycle = attachStartLifecycle({ state: withDescriptors });
     return fixMojibakeDeep(stripBoardAndGridIfNotStarted(withLifecycle));
   }

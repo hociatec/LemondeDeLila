@@ -21,7 +21,7 @@ export class StatsWsHandler {
     return { type: 'stats.my', payload: { games } };
   }
 
-  async user(session: WsSession, payload: any) {
+  async user(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(StatsUserDto, payload);
 
@@ -43,7 +43,7 @@ export class StatsWsHandler {
     return { type: 'leaderboard.games', payload: { games } };
   }
 
-  async leaderboardTop(payload: any) {
+  async leaderboardTop(payload: unknown) {
     const dto = this.validator.validate(LeaderboardTopDto, payload);
     const entries = await this.stats.getTop10(dto.gameType);
     return {

@@ -21,7 +21,7 @@ export class CatalogWsHandler {
     return { type: 'catalog.categories', payload: categories };
   }
 
-  async categoryGames(payload: any) {
+  async categoryGames(payload: unknown) {
     const dto = this.validator.validate(CatalogCategoryDto, payload);
     const games = await this.catalog.getGamesForCategory(dto.id);
     return { type: 'catalog.categoryGames', payload: games };

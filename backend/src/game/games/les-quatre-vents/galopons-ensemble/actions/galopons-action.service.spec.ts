@@ -590,7 +590,7 @@ describe('GaloponsActionService', () => {
     const backState = {
       ...afterFinish,
       pending: null,
-      turn: { currentPlayerId: 1, direction: 1 },
+      turn: { currentPlayerId: 1, direction: 1 as const },
     };
     const afterBackRoll = service.applyActions(backState, [
       { type: 'roll', payload: {} },

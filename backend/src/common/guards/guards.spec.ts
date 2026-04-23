@@ -1,6 +1,6 @@
 import { ExecutionContext } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import jsonwebtoken from 'jsonwebtoken';
+import { sign as jwtSign } from 'jsonwebtoken';
 import { generateKeyPairSync } from 'crypto';
 import { HttpJwtGuard } from './http-jwt.guard';
 import { WsJwtGuard } from './ws-jwt.guard';
@@ -11,14 +11,6 @@ type JwtSignOptions = {
   subject: string;
   expiresIn: string;
 };
-
-type JwtSigner = (
-  payload: object,
-  secretOrKey: string | Buffer,
-  options: JwtSignOptions,
-) => string;
-
-const jwtSign = (jsonwebtoken as unknown as { sign: JwtSigner }).sign;
 
 type HttpRequestLike = {
   headers: Record<string, string>;

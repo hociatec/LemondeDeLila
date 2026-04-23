@@ -67,8 +67,8 @@ export class GameCoreService {
 
       const message = String(asEntry?.message ?? '');
       const tsRaw =
-        typeof (asEntry as any)?.timestamp === 'string'
-          ? String((asEntry as any).timestamp).trim()
+        typeof asEntry?.timestamp === 'string'
+          ? String(asEntry.timestamp).trim()
           : '';
 
       if (tsRaw) {

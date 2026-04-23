@@ -94,10 +94,10 @@ export class BoardMissionRegistrarService implements OnModuleInit {
       maxPlayers: entry.manifest.maxPlayers,
       hydrateInitialState: (baseState: GameStateEntity): GameStateEntity => {
         const model = this.modelLoader.load(entry.id, entry.gameDir);
-        return this.setup.hydrateInitialState<BoardMissionGameMetadata>(
+        return this.setup.hydrateInitialState(
           baseState,
           model,
-          (meta) => ({
+          (meta: BoardMissionGameMetadata) => ({
             ...meta,
             statuses: {
               skipTurn: Object.fromEntries(
@@ -112,7 +112,7 @@ export class BoardMissionRegistrarService implements OnModuleInit {
         state: GameStateEntity,
         actions: GameSingleActionDto[],
       ): GameStateEntity => {
-        return this.engine.applyActions<BoardMissionGameMetadata>(
+        return this.engine.applyActions(
           state,
           actions,
           this.modelLoader.load(entry.id, entry.gameDir),
@@ -136,7 +136,7 @@ export class BoardMissionRegistrarService implements OnModuleInit {
         state: GameStateEntity,
         userId: number,
       ): GameStateWithActions =>
-        this.presenter.exposeStateForUser<BoardMissionGameMetadata>(
+        this.presenter.exposeStateForUser(
           state,
           userId,
           this.modelLoader.load(entry.id, entry.gameDir),

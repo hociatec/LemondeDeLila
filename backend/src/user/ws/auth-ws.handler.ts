@@ -11,13 +11,13 @@ export class AuthWsHandler {
     private readonly validator: PayloadValidationService,
   ) {}
 
-  async register(payload: any) {
+  async register(payload: unknown) {
     const dto = this.validator.validate(RegisterDto, payload);
     await this.auth.register(dto.email, dto.username, dto.password);
     return { type: 'auth.register.ok', payload: { message: 'inscrit' } };
   }
 
-  async login(payload: any) {
+  async login(payload: unknown) {
     const dto = this.validator.validate(LoginDto, payload);
     const result = await this.auth.login(dto.username, dto.password);
     return { type: 'auth.login.ok', payload: result };

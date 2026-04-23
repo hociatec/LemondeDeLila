@@ -108,7 +108,7 @@ describe('MnemoQuizStoreService persistence path', () => {
       };
     });
 
-    const mod = (await import('../store/mnemo-quiz-store.service')) as {
+    const mod = require('../store/mnemo-quiz-store.service') as {
       MnemoQuizStoreService: new () => any;
     };
     return new mod.MnemoQuizStoreService();

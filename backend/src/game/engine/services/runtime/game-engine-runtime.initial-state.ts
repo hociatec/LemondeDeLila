@@ -1,4 +1,4 @@
-import type { RoomPayload } from '../../../room/dto/room-response.dto';
+import type { RoomPayload } from '../../../../room/dto/room-response.dto';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
 import type { GameRulesAdapter } from '../../interfaces/game-rules-adapter.interface';
 

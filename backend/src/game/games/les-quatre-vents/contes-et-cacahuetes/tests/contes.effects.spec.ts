@@ -502,7 +502,9 @@ describe('Contes effects', () => {
     };
 
     state = (actionsService as any).applyMalusEffectById(state, 1, 9, 0);
-    expect(asRecord(state.pending).data.context).toBe('give_drawn_bonus:8');
+    expect(asRecord(asRecord(state.pending).data).context).toBe(
+      'give_drawn_bonus:8',
+    );
 
     state = actionsService.applyActions(state, [
       { type: 'choose_target', payload: { targetPlayerId: 2 } },

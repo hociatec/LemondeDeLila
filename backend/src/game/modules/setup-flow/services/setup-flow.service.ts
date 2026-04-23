@@ -10,6 +10,7 @@ type PawnChoice = {
   description?: unknown;
   [key: string]: unknown;
 };
+type ChoiceLike = { id?: unknown; label?: unknown; value?: unknown };
 
 @Injectable()
 export class SetupFlowService {
@@ -109,7 +110,7 @@ export class SetupFlowService {
         ...(params.includeChoiceMapData === true
           ? {
               choices: availableChoices.map((choice) =>
-                String((choice as any)?.label ?? '').trim(),
+                String(choice?.label ?? '').trim(),
               ),
             }
           : {}),
@@ -134,19 +135,20 @@ export class SetupFlowService {
     const normalizedOptions = Array.isArray(options) ? options : [];
     if (!normalizedOptions.length) return null;
 
+    const rawChoice = this.readChoiceLike(raw);
     const value =
       typeof raw === 'object' && raw != null
-        ? ((raw as any)?.id ?? (raw as any)?.value ?? raw)
+        ? (rawChoice.id ?? rawChoice.value ?? raw)
         : raw;
     const key = this.normalizeKey(value);
     if (!key) return null;
 
     for (const option of normalizedOptions) {
-      const idKey = this.normalizeKey((option as any)?.id);
+      const idKey = this.normalizeKey(option?.id);
       if (idKey && idKey === key) return option;
     }
     for (const option of normalizedOptions) {
-      const labelKey = this.normalizeKey((option as any)?.label);
+      const labelKey = this.normalizeKey(option?.label);
       if (labelKey && labelKey === key) return option;
     }
     return null;
@@ -162,13 +164,14 @@ export class SetupFlowService {
     }));
     if (!normalized.length) return null;
 
+    const rawChoice = this.readChoiceLike(raw);
     const candidate =
       typeof raw === 'object' && raw != null
-        ? ((raw as any)?.id ??
-          (raw as any)?.pawnId ??
-          (raw as any)?.pawn ??
-          (raw as any)?.value ??
-          (raw as any)?.label ??
+        ? (rawChoice.id ??
+          rawChoice.pawnId ??
+          rawChoice.pawn ??
+          rawChoice.value ??
+          rawChoice.label ??
           raw)
         : raw;
 
@@ -188,8 +191,8 @@ export class SetupFlowService {
     return (Array.isArray(choices) ? choices : [])
       .map((choice) => ({
         ...choice,
-        id: stringOrEmpty((choice as any)?.id).trim(),
-        label: stringOrEmpty((choice as any)?.label).trim(),
+        id: stringOrEmpty(choice?.id).trim(),
+        label: stringOrEmpty(choice?.label).trim(),
       }))
       .filter((choice) => choice.id.length > 0 && choice.label.length > 0);
   }
@@ -199,19 +202,29 @@ export class SetupFlowService {
   ): Array<TChoice & SetupChoice> {
     return (Array.isArray(choices) ? choices : [])
       .map((choice) => {
-        const id = stringOrEmpty((choice as any)?.id).trim();
-        const label = stringOrEmpty((choice as any)?.label ?? id).trim();
-        return { ...(choice as any), id, label } as TChoice & SetupChoice;
+        const id = stringOrEmpty(choice?.id).trim();
+        const label = stringOrEmpty(choice?.label ?? id).trim();
+        return { ...choice, id, label } as TChoice & SetupChoice;
       })
       .filter((choice) => choice.id.length > 0 && choice.label.length > 0);
   }
 
   private defaultPawnData(choice: PawnChoice): Record<string, unknown> {
     return {
-      id: stringOrEmpty((choice as any)?.id).trim(),
-      label: stringOrEmpty((choice as any)?.label).trim(),
-      description: stringOrEmpty((choice as any)?.description).trim(),
+      id: stringOrEmpty(choice?.id).trim(),
+      label: stringOrEmpty(choice?.label).trim(),
+      description: stringOrEmpty(choice?.description).trim(),
     };
+  }
+
+  private readChoiceLike(value: unknown): ChoiceLike & {
+    pawnId?: unknown;
+    pawn?: unknown;
+  } {
+    if (value == null || typeof value !== 'object') {
+      return {};
+    }
+    return value as ChoiceLike & { pawnId?: unknown; pawn?: unknown };
   }
 
   private playerLabel(player: SetupPlayer | null | undefined): string {

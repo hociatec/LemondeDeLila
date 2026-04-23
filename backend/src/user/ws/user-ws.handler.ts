@@ -15,7 +15,7 @@ export class UserWsHandler {
     return { type: 'users.list', payload: { items } };
   }
 
-  async get(payload: any) {
+  async get(payload: unknown) {
     const dto = this.validator.validate(UserGetDto, payload);
     const user = await this.users.findOne(dto.id);
     return { type: 'users.get', payload: { user } };

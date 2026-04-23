@@ -1,13 +1,24 @@
-import type { GameStateEntity } from '../entities/game-state.entity';
+import type {
+  GameStateEntity,
+  PlayerStateEntity,
+} from '../entities/game-state.entity';
 import type { GameCoreService } from '../services/game-core.service';
 import type { SetupFlowService } from '../../modules/setup-flow/services/setup-flow.service';
 import { resolvePlayerNameFromState } from '../../modules/turn-policies/player-name.helper';
+import type { ResolvePlayerNameOptions } from '../../modules/turn-policies/player-name.helper';
 
 export type ConfiguredSetupPawnChoice = {
   id: string;
   label: string;
   description?: string;
   [key: string]: unknown;
+};
+
+type ConfiguredSetupPlayer = PlayerStateEntity & Record<string, unknown>;
+
+type ConfiguredBotPawnPickResult = {
+  choice: ConfiguredSetupPawnChoice | null;
+  state?: GameStateEntity;
 };
 
 export function assignConfiguredBotPawns(params: {
@@ -25,19 +36,21 @@ export function assignConfiguredBotPawns(params: {
     choice: ConfiguredSetupPawnChoice,
     state: GameStateEntity,
   ) => string;
-  isBotPlayer?: (player: any, state: GameStateEntity) => boolean;
+  isBotPlayer?: (
+    player: ConfiguredSetupPlayer,
+    state: GameStateEntity,
+  ) => boolean;
   pickChoice?: (params: {
     state: GameStateEntity;
-    player: any;
+    player: ConfiguredSetupPlayer;
     available: ConfiguredSetupPawnChoice[];
     catalog: ConfiguredSetupPawnChoice[];
-  }) =>
-    | { choice: ConfiguredSetupPawnChoice | null; state?: GameStateEntity }
-    | ConfiguredSetupPawnChoice
-    | null;
-  playerNameOptions?: unknown;
+  }) => ConfiguredBotPawnPickResult | ConfiguredSetupPawnChoice | null;
+  playerNameOptions?: ResolvePlayerNameOptions;
 }): GameStateEntity {
-  const players = Array.isArray(params.state.players) ? params.state.players : [];
+  const players = Array.isArray(params.state.players)
+    ? (params.state.players as ConfiguredSetupPlayer[])
+    : [];
   if (!players.length || !params.catalog.length) {
     return params.state;
   }
@@ -77,7 +90,7 @@ export function assignConfiguredBotPawns(params: {
       catalog: params.catalog,
     });
     const resolved =
-      picked && typeof picked === 'object' && 'choice' in picked
+      isConfiguredBotPawnPickResult(picked)
         ? picked
         : {
             choice:
@@ -106,10 +119,9 @@ export function assignConfiguredBotPawns(params: {
       };
     }
 
-    const updated =
-      player != null && typeof player === 'object'
-        ? ({ ...player } as Record<string, unknown>)
-        : ({} as Record<string, unknown>);
+    const updated: ConfiguredSetupPlayer = {
+      ...player,
+    };
     if (params.playerPawnField) {
       updated[params.playerPawnField] = choice.id;
     }
@@ -127,15 +139,23 @@ export function assignConfiguredBotPawns(params: {
     const playerName = resolvePlayerNameFromState(
       {
         ...working,
-        players: replacePlayer(players, updated, Number(player?.id)),
+        players: replacePlayer(
+          getWorkingPlayers(working, players),
+          updated,
+          Number(player?.id),
+        ),
       },
       Number(player?.id),
-      params.playerNameOptions as any,
+      params.playerNameOptions,
     );
     const prompt = `C'est à ${playerName} de choisir son pion.`;
     let withUpdatedPlayers = {
       ...working,
-      players: replacePlayer(players, updated, Number(player?.id)),
+      players: replacePlayer(
+        getWorkingPlayers(working, players),
+        updated,
+        Number(player?.id),
+      ),
       metadata,
     };
     const hasPrompt = Array.isArray(withUpdatedPlayers.log)
@@ -147,7 +167,11 @@ export function assignConfiguredBotPawns(params: {
       working = params.core.appendLog(withUpdatedPlayers, prompt);
       withUpdatedPlayers = {
         ...working,
-        players: replacePlayer(players, updated, Number(player?.id)),
+        players: replacePlayer(
+          getWorkingPlayers(working, players),
+          updated,
+          Number(player?.id),
+        ),
         metadata,
       };
     }
@@ -178,7 +202,10 @@ export function queueConfiguredPawnSelection(params: {
   pendingType?: 'choose_pawn' | 'pick_pawn';
   metadataAssignmentKey?: string;
   playerPawnField?: string | false;
-  isBotPlayer?: (player: any, state: GameStateEntity) => boolean;
+  isBotPlayer?: (
+    player: ConfiguredSetupPlayer,
+    state: GameStateEntity,
+  ) => boolean;
   takenPawnIdsResolver?: (
     state: GameStateEntity,
     catalog: ConfiguredSetupPawnChoice[],
@@ -262,16 +289,25 @@ export function queueConfiguredPawnSelection(params: {
 }
 
 function replacePlayer(
-  players: Array<any>,
-  updated: Record<string, unknown>,
+  players: ConfiguredSetupPlayer[],
+  updated: ConfiguredSetupPlayer,
   playerId: number,
-): Array<any> {
+): ConfiguredSetupPlayer[] {
   return players.map((player) =>
     Number(player?.id) === playerId ? updated : player,
   );
 }
 
-function defaultIsBotPlayer(player: any): boolean {
+function getWorkingPlayers(
+  state: GameStateEntity,
+  fallback: ConfiguredSetupPlayer[],
+): ConfiguredSetupPlayer[] {
+  return Array.isArray(state.players)
+    ? (state.players as ConfiguredSetupPlayer[])
+    : fallback;
+}
+
+function defaultIsBotPlayer(player: ConfiguredSetupPlayer): boolean {
   return player?.isBot === true;
 }
 
@@ -299,7 +335,7 @@ function collectTakenPawnIds(
 }
 
 function resolveAssignedPawnId(
-  player: any,
+  player: ConfiguredSetupPlayer,
   assignedById: Record<string, unknown>,
   playerPawnField: string | false | undefined,
 ): string {
@@ -329,6 +365,12 @@ function hasAssignedPawn(
       playerPawnField,
     ).length > 0
   );
+}
+
+function isConfiguredBotPawnPickResult(
+  value: unknown,
+): value is ConfiguredBotPawnPickResult {
+  return value != null && typeof value === 'object' && 'choice' in value;
 }
 
 function asRecord(value: unknown): Record<string, unknown> {

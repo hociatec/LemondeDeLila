@@ -1,4 +1,8 @@
-import type { RoomBotState, RoomPayload, RoomPlayer } from '../../../room/dto/room-response.dto';
+import type {
+  RoomBotState,
+  RoomPayload,
+  RoomPlayer,
+} from '../../../../room/dto/room-response.dto';
 import type {
   GameStateEntity,
   PlayerStateEntity,

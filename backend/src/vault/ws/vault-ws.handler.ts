@@ -22,28 +22,28 @@ export class VaultWsHandler {
     return { type: 'vault.list', payload: { items } };
   }
 
-  async save(session: WsSession, payload: any) {
+  async save(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(VaultSaveWsDto, payload);
     const res = await this.vault.save(user.id, dto.roomId, dto.id);
     return { type: 'vault.save', payload: { id: res.id } };
   }
 
-  async restore(session: WsSession, payload: any) {
+  async restore(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(VaultIdWsDto, payload);
     const res = await this.vault.restore(user.id, dto.id);
     return { type: 'vault.restore', payload: { roomId: res.roomId } };
   }
 
-  async delete(session: WsSession, payload: any) {
+  async delete(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(VaultIdWsDto, payload);
     const ok = await this.vault.delete(user.id, dto.id);
     return { type: 'vault.delete', payload: { ok } };
   }
 
-  async abandon(session: WsSession, payload: any) {
+  async abandon(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(VaultAbandonWsDto, payload);
     const ok = await this.vault.abandonRestoredRoom(user.id, dto.roomId);

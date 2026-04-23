@@ -1,4 +1,5 @@
 import { BoardPayloadService } from '../../modules/board/services/board-payload.service';
+import type { GameStateEntity } from '../../core/entities/game-state.entity';
 import { AventureSauvagePresenterService } from '../les-quatre-vents/aventure-sauvage/presenter/aventure-sauvage-presenter.service';
 import { AFondLesBallonsPresenterService } from '../les-quatre-vents/a-fond-les-ballons/presenter/a-fond-les-ballons-presenter.service';
 import { CaPresenterService } from '../les-quatre-vents/ca-derape/presenter/ca-presenter.service';
@@ -19,22 +20,36 @@ import { BoardMissionRuntimeSupportService } from '../../engine/board-mission/bo
 
 type PresenterCase = {
   label: string;
-  presenter: { exposeStateForUser(state: any, userId: number): any };
+  presenter: {
+    exposeStateForUser(state: GameStateEntity, userId: number): {
+      extras?: {
+        ui?: {
+          panels?: Record<string, unknown>;
+        };
+      };
+      [key: string]: unknown;
+    };
+  };
   metadata: Record<string, unknown>;
 };
 
-function createBaseState(metadata: Record<string, unknown>) {
+function createBaseState(metadata: Record<string, unknown>): GameStateEntity {
   return {
     status: 'started',
+    phase: 'playing',
+    round: 1,
+    turnIndex: 0,
+    lastRoll: null,
+    log: [],
     players: [
       { id: 1, username: 'Lila' },
       { id: 2, username: 'Mouche' },
     ],
-    turn: { currentPlayerId: 1 },
+    turn: { currentPlayerId: 1, direction: 1 },
     pending: null,
     extras: {},
     metadata,
-  } as any;
+  };
 }
 
 describe('Position panels', () => {
@@ -144,7 +159,7 @@ describe('Position panels', () => {
     {
       label: 'Taxi Express',
       presenter: {
-        exposeStateForUser(state: any, userId: number) {
+        exposeStateForUser(state: GameStateEntity, userId: number) {
           return boardMissionPresenter.exposeStateForUser(
             state,
             userId,

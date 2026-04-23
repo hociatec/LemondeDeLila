@@ -14,11 +14,13 @@ export type PlayerStateEntity = {
   id: number;
   username: string;
   isBot?: boolean;
+  alive?: boolean;
   // Champs historiques (Panier Express). Optionnels pour éviter de polluer les autres jeux.
   basket?: unknown[];
   inventory?: unknown[];
   shoppingList?: unknown[];
   pawn?: string;
+  pawnLabel?: string;
 };
 
 export type PendingState = {

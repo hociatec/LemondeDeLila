@@ -42,18 +42,18 @@ export class GameEngineStateStore {
   async get(
     roomId: number,
     gameType: string,
-  ): Promise<GameStateEntity | undefined> {
+  ): Promise<GameStateEntity | null> {
     const key = this.buildKey(roomId, gameType);
     const cached = this.states.get(key);
     if (cached) {
       return cached;
     }
     if (!this.redis) {
-      return undefined;
+      return null;
     }
     try {
       const raw = await this.redis.get(this.redisKey(key));
-      if (!raw) return undefined;
+      if (!raw) return null;
       const parsed = JSON.parse(raw) as GameStateEntity;
       this.states.set(key, parsed);
       return parsed;
@@ -62,7 +62,7 @@ export class GameEngineStateStore {
         'lecture impossible depuis Redis (fallback mémoire)',
         error,
       );
-      return undefined;
+      return null;
     }
   }
 

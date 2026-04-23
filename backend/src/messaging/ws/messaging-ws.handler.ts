@@ -25,7 +25,7 @@ export class MessagingWsHandler {
     private readonly counts: UserBadgeCountsService,
   ) {}
 
-  async conversation(session: WsSession, payload: any) {
+  async conversation(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(MessagingConversationDto, payload);
     const items = await this.messaging.conversation(
@@ -36,7 +36,7 @@ export class MessagingWsHandler {
     return { type: 'messaging.conversation', payload: { items } };
   }
 
-  async messages(session: WsSession, payload: any) {
+  async messages(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(MessagingListDto, payload);
     const { box, items } = await this.resolveBox(
@@ -47,7 +47,7 @@ export class MessagingWsHandler {
     return { type: 'messaging.messages', payload: { box, items } };
   }
 
-  async send(session: WsSession, payload: any) {
+  async send(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(MessagingSendDto, payload);
     const message = await this.messaging.send(user.id, dto as SendMessageDto);
@@ -78,38 +78,41 @@ export class MessagingWsHandler {
     return { type: 'messaging.message', payload: { message } };
   }
 
-  async delete(session: WsSession, payload: any) {
+  async delete(session: WsSession, payload: unknown) {
     const user = requireUser(session);
-    const messageId = String(payload?.messageId ?? payload?.id ?? '');
+    const row = asRecord(payload);
+    const messageId = String(row.messageId ?? row.id ?? '');
     const message = await this.messaging.delete(user.id, messageId);
     await this.counts.notifyCounts(user.id);
     return { type: 'messaging.deleted', payload: { message } };
   }
 
-  async restore(session: WsSession, payload: any) {
+  async restore(session: WsSession, payload: unknown) {
     const user = requireUser(session);
-    const messageId = String(payload?.messageId ?? payload?.id ?? '');
+    const row = asRecord(payload);
+    const messageId = String(row.messageId ?? row.id ?? '');
     const message = await this.messaging.restore(user.id, messageId);
     await this.counts.notifyCounts(user.id);
     return { type: 'messaging.restored', payload: { message } };
   }
 
-  async purge(session: WsSession, payload: any) {
+  async purge(session: WsSession, payload: unknown) {
     const user = requireUser(session);
-    const messageId = String(payload?.messageId ?? payload?.id ?? '');
+    const row = asRecord(payload);
+    const messageId = String(row.messageId ?? row.id ?? '');
     const message = await this.messaging.purge(user.id, messageId);
     await this.counts.notifyCounts(user.id);
     return { type: 'messaging.purged', payload: { message } };
   }
 
-  async search(payload: any) {
+  async search(payload: unknown) {
     const dto = this.validator.validate(MessagingSearchDto, payload);
     const username = dto.username ?? dto.query ?? '';
     const user = await this.messaging.lookupUser(username);
     return { type: 'messaging.user', payload: { user } };
   }
 
-  async markRead(session: WsSession, payload: any) {
+  async markRead(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(MessagingMarkReadDto, payload);
     await this.messaging.markRead(user.id, dto.messageId);
@@ -127,7 +130,7 @@ export class MessagingWsHandler {
     box: string,
     userId: number,
     limit: number,
-  ): Promise<{ box: string; items: any[] }> {
+  ): Promise<{ box: string; items: unknown[] }> {
     const normalized = (box || 'inbox').toLowerCase();
     const mapping: Record<string, 'inbox' | 'outbox' | 'deleted'> = {
       inbox: 'inbox',
@@ -156,4 +159,10 @@ export class MessagingWsHandler {
           : normalized;
     return { box: finalBox, items };
   }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value != null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
 }
