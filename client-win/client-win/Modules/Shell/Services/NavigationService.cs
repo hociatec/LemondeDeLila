@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Threading;
+using client_win.Core.Diagnostics;
 
 namespace client_win.Modules.Shell.Services;
 
@@ -34,6 +35,8 @@ public sealed class NavigationService : INavigationService
 
     public void Show(object content)
     {
+        ArgumentNullException.ThrowIfNull(content);
+
         // Navigation must run on the UI thread to keep focus transitions deterministic for screen readers.
         var dispatcher = Application.Current?.Dispatcher;
         if (dispatcher != null && !dispatcher.CheckAccess())
@@ -41,6 +44,13 @@ public sealed class NavigationService : INavigationService
             dispatcher.Invoke(() => Show(content), DispatcherPriority.Send);
             return;
         }
+
+        if (ReferenceEquals(CurrentContent, content))
+        {
+            return;
+        }
+
+        using var _ = PerfTrace.Measure($"nav.show {(content.GetType().Name ?? "<unknown>")}");
 
         try
         {
@@ -51,7 +61,7 @@ public sealed class NavigationService : INavigationService
             // best-effort
         }
 
-        CurrentContent = content ?? throw new ArgumentNullException(nameof(content));
+        CurrentContent = content;
         try
         {
             CurrentContentChanged?.Invoke(this, content);

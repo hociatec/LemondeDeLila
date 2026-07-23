@@ -16,7 +16,7 @@ namespace client_win.Modules.Shell.Views;
 /// Content host that caches DataTemplate-generated views for selected shell-level pages.
 /// This avoids destroying/recreating visual trees during navigation, which is a common trigger for NVDA "non disponible".
 /// </summary>
-public partial class CachedContentHost : UserControl, ICurrentContentRootProvider
+public partial class CachedContentHost : UserControl, ICurrentContentRootProvider, INavigationFocusHost
 {
     public static readonly DependencyProperty CurrentContentProperty =
         DependencyProperty.Register(
@@ -45,7 +45,6 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
     private int _currentFocusReadyHookedForTransitionId;
     private FrameworkElement? _observedCurrentRoot;
     private RoutedEventHandler? _observedCurrentRootLoadedHandler;
-    private EventHandler? _observedCurrentRootLayoutUpdatedHandler;
 
     private const int MaxCacheEntries = 10;
 
@@ -76,6 +75,8 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         get => GetValue(CurrentContentProperty);
         set => SetValue(CurrentContentProperty, value);
     }
+
+    public bool HandlesNavigationFocus => true;
 
     /// <summary>
     /// Pre-creates the presenter and materializes the view template for the given content without navigating to it.
@@ -125,7 +126,7 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         }
 
         _preloadScheduled = true;
-        Dispatcher.BeginInvoke(new Action(ProcessPreloadQueue), DispatcherPriority.Background);
+        Dispatcher.BeginInvoke(new Action(ProcessPreloadQueue), DispatcherPriority.ApplicationIdle);
     }
 
     private void ProcessPreloadQueue()
@@ -156,7 +157,7 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         {
             if (_preloadQueue.Count > 0)
             {
-                Dispatcher.BeginInvoke(new Action(ProcessPreloadQueue), DispatcherPriority.Background);
+                Dispatcher.BeginInvoke(new Action(ProcessPreloadQueue), DispatcherPriority.ApplicationIdle);
             }
             else
             {
@@ -616,15 +617,31 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
 
             DetachCurrentRootObservers();
             _observedCurrentRoot = root;
-            _observedCurrentRootLoadedHandler = (_, _) => TryFocusAndMaybeFinalize();
-            _observedCurrentRootLayoutUpdatedHandler = (_, _) => TryFocusAndMaybeFinalize();
+            _observedCurrentRootLoadedHandler = (_, _) =>
+            {
+                try { ScheduleFocusRetry(DispatcherPriority.Input); } catch { /* ignore */ }
+            };
             root.Loaded += _observedCurrentRootLoadedHandler;
-            root.LayoutUpdated += _observedCurrentRootLayoutUpdatedHandler;
+            ScheduleFocusRetry(DispatcherPriority.ContextIdle);
         }
         catch
         {
             // ignore
         }
+    }
+
+    private void ScheduleFocusRetry(DispatcherPriority priority)
+    {
+        var transitionId = _transitionId;
+        _ = Dispatcher.BeginInvoke(priority, new Action(() =>
+        {
+            if (transitionId != _transitionId)
+            {
+                return;
+            }
+
+            TryFocusAndMaybeFinalize();
+        }));
     }
 
     private void DetachCurrentRootObservers()
@@ -637,11 +654,6 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
                 {
                     _observedCurrentRoot.Loaded -= _observedCurrentRootLoadedHandler;
                 }
-
-                if (_observedCurrentRootLayoutUpdatedHandler != null)
-                {
-                    _observedCurrentRoot.LayoutUpdated -= _observedCurrentRootLayoutUpdatedHandler;
-                }
             }
         }
         catch
@@ -652,7 +664,6 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         {
             _observedCurrentRoot = null;
             _observedCurrentRootLoadedHandler = null;
-            _observedCurrentRootLayoutUpdatedHandler = null;
         }
     }
 
@@ -932,4 +943,3 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         public int GetHashCode(object obj) => RuntimeHelpers.GetHashCode(obj);
     }
 }
-

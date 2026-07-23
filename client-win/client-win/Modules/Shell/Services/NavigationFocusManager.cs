@@ -24,7 +24,6 @@ public sealed class NavigationFocusManager : INavigationFocusManager
     private EventHandler? _windowActivatedHandler;
     private FrameworkElement? _observedRoot;
     private RoutedEventHandler? _rootLoadedHandler;
-    private EventHandler? _rootLayoutUpdatedHandler;
 
     public NavigationFocusManager(Dispatcher dispatcher)
     {
@@ -80,6 +79,12 @@ public sealed class NavigationFocusManager : INavigationFocusManager
             _navId = unchecked(_navId + 1);
             DetachFocusObservers();
 
+            if (ContentHostHandlesNavigationFocus())
+            {
+                ScheduleCompleteFocusPass(_navId, DispatcherPriority.ApplicationIdle);
+                return;
+            }
+
             // Fast attempts around layout/render boundaries.
             _dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => TryEnsureInitialFocus(_navId)));
             _dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => TryEnsureInitialFocus(_navId)));
@@ -112,14 +117,10 @@ public sealed class NavigationFocusManager : INavigationFocusManager
                 _observedRoot = fe;
                 _rootLoadedHandler = (_, _) =>
                 {
-                    try { TryEnsureInitialFocus(navId); } catch { /* ignore */ }
-                };
-                _rootLayoutUpdatedHandler = (_, _) =>
-                {
-                    try { TryEnsureInitialFocus(navId); } catch { /* ignore */ }
+                    try { ScheduleFocusRetry(navId, DispatcherPriority.Input); } catch { /* ignore */ }
                 };
                 fe.Loaded += _rootLoadedHandler;
-                fe.LayoutUpdated += _rootLayoutUpdatedHandler;
+                ScheduleFocusRetry(navId, DispatcherPriority.ContextIdle);
             }
         }
         catch
@@ -189,14 +190,10 @@ public sealed class NavigationFocusManager : INavigationFocusManager
                 _observedRoot = fe;
                 _rootLoadedHandler = (_, _) =>
                 {
-                    try { TryEnsureInitialFocus(navId); } catch { /* ignore */ }
-                };
-                _rootLayoutUpdatedHandler = (_, _) =>
-                {
-                    try { TryEnsureInitialFocus(navId); } catch { /* ignore */ }
+                    try { ScheduleFocusRetry(navId, DispatcherPriority.Input); } catch { /* ignore */ }
                 };
                 fe.Loaded += _rootLoadedHandler;
-                fe.LayoutUpdated += _rootLayoutUpdatedHandler;
+                ScheduleFocusRetry(navId, DispatcherPriority.ContextIdle);
                 return;
             }
 
@@ -207,6 +204,42 @@ public sealed class NavigationFocusManager : INavigationFocusManager
         catch (Exception ex)
         {
             Log.Debug(ex, "NavigationFocusManager.TryEnsureInitialFocus failed");
+        }
+    }
+
+    private void ScheduleFocusRetry(int navId, DispatcherPriority priority)
+    {
+        _dispatcher.BeginInvoke(priority, new Action(() => TryEnsureInitialFocus(navId)));
+    }
+
+    private void ScheduleCompleteFocusPass(int navId, DispatcherPriority priority)
+    {
+        _dispatcher.BeginInvoke(priority, new Action(() =>
+        {
+            if (navId != _navId)
+            {
+                return;
+            }
+
+            CompleteFocusPass();
+        }));
+    }
+
+    private static bool ContentHostHandlesNavigationFocus()
+    {
+        try
+        {
+            var window = Application.Current?.MainWindow;
+            if (window == null)
+            {
+                return false;
+            }
+
+            return TryGetRootHost(window) is INavigationFocusHost { HandlesNavigationFocus: true };
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -314,11 +347,6 @@ public sealed class NavigationFocusManager : INavigationFocusManager
                 {
                     _observedRoot.Loaded -= _rootLoadedHandler;
                 }
-
-                if (_rootLayoutUpdatedHandler != null)
-                {
-                    _observedRoot.LayoutUpdated -= _rootLayoutUpdatedHandler;
-                }
             }
         }
         catch
@@ -329,7 +357,6 @@ public sealed class NavigationFocusManager : INavigationFocusManager
         {
             _observedRoot = null;
             _rootLoadedHandler = null;
-            _rootLayoutUpdatedHandler = null;
         }
     }
 
@@ -571,5 +598,3 @@ public sealed class NavigationFocusManager : INavigationFocusManager
         return LogicalTreeHelper.GetParent(current);
     }
 }
-
-
