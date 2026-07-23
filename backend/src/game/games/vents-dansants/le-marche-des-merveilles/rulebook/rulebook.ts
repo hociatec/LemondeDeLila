@@ -37,13 +37,17 @@ export function getAvailableActions(
     const price = meta.prices?.[good] ?? 0;
     if (coins >= price) {
       actions.push({ type: 'buy', payload: { good } });
+      actions.push({ type: `buy_${good}`, payload: {} });
     }
     if (inventory[good] > 0) {
       actions.push({ type: 'sell', payload: { good } });
+      actions.push({ type: `sell_${good}`, payload: {} });
     }
     if (coins >= RUMOR_COST) {
       actions.push({ type: 'rumor', payload: { good, direction: 'up' } });
       actions.push({ type: 'rumor', payload: { good, direction: 'down' } });
+      actions.push({ type: `rumor_up_${good}`, payload: {} });
+      actions.push({ type: `rumor_down_${good}`, payload: {} });
     }
   }
 
@@ -62,6 +66,7 @@ export function getAvailableActions(
           type: 'steal_deal',
           payload: { targetPlayerId: targetId, good },
         });
+        actions.push({ type: 'steal_deal_best', payload: {} });
       }
     }
   }
@@ -84,33 +89,28 @@ export function validateAction(
   if (state.turn?.currentPlayerId !== actorId) {
     throw new Error("Ce n'est pas votre tour.");
   }
-  if (
-    type !== 'buy' &&
-    type !== 'sell' &&
-    type !== 'rumor' &&
-    type !== 'protect' &&
-    type !== 'steal_deal' &&
-    type !== 'pass'
-  ) {
+  const normalized = normalizeMarketAction(state, action, actorId);
+  if (!normalized) {
     throw new Error(`Action inconnue : ${type}`);
   }
 
   const meta = getMeta(state);
-  const payload = (action.payload ?? {}) as MarketActionPayload;
+  const payload = normalized.payload;
+  const normalizedType = normalized.type;
   const good = parseGood(payload.good);
   const coins = meta.coins?.[actorId] ?? 0;
   const inventory = copyInventory(meta.inventories?.[actorId]);
 
-  if ((type === 'buy' || type === 'sell' || type === 'rumor') && !good) {
+  if ((normalizedType === 'buy' || normalizedType === 'sell' || normalizedType === 'rumor') && !good) {
     throw new Error('Marchandise manquante.');
   }
-  if (type === 'buy' && good && coins < (meta.prices?.[good] ?? 0)) {
+  if (normalizedType === 'buy' && good && coins < (meta.prices?.[good] ?? 0)) {
     throw new Error(`Pas assez de pieces pour acheter ${GOOD_LABELS[good]}.`);
   }
-  if (type === 'sell' && good && inventory[good] <= 0) {
+  if (normalizedType === 'sell' && good && inventory[good] <= 0) {
     throw new Error(`Vous ne possedez pas ${GOOD_LABELS[good]}.`);
   }
-  if (type === 'rumor') {
+  if (normalizedType === 'rumor') {
     const direction = String(payload.direction ?? '').trim();
     if (direction !== 'up' && direction !== 'down') {
       throw new Error('Rumeur invalide.');
@@ -119,10 +119,10 @@ export function validateAction(
       throw new Error('Pas assez de pieces pour lancer une rumeur.');
     }
   }
-  if (type === 'protect' && coins < PROTECT_COST) {
+  if (normalizedType === 'protect' && coins < PROTECT_COST) {
     throw new Error('Pas assez de pieces pour proteger votre etal.');
   }
-  if (type === 'steal_deal') {
+  if (normalizedType === 'steal_deal') {
     const targetPlayerId = Number(payload.targetPlayerId ?? 0);
     if (!good || targetPlayerId <= 0 || targetPlayerId === actorId) {
       throw new Error('Cible invalide.');
@@ -142,6 +142,70 @@ export function validateAction(
 export function parseGood(value: unknown): WonderGood | null {
   const raw = String(value ?? '').trim();
   return (WONDER_GOODS as string[]).includes(raw) ? (raw as WonderGood) : null;
+}
+
+export function normalizeMarketAction(
+  state: GameStateEntity,
+  action: GameSingleActionDto,
+  actorId: number | null,
+): { type: string; payload: MarketActionPayload } | null {
+  const type = normalizeActionType(action);
+  const payload = { ...((action.payload ?? {}) as MarketActionPayload) };
+  if (
+    type === 'buy' ||
+    type === 'sell' ||
+    type === 'rumor' ||
+    type === 'protect' ||
+    type === 'steal_deal' ||
+    type === 'pass'
+  ) {
+    return { type, payload };
+  }
+
+  for (const good of WONDER_GOODS) {
+    if (type === `buy_${good}`) {
+      return { type: 'buy', payload: { good } };
+    }
+    if (type === `sell_${good}`) {
+      return { type: 'sell', payload: { good } };
+    }
+    if (type === `rumor_up_${good}`) {
+      return { type: 'rumor', payload: { good, direction: 'up' } };
+    }
+    if (type === `rumor_down_${good}`) {
+      return { type: 'rumor', payload: { good, direction: 'down' } };
+    }
+  }
+
+  if (type === 'steal_deal_best' && actorId != null) {
+    const best = findBestStealTarget(state, actorId);
+    return best ? { type: 'steal_deal', payload: best } : null;
+  }
+
+  return null;
+}
+
+function findBestStealTarget(
+  state: GameStateEntity,
+  actorId: number,
+): MarketActionPayload | null {
+  const meta = getMeta(state);
+  let best: { targetPlayerId: number; good: WonderGood; price: number } | null =
+    null;
+  for (const target of state.players ?? []) {
+    const targetPlayerId = Number(target?.id ?? 0);
+    if (targetPlayerId <= 0 || targetPlayerId === actorId) continue;
+    if (meta.protectedPlayers?.[targetPlayerId]) continue;
+    const inventory = copyInventory(meta.inventories?.[targetPlayerId]);
+    for (const good of WONDER_GOODS) {
+      if (inventory[good] <= 0) continue;
+      const price = meta.prices?.[good] ?? 0;
+      if (!best || price > best.price) {
+        best = { targetPlayerId, good, price };
+      }
+    }
+  }
+  return best ? { targetPlayerId: best.targetPlayerId, good: best.good } : null;
 }
 
 function getMeta(state: GameStateEntity): LeMarcheDesMerveillesMetadata {

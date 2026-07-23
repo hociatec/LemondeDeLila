@@ -22,7 +22,7 @@ import type {
   LeMarcheDesMerveillesMetadata,
   WonderGood,
 } from '../model/le-marche-des-merveilles-state.entity';
-import { parseGood } from '../rulebook/rulebook';
+import { normalizeMarketAction, parseGood } from '../rulebook/rulebook';
 
 type MarketActionPayload = {
   good?: string | null;
@@ -42,15 +42,23 @@ export class LeMarcheDesMerveillesActionService {
     actions: GameSingleActionDto[],
   ): GameStateEntity {
     return applyActionsSequentially(state, actions, (next, action) => {
-      const type = normalizeActionType(action);
+      const actorId = next.turn?.currentPlayerId ?? null;
+      const normalized = normalizeMarketAction(next, action, actorId);
+      if (!normalized) return next;
+      const type = normalizeActionType({ type: normalized.type });
+      const normalizedAction = {
+        ...action,
+        type: normalized.type,
+        payload: normalized.payload,
+      };
       return dispatchByActionType(
         type,
         {
-          buy: () => this.handleBuy(next, action),
-          sell: () => this.handleSell(next, action),
-          rumor: () => this.handleRumor(next, action),
+          buy: () => this.handleBuy(next, normalizedAction),
+          sell: () => this.handleSell(next, normalizedAction),
+          rumor: () => this.handleRumor(next, normalizedAction),
           protect: () => this.handleProtect(next),
-          steal_deal: () => this.handleStealDeal(next, action),
+          steal_deal: () => this.handleStealDeal(next, normalizedAction),
           pass: () => this.finishAction(next, 'observe le marche.'),
         },
         () => next,

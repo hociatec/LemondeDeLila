@@ -97,6 +97,28 @@ describe('LeMarcheDesMerveilles', () => {
     expect(meta.prices.gemmes).toBe(5);
   });
 
+  it('accepts keyboard action aliases', () => {
+    const setup = new LeMarcheDesMerveillesSetupService();
+    const actions = createActionService();
+    let state = setup.hydrateInitialState(baseState());
+
+    expect(() =>
+      Rulebook.validateAction(
+        state,
+        { type: 'buy_gemmes', payload: {} } as any,
+        1,
+      ),
+    ).not.toThrow();
+
+    state = actions.applyActions(state, [
+      { type: 'buy_gemmes', payload: {} } as any,
+    ]);
+
+    const meta = state.metadata as LeMarcheDesMerveillesMetadata;
+    expect(meta.coins[1]).toBe(7);
+    expect(meta.inventories[1].gemmes).toBe(1);
+  });
+
   it('finishes after the configured number of turns', () => {
     const setup = new LeMarcheDesMerveillesSetupService();
     const actions = createActionService();

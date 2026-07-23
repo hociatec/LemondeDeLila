@@ -16,6 +16,7 @@ import { LE_MARCHE_DES_MERVEILLES_GAME } from './definitions/game.definition';
 import { LeMarcheDesMerveillesPresenterService } from './presenter/le-marche-des-merveilles-presenter.service';
 import * as Rulebook from './rulebook/rulebook';
 import { LeMarcheDesMerveillesSetupService } from './setup/le-marche-des-merveilles-setup.service';
+import { buildLeMarcheDesMerveillesShortcuts } from './le-marche-des-merveilles.shortcuts';
 
 @Injectable()
 export class LeMarcheDesMerveillesService extends AbstractGameService {
@@ -78,7 +79,7 @@ export class LeMarcheDesMerveillesService extends AbstractGameService {
     return this.bots.getBotActions(state, botPlayerId);
   }
 
-  getShortcuts(_ctx: GameShortcutsContext<any>): GameShortcutHint[] {
-    return [];
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildLeMarcheDesMerveillesShortcuts(ctx);
   }
 }
