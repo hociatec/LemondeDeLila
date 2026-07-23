@@ -1,0 +1,8 @@
+{
+  "code": "le-marche-des-merveilles",
+  "name": "Le Marche des Merveilles",
+  "minPlayers": 2,
+  "maxPlayers": 6,
+  "engine": "le-marche-des-merveilles",
+  "summary": "Achetez, vendez, influencez les prix et protegez votre etal pour devenir la plus grande fortune du marche."
+}
