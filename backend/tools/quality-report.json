@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-03-12T04:55:31.948Z",
+  "generatedAt": "2026-07-23T02:44:15.797Z",
   "baselineUpdatedAt": "2026-03-12",
   "metrics": {
-    "manualActionPayloadParsing": 5,
-    "directPendingAssignments": 132,
-    "mojibakeMatches": 325,
-    "scoresByPlayerIdMentionsInGames": 68,
+    "manualActionPayloadParsing": 4,
+    "directPendingAssignments": 46,
+    "mojibakeMatches": 284,
+    "scoresByPlayerIdMentionsInGames": 65,
     "targetScoreMentionsInGames": 39
   },
   "baseline": {

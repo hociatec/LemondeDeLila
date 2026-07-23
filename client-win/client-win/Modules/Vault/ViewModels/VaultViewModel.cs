@@ -2,6 +2,7 @@ using System;
 using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows;
@@ -14,7 +15,7 @@ using client_win.Modules.Vault.Services;
 
 namespace client_win.Modules.Vault.ViewModels;
 
-public sealed class VaultViewModel : ObservableObject, IDisposable, IShellContentCachePolicy
+public sealed class VaultViewModel : ObservableObject, IDisposable, IShellContentCachePolicy, IShellNavigationAware
 {
     private readonly IVaultClient _vault;
     private readonly IGameTableOpener _tables;
@@ -68,6 +69,21 @@ public sealed class VaultViewModel : ObservableObject, IDisposable, IShellConten
 
         _initialized = true;
         return LoadAsync();
+    }
+
+    public async Task OnNavigatedToAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        await InitializeAsync().ConfigureAwait(true);
+    }
+
+    public Task OnNavigatedFromAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
     }
 
     public ObservableCollection<VaultSnapshotItem> Items { get; } = new();

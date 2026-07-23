@@ -1,7 +1,8 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using client_win.Core.Diagnostics;
 
 namespace client_win.Modules.Shell.Services;
 
@@ -12,11 +13,15 @@ public sealed class NavigationService : INavigationService
 {
     private UserContext _currentUser = UserContext.Empty;
     private readonly INavigationFocusManager? _focusManager;
+    private CancellationTokenSource? _navigationLifecycleCts;
+    private long _navigationVersion;
 
     public object? CurrentContent { get; private set; }
+    public ShellRoute? CurrentRoute { get; private set; }
     public UserContext CurrentUser => _currentUser;
 
     public event EventHandler<object?>? CurrentContentChanged;
+    public event EventHandler<ShellRoute?>? CurrentRouteChanged;
 
     public NavigationService(INavigationFocusManager? focusManager = null)
     {
@@ -45,13 +50,6 @@ public sealed class NavigationService : INavigationService
             return;
         }
 
-        if (ReferenceEquals(CurrentContent, content))
-        {
-            return;
-        }
-
-        using var _ = PerfTrace.Measure($"nav.show {(content.GetType().Name ?? "<unknown>")}");
-
         try
         {
             _focusManager?.BeforeNavigation();
@@ -61,10 +59,17 @@ public sealed class NavigationService : INavigationService
             // best-effort
         }
 
+        var previousContent = CurrentContent;
+        var previousRoute = CurrentRoute;
+        var nextRoute = ShellRoute.FromContent(content);
+        var navigationVersion = unchecked(++_navigationVersion);
+
         CurrentContent = content;
+        CurrentRoute = nextRoute;
         try
         {
             CurrentContentChanged?.Invoke(this, content);
+            CurrentRouteChanged?.Invoke(this, nextRoute);
         }
         catch
         {
@@ -79,6 +84,8 @@ public sealed class NavigationService : INavigationService
         {
             // best-effort
         }
+
+        ScheduleLifecycle(previousContent, previousRoute, content, nextRoute, navigationVersion);
 
         // Accessibilité : donner une opportunité au focus clavier d'atterrir dans la nouvelle vue.
 #if false
@@ -105,6 +112,81 @@ public sealed class NavigationService : INavigationService
             }
         }));
 #endif
+    }
+
+    private void ScheduleLifecycle(
+        object? previousContent,
+        ShellRoute? previousRoute,
+        object nextContent,
+        ShellRoute nextRoute,
+        long navigationVersion)
+    {
+        try
+        {
+            _navigationLifecycleCts?.Cancel();
+            _navigationLifecycleCts?.Dispose();
+            _navigationLifecycleCts = new CancellationTokenSource();
+            var token = _navigationLifecycleCts.Token;
+
+            var dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+            _ = dispatcher.BeginInvoke(
+                DispatcherPriority.ContextIdle,
+                new Action(async () =>
+                {
+                    if (navigationVersion != _navigationVersion || token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    await RunLifecycleAsync(previousContent, previousRoute, nextContent, nextRoute, token)
+                        .ConfigureAwait(true);
+                }));
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    private async Task RunLifecycleAsync(
+        object? previousContent,
+        ShellRoute? previousRoute,
+        object nextContent,
+        ShellRoute nextRoute,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (previousContent is IShellNavigationAware previousAware && previousRoute != null)
+            {
+                await previousAware
+                    .OnNavigatedFromAsync(new ShellNavigationContext(previousRoute, previousContent, CurrentUser), cancellationToken)
+                    .ConfigureAwait(true);
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        try
+        {
+            if (nextContent is IShellNavigationAware nextAware)
+            {
+                await nextAware
+                    .OnNavigatedToAsync(new ShellNavigationContext(nextRoute, nextContent, CurrentUser), cancellationToken)
+                    .ConfigureAwait(true);
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
     }
 }
 

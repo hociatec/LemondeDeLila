@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using client_win.Core;
@@ -16,7 +17,7 @@ using client_win.Modules.User.Services;
 
 namespace client_win.Modules.Notifications.ViewModels;
 
-public sealed class NotificationsViewModel : ObservableObject
+public sealed class NotificationsViewModel : ObservableObject, IShellNavigationAware
 {
     private readonly INotificationInbox _inbox;
     private readonly INotifyGatewayClient _notify;
@@ -180,6 +181,21 @@ public sealed class NotificationsViewModel : ObservableObject
     {
         await RefreshAsync().ConfigureAwait(true);
         UpdateStatusAndSelection();
+    }
+
+    public async Task OnNavigatedToAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        await InitializeAsync().ConfigureAwait(true);
+    }
+
+    public Task OnNavigatedFromAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
     }
 
     public bool HandleEscape()

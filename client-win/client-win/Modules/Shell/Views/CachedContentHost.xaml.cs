@@ -16,7 +16,7 @@ namespace client_win.Modules.Shell.Views;
 /// Content host that caches DataTemplate-generated views for selected shell-level pages.
 /// This avoids destroying/recreating visual trees during navigation, which is a common trigger for NVDA "non disponible".
 /// </summary>
-public partial class CachedContentHost : UserControl, ICurrentContentRootProvider, INavigationFocusHost
+public partial class CachedContentHost : UserControl, ICurrentContentRootProvider
 {
     public static readonly DependencyProperty CurrentContentProperty =
         DependencyProperty.Register(
@@ -45,6 +45,7 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
     private int _currentFocusReadyHookedForTransitionId;
     private FrameworkElement? _observedCurrentRoot;
     private RoutedEventHandler? _observedCurrentRootLoadedHandler;
+    private EventHandler? _observedCurrentRootLayoutUpdatedHandler;
 
     private const int MaxCacheEntries = 10;
 
@@ -75,8 +76,6 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         get => GetValue(CurrentContentProperty);
         set => SetValue(CurrentContentProperty, value);
     }
-
-    public bool HandlesNavigationFocus => true;
 
     /// <summary>
     /// Pre-creates the presenter and materializes the view template for the given content without navigating to it.
@@ -126,7 +125,7 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         }
 
         _preloadScheduled = true;
-        Dispatcher.BeginInvoke(new Action(ProcessPreloadQueue), DispatcherPriority.ApplicationIdle);
+        Dispatcher.BeginInvoke(new Action(ProcessPreloadQueue), DispatcherPriority.Background);
     }
 
     private void ProcessPreloadQueue()
@@ -157,7 +156,7 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         {
             if (_preloadQueue.Count > 0)
             {
-                Dispatcher.BeginInvoke(new Action(ProcessPreloadQueue), DispatcherPriority.ApplicationIdle);
+                Dispatcher.BeginInvoke(new Action(ProcessPreloadQueue), DispatcherPriority.Background);
             }
             else
             {
@@ -189,6 +188,34 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         }
         DetachCurrentRootObservers();
         _currentFocusReadyHookedForTransitionId = 0;
+
+        if (newContent != null && IsPersistentShellPage(newContent))
+        {
+            try
+            {
+                if (_current != null)
+                {
+                    var oldRoot = TryGetPresenterRoot(_current.Presenter);
+                    if (oldRoot != null && IsFocusWithin(oldRoot))
+                    {
+                        FocusParking.ForcePark(Window.GetWindow(this) ?? Application.Current?.MainWindow);
+                    }
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+
+            _previous = null;
+            _current = GetOrCreateEntry(newContent, ensureInHostGrid: true);
+
+            UpdatePersistentPresenterVisibilities();
+            EvictIfNeeded();
+
+            BeginFocusPass();
+            return;
+        }
 
         _previous = _current;
         _current = newContent == null ? null : GetOrCreateEntry(newContent, ensureInHostGrid: true);
@@ -302,8 +329,8 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
             return policy.IsCacheable;
         }
 
-        // Cache only "shell pages" that are frequently revisited and known to be single-instance per navigation.
-        // Ephemeral pages (catalog/stats/leaderboard/join game/game room) are intentionally not cached.
+        // Cache only shell pages that are frequently revisited and known to be single-instance per navigation.
+        // Feature pages can opt in explicitly through IShellContentCachePolicy.
         var t = content.GetType();
         var name = t.FullName ?? t.Name;
         return name.Contains("Modules.Home.ViewModels.HomeViewModel", StringComparison.Ordinal) ||
@@ -315,6 +342,34 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
                name.Contains("Modules.Admin.ViewModels.AdminViewModel", StringComparison.Ordinal) ||
                name.Contains("Modules.Notifications.ViewModels.NotificationsViewModel", StringComparison.Ordinal) ||
                name.Contains("Modules.Messaging.ViewModels.MessagingViewModel", StringComparison.Ordinal);
+    }
+
+    private static bool IsPersistentShellPage(object content)
+    {
+        if (content is IShellContentCachePolicy policy)
+        {
+            return policy.IsCacheable;
+        }
+
+        var t = content.GetType();
+        var name = t.FullName ?? t.Name;
+        return name.Contains("Modules.Home.ViewModels.HomeViewModel", StringComparison.Ordinal) ||
+               name.Contains("Modules.MainMenu.ViewModels.MainMenuViewModel", StringComparison.Ordinal) ||
+               name.Contains("Modules.Social.ViewModels.SocialViewModel", StringComparison.Ordinal) ||
+               name.Contains("Modules.Notifications.ViewModels.NotificationsViewModel", StringComparison.Ordinal) ||
+               name.Contains("Modules.Messaging.ViewModels.MessagingViewModel", StringComparison.Ordinal) ||
+               name.Contains("Modules.About.ViewModels.AboutViewModel", StringComparison.Ordinal);
+    }
+
+    private void UpdatePersistentPresenterVisibilities()
+    {
+        foreach (var entry in _entries.Values)
+        {
+            var isCurrent = _current != null && ReferenceEquals(entry.Content, _current.Content);
+            entry.Presenter.Visibility = isCurrent ? Visibility.Visible : Visibility.Collapsed;
+            entry.Presenter.IsHitTestVisible = isCurrent;
+            Panel.SetZIndex(entry.Presenter, isCurrent ? 1 : 0);
+        }
     }
 
     private void UpdatePresenterVisibilities()
@@ -617,31 +672,15 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
 
             DetachCurrentRootObservers();
             _observedCurrentRoot = root;
-            _observedCurrentRootLoadedHandler = (_, _) =>
-            {
-                try { ScheduleFocusRetry(DispatcherPriority.Input); } catch { /* ignore */ }
-            };
+            _observedCurrentRootLoadedHandler = (_, _) => TryFocusAndMaybeFinalize();
+            _observedCurrentRootLayoutUpdatedHandler = (_, _) => TryFocusAndMaybeFinalize();
             root.Loaded += _observedCurrentRootLoadedHandler;
-            ScheduleFocusRetry(DispatcherPriority.ContextIdle);
+            root.LayoutUpdated += _observedCurrentRootLayoutUpdatedHandler;
         }
         catch
         {
             // ignore
         }
-    }
-
-    private void ScheduleFocusRetry(DispatcherPriority priority)
-    {
-        var transitionId = _transitionId;
-        _ = Dispatcher.BeginInvoke(priority, new Action(() =>
-        {
-            if (transitionId != _transitionId)
-            {
-                return;
-            }
-
-            TryFocusAndMaybeFinalize();
-        }));
     }
 
     private void DetachCurrentRootObservers()
@@ -654,6 +693,11 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
                 {
                     _observedCurrentRoot.Loaded -= _observedCurrentRootLoadedHandler;
                 }
+
+                if (_observedCurrentRootLayoutUpdatedHandler != null)
+                {
+                    _observedCurrentRoot.LayoutUpdated -= _observedCurrentRootLayoutUpdatedHandler;
+                }
             }
         }
         catch
@@ -664,6 +708,7 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         {
             _observedCurrentRoot = null;
             _observedCurrentRootLoadedHandler = null;
+            _observedCurrentRootLayoutUpdatedHandler = null;
         }
     }
 

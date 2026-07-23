@@ -49,23 +49,6 @@ public partial class MessagingView : UserControl, IInitialFocusTarget
             }
             ShowScreen(MessagingScreen.Menu);
         }, DispatcherPriority.Input);
-
-        if (DataContext is MessagingViewModel vm)
-        {
-            _ = InitializeVmAsync(vm);
-        }
-    }
-
-    private static async Task InitializeVmAsync(MessagingViewModel vm)
-    {
-        try
-        {
-            await vm.InitializeAsync().ConfigureAwait(true);
-        }
-        catch
-        {
-            // Best-effort: éviter une exception non gérée qui bloquerait l'UI.
-        }
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)

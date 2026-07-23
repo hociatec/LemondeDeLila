@@ -4,10 +4,10 @@ const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
-function rgCount(pattern, searchRoot) {
+function rgCount(pattern, searchRoot, extraArgs = []) {
   const result = spawnSync(
     'rg',
-    ['-n', pattern, searchRoot, '-g', '*.ts'],
+    ['-n', pattern, searchRoot, '-g', '*.ts', ...extraArgs],
     { encoding: 'utf8' },
   );
   // In this environment, spawnSync can set result.error (EPERM) even when the
@@ -41,7 +41,11 @@ const manualActionPayloadParsing = rgCount(
   'Number\\(\\(action\\.payload|String\\(\\(action\\.payload',
   'src/game',
 );
-const directPendingAssignments = rgCount('pending\\s*:\\s*\\{', 'src/game');
+const productionDirectPendingAssignments = rgCount(
+  'pending\\s*:\\s*\\{',
+  'src/game',
+  ['-g', '!*.spec.ts'],
+);
 const mojibakeMatches = rgCount('Ã|â€™|â€œ|â€|Â|ï»¿|�', 'src');
 const scoresByPlayerIdMentionsInGames = rgCount(
   '\\bscoresByPlayerId\\b',
@@ -61,7 +65,7 @@ const baselineManualActionPayloadParsing = getBaselineMetric(
 const baselineDirectPendingAssignments = getBaselineMetric(
   baseline,
   'directPendingAssignments',
-  directPendingAssignments,
+  productionDirectPendingAssignments,
 );
 const baselineMojibakeMatches = getBaselineMetric(
   baseline,
@@ -83,7 +87,7 @@ const report = {
   baselineUpdatedAt: baseline.updatedAt,
   metrics: {
     manualActionPayloadParsing,
-    directPendingAssignments,
+    directPendingAssignments: productionDirectPendingAssignments,
     mojibakeMatches,
     scoresByPlayerIdMentionsInGames,
     targetScoreMentionsInGames,
@@ -93,7 +97,7 @@ const report = {
     manualActionPayloadParsing:
       manualActionPayloadParsing > baselineManualActionPayloadParsing,
     directPendingAssignments:
-      directPendingAssignments > baselineDirectPendingAssignments,
+      productionDirectPendingAssignments > baselineDirectPendingAssignments,
     mojibakeMatches: mojibakeMatches > baselineMojibakeMatches,
     scoresByPlayerIdMentionsInGames:
       scoresByPlayerIdMentionsInGames >

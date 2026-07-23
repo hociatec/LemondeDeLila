@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -12,7 +13,7 @@ using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Messaging.ViewModels;
 
-public sealed class MessagingViewModel : ObservableObject
+public sealed class MessagingViewModel : ObservableObject, IShellNavigationAware
 {
     private readonly IMessagingService _service;
     private readonly IDialogService _dialogs;
@@ -279,6 +280,21 @@ public sealed class MessagingViewModel : ObservableObject
     public async Task InitializeAsync()
     {
         await LoadBoxAsync(SelectedBox).ConfigureAwait(true);
+    }
+
+    public async Task OnNavigatedToAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        await InitializeAsync().ConfigureAwait(true);
+    }
+
+    public Task OnNavigatedFromAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
     }
 
     public Task ReloadSelectedBoxAsync()

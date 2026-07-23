@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -29,7 +30,7 @@ public enum ProfileEditorMode
     Visibility
 }
 
-public sealed class SocialViewModel : ObservableObject
+public sealed class SocialViewModel : ObservableObject, IShellNavigationAware
 {
     private readonly ISocialService _service;
     private readonly Func<int, string, Task<string>>? _openStoryBook;
@@ -354,6 +355,21 @@ public sealed class SocialViewModel : ObservableObject
     public async Task InitializeAsync()
     {
         await LoadSectionAsync(SelectedSection).ConfigureAwait(true);
+    }
+
+    public async Task OnNavigatedToAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        await InitializeAsync().ConfigureAwait(true);
+    }
+
+    public Task OnNavigatedFromAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
     }
 
     private async Task LoadSectionAsync(SocialSection section)
