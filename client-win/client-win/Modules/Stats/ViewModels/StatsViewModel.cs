@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -18,7 +19,7 @@ public enum StatsNavResult
     Closed
 }
 
-public sealed class StatsViewModel : ObservableObject, IShellContentCachePolicy
+public sealed class StatsViewModel : ObservableObject, IShellContentCachePolicy, IShellNavigationAware
 {
     private readonly IStatsService _stats;
     private readonly Func<Task>? _openLeaderboard;
@@ -75,7 +76,6 @@ public sealed class StatsViewModel : ObservableObject, IShellContentCachePolicy
 
     public bool IsCacheable => _cacheable;
 
-    // Called by the view once it is visible: ensures we don't trigger network calls before the UI is shown.
     public Task InitializeAsync()
     {
         if (_initialized)
@@ -92,6 +92,21 @@ public sealed class StatsViewModel : ObservableObject, IShellContentCachePolicy
             return LoadGamesAsync();
         }
 
+        return Task.CompletedTask;
+    }
+
+    public async Task OnNavigatedToAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        await InitializeAsync().ConfigureAwait(true);
+    }
+
+    public Task OnNavigatedFromAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
         return Task.CompletedTask;
     }
 
@@ -337,4 +352,3 @@ public sealed class StatsViewModel : ObservableObject, IShellContentCachePolicy
         Details
     }
 }
-

@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows;
@@ -32,6 +33,7 @@ public enum CatalogEscapeResult
 public sealed class CatalogViewModel : ObservableObject
     , IDisposable
     , IShellContentCachePolicy
+    , IShellNavigationAware
 {
     private readonly ICatalogService _service;
     private readonly IOptionsService _options;
@@ -50,6 +52,7 @@ public sealed class CatalogViewModel : ObservableObject
     private int _selectionRevision;
     private bool _refreshAfterBusy;
     private bool _isDisposed;
+    private bool _initialized;
     private const string ActionPrefix = "action:";
     private static readonly CultureInfo CatalogCulture = CultureInfo.GetCultureInfo("fr-FR");
     private readonly EventHandler _onOptionsChanged;
@@ -118,9 +121,6 @@ public sealed class CatalogViewModel : ObservableObject
         }
 
         Status = "Chargement du catalogue...";
-        // IMPORTANT: ne pas muter les collections pendant que WPF est en train de mesurer/générer les conteneurs
-        // (sinon ItemsControl peut lever ItemContainerGenerator.Verify()).
-        _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => RefreshCommand.Execute(null)));
     }
 
     public ObservableCollection<CatalogCategory> Shelves { get; } = new();
@@ -128,6 +128,32 @@ public sealed class CatalogViewModel : ObservableObject
     public ObservableCollection<CatalogGame> Games { get; } = new();
 
     public bool IsCacheable => true;
+
+    public async Task InitializeAsync()
+    {
+        if (_initialized)
+        {
+            return;
+        }
+
+        _initialized = true;
+        await LoadAsync().ConfigureAwait(true);
+    }
+
+    public async Task OnNavigatedToAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        await InitializeAsync().ConfigureAwait(true);
+    }
+
+    public Task OnNavigatedFromAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
 
     public CatalogCategory? SelectedShelf
     {
@@ -319,6 +345,7 @@ public sealed class CatalogViewModel : ObservableObject
             }
 
             Status = "Catalogue mis à jour, rechargement...";
+            _initialized = true;
 
             if (IsBusy)
             {

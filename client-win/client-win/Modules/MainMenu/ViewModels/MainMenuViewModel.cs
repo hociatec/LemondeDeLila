@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using System.Collections.ObjectModel;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows;
 using System.Windows.Threading;
@@ -11,11 +13,10 @@ using client_win.Modules.MainMenu.Services;
 using client_win.Modules.User.Models;
 using client_win.Modules.Shell.Services;
 using Serilog;
-using System.ComponentModel;
 
 namespace client_win.Modules.MainMenu.ViewModels;
 
-public sealed class MainMenuViewModel : ObservableObject
+public sealed class MainMenuViewModel : ObservableObject, IShellNavigationAware
 {
     private readonly AuthenticatedUser _user;
     private readonly IMenuRouter _router;
@@ -26,6 +27,7 @@ public sealed class MainMenuViewModel : ObservableObject
     private string _statusMessage = "Prêt.";
     private bool _isAdminVisible;
     private bool _isBusy;
+    private bool _adminVisibilityInitialized;
     private MainMenuItem? _selectedItem;
 
     public MainMenuViewModel(
@@ -88,9 +90,6 @@ public sealed class MainMenuViewModel : ObservableObject
         });
         BuildMenuItems();
 
-        // Déclenche immédiatement la détection des droits admin à l'arrivée sur le menu.
-        _ = RefreshAdminVisibilityCommand.ExecuteAsync(null);
-
         // Les badges (notifications/messagerie) sont mis à jour en arrière-plan.
         // Recréer la liste à chaque changement déclenche des annonces NVDA répétées.
     }
@@ -134,6 +133,32 @@ public sealed class MainMenuViewModel : ObservableObject
 
     public AsyncRelayCommand ActivateCommand { get; }
     public AsyncRelayCommand RefreshAdminVisibilityCommand { get; }
+
+    public async Task InitializeAsync()
+    {
+        if (_adminVisibilityInitialized)
+        {
+            return;
+        }
+
+        _adminVisibilityInitialized = true;
+        await RefreshAdminVisibilityCommand.ExecuteAsync(null).ConfigureAwait(true);
+    }
+
+    public async Task OnNavigatedToAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        await InitializeAsync().ConfigureAwait(true);
+    }
+
+    public Task OnNavigatedFromAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
 
     private void SetStatus(string text) => StatusMessage = text;
 

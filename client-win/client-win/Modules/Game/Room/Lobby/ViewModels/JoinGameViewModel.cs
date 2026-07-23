@@ -14,7 +14,7 @@ using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Game.Room.Lobby.ViewModels;
 
-public sealed class JoinGameViewModel : ObservableObject, IDisposable
+public sealed class JoinGameViewModel : ObservableObject, IDisposable, IShellNavigationAware
 {
     private readonly IRoomLobbyClient _rooms;
     private readonly IGameTableOpener _tables;
@@ -28,6 +28,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
     private bool _isDisposed;
     private bool _subscribed;
     private bool _subscriptionSupported = true;
+    private bool _initialized;
     private bool _isBusy;
     private string _status = "Chargement des tables...";
     private ObservableCollection<PublicRoomListItem> _roomsList = new();
@@ -51,15 +52,6 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
         CloseCommand = new RelayCommand(_close);
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
         JoinSelectedCommand = new AsyncRelayCommand(JoinSelectedAsync);
-
-        _transportSubscription = _rooms.OnTransportConnected(() =>
-        {
-            // Si le WS "api" est recréé, l'abonnement côté serveur est perdu (connectionId change).
-            // On relance un refresh pour se ré-abonner sans forcer l'utilisateur à relancer le client.
-            ScheduleRefresh();
-        });
-
-        _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => RefreshCommand.Execute(null)));
     }
 
     public ObservableCollection<PublicRoomListItem> Rooms
@@ -89,6 +81,39 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
     public ICommand CloseCommand { get; }
     public AsyncRelayCommand RefreshCommand { get; }
     public AsyncRelayCommand JoinSelectedCommand { get; }
+
+    public async Task InitializeAsync()
+    {
+        if (_initialized)
+        {
+            return;
+        }
+
+        _initialized = true;
+        _transportSubscription = _rooms.OnTransportConnected(() =>
+        {
+            // Si le WS "api" est recréé, l'abonnement côté serveur est perdu (connectionId change).
+            // On relance un refresh pour se ré-abonner sans forcer l'utilisateur à relancer le client.
+            ScheduleRefresh();
+        });
+
+        await RefreshAsync().ConfigureAwait(true);
+    }
+
+    public async Task OnNavigatedToAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        await InitializeAsync().ConfigureAwait(true);
+    }
+
+    public Task OnNavigatedFromAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
 
     private async Task RefreshAsync()
     {

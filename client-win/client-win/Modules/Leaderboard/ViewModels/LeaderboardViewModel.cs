@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -18,7 +19,7 @@ public enum LeaderboardNavResult
     Closed
 }
 
-public sealed class LeaderboardViewModel : ObservableObject, IShellContentCachePolicy
+public sealed class LeaderboardViewModel : ObservableObject, IShellContentCachePolicy, IShellNavigationAware
 {
     private readonly ILeaderboardService _service;
     private readonly Action _close;
@@ -27,6 +28,7 @@ public sealed class LeaderboardViewModel : ObservableObject, IShellContentCacheP
     private string _title = "Classement";
     private string _status = string.Empty;
     private bool _isBusy;
+    private bool _initialized;
     private LeaderboardGameDto? _selectedGame;
     private const string EmptyInfo = "Aucune information encore disponible";
 
@@ -39,12 +41,37 @@ public sealed class LeaderboardViewModel : ObservableObject, IShellContentCacheP
         Items = new ObservableCollection<LeaderboardMenuItem>();
         ActivateCommand = new AsyncRelayCommand(ActivateSelectedAsync);
         Status = "Chargement...";
-        _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () => await LoadGamesAsync().ConfigureAwait(true)));
     }
 
     public ObservableCollection<LeaderboardMenuItem> Items { get; }
 
     public bool IsCacheable => true;
+
+    public async Task InitializeAsync()
+    {
+        if (_initialized)
+        {
+            return;
+        }
+
+        _initialized = true;
+        await LoadGamesAsync().ConfigureAwait(true);
+    }
+
+    public async Task OnNavigatedToAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        await InitializeAsync().ConfigureAwait(true);
+    }
+
+    public Task OnNavigatedFromAsync(ShellNavigationContext context, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
 
     public LeaderboardMenuItem? SelectedItem
     {

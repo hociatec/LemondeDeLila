@@ -129,8 +129,8 @@ public sealed class ShellSessionController
         _homeAccessor.HomeContent = menuVm;
         _navigation.Show(menuVm);
 
-        // UI warm-up: create the most-used shell view-models and kick off their background loads.
-        // This reduces the perceived "mini transition" the first time each screen is opened.
+        // UI warm-up: create the most-used shell view-models and materialize their views.
+        // Data loading is owned by the shell navigation lifecycle.
         try
         {
             var dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
