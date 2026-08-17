@@ -62,6 +62,10 @@ bool ChatService::Open()
     {
         SetState(domain::ChatState::Error);
         sessionStore_.Clear();
+        {
+            std::scoped_lock lock(mutex_);
+            lastServerError_ = domain::ChatServerError{exception.what(), {}, std::nullopt};
+        }
         SetStatus(
             lila::shared::errors::WithDetails(
                 lila::shared::errors::ChatConnectionFailed,
@@ -75,6 +79,17 @@ bool ChatService::Open()
     catch (const std::exception& exception)
     {
         SetState(domain::ChatState::Error);
+        const std::string exceptionMessage = exception.what();
+        {
+            std::scoped_lock lock(mutex_);
+            if (!exceptionMessage.empty())
+            {
+                lastServerError_ = domain::ChatServerError{
+                    exceptionMessage,
+                    {},
+                    std::nullopt};
+            }
+        }
         SetStatus(lila::shared::errors::WithDetails(lila::shared::errors::ChatConnectionFailed, exception.what()), true);
         Close();
         return false;
@@ -181,7 +196,7 @@ void ChatService::ReceiveLoop()
         {
             ProcessIncomingMessage(gateway_.Receive());
         }
-        catch (const std::exception& exception)
+        catch (const std::exception&)
         {
             {
                 std::scoped_lock lock(mutex_);

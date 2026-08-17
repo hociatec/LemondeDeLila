@@ -45,15 +45,35 @@ std::string ResolveChatErrorMessage(
     const std::optional<lila::modules::chat::domain::ChatServerError>& serverError)
 {
     const auto trimmedBase = lila::shared::text::TrimCopy(baseMessage);
+    const bool baseContainsUnexpected =
+        trimmedBase.find(lila::shared::errors::UnexpectedError) != std::string::npos;
     const bool isBaseUnhelpful = trimmedBase.empty() ||
+        baseContainsUnexpected ||
         trimmedBase == lila::shared::errors::UnexpectedError ||
         trimmedBase == lila::shared::errors::ChatErrorMessage;
+    const auto serverMessage = BuildServerErrorMessage(serverError);
+    if (!serverMessage.empty() && isBaseUnhelpful)
+    {
+        return lila::shared::errors::WithDetails(
+            lila::shared::errors::ChatConnectionFailed,
+            serverMessage);
+    }
+
+    const bool startsWithConnectionFailure =
+        trimmedBase.rfind(lila::shared::errors::ChatConnectionFailed, 0) == 0 ||
+        trimmedBase.rfind(lila::shared::errors::ChatReconnectionInterrupted, 0) == 0;
+    if (!serverMessage.empty() && startsWithConnectionFailure)
+    {
+        return lila::shared::errors::WithDetails(
+            lila::shared::errors::ChatConnectionFailed,
+            serverMessage);
+    }
+
     if (!isBaseUnhelpful)
     {
         return trimmedBase;
     }
 
-    const auto serverMessage = BuildServerErrorMessage(serverError);
     return serverMessage.empty()
         ? trimmedBase
         : lila::shared::errors::WithDetails(
@@ -194,8 +214,14 @@ void ChatFrame::BindEvents()
                     {
                         CancelEdit();
                         UpdateStatus(wxString::FromUTF8(lila::shared::errors::ChatDeleted));
-                    });
+                });
             }
+        });
+    testConnectionButton_->Bind(
+        wxEVT_BUTTON,
+        [this](wxCommandEvent&)
+        {
+            RunConnectionDiagnostics();
         });
 
     inputCtrl_->Bind(
@@ -380,8 +406,6 @@ void ChatFrame::OpenChat()
                             wxString::FromUTF8(safeMessage),
                             wxString::FromUTF8(lila::shared::errors::ChatFrameHeader));
 
-                        weakSelf->RequestCloseToSession();
-
                         return;
                     }
 
@@ -403,7 +427,6 @@ void ChatFrame::OpenChat()
                         weakSelf->ShowAccessibleErrorDialog(
                             wxString::FromUTF8(resolvedMessage),
                             wxString::FromUTF8(lila::shared::errors::ChatFrameHeader));
-                        weakSelf->RequestCloseToSession();
                         return;
                     }
 

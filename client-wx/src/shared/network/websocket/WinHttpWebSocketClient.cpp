@@ -148,6 +148,33 @@ std::string ReceiveMessage(HINTERNET webSocketHandle)
     payload.reserve(4096);
     std::array<std::uint8_t, 4096> buffer{};
 
+    auto buildCloseErrorMessage = [](HINTERNET webSocketHandle) -> std::string
+    {
+        USHORT closeStatus = 0;
+        std::array<char, WINHTTP_WEB_SOCKET_MAX_CLOSE_REASON_LENGTH> closeReason{};
+        DWORD reasonLength = 0;
+
+        const DWORD queryResult = WinHttpWebSocketQueryCloseStatus(
+            webSocketHandle,
+            &closeStatus,
+            closeReason.data(),
+            static_cast<DWORD>(closeReason.size()),
+            &reasonLength);
+
+        if (queryResult != NO_ERROR)
+        {
+            return lila::shared::errors::WinHttpSocketClosed;
+        }
+
+        if (reasonLength == 0)
+        {
+            return std::string(lila::shared::errors::WinHttpSocketClosed) + " (close status "
+                + std::to_string(closeStatus) + ").";
+        }
+
+        return std::string(closeReason.data(), reasonLength);
+    };
+
     while (true)
     {
         DWORD bytesRead = 0;
@@ -167,7 +194,7 @@ std::string ReceiveMessage(HINTERNET webSocketHandle)
 
         if (bufferType == WINHTTP_WEB_SOCKET_CLOSE_BUFFER_TYPE)
         {
-            throw std::runtime_error(lila::shared::errors::WinHttpSocketClosed);
+            throw std::runtime_error(buildCloseErrorMessage(webSocketHandle));
         }
 
         payload.insert(payload.end(), buffer.begin(), buffer.begin() + bytesRead);

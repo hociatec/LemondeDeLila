@@ -5845,16 +5845,112 @@ CMakeFiles/lemonde_de_lila_wx.dir/src/modules/chat/presentation/ChatFrame.cpp.ob
  C:/vcpkg/installed/x64-windows/include/wx/msw/tooltip.h
  C:/vcpkg/installed/x64-windows/include/wx/msw/frame.h
  C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/domain/ChatMessage.h
- C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/application/ChatService.h
- C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mutex
- C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
- C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ratio
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/array
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/sstream
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/istream
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_ostream.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ios
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocnum
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/streambuf
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xiosbase
+ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/share.h
  C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/system_error
  C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_system_error_abi.hpp
  C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cerrno
- C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
  C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcall_once.h
  C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xerrc.h
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocale
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xfacet
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocinfo
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_xlocinfo_types.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/clocale
+ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/locale.h
+ C:/vcpkg/installed/x64-windows/include/nlohmann/json.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/adl_serializer.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/abi_macros.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/conversions/from_json.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/forward_list
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/map
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtree
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/valarray
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/exceptions.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/value_t.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_scope.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/meta/detected.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/meta/void_t.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/version
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cassert
+ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/assert.h
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/string_escape.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/input/position_t.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/meta/cpp_future.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/meta/type_traits.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/iterators/iterator_traits.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/meta/call_std/begin.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/meta/call_std/end.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/json_fwd.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/string_concat.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/meta/identity_tag.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/meta/std_fs.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/filesystem
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/chrono
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ratio
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xfilesystem_abi.h
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_tzdb.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/format
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_format_ucd_tables.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_formatter.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_print.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_ranges_tuple_formatter.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/bit
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/charconv
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcharconv.h
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcharconv_ryu.h
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcharconv_ryu_tables.h
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcharconv_tables.h
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/locale
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocbuf
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocmes
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocmon
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xloctime
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/iomanip
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/conversions/to_json.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/iterators/iteration_proxy.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ranges
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_int128.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_ranges_to.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/string_utils.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/byte_container_with_subtype.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/hash.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/input/binary_reader.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/input/input_adapters.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/numeric
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/input/json_sax.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/input/lexer.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/meta/is_sax.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/input/parser.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/iterators/internal_iterator.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/iterators/primitive_iterator.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/iterators/iter_impl.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/iterators/json_reverse_iterator.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/json_custom_base_class.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/json_pointer.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/json_ref.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/output/binary_writer.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/output/output_adapters.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ostream
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/output/serializer.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/conversions/to_chars.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/ordered_map.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/any
+ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_unscope.hpp
+ C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.hpp
+ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/application/ChatService.h
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mutex
  C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
  C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
  C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup.h
@@ -5870,8 +5966,45 @@ CMakeFiles/lemonde_de_lila_wx.dir/src/modules/chat/presentation/ChatFrame.cpp.ob
  C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/application/OptionsStore.h
  C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/OptionsState.h
  C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/IOptionsRepository.h
+ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/application/SessionStore.h
+ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/domain/ISessionRepository.h
+ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/domain/Session.h
  C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/AccessibilityUtils.h
+ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/JsonReaders.h
+ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/NetworkPolicy.h
+ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/http/WsTicketProvider.h
+ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/AuthenticatedRealtimeApiClient.h
+ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/RealtimeApiClient.h
+ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
  C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/AppConfig.h
+ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/WinHttpWebSocketClient.h
+ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/Encoding.h
+ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/StringUtils.h
+ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/BackgroundTask.h
+ C:/vcpkg/installed/x64-windows/include/wx/app.h
+ C:/vcpkg/installed/x64-windows/include/wx/eventfilter.h
+ C:/vcpkg/installed/x64-windows/include/wx/defs.h
+ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+ C:/vcpkg/installed/x64-windows/include/wx/build.h
+ C:/vcpkg/installed/x64-windows/include/wx/cmdargs.h
+ C:/vcpkg/installed/x64-windows/include/wx/init.h
+ C:/vcpkg/installed/x64-windows/include/wx/defs.h
+ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+ C:/vcpkg/installed/x64-windows/include/wx/msw/init.h
+ C:/vcpkg/installed/x64-windows/include/wx/log.h
+ C:/vcpkg/installed/x64-windows/include/wx/defs.h
+ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+ C:/vcpkg/installed/x64-windows/include/wx/msgout.h
+ C:/vcpkg/installed/x64-windows/include/wx/defs.h
+ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+ C:/vcpkg/installed/x64-windows/include/wx/time.h
+ C:/vcpkg/installed/x64-windows/include/wx/iosfwrap.h
+ C:/vcpkg/installed/x64-windows/include/wx/defs.h
+ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+ C:/vcpkg/installed/x64-windows/include/wx/generic/logg.h
+ C:/vcpkg/installed/x64-windows/include/wx/msw/app.h
+ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/concurrency/BackgroundExecutor.h
  C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/Theme.h
  C:/vcpkg/installed/x64-windows/include/wx/button.h
  C:/vcpkg/installed/x64-windows/include/wx/defs.h
@@ -5927,6 +6060,14 @@ CMakeFiles/lemonde_de_lila_wx.dir/src/modules/chat/presentation/ChatFrame.cpp.ob
  C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
  C:/vcpkg/installed/x64-windows/include/wx/msw/dialog.h
  C:/vcpkg/installed/x64-windows/include/wx/panel.h
+ C:/vcpkg/installed/x64-windows/include/wx/msgdlg.h
+ C:/vcpkg/installed/x64-windows/include/wx/defs.h
+ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+ C:/vcpkg/installed/x64-windows/include/wx/stockitem.h
+ C:/vcpkg/installed/x64-windows/include/wx/defs.h
+ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+ C:/vcpkg/installed/x64-windows/include/wx/generic/msgdlgg.h
+ C:/vcpkg/installed/x64-windows/include/wx/msw/msgdlg.h
  C:/vcpkg/installed/x64-windows/include/wx/sizer.h
  C:/vcpkg/installed/x64-windows/include/wx/defs.h
  C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
@@ -5940,24 +6081,13 @@ CMakeFiles/lemonde_de_lila_wx.dir/src/modules/chat/presentation/ChatFrame.cpp.ob
  C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
  C:/vcpkg/installed/x64-windows/include/wx/beforestd.h
  C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/iostream
- C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/istream
- C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_ostream.hpp
- C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ios
- C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocnum
- C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/streambuf
- C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xiosbase
- C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/share.h
- C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocale
- C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xfacet
- C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocinfo
- C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_xlocinfo_types.hpp
- C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/clocale
- C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/locale.h
- C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ostream
  C:/vcpkg/installed/x64-windows/include/wx/afterstd.h
  C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
  C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
  C:/vcpkg/installed/x64-windows/include/wx/msw/textctrl.h
+ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/um/winhttp.h
+ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/shared/pshpack8.h
+ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/shared/poppack.h
 
 CMakeFiles/lemonde_de_lila_wx.dir/src/modules/home/application/HomeAuthValidator.cpp.obj
  C:/wamp64/www/lemondeDeLila/client-wx/src/modules/home/application/HomeAuthValidator.cpp

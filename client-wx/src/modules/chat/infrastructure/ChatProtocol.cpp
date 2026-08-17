@@ -44,6 +44,22 @@ const nlohmann::json* FindPayloadObject(const nlohmann::json& root)
     return &(*payloadIterator);
 }
 
+const nlohmann::json* FindPayloadObjectOrRoot(const nlohmann::json& root)
+{
+    const auto payloadIterator = root.find(std::string(lila::shared::contracts::chat::PayloadField));
+    if (payloadIterator == root.end() || payloadIterator->is_null())
+    {
+        return &root;
+    }
+
+    if (!payloadIterator->is_object())
+    {
+        return &root;
+    }
+
+    return &(*payloadIterator);
+}
+
 const nlohmann::json& RequireArrayField(
     const nlohmann::json& root,
     const char* fieldName,
@@ -222,9 +238,48 @@ ChatEvent ChatProtocol::ParseEvent(const std::string& rawJson, int currentUserId
 
         ChatEvent event;
         event.type = ChatEventType::Error;
-        const auto* payload = FindPayloadObject(root);
+        const auto* payload = FindPayloadObjectOrRoot(root);
         const auto* errorContainer = FindErrorContainer(root, *payload);
         domain::ChatServerError serverError;
         serverError.message = ReadOptionalString(
             *errorContainer,
-            lila::shared::contracts::chat::ErrorMessag
+            lila::shared::contracts::chat::ErrorMessageField.data());
+        serverError.reason = ReadOptionalString(
+            *errorContainer,
+            lila::shared::contracts::chat::ErrorReasonField.data());
+        if (serverError.message.empty())
+        {
+            serverError.message = ReadOptionalString(
+                *payload,
+                lila::shared::contracts::chat::ErrorMessageField.data());
+        }
+        if (serverError.message.empty())
+        {
+            serverError.message = ReadOptionalString(
+                *payload,
+                lila::shared::contracts::realtime::ErrorField.data());
+        }
+        if (serverError.reason.empty())
+        {
+            serverError.reason = ReadOptionalString(
+                *payload,
+                lila::shared::contracts::chat::ErrorReasonField.data());
+        }
+        serverError.untilUtc = lila::shared::data::datetime::ParseIsoTimestamp(
+            ReadOptionalString(
+                *errorContainer,
+                lila::shared::contracts::chat::ErrorUntilField.data()));
+        if (serverError.message.empty())
+        {
+            serverError.message = lila::shared::errors::ChatErrorMessage;
+        }
+
+        event.error = serverError;
+        return event;
+    }
+    catch (const std::exception&)
+    {
+        return BuildErrorEvent(lila::shared::errors::ChatEventDataInvalid);
+    }
+}
+}

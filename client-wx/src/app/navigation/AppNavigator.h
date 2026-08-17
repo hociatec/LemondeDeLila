@@ -31,6 +31,11 @@ namespace lila::modules::messaging::application
 class MessagingService;
 }
 
+namespace lila::shared::network::http
+{
+class WsTicketProvider;
+}
+
 namespace lila::modules::user::application
 {
 class LoginUseCase;
@@ -49,7 +54,8 @@ public:
         lila::modules::options::application::OptionsStore& optionsStore,
         lila::modules::chat::application::ChatService& chatService,
         lila::modules::messaging::application::MessagingService& messagingService,
-        lila::modules::social::application::SocialService& socialService);
+        lila::modules::social::application::SocialService& socialService,
+        lila::shared::network::http::WsTicketProvider& wsTicketProvider);
 
     bool Start();
 
@@ -74,6 +80,7 @@ private:
     lila::modules::chat::application::ChatService& chatService_;
     lila::modules::messaging::application::MessagingService& messagingService_;
     lila::modules::social::application::SocialService& socialService_;
+    lila::shared::network::http::WsTicketProvider& wsTicketProvider_;
     wxFrame* currentWindow_ = nullptr;
     std::size_t lastMainMenuSelection_ = 0;
     std::size_t lastSocialMenuSelection_ = 0;

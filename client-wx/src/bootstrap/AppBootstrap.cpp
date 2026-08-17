@@ -91,7 +91,8 @@ bool AppBootstrap::Start()
             *optionsStore_,
             *chatService_,
             *messagingService_,
-            *socialService_);
+            *socialService_,
+            *wsTicketProvider_);
         return navigator_->Start();
     }
     catch (const std::exception& error)

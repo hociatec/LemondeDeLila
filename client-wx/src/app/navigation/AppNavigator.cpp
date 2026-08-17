@@ -29,14 +29,16 @@ AppNavigator::AppNavigator(
     modules::options::application::OptionsStore& optionsStore,
     modules::chat::application::ChatService& chatService,
     modules::messaging::application::MessagingService& messagingService,
-    modules::social::application::SocialService& socialService)
+    modules::social::application::SocialService& socialService,
+    shared::network::http::WsTicketProvider& wsTicketProvider)
     : loginUseCase_(loginUseCase),
       registerUseCase_(registerUseCase),
       sessionStore_(sessionStore),
       optionsStore_(optionsStore),
       chatService_(chatService),
       messagingService_(messagingService),
-      socialService_(socialService)
+      socialService_(socialService),
+      wsTicketProvider_(wsTicketProvider)
 {
 }
 
@@ -107,6 +109,8 @@ void AppNavigator::ShowChat(std::size_t selectedIndex)
     auto* window = new modules::chat::presentation::ChatFrame(
         chatService_,
         optionsStore_,
+        sessionStore_,
+        wsTicketProvider_,
         [this]()
         {
             ShowSession(lastMainMenuSelection_);

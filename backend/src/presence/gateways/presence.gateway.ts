@@ -36,12 +36,61 @@ export class PresenceGateway
   }
 
   async handleConnection(client: WebSocket, ...args: any[]) {
-    const payload = this.resolveAuth(client, args);
+    let payload: WsAuthPayload | null = null;
+    try
+    {
+      payload = this.resolveAuth(client, args);
+    }
+    catch
+    {
+      try
+      {
+        client.send(
+          JSON.stringify({
+            type: 'error',
+            payload: { message: 'Le token d\'authentification est invalide.' },
+          }),
+        );
+      }
+      catch
+      {
+        /* ignore */
+      }
+      client.close(4001, 'invalid ws token');
+      return;
+    }
+
     if (!payload || !payload.id || !payload.username) {
+      try
+      {
+        client.send(
+          JSON.stringify({
+            type: 'error',
+            payload: { message: 'Authentification requise pour ouvrir le tchat.' },
+          }),
+        );
+      }
+      catch
+      {
+        /* ignore */
+      }
       client.close(4001, 'auth required');
       return;
     }
     if (!this.wsTickets.validate(client, args, 'presence')) {
+      try
+      {
+        client.send(
+          JSON.stringify({
+            type: 'error',
+            payload: { message: 'Le ticket WebSocket est requis pour se connecter.' },
+          }),
+        );
+      }
+      catch
+      {
+        /* ignore */
+      }
       client.close(4403, 'ws ticket requis');
       return;
     }
